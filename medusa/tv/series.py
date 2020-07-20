@@ -559,6 +559,7 @@ class Series(TV):
     @property
     def prev_airdate(self):
         """Return last aired episode airdate."""
+        self.prev_episode()
         return (
             sbdatetime.convert_to_setting(network_timezones.parse_date_time(self.prev_aired, self.airs, self.network))
             if try_int(self.prev_aired, 1) > MILLIS_YEAR_1900 else None
@@ -567,6 +568,7 @@ class Series(TV):
     @property
     def next_airdate(self):
         """Return next aired episode airdate."""
+        self.next_episode()
         return (
             sbdatetime.convert_to_setting(network_timezones.parse_date_time(self.next_aired, self.airs, self.network))
             if try_int(self.next_aired, 1) > MILLIS_YEAR_1900 else None
