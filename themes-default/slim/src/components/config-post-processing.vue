@@ -501,12 +501,12 @@ export default {
         }
     },
     computed: {
-        ...mapState([
-            'config',
-            'metadata',
-            'postprocessing',
-            'system'
-        ]),
+        ...mapState({
+            config: state => state.config.general,
+            metadata: state => state.config.metadata,
+            postprocessing: state => state.config.postprocessing,
+            system: state => state.config.system
+        }),
         configLoaded() {
             const { postprocessing } = this;
             return postprocessing.processAutomatically !== null;

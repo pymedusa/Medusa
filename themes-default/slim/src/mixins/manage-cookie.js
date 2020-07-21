@@ -15,6 +15,42 @@ export const manageCookieMixin = cookiePrefix => {
             },
             setCookie(key, value) {
                 return this.$cookies.set(`${cookiePrefix}-${key}`, JSON.stringify(value));
+            },
+            /**
+             * Save vue-good-table sort field and sort order (desc/asc)
+             * @param {*} evt - Vue good table sorting event (triggered by the `on-sort-change` event)
+             */
+            saveSorting(evt) {
+                const { setCookie } = this;
+                // Store cookies, for sort field and type (asc/desc)
+                setCookie('sort-field', evt.map(item => item.field));
+                setCookie('sort-type', evt.map(item => item.type));
+            },
+            /**
+             * Get vue-good-table sort field and sort order.
+             * @param {string} defaultField - default vue good table field to sort by.
+             * @param {string} defaultType - default vue good table sort order (ascending / descending).
+             * @returns {object} - Object with the field and type properties.
+             */
+            getSortBy(defaultField = 'title', defaultType = 'asc') {
+                const { getCookie } = this;
+                // Try to get cookies, for sort field and type (asc/desc)
+                const sortField = getCookie('sort-field');
+                const sortType = getCookie('sort-type');
+                const sort = [];
+
+                if (Array.isArray(sortField) && sortField.length === 2) {
+                    sortField.forEach((_, index) => {
+                        sort.push({ field: sortField[index] || defaultField, type: sortType[index] || defaultType });
+                    });
+                    return sort;
+                }
+
+                if (sortField === null || sortType === null) {
+                    return ({ field: defaultField, type: defaultType });
+                }
+
+                return ({ field: sortField[0] || defaultField, type: sortType[0] || defaultType });
             }
         },
         created() {

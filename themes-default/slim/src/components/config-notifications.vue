@@ -954,11 +954,11 @@ export default {
         };
     },
     computed: {
-        ...mapState([
-            'config',
-            'indexers',
-            'notifiers'
-        ]),
+        ...mapState({
+            config: state => state.config.general,
+            indexers: state => state.config.indexers,
+            notifiers: state => state.config.notifiers
+        }),
         traktNewTokenMessage() {
             const { accessToken } = this.notifiers.trakt;
             return 'Get ' + accessToken ? 'New ' : ' Trakt PIN';

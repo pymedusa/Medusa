@@ -2,11 +2,13 @@
 
 from __future__ import unicode_literals
 
-import datetime
 import logging
 import threading
 from builtins import object
+from datetime import datetime
 from functools import cmp_to_key
+from uuid import uuid4
+
 
 log = logging.getLogger()
 
@@ -46,7 +48,7 @@ class GenericQueue(object):
         :return: item
         """
         with self.lock:
-            item.added = datetime.datetime.now()
+            item.added = datetime.utcnow()
             self.queue.append(item)
 
             return item
@@ -111,18 +113,37 @@ class QueueItem(threading.Thread):
         self.action_id = action_id
         self.stop = threading.Event()
         self.added = None
-        self.queue_time = datetime.datetime.now()
+        self.queue_time = datetime.utcnow()
         self.start_time = None
+        self._to_json = {
+            'identifier': str(uuid4()),
+            'name': self.name,
+            'priority': self.priority,
+            'actionId': self.action_id,
+            'queueTime': str(self.queue_time),
+            'success': None
+        }
 
     def run(self):
         """Implementing classes should call this."""
         self.inProgress = True
-        self.start_time = datetime.datetime.now()
+        self.start_time = datetime.utcnow()
 
     def finish(self):
         """Implementing Classes should call this."""
         self.inProgress = False
         threading.currentThread().name = self.name
+
+    @property
+    def to_json(self):
+        """Update queue item JSON representation."""
+        self._to_json.update({
+            'inProgress': self.inProgress,
+            'startTime': str(self.start_time) if self.start_time else None,
+            'updateTime': str(datetime.utcnow()),
+            'success': self.success
+        })
+        return self._to_json
 
 
 def fifo(my_list, item, max_size=100):

@@ -89,7 +89,7 @@ export default {
         VueGoodTable
     },
     mixins: [
-        manageCookieMixin('home'),
+        manageCookieMixin('home-simple'),
         showlistTableMixin
     ],
     props: {

@@ -3,7 +3,7 @@
 
 from __future__ import unicode_literals
 
-import bencode
+import bencodepy
 
 from medusa import init  # noqa: F401 [unused]
 
@@ -13,7 +13,7 @@ import pytest
 @pytest.mark.parametrize('p', [
     {  # p0: bytes with *allowed* extra data
         'value': b'd5:hello5:world7:numbersli1ei2eeeEXTRA_DATA_HERE',
-        'expected': {b'hello': b'world', b'numbers': [1, 2]},
+        'expected': {'hello': 'world', 'numbers': [1, 2]},
         'allow_extra_data': True,
         'raises_exc': None,
         'exc_message': r''
@@ -22,12 +22,12 @@ import pytest
         'value': b'd5:hello5:world7:numbersli1ei2eeeEXTRA_DATA_HERE',
         'expected': None,
         'allow_extra_data': False,
-        'raises_exc': bencode.BencodeDecodeError,
+        'raises_exc': bencodepy.BencodeDecodeError,
         'exc_message': r'.+\(data after valid prefix\)'
     },
     {  # p2: unicode with *allowed* extra data
         'value': 'd5:hello5:world7:numbersli1ei2eeeEXTRA_DATA_HERE',
-        'expected': {b'hello': b'world', b'numbers': [1, 2]},
+        'expected': {'hello': 'world', 'numbers': [1, 2]},
         'allow_extra_data': True,
         'raises_exc': None,
         'exc_message': r''
@@ -36,21 +36,21 @@ import pytest
         'value': 'd5:hello5:world7:numbersli1ei2eeeEXTRA_DATA_HERE',
         'expected': None,
         'allow_extra_data': False,
-        'raises_exc': bencode.BencodeDecodeError,
+        'raises_exc': bencodepy.BencodeDecodeError,
         'exc_message': r'.+\(data after valid prefix\)'
     },
     {  # p4: invalid data
         'value': 'Heythere',
         'expected': None,
         'allow_extra_data': False,
-        'raises_exc': bencode.BencodeDecodeError,
+        'raises_exc': bencodepy.BencodeDecodeError,
         'exc_message': r'not a valid bencoded string'
     },
     {  # p5: none
         'value': None,
         'expected': None,
         'allow_extra_data': False,
-        'raises_exc': bencode.BencodeDecodeError,
+        'raises_exc': bencodepy.BencodeDecodeError,
         'exc_message': r'not a valid bencoded string'
     }
 ])
@@ -64,9 +64,11 @@ def test_bdecode_monkeypatch(p):
     raises_exc = p['raises_exc']
 
     # When + Then
+    bc = bencodepy.Bencode(encoding='utf-8')
+
     if raises_exc is not None:
         with pytest.raises(raises_exc, match=exc_message):
-            actual = bencode.bdecode(value, allow_extra_data=allow_extra_data)
+            actual = bc.decode(value, allow_extra_data=allow_extra_data)
     else:
-        actual = bencode.bdecode(value, allow_extra_data=allow_extra_data)
+        actual = bc.decode(value, allow_extra_data=allow_extra_data)
         assert expected == actual

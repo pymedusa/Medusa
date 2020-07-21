@@ -848,3 +848,49 @@ class GenericProvider(object):
     def __unicode__(self):
         """Return provider name and provider type."""
         return '{provider_name} ({provider_type})'.format(provider_name=self.name, provider_type=self.provider_type)
+
+    def to_json(self):
+        """Return a json representation for a provider."""
+        from medusa.providers.torrent.torrent_provider import TorrentProvider
+        return {
+            'name': self.name,
+            'id': self.get_id(),
+            'config': {
+                'enabled': self.enabled,
+                'search': {
+                    'backlog': {
+                        'enabled': self.enable_backlog
+                    },
+                    'manual': {
+                        'enabled': self.enable_backlog
+                    },
+                    'daily': {
+                        'enabled': self.enable_backlog,
+                        'maxRecentItems': self.max_recent_items,
+                        'stopAt': self.stop_at
+                    },
+                    'fallback': self.search_fallback,
+                    'mode': self.search_mode,
+                    'separator': self.search_separator,
+                    'seasonTemplates': self.season_templates,
+                    'delay': {
+                        'enabled': self.enable_search_delay,
+                        'duration': self.search_delay
+                    }
+                }
+            },
+            'animeOnly': self.anime_only,
+            'type': self.provider_type,
+            'public': self.public,
+            'btCacheUrls': self.bt_cache_urls if isinstance(self, TorrentProvider) else [],
+            'properStrings': self.proper_strings,
+            'headers': self.headers,
+            'supportsAbsoluteNumbering': self.supports_absolute_numbering,
+            'supportsBacklog': self.supports_backlog,
+            'url': self.url,
+            'urls': self.urls,
+            'cookies': {
+                'enabled': self.enable_cookies,
+                'required': self.cookies
+            }
+        }

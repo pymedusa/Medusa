@@ -43,8 +43,10 @@ const homeRoutes = [
         name: 'snatchSelection',
         meta: {
             topMenu: 'home',
-            subMenu: showSubMenu
-        }
+            subMenu: showSubMenu,
+            converted: true
+        },
+        component: () => import('../components/snatch-selection.vue')
     },
     {
         path: '/home/testRename',

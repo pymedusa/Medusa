@@ -12,7 +12,8 @@
                      :show-id="id"
                      :show-indexer="indexer"
                      @update="statusQualityUpdate"
-                     @update-overview-status="filterByOverviewStatus = $event" />
+                     @update-overview-status="filterByOverviewStatus = $event"
+        />
 
         <div class="row" :class="{ fanartBackground: layout.fanartBackground }">
             <div class="col-md-12 top-15 displayShow horizontal-scroll">
@@ -38,7 +39,7 @@
                                 }"
                                 :sort-options="{
                                     enabled: true,
-                                    initialSortBy: { field: 'episode', type: 'desc' }
+                                    initialSortBy: getSortBy('episode', 'desc')
                                 }"
                                 :selectOptions="{
                                     enabled: true,
@@ -122,8 +123,8 @@
                         <span v-else-if="props.column.label == 'Subtitles'" class="align-center">
                             <div class="subtitles" v-if="['Archived', 'Downloaded', 'Ignored', 'Skipped'].includes(props.row.status)">
                                 <div v-for="flag in props.row.subtitles" :key="flag">
-                                    <img v-if="flag !== 'und'" :src="`images/subtitles/flags/${flag}.png`" width="16" height="11" alt="{flag}" onError="this.onerror=null;this.src='images/flags/unknown.png';" @click="searchSubtitle($event, props.row, flag)">
-                                    <img v-else :src="`images/subtitles/flags/${flag}.png`" class="subtitle-flag" width="16" height="11" alt="flag" onError="this.onerror=null;this.src='images/flags/unknown.png';">
+                                    <img v-if="flag !== 'und'" :src="`images/subtitles/flags/${flag}.png`" width="16" height="11" :alt="flag" onError="this.onerror=null;this.src='images/flags/unknown.png';" @click="searchSubtitle($event, props.row, flag)">
+                                    <img v-else :src="`images/subtitles/flags/${flag}.png`" class="subtitle-flag" width="16" height="11" :alt="flag" onError="this.onerror=null;this.src='images/flags/unknown.png';">
                                 </div>
                             </div>
                         </span>
@@ -181,7 +182,7 @@
                                 }"
                                 :sort-options="{
                                     enabled: true,
-                                    initialSortBy: { field: 'episode', type: 'desc' }
+                                    initialSortBy: getSortBy('episode', 'desc')
                                 }"
                                 :selectOptions="{
                                     enabled: true,
@@ -278,8 +279,8 @@
                         </span>
 
                         <span v-else-if="props.column.field == 'search'">
-                            <img class="epForcedSearch" :id="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :name="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :ref="`search-${props.row.slug}`" src="images/search16.png" height="16" :alt="retryDownload(props.row) ? 'retry' : 'search'" :title="retryDownload(props.row) ? 'Retry Download' : 'Forced Seach'" @click="queueSearch(props.row)">
-                            <app-link class="epManualSearch" :id="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :name="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :href="'home/snatchSelection?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&season=' + props.row.season + '&episode=' + props.row.episode"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search"></app-link>
+                            <img class="epForcedSearch" :id="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`" :name="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`" :ref="`search-${props.row.slug}`" src="images/search16.png" height="16" :alt="retryDownload(props.row) ? 'retry' : 'search'" :title="retryDownload(props.row) ? 'Retry Download' : 'Forced Seach'" @click="queueSearch(props.row)">
+                            <app-link class="epManualSearch" :id="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`" :name="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`" :href="`home/snatchSelection?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}&season=${props.row.season}&episode=${props.row.episode}`"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search"></app-link>
                             <img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" @click="searchSubtitle($event, props.row)">
                         </span>
 
@@ -526,10 +527,10 @@ export default {
     computed: {
         ...mapState({
             shows: state => state.shows.shows,
-            configLoaded: state => state.layout.fanartBackground !== null,
-            config: state => state.config,
-            layout: state => state.layout,
-            stateSearch: state => state.search
+            config: state => state.config.general,
+            configLoaded: state => state.config.layout.fanartBackground !== null,
+            layout: state => state.config.layout,
+            stateSearch: state => state.config.search
         }),
         ...mapGetters({
             show: 'getCurrentShow',
@@ -675,7 +676,8 @@ export default {
         ...mapActions({
             getShow: 'getShow', // Map `this.getShow()` to `this.$store.dispatch('getShow')`
             getEpisodes: 'getEpisodes',
-            setCurrentShow: 'setCurrentShow'
+            setCurrentShow: 'setCurrentShow',
+            setRecentShow: 'setRecentShow'
         }),
         loadShow() {
             const { setCurrentShow, id, indexer, getShow } = this;
@@ -1146,7 +1148,7 @@ export default {
             _getEpisodes(id, indexer);
         },
         initializeEpisodes() {
-            const { getEpisodes, id, indexer, show } = this;
+            const { getEpisodes, id, indexer, setRecentShow, show } = this;
             if (!show.seasons) {
                 // Load episodes for the first page.
                 this.loadEpisodes(1);
@@ -1154,6 +1156,15 @@ export default {
                 if (show.seasonCount.length > 0 && show.seasonCount[0].season === 0) {
                     getEpisodes({ id, indexer, season: 0 });
                 }
+            }
+
+            if (show.id.slug) {
+                // For now i'm dumping this here
+                setRecentShow({
+                    indexerName: show.indexer,
+                    showId: show.id[show.indexer],
+                    name: show.title
+                });
             }
         }
     },
@@ -1201,17 +1212,17 @@ div.vgt-responsive > table tbody > tr > th.vgt-row-header > span {
     margin-bottom: 10px;
 }
 
-.fanartBackground.displayShow {
-    clear: both;
-    opacity: 0.9;
-}
-
 .defaultTable.displayShow {
     clear: both;
 }
 
 .displayShowTable.displayShow {
     clear: both;
+}
+
+.fanartBackground.displayShow {
+    clear: both;
+    opacity: 0.9;
 }
 
 .fanartBackground table {

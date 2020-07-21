@@ -7,7 +7,7 @@ $.tablesorter.addParser({
         if (s.indexOf('Loading...') === 0) {
             return s.replace('Loading...', '000');
         }
-        return (MEDUSA.layout.sortArticle ? (s || '') : (s || '').replace(/^(the|a|an)\s/i, ''));
+        return (MEDUSA.config.layout.sortArticle ? (s || '') : (s || '').replace(/^(the|a|an)\s/i, ''));
     },
     type: 'text'
 });

@@ -4,7 +4,9 @@ import { mapState } from 'vuex';
 export default {
     name: 'status',
     template: '#status-template',
-    computed: mapState(['config']),
+    computed: mapState({
+        config: state => state.config
+    }),
     mounted() {
         $('#schedulerStatusTable').tablesorter({
             widgets: ['saveSort', 'zebra'],
