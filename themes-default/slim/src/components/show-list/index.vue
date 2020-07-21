@@ -33,8 +33,8 @@
 
         </div>
 
-        <!-- Where still loading -->
-        <div v-if="!test && shows.length === 0">
+        <!-- We're still loading -->
+        <div v-if="!this.showsLoading.finished && shows.length === 0">
             <state-switch state="loading" :theme="stateLayout.themeName" />
             <span>Loading</span>
         </div>
@@ -106,7 +106,7 @@ export default {
     },
     computed: {
         ...mapState({
-            stateLayout: state => state.layout,
+            stateLayout: state => state.config.layout,
             showsLoading: state => state.shows.loading
         }),
         mappedLayout() {
@@ -137,15 +137,6 @@ export default {
                 const { setPosterSortDir } = this;
                 setPosterSortDir({ value });
             }
-        },
-        sortedShows() {
-            const { shows, stateLayout } = this;
-            const { sortArticle } = stateLayout;
-            const removeArticle = str => sortArticle ? str.replace(/^((?:a(?!\s+to)n?)|the)\s/i, '') : str;
-            return shows.concat().sort((a, b) => removeArticle(a.title).toLowerCase().localeCompare(removeArticle(b.title).toLowerCase()));
-        },
-        test() {
-            return this.showsLoading.finished;
         }
     },
     methods: {

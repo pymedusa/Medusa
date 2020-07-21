@@ -20,9 +20,9 @@ export default {
     },
     computed: {
         ...mapState({
-            config: state => state.config,
+            config: state => state.config.general,
             // Renamed because of the computed property 'layout'.
-            stateLayout: state => state.layout
+            stateLayout: state => state.config.layout
         }),
         header() {
             return this.$route.meta.header;

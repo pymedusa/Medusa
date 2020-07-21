@@ -1,11 +1,11 @@
-import { ADD_CONFIG } from '../mutation-types';
-import { api } from '../../api';
+import { ADD_CONFIG, UPDATE_LAYOUT_LOCAL } from '../../mutation-types';
+import { api } from '../../../api';
 import formatDate from 'date-fns/format';
 import parseISO from 'date-fns/parseISO';
 import TimeAgo from 'javascript-time-ago';
 import timeAgoLocalEN from 'javascript-time-ago/locale/en';
 
-import { convertDateFormat } from '../../utils/core';
+import { convertDateFormat } from '../../../utils/core';
 
 // Add locale-specific relative date/time formatting rules.
 TimeAgo.addLocale(timeAgoLocalEN);
@@ -45,11 +45,14 @@ const state = {
         status: null,
         period: null
     },
-    showFilterByName: '',
     posterSortdir: null,
     posterSortby: null,
-    posterSize: 188,
-    currentShowTab: null
+    // Local config store properties, are saved to.
+    local: {
+        showFilterByName: '',
+        posterSize: 188,
+        currentShowTab: null
+    }
 };
 
 const mutations = {
@@ -57,6 +60,9 @@ const mutations = {
         if (section === 'layout') {
             state = Object.assign(state, config);
         }
+    },
+    [UPDATE_LAYOUT_LOCAL](state, local) {
+        state.local = { ...state.local, ...local };
     }
 };
 
@@ -81,7 +87,7 @@ const getters = {
         return formatDate(fdate, convertDateFormat(`${dateStyle} ${timeStyle}`));
     },
     getShowFilterByName: state => {
-        return state.showFilterByName;
+        return state.local.showFilterByName;
     }
 
 };
@@ -89,12 +95,12 @@ const getters = {
 const actions = {
     setLayout(context, { page, layout }) {
         const { commit } = context;
-        return api.patch('config/main', { layout: { [page]: layout } })
-            .then(() => {
-                return commit(ADD_CONFIG, {
-                    section: 'layout', config: { [page]: layout }
-                });
-            });
+        // Don't wait for the api, just commit to store.
+        commit(ADD_CONFIG, {
+            section: 'layout', config: { [page]: layout }
+        });
+
+        return api.patch('config/main', { layout: { [page]: layout } });
     },
     setTheme(context, { themeName }) {
         const { commit } = context;
@@ -117,12 +123,6 @@ const actions = {
                 });
             });
     },
-    setShowFilterByName(context, { filter }) {
-        const { commit } = context;
-        return commit(ADD_CONFIG, {
-            section: 'layout', config: { showFilterByName: filter }
-        });
-    },
     setPosterSortBy(context, { value }) {
         const { commit } = context;
         return api.patch('config/main', { layout: { posterSortby: value } })
@@ -141,12 +141,6 @@ const actions = {
                 });
             });
     },
-    setPosterSize(context, { posterSize }) {
-        const { commit } = context;
-        return commit(ADD_CONFIG, {
-            section: 'layout', config: { posterSize }
-        });
-    },
     setShowListOrder(context, { value }) {
         const { commit } = context;
         return api.patch('config/main', { layout: { show: { showListOrder: value } } })
@@ -164,6 +158,10 @@ const actions = {
                     section: 'layout', config: { [key]: value }
                 });
             });
+    },
+    setLayoutLocal(context, { key, value }) {
+        const { commit } = context;
+        return commit(UPDATE_LAYOUT_LOCAL, { [key]: value });
     }
 };
 

@@ -16,7 +16,7 @@ export const errorlogsSubMenu = vm => {
     const { $route, $store } = vm;
     const level = $route.params.level || $route.query.level;
     const { config } = $store.state;
-    const { loggingLevels, numErrors, numWarnings } = config.logs;
+    const { loggingLevels, numErrors, numWarnings } = config.general.logs;
     if (Object.keys(loggingLevels).length === 0) {
         return [];
     }
@@ -56,7 +56,8 @@ export const historySubMenu = [
 /** @type {import('.').SubMenuFunction} */
 export const showSubMenu = vm => {
     const { $route, $store } = vm;
-    const { config, notifiers } = $store.state;
+    const { config } = $store.state;
+    const { notifiers } = config;
 
     const indexerName = $route.params.indexer || $route.query.indexername;
     const showId = $route.params.id || $route.query.seriesid;
@@ -124,7 +125,7 @@ export const showSubMenu = vm => {
             {
                 title: 'Download Subtitles',
                 path: `home/subtitleShow?indexername=${indexerName}&seriesid=${showId}`,
-                requires: config.subtitles.enabled && !isBeingSubtitled && show.config.subtitlesEnabled,
+                requires: config.general.subtitles.enabled && !isBeingSubtitled && show.config.subtitlesEnabled,
                 icon: 'menu-icon-backlog'
             }
         ]);

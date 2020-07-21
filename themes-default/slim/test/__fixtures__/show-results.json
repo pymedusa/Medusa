@@ -1,0 +1,1325 @@
+[
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.s05e10.720p.bluray.x264.1-demand-Obfuscated",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 256,
+        "releaseGroup": "1-demand",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 2581722000,
+        "leechers": -1,
+        "pubdate": "2018-08-06T00:37:43+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.The.Informant.1080p.AMZN.WEB-DL.DDP5.1.H.264-NTb-Scrambled",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 128,
+        "releaseGroup": "NTb",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 3209182000,
+        "leechers": -1,
+        "pubdate": "2018-05-18T18:04:53+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.The.Informant.1080p.AMZN.WEB-DL.DDP5.1.H.264.1-NTb-Obfuscated",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 128,
+        "releaseGroup": "1-NTb",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 3208222000,
+        "leechers": -1,
+        "pubdate": "2018-05-17T23:26:29+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.iNTERNAL.1080p.WEB.H264-METCON-BUYMORE",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 128,
+        "releaseGroup": "METCON",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 1681186000,
+        "leechers": -1,
+        "pubdate": "2018-04-07T10:09:18+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.iNTERNAL.1080p.WEB.H264.1-METCON-Obfuscated",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 128,
+        "releaseGroup": "1-METCON",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 1761574000,
+        "leechers": -1,
+        "pubdate": "2018-04-06T12:27:25+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.iNTERNAL.1080p.WEB.H264-METCON-Obfuscated",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 128,
+        "releaseGroup": "METCON",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 1761574000,
+        "leechers": -1,
+        "pubdate": "2018-04-06T11:44:02+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.The.Informant.1080p.AMZN.WEB-DL.DDP5.1.H.264.NL-Subs-Obfuscated",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 128,
+        "releaseGroup": null,
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 3208216000,
+        "leechers": -1,
+        "pubdate": "2018-01-21T16:25:20+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.The.Informant.1080p.AMZN.WEB-DL.DDP5.1.H.264.NL-Subs",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 128,
+        "releaseGroup": null,
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 3181335000,
+        "leechers": -1,
+        "pubdate": "2018-01-21T00:01:18+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.1080p.AMZN.WEBRip.DDP5.1.x264-NTb-Obfuscated",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 128,
+        "releaseGroup": "NTb",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 3208222000,
+        "leechers": -1,
+        "pubdate": "2018-01-13T18:58:30+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.1080p.AMZN.WEBRip.DDP5.1.x264-NTb",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 128,
+        "releaseGroup": "NTb",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 3181515000,
+        "leechers": -1,
+        "pubdate": "2018-01-13T17:24:49+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.The.Informant.1080p.AMZN.WEB-DL.DDP5.1.H.264-NTb-Obfuscated",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 128,
+        "releaseGroup": "NTb",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 3208222000,
+        "leechers": -1,
+        "pubdate": "2018-01-12T20:42:30+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.The.Informant.1080p.AMZN.WEB-DL.DDP5.1.H.264-NTb",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 128,
+        "releaseGroup": "NTb",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 3143648000,
+        "leechers": -1,
+        "pubdate": "2018-01-12T20:12:12+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.The.Informant.1080p.AMZN.WEB-DL.DDP5.1.H.264-NTb-BUYMORE",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 128,
+        "releaseGroup": "NTb",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 3061984000,
+        "leechers": -1,
+        "pubdate": "2018-01-12T09:09:31+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.s05e10.1080p.web.x264-tbs-BUYMORE",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 128,
+        "releaseGroup": "tbs",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 1429787000,
+        "leechers": -1,
+        "pubdate": "2018-01-12T09:01:27+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.The.Informant.1080p.AMZN.WEBRip.DDP5.1.x264-NTb-postbot",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 128,
+        "releaseGroup": "NTb",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 3208222000,
+        "leechers": -1,
+        "pubdate": "2018-01-11T13:37:20+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.The.Informant.1080p.AMZN.WEB-DL.DDP5.1.H.264-NTb-Obfuscated",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 128,
+        "releaseGroup": "NTb",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 3208222000,
+        "leechers": -1,
+        "pubdate": "2018-01-11T11:23:26+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.1080p.WEB.x264-TBS-Obfuscated",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 128,
+        "releaseGroup": "TBS",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 1497817000,
+        "leechers": -1,
+        "pubdate": "2018-01-11T10:20:58+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.The.Informant.720p.AMZN.WEBRip.DDP5.1.x264-NTb-Scrambled",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 64,
+        "releaseGroup": "NTb",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 1921362000,
+        "leechers": -1,
+        "pubdate": "2018-05-18T18:15:22+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.The.Informant.720p.AMZN.WEBRip.DDP5.1.x264-NTb-Obfuscated",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 64,
+        "releaseGroup": "NTb",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 1920698000,
+        "leechers": -1,
+        "pubdate": "2018-01-12T20:54:42+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.The.Informant.720p.AMZN.WEBRip.DDP5.1.x264-NTb",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 64,
+        "releaseGroup": "NTb",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 1881740000,
+        "leechers": -1,
+        "pubdate": "2018-01-12T20:12:13+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.The.Informant.720p.AMZN.WEBRip.DDP5.1.x264-NTb-BUYMORE",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 64,
+        "releaseGroup": "NTb",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 1833346000,
+        "leechers": -1,
+        "pubdate": "2018-01-12T09:13:38+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.s05e10.internal.720p.web.x264-bamboozle-BUYMORE",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 64,
+        "releaseGroup": "bamboozle",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 952453000,
+        "leechers": -1,
+        "pubdate": "2018-01-12T09:03:36+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.The.Informant.720p.AMZN.WEBRip.DDP5.1.x264-NTb-postbot",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 64,
+        "releaseGroup": "NTb",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 1920698000,
+        "leechers": -1,
+        "pubdate": "2018-01-11T18:24:42+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.The.Informant.720p.AMZN.WEBRip.DDP5.1.x264-NTb-Obfuscated",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 64,
+        "releaseGroup": "NTb",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 1920698000,
+        "leechers": -1,
+        "pubdate": "2018-01-11T12:26:44+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.iNTERNAL.720p.WEB.x264-BAMBOOZLE-Obfuscated",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 64,
+        "releaseGroup": "BAMBOOZLE",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 952452000,
+        "leechers": -1,
+        "pubdate": "2018-01-11T10:18:45+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.MULTi.1080p.HDTV.x264.1-HYBRiS-Obfuscated",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 32,
+        "releaseGroup": "1-HYBRiS",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 2626882000,
+        "leechers": -1,
+        "pubdate": "2018-10-13T19:14:40+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.MULTi.1080p.HDTV.x264-HYBRiS-Obfuscated",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 32,
+        "releaseGroup": "HYBRiS",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 2626882000,
+        "leechers": -1,
+        "pubdate": "2018-10-13T19:14:40+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.1080p.HEVC.x265-MeGusta-Obfuscated",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 32,
+        "releaseGroup": "MeGusta",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 641647000,
+        "leechers": -1,
+        "pubdate": "2018-01-11T14:59:06+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.720p.HDTV.x264.1-AVS-Obfuscated",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 8,
+        "releaseGroup": "1-AVS",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 1088913000,
+        "leechers": -1,
+        "pubdate": "2018-05-17T23:21:23+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.iNTERNAL.720p.HEVC.x265-MeGusta-Obfuscated",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 8,
+        "releaseGroup": "MeGusta",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 264947000,
+        "leechers": -1,
+        "pubdate": "2018-01-13T12:02:38+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.720p.HEVC.x265-MeGusta-Obfuscated",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 8,
+        "releaseGroup": "MeGusta",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 261446000,
+        "leechers": -1,
+        "pubdate": "2018-01-13T04:54:22+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.720p.HDTV.x264-AVS-BUYMORE",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 8,
+        "releaseGroup": "AVS",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 1088913000,
+        "leechers": -1,
+        "pubdate": "2018-01-11T07:07:38+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.720p.HDTV.x264-AVS-postbot",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 8,
+        "releaseGroup": "AVS",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 1088913000,
+        "leechers": -1,
+        "pubdate": "2018-01-11T05:06:04+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.720p.HDTV.x264-AVS-Obfuscated",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 8,
+        "releaseGroup": "AVS",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 1088913000,
+        "leechers": -1,
+        "pubdate": "2018-01-11T03:33:09+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.German.BDRip.x264-EXCiTED",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 4,
+        "releaseGroup": "EXCiTED",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 393160000,
+        "leechers": -1,
+        "pubdate": "2019-02-14T00:27:54+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.s05e10.bdrip.x264.1-demand-Obfuscated",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 4,
+        "releaseGroup": "1-demand",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 275518000,
+        "leechers": -1,
+        "pubdate": "2018-09-05T01:20:53+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.s05e10.bdrip.x264.1-demand-Obfuscated",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 4,
+        "releaseGroup": "1-demand",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 275518000,
+        "leechers": -1,
+        "pubdate": "2018-08-05T23:22:25+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.480p.WEBRip.nSD.x264.1-NhaNc3-Obfuscated",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 2,
+        "releaseGroup": "1-NhaNc3",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 577432000,
+        "leechers": -1,
+        "pubdate": "2018-05-22T00:19:05+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.iNTERNAL.480p.x264-mSD-Obfuscated",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 2,
+        "releaseGroup": "mSD",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 215341000,
+        "leechers": -1,
+        "pubdate": "2018-01-14T20:20:10+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.480p.x264-mSD-Obfuscated",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 2,
+        "releaseGroup": "mSD",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 210482000,
+        "leechers": -1,
+        "pubdate": "2018-01-14T20:20:09+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.HDTV.x264-SVA-postbot",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 2,
+        "releaseGroup": "SVA",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 286013000,
+        "leechers": -1,
+        "pubdate": "2018-01-11T09:10:39+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.HDTV.x264-SVA-BUYMORE",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 2,
+        "releaseGroup": "SVA",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 286013000,
+        "leechers": -1,
+        "pubdate": "2018-01-11T07:09:07+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.HDTV.x264-SVA-Obfuscated",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 2,
+        "releaseGroup": "SVA",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 286013000,
+        "leechers": -1,
+        "pubdate": "2018-01-11T02:32:09+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.iNTERNAL.AAC.MP4-Mobile-Obfuscated",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 1,
+        "releaseGroup": "Mobile",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 186915000,
+        "leechers": -1,
+        "pubdate": "2018-01-11T16:18:25+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.AAC.MP4-Mobile-Obfuscated",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 1,
+        "releaseGroup": "Mobile",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 181862000,
+        "leechers": -1,
+        "pubdate": "2018-01-11T15:14:20+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.iNTERNAL.XviD-AFG-Obfuscated",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 1,
+        "releaseGroup": "AFG",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 380103000,
+        "leechers": -1,
+        "pubdate": "2018-01-11T11:36:52+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "release": "Black.Mirror.S05E10.XviD-AFG-Obfuscated",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://api.nzbgeek.info/api?t=get&id=00000&apikey=000000",
+        "time": "2020-06-28T19:58:23",
+        "quality": 1,
+        "releaseGroup": "AFG",
+        "dateAdded": "2020-06-28T19:58:23",
+        "version": -1,
+        "seeders": -1,
+        "size": 380047000,
+        "leechers": -1,
+        "pubdate": "2018-01-11T11:07:47+00:00",
+        "provider": {
+            "id": "nzbgeek",
+            "name": "nzbgeek",
+            "imageName": "newznab.png"
+        }
+    },
+    {
+        "identifier": "Black.Mirror.S05E10.The.Informant.1080p.AMZN.WEB-DL.DDP5.1.H.264-NTb..nfo_-1",
+        "release": "Black.Mirror.S05E10.The.Informant.1080p.AMZN.WEB-DL.DDP5.1.H.264-NTb..nfo",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://www.binsearch.info/fcgi/nzb.fcgi?adv_age=&xminsize=20&max=250&q=Black.Mirror+S05E10&server=1|nzb_id=00000",
+        "time": "2020-06-28T19:58:01",
+        "quality": 128,
+        "releaseGroup": "NTb",
+        "dateAdded": "2020-06-28T19:58:01",
+        "version": -1,
+        "seeders": -1,
+        "size": -1,
+        "leechers": -1,
+        "pubdate": "2018-01-15T19:58:00+01:00",
+        "provider": {
+            "id": "binsearch",
+            "name": "BinSearch",
+            "imageName": "binsearch.png"
+        }
+    },
+    {
+        "identifier": "Black.Mirror.S05E10.The.Informant.720p.AMZN.WEBRip.DDP5.1.x264-NTb.nf.o_-1",
+        "release": "Black.Mirror.S05E10.The.Informant.720p.AMZN.WEBRip.DDP5.1.x264-NTb.nf.o",
+        "season": 5,
+        "episodes": [
+            10
+        ],
+        "seasonPack": false,
+        "indexer": 1,
+        "seriesId": 266189,
+        "showSlug": "tvdb266189",
+        "url": "https://www.binsearch.info/fcgi/nzb.fcgi?adv_age=&xminsize=20&max=250&q=Black.Mirror+S05E10&server=1|nzb_id=000000",
+        "time": "2020-06-28T19:58:01",
+        "quality": 64,
+        "releaseGroup": "NTb.nf.o",
+        "dateAdded": "2020-06-28T19:58:01",
+        "version": -1,
+        "seeders": -1,
+        "size": -1,
+        "leechers": -1,
+        "pubdate": "2018-01-15T19:58:00+01:00",
+        "provider": {
+            "id": "binsearch",
+            "name": "BinSearch",
+            "imageName": "binsearch.png"
+        }
+    }
+]

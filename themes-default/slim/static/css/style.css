@@ -1444,6 +1444,10 @@ ul.tags li a {
     background-color: rgb(255, 153, 153);
 }
 
+.allowed {
+    background-color: rgb(255, 218, 138);
+}
+
 span.unaired {
     color: rgb(88, 75, 32);
 }

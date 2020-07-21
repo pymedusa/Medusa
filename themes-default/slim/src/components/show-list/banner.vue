@@ -8,7 +8,7 @@
                         }"
                         :sort-options="{
                             enabled: true,
-                            initialSortBy: { field: 'title', type: 'asc' }
+                            initialSortBy: getSortBy()
                         }"
                         :column-filter-options="{
                             enabled: true
@@ -27,9 +27,9 @@
 
                 <span v-else-if="props.column.label == 'Show'" class="tvShow">
                     <span style="display: none;">{{ props.row.title }}</span>
-                    <div class="imgbanner banner">
+                    <div class="imgbanner">
                         <app-link :href="`home/displayShow?indexername=${props.row.indexer}&seriesid=${props.row.id[props.row.indexer]}`">
-                            <asset default="images/banner.png" :show-slug="props.row.id.slug" type="banner" class="banner" :alt="props.row.title" :title="props.row.title" />
+                            <asset default-src="images/banner.png" :show-slug="props.row.id.slug" type="banner" cls="banner" :alt="props.row.title" :title="props.row.title" />
                         </app-link>
                     </div>
                 </span>
@@ -37,7 +37,7 @@
                 <span v-else-if="props.column.label == 'Network'" class="align-center">
                     <template v-if="props.row.network">
                         <span :title="props.row.network" class="hidden-print">
-                            <asset default="images/network/nonetwork.png" :show-slug="props.row.indexer + props.row.id[props.row.indexer]" type="network" cls="show-network-image" :link="false" width="54" height="27" :alt="props.row.network" :title="props.row.network" />
+                            <asset default-src="images/network/nonetwork.png" :show-slug="props.row.indexer + props.row.id[props.row.indexer]" type="network" cls="show-network-image" :link="false" width="54" height="27" :alt="props.row.network" :title="props.row.network" />
                         </span>
                         <span class="visible-print-inline">{{ props.row.network }}</span>
                     </template>
@@ -103,7 +103,7 @@ export default {
         VueGoodTable
     },
     mixins: [
-        manageCookieMixin('home-hide-field'),
+        manageCookieMixin('home-banner'),
         showlistTableMixin
     ],
     props: {
@@ -126,4 +126,5 @@ export default {
 </script>
 
 <style>
+
 </style>

@@ -33,7 +33,7 @@ export default {
     },
     computed: {
         ...mapState({
-            qualityValues: state => state.consts.qualities.values
+            qualityValues: state => state.config.consts.qualities.values
         }),
         ...mapGetters([
             'getQuality',

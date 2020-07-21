@@ -1,4 +1,4 @@
-import { ADD_CONFIG } from '../mutation-types';
+import { ADD_CONFIG } from '../../mutation-types';
 
 /**
  * An object representing a split quality.

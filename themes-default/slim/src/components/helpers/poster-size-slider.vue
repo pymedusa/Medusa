@@ -20,7 +20,7 @@ export default {
         }
     },
     mounted() {
-        const { setPosterSize, min, max } = this;
+        const { setLayoutLocal, min, max } = this;
 
         // Get poster size from localStorage
         let slidePosterSize;
@@ -32,7 +32,7 @@ export default {
         }
 
         // Update poster size to store
-        setPosterSize({ posterSize: slidePosterSize });
+        setLayoutLocal({ key: 'posterSize', value: slidePosterSize });
 
         $(this.$el).find('#posterSizeSlider').slider({
             min,
@@ -44,13 +44,13 @@ export default {
                     localStorage.setItem('posterSize', ui.value);
                 }
                 // Save to store
-                setPosterSize({ posterSize: ui.value });
+                setLayoutLocal({ key: 'posterSize', value: ui.value });
             }
         });
     },
     methods: {
         ...mapActions({
-            setPosterSize: 'setPosterSize'
+            setLayoutLocal: 'setLayoutLocal'
         })
     }
 };

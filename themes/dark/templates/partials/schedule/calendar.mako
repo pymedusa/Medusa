@@ -39,7 +39,7 @@
                     <td class="calendarShow">
                         <div class="poster">
                             <app-link title="${cur_result['show_name'] | h}" href="home/displayShow?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}">
-                                <asset default="images/poster.png" show-slug="${cur_result['series_slug']}" type="posterThumb" :link="false"></asset>
+                                <asset default-src="images/poster.png" show-slug="${cur_result['series_slug']}" type="posterThumb" :link="false"></asset>
                             </app-link>
                         </div>
                         <div class="text">

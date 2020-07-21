@@ -113,18 +113,16 @@ export default {
         AppLink
     },
     computed: {
-        ...mapState([
-            'config',
-            'clients',
-            'notifiers',
-            'postprocessing',
-            'search',
-            'system'
-        ]),
         ...mapState({
+            config: state => state.config.general,
+            clients: state => state.config.clients,
+            notifiers: state => state.config.notifiers,
+            postprocessing: state => state.config.postprocessing,
+            search: state => state.config.search,
+            system: state => state.config.system,
             isAuthenticated: state => state.auth.isAuthenticated,
             username: state => state.auth.user.username,
-            warningLevel: state => state.config.logs.loggingLevels.warning
+            warningLevel: state => state.config.general.logs.loggingLevels.warning
         }),
         recentShows() {
             const { config } = this;

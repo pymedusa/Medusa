@@ -24,7 +24,7 @@ window.app = new Vue({
     computed: Object.assign(mapState(['config']), {
         period: {
             get() {
-                return this.config.backlogOverview.period;
+                return this.config.general.backlogOverview.period;
             },
             set(value) {
                 const { $store } = this;
@@ -37,7 +37,7 @@ window.app = new Vue({
         },
         status: {
             get() {
-                return this.config.backlogOverview.status;
+                return this.config.general.backlogOverview.status;
             },
             set(value) {
                 const { $store } = this;

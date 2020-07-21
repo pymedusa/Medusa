@@ -9,7 +9,7 @@ import logging
 import os
 import re
 
-from bencode import bdecode
+from bencodepy import Bencode
 
 from medusa import (
     app,
@@ -131,8 +131,9 @@ class TorrentRssProvider(TorrentProvider):
             else:
                 torrent_file = self.session.get_content(url)
                 try:
-                    # `bencode.bdecode` is monkeypatched in `medusa.init`
-                    bdecode(torrent_file, allow_extra_data=True)
+                    # `bencodepy` is monkeypatched in `medusa.init`
+                    bc = Bencode(encoding='utf-8')
+                    bc.decode(torrent_file, allow_extra_data=True)
                 except Exception as error:
                     self.dump_html(torrent_file)
                     return {'result': False,
