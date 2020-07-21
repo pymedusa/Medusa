@@ -12,7 +12,7 @@ ext | `bencode.py` | [4.0.0](https://pypi.org/project/bencode.py/4.0.0/) | **`me
 ext | `boto` | [2.48.0](https://pypi.org/project/boto/2.48.0/) | `imdbpie` | Module: `boto`
 ext | `CacheControl` | [0.12.6](https://pypi.org/project/CacheControl/0.12.6/) | **`medusa`** | Module: `cachecontrol`
 ext | `certifi` | [2020.6.20](https://pypi.org/project/certifi/2020.6.20/) | **`medusa`**, `requests`, `traktor` | Module: `certifi`
-ext | `chardet` | [3.0.4](https://pypi.org/project/chardet/3.0.4/) | **`medusa`**, `feedparser`, `html5lib`, `pysrt`, `requests`, `subliminal` | Module: `chardet`
+ext | `chardet` | [3.0.4](https://pypi.org/project/chardet/3.0.4/) | **`medusa`**, `feedparser`, `pysrt`, `requests`, `subliminal` | Module: `chardet`
 ext | `cloudscraper` | [1.2.40](https://pypi.org/project/cloudscraper/1.2.40/) | **`medusa`** | Module: `cloudscraper`
 ext | `configobj` | [5.0.6](https://pypi.org/project/configobj/5.0.6/) | **`medusa`** | Modules: `configobj.py`, `validate.py`, `_version.py`
 **ext2** | `configparser` | [3.7.4](https://pypi.org/project/configparser/3.7.4/) | `adba` | Modules: `configparser.py`, `backports/configparser`
@@ -31,7 +31,7 @@ ext | `feedparser` | [2b11c80](https://github.com/kurtmckee/feedparser/tree/2b11
 **ext2** | `futures` | [3.2.0](https://pypi.org/project/futures/3.2.0/) | **`medusa`**, `subliminal`, `tornado` | Module: `concurrent/futures`
 ext | `gntp` | [1.0.3](https://pypi.org/project/gntp/1.0.3/) | **`medusa`** | Module: `gntp`
 ext | `guessit` | [3.1.1](https://pypi.org/project/guessit/3.1.1/) | **`medusa`**, `subliminal` | Module: `guessit`
-ext | `html5lib` | [1.0.1](https://pypi.org/project/html5lib/1.0.1/) | **`medusa`** (via `beautifulsoup4`) | Module: `html5lib`
+ext | `html5lib` | [1.1](https://pypi.org/project/html5lib/1.1/) | **`medusa`** (via `beautifulsoup4`) | Module: `html5lib`
 ext | `idna` | [2.8](https://pypi.org/project/idna/2.8/) | `requests` | Module: `idna`
 ext | `imdbpie` | [5.6.4](https://pypi.org/project/imdbpie/5.6.4/) | **`medusa`** | Module: `imdbpie`
 ext | `jsonrpclib-pelix` | [0.4.1](https://pypi.org/project/jsonrpclib-pelix/0.4.1/) | **`medusa`** | Module: `jsonrpclib`
