@@ -561,7 +561,8 @@ class Series(TV):
         """Return last aired episode ordinal."""
         today = datetime.date.today().toordinal()
         if not self._prev_aired or self._prev_aired > today:
-            self._prev_aired = self.prev_episode()
+            if self._last_update_indexer >= today:
+                self._prev_aired = self.prev_episode()
         return self._prev_aired
 
     @property
@@ -569,7 +570,8 @@ class Series(TV):
         """Return next aired episode ordinal."""
         today = datetime.date.today().toordinal()
         if not self._next_aired or self._next_aired < today:
-            self._next_aired = self.next_episode()
+            if self._last_update_indexer >= today:
+                self._next_aired = self.next_episode()
         return self._next_aired
 
     @property
