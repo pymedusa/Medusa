@@ -11,7 +11,7 @@ ext | `babelfish` | [f403000](https://github.com/Diaoul/babelfish/tree/f403000dd
 ext | `bencode.py` | [4.0.0](https://pypi.org/project/bencode.py/4.0.0/) | **`medusa`** | Modules: `bencodepy`, `bencode`<br>Monkey-patched, see `medusa/init/__init__.py`
 ext | `boto` | [2.48.0](https://pypi.org/project/boto/2.48.0/) | `imdbpie` | Module: `boto`
 ext | `CacheControl` | [0.12.6](https://pypi.org/project/CacheControl/0.12.6/) | **`medusa`** | Module: `cachecontrol`
-ext | `certifi` | [2020.4.5.2](https://pypi.org/project/certifi/2020.4.5.2/) | **`medusa`**, `requests`, `traktor` | Module: `certifi`
+ext | `certifi` | [2020.6.20](https://pypi.org/project/certifi/2020.6.20/) | **`medusa`**, `requests`, `traktor` | Module: `certifi`
 ext | `chardet` | [3.0.4](https://pypi.org/project/chardet/3.0.4/) | **`medusa`**, `feedparser`, `html5lib`, `pysrt`, `requests`, `subliminal` | Module: `chardet`
 ext | `cloudscraper` | [1.2.40](https://pypi.org/project/cloudscraper/1.2.40/) | **`medusa`** | Module: `cloudscraper`
 ext | `configobj` | [5.0.6](https://pypi.org/project/configobj/5.0.6/) | **`medusa`** | Modules: `configobj.py`, `validate.py`, `_version.py`
