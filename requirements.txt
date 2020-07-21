@@ -29,6 +29,7 @@ PyGithub==1.45
 PyJWT==1.7.1
 python-dateutil==2.8.1
 python-twitter==3.5
+pytimeparse @ https://codeload.github.com/pymedusa/pytimeparse/tar.gz/8f2832597235c6ec98c44de4dab3274927f67e29
 rarfile==3.1
 rebulk==2.0.1
 requests==2.24.0
