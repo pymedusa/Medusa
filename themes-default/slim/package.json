@@ -104,7 +104,7 @@
     "stylelint": "13.6.0",
     "stylelint-config-standard": "20.0.0",
     "timekeeper": "2.2.0",
-    "vue-jest": "3.0.5",
+    "vue-jest": "3.0.6",
     "vue-loader": "15.9.2",
     "webpack": "4.43.0",
     "webpack-cli": "3.3.11"
