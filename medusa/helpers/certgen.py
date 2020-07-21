@@ -1,12 +1,13 @@
-# -*- coding: latin-1 -*-
+# coding=utf-8
 #
 # Copyright (C) AB Strakt
 # Copyright (C) Jean-Paul Calderone
 # See LICENSE for details.
+#
+# Modified from source:
+# https://github.com/pyca/pyopenssl/blob/d52975cef3a36e18552aeb23de7c06aa73d76454/examples/certgen.py
 
-"""
-Certificate generation module.
-"""
+"""Certificate generation module."""
 
 from OpenSSL import crypto
 
@@ -14,20 +15,20 @@ TYPE_RSA = crypto.TYPE_RSA
 TYPE_DSA = crypto.TYPE_DSA
 
 
-def createKeyPair(type, bits):
+def create_key_pair(key_type, bits):
     """
     Create a public/private key pair.
 
-    Arguments: type - Key type, must be one of TYPE_RSA and TYPE_DSA
-               bits - Number of bits to use in the key
+    Arguments: key_type - Key type, must be one of TYPE_RSA and TYPE_DSA
+               bits     - Number of bits to use in the key
     Returns:   The public/private key pair in a PKey object
     """
     pkey = crypto.PKey()
-    pkey.generate_key(type, bits)
+    pkey.generate_key(key_type, bits)
     return pkey
 
 
-def createCertRequest(pkey, digest="sha256", **name):
+def create_cert_request(pkey, digest='sha256', **name):
     """
     Create a certificate request.
 
@@ -55,30 +56,29 @@ def createCertRequest(pkey, digest="sha256", **name):
     return req
 
 
-def createCertificate(req, issuerCertKey, serial, validityPeriod,
-                      digest="sha256"):
+def create_certificate(req, issuer_cert_key, serial, validity_period, digest='sha256'):
     """
     Generate a certificate given a certificate request.
 
-    Arguments: req        - Certificate request to use
-               issuerCert - The certificate of the issuer
-               issuerKey  - The private key of the issuer
-               serial     - Serial number for the certificate
-               notBefore  - Timestamp (relative to now) when the certificate
-                            starts being valid
-               notAfter   - Timestamp (relative to now) when the certificate
-                            stops being valid
-               digest     - Digest method to use for signing, default is sha256
+    Arguments: req         - Certificate request to use
+               issuer_cert - The certificate of the issuer
+               issuer_key  - The private key of the issuer
+               serial      - Serial number for the certificate
+               not_before  - Timestamp (relative to now) when the certificate
+                             starts being valid
+               not_after   - Timestamp (relative to now) when the certificate
+                             stops being valid
+               digest      - Digest method to use for signing, default is sha256
     Returns:   The signed certificate in an X509 object
     """
-    issuerCert, issuerKey = issuerCertKey
-    notBefore, notAfter = validityPeriod
+    issuer_cert, issuer_key = issuer_cert_key
+    not_before, not_after = validity_period
     cert = crypto.X509()
     cert.set_serial_number(serial)
-    cert.gmtime_adj_notBefore(notBefore)
-    cert.gmtime_adj_notAfter(notAfter)
-    cert.set_issuer(issuerCert.get_subject())
+    cert.gmtime_adj_notBefore(not_before)
+    cert.gmtime_adj_notAfter(not_after)
+    cert.set_issuer(issuer_cert.get_subject())
     cert.set_subject(req.get_subject())
     cert.set_pubkey(req.get_pubkey())
-    cert.sign(issuerKey, digest)
+    cert.sign(issuer_key, digest)
     return cert

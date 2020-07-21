@@ -1,7 +1,6 @@
 ## lib
 Folder | Package | Version / Commit | Used By | Notes / Modules
 :----: | :-----: | :--------------: | :------ | :--------------
-lib | **`certgen.py`** | [d52975c](https://github.com/pyca/pyopenssl/blob/d52975cef3a36e18552aeb23de7c06aa73d76454/examples/certgen.py) | **`medusa`** | **Not a package**
 lib | **`native`** | - | `pymediainfo` | **Not a package**
 lib | **`pkg_resources`** | - | `babelfish`, `enzyme`, `guessit`, `Pint`, `stevedore` | **Not a package**<br>Part of `setuptools`
 lib | **`pymediainfo`** | [3.2.1](https://pypi.org/project/pymediainfo/3.2.1/) | `knowit` | **Modified**: Version number fixed
