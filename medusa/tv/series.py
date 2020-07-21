@@ -235,8 +235,8 @@ class Series(TV):
         self.default_ep_status = SKIPPED
         self._location = ''
         self.episodes = {}
-        self.prev_aired = ''
-        self.next_aired = ''
+        self._prev_aired = 0
+        self._next_aired = 0
         self.release_groups = None
         self.exceptions = set()
         self.externals = {}
@@ -557,11 +557,29 @@ class Series(TV):
         return int(epoch_date.total_seconds())
 
     @property
+    def prev_aired(self):
+        """Return last aired episode ordinal."""
+        today = datetime.date.today().toordinal()
+        if not self._prev_aired or self._prev_aired > today:
+            if self._last_update_indexer >= today:
+                self._prev_aired = self.prev_episode()
+        return self._prev_aired
+
+    @property
+    def next_aired(self):
+        """Return next aired episode ordinal."""
+        today = datetime.date.today().toordinal()
+        if not self._next_aired or self._next_aired < today:
+            if self._last_update_indexer >= today:
+                self._next_aired = self.next_episode()
+        return self._next_aired
+
+    @property
     def prev_airdate(self):
         """Return last aired episode airdate."""
         return (
             sbdatetime.convert_to_setting(network_timezones.parse_date_time(self.prev_aired, self.airs, self.network))
-            if try_int(self.prev_aired, 1) > MILLIS_YEAR_1900 else None
+            if self.prev_aired > MILLIS_YEAR_1900 else None
         )
 
     @property
@@ -569,7 +587,7 @@ class Series(TV):
         """Return next aired episode airdate."""
         return (
             sbdatetime.convert_to_setting(network_timezones.parse_date_time(self.next_aired, self.airs, self.network))
-            if try_int(self.next_aired, 1) > MILLIS_YEAR_1900 else None
+            if self.next_aired > MILLIS_YEAR_1900 else None
         )
 
     @property
@@ -1629,6 +1647,7 @@ class Series(TV):
         """
         log.debug(u'{id}: Finding the episode which aired last', {'id': self.series_id})
 
+        today = datetime.date.today().toordinal()
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select(
             'SELECT '
@@ -1645,11 +1664,10 @@ class Series(TV):
             'ORDER BY'
             '  airdate '
             'DESC LIMIT 1',
-            [self.indexer, self.series_id, datetime.date.today().toordinal(), UNAIRED])
+            [self.indexer, self.series_id, today, UNAIRED])
 
         if sql_results is None or len(sql_results) == 0:
             log.debug(u'{id}: Could not find a previous aired episode', {'id': self.series_id})
-            self.prev_aired = u''
         else:
             log.debug(
                 u'{id}: Found previous aired episode number {ep}', {
@@ -1657,9 +1675,9 @@ class Series(TV):
                     'ep': episode_num(sql_results[0]['season'], sql_results[0]['episode'])
                 }
             )
-            self.prev_aired = sql_results[0]['airdate']
+            self._prev_aired = sql_results[0]['airdate']
 
-        return self.prev_aired
+        return self._prev_aired
 
     def next_episode(self):
         """Return the next episode air date.
@@ -1667,43 +1685,38 @@ class Series(TV):
         :return:
         :rtype: datetime.date
         """
-        log.debug(u'{id}: Finding the episode which airs next',
-                  {'id': self.series_id})
+        log.debug(u'{id}: Finding the episode which airs next', {'id': self.series_id})
 
-        cur_date = datetime.date.today().toordinal()
-        if not self.next_aired or self.next_aired and cur_date > self.next_aired:
-            main_db_con = db.DBConnection()
-            sql_results = main_db_con.select(
-                'SELECT '
-                '  airdate,'
-                '  season,'
-                '  episode '
-                'FROM '
-                '  tv_episodes '
-                'WHERE '
-                '  indexer = ?'
-                '  AND showid = ? '
-                '  AND airdate >= ? '
-                'ORDER BY'
-                '  airdate '
-                'ASC LIMIT 1',
-                [self.indexer, self.series_id, datetime.date.today().toordinal()])
+        today = datetime.date.today().toordinal()
+        main_db_con = db.DBConnection()
+        sql_results = main_db_con.select(
+            'SELECT '
+            '  airdate,'
+            '  season,'
+            '  episode '
+            'FROM '
+            '  tv_episodes '
+            'WHERE '
+            '  indexer = ?'
+            '  AND showid = ? '
+            '  AND airdate >= ? '
+            'ORDER BY'
+            '  airdate '
+            'ASC LIMIT 1',
+            [self.indexer, self.series_id, today])
 
-            if sql_results is None or len(sql_results) == 0:
-                log.debug(u'{id}: Could not find a next episode',
-                          {'id': self.series_id})
-                self.next_aired = u''
-            else:
-                log.debug(
-                    u'{id}: Found episode {ep}', {
-                        'id': self.series_id,
-                        'ep': episode_num(sql_results[0]['season'],
-                                          sql_results[0]['episode']),
-                    }
-                )
-                self.next_aired = sql_results[0]['airdate']
+        if sql_results is None or len(sql_results) == 0:
+            log.debug(u'{id}: Could not find a next episode', {'id': self.series_id})
+        else:
+            log.debug(
+                u'{id}: Found episode {ep}', {
+                    'id': self.series_id,
+                    'ep': episode_num(sql_results[0]['season'], sql_results[0]['episode']),
+                }
+            )
+            self._next_aired = sql_results[0]['airdate']
 
-        return self.next_aired
+        return self._next_aired
 
     def delete_show(self, full=False):
         """Delete the tv show from the database.
