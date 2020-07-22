@@ -27,7 +27,6 @@ const ADD_SHOW_HISTORY = '📺 Show specific History added to store';
 const ADD_SHOW_EPISODE_HISTORY = "📺 Show's episode specific History added to store";
 const ADD_PROVIDERS = '⛽ Provider list added to store';
 const ADD_PROVIDER_CACHE = '⛽ Provider cache results added to store';
-const SET_PROVIDER_CACHE = '⛽ Provider cache results set in store';
 const ADD_SEARCH_RESULTS = '⛽ New search results added for provider';
 const ADD_QUEUE_ITEM = '🔍 Queue item updated';
 
@@ -62,6 +61,5 @@ export {
     ADD_PROVIDERS,
     ADD_PROVIDER_CACHE,
     ADD_SEARCH_RESULTS,
-    SET_PROVIDER_CACHE,
     ADD_QUEUE_ITEM
 };

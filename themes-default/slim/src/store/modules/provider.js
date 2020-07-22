@@ -1,7 +1,7 @@
 import Vue from 'vue';
 
 import { api } from '../../api';
-import { ADD_PROVIDERS, ADD_PROVIDER_CACHE, ADD_SEARCH_RESULTS, SET_PROVIDER_CACHE } from '../mutation-types';
+import { ADD_PROVIDERS, ADD_PROVIDER_CACHE, ADD_SEARCH_RESULTS } from '../mutation-types';
 
 const state = {
     providers: {}
@@ -18,15 +18,26 @@ const mutations = {
         if (!state.providers[providerId]) {
             state.providers[providerId] = {
                 name: '',
-                config: {},
-                cache: []
+                config: {}
             };
         }
 
-        Vue.set(state.providers[providerId], 'cache', [...state.providers[providerId].cache || [], ...cache]);
-    },
-    [SET_PROVIDER_CACHE](state, { providerId, cache }) {
-        Vue.set(state.providers[providerId], 'cache', cache);
+        if (state.providers[providerId].cache === undefined) {
+            Vue.set(state.providers[providerId], 'cache', []);
+        }
+
+        const newCache = [];
+
+        for (const result of cache) {
+            const existingIdentifier = state.providers[providerId].cache.find(item => item.identifier === result.identifier);
+            if (existingIdentifier) {
+                newCache.push({ ...existingIdentifier, ...result });
+            } else {
+                newCache.push(result);
+            }
+        }
+
+        Vue.set(state.providers[providerId], 'cache', newCache);
     },
     /**
      * Add search results which have been retreived through the webSocket.
@@ -109,9 +120,6 @@ const actions = {
             let page = 0;
             let lastPage = false;
             const results = [];
-
-            // Empty the providers cache
-            commit(SET_PROVIDER_CACHE, { providerId: provider, cache: [] });
 
             const { id: providerId } = state.providers[provider];
 
