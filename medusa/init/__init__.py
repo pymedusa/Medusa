@@ -158,26 +158,17 @@ def _strptime_workaround():
 
 def _monkey_patch_bdecode():
     """
-    Monkeypatch `bencode.bdecode` to add an option to allow extra data.
+    Monkeypatch `bencodepy` to add an option to allow extra data, and change the default parameters.
 
     This allows us to not raise an exception if bencoded data contains extra data after valid prefix.
     """
     import bencodepy
-    from bencodepy.compat import to_binary
+    import bencodepy.compat
 
-    class BencodeDecoder(bencodepy.BencodeDecoder):
+    class CustomBencodeDecoder(bencodepy.BencodeDecoder):
         def decode(self, value, allow_extra_data=False):
-            """
-            Decode bencode formatted byte string ``value``.
-
-            :param value: Bencode formatted string
-            :type value: bytes
-
-            :return: Decoded value
-            :rtype: object
-            """
             try:
-                value = to_binary(value)
+                value = bencodepy.compat.to_binary(value)
                 data, length = self.decode_func[value[0:1]](value, 0)
             except (IndexError, KeyError, TypeError, ValueError):
                 raise bencodepy.BencodeDecodeError('not a valid bencoded string')
@@ -187,22 +178,21 @@ def _monkey_patch_bdecode():
 
             return data
 
-    bencodepy.BencodeDecoder = BencodeDecoder
+    class CustomBencode(bencodepy.Bencode):
+        def __init__(self, encoding=None, encoding_fallback=None, dict_ordered=False, dict_ordered_sort=False):
+            self.decoder = CustomBencodeDecoder(
+                encoding=encoding,
+                encoding_fallback=encoding_fallback,
+                dict_ordered=dict_ordered,
+                dict_ordered_sort=dict_ordered_sort,
+            )
+            self.encoder = bencodepy.BencodeEncoder()
 
-    class Bencode(bencodepy.Bencode):
         def decode(self, value, allow_extra_data=False):
-            """
-            Decode bencode formatted byte string ``value``.
-
-            :param value: Bencode formatted string
-            :type value: bytes
-
-            :return: Decoded value
-            :rtype: object
-            """
             return self.decoder.decode(value, allow_extra_data=allow_extra_data)
 
-    bencodepy.Bencode = Bencode
+    # Replace the default encoder
+    bencodepy.DEFAULT = CustomBencode(encoding='utf-8', encoding_fallback='value')
 
 
 def _configure_guessit():
