@@ -1,17 +1,27 @@
 <template>
-    <img v-if="!link" v-bind="{ src, class: cls, 'data-src': dataSrc, class: newCls }" @error="error = true">
-    <app-link v-else :href="href">
-        <img v-bind="{ src, class: cls, 'data-src': dataSrc, class: newCls }" @error="error = true">
-    </app-link>
+    <div v-if="!lazy" style="display: inherit">
+        <img v-if="!link" v-bind="{ src, class: cls, class: newCls }" @error="error = true">
+        <app-link v-else :href="href">
+            <img v-bind="{ src, class: newCls }" @error="error = true">
+        </app-link>
+    </div>
+    <div v-else style="display: inherit">
+        <lazy-image v-if="!link" :lazy-src="src" :lazy-cls="newCls" :lazy-default-src="defaultSrc" />
+        <app-link v-else :href="href">
+            <lazy-image :lazy-src="src" :lazy-cls="newCls" :lazy-default-src="defaultSrc" />
+        </app-link>
+    </div>
 </template>
 <script>
 import { webRoot, apiKey } from '../../api';
 import AppLink from './app-link.vue';
+import LazyImage from './lazy-image.vue';
 
 export default {
     name: 'asset',
     components: {
-        AppLink
+        AppLink,
+        LazyImage
     },
     props: {
         showSlug: {
@@ -21,7 +31,7 @@ export default {
             type: String,
             required: true
         },
-        default: {
+        defaultSrc: {
             type: String,
             required: true
         },
@@ -35,9 +45,7 @@ export default {
         imgWidth: {
             type: Number
         },
-        lazy: {
-            type: Boolean
-        }
+        lazy: Boolean
     },
     data() {
         return {
@@ -46,22 +54,19 @@ export default {
     },
     computed: {
         src() {
-            const { lazy, error, showSlug, type } = this;
+            const { defaultSrc, error, showSlug, type } = this;
 
             if (error || !showSlug || !type) {
-                return this.default;
+                return defaultSrc;
             }
 
-            if (!lazy) {
-                return webRoot + '/api/v2/series/' + showSlug + '/asset/' + type + '?api_key=' + apiKey;
-            }
-
-            return this.default;
+            return `${webRoot}/api/v2/series/${showSlug}/asset/${type}?api_key=${apiKey}`;
         },
         href() {
+            const { link, src } = this;
             // Compute a link to the full asset, if applicable
-            if (this.link) {
-                return this.src.replace('Thumb', '');
+            if (link) {
+                return src.replace('Thumb', '');
             }
             return undefined;
         },
@@ -74,19 +79,6 @@ export default {
             }
 
             return newClass;
-        },
-        dataSrc() {
-            const { lazy, error, showSlug, type } = this;
-
-            if (error || !showSlug || !type) {
-                return this.default;
-            }
-
-            if (lazy) {
-                return webRoot + '/api/v2/series/' + showSlug + '/asset/' + type + '?api_key=' + apiKey;
-            }
-
-            return '';
         }
     }
 };
@@ -99,4 +91,5 @@ export default {
 .width-50 {
     width: 50px;
 }
+
 </style>

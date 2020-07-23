@@ -155,13 +155,13 @@ const getters = {
         return getShowById;
     },
     getShowByTitle: state => title => state.shows.find(show => show.title === title),
-    getSeason: state => ({ id, indexer, season }) => {
-        const show = state.shows.find(show => Number(show.id[indexer]) === Number(id));
+    getSeason: state => ({ showSlug, season }) => {
+        const show = state.shows.find(show => show.id.slug === showSlug);
         return show && show.seasons ? show.seasons[season] : undefined;
     },
-    getEpisode: state => ({ id, indexer, season, episode }) => {
-        const show = state.shows.find(show => Number(show.id[indexer]) === Number(id));
-        return show && show.seasons && show.seasons[season] ? show.seasons[season][episode] : undefined;
+    getEpisode: state => ({ showSlug, season, episode }) => {
+        const show = state.shows.find(show => show.id.slug === showSlug);
+        return show && show.seasons && show.seasons.find(s => s.season === season) ? show.seasons.find(s => s.season === season).episodes.find(ep => ep.episode === episode) : undefined;
     },
     getCurrentShow: (state, getters, rootState) => {
         return state.shows.find(show => Number(show.id[state.currentShow.indexer]) === Number(state.currentShow.id)) || rootState.defaults.show;

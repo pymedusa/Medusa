@@ -9,7 +9,7 @@ import threading
 import time
 import traceback
 
-from medusa import app, common, failed_history, generic_queue, history, ui
+from medusa import app, common, failed_history, generic_queue, history, ui, ws
 from medusa.helpers import pretty_file_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.search import BACKLOG_SEARCH, DAILY_SEARCH, FAILED_SEARCH, MANUAL_SEARCH, SNATCH_RESULT, SearchType
@@ -256,6 +256,11 @@ class DailySearchQueueItem(generic_queue.QueueItem):
         self.scheduler_start_time = scheduler_start_time
         self.force = force
 
+        self.to_json.update({
+            'success': self.success,
+            'force': self.force
+        })
+
     def run(self):
         """Run daily search thread."""
         generic_queue.QueueItem.run(self)
@@ -263,6 +268,10 @@ class DailySearchQueueItem(generic_queue.QueueItem):
 
         try:
             log.info('Beginning daily search for new episodes')
+
+            # Push an update to any open Web UIs through the WebSocket
+            ws.Message('QueueItemUpdate', self.to_json).push()
+
             found_results = search_for_needed_episodes(self.scheduler_start_time, force=self.force)
 
             if not found_results:
@@ -315,6 +324,9 @@ class DailySearchQueueItem(generic_queue.QueueItem):
         if self.success is None:
             self.success = False
 
+        # Push an update to any open Web UIs through the WebSocket
+        ws.Message('QueueItemUpdate', self.to_json).push()
+
         self.finish()
 
 
@@ -345,6 +357,13 @@ class ManualSearchQueueItem(generic_queue.QueueItem):
         self.segment = segment
         self.manual_search_type = manual_search_type
 
+        self.to_json.update({
+            'show': self.show.to_json(),
+            'segment': [ep.to_json() for ep in self.segment],
+            'success': self.success,
+            'manualSearchType': self.manual_search_type
+        })
+
     def run(self):
         """Run manual search thread."""
         generic_queue.QueueItem.run(self)
@@ -358,6 +377,9 @@ class ManualSearchQueueItem(generic_queue.QueueItem):
                     'ep': self.segment[0].pretty_name()
                 }
             )
+
+            # Push an update to any open Web UIs through the WebSocket
+            ws.Message('QueueItemUpdate', self.to_json).push()
 
             search_result = search_providers(self.show, self.segment, forced_search=True, down_cur_quality=True,
                                              manual_search=True, manual_search_type=self.manual_search_type)
@@ -396,6 +418,10 @@ class ManualSearchQueueItem(generic_queue.QueueItem):
         if self.success is None:
             self.success = False
 
+        # Push an update to any open Web UIs through the WebSocket
+        msg = ws.Message('QueueItemUpdate', self.to_json)
+        msg.push()
+
         self.finish()
 
 
@@ -423,6 +449,13 @@ class SnatchQueueItem(generic_queue.QueueItem):
         self.results = None
         self.search_result = search_result
 
+        self.to_json.update({
+            'show': self.show.to_json(),
+            'segment': [ep.to_json() for ep in self.segment],
+            'success': self.success,
+            'searchResult': self.search_result.to_json()
+        })
+
     def run(self):
         """Run manual snatch job."""
         generic_queue.QueueItem.run(self)
@@ -433,6 +466,10 @@ class SnatchQueueItem(generic_queue.QueueItem):
         try:
             log.info('Beginning to snatch release: {name}',
                      {'name': result.name})
+
+            # Push an update to any open Web UIs through the WebSocket
+            msg = ws.Message('QueueItemUpdate', self.to_json)
+            msg.push()
 
             if result:
                 if result.seeders not in (-1, None) and result.leechers not in (-1, None):
@@ -473,6 +510,10 @@ class SnatchQueueItem(generic_queue.QueueItem):
         if self.success is None:
             self.success = False
 
+        # Push an update to any open Web UIs through the WebSocket
+        msg = ws.Message('QueueItemUpdate', self.to_json)
+        msg.push()
+
         self.finish()
 
 
@@ -491,6 +532,12 @@ class BacklogQueueItem(generic_queue.QueueItem):
         self.show = show
         self.segment = segment
 
+        self.to_json.update({
+            'show': self.show.to_json(),
+            'segment': [ep.to_json() for ep in self.segment],
+            'success': self.success
+        })
+
     def run(self):
         """Run backlog search thread."""
         generic_queue.QueueItem.run(self)
@@ -500,6 +547,10 @@ class BacklogQueueItem(generic_queue.QueueItem):
             try:
                 log.info('Beginning backlog search for: {name}',
                          {'name': self.show.name})
+
+                # Push an update to any open Web UIs through the WebSocket
+                ws.Message('QueueItemUpdate', self.to_json).push()
+
                 search_result = search_providers(self.show, self.segment)
 
                 if search_result:
@@ -557,6 +608,9 @@ class BacklogQueueItem(generic_queue.QueueItem):
         if self.success is None:
             self.success = False
 
+        # Push an update to any open Web UIs through the WebSocket
+        ws.Message('QueueItemUpdate', self.to_json).push()
+
         self.finish()
 
 
@@ -576,10 +630,20 @@ class FailedQueueItem(generic_queue.QueueItem):
         self.segment = segment
         self.down_cur_quality = down_cur_quality
 
+        self.to_json.update({
+            'show': self.show.to_json(),
+            'segment': [ep.to_json() for ep in self.segment],
+            'success': self.success,
+            'downloadCurrentQuality': self.down_cur_quality
+        })
+
     def run(self):
         """Run failed thread."""
         generic_queue.QueueItem.run(self)
         self.started = True
+
+        # Push an update to any open Web UIs through the WebSocket
+        ws.Message('QueueItemUpdate', self.to_json).push()
 
         try:
             for ep_obj in self.segment:
@@ -655,6 +719,9 @@ class FailedQueueItem(generic_queue.QueueItem):
 
         if self.success is None:
             self.success = False
+
+        # Push an update to any open Web UIs through the WebSocket
+        ws.Message('QueueItemUpdate', self.to_json).push()
 
         self.finish()
 

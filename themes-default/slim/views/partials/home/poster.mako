@@ -106,7 +106,7 @@
                     </div>
                     <div class="poster-overlay">
                         <app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.indexerid}">
-                            <asset default="images/poster.png" show-slug="${cur_show.slug}" :lazy="false" type="posterThumb" cls="show-image" :link="false"></asset>
+                            <asset default-src="images/poster.png" show-slug="${cur_show.slug}" type="posterThumb" cls="show-image" :link="false"></asset>
                         </app-link>
                     </div>
                 </div>
@@ -154,7 +154,7 @@
                                     <td class="show-table">
                                     % if cur_show.network:
                                         <span title="${cur_show.network}">
-                                            <asset default="images/network/nonetwork.png" show-slug="${cur_show.slug}" :lazy="false" type="network" cls="show-network-image" :link="false" alt="${cur_show.network}" title="${cur_show.network}"></asset>
+                                            <asset default-src="images/network/nonetwork.png" show-slug="${cur_show.slug}" type="network" cls="show-network-image" :link="false" alt="${cur_show.network}" title="${cur_show.network}"></asset>
                                         </span>
                                     % else:
                                         <span title="No Network"><img class="show-network-image" src="images/network/nonetwork.png" alt="No Network" title="No Network" /></span>

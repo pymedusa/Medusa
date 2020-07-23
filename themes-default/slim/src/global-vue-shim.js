@@ -149,8 +149,8 @@ export default () => {
                     store.dispatch('getStats')
                 ]).then(([_, config]) => {
                     this.$root.$emit('loaded');
-                    // Legacy - send config.main to jQuery (received by index.js)
-                    const event = new CustomEvent('medusa-config-loaded', { detail: config.main });
+                    // Legacy - send config.general to jQuery (received by index.js)
+                    const event = new CustomEvent('medusa-config-loaded', { detail: { main: config.general, layout: config.layout } });
                     window.dispatchEvent(event);
                 }).catch(error => {
                     console.debug(error);

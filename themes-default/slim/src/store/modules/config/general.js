@@ -1,6 +1,6 @@
-import { api, apiRoute } from '../../api';
-import { ADD_CONFIG } from '../mutation-types';
-import { arrayUnique, arrayExclude } from '../../utils/core';
+import { api, apiRoute } from '../../../api';
+import { ADD_CONFIG } from '../../mutation-types';
+import { arrayUnique, arrayExclude } from '../../../utils/core';
 
 const state = {
     wikiUrl: null,
@@ -107,21 +107,30 @@ const mutations = {
         if (section === 'main') {
             state = Object.assign(state, config);
         }
+    },
+    addRecentShow(state, { show }) {
+        state.recentShows = state.recentShows.filter(
+            filterShow =>
+                !(filterShow.indexerName === show.indexerName && filterShow.showId === show.showId && filterShow.name === show.name)
+        );
+
+        state.recentShows.unshift(show); // Add the new show object to the start of the array.
+        state.recentShows = state.recentShows.slice(0, 5); // Cut the array of at 5 items.
     }
 };
 
 const getters = {
     effectiveIgnored: (state, _, rootState) => series => {
         const seriesIgnored = series.config.release.ignoredWords.map(x => x.toLowerCase());
-        const globalIgnored = rootState.search.filters.ignored.map(x => x.toLowerCase());
+        const globalIgnored = rootState.config.search.filters.ignored.map(x => x.toLowerCase());
         if (!series.config.release.ignoredWordsExclude) {
             return arrayUnique(globalIgnored.concat(seriesIgnored));
         }
         return arrayExclude(globalIgnored, seriesIgnored);
     },
     effectiveRequired: (state, _, rootState) => series => {
-        const globalRequired = rootState.search.filters.required.map(x => x.toLowerCase());
         const seriesRequired = series.config.release.requiredWords.map(x => x.toLowerCase());
+        const globalRequired = rootState.config.search.filters.required.map(x => x.toLowerCase());
         if (!series.config.release.requiredWordsExclude) {
             return arrayUnique(globalRequired.concat(seriesRequired));
         }
@@ -163,6 +172,13 @@ const actions = {
                 config.webInterface.apiKey = response.data;
                 return commit(ADD_CONFIG, { section, config });
             });
+    },
+    setRecentShow({ commit, state }, show) {
+        commit('addRecentShow', { show });
+        const config = {
+            recentShows: state.recentShows
+        };
+        return api.patch('config/main', config);
     }
 
 };

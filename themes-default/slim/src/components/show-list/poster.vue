@@ -1,15 +1,15 @@
 <template>
     <div name="poster-container-row" class="row">
         <div name="poster-container-col" class="col-md-12">
-            <isotope :ref="`isotope-${listTitle}`" :list="sortedShows" :id="`isotope-container-${listTitle}`" :item-selector="'show-container'" :options="option" v-images-loaded:on.always="updateLayout">
-                <div v-for="show in sortedShows" :key="show.id.slug" :id="show.id.slug" :style="showContainerStyle" :data-name="show.title" :data-date="show.airDate" :data-network="show.network" :data-indexer="show.indexer">
+            <isotope :ref="`isotope-${listTitle}`" :list="showsReady" :id="`isotope-container-${listTitle}`" :item-selector="'show-container'" :options="option" v-images-loaded:on.always="updateLayout">
+                <div v-for="show in showsReady" :key="show.id.slug" :id="show.id.slug" :style="showContainerStyle" :data-name="show.title" :data-date="show.airDate" :data-network="show.network" :data-indexer="show.indexer">
                     <div class="overlay-container">
                         <div class="background-image">
                             <img src="images/poster-back-dark.png">
                         </div>
                         <div class="poster-overlay">
                             <app-link :href="`home/displayShow?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}`">
-                                <asset default="images/poster.png" :show-slug="show.id.slug" :lazy="true" type="posterThumb" cls="show-image" :link="false" />
+                                <asset default-src="images/poster.png" :show-slug="show.id.slug" lazy type="posterThumb" cls="show-image" :link="false" />
                             </app-link>
                         </div>
                     </div>
@@ -36,7 +36,7 @@
                                         </td>
                                         <td class="show-table">
                                             <span v-if="show.network" :title="show.network">
-                                                <asset default="images/network/nonetwork.png" :show-slug="show.id.slug" :lazy="false" type="network" cls="show-network-image" :link="false" :alt="show.network" :title="show.network" :imgWidth="logoWidth" />
+                                                <asset default-src="images/network/nonetwork.png" :show-slug="show.id.slug" type="network" cls="show-network-image" :link="false" :alt="show.network" :title="show.network" :imgWidth="logoWidth" />
                                             </span>
                                             <span v-else title="No Network"><img class="show-network-image" src="images/network/nonetwork.png" alt="No Network" title="No Network"></span>
                                         </td>
@@ -54,11 +54,10 @@
     </div>
 </template>
 <script>
-import { mapActions, mapGetters, mapState } from 'vuex';
+import { mapGetters, mapState } from 'vuex';
 import pretty from 'pretty-bytes';
 import { AppLink, Asset, ProgressBar, QualityPill } from '../helpers';
 import Isotope from 'vueisotope';
-import LazyLoad from 'vanilla-lazyload';
 import imagesLoaded from 'vue-images-loaded';
 
 export default {
@@ -97,7 +96,16 @@ export default {
             option: {
                 getSortData: {
                     id: row => row.id.slug,
-                    name: 'title',
+                    name: row => {
+                        const { stateLayout } = this;
+                        const { sortArticle } = stateLayout;
+
+                        if (!sortArticle) {
+                            return row.title;
+                        }
+
+                        return row.title.replace(/^((?:a(?!\s+to)n?)|the)\s/i, '').toLowerCase();
+                    },
                     date: row => {
                         const { maxNextAirDate } = this;
                         if (row.nextAirDate && Date.parse(row.nextAirDate) > Date.now()) {
@@ -120,7 +128,7 @@ export default {
                     },
                     indexer: row => {
                         const { indexers } = this;
-                        return indexers[row.indexer].id;
+                        return indexers.indexers[row.indexer].id;
                     }
                 },
                 sortBy: () => this.posterSortBy,
@@ -137,19 +145,19 @@ export default {
     },
     computed: {
         ...mapState({
-            config: state => state.config,
-            stateLayout: state => state.layout,
-            indexers: state => state.indexers.indexers,
+            config: state => state.config.general,
+            stateLayout: state => state.config.layout,
+            indexers: state => state.config.indexers,
             // Need to map these computed, as we need them in the $watch.
-            posterSortBy: state => state.layout.posterSortby,
-            posterSortDir: state => state.layout.posterSortdir,
-            posterSize: state => state.layout.posterSize,
-            currentShowTab: state => state.layout.currentShowTab
+            posterSortBy: state => state.config.layout.posterSortby,
+            posterSortDir: state => state.config.layout.posterSortdir,
+            posterSize: state => state.config.layout.local.posterSize,
+            currentShowTab: state => state.config.layout.local.currentShowTab
         }),
         ...mapGetters({
             fuzzyParseDateTime: 'fuzzyParseDateTime'
         }),
-        sortedShows() {
+        showsReady() {
             const { shows, maxNextAirDate } = this;
             if (shows.length === 0 || !maxNextAirDate) {
                 return [];
@@ -171,9 +179,6 @@ export default {
         }
     },
     methods: {
-        ...mapActions({
-            setPosterSize: 'setPosterSize'
-        }),
         prettyBytes: bytes => pretty(bytes),
         showIndexerUrl(show) {
             const { indexers } = this;
@@ -182,7 +187,7 @@ export default {
             }
 
             const id = show.id[show.indexer];
-            const indexerUrl = indexers[show.indexer].showUrl;
+            const indexerUrl = indexers.indexers[show.indexer].showUrl;
             return `${indexerUrl}${id}`;
         },
         parsePrevDateFn(row) {
@@ -222,12 +227,11 @@ export default {
         },
         updateLayout() {
             const {
-                calculateSize, imgLazyLoad,
+                calculateSize,
                 listTitle, posterSortBy,
                 posterSortDir
             } = this;
             this.isotopeLoaded = true;
-            imgLazyLoad.update();
             calculateSize();
             // Render layout (for sizing)
             this.$refs[`isotope-${listTitle}`].layout();
@@ -245,11 +249,6 @@ export default {
             }
             return show.status;
         }
-    },
-    mounted() {
-        this.imgLazyLoad = new LazyLoad({
-            threshold: 500
-        });
     },
     watch: {
         posterSortBy(key) {
@@ -382,6 +381,6 @@ export default {
 
 .overlay-container {
     display: flex;
-    align-items: center;
+    align-items: baseline;
 }
 </style>

@@ -112,25 +112,11 @@ home.mako
 ========================================================================== */
 
 .imgbanner .banner {
-    border: 1px solid rgb(17, 17, 17);
-    overflow: hidden;
-    height: 66px;
-    border-radius: 8px;
-    vertical-align: top;
-    width: 360px;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
+    border-color: rgb(17, 17, 17);
 }
 
 .imgsmallposter .small {
-    height: 66px;
-    overflow: hidden;
-    border-radius: 3px;
-    vertical-align: middle;
-    width: 45px;
-    border: 1px solid rgb(17, 17, 17);
-    margin-right: 5px;
+    border-color: rgb(17, 17, 17);
 }
 
 .progressbarText {

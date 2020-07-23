@@ -13,6 +13,7 @@ const SOCKET_RECONNECT_ERROR = '🔗 🔃 ❌ WebSocket reconnection attempt fai
 const NOTIFICATIONS_ENABLED = '🔔 Notifications Enabled';
 const NOTIFICATIONS_DISABLED = '🔔 Notifications Disabled';
 const ADD_CONFIG = '⚙️ Config added to store';
+const UPDATE_LAYOUT_LOCAL = '⚙️ Local layout updated in store';
 const ADD_SHOW = '📺 Show added to store';
 const ADD_SHOWS = '📺 Multiple Shows added to store in bulk';
 const ADD_SHOW_EPISODE = '📺 Shows season with episodes added to store';
@@ -24,6 +25,10 @@ const REMOVE_SHOW_SCENE_EXCEPTION = '📺 Remove a scene exception';
 const ADD_HISTORY = '📺 History added to store';
 const ADD_SHOW_HISTORY = '📺 Show specific History added to store';
 const ADD_SHOW_EPISODE_HISTORY = "📺 Show's episode specific History added to store";
+const ADD_PROVIDERS = '⛽ Provider list added to store';
+const ADD_PROVIDER_CACHE = '⛽ Provider cache results added to store';
+const ADD_SEARCH_RESULTS = '⛽ New search results added for provider';
+const ADD_QUEUE_ITEM = '🔍 Queue item updated';
 
 export {
     LOGIN_PENDING,
@@ -41,6 +46,7 @@ export {
     NOTIFICATIONS_ENABLED,
     NOTIFICATIONS_DISABLED,
     ADD_CONFIG,
+    UPDATE_LAYOUT_LOCAL,
     ADD_HISTORY,
     ADD_SHOW,
     ADD_SHOWS,
@@ -51,5 +57,9 @@ export {
     ADD_SHOW_SCENE_EXCEPTION,
     REMOVE_SHOW_SCENE_EXCEPTION,
     ADD_SHOW_HISTORY,
-    ADD_SHOW_EPISODE_HISTORY
+    ADD_SHOW_EPISODE_HISTORY,
+    ADD_PROVIDERS,
+    ADD_PROVIDER_CACHE,
+    ADD_SEARCH_RESULTS,
+    ADD_QUEUE_ITEM
 };

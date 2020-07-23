@@ -10,7 +10,11 @@
     "season": 4,
     "episode": 6,
     "manuallySearched": false,
-    "provider": {}
+    "subtitleLanguage": "dut",
+    "provider": {
+        "id": "opensubtitles",
+        "name": "opensubtitles"
+    }
 }, {
     "id": 70,
     "series": "tvdb5692427",
@@ -23,7 +27,11 @@
     "season": 4,
     "episode": 6,
     "manuallySearched": false,
-    "provider": {}
+    "subtitleLanguage": "eng",
+    "provider": {
+        "id": "opensubtitles",
+        "name": "opensubtitles"
+    }
 }, {
     "id": 18,
     "series": "tvdb5692427",
@@ -36,9 +44,13 @@
     "season": 4,
     "episode": 6,
     "manuallySearched": false,
+    "infoHash": null,
     "provider": {
         "id": "rarbg",
-        "name": "Rarbg",
-        "imageName": "rarbg.png"
-    }
+        "name": "Rarbg"
+    },
+    "release_name": "Example.S04E06.1080p.WEB.h264-TBS",
+    "releaseGroup": null,
+    "fileName": null,
+    "subtitleLanguage": null
 }]

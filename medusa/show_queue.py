@@ -31,6 +31,7 @@ from medusa import (
     notifiers,
     scene_numbering,
     ui,
+    ws,
 )
 from medusa.black_and_white_list import BlackAndWhiteList
 from medusa.common import WANTED, statusStrings
@@ -658,6 +659,9 @@ class QueueItemAdd(ShowQueueItem):
                 {'id': self.show.series_id, 'error_msg': error}
             )
             log.error(traceback.format_exc())
+
+        # Send ws update to client
+        ws.Message('showAdded', self.show.to_json(detailed=False)).push()
 
         self.finish()
 

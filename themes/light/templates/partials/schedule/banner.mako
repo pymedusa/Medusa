@@ -103,7 +103,7 @@
         <tr>
             <th class="nobg" valign="top">
                 <app-link href="home/displayShow?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}">
-                    <asset default="images/banner.png" show-slug="${cur_result['series_slug']}" type="banner" cls="bannerThumb" :link="false"></asset>
+                    <asset default-src="images/banner.png" show-slug="${cur_result['series_slug']}" type="banner" cls="bannerThumb" :link="false"></asset>
                 </app-link>
             </th>
         </tr>

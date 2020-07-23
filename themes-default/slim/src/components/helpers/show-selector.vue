@@ -43,7 +43,7 @@ export default {
     },
     computed: {
         ...mapState({
-            layout: state => state.layout,
+            layout: state => state.config.layout,
             shows: state => state.shows.shows
         }),
         showLists() {

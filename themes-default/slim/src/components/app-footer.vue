@@ -35,11 +35,11 @@ export default {
         AppLink
     },
     computed: {
-        ...mapState([
-            'layout',
-            'stats',
-            'system'
-        ]),
+        ...mapState({
+            layout: state => state.config.layout,
+            system: state => state.config.system,
+            stats: state => state.stats
+        }),
         ...mapGetters([
             'getStatus',
             'getScheduler'
