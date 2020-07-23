@@ -53,7 +53,7 @@ OPTSEP      = lambda x: r'(?:{x}\s*(?:{SEPARATORS}\s*)?)?'.format(
     x=x, SEPARATORS=SEPARATORS)
 
 TIMEFORMATS = [
-    r'{WEEKS}\s*{DAYS}\s*{HOURS}\s*{MINS}\s*{SECS}'.format(
+    r'{YEARS}\s*{MONTHS}\s*{WEEKS}\s*{DAYS}\s*{HOURS}\s*{MINS}\s*{SECS}'.format(
         YEARS=OPTSEP(YEARS),
         MONTHS=OPTSEP(MONTHS),
         WEEKS=OPTSEP(WEEKS),
@@ -77,6 +77,10 @@ TIMEFORMATS = [
         MONTHS=MONTHS),
     ]
 
+COMPILED_SIGN = re.compile(r'\s*' + SIGN + r'\s*(?P<unsigned>.*)$')
+COMPILED_TIMEFORMATS = [re.compile(r'\s*' + timefmt + r'\s*$', re.I)
+                        for timefmt in TIMEFORMATS]
+
 MULTIPLIERS = dict([
         ('years',  60 * 60 * 24 * 365),
         ('months', 60 * 60 * 24 * 30),
@@ -92,19 +96,19 @@ def _interpret_as_minutes(sval, mdict):
     Times like "1:22" are ambiguous; do they represent minutes and seconds
     or hours and minutes?  By default, timeparse assumes the latter.  Call
     this function after parsing out a dictionary to change that assumption.
-    
+
     >>> import pprint
     >>> pprint.pprint(_interpret_as_minutes('1:24', {'secs': '24', 'mins': '1'}))
     {'hours': '1', 'mins': '24'}
     """
-    if (    sval.count(':') == 1 
+    if (    sval.count(':') == 1
         and '.' not in sval
         and (('hours' not in mdict) or (mdict['hours'] is None))
         and (('days' not in mdict) or (mdict['days'] is None))
         and (('weeks' not in mdict) or (mdict['weeks'] is None))
         and (('months' not in mdict) or (mdict['months'] is None))
         and (('years' not in mdict) or (mdict['years'] is None))
-        ):   
+        ):
         mdict['hours'] = mdict['mins']
         mdict['mins'] = mdict['secs']
         mdict.pop('secs')
@@ -140,20 +144,20 @@ def timeparse(sval, granularity='seconds'):
     -60
     >>> timeparse('+ 1 minute')
     60
-    
+
     If granularity is specified as ``minutes``, then ambiguous digits following
     a colon will be interpreted as minutes; otherwise they are considered seconds.
-    
+
     >>> timeparse('1:30')
     90
     >>> timeparse('1:30', granularity='minutes')
     5400
     '''
-    match = re.match(r'\s*' + SIGN + r'\s*(?P<unsigned>.*)$', sval)
+    match = COMPILED_SIGN.match(sval)
     sign = -1 if match.groupdict()['sign'] == '-' else 1
     sval = match.groupdict()['unsigned']
-    for timefmt in TIMEFORMATS:
-        match = re.match(r'\s*' + timefmt + r'\s*$', sval, re.I)
+    for timefmt in COMPILED_TIMEFORMATS:
+        match = timefmt.match(sval)
         if match and match.group(0).strip():
             mdict = match.groupdict()
             if granularity == 'minutes':
