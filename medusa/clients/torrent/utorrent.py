@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 import logging
 import os
 import re
+import time
 from collections import OrderedDict
 
 from medusa import app
@@ -60,7 +61,8 @@ class UTorrentAPI(GenericClient):
         """
         super(UTorrentAPI, self).__init__('uTorrent', host, username, password)
         self.url = urljoin(self.host, 'gui/')
-        self._torrentc = None
+        self._torrents_list = []
+        self._torrents_epoch = 0.0
 
     def _request(self, method='get', params=None, data=None, files=None, cookies=None):
         if cookies:
@@ -84,7 +86,7 @@ class UTorrentAPI(GenericClient):
 
         if not self.response.status_code == 404:
             self.auth = re.findall('<div.*?>(.*?)</', self.response.text)[0]
-            self._torrent_properties('04C3D85BAA9459D5A1B8440C12A1342CD2FF9C45')
+            self._torrent_properties('61D1730BDB405D3BFD0630E9C0EEAA7CDBC4632E')
             return self.auth
 
         return None
@@ -209,22 +211,33 @@ class UTorrentAPI(GenericClient):
             'hash': info_hash,
         })
 
+    def _get_torrents(self):
+        if self._torrents_epoch:
+            if time.time() - self._torrents_epoch <= 180:
+                return self._torrents_list
+
+        params = {'list': 1}
+        if not self._request(params=params):
+            log.warning('Error while fetching torrents.')
+            return []
+
+        response = self.response.json()
+        self._torrents_list = response['torrents']
+        self._torrents_epoch = time.time()
+
+        return self._torrents_list
+
     def _torrent_properties(self, info_hash):
         """Get torrent properties."""
         log.info('Checking {client} torrent {hash} status.', {'client': self.name, 'hash': info_hash})
 
-        params = {
-            'list': 1,
-            'torrentc': self._torrentc,
-        }
-
-        if not self._request(params=params):
+        if not self._get_torrents():
             log.warning('Error while fetching torrent {hash} status.', {'hash': info_hash})
             return
 
-        torrent = self.response.json()
-        self._torrentc = torrent['torrentc']
-        return torrent
+        for torrent in self._torrents_list:
+            if torrent[0] == info_hash:
+                return torrent
 
 
 api = UTorrentAPI
