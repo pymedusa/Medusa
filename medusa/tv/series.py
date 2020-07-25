@@ -563,7 +563,6 @@ class Series(TV):
         return self._prev_aired
 
     @property
-    @time_cache(seconds=43200)
     def next_aired(self):
         """Return next aired episode ordinal."""
         today = datetime.date.today().toordinal()
@@ -581,6 +580,7 @@ class Series(TV):
         )
 
     @property
+    @time_cache(seconds=43200)
     def next_airdate(self):
         """Return next aired episode airdate."""
         return (
