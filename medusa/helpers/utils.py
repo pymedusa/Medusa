@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 
 import functools
 from builtins import str
-from datetime import (datetime, timedelta)
+from datetime import datetime, timedelta
 
 from dateutil import tz
 
