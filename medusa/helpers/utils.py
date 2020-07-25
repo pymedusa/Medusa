@@ -149,7 +149,7 @@ class _TimeCache(object):
     """Cache the result for x hours."""
 
     def __init__(self, func, seconds=3600):
-        """Initialize the PlexFallback decorator."""
+        """Initialize the decorator."""
         self.func = func
         self.seconds = seconds
         self.timer = None
@@ -160,11 +160,7 @@ class _TimeCache(object):
         return functools.partial(self.__call__, obj)
 
     def __call__(self, *args, **kwargs):
-        """
-        Return a cached value, if the timer hasn't expired yet.
-
-        Fixed the timeout to 1 hour.
-        """
+        """Return a cached value, if the timer hasn't expired yet."""
         if self.timer and self.timer > datetime.now() - timedelta(seconds=self.seconds):
             # Timer not expired yet
             return self.cached
