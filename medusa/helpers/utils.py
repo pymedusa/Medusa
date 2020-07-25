@@ -3,8 +3,9 @@
 """General utility functions."""
 from __future__ import unicode_literals
 
+import functools
 from builtins import str
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from dateutil import tz
 
@@ -142,3 +143,49 @@ def int_default(value, default=0):
     if value is not None:
         return int(value)
     return default
+
+
+class _TimeCache(object):
+    """Cache the result for x hours."""
+
+    def __init__(self, func, seconds=3600):
+        """Initialize the decorator."""
+        self.func = func
+        self.seconds = seconds
+        self.timer = None
+        self.cached = None
+
+    def __get__(self, obj, objtype):
+        """Support instance methods."""
+        return functools.partial(self.__call__, obj)
+
+    def __call__(self, *args, **kwargs):
+        """Return a cached value, if the timer hasn't expired yet."""
+        if self.timer and self.timer > datetime.now() - timedelta(seconds=self.seconds):
+            # Timer not expired yet
+            return self.cached
+        else:
+            # Timer expired
+            self.cached = self.func(*args, **kwargs)
+            # Set new timer
+            self.timer = datetime.now()
+            return self.cached
+
+
+# wrap _TimeCache to allow for deferred calling
+def time_cache(function=None, seconds=3600):
+    """
+    Wrap function for the TimeCache decorator class.
+
+    Note! Pass the optional parameter seconds as a keyword argument and not a positional argument.
+    The Decorator will not work, when passed with positional args.
+
+    Example: @time_cache(seconds=7200) # For two hours. or @time_cache # for the default 1 hour.
+    """
+    if function:
+        return _TimeCache(function)
+    else:
+        def wrapper(function):
+            return _TimeCache(function, seconds)
+
+        return wrapper
