@@ -65,7 +65,7 @@ from medusa.helper.exceptions import (
 )
 from medusa.helpers.anidb import short_group_names
 from medusa.helpers.externals import get_externals, load_externals_from_db
-from medusa.helpers.utils import dict_to_array, safe_get, to_camel_case
+from medusa.helpers.utils import dict_to_array, safe_get, time_cache, to_camel_case
 from medusa.imdb import Imdb
 from medusa.indexers.api import indexerApi
 from medusa.indexers.config import (
@@ -559,10 +559,7 @@ class Series(TV):
     @property
     def prev_aired(self):
         """Return last aired episode ordinal."""
-        today = datetime.date.today().toordinal()
-        if not self._prev_aired or self._prev_aired > today:
-            if self._last_update_indexer >= today:
-                self._prev_aired = self.prev_episode()
+        self._prev_aired = self.prev_episode()
         return self._prev_aired
 
     @property
@@ -570,11 +567,11 @@ class Series(TV):
         """Return next aired episode ordinal."""
         today = datetime.date.today().toordinal()
         if not self._next_aired or self._next_aired < today:
-            if self._last_update_indexer >= today:
-                self._next_aired = self.next_episode()
+            self._next_aired = self.next_episode()
         return self._next_aired
 
     @property
+    @time_cache
     def prev_airdate(self):
         """Return last aired episode airdate."""
         return (
