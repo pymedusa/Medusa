@@ -18,7 +18,7 @@ if TRAVIS:
     TRAVIS_BUILD_DIR = os.environ['TRAVIS_BUILD_DIR']
 else:
     TRAVIS_PULL_REQUEST = '1234'
-    TRAVIS_PR_TARGET_BRANCH = 'master'
+    TRAVIS_PR_TARGET_BRANCH = 'main'
     TRAVIS_PR_SOURCE_BRANCH = 'develop'  # or 'release/release-0.2.3'
     TRAVIS_BUILD_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
@@ -71,18 +71,18 @@ def search_file_for_version():
     raise ValueError('Failed to get the app version!')
 
 
-# Are we merging either develop or a release branch into master in a pull request?
+# Are we merging either develop or a release branch into main in a pull request?
 if all((
         TRAVIS_PULL_REQUEST != 'false',
-        TRAVIS_PR_TARGET_BRANCH == 'master',
+        TRAVIS_PR_TARGET_BRANCH == 'main',
         TRAVIS_PR_SOURCE_BRANCH == 'develop' or TRAVIS_PR_SOURCE_BRANCH.startswith('release/')
 )):
-    # Get lastest git tag on master branch
-    proc = subprocess.call(['git', 'fetch', 'origin', 'master:master'])
+    # Get lastest git tag on main branch
+    proc = subprocess.call(['git', 'fetch', 'origin', 'main:main'])
     if proc > 0:
         print('Failed to fetch')
 
-    proc = subprocess.Popen(['git', 'describe', '--tags', '--abbrev=0', 'master'], stdout=subprocess.PIPE, universal_newlines=True)
+    proc = subprocess.Popen(['git', 'describe', '--tags', '--abbrev=0', 'main'], stdout=subprocess.PIPE, universal_newlines=True)
     (output, err) = proc.communicate()
     latest_tag = output.strip()
     if err or not latest_tag:

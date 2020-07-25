@@ -53,7 +53,7 @@ class Namespace(object):
         self._end_language()
 
     def _end_dc_publisher(self):
-        self._end_webmaster()
+        self._end_webmain()
 
     def _end_dc_rights(self):
         self._end_rights()
@@ -89,7 +89,7 @@ class Namespace(object):
         self._start_language(attrsD)
 
     def _start_dc_publisher(self, attrsD):
-        self._start_webmaster(attrsD)
+        self._start_webmain(attrsD)
 
     def _start_dc_rights(self, attrsD):
         self._start_rights(attrsD)

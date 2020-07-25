@@ -7,7 +7,7 @@ import logging
 
 
 __all__ = ['INTEGER', 'UINTEGER', 'FLOAT', 'STRING', 'UNICODE', 'DATE', 'MASTER', 'BINARY',
-           'SPEC_TYPES', 'READERS', 'Element', 'MasterElement', 'parse', 'parse_element',
+           'SPEC_TYPES', 'READERS', 'Element', 'MainElement', 'parse', 'parse_element',
            'get_matroska_specs']
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ SPEC_TYPES = {
     'string': STRING,
     'utf-8': UNICODE,
     'date': DATE,
-    'master': MASTER,
+    'main': MASTER,
     'binary': BINARY
 }
 
@@ -65,7 +65,7 @@ class Element(object):
         return '<%s [%s, %r]>' % (self.__class__.__name__, self.name, self.data)
 
 
-class MasterElement(Element):
+class MainElement(Element):
     """Element of type :data:`MASTER` that has a list of :class:`Element` as its data
 
     :param int id: id of the element, best represented as hexadecimal (0x18538067 for Matroska Segment element)
@@ -76,7 +76,7 @@ class MasterElement(Element):
     :param data: child elements
     :type data: list of :class:`Element`
 
-    :class:`MasterElement` implements some magic methods to ease manipulation. Thus, a MasterElement supports
+    :class:`MainElement` implements some magic methods to ease manipulation. Thus, a MainElement supports
     the `in` keyword to test for the presence of a child element by its name and gives access to it
     with a container getter::
 
@@ -90,7 +90,7 @@ class MasterElement(Element):
 
     """
     def __init__(self, id=None, name=None, level=None, position=None, size=None, data=None):  # @ReservedAssignment
-        super(MasterElement, self).__init__(id, MASTER, name, level, position, size, data)
+        super(MainElement, self).__init__(id, MASTER, name, level, position, size, data)
 
     def load(self, stream, specs, ignore_element_types=None, ignore_element_names=None, max_level=None):
         """Load children :class:`Elements <Element>` with level lower or equal to the `max_level`
@@ -107,10 +107,10 @@ class MasterElement(Element):
         self.data = parse(stream, specs, self.size, ignore_element_types, ignore_element_names, max_level)
 
     def get(self, name, default=None):
-        """Convenience method for ``master_element[name].data if name in master_element else default``
+        """Convenience method for ``main_element[name].data if name in main_element else default``
 
         :param string name: the name of the child to get
-        :param default: default value if `name` is not in the :class:`MasterElement`
+        :param default: default value if `name` is not in the :class:`MainElement`
         :return: the data of the child :class:`Element` or `default`
 
         """
@@ -118,7 +118,7 @@ class MasterElement(Element):
             return default
         element = self[name]
         if element.type == MASTER:
-            raise ValueError('%s is a MasterElement' % name)
+            raise ValueError('%s is a MainElement' % name)
         return element.data
 
     def __getitem__(self, key):
@@ -191,7 +191,7 @@ def parse_element(stream, specs, load_children=False, ignore_element_types=None,
 
     :param stream: file-like object from which to read
     :param dict specs: see :ref:`specs`
-    :param bool load_children: load children elements if the parsed element is a :class:`MasterElement`
+    :param bool load_children: load children elements if the parsed element is a :class:`MainElement`
     :param list ignore_element_types: list of element types to ignore
     :param list ignore_element_names: list of element names to ignore
     :param int max_level: maximum level for children elements
@@ -213,7 +213,7 @@ def parse_element(stream, specs, load_children=False, ignore_element_types=None,
         return None
     element_type, element_name, element_level = specs[element_id]
     if element_type == MASTER:
-        element = MasterElement(element_id, element_name, element_level, stream.tell(), element_size)
+        element = MainElement(element_id, element_name, element_level, stream.tell(), element_size)
         if load_children:
             element.data = parse(stream, specs, element.size, ignore_element_types, ignore_element_names, max_level)
     else:

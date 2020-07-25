@@ -39,7 +39,7 @@ class InitialSchema(db.SchemaUpgrade):
 
     def _get_provider_tables(self):
         return self.connection.select(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name NOT IN ('lastUpdate',"
+            "SELECT name FROM sqlite_main WHERE type='table' AND name NOT IN ('lastUpdate',"
             " 'lastSearch', 'scene_names', 'network_timezones', 'scene_exceptions_refresh',"
             " 'db_version', 'scene_exceptions', 'last_update');")
 

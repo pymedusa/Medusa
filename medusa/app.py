@@ -117,7 +117,7 @@ class MedusaApp(object):
         self.BRANCH = ''
 
         self.GIT_RESET = True
-        self.GIT_RESET_BRANCHES = ['develop', 'master']
+        self.GIT_RESET_BRANCHES = ['develop', 'main']
         self.GIT_REMOTE_BRANCHES = []
         self.GIT_REMOTE = ''
         self.GIT_REMOTE_URL = ''

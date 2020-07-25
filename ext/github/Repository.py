@@ -502,12 +502,12 @@ class Repository(github.GithubObject.CompletableGithubObject):
         return self._languages_url.value
 
     @property
-    def master_branch(self):
+    def main_branch(self):
         """
         :type: string
         """
-        self._completeIfNotSet(self._master_branch)
-        return self._master_branch.value
+        self._completeIfNotSet(self._main_branch)
+        return self._main_branch.value
 
     @property
     def merges_url(self):
@@ -1890,7 +1890,7 @@ class Repository(github.GithubObject.CompletableGithubObject):
         :param message: string, Required. The commit message.
         :param content: string, Required. The updated file content, either base64 encoded, or ready to be encoded.
         :param sha: string, Required. The blob SHA of the file being replaced.
-        :param branch: string. The branch name. Default: the repository’s default branch (usually master)
+        :param branch: string. The branch name. Default: the repository’s default branch (usually main)
         :param committer: InputGitAuthor, (optional), if no information is given the authenticated user's information will be used. You must specify both a name and email.
         :param author: InputGitAuthor, (optional), if omitted this will be filled in with committer information. If passed, you must specify both a name and email.
         :rtype: {
@@ -1958,7 +1958,7 @@ class Repository(github.GithubObject.CompletableGithubObject):
         :param path: string, Required. The content path.
         :param message: string, Required. The commit message.
         :param sha: string, Required. The blob SHA of the file being replaced.
-        :param branch: string. The branch name. Default: the repository’s default branch (usually master)
+        :param branch: string. The branch name. Default: the repository’s default branch (usually main)
         :param committer: InputGitAuthor, (optional), if no information is given the authenticated user's information will be used. You must specify both a name and email.
         :param author: InputGitAuthor, (optional), if omitted this will be filled in with committer information. If passed, you must specify both a name and email.
         :rtype: {
@@ -3197,7 +3197,7 @@ class Repository(github.GithubObject.CompletableGithubObject):
         self._labels_url = github.GithubObject.NotSet
         self._language = github.GithubObject.NotSet
         self._languages_url = github.GithubObject.NotSet
-        self._master_branch = github.GithubObject.NotSet
+        self._main_branch = github.GithubObject.NotSet
         self._merges_url = github.GithubObject.NotSet
         self._milestones_url = github.GithubObject.NotSet
         self._mirror_url = github.GithubObject.NotSet
@@ -3339,8 +3339,8 @@ class Repository(github.GithubObject.CompletableGithubObject):
             self._language = self._makeStringAttribute(attributes["language"])
         if "languages_url" in attributes:  # pragma no branch
             self._languages_url = self._makeStringAttribute(attributes["languages_url"])
-        if "master_branch" in attributes:  # pragma no branch
-            self._master_branch = self._makeStringAttribute(attributes["master_branch"])
+        if "main_branch" in attributes:  # pragma no branch
+            self._main_branch = self._makeStringAttribute(attributes["main_branch"])
         if "merges_url" in attributes:  # pragma no branch
             self._merges_url = self._makeStringAttribute(attributes["merges_url"])
         if "milestones_url" in attributes:  # pragma no branch

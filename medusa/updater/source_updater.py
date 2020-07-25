@@ -48,7 +48,7 @@ class SourceUpdateManager(UpdateManager):
 
     @staticmethod
     def _find_installed_branch():
-        return app.CUR_COMMIT_BRANCH if app.CUR_COMMIT_BRANCH else 'master'
+        return app.CUR_COMMIT_BRANCH if app.CUR_COMMIT_BRANCH else 'main'
 
     @property
     def current_commit_hash(self):
@@ -88,7 +88,7 @@ class SourceUpdateManager(UpdateManager):
             return False
 
         # This will be used until the first update
-        if self.branch == 'master' and not self._cur_commit_hash:
+        if self.branch == 'main' and not self._cur_commit_hash:
             if self.is_latest_version():
                 app.CUR_COMMIT_HASH = self._newest_commit_hash
                 app.CUR_COMMIT_BRANCH = self.branch

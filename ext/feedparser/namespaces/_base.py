@@ -265,10 +265,10 @@ class Namespace(object):
     def _end_language(self):
         self.lang = self.pop('language')
 
-    def _start_webmaster(self, attrsD):
+    def _start_webmain(self, attrsD):
         self.push('publisher', 1)
 
-    def _end_webmaster(self):
+    def _end_webmain(self):
         self.pop('publisher')
         self._sync_author_detail('publisher')
 

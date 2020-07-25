@@ -204,7 +204,7 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
         # Let's check if this provider table already exists
         table_exists = main_db_con.select(
             'SELECT name '
-            'FROM sqlite_master '
+            'FROM sqlite_main '
             "WHERE type='table'"
             ' AND name=?',
             [cur_provider.get_id()]

@@ -58,7 +58,7 @@ def get_lookup():
     if mako_cache is None:
         mako_cache = os.path.join(app.CACHE_DIR, 'mako')
     if mako_lookup is None:
-        use_strict = app.BRANCH and app.BRANCH != 'master'
+        use_strict = app.BRANCH and app.BRANCH != 'main'
         mako_lookup = TemplateLookup(directories=[mako_path],
                                      module_directory=mako_cache,
                                      #  format_exceptions=True,

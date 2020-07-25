@@ -25,7 +25,7 @@ class DockerUpdateManager(SourceUpdateManager):
             log.debug(u'Branch checkout: {0}->{1}', self._find_installed_branch(), self.branch)
             return True
 
-        if self.branch == 'master' and not self.is_latest_version():
+        if self.branch == 'main' and not self.is_latest_version():
             self._set_update_text()
             return True
 

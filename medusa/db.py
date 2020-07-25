@@ -400,7 +400,7 @@ class DBConnection(object):
         :param tableName: table name to check
         :return: True if table exists, False if it does not
         """
-        return len(self.select('SELECT 1 FROM sqlite_master WHERE name = ?;', (tableName, ))) > 0
+        return len(self.select('SELECT 1 FROM sqlite_main WHERE name = ?;', (tableName, ))) > 0
 
     def hasColumn(self, tableName, column):
         """
@@ -482,7 +482,7 @@ class SchemaUpgrade(object):
         self.connection = connection
 
     def hasTable(self, tableName):
-        return len(self.connection.select('SELECT 1 FROM sqlite_master WHERE name = ?;', (tableName, ))) > 0
+        return len(self.connection.select('SELECT 1 FROM sqlite_main WHERE name = ?;', (tableName, ))) > 0
 
     def hasColumn(self, tableName, column):
         return column in self.connection.tableInfo(tableName)

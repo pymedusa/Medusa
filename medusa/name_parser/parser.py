@@ -182,7 +182,7 @@ class NameParser(object):
 
         # Try to translate the scene series name to a scene number.
         # For example Jojo's bizarre Adventure - Diamond is unbreakable, will use xem, to translate the
-        # "diamond is unbreakable" exception back to season 4 of it's "master" table. This will be used later
+        # "diamond is unbreakable" exception back to season 4 of it's "main" table. This will be used later
         # to translate it to an absolute number, which in turn can be translated to an indexer SxEx.
         # For example Diamond is unbreakable - 26 -> Season 4 -> Absolute number 100 -> tvdb S03E26
         season_exception = None

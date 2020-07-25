@@ -887,7 +887,7 @@ class Home(WebRoot):
         for provider, last_update in iteritems(last_prov_updates):
             table_exists = main_db_con.select(
                 'SELECT name '
-                'FROM sqlite_master '
+                'FROM sqlite_main '
                 "WHERE type='table' AND name=?",
                 [provider]
             )
@@ -1245,7 +1245,7 @@ class Home(WebRoot):
                 # Let's check if this provider table already exists
                 table_exists = main_db_con.select(
                     'SELECT name '
-                    'FROM sqlite_master '
+                    'FROM sqlite_main '
                     "WHERE type='table' AND name=?",
                     [cur_provider.get_id()]
                 )
