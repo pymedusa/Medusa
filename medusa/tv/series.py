@@ -65,7 +65,7 @@ from medusa.helper.exceptions import (
 )
 from medusa.helpers.anidb import short_group_names
 from medusa.helpers.externals import get_externals, load_externals_from_db
-from medusa.helpers.utils import dict_to_array, safe_get, time_cache, to_camel_case
+from medusa.helpers.utils import dict_to_array, safe_get, to_camel_case
 from medusa.imdb import Imdb
 from medusa.indexers.api import indexerApi
 from medusa.indexers.config import (
@@ -114,6 +114,8 @@ from medusa.tv.episode import Episode
 from medusa.tv.indexer import Indexer
 
 from six import iteritems, itervalues, string_types, text_type, viewitems
+
+import ttl_cache
 
 try:
     from send2trash import send2trash
@@ -571,7 +573,7 @@ class Series(TV):
         return self._next_aired
 
     @property
-    @time_cache(seconds=43200)
+    @ttl_cache(43200.0)
     def prev_airdate(self):
         """Return last aired episode airdate."""
         return (
@@ -580,7 +582,7 @@ class Series(TV):
         )
 
     @property
-    @time_cache(seconds=43200)
+    @ttl_cache(43200.0)
     def next_airdate(self):
         """Return next aired episode airdate."""
         return (
