@@ -114,6 +114,7 @@ from medusa.tv.episode import Episode
 from medusa.tv.indexer import Indexer
 
 from six import iteritems, itervalues, string_types, text_type, viewitems
+
 import ttl_cache
 
 try:
