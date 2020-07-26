@@ -54,6 +54,7 @@
     </div>
 </template>
 <script>
+import debounce from 'lodash/debounce';
 import { mapGetters, mapState } from 'vuex';
 import pretty from 'pretty-bytes';
 import { AppLink, Asset, ProgressBar, QualityPill } from '../helpers';
@@ -152,7 +153,8 @@ export default {
             posterSortBy: state => state.config.layout.posterSortby,
             posterSortDir: state => state.config.layout.posterSortdir,
             posterSize: state => state.config.layout.local.posterSize,
-            currentShowTab: state => state.config.layout.local.currentShowTab
+            currentShowTab: state => state.config.layout.local.currentShowTab,
+            showFilterByName: state => state.config.layout.local.showFilterByName
         }),
         ...mapGetters({
             fuzzyParseDateTime: 'fuzzyParseDateTime'
@@ -248,7 +250,10 @@ export default {
                 return 'Paused';
             }
             return show.status;
-        }
+        },
+        rearrangePosters: debounce(function() {
+            this.$refs[`isotope-${this.listTitle}`].arrange();
+        }, 200)
     },
     watch: {
         posterSortBy(key) {
@@ -260,24 +265,23 @@ export default {
             this.$refs[`isotope-${listTitle}`].arrange({ sortBy: posterSortBy, sortAscending: value });
         },
         posterSize(oldSize, newSize) {
-            const { calculateSize, isotopeLoaded, listTitle } = this;
+            const { calculateSize, isotopeLoaded } = this;
             if (!isotopeLoaded || oldSize === newSize) {
                 return;
             }
             calculateSize();
-            this.$nextTick(() => {
-                this.$refs[`isotope-${listTitle}`].arrange();
-            });
+            this.rearrangePosters();
         },
         currentShowTab() {
-            const { isotopeLoaded, listTitle } = this;
+            const { isotopeLoaded } = this;
             if (!isotopeLoaded) {
                 return;
             }
 
-            this.$nextTick(() => {
-                this.$refs[`isotope-${listTitle}`].arrange();
-            });
+            this.rearrangePosters();
+        },
+        showFilterByName() {
+            this.rearrangePosters();
         }
     }
 };
