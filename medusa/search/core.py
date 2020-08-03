@@ -718,8 +718,11 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
                                                                       down_cur_quality, manual_search, manual_search_type)
                     # Update the list found_results
                     found_results = list_results_for_provider(search_results, found_results, cur_provider)
-                else:
-                    found_results = cache_found_results
+                    multi_results, single_results = collect_candidates(
+                        found_results, cur_provider, multi_results, single_results
+                    )
+                    found_eps = itertools.chain(*(result.episodes for result in multi_results + single_results))
+                    needed_eps = [ep for ep in episodes if ep not in found_eps]
 
             except AuthException as error:
                 log.error(u'Authentication error: {0!r}', error)
@@ -760,10 +763,6 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
                     manual_search_results.append(True)
             # Continue because we don't want to pick best results as we are running a manual search by user
             continue
-
-        multi_results, single_results = collect_candidates(
-            found_results, cur_provider, multi_results, single_results
-        )
 
     # Remove provider from thread name before return results
     threading.currentThread().name = original_thread_name
