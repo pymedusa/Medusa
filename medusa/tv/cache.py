@@ -577,6 +577,18 @@ class Cache(object):
                      '%|{0}|%'.format(ep_obj.episode)]]
                 )
 
+            if len(episodes) > 1:
+                results.append([
+                    'SELECT * FROM [{name}] '
+                    'WHERE indexer = ? AND '
+                    'indexerid = ? AND '
+                    'season = ? AND '
+                    'episodes == "||"'.format(
+                        name=self.provider_id
+                    ),
+                    [ep_obj.series.indexer, ep_obj.series.series_id, ep_obj.season]
+                ])
+
             if results:
                 # Only execute the query if we have results
                 sql_results = cache_db_con.mass_action(results, fetchall=True)
