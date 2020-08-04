@@ -256,7 +256,7 @@ window.app = new Vue({
                 <br>
 
                 <span v-if="isLoading">
-                    <img id="searchingAnim" src="images/loading32.gif" height="32" width="32" /> loading folders...
+                    <img id="searchingAnime" src="images/loading32.gif" height="32" width="32" /> loading folders...
                 </span>
                 <template v-else>
                     <span v-if="errorMessage !== ''">
