@@ -1093,7 +1093,7 @@ export default {
             }
         },
         async twitterStep1() {
-            this.twitterTestInfo = MEDUSA.config.loading;
+            this.twitterTestInfo = MEDUSA.config.layout.loading;
 
             const response = await apiRoute('home/twitterStep1');
             const { data } = response;
@@ -1156,7 +1156,7 @@ export default {
             }
             $('#growl_host').removeClass('warning');
             $(this).prop('disabled', true);
-            $('#testGrowl-result').html(MEDUSA.config.loading);
+            $('#testGrowl-result').html(MEDUSA.config.layout.loading);
             $.get('home/testGrowl', {
                 host: growl.host,
                 password: growl.password
@@ -1176,7 +1176,7 @@ export default {
             }
             $('#prowl_api').find('input').removeClass('warning');
             $(this).prop('disabled', true);
-            $('#testProwl-result').html(MEDUSA.config.loading);
+            $('#testProwl-result').html(MEDUSA.config.layout.loading);
             $.get('home/testProwl', {
                 prowl_api: prowl.api, // eslint-disable-line camelcase
                 prowl_priority: prowl.priority // eslint-disable-line camelcase
@@ -1199,7 +1199,7 @@ export default {
             }
             $('#kodi_host').find('input').removeClass('warning');
             $(this).prop('disabled', true);
-            $('#testKODI-result').html(MEDUSA.config.loading);
+            $('#testKODI-result').html(MEDUSA.config.layout.loading);
             $.get('home/testKODI', {
                 host: kodi.host,
                 username: kodi.username,
@@ -1224,7 +1224,7 @@ export default {
             }
             $('#plex_client_host').find('input').removeClass('warning');
             $(this).prop('disabled', true);
-            $('#testPHT-result').html(MEDUSA.config.loading);
+            $('#testPHT-result').html(MEDUSA.config.layout.loading);
             $.get('home/testPHT', {
                 host: plex.client.host,
                 username: plex.client.username,
@@ -1251,7 +1251,7 @@ export default {
             }
             $('#plex_server_host').find('input').removeClass('warning');
             $(this).prop('disabled', true);
-            $('#testPMS-result').html(MEDUSA.config.loading);
+            $('#testPMS-result').html(MEDUSA.config.layout.loading);
             $.get('home/testPMS', {
                 host: plex.server.host,
                 username: plex.server.username,
@@ -1274,7 +1274,7 @@ export default {
             }
             $('#emby_host,#emby_apikey').children('input').removeClass('warning');
             $(this).prop('disabled', true);
-            $('#testEMBY-result').html(MEDUSA.config.loading);
+            $('#testEMBY-result').html(MEDUSA.config.layout.loading);
             $.get('home/testEMBY', {
                 host: emby.host,
                 emby_apikey: emby.apikey // eslint-disable-line camelcase
@@ -1293,7 +1293,7 @@ export default {
             }
             $('#boxcar2_accesstoken').removeClass('warning');
             $(this).prop('disabled', true);
-            $('#testBoxcar2-result').html(MEDUSA.config.loading);
+            $('#testBoxcar2-result').html(MEDUSA.config.layout.loading);
             $.get('home/testBoxcar2', {
                 accesstoken: boxcar2.accesstoken
             }).done(data => {
@@ -1313,7 +1313,7 @@ export default {
             }
             $('#pushover_userkey,#pushover_apikey').removeClass('warning');
             $(this).prop('disabled', true);
-            $('#testPushover-result').html(MEDUSA.config.loading);
+            $('#testPushover-result').html(MEDUSA.config.layout.loading);
             $.get('home/testPushover', {
                 userKey: pushover.userkey,
                 apiKey: pushover.apikey
@@ -1323,7 +1323,7 @@ export default {
             });
         },
         testLibnotify() {
-            $('#testLibnotify-result').html(MEDUSA.config.loading);
+            $('#testLibnotify-result').html(MEDUSA.config.layout.loading);
             $.get('home/testLibnotify', data => {
                 $('#testLibnotify-result').html(data);
             });
@@ -1332,7 +1332,7 @@ export default {
             const nmj = {};
             nmj.host = $('#nmj_host').val();
             if (nmj.host) {
-                $('#testNMJ-result').html(MEDUSA.config.loading);
+                $('#testNMJ-result').html(MEDUSA.config.layout.loading);
                 $.get('home/settingsNMJ', {
                     host: nmj.host
                 }, data => {
@@ -1369,7 +1369,7 @@ export default {
             if (nmj.host) {
                 $('#nmj_host').removeClass('warning');
                 $(this).prop('disabled', true);
-                $('#testNMJ-result').html(MEDUSA.config.loading);
+                $('#testNMJ-result').html(MEDUSA.config.layout.loading);
                 $.get('home/testNMJ', {
                     host: nmj.host,
                     database: nmj.database,
@@ -1387,7 +1387,7 @@ export default {
             const nmjv2 = {};
             nmjv2.host = $('#nmjv2_host').val();
             if (nmjv2.host) {
-                $('#testNMJv2-result').html(MEDUSA.config.loading);
+                $('#testNMJv2-result').html(MEDUSA.config.layout.loading);
                 nmjv2.dbloc = '';
                 const radios = document.getElementsByName('nmjv2_dbloc');
                 for (let i = 0, len = radios.length; i < len; i++) {
@@ -1427,7 +1427,7 @@ export default {
             if (nmjv2.host) {
                 $('#nmjv2_host').removeClass('warning');
                 $(this).prop('disabled', true);
-                $('#testNMJv2-result').html(MEDUSA.config.loading);
+                $('#testNMJv2-result').html(MEDUSA.config.layout.loading);
                 $.get('home/testNMJv2', {
                     host: nmjv2.host
                 }).done(data => {
@@ -1459,7 +1459,7 @@ export default {
             }
             $('#freemobile_id,#freemobile_apikey').removeClass('warning');
             $(this).prop('disabled', true);
-            $('#testFreeMobile-result').html(MEDUSA.config.loading);
+            $('#testFreeMobile-result').html(MEDUSA.config.layout.loading);
             $.get('home/testFreeMobile', {
                 freemobile_id: freemobile.id, // eslint-disable-line camelcase
                 freemobile_apikey: freemobile.apikey // eslint-disable-line camelcase
@@ -1480,7 +1480,7 @@ export default {
             }
             $('#telegram_id,#telegram_apikey').removeClass('warning');
             $(this).prop('disabled', true);
-            $('#testTelegram-result').html(MEDUSA.config.loading);
+            $('#testTelegram-result').html(MEDUSA.config.layout.loading);
             $.get('home/testTelegram', {
                 telegram_id: telegram.id, // eslint-disable-line camelcase
                 telegram_apikey: telegram.apikey // eslint-disable-line camelcase
@@ -1499,7 +1499,7 @@ export default {
             }
             $('#discord_id,#discord_apikey').removeClass('warning');
             $(this).prop('disabled', true);
-            $('#testDiscord-result').html(MEDUSA.config.loading);
+            $('#testDiscord-result').html(MEDUSA.config.layout.loading);
             $.get('home/testDiscord', {
                 discord_webhook: notifiers.discord.webhook, // eslint-disable-line camelcase
                 discord_tts: notifiers.discord.tts // eslint-disable-line camelcase
@@ -1519,7 +1519,7 @@ export default {
             }
             $('#slack_webhook').removeClass('warning');
             $(this).prop('disabled', true);
-            $('#testSlack-result').html(MEDUSA.config.loading);
+            $('#testSlack-result').html(MEDUSA.config.layout.loading);
             $.get('home/testslack', {
                 slack_webhook: slack.webhook // eslint-disable-line camelcase
             }).done(data => {
@@ -1564,7 +1564,7 @@ export default {
             $('#trakt_username').removeClass('warning');
             $('#trakt_blacklist_name').removeClass('warning');
             $(this).prop('disabled', true);
-            $('#testTrakt-result').html(MEDUSA.config.loading);
+            $('#testTrakt-result').html(MEDUSA.config.layout.loading);
             $.get('home/testTrakt', {
                 username: trakt.username,
                 blacklist_name: trakt.trendingBlacklist // eslint-disable-line camelcase
@@ -1574,7 +1574,7 @@ export default {
             });
         },
         traktForceSync() {
-            $('#testTrakt-result').html(MEDUSA.config.loading);
+            $('#testTrakt-result').html(MEDUSA.config.layout.loading);
             $.getJSON('home/forceTraktSync', data => {
                 $('#testTrakt-result').html(data.result);
             });
@@ -1582,7 +1582,7 @@ export default {
         testEmail() {
             let to = '';
             const status = $('#testEmail-result');
-            status.html(MEDUSA.config.loading);
+            status.html(MEDUSA.config.layout.loading);
             let host = $('#email_host').val();
             host = host.length > 0 ? host : null;
             let port = $('#email_port').val();
@@ -1633,7 +1633,7 @@ export default {
             }
             $('#pushalot_authorizationtoken').removeClass('warning');
             $(this).prop('disabled', true);
-            $('#testPushalot-result').html(MEDUSA.config.loading);
+            $('#testPushalot-result').html(MEDUSA.config.layout.loading);
             $.get('home/testPushalot', {
                 authorizationToken: pushalot.authToken
             }).done(data => {
