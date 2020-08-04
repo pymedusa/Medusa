@@ -100,7 +100,7 @@
                                 </template>
 
                                 <div id="indexer-wrapper">
-                                    <img id="storage" src="images/storage.png">
+                                    <img :style="layout.themeName === 'light' ? { background: 'white'} : { background: 'black' }" id="storage" :src="`images/storage-${layout.themeName}.png`">
                                     <app-link v-if="showIndexerUrl && indexerConfig[show.indexer].icon" :href="showIndexerUrl" :title="showIndexerUrl">
                                         <img :alt="indexerConfig[show.indexer].name" height="16" width="16" :src="`images/${indexerConfig[show.indexer].icon}`" style="margin-top: -1px; vertical-align:middle;">
                                     </app-link>
@@ -879,6 +879,6 @@ span.global-filter {
     z-index: 9999;
     padding: 1px 1px 0 1px;
     margin-bottom: 1px;
-    background: white;
+    border-top-right-radius: 5px;
 }
 </style>
