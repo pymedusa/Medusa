@@ -75,7 +75,7 @@
                             <div class="pull-right col-lg-3 col-md-3 hidden-sm hidden-xs">
                                 <asset default-src="images/banner.png" :show-slug="show.id.slug" type="banner" cls="show-banner pull-right shadow" :link="true" />
                             </div>
-                            <div id="show-rating" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
+                            <div id="indexers" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
                                 <span
                                     v-if="show.rating.imdb && show.rating.imdb.rating"
                                     class="imdbstars"
@@ -98,11 +98,16 @@
                                         <img alt="[imdb]" height="16" width="16" src="images/imdb.png" style="margin-top: -1px; vertical-align:middle;">
                                     </app-link>
                                 </template>
+
+                                <div id="indexer-wrapper">
+                                    <img id="storage" src="images/storage.png">
+                                    <app-link v-if="showIndexerUrl && indexerConfig[show.indexer].icon" :href="showIndexerUrl" :title="showIndexerUrl">
+                                        <img :alt="indexerConfig[show.indexer].name" height="16" width="16" :src="`images/${indexerConfig[show.indexer].icon}`" style="margin-top: -1px; vertical-align:middle;">
+                                    </app-link>
+                                </div>
+
                                 <app-link v-if="show.id.trakt" :href="`https://trakt.tv/shows/${show.id.trakt}`" :title="`https://trakt.tv/shows/${show.id.trakt}`">
                                     <img alt="[trakt]" height="16" width="16" src="images/trakt.png">
-                                </app-link>
-                                <app-link v-if="showIndexerUrl && indexerConfig[show.indexer].icon" :href="showIndexerUrl" :title="showIndexerUrl">
-                                    <img :alt="indexerConfig[show.indexer].name" height="16" width="16" :src="`images/${indexerConfig[show.indexer].icon}`" style="margin-top: -1px; vertical-align:middle;">
                                 </app-link>
 
                                 <app-link v-if="show.xemNumbering && show.xemNumbering.length > 0" :href="`http://thexem.de/search?q=${show.title}`" :title="`http://thexem.de/search?q=${show.title}`">
@@ -112,6 +117,7 @@
                                 <app-link v-if="show.id.tvdb" :href="`https://fanart.tv/series/${show.id.tvdb}`" :title="`https://fanart.tv/series/${show.id[show.indexer]}`">
                                     <img alt="[fanart.tv]" height="16" width="16" src="images/fanart.tv.png" class="fanart">
                                 </app-link>
+
                             </div>
                             <div id="tags" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
                                 <ul class="tags" v-if="show.genres">
@@ -858,5 +864,21 @@ span.global-filter {
     font-size: 11px;
     text-align: left;
     display: block;
+}
+
+#indexer-wrapper {
+    display: inline;
+    position: relative;
+}
+
+#storage {
+    position: absolute;
+    height: 11px;
+    bottom: -5px;
+    right: -4px;
+    z-index: 9999;
+    padding: 1px 1px 0 1px;
+    margin-bottom: 1px;
+    background: white;
 }
 </style>
