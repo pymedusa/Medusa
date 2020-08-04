@@ -100,7 +100,7 @@
                                 </template>
 
                                 <div id="indexer-wrapper">
-                                    <img :style="layout.themeName === 'light' ? { background: 'white'} : { background: 'black' }" id="storage" :src="`images/storage-${layout.themeName}.png`">
+                                    <img id="stored-by-indexer" src="images/star.png">
                                     <app-link v-if="showIndexerUrl && indexerConfig[show.indexer].icon" :href="showIndexerUrl" :title="showIndexerUrl">
                                         <img :alt="indexerConfig[show.indexer].name" height="16" width="16" :src="`images/${indexerConfig[show.indexer].icon}`" style="margin-top: -1px; vertical-align:middle;">
                                     </app-link>
@@ -866,19 +866,16 @@ span.global-filter {
     display: block;
 }
 
+#stored-by-indexer {
+    position: absolute;
+    bottom: -3px;
+    right: -3px;
+    z-index: 9999;
+}
+
 #indexer-wrapper {
     display: inline;
     position: relative;
 }
 
-#storage {
-    position: absolute;
-    height: 11px;
-    bottom: -5px;
-    right: -4px;
-    z-index: 9999;
-    padding: 1px 1px 0 1px;
-    margin-bottom: 1px;
-    border-top-right-radius: 5px;
-}
 </style>
