@@ -41,6 +41,12 @@
                                 />
                             </template>
                         </v-tab>
+                        <v-tab>
+                            <div class="new-tab" slot="title">
+                                <input type="textbox" v-model="newTabTitle" @click.stop="addTab(index)">
+                                <span @click.stop="removeTab(index)" class="ti-close tab-close" />
+                            </div>
+                        </v-tab>
                     </vue-tabs>
                 </div> <!-- #showTabs -->
                 <template v-else>
@@ -86,7 +92,8 @@ export default {
                 { value: 'banner', text: 'Banner' },
                 { value: 'simple', text: 'Simple' }
             ],
-            selectedRootDir: 0
+            selectedRootDir: 0,
+            newTabTitle: 'New Tab'
         };
     },
     computed: {
@@ -135,9 +142,9 @@ export default {
             }
         },
         showLists() {
-            const { config, filterByName, indexers, stateLayout, showsWithStats } = this;
+            const { config, filterByName, indexers, stateLayout, showList, showsWithStats } = this;
             const { rootDirs } = config;
-            const { animeSplitHome, selectedRootIndex, show } = stateLayout;
+            const { animeSplitHome, selectedRootIndex } = stateLayout;
             if (!indexers.indexers) {
                 return;
             }
@@ -151,7 +158,7 @@ export default {
             shows = shows.filter(show => show.title.toLowerCase().includes(filterByName.toLowerCase()));
 
             if (animeSplitHome) {
-                return show.showListOrder.map(listTitle => {
+                return showList.map(listTitle => {
                     return (
                         { listTitle, shows: shows.filter(show => show.config.anime === (listTitle === 'Anime')) }
                     );
@@ -225,4 +232,5 @@ ul.list-group > li {
         display: none;
     }
 }
+
 </style>
