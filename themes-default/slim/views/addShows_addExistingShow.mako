@@ -41,9 +41,10 @@ window.app = new Vue({
         }, 500);
     },
     // TODO: Replace with Object spread (`...mapState`)
-    computed: Object.assign(mapState([
-        'config' // Used by `inc_addShowOptions.mako`
-    ]), {
+    computed: Object.assign(mapState({
+        config: state => state.config.general // Used by `inc_addShowOptions.mako`
+    }),
+    {
         selectedRootDirs() {
             return this.rootDirs.filter(rd => rd.selected);
         },

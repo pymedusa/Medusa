@@ -19,7 +19,10 @@ window.app = new Vue({
         };
     },
     // @TODO: Replace with Object spread (`...mapState`)
-    computed: Object.assign(mapState(['layout']), {
+    computed: Object.assign(mapState({
+        layout: state => state.config.layout
+    }),
+    {
         restartState() {
             const { status } = this;
             if (status !== 'restarted') {
