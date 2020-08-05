@@ -53,14 +53,14 @@
     "vue-multiselect": "2.1.6",
     "vue-native-websocket": "2.0.14",
     "vue-nav-tabs": "0.5.7",
-    "vue-router": "3.3.2",
+    "vue-router": "3.4.0",
     "vue-scrollto": "2.18.1",
     "vue-snotify": "3.2.1",
     "vue-template-compiler": "2.6.11",
     "vue-truncate-collapsed": "2.1.0",
     "vuedraggable": "2.23.2",
     "vueisotope": "3.1.2",
-    "vuex": "3.4.0"
+    "vuex": "3.5.1"
   },
   "devDependencies": {
     "@babel/core": "7.10.2",
@@ -105,7 +105,7 @@
     "stylelint-config-standard": "20.0.0",
     "timekeeper": "2.2.0",
     "vue-jest": "3.0.6",
-    "vue-loader": "15.9.2",
+    "vue-loader": "15.9.3",
     "webpack": "4.43.0",
     "webpack-cli": "3.3.11"
   },
