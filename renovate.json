@@ -54,6 +54,10 @@
       {
         "packageNames": ["dogpile.cache"],
         "allowedVersions": "<1"
+      },
+      {
+        "packageNames": ["validators"],
+        "allowedVersions": "<0.17.0"
       }
     ]
   }
