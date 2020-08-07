@@ -447,6 +447,7 @@ export default {
                     qbittorrent: {
                         title: 'qBittorrent',
                         description: 'URL to your qBittorrent client (e.g. http://localhost:8080)',
+                        pathOption: true,
                         labelOption: true,
                         labelAnimeOption: true,
                         pausedOption: true,
