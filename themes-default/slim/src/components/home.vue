@@ -31,7 +31,7 @@
             <div class="col-md-12">
                 <!-- Split in tabs -->
                 <div id="showTabs" v-if="stateLayout.animeSplitHome && stateLayout.animeSplitHomeInTabs">
-                    <vue-tabs @tab-change="updateTabContent">
+                    <vue-tabs>
                         <v-tab v-for="showList in showLists" :key="showList.listTitle" :title="showList.listTitle">
                             <template v-if="['banner', 'simple', 'small', 'poster'].includes(layout)">
                                 <show-list :id="`${showList.listTitle.toLowerCase()}TabContent`"
@@ -40,12 +40,6 @@
                                            }"
                                 />
                             </template>
-                        </v-tab>
-                        <v-tab>
-                            <div class="new-tab" slot="title">
-                                <input type="textbox" v-model="newTabTitle" @click.stop="addTab(index)">
-                                <span @click.stop="removeTab(index)" class="ti-close tab-close" />
-                            </div>
                         </v-tab>
                     </vue-tabs>
                 </div> <!-- #showTabs -->
@@ -92,8 +86,7 @@ export default {
                 { value: 'banner', text: 'Banner' },
                 { value: 'simple', text: 'Simple' }
             ],
-            selectedRootDir: 0,
-            newTabTitle: 'New Tab'
+            selectedRootDir: 0
         };
     },
     computed: {
@@ -145,7 +138,7 @@ export default {
         showLists() {
             const { config, filterByName, indexers, stateLayout, showList, showsWithStats } = this;
             const { rootDirs } = config;
-            const { animeSplitHome, selectedRootIndex } = stateLayout;
+            const { selectedRootIndex } = stateLayout;
             if (!indexers.indexers) {
                 return;
             }
@@ -158,15 +151,11 @@ export default {
             // Filter by text
             shows = shows.filter(show => show.title.toLowerCase().includes(filterByName.toLowerCase()));
 
-            if (animeSplitHome) {
-                return showList.map(listTitle => {
-                    return (
-                        { listTitle, shows: shows.filter(show => show.config.anime === (listTitle === 'Anime')) }
-                    );
-                });
-            }
-
-            return ([{ listTitle: 'Series', shows }]);
+            return showList.map(listTitle => {
+                return (
+                    { listTitle, shows: shows.filter(show => show.config.showLists.includes(listTitle.toLowerCase())) }
+                );
+            });
         },
         selectedRootIndexOptions() {
             const { config } = this;
@@ -200,10 +189,6 @@ export default {
         saveSelectedRootDir(value) {
             const { setStoreLayout } = this;
             setStoreLayout({ key: 'selectedRootIndex', value });
-        },
-        updateTabContent(tabIndex, newTab) {
-            const { setLayoutLocal } = this;
-            setLayoutLocal({ key: 'currentShowTab', value: newTab.title });
         }
     },
     mounted() {

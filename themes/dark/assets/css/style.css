@@ -595,16 +595,6 @@ div.xem {
     top: 0;
 }
 
-/* Add tab */
-ul.nav-tabs li:last-child {
-    float: right;
-    height: 34px;
-}
-
-.tab-close{
-  float:right;
-}
-
 [class^="ti-"], [class*=" ti-"] {
     font-family: 'themify';
     speak: none;
