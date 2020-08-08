@@ -1,6 +1,6 @@
 <template>
     <div id="home">
-        <div class="row">
+        <div v-if="['banner', 'simple', 'small'].includes(layout)" class="row">
             <div class="col-sm-12">
                 <div class="home-filter-option option-filter-name">
                     <input v-model="filterByName" id="filterShowName" class="form-control form-control-inline input-sm input200" type="search" placeholder="Filter Show Name">
@@ -136,7 +136,7 @@ export default {
             }
         },
         showLists() {
-            const { config, filterByName, indexers, stateLayout, showList, showsWithStats } = this;
+            const { config, filterByName, indexers, layout, stateLayout, showList, showsWithStats } = this;
             const { rootDirs } = config;
             const { selectedRootIndex } = stateLayout;
             if (!indexers.indexers) {
@@ -148,8 +148,11 @@ export default {
             // Filter root dirs
             shows = showsWithStats.filter(show => selectedRootIndex === -1 || show.config.location.includes(rootDirs.slice(1)[selectedRootIndex]));
 
-            // Filter by text
+            // Filter by text for the banner, simple and smallposter layouts.
+            // The Poster layout uses vue-isotope and this does not respond well to changes to the `list` property.
+            if (layout !== 'poster') {
             shows = shows.filter(show => show.title.toLowerCase().includes(filterByName.toLowerCase()));
+            }
 
             const categorizedShows = showList.map(listTitle => {
                 return (

@@ -70,7 +70,7 @@ window.app = new Vue({
                 return;
             }
 
-            $('.updating_categories').wrapInner('<span><img src="images/loading16' + MEDUSA.config.themeSpinner + '.gif"> Updating Categories...</span>');
+            $('.updating_categories').wrapInner('<span><img src="images/loading16' + MEDUSA.config.layout.themeSpinner + '.gif"> Updating Categories...</span>');
 
             const dfd = new $.Deferred();
             let capabilities = [];
@@ -165,7 +165,7 @@ window.app = new Vue({
             $('#editANewznabProvider').append('<option value=' + id + '>' + name + '</option>');
 
             if ($('#provider_order_list > #' + id).length === 0) {
-                $('#provider_order_list').append('<li class="ui-state-default" id="' + id + '"> <input type="checkbox" id="enable_' + id + '" class="provider_enabler" CHECKED> <a href="' + MEDUSA.config.anonURL + url + '" class="imgLink" target="_new"><img src="images/providers/newznab.png" alt="' + name + '" width="16" height="16"></a> ' + name + '</li>'); // eslint-disable-line no-undef
+                $('#provider_order_list').append('<li class="ui-state-default" id="' + id + '"> <input type="checkbox" id="enable_' + id + '" class="provider_enabler" CHECKED> <a href="' + MEDUSA.config.general.anonRedirect + url + '" class="imgLink" target="_new"><img src="images/providers/newznab.png" alt="' + name + '" width="16" height="16"></a> ' + name + '</li>'); // eslint-disable-line no-undef
                 $('#provider_order_list').sortable('refresh');
             }
 
@@ -184,7 +184,7 @@ window.app = new Vue({
             $('#editATorrentRssProvider').append('<option value=' + id + '>' + name + '</option>');
 
             if ($('#provider_order_list > #' + id).length === 0) {
-                $('#provider_order_list').append('<li class="ui-state-default" id="' + id + '"> <input type="checkbox" id="enable_' + id + '" class="provider_enabler" CHECKED> <a href="' + MEDUSA.config.anonURL + url + '" class="imgLink" target="_new"><img src="images/providers/torrentrss.png" alt="' + name + '" width="16" height="16"></a> ' + name + '</li>'); // eslint-disable-line no-undef
+                $('#provider_order_list').append('<li class="ui-state-default" id="' + id + '"> <input type="checkbox" id="enable_' + id + '" class="provider_enabler" CHECKED> <a href="' + MEDUSA.config.general.anonRedirect + url + '" class="imgLink" target="_new"><img src="images/providers/torrentrss.png" alt="' + name + '" width="16" height="16"></a> ' + name + '</li>'); // eslint-disable-line no-undef
                 $('#provider_order_list').sortable('refresh');
             }
 
@@ -203,7 +203,7 @@ window.app = new Vue({
             $('#editATorznabProvider').append('<option value=' + id + '>' + name + '</option>');
 
             if ($('#provider_order_list > #' + id).length === 0) {
-                $('#provider_order_list').append('<li class="ui-state-default" id="' + id + '"> <input type="checkbox" id="enable_' + id + '" class="provider_enabler" CHECKED> <a href="' + MEDUSA.config.anonURL + url + '" class="imgLink" target="_new"><img src="images/providers/jackett.png" alt="' + name + '" width="16" height="16"></a> ' + name + '</li>'); // eslint-disable-line no-undef
+                $('#provider_order_list').append('<li class="ui-state-default" id="' + id + '"> <input type="checkbox" id="enable_' + id + '" class="provider_enabler" CHECKED> <a href="' + MEDUSA.config.general.anonRedirect + url + '" class="imgLink" target="_new"><img src="images/providers/jackett.png" alt="' + name + '" width="16" height="16"></a> ' + name + '</li>'); // eslint-disable-line no-undef
                 $('#provider_order_list').sortable('refresh');
             }
 

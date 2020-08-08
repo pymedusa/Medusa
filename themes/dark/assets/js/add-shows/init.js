@@ -72,7 +72,7 @@ MEDUSA.addShows.init = function() {
     };
 
     $.fn.loadRemoteShows = function(path, loadingTxt, errorTxt) {
-        $(this).html('<img id="searchingAnim" src="images/loading32' + MEDUSA.config.themeSpinner + '.gif" height="32" width="32" />&nbsp;' + loadingTxt);
+        $(this).html('<img id="searchingAnime" src="images/loading32' + MEDUSA.config.layout.themeSpinner + '.gif" height="32" width="32" />&nbsp;' + loadingTxt);
         $(this).load(path + ' #container', function(response, status) {
             if (status === 'error') {
                 $(this).empty().html(errorTxt);

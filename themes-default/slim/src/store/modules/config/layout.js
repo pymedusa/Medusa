@@ -162,6 +162,15 @@ const actions = {
     setLayoutLocal(context, { key, value }) {
         const { commit } = context;
         return commit(UPDATE_LAYOUT_LOCAL, { [key]: value });
+    },
+    setBacklogOverview(context, { key, value }) {
+        const { commit } = context;
+        return api.patch('config/main', { layout: { backlogOverview: { [key]: value } } })
+            .then(() => {
+                return commit(ADD_CONFIG, {
+                    section: 'layout', config: { backlogOverview: { [key]: value } }
+                });
+            });
     }
 };
 

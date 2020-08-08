@@ -535,7 +535,7 @@ export default {
             const { torrents } = clients;
             const { method, host, username, password } = torrents;
 
-            this.clientsConfig.torrent[method].testStatus = MEDUSA.config.loading;
+            this.clientsConfig.torrent[method].testStatus = MEDUSA.config.layout.loading;
 
             const params = {
                 torrent_method: method, // eslint-disable-line camelcase
@@ -553,7 +553,7 @@ export default {
             const { nzbget } = nzb;
             const { host, username, password, useHttps } = nzbget;
 
-            this.clientsConfig.nzb.nzbget.testStatus = MEDUSA.config.loading;
+            this.clientsConfig.nzb.nzbget.testStatus = MEDUSA.config.layout.loading;
 
             const params = {
                 host,
@@ -571,7 +571,7 @@ export default {
             const { sabnzbd } = nzb;
             const { host, username, password, apiKey } = sabnzbd;
 
-            this.clientsConfig.nzb.sabnzbd.testStatus = MEDUSA.config.loading;
+            this.clientsConfig.nzb.sabnzbd.testStatus = MEDUSA.config.layout.loading;
 
             const params = {
                 host,

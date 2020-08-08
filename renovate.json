@@ -50,6 +50,14 @@
       {
         "packageNames": ["rarfile"],
         "allowedVersions": "<=3.1"
+      }, 
+      {
+        "packageNames": ["dogpile.cache"],
+        "allowedVersions": "<1"
+      },
+      {
+        "packageNames": ["validators"],
+        "allowedVersions": "<0.17.0"
       }
     ]
   }
