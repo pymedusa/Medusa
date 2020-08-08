@@ -922,3 +922,26 @@ class MoveSceneExceptions(AddReleaseIgnoreRequireExcludeOptions):
         )
 
         self.inc_minor_version()
+
+
+class AddShowLists(MoveSceneExceptions):
+    """Add show_lists field to tv_shows."""
+
+    def test(self):
+        """Test if the version is at least 44.16."""
+        return self.connection.version >= (44, 16)
+
+    def execute(self):
+        utils.backup_database(self.connection.path, self.connection.version)
+
+        log.info(u'Addin show_lists field to tv_shows.')
+        if not self.hasColumn('tv_shows', 'show_lists'):
+            self.addColumn('tv_shows', 'show_lists', 'text', 'series')
+
+            # Shows that are not flagged as anime, put in the anime list
+            self.connection.action("update tv_shows set show_lists = 'series' where anime = 0")
+
+            # Shows that are flagged as anime, put in the anime list
+            self.connection.action("update tv_shows set show_lists = 'anime' where anime = 1")
+
+        self.inc_minor_version()
