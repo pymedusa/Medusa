@@ -151,11 +151,24 @@ export default {
             // Filter by text
             shows = shows.filter(show => show.title.toLowerCase().includes(filterByName.toLowerCase()));
 
-            return showList.map(listTitle => {
+            const categorizedShows = showList.map(listTitle => {
                 return (
                     { listTitle, shows: shows.filter(show => show.config.showLists.includes(listTitle.toLowerCase())) }
                 );
             });
+
+            // Check for shows that are not in any category anymore
+            const uncategorizedShows = shows.filter(show => {
+                return show.config.showLists.map(item => {
+                    return showList.map(list => list.toLowerCase()).includes(item);
+                }).every(item => !item);
+            });
+
+            if (uncategorizedShows.length > 0) {
+                categorizedShows.push({ listTitle: 'uncategorized', shows: uncategorizedShows });
+            }
+
+            return categorizedShows;
         },
         selectedRootIndexOptions() {
             const { config } = this;
