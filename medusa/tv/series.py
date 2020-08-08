@@ -244,6 +244,7 @@ class Series(TV):
         self.externals = {}
         self._cached_indexer_api = None
         self.plot = None
+        self._show_lists = None
 
         other_show = Show.find_by_id(app.showList, self.indexer, self.series_id)
         if other_show is not None:
@@ -1494,6 +1495,8 @@ class Series(TV):
             # Load external id's from indexer_mappings table.
             self.externals = load_externals_from_db(self.indexer, self.series_id)
 
+            self._show_lists = sql_results[0]['show_lists']
+
         # Get IMDb_info from database
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select(
@@ -2158,6 +2161,7 @@ class Series(TV):
         data['config']['release']['ignoredWordsExclude'] = bool(self.rls_ignore_exclude)
         data['config']['release']['requiredWordsExclude'] = bool(self.rls_require_exclude)
         data['config']['airdateOffset'] = self.airdate_offset
+        data['config']['showLists'] = self.show_lists
 
         # Moved from detailed, as the home page, needs it to display the Xem icon.
         data['xemNumbering'] = numbering_tuple_to_dict(self.xem_numbering)
@@ -2225,6 +2229,15 @@ class Series(TV):
     def qualities_preferred(self, qualities_preferred):
         """Configure qualities (combined) by adding the preferred qualities to it."""
         self.quality = Quality.combine_qualities(self.qualities_allowed, qualities_preferred)
+
+    @property
+    def show_lists(self):
+        """Return series show lists."""
+        return self._show_lists.split(',') if self._show_lists else 'series'
+
+    @show_lists.setter
+    def show_lists(self, show_lists):
+        self._show_lists = ','.join(show_lists) if show_lists else 'series'
 
     def get_all_possible_names(self, season=-1):
         """Get every possible variation of the name for a particular show.

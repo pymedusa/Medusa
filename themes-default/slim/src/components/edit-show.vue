@@ -117,6 +117,15 @@
                                     <span>use the DVD order instead of the air order</span>
                                     <div class="clear-left"><p>A "Force Full Update" is necessary, and if you have existing episodes you need to sort them manually.</p></div>
                                 </config-toggle-slider>
+
+                                <config-template label-for="show_lists" label="Display in show lists">
+                                    <multiselect
+                                        v-model="show.config.showLists"
+                                        :multiple="true"
+                                        :options="layout.show.showListOrder.map(list => list.toLowerCase())"
+                                    />
+                                </config-template>
+
                             </fieldset>
                         </div>
                     </v-tab>
@@ -216,6 +225,9 @@ import {
     SelectList
 } from './helpers';
 
+import Multiselect from 'vue-multiselect';
+import 'vue-multiselect/dist/vue-multiselect.min.css';
+
 export default {
     name: 'edit-show',
     components: {
@@ -228,6 +240,7 @@ export default {
         ConfigToggleSlider,
         FileBrowser,
         LanguageSelect,
+        Multiselect,
         QualityChooser,
         SelectList,
         VueTabs,
@@ -395,7 +408,8 @@ export default {
                         preferred: showConfig.qualities.preferred,
                         allowed: showConfig.qualities.allowed
                     },
-                    airdateOffset: showConfig.airdateOffset
+                    airdateOffset: showConfig.airdateOffset,
+                    showLists: showConfig.showLists
                 },
                 language: show.language
             };

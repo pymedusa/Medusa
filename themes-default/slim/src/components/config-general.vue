@@ -175,6 +175,14 @@
                                         <p>include articles ("The", "A", "An") when sorting show lists</p>
                                     </config-toggle-slider>
 
+                                    <config-template label-for="show_list_order" label="show lists">
+                                        <sorted-select-list
+                                            :list-items="layout.show.showListOrder"
+                                            @change="saveShowListOrder"
+                                        />
+                                        <p>Create and order different categories for your shows.</p>
+                                    </config-template>
+
                                     <config-textbox-number v-model="layout.comingEps.missedRange" label="Missed episodes range" id="coming_eps_missed_range duration" :step="1" :min="7">
                                         <p>Set the range in days of the missed episodes in the Schedule page</p>
                                     </config-textbox-number>
@@ -525,7 +533,8 @@ import {
     ConfigTextbox,
     ConfigTextboxNumber,
     ConfigToggleSlider,
-    LanguageSelect
+    LanguageSelect,
+    SortedSelectList
 } from './helpers';
 import { convertDateFormat } from '../utils/core.js';
 import formatDate from 'date-fns/format';
@@ -545,6 +554,7 @@ export default {
         ConfigToggleSlider,
         LanguageSelect,
         Multiselect,
+        SortedSelectList,
         VPopover,
         ToggleButton,
         RootDirs
@@ -696,11 +706,12 @@ export default {
         }
     },
     methods: {
-        ...mapActions([
-            'setConfig',
-            'setTheme',
-            'getApiKey'
-        ]),
+        ...mapActions({
+            setConfig: 'setConfig',
+            setTheme: 'setTheme',
+            getApiKey: 'getApiKey',
+            setLayoutShow: 'setLayoutShow'
+        }),
         async githubBranchForceUpdate() {
             const response = await apiRoute('home/branchForceUpdate');
             if (response.data._size > 0) {
@@ -803,6 +814,12 @@ export default {
             } finally {
                 this.saving = false;
             }
+        },
+        saveShowListOrder(value) {
+            const { layout, setLayoutShow } = this;
+            const mergedShowLayout = { ...layout.show, ...{ showListOrder: value.map(item => item.value) } };
+
+            setLayoutShow(mergedShowLayout);
         }
     }
 };

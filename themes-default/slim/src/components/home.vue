@@ -137,8 +137,9 @@ export default {
                 return show.showListOrder;
             },
             set(value) {
-                const { setShowListOrder } = this;
-                setShowListOrder({ value });
+                const { stateLayout, setLayoutShow } = this;
+                const mergedShowLayout = { ...stateLayout.show, showListOrder: value.map(item => item.value) };
+                setLayoutShow(mergedShowLayout);
             }
         },
         showLists() {
@@ -177,7 +178,7 @@ export default {
         ...mapActions({
             setLayout: 'setLayout',
             setConfig: 'setConfig',
-            setShowListOrder: 'setShowListOrder',
+            setLayoutShow: 'setLayoutShow',
             setStoreLayout: 'setStoreLayout',
             setLayoutLocal: 'setLayoutLocal',
             getShows: 'getShows',

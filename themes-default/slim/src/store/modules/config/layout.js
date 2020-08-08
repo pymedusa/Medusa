@@ -141,12 +141,12 @@ const actions = {
                 });
             });
     },
-    setShowListOrder(context, { value }) {
+    setLayoutShow(context, value) {
         const { commit } = context;
-        return api.patch('config/main', { layout: { show: { showListOrder: value } } })
+        return api.patch('config/main', { layout: { show: value } })
             .then(() => {
                 return commit(ADD_CONFIG, {
-                    section: 'layout', config: { show: { showListOrder: value } }
+                    section: 'layout', config: { show: value }
                 });
             });
     },

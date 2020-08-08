@@ -6,6 +6,10 @@ import Snotify from 'vue-snotify';
 import VueCookies from 'vue-cookies';
 import VModal from 'vue-js-modal';
 import { VTooltip } from 'v-tooltip';
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { faAlignJustify } from '@fortawesome/free-solid-svg-icons';
+
+library.add(faAlignJustify);
 
 import {
     AddShowOptions,
