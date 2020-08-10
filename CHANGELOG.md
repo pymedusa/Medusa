@@ -1,9 +1,12 @@
 ## Unreleased
 
 #### New Features
-- Added Search shows by id ([#8058](https://github.com/pymedusa/Medusa/pull/8058))
+- Added Search shows by id ([#8308](https://github.com/pymedusa/Medusa/pull/8308))
+- Added UI option to create your own show list categories ([#8308](https://github.com/pymedusa/Medusa/pull/8308))
 
 #### Improvements
+- Vueified Home page (Poster, small poster, banner, simple layouts) ([5345](https://github.com/pymedusa/Medusa/pull/5345))
+- Vueified Snatch Selection page ([7345](https://github.com/pymedusa/Medusa/pull/7345))
 
 #### Fixes
 
