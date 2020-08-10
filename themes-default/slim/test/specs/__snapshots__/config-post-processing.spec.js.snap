@@ -3165,7 +3165,6 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                 type="submit"
                 value="Save Changes"
               />
-              <br />
             </div>
           </div>
         </div>

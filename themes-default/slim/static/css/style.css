@@ -595,22 +595,6 @@ div.xem {
     top: 0;
 }
 
-[class^="ti-"], [class*=" ti-"] {
-    font-family: 'themify';
-    speak: none;
-    font-style: normal;
-    font-weight: normal;
-    font-variant: normal;
-    text-transform: none;
-    line-height: 1;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-}
-
-.ti-close:before {
-	content: "\e646";
-}
-
 /* Show options */
 
 .show-option {

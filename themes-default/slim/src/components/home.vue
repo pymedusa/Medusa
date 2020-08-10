@@ -151,7 +151,7 @@ export default {
             // Filter by text for the banner, simple and smallposter layouts.
             // The Poster layout uses vue-isotope and this does not respond well to changes to the `list` property.
             if (layout !== 'poster') {
-            shows = shows.filter(show => show.title.toLowerCase().includes(filterByName.toLowerCase()));
+                shows = shows.filter(show => show.title.toLowerCase().includes(filterByName.toLowerCase()));
             }
 
             const categorizedShows = showList.map(listTitle => {
