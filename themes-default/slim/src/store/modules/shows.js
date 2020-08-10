@@ -1,7 +1,10 @@
 import Vue from 'vue';
 
 import { api } from '../../api';
-import { ADD_SHOW, ADD_SHOWS,
+import {
+    ADD_SHOW,
+    ADD_SHOW_CONFIG,
+    ADD_SHOWS,
     ADD_SHOW_EPISODE,
     ADD_SHOW_SCENE_EXCEPTION,
     REMOVE_SHOW_SCENE_EXCEPTION
@@ -60,6 +63,10 @@ const mutations = {
 
         Vue.set(state, 'shows', [...state.shows, ...newShows]);
         console.debug(`Added ${shows.length} shows to store`);
+    },
+    [ADD_SHOW_CONFIG](state, { show, config }) {
+        const existingShow = state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer]));
+        existingShow.config = { ...existingShow.config, ...config };
     },
     currentShow(state, { indexer, id }) {
         state.currentShow.indexer = indexer;
@@ -371,6 +378,10 @@ const actions = {
         // Set current show
         const { commit } = context;
         return commit('currentShow', { indexer, id });
+    },
+    setShowConfig(context, { show, config }) {
+        const { commit } = context;
+        commit(ADD_SHOW_CONFIG, { show, config });
     }
 };
 

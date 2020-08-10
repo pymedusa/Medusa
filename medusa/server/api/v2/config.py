@@ -1215,10 +1215,10 @@ class DataGenerator(object):
         """Anime configuration."""
         return {
             'anidb': {
-                'enabled': app.USE_ANIDB,
+                'enabled': bool(app.USE_ANIDB),
                 'username': app.ANIDB_USERNAME,
                 'password': app.ANIDB_PASSWORD,
-                'useMylist': app.ANIDB_USE_MYLIST
+                'useMylist': bool(app.ANIDB_USE_MYLIST)
             },
-            'autoAnimeToList': app.AUTO_ANIME_TO_LIST
+            'autoAnimeToList': bool(app.AUTO_ANIME_TO_LIST)
         }
