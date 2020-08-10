@@ -2026,8 +2026,6 @@ class Series(TV):
         main_db_con = db.DBConnection()
         main_db_con.upsert('tv_shows', new_value_dict, control_value_dict)
 
-        helpers.update_anime_support()
-
         if self.imdb_id and self.imdb_info.get('year'):
             control_value_dict = {'indexer': self.indexer, 'indexer_id': self.series_id}
             new_value_dict = self.imdb_info

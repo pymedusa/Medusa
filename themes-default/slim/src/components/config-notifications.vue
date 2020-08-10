@@ -57,7 +57,11 @@
 
                                             <div class="testNotification" id="testKODI-result">Click below to test.</div>
                                             <input  class="btn-medusa" type="button" value="Test KODI" id="testKODI" @click="testKODI">
-                                            <input type="submit" class="config_submitter btn-medusa" value="Save Changes">
+                                            <input type="submit"
+                                                   class="btn-medusa config_submitter"
+                                                   value="Save Changes"
+                                                   :disabled="saving"
+                                            >
 
                                         </div>
 
@@ -100,7 +104,11 @@
                                             <div class="field-pair">
                                                 <div class="testNotification" id="testPMS-result">Click below to test Plex Media Server(s)</div>
                                                 <input class="btn-medusa" type="button" value="Test Plex Media Server" id="testPMS" @click="testPMS">
-                                                <input type="submit" class="config_submitter btn-medusa" value="Save Changes">
+                                                <input type="submit"
+                                                       class="btn-medusa config_submitter"
+                                                       value="Save Changes"
+                                                       :disabled="saving"
+                                                >
                                                 <div class="clear-left">&nbsp;</div>
                                             </div>
 
@@ -135,7 +143,12 @@
                                             <div class="field-pair">
                                                 <div class="testNotification" id="testPHT-result">Click below to test Plex Home Theater(s)</div>
                                                 <input class="btn-medusa" type="button" value="Test Plex Home Theater" id="testPHT" @click="testPHT">
-                                                <input type="submit" class="config_submitter btn-medusa" value="Save Changes">
+
+                                                <input type="submit"
+                                                       class="btn-medusa config_submitter"
+                                                       value="Save Changes"
+                                                       :disabled="saving"
+                                                >
                                                 <div class="clear-left"><p><b>Note:</b> some Plex Home Theaters <b class="boldest">do not</b> support notifications e.g. Plexapp for Samsung TVs</p></div>
                                             </div>
 
@@ -190,7 +203,11 @@
 
                                             <div class="testNotification" id="testNMJ-result">Click below to test.</div>
                                             <input class="btn-medusa" type="button" value="Test NMJ" id="testNMJ" @click="testNMJ">
-                                            <input type="submit" class="config_submitter btn-medusa" value="Save Changes">
+                                            <input type="submit"
+                                                   class="btn-medusa config_submitter"
+                                                   value="Save Changes"
+                                                   :disabled="saving"
+                                            >
 
                                         </div>
                                     </fieldset>
@@ -243,7 +260,11 @@
                                             <config-textbox v-model="notifiers.nmjv2.database" label="NMJv2 database" id="nmjv2_database" :explanations="['automatically filled via the \'Find Database\' buttons.']" @change="save()" />
                                             <div class="testNotification" id="testNMJv2-result">Click below to test.</div>
                                             <input class="btn-medusa" type="button" value="Test NMJv2" id="testNMJv2" @click="testNMJv2">
-                                            <input type="submit" class="config_submitter btn-medusa" value="Save Changes">
+                                            <input type="submit"
+                                                   class="btn-medusa config_submitter"
+                                                   value="Save Changes"
+                                                   :disabled="saving"
+                                            >
                                         </div>
                                     </fieldset>
                                 </div>
@@ -261,7 +282,11 @@
                                         <!-- All form components here for synology indexer -->
                                         <config-toggle-slider v-model="notifiers.synologyIndex.enabled" label="HTTPS" id="use_synoindex" :explanations="['Note: requires Medusa to be running on your Synology NAS.']" @change="save()" />
                                         <div v-show="notifiers.synologyIndex.enabled" id="content_use_synoindex">
-                                            <input type="submit" class="config_submitter btn-medusa" value="Save Changes">
+                                            <input type="submit"
+                                                   class="btn-medusa config_submitter"
+                                                   value="Save Changes"
+                                                   :disabled="saving"
+                                            >
                                         </div>
                                     </fieldset>
                                 </div>
@@ -283,7 +308,11 @@
                                             <config-toggle-slider v-model="notifiers.synology.notifyOnSnatch" label="Notify on snatch" id="_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()" />
                                             <config-toggle-slider v-model="notifiers.synology.notifyOnDownload" label="Notify on download" id="synology_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()" />
                                             <config-toggle-slider v-model="notifiers.synology.notifyOnSubtitleDownload" label="Notify on subtitle download" id="synology_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()" />
-                                            <input type="submit" class="config_submitter btn-medusa" value="Save Changes">
+                                            <input type="submit"
+                                                   class="btn-medusa config_submitter"
+                                                   value="Save Changes"
+                                                   :disabled="saving"
+                                            >
                                         </div>
                                     </fieldset>
                                 </div>
@@ -303,7 +332,11 @@
                                             <config-textbox v-model="notifiers.pyTivo.host" label="pyTivo IP:Port" id="pytivo_host" :explanations="['host running pyTivo (eg. 192.168.1.1:9032)']" @change="save()" />
                                             <config-textbox v-model="notifiers.pyTivo.shareName" label="pyTivo share name" id="pytivo_name" :explanations="['(Messages \& Settings > Account \& System Information > System Information > DVR name)']" @change="save()" />
                                             <config-textbox v-model="notifiers.pyTivo.name" label="Tivo name" id="pytivo_tivo_name" :explanations="['value used in pyTivo Web Configuration to name the share.']" @change="save()" />
-                                            <input type="submit" class="config_submitter btn-medusa" value="Save Changes">
+                                            <input type="submit"
+                                                   class="btn-medusa config_submitter"
+                                                   value="Save Changes"
+                                                   :disabled="saving"
+                                            >
                                         </div>
                                     </fieldset>
                                 </div>
@@ -331,7 +364,11 @@
 
                                             <div class="testNotification" id="testGrowl-result">Click below to register and test Growl, this is required for Growl notifications to work.</div>
                                             <input  class="btn-medusa" type="button" value="Register Growl" id="testGrowl" @click="testGrowl">
-                                            <input type="submit" class="config_submitter btn-medusa" value="Save Changes">
+                                            <input type="submit"
+                                                   class="btn-medusa config_submitter"
+                                                   value="Save Changes"
+                                                   :disabled="saving"
+                                            >
                                         </div>
                                     </fieldset>
                                 </div>
@@ -390,7 +427,11 @@
 
                                             <div class="testNotification" id="testProwl-result">Click below to test.</div>
                                             <input class="btn-medusa" type="button" value="Test Prowl" id="testProwl" @click="testProwl">
-                                            <input type="submit" class="config_submitter btn-medusa" value="Save Changes">
+                                            <input type="submit"
+                                                   class="btn-medusa config_submitter"
+                                                   value="Save Changes"
+                                                   :disabled="saving"
+                                            >
                                         </div>
                                     </fieldset>
                                 </div>
@@ -414,7 +455,11 @@
 
                                             <div class="testNotification" id="testLibnotify-result">Click below to test.</div>
                                             <input  class="btn-medusa" type="button" value="Test Libnotify" id="testLibnotify" @click="testLibnotify">
-                                            <input type="submit" class="config_submitter btn-medusa" value="Save Changes">
+                                            <input type="submit"
+                                                   class="btn-medusa config_submitter"
+                                                   value="Save Changes"
+                                                   :disabled="saving"
+                                            >
                                         </div>
                                     </fieldset>
                                 </div>
@@ -466,7 +511,11 @@
 
                                             <div class="testNotification" id="testPushover-result">Click below to test.</div>
                                             <input  class="btn-medusa" type="button" value="Test Pushover" id="testPushover" @click="testPushover">
-                                            <input type="submit" class="config_submitter btn-medusa" value="Save Changes">
+                                            <input type="submit"
+                                                   class="btn-medusa config_submitter"
+                                                   value="Save Changes"
+                                                   :disabled="saving"
+                                            >
                                         </div>
                                     </fieldset>
                                 </div>
@@ -491,7 +540,11 @@
 
                                             <div class="testNotification" id="testBoxcar2-result">Click below to test.</div>
                                             <input  class="btn-medusa" type="button" value="Test Boxcar" id="testBoxcar2" @click="testBoxcar2">
-                                            <input type="submit" class="config_submitter btn-medusa" value="Save Changes">
+                                            <input type="submit"
+                                                   class="btn-medusa config_submitter"
+                                                   value="Save Changes"
+                                                   :disabled="saving"
+                                            >
                                         </div>
                                     </fieldset>
                                 </div>
@@ -516,7 +569,11 @@
 
                                             <div class="testNotification" id="testPushalot-result">Click below to test.</div>
                                             <input type="button" class="btn-medusa" value="Test Pushalot" id="testPushalot" @click="testPushalot">
-                                            <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
+                                            <input type="submit"
+                                                   class="btn-medusa config_submitter"
+                                                   value="Save Changes"
+                                                   :disabled="saving"
+                                            >
                                         </div>
                                     </fieldset>
                                 </div>
@@ -551,7 +608,11 @@
 
                                             <div class="testNotification" id="testPushbullet-resultsfsf">{{pushbulletTestInfo}}</div>
                                             <input type="button" class="btn-medusa" value="Test Pushbullet" id="testPushbullet" @click="testPushbulletApi">
-                                            <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
+                                            <input type="submit"
+                                                   class="btn-medusa config_submitter"
+                                                   value="Save Changes"
+                                                   :disabled="saving"
+                                            >
                                         </div>
                                     </fieldset>
                                 </div>
@@ -577,7 +638,11 @@
 
                                             <div class="testNotification" id="testJoin-result">{{joinTestInfo}}</div>
                                             <input type="button" class="btn-medusa" value="Test Join" id="testJoin" @click="testJoinApi">
-                                            <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
+                                            <input type="submit"
+                                                   class="btn-medusa config_submitter"
+                                                   value="Save Changes"
+                                                   :disabled="saving"
+                                            >
                                         </div>
                                     </fieldset>
                                 </div>
@@ -603,7 +668,11 @@
 
                                             <div class="testNotification" id="testFreeMobile-result">Click below to test your settings.</div>
                                             <input  class="btn-medusa" type="button" value="Test SMS" id="testFreeMobile" @click="testFreeMobile">
-                                            <input type="submit" class="config_submitter btn-medusa" value="Save Changes">
+                                            <input type="submit"
+                                                   class="btn-medusa config_submitter"
+                                                   value="Save Changes"
+                                                   :disabled="saving"
+                                            >
                                         </div>
                                     </fieldset>
                                 </div>
@@ -629,7 +698,11 @@
 
                                             <div class="testNotification" id="testTelegram-result">Click below to test your settings.</div>
                                             <input  class="btn-medusa" type="button" value="Test Telegram" id="testTelegram" @click="testTelegram">
-                                            <input type="submit" class="config_submitter btn-medusa" value="Save Changes">
+                                            <input type="submit"
+                                                   class="btn-medusa config_submitter"
+                                                   value="Save Changes"
+                                                   :disabled="saving"
+                                            >
                                         </div>
                                     </fieldset>
                                 </div>
@@ -656,7 +729,11 @@
 
                                             <div class="testNotification" id="testDiscord-result">Click below to test your settings.</div>
                                             <input  class="btn-medusa" type="button" value="Test Discord" id="testDiscord" @click="testDiscord">
-                                            <input type="submit" class="config_submitter btn-medusa" value="Save Changes">
+                                            <input type="submit"
+                                                   class="btn-medusa config_submitter"
+                                                   value="Save Changes"
+                                                   :disabled="saving"
+                                            >
                                         </div>
                                     </fieldset>
                                 </div>
@@ -696,7 +773,11 @@
 
                                             <div class="testNotification" id="testTwitter-result" v-html="twitterTestInfo" />
                                             <input  class="btn-medusa" type="button" value="Test Twitter" id="testTwitter" @click="twitterTest">
-                                            <input type="submit" class="config_submitter btn-medusa" value="Save Changes">
+                                            <input type="submit"
+                                                   class="btn-medusa config_submitter"
+                                                   value="Save Changes"
+                                                   :disabled="saving"
+                                            >
                                         </div>
                                     </fieldset>
                                 </div>
@@ -770,7 +851,11 @@
                                             <input type="button" class="btn-medusa" value="Test Trakt" id="testTrakt" @click="testTrakt">
                                             <input type="button" class="btn-medusa" value="Force Sync" id="forceSync" @click="traktForceSync">
                                             <input type="hidden" id="trakt_pin_url" :value="notifiers.trakt.pinUrl">
-                                            <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
+                                            <input type="submit"
+                                                   class="btn-medusa config_submitter"
+                                                   value="Save Changes"
+                                                   :disabled="saving"
+                                            >
                                         </div>
                                     </fieldset>
                                 </div>
@@ -825,7 +910,11 @@
 
                                             <div class="testNotification" id="testEmail-result">Click below to test.</div><!-- #testEmail-result //-->
                                             <input class="btn-medusa" type="button" value="Test Email" id="testEmail" @click="testEmail">
-                                            <input class="btn-medusa config_submitter" type="submit" value="Save Changes">
+                                            <input type="submit"
+                                                   class="btn-medusa config_submitter"
+                                                   value="Save Changes"
+                                                   :disabled="saving"
+                                            >
                                         </div>
                                     </fieldset>
                                 </div>
@@ -852,7 +941,11 @@
 
                                             <div class="testNotification" id="testSlack-result">Click below to test your settings.</div>
                                             <input  class="btn-medusa" type="button" value="Test Slack" id="testSlack" @click="testSlack">
-                                            <input type="submit" class="config_submitter btn-medusa" value="Save Changes">
+                                            <input type="submit"
+                                                   class="btn-medusa config_submitter"
+                                                   value="Save Changes"
+                                                   :disabled="saving"
+                                            >
                                         </div>
                                     </fieldset>
                                 </div>
@@ -860,7 +953,11 @@
 
                         </div><!-- #social //-->
                         <br>
-                        <input type="submit" class="config_submitter btn-medusa" value="Save Changes">
+                        <input type="submit"
+                               class="btn-medusa config_submitter"
+                               value="Save Changes"
+                               :disabled="saving"
+                        >
                         <br>
                     </div><!-- #config-components //-->
                 </form><!-- #configForm //-->
@@ -950,7 +1047,8 @@ export default {
             twitterTestInfo: 'Click below to test.',
             twitterKey: '',
             emailSelectedShow: null,
-            emailSelectedShowAdresses: []
+            emailSelectedShowAdresses: [],
+            saving: false
         };
     },
     computed: {

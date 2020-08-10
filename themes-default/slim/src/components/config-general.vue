@@ -135,7 +135,11 @@
                                         <p>send a message to all enabled notifiers when Medusa has been updated</p>
                                     </config-toggle-slider>
 
-                                    <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
+                                    <input type="submit"
+                                           class="btn-medusa config_submitter"
+                                           value="Save Changes"
+                                           :disabled="saving"
+                                    >
                                 </fieldset>
                             </div>
                         </div>
@@ -182,6 +186,10 @@
                                         />
                                         <p>Create and order different categories for your shows.</p>
                                     </config-template>
+
+                                    <config-toggle-slider v-model="layout.animeSplitHomeInTabs" label="Split home in tabs" id="split_home_in_tabs">
+                                        <span class="component-desc">Use tabs when splitting show lists</span>
+                                    </config-toggle-slider>
 
                                     <config-textbox-number v-model="layout.comingEps.missedRange" label="Missed episodes range" id="coming_eps_missed_range duration" :step="1" :min="7">
                                         <p>Set the range in days of the missed episodes in the Schedule page</p>
@@ -581,7 +589,8 @@ export default {
             defaultPageOptions,
             privacyLevelOptions,
             githubBranchesForced: [],
-            resetBranchSelected: null
+            resetBranchSelected: null,
+            saving: false
         };
     },
     beforeMount() {

@@ -741,22 +741,6 @@ def fix_set_group_id(child_path):
                 {'path': child_path, 'gid': parent_gid})
 
 
-def is_anime_in_show_list():
-    """Check if any shows in list contain anime.
-
-    :return: True if global showlist contains Anime, False if not
-    """
-    for show in app.showList:
-        if show.is_anime:
-            return True
-    return False
-
-
-def update_anime_support():
-    """Check if we need to support anime, and if we do, enable the feature."""
-    app.ANIMESUPPORT = is_anime_in_show_list()
-
-
 def get_absolute_number_from_season_and_episode(series_obj, season, episode):
     """Find the absolute number for a show episode.
 

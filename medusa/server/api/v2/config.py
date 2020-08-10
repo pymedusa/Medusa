@@ -460,8 +460,6 @@ class ConfigHandler(BaseRequestHandler):
         'layout.wide': BooleanField(app, 'LAYOUT_WIDE'),
         'layout.posterSortdir': IntegerField(app, 'POSTER_SORTDIR'),
         'layout.themeName': StringField(app, 'THEME_NAME', setter=theme_name_setter),
-        'layout.animeSplitHomeInTabs': BooleanField(app, 'ANIME_SPLIT_HOME'),
-        'layout.animeSplitHome': BooleanField(app, 'ANIME_SPLIT_HOME'),
         'layout.timezoneDisplay': StringField(app, 'TIMEZONE_DISPLAY'),
         'layout.trimZero': BooleanField(app, 'TRIM_ZERO'),
         'layout.sortArticle': BooleanField(app, 'SORT_ARTICLE'),
@@ -475,6 +473,15 @@ class ConfigHandler(BaseRequestHandler):
         'layout.timeStyle': StringField(app, 'TIME_PRESET_W_SECONDS'),
         'layout.dateStyle': StringField(app, 'DATE_PRESET'),
         'layout.selectedRootIndex': IntegerField(app, 'SELECTED_ROOT'),
+
+        'layout.animeSplitHome': BooleanField(app, 'ANIME_SPLIT_HOME'),
+        'layout.splitHomeInTabs': BooleanField(app, 'ANIME_SPLIT_HOME_IN_TABS'),
+
+        'anime.anidb.enabled': BooleanField(app, 'USE_ANIDB'),
+        'anime.anidb.username': StringField(app, 'ANIDB_USERNAME'),
+        'anime.anidb.password': StringField(app, 'ANIDB_PASSWORD'),
+        'anime.anidb.useMylist': BooleanField(app, 'ANIDB_USE_MYLIST'),
+        'anime.autoAnimeToList': BooleanField(app, 'AUTO_ANIME_TO_LIST')
     }
 
     def get(self, identifier, path_param=None):
@@ -1202,3 +1209,16 @@ class DataGenerator(object):
         section_data['selectedRootIndex'] = int_default(app.SELECTED_ROOT, -1)  # All paths
 
         return section_data
+
+    @staticmethod
+    def data_anime():
+        """Anime configuration."""
+        return {
+            'anidb': {
+                'enabled': app.USE_ANIDB,
+                'username': app.ANIDB_USERNAME,
+                'password': app.ANIDB_PASSWORD,
+                'useMylist': app.ANIDB_USE_MYLIST
+            },
+            'autoAnimeToList': app.AUTO_ANIME_TO_LIST
+        }
