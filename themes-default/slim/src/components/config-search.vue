@@ -319,6 +319,9 @@
                                                 <p>where <span id="torrent_client" v-if="clientsConfig.torrent[clients.torrents.method]">{{clientsConfig.torrent[clients.torrents.method].shortTitle || clientsConfig.torrent[clients.torrents.method].title}}</span> will save downloaded files (blank for client default)
                                                     <span v-show="clients.torrents.method === 'downloadstation'"> <b>Note:</b> the destination has to be a shared folder for Synology DS</span>
                                                 </p>
+                                                <span v-show="clients.torrents.method === 'qbittorrent'">
+                                                    <p><b>Note:</b> for qBitTorrent 3.2.0 and up</p>
+                                                </span>
                                             </config-template>
 
                                             <config-template v-show="clientsConfig.torrent[clients.torrents.method].seedLocationOption" label-for="torrent_seed_location" label="Post-Processed seeding torrents location">
@@ -479,6 +482,7 @@ export default {
                     qbittorrent: {
                         title: 'qBittorrent',
                         description: 'URL to your qBittorrent client (e.g. http://localhost:8080)',
+                        pathOption: true,
                         labelOption: true,
                         labelAnimeOption: true,
                         pausedOption: true,
