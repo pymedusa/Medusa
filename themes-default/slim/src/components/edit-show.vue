@@ -117,6 +117,15 @@
                                     <span>use the DVD order instead of the air order</span>
                                     <div class="clear-left"><p>A "Force Full Update" is necessary, and if you have existing episodes you need to sort them manually.</p></div>
                                 </config-toggle-slider>
+
+                                <config-template label-for="show_lists" label="Display in show lists">
+                                    <multiselect
+                                        v-model="showLists"
+                                        :multiple="true"
+                                        :options="layout.show.showListOrder"
+                                    />
+                                </config-template>
+
                             </fieldset>
                         </div>
                     </v-tab>
@@ -216,6 +225,9 @@ import {
     SelectList
 } from './helpers';
 
+import Multiselect from 'vue-multiselect';
+import 'vue-multiselect/dist/vue-multiselect.min.css';
+
 export default {
     name: 'edit-show',
     components: {
@@ -228,6 +240,7 @@ export default {
         ConfigToggleSlider,
         FileBrowser,
         LanguageSelect,
+        Multiselect,
         QualityChooser,
         SelectList,
         VueTabs,
@@ -269,6 +282,7 @@ export default {
     computed: {
         ...mapState({
             indexers: state => state.config.indexers,
+            anime: state => state.config.anime,
             layout: state => state.config.layout,
             episodeStatuses: state => state.config.consts.statuses,
             search: state => state.config.search
@@ -277,6 +291,16 @@ export default {
             show: 'getCurrentShow',
             getStatus: 'getStatus'
         }),
+        showLists: {
+            get() {
+                const { show } = this;
+                return show.config.showLists.map(list => list.toLowerCase());
+            },
+            set(value) {
+                const { show, setShowConfig } = this;
+                setShowConfig({ show, config: { ...show.config, showLists: value } });
+            }
+        },
         indexer() {
             return this.showIndexer || this.$route.query.indexername;
         },
@@ -340,11 +364,12 @@ export default {
         this.loadShow();
     },
     methods: {
-        ...mapActions([
-            'getShow',
-            'setShow',
-            'setCurrentShow'
-        ]),
+        ...mapActions({
+            getShow: 'getShow',
+            setShow: 'setShow',
+            setCurrentShow: 'setCurrentShow',
+            setShowConfig: 'setShowConfig'
+        }),
         loadShow() {
             const { setCurrentShow, id, indexer, getShow } = this;
             // Let's tell the store which show we currently want as current.
@@ -395,7 +420,8 @@ export default {
                         preferred: showConfig.qualities.preferred,
                         allowed: showConfig.qualities.allowed
                     },
-                    airdateOffset: showConfig.airdateOffset
+                    airdateOffset: showConfig.airdateOffset,
+                    showLists: showConfig.showLists
                 },
                 language: show.language
             };
@@ -437,12 +463,25 @@ export default {
             this.show.language = value;
         },
         changeFormat(value, formatOption) {
+            const { anime } = this;
             this.show.config[formatOption] = value;
             if (value) {
                 // Check each format option, disable the other options.
                 ['anime', 'sports', 'airByDate'].filter(item => item !== formatOption).forEach(option => {
                     this.show.config[option] = false;
                 });
+            }
+
+            if (formatOption === 'anime' && anime.autoAnimeToList) {
+                if (value) {
+                    // Auto anime to list is enabled. If changing the show format to anime, add 'Anime' to show lists.
+                    this.showLists.push('anime');
+                    // The filter makes sure there are unique strings.
+                    this.showLists = this.showLists.filter((v, i, a) => a.indexOf(v) === i);
+                } else {
+                    // Auto anime to list is enabled. If changing the show format to anime, add 'Anime' to show lists.
+                    this.showLists = this.showLists.filter(list => list !== 'anime');
+                }
             }
         }
     }

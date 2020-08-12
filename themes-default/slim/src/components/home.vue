@@ -31,7 +31,7 @@
             <div class="col-md-12">
                 <!-- Split in tabs -->
                 <div id="showTabs" v-if="stateLayout.animeSplitHome && stateLayout.animeSplitHomeInTabs">
-                    <vue-tabs @tab-change="updateTabContent">
+                    <vue-tabs>
                         <v-tab v-for="showList in showLists" :key="showList.listTitle" :title="showList.listTitle">
                             <template v-if="['banner', 'simple', 'small', 'poster'].includes(layout)">
                                 <show-list :id="`${showList.listTitle.toLowerCase()}TabContent`"
@@ -130,14 +130,15 @@ export default {
                 return show.showListOrder;
             },
             set(value) {
-                const { setShowListOrder } = this;
-                setShowListOrder({ value });
+                const { stateLayout, setLayoutShow } = this;
+                const mergedShowLayout = { ...stateLayout.show, showListOrder: value.map(item => item.value) };
+                setLayoutShow(mergedShowLayout);
             }
         },
         showLists() {
-            const { config, filterByName, indexers, layout, stateLayout, showsWithStats } = this;
+            const { config, filterByName, indexers, layout, stateLayout, showList, showsWithStats } = this;
             const { rootDirs } = config;
-            const { animeSplitHome, selectedRootIndex, show } = stateLayout;
+            const { selectedRootIndex } = stateLayout;
             if (!indexers.indexers) {
                 return;
             }
@@ -153,15 +154,24 @@ export default {
                 shows = shows.filter(show => show.title.toLowerCase().includes(filterByName.toLowerCase()));
             }
 
-            if (animeSplitHome) {
-                return show.showListOrder.map(listTitle => {
-                    return (
-                        { listTitle, shows: shows.filter(show => show.config.anime === (listTitle === 'Anime')) }
-                    );
-                });
+            const categorizedShows = showList.map(listTitle => {
+                return (
+                    { listTitle, shows: shows.filter(show => show.config.showLists.includes(listTitle.toLowerCase())) }
+                );
+            });
+
+            // Check for shows that are not in any category anymore
+            const uncategorizedShows = shows.filter(show => {
+                return show.config.showLists.map(item => {
+                    return showList.map(list => list.toLowerCase()).includes(item);
+                }).every(item => !item);
+            });
+
+            if (uncategorizedShows.length > 0) {
+                categorizedShows.push({ listTitle: 'uncategorized', shows: uncategorizedShows });
             }
 
-            return ([{ listTitle: 'Series', shows }]);
+            return categorizedShows;
         },
         selectedRootIndexOptions() {
             const { config } = this;
@@ -173,7 +183,7 @@ export default {
         ...mapActions({
             setLayout: 'setLayout',
             setConfig: 'setConfig',
-            setShowListOrder: 'setShowListOrder',
+            setLayoutShow: 'setLayoutShow',
             setStoreLayout: 'setStoreLayout',
             setLayoutLocal: 'setLayoutLocal',
             getShows: 'getShows',
@@ -195,10 +205,6 @@ export default {
         saveSelectedRootDir(value) {
             const { setStoreLayout } = this;
             setStoreLayout({ key: 'selectedRootIndex', value });
-        },
-        updateTabContent(tabIndex, newTab) {
-            const { setLayoutLocal } = this;
-            setLayoutLocal({ key: 'currentShowTab', value: newTab.title });
         }
     },
     mounted() {
@@ -228,4 +234,5 @@ ul.list-group > li {
         display: none;
     }
 }
+
 </style>

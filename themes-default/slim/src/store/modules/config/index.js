@@ -1,3 +1,4 @@
+import anime from './anime';
 import clients from './clients';
 import consts from './consts';
 import indexers from './indexers';
@@ -10,6 +11,7 @@ import search from './search';
 import system from './system';
 
 const modules = {
+    anime,
     clients,
     consts,
     indexers,

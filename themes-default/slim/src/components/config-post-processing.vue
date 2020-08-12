@@ -234,7 +234,11 @@
                                         </div>
                                     </div>
                                 </fieldset>
-                                <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
+                                <input type="submit"
+                                       class="btn-medusa config_submitter"
+                                       value="Save Changes"
+                                       :disabled="saving"
+                                >
                             </div> <!-- /col -->
                         </div> <!-- /row -->
                     </div><!-- /component-group1 //-->
@@ -349,14 +353,22 @@
                                         </div>
                                     </div>
                                 </fieldset>
-                                <input type="submit" class="btn-medusa config_submitter" value="Save Changes"><br>
+                                <input type="submit"
+                                       class="btn-medusa config_submitter"
+                                       value="Save Changes"
+                                       :disabled="saving"
+                                >
 
                             </div> <!-- end of col -->
                         </div> <!-- end of row -->
                     </div> <!-- end of metatdata id -->
 
                     <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">{{system.dataDir}}</span></b> </h6>
-                    <input type="submit" class="btn-medusa pull-left config_submitter button" value="Save Changes">
+                    <input type="submit"
+                           class="btn-medusa pull-left config_submitter button"
+                           value="Save Changes"
+                           :disabled="saving"
+                    >
                 </div><!--/config-components//-->
             </form>
         </div><!--/config-content//-->
@@ -396,7 +408,8 @@ export default {
                 { value: 'local', text: 'Local' },
                 { value: 'network', text: 'Network' }
             ],
-            metadataProviderSelected: null
+            metadataProviderSelected: null,
+            saving: false
         };
     },
     methods: {
