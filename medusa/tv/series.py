@@ -2230,11 +2230,20 @@ class Series(TV):
 
     @property
     def show_lists(self):
-        """Return series show lists."""
-        return self._show_lists.split(',') if self._show_lists else 'series'
+        """
+        Return series show lists.
+
+        :returns: A list of show categories.
+        """
+        return self._show_lists.split(',') if self._show_lists else ['series']
 
     @show_lists.setter
     def show_lists(self, show_lists):
+        """
+        Configure the show lists, for this show.
+
+        :param show_lists: Comma separated list of show categories.
+        """
         self._show_lists = ','.join(show_lists) if show_lists else 'series'
 
     def get_all_possible_names(self, season=-1):
@@ -2244,7 +2253,7 @@ class Series(TV):
         at the end of the name (e.g. "Show Name (AU)".
 
         show: a Series object that we should get the names of
-        Returns: all possible show names
+        :returns: all possible show names
         """
         show_names = {exception.title for exception in get_scene_exceptions(self, season)}
         show_names.add(self.name)
