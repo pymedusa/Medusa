@@ -870,7 +870,6 @@ span.global-filter {
     position: absolute;
     bottom: -3px;
     right: -3px;
-    z-index: 9999;
 }
 
 #indexer-wrapper {
