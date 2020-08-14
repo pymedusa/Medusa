@@ -28,7 +28,7 @@ const state = {
     timeStyle: null,
     dateStyle: null,
     themeName: null,
-    animeSplitHomeInTabs: null,
+    splitHomeInTabs: null,
     animeSplitHome: null,
     fanartBackground: null,
     fanartBackgroundOpacity: null,
