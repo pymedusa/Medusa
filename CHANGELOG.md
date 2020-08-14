@@ -3,12 +3,19 @@
 #### New Features
 - Added Search shows by id ([#8308](https://github.com/pymedusa/Medusa/pull/8308))
 - Added UI option to create your own show list categories ([#8308](https://github.com/pymedusa/Medusa/pull/8308))
+- Add the ability to modify the Discord Bot Username ([#8148](https://github.com/pymedusa/Medusa/pull/8148))
 
 #### Improvements
 - Vueified Home page (Poster, small poster, banner, simple layouts) ([5345](https://github.com/pymedusa/Medusa/pull/5345))
 - Vueified Snatch Selection page ([7345](https://github.com/pymedusa/Medusa/pull/7345))
+- Add the save path option for qBittorrent version > 3.2) ([8304](https://github.com/pymedusa/Medusa/pull/8304))
+- show-header: mark indexer used for adding show with star ([8286](https://github.com/pymedusa/Medusa/pull/8286))
+- Utilize season search results from cache ([8281](https://github.com/pymedusa/Medusa/pull/8281))
+- Improve season scene name handling for non-anime shows ([8155](https://github.com/pymedusa/Medusa/pull/8281))
 
 #### Fixes
+- Disable forcing of the scene option when adding shows ([8316](https://github.com/pymedusa/Medusa/pull/8316))
+- Fix associated files matching more files than wanted ([8152](https://github.com/pymedusa/Medusa/pull/8152))
 
 -----
 
