@@ -187,7 +187,7 @@
                                         <p>Create and order different categories for your shows.</p>
                                     </config-template>
 
-                                    <config-toggle-slider v-model="layout.animeSplitHomeInTabs" label="Split home in tabs" id="split_home_in_tabs">
+                                    <config-toggle-slider v-model="layout.splitHomeInTabs" label="Split home in tabs" id="split_home_in_tabs">
                                         <span class="component-desc">Use tabs when splitting show lists</span>
                                     </config-toggle-slider>
 
