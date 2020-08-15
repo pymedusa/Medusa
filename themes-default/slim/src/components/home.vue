@@ -32,7 +32,11 @@
                 <!-- Split in tabs -->
                 <div id="showTabs" v-if="stateLayout.animeSplitHome && stateLayout.animeSplitHomeInTabs">
                     <vue-tabs>
-                        <v-tab v-for="showList in showLists" :key="showList.listTitle" :title="showList.listTitle">
+                        <v-tab
+                            v-for="showList in showLists"
+                            :key="showList.listTitle"
+                            :title="showList.listTitle"
+                        >
                             <template v-if="['banner', 'simple', 'small', 'poster'].includes(layout)">
                                 <show-list :id="`${showList.listTitle.toLowerCase()}TabContent`"
                                            v-bind="{
@@ -154,11 +158,9 @@ export default {
                 shows = shows.filter(show => show.title.toLowerCase().includes(filterByName.toLowerCase()));
             }
 
-            const categorizedShows = showList.map(listTitle => {
-                return (
-                    { listTitle, shows: shows.filter(show => show.config.showLists.includes(listTitle.toLowerCase())) }
-                );
-            });
+            const categorizedShows = showList.filter(listTitle => {
+                return listTitle === 'series' || shows.filter(show => show.config.showLists.includes(listTitle.toLowerCase())).length > 0;
+            }).map(listTitle => ({ listTitle, shows: shows.filter(show => show.config.showLists.includes(listTitle.toLowerCase())) }));
 
             // Check for shows that are not in any category anymore
             const uncategorizedShows = shows.filter(show => {
