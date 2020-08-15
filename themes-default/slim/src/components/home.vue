@@ -31,7 +31,7 @@
             <div class="col-md-12">
                 <!-- Split in tabs -->
                 <div id="showTabs" v-if="stateLayout.splitHomeInTabs">
-                    <vue-tabs>
+                    <vue-tabs @tab-change="tabChange">
                         <v-tab
                             v-for="showList in showLists"
                             :key="showList.listTitle"
@@ -143,7 +143,7 @@ export default {
             const { config, filterByName, indexers, layout, stateLayout, showList, showsWithStats } = this;
             const { rootDirs } = config;
             const { selectedRootIndex } = stateLayout;
-            if (!indexers.indexers) {
+            if (!indexers.indexers || showsWithStats.length === 0) {
                 return;
             }
 
@@ -159,13 +159,13 @@ export default {
             }
 
             const categorizedShows = showList.filter(listTitle => {
-                return listTitle === 'series' || shows.filter(show => show.config.showLists.includes(listTitle.toLowerCase())).length > 0;
-            }).map(listTitle => ({ listTitle, shows: shows.filter(show => show.config.showLists.includes(listTitle.toLowerCase())) }));
+                return listTitle === 'series' || shows.filter(show => show.config.showLists.map(list => list.toLowerCase()).includes(listTitle.toLowerCase())).length > 0;
+            }).map(listTitle => ({ listTitle, shows: shows.filter(show => show.config.showLists.map(list => list.toLowerCase()).includes(listTitle.toLowerCase())) }));
 
             // Check for shows that are not in any category anymore
             const uncategorizedShows = shows.filter(show => {
                 return show.config.showLists.map(item => {
-                    return showList.map(list => list.toLowerCase()).includes(item);
+                    return showList.map(list => list.toLowerCase()).includes(item.toLowerCase());
                 }).every(item => !item);
             });
 
@@ -207,6 +207,10 @@ export default {
         saveSelectedRootDir(value) {
             const { setStoreLayout } = this;
             setStoreLayout({ key: 'selectedRootIndex', value });
+        },
+        tabChange(tabIndex) {
+            const { setLayoutLocal } = this;
+            setLayoutLocal({ key: 'currentShowTab', tabIndex });
         }
     },
     mounted() {
