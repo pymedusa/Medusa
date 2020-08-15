@@ -1,4 +1,4 @@
-## Unreleased
+## 0.4.0 (2020-08-15)
 
 #### New Features
 - Added Search shows by id ([#8308](https://github.com/pymedusa/Medusa/pull/8308))
