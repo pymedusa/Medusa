@@ -44,7 +44,7 @@
         </div>
 
         <!-- No Shows added -->
-        <span v-else>Please add a show <a href="/addShows">here</a> to get started</span>
+        <span v-else>Please add a show <app-link href="addShows">here</app-link> to get started</span>
     </div>
 </template>
 <script>
@@ -54,11 +54,12 @@ import Banner from './banner.vue';
 import Simple from './simple.vue';
 import Poster from './poster.vue';
 import Smallposter from './smallposter.vue';
-import { PosterSizeSlider, StateSwitch } from '../helpers';
+import { AppLink, PosterSizeSlider, StateSwitch } from '../helpers';
 
 export default {
     name: 'show-list',
     components: {
+        AppLink,
         Banner,
         Simple,
         Poster,
