@@ -216,7 +216,7 @@
                 "wide": false,
                 "posterSortdir": 1,
                 "themeName": "light",
-                "animeSplitHomeInTabs": true,
+                "splitHomeInTabs": true,
                 "animeSplitHome": true,
                 "fanartBackground": true,
                 "fanartBackgroundOpacity": 0.3,
