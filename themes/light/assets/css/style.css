@@ -2762,7 +2762,7 @@ select,
     }
 
     .navbar-default .navbar-nav > li > a {
-        width: 100%
+        width: 100%;
     }
 
     .navbar-default .navbar-nav .open .dropdown-menu > li > a {
