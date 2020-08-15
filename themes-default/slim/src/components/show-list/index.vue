@@ -1,7 +1,7 @@
 <template>
     <div>
         <!-- Only show the list title when not in tabs -->
-        <div v-if="(!(stateLayout.animeSplitHome && stateLayout.animeSplitHomeInTabs))" class="showListTitle listTitle">
+        <div v-if="!stateLayout.splitHomeInTabs" class="showListTitle listTitle">
             <button type="button" class="nav-show-list move-show-list">
                 <span class="icon-bar" />
                 <span class="icon-bar" />

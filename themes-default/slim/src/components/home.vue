@@ -30,7 +30,7 @@
         <div class="row">
             <div class="col-md-12">
                 <!-- Split in tabs -->
-                <div id="showTabs" v-if="stateLayout.animeSplitHome && stateLayout.animeSplitHomeInTabs">
+                <div id="showTabs" v-if="stateLayout.splitHomeInTabs">
                     <vue-tabs>
                         <v-tab
                             v-for="showList in showLists"
