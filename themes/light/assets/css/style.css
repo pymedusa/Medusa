@@ -2699,10 +2699,6 @@ select,
     color: rgb(221, 221, 221);
 }
 
-.navbar-default .navbar-nav > li > a {
-    color: rgb(221, 221, 221);
-}
-
 .navbar-default .navbar-nav > li > a:hover,
 .navbar-default .navbar-nav > li > a:focus {
     color: rgb(255, 255, 255);
@@ -2735,6 +2731,10 @@ select,
     background-color: rgb(51, 51, 51);
 }
 
+.navbar-default .navbar-nav > li > a {
+    color: rgb(221, 221, 221);
+}
+
 .navbar-default .navbar-nav > .open > a,
 .navbar-default .navbar-nav > .open > a:hover,
 .navbar-default .navbar-nav > .open > a:focus {
@@ -2743,7 +2743,6 @@ select,
 }
 
 .navbar-default .navbar-nav > li.navbar-split > a {
-    display: inline-block;
     float: left;
     border: 1px solid rgba(0, 0, 0, 0.15);
 }
@@ -2757,6 +2756,15 @@ select,
 }
 
 @media (max-width: 767px) {
+    .navbar-default .navbar-nav > li {
+        float: left;
+        min-width: 100px;
+    }
+
+    .navbar-default .navbar-nav > li > a {
+        width: 100%
+    }
+
     .navbar-default .navbar-nav .open .dropdown-menu > li > a {
         color: rgb(221, 221, 221);
     }
