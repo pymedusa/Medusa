@@ -143,11 +143,7 @@ export default {
             const { config, filterByName, indexers, layout, stateLayout, showList, showsWithStats } = this;
             const { rootDirs } = config;
             const { selectedRootIndex } = stateLayout;
-            if (!indexers.indexers) {
-                return;
-            }
-
-            if (showsWithStats.length === 0) {
+            if (!indexers.indexers || showsWithStats.length === 0) {
                 return;
             }
 
