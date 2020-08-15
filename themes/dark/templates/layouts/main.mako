@@ -55,26 +55,26 @@
 
 <body ${('', attributes)[bool(loggedIn)]} web-root="${app.WEB_ROOT}">
     <div id="vue-wrap" class="container-fluid">
+        <load-progress-bar v-if="showsLoading" v-bind="{display: showsLoading.display, current: showsLoading.current, total: showsLoading.total}"></load-progress-bar>
 
         <div v-if="globalLoading" class="text-center">
             <h3>Loading&hellip;</h3>
             If this is taking too long,<br>
             <i style="cursor: pointer;" @click="globalLoading = false;">click here</i> to show the page.
         </div>
+
         <div v-cloak :style="globalLoading ? { opacity: '0 !important' } : undefined">
-
-            <!-- These are placeholders used by the displayShow template. As they transform to full width divs, they need to be located outside the template. -->
-            <div id="summaryBackground" class="shadow" style="display: none"></div>
-            <div id="checkboxControlsBackground" class="shadow" style="display: none"></div>
-
             <app-header></app-header>
             <sub-menu></sub-menu>
+
             <%include file="/partials/alerts.mako"/>
+
             <div id="content-row" class="row">
                 <component :is="pageComponent || 'div'" id="content-col" class="${'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1' if not app.LAYOUT_WIDE else 'col-lg-12 col-md-12'} col-sm-12 col-xs-12">
                     <%block name="content" />
                 </component>
             </div><!-- /content -->
+
             <app-footer v-if="$store.state.auth.isAuthenticated"></app-footer>
             <scroll-buttons></scroll-buttons>
 

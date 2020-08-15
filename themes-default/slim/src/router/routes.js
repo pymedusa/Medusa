@@ -13,15 +13,18 @@ const homeRoutes = [
         meta: {
             title: 'Home',
             header: 'Show List',
-            topMenu: 'home'
-        }
+            topMenu: 'home',
+            converted: true
+        },
+        component: () => import('../components/home.vue')
     },
     {
         path: '/home/editShow',
         name: 'editShow',
         meta: {
             topMenu: 'home',
-            subMenu: showSubMenu
+            subMenu: showSubMenu,
+            converted: true
         },
         component: () => import('../components/edit-show.vue')
     },
@@ -30,7 +33,8 @@ const homeRoutes = [
         name: 'show',
         meta: {
             topMenu: 'home',
-            subMenu: showSubMenu
+            subMenu: showSubMenu,
+            converted: true
         },
         component: () => import('../components/display-show.vue')
     },
@@ -39,8 +43,10 @@ const homeRoutes = [
         name: 'snatchSelection',
         meta: {
             topMenu: 'home',
-            subMenu: showSubMenu
-        }
+            subMenu: showSubMenu,
+            converted: true
+        },
+        component: () => import('../components/snatch-selection.vue')
     },
     {
         path: '/home/testRename',
@@ -115,8 +121,9 @@ const configRoutes = [
             title: 'Config - Anime',
             header: 'Anime',
             topMenu: 'config',
-            subMenu: configSubMenu
-        }
+            converted: true
+        },
+        component: () => import('../components/config-anime.vue')
     },
     {
         path: '/config/backuprestore',

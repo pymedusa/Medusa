@@ -1,0 +1,49 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ShowResults.test.js renders show-results component 1`] = `
+<div
+  class="show-results-wrapper"
+>
+  <div
+    class="row horizontal-scroll fanartBackground"
+  >
+    <div
+      class="col-md-12 top-15"
+    >
+      <div
+        class="button-row"
+      >
+        <input
+          class="btn-medusa manualSearchButton top-5 bottom-5"
+          type="button"
+          value="Refresh Results"
+        />
+         
+        <input
+          class="btn-medusa manualSearchButton top-5 bottom-5"
+          type="button"
+          value="Force Search"
+        />
+         
+        <!---->
+      </div>
+       
+      <vue-good-table-stub
+        columnfilteroptions="[object Object]"
+        columns="[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]"
+        groupoptions="[object Object]"
+        mode="local"
+        paginationoptions="[object Object]"
+        responsive="true"
+        rows="[object Object],[object Object],[object Object]"
+        rowstyleclass="function () { [native code] }"
+        searchoptions="[object Object]"
+        selectoptions="[object Object]"
+        sortoptions="[object Object]"
+        styleclass="vgt-table condensed"
+        theme=""
+      />
+    </div>
+  </div>
+</div>
+`;

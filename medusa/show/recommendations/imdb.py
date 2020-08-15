@@ -11,7 +11,7 @@ from builtins import object
 from medusa import helpers
 from medusa.cache import recommended_series_cache
 from medusa.imdb import Imdb
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
 from medusa.show.recommendations.recommended import (

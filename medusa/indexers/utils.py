@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 
 import re
 
-from medusa.indexers.indexer_config import EXTERNAL_MAPPINGS, TRAKT_INDEXERS, indexerConfig
+from medusa.indexers.config import EXTERNAL_MAPPINGS, TRAKT_INDEXERS, indexerConfig
 
 from six import viewitems
 
@@ -17,6 +17,9 @@ mappings.update(EXTERNAL_MAPPINGS)
 # For example: {'tvdb_id': 1, 'tvmaze_id': 3, 'tmdb_id': 4}
 reverse_mappings = {indexerConfig[indexer]['mapped_to']: indexer for indexer in indexerConfig}
 reverse_mappings.update({v: k for k, v in viewitems(EXTERNAL_MAPPINGS)})
+
+# For example: {'tvdb': 1, 'tvmaze': 3, 'tmdb': 4}
+indexer_name_mapping = {indexerConfig[indexer]['identifier']: indexer for indexer in indexerConfig}
 
 
 def indexer_name_to_id(indexer_name):

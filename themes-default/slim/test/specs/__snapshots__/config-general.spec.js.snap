@@ -571,6 +571,33 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   </p>
                 </config-toggle-slider-stub>
                  
+                <config-template-stub
+                  label="show lists"
+                  labelfor="show_list_order"
+                >
+                  <sorted-select-list-stub
+                    listitems="Anime,Series"
+                    unique="true"
+                  />
+                   
+                  <p>
+                    Create and order different categories for your shows.
+                  </p>
+                </config-template-stub>
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="split_home_in_tabs"
+                  label="Split home in tabs"
+                  value="true"
+                >
+                  <span
+                    class="component-desc"
+                  >
+                    Use tabs when splitting show lists
+                  </span>
+                </config-toggle-slider-stub>
+                 
                 <config-textbox-number-stub
                   explanations=""
                   id="coming_eps_missed_range duration"

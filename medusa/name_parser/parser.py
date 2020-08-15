@@ -18,8 +18,8 @@ from medusa import (
     scene_numbering,
 )
 from medusa.helper.common import episode_num
-from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_exceptions import (
+from medusa.indexers.api import indexerApi
+from medusa.indexers.exceptions import (
     IndexerEpisodeNotFound,
     IndexerError,
     IndexerException,
@@ -187,9 +187,7 @@ class NameParser(object):
         # For example Diamond is unbreakable - 26 -> Season 4 -> Absolute number 100 -> tvdb S03E26
         season_exception = None
         if result.season_number is None:
-            season_exception = list(scene_exceptions.get_scene_exceptions_by_name(result.series_name))
-            if season_exception:
-                season_exception = season_exception[0].season
+            season_exception = scene_exceptions.get_season_from_name(result.series, result.series_name)
 
         if result.ab_episode_numbers:
             for absolute_episode in result.ab_episode_numbers:
@@ -200,7 +198,7 @@ class NameParser(object):
                 if season_exception is not None or result.series.is_scene:
                     # Get absolute number from custom numbering (1), XEM (2) or indexer (3)
                     a = scene_numbering.get_indexer_absolute_numbering(
-                        result.series, a, True, season_exception
+                        result.series, a, fallback_to_xem=True, scene_season=season_exception
                     )
 
                 new_absolute_numbers.append(a)
@@ -270,14 +268,15 @@ class NameParser(object):
         new_season_numbers = []
         new_absolute_numbers = []
 
+        season = scene_exceptions.get_season_from_name(result.series, result.series_name) or result.season_number
+
         for episode_number in result.episode_numbers:
-            season = result.season_number
             episode = episode_number
 
             if result.series.is_scene:
                 (season, episode) = scene_numbering.get_indexer_numbering(
                     result.series,
-                    result.season_number,
+                    season,
                     episode_number
                 )
                 log.debug(

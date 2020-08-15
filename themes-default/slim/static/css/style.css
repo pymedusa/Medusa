@@ -152,6 +152,8 @@ inc_top.mako
     text-decoration: none;
 }
 
+/* jQuery ui-tabs (remove when everyting moved to vue-tabs */
+
 .ui-tabs {
     padding: 0;
     background: none;
@@ -180,6 +182,85 @@ inc_top.mako
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
 }
+
+/* Vue Tabs alternative */
+.vue-tabs {
+    padding: 0;
+    background: none;
+    border-width: 0;
+}
+
+.vue-tabs .nav-tabs-navigation {
+    padding-left: 0;
+    background: transparent;
+    border-width: 0;
+    border-radius: 0;
+}
+
+.vue-tabs .tab-content {
+    background-color: rgb(247, 247, 247) !important;
+    border: 1px solid rgb(204, 204, 204) !important;
+    padding: 1em;
+}
+
+.nav-tabs {
+    border-bottom: none;
+}
+
+.nav-tabs li.tab {
+    background: rgb(255, 255, 255);
+    border: 1px solid rgb(204, 204, 204);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    margin: 1px 0.2em 0 0;
+    padding: 0;
+    top: 1px;
+}
+
+.nav-tabs li.tab.active {
+    background: rgb(247, 247, 247);
+    border-bottom-style: none !important;
+}
+
+.vue-tabs li.tab:not(.active) {
+    top: 2px;
+}
+
+.nav-tabs li.tab a {
+    background-color: transparent;
+    border-color: transparent;
+    padding: 0.5em 1em;
+    padding-top: 0.5em;
+    padding-right: 1em;
+    padding-bottom: 0.5em;
+    padding-left: 1em;
+    text-decoration: none;
+}
+
+.nav-tabs li.tab a,
+.nav-tabs li.tab a:hover,
+.nav-tabs li.tab a:active,
+.nav-tabs li.tab a:focus {
+    color: #555;
+    cursor: default;
+    background-color: transparent;
+    border: 0;
+    text-decoration: none;
+}
+
+.nav-tabs :not(li.tab.active) {
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-width: 0;
+}
+
+.nav-tabs li {
+    border-bottom-width: 0 !important;
+    padding: 0;
+    white-space: nowrap;
+}
+
+/* End of nav tabs section */
 
 #content {
     margin-left: auto;
@@ -561,14 +642,6 @@ div.xem {
     display: inline-block;
 }
 
-.show-container {
-    margin: 4px;
-    background-color: rgb(243, 243, 243);
-    border: 5px solid rgb(243, 243, 243);
-    overflow: hidden;
-    box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.31);
-}
-
 .aligner {
     display: flex;
     align-items: center;
@@ -610,6 +683,11 @@ div.xem {
 
 .poster-overlay {
     position: absolute;
+}
+
+.show-container {
+    background-color: rgb(243, 243, 243);
+    border-color: rgb(243, 243, 243);
 }
 
 .show-container .ui-progressbar {
@@ -727,29 +805,9 @@ div.xem {
     display: block;
 }
 
-.show-status {
-    font-size: 11px;
-    text-align: left;
-    display: block;
-}
-
 .show-network-image {
     width: 50px;
     height: auto;
-}
-
-.show-dlstats {
-    font-size: 11px;
-    text-align: left;
-    display: block;
-    margin-left: 4px;
-}
-
-.show-quality {
-    font-size: 11px;
-    text-align: right;
-    display: block;
-    margin-right: 4px;
 }
 
 #sort-by {
@@ -765,17 +823,24 @@ div.xem {
     padding: 0;
 }
 
-.posterview {
-    margin: 0 auto;
-    position: relative;
-}
-
+/* Used by History.mako */
 td.tvShow a {
     color: rgb(0, 0, 0);
     text-decoration: none;
 }
 
 td.tvShow a:hover {
+    cursor: pointer;
+    color: rgb(66, 139, 202);
+}
+
+/* Used by home.mako */
+span.tvShow a {
+    color: rgb(0, 0, 0);
+    text-decoration: none;
+}
+
+span.tvShow a:hover {
     cursor: pointer;
     color: rgb(66, 139, 202);
 }
@@ -1251,7 +1316,7 @@ h1.title {
     margin-bottom: 15px;
     line-height: 30px;
     text-align: left;
-    text-rendering: optimizelegibility;
+    text-rendering: optimizeLegibility;
     border-bottom: 1px solid rgb(136, 136, 136);
 }
 
@@ -1320,36 +1385,8 @@ ul.tags li a {
 }
 
 #summary {
-    margin-top: 5px;
-    padding: 10px;
-    width: 100%;
     overflow: auto;
     cursor: default;
-}
-
-#summaryBackground {
-    position: absolute;
-    top: 305px;
-    width: 100%;
-    height: 200px;
-    background-color: #efefef;
-    opacity: 0.8;
-    border-width: 1px;
-    border-style: solid none;
-    border-color: rgb(136, 136, 136);
-}
-
-#checkboxControlsBackground {
-    position: absolute;
-    top: 0;
-    width: 100%;
-    height: 0;
-    background-color: #ddd;
-    opacity: 0.8;
-    border-width: 1px;
-    border-style: solid none;
-    border-color: rgb(136, 136, 136);
-    z-index: -2;
 }
 
 #checkboxControls {
@@ -1405,6 +1442,10 @@ ul.tags li a {
 
 .failed {
     background-color: rgb(255, 153, 153);
+}
+
+.allowed {
+    background-color: rgb(255, 218, 138);
 }
 
 span.unaired {
@@ -2658,10 +2699,6 @@ select,
     color: rgb(221, 221, 221);
 }
 
-.navbar-default .navbar-nav > li > a {
-    color: rgb(221, 221, 221);
-}
-
 .navbar-default .navbar-nav > li > a:hover,
 .navbar-default .navbar-nav > li > a:focus {
     color: rgb(255, 255, 255);
@@ -2694,6 +2731,10 @@ select,
     background-color: rgb(51, 51, 51);
 }
 
+.navbar-default .navbar-nav > li > a {
+    color: rgb(221, 221, 221);
+}
+
 .navbar-default .navbar-nav > .open > a,
 .navbar-default .navbar-nav > .open > a:hover,
 .navbar-default .navbar-nav > .open > a:focus {
@@ -2702,8 +2743,8 @@ select,
 }
 
 .navbar-default .navbar-nav > li.navbar-split > a {
-    display: inline-block;
     float: left;
+    border: 1px solid rgba(0, 0, 0, 0.15);
 }
 
 .navbar-default .navbar-nav > li.navbar-split > a:first-child {
@@ -2715,6 +2756,15 @@ select,
 }
 
 @media (max-width: 767px) {
+    .navbar-default .navbar-nav > li {
+        float: left;
+        min-width: 100px;
+    }
+
+    .navbar-default .navbar-nav > li > a {
+        width: 100%;
+    }
+
     .navbar-default .navbar-nav .open .dropdown-menu > li > a {
         color: rgb(221, 221, 221);
     }
@@ -2791,6 +2841,53 @@ fieldset[disabled] .navbar-default .btn-link:focus {
 }
 
 /* Vueified DisplayShow uses the vue component vue-good-table to display tables. */
+.vgt-table {
+    color: rgb(0, 0, 0);
+}
+
+.vgt-table th,
+.vgt-table td {
+    border-top: rgb(255, 255, 255) 1px solid;
+    border-left: rgb(255, 255, 255) 1px solid;
+}
+
+.vgt-table th {
+    color: rgb(255, 255, 255);
+    text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
+    background-color: rgb(51, 51, 51);
+}
+
+.vgt-table thead th.sorting.sorting-desc {
+    background-color: rgb(85, 85, 85);
+    background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
+}
+
+.vgt-table thead th.sorting.sorting-asc {
+    background-color: rgb(85, 85, 85);
+    background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjI8Bya2wnINUMopZAQA7);
+}
+
+.vgt-table tfoot tr {
+    color: rgb(255, 255, 255);
+    text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
+    background-color: rgb(51, 51, 51);
+}
+
+.vgt-table tfoot a {
+    color: rgb(255, 255, 255);
+}
+
+.vgt-table tr:nth-child(even) {
+    background-color: rgb(223, 218, 207);
+}
+
+.vgt-table tr:nth-child(odd) {
+    background-color: rgb(245, 241, 228);
+}
+
+.vgt-dropdown > .button-group {
+    margin-bottom: 10px;
+}
 
 .vgt-dropdown-menu {
     background-color: rgb(245, 241, 228);
@@ -2838,6 +2935,10 @@ fieldset[disabled] .navbar-default .btn-link:focus {
 
 .shadow {
     box-shadow: 3px 3px 3px rgba(17, 17, 17, 0.5);
+}
+
+.shadow-background {
+    background-color: rgb(239, 239, 239, 0.8);
 }
 
 .border-bottom {

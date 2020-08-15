@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 import json
 import os
 import time
-from datetime import date, datetime
+from datetime import date
 from textwrap import dedent
 
 from medusa import (
@@ -39,11 +39,7 @@ from medusa.common import (
     cpu_presets,
     statusStrings,
 )
-from medusa.failed_history import prepare_failed_name
-from medusa.helper.common import (
-    enabled_providers,
-    pretty_file_size,
-)
+from medusa.helper.common import enabled_providers
 from medusa.helper.exceptions import (
     AnidbAdbaConnectionException,
     CantRefreshShowException,
@@ -52,10 +48,8 @@ from medusa.helper.exceptions import (
     ex,
 )
 from medusa.helpers.anidb import get_release_groups_for_anime
-from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.utils import indexer_id_to_name, indexer_name_to_id
-from medusa.providers.generic_provider import GenericProvider
-from medusa.sbdatetime import sbdatetime
+from medusa.indexers.api import indexerApi
+from medusa.indexers.utils import indexer_name_to_id
 from medusa.scene_exceptions import (
     get_all_scene_exceptions,
     get_scene_exceptions,
@@ -73,7 +67,6 @@ from medusa.search.manual import (
     SEARCH_STATUS_QUEUED,
     SEARCH_STATUS_SEARCHING,
     collect_episodes_from_search_thread,
-    get_provider_cache_results,
     update_finished_search_queue_item,
 )
 from medusa.search.queue import (
@@ -85,7 +78,6 @@ from medusa.server.web.core import (
     PageTemplate,
     WebRoot,
 )
-from medusa.show.history import History
 from medusa.show.show import Show
 from medusa.system.restart import Restart
 from medusa.system.shutdown import Shutdown
@@ -121,41 +113,13 @@ class Home(WebRoot):
         return t.render(message=message, subject=subject, title='')
 
     def index(self):
-        t = PageTemplate(rh=self, filename='home.mako')
-        selected_root = int(app.SELECTED_ROOT)
-        shows_dir = None
-        if selected_root is not None and app.ROOT_DIRS:
-            backend_pieces = app.ROOT_DIRS
-            backend_dirs = backend_pieces[1:]
-            try:
-                shows_dir = backend_dirs[selected_root] if selected_root != -1 else None
-            except IndexError:
-                # If user have a root selected in /home and remove the root folder a IndexError is raised
-                shows_dir = None
-                app.SELECTED_ROOT = -1
+        """
+        Render the home page.
 
-        series = []
-        if app.ANIME_SPLIT_HOME:
-            anime = []
-            for show in app.showList:
-                if shows_dir and not show._location.startswith(shows_dir):
-                    continue
-                if show.is_anime:
-                    anime.append(show)
-                else:
-                    series.append(show)
-
-            show_lists = [[order, {'Series': series, 'Anime': anime}[order]] for order in app.SHOW_LIST_ORDER]
-        else:
-            for show in app.showList:
-                if shows_dir and not show._location.startswith(shows_dir):
-                    continue
-                series.append(show)
-            show_lists = [['Series', series]]
-
-        stats = self.show_statistics()
-        return t.render(show_lists=show_lists, show_stat=stats[0],
-                        max_download_count=stats[1], controller='home', action='index')
+        [Converted to VueRouter]
+        """
+        t = PageTemplate(rh=self, filename='index.mako')
+        return t.render()
 
     @staticmethod
     def show_statistics():
@@ -751,7 +715,11 @@ class Home(WebRoot):
         })
 
     def displayShow(self, indexername=None, seriesid=None, ):
-        # @TODO: add more comprehensive show validation
+        """
+        Render the home page.
+
+        [Converted to VueRouter]
+        """
         try:
             indexer_id = indexer_name_to_id(indexername)
             series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
@@ -763,44 +731,24 @@ class Home(WebRoot):
 
         t = PageTemplate(rh=self, filename='index.mako')
 
-        indexer_id = int(series_obj.indexer)
-        series_id = int(series_obj.series_id)
-
-        # Delete any previous occurrances
-        indexer_name = indexer_id_to_name(indexer_id)
-        for index, recentShow in enumerate(app.SHOWS_RECENT):
-            if recentShow['indexerName'] == indexer_name and recentShow['showId'] == series_id:
-                del app.SHOWS_RECENT[index]
-
-        # Only track 5 most recent shows
-        del app.SHOWS_RECENT[4:]
-
-        # Insert most recent show
-        app.SHOWS_RECENT.insert(0, {
-            'indexerName': indexer_name,
-            'showId': series_id,
-            'name': series_obj.name,
-        })
-
         return t.render(
             controller='home', action='displayShow',
         )
 
-    def pickManualSearch(self, provider=None, rowid=None):
+    def pickManualSearch(self, provider=None, identifier=None):
         """
         Tries to Perform the snatch for a manualSelected episode, episodes or season pack.
 
         @param provider: The provider id, passed as usenet_crawler and not the provider name (Usenet-Crawler)
-        @param rowid: The provider's cache table's rowid. (currently the implicit sqlites rowid is used, needs to be replaced in future)
+        @param identifier: The provider's cache table's identifier (unique).
 
         @return: A json with a {'success': true} or false.
         """
         # Try to retrieve the cached result from the providers cache table.
-        # @TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
         provider_obj = providers.get_provider_class(provider)
 
         try:
-            cached_result = Cache(provider_obj).load_from_row(rowid)
+            cached_result = Cache(provider_obj).load_from_row(identifier)
         except Exception as msg:
             error_message = "Couldn't read cached results. Error: {error}".format(error=msg)
             logger.log(error_message)
@@ -928,8 +876,11 @@ class Home(WebRoot):
 
     def snatchSelection(self, indexername, seriesid, season=None, episode=None, manual_search_type='episode',
                         perform_search=0, down_cur_quality=0, show_all_results=0):
-        """ The view with results for the manual selected show/episode """
+        """
+        Render the home page.
 
+        [Converted to VueRouter]
+        """
         # @TODO: add more comprehensive show validation
         try:
             indexer_id = indexer_name_to_id(indexername)
@@ -940,101 +891,9 @@ class Home(WebRoot):
         if series_obj is None:
             return self._genericMessage('Error', 'Show not in show list')
 
-        # Retrieve cache results from providers
-        search_show = {'series': series_obj, 'season': season, 'episode': episode, 'manual_search_type': manual_search_type}
-
-        provider_results = get_provider_cache_results(series_obj, perform_search=perform_search,
-                                                      show_all_results=show_all_results, **search_show)
-
-        t = PageTemplate(rh=self, filename='snatchSelection.mako')
-
-        series_obj.exceptions = get_scene_exceptions(series_obj)
-
-        indexer_id = int(series_obj.indexer)
-        series_id = int(series_obj.series_id)
-
-        # Delete any previous occurrances
-        indexer_name = indexer_id_to_name(indexer_id)
-        for index, recentShow in enumerate(app.SHOWS_RECENT):
-            if recentShow['indexerName'] == indexer_name and recentShow['showId'] == series_id:
-                del app.SHOWS_RECENT[index]
-
-        # Only track 5 most recent shows
-        del app.SHOWS_RECENT[4:]
-
-        # Insert most recent show
-        app.SHOWS_RECENT.insert(0, {
-            'indexerName': indexer_name,
-            'showId': series_id,
-            'name': series_obj.name,
-        })
-
-        episode_history = []
-        try:
-            main_db_con = db.DBConnection()
-            episode_status_result = main_db_con.select(
-                'SELECT date, action, quality, provider, resource, size '
-                'FROM history '
-                'WHERE indexer_id = ? '
-                'AND showid = ? '
-                'AND season = ? '
-                'AND episode = ? '
-                'AND action in (?, ?, ?, ?, ?) '
-                'ORDER BY date DESC',
-                [indexer_id, series_id, season, episode,
-                 DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED]
-            )
-            episode_history = episode_status_result
-            for i in episode_history:
-                i['status'] = i['action']
-                i['action_date'] = sbdatetime.sbfdatetime(datetime.strptime(text_type(i['date']), History.date_format), show_seconds=True)
-                i['resource_file'] = os.path.basename(i['resource'])
-                i['pretty_size'] = pretty_file_size(i['size']) if i['size'] > -1 else 'N/A'
-                i['status_name'] = statusStrings[i['status']]
-                provider = None
-                if i['status'] == DOWNLOADED:
-                    i['status_color_style'] = 'downloaded'
-                elif i['status'] in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
-                    i['status_color_style'] = 'snatched'
-                    provider = providers.get_provider_class(GenericProvider.make_id(i['provider']))
-                elif i['status'] == FAILED:
-                    i['status_color_style'] = 'failed'
-                    provider = providers.get_provider_class(GenericProvider.make_id(i['provider']))
-                if provider is not None:
-                    i['provider_name'] = provider.name
-                    i['provider_img_link'] = 'images/providers/' + provider.image_name()
-                else:
-                    i['provider_name'] = i['provider'] if i['provider'] != '-1' else 'Unknown'
-                    i['provider_img_link'] = ''
-
-            # Compare manual search results with history and set status
-            for provider_result in provider_results['found_items']:
-                failed_statuses = [FAILED, ]
-                snatched_statuses = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
-                if any([item for item in episode_history
-                        if all([prepare_failed_name(provider_result['name']) in item['resource'],
-                                item['provider'] in (provider_result['provider'], provider_result['release_group'],),
-                                item['status'] in failed_statuses])
-                        ]):
-                    provider_result['status_highlight'] = 'failed'
-                elif any([item for item in episode_history
-                          if all([provider_result['name'] in item['resource'],
-                                  item['provider'] in provider_result['provider'],
-                                  item['status'] in snatched_statuses,
-                                  item['size'] == provider_result['size']])
-                          ]):
-                    provider_result['status_highlight'] = 'snatched'
-                else:
-                    provider_result['status_highlight'] = ''
-
-        # TODO: Remove the catchall, make sure we only catch expected exceptions!
-        except Exception as msg:
-            logger.log("Couldn't read latest episode status. Error: {error}".format(error=msg))
+        t = PageTemplate(rh=self, filename='index.mako')
 
         return t.render(
-            show=series_obj,
-            provider_results=provider_results, episode_history=episode_history,
-            season=season, episode=episode, manual_search_type=manual_search_type,
             controller='home', action='snatchSelection'
         )
 

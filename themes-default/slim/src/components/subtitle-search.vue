@@ -1,7 +1,7 @@
 <template>
     <tr class="subtitle-search-wrapper">
         <td colspan="9999">
-            <span v-if="loading" class="loading-message">{{loadingMessage}} <state-switch :theme="config.themeName" state="loading" /></span>
+            <span v-if="loading" class="loading-message">{{loadingMessage}} <state-switch :theme="general.themeName" state="loading" /></span>
             <div v-if="displayQuestion" class="search-question">
                 <div class="question">
                     <p v-if="!lang">Do you want to manually pick subtitles or let us choose it for you?</p>
@@ -13,7 +13,7 @@
                 </div>
             </div>
 
-            <div v-if="subtitles.length > 0" class="subtitle-results">
+            <div v-if="!displayQuestion && searchType == 'manual'" class="subtitle-results">
                 <span class="release-name">
                     {{releaseName}}
                 </span>
@@ -129,13 +129,14 @@ export default {
             }],
             subtitles: [],
             displayQuestion: false,
+            searchType: null,
             loading: false,
             loadingMessage: ''
         };
     },
     computed: {
         ...mapState({
-            config: state => state.config
+            general: state => state.config.general
         }),
         ...mapGetters({
             getLastReleaseName: 'getLastReleaseName'
@@ -168,6 +169,7 @@ export default {
             'getShowEpisodeHistory'
         ]),
         autoSearch() {
+            this.searchType = 'auto';
             const { lang, subtitleParams } = this;
             const params = subtitleParams;
 
@@ -201,6 +203,7 @@ export default {
                 });
         },
         manualSearch() {
+            this.searchType = 'manual';
             const { episode, getShowEpisodeHistory, show, subtitleParams } = this;
 
             this.displayQuestion = false;
@@ -283,7 +286,7 @@ export default {
             // Destroy the vue listeners, etc
             this.$destroy();
             // Remove the element from the DOM
-            this.$el.parentNode.removeChild(this.$el);
+            this.$el.remove();
         }
     }
 };

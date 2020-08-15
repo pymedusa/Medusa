@@ -31,10 +31,10 @@
                         </ul>
                         <div style="clear:both;" />
                     </li>
-                    <li id="NAVschedule" :class="{ active: topMenu === 'schedule' }">
+                    <li id="NAVschedule" class="navbar-split" :class="{ active: topMenu === 'schedule' }">
                         <app-link href="schedule/">Schedule</app-link>
                     </li>
-                    <li id="NAVhistory" :class="{ active: topMenu === 'history' }">
+                    <li id="NAVhistory" class="navbar-split" :class="{ active: topMenu === 'history' }">
                         <app-link href="history/">History</app-link>
                     </li>
                     <li id="NAVmanage" class="navbar-split dropdown" :class="{ active: topMenu === 'manage' }">
@@ -113,18 +113,16 @@ export default {
         AppLink
     },
     computed: {
-        ...mapState([
-            'config',
-            'clients',
-            'notifiers',
-            'postprocessing',
-            'search',
-            'system'
-        ]),
         ...mapState({
+            config: state => state.config.general,
+            clients: state => state.config.clients,
+            notifiers: state => state.config.notifiers,
+            postprocessing: state => state.config.postprocessing,
+            search: state => state.config.search,
+            system: state => state.config.system,
             isAuthenticated: state => state.auth.isAuthenticated,
             username: state => state.auth.user.username,
-            warningLevel: state => state.config.logs.loggingLevels.warning
+            warningLevel: state => state.config.general.logs.loggingLevels.warning
         }),
         recentShows() {
             const { config } = this;

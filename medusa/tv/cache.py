@@ -14,7 +14,7 @@ from time import time
 
 from medusa import (
     app,
-    db,
+    db
 )
 from medusa.helper.common import episode_num
 from medusa.helper.exceptions import AuthException
@@ -28,6 +28,7 @@ from medusa.rss_feeds import getFeed
 from medusa.search import FORCED_SEARCH
 from medusa.show import naming
 from medusa.show.show import Show
+from medusa.tv.series import SeriesIdentifier
 
 from six import text_type, viewitems
 
@@ -148,14 +149,14 @@ class Cache(object):
             # trim items older than MAX_CACHE_AGE days
             self.trim(days=app.MAX_CACHE_AGE)
 
-    def load_from_row(self, rowid):
+    def load_from_row(self, identifier):
         """Load cached result from a single row."""
         cache_db_con = self._get_db()
         cached_result = cache_db_con.action(
             'SELECT * '
             "FROM '{provider}' "
-            'WHERE rowid = ?'.format(provider=self.provider_id),
-            [rowid],
+            'WHERE identifier = ?'.format(provider=self.provider_id),
+            [identifier],
             fetchone=True
         )
 
@@ -576,6 +577,18 @@ class Cache(object):
                      '%|{0}|%'.format(ep_obj.episode)]]
                 )
 
+            if len(episodes) > 1:
+                results.append([
+                    'SELECT * FROM [{name}] '
+                    'WHERE indexer = ? AND '
+                    'indexerid = ? AND '
+                    'season = ? AND '
+                    'episodes == "||"'.format(
+                        name=self.provider_id
+                    ),
+                    [ep_obj.series.indexer, ep_obj.series.series_id, ep_obj.season]
+                ])
+
             if results:
                 # Only execute the query if we have results
                 sql_results = cache_db_con.mass_action(results, fetchall=True)
@@ -618,3 +631,38 @@ class Cache(object):
         self.searched = time()
 
         return cache_results
+
+    def get_results(self, show_slug=None, season=None, episode=None):
+        """Get cached results for this provider."""
+        cache_db_con = self._get_db()
+
+        param = []
+        where = []
+
+        if show_slug:
+            show = SeriesIdentifier.from_slug(show_slug)
+            where += ['indexer', 'indexerid']
+            param += [show.indexer.id, show.id]
+
+        if season:
+            where += ['season']
+            param += [season]
+
+        if episode:
+            where += ['episodes']
+            param += ['|{0}|'.format(episode)]
+
+        base_sql = 'SELECT * FROM [{name}]'.format(name=self.provider_id)
+        base_params = []
+
+        if where and param:
+            base_sql += ' WHERE '
+            base_sql += ' AND '.join([item + ' = ? ' for item in where])
+            base_params += param
+
+        results = cache_db_con.select(
+            base_sql,
+            base_params
+        )
+
+        return results

@@ -51,7 +51,7 @@ window.app = new Vue({
     computed: {
         // @TODO: Replace with mapState
         config() {
-            return this.$store.state.config;
+            return this.$store.state.config.general;
         },
         spinnerSrc() {
             const { config } = this;

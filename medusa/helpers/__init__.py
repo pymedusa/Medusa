@@ -46,7 +46,7 @@ from medusa.helper.common import (episode_num, http_code_description, media_exte
                                   pretty_file_size, subtitle_extensions)
 from medusa.helpers.utils import generate
 from medusa.imdb import Imdb
-from medusa.indexers.indexer_exceptions import IndexerException
+from medusa.indexers.exceptions import IndexerException
 from medusa.logger.adapters.style import BraceAdapter, BraceMessage
 from medusa.session.core import MedusaSafeSession
 from medusa.show.show import Show
@@ -205,7 +205,7 @@ def search_indexer_for_show_id(show_name, indexer=None, series_id=None, ui=None)
     :param ui: Custom UI for indexer use
     :return:
     """
-    from medusa.indexers.indexer_api import indexerApi
+    from medusa.indexers.api import indexerApi
     show_names = [re.sub('[. -]', ' ', show_name)]
 
     # Query Indexers for each search term and build the list of results
@@ -741,22 +741,6 @@ def fix_set_group_id(child_path):
                 {'path': child_path, 'gid': parent_gid})
 
 
-def is_anime_in_show_list():
-    """Check if any shows in list contain anime.
-
-    :return: True if global showlist contains Anime, False if not
-    """
-    for show in app.showList:
-        if show.is_anime:
-            return True
-    return False
-
-
-def update_anime_support():
-    """Check if we need to support anime, and if we do, enable the feature."""
-    app.ANIMESUPPORT = is_anime_in_show_list()
-
-
 def get_absolute_number_from_season_and_episode(series_obj, season, episode):
     """Find the absolute number for a show episode.
 
@@ -845,24 +829,23 @@ def create_https_certificates(ssl_cert, ssl_key):
     """
     try:
         from OpenSSL import crypto
-        from certgen import createKeyPair, createCertRequest, createCertificate, TYPE_RSA
+        from medusa.helpers.certgen import create_key_pair, create_cert_request, create_certificate, TYPE_RSA
     except Exception:
-        log.warning(u'pyopenssl module missing, please install for'
-                    u' https access')
+        log.warning('pyopenssl module missing, please install for https access')
         return False
 
     # Serial number for the certificate
     serial = int(time.time())
 
     # Create the CA Certificate
-    cakey = createKeyPair(TYPE_RSA, 2048)
-    careq = createCertRequest(cakey, CN='Certificate Authority')
-    cacert = createCertificate(careq, (careq, cakey), serial, (0, 60 * 60 * 24 * 365 * 10))  # ten years
+    cakey = create_key_pair(TYPE_RSA, 2048)
+    careq = create_cert_request(cakey, CN='Certificate Authority')
+    cacert = create_certificate(careq, (careq, cakey), serial, (0, 60 * 60 * 24 * 365 * 10))  # ten years
 
     cname = 'Medusa'
-    pkey = createKeyPair(TYPE_RSA, 2048)
-    req = createCertRequest(pkey, CN=cname)
-    cert = createCertificate(req, (cacert, cakey), serial, (0, 60 * 60 * 24 * 365 * 10))  # ten years
+    pkey = create_key_pair(TYPE_RSA, 2048)
+    req = create_cert_request(pkey, CN=cname)
+    cert = create_certificate(req, (cacert, cakey), serial, (0, 60 * 60 * 24 * 365 * 10))  # ten years
 
     # Save the key and certificate to disk
     try:
@@ -930,8 +913,8 @@ def check_url(url):
 
     We only check the URL header.
     """
-    # see also http://stackoverflow.com/questions/2924422
-    # http://stackoverflow.com/questions/1140661
+    # see also https://stackoverflow.com/questions/2924422
+    # https://stackoverflow.com/questions/1140661
     good_codes = [http_client.OK, http_client.FOUND, http_client.MOVED_PERMANENTLY]
 
     host, path = urlparse(url)[1:3]  # elems [1] and [2]
@@ -1020,10 +1003,9 @@ def get_show(name, try_indexers=False):
 
         # try scene exceptions
         if not series:
-            found_exceptions = list(scene_exceptions.get_scene_exceptions_by_name(series_name))
-            if found_exceptions:
-                # Only use the first exception.
-                series = Show.find_by_id(app.showList, found_exceptions[0].indexer, found_exceptions[0].series_id)
+            found_exception = scene_exceptions.get_scene_exception_by_name(series_name)
+            if found_exception:
+                series = Show.find_by_id(app.showList, found_exception.indexer, found_exception.series_id)
 
         if not series:
             match_name_only = (s.name for s in app.showList if text_type(s.imdb_year) in s.name and
@@ -1075,8 +1057,8 @@ def real_path(path):
 
 def validate_show(show, season=None, episode=None):
     """Reindex show from originating indexer, and return indexer information for the passed episode."""
-    from medusa.indexers.indexer_api import indexerApi
-    from medusa.indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerShowNotFound
+    from medusa.indexers.api import indexerApi
+    from medusa.indexers.exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerShowNotFound
     indexer_lang = show.lang
 
     try:
@@ -1490,7 +1472,7 @@ def get_tvdb_from_id(indexer_id, indexer):
     tvdb_id = ''
 
     if indexer == 'IMDB':
-        url = 'http://www.thetvdb.com/api/GetSeriesByRemoteID.php?imdbid=%s' % indexer_id
+        url = 'https://www.thetvdb.com/api/GetSeriesByRemoteID.php?imdbid=%s' % indexer_id
         data = session.get_content(url)
         if data is None:
             return tvdb_id
@@ -1504,7 +1486,7 @@ def get_tvdb_from_id(indexer_id, indexer):
             return tvdb_id
 
     elif indexer == 'ZAP2IT':
-        url = 'http://www.thetvdb.com/api/GetSeriesByRemoteID.php?zap2it=%s' % indexer_id
+        url = 'https://www.thetvdb.com/api/GetSeriesByRemoteID.php?zap2it=%s' % indexer_id
         data = session.get_content(url)
         if data is None:
             return tvdb_id
@@ -1517,7 +1499,7 @@ def get_tvdb_from_id(indexer_id, indexer):
         return tvdb_id
 
     elif indexer == 'TVMAZE':
-        url = 'http://api.tvmaze.com/shows/%s' % indexer_id
+        url = 'https://api.tvmaze.com/shows/%s' % indexer_id
         data = session.get_json(url)
         if data is None:
             return tvdb_id
@@ -1527,7 +1509,7 @@ def get_tvdb_from_id(indexer_id, indexer):
     # If indexer is IMDB and we've still not returned a tvdb_id,
     # let's try to use tvmaze's api, to get the tvdbid
     if indexer == 'IMDB':
-        url = 'http://api.tvmaze.com/lookup/shows?imdb={indexer_id}'.format(indexer_id=indexer_id)
+        url = 'https://api.tvmaze.com/lookup/shows?imdb={indexer_id}'.format(indexer_id=indexer_id)
         data = session.get_json(url)
         if not data:
             return tvdb_id
@@ -1538,7 +1520,7 @@ def get_tvdb_from_id(indexer_id, indexer):
 
 
 def get_showname_from_indexer(indexer, indexer_id, lang='en'):
-    from medusa.indexers.indexer_api import indexerApi
+    from medusa.indexers.api import indexerApi
     indexer_api_params = indexerApi(indexer).api_params.copy()
     if lang:
         indexer_api_params['language'] = lang
@@ -1564,7 +1546,7 @@ def get_showname_from_indexer(indexer, indexer_id, lang='en'):
     return data.get('seriesname')
 
 
-# http://stackoverflow.com/a/20380514
+# https://stackoverflow.com/a/20380514
 def get_image_size(image_path):
     """Determine the image type of image_path and return its size.."""
     img_ext = os.path.splitext(image_path)[1].lower().strip('.')

@@ -3,8 +3,8 @@ const startAjaxEpisodeSubtitles = function() { // eslint-disable-line no-unused-
     let selectedEpisode;
     const searchTypesList = ['.epSubtitlesSearch', '.epSubtitlesSearchPP', '.epRedownloadSubtitle', '.epSearch', '.epRetry', '.epManualSearch'];
     const subtitlesResultModal = $('#manualSubtitleSearchModal');
-    const { subtitlesMulti } = MEDUSA.config;
-    const loadingSpinner = 'images/loading32' + MEDUSA.config.themeSpinner + '.gif';
+    const { subtitlesMulti } = MEDUSA.config.general;
+    const loadingSpinner = 'images/loading32' + MEDUSA.config.layout.themeSpinner + '.gif';
 
     function disableAllSearches() {
         // Disables all other searches while manual searching for subtitles
@@ -152,7 +152,7 @@ const startAjaxEpisodeSubtitles = function() { // eslint-disable-line no-unused-
                             });
                         }
                         let subtitleScore = subtitle.score;
-                        const subtitleName = subtitle.filename.substring(0, 99);
+                        const subtitleName = subtitle.filename.slice(0, 99);
                         // If hash match, don't show missingGuess
                         if (subtitle.sub_score >= subtitle.max_score) {
                             missingGuess = '';

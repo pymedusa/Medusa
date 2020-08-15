@@ -30,7 +30,7 @@ window.app = new Vue({
             if (!backup.dir) return;
 
             backup.disabled = true;
-            backup.status = MEDUSA.config.loading;
+            backup.status = MEDUSA.config.layout.loading;
 
             $.get('config/backuprestore/backup', {
                 backupDir: backup.dir
@@ -45,7 +45,7 @@ window.app = new Vue({
             if (!restore.file) return;
 
             restore.disabled = true;
-            restore.status = MEDUSA.config.loading;
+            restore.status = MEDUSA.config.layout.loading;
 
             $.get('config/backuprestore/restore', {
                 backupFile: restore.file

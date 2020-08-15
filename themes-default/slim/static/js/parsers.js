@@ -7,7 +7,7 @@ $.tablesorter.addParser({
         if (s.indexOf('Loading...') === 0) {
             return s.replace('Loading...', '000');
         }
-        return (MEDUSA.layout.sortArticle ? (s || '') : (s || '').replace(/^(The|A|An)\s/i, ''));
+        return (MEDUSA.config.layout.sortArticle ? (s || '') : (s || '').replace(/^(the|a|an)\s/i, ''));
     },
     type: 'text'
 });
@@ -74,13 +74,13 @@ $.tablesorter.addParser({
             nums[0] = numParts[0];
         }
 
-        nums[0] = parseInt(nums[0], 10);
-        nums[1] = parseInt(nums[1], 10);
+        nums[0] = Number.parseInt(nums[0], 10);
+        nums[1] = Number.parseInt(nums[1], 10);
 
         if (nums[0] === 0) {
             return nums[1];
         }
-        let finalNum = parseInt(($('meta[data-var="max_download_count"]').data('content')) * nums[0] / nums[1], 10);
+        let finalNum = Number.parseInt(($('meta[data-var="max_download_count"]').data('content')) * nums[0] / nums[1], 10);
         const pct = Math.round((nums[0] / nums[1]) * 100) / 1000;
         if (finalNum > 0) {
             finalNum += nums[0];

@@ -141,10 +141,10 @@ export default {
         }
     },
     computed: {
-        ...mapState([
-            'config',
-            'layout'
-        ]),
+        ...mapState({
+            config: state => state.config.general,
+            layout: state => state.config.layout
+        }),
         rawViewLink() {
             const qs = new URLSearchParams();
             qs.set('level', this.minLevel);
