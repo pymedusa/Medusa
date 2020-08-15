@@ -9,7 +9,9 @@
     "build": "webpack --mode production",
     "install": "yarn run lint",
     "test": "cross-env NODE_ENV=test nyc --clean jest --coverage",
-    "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov -F frontend"
+    "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov -F frontend",
+    "snyk-protect": "snyk protect",
+    "prepare": "yarn run snyk-protect"
   },
   "config": {
     "cssThemes": [
@@ -63,7 +65,8 @@
     "vue-truncate-collapsed": "2.1.0",
     "vuedraggable": "2.23.2",
     "vueisotope": "3.1.2",
-    "vuex": "3.5.1"
+    "vuex": "3.5.1",
+    "snyk": "^1.374.0"
   },
   "devDependencies": {
     "@babel/core": "7.11.1",
@@ -186,5 +189,6 @@
       "text"
     ],
     "tempDirectory": "./coverage"
-  }
+  },
+  "snyk": true
 }
