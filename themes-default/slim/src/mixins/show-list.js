@@ -123,30 +123,46 @@ export const showlistTableMixin = {
             return row.config && !row.config.paused && row.status === 'Continuing';
         },
         sortDateNext(x, y) {
+            const { maxNextAirDate } = this;
+
             if (x === null && y === null) {
                 return 0;
             }
 
             if (x === null || y === null) {
-                return x === null ? -1 : 1;
+                return x === null ? 1 : -1;
             }
 
-            const xTsDiff = Date.parse(x) - Date.now();
-            const yTsDiff = Date.parse(y) - Date.now();
+            // Convert to timestamps
+            x = Date.parse(x);
+            y = Date.parse(y);
 
-            return xTsDiff < yTsDiff ? 1 : (xTsDiff > yTsDiff ? -1 : 0);
+            // This next airdate lies in the past. We need to correct this.
+            if (x < Date.now()) {
+                x += maxNextAirDate;
+            }
+
+            if (y < Date.now()) {
+                y += maxNextAirDate;
+            }
+
+            return (x < y ? -1 : (x > y ? 1 : 0));
         },
         sortDatePrev(x, y) {
             if (x === null && y === null) {
                 return 0;
             }
 
+            // Standardize dates and nulls
+            x = x ? Date.parse(x) : 0;
+            y = y ? Date.parse(y) : 0;
+
             if (x === null || y === null) {
                 return x === null ? -1 : 1;
             }
 
-            const xTsDiff = Date.parse(x) - Date.now();
-            const yTsDiff = Date.parse(y) - Date.now();
+            const xTsDiff = x - Date.now();
+            const yTsDiff = y - Date.now();
 
             return xTsDiff < yTsDiff ? -1 : (xTsDiff > yTsDiff ? 1 : 0);
         },
