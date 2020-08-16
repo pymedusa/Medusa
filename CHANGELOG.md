@@ -1,6 +1,14 @@
 ## Unreleased
 
 #### New Features
+
+#### Improvements
+
+#### Fixes
+
+## 0.4.0 (2020-08-15)
+
+#### New Features
 - Added Search shows by id ([#8308](https://github.com/pymedusa/Medusa/pull/8308))
 - Added UI option to create your own show list categories ([#8308](https://github.com/pymedusa/Medusa/pull/8308))
 - Add the ability to modify the Discord bot username ([#8148](https://github.com/pymedusa/Medusa/pull/8148))
