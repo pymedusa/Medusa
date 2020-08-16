@@ -2021,7 +2021,8 @@ class Series(TV):
                           'rls_require_exclude': self.rls_require_exclude,
                           'default_ep_status': self.default_ep_status,
                           'plot': self.plot,
-                          'airdate_offset': self.airdate_offset}
+                          'airdate_offset': self.airdate_offset,
+                          'show_lists': self._show_lists}
 
         main_db_con = db.DBConnection()
         main_db_con.upsert('tv_shows', new_value_dict, control_value_dict)
