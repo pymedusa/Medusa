@@ -79,7 +79,11 @@ export const showlistTableMixin = {
         }),
         ...mapGetters({
             fuzzyParseDateTime: 'fuzzyParseDateTime'
-        })
+        }),
+        maxNextAirDate() {
+            const { shows } = this;
+            return Math.max(...shows.filter(show => show.nextAirDate).map(show => Date.parse(show.nextAirDate)));
+        }
     },
     methods: {
         prettyBytes: bytes => pretty(bytes),
@@ -119,46 +123,32 @@ export const showlistTableMixin = {
             return row.config && !row.config.paused && row.status === 'Continuing';
         },
         sortDateNext(x, y) {
-            const { maxNextAirDate } = this;
-
             if (x === null && y === null) {
                 return 0;
             }
 
-            if ((x === null || y === null) && x !== y) {
-                return x < y ? 1 : -1;
+            if (x === null || y === null) {
+                return x === null ? -1 : 1;
             }
 
-            let xTsDiff = Date.parse(x) - Date.now();
-            let yTsDiff = Date.parse(y) - Date.now();
+            const xTsDiff = Date.parse(x) - Date.now();
+            const yTsDiff = Date.parse(y) - Date.now();
 
-            if (x && Date.parse(x) < Date.now()) {
-                xTsDiff += maxNextAirDate;
-            }
-
-            if (y && Date.parse(y) < Date.now()) {
-                yTsDiff += maxNextAirDate;
-            }
-
-            return (xTsDiff < yTsDiff ? -1 : (xTsDiff > yTsDiff ? 1 : 0));
+            return xTsDiff < yTsDiff ? 1 : (xTsDiff > yTsDiff ? -1 : 0);
         },
         sortDatePrev(x, y) {
             if (x === null && y === null) {
                 return 0;
             }
 
-            if ((x === null || y === null) && x !== y) {
-                return x < y ? 1 : -1;
+            if (x === null || y === null) {
+                return x === null ? -1 : 1;
             }
 
             const xTsDiff = Date.parse(x) - Date.now();
             const yTsDiff = Date.parse(y) - Date.now();
 
-            return (xTsDiff < yTsDiff ? -1 : (xTsDiff > yTsDiff ? 1 : 0));
-        },
-        maxNextAirDate() {
-            const { shows } = this;
-            return Math.max(...shows.filter(show => show.nextAirDate).map(show => Date.parse(show.nextAirDate)));
+            return xTsDiff < yTsDiff ? -1 : (xTsDiff > yTsDiff ? 1 : 0);
         },
         sortTitle(x, y) {
             const { stateLayout } = this;
