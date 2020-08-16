@@ -47,7 +47,9 @@ export const showlistTableMixin = {
                 hidden: getCookie('Quality')
             }, {
                 label: 'Downloads',
-                field: 'stats.tooltip.text',
+                field: 'stats.tooltip.percentage',
+                sortFn: this.sortDownloads,
+                type: 'boolean',
                 hidden: getCookie('Downloads')
             }, {
                 label: 'Size',
@@ -179,6 +181,13 @@ export const showlistTableMixin = {
             }
 
             return (titleX < titleY ? -1 : (titleX > titleY ? 1 : 0));
+        },
+        sortDownloads(x, y, _, rowX, rowY) {
+            if ((x === 0 || x === 100) && x === y) {
+                return rowX.stats.episodes.total < rowY.stats.episodes.total ? -1 : (rowX.stats.episodes.total < rowY.stats.episodes.total ? 1 : 0);
+            }
+
+            return x < y ? -1 : (x > y ? 1 : 0);
         }
     }
 };
