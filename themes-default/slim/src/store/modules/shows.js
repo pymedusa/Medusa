@@ -232,10 +232,6 @@ const getters = {
 
         const { showsWithStats } = getters;
 
-        // if (showsWithStats.length === 0) {
-        //     return [];
-        // }
-
         let shows = null;
 
         // Filter root dirs
