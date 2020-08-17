@@ -1,7 +1,7 @@
 <template>
     <div>
         <!-- Only show the list title when not in tabs -->
-        <div v-if="!stateLayout.splitHomeInTabs" class="showListTitle listTitle">
+        <div v-if="!stateLayout.splitHomeInTabs && (showsInLists && showsInLists.length > 1)" class="showListTitle listTitle">
             <button type="button" class="nav-show-list move-show-list">
                 <span class="icon-bar" />
                 <span class="icon-bar" />
@@ -49,7 +49,7 @@
 </template>
 <script>
 
-import { mapActions, mapState } from 'vuex';
+import { mapActions, mapGetters, mapState } from 'vuex';
 import Banner from './banner.vue';
 import Simple from './simple.vue';
 import Poster from './poster.vue';
@@ -109,6 +109,9 @@ export default {
         ...mapState({
             stateLayout: state => state.config.layout,
             showsLoading: state => state.shows.loading
+        }),
+        ...mapGetters({
+            showsInLists: 'showsInLists'
         }),
         mappedLayout() {
             const { layout } = this;
