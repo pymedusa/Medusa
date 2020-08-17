@@ -42,9 +42,6 @@
         <div v-else-if="shows.length >= 1" :class="[['simple', 'small', 'banner'].includes(layout) ? 'table-layout' : '']">
             <component :is="mappedLayout" v-bind="$props" />
         </div>
-
-        <!-- No Shows added -->
-        <span v-else>Please add a show <app-link href="addShows">here</app-link> to get started</span>
     </div>
 </template>
 <script>

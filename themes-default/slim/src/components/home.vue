@@ -60,6 +60,10 @@
                         </draggable>
                     </template>
                 </template>
+
+                <!-- No Shows added -->
+                <span v-if="showsInLists && showsInLists.filter(list => list.shows.length > 0).length === 0">Please add a show <app-link href="addShows">here</app-link> to get started</span>
+
             </div>
         </div>
         <backstretch :slug="config.randomShowSlug" />
@@ -68,6 +72,7 @@
 
 <script>
 import { mapActions, mapGetters, mapState } from 'vuex';
+import { AppLink } from './helpers';
 import { ShowList } from './show-list';
 import { VueTabs, VTab } from 'vue-nav-tabs/dist/vue-tabs.js';
 import Draggable from 'vuedraggable';
@@ -76,6 +81,7 @@ import Backstretch from './backstretch.vue';
 export default {
     name: 'home',
     components: {
+        AppLink,
         Backstretch,
         ShowList,
         VueTabs,
