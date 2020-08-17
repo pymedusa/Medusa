@@ -121,7 +121,7 @@ export default {
 </script>
 
 <style>
-/* Also defined in style.css and dark.css, but i'm overwriting for light and dark, because the schedule table has coloring.*/
+/* Also defined in style.css and dark.css, but i'm overwriting for light and dark, because the schedule table has coloring. */
 td.tvShow a {
     color: rgb(0, 0, 0);
     text-decoration: none;
