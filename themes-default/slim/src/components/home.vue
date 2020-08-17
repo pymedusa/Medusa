@@ -33,14 +33,14 @@
                 <div id="showTabs" v-if="stateLayout.splitHomeInTabs">
                     <vue-tabs @tab-change="tabChange">
                         <v-tab
-                            v-for="showList in showLists"
-                            :key="showList.listTitle"
-                            :title="showList.listTitle"
+                            v-for="showInList in showsInLists"
+                            :key="showInList.listTitle"
+                            :title="showInList.listTitle"
                         >
                             <template v-if="['banner', 'simple', 'small', 'poster'].includes(layout)">
-                                <show-list :id="`${showList.listTitle.toLowerCase()}TabContent`"
+                                <show-list :id="`${showInList.listTitle.toLowerCase()}TabContent`"
                                            v-bind="{
-                                               listTitle: showList.listTitle, layout, shows: showList.shows, header: showLists.length > 1
+                                               listTitle: showInList.listTitle, layout, shows: showInList.shows, header: showInList.length > 1
                                            }"
                                 />
                             </template>
@@ -50,16 +50,20 @@
                 <template v-else>
                     <template v-if="['banner', 'simple', 'small', 'poster'].includes(layout)">
                         <draggable tag="ul" v-model="showList" class="list-group" handle=".move-show-list">
-                            <li v-for="showList in showLists" :key="showList.listTitle">
+                            <li v-for="showInList in showsInLists" :key="showInList.listTitle">
                                 <show-list
                                     v-bind="{
-                                        listTitle: showList.listTitle, layout, shows: showList.shows, header: showLists.length > 1
+                                        listTitle: showInList.listTitle, layout, shows: showInList.shows, header: showInList.length > 1
                                     }"
                                 />
                             </li>
                         </draggable>
                     </template>
                 </template>
+
+                <!-- No Shows added -->
+                <span v-if="showsInLists && showsInLists.filter(list => list.shows.length > 0).length === 0">Please add a show <app-link href="addShows">here</app-link> to get started</span>
+
             </div>
         </div>
         <backstretch :slug="config.randomShowSlug" />
@@ -68,6 +72,7 @@
 
 <script>
 import { mapActions, mapGetters, mapState } from 'vuex';
+import { AppLink } from './helpers';
 import { ShowList } from './show-list';
 import { VueTabs, VTab } from 'vue-nav-tabs/dist/vue-tabs.js';
 import Draggable from 'vuedraggable';
@@ -76,6 +81,7 @@ import Backstretch from './backstretch.vue';
 export default {
     name: 'home',
     components: {
+        AppLink,
         Backstretch,
         ShowList,
         VueTabs,
@@ -102,7 +108,8 @@ export default {
             stats: state => state.stats
         }),
         ...mapGetters({
-            showsWithStats: 'showsWithStats'
+            showsWithStats: 'showsWithStats',
+            showsInLists: 'showsInLists'
         }),
         layout: {
             get() {
@@ -138,42 +145,6 @@ export default {
                 const mergedShowLayout = { ...stateLayout.show, showListOrder: value.map(item => item.value) };
                 setLayoutShow(mergedShowLayout);
             }
-        },
-        showLists() {
-            const { config, filterByName, indexers, layout, stateLayout, showList, showsWithStats } = this;
-            const { rootDirs } = config;
-            const { selectedRootIndex } = stateLayout;
-            if (!indexers.indexers || showsWithStats.length === 0) {
-                return;
-            }
-
-            let shows = null;
-
-            // Filter root dirs
-            shows = showsWithStats.filter(show => selectedRootIndex === -1 || show.config.location.includes(rootDirs.slice(1)[selectedRootIndex]));
-
-            // Filter by text for the banner, simple and smallposter layouts.
-            // The Poster layout uses vue-isotope and this does not respond well to changes to the `list` property.
-            if (layout !== 'poster') {
-                shows = shows.filter(show => show.title.toLowerCase().includes(filterByName.toLowerCase()));
-            }
-
-            const categorizedShows = showList.filter(listTitle => {
-                return listTitle === 'series' || shows.filter(show => show.config.showLists.map(list => list.toLowerCase()).includes(listTitle.toLowerCase())).length > 0;
-            }).map(listTitle => ({ listTitle, shows: shows.filter(show => show.config.showLists.map(list => list.toLowerCase()).includes(listTitle.toLowerCase())) }));
-
-            // Check for shows that are not in any category anymore
-            const uncategorizedShows = shows.filter(show => {
-                return show.config.showLists.map(item => {
-                    return showList.map(list => list.toLowerCase()).includes(item.toLowerCase());
-                }).every(item => !item);
-            });
-
-            if (uncategorizedShows.length > 0) {
-                categorizedShows.push({ listTitle: 'uncategorized', shows: uncategorizedShows });
-            }
-
-            return categorizedShows;
         },
         selectedRootIndexOptions() {
             const { config } = this;

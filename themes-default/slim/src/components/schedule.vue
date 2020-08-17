@@ -121,4 +121,14 @@ export default {
 </script>
 
 <style>
+/* Also defined in style.css and dark.css, but i'm overwriting for light and dark, because the schedule table has coloring. */
+td.tvShow a {
+    color: rgb(0, 0, 0);
+    text-decoration: none;
+}
+
+td.tvShow a:hover {
+    cursor: pointer;
+    color: rgb(66, 139, 202);
+}
 </style>
