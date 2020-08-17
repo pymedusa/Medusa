@@ -51,12 +51,11 @@ import Banner from './banner.vue';
 import Simple from './simple.vue';
 import Poster from './poster.vue';
 import Smallposter from './smallposter.vue';
-import { AppLink, PosterSizeSlider, StateSwitch } from '../helpers';
+import { PosterSizeSlider, StateSwitch } from '../helpers';
 
 export default {
     name: 'show-list',
     components: {
-        AppLink,
         Banner,
         Simple,
         Poster,
