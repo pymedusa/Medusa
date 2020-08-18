@@ -1,7 +1,7 @@
 <template>
     <div>
         <!-- Only show the list title when not in tabs -->
-        <div v-if="!stateLayout.splitHomeInTabs" class="showListTitle listTitle">
+        <div v-if="!stateLayout.splitHomeInTabs && (showsInLists && showsInLists.length > 1)" class="showListTitle listTitle">
             <button type="button" class="nav-show-list move-show-list">
                 <span class="icon-bar" />
                 <span class="icon-bar" />
@@ -42,24 +42,20 @@
         <div v-else-if="shows.length >= 1" :class="[['simple', 'small', 'banner'].includes(layout) ? 'table-layout' : '']">
             <component :is="mappedLayout" v-bind="$props" />
         </div>
-
-        <!-- No Shows added -->
-        <span v-else>Please add a show <app-link href="addShows">here</app-link> to get started</span>
     </div>
 </template>
 <script>
 
-import { mapActions, mapState } from 'vuex';
+import { mapActions, mapGetters, mapState } from 'vuex';
 import Banner from './banner.vue';
 import Simple from './simple.vue';
 import Poster from './poster.vue';
 import Smallposter from './smallposter.vue';
-import { AppLink, PosterSizeSlider, StateSwitch } from '../helpers';
+import { PosterSizeSlider, StateSwitch } from '../helpers';
 
 export default {
     name: 'show-list',
     components: {
-        AppLink,
         Banner,
         Simple,
         Poster,
@@ -109,6 +105,9 @@ export default {
         ...mapState({
             stateLayout: state => state.config.layout,
             showsLoading: state => state.shows.loading
+        }),
+        ...mapGetters({
+            showsInLists: 'showsInLists'
         }),
         mappedLayout() {
             const { layout } = this;

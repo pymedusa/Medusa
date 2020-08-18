@@ -1,3 +1,16 @@
+## 0.4.1 (2020-08-18)
+
+#### New Features
+
+#### Improvements
+
+#### Fixes
+- Fixed show titles displayed in white text on the schedule page ([#8338](https://github.com/pymedusa/Medusa/pull/8338))
+- Fixed Series show list title shown, also when it's the only show list used ([#8338](https://github.com/pymedusa/Medusa/pull/8338))
+- Fixed home table layouts Downloads sorting ([#8338](https://github.com/pymedusa/Medusa/pull/8338))
+- Fixed home table layouts previous and next episode sorting ([#8337](https://github.com/pymedusa/Medusa/pull/8337))
+- Fixed show's show lists not stored after restart ([#8337](https://github.com/pymedusa/Medusa/pull/8337))
+
 ## 0.4.0 (2020-08-15)
 
 #### New Features

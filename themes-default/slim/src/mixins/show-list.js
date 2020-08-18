@@ -47,7 +47,9 @@ export const showlistTableMixin = {
                 hidden: getCookie('Quality')
             }, {
                 label: 'Downloads',
-                field: 'stats.tooltip.text',
+                field: 'stats.tooltip.percentage',
+                sortFn: this.sortDownloads,
+                type: 'boolean',
                 hidden: getCookie('Downloads')
             }, {
                 label: 'Size',
@@ -79,7 +81,11 @@ export const showlistTableMixin = {
         }),
         ...mapGetters({
             fuzzyParseDateTime: 'fuzzyParseDateTime'
-        })
+        }),
+        maxNextAirDate() {
+            const { shows } = this;
+            return Math.max(...shows.filter(show => show.nextAirDate).map(show => Date.parse(show.nextAirDate)));
+        }
     },
     methods: {
         prettyBytes: bytes => pretty(bytes),
@@ -125,40 +131,42 @@ export const showlistTableMixin = {
                 return 0;
             }
 
-            if ((x === null || y === null) && x !== y) {
-                return x < y ? 1 : -1;
+            if (x === null || y === null) {
+                return x === null ? 1 : -1;
             }
 
-            let xTsDiff = Date.parse(x) - Date.now();
-            let yTsDiff = Date.parse(y) - Date.now();
+            // Convert to timestamps
+            x = Date.parse(x);
+            y = Date.parse(y);
 
-            if (x && Date.parse(x) < Date.now()) {
-                xTsDiff += maxNextAirDate;
+            // This next airdate lies in the past. We need to correct this.
+            if (x < Date.now()) {
+                x += maxNextAirDate;
             }
 
-            if (y && Date.parse(y) < Date.now()) {
-                yTsDiff += maxNextAirDate;
+            if (y < Date.now()) {
+                y += maxNextAirDate;
             }
 
-            return (xTsDiff < yTsDiff ? -1 : (xTsDiff > yTsDiff ? 1 : 0));
+            return (x < y ? -1 : (x > y ? 1 : 0));
         },
         sortDatePrev(x, y) {
             if (x === null && y === null) {
                 return 0;
             }
 
-            if ((x === null || y === null) && x !== y) {
-                return x < y ? 1 : -1;
+            // Standardize dates and nulls
+            x = x ? Date.parse(x) : 0;
+            y = y ? Date.parse(y) : 0;
+
+            if (x === null || y === null) {
+                return x === null ? -1 : 1;
             }
 
-            const xTsDiff = Date.parse(x) - Date.now();
-            const yTsDiff = Date.parse(y) - Date.now();
+            const xTsDiff = x - Date.now();
+            const yTsDiff = y - Date.now();
 
-            return (xTsDiff < yTsDiff ? -1 : (xTsDiff > yTsDiff ? 1 : 0));
-        },
-        maxNextAirDate() {
-            const { shows } = this;
-            return Math.max(...shows.filter(show => show.nextAirDate).map(show => Date.parse(show.nextAirDate)));
+            return xTsDiff < yTsDiff ? -1 : (xTsDiff > yTsDiff ? 1 : 0);
         },
         sortTitle(x, y) {
             const { stateLayout } = this;
@@ -173,6 +181,13 @@ export const showlistTableMixin = {
             }
 
             return (titleX < titleY ? -1 : (titleX > titleY ? 1 : 0));
+        },
+        sortDownloads(x, y, _, rowX, rowY) {
+            if ((x === 0 || x === 100) && x === y) {
+                return rowX.stats.episodes.total < rowY.stats.episodes.total ? -1 : (rowX.stats.episodes.total < rowY.stats.episodes.total ? 1 : 0);
+            }
+
+            return x < y ? -1 : (x > y ? 1 : 0);
         }
     }
 };
