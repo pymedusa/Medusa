@@ -1191,27 +1191,6 @@ export default {
 </script>
 
 <style scoped>
-.vgt-global-search__input.vgt-pull-left {
-    float: left;
-    height: 40px;
-}
-
-.vgt-input {
-    border: 1px solid #ccc;
-    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, -webkit-box-shadow 0.15s ease-in-out;
-    height: 30px;
-    padding: 5px 10px;
-    font-size: 12px;
-    line-height: 1.5;
-    border-radius: 3px;
-}
-
-div.vgt-responsive > table tbody > tr > th.vgt-row-header > span {
-    font-size: 24px;
-    margin-top: 20px;
-    margin-bottom: 10px;
-}
-
 .defaultTable.displayShow {
     clear: both;
 }
@@ -1257,6 +1236,27 @@ div.vgt-responsive > table tbody > tr > th.vgt-row-header > span {
 /* =======================================================================
 tablesorter.css
 ========================================================================== */
+
+.displayShow >>> .vgt-global-search__input.vgt-pull-left {
+    float: left;
+    height: 40px;
+}
+
+.displayShow >>> .vgt-input {
+    border: 1px solid #ccc;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, -webkit-box-shadow 0.15s ease-in-out;
+    height: 30px;
+    padding: 5px 10px;
+    font-size: 12px;
+    line-height: 1.5;
+    border-radius: 3px;
+}
+
+.displayShow >>> div.vgt-responsive > table tbody > tr > th.vgt-row-header > span {
+    font-size: 24px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
 
 .displayShow >>> .vgt-table {
     width: 100%;
