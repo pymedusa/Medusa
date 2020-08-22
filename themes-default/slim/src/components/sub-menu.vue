@@ -1,7 +1,7 @@
 <template>
-    <div v-if="subMenu.length > 0" id="sub-menu-wrapper">
-        <div id="sub-menu-container" class="row shadow">
-            <div id="sub-menu" class="submenu-default hidden-print col-md-12">
+    <div v-if="subMenu.length > 0" id="sub-menu-wrapper" class="row">
+        <div id="sub-menu-container" class="col-md-12 shadow">
+            <div id="sub-menu" class="submenu-default hidden-print">
                 <app-link
                     v-for="menuItem in subMenu"
                     :key="`sub-menu-${menuItem.title}`"
@@ -95,6 +95,10 @@ export default {
 </script>
 <style scoped>
 /* Theme-specific styling adds the rest */
+#sub-menu-wrapper {
+    display: flex;
+}
+
 #sub-menu-container {
     z-index: 550;
     min-height: 41px;

@@ -1,31 +1,30 @@
 <template>
     <div id="home">
-        <div v-if="['banner', 'simple', 'small'].includes(layout)" class="row">
-            <div class="col-sm-12">
-                <div class="home-filter-option option-filter-name">
-                    <input v-model="filterByName" id="filterShowName" class="form-control form-control-inline input-sm input200" type="search" placeholder="Filter Show Name">
-                </div>
-            </div>
-        </div>
 
         <div class="row">
             <div class="col-sm-12">
-                <div class="home-filter-option pull-left" id="showRoot">
-                    <select :value="stateLayout.selectedRootIndex" name="showRootDir" id="showRootDir" class="form-control form-control-inline input-sm" @change="setStoreLayout({ key: 'selectedRootIndex', value: Number($event.target.selectedOptions[0].value) });">
-                        <option v-for="option in selectedRootIndexOptions" :key="option.value" :value="String(option.value)">{{option.text}}</option>
-                    </select>
+                <div class="home-options">
+                    <div v-if="['banner', 'simple', 'small'].includes(layout)" class="home-filter-option option-filter-name pull-left">
+                        <input v-model="filterByName" id="filterShowName" class="form-control form-control-inline input-sm input200" type="search" placeholder="Filter Show Name">
+                    </div>
+                    <div v-if="selectedRootIndexOptions.length > 1" class="home-filter-option pull-left" id="showRoot">
+                        <select :value="stateLayout.selectedRootIndex" name="showRootDir" id="showRootDir" class="form-control form-control-inline input-sm" @change="setStoreLayout({ key: 'selectedRootIndex', value: Number($event.target.selectedOptions[0].value) });">
+                            <option v-for="option in selectedRootIndexOptions" :key="option.value" :value="String(option.value)">{{option.text}}</option>
+                        </select>
+                    </div>
+                    <div class="home-filter-option show-option-layout pull-left">
+                        <span>Layout: </span>
+                        <select v-model="layout" name="layout" class="form-control form-control-inline input-sm show-layout">
+                            <option value="poster">Poster</option>
+                            <option value="small">Small Poster</option>
+                            <option value="banner">Banner</option>
+                            <option value="simple">Simple</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="home-filter-option show-option-layout pull-right">
-                    <span>Layout: </span>
-                    <select v-model="layout" name="layout" class="form-control form-control-inline input-sm show-layout">
-                        <option value="poster">Poster</option>
-                        <option value="small">Small Poster</option>
-                        <option value="banner">Banner</option>
-                        <option value="simple">Simple</option>
-                    </select>
-                </div>
+
             </div>
-        </div><!-- end row -->
+        </div>
 
         <div class="row">
             <div class="col-md-12">
@@ -149,7 +148,11 @@ export default {
         selectedRootIndexOptions() {
             const { config } = this;
             const { rootDirs } = config;
-            return [...[{ value: -1, text: 'All Folders' }], ...rootDirs.slice(1).map((item, idx) => ({ text: item, value: idx }))];
+            let mappedRootDirs = rootDirs.slice(1).map((item, idx) => ({ text: item, value: idx }));
+            if (mappedRootDirs && mappedRootDirs.length > 1) {
+                mappedRootDirs = [...[{ value: -1, text: 'All Folders' }], ...mappedRootDirs];
+            }
+            return mappedRootDirs;
         }
     },
     methods: {
@@ -194,6 +197,10 @@ export default {
 <style scoped>
 ul.list-group > li {
     list-style: none;
+}
+
+.home-options {
+    float: right;
 }
 
 .home-filter-option {
