@@ -384,7 +384,7 @@ class Series(TV):
                     u'\u05E7': 'q',  # ק
                     u'\u05E9': 's',  # ש
                     u'\u05EA': 't',  # ת
-                    ' ':'-'})
+                    ' ': '-'})
             for key in dict:
                 str = str.replace(key, dict[key])
             return str.lower()
