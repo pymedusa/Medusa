@@ -375,16 +375,16 @@ class Series(TV):
         """Get the network logo name."""
 
         def sanitize_network_names(str):
-            dict = ( {
-            u'\u010C':'C', # Č
-            u'\u00E1':"a", # á
-            u'\u00E9':'e', # é
-            u'\u00F1':'n', # ñ
-            u'\u00C9':'e', # É
-            u'\u05E7':'q', # ק
-            u'\u05E9':'s', # ש
-            u'\u05EA':'t', # ת
-            ' ':'-' } )
+            dict = ({
+                    u'\u010C': 'C',  # Č
+                    u'\u00E1': 'a',  # á
+                    u'\u00E9': 'e',  # é
+                    u'\u00F1': 'n',  # ñ
+                    u'\u00C9': 'e',  # É
+                    u'\u05E7': 'q',  # ק
+                    u'\u05E9': 's',  # ש
+                    u'\u05EA': 't',  # ת
+                    ' ':'-'})
             for key in dict:
                 str = str.replace(key, dict[key])
             return str.lower()
