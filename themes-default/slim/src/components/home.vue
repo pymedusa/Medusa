@@ -2,7 +2,7 @@
     <div id="home">
 
         <div class="row">
-            <div class="col-sm-12">
+            <div class="col-sm-12 align-center">
                 <div class="home-options">
                     <div v-if="['banner', 'simple', 'small'].includes(layout)" class="home-filter-option option-filter-name pull-left">
                         <input v-model="filterByName" id="filterShowName" class="form-control form-control-inline input-sm input200" type="search" placeholder="Filter Show Name">
@@ -199,8 +199,10 @@ ul.list-group > li {
     list-style: none;
 }
 
-.home-options {
-    float: right;
+.align-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .home-filter-option {
