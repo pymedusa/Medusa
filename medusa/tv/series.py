@@ -375,7 +375,7 @@ class Series(TV):
         """Get the network logo name."""
 
         def sanitize_network_names(str):
-            dict = ( {.
+            dict = ( {
             u'\u010C':'C', # Č
             u'\u00E1':"a", # á
             u'\u00E9':'e', # é
