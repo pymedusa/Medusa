@@ -747,6 +747,9 @@ export default {
         },
         rowStyleClassFn(row) {
             const { getOverviewStatus, show } = this;
+            if (Object.keys(row).includes('vgt_header_id')) {
+                return;
+            }
             const overview = getOverviewStatus(row.status, row.quality, show.config.qualities).toLowerCase().trim();
             return overview;
         },

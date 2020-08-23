@@ -4,9 +4,6 @@
         <div class="row">
             <div class="col-sm-12 align-center">
                 <div class="home-options">
-                    <div v-if="['banner', 'simple', 'small'].includes(layout)" class="home-filter-option option-filter-name pull-left">
-                        <input v-model="filterByName" id="filterShowName" class="form-control form-control-inline input-sm input200" type="search" placeholder="Filter Show Name">
-                    </div>
                     <div v-if="selectedRootIndexOptions.length > 1" class="home-filter-option pull-left" id="showRoot">
                         <select :value="stateLayout.selectedRootIndex" name="showRootDir" id="showRootDir" class="form-control form-control-inline input-sm" @change="setStoreLayout({ key: 'selectedRootIndex', value: Number($event.target.selectedOptions[0].value) });">
                             <option v-for="option in selectedRootIndexOptions" :key="option.value" :value="String(option.value)">{{option.text}}</option>
@@ -141,7 +138,7 @@ export default {
             },
             set(value) {
                 const { stateLayout, setLayoutShow } = this;
-                const mergedShowLayout = { ...stateLayout.show, showListOrder: value.map(item => item.value) };
+                const mergedShowLayout = { ...stateLayout.show, showListOrder: value };
                 setLayoutShow(mergedShowLayout);
             }
         },
@@ -197,6 +194,7 @@ export default {
 <style scoped>
 ul.list-group > li {
     list-style: none;
+    margin-bottom: 10px;
 }
 
 .align-center {

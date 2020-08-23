@@ -30,19 +30,33 @@ export const showlistTableMixin = {
             }, {
                 label: 'Show',
                 field: 'title',
+                filterOptions: {
+                    enabled: true
+                },
                 sortFn: this.sortTitle,
                 hidden: getCookie('Show')
             }, {
                 label: 'Network',
                 field: 'network',
+                filterOptions: {
+                    enabled: true
+                },
                 hidden: getCookie('Network')
             }, {
                 label: 'Indexer',
                 field: 'indexer',
+                filterOptions: {
+                    enabled: true,
+                    filterDropdownItems: ['tvdb', 'tvmaze', 'tmdb']
+                },
                 hidden: getCookie('Indexer')
             }, {
                 label: 'Quality',
-                field: 'quality',
+                field: 'config.qualities',
+                filterOptions: {
+                    enabled: true,
+                    filterFn: this.qualityColumnFilterFn
+                },
                 sortable: false,
                 hidden: getCookie('Quality')
             }, {
@@ -59,15 +73,36 @@ export const showlistTableMixin = {
             }, {
                 label: 'Active',
                 field: this.fealdFnActive,
+                filterOptions: {
+                    enabled: true,
+                    filterDropdownItems: [
+                        { value: true, text: 'yes' },
+                        { value: false, text: 'no' }
+                    ]
+                },
                 type: 'boolean',
                 hidden: getCookie('Active')
             }, {
                 label: 'Status',
                 field: 'status',
+                filterOptions: {
+                    enabled: true,
+                    filterDropdownItems: [
+                        { value: true, text: 'yes' },
+                        { value: false, text: 'no' }
+                    ]
+                },
                 hidden: getCookie('Status')
             }, {
                 label: 'Xem',
                 field: this.fealdFnXem,
+                filterOptions: {
+                    enabled: true,
+                    filterDropdownItems: [
+                        { value: true, text: 'yes' },
+                        { value: false, text: 'no' }
+                    ]
+                },
                 type: 'boolean',
                 hidden: getCookie('Xem')
             }]
@@ -77,10 +112,12 @@ export const showlistTableMixin = {
         ...mapState({
             config: state => state.config.general,
             indexerConfig: state => state.config.indexers.indexers,
-            stateLayout: state => state.config.layout
+            stateLayout: state => state.config.layout,
+            qualityValues: state => state.config.consts.qualities.values
         }),
         ...mapGetters({
-            fuzzyParseDateTime: 'fuzzyParseDateTime'
+            fuzzyParseDateTime: 'fuzzyParseDateTime',
+            showsInLists: 'showsInLists'
         }),
         maxNextAirDate() {
             const { shows } = this;
@@ -188,6 +225,10 @@ export const showlistTableMixin = {
             }
 
             return x < y ? -1 : (x > y ? 1 : 0);
+        },
+        qualityColumnFilterFn(data, filterString) {
+            const { qualityValues } = this;
+            return [...data.allowed, ...data.preferred].map(q => qualityValues.find(qv => qv.value === q).name.includes(filterString)).some(isTrue => isTrue);
         }
     }
 };

@@ -1,15 +1,5 @@
 <template>
     <div>
-        <!-- Only show the list title when not in tabs -->
-        <div v-if="!stateLayout.splitHomeInTabs && (showsInLists && showsInLists.length > 1)" class="showListTitle listTitle">
-            <button type="button" class="nav-show-list move-show-list">
-                <span class="icon-bar" />
-                <span class="icon-bar" />
-                <span class="icon-bar" />
-            </button>
-            <h2 class="header">{{listTitle}}</h2>
-        </div>
-
         <div v-if="layout ==='poster'" class="row poster-ui-controls">
             <div class="col-lg-12">
                 <div class="show-option">
@@ -42,20 +32,24 @@
         <div v-else-if="shows.length >= 1" :class="[['simple', 'small', 'banner'].includes(layout) ? 'table-layout' : '']">
             <component :is="mappedLayout" v-bind="$props" />
         </div>
+
+        <!-- No Shows added -->
+        <span v-else>Please add a show <app-link href="addShows">here</app-link> to get started</span>
     </div>
 </template>
 <script>
 
-import { mapActions, mapGetters, mapState } from 'vuex';
+import { mapActions, mapState } from 'vuex';
 import Banner from './banner.vue';
 import Simple from './simple.vue';
 import Poster from './poster.vue';
 import Smallposter from './smallposter.vue';
-import { PosterSizeSlider, StateSwitch } from '../helpers';
+import { AppLink, PosterSizeSlider, StateSwitch } from '../helpers';
 
 export default {
     name: 'show-list',
     components: {
+        AppLink,
         Banner,
         Simple,
         Poster,
@@ -106,9 +100,6 @@ export default {
             stateLayout: state => state.config.layout,
             showsLoading: state => state.shows.loading
         }),
-        ...mapGetters({
-            showsInLists: 'showsInLists'
-        }),
         mappedLayout() {
             const { layout } = this;
             if (layout === 'small') {
@@ -148,6 +139,17 @@ export default {
 };
 </script>
 <style scoped>
+.table-layout >>> .show-list-title {
+    float: left;
+    position: relative;
+}
+
+.table-layout >>> h3.header {
+    display: inline;
+    position: absolute;
+    top: -17px;
+}
+
 /** Use this as table styling for all table layouts */
 .table-layout >>> .vgt-table {
     width: 100%;
@@ -236,6 +238,10 @@ export default {
 
 .table-layout >>> .vgt-table tr.spacer {
     height: 25px;
+}
+
+.table-layout >>> .vgt-dropdown {
+    float: right;
 }
 
 .table-layout >>> .vgt-dropdown-menu {
