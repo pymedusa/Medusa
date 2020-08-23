@@ -22,26 +22,26 @@ exports[`AppHeader.test.js renders 1`] = `
         >
           1
         </span>
-         
+
         <span
           class="sr-only"
         >
           Toggle navigation
         </span>
-         
+
         <span
           class="icon-bar"
         />
-         
+
         <span
           class="icon-bar"
         />
-         
+
         <span
           class="icon-bar"
         />
       </button>
-       
+
       <app-link-stub
         class="navbar-brand"
         href="home/"
@@ -56,7 +56,7 @@ exports[`AppHeader.test.js renders 1`] = `
         />
       </app-link-stub>
     </div>
-     
+
     <div
       class="collapse navbar-collapse"
       id="main_nav"
@@ -79,12 +79,12 @@ exports[`AppHeader.test.js renders 1`] = `
             <span>
               Shows
             </span>
-             
+
             <b
               class="caret"
             />
           </app-link-stub>
-           
+
           <ul
             class="dropdown-menu"
           >
@@ -99,7 +99,7 @@ exports[`AppHeader.test.js renders 1`] = `
                  Show List
               </app-link-stub>
             </li>
-             
+
             <li>
               <app-link-stub
                 href="addShows/"
@@ -111,7 +111,7 @@ exports[`AppHeader.test.js renders 1`] = `
                  Add Shows
               </app-link-stub>
             </li>
-             
+
             <li>
               <app-link-stub
                 href="addRecommended/"
@@ -123,7 +123,7 @@ exports[`AppHeader.test.js renders 1`] = `
                  Add Recommended Shows
               </app-link-stub>
             </li>
-             
+
             <li>
               <app-link-stub
                 href="home/postprocess/"
@@ -135,12 +135,12 @@ exports[`AppHeader.test.js renders 1`] = `
                  Manual Post-Processing
               </app-link-stub>
             </li>
-             
+
             <li
               class="divider"
               role="separator"
             />
-             
+
             <li>
               <app-link-stub
                 href="home/displayShow?indexername=tvdb&seriesid=253463"
@@ -150,7 +150,7 @@ exports[`AppHeader.test.js renders 1`] = `
                   class="menu-icon-addshow"
                 />
                  Black Mirror
-                            
+
               </app-link-stub>
             </li>
             <li>
@@ -162,16 +162,16 @@ exports[`AppHeader.test.js renders 1`] = `
                   class="menu-icon-addshow"
                 />
                  The Big Bang Theory
-                            
+
               </app-link-stub>
             </li>
           </ul>
-           
+
           <div
             style="clear: both;"
           />
         </li>
-         
+
         <li
           class="navbar-split"
           id="NAVschedule"
@@ -183,7 +183,7 @@ exports[`AppHeader.test.js renders 1`] = `
             Schedule
           </app-link-stub>
         </li>
-         
+
         <li
           class="navbar-split"
           id="NAVhistory"
@@ -195,7 +195,7 @@ exports[`AppHeader.test.js renders 1`] = `
             History
           </app-link-stub>
         </li>
-         
+
         <li
           class="navbar-split dropdown"
           id="NAVmanage"
@@ -211,12 +211,12 @@ exports[`AppHeader.test.js renders 1`] = `
             <span>
               Manage
             </span>
-             
+
             <b
               class="caret"
             />
           </app-link-stub>
-           
+
           <ul
             class="dropdown-menu"
           >
@@ -231,7 +231,7 @@ exports[`AppHeader.test.js renders 1`] = `
                  Mass Update
               </app-link-stub>
             </li>
-             
+
             <li>
               <app-link-stub
                 href="manage/backlogOverview/"
@@ -243,7 +243,7 @@ exports[`AppHeader.test.js renders 1`] = `
                  Backlog Overview
               </app-link-stub>
             </li>
-             
+
             <li>
               <app-link-stub
                 href="manage/manageSearches/"
@@ -255,7 +255,7 @@ exports[`AppHeader.test.js renders 1`] = `
                  Manage Searches
               </app-link-stub>
             </li>
-             
+
             <li>
               <app-link-stub
                 href="manage/episodeStatuses/"
@@ -267,9 +267,9 @@ exports[`AppHeader.test.js renders 1`] = `
                  Episode Status Management
               </app-link-stub>
             </li>
-             
+
             <!---->
-             
+
             <li>
               <app-link-stub
                 href="home/updateKODI/"
@@ -281,11 +281,11 @@ exports[`AppHeader.test.js renders 1`] = `
                  Update KODI
               </app-link-stub>
             </li>
-             
+
             <!---->
-             
+
             <!---->
-             
+
             <li>
               <app-link-stub
                 href="manage/failedDownloads/"
@@ -297,7 +297,7 @@ exports[`AppHeader.test.js renders 1`] = `
                  Failed Downloads
               </app-link-stub>
             </li>
-             
+
             <li>
               <app-link-stub
                 href="manage/subtitleMissed/"
@@ -309,15 +309,15 @@ exports[`AppHeader.test.js renders 1`] = `
                  Missed Subtitle Management
               </app-link-stub>
             </li>
-             
+
             <!---->
           </ul>
-           
+
           <div
             style="clear: both;"
           />
         </li>
-         
+
         <li
           class="navbar-split dropdown"
           id="NAVconfig"
@@ -339,12 +339,12 @@ exports[`AppHeader.test.js renders 1`] = `
               class="navbaricon hidden-xs"
               src="images/menu/system18.png"
             />
-             
+
             <b
               class="caret"
             />
           </app-link-stub>
-           
+
           <ul
             class="dropdown-menu"
           >
@@ -359,7 +359,7 @@ exports[`AppHeader.test.js renders 1`] = `
                  Help & Info
               </app-link-stub>
             </li>
-             
+
             <li>
               <app-link-stub
                 href="config/general/"
@@ -371,7 +371,7 @@ exports[`AppHeader.test.js renders 1`] = `
                  General
               </app-link-stub>
             </li>
-             
+
             <li>
               <app-link-stub
                 href="config/backuprestore/"
@@ -383,7 +383,7 @@ exports[`AppHeader.test.js renders 1`] = `
                  Backup & Restore
               </app-link-stub>
             </li>
-             
+
             <li>
               <app-link-stub
                 href="config/search/"
@@ -395,7 +395,7 @@ exports[`AppHeader.test.js renders 1`] = `
                  Search Settings
               </app-link-stub>
             </li>
-             
+
             <li>
               <app-link-stub
                 href="config/providers/"
@@ -407,7 +407,7 @@ exports[`AppHeader.test.js renders 1`] = `
                  Search Providers
               </app-link-stub>
             </li>
-             
+
             <li>
               <app-link-stub
                 href="config/subtitles/"
@@ -419,7 +419,7 @@ exports[`AppHeader.test.js renders 1`] = `
                  Subtitles Settings
               </app-link-stub>
             </li>
-             
+
             <li>
               <app-link-stub
                 href="config/postProcessing/"
@@ -431,7 +431,7 @@ exports[`AppHeader.test.js renders 1`] = `
                  Post-Processing
               </app-link-stub>
             </li>
-             
+
             <li>
               <app-link-stub
                 href="config/notifications/"
@@ -443,7 +443,7 @@ exports[`AppHeader.test.js renders 1`] = `
                  Notifications
               </app-link-stub>
             </li>
-             
+
             <li>
               <app-link-stub
                 href="config/anime/"
@@ -456,12 +456,12 @@ exports[`AppHeader.test.js renders 1`] = `
               </app-link-stub>
             </li>
           </ul>
-           
+
           <div
             style="clear: both;"
           />
         </li>
-         
+
         <li
           class="navbar-split dropdown"
           id="NAVsystem"
@@ -483,18 +483,18 @@ exports[`AppHeader.test.js renders 1`] = `
               class="navbaricon hidden-xs"
               src="images/menu/system18-2.png"
             />
-             
+
             <span
               class="badge"
             >
               1
             </span>
-             
+
             <b
               class="caret"
             />
           </app-link-stub>
-           
+
           <ul
             class="dropdown-menu"
           >
@@ -506,7 +506,7 @@ exports[`AppHeader.test.js renders 1`] = `
                 <i
                   class="menu-icon-news"
                 />
-                 News 
+                 News
                 <span
                   class="badge"
                 >
@@ -514,7 +514,7 @@ exports[`AppHeader.test.js renders 1`] = `
                 </span>
               </app-link-stub>
             </li>
-             
+
             <li>
               <app-link-stub
                 href="IRC/"
@@ -526,7 +526,7 @@ exports[`AppHeader.test.js renders 1`] = `
                  IRC
               </app-link-stub>
             </li>
-             
+
             <li>
               <app-link-stub
                 href="changes/"
@@ -538,28 +538,16 @@ exports[`AppHeader.test.js renders 1`] = `
                  Changelog
               </app-link-stub>
             </li>
-             
-            <li>
-              <app-link-stub
-                href="https://github.com/pymedusa/Medusa/wiki/Donations"
-                placeholder="indexer-to-name"
-              >
-                <i
-                  class="menu-icon-support"
-                />
-                 Support Medusa
-              </app-link-stub>
-            </li>
-             
+
             <li
               class="divider"
               role="separator"
             />
-             
+
             <!---->
-             
+
             <!---->
-             
+
             <li>
               <app-link-stub
                 href="errorlogs/viewlog/"
@@ -571,12 +559,12 @@ exports[`AppHeader.test.js renders 1`] = `
                  View Log
               </app-link-stub>
             </li>
-             
+
             <li
               class="divider"
               role="separator"
             />
-             
+
             <li>
               <app-link-stub
                 href="home/updateCheck?pid=1234"
@@ -588,7 +576,7 @@ exports[`AppHeader.test.js renders 1`] = `
                  Check For Updates
               </app-link-stub>
             </li>
-             
+
             <li>
               <app-link-stub
                 href="home/restart/?pid=1234"
@@ -600,7 +588,7 @@ exports[`AppHeader.test.js renders 1`] = `
                  Restart
               </app-link-stub>
             </li>
-             
+
             <li>
               <app-link-stub
                 href="home/shutdown/?pid=1234"
@@ -612,7 +600,7 @@ exports[`AppHeader.test.js renders 1`] = `
                  Shutdown
               </app-link-stub>
             </li>
-             
+
             <li>
               <app-link-stub
                 href="logout"
@@ -624,12 +612,12 @@ exports[`AppHeader.test.js renders 1`] = `
                  Logout
               </app-link-stub>
             </li>
-             
+
             <li
               class="divider"
               role="separator"
             />
-             
+
             <li>
               <app-link-stub
                 href="home/status/"
@@ -642,7 +630,7 @@ exports[`AppHeader.test.js renders 1`] = `
               </app-link-stub>
             </li>
           </ul>
-           
+
           <div
             style="clear: both;"
           />
