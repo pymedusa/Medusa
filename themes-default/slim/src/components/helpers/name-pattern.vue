@@ -241,7 +241,7 @@
                     <span>Add Absolute Number</span>
                 </label>
                 <div class="col-sm-10 content">
-                    <input type="radio" name="naming_anime" id="naming_anime" value="1" v-model="animeType" @change="updatePatternSamples" @input="update()">
+                    <input type="radio" name="naming_anime" id="naming_anime" value="1" v-model="animeType" @change="updatePatternSamples">
                     <span>Add the absolute number to the season/episode format?</span>
                     <p>Only applies to animes. (e.g. S15E45 - 310 vs S15E45)</p>
                 </div>
@@ -252,7 +252,7 @@
                     <span>Only Absolute Number</span>
                 </label>
                 <div class="col-sm-10 content">
-                    <input type="radio" name="naming_anime" id="naming_anime_only" value="2" v-model="animeType" @change="updatePatternSamples" @input="update()">
+                    <input type="radio" name="naming_anime" id="naming_anime_only" value="2" v-model="animeType" @change="updatePatternSamples">
                     <span>Replace season/episode format with absolute number</span>
                     <p>Only applies to animes.</p>
                 </div>
@@ -263,7 +263,7 @@
                     <span>No Absolute Number</span>
                 </label>
                 <div class="col-sm-10 content">
-                    <input type="radio" name="naming_anime" id="naming_anime_none" value="3" v-model="animeType" @change="updatePatternSamples" @input="update()">
+                    <input type="radio" name="naming_anime" id="naming_anime_none" value="3" v-model="animeType" @change="updatePatternSamples">
                     <span>Don't include the absolute number</span>
                     <p>Only applies to animes.</p>
                 </div>
@@ -411,21 +411,21 @@ export default {
 
                 this.checkNaming(pattern, this.selectedMultiEpStyle, this.animeType);
             }
+
+            this.update();
         },
         update() {
             if (!this.flagLoaded) {
                 return;
             }
 
-            this.$nextTick(() => {
-                this.$emit('change', {
-                    pattern: this.isCustom ? this.customName : this.pattern,
-                    type: this.type,
-                    multiEpStyle: this.selectedMultiEpStyle,
-                    custom: this.isCustom,
-                    enabled: this.isEnabled,
-                    animeNamingType: Number(this.animeType)
-                });
+            this.$emit('change', {
+                pattern: this.isCustom ? this.customName : this.pattern,
+                type: this.type,
+                multiEpStyle: this.selectedMultiEpStyle,
+                custom: this.isCustom,
+                enabled: this.isEnabled,
+                animeNamingType: Number(this.animeType)
             });
         },
         checkNaming(pattern, selectedMultiEpStyle, animeType) {
