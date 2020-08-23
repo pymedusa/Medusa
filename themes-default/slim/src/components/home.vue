@@ -2,14 +2,15 @@
     <div id="home">
 
         <div class="row">
-            <div class="col-sm-12 align-center">
+            <div class="col-sm-12 home-header-controls">
+                <h2 class="header pull-left">Show List</h2>
                 <div class="home-options">
-                    <div v-if="selectedRootIndexOptions.length > 1" class="home-filter-option pull-left" id="showRoot">
+                    <div v-if="selectedRootIndexOptions.length > 1" class="home-filter-option pull-right" id="showRoot">
                         <select :value="stateLayout.selectedRootIndex" name="showRootDir" id="showRootDir" class="form-control form-control-inline input-sm" @change="setStoreLayout({ key: 'selectedRootIndex', value: Number($event.target.selectedOptions[0].value) });">
                             <option v-for="option in selectedRootIndexOptions" :key="option.value" :value="String(option.value)">{{option.text}}</option>
                         </select>
                     </div>
-                    <div class="home-filter-option show-option-layout pull-left">
+                    <div class="home-filter-option show-option-layout pull-right">
                         <span>Layout: </span>
                         <select v-model="layout" name="layout" class="form-control form-control-inline input-sm show-layout">
                             <option value="poster">Poster</option>
@@ -19,7 +20,6 @@
                         </select>
                     </div>
                 </div>
-
             </div>
         </div>
 
@@ -201,6 +201,19 @@ ul.list-group > li {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.home-header-controls {
+    display: flex;
+}
+
+.home-header-controls > h2 {
+    white-space: nowrap;
+}
+
+.home-options {
+    align-self: flex-end;
+    width: 100%;
 }
 
 .home-filter-option {

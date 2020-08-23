@@ -1,6 +1,15 @@
 <template>
     <div>
         <div v-if="layout ==='poster'" class="row poster-ui-controls">
+            <!-- Only show the list title when not in tabs & only for the poster layout -->
+            <div v-if="!stateLayout.splitHomeInTabs && (showsInLists && showsInLists.length > 1)" class="show-list-title listTitle">
+                <button type="button" class="nav-show-list move-show-list">
+                    <span class="icon-bar" />
+                    <span class="icon-bar" />
+                    <span class="icon-bar" />
+                </button>
+                <h3 class="header">{{listTitle}}</h3>
+            </div>
             <div class="col-lg-12">
                 <div class="show-option">
                     <!-- These need to patch apiv2 on change! -->
@@ -24,14 +33,14 @@
         </div>
 
         <!-- We're still loading -->
-        <div v-if="!this.showsLoading.finished && shows.length === 0">
+        <template v-if="!this.showsLoading.finished && shows.length === 0">
             <state-switch state="loading" :theme="stateLayout.themeName" />
             <span>Loading</span>
-        </div>
+        </template>
 
-        <div v-else-if="shows.length >= 1" :class="[['simple', 'small', 'banner'].includes(layout) ? 'table-layout' : '']">
-            <component :is="mappedLayout" v-bind="$props" />
-        </div>
+        <template v-else-if="shows.length >= 1">
+            <component :class="[['simple', 'small', 'banner'].includes(layout) ? 'table-layout' : '']" :is="mappedLayout" v-bind="$props" />
+        </template>
 
         <!-- No Shows added -->
         <span v-else>Please add a show <app-link href="addShows">here</app-link> to get started</span>
@@ -39,7 +48,7 @@
 </template>
 <script>
 
-import { mapActions, mapState } from 'vuex';
+import { mapActions, mapGetters, mapState } from 'vuex';
 import Banner from './banner.vue';
 import Simple from './simple.vue';
 import Poster from './poster.vue';
@@ -100,6 +109,9 @@ export default {
             stateLayout: state => state.config.layout,
             showsLoading: state => state.shows.loading
         }),
+        ...mapGetters({
+            showsInLists: 'showsInLists'
+        }),
         mappedLayout() {
             const { layout } = this;
             if (layout === 'small') {
@@ -139,6 +151,20 @@ export default {
 };
 </script>
 <style scoped>
+
+.show-list-title {
+    display: flex;
+}
+
+button.nav-show-list {
+    height: 20px;
+}
+
+.show-list-title > h3 {
+    margin-top: 3px;
+    margin-bottom: px;
+}
+
 .table-layout >>> .show-list-title {
     float: left;
     position: relative;
