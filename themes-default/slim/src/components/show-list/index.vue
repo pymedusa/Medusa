@@ -152,8 +152,11 @@ export default {
 </script>
 <style scoped>
 
+/* Configure the show-list-title for in the poster layout. */
 .show-list-title {
     display: flex;
+    float: left;
+    margin-top: 6px;
 }
 
 button.nav-show-list {
@@ -161,19 +164,21 @@ button.nav-show-list {
 }
 
 .show-list-title > h3 {
-    margin-top: 3px;
-    margin-bottom: px;
+    margin: 0;
 }
 
+/* Configure the show-list-title for in the table layouts. */
 .table-layout >>> .show-list-title {
+    display: flex;
     float: left;
-    position: relative;
 }
 
-.table-layout >>> h3.header {
-    display: inline;
-    position: absolute;
-    top: -17px;
+.table-layout >>>  button.nav-show-list {
+    height: 20px;
+}
+
+.table-layout >>> .show-list-title > h3 {
+    margin: 0;
 }
 
 /** Use this as table styling for all table layouts */
