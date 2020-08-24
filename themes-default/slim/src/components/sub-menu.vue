@@ -95,10 +95,6 @@ export default {
 </script>
 <style scoped>
 /* Theme-specific styling adds the rest */
-#sub-menu-wrapper {
-    display: flex;
-}
-
 #sub-menu-container {
     z-index: 550;
     min-height: 41px;
@@ -126,6 +122,12 @@ export default {
     #sub-menu-container {
         position: relative;
         margin-top: -24px;
+    }
+}
+
+@media (max-width: 767px) {
+    #sub-menu-wrapper {
+        display: flex;
     }
 }
 </style>
