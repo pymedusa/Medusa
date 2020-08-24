@@ -306,4 +306,13 @@ button.nav-show-list {
 .table-layout >>> .indexer-image :not(:last-child) {
     margin-right: 5px;
 }
+
+.table-layout >>> .vgt-input {
+    width: 100%;
+}
+
+.table-layout >>> .vgt-select {
+    margin-top: -1px;
+}
+
 </style>

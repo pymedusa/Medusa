@@ -86,11 +86,7 @@ export const showlistTableMixin = {
                 label: 'Status',
                 field: 'status',
                 filterOptions: {
-                    enabled: true,
-                    filterDropdownItems: [
-                        { value: true, text: 'yes' },
-                        { value: false, text: 'no' }
-                    ]
+                    enabled: true
                 },
                 hidden: getCookie('Status')
             }, {
