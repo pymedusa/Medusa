@@ -151,7 +151,6 @@ export default {
 };
 </script>
 <style scoped>
-
 /* Configure the show-list-title for in the poster layout. */
 .show-list-title {
     display: flex;
@@ -173,7 +172,7 @@ button.nav-show-list {
     float: left;
 }
 
-.table-layout >>>  button.nav-show-list {
+.table-layout >>> button.nav-show-list {
     height: 20px;
 }
 
