@@ -83,7 +83,6 @@
                             <li><app-link href="news/"><i class="menu-icon-news" />&nbsp;News <span v-if="system.news.unread > 0" class="badge">{{ system.news.unread }}</span></app-link></li>
                             <li><app-link href="IRC/"><i class="menu-icon-irc" />&nbsp;IRC</app-link></li>
                             <li><app-link href="changes/"><i class="menu-icon-changelog" />&nbsp;Changelog</app-link></li>
-                            <li><app-link :href="config.donationsUrl"><i class="menu-icon-support" />&nbsp;Support Medusa</app-link></li>
                             <li role="separator" class="divider" />
                             <li v-if="config.logs.numErrors > 0"><app-link href="errorlogs/"><i class="menu-icon-error" />&nbsp;View Errors <span class="badge btn-danger">{{config.logs.numErrors}}</span></app-link></li>
                             <li v-if="config.logs.numWarnings > 0"><app-link :href="`errorlogs/?level=${warningLevel}`"><i class="menu-icon-viewlog-errors" />&nbsp;View Warnings <span class="badge btn-warning">{{config.logs.numWarnings}}</span></app-link></li>

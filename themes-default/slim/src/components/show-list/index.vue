@@ -1,16 +1,15 @@
 <template>
     <div>
-        <!-- Only show the list title when not in tabs -->
-        <div v-if="!stateLayout.splitHomeInTabs && (showsInLists && showsInLists.length > 1)" class="showListTitle listTitle">
-            <button type="button" class="nav-show-list move-show-list">
-                <span class="icon-bar" />
-                <span class="icon-bar" />
-                <span class="icon-bar" />
-            </button>
-            <h2 class="header">{{listTitle}}</h2>
-        </div>
-
         <div v-if="layout ==='poster'" class="row poster-ui-controls">
+            <!-- Only show the list title when not in tabs & only for the poster layout -->
+            <div v-if="!stateLayout.splitHomeInTabs && (showsInLists && showsInLists.length > 1)" class="show-list-title listTitle">
+                <button type="button" class="nav-show-list move-show-list">
+                    <span class="icon-bar" />
+                    <span class="icon-bar" />
+                    <span class="icon-bar" />
+                </button>
+                <h3 class="header">{{listTitle}}</h3>
+            </div>
             <div class="col-lg-12">
                 <div class="show-option">
                     <!-- These need to patch apiv2 on change! -->
@@ -34,14 +33,17 @@
         </div>
 
         <!-- We're still loading -->
-        <div v-if="!this.showsLoading.finished && shows.length === 0">
+        <template v-if="!this.showsLoading.finished && shows.length === 0">
             <state-switch state="loading" :theme="stateLayout.themeName" />
             <span>Loading</span>
-        </div>
+        </template>
 
-        <div v-else-if="shows.length >= 1" :class="[['simple', 'small', 'banner'].includes(layout) ? 'table-layout' : '']">
-            <component :is="mappedLayout" v-bind="$props" />
-        </div>
+        <template v-else-if="shows.length >= 1">
+            <component :class="[['simple', 'small', 'banner'].includes(layout) ? 'table-layout' : '']" :is="mappedLayout" v-bind="$props" />
+        </template>
+
+        <!-- No Shows added -->
+        <span v-else>Please add a show <app-link href="addShows">here</app-link> to get started</span>
     </div>
 </template>
 <script>
@@ -51,11 +53,12 @@ import Banner from './banner.vue';
 import Simple from './simple.vue';
 import Poster from './poster.vue';
 import Smallposter from './smallposter.vue';
-import { PosterSizeSlider, StateSwitch } from '../helpers';
+import { AppLink, PosterSizeSlider, StateSwitch } from '../helpers';
 
 export default {
     name: 'show-list',
     components: {
+        AppLink,
         Banner,
         Simple,
         Poster,
@@ -148,6 +151,35 @@ export default {
 };
 </script>
 <style scoped>
+/* Configure the show-list-title for in the poster layout. */
+.show-list-title {
+    display: flex;
+    float: left;
+    margin-top: 6px;
+}
+
+button.nav-show-list {
+    height: 20px;
+}
+
+.show-list-title > h3 {
+    margin: 0;
+}
+
+/* Configure the show-list-title for in the table layouts. */
+.table-layout >>> .show-list-title {
+    display: flex;
+    float: left;
+}
+
+.table-layout >>> button.nav-show-list {
+    height: 20px;
+}
+
+.table-layout >>> .show-list-title > h3 {
+    margin: 0;
+}
+
 /** Use this as table styling for all table layouts */
 .table-layout >>> .vgt-table {
     width: 100%;
@@ -238,6 +270,10 @@ export default {
     height: 25px;
 }
 
+.table-layout >>> .vgt-dropdown {
+    float: right;
+}
+
 .table-layout >>> .vgt-dropdown-menu {
     position: absolute;
     z-index: 1000;
@@ -269,4 +305,13 @@ export default {
 .table-layout >>> .indexer-image :not(:last-child) {
     margin-right: 5px;
 }
+
+.table-layout >>> .vgt-input {
+    width: 100%;
+}
+
+.table-layout >>> .vgt-select {
+    margin-top: -1px;
+}
+
 </style>

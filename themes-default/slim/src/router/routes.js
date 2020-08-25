@@ -12,7 +12,6 @@ const homeRoutes = [
         name: 'home',
         meta: {
             title: 'Home',
-            header: 'Show List',
             topMenu: 'home',
             converted: true
         },

@@ -539,18 +539,6 @@ exports[`AppHeader.test.js renders 1`] = `
               </app-link-stub>
             </li>
              
-            <li>
-              <app-link-stub
-                href="https://github.com/pymedusa/Medusa/wiki/Donations"
-                placeholder="indexer-to-name"
-              >
-                <i
-                  class="menu-icon-support"
-                />
-                 Support Medusa
-              </app-link-stub>
-            </li>
-             
             <li
               class="divider"
               role="separator"

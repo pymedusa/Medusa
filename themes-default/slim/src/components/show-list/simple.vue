@@ -14,7 +14,20 @@
                             enabled: true
                         }"
                         :class="{fanartOpacity: stateLayout.fanartBackground}"
-                        @on-sort-change="saveSorting">
+                        @on-sort-change="saveSorting"
+        >
+
+            <template slot="table-actions-header">
+                <!-- Only show the list title when not in tabs -->
+                <div v-if="!stateLayout.splitHomeInTabs && (showsInLists && showsInLists.length > 1)" class="show-list-title listTitle">
+                    <button type="button" class="nav-show-list move-show-list">
+                        <span class="icon-bar" />
+                        <span class="icon-bar" />
+                        <span class="icon-bar" />
+                    </button>
+                    <h3 class="header">{{listTitle}}</h3>
+                </div>
+            </template>
 
             <template slot="table-row" slot-scope="props">
                 <span v-if="props.column.label == 'Next Ep'" class="align-center">
@@ -75,7 +88,6 @@
 </template>
 <script>
 import { AppLink, ProgressBar, QualityPill } from '../helpers';
-
 import { VueGoodTable } from 'vue-good-table';
 import { manageCookieMixin } from '../../mixins/manage-cookie';
 import { showlistTableMixin } from '../../mixins/show-list';
