@@ -17,6 +17,7 @@ from medusa import (
     db,
     helpers,
     logger,
+    ui,
     ws,
 )
 from medusa.common import IGNORED, Quality, SKIPPED, WANTED, cpu_presets
@@ -40,6 +41,8 @@ from medusa.system.schedulers import (
     generate_schedulers,
     generate_show_queue,
 )
+from medusa.updater.version_checker import CheckVersion
+
 
 from six import iteritems, itervalues, text_type
 from six.moves import map
@@ -76,7 +79,7 @@ class ConfigHandler(BaseRequestHandler):
     #: path param
     path_param = ('path_param', r'\w+')
     #: allowed HTTP methods
-    allowed_methods = ('GET', 'PATCH', )
+    allowed_methods = ('GET', 'PATCH', 'POST')
     #: patch mapping
     patches = {
         # Main
@@ -552,13 +555,52 @@ class ConfigHandler(BaseRequestHandler):
         app.instance.save_config()
 
         # Push an update to any open Web UIs through the WebSocket
-        msg = ws.Message('configUpdated', {
+        ws.Message('configUpdated', {
             'section': identifier,
             'config': DataGenerator.get_data(identifier)
-        })
-        msg.push()
+        }).push()
 
         return self._ok(data=accepted)
+
+    def post(self, identifier, *args, **kwargs):
+        """Perform an operation on the config."""
+        data = json_decode(self.request.body)
+        if identifier != 'operation':
+            return self._bad_request('Invalid operation')
+
+        if data['type'] == 'CHECKOUT_BRANCH' and data['branch']:
+            if app.BRANCH != data['branch']:
+                app.BRANCH = data['branch']
+                ui.notifications.message('Checking out branch: ', data['branch'])
+
+                if self._update(app.PID, data['branch']):
+                    return self._created()
+                else:
+                    return self._bad_request('Update failed')
+            else:
+                ui.notifications.message('Already on branch: ', data['branch'])
+                return self._bad_request('Already on branch')
+
+
+    def _update(self, pid=None, branch=None):
+        if str(pid) != str(app.PID):
+            return self.redirect('/home/')
+
+        checkversion = CheckVersion()
+        backup = checkversion.updater and checkversion._runbackup()  # pylint: disable=protected-access
+
+        if backup is True:
+            if branch:
+                checkversion.updater.branch = branch
+
+            if checkversion.updater.need_update() and checkversion.updater.update():
+                # do a hard restart
+                app.events.put(app.events.SystemEvent.RESTART)
+                return True
+            else:
+                ui.notifications.message("Update wasn't successful, not restarting. Check your log for more information.", branch)
+                return False
+        return False
 
 
 class DataGenerator(object):

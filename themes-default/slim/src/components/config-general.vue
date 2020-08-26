@@ -435,7 +435,7 @@
                                             <option disabled value="">Please select a branch</option>
                                             <option :value="option.value" v-for="option in githubRemoteBranchesOptions" :key="option.value">{{ option.text }}</option>
                                         </select>
-                                        <input :disabled="!githubBranches.length > 0" class="btn-medusa btn-inline" style="margin-left: 6px;" type="button" id="branchCheckout" value="Checkout Branch">
+                                        <input :disabled="!githubBranches.length > 0" class="btn-medusa btn-inline" style="margin-left: 6px;" type="button" id="branchCheckout" value="Checkout Branch" @click="validateCheckoutBranch">
                                         <span v-if="!githubBranches.length > 0" style="color:rgb(255, 0, 0);"><p>Error: No branches found.</p></span>
                                         <p v-else>select branch to use (restart required)</p>
                                     </config-template>
@@ -528,6 +528,32 @@
                 </div><!-- /config-components -->
             </form>
         </div>
+
+        <modal name="query-upgrade-database" :height="'auto'" :width="'80%'">
+            <transition name="modal">
+                <div class="modal-mask">
+                    <div class="modal-wrapper">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                Upgrade database model?
+                            </div>
+
+                            <div class="modal-body">
+                                <p>Changing branch will upgrade your database</p>
+                                <p>You won't be able to downgrade afterward.</p>
+                                <p>Do you want to continue?</p>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn-medusa btn-danger" data-dismiss="modal" @click="$modal.hide('query-upgrade-database')">No</button>
+                                <button type="button" class="btn-medusa btn-success" data-dismiss="modal" @click="checkoutBranch(); $modal.hide('query-upgrade-database')">Yes</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </transition>
+        </modal>
+
     </div>
 </template>
 
@@ -829,6 +855,40 @@ export default {
             const mergedShowLayout = { ...layout.show, ...{ showListOrder: value.map(item => item.value) } };
 
             setLayoutShow(mergedShowLayout);
+        },
+        async validateCheckoutBranch() {
+            const { checkoutBranch, system } = this;
+            const { branch } = system;
+
+            try {
+                const result = await apiRoute.get('home/getDBcompare');
+                if (result.status === 'success') {
+                    if (result.message === 'equal') {
+                        // Checkout Branch
+                        checkoutBranch();
+                    }
+
+                    if (result.message === 'upgrade') {
+                        this.$modal.show('query-upgrade-database', { branch });
+                    }
+
+                    if (result.message === 'downgrade') {
+                        this.$snotify.error(
+                            'Can\'t switch branch as this will result in a database downgrade.',
+                            'Error'
+                        );
+                    }
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        },
+        checkoutBranch() {
+            const { system } = this;
+            const { branch } = system;
+            const url = `home/branchCheckout?branch=${branch}`;
+
+            debugger;
         }
     }
 };
