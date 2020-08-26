@@ -696,20 +696,17 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
 
             try:
                 search_results = []
-                cache_search_results = []
-                cache_multi = []
-                cache_single = []
                 needed_eps = episodes
 
                 if not manual_search:
                     cache_search_results = cur_provider.search_results_in_cache(episodes)
                     if cache_search_results:
-                        # From our provider multi_episode and single_episode results, collect results
                         cache_found_results = list_results_for_provider(cache_search_results, found_results, cur_provider)
-                        # We're passing the empty lists, because we don't want to include previous candidates
-                        cache_multi, cache_single = collect_candidates(cache_found_results, cur_provider, [], [])
-                        cached_eps = itertools.chain(*(cache.episodes for cache in cache_multi + cache_single))
-                        needed_eps = [ep for ep in episodes if ep not in cached_eps]
+                        multi_results, single_results = collect_candidates(
+                            cache_found_results, cur_provider, multi_results, single_results
+                        )
+                        found_eps = itertools.chain(*(result.episodes for result in multi_results + single_results))
+                        needed_eps = [ep for ep in episodes if ep not in found_eps]
 
                 # We only search if we didn't get any useful results from cache
                 if needed_eps:
