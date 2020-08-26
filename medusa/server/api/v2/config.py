@@ -581,7 +581,6 @@ class ConfigHandler(BaseRequestHandler):
                 ui.notifications.message('Already on branch: ', data['branch'])
                 return self._bad_request('Already on branch')
 
-
     def _update(self, pid=None, branch=None):
         if str(pid) != str(app.PID):
             return self.redirect('/home/')
@@ -594,12 +593,9 @@ class ConfigHandler(BaseRequestHandler):
                 checkversion.updater.branch = branch
 
             if checkversion.updater.need_update() and checkversion.updater.update():
-                # do a hard restart
-                app.events.put(app.events.SystemEvent.RESTART)
                 return True
             else:
                 ui.notifications.message("Update wasn't successful, not restarting. Check your log for more information.", branch)
-                return False
         return False
 
 
