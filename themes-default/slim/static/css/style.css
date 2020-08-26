@@ -2757,7 +2757,7 @@ select,
 @media (max-width: 767px) {
     .navbar-default .navbar-nav > li {
         float: left;
-        min-width: 100px;
+        width: 33%;
     }
 
     .navbar-default .navbar-nav > li > a {
@@ -2786,6 +2786,26 @@ select,
     .navbar-default .navbar-nav .open .dropdown-menu > .disabled > a:focus {
         color: rgb(204, 204, 204);
         background-color: transparent;
+    }
+
+    /* experiment */
+    .navbar-default .navbar-collapse {
+        position: relative;
+        height: 100vh;
+    }
+
+    .navbar-default .navbar-nav .dropdown-menu {
+        position: absolute;
+        left: 0px;
+        top: 93px;
+    }
+
+    .navbar-default .navbar-nav > li {
+        position: unset;
+    }
+
+    .navbar-fixed-bottom .navbar-collapse, .navbar-fixed-top .navbar-collapse {
+        max-height: none;
     }
 }
 
