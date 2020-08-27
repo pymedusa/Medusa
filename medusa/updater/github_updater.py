@@ -193,8 +193,11 @@ class GitUpdateManager(UpdateManager):
         # update remote origin url
         self.update_remote_origin()
 
+        # Configure local branch with upstream
+        self.set_upstream_branch()
+
         # get all new info from github
-        output, _, exit_status = self._run_git(self._git_path, 'fetch --prune %s' % app.GIT_REMOTE)
+        output, _, exit_status = self._run_git(self._git_path, 'fetch --prune {0}'.format(app.GIT_REMOTE))
         if not exit_status == 0:
             log.warning(u"Unable to contact github, can't check for update")
             return False
@@ -308,7 +311,7 @@ class GitUpdateManager(UpdateManager):
         self.clean()
 
         if self.branch == self._find_installed_branch():
-            _, _, exit_status = self._run_git(self._git_path, 'pull -f %s %s' % (app.GIT_REMOTE, self.branch))
+            _, _, exit_status = self._run_git(self._git_path, 'pull -f {0} {1}'.format(app.GIT_REMOTE, self.branch))
         else:
             _, _, exit_status = self._run_git(self._git_path, 'checkout -f ' + self.branch)
 
@@ -363,12 +366,15 @@ class GitUpdateManager(UpdateManager):
         self.update_remote_origin()
         app.BRANCH = self._find_installed_branch()
 
-        branches, _, exit_status = self._run_git(self._git_path, 'ls-remote --heads %s' % app.GIT_REMOTE)
+        branches, _, exit_status = self._run_git(self._git_path, 'ls-remote --heads {0}'.format(app.GIT_REMOTE))
         if exit_status == 0 and branches:
             if branches:
                 return re.findall(r'refs/heads/(.*)', branches)
         return []
 
     def update_remote_origin(self):
-        self._run_git(self._git_path, 'config remote.%s.url %s' % (app.GIT_REMOTE, app.GIT_REMOTE_URL))
-        self._run_git(self._git_path, 'config remote.%s.pushurl %s' % (app.GIT_REMOTE, app.GIT_REMOTE_URL))
+        self._run_git(self._git_path, 'config remote.{0}.url {1}'.format(app.GIT_REMOTE, app.GIT_REMOTE_URL))
+        self._run_git(self._git_path, 'config remote.{0}.pushurl {1}'.format(app.GIT_REMOTE, app.GIT_REMOTE_URL))
+
+    def set_upstream_branch(self):
+        self._run_git(self._git_path, 'branch {0} --set-upstream-to origin/{1}'.format(app.BRANCH, app.BRANCH))

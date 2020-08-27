@@ -83,6 +83,7 @@ from medusa.system.restart import Restart
 from medusa.system.shutdown import Shutdown
 from medusa.tv.cache import Cache
 from medusa.tv.series import Series, SeriesIdentifier
+from medusa.updater.version_checker import CheckVersion
 
 from requests.compat import (
     quote_plus,
