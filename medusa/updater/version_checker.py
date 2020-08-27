@@ -72,16 +72,16 @@ class CheckVersion(object):
                 os.mkdir(backupDir)
 
             if self._keeplatestbackup(backupDir) and self._backup(backupDir):
-                log.info(u'Config backup successful, updating...')
-                ui.notifications.message('Backup', 'Config backup successful, updating...')
+                log.info(u'Config backup successful')
+                ui.notifications.message('Backup', 'Config backup successful')
                 return True
             else:
-                log.warning(u'Config backup failed, aborting update')
-                ui.notifications.message('Backup', 'Config backup failed, aborting update')
+                log.warning(u'Config backup failed')
+                ui.notifications.message('Backup', 'Config backup failed')
                 return False
         except Exception as e:
             log.error(u'Update: Config backup failed. Error: {0!r}', e)
-            ui.notifications.message('Backup', 'Config backup failed, aborting update')
+            ui.notifications.message('Backup', 'Config backup failed')
             return False
 
     @staticmethod
