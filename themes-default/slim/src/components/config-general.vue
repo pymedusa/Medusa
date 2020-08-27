@@ -431,11 +431,14 @@
                                 <fieldset class="component-group-list">
 
                                     <config-template label-for="github_remote_branches" label="Branch version">
-                                        <select id="github_remote_branches" name="github_remote_branches" v-model="system.branch" class="form-control input-sm margin-bottom-5">
+                                        <select id="github_remote_branches" name="github_remote_branches" v-model="selectedBranch" class="form-control input-sm margin-bottom-5">
                                             <option disabled value="">Please select a branch</option>
                                             <option :value="option.value" v-for="option in githubRemoteBranchesOptions" :key="option.value">{{ option.text }}</option>
                                         </select>
-                                        <input :disabled="!githubBranches.length > 0" class="btn-medusa btn-inline" style="margin-left: 6px;" type="button" id="branchCheckout" value="Checkout Branch" @click="validateCheckoutBranch">
+                                        <input :disabled="!githubBranches.length > 0"
+                                               class="btn-medusa btn-inline" style="margin-left: 6px;" type="button" id="branchCheckout"
+                                               value="Checkout Branch" @click="validateCheckoutBranch"
+                                        >
                                         <span v-if="!githubBranches.length > 0" style="color:rgb(255, 0, 0);"><p>Error: No branches found.</p></span>
                                         <p v-else>select branch to use (restart required)</p>
                                     </config-template>
@@ -558,7 +561,7 @@
 </template>
 
 <script>
-import { apiRoute } from '../api.js';
+import { api, apiRoute } from '../api.js';
 import { mapActions, mapGetters, mapState } from 'vuex';
 import RootDirs from './root-dirs.vue';
 import {
@@ -616,7 +619,8 @@ export default {
             privacyLevelOptions,
             githubBranchesForced: [],
             resetBranchSelected: null,
-            saving: false
+            saving: false,
+            selectedBranch: ''
         };
     },
     beforeMount() {
@@ -856,39 +860,61 @@ export default {
 
             setLayoutShow(mergedShowLayout);
         },
-        async validateCheckoutBranch() {
-            const { checkoutBranch, system } = this;
-            const { branch } = system;
+        async compareDBUpgrade() {
+            const { checkoutBranch, selectedBranch } = this;
 
             try {
                 const result = await apiRoute.get('home/getDBcompare');
-                if (result.status === 'success') {
-                    if (result.message === 'equal') {
+                if (result.data.status === 'success') {
+                    if (result.data.message === 'equal') {
                         // Checkout Branch
                         checkoutBranch();
                     }
 
-                    if (result.message === 'upgrade') {
-                        this.$modal.show('query-upgrade-database', { branch });
+                    if (result.data.message === 'upgrade') {
+                        this.$modal.show('query-upgrade-database', { selectedBranch });
                     }
 
-                    if (result.message === 'downgrade') {
+                    if (result.data.message === 'downgrade') {
                         this.$snotify.error(
                             'Can\'t switch branch as this will result in a database downgrade.',
                             'Error'
                         );
                     }
+                } else {
+                    this.$snotify.error(
+                        'Error while trying to compare db versions for checkout',
+                        `Error: ${result.data.status}`
+                    );
                 }
             } catch (error) {
                 console.log(error);
             }
         },
-        checkoutBranch() {
-            const { system } = this;
-            const { branch } = system;
-            const url = `home/branchCheckout?branch=${branch}`;
+        /**
+         * Validate if we need a compareDb, or directly checkout.
+         *
+         * If whe're running a master or develop branch, we check for database changes.
+         * This to prepare the user, by showing a few modals.
+         * If the user is running another branch like, a feature branch. We asume the user knows what he's doing.
+         *
+         */
+        validateCheckoutBranch() {
+            const { checkoutBranch, compareDBUpgrade, selectedBranch, system } = this;
 
-            debugger;
+            if (!selectedBranch) {
+                return;
+            }
+
+            if (['develop', 'master'].includes(system.branch)) {
+                compareDBUpgrade();
+            } else {
+                checkoutBranch();
+            }
+        },
+        async checkoutBranch() {
+            const { selectedBranch } = this;
+            const result = await api.post('config/operation', { type: "CHECKOUT_BRANCH", branch: "master" });
         }
     }
 };
