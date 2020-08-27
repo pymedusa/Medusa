@@ -595,7 +595,7 @@ class ConfigHandler(BaseRequestHandler):
             if checkversion.updater.need_update() and checkversion.updater.update():
                 return True
             else:
-                ui.notifications.message("Update wasn't successful, not restarting. Check your log for more information.", branch)
+                ui.notifications.message("Update wasn't successful. Check your log for more information.", branch)
         return False
 
 
