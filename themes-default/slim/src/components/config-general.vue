@@ -441,6 +441,10 @@
                                         >
                                         <span v-if="!githubBranches.length > 0" style="color:rgb(255, 0, 0);"><p>Error: No branches found.</p></span>
                                         <p v-else>select branch to use (restart required)</p>
+                                        <p v-if="checkoutBranchMessage">
+                                            <state-switch state="loading" :theme="layout.themeName" />
+                                            <span>{{checkoutBranchMessage}}</span>
+                                        </p>
                                     </config-template>
 
                                     <config-template label-for="date_presets" label="GitHub authentication type">
@@ -518,7 +522,7 @@
                                             :options="githubBranches"
                                         />
                                         <input class="btn-medusa btn-inline" style="margin-left: 6px;" type="button" id="branch_force_update" value="Update Branches" @click="githubBranchForceUpdate">
-                                        <span class="component-desc"><b>Note:</b> Empty selection means that any branch could be reset.</span>
+                                        <span><b>Note:</b> Empty selection means that any branch could be reset.</span>
                                     </config-template>
                                     <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
                                 </fieldset>
@@ -571,7 +575,8 @@ import {
     ConfigTextboxNumber,
     ConfigToggleSlider,
     LanguageSelect,
-    SortedSelectList
+    SortedSelectList,
+    StateSwitch,
 } from './helpers';
 import { convertDateFormat } from '../utils/core.js';
 import formatDate from 'date-fns/format';
@@ -593,6 +598,7 @@ export default {
         Multiselect,
         SortedSelectList,
         VPopover,
+        StateSwitch,
         ToggleButton,
         RootDirs
     },
@@ -620,7 +626,8 @@ export default {
             githubBranchesForced: [],
             resetBranchSelected: null,
             saving: false,
-            selectedBranch: ''
+            selectedBranch: '',
+            checkoutBranchMessage: ''
         };
     },
     beforeMount() {
@@ -863,6 +870,8 @@ export default {
         async compareDBUpgrade() {
             const { checkoutBranch, selectedBranch } = this;
 
+            const inDevelopOrMaster = () => ['master', 'develop'].includes(selectedBranch);
+
             try {
                 const result = await apiRoute.get('home/getDBcompare');
                 if (result.data.status === 'success') {
@@ -900,21 +909,21 @@ export default {
          *
          */
         validateCheckoutBranch() {
-            const { checkoutBranch, compareDBUpgrade, selectedBranch, system } = this;
+            const { compareDBUpgrade, selectedBranch } = this;
 
             if (!selectedBranch) {
                 return;
             }
-
-            if (['develop', 'master'].includes(system.branch)) {
-                compareDBUpgrade();
-            } else {
-                checkoutBranch();
-            }
+            compareDBUpgrade();
         },
         async checkoutBranch() {
             const { selectedBranch } = this;
-            const result = await api.post('config/operation', { type: "CHECKOUT_BRANCH", branch: "master" });
+            this.checkoutBranchMessage = `Checking out branch ${selectedBranch}`;
+            // const result = await api.post('config/operation', { type: "CHECKOUT_BRANCH", branch: "master" });
+            console.log('checking out branch');
+            setTimeout(() => {
+                this.checkoutBranchMessage = `Finished checking out branch ${selectedBranch}`;
+            }, 4000);
         }
     }
 };
