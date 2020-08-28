@@ -122,7 +122,7 @@
                                     <multiselect
                                         v-model="showLists"
                                         :multiple="true"
-                                        :options="layout.show.showListOrder"
+                                        :options="layout.show.showListOrder.map(list => list.toLowerCase())"
                                     />
                                 </config-template>
 
