@@ -1059,6 +1059,10 @@ class FixEpisodeTitleAsMultiSeason(Rule):
         if next_episode:
             return
 
+        previous_episode = matches.previous(season, predicate=lambda match: match.name == 'episode')
+        if previous_episode:
+            return
+
         to_remove = []
 
         episode_titles = matches.named('episode_title')
