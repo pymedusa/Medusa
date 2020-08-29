@@ -564,9 +564,10 @@ class ConfigHandler(BaseRequestHandler):
 
     def post(self, identifier, *args, **kwargs):
         """Perform an operation on the config."""
-        data = json_decode(self.request.body)
         if identifier != 'operation':
             return self._bad_request('Invalid operation')
+
+        data = json_decode(self.request.body)
 
         if data['type'] == 'CHECKOUT_BRANCH' and data['branch']:
             if app.BRANCH != data['branch']:

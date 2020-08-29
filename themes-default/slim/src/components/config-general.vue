@@ -552,7 +552,7 @@
                             </div>
 
                             <div class="modal-footer">
-                                <button type="button" class="btn-medusa btn-danger" data-dismiss="modal" @click="$modal.hide('query-upgrade-database')">No</button>
+                                <button type="button" class="btn-medusa btn-danger" data-dismiss="modal" @click="$modal.hide('query-upgrade-database'); checkoutBranchMessage = ''">No</button>
                                 <button type="button" class="btn-medusa btn-success" data-dismiss="modal" @click="checkoutBranch(); $modal.hide('query-upgrade-database')">Yes</button>
                             </div>
                         </div>
@@ -561,6 +561,28 @@
             </transition>
         </modal>
 
+        <modal name="query-restart" :height="'auto'" :width="'80%'">
+            <transition name="modal">
+                <div class="modal-mask">
+                    <div class="modal-wrapper">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                Checking out a branch requires a restart
+                            </div>
+
+                            <div class="modal-body">
+                                <p>Would you like to start a restart of medusa now?</p>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn-medusa btn-danger" data-dismiss="modal" @click="$modal.hide('query-restart'); checkoutBranchMessage = ''">No</button>
+                                <button type="button" class="btn-medusa btn-success" data-dismiss="modal" @click="$modal.hide('query-restart'); $router.push({ name: 'restart' });">Yes</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </transition>
+        </modal>
     </div>
 </template>
 
@@ -576,7 +598,7 @@ import {
     ConfigToggleSlider,
     LanguageSelect,
     SortedSelectList,
-    StateSwitch,
+    StateSwitch
 } from './helpers';
 import { convertDateFormat } from '../utils/core.js';
 import formatDate from 'date-fns/format';
@@ -870,9 +892,8 @@ export default {
         async compareDBUpgrade() {
             const { checkoutBranch, selectedBranch } = this;
 
-            const inDevelopOrMaster = () => ['master', 'develop'].includes(selectedBranch);
-
             try {
+                this.checkoutBranchMessage = 'Checking if the checkout requires a database upgrade / downgrade';
                 const result = await apiRoute.get('home/getDBcompare');
                 if (result.data.status === 'success') {
                     if (result.data.message === 'equal') {
@@ -914,21 +935,29 @@ export default {
             if (!selectedBranch) {
                 return;
             }
-            compareDBUpgrade();
+            // compareDBUpgrade();
+            this.checkoutBranch();
         },
         async checkoutBranch() {
             const { selectedBranch } = this;
             this.checkoutBranchMessage = `Checking out branch ${selectedBranch}`;
-            // const result = await api.post('config/operation', { type: "CHECKOUT_BRANCH", branch: "master" });
             console.log('checking out branch');
+            // const result = await api.post('config/operation', { type: "CHECKOUT_BRANCH", branch: "master" });
+            this.checkoutBranchMessage = `Finished checking out branch ${selectedBranch}`;
+
             setTimeout(() => {
-                this.checkoutBranchMessage = `Finished checking out branch ${selectedBranch}`;
+                this.checkoutBranchMessage = '';
             }, 4000);
+            this.$modal.show('query-restart');
+        },
+        cancelCheckout() {
+            this.checkoutBranchMessage = '';
         }
     }
 };
 </script>
 <style>
+@import '../style/modal.css';
 .display-inline {
     display: inline;
 }

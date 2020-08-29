@@ -1194,6 +1194,7 @@ export default {
 </script>
 
 <style scoped>
+@import '../style/modal.css';
 .defaultTable.displayShow {
     clear: both;
 }
@@ -1492,38 +1493,6 @@ td.col-footer {
 .select-info span {
     margin-left: 5px;
     line-height: 40px;
-}
-
-/** Style the modal. This should be saved somewhere, where we create one modal template with slots, and style that. */
-.modal-container {
-    border: 1px solid rgb(17, 17, 17);
-    box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.175);
-    border-radius: 0;
-}
-
-.modal-header {
-    padding: 9px 15px;
-    border-bottom: none;
-    border-radius: 0;
-    background-color: rgb(55, 55, 55);
-}
-
-.modal-content {
-    background: rgb(34, 34, 34);
-    border-radius: 0;
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-    color: white;
-}
-
-.modal-body {
-    background: rgb(34, 34, 34);
-    overflow-y: auto;
-}
-
-.modal-footer {
-    border-top: none;
-    text-align: center;
 }
 
 .subtitles > div {

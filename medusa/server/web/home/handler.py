@@ -606,13 +606,12 @@ class Home(WebRoot):
         return self._genericMessage(title, message)
 
     def restart(self, pid=None):
-        if not Restart.restart(pid):
-            return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
+        """
+        Render the home page.
 
-        t = PageTemplate(rh=self, filename='restart.mako')
-
-        return t.render(title='Home', header='Restarting Medusa',
-                        controller='home', action='restart')
+        [Converted to VueRouter]
+        """
+        return PageTemplate(rh=self, filename='index.mako').render()
 
     def updateCheck(self, pid=None):
         if text_type(pid) != text_type(app.PID):
