@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.system.restart import Restart
+from medusa.system.shutdown import Shutdown
 
 from tornado.escape import json_decode
 
@@ -29,6 +30,11 @@ class SystemHandler(BaseRequestHandler):
 
         if data['type'] == 'RESTART' and data['pid']:
             if not Restart.restart(data['pid']):
+                self._not_found('Pid does not match running pid')
+            return self._created()
+
+        if data['type'] == 'SHUTDOWN' and data['pid']:
+            if not Shutdown.stop(data['pid']):
                 self._not_found('Pid does not match running pid')
             return self._created()
 
