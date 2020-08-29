@@ -806,8 +806,10 @@ class OnePreGroupAsMultiEpisode(Rule):
 
 class AnimeAbsoluteEpisodeNumbers(Rule):
     """Move episode numbers to absolute episode numbers for animes.
+
     Medusa rule: If it's an anime, prefer absolute episode numbers.
     e.g.: [Group].Show.Name.-.102.[720p]
+
     guessit -t episode "[Group].Show.Name.-.102.[720p]"
     without this rule:
         For: [Group].Show.Name.-.102.[720p]
@@ -912,8 +914,10 @@ class AnimeAbsoluteEpisodeNumbers(Rule):
 
 class AbsoluteEpisodeNumbers(Rule):
     """Move episode numbers to absolute episode numbers for animes without season.
+
     Medusa absolute episode numbers rule. For animes without season, prefer absolute numbers.
     e.g.: Show.Name.10.720p
+
     guessit -t episode "Show.Name.10.720p"
     without this rule:
         For: Show.Name.10.720p
