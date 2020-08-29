@@ -1402,7 +1402,7 @@
   release_group: Group
   type: episode
 
-? The.X-Flies.S09E06.Trust.No.1.x265.HEVC-Group
+? The.X-Flies.S09E06.Trust.No.1.x265.HEVC-Group.mkv
 : title: The X-Flies
   season: 9
   episode: 6
@@ -1415,7 +1415,7 @@
   mimetype: video/x-matroska
   type: episode
 
-? /media/Season 09/The.X-Flies.S09E06.Trust.No.1.x265.HEVC-Group
+? /media/Season 09/The.X-Flies.S09E06.Trust.No.1.x265.HEVC-Group.mkv
 : title: The X-Flies
   season: 9
   episode: 6
@@ -1428,11 +1428,11 @@
   mimetype: video/x-matroska
   type: episode
 
-? The.X-Flies.S09E07.3.x265.HEVC-Group
+? The.X-Flies.S09E07.3.x265.HEVC-Group.mkv
 : title: The X-Flies
   season: 9
   episode: 7
-  episode_title: 3
+  episode_title: '3'
   video_codec: H.265
   video_encoder: x265
   video_profile: High Efficiency Video Coding
@@ -1441,11 +1441,11 @@
   mimetype: video/x-matroska
   type: episode
 
-? /media/Season 09/The.X-Flies.S09E07.3.x265.HEVC-Group
+? /media/Season 09/The.X-Flies.S09E07.3.x265.HEVC-Group.mkv
 : title: The X-Flies
   season: 9
   episode: 7
-  episode_title: 3
+  episode_title: '3'
   video_codec: H.265
   video_encoder: x265
   video_profile: High Efficiency Video Coding
