@@ -1059,19 +1059,23 @@ class FixEpisodeTitleAsMultiSeason(Rule):
         if next_episode:
             return
 
-        previous_episode = matches.previous(season, predicate=lambda match: match.name == 'episode')
-        if previous_episode:
-            return
-
         to_remove = []
 
         episode_titles = matches.named('episode_title')
         if episode_titles:
+            previous = matches.previous(season, predicate=lambda match: match.name == 'episode_title')
+            if not previous:
+                return
+
             episode_title = episode_titles[0]
             if not episode_title.value[0].isdigit():
                 episode_title.value = episode_title.value + ' ' + str(season.value)
             to_remove.append(season)
         else:
+            previous = matches.previous(season, predicate=lambda match: match.name == 'episode')
+            if not previous:
+                return
+
             episode_title = season
             episode_title.name = 'episode_title'
             episode_title.value = str(season.value)
