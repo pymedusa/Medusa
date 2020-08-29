@@ -181,7 +181,6 @@ class FixInvalidAbsoluteReleaseGroups(Rule):
             "type": "episode"
         }
 
-
     with this fix:
         For: Show.Name.s16e03-05.313-315
         GuessIt found: {
@@ -823,6 +822,7 @@ class AnimeAbsoluteEpisodeNumbers(Rule):
             "screen_size": "720p",
             "type": "episode"
         }
+
     with this rule:
         For: [Group].Show.Name.-.102.[720p]
         GuessIt found: {
@@ -932,6 +932,7 @@ class AbsoluteEpisodeNumbers(Rule):
             "screen_size": "720p",
             "type": "episode"
         }
+
     with this rule:
         For: Show.Name.10.720p
         GuessIt found: {
@@ -1237,6 +1238,7 @@ class FixParentFolderReplacingTitle(Rule):
             "mimetype": "video/x-matroska",
             "type": "episode"
         }
+
     with the rule:
         For: /Comedy 23/Funny.Show.S4E19.mkv
         GuessIt found: {
@@ -1315,7 +1317,6 @@ class FixMultipleSources(Rule):
             "release_group": "GROUP",
             "type": "episode"
         }
-
 
     with this rule:
         For: Show.Name.S02E01.eps2.0.unm4sk-pt1.tc.1080p.WEB-DL.DD5.1.H264-GROUP
@@ -1557,7 +1558,6 @@ class ReleaseGroupPostProcessor(Rule):
             "release_group": "GROUP[TRASH]",
             "type": "episode"
         }
-
 
     with this post processor:
         For: Some.Show.S02E14.1080p.HDTV.X264-GROUP[TRASH]
