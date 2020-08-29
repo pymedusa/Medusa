@@ -935,14 +935,13 @@ export default {
             if (!selectedBranch) {
                 return;
             }
-            // compareDBUpgrade();
-            this.checkoutBranch();
+            compareDBUpgrade();
         },
         async checkoutBranch() {
             const { selectedBranch } = this;
             this.checkoutBranchMessage = `Checking out branch ${selectedBranch}`;
-            console.log('checking out branch');
-            // const result = await api.post('config/operation', { type: "CHECKOUT_BRANCH", branch: "master" });
+
+            const result = await api.post('config/operation', { type: 'CHECKOUT_BRANCH', branch: selectedBranch });
             this.checkoutBranchMessage = `Finished checking out branch ${selectedBranch}`;
 
             setTimeout(() => {
