@@ -536,6 +536,7 @@
             </form>
         </div>
 
+        <!-- eslint-disable @sharkykh/vue-extra/component-not-registered -->
         <modal name="query-upgrade-database" :height="'auto'" :width="'80%'">
             <transition name="modal">
                 <div class="modal-mask">
@@ -583,6 +584,7 @@
                 </div>
             </transition>
         </modal>
+        <!--eslint-enable-->
     </div>
 </template>
 
@@ -957,6 +959,7 @@ export default {
 </script>
 <style>
 @import '../style/modal.css';
+
 .display-inline {
     display: inline;
 }

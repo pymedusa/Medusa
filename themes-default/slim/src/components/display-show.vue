@@ -1195,6 +1195,7 @@ export default {
 
 <style scoped>
 @import '../style/modal.css';
+
 .defaultTable.displayShow {
     clear: both;
 }
