@@ -667,7 +667,8 @@ export default {
             layout: state => state.config.layout,
             statuses: state => state.config.consts.statuses,
             indexers: state => state.config.indexers,
-            system: state => state.config.system
+            system: state => state.config.system,
+            gitRemoteBranches: state => state.config.system.gitRemoteBranches // We need the reactivity on this.
         }),
         ...mapGetters([
             'getStatus'
@@ -740,15 +741,14 @@ export default {
             return [];
         },
         githubRemoteBranchesOptions() {
-            const { general, githubBranches, githubBranchForceUpdate } = this;
-            const { system } = this;
+            const { general, githubBranches, githubBranchForceUpdate, gitRemoteBranches } = this;
             const { username, password, token } = general.git;
 
-            if (!system.gitRemoteBranches) {
+            if (!gitRemoteBranches) {
                 return [];
             }
 
-            if (!system.gitRemoteBranches.length > 0) {
+            if (!gitRemoteBranches.length > 0) {
                 githubBranchForceUpdate();
             }
 
@@ -765,8 +765,8 @@ export default {
             return filteredBranches.map(branch => ({ text: branch, value: branch }));
         },
         githubBranches() {
-            const { system, githubBranchesForced } = this;
-            return system.gitRemoteBranches || githubBranchesForced;
+            const { githubBranchesForced, gitRemoteBranches } = this;
+            return gitRemoteBranches || githubBranchesForced;
         },
         githubTokenPopover() {
             const { general } = this;
