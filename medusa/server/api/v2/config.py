@@ -17,7 +17,6 @@ from medusa import (
     db,
     helpers,
     logger,
-    ui,
     ws,
 )
 from medusa.common import IGNORED, Quality, SKIPPED, WANTED, cpu_presets

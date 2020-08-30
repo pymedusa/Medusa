@@ -1392,6 +1392,8 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   <p>
                     select branch to use (restart required)
                   </p>
+                   
+                  <!---->
                 </config-template-stub>
                  
                 <config-template-stub
@@ -1623,9 +1625,7 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                     value="Update Branches"
                   />
                    
-                  <span
-                    class="component-desc"
-                  >
+                  <span>
                     <b>
                       Note:
                     </b>
@@ -1666,5 +1666,129 @@ exports[`ConfigGeneral.test.js renders 1`] = `
       </div>
     </form>
   </div>
+   
+  <modal
+    height="auto"
+    name="query-upgrade-database"
+    width="80%"
+  >
+    <transition-stub
+      name="modal"
+    >
+      <div
+        class="modal-mask"
+      >
+        <div
+          class="modal-wrapper"
+        >
+          <div
+            class="modal-content"
+          >
+            <div
+              class="modal-header"
+            >
+              
+                            Upgrade database model?
+                        
+            </div>
+             
+            <div
+              class="modal-body"
+            >
+              <p>
+                Changing branch will upgrade your database
+              </p>
+               
+              <p>
+                You won't be able to downgrade afterward.
+              </p>
+               
+              <p>
+                Do you want to continue?
+              </p>
+            </div>
+             
+            <div
+              class="modal-footer"
+            >
+              <button
+                class="btn-medusa btn-danger"
+                data-dismiss="modal"
+                type="button"
+              >
+                No
+              </button>
+               
+              <button
+                class="btn-medusa btn-success"
+                data-dismiss="modal"
+                type="button"
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition-stub>
+  </modal>
+   
+  <modal
+    height="auto"
+    name="query-restart"
+    width="80%"
+  >
+    <transition-stub
+      name="modal"
+    >
+      <div
+        class="modal-mask"
+      >
+        <div
+          class="modal-wrapper"
+        >
+          <div
+            class="modal-content"
+          >
+            <div
+              class="modal-header"
+            >
+              
+                            Checking out a branch requires a restart
+                        
+            </div>
+             
+            <div
+              class="modal-body"
+            >
+              <p>
+                Would you like to start a restart of medusa now?
+              </p>
+            </div>
+             
+            <div
+              class="modal-footer"
+            >
+              <button
+                class="btn-medusa btn-danger"
+                data-dismiss="modal"
+                type="button"
+              >
+                No
+              </button>
+               
+              <button
+                class="btn-medusa btn-success"
+                data-dismiss="modal"
+                type="button"
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition-stub>
+  </modal>
 </div>
 `;

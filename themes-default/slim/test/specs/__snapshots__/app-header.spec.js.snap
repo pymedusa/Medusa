@@ -579,7 +579,7 @@ exports[`AppHeader.test.js renders 1`] = `
              
             <li>
               <app-link-stub
-                href="home/restart/?pid=1234"
+                href="home/restart"
                 placeholder="indexer-to-name"
               >
                 <i
@@ -591,7 +591,7 @@ exports[`AppHeader.test.js renders 1`] = `
              
             <li>
               <app-link-stub
-                href="home/shutdown/?pid=1234"
+                href="home/shutdown"
                 placeholder="indexer-to-name"
               >
                 <i
