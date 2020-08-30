@@ -118,18 +118,6 @@ export default {
                 setLayout({ page, layout });
             }
         },
-        filterByName: {
-            get() {
-                const { local } = this.stateLayout;
-                const { showFilterByName } = local;
-
-                return showFilterByName;
-            },
-            set(value) {
-                const { setLayoutLocal } = this;
-                setLayoutLocal({ key: 'showFilterByName', value });
-            }
-        },
         showList: {
             get() {
                 const { stateLayout } = this;
@@ -195,12 +183,6 @@ export default {
 ul.list-group > li {
     list-style: none;
     margin-bottom: 10px;
-}
-
-.align-center {
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .home-header-controls {

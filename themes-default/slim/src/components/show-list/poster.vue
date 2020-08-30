@@ -140,7 +140,8 @@ export default {
             borderRadius: null,
             borderWidth: null,
             isotopeLoaded: false,
-            imgLazyLoad: null
+            imgLazyLoad: null,
+            filterByTitle: ''
         };
     },
     computed: {
@@ -152,7 +153,8 @@ export default {
             posterSortBy: state => state.config.layout.posterSortby,
             posterSortDir: state => state.config.layout.posterSortdir,
             posterSize: state => state.config.layout.local.posterSize,
-            currentShowTab: state => state.config.layout.local.currentShowTab
+            currentShowTab: state => state.config.layout.local.currentShowTab,
+            showFilterByName: state => state.config.layout.local.showFilterByName
         }),
         ...mapGetters({
             fuzzyParseDateTime: 'fuzzyParseDateTime'
@@ -278,6 +280,19 @@ export default {
             this.$nextTick(() => {
                 this.$refs[`isotope-${listTitle}`].arrange();
             });
+        },
+        showFilterByName(value) {
+            const { $refs, listTitle } = this;
+
+            const allContainers = $refs[`isotope-${listTitle}`].$el.querySelectorAll('.show-container');
+
+            for (const container of allContainers) {
+                if (container.textContent.toLowerCase().includes(value.toLowerCase())) {
+                    container.classList.remove('hide');
+                } else {
+                    container.classList.add('hide');
+                }
+            }
         }
     }
 };
