@@ -41,8 +41,6 @@ from medusa.system.schedulers import (
     generate_schedulers,
     generate_show_queue,
 )
-from medusa.updater.version_checker import CheckVersion
-
 
 from six import iteritems, itervalues, text_type
 from six.moves import map
@@ -561,23 +559,6 @@ class ConfigHandler(BaseRequestHandler):
         }).push()
 
         return self._ok(data=accepted)
-
-    def _update(self, pid=None, branch=None):
-        if str(pid) != str(app.PID):
-            return self.redirect('/home/')
-
-        checkversion = CheckVersion()
-        backup = checkversion.updater and checkversion._runbackup()  # pylint: disable=protected-access
-
-        if backup is True:
-            if branch:
-                checkversion.updater.branch = branch
-
-            if checkversion.updater.need_update() and checkversion.updater.update():
-                return True
-            else:
-                ui.notifications.message("Update wasn't successful. Check your log for more information.", branch)
-        return False
 
 
 class DataGenerator(object):

@@ -6,6 +6,7 @@ from medusa import app, ui
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.system.restart import Restart
 from medusa.system.shutdown import Shutdown
+from medusa.updater.version_checker import CheckVersion
 
 from tornado.escape import json_decode
 
@@ -44,7 +45,7 @@ class SystemHandler(BaseRequestHandler):
                 app.BRANCH = data['branch']
                 ui.notifications.message('Checking out branch: ', data['branch'])
 
-                if self._update(app.PID, data['branch']):
+                if self._update(data['branch']):
                     return self._created()
                 else:
                     return self._bad_request('Update failed')
@@ -53,3 +54,17 @@ class SystemHandler(BaseRequestHandler):
                 return self._bad_request('Already on branch')
 
         return self._bad_request('Invalid operation')
+
+    def _update(self, branch):
+        checkversion = CheckVersion()
+        backup = checkversion.updater and checkversion._runbackup()  # pylint: disable=protected-access
+
+        if backup is True:
+            if branch:
+                checkversion.updater.branch = branch
+
+            if checkversion.updater.need_update() and checkversion.updater.update():
+                return True
+            else:
+                ui.notifications.message("Update wasn't successful. Check your log for more information.", branch)
+        return False
