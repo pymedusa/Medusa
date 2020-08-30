@@ -943,7 +943,7 @@ export default {
             const { selectedBranch } = this;
             this.checkoutBranchMessage = `Checking out branch ${selectedBranch}`;
 
-            await api.post('config/operation', { type: 'CHECKOUT_BRANCH', branch: selectedBranch }, { timeout: 120000 });
+            await api.post('system/operation', { type: 'CHECKOUT_BRANCH', branch: selectedBranch }, { timeout: 120000 });
             this.checkoutBranchMessage = `Finished checking out branch ${selectedBranch}`;
 
             setTimeout(() => {

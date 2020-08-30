@@ -79,7 +79,7 @@ class ConfigHandler(BaseRequestHandler):
     #: path param
     path_param = ('path_param', r'\w+')
     #: allowed HTTP methods
-    allowed_methods = ('GET', 'PATCH', 'POST')
+    allowed_methods = ('GET', 'PATCH')
     #: patch mapping
     patches = {
         # Main
@@ -561,26 +561,6 @@ class ConfigHandler(BaseRequestHandler):
         }).push()
 
         return self._ok(data=accepted)
-
-    def post(self, identifier, *args, **kwargs):
-        """Perform an operation on the config."""
-        if identifier != 'operation':
-            return self._bad_request('Invalid operation')
-
-        data = json_decode(self.request.body)
-
-        if data['type'] == 'CHECKOUT_BRANCH' and data['branch']:
-            if app.BRANCH != data['branch']:
-                app.BRANCH = data['branch']
-                ui.notifications.message('Checking out branch: ', data['branch'])
-
-                if self._update(app.PID, data['branch']):
-                    return self._created()
-                else:
-                    return self._bad_request('Update failed')
-            else:
-                ui.notifications.message('Already on branch: ', data['branch'])
-                return self._bad_request('Already on branch')
 
     def _update(self, pid=None, branch=None):
         if str(pid) != str(app.PID):

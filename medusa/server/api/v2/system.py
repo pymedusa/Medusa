@@ -2,6 +2,7 @@
 """Request handler for statistics."""
 from __future__ import unicode_literals
 
+from medusa import app, ui
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.system.restart import Restart
 from medusa.system.shutdown import Shutdown
@@ -37,5 +38,18 @@ class SystemHandler(BaseRequestHandler):
             if not Shutdown.stop(data['pid']):
                 self._not_found('Pid does not match running pid')
             return self._created()
+
+        if data['type'] == 'CHECKOUT_BRANCH' and data['branch']:
+            if app.BRANCH != data['branch']:
+                app.BRANCH = data['branch']
+                ui.notifications.message('Checking out branch: ', data['branch'])
+
+                if self._update(app.PID, data['branch']):
+                    return self._created()
+                else:
+                    return self._bad_request('Update failed')
+            else:
+                ui.notifications.message('Already on branch: ', data['branch'])
+                return self._bad_request('Already on branch')
 
         return self._bad_request('Invalid operation')
