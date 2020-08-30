@@ -76,7 +76,7 @@ class ConfigHandler(BaseRequestHandler):
     #: path param
     path_param = ('path_param', r'\w+')
     #: allowed HTTP methods
-    allowed_methods = ('GET', 'PATCH')
+    allowed_methods = ('GET', 'PATCH',)
     #: patch mapping
     patches = {
         # Main
