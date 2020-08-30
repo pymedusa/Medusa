@@ -197,12 +197,6 @@ ul.list-group > li {
     margin-bottom: 10px;
 }
 
-.align-center {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
 .home-header-controls {
     display: flex;
 }
