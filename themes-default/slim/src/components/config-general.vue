@@ -744,10 +744,6 @@ export default {
             const { general, githubBranches, githubBranchForceUpdate, gitRemoteBranches } = this;
             const { username, password, token } = general.git;
 
-            if (!gitRemoteBranches) {
-                return [];
-            }
-
             if (!gitRemoteBranches.length > 0) {
                 githubBranchForceUpdate();
             }
