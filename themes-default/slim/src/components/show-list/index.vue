@@ -313,11 +313,6 @@ button.nav-show-list {
     white-space: nowrap;
 }
 
-.table-layout >>> .align-center {
-    display: flex;
-    justify-content: center;
-}
-
 .table-layout >>> .indexer-image :not(:last-child) {
     margin-right: 5px;
 }
