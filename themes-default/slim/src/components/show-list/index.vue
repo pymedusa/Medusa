@@ -12,6 +12,9 @@
             </div>
             <div class="col-lg-12">
                 <div class="show-option">
+                    <input type="search" v-model="filterByName" class="form-control form-control-inline input-sm input200" placeholder="Filter Show Name">
+                </div>
+                <div class="show-option">
                     <!-- These need to patch apiv2 on change! -->
                     <select v-model="posterUiSortDir" id="postersortdirection" class="form-control form-control-inline input-sm" placeholder="Direction">
                         <option :value="1">Ascending</option>
@@ -112,6 +115,18 @@ export default {
         ...mapGetters({
             showsInLists: 'showsInLists'
         }),
+        filterByName: {
+            get() {
+                const { local } = this.stateLayout;
+                const { showFilterByName } = local;
+
+                return showFilterByName;
+            },
+            set(value) {
+                const { setLayoutLocal } = this;
+                setLayoutLocal({ key: 'showFilterByName', value });
+            }
+        },
         mappedLayout() {
             const { layout } = this;
             if (layout === 'small') {
@@ -145,7 +160,8 @@ export default {
     methods: {
         ...mapActions({
             setPosterSortBy: 'setPosterSortBy',
-            setPosterSortDir: 'setPosterSortDir'
+            setPosterSortDir: 'setPosterSortDir',
+            setLayoutLocal: 'setLayoutLocal'
         })
     }
 };
@@ -295,11 +311,6 @@ button.nav-show-list {
     font-weight: 400;
     line-height: 1.42857143;
     white-space: nowrap;
-}
-
-.table-layout >>> .align-center {
-    display: flex;
-    justify-content: center;
 }
 
 .table-layout >>> .indexer-image :not(:last-child) {

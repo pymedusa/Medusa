@@ -1402,6 +1402,58 @@
   release_group: Group
   type: episode
 
+? The.X-Flies.S09E06.Trust.No.1.x265.HEVC-Group.mkv
+: title: The X-Flies
+  season: 9
+  episode: 6
+  episode_title: Trust No 1
+  video_codec: H.265
+  video_encoder: x265
+  video_profile: High Efficiency Video Coding
+  release_group: Group
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
+
+? /media/Season 09/The.X-Flies.S09E06.Trust.No.1.x265.HEVC-Group.mkv
+: title: The X-Flies
+  season: 9
+  episode: 6
+  episode_title: Trust No 1
+  video_codec: H.265
+  video_encoder: x265
+  video_profile: High Efficiency Video Coding
+  release_group: Group
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
+
+? The.X-Flies.S09E07.3.x265.HEVC-Group.mkv
+: title: The X-Flies
+  season: 9
+  episode: 7
+  episode_title: '3'
+  video_codec: H.265
+  video_encoder: x265
+  video_profile: High Efficiency Video Coding
+  release_group: Group
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
+
+? /media/Season 09/The.X-Flies.S09E07.3.x265.HEVC-Group.mkv
+: title: The X-Flies
+  season: 9
+  episode: 7
+  episode_title: '3'
+  video_codec: H.265
+  video_encoder: x265
+  video_profile: High Efficiency Video Coding
+  release_group: Group
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
+
 # https://github.com/guessit-io/guessit/issues/295
 ? - Some.Show.S02E14.X264.1080p.HDTV
   - /Some.Show.S02E14.X264.1080p.HDTV/Some.Show.S02E14.X264.1080p.HDTV

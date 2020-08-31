@@ -130,17 +130,42 @@
                         </span>
 
                         <span v-else-if="props.column.label == 'Status'">
-                            <div>
+                            <div class="pull-left">
                                 {{props.row.status}}
                                 <quality-pill v-if="props.row.quality !== 0" :quality="props.row.quality" />
-                                <img :title="props.row.watched ? 'This episode has been flagged as watched' : ''" class="addQTip" v-if="props.row.status !== 'Unaired'" :src="`images/${props.row.watched ? '' : 'not'}watched.png`" width="16" @click="updateEpisodeWatched(props.row, !props.row.watched);">
+                                <img v-if="props.row.status !== 'Unaired'"
+                                     :title="props.row.watched ? 'This episode has been flagged as watched' : ''"
+                                     class="addQTip" :src="`images/${props.row.watched ? '' : 'not'}watched.png`"
+                                     width="16" height="16" style="margin-left: 5px" @click="updateEpisodeWatched(props.row, !props.row.watched);"
+                                >
                             </div>
                         </span>
 
                         <span v-else-if="props.column.field == 'search'">
-                            <img class="epForcedSearch" :id="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :name="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :ref="`search-${props.row.slug}`" src="images/search16.png" height="16" :alt="retryDownload(props.row) ? 'retry' : 'search'" :title="retryDownload(props.row) ? 'Retry Download' : 'Forced Seach'" @click="queueSearch(props.row)">
-                            <app-link class="epManualSearch" :id="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :name="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :href="'home/snatchSelection?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&season=' + props.row.season + '&episode=' + props.row.episode"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search"></app-link>
-                            <img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" @click="searchSubtitle($event, props.row)">
+                            <div class="full-width">
+                                <img class="epForcedSearch" :id="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`"
+                                     :name="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`"
+                                     :ref="`search-${props.row.slug}`" src="images/search16.png" height="16"
+                                     :alt="retryDownload(props.row) ? 'retry' : 'search'"
+                                     :title="retryDownload(props.row) ? 'Retry Download' : 'Forced Seach'"
+                                     @click="queueSearch(props.row)"
+                                >
+                                <app-link class="epManualSearch" :id="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`"
+                                          :name="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`"
+                                          :href="`home/snatchSelection?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}&season=${props.row.season}&episode=${props.row.episode}`"
+                                >
+                                    <img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search">
+                                </app-link>
+                                <img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" @click="searchSubtitle($event, props.row)">
+                            </div>
+                            <div class="mobile">
+                                <select name="search-select" class="form-control input-sm mobile-select" @change="mobileSelectSearch($event, props.row)">
+                                    <option disabled selected value="search action">search action</option>
+                                    <option value="forced">{{retryDownload(props.row) ? 'retry' : 'search'}}</option>
+                                    <option value="manual">manual</option>
+                                    <option value="subtitle">subtitle</option>
+                                </select>
+                            </div>
                         </span>
 
                         <span v-else>
@@ -270,18 +295,39 @@
                             </div>
                         </span>
 
-                        <span v-else-if="props.column.label == 'Status'">
-                            <div>
+                        <span v-else-if="props.column.label == 'Status'" class="align-center">
+                            <div class="pull-left">
                                 {{props.row.status}}
-                                <quality-pill v-if="props.row.quality !== 0" :quality="props.row.quality" />
+                                <quality-pill v-if="props.row.quality !== 0" :quality="props.row.quality" class="quality-margins" />
                                 <img :title="props.row.watched ? 'This episode has been flagged as watched' : ''" class="addQTip" v-if="props.row.status !== 'Unaired'" :src="`images/${props.row.watched ? '' : 'not'}watched.png`" width="16" @click="updateEpisodeWatched(props.row, !props.row.watched);">
                             </div>
                         </span>
 
                         <span v-else-if="props.column.field == 'search'">
-                            <img class="epForcedSearch" :id="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`" :name="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`" :ref="`search-${props.row.slug}`" src="images/search16.png" height="16" :alt="retryDownload(props.row) ? 'retry' : 'search'" :title="retryDownload(props.row) ? 'Retry Download' : 'Forced Seach'" @click="queueSearch(props.row)">
-                            <app-link class="epManualSearch" :id="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`" :name="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`" :href="`home/snatchSelection?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}&season=${props.row.season}&episode=${props.row.episode}`"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search"></app-link>
-                            <img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" @click="searchSubtitle($event, props.row)">
+                            <div class="full-width">
+                                <img class="epForcedSearch" :id="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`"
+                                     :name="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`"
+                                     :ref="`search-${props.row.slug}`" src="images/search16.png" height="16"
+                                     :alt="retryDownload(props.row) ? 'retry' : 'search'"
+                                     :title="retryDownload(props.row) ? 'Retry Download' : 'Forced Seach'"
+                                     @click="queueSearch(props.row)"
+                                >
+                                <app-link class="epManualSearch" :id="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`"
+                                          :name="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`"
+                                          :href="`home/snatchSelection?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}&season=${props.row.season}&episode=${props.row.episode}`"
+                                >
+                                    <img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search">
+                                </app-link>
+                                <img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" @click="searchSubtitle($event, props.row)">
+                            </div>
+                            <div class="mobile">
+                                <select name="search-select" class="form-control input-sm mobile-select" @change="mobileSelectSearch($event, props.row)">
+                                    <option disabled selected value="search action">search action</option>
+                                    <option value="forced">{{retryDownload(props.row) ? 'retry' : 'search'}}</option>
+                                    <option value="manual">manual</option>
+                                    <option value="subtitle">subtitle</option>
+                                </select>
+                            </div>
                         </span>
 
                         <span v-else>
@@ -493,6 +539,7 @@ export default {
                 // But the goal is to have this user formatted (as configured in backend)
                 label: 'Air date',
                 field: this.parseDateFn,
+                tdClass: 'align-center',
                 sortable: false,
                 hidden: getCookie('Air date')
             }, {
@@ -521,7 +568,8 @@ export default {
             // We need to keep track of which episode where trying to search, for the vue-modal
             failedSearchEpisode: null,
             backlogSearchEpisodes: [],
-            filterByOverviewStatus: false
+            filterByOverviewStatus: false,
+            selectedSearch: 'search action'
         };
     },
     computed: {
@@ -1169,6 +1217,33 @@ export default {
                     name: show.title
                 });
             }
+        },
+        mobileSelectSearch(event, episode) {
+            const { $snotify, $router, queueSearch, searchSubtitle, show } = this;
+            if (event.target.value === 'forced') {
+                queueSearch(episode);
+                $snotify.success(
+                    `Search started for S${episode.season} E${episode.episode}`
+                );
+            }
+
+            if (event.target.value === 'manual') {
+                // Use the router to navigate to snatchSelection.
+                $router.push({ name: 'snatchSelection', query: {
+                    indexername: show.indexer,
+                    seriesid: show.id[show.indexer],
+                    season: episode.season,
+                    episode: episode.episode
+                } });
+            }
+
+            if (event.target.value === 'subtitle') {
+                searchSubtitle(event, episode);
+            }
+
+            setTimeout(() => {
+                event.target.value = 'search action';
+            }, 2000);
         }
     },
     watch: {
@@ -1442,6 +1517,11 @@ tablesorter.css
     font-weight: 800;
 }
 
+.mobile-select {
+    width: 110px;
+    font-size: x-small;
+}
+
 td.col-footer {
     text-align: left !important;
 }
@@ -1502,11 +1582,6 @@ td.col-footer {
 
 .subtitles > div:not(:last-child) {
     margin-right: 2px;
-}
-
-.align-center {
-    display: flex;
-    justify-content: center;
 }
 
 .displayShow >>> .vgt-dropdown-menu {
