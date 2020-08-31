@@ -118,18 +118,6 @@ export default {
                 setLayout({ page, layout });
             }
         },
-        filterByName: {
-            get() {
-                const { local } = this.stateLayout;
-                const { showFilterByName } = local;
-
-                return showFilterByName;
-            },
-            set(value) {
-                const { setLayoutLocal } = this;
-                setLayoutLocal({ key: 'showFilterByName', value });
-            }
-        },
         showList: {
             get() {
                 const { stateLayout } = this;
