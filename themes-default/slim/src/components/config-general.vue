@@ -602,7 +602,7 @@ import {
     SortedSelectList,
     StateSwitch
 } from './helpers';
-import { convertDateFormat } from '../utils/core.js';
+import { convertDateFormat, forceBrowserReload } from '../utils/core.js';
 import formatDate from 'date-fns/format';
 import { ToggleButton } from 'vue-js-toggle-button';
 import Multiselect from 'vue-multiselect';
@@ -819,7 +819,7 @@ export default {
                 );
                 setTimeout(() => {
                     // For now we reload the page since the layouts use python still
-                    location.reload(true);
+                    forceBrowserReload();
                 }, 1000);
             } catch (error) {
                 this.$snotify.error(
