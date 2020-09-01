@@ -89,7 +89,7 @@ export default {
                             clearInterval(checkIsAlive);
                             this.status = 'restarted';
                             setTimeout(() => {
-                                this.$router.push({ name: defaultPage });
+                                window.location = defaultPage + '/';
                             }, 5000);
                         }
                     })

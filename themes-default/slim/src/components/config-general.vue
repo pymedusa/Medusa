@@ -819,7 +819,7 @@ export default {
                 );
                 setTimeout(() => {
                     // For now we reload the page since the layouts use python still
-                    location.reload();
+                    location.reload(true);
                 }, 1000);
             } catch (error) {
                 this.$snotify.error(
