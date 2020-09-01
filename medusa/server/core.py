@@ -34,6 +34,7 @@ from medusa.server.api.v2.series_asset import SeriesAssetHandler
 from medusa.server.api.v2.series_legacy import SeriesLegacyHandler
 from medusa.server.api.v2.series_operation import SeriesOperationHandler
 from medusa.server.api.v2.stats import StatsHandler
+from medusa.server.api.v2.system import SystemHandler
 from medusa.server.web import (
     CalendarHandler,
     KeyHandler,
@@ -126,6 +127,9 @@ def get_apiv2_handlers(base):
 
         # /api/v2/alias
         AliasHandler.create_app_handler(base),
+
+        # /api/v2/system
+        SystemHandler.create_app_handler(base),
 
         # /api/v2/authenticate
         AuthHandler.create_app_handler(base),

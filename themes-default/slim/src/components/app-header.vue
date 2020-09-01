@@ -89,8 +89,8 @@
                             <li><app-link href="errorlogs/viewlog/"><i class="menu-icon-viewlog" />&nbsp;View Log</app-link></li>
                             <li role="separator" class="divider" />
                             <li><app-link :href="`home/updateCheck?pid=${system.pid}`"><i class="menu-icon-update" />&nbsp;Check For Updates</app-link></li>
-                            <li><app-link :href="`home/restart/?pid=${system.pid}`" @click.native.prevent="confirmDialog($event, 'restart')"><i class="menu-icon-restart" />&nbsp;Restart</app-link></li>
-                            <li><app-link :href="`home/shutdown/?pid=${system.pid}`" @click.native.prevent="confirmDialog($event, 'shutdown')"><i class="menu-icon-shutdown" />&nbsp;Shutdown</app-link></li>
+                            <li><app-link :href="'home/restart'"><i class="menu-icon-restart" />&nbsp;Restart</app-link></li>
+                            <li><app-link :href="'home/shutdown'" @click.prevent="$router.push({ name: 'shutdown' });"><i class="menu-icon-shutdown" />&nbsp;Shutdown</app-link></li>
                             <li v-if="username"><app-link href="logout" @click.native.prevent="confirmDialog($event, 'logout')"><i class="menu-icon-shutdown" />&nbsp;Logout</app-link></li>
                             <li role="separator" class="divider" />
                             <li><app-link href="home/status/"><i class="menu-icon-info" />&nbsp;Server Status</app-link></li>

@@ -79,8 +79,10 @@ const homeRoutes = [
         meta: {
             title: 'Restarting...',
             header: 'Performing Restart',
-            topMenu: 'system'
-        }
+            topMenu: 'system',
+            converted: true
+        },
+        component: () => import('../components/restart.vue')
     },
     {
         path: '/home/shutdown',
@@ -88,7 +90,9 @@ const homeRoutes = [
         meta: {
             header: 'Shutting down',
             topMenu: 'system'
-        }
+        },
+        component: () => import('../components/restart.vue'),
+        props: { shutdown: true }
     },
     {
         path: '/home/update',

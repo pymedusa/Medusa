@@ -79,8 +79,6 @@ from medusa.server.web.core import (
     WebRoot,
 )
 from medusa.show.show import Show
-from medusa.system.restart import Restart
-from medusa.system.shutdown import Shutdown
 from medusa.tv.cache import Cache
 from medusa.tv.series import Series, SeriesIdentifier
 from medusa.updater.version_checker import CheckVersion
@@ -596,23 +594,21 @@ class Home(WebRoot):
                         tvdirFree=tv_dir_free, rootDir=root_dir,
                         controller='home', action='status')
 
-    def shutdown(self, pid=None):
-        if not Shutdown.stop(pid):
-            return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
+    def restart(self):
+        """
+        Render the restart page.
 
-        title = 'Shutting down'
-        message = 'Medusa is shutting down...'
+        [Converted to VueRouter]
+        """
+        return PageTemplate(rh=self, filename='index.mako').render()
 
-        return self._genericMessage(title, message)
+    def shutdown(self):
+        """
+        Render the shutdown page.
 
-    def restart(self, pid=None):
-        if not Restart.restart(pid):
-            return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
-
-        t = PageTemplate(rh=self, filename='restart.mako')
-
-        return t.render(title='Home', header='Restarting Medusa',
-                        controller='home', action='restart')
+        [Converted to VueRouter]
+        """
+        return PageTemplate(rh=self, filename='index.mako').render()
 
     def updateCheck(self, pid=None):
         if text_type(pid) != text_type(app.PID):

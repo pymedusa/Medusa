@@ -76,7 +76,7 @@ class ConfigHandler(BaseRequestHandler):
     #: path param
     path_param = ('path_param', r'\w+')
     #: allowed HTTP methods
-    allowed_methods = ('GET', 'PATCH', )
+    allowed_methods = ('GET', 'PATCH',)
     #: patch mapping
     patches = {
         # Main
@@ -552,11 +552,10 @@ class ConfigHandler(BaseRequestHandler):
         app.instance.save_config()
 
         # Push an update to any open Web UIs through the WebSocket
-        msg = ws.Message('configUpdated', {
+        ws.Message('configUpdated', {
             'section': identifier,
             'config': DataGenerator.get_data(identifier)
-        })
-        msg.push()
+        }).push()
 
         return self._ok(data=accepted)
 
