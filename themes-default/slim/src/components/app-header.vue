@@ -126,11 +126,15 @@ export default {
         recentShows() {
             const { config } = this;
             const { recentShows } = config;
-            return recentShows.map(show => {
-                const { name, indexerName, showId } = show;
-                const link = `home/displayShow?indexername=${indexerName}&seriesid=${showId}`;
-                return { name, link };
-            });
+
+            const showAlreadyActive = show => !this.$route.name === 'show' || !(show.indexerName === this.$route.query.indexername && show.showId === Number(this.$route.query.seriesid));
+
+            return recentShows.filter(showAlreadyActive)
+                .map(show => {
+                    const { name, indexerName, showId } = show;
+                    const link = `home/displayShow?indexername=${indexerName}&seriesid=${showId}`;
+                    return { name, link };
+                });
         },
         topMenu() {
             return this.$route.meta.topMenu;
