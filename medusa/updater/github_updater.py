@@ -377,4 +377,7 @@ class GitUpdateManager(UpdateManager):
         self._run_git(self._git_path, 'config remote.{0}.pushurl {1}'.format(app.GIT_REMOTE, app.GIT_REMOTE_URL))
 
     def set_upstream_branch(self):
-        self._run_git(self._git_path, 'branch {0} --set-upstream-to origin/{1}'.format(app.BRANCH, app.BRANCH))
+        _, error, exit_status = self._run_git(self._git_path, 'branch {0} --set-upstream-to origin/{1}'.format(app.BRANCH, app.BRANCH))
+        if exit_status and 'unknown option' in error:
+            log.warning("Can't set upstream to origin/{0} because your running an old version of git."
+                        "\nPlease upgrade your git installation to it's latest version.", app.BRANCH)
