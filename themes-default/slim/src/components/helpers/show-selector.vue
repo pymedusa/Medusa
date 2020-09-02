@@ -8,14 +8,14 @@
                 <!-- placeholder -->
                 <option v-if="placeholder" :value="placeholder" disabled :selected="!selectedShowSlug" hidden>{{placeholder}}</option>
                 <!-- If there are multiple show lists -->
-                <template v-if="showsInLists && showsInLists.length > 1">
-                    <optgroup v-for="list in showsInLists" :key="list.listTitle" :label="list.listTitle">
+                <template v-if="sortedLists && sortedLists.length > 1">
+                    <optgroup v-for="list in sortedLists" :key="list.listTitle" :label="list.listTitle">
                         <option v-for="show in list.shows" :key="show.id.slug" :value="show.id.slug">{{show.title}}</option>
                     </optgroup>
                 </template>
                 <!-- If there is one list -->
                 <template v-else>
-                    <option v-for="show in showsInLists[0].shows" :key="show.id.slug" :value="show.id.slug">{{show.title}}</option>
+                    <option v-for="show in sortedLists[0].shows" :key="show.id.slug" :value="show.id.slug">{{show.title}}</option>
                 </template>
             </select>
         </div> <!-- end of select-show-group -->
@@ -52,6 +52,31 @@ export default {
         ...mapGetters({
             showsInLists: 'showsInLists'
         }),
+        sortedLists() {
+            const { layout, showsInLists } = this;
+            const { sortArticle } = layout;
+
+            const sortedShows = [...showsInLists];
+
+            const sortKey = title => (sortArticle ? title.replace(/^((?:the|a|an)\s)/i, '') : title).toLowerCase();
+            const sortFn = (showA, showB) => {
+                const titleA = sortKey(showA.title);
+                const titleB = sortKey(showB.title);
+                if (titleA < titleB) {
+                    return -1;
+                }
+                if (titleA > titleB) {
+                    return 1;
+                }
+                return 0;
+            };
+
+            sortedShows.forEach(list => {
+                list.shows.sort(sortFn);
+            });
+
+            return sortedShows;
+        },
         showForRoutes() {
             const { $route } = this;
             return ['show', 'editShow'].includes($route.name);
