@@ -105,7 +105,6 @@
 <script>
 import { mapState } from 'vuex';
 import { AppLink } from './helpers';
-import displayShowVue from './display-show.vue';
 
 export default {
     name: 'app-header',
