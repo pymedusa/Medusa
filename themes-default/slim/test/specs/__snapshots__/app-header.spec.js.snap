@@ -143,18 +143,6 @@ exports[`AppHeader.test.js renders 1`] = `
              
             <li>
               <app-link-stub
-                href="home/displayShow?indexername=tvdb&seriesid=253463"
-                placeholder="indexer-to-name"
-              >
-                <i
-                  class="menu-icon-addshow"
-                />
-                 Black Mirror
-                            
-              </app-link-stub>
-            </li>
-            <li>
-              <app-link-stub
                 href="home/displayShow?indexername=tvdb&seriesid=80379"
                 placeholder="indexer-to-name"
               >
