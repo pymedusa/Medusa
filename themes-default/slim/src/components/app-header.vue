@@ -123,14 +123,29 @@ export default {
             username: state => state.auth.user.username,
             warningLevel: state => state.config.general.logs.loggingLevels.warning
         }),
+        /**
+         * Moved into a computed, so it's easier to mock in Jest.
+         * @returns {Object} - Route name and query.
+         */
+        currentShowRoute() {
+            const { $route } = this;
+            return {
+                name: $route.name,
+                query: $route.query
+            };
+        },
         recentShows() {
-            const { config } = this;
+            const { config, currentShowRoute } = this;
             const { recentShows } = config;
-            return recentShows.map(show => {
-                const { name, indexerName, showId } = show;
-                const link = `home/displayShow?indexername=${indexerName}&seriesid=${showId}`;
-                return { name, link };
-            });
+
+            const showAlreadyActive = show => !currentShowRoute.name === 'show' || !(show.indexerName === currentShowRoute.query.indexername && show.showId === Number(currentShowRoute.query.seriesid));
+
+            return recentShows.filter(showAlreadyActive)
+                .map(show => {
+                    const { name, indexerName, showId } = show;
+                    const link = `home/displayShow?indexername=${indexerName}&seriesid=${showId}`;
+                    return { name, link };
+                });
         },
         topMenu() {
             return this.$route.meta.topMenu;
