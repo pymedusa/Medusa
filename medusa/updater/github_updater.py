@@ -148,24 +148,27 @@ class GitUpdateManager(UpdateManager):
 
         if exit_status == 0:
             log.debug(u'{cmd} : returned successful', {'cmd': cmd})
-            exit_status = 0
 
         elif exit_status == 1:
             if output:
                 if 'stash' in output:
                     log.warning(u"Enable 'git reset' in settings or stash your changes in local files")
-                elif 'unknown option' in output and 'set-upstream-to' in output:
-                    log.info("Can't set upstream to origin/{0} because your running an old version of git."
-                             '\nPlease upgrade your git installation to its latest version.', app.BRANCH)
                 else:
                     log.warning(u'{cmd} returned : {output}', {'cmd': cmd, 'output': output})
             else:
                 log.warning(u'{cmd} returned no data', {'cmd': cmd})
-            exit_status = 1
 
-        elif exit_status == 128 or 'fatal:' in output or err:
-            log.warning(u'{cmd} returned : {output}', {'cmd': cmd, 'output': output})
-            exit_status = 128
+        elif exit_status == 128:
+            log.warning('{cmd} returned ({status}) : {output}',
+                        {'cmd': cmd, 'status': exit_status, 'output': output})
+
+        elif exit_status == 129:
+            if 'unknown option' in output and 'set-upstream-to' in output:
+                log.info("Can't set upstream to origin/{0} because you're running an old version of git."
+                         '\nPlease upgrade your git installation to its latest version.', app.BRANCH)
+            else:
+                log.warning('{cmd} returned ({status}) : {output}',
+                            {'cmd': cmd, 'status': exit_status, 'output': output})
 
         else:
             log.warning(u'{cmd} returned : {output}. Treat as error for now', {'cmd': cmd, 'output': output})
