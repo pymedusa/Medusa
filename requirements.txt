@@ -5,7 +5,7 @@ bencode.py==4.0.0
 CacheControl==0.12.6
 certifi==2020.6.20
 chardet==3.0.4
-cloudscraper==1.2.40
+cloudscraper==1.2.46
 configobj==5.0.6
 contextlib2==0.6.0.post1
 deluge-client==1.9.0
