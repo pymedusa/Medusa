@@ -154,6 +154,9 @@ class GitUpdateManager(UpdateManager):
             if output:
                 if 'stash' in output:
                     log.warning(u"Enable 'git reset' in settings or stash your changes in local files")
+                elif 'unknown option' in error and 'set-upstream-to' in error:
+                    log.info("Can't set upstream to origin/{0} because your running an old version of git."
+                             "\nPlease upgrade your git installation to its latest version.", app.BRANCH)
                 else:
                     log.warning(u'{cmd} returned : {output}', {'cmd': cmd, 'output': output})
             else:
@@ -378,6 +381,3 @@ class GitUpdateManager(UpdateManager):
 
     def set_upstream_branch(self):
         _, error, exit_status = self._run_git(self._git_path, 'branch {0} --set-upstream-to origin/{1}'.format(app.BRANCH, app.BRANCH))
-        if exit_status and 'unknown option' in error:
-            log.info("Can't set upstream to origin/{0} because your running an old version of git."
-                        "\nPlease upgrade your git installation to its latest version.", app.BRANCH)
