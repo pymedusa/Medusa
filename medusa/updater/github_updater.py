@@ -380,4 +380,4 @@ class GitUpdateManager(UpdateManager):
         self._run_git(self._git_path, 'config remote.{0}.pushurl {1}'.format(app.GIT_REMOTE, app.GIT_REMOTE_URL))
 
     def set_upstream_branch(self):
-        _, error, exit_status = self._run_git(self._git_path, 'branch {0} --set-upstream-to origin/{1}'.format(app.BRANCH, app.BRANCH))
+        self._run_git(self._git_path, 'branch {0} --set-upstream-to origin/{1}'.format(app.BRANCH, app.BRANCH))
