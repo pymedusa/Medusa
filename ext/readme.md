@@ -70,7 +70,7 @@ ext | `trans` | [2.1.0](https://pypi.org/project/trans/2.1.0/) | `imdbpie` | Fil
 ext | `ttl-cache` | [1.6](https://pypi.org/project/ttl-cache/1.6/) | **`medusa`** | File: `ttl_cache.py`
 ext | **`tvdbapiv2`** | pymedusa/[bf1272c](https://github.com/pymedusa/tvdbv2/tree/bf1272c9264c280c3048e89a1920e2bf5f386284) | **`medusa`** | -
 ext | **`urllib3`** | [1.24.1](https://pypi.org/project/urllib3/1.24.1/) | `requests` | -
-ext | **`validators`** | [0.15.0](https://pypi.org/project/validators/0.15.0/) | **`medusa`** | -
+ext | **`validators`** | [0.16.0](https://pypi.org/project/validators/0.16.0/) | **`medusa`** | -
 ext | **`webencodings`** | [0.5.1](https://pypi.org/project/webencodings/0.5.1/) | `html5lib` | -
 ext | **`wrapt`** | [1.10.11](https://pypi.org/project/wrapt/1.10.11/) | `deprecated` | -
 
