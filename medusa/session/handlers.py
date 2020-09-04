@@ -33,7 +33,7 @@ def cloudflare(session, resp, **kwargs):
     A request handler that retries a request after bypassing Cloudflare anti-bot
     protection.
     """
-    if CloudScraper.is_IUAM_Challenge(resp):
+    if CloudScraper.is_IUAM_Challenge(resp) or CloudScraper.is_Captcha_Challenge(resp):
         log.debug('Cloudflare protection detected, trying to bypass it.')
 
         # Get the original request
@@ -68,7 +68,7 @@ def cloudflare(session, resp, **kwargs):
             log.debug('Cloudflare successfully bypassed.')
         return cf_resp
     else:
-        if CloudScraper.is_reCaptcha_Challenge(resp) or CloudScraper.is_Firewall_Blocked(resp):
-            log.warning("Cloudflare captcha challenge or firewall detected, it can't be bypassed.")
-
+        if (CloudScraper.is_New_IUAM_Challenge(resp) or CloudScraper.is_Firewall_Blocked(resp)
+                or CloudScraper.is_New_Captcha_Challenge(resp)):
+            log.warning("Cloudflare captcha challenge v2 or firewall detected, it can't be bypassed.")
         return resp
