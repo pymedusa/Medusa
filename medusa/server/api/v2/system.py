@@ -3,7 +3,6 @@
 from __future__ import unicode_literals
 
 from medusa import app, ui
-from medusa.app import version_check_scheduler
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.system.restart import Restart
 from medusa.system.shutdown import Shutdown
