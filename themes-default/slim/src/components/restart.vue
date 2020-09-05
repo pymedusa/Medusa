@@ -90,7 +90,7 @@ export default {
                             clearInterval(checkIsAlive);
                             this.status = 'restarted';
                             setTimeout(() => {
-                                window.location = defaultPage + '/';
+                                window.location.href = defaultPage + '/';
                                 forceBrowserReload();
                             }, 5000);
                         }
