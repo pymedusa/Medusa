@@ -29,7 +29,6 @@
 import { mapState } from 'vuex';
 import { api, apiRoute } from '../api.js';
 import { StateSwitch } from './helpers';
-import { forceBrowserReload } from '../utils/core';
 /**
  * An object representing a restart component.
  * @typedef {Object} restart
