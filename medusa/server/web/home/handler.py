@@ -610,6 +610,14 @@ class Home(WebRoot):
         """
         return PageTemplate(rh=self, filename='index.mako').render()
 
+    def update(self):
+        """
+        Render the update page.
+
+        [Converted to VueRouter]
+        """
+        return PageTemplate(rh=self, filename='index.mako').render()
+
     def updateCheck(self, pid=None):
         if text_type(pid) != text_type(app.PID):
             return self.redirect('/home/')
@@ -618,33 +626,6 @@ class Home(WebRoot):
         app.version_check_scheduler.action.check_for_new_news(force=True)
 
         return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
-
-    def update(self, pid=None, branch=None):
-        if text_type(pid) != text_type(app.PID):
-            return self.redirect('/home/')
-
-        checkversion = CheckVersion()
-        backup = checkversion.updater and checkversion._runbackup()  # pylint: disable=protected-access
-
-        if backup is True:
-            if branch:
-                checkversion.updater.branch = branch
-
-            # @FIXME: Pre-render the restart page. This is a workaround to stop errors on updates.
-            t = PageTemplate(rh=self, filename='restart.mako')
-            restart_rendered = t.render(title='Home', header='Restarting Medusa',
-                                        controller='home', action='restart')
-
-            if checkversion.updater.need_update() and checkversion.updater.update():
-                # do a hard restart
-                app.events.put(app.events.SystemEvent.RESTART)
-
-                return restart_rendered
-            else:
-                return self._genericMessage('Update Failed',
-                                            "Update wasn't successful, not restarting. Check your log for more information.")
-        else:
-            return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
 
     def branchCheckout(self, branch):
         if app.BRANCH != branch:

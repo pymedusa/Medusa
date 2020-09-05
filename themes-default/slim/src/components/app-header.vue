@@ -88,7 +88,7 @@
                             <li v-if="config.logs.numWarnings > 0"><app-link :href="`errorlogs/?level=${warningLevel}`"><i class="menu-icon-viewlog-errors" />&nbsp;View Warnings <span class="badge btn-warning">{{config.logs.numWarnings}}</span></app-link></li>
                             <li><app-link href="errorlogs/viewlog/"><i class="menu-icon-viewlog" />&nbsp;View Log</app-link></li>
                             <li role="separator" class="divider" />
-                            <li><app-link :href="`home/updateCheck?pid=${system.pid}`"><i class="menu-icon-update" />&nbsp;Check For Updates</app-link></li>
+                            <li><app-link :href="'home/update'" @click.native.prevent="checkForupdates($event)"><i class="menu-icon-update" />&nbsp;Check For Updates</app-link></li>
                             <li><app-link :href="'home/restart'"><i class="menu-icon-restart" />&nbsp;Restart</app-link></li>
                             <li><app-link :href="'home/shutdown'" @click.prevent="$router.push({ name: 'shutdown' });"><i class="menu-icon-shutdown" />&nbsp;Shutdown</app-link></li>
                             <li v-if="username"><app-link href="logout" @click.native.prevent="confirmDialog($event, 'logout')"><i class="menu-icon-shutdown" />&nbsp;Logout</app-link></li>
@@ -103,6 +103,7 @@
     </nav>
 </template>
 <script>
+import { api } from '../api';
 import { mapState } from 'vuex';
 import { AppLink } from './helpers';
 
@@ -252,18 +253,16 @@ export default {
                 cancelButton: 'Cancel',
                 dialogClass: 'modal-dialog',
                 post: false,
-                button: $(event.currentTarget),
+                button: $(event.currentTarget || event.target),
+
                 confirm($element) {
                     window.location.href = $element[0].href;
                 }
             };
 
-            if (action === 'restart') {
-                options.title = 'Restart';
-                options.text = 'Are you sure you want to restart Medusa?';
-            } else if (action === 'shutdown') {
-                options.title = 'Shutdown';
-                options.text = 'Are you sure you want to shutdown Medusa?';
+            if (action === 'newversion') {
+                options.title = 'New version';
+                options.text = 'New version available, update now?';
             } else if (action === 'logout') {
                 options.title = 'Logout';
                 options.text = 'Are you sure you want to logout from Medusa?';
@@ -272,6 +271,20 @@ export default {
             }
 
             $.confirm(options, event);
+        },
+        async checkForupdates(event) {
+            const { confirmDialog } = this;
+            try {
+                this.$snotify.info(
+                    'Checking for a new version...'
+                );
+                await api.post('system/operation', { type: 'CHECKFORUPDATE' });
+                confirmDialog(event, 'newversion');
+            } catch (error) {
+                this.$snotify.info(
+                    'You are already on the latest version'
+                );
+            }
         }
     }
 };

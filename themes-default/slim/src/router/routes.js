@@ -98,8 +98,10 @@ const homeRoutes = [
         path: '/home/update',
         name: 'update',
         meta: {
+            header: 'Update Medusa',
             topMenu: 'system'
-        }
+        },
+        component: () => import('../components/update.vue')
     }
 ];
 

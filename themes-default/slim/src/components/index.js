@@ -29,5 +29,6 @@ export { default as SnatchSelection } from './snatch-selection.vue';
 export { default as Status } from './status.vue';
 export { default as SubMenu } from './sub-menu.vue';
 export { default as SubtitleSearch } from './subtitle-search.vue';
+export { default as Update } from './update.vue';
 export * from './http';
 export * from './helpers';

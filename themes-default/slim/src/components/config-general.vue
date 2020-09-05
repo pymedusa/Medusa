@@ -818,7 +818,7 @@ export default {
                     { timeout: 5000 }
                 );
                 setTimeout(() => {
-                    // For now we reload the page since the layouts use python still
+                    // Reload the page as we need to reload static content.
                     forceBrowserReload();
                 }, 1000);
             } catch (error) {

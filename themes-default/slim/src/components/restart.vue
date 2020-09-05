@@ -29,7 +29,6 @@
 import { mapState } from 'vuex';
 import { api, apiRoute } from '../api.js';
 import { StateSwitch } from './helpers';
-import { forceBrowserReload } from '../utils/core';
 /**
  * An object representing a restart component.
  * @typedef {Object} restart
@@ -90,8 +89,7 @@ export default {
                             clearInterval(checkIsAlive);
                             this.status = 'restarted';
                             setTimeout(() => {
-                                window.location = defaultPage + '/';
-                                forceBrowserReload();
+                                window.location.href = defaultPage + '/';
                             }, 5000);
                         }
                     })
