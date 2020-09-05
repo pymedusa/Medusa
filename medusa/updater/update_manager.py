@@ -30,7 +30,7 @@ class UpdateManager(object):
 
     @staticmethod
     def get_update_url():
-        return app.WEB_ROOT + '/home/update/?pid=' + text_type(app.PID)
+        return app.WEB_ROOT + '/home/update
 
     def current_version(self):
         """Get the current verion of the app."""
