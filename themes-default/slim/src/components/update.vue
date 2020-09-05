@@ -39,49 +39,33 @@ export default {
     data() {
         return {
             startUpdate: false,
-            backupStatus: '',
-            updateStatus: '',
-            currentPid: null
+            backupStatus: 'loading',
+            updateStatus: 'loading'
         };
     },
     computed: {
         ...mapState({
             general: state => state.config.general,
-            systemPid: state => state.config.system.pid,
             layout: state => state.config.layout
-        }),
-        backupState() {
-            const { status } = this;
-
-            if (status === 'failed') {
-                return 'no';
-            }
-
-            if (status === 'restarted') {
-                return 'yes';
-            }
-
-            return 'loading';
-        }
+        })
     },
     methods: {
         async backup() {
             this.startUpdate = true;
             try {
-                this.backupStatus = 'loading';
                 await api.post('system/operation', { type: 'BACKUP' }, { timeout: 1200000 });
                 this.backupStatus = 'yes';
+                this.update();
             } catch (error) {
-                this.backupStatus = 'failed';
+                this.backupStatus = 'no';
             }
         },
         async update() {
             try {
-                this.updateStatus = 'loading';
                 await api.post('system/operation', { type: 'UPDATE' });
                 this.updateStatus = 'yes';
             } catch (error) {
-                this.updateStatus = 'failed';
+                this.updateStatus = 'no';
             }
         }
 

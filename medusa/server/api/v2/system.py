@@ -3,6 +3,7 @@
 from __future__ import unicode_literals
 
 from medusa import app, ui
+from medusa.app import version_check_scheduler
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.system.restart import Restart
 from medusa.system.shutdown import Shutdown
@@ -45,10 +46,12 @@ class SystemHandler(BaseRequestHandler):
                 app.BRANCH = data['branch']
                 ui.notifications.message('Checking out branch: ', data['branch'])
 
-                if self._update(data['branch']):
-                    return self._created()
-                else:
-                    return self._bad_request('Update failed')
+                if self._backup():
+                    if self._update(data['branch']):
+                        return self._created()
+                    else:
+                        return self._bad_request('Update failed')
+                    return self._bad_request('Backup failed')
             else:
                 ui.notifications.message('Already on branch: ', data['branch'])
                 return self._bad_request('Already on branch')
@@ -60,32 +63,43 @@ class SystemHandler(BaseRequestHandler):
                 return self._bad_request('Update failed')
 
         if data['type'] == 'BACKUP':
-            checkversion = CheckVersion()
-            if checkversion.updater and checkversion._runbackup():
-                # return self._created()
-                return self._bad_request('Backup failed')
+            if self._backup():
+                return self._created()
             else:
                 return self._bad_request('Backup failed')
 
+        if data['type'] == 'CHECKFORUPDATE':
+            check_version = CheckVersion()
+            if check_version.check_for_new_version():
+                return self._created()
+            else:
+                return self._bad_request('Version already up to date')
+
         return self._bad_request('Invalid operation')
 
-    def _update(self, branch=None):
+    def _backup(self, branch=None):
         checkversion = CheckVersion()
         backup = checkversion.updater and checkversion._runbackup()  # pylint: disable=protected-access
 
         if backup is True:
-            if branch:
-                checkversion.updater.branch = branch
-
-            if checkversion.updater.need_update() and checkversion.updater.update():
-                return True
-            else:
-                ui.notifications.message('Update failed{branch}'.format(
-                    branch=' for branch {0}'.format(branch) if branch else ''
-                ), 'Check logs for more information.')
+            return True
         else:
             ui.notifications.message('Update failed{branch}'.format(
                 branch=' for branch {0}'.format(branch) if branch else ''
-            ), 'Backup failed. Check logs for more information.')
-            return False
+            ), 'Check logs for more information.')
+
+        return False
+
+    def _update(self, branch=None):
+        checkversion = CheckVersion()
+        if branch:
+            checkversion.updater.branch = branch
+
+        if checkversion.updater.need_update() and checkversion.updater.update():
+            return True
+        else:
+            ui.notifications.message('Update failed{branch}'.format(
+                branch=' for branch {0}'.format(branch) if branch else ''
+            ), 'Check logs for more information.')
+
         return False
