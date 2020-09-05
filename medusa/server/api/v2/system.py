@@ -53,9 +53,23 @@ class SystemHandler(BaseRequestHandler):
                 ui.notifications.message('Already on branch: ', data['branch'])
                 return self._bad_request('Already on branch')
 
+        if data['type'] == 'UPDATE':
+            if self._update():
+                return self._created()
+            else:
+                return self._bad_request('Update failed')
+
+        if data['type'] == 'BACKUP':
+            checkversion = CheckVersion()
+            if checkversion.updater and checkversion._runbackup():
+                # return self._created()
+                return self._bad_request('Backup failed')
+            else:
+                return self._bad_request('Backup failed')
+
         return self._bad_request('Invalid operation')
 
-    def _update(self, branch):
+    def _update(self, branch=None):
         checkversion = CheckVersion()
         backup = checkversion.updater and checkversion._runbackup()  # pylint: disable=protected-access
 
@@ -66,5 +80,12 @@ class SystemHandler(BaseRequestHandler):
             if checkversion.updater.need_update() and checkversion.updater.update():
                 return True
             else:
-                ui.notifications.message("Update wasn't successful. Check your log for more information.", branch)
+                ui.notifications.message('Update failed{branch}'.format(
+                    branch=' for branch {0}'.format(branch) if branch else ''
+                ), 'Check logs for more information.')
+        else:
+            ui.notifications.message('Update failed{branch}'.format(
+                branch=' for branch {0}'.format(branch) if branch else ''
+            ), 'Backup failed. Check logs for more information.')
+            return False
         return False
