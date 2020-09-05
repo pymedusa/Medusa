@@ -4,7 +4,7 @@
 
 #### Improvements
 - Added new page "restart", for restarting and shutting down medusa ([8399 ](https://github.com/pymedusa/Medusa/pull/8399 ))
-- Added new page "update", for updating medusa to a new version. ([8437](https://github.com/pymedusa/Medusa/pull/8437))
+- Added new page "update", for updating medusa to a new version ([8437](https://github.com/pymedusa/Medusa/pull/8437))
 
 #### Fixes
 
