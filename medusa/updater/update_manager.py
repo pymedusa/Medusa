@@ -12,7 +12,6 @@ from medusa.logger.adapters.style import BraceAdapter
 
 from requests.exceptions import RequestException
 
-from six import text_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
