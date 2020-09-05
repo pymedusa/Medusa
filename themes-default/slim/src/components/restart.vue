@@ -91,7 +91,6 @@ export default {
                             this.status = 'restarted';
                             setTimeout(() => {
                                 window.location.href = defaultPage + '/';
-                                forceBrowserReload();
                             }, 5000);
                         }
                     })
