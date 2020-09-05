@@ -71,8 +71,12 @@ export default {
     },
     methods: {
         restart() {
-            const { general, systemPid } = this;
+            const { general, shutdown, systemPid } = this;
             const { defaultPage } = general;
+
+            if (shutdown) {
+                return this.shutdownMedusa();
+            }
 
             const checkIsAlive = setInterval(() => {
                 // @TODO: Move to API
