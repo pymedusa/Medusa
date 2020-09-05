@@ -555,7 +555,7 @@ exports[`AppHeader.test.js renders 1`] = `
              
             <li>
               <app-link-stub
-                href="home/updateCheck?pid=1234"
+                href="home/update"
                 placeholder="indexer-to-name"
               >
                 <i
