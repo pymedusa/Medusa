@@ -27,7 +27,7 @@
   },
   "resolutions": {
     "**/jquery": "3.5.1",
-    "**/date-fns": "2.14.0",
+    "**/date-fns": "2.16.1",
     "jest/**/@babel/core": "7.11.1"
   },
   "dependencies": {
@@ -37,7 +37,7 @@
     "axios": "0.19.2",
     "bootstrap": "3.4.1",
     "country-language": "0.1.7",
-    "date-fns": "2.14.0",
+    "date-fns": "2.16.1",
     "is-visible": "2.2.0",
     "javascript-time-ago": "2.0.13",
     "jquery": "3.5.1",
