@@ -616,7 +616,6 @@ div.xem {
 
 .nav-show-list {
     position: relative;
-    margin-top: 4px;
     background-color: transparent;
     border: none;
     float: left;
@@ -2886,7 +2885,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
 }
 
 .vgt-dropdown > .button-group {
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 
 .vgt-dropdown-menu {
@@ -4228,6 +4227,13 @@ CSS helper classes
     .col-md-12 > .horizontal-scroll {
         margin: 0 -13px;
     }
+}
+
+/* This is used by multiple vue-good-table tables, for centering td content. */
+
+.align-center {
+    display: flex;
+    justify-content: center;
 }
 
 /* sub-menu */

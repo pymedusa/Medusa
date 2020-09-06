@@ -1,31 +1,27 @@
 <template>
     <div id="home">
-        <div v-if="['banner', 'simple', 'small'].includes(layout)" class="row">
-            <div class="col-sm-12">
-                <div class="home-filter-option option-filter-name">
-                    <input v-model="filterByName" id="filterShowName" class="form-control form-control-inline input-sm input200" type="search" placeholder="Filter Show Name">
+
+        <div class="row">
+            <div class="col-sm-12 home-header-controls">
+                <h2 class="header pull-left">Show List</h2>
+                <div class="home-options">
+                    <div v-if="selectedRootIndexOptions.length > 1" class="home-filter-option pull-right" id="showRoot">
+                        <select :value="stateLayout.selectedRootIndex" name="showRootDir" id="showRootDir" class="form-control form-control-inline input-sm" @change="setStoreLayout({ key: 'selectedRootIndex', value: Number($event.target.selectedOptions[0].value) });">
+                            <option v-for="option in selectedRootIndexOptions" :key="option.value" :value="String(option.value)">{{option.text}}</option>
+                        </select>
+                    </div>
+                    <div class="home-filter-option show-option-layout pull-right">
+                        <span>Layout: </span>
+                        <select v-model="layout" name="layout" class="form-control form-control-inline input-sm show-layout">
+                            <option value="poster">Poster</option>
+                            <option value="small">Small Poster</option>
+                            <option value="banner">Banner</option>
+                            <option value="simple">Simple</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <div class="row">
-            <div class="col-sm-12">
-                <div class="home-filter-option pull-left" id="showRoot">
-                    <select :value="stateLayout.selectedRootIndex" name="showRootDir" id="showRootDir" class="form-control form-control-inline input-sm" @change="setStoreLayout({ key: 'selectedRootIndex', value: Number($event.target.selectedOptions[0].value) });">
-                        <option v-for="option in selectedRootIndexOptions" :key="option.value" :value="String(option.value)">{{option.text}}</option>
-                    </select>
-                </div>
-                <div class="home-filter-option show-option-layout pull-right">
-                    <span>Layout: </span>
-                    <select v-model="layout" name="layout" class="form-control form-control-inline input-sm show-layout">
-                        <option value="poster">Poster</option>
-                        <option value="small">Small Poster</option>
-                        <option value="banner">Banner</option>
-                        <option value="simple">Simple</option>
-                    </select>
-                </div>
-            </div>
-        </div><!-- end row -->
 
         <div class="row">
             <div class="col-md-12">
@@ -122,18 +118,6 @@ export default {
                 setLayout({ page, layout });
             }
         },
-        filterByName: {
-            get() {
-                const { local } = this.stateLayout;
-                const { showFilterByName } = local;
-
-                return showFilterByName;
-            },
-            set(value) {
-                const { setLayoutLocal } = this;
-                setLayoutLocal({ key: 'showFilterByName', value });
-            }
-        },
         showList: {
             get() {
                 const { stateLayout } = this;
@@ -142,14 +126,18 @@ export default {
             },
             set(value) {
                 const { stateLayout, setLayoutShow } = this;
-                const mergedShowLayout = { ...stateLayout.show, showListOrder: value.map(item => item.value) };
+                const mergedShowLayout = { ...stateLayout.show, showListOrder: value };
                 setLayoutShow(mergedShowLayout);
             }
         },
         selectedRootIndexOptions() {
             const { config } = this;
             const { rootDirs } = config;
-            return [...[{ value: -1, text: 'All Folders' }], ...rootDirs.slice(1).map((item, idx) => ({ text: item, value: idx }))];
+            let mappedRootDirs = rootDirs.slice(1).map((item, idx) => ({ text: item, value: idx }));
+            if (mappedRootDirs && mappedRootDirs.length > 1) {
+                mappedRootDirs = [...[{ value: -1, text: 'All Folders' }], ...mappedRootDirs];
+            }
+            return mappedRootDirs;
         }
     },
     methods: {
@@ -194,6 +182,20 @@ export default {
 <style scoped>
 ul.list-group > li {
     list-style: none;
+    margin-bottom: 10px;
+}
+
+.home-header-controls {
+    display: flex;
+}
+
+.home-header-controls > h2 {
+    white-space: nowrap;
+}
+
+.home-options {
+    align-self: flex-end;
+    width: 100%;
 }
 
 .home-filter-option {

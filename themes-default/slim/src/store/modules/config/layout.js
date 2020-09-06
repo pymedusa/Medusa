@@ -67,7 +67,7 @@ const mutations = {
 };
 
 const getters = {
-    fuzzyParseDateTime: state => airDate => {
+    fuzzyParseDateTime: state => (airDate, showSeconds = false) => {
         const timeAgo = new TimeAgo('en-US');
         const { dateStyle, fuzzyDating, timeStyle } = state;
 
@@ -83,8 +83,11 @@ const getters = {
             return new Date(airDate).toLocaleString();
         }
 
+        // Only the history page should show seconds.
+        const formatTimeStyle = showSeconds ? timeStyle : timeStyle.replace(':%S', '');
+
         const fdate = parseISO(airDate);
-        return formatDate(fdate, convertDateFormat(`${dateStyle} ${timeStyle}`));
+        return formatDate(fdate, convertDateFormat(`${dateStyle} ${formatTimeStyle}`));
     },
     getShowFilterByName: state => {
         return state.local.showFilterByName;

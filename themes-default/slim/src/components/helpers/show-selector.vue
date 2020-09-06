@@ -5,21 +5,24 @@
                 <option>Loading...</option>
             </select>
             <select v-else v-model="selectedShowSlug" :class="selectClass" @change="$emit('change', selectedShowSlug)">
+                <!-- placeholder -->
                 <option v-if="placeholder" :value="placeholder" disabled :selected="!selectedShowSlug" hidden>{{placeholder}}</option>
-                <template v-if="whichList === -1">
-                    <optgroup v-for="curShowList in showLists" :key="curShowList.type" :label="curShowList.type">
-                        <option v-for="show in curShowList.shows" :key="show.id.slug" :value="show.id.slug">{{show.title}}</option>
+                <!-- If there are multiple show lists -->
+                <template v-if="sortedLists && sortedLists.length > 1">
+                    <optgroup v-for="list in sortedLists" :key="list.listTitle" :label="list.listTitle">
+                        <option v-for="show in list.shows" :key="show.id.slug" :value="show.id.slug">{{show.title}}</option>
                     </optgroup>
                 </template>
+                <!-- If there is one list -->
                 <template v-else>
-                    <option v-for="show in showLists[whichList].shows" :key="show.id.slug" :value="show.id.slug">{{show.title}}</option>
+                    <option v-for="show in sortedLists[0].shows" :key="show.id.slug" :value="show.id.slug">{{show.title}}</option>
                 </template>
             </select>
         </div> <!-- end of select-show-group -->
     </div> <!-- end of container -->
 </template>
 <script>
-import { mapState } from 'vuex';
+import { mapGetters, mapState } from 'vuex';
 
 export default {
     name: 'show-selector',
@@ -46,51 +49,33 @@ export default {
             layout: state => state.config.layout,
             shows: state => state.shows.shows
         }),
-        showLists() {
-            const { layout, shows } = this;
-            const { animeSplitHome, sortArticle } = layout;
-            const lists = [
-                { type: 'Shows', shows: [] },
-                { type: 'Anime', shows: [] }
-            ];
+        ...mapGetters({
+            showsInLists: 'showsInLists'
+        }),
+        sortedLists() {
+            const { layout, showsInLists } = this;
+            const { sortArticle } = layout;
 
-            // We're still loading
-            if (shows.length === 0) {
-                return;
-            }
+            const sortedShows = [...showsInLists];
 
-            shows.forEach(show => {
-                const type = Number(animeSplitHome && show.config.anime);
-                lists[type].shows.push(show);
+            const sortKey = title => (sortArticle ? title.replace(/^((?:the|a|an)\s)/i, '') : title).toLowerCase();
+            const sortFn = (showA, showB) => {
+                const titleA = sortKey(showA.title);
+                const titleB = sortKey(showB.title);
+                if (titleA < titleB) {
+                    return -1;
+                }
+                if (titleA > titleB) {
+                    return 1;
+                }
+                return 0;
+            };
+
+            sortedShows.forEach(list => {
+                list.shows.sort(sortFn);
             });
 
-            const sortKey = title => (sortArticle ? title : title.replace(/^((?:the|a|an)\s)/i, '')).toLowerCase();
-            lists.forEach(list => {
-                list.shows.sort((showA, showB) => {
-                    const titleA = sortKey(showA.title);
-                    const titleB = sortKey(showB.title);
-                    if (titleA < titleB) {
-                        return -1;
-                    }
-                    if (titleA > titleB) {
-                        return 1;
-                    }
-                    return 0;
-                });
-            });
-            return lists;
-        },
-        whichList() {
-            const { showLists } = this;
-            const shows = showLists[0].shows.length !== 0;
-            const anime = showLists[1].shows.length !== 0;
-            if (shows && anime) {
-                return -1;
-            }
-            if (anime) {
-                return 1;
-            }
-            return 0;
+            return sortedShows;
         },
         showForRoutes() {
             const { $route } = this;
@@ -114,7 +99,7 @@ export default {
             const indexerName = selectedShow.indexer;
             const seriesId = selectedShow.id[indexerName];
 
-            // TODO: Make sure the correct show, has been set as current show.
+            // Make sure the correct show, has been set as current show.
             console.debug(`Setting current show to ${selectedShow.title}`);
             $store.commit('currentShow', {
                 indexer: indexerName,

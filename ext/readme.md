@@ -13,7 +13,7 @@ ext | **`boto`** | [2.48.0](https://pypi.org/project/boto/2.48.0/) | `imdbpie` |
 ext | `CacheControl` | [0.12.6](https://pypi.org/project/CacheControl/0.12.6/) | **`medusa`** | Module: `cachecontrol`
 ext | **`certifi`** | [2020.6.20](https://pypi.org/project/certifi/2020.6.20/) | **`medusa`**, `requests`, `traktor` | -
 ext | **`chardet`** | [3.0.4](https://pypi.org/project/chardet/3.0.4/) | **`medusa`**, `feedparser`, `pysrt`, `requests`, `subliminal` | -
-ext | **`cloudscraper`** | [1.2.40](https://pypi.org/project/cloudscraper/1.2.40/) | **`medusa`** | -
+ext | **`cloudscraper`** | [1.2.46](https://pypi.org/project/cloudscraper/1.2.46/) | **`medusa`** | -
 ext | `configobj` | [5.0.6](https://pypi.org/project/configobj/5.0.6/) | **`medusa`** | Modules: `configobj.py`, `validate.py`, `_version.py`
 **ext2** | `configparser` | [3.7.4](https://pypi.org/project/configparser/3.7.4/) | `adba` | Modules: `configparser.py`, `backports/configparser`
 ext | `contextlib2` | [0.6.0.post1](https://pypi.org/project/contextlib2/0.6.0.post1/) | **`medusa`** | File: `contextlib2.py`
@@ -70,7 +70,7 @@ ext | `trans` | [2.1.0](https://pypi.org/project/trans/2.1.0/) | `imdbpie` | Fil
 ext | `ttl-cache` | [1.6](https://pypi.org/project/ttl-cache/1.6/) | **`medusa`** | File: `ttl_cache.py`
 ext | **`tvdbapiv2`** | pymedusa/[bf1272c](https://github.com/pymedusa/tvdbv2/tree/bf1272c9264c280c3048e89a1920e2bf5f386284) | **`medusa`** | -
 ext | **`urllib3`** | [1.24.1](https://pypi.org/project/urllib3/1.24.1/) | `requests` | -
-ext | **`validators`** | [0.15.0](https://pypi.org/project/validators/0.15.0/) | **`medusa`** | -
+ext | **`validators`** | [0.16.0](https://pypi.org/project/validators/0.16.0/) | **`medusa`** | -
 ext | **`webencodings`** | [0.5.1](https://pypi.org/project/webencodings/0.5.1/) | `html5lib` | -
 ext | **`wrapt`** | [1.10.11](https://pypi.org/project/wrapt/1.10.11/) | `deprecated` | -
 

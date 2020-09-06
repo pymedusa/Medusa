@@ -143,18 +143,6 @@ exports[`AppHeader.test.js renders 1`] = `
              
             <li>
               <app-link-stub
-                href="home/displayShow?indexername=tvdb&seriesid=253463"
-                placeholder="indexer-to-name"
-              >
-                <i
-                  class="menu-icon-addshow"
-                />
-                 Black Mirror
-                            
-              </app-link-stub>
-            </li>
-            <li>
-              <app-link-stub
                 href="home/displayShow?indexername=tvdb&seriesid=80379"
                 placeholder="indexer-to-name"
               >
@@ -539,18 +527,6 @@ exports[`AppHeader.test.js renders 1`] = `
               </app-link-stub>
             </li>
              
-            <li>
-              <app-link-stub
-                href="https://github.com/pymedusa/Medusa/wiki/Donations"
-                placeholder="indexer-to-name"
-              >
-                <i
-                  class="menu-icon-support"
-                />
-                 Support Medusa
-              </app-link-stub>
-            </li>
-             
             <li
               class="divider"
               role="separator"
@@ -579,7 +555,7 @@ exports[`AppHeader.test.js renders 1`] = `
              
             <li>
               <app-link-stub
-                href="home/updateCheck?pid=1234"
+                href="home/update"
                 placeholder="indexer-to-name"
               >
                 <i
@@ -591,7 +567,7 @@ exports[`AppHeader.test.js renders 1`] = `
              
             <li>
               <app-link-stub
-                href="home/restart/?pid=1234"
+                href="home/restart"
                 placeholder="indexer-to-name"
               >
                 <i
@@ -603,7 +579,7 @@ exports[`AppHeader.test.js renders 1`] = `
              
             <li>
               <app-link-stub
-                href="home/shutdown/?pid=1234"
+                href="home/shutdown"
                 placeholder="indexer-to-name"
               >
                 <i

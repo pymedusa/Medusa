@@ -1,7 +1,7 @@
 <template>
-    <div v-if="subMenu.length > 0" id="sub-menu-wrapper">
-        <div id="sub-menu-container" class="row shadow">
-            <div id="sub-menu" class="submenu-default hidden-print col-md-12">
+    <div v-if="subMenu.length > 0" id="sub-menu-wrapper" class="row">
+        <div id="sub-menu-container" class="col-md-12 shadow">
+            <div id="sub-menu" class="submenu-default hidden-print">
                 <app-link
                     v-for="menuItem in subMenu"
                     :key="`sub-menu-${menuItem.title}`"
@@ -122,6 +122,12 @@ export default {
     #sub-menu-container {
         position: relative;
         margin-top: -24px;
+    }
+}
+
+@media (max-width: 767px) {
+    #sub-menu-wrapper {
+        display: flex;
     }
 }
 </style>

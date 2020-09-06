@@ -79,8 +79,6 @@ from medusa.server.web.core import (
     WebRoot,
 )
 from medusa.show.show import Show
-from medusa.system.restart import Restart
-from medusa.system.shutdown import Shutdown
 from medusa.tv.cache import Cache
 from medusa.tv.series import Series, SeriesIdentifier
 from medusa.updater.version_checker import CheckVersion
@@ -596,23 +594,29 @@ class Home(WebRoot):
                         tvdirFree=tv_dir_free, rootDir=root_dir,
                         controller='home', action='status')
 
-    def shutdown(self, pid=None):
-        if not Shutdown.stop(pid):
-            return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
+    def restart(self):
+        """
+        Render the restart page.
 
-        title = 'Shutting down'
-        message = 'Medusa is shutting down...'
+        [Converted to VueRouter]
+        """
+        return PageTemplate(rh=self, filename='index.mako').render()
 
-        return self._genericMessage(title, message)
+    def shutdown(self):
+        """
+        Render the shutdown page.
 
-    def restart(self, pid=None):
-        if not Restart.restart(pid):
-            return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
+        [Converted to VueRouter]
+        """
+        return PageTemplate(rh=self, filename='index.mako').render()
 
-        t = PageTemplate(rh=self, filename='restart.mako')
+    def update(self):
+        """
+        Render the update page.
 
-        return t.render(title='Home', header='Restarting Medusa',
-                        controller='home', action='restart')
+        [Converted to VueRouter]
+        """
+        return PageTemplate(rh=self, filename='index.mako').render()
 
     def updateCheck(self, pid=None):
         if text_type(pid) != text_type(app.PID):
@@ -622,33 +626,6 @@ class Home(WebRoot):
         app.version_check_scheduler.action.check_for_new_news(force=True)
 
         return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
-
-    def update(self, pid=None, branch=None):
-        if text_type(pid) != text_type(app.PID):
-            return self.redirect('/home/')
-
-        checkversion = CheckVersion()
-        backup = checkversion.updater and checkversion._runbackup()  # pylint: disable=protected-access
-
-        if backup is True:
-            if branch:
-                checkversion.updater.branch = branch
-
-            # @FIXME: Pre-render the restart page. This is a workaround to stop errors on updates.
-            t = PageTemplate(rh=self, filename='restart.mako')
-            restart_rendered = t.render(title='Home', header='Restarting Medusa',
-                                        controller='home', action='restart')
-
-            if checkversion.updater.need_update() and checkversion.updater.update():
-                # do a hard restart
-                app.events.put(app.events.SystemEvent.RESTART)
-
-                return restart_rendered
-            else:
-                return self._genericMessage('Update Failed',
-                                            "Update wasn't successful, not restarting. Check your log for more information.")
-        else:
-            return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
 
     def branchCheckout(self, branch):
         if app.BRANCH != branch:

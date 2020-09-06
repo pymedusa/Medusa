@@ -37,21 +37,44 @@ exports[`ShowSelector.test.js renders with articles(The|A|An) ignored in /home/d
         -- Select a Show --
       </option>
        
-      <option
-        value="tvdb76924"
+      <optgroup
+        label="Series"
       >
-        Black Books
-      </option>
-      <option
-        value="tvdb330942"
+        <option
+          value="tvdb76924"
+        >
+          Black Books
+        </option>
+        <option
+          value="tvdb330942"
+        >
+          Blue Planet II
+        </option>
+        <option
+          value="tvdb73787"
+        >
+          That '70s Show
+        </option>
+      </optgroup>
+      <optgroup
+        label="Anime"
       >
-        Blue Planet II
-      </option>
-      <option
-        value="tvdb73787"
-      >
-        That '70s Show
-      </option>
+        <option
+          value="tvdb360438"
+        >
+          A Certain Scientific Accelerator
+        </option>
+        <option
+          value="tvdb300835"
+        >
+          Ajin
+        </option>
+        <option
+          value="tvdb313867"
+        >
+          Izetta, The Last Witch
+        </option>
+      </optgroup>
     </select>
   </div>
 </div>
@@ -75,21 +98,44 @@ exports[`ShowSelector.test.js renders with shows in /home/displayShow 1`] = `
         -- Select a Show --
       </option>
        
-      <option
-        value="tvdb76924"
+      <optgroup
+        label="Series"
       >
-        Black Books
-      </option>
-      <option
-        value="tvdb330942"
+        <option
+          value="tvdb76924"
+        >
+          Black Books
+        </option>
+        <option
+          value="tvdb330942"
+        >
+          Blue Planet II
+        </option>
+        <option
+          value="tvdb73787"
+        >
+          That '70s Show
+        </option>
+      </optgroup>
+      <optgroup
+        label="Anime"
       >
-        Blue Planet II
-      </option>
-      <option
-        value="tvdb73787"
-      >
-        That '70s Show
-      </option>
+        <option
+          value="tvdb300835"
+        >
+          Ajin
+        </option>
+        <option
+          value="tvdb360438"
+        >
+          A Certain Scientific Accelerator
+        </option>
+        <option
+          value="tvdb313867"
+        >
+          Izetta, The Last Witch
+        </option>
+      </optgroup>
     </select>
   </div>
 </div>
@@ -113,21 +159,44 @@ exports[`ShowSelector.test.js renders with shows in /home/editShow 1`] = `
         -- Select a Show --
       </option>
        
-      <option
-        value="tvdb76924"
+      <optgroup
+        label="Series"
       >
-        Black Books
-      </option>
-      <option
-        value="tvdb330942"
+        <option
+          value="tvdb76924"
+        >
+          Black Books
+        </option>
+        <option
+          value="tvdb330942"
+        >
+          Blue Planet II
+        </option>
+        <option
+          value="tvdb73787"
+        >
+          That '70s Show
+        </option>
+      </optgroup>
+      <optgroup
+        label="Anime"
       >
-        Blue Planet II
-      </option>
-      <option
-        value="tvdb73787"
-      >
-        That '70s Show
-      </option>
+        <option
+          value="tvdb300835"
+        >
+          Ajin
+        </option>
+        <option
+          value="tvdb360438"
+        >
+          A Certain Scientific Accelerator
+        </option>
+        <option
+          value="tvdb313867"
+        >
+          Izetta, The Last Witch
+        </option>
+      </optgroup>
     </select>
   </div>
 </div>
@@ -151,21 +220,44 @@ exports[`ShowSelector.test.js renders with split sections in /home/displayShow 1
         -- Select a Show --
       </option>
        
-      <option
-        value="tvdb76924"
+      <optgroup
+        label="Series"
       >
-        Black Books
-      </option>
-      <option
-        value="tvdb330942"
+        <option
+          value="tvdb76924"
+        >
+          Black Books
+        </option>
+        <option
+          value="tvdb330942"
+        >
+          Blue Planet II
+        </option>
+        <option
+          value="tvdb73787"
+        >
+          That '70s Show
+        </option>
+      </optgroup>
+      <optgroup
+        label="Anime"
       >
-        Blue Planet II
-      </option>
-      <option
-        value="tvdb73787"
-      >
-        That '70s Show
-      </option>
+        <option
+          value="tvdb300835"
+        >
+          Ajin
+        </option>
+        <option
+          value="tvdb360438"
+        >
+          A Certain Scientific Accelerator
+        </option>
+        <option
+          value="tvdb313867"
+        >
+          Izetta, The Last Witch
+        </option>
+      </optgroup>
     </select>
   </div>
 </div>
@@ -183,21 +275,44 @@ exports[`ShowSelector.test.js renders without placeholder in /home/displayShow 1
     >
       <!---->
        
-      <option
-        value="tvdb76924"
+      <optgroup
+        label="Series"
       >
-        Black Books
-      </option>
-      <option
-        value="tvdb330942"
+        <option
+          value="tvdb76924"
+        >
+          Black Books
+        </option>
+        <option
+          value="tvdb330942"
+        >
+          Blue Planet II
+        </option>
+        <option
+          value="tvdb73787"
+        >
+          That '70s Show
+        </option>
+      </optgroup>
+      <optgroup
+        label="Anime"
       >
-        Blue Planet II
-      </option>
-      <option
-        value="tvdb73787"
-      >
-        That '70s Show
-      </option>
+        <option
+          value="tvdb300835"
+        >
+          Ajin
+        </option>
+        <option
+          value="tvdb360438"
+        >
+          A Certain Scientific Accelerator
+        </option>
+        <option
+          value="tvdb313867"
+        >
+          Izetta, The Last Witch
+        </option>
+      </optgroup>
     </select>
   </div>
 </div>
