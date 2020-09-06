@@ -82,7 +82,7 @@
     "codecov": "3.7.2",
     "copy-webpack-plugin": "6.1.0",
     "cross-env": "7.0.2",
-    "css-loader": "3.6.0",
+    "css-loader": "4.2.2",
     "eslint": "7.8.1",
     "eslint-config-xo": "0.26.0",
     "eslint-import-resolver-webpack": "0.12.2",
