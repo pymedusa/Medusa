@@ -75,48 +75,56 @@ class HomeAddShows(Home):
         t = PageTemplate(rh=self, filename='index.mako')
         return t.render(controller='addShows', action='index')
 
-    def newShow(self, show_to_add=None, other_shows=None, search_string=None):
+    # def newShow(self, show_to_add=None, other_shows=None, search_string=None):
+    #     """
+    #     Display the new show page which collects a tvdb id, folder, and extra options and
+    #     posts them to addNewShow
+    #     """
+    #     t = PageTemplate(rh=self, filename='addShows_newShow.mako')
+
+    #     indexer, show_dir, indexer_id, show_name = self.split_extra_show(show_to_add)
+    #     use_provided_info = bool(indexer_id and indexer and show_name)
+
+    #     # use the given show_dir for the indexer search if available
+    #     if not show_dir:
+    #         if search_string:
+    #             default_show_name = search_string
+    #         else:
+    #             default_show_name = ''
+
+    #     elif not show_name:
+    #         default_show_name = re.sub(r' \(\d{4}\)', '',
+    #                                    os.path.basename(os.path.normpath(show_dir)))
+    #     else:
+    #         default_show_name = show_name
+
+    #     # carry a list of other dirs if given
+    #     if not other_shows:
+    #         other_shows = []
+    #     elif not isinstance(other_shows, list):
+    #         other_shows = [other_shows]
+
+    #     other_shows = decode_shows(other_shows)
+    #     provided_indexer_id = int(indexer_id or 0)
+    #     provided_indexer_name = show_name
+    #     provided_indexer = int(indexer or app.INDEXER_DEFAULT)
+
+    #     return t.render(
+    #         enable_anime_options=True, use_provided_info=use_provided_info,
+    #         default_show_name=default_show_name, other_shows=other_shows,
+    #         provided_show_dir=show_dir, provided_indexer_id=provided_indexer_id,
+    #         provided_indexer_name=provided_indexer_name, provided_indexer=provided_indexer,
+    #         indexers=indexerApi().indexers, whitelist=[], blacklist=[], groups=[],
+    #         controller='addShows', action='newShow'
+    #     )
+
+    def newShow(self, **query_args):
         """
-        Display the new show page which collects a tvdb id, folder, and extra options and
-        posts them to addNewShow
+        Render the newShow page.
+
+        [Converted to VueRouter]
         """
-        t = PageTemplate(rh=self, filename='addShows_newShow.mako')
-
-        indexer, show_dir, indexer_id, show_name = self.split_extra_show(show_to_add)
-        use_provided_info = bool(indexer_id and indexer and show_name)
-
-        # use the given show_dir for the indexer search if available
-        if not show_dir:
-            if search_string:
-                default_show_name = search_string
-            else:
-                default_show_name = ''
-
-        elif not show_name:
-            default_show_name = re.sub(r' \(\d{4}\)', '',
-                                       os.path.basename(os.path.normpath(show_dir)))
-        else:
-            default_show_name = show_name
-
-        # carry a list of other dirs if given
-        if not other_shows:
-            other_shows = []
-        elif not isinstance(other_shows, list):
-            other_shows = [other_shows]
-
-        other_shows = decode_shows(other_shows)
-        provided_indexer_id = int(indexer_id or 0)
-        provided_indexer_name = show_name
-        provided_indexer = int(indexer or app.INDEXER_DEFAULT)
-
-        return t.render(
-            enable_anime_options=True, use_provided_info=use_provided_info,
-            default_show_name=default_show_name, other_shows=other_shows,
-            provided_show_dir=show_dir, provided_indexer_id=provided_indexer_id,
-            provided_indexer_name=provided_indexer_name, provided_indexer=provided_indexer,
-            indexers=indexerApi().indexers, whitelist=[], blacklist=[], groups=[],
-            controller='addShows', action='newShow'
-        )
+        return PageTemplate(rh=self, filename='index.mako').render()
 
     def trendingShows(self, traktList=None):
         """

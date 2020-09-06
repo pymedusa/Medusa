@@ -19,6 +19,7 @@ export { default as IRC } from './irc.vue';
 export { default as Login } from './login.vue';
 export { default as Logs } from './logs.vue';
 export { default as ManualPostProcess } from './manual-post-process.vue';
+export { default as newShow } from './new-show.vue';
 export { default as Restart } from './restart.vue';
 export { default as RootDirs } from './root-dirs.vue';
 export { default as Schedule } from './schedule.vue';

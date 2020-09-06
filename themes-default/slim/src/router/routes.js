@@ -238,8 +238,10 @@ const addShowRoutes = [
         meta: {
             title: 'Add New Show',
             header: 'Add New Show',
-            topMenu: 'home'
-        }
+            topMenu: 'home',
+            converted: true
+        },
+        component: () => import('../components/new-show.vue')
     },
     {
         path: '/addShows/trendingShows',
