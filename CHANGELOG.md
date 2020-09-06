@@ -1,4 +1,4 @@
-## Unreleased
+## 0.4.2 (2020-09-06)
 
 #### New Features
 
@@ -7,6 +7,13 @@
 - Added new page "update", for updating medusa to a new version ([8437](https://github.com/pymedusa/Medusa/pull/8437))
 
 #### Fixes
+- Fix show-selector using the show lists ([8426](https://github.com/pymedusa/Medusa/pull/8426))
+- Fix home poster layout. Re-add the search by show title ([8415](https://github.com/pymedusa/Medusa/pull/8415))
+- Fix backlog search ignoring cached search results ([8395](https://github.com/pymedusa/Medusa/pull/8395))
+- Fix guessit parsing numbered episode titles as multi season ([8413](https://github.com/pymedusa/Medusa/pull/8413))
+- Fix History page showing black text (on black) when using dark theme ([8375](https://github.com/pymedusa/Medusa/pull/8375))
+
+-----
 
 ## 0.4.1 (2020-08-18)
 
@@ -20,6 +27,8 @@
 - Fixed home table layouts Downloads sorting ([#8338](https://github.com/pymedusa/Medusa/pull/8338))
 - Fixed home table layouts previous and next episode sorting ([#8337](https://github.com/pymedusa/Medusa/pull/8337))
 - Fixed show's show lists not stored after restart ([#8337](https://github.com/pymedusa/Medusa/pull/8337))
+
+-----
 
 ## 0.4.0 (2020-08-15)
 
