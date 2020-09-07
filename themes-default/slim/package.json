@@ -46,7 +46,7 @@
     "tablesorter": "2.31.3",
     "v-tooltip": "2.0.3",
     "vue": "2.6.11",
-    "vue-async-computed": "3.8.2",
+    "vue-async-computed": "3.9.0",
     "vue-cookies": "1.7.4",
     "vue-good-table": "p0psicles/vue-good-table#123464621c79f503224c2c2e363f8fca43c67c0d",
     "vue-images-loaded": "1.1.2",
