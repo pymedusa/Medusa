@@ -505,7 +505,7 @@ export default {
             },
             set(example) {
                 // We need to convert the selected example back to a pattern
-                this.pattern = this.presets.filter(preset => preset.example === example)[0].pattern;
+                this.pattern = this.presets.find(preset => preset.example === example).pattern;
             }
         },
         presetsPatterns() {
