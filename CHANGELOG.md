@@ -1,17 +1,18 @@
-## Unreleased
-
-#### New Features
+## 0.4.3 (2020-09-08)
 
 #### Improvements
+- Updated all frontend libraries and dependencies
 
 #### Fixes
+- Fix no max season error when a show is incomplete ([8460](https://github.com/pymedusa/Medusa/pull/8460))
+- Fix start error on some Python 2.7 builds
 
 -----
 
 ## 0.4.2 (2020-09-06)
 
 #### Improvements
-- Added new page "restart", for restarting and shutting down medusa ([8399](https://github.com/pymedusa/Medusa/pull/8399))
+- Added new page "restart", for restarting and shutting down Medusa ([8399](https://github.com/pymedusa/Medusa/pull/8399))
 - Added new page "update", for updating medusa to a new version ([8437](https://github.com/pymedusa/Medusa/pull/8437))
 
 #### Fixes
