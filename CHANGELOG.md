@@ -8,11 +8,22 @@
 
 -----
 
+## 0.4.3 (2020-09-08)
+
+#### Improvements
+- Updated all frontend libraries and dependencies
+
+#### Fixes
+- Fix no max season error when a show is incomplete ([8460](https://github.com/pymedusa/Medusa/pull/8460))
+- Fix start error on some Python 2.7 builds
+
+-----
+
 ## 0.4.2 (2020-09-06)
 
 #### Improvements
-- Added new page "restart", for restarting and shutting down medusa ([8399](https://github.com/pymedusa/Medusa/pull/8399))
-- Added new page "update", for updating medusa to a new version ([8437](https://github.com/pymedusa/Medusa/pull/8437))
+- Added new page "restart", for restarting and shutting down Medusa ([8399](https://github.com/pymedusa/Medusa/pull/8399))
+- Added new page "update", for updating Medusa to a new version ([8437](https://github.com/pymedusa/Medusa/pull/8437))
 
 #### Fixes
 - Fix show-selector using the show lists ([8426](https://github.com/pymedusa/Medusa/pull/8426))
@@ -76,7 +87,7 @@
 
 #### Fixes
 - Fixed root dirs not always shown on Home page ([#7921](https://github.com/pymedusa/Medusa/pull/7921))
-- Fixed starting medusa failed running python3.8 on windows ([#7940](https://github.com/pymedusa/Medusa/pull/7940))
+- Fixed starting Medusa failed running Python 3.8 on Windows ([#7940](https://github.com/pymedusa/Medusa/pull/7940))
 - Fixed Speed.cd provider login ([#7941](https://github.com/pymedusa/Medusa/pull/7941))
 - Fixed [#7959](https://github.com/pymedusa/Medusa/issues/7959) - UI bug on schedule calendar view ([#7962](https://github.com/pymedusa/Medusa/pull/7962))
 - Fixed running Scheduler with specific start time ([#7963](https://github.com/pymedusa/Medusa/pull/7963))
