@@ -8,8 +8,8 @@ export const isDevelopment = process.env.NODE_ENV === 'development';
  */
 export const combineQualities = (allowedQualities, preferredQualities = []) => {
     const reducer = (accumulator, currentValue) => accumulator | currentValue;
-    const allowed = allowedQualities.reduce(reducer, 0);
-    const preferred = preferredQualities.reduce(reducer, 0);
+    const allowed = allowedQualities.reduce((a, c) => reducer(a, c), 0);
+    const preferred = preferredQualities.reduce((a, c) => reducer(a, c), 0);
 
     return (allowed | (preferred << 16)) >>> 0; // Unsigned int
 };
@@ -174,4 +174,31 @@ export const waitFor = /* istanbul ignore next */ async (check, poll = 100, time
         }
     }
     return ms;
+};
+
+/**
+ * Transform a season and episode number to an episode slug.
+ * If the episode number is not provided, return a season slug.
+ * @param {number} season - Season number.
+ * @param {number} episode - Episode number.
+ * @returns {string} Episode or Season slug.
+ */
+export const episodeToSlug = (season, episode) => {
+    if (episode) {
+        return `s${season.toString().padStart(2, '0')}e${episode.toString().padStart(2, '0')}`;
+    }
+    return `s${season.toString().padStart(2, '0')}`;
+};
+
+/**
+ * Force reload.
+ * Force a reload of the page and ignore local cache.
+ * window.location.reload(true) doesn't seem to work on chrome. But the self assign does.
+*/
+export const forceBrowserReload = () => {
+    if (Boolean(window.chrome) && Boolean(window.chrome.webstore)) {
+        window.location.href = window.location.href; // eslint-disable-line no-self-assign
+    } else {
+        window.location.reload(true);
+    }
 };

@@ -35,6 +35,12 @@ size_before=$(get_size $path_to_built_themes)
 [[ -n $build_cmd ]] && run_verbose "$build_cmd"
 run_verbose "yarn gulp sync"
 
+# Normalize line endings in changed files
+changed_files=$(git status --porcelain -- $path_to_built_themes | sed s/^...//)
+for file in $changed_files; do
+    sed -i 's/\r$//g' ../../$file;
+done
+
 # Keep track of the new themes size.
 size_after=$(get_size $path_to_built_themes)
 

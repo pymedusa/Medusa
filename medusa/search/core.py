@@ -696,33 +696,36 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
 
             try:
                 search_results = []
-                cache_search_results = []
-                cache_multi = []
-                cache_single = []
+                needed_eps = episodes
 
                 if not manual_search:
                     cache_search_results = cur_provider.search_results_in_cache(episodes)
                     if cache_search_results:
-                        # From our provider multi_episode and single_episode results, collect results
                         cache_found_results = list_results_for_provider(cache_search_results, found_results, cur_provider)
-                        # We're passing the empty lists, because we don't want to include previous candidates
-                        cache_multi, cache_single = collect_candidates(cache_found_results, cur_provider, [], [])
+                        multi_results, single_results = collect_candidates(
+                            cache_found_results, cur_provider, multi_results, single_results
+                        )
+                        found_eps = itertools.chain(*(result.episodes for result in multi_results + single_results))
+                        needed_eps = [ep for ep in episodes if ep not in found_eps]
 
                 # We only search if we didn't get any useful results from cache
-                if not (cache_multi or cache_single):
-                    log.debug(u'Could not find any candidates in cache, searching provider.')
-                    search_results = cur_provider.find_search_results(series_obj, episodes, search_mode, forced_search,
+                if needed_eps:
+                    log.debug(u'Could not find all candidates in cache, searching provider.')
+                    search_results = cur_provider.find_search_results(series_obj, needed_eps, search_mode, forced_search,
                                                                       down_cur_quality, manual_search, manual_search_type)
                     # Update the list found_results
                     found_results = list_results_for_provider(search_results, found_results, cur_provider)
-                else:
-                    found_results = cache_found_results
+                    multi_results, single_results = collect_candidates(
+                        found_results, cur_provider, multi_results, single_results
+                    )
+                    found_eps = itertools.chain(*(result.episodes for result in multi_results + single_results))
+                    needed_eps = [ep for ep in episodes if ep not in found_eps]
 
             except AuthException as error:
                 log.error(u'Authentication error: {0!r}', error)
                 break
 
-            if search_results or cache_search_results:
+            if not needed_eps and found_results:
                 break
             elif not cur_provider.search_fallback or search_count == 2:
                 break
@@ -757,10 +760,6 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
                     manual_search_results.append(True)
             # Continue because we don't want to pick best results as we are running a manual search by user
             continue
-
-        multi_results, single_results = collect_candidates(
-            found_results, cur_provider, multi_results, single_results
-        )
 
     # Remove provider from thread name before return results
     threading.currentThread().name = original_thread_name
@@ -889,27 +888,7 @@ def combine_results(multi_results, single_results):
     if not single_results:
         return result_candidates
 
-    return_multi_results = []
     for multi_result in result_candidates:
-        # see how many of the eps that this result covers aren't covered by single results
-        needed_eps = []
-        not_needed_eps = []
-        for result in single_results:
-            if result.episodes[0] in multi_result.episodes:
-                not_needed_eps.append(result.actual_episode)
-            else:
-                needed_eps.append(result.actual_episode)
-
-        log.debug(u'Single-ep check result is needed_eps: {0}, not_needed_eps: {1}',
-                  needed_eps, not_needed_eps)
-
-        if needed_eps:
-            return_multi_results.append(multi_result)
-        else:
-            log.debug(u'All of these episodes were covered by single-episode results,'
-                      u' ignoring this multi-episode result')
-            continue
-
         # remove the single result if we're going to get it with a multi-result
         for ep_obj in multi_result.episodes:
             for i, result in enumerate(single_results):
@@ -921,4 +900,4 @@ def combine_results(multi_results, single_results):
                     )
                     del single_results[i]
 
-    return single_results + return_multi_results
+    return single_results + result_candidates

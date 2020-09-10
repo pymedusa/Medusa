@@ -16,11 +16,9 @@ window.app = new Vue({
     router,
     el: '#vue-wrap',
     // TODO: Replace with Object spread (`...mapState`)
-    computed: Object.assign(mapState([
-        'config'
-    ]), {
-
-    }),
+    computed: Object.assign(mapState({
+        config: state => state.config.general
+    })),
     beforeMount() {
         $('#config-components').tabs();
     },

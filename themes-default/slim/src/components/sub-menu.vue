@@ -1,7 +1,7 @@
 <template>
-    <div v-if="subMenu.length > 0" id="sub-menu-wrapper">
-        <div id="sub-menu-container" class="row shadow">
-            <div id="sub-menu" class="submenu-default hidden-print col-md-12">
+    <div v-if="subMenu.length > 0" id="sub-menu-wrapper" class="row">
+        <div id="sub-menu-container" class="col-md-12 shadow">
+            <div id="sub-menu" class="submenu-default hidden-print">
                 <app-link
                     v-for="menuItem in subMenu"
                     :key="`sub-menu-${menuItem.title}`"
@@ -12,7 +12,7 @@
                     <span :class="['pull-left', menuItem.icon]" /> {{ menuItem.title }}
                 </app-link>
 
-                <show-selector v-if="showSelectorVisible" :show-slug="curShowSlug" follow-selection />
+                <show-selector :show-slug="curShowSlug" follow-selection />
             </div>
         </div>
 
@@ -40,14 +40,10 @@ export default {
             const reducer = (arr, item) => (item.requires === undefined || item.requires) ? arr.concat(item) : arr;
             return subMenu.reduceRight(reducer, []);
         },
-        showSelectorVisible() {
-            const { $route } = this;
-            return $route.name === 'show';
-        },
         curShowSlug() {
-            const { $route, showSelectorVisible } = this;
+            const { $route } = this;
             const { indexername, seriesid } = $route.query;
-            if (showSelectorVisible && indexername && seriesid) {
+            if (indexername && seriesid) {
                 return indexername + seriesid;
             }
             return '';
@@ -126,6 +122,12 @@ export default {
     #sub-menu-container {
         position: relative;
         margin-top: -24px;
+    }
+}
+
+@media (max-width: 767px) {
+    #sub-menu-wrapper {
+        display: flex;
     }
 }
 </style>

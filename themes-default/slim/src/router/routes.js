@@ -12,16 +12,18 @@ const homeRoutes = [
         name: 'home',
         meta: {
             title: 'Home',
-            header: 'Show List',
-            topMenu: 'home'
-        }
+            topMenu: 'home',
+            converted: true
+        },
+        component: () => import('../components/home.vue')
     },
     {
         path: '/home/editShow',
         name: 'editShow',
         meta: {
             topMenu: 'home',
-            subMenu: showSubMenu
+            subMenu: showSubMenu,
+            converted: true
         },
         component: () => import('../components/edit-show.vue')
     },
@@ -30,7 +32,8 @@ const homeRoutes = [
         name: 'show',
         meta: {
             topMenu: 'home',
-            subMenu: showSubMenu
+            subMenu: showSubMenu,
+            converted: true
         },
         component: () => import('../components/display-show.vue')
     },
@@ -39,8 +42,10 @@ const homeRoutes = [
         name: 'snatchSelection',
         meta: {
             topMenu: 'home',
-            subMenu: showSubMenu
-        }
+            subMenu: showSubMenu,
+            converted: true
+        },
+        component: () => import('../components/snatch-selection.vue')
     },
     {
         path: '/home/testRename',
@@ -74,8 +79,10 @@ const homeRoutes = [
         meta: {
             title: 'Restarting...',
             header: 'Performing Restart',
-            topMenu: 'system'
-        }
+            topMenu: 'system',
+            converted: true
+        },
+        component: () => import('../components/restart.vue')
     },
     {
         path: '/home/shutdown',
@@ -83,14 +90,18 @@ const homeRoutes = [
         meta: {
             header: 'Shutting down',
             topMenu: 'system'
-        }
+        },
+        component: () => import('../components/restart.vue'),
+        props: { shutdown: true }
     },
     {
         path: '/home/update',
         name: 'update',
         meta: {
+            header: 'Update Medusa',
             topMenu: 'system'
-        }
+        },
+        component: () => import('../components/update.vue')
     }
 ];
 
@@ -115,8 +126,9 @@ const configRoutes = [
             title: 'Config - Anime',
             header: 'Anime',
             topMenu: 'config',
-            subMenu: configSubMenu
-        }
+            converted: true
+        },
+        component: () => import('../components/config-anime.vue')
     },
     {
         path: '/config/backuprestore',
@@ -156,8 +168,8 @@ const configRoutes = [
         path: '/config/postProcessing',
         name: 'configPostProcessing',
         meta: {
-            title: 'Config - Post Processing',
-            header: 'Post Processing',
+            title: 'Config - Post-Processing',
+            header: 'Post-Processing',
             topMenu: 'config',
             subMenu: configSubMenu,
             converted: true

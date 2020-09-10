@@ -64,6 +64,12 @@ module.exports = {
         'valid-jsdoc': 'error',
         'padding-line-between-statements': 'off',
         'unicorn/prevent-abbreviations': 'off',
+        'unicorn/no-null': 'off',
+        'unicorn/no-useless-undefined': 'off',
+        'unicorn/no-reduce': 'off',
+        'unicorn/consistent-function-scoping': 'off',
+        'unicorn/prefer-optional-catch-binding': 'off',
+        'unicorn/no-fn-reference-in-iterator': 'off',
         'vue/html-indent': [
             'error',
             4,

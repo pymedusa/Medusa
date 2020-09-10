@@ -40,7 +40,7 @@ export default {
     },
     computed: {
         ...mapState({
-            rawRootDirs: state => state.config.rootDirs
+            rawRootDirs: state => state.config.general.rootDirs
         }),
         paths() {
             return this.rootDirs.map(rd => rd.path);
@@ -110,7 +110,7 @@ export default {
             }
 
             // Transform raw root dirs in the form of an array, to an array of objects
-            const defaultDir = parseInt(rawRootDirs[0], 10);
+            const defaultDir = Number.parseInt(rawRootDirs[0], 10);
             return rawRootDirs
                 .slice(1)
                 .map((path, index) => {

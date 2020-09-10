@@ -9,8 +9,8 @@ export default {
     name: 'irc',
     computed: {
         ...mapState({
-            configLoaded: state => state.config.pythonVersion !== null,
-            gitUsername: state => state.config.gitUsername
+            configLoaded: state => state.config.system.pythonVersion !== null,
+            gitUsername: state => state.config.general.git.username
         }),
         frameSrc() {
             const { configLoaded, gitUsername } = this;

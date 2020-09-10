@@ -55,6 +55,7 @@ class SeriesHandler(BaseRequestHandler):
                 s.to_json(detailed=detailed, episodes=episodes)
                 for s in Series.find_series(predicate=filter_series)
             ]
+
             return self._paginate(data, sort='title')
 
         identifier = SeriesIdentifier.from_slug(series_slug)
@@ -145,6 +146,7 @@ class SeriesHandler(BaseRequestHandler):
             'config.qualities.preferred': ListField(series, 'qualities_preferred'),
             'config.qualities.combined': IntegerField(series, 'quality'),
             'config.airdateOffset': IntegerField(series, 'airdate_offset'),
+            'config.showLists': ListField(Series, 'show_lists'),
         }
 
         for key, value in iter_nested_items(data):

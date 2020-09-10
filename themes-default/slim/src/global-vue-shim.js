@@ -6,6 +6,10 @@ import Snotify from 'vue-snotify';
 import VueCookies from 'vue-cookies';
 import VModal from 'vue-js-modal';
 import { VTooltip } from 'v-tooltip';
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { faAlignJustify } from '@fortawesome/free-solid-svg-icons';
+
+library.add(faAlignJustify);
 
 import {
     AddShowOptions,
@@ -21,8 +25,8 @@ import {
     ConfigToggleSlider,
     FileBrowser,
     History,
-    Home,
     LanguageSelect,
+    LoadProgressBar,
     ManualPostProcess,
     PlotInfo,
     QualityChooser,
@@ -74,6 +78,7 @@ export const registerGlobalComponents = () => {
         ConfigToggleSlider,
         FileBrowser,
         LanguageSelect,
+        LoadProgressBar,
         PlotInfo,
         QualityChooser,
         QualityPill, // @FIXME: (sharkykh) Used in a hack/workaround in `static/js/ajax-episode-search.js`
@@ -87,7 +92,6 @@ export const registerGlobalComponents = () => {
     // @TODO: These need to be converted to Vue SFCs
     components = components.concat([
         History,
-        Home,
         ManualPostProcess,
         Schedule,
         SnatchSelection,
@@ -132,7 +136,8 @@ export default () => {
             if (this.$root === this) {
                 return {
                     globalLoading: true,
-                    pageComponent: false
+                    pageComponent: false,
+                    showsLoading: false
                 };
             }
             return {};
@@ -148,8 +153,8 @@ export default () => {
                     store.dispatch('getStats')
                 ]).then(([_, config]) => {
                     this.$root.$emit('loaded');
-                    // Legacy - send config.main to jQuery (received by index.js)
-                    const event = new CustomEvent('medusa-config-loaded', { detail: config.main });
+                    // Legacy - send config.general to jQuery (received by index.js)
+                    const event = new CustomEvent('medusa-config-loaded', { detail: { general: config.main, layout: config.layout } });
                     window.dispatchEvent(event);
                 }).catch(error => {
                     console.debug(error);

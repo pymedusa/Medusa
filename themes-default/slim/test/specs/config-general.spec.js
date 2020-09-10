@@ -2,7 +2,7 @@ import Vuex, { Store } from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { ConfigGeneral } from '../../src/components';
-import constsModule from '../../src/store/modules/consts';
+import consts from '../../src/store/modules/config/consts';
 import fixtures from '../__fixtures__/common';
 
 describe('ConfigGeneral.test.js', () => {
@@ -17,10 +17,15 @@ describe('ConfigGeneral.test.js', () => {
         const { state } = fixtures;
         store = new Store({
             modules: {
-                consts: constsModule
+                consts: {
+                    getters: consts.getters,
+                    state: state.config.consts
+                },
+                config: {
+                    state: state.config
+                }
             }
         });
-        store.replaceState(state);
     });
 
     it('renders', () => {

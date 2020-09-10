@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ShowSelector.test.js renders "loading..." with empty show array 1`] = `
+exports[`ShowSelector.test.js renders "loading..." with empty show array in /home/displayShow 1`] = `
 <div
   class="show-selector form-inline hidden-print"
 >
@@ -19,7 +19,7 @@ exports[`ShowSelector.test.js renders "loading..." with empty show array 1`] = `
 </div>
 `;
 
-exports[`ShowSelector.test.js renders with articles(The|A|An) ignored 1`] = `
+exports[`ShowSelector.test.js renders with articles(The|A|An) ignored in /home/displayShow 1`] = `
 <div
   class="show-selector form-inline hidden-print"
 >
@@ -37,27 +37,50 @@ exports[`ShowSelector.test.js renders with articles(The|A|An) ignored 1`] = `
         -- Select a Show --
       </option>
        
-      <option
-        value="tvdb76924"
+      <optgroup
+        label="Series"
       >
-        Black Books
-      </option>
-      <option
-        value="tvdb330942"
+        <option
+          value="tvdb76924"
+        >
+          Black Books
+        </option>
+        <option
+          value="tvdb330942"
+        >
+          Blue Planet II
+        </option>
+        <option
+          value="tvdb73787"
+        >
+          That '70s Show
+        </option>
+      </optgroup>
+      <optgroup
+        label="Anime"
       >
-        Blue Planet II
-      </option>
-      <option
-        value="tvdb73787"
-      >
-        That '70s Show
-      </option>
+        <option
+          value="tvdb360438"
+        >
+          A Certain Scientific Accelerator
+        </option>
+        <option
+          value="tvdb300835"
+        >
+          Ajin
+        </option>
+        <option
+          value="tvdb313867"
+        >
+          Izetta, The Last Witch
+        </option>
+      </optgroup>
     </select>
   </div>
 </div>
 `;
 
-exports[`ShowSelector.test.js renders with shows 1`] = `
+exports[`ShowSelector.test.js renders with shows in /home/displayShow 1`] = `
 <div
   class="show-selector form-inline hidden-print"
 >
@@ -75,27 +98,50 @@ exports[`ShowSelector.test.js renders with shows 1`] = `
         -- Select a Show --
       </option>
        
-      <option
-        value="tvdb76924"
+      <optgroup
+        label="Series"
       >
-        Black Books
-      </option>
-      <option
-        value="tvdb330942"
+        <option
+          value="tvdb76924"
+        >
+          Black Books
+        </option>
+        <option
+          value="tvdb330942"
+        >
+          Blue Planet II
+        </option>
+        <option
+          value="tvdb73787"
+        >
+          That '70s Show
+        </option>
+      </optgroup>
+      <optgroup
+        label="Anime"
       >
-        Blue Planet II
-      </option>
-      <option
-        value="tvdb73787"
-      >
-        That '70s Show
-      </option>
+        <option
+          value="tvdb300835"
+        >
+          Ajin
+        </option>
+        <option
+          value="tvdb360438"
+        >
+          A Certain Scientific Accelerator
+        </option>
+        <option
+          value="tvdb313867"
+        >
+          Izetta, The Last Witch
+        </option>
+      </optgroup>
     </select>
   </div>
 </div>
 `;
 
-exports[`ShowSelector.test.js renders with split sections 1`] = `
+exports[`ShowSelector.test.js renders with shows in /home/editShow 1`] = `
 <div
   class="show-selector form-inline hidden-print"
 >
@@ -113,27 +159,111 @@ exports[`ShowSelector.test.js renders with split sections 1`] = `
         -- Select a Show --
       </option>
        
-      <option
-        value="tvdb76924"
+      <optgroup
+        label="Series"
       >
-        Black Books
-      </option>
-      <option
-        value="tvdb330942"
+        <option
+          value="tvdb76924"
+        >
+          Black Books
+        </option>
+        <option
+          value="tvdb330942"
+        >
+          Blue Planet II
+        </option>
+        <option
+          value="tvdb73787"
+        >
+          That '70s Show
+        </option>
+      </optgroup>
+      <optgroup
+        label="Anime"
       >
-        Blue Planet II
-      </option>
-      <option
-        value="tvdb73787"
-      >
-        That '70s Show
-      </option>
+        <option
+          value="tvdb300835"
+        >
+          Ajin
+        </option>
+        <option
+          value="tvdb360438"
+        >
+          A Certain Scientific Accelerator
+        </option>
+        <option
+          value="tvdb313867"
+        >
+          Izetta, The Last Witch
+        </option>
+      </optgroup>
     </select>
   </div>
 </div>
 `;
 
-exports[`ShowSelector.test.js renders without placeholder 1`] = `
+exports[`ShowSelector.test.js renders with split sections in /home/displayShow 1`] = `
+<div
+  class="show-selector form-inline hidden-print"
+>
+  <div
+    class="select-show-group pull-left top-5 bottom-5"
+  >
+    <select
+      class="select-show form-control input-sm-custom"
+    >
+      <option
+        disabled="disabled"
+        hidden="hidden"
+        value="-- Select a Show --"
+      >
+        -- Select a Show --
+      </option>
+       
+      <optgroup
+        label="Series"
+      >
+        <option
+          value="tvdb76924"
+        >
+          Black Books
+        </option>
+        <option
+          value="tvdb330942"
+        >
+          Blue Planet II
+        </option>
+        <option
+          value="tvdb73787"
+        >
+          That '70s Show
+        </option>
+      </optgroup>
+      <optgroup
+        label="Anime"
+      >
+        <option
+          value="tvdb300835"
+        >
+          Ajin
+        </option>
+        <option
+          value="tvdb360438"
+        >
+          A Certain Scientific Accelerator
+        </option>
+        <option
+          value="tvdb313867"
+        >
+          Izetta, The Last Witch
+        </option>
+      </optgroup>
+    </select>
+  </div>
+</div>
+`;
+
+exports[`ShowSelector.test.js renders without placeholder in /home/displayShow 1`] = `
 <div
   class="show-selector form-inline hidden-print"
 >
@@ -145,21 +275,44 @@ exports[`ShowSelector.test.js renders without placeholder 1`] = `
     >
       <!---->
        
-      <option
-        value="tvdb76924"
+      <optgroup
+        label="Series"
       >
-        Black Books
-      </option>
-      <option
-        value="tvdb330942"
+        <option
+          value="tvdb76924"
+        >
+          Black Books
+        </option>
+        <option
+          value="tvdb330942"
+        >
+          Blue Planet II
+        </option>
+        <option
+          value="tvdb73787"
+        >
+          That '70s Show
+        </option>
+      </optgroup>
+      <optgroup
+        label="Anime"
       >
-        Blue Planet II
-      </option>
-      <option
-        value="tvdb73787"
-      >
-        That '70s Show
-      </option>
+        <option
+          value="tvdb300835"
+        >
+          Ajin
+        </option>
+        <option
+          value="tvdb360438"
+        >
+          A Certain Scientific Accelerator
+        </option>
+        <option
+          value="tvdb313867"
+        >
+          Izetta, The Last Witch
+        </option>
+      </optgroup>
     </select>
   </div>
 </div>

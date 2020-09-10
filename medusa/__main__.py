@@ -80,7 +80,7 @@ from medusa.config import (
 )
 from medusa.databases import cache_db, failed_db, main_db
 from medusa.event_queue import Events
-from medusa.indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVMAZE
+from medusa.indexers.config import INDEXER_TVDBV2, INDEXER_TVMAZE
 from medusa.init.filesystem import is_valid_encoding
 from medusa.providers.generic_provider import GenericProvider
 from medusa.providers.nzb.newznab import NewznabProvider
@@ -331,6 +331,15 @@ class Application(object):
         self.load_shows_from_db()
 
         logger.info('Starting Medusa [{branch}] using {config!r}', branch=app.BRANCH, config=app.CONFIG_FILE)
+
+        # Python 2 EOL warning
+        if sys.version_info < (3,):
+            logger.warning(
+                'As of October 1st 2020 Medusa will not run on Python 2.x any longer.\n'
+                'Python 2.x has passed its sunset date as you can read here: {python_sunset_url}\n'
+                'Please upgrade your Python version to 3.6 or higher as soon as possible!',
+                python_sunset_url='https://tinyurl.com/y4zwbawq'
+            )
 
         if not is_valid_encoding(app.SYS_ENCODING):
             logger.warning(
@@ -753,6 +762,7 @@ class Application(object):
                 check_setting_int(app.CFG, 'Discord', 'discord_notify_onsubtitledownload', 0))
             app.DISCORD_WEBHOOK = check_setting_str(app.CFG, 'Discord', 'discord_webhook', '', censor_log='normal')
             app.DISCORD_TTS = check_setting_bool(app.CFG, 'Discord', 'discord_tts', 0)
+            app.DISCORD_NAME = check_setting_str(app.CFG, 'Discord', 'discord_name', '', censor_log='normal')
 
             app.USE_PROWL = bool(check_setting_int(app.CFG, 'Prowl', 'use_prowl', 0))
             app.PROWL_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'Prowl', 'prowl_notify_onsnatch', 0))
@@ -935,13 +945,13 @@ class Application(object):
 
             app.USE_LISTVIEW = bool(check_setting_int(app.CFG, 'General', 'use_listview', 0))
 
-            app.ANIMESUPPORT = False
             app.USE_ANIDB = bool(check_setting_int(app.CFG, 'ANIDB', 'use_anidb', 0))
             app.ANIDB_USERNAME = check_setting_str(app.CFG, 'ANIDB', 'anidb_username', '', censor_log='normal')
             app.ANIDB_PASSWORD = check_setting_str(app.CFG, 'ANIDB', 'anidb_password', '', censor_log='low')
             app.ANIDB_USE_MYLIST = bool(check_setting_int(app.CFG, 'ANIDB', 'anidb_use_mylist', 0))
             app.ANIME_SPLIT_HOME = bool(check_setting_int(app.CFG, 'ANIME', 'anime_split_home', 0))
             app.ANIME_SPLIT_HOME_IN_TABS = bool(check_setting_int(app.CFG, 'ANIME', 'anime_split_home_in_tabs', 0))
+            app.AUTO_ANIME_TO_LIST = bool(check_setting_int(app.CFG, 'ANIME', 'auto_anime_to_list', 0))
 
             app.METADATA_KODI = check_setting_list(app.CFG, 'General', 'metadata_kodi', ['0'] * 10, transform=int)
             app.METADATA_KODI_12PLUS = check_setting_list(app.CFG, 'General', 'metadata_kodi_12plus', ['0'] * 10, transform=int)
@@ -1756,6 +1766,7 @@ class Application(object):
         new_config['Discord']['discord_notify_onsubtitledownload'] = int(app.DISCORD_NOTIFY_ONSUBTITLEDOWNLOAD)
         new_config['Discord']['discord_webhook'] = app.DISCORD_WEBHOOK
         new_config['Discord']['discord_tts'] = int(app.DISCORD_TTS)
+        new_config['Discord']['discord_name'] = app.DISCORD_NAME
 
         new_config['Prowl'] = {}
         new_config['Prowl']['use_prowl'] = int(app.USE_PROWL)
@@ -1968,6 +1979,7 @@ class Application(object):
         new_config['ANIME'] = {}
         new_config['ANIME']['anime_split_home'] = int(app.ANIME_SPLIT_HOME)
         new_config['ANIME']['anime_split_home_in_tabs'] = int(app.ANIME_SPLIT_HOME_IN_TABS)
+        new_config['ANIME']['auto_anime_to_list'] = int(app.AUTO_ANIME_TO_LIST)
 
         new_config.write()
 
@@ -2134,6 +2146,7 @@ class Application(object):
         for sql_show in sql_results:
             try:
                 cur_show = Series(sql_show['indexer'], sql_show['indexer_id'])
+                cur_show.prev_episode()
                 cur_show.next_episode()
                 app.showList.append(cur_show)
             except Exception as error:

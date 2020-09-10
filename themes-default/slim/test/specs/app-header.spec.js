@@ -1,5 +1,4 @@
 import Vuex, { Store } from 'vuex';
-import VueRouter from 'vue-router';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { AppHeader } from '../../src/components';
 import fixtures from '../__fixtures__/common';
@@ -11,25 +10,27 @@ describe('AppHeader.test.js', () => {
     beforeEach(() => {
         localVue = createLocalVue();
         localVue.use(Vuex);
-        localVue.use(VueRouter);
 
         const { state } = fixtures;
         store = new Store({ state });
     });
 
     it('renders', () => {
-        const { state } = fixtures;
         const wrapper = shallowMount(AppHeader, {
             localVue,
             store,
             computed: {
-                config() {
-                    return {
-                        ...state.config
-                    };
-                },
                 topMenu() {
                     return 'home';
+                },
+                currentShowRoute() {
+                    return {
+                        name: 'show',
+                        query: {
+                            indexername: 'tvdb',
+                            seriesid: 253463
+                        }
+                    };
                 }
             }
         });

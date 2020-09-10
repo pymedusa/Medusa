@@ -209,7 +209,7 @@ class PostProcessor(object):
         files = self._search_files(file_path, subfolders=subfolders)
 
         # file path to the video file that is being processed (without extension)
-        processed_file_name = os.path.splitext(os.path.basename(file_path))[0].lower()
+        processed_file_name = os.path.splitext(os.path.basename(file_path))[0].lower() + '.'
 
         processed_names = (processed_file_name,)
         processed_names += tuple((_f for _f in (self._rar_basename(file_path, files),) if _f))
@@ -332,7 +332,7 @@ class PostProcessor(object):
                            u'Error: {message}'.format(name=rar, message=error), logger.WARNING)
                 continue
             if videofile in content:
-                return os.path.splitext(os.path.basename(rar))[0].lower()
+                return os.path.splitext(os.path.basename(rar))[0].lower() + '.'
 
     def _delete(self, files, associated_files=False):
         """
@@ -1111,7 +1111,7 @@ class PostProcessor(object):
 
                 # If the file season (ep_obj.season) is bigger than
                 # the indexer season (max_season[0]['max']), skip the file
-                if int(ep_obj.season) > int(max_season[0]['max']):
+                if max_season[0]['max'] and int(ep_obj.season) > int(max_season[0]['max']):
                     self.log(u'File has season {0}, while the indexer is on season {1}. '
                              u'The file may be incorrectly labeled or fake, aborting.'.format
                              (ep_obj.season, max_season[0]['max']))

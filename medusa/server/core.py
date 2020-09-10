@@ -27,12 +27,14 @@ from medusa.server.api.v2.episodes import EpisodeHandler
 from medusa.server.api.v2.history import HistoryHandler
 from medusa.server.api.v2.internal import InternalHandler
 from medusa.server.api.v2.log import LogHandler
+from medusa.server.api.v2.providers import ProvidersHandler
 from medusa.server.api.v2.search import SearchHandler
 from medusa.server.api.v2.series import SeriesHandler
 from medusa.server.api.v2.series_asset import SeriesAssetHandler
 from medusa.server.api.v2.series_legacy import SeriesLegacyHandler
 from medusa.server.api.v2.series_operation import SeriesOperationHandler
 from medusa.server.api.v2.stats import StatsHandler
+from medusa.server.api.v2.system import SystemHandler
 from medusa.server.web import (
     CalendarHandler,
     KeyHandler,
@@ -82,6 +84,9 @@ def get_apiv2_handlers(base):
 
         # Order: Most specific to most generic
 
+        # /api/v2/providers
+        ProvidersHandler.create_app_handler(base),
+
         # /api/v2/history/tvdb1234/episode
         EpisodeHistoryHandler.create_app_handler(base),
 
@@ -122,6 +127,9 @@ def get_apiv2_handlers(base):
 
         # /api/v2/alias
         AliasHandler.create_app_handler(base),
+
+        # /api/v2/system
+        SystemHandler.create_app_handler(base),
 
         # /api/v2/authenticate
         AuthHandler.create_app_handler(base),
