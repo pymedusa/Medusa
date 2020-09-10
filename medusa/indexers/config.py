@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 from builtins import str
 
 from medusa.app import app
-from medusa.indexers.glotz.glotz_api import GLOTZ
+from medusa.indexers.glotz.api import GLOTZ
 from medusa.indexers.tmdb.api import Tmdb
 from medusa.indexers.tvdbv2.api import TVDBv2
 from medusa.indexers.tvmaze.api import TVmaze

@@ -9,8 +9,8 @@ from time import time
 
 from medusa import app
 from medusa.app import GLOTZ_API_KEY
-from medusa.indexers.indexer_base import (Actor, Actors, BaseIndexer)
-from medusa.indexers.indexer_exceptions import (IndexerError, IndexerException, IndexerShowNotFound, IndexerUnavailable)
+from medusa.indexers.base import (Actor, Actors, BaseIndexer)
+from medusa.indexers.exceptions import (IndexerError, IndexerException, IndexerShowNotFound, IndexerUnavailable)
 from medusa.logger.adapters.style import BraceAdapter
 
 from pyglotz import Glotz
