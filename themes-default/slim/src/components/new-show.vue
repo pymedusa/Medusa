@@ -40,7 +40,7 @@
                                     </div>
 
                                     <div class="show-add-option">
-                                        <select v-model="indexerDefault" class="form-control form-control-inline input-sm">
+                                        <select v-model="indexerId" class="form-control form-control-inline input-sm">
                                             <option v-for="option in indexerListOptions" :value="option.value" :key="option.value">
                                                 {{ option.text }}
                                             </option>
@@ -137,14 +137,18 @@
 </template>
 <script>
 import { mapGetters, mapState } from 'vuex';
-import { AppLink } from './helpers';
+import { AddShowOptions, RootDirs } from '.';
+import { AppLink, LanguageSelect } from './helpers';
 import { api, apiRoute } from '../api';
 import axios from 'axios';
 
 export default {
     name: 'new-show',
     components: {
-        AppLink
+        AddShowOptions,
+        AppLink,
+        LanguageSelect,
+        RootDirs
     },
     data() {
         return {
@@ -233,6 +237,15 @@ export default {
             revealfx: ['slide', 300],
             oninit: init
         });
+
+        const { general } = this;
+        // Set the indexer to the indexer default.
+        if (general.indexerDefault) {
+            this.indexerId = general.indexerDefault;
+        }
+
+        // Set default indexer language.
+        this.indexerLanguage = general.indexerDefaultLanguage;
     },
     computed: {
         ...mapState({
@@ -241,22 +254,6 @@ export default {
             indexers: state => state.config.indexers
         }),
         ...mapGetters(['indexerIdToName']),
-        indexerDefault: {
-            get() {
-                const { general } = this;
-                const { indexerDefault } = general;
-                return indexerDefault || 0;
-            },
-            set(indexer) {
-                // IndexerId selected for a search.
-                this.indexerId = indexer;
-            }
-        },
-
-        // @TODO: Replace with mapState
-        // config() {
-        //     return this.$store.state.config;
-        // },
         selectedShow() {
             const { searchResults, selectedShowSlug } = this;
             if (searchResults.length === 0 || !selectedShowSlug) {
@@ -352,7 +349,7 @@ export default {
 
             const indexerOptions = Object.values(indexers.indexers).map(indexer => ({ value: indexer.id, text: indexer.name }));
             return [...allIndexers, ...indexerOptions];
-        },
+        }
     },
     methods: {
         async submitForm(skipShow) {
@@ -507,7 +504,7 @@ export default {
             const indexerLanguageSelect = this.$refs.indexerLanguage.$el;
             const indexerLanguageName = indexerLanguageSelect[indexerLanguageSelect.selectedIndex].text;
 
-            const indexerName = indexerIdToName(indexerId);
+            const indexerName = indexerId === 0 ? 'All Indexers' : indexerIdToName(indexerId);
 
             if (currentSearch.cancel) {
                 // If a search is currently running, and the new search is the same, don't start a new search
@@ -537,7 +534,7 @@ export default {
                 },
                 timeout: indexerTimeout * 1000,
                 // An executor function receives a cancel function as a parameter
-                cancelToken: new axios.CancelToken(cancel => currentSearch.cancel === cancel)
+                cancelToken: new axios.CancelToken(cancel => currentSearch.cancel = cancel)
             };
 
             this.$nextTick(() => this.formwizard.loadsection(0)); // eslint-disable-line no-use-before-define
@@ -559,8 +556,7 @@ export default {
                 // Request failed
                 this.searchStatus = 'Search failed with error: ' + error;
                 return;
-            }
-            finally {
+            } finally {
                 currentSearch.cancel = null;
             }
 
