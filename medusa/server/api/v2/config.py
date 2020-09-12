@@ -91,6 +91,7 @@ class ConfigHandler(BaseRequestHandler):
                                                    converter=bool),
         'showDefaults.anime': BooleanField(app, 'ANIME_DEFAULT', converter=bool),
         'showDefaults.scene': BooleanField(app, 'SCENE_DEFAULT', converter=bool),
+        'showDefaults.showLists': ListField(app, 'SHOWLIST_DEFAULT'),
         'anonRedirect': StringField(app, 'ANON_REDIRECT'),
         'emby.enabled': BooleanField(app, 'USE_EMBY'),
 
@@ -609,6 +610,7 @@ class DataGenerator(object):
         section_data['showDefaults']['seasonFolders'] = bool(app.SEASON_FOLDERS_DEFAULT)
         section_data['showDefaults']['anime'] = bool(app.ANIME_DEFAULT)
         section_data['showDefaults']['scene'] = bool(app.SCENE_DEFAULT)
+        section_data['showDefaults']['showLists'] = list(app.SHOWLIST_DEFAULT)
 
         section_data['logs'] = {}
         section_data['logs']['debug'] = bool(app.DEBUG)

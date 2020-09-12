@@ -51,6 +51,13 @@
                                         <input class="btn-medusa btn-inline" type="button" value="Search" @click="searchIndexers">
                                     </div>
 
+                                    <div name="filter-exact-results">
+                                        <div class="">
+                                            <toggle-button :width="45" :height="22" v-model="searchExact" sync />
+                                            <p style="display: inline">Filter the results by exact string</p>
+                                        </div>
+                                    </div>
+
                                     <div style="display: inline-block">
                                         <p style="padding: 20px 0;">
                                             <b>*</b> This will only affect the language of the retrieved metadata file contents and episode filenames.<br>
@@ -58,54 +65,59 @@
                                         </p>
                                     </div>
 
-                                    <div>
-                                        <div v-show="displayStatus === 'searching'">
-                                            <img :src="spinnerSrc" height="32" width="32">
-                                            Searching <b>{{ currentSearch.query }}</b>
-                                            on {{ currentSearch.indexerName }}
-                                            in {{ currentSearch.languageName }}...
-                                        </div>
-                                        <div v-if="displayStatus === 'results'" class="search-results">
-                                            <legend class="legendStep">Search Results:</legend>
-                                            <table v-if="searchResults.length !== 0" class="search-results">
-                                                <thead>
-                                                    <tr>
-                                                        <th />
-                                                        <th>Show Name</th>
-                                                        <th class="premiere">Premiere</th>
-                                                        <th class="network">Network</th>
-                                                        <th class="indexer">Indexer</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr v-for="result in searchResults" :key="result.slug" @click="selectResult(result)" :class="{ selected: selectedShowSlug === result.slug }">
-                                                        <td class="search-result">
-                                                            <input v-if="!result.alreadyAdded" v-model="selectedShowSlug" type="radio" :value="result.slug">
-                                                            <app-link v-else :href="result.alreadyAdded" title="Show already added - jump to show page">
-                                                                <img height="16" width="16" src="images/ico/favicon-16.png">
-                                                            </app-link>
-                                                        </td>
-                                                        <td>
-                                                            <app-link :href="result.indexerShowUrl" title="Go to the show's page on the indexer site">
-                                                                <b>{{ result.showName }}</b>
-                                                            </app-link>
-                                                        </td>
-                                                        <td class="premiere">{{ result.premiereDate }}</td>
-                                                        <td class="network">{{ result.network }}</td>
-                                                        <td class="indexer">
-                                                            {{ result.indexerName }}
-                                                            <img height="16" width="16" :src="result.indexerIcon">
-                                                        </td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                            <div v-else class="no-results">
-                                                <b>No results found, try a different search.</b>
-                                            </div>
+
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <div v-show="displayStatus === 'searching'">
+                                        <img :src="spinnerSrc" height="32" width="32">
+                                        Searching <b>{{ currentSearch.query }}</b>
+                                        on {{ currentSearch.indexerName }}
+                                        in {{ currentSearch.languageName }}...
+                                    </div>
+                                    <div v-if="displayStatus === 'results'" class="search-results">
+                                        <legend class="legendStep">Search Results:</legend>
+                                        <table v-if="filteredSearchResults.length !== 0" class="search-results">
+                                            <thead>
+                                                <tr>
+                                                    <th />
+                                                    <th>Show Name</th>
+                                                    <th class="premiere">Premiere</th>
+                                                    <th class="network">Network</th>
+                                                    <th class="indexer">Indexer</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="result in filteredSearchResults" :key="result.slug" @click="selectResult(result)" :class="{ selected: selectedShowSlug === result.slug }">
+                                                    <td class="search-result">
+                                                        <input v-if="!result.alreadyAdded" v-model="selectedShowSlug" type="radio" :value="result.slug">
+                                                        <app-link v-else :href="result.alreadyAdded" title="Show already added - jump to show page">
+                                                            <img height="16" width="16" src="images/ico/favicon-16.png">
+                                                        </app-link>
+                                                    </td>
+                                                    <td>
+                                                        <app-link :href="result.indexerShowUrl" title="Go to the show's page on the indexer site">
+                                                            <b>{{ result.showName }}</b>
+                                                        </app-link>
+                                                    </td>
+                                                    <td class="premiere">{{ result.premiereDate }}</td>
+                                                    <td class="network">{{ result.network }}</td>
+                                                    <td class="indexer">
+                                                        {{ result.indexerName }}
+                                                        <img height="16" width="16" :src="result.indexerIcon">
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <div v-else class="no-results">
+                                            <b>No results found, try a different search.</b>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+
                         </div>
                     </fieldset>
                     <fieldset class="sectionwrap">
@@ -137,7 +149,9 @@
 </template>
 <script>
 import { mapGetters, mapState } from 'vuex';
-import { AddShowOptions, RootDirs } from '.';
+import { ToggleButton } from 'vue-js-toggle-button';
+import RootDirs from './root-dirs.vue';
+import { AddShowOptions } from '.';
 import { AppLink, LanguageSelect } from './helpers';
 import { api, apiRoute } from '../api';
 import axios from 'axios';
@@ -147,6 +161,7 @@ export default {
     components: {
         AddShowOptions,
         AppLink,
+        ToggleButton,
         LanguageSelect,
         RootDirs
     },
@@ -159,6 +174,7 @@ export default {
             // Show Search
             searchStatus: '',
             searchResults: [],
+            searchExact: false,
             // indexers: ${json.dumps(valid_indexers)},
             // validLanguages: ${json.dumps(indexerApi().config['valid_languages'])},
             nameToSearch: '', //'${json.dumps(default_show_name)},'
@@ -197,7 +213,8 @@ export default {
                 quality: {
                     allowed: [],
                     preferred: []
-                }
+                },
+                showLists: []
             }
         };
     },
@@ -259,6 +276,7 @@ export default {
             if (searchResults.length === 0 || !selectedShowSlug) {
                 return null;
             }
+
             return searchResults.find(s => s.slug === selectedShowSlug);
         },
         addButtonDisabled() {
@@ -267,6 +285,15 @@ export default {
                 return providedInfo.showId === 0;
             }
             return !(providedInfo.showDir || selectedRootDir) || selectedShowSlug === '';
+        },
+        filteredSearchResults() {
+            const { nameToSearch, searchExact, searchResults } = this;
+
+            if (searchExact) {
+                return searchResults.filter(result => result.showName.toLowerCase().includes(nameToSearch.toLowerCase()));
+            }
+
+            return searchResults;
         },
         // skipShowVisible() {
         //     const { otherShows, providedInfo } = this;
@@ -431,7 +458,8 @@ export default {
                     seasonFolders,
                     status,
                     statusAfter,
-                    subtitles
+                    subtitles,
+                    showLists
                 } = selectedShowOptions;
 
                 // Show options
@@ -447,6 +475,8 @@ export default {
 
                 appendArrayToFormData(formData, 'whitelist', release.whitelist);
                 appendArrayToFormData(formData, 'blacklist', release.blacklist);
+
+                appendArrayToFormData(formData, 'showLists', showLists);
             }
 
             const response = await apiRoute.post('addShows/addNewShow', formData);
@@ -534,7 +564,9 @@ export default {
                 },
                 timeout: indexerTimeout * 1000,
                 // An executor function receives a cancel function as a parameter
-                cancelToken: new axios.CancelToken(cancel => currentSearch.cancel = cancel)
+                cancelToken: new axios.CancelToken(cancel => {
+                    currentSearch.cancel = cancel;
+                })
             };
 
             this.$nextTick(() => this.formwizard.loadsection(0)); // eslint-disable-line no-use-before-define
@@ -557,14 +589,13 @@ export default {
                 this.searchStatus = 'Search failed with error: ' + error;
                 return;
             } finally {
-                currentSearch.cancel = null;
+                currentSearch.cancel = null; // eslint-disable-line  require-atomic-updates
             }
 
             if (!data) {
                 return;
             }
 
-            // const { languageId } = data;
             this.searchResults = data.results
                 .map(result => {
                     // Compute whichSeries value (without the 2 last items - sanitizedName and alreadyAdded)
@@ -625,12 +656,6 @@ export default {
                     };
                 });
 
-            // Select the first available result
-            const firstAvailableResult = this.searchResults.find(result => !result.alreadyAdded);
-            if (firstAvailableResult) {
-                this.selectedShowSlug = firstAvailableResult.slug;
-            }
-
             this.searchStatus = '';
 
             this.$nextTick(() => {
@@ -658,6 +683,19 @@ export default {
             this.selectedShowOptions.release.whitelist = options.release.whitelist;
             this.selectedShowOptions.quality.allowed = options.quality.allowed;
             this.selectedShowOptions.quality.preferred = options.quality.preferred;
+        }
+    },
+    watch: {
+        filteredSearchResults(newResults, oldResults) {
+            if (oldResults.length === newResults.length) {
+                return;
+            }
+
+            // Select the first available result
+            const firstAvailableResult = newResults.find(result => !result.alreadyAdded);
+            if (!this.selectedShowSlug && firstAvailableResult) {
+                this.selectedShowSlug = firstAvailableResult.slug;
+            }
         }
     }
 };

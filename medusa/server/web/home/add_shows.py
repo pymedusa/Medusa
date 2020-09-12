@@ -387,7 +387,7 @@ class HomeAddShows(Home):
     def addNewShow(self, whichSeries=None, indexer_lang=None, rootDir=None, defaultStatus=None, quality_preset=None,
                    allowed_qualities=None, preferred_qualities=None, season_folders=None, subtitles=None,
                    fullShowPath=None, other_shows=None, skipShow=None, providedIndexer=None, anime=None,
-                   scene=None, blacklist=None, whitelist=None, defaultStatusAfter=None):
+                   scene=None, blacklist=None, whitelist=None, defaultStatusAfter=None, showlists=None):
         """
         Receive tvdb id, dir, and other options and create a show from them. If extra show dirs are
         provided then it forwards back to newShow, if not it goes to /home.
@@ -516,12 +516,16 @@ class HomeAddShows(Home):
             allowed_qualities = [allowed_qualities]
         if not isinstance(preferred_qualities, list):
             preferred_qualities = [preferred_qualities]
+
+        if not isinstance(showlists, list):
+            showlists = [showlists]
+
         new_quality = Quality.combine_qualities([int(q) for q in allowed_qualities], [int(q) for q in preferred_qualities])
 
         # add the show
         app.show_queue_scheduler.action.addShow(indexer, indexer_id, show_dir, int(defaultStatus), new_quality,
                                                 season_folders, indexer_lang, subtitles, anime,
-                                                scene, None, blacklist, whitelist, int(defaultStatusAfter))
+                                                scene, None, blacklist, whitelist, int(defaultStatusAfter), showlists)
         ui.notifications.message('Show added', 'Adding the specified show into {path}'.format(path=show_dir))
 
         return finishAddShow()

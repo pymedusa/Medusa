@@ -93,6 +93,14 @@
                 @input="selectedSceneEnabled = $event"
             />
 
+            <config-template label-for="show_lists" label="Display in show lists">
+                <multiselect
+                    v-model="selectedShowLists"
+                    :multiple="true"
+                    :options="layout.show.showListOrder.map(list => list.toLowerCase())"
+                />
+            </config-template>
+
             <div class="form-group">
                 <div class="row">
                     <label for="saveDefaultsButton" class="col-sm-2 control-label">
@@ -108,19 +116,23 @@
 </template>
 
 <script>
-import { mapState, mapGetters } from 'vuex';
+import { mapActions, mapState, mapGetters } from 'vuex';
 import { combineQualities } from '../utils/core';
 import {
+    ConfigTemplate,
     ConfigToggleSlider,
     QualityChooser
 } from './helpers';
 import AnidbReleaseGroupUi from './anidb-release-group-ui.vue';
+import Multiselect from 'vue-multiselect';
 
 export default {
     name: 'add-show-options',
     components: {
         AnidbReleaseGroupUi,
+        ConfigTemplate,
         ConfigToggleSlider,
+        Multiselect,
         QualityChooser
     },
     props: {
@@ -150,7 +162,8 @@ export default {
             release: {
                 blacklist: [],
                 whitelist: []
-            }
+            },
+            selectedShowLists: []
         };
     },
     mounted() {
@@ -170,83 +183,14 @@ export default {
             this.update();
         });
     },
-    methods: {
-        update() {
-            const {
-                selectedSubtitleEnabled,
-                selectedStatus,
-                selectedStatusAfter,
-                selectedSeasonFoldersEnabled,
-                selectedAnimeEnabled,
-                selectedSceneEnabled,
-                release,
-                quality
-            } = this;
-            this.$nextTick(() => {
-                this.$emit('change', {
-                    subtitles: selectedSubtitleEnabled,
-                    status: selectedStatus,
-                    statusAfter: selectedStatusAfter,
-                    seasonFolders: selectedSeasonFoldersEnabled,
-                    anime: selectedAnimeEnabled,
-                    scene: selectedSceneEnabled,
-                    release,
-                    quality
-                });
-            });
-        },
-        onChangeReleaseGroupsAnime(groupNames) {
-            this.release.whitelist = groupNames.whitelist;
-            this.release.blacklist = groupNames.blacklist;
-            this.update();
-        },
-        saveDefaults() {
-            const {
-                $store,
-                selectedStatus,
-                selectedStatusAfter,
-                combinedQualities,
-                selectedSubtitleEnabled,
-                selectedSeasonFoldersEnabled,
-                selectedAnimeEnabled,
-                selectedSceneEnabled
-            } = this;
-
-            const section = 'main';
-            const config = {
-                showDefaults: {
-                    status: selectedStatus,
-                    statusAfter: selectedStatusAfter,
-                    quality: combinedQualities,
-                    subtitles: selectedSubtitleEnabled,
-                    seasonFolders: selectedSeasonFoldersEnabled,
-                    anime: selectedAnimeEnabled,
-                    scene: selectedSceneEnabled
-                }
-            };
-
-            this.saving = true;
-            $store.dispatch('setConfig', { section, config }).then(() => {
-                this.$snotify.success(
-                    'Your "add show" defaults have been set to your current selections.',
-                    'Saved Defaults'
-                );
-            }).catch(error => {
-                this.$snotify.error(
-                    'Error while trying to save "add show" defaults: ' + (error.message || 'Unknown'),
-                    'Error'
-                );
-            }).finally(() => {
-                this.saving = false;
-            });
-        }
-    },
     computed: {
         ...mapState({
             defaultConfig: state => state.config.general.showDefaults,
+            layout: state => state.config.layout,
             namingForceFolders: state => state.config.general.namingForceFolders,
             subtitlesEnabled: state => state.config.general.subtitles.enabled,
-            episodeStatuses: state => state.config.consts.statuses
+            episodeStatuses: state => state.config.consts.statuses,
+            anime: state => state.config.anime
         }),
         ...mapGetters([
             'getStatus'
@@ -283,7 +227,8 @@ export default {
                 selectedSeasonFoldersEnabled,
                 selectedSubtitleEnabled,
                 selectedAnimeEnabled,
-                selectedSceneEnabled
+                selectedSceneEnabled,
+                selectedShowLists
             } = this;
 
             return [
@@ -293,10 +238,90 @@ export default {
                 selectedSeasonFoldersEnabled === (defaultConfig.seasonFolders || namingForceFolders),
                 selectedSubtitleEnabled === defaultConfig.subtitles,
                 !enableAnimeOptions || selectedAnimeEnabled === defaultConfig.anime,
-                selectedSceneEnabled === defaultConfig.scene
+                selectedSceneEnabled === defaultConfig.scene,
+                selectedShowLists === defaultConfig.showLists
             ].every(Boolean);
         }
     },
+    methods: {
+        ...mapActions({
+            setShowConfig: 'setShowConfig'
+        }),
+        update() {
+            const {
+                selectedSubtitleEnabled,
+                selectedStatus,
+                selectedStatusAfter,
+                selectedSeasonFoldersEnabled,
+                selectedAnimeEnabled,
+                selectedSceneEnabled,
+                selectedShowLists,
+                release,
+                quality
+            } = this;
+            this.$nextTick(() => {
+                this.$emit('change', {
+                    subtitles: selectedSubtitleEnabled,
+                    status: selectedStatus,
+                    statusAfter: selectedStatusAfter,
+                    seasonFolders: selectedSeasonFoldersEnabled,
+                    anime: selectedAnimeEnabled,
+                    scene: selectedSceneEnabled,
+                    showLists: selectedShowLists,
+                    release,
+                    quality
+                });
+            });
+        },
+        onChangeReleaseGroupsAnime(groupNames) {
+            this.release.whitelist = groupNames.whitelist;
+            this.release.blacklist = groupNames.blacklist;
+            this.update();
+        },
+        saveDefaults() {
+            const {
+                $store,
+                selectedStatus,
+                selectedStatusAfter,
+                combinedQualities,
+                selectedSubtitleEnabled,
+                selectedSeasonFoldersEnabled,
+                selectedAnimeEnabled,
+                selectedSceneEnabled,
+                selectedShowLists
+            } = this;
+
+            const section = 'main';
+            const config = {
+                showDefaults: {
+                    status: selectedStatus,
+                    statusAfter: selectedStatusAfter,
+                    quality: combinedQualities,
+                    subtitles: selectedSubtitleEnabled,
+                    seasonFolders: selectedSeasonFoldersEnabled,
+                    anime: selectedAnimeEnabled,
+                    scene: selectedSceneEnabled,
+                    showLists: selectedShowLists
+                }
+            };
+
+            this.saving = true;
+            $store.dispatch('setConfig', { section, config }).then(() => {
+                this.$snotify.success(
+                    'Your "add show" defaults have been set to your current selections.',
+                    'Saved Defaults'
+                );
+            }).catch(error => {
+                this.$snotify.error(
+                    'Error while trying to save "add show" defaults: ' + (error.message || 'Unknown'),
+                    'Error'
+                );
+            }).finally(() => {
+                this.saving = false;
+            });
+        }
+    },
+
     watch: {
         release: {
             handler() {
@@ -318,18 +343,35 @@ export default {
             deep: true,
             immediate: false
         },
-        selectedAnimeEnabled() {
+        selectedAnimeEnabled(value) {
+            const { anime } = this;
+
+            if (anime.autoAnimeToList) {
+                if (value) {
+                    // Auto anime to list is enabled. If changing the show format to anime, add 'Anime' to show lists.
+                    this.selectedShowLists.push('anime');
+                    // The filter makes sure there are unique strings.
+                    this.selectedShowLists = this.selectedShowLists.filter((v, i, a) => a.indexOf(v) === i);
+                } else {
+                    // Remove the anime list.
+                    this.selectedShowLists = this.selectedShowLists.filter(list => list.toLowerCase() !== 'anime');
+                }
+            }
+
             this.$emit('refresh');
             this.update();
         },
         defaultConfig(newValue) {
-            const { namingForceFolders } = this;
+            const { layout, namingForceFolders } = this;
             this.selectedStatus = newValue.status;
             this.selectedStatusAfter = newValue.statusAfter;
             this.selectedSubtitleEnabled = newValue.subtitles;
             this.selectedAnimeEnabled = newValue.anime;
             this.selectedSeasonFoldersEnabled = newValue.seasonFolders || namingForceFolders;
             this.selectedSceneEnabled = newValue.scene;
+            this.selectedShowLists = newValue.showLists.filter(
+                list => layout.show.showListOrder.map(list => list.toLowerCase()).includes(list.toLowerCase())
+            ) || [];
         }
     }
 };

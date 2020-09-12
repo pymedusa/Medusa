@@ -244,14 +244,14 @@ class ShowQueue(generic_queue.GenericQueue):
 
     def addShow(self, indexer, indexer_id, show_dir, default_status=None, quality=None, season_folders=None,
                 lang=None, subtitles=None, anime=None, scene=None, paused=None, blacklist=None, whitelist=None,
-                default_status_after=None, root_dir=None):
+                default_status_after=None, root_dir=None, show_lists=None):
 
         if lang is None:
             lang = app.INDEXER_DEFAULT_LANGUAGE
 
         queueItemObj = QueueItemAdd(indexer, indexer_id, show_dir, default_status, quality, season_folders, lang,
                                     subtitles, anime, scene, paused, blacklist, whitelist, default_status_after,
-                                    root_dir)
+                                    root_dir, show_lists)
 
         self.add_item(queueItemObj)
 
@@ -317,7 +317,7 @@ class ShowQueueItem(generic_queue.QueueItem):
 
 class QueueItemAdd(ShowQueueItem):
     def __init__(self, indexer, indexer_id, show_dir, default_status, quality, season_folders, lang, subtitles, anime,
-                 scene, paused, blacklist, whitelist, default_status_after, root_dir):
+                 scene, paused, blacklist, whitelist, default_status_after, root_dir, show_lists):
 
         if isinstance(show_dir, binary_type):
             self.show_dir = text_type(show_dir, 'utf-8')
@@ -338,6 +338,7 @@ class QueueItemAdd(ShowQueueItem):
         self.whitelist = whitelist
         self.default_status_after = default_status_after
         self.root_dir = root_dir
+        self.show_lists = show_lists
 
         self.show = None
 
@@ -506,6 +507,7 @@ class QueueItemAdd(ShowQueueItem):
             self.show.anime = self.anime if self.anime is not None else app.ANIME_DEFAULT
             self.show.scene = self.scene if self.scene is not None else app.SCENE_DEFAULT
             self.show.paused = self.paused if self.paused is not None else False
+            self.show_lists = self.show_lists if self.show_lists is not None else []
 
             # set up default new/missing episode status
             log.info(

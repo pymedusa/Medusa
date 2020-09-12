@@ -1,7 +1,6 @@
 import { ADD_CONFIG } from '../../mutation-types';
 
 const state = {
-    animeSupport: false,
     anidb: {
         enabled: false,
         username: null,

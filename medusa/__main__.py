@@ -585,6 +585,7 @@ class Application(object):
             app.INDEXER_TIMEOUT = check_setting_int(app.CFG, 'General', 'indexer_timeout', 20)
             app.ANIME_DEFAULT = bool(check_setting_int(app.CFG, 'General', 'anime_default', 0))
             app.SCENE_DEFAULT = bool(check_setting_int(app.CFG, 'General', 'scene_default', 0))
+            app.SHOWLIST_DEFAULT = list(check_setting_int(app.CFG, 'General', 'showlist_default', ['series']))
             app.PROVIDER_ORDER = check_setting_list(app.CFG, 'General', 'provider_order')
             app.NAMING_PATTERN = check_setting_str(app.CFG, 'General', 'naming_pattern', 'Season %0S/%SN - S%0SE%0E - %EN')
             app.NAMING_ABD_PATTERN = check_setting_str(app.CFG, 'General', 'naming_abd_pattern', '%SN - %A.D - %EN')
@@ -1529,6 +1530,7 @@ class Application(object):
         new_config['General']['tvdb_dvd_order_ep_ignore'] = int(app.TVDB_DVD_ORDER_EP_IGNORE)
         new_config['General']['anime_default'] = int(app.ANIME_DEFAULT)
         new_config['General']['scene_default'] = int(app.SCENE_DEFAULT)
+        new_config['General']['showlist_default'] = list(app.SHOWLIST_DEFAULT)
         new_config['General']['provider_order'] = app.PROVIDER_ORDER
         new_config['General']['version_notify'] = int(app.VERSION_NOTIFY)
         new_config['General']['auto_update'] = int(app.AUTO_UPDATE)

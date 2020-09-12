@@ -36,7 +36,8 @@ const state = {
         subtitles: null,
         seasonFolders: null,
         anime: null,
-        scene: null
+        scene: null,
+        showLists: null
     },
     launchBrowser: null,
     defaultPage: null,
