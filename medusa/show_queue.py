@@ -521,14 +521,6 @@ class QueueItemAdd(ShowQueueItem):
                 if self.whitelist:
                     self.show.release_groups.set_white_keywords(self.whitelist)
 
-            # # be smartish about this
-            # if self.show.genre and "talk show" in self.show.genre.lower():
-            #     self.show.air_by_date = 1
-            # if self.show.genre and "documentary" in self.show.genre.lower():
-            #     self.show.air_by_date = 0
-            # if self.show.classification and "sports" in self.show.classification.lower():
-            #     self.show.sports = 1
-
         except IndexerException as error:
             log.error(
                 'Unable to add show due to an error with {indexer}: {error}',
@@ -640,9 +632,18 @@ class QueueItemAdd(ShowQueueItem):
         scene_numbering.xem_refresh(self.show, force=True)
 
         # check if show has XEM mapping so we can determine if searches
-        # should go by scene numbering or indexer numbering.
+        # should go by scene numbering or indexer numbering. Warn the user.
         if not self.scene and scene_numbering.get_xem_numbering_for_show(self.show):
-            self.show.scene = 1
+            log.warning(
+                '{id}: while adding the show {title} we noticed thexem.de has an episode mapping available'
+                '\nyou might want to consider enabling the scene option for this show.',
+                {'id': self.show.series_id, 'title': self.show.name}
+            )
+            ui.notifications.message(
+                'consider enabling scene for this show',
+                'for show {title} you might want to consider enabling the scene option'
+                .format(title=self.show.name)
+            )
 
         # After initial add, set to default_status_after.
         self.show.default_ep_status = self.default_status_after

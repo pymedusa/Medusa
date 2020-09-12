@@ -135,7 +135,11 @@
                                         <p>send a message to all enabled notifiers when Medusa has been updated</p>
                                     </config-toggle-slider>
 
-                                    <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
+                                    <input type="submit"
+                                           class="btn-medusa config_submitter"
+                                           value="Save Changes"
+                                           :disabled="saving"
+                                    >
                                 </fieldset>
                             </div>
                         </div>
@@ -173,6 +177,18 @@
 
                                     <config-toggle-slider v-model="layout.sortArticle" label="Sort with 'The' 'A', 'An'" id="sort_article">
                                         <p>include articles ("The", "A", "An") when sorting show lists</p>
+                                    </config-toggle-slider>
+
+                                    <config-template label-for="show_list_order" label="show lists">
+                                        <sorted-select-list
+                                            :list-items="layout.show.showListOrder"
+                                            @change="saveShowListOrder"
+                                        />
+                                        <p>Create and order different categories for your shows.</p>
+                                    </config-template>
+
+                                    <config-toggle-slider v-model="layout.splitHomeInTabs" label="Split home in tabs" id="split_home_in_tabs">
+                                        <span class="component-desc">Use tabs when splitting show lists</span>
                                     </config-toggle-slider>
 
                                     <config-textbox-number v-model="layout.comingEps.missedRange" label="Missed episodes range" id="coming_eps_missed_range duration" :step="1" :min="7">
@@ -415,13 +431,20 @@
                                 <fieldset class="component-group-list">
 
                                     <config-template label-for="github_remote_branches" label="Branch version">
-                                        <select id="github_remote_branches" name="github_remote_branches" v-model="system.branch" class="form-control input-sm margin-bottom-5">
+                                        <select id="github_remote_branches" name="github_remote_branches" v-model="selectedBranch" class="form-control input-sm margin-bottom-5">
                                             <option disabled value="">Please select a branch</option>
                                             <option :value="option.value" v-for="option in githubRemoteBranchesOptions" :key="option.value">{{ option.text }}</option>
                                         </select>
-                                        <input :disabled="!githubBranches.length > 0" class="btn-medusa btn-inline" style="margin-left: 6px;" type="button" id="branchCheckout" value="Checkout Branch">
+                                        <input :disabled="!githubBranches.length > 0"
+                                               class="btn-medusa btn-inline" style="margin-left: 6px;" type="button" id="branchCheckout"
+                                               value="Checkout Branch" @click="validateCheckoutBranch"
+                                        >
                                         <span v-if="!githubBranches.length > 0" style="color:rgb(255, 0, 0);"><p>Error: No branches found.</p></span>
                                         <p v-else>select branch to use (restart required)</p>
+                                        <p v-if="checkoutBranchMessage">
+                                            <state-switch state="loading" :theme="layout.themeName" />
+                                            <span>{{checkoutBranchMessage}}</span>
+                                        </p>
                                     </config-template>
 
                                     <config-template label-for="date_presets" label="GitHub authentication type">
@@ -499,7 +522,7 @@
                                             :options="githubBranches"
                                         />
                                         <input class="btn-medusa btn-inline" style="margin-left: 6px;" type="button" id="branch_force_update" value="Update Branches" @click="githubBranchForceUpdate">
-                                        <span class="component-desc"><b>Note:</b> Empty selection means that any branch could be reset.</span>
+                                        <span><b>Note:</b> Empty selection means that any branch could be reset.</span>
                                     </config-template>
                                     <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
                                 </fieldset>
@@ -512,11 +535,61 @@
                 </div><!-- /config-components -->
             </form>
         </div>
+
+        <!-- eslint-disable @sharkykh/vue-extra/component-not-registered -->
+        <modal name="query-upgrade-database" :height="'auto'" :width="'80%'">
+            <transition name="modal">
+                <div class="modal-mask">
+                    <div class="modal-wrapper">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                Upgrade database model?
+                            </div>
+
+                            <div class="modal-body">
+                                <p>Changing branch will upgrade your database</p>
+                                <p>You won't be able to downgrade afterward.</p>
+                                <p>Do you want to continue?</p>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn-medusa btn-danger" data-dismiss="modal" @click="$modal.hide('query-upgrade-database'); checkoutBranchMessage = ''">No</button>
+                                <button type="button" class="btn-medusa btn-success" data-dismiss="modal" @click="checkoutBranch(); $modal.hide('query-upgrade-database')">Yes</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </transition>
+        </modal>
+
+        <modal name="query-restart" :height="'auto'" :width="'80%'">
+            <transition name="modal">
+                <div class="modal-mask">
+                    <div class="modal-wrapper">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                Checking out a branch requires a restart
+                            </div>
+
+                            <div class="modal-body">
+                                <p>Would you like to start a restart of medusa now?</p>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn-medusa btn-danger" data-dismiss="modal" @click="$modal.hide('query-restart'); checkoutBranchMessage = ''">No</button>
+                                <button type="button" class="btn-medusa btn-success" data-dismiss="modal" @click="$modal.hide('query-restart'); $router.push({ name: 'restart' });">Yes</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </transition>
+        </modal>
+        <!--eslint-enable-->
     </div>
 </template>
 
 <script>
-import { apiRoute } from '../api.js';
+import { api, apiRoute } from '../api.js';
 import { mapActions, mapGetters, mapState } from 'vuex';
 import RootDirs from './root-dirs.vue';
 import {
@@ -525,9 +598,11 @@ import {
     ConfigTextbox,
     ConfigTextboxNumber,
     ConfigToggleSlider,
-    LanguageSelect
+    LanguageSelect,
+    SortedSelectList,
+    StateSwitch
 } from './helpers';
-import { convertDateFormat } from '../utils/core.js';
+import { convertDateFormat, forceBrowserReload } from '../utils/core.js';
 import formatDate from 'date-fns/format';
 import { ToggleButton } from 'vue-js-toggle-button';
 import Multiselect from 'vue-multiselect';
@@ -545,7 +620,9 @@ export default {
         ConfigToggleSlider,
         LanguageSelect,
         Multiselect,
+        SortedSelectList,
         VPopover,
+        StateSwitch,
         ToggleButton,
         RootDirs
     },
@@ -571,7 +648,10 @@ export default {
             defaultPageOptions,
             privacyLevelOptions,
             githubBranchesForced: [],
-            resetBranchSelected: null
+            resetBranchSelected: null,
+            saving: false,
+            selectedBranch: '',
+            checkoutBranchMessage: ''
         };
     },
     beforeMount() {
@@ -587,7 +667,8 @@ export default {
             layout: state => state.config.layout,
             statuses: state => state.config.consts.statuses,
             indexers: state => state.config.indexers,
-            system: state => state.config.system
+            system: state => state.config.system,
+            gitRemoteBranches: state => state.config.system.gitRemoteBranches // We need the reactivity on this.
         }),
         ...mapGetters([
             'getStatus'
@@ -660,15 +741,10 @@ export default {
             return [];
         },
         githubRemoteBranchesOptions() {
-            const { general, githubBranches, githubBranchForceUpdate } = this;
-            const { system } = this;
+            const { general, githubBranches, githubBranchForceUpdate, gitRemoteBranches } = this;
             const { username, password, token } = general.git;
 
-            if (!system.gitRemoteBranches) {
-                return [];
-            }
-
-            if (!system.gitRemoteBranches.length > 0) {
+            if (!gitRemoteBranches.length > 0) {
                 githubBranchForceUpdate();
             }
 
@@ -685,8 +761,8 @@ export default {
             return filteredBranches.map(branch => ({ text: branch, value: branch }));
         },
         githubBranches() {
-            const { system, githubBranchesForced } = this;
-            return system.gitRemoteBranches || githubBranchesForced;
+            const { githubBranchesForced, gitRemoteBranches } = this;
+            return gitRemoteBranches || githubBranchesForced;
         },
         githubTokenPopover() {
             const { general } = this;
@@ -696,11 +772,12 @@ export default {
         }
     },
     methods: {
-        ...mapActions([
-            'setConfig',
-            'setTheme',
-            'getApiKey'
-        ]),
+        ...mapActions({
+            setConfig: 'setConfig',
+            setTheme: 'setTheme',
+            getApiKey: 'getApiKey',
+            setLayoutShow: 'setLayoutShow'
+        }),
         async githubBranchForceUpdate() {
             const response = await apiRoute('home/branchForceUpdate');
             if (response.data._size > 0) {
@@ -741,8 +818,8 @@ export default {
                     { timeout: 5000 }
                 );
                 setTimeout(() => {
-                    // For now we reload the page since the layouts use python still
-                    location.reload();
+                    // Reload the page as we need to reload static content.
+                    forceBrowserReload();
                 }, 1000);
             } catch (error) {
                 this.$snotify.error(
@@ -803,11 +880,82 @@ export default {
             } finally {
                 this.saving = false;
             }
+        },
+        saveShowListOrder(value) {
+            const { layout, setLayoutShow } = this;
+            const mergedShowLayout = { ...layout.show, ...{ showListOrder: value.map(item => item.value) } };
+
+            setLayoutShow(mergedShowLayout);
+        },
+        async compareDBUpgrade() {
+            const { checkoutBranch, selectedBranch } = this;
+
+            try {
+                this.checkoutBranchMessage = 'Checking if the checkout requires a database upgrade / downgrade';
+                const result = await apiRoute.get('home/getDBcompare');
+                if (result.data.status === 'success') {
+                    if (result.data.message === 'equal') {
+                        // Checkout Branch
+                        checkoutBranch();
+                    }
+
+                    if (result.data.message === 'upgrade') {
+                        this.$modal.show('query-upgrade-database', { selectedBranch });
+                    }
+
+                    if (result.data.message === 'downgrade') {
+                        this.$snotify.error(
+                            'Can\'t switch branch as this will result in a database downgrade.',
+                            'Error'
+                        );
+                    }
+                } else {
+                    this.$snotify.error(
+                        'Error while trying to compare db versions for checkout',
+                        `Error: ${result.data.status}`
+                    );
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        },
+        /**
+         * Validate if we need a compareDb, or directly checkout.
+         *
+         * If whe're running a master or develop branch, we check for database changes.
+         * This to prepare the user, by showing a few modals.
+         * If the user is running another branch like, a feature branch. We asume the user knows what he's doing.
+         *
+         */
+        validateCheckoutBranch() {
+            const { compareDBUpgrade, selectedBranch } = this;
+
+            if (!selectedBranch) {
+                return;
+            }
+            compareDBUpgrade();
+        },
+        async checkoutBranch() {
+            const { selectedBranch } = this;
+            this.checkoutBranchMessage = `Checking out branch ${selectedBranch}`;
+
+            await api.post('system/operation', { type: 'CHECKOUT_BRANCH', branch: selectedBranch }, { timeout: 120000 });
+            this.checkoutBranchMessage = `Finished checking out branch ${selectedBranch}`;
+
+            setTimeout(() => {
+                this.checkoutBranchMessage = '';
+            }, 4000);
+            this.$modal.show('query-restart');
+        },
+        cancelCheckout() {
+            this.checkoutBranchMessage = '';
         }
     }
 };
 </script>
 <style>
+@import '../style/modal.css';
+
 .display-inline {
     display: inline;
 }

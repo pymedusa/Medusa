@@ -21,31 +21,28 @@ window.app = new Vue({
         };
     },
     // TODO: Replace with Object spread (`...mapState`)
-    computed: Object.assign(mapState(['config']), {
+    computed: Object.assign(mapState({
+        layout: state => state.config.layout
+    }),
+    {
         period: {
             get() {
-                return this.config.general.backlogOverview.period;
+                return this.layout.backlogOverview.period;
             },
             set(value) {
                 const { $store } = this;
-                return $store.dispatch('setConfig', {
-                    section: 'main',
-                    config: { backlogOverview: { period: value } }
-                })
-                .then(setTimeout(() => location.reload(), 500));
+                return $store.dispatch('setBacklogOverview', { key: 'period', value })
+                       .then(setTimeout(() => location.reload(), 500));
             }
         },
         status: {
             get() {
-                return this.config.general.backlogOverview.status;
+                return this.layout.backlogOverview.status;
             },
             set(value) {
                 const { $store } = this;
-                return $store.dispatch('setConfig', {
-                    section: 'main',
-                    config: { backlogOverview: { status: value } }
-                })
-                .then(setTimeout(() => location.reload(), 500));
+                return $store.dispatch('setBacklogOverview', { key: 'status', value })
+                       .then(setTimeout(() => location.reload(), 500));
             }
         }
     }),

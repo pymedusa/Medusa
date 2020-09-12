@@ -6,6 +6,10 @@ import Snotify from 'vue-snotify';
 import VueCookies from 'vue-cookies';
 import VModal from 'vue-js-modal';
 import { VTooltip } from 'v-tooltip';
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { faAlignJustify } from '@fortawesome/free-solid-svg-icons';
+
+library.add(faAlignJustify);
 
 import {
     AddShowOptions,
@@ -150,7 +154,7 @@ export default () => {
                 ]).then(([_, config]) => {
                     this.$root.$emit('loaded');
                     // Legacy - send config.general to jQuery (received by index.js)
-                    const event = new CustomEvent('medusa-config-loaded', { detail: { main: config.general, layout: config.layout } });
+                    const event = new CustomEvent('medusa-config-loaded', { detail: { general: config.main, layout: config.layout } });
                     window.dispatchEvent(event);
                 }).catch(error => {
                     console.debug(error);

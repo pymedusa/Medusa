@@ -20,11 +20,9 @@ window.app = new Vue({
         };
     },
     // TODO: Replace with Object spread (`...mapState`)
-    computed: Object.assign(mapState([
-        'config' // Used by `inc_addShowOptions.mako`
-    ]), {
-
-    })
+    computed: Object.assign(mapState({
+        config: state => state.config.general // Used by `inc_addShowOptions.mako`
+    }))
 });
 </script>
 </%block>

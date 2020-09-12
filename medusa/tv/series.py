@@ -115,6 +115,8 @@ from medusa.tv.indexer import Indexer
 
 from six import iteritems, itervalues, string_types, text_type, viewitems
 
+import ttl_cache
+
 try:
     from send2trash import send2trash
 except ImportError:
@@ -242,6 +244,7 @@ class Series(TV):
         self.externals = {}
         self._cached_indexer_api = None
         self.plot = None
+        self._show_lists = None
 
         other_show = Show.find_by_id(app.showList, self.indexer, self.series_id)
         if other_show is not None:
@@ -370,7 +373,23 @@ class Series(TV):
     @property
     def network_logo_name(self):
         """Get the network logo name."""
-        return self.network.replace(u'\u00C9', 'e').replace(u'\u00E9', 'e').replace(' ', '-').lower()
+
+        def sanitize_network_names(str):
+            dict = ({
+                    u'\u010C': 'C',  # Č
+                    u'\u00E1': 'a',  # á
+                    u'\u00E9': 'e',  # é
+                    u'\u00F1': 'n',  # ñ
+                    u'\u00C9': 'e',  # É
+                    u'\u05E7': 'q',  # ק
+                    u'\u05E9': 's',  # ש
+                    u'\u05EA': 't',  # ת
+                    ' ': '-'})
+            for key in dict:
+                str = str.replace(key, dict[key])
+            return str.lower()
+
+        return sanitize_network_names(self.network)
 
     @property
     def validate_location(self):
@@ -559,10 +578,7 @@ class Series(TV):
     @property
     def prev_aired(self):
         """Return last aired episode ordinal."""
-        today = datetime.date.today().toordinal()
-        if not self._prev_aired or self._prev_aired > today:
-            if self._last_update_indexer >= today:
-                self._prev_aired = self.prev_episode()
+        self._prev_aired = self.prev_episode()
         return self._prev_aired
 
     @property
@@ -570,11 +586,11 @@ class Series(TV):
         """Return next aired episode ordinal."""
         today = datetime.date.today().toordinal()
         if not self._next_aired or self._next_aired < today:
-            if self._last_update_indexer >= today:
-                self._next_aired = self.next_episode()
+            self._next_aired = self.next_episode()
         return self._next_aired
 
     @property
+    @ttl_cache(43200.0)
     def prev_airdate(self):
         """Return last aired episode airdate."""
         return (
@@ -583,6 +599,7 @@ class Series(TV):
         )
 
     @property
+    @ttl_cache(43200.0)
     def next_airdate(self):
         """Return next aired episode airdate."""
         return (
@@ -1494,6 +1511,8 @@ class Series(TV):
             # Load external id's from indexer_mappings table.
             self.externals = load_externals_from_db(self.indexer, self.series_id)
 
+            self._show_lists = sql_results[0]['show_lists']
+
         # Get IMDb_info from database
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select(
@@ -2018,12 +2037,11 @@ class Series(TV):
                           'rls_require_exclude': self.rls_require_exclude,
                           'default_ep_status': self.default_ep_status,
                           'plot': self.plot,
-                          'airdate_offset': self.airdate_offset}
+                          'airdate_offset': self.airdate_offset,
+                          'show_lists': self._show_lists}
 
         main_db_con = db.DBConnection()
         main_db_con.upsert('tv_shows', new_value_dict, control_value_dict)
-
-        helpers.update_anime_support()
 
         if self.imdb_id and self.imdb_info.get('year'):
             control_value_dict = {'indexer': self.indexer, 'indexer_id': self.series_id}
@@ -2158,6 +2176,7 @@ class Series(TV):
         data['config']['release']['ignoredWordsExclude'] = bool(self.rls_ignore_exclude)
         data['config']['release']['requiredWordsExclude'] = bool(self.rls_require_exclude)
         data['config']['airdateOffset'] = self.airdate_offset
+        data['config']['showLists'] = self.show_lists
 
         # Moved from detailed, as the home page, needs it to display the Xem icon.
         data['xemNumbering'] = numbering_tuple_to_dict(self.xem_numbering)
@@ -2226,6 +2245,24 @@ class Series(TV):
         """Configure qualities (combined) by adding the preferred qualities to it."""
         self.quality = Quality.combine_qualities(self.qualities_allowed, qualities_preferred)
 
+    @property
+    def show_lists(self):
+        """
+        Return series show lists.
+
+        :returns: A list of show categories.
+        """
+        return self._show_lists.split(',') if self._show_lists else ['series']
+
+    @show_lists.setter
+    def show_lists(self, show_lists):
+        """
+        Configure the show lists, for this show.
+
+        :param show_lists: Comma separated list of show categories.
+        """
+        self._show_lists = ','.join(show_lists) if show_lists else 'series'
+
     def get_all_possible_names(self, season=-1):
         """Get every possible variation of the name for a particular show.
 
@@ -2233,7 +2270,7 @@ class Series(TV):
         at the end of the name (e.g. "Show Name (AU)".
 
         show: a Series object that we should get the names of
-        Returns: all possible show names
+        :returns: all possible show names
         """
         show_names = {exception.title for exception in get_scene_exceptions(self, season)}
         show_names.add(self.name)

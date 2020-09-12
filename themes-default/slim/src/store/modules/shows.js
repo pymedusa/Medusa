@@ -1,7 +1,10 @@
 import Vue from 'vue';
 
 import { api } from '../../api';
-import { ADD_SHOW, ADD_SHOWS,
+import {
+    ADD_SHOW,
+    ADD_SHOW_CONFIG,
+    ADD_SHOWS,
     ADD_SHOW_EPISODE,
     ADD_SHOW_SCENE_EXCEPTION,
     REMOVE_SHOW_SCENE_EXCEPTION
@@ -60,6 +63,10 @@ const mutations = {
 
         Vue.set(state, 'shows', [...state.shows, ...newShows]);
         console.debug(`Added ${shows.length} shows to store`);
+    },
+    [ADD_SHOW_CONFIG](state, { show, config }) {
+        const existingShow = state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer]));
+        existingShow.config = { ...existingShow.config, ...config };
     },
     currentShow(state, { indexer, id }) {
         state.currentShow.indexer = indexer;
@@ -214,6 +221,56 @@ const getters = {
             };
             return show;
         });
+    },
+    showsInLists: (state, getters, rootState) => {
+        const { layout, general } = rootState.config;
+        const { show } = layout;
+        const { showListOrder } = show;
+        const { rootDirs } = general;
+        const { selectedRootIndex, local } = layout;
+        const { showFilterByName } = local;
+
+        const { showsWithStats } = getters;
+
+        let shows = null;
+
+        // Filter root dirs
+        shows = showsWithStats.filter(show => selectedRootIndex === -1 || show.config.location.includes(rootDirs.slice(1)[selectedRootIndex]));
+
+        // Filter by text for the banner, simple and smallposter layouts.
+        // The Poster layout uses vue-isotope and this does not respond well to changes to the `list` property.
+        if (layout.home !== 'poster') {
+            shows = shows.filter(show => show.title.toLowerCase().includes(showFilterByName.toLowerCase()));
+        }
+
+        const categorizedShows = showListOrder.filter(
+            listTitle => shows.filter(
+                show => show.config.showLists.map(
+                    list => list.toLowerCase()
+                ).includes(listTitle.toLowerCase())
+            ).length > 0
+        ).map(
+            listTitle => ({ listTitle, shows: shows.filter(
+                show => show.config.showLists.map(list => list.toLowerCase()).includes(listTitle.toLowerCase())
+            ) })
+        );
+
+        // Check for shows that are not in any category anymore
+        const uncategorizedShows = shows.filter(show => {
+            return show.config.showLists.map(item => {
+                return showListOrder.map(list => list.toLowerCase()).includes(item.toLowerCase());
+            }).every(item => !item);
+        });
+
+        if (uncategorizedShows.length > 0) {
+            categorizedShows.push({ listTitle: 'uncategorized', shows: uncategorizedShows });
+        }
+
+        if (categorizedShows.length === 0 && uncategorizedShows.length === 0) {
+            categorizedShows.push({ listTitle: 'Series', shows: [] });
+        }
+
+        return categorizedShows;
     }
 };
 
@@ -371,6 +428,10 @@ const actions = {
         // Set current show
         const { commit } = context;
         return commit('currentShow', { indexer, id });
+    },
+    setShowConfig(context, { show, config }) {
+        const { commit } = context;
+        commit(ADD_SHOW_CONFIG, { show, config });
     }
 };
 

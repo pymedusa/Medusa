@@ -234,7 +234,11 @@
                                         </div>
                                     </div>
                                 </fieldset>
-                                <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
+                                <input type="submit"
+                                       class="btn-medusa config_submitter"
+                                       value="Save Changes"
+                                       :disabled="saving"
+                                >
                             </div> <!-- /col -->
                         </div> <!-- /row -->
                     </div><!-- /component-group1 //-->
@@ -349,14 +353,22 @@
                                         </div>
                                     </div>
                                 </fieldset>
-                                <input type="submit" class="btn-medusa config_submitter" value="Save Changes"><br>
+                                <input type="submit"
+                                       class="btn-medusa config_submitter"
+                                       value="Save Changes"
+                                       :disabled="saving"
+                                >
 
                             </div> <!-- end of col -->
                         </div> <!-- end of row -->
                     </div> <!-- end of metatdata id -->
 
                     <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">{{system.dataDir}}</span></b> </h6>
-                    <input type="submit" class="btn-medusa pull-left config_submitter button" value="Save Changes">
+                    <input type="submit"
+                           class="btn-medusa pull-left config_submitter button"
+                           value="Save Changes"
+                           :disabled="saving"
+                    >
                 </div><!--/config-components//-->
             </form>
         </div><!--/config-content//-->
@@ -379,10 +391,10 @@ export default {
     data() {
         return {
             presets: [
-                { pattern: '%SN - %Sx%0E - %EN', example: 'Show Name - 2x03 - Ep Name' },
-                { pattern: '%S.N.S%0SE%0E.%E.N', example: 'Show.Name.S02E03.Ep.Name' },
-                { pattern: '%Sx%0E - %EN', example: '2x03 - Ep Name' },
-                { pattern: 'S%0SE%0E - %EN', example: 'S02E03 - Ep Name' },
+                { pattern: 'Season %0S/%SN - %Sx%0E - %EN', example: 'Season 02/Show Name - 2x03 - Ep Name' },
+                { pattern: 'Season %0S/%S.N.S%0SE%0E.%E.N', example: 'Season 02/Show.Name.S02E03.Ep.Name' },
+                { pattern: 'Season %S/%S_N_%Sx%0E_%E_N', example: 'Season 2/Show_Name_2x03_Ep_Name' },
+                { pattern: 'Season %S/%SN S%0SE%0E %SQN', example: 'Season 2/Show Name S02E03 720p HDTV x264' },
                 { pattern: 'Season %0S/%S.N.S%0SE%0E.%Q.N-%RG', example: 'Season 02/Show.Name.S02E03.720p.HDTV-RLSGROUP' }
             ],
             processMethods: [
@@ -396,7 +408,8 @@ export default {
                 { value: 'local', text: 'Local' },
                 { value: 'network', text: 'Network' }
             ],
-            metadataProviderSelected: null
+            metadataProviderSelected: null,
+            saving: false
         };
     },
     methods: {

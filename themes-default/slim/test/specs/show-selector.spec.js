@@ -4,6 +4,7 @@ import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { ShowSelector } from '../../src/components';
 import fixtures from '../__fixtures__/common';
 import { shows } from '../__fixtures__/shows';
+import showLists from '../__fixtures__/show-lists';
 
 describe('ShowSelector.test.js', () => {
     let localVue;
@@ -42,13 +43,15 @@ describe('ShowSelector.test.js', () => {
         const wrapper = shallowMount(ShowSelector, {
             localVue,
             computed: {
+                showsInLists() {
+                    return [];
+                },
                 shows() {
                     return [];
                 },
-                config() {
+                layout() {
                     return {
-                        animeSplitHome: false,
-                        sortArticle: 'asc'
+                        sortArticle: true
                     };
                 }
             },
@@ -63,12 +66,14 @@ describe('ShowSelector.test.js', () => {
         const wrapper = shallowMount(ShowSelector, {
             localVue,
             computed: {
+                showsInLists() {
+                    return showLists;
+                },
                 shows() {
                     return shows;
                 },
-                config() {
+                layout() {
                     return {
-                        animeSplitHome: false,
                         sortArticle: true
                     };
                 }
@@ -87,12 +92,14 @@ describe('ShowSelector.test.js', () => {
         const wrapper = shallowMount(ShowSelector, {
             localVue,
             computed: {
+                showsInLists() {
+                    return showLists;
+                },
                 shows() {
                     return shows;
                 },
-                config() {
+                layout() {
                     return {
-                        animeSplitHome: false,
                         sortArticle: false
                     };
                 }
@@ -111,13 +118,15 @@ describe('ShowSelector.test.js', () => {
         const wrapper = shallowMount(ShowSelector, {
             localVue,
             computed: {
+                showsInLists() {
+                    return showLists;
+                },
                 shows() {
                     return shows;
                 },
-                config() {
+                layout() {
                     return {
-                        animeSplitHome: false,
-                        sortArticle: 'asc'
+                        sortArticle: true
                     };
                 }
             },
@@ -135,13 +144,15 @@ describe('ShowSelector.test.js', () => {
         const wrapper = shallowMount(ShowSelector, {
             localVue,
             computed: {
+                showsInLists() {
+                    return showLists;
+                },
                 shows() {
                     return shows;
                 },
-                config() {
+                layout() {
                     return {
-                        animeSplitHome: false,
-                        sortArticle: 'asc'
+                        sortArticle: true
                     };
                 }
             },
@@ -158,12 +169,14 @@ describe('ShowSelector.test.js', () => {
         const wrapper = shallowMount(ShowSelector, {
             localVue,
             computed: {
+                showsInLists() {
+                    return showLists;
+                },
                 shows() {
                     return shows;
                 },
-                config() {
+                layout() {
                     return {
-                        animeSplitHome: false,
                         sortArticle: true
                     };
                 }

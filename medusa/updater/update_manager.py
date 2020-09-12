@@ -12,7 +12,6 @@ from medusa.logger.adapters.style import BraceAdapter
 
 from requests.exceptions import RequestException
 
-from six import text_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -30,7 +29,7 @@ class UpdateManager(object):
 
     @staticmethod
     def get_update_url():
-        return app.WEB_ROOT + '/home/update/?pid=' + text_type(app.PID)
+        return app.WEB_ROOT + '/home/update'
 
     def current_version(self):
         """Get the current verion of the app."""

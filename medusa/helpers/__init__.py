@@ -741,22 +741,6 @@ def fix_set_group_id(child_path):
                 {'path': child_path, 'gid': parent_gid})
 
 
-def is_anime_in_show_list():
-    """Check if any shows in list contain anime.
-
-    :return: True if global showlist contains Anime, False if not
-    """
-    for show in app.showList:
-        if show.is_anime:
-            return True
-    return False
-
-
-def update_anime_support():
-    """Check if we need to support anime, and if we do, enable the feature."""
-    app.ANIMESUPPORT = is_anime_in_show_list()
-
-
 def get_absolute_number_from_season_and_episode(series_obj, season, episode):
     """Find the absolute number for a show episode.
 
@@ -845,24 +829,23 @@ def create_https_certificates(ssl_cert, ssl_key):
     """
     try:
         from OpenSSL import crypto
-        from certgen import createKeyPair, createCertRequest, createCertificate, TYPE_RSA
+        from medusa.helpers.certgen import create_key_pair, create_cert_request, create_certificate, TYPE_RSA
     except Exception:
-        log.warning(u'pyopenssl module missing, please install for'
-                    u' https access')
+        log.warning('pyopenssl module missing, please install for https access')
         return False
 
     # Serial number for the certificate
     serial = int(time.time())
 
     # Create the CA Certificate
-    cakey = createKeyPair(TYPE_RSA, 2048)
-    careq = createCertRequest(cakey, CN='Certificate Authority')
-    cacert = createCertificate(careq, (careq, cakey), serial, (0, 60 * 60 * 24 * 365 * 10))  # ten years
+    cakey = create_key_pair(TYPE_RSA, 2048)
+    careq = create_cert_request(cakey, CN='Certificate Authority')
+    cacert = create_certificate(careq, (careq, cakey), serial, (0, 60 * 60 * 24 * 365 * 10))  # ten years
 
     cname = 'Medusa'
-    pkey = createKeyPair(TYPE_RSA, 2048)
-    req = createCertRequest(pkey, CN=cname)
-    cert = createCertificate(req, (cacert, cakey), serial, (0, 60 * 60 * 24 * 365 * 10))  # ten years
+    pkey = create_key_pair(TYPE_RSA, 2048)
+    req = create_cert_request(pkey, CN=cname)
+    cert = create_certificate(req, (cacert, cakey), serial, (0, 60 * 60 * 24 * 365 * 10))  # ten years
 
     # Save the key and certificate to disk
     try:

@@ -189,3 +189,16 @@ export const episodeToSlug = (season, episode) => {
     }
     return `s${season.toString().padStart(2, '0')}`;
 };
+
+/**
+ * Force reload.
+ * Force a reload of the page and ignore local cache.
+ * window.location.reload(true) doesn't seem to work on chrome. But the self assign does.
+*/
+export const forceBrowserReload = () => {
+    if (Boolean(window.chrome) && Boolean(window.chrome.webstore)) {
+        window.location.href = window.location.href; // eslint-disable-line no-self-assign
+    } else {
+        window.location.reload(true);
+    }
+};

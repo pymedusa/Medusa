@@ -12,7 +12,6 @@ const homeRoutes = [
         name: 'home',
         meta: {
             title: 'Home',
-            header: 'Show List',
             topMenu: 'home',
             converted: true
         },
@@ -80,8 +79,10 @@ const homeRoutes = [
         meta: {
             title: 'Restarting...',
             header: 'Performing Restart',
-            topMenu: 'system'
-        }
+            topMenu: 'system',
+            converted: true
+        },
+        component: () => import('../components/restart.vue')
     },
     {
         path: '/home/shutdown',
@@ -89,14 +90,18 @@ const homeRoutes = [
         meta: {
             header: 'Shutting down',
             topMenu: 'system'
-        }
+        },
+        component: () => import('../components/restart.vue'),
+        props: { shutdown: true }
     },
     {
         path: '/home/update',
         name: 'update',
         meta: {
+            header: 'Update Medusa',
             topMenu: 'system'
-        }
+        },
+        component: () => import('../components/update.vue')
     }
 ];
 
@@ -121,8 +126,9 @@ const configRoutes = [
             title: 'Config - Anime',
             header: 'Anime',
             topMenu: 'config',
-            subMenu: configSubMenu
-        }
+            converted: true
+        },
+        component: () => import('../components/config-anime.vue')
     },
     {
         path: '/config/backuprestore',

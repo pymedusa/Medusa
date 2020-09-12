@@ -1,6 +1,6 @@
 <template>
     <div class="show-results-wrapper">
-        <div class="row" :class="{ fanartBackground: layout.fanartBackground }">
+        <div class="row horizontal-scroll" :class="{ fanartBackground: layout.fanartBackground }">
             <div class="col-md-12 top-15">
                 <div class="button-row">
                     <input class="btn-medusa manualSearchButton top-5 bottom-5" type="button"  value="Refresh Results" @click="getProviderResults">

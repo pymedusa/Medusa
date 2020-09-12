@@ -1,11 +1,68 @@
 ## Unreleased
 
 #### New Features
-- Added Search shows by id ([#8058](https://github.com/pymedusa/Medusa/pull/8058))
 
 #### Improvements
 
 #### Fixes
+
+-----
+
+## 0.4.3 (2020-09-08)
+
+#### Improvements
+- Updated all frontend libraries and dependencies
+
+#### Fixes
+- Fix no max season error when a show is incomplete ([8460](https://github.com/pymedusa/Medusa/pull/8460))
+- Fix start error on some Python 2.7 builds
+
+-----
+
+## 0.4.2 (2020-09-06)
+
+#### Improvements
+- Added new page "restart", for restarting and shutting down Medusa ([8399](https://github.com/pymedusa/Medusa/pull/8399))
+- Added new page "update", for updating Medusa to a new version ([8437](https://github.com/pymedusa/Medusa/pull/8437))
+
+#### Fixes
+- Fix show-selector using the show lists ([8426](https://github.com/pymedusa/Medusa/pull/8426))
+- Fix home poster layout. Re-add the search by show title ([8415](https://github.com/pymedusa/Medusa/pull/8415))
+- Fix backlog search ignoring cached search results ([8395](https://github.com/pymedusa/Medusa/pull/8395))
+- Fix guessit parsing numbered episode titles as multi season ([8413](https://github.com/pymedusa/Medusa/pull/8413))
+- Fix History page showing black text (on black) when using dark theme ([8375](https://github.com/pymedusa/Medusa/pull/8375))
+
+-----
+
+## 0.4.1 (2020-08-18)
+
+#### Fixes
+- Fixed show titles displayed in white text on the schedule page ([#8338](https://github.com/pymedusa/Medusa/pull/8338))
+- Fixed Series show list title shown, also when it's the only show list used ([#8338](https://github.com/pymedusa/Medusa/pull/8338))
+- Fixed home table layouts Downloads sorting ([#8338](https://github.com/pymedusa/Medusa/pull/8338))
+- Fixed home table layouts previous and next episode sorting ([#8337](https://github.com/pymedusa/Medusa/pull/8337))
+- Fixed show's show lists not stored after restart ([#8337](https://github.com/pymedusa/Medusa/pull/8337))
+
+-----
+
+## 0.4.0 (2020-08-15)
+
+#### New Features
+- Added Search shows by id ([#8308](https://github.com/pymedusa/Medusa/pull/8308))
+- Added UI option to create your own show list categories ([#8308](https://github.com/pymedusa/Medusa/pull/8308))
+- Add the ability to modify the Discord bot username ([#8148](https://github.com/pymedusa/Medusa/pull/8148))
+
+#### Improvements
+- Vueified Home page (Poster, small poster, banner, simple layouts) ([5345](https://github.com/pymedusa/Medusa/pull/5345))
+- Vueified Snatch Selection page ([7345](https://github.com/pymedusa/Medusa/pull/7345))
+- Add the save path option for qBittorrent version > 3.2 ([8304](https://github.com/pymedusa/Medusa/pull/8304))
+- show-header: mark indexer used for adding show with star ([8286](https://github.com/pymedusa/Medusa/pull/8286))
+- Utilize season search results from cache ([8281](https://github.com/pymedusa/Medusa/pull/8281))
+- Improve season scene name handling for non-anime shows ([8155](https://github.com/pymedusa/Medusa/pull/8155))
+
+#### Fixes
+- Disable forcing of the scene option when adding shows ([8316](https://github.com/pymedusa/Medusa/pull/8316))
+- Fix associated files matching more files than wanted ([8152](https://github.com/pymedusa/Medusa/pull/8152))
 
 -----
 
@@ -30,7 +87,7 @@
 
 #### Fixes
 - Fixed root dirs not always shown on Home page ([#7921](https://github.com/pymedusa/Medusa/pull/7921))
-- Fixed starting medusa failed running python3.8 on windows ([#7940](https://github.com/pymedusa/Medusa/pull/7940))
+- Fixed starting Medusa failed running Python 3.8 on Windows ([#7940](https://github.com/pymedusa/Medusa/pull/7940))
 - Fixed Speed.cd provider login ([#7941](https://github.com/pymedusa/Medusa/pull/7941))
 - Fixed [#7959](https://github.com/pymedusa/Medusa/issues/7959) - UI bug on schedule calendar view ([#7962](https://github.com/pymedusa/Medusa/pull/7962))
 - Fixed running Scheduler with specific start time ([#7963](https://github.com/pymedusa/Medusa/pull/7963))

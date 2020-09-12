@@ -777,7 +777,7 @@ def config_layout():
 
     section_data['posterSortdir'] = int(app.POSTER_SORTDIR or 0)
     section_data['themeName'] = app.THEME_NAME
-    section_data['animeSplitHomeInTabs'] = bool(app.ANIME_SPLIT_HOME_IN_TABS)
+    section_data['splitHomeInTabs'] = bool(app.ANIME_SPLIT_HOME_IN_TABS)
     section_data['animeSplitHome'] = bool(app.ANIME_SPLIT_HOME)
     section_data['fanartBackground'] = bool(app.FANART_BACKGROUND)
     section_data['fanartBackgroundOpacity'] = float(app.FANART_BACKGROUND_OPACITY or 0)

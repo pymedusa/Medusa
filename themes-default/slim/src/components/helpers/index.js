@@ -17,4 +17,5 @@ export { default as QualityPill } from './quality-pill.vue';
 export { default as ScrollButtons } from './scroll-buttons.vue';
 export { default as SelectList } from './select-list.vue';
 export { default as ShowSelector } from './show-selector.vue';
+export { default as SortedSelectList } from './sorted-select-list.vue';
 export { default as StateSwitch } from './state-switch.vue';

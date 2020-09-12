@@ -76,7 +76,7 @@ class ConfigHandler(BaseRequestHandler):
     #: path param
     path_param = ('path_param', r'\w+')
     #: allowed HTTP methods
-    allowed_methods = ('GET', 'PATCH', )
+    allowed_methods = ('GET', 'PATCH',)
     #: patch mapping
     patches = {
         # Main
@@ -460,8 +460,6 @@ class ConfigHandler(BaseRequestHandler):
         'layout.wide': BooleanField(app, 'LAYOUT_WIDE'),
         'layout.posterSortdir': IntegerField(app, 'POSTER_SORTDIR'),
         'layout.themeName': StringField(app, 'THEME_NAME', setter=theme_name_setter),
-        'layout.animeSplitHomeInTabs': BooleanField(app, 'ANIME_SPLIT_HOME'),
-        'layout.animeSplitHome': BooleanField(app, 'ANIME_SPLIT_HOME'),
         'layout.timezoneDisplay': StringField(app, 'TIMEZONE_DISPLAY'),
         'layout.trimZero': BooleanField(app, 'TRIM_ZERO'),
         'layout.sortArticle': BooleanField(app, 'SORT_ARTICLE'),
@@ -475,6 +473,15 @@ class ConfigHandler(BaseRequestHandler):
         'layout.timeStyle': StringField(app, 'TIME_PRESET_W_SECONDS'),
         'layout.dateStyle': StringField(app, 'DATE_PRESET'),
         'layout.selectedRootIndex': IntegerField(app, 'SELECTED_ROOT'),
+
+        'layout.animeSplitHome': BooleanField(app, 'ANIME_SPLIT_HOME'),
+        'layout.splitHomeInTabs': BooleanField(app, 'ANIME_SPLIT_HOME_IN_TABS'),
+
+        'anime.anidb.enabled': BooleanField(app, 'USE_ANIDB'),
+        'anime.anidb.username': StringField(app, 'ANIDB_USERNAME'),
+        'anime.anidb.password': StringField(app, 'ANIDB_PASSWORD'),
+        'anime.anidb.useMylist': BooleanField(app, 'ANIDB_USE_MYLIST'),
+        'anime.autoAnimeToList': BooleanField(app, 'AUTO_ANIME_TO_LIST')
     }
 
     def get(self, identifier, path_param=None):
@@ -545,11 +552,10 @@ class ConfigHandler(BaseRequestHandler):
         app.instance.save_config()
 
         # Push an update to any open Web UIs through the WebSocket
-        msg = ws.Message('configUpdated', {
+        ws.Message('configUpdated', {
             'section': identifier,
             'config': DataGenerator.get_data(identifier)
-        })
-        msg.push()
+        }).push()
 
         return self._ok(data=accepted)
 
@@ -1176,7 +1182,7 @@ class DataGenerator(object):
 
         section_data['posterSortdir'] = int(app.POSTER_SORTDIR or 0)
         section_data['themeName'] = app.THEME_NAME
-        section_data['animeSplitHomeInTabs'] = bool(app.ANIME_SPLIT_HOME_IN_TABS)
+        section_data['splitHomeInTabs'] = bool(app.ANIME_SPLIT_HOME_IN_TABS)
         section_data['animeSplitHome'] = bool(app.ANIME_SPLIT_HOME)
         section_data['fanartBackground'] = bool(app.FANART_BACKGROUND)
         section_data['fanartBackgroundOpacity'] = float(app.FANART_BACKGROUND_OPACITY or 0)
@@ -1202,3 +1208,16 @@ class DataGenerator(object):
         section_data['selectedRootIndex'] = int_default(app.SELECTED_ROOT, -1)  # All paths
 
         return section_data
+
+    @staticmethod
+    def data_anime():
+        """Anime configuration."""
+        return {
+            'anidb': {
+                'enabled': bool(app.USE_ANIDB),
+                'username': app.ANIDB_USERNAME,
+                'password': app.ANIDB_PASSWORD,
+                'useMylist': bool(app.ANIDB_USE_MYLIST)
+            },
+            'autoAnimeToList': bool(app.AUTO_ANIME_TO_LIST)
+        }

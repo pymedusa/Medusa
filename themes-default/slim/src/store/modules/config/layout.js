@@ -28,7 +28,7 @@ const state = {
     timeStyle: null,
     dateStyle: null,
     themeName: null,
-    animeSplitHomeInTabs: null,
+    splitHomeInTabs: null,
     animeSplitHome: null,
     fanartBackground: null,
     fanartBackgroundOpacity: null,
@@ -67,7 +67,7 @@ const mutations = {
 };
 
 const getters = {
-    fuzzyParseDateTime: state => airDate => {
+    fuzzyParseDateTime: state => (airDate, showSeconds = false) => {
         const timeAgo = new TimeAgo('en-US');
         const { dateStyle, fuzzyDating, timeStyle } = state;
 
@@ -83,8 +83,11 @@ const getters = {
             return new Date(airDate).toLocaleString();
         }
 
+        // Only the history page should show seconds.
+        const formatTimeStyle = showSeconds ? timeStyle : timeStyle.replace(':%S', '');
+
         const fdate = parseISO(airDate);
-        return formatDate(fdate, convertDateFormat(`${dateStyle} ${timeStyle}`));
+        return formatDate(fdate, convertDateFormat(`${dateStyle} ${formatTimeStyle}`));
     },
     getShowFilterByName: state => {
         return state.local.showFilterByName;
@@ -141,12 +144,12 @@ const actions = {
                 });
             });
     },
-    setShowListOrder(context, { value }) {
+    setLayoutShow(context, value) {
         const { commit } = context;
-        return api.patch('config/main', { layout: { show: { showListOrder: value } } })
+        return api.patch('config/main', { layout: { show: value } })
             .then(() => {
                 return commit(ADD_CONFIG, {
-                    section: 'layout', config: { show: { showListOrder: value } }
+                    section: 'layout', config: { show: value }
                 });
             });
     },
@@ -162,6 +165,15 @@ const actions = {
     setLayoutLocal(context, { key, value }) {
         const { commit } = context;
         return commit(UPDATE_LAYOUT_LOCAL, { [key]: value });
+    },
+    setBacklogOverview(context, { key, value }) {
+        const { commit } = context;
+        return api.patch('config/main', { layout: { backlogOverview: { [key]: value } } })
+            .then(() => {
+                return commit(ADD_CONFIG, {
+                    section: 'layout', config: { backlogOverview: { [key]: value } }
+                });
+            });
     }
 };
 
