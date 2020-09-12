@@ -86,7 +86,6 @@ class UTorrentAPI(GenericClient):
 
         if not self.response.status_code == 404:
             self.auth = re.findall('<div.*?>(.*?)</', self.response.text)[0]
-            self._torrent_properties('61D1730BDB405D3BFD0630E9C0EEAA7CDBC4632E')
             return self.auth
 
         return None

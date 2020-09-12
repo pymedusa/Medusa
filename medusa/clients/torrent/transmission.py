@@ -87,7 +87,6 @@ class TransmissionAPI(GenericClient):
         })
 
         self._request(method='post', data=post_data)
-        self._torrent_properties('b2710a116396a88eca5444887fd5568eecb889ce')
         return self.auth
 
     def _add_torrent_uri(self, result):
