@@ -36,7 +36,6 @@ import {
     ScrollButtons,
     SelectList,
     ShowSelector,
-    SnatchSelection,
     StateSwitch,
     Status,
     SubMenu
@@ -94,7 +93,6 @@ export const registerGlobalComponents = () => {
         History,
         ManualPostProcess,
         Schedule,
-        SnatchSelection,
         Status
     ]);
 

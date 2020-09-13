@@ -98,6 +98,7 @@
                     v-model="selectedShowLists"
                     :multiple="true"
                     :options="layout.show.showListOrder.map(list => list.toLowerCase())"
+                    @input="selectedShowLists = $event"
                 />
             </config-template>
 
@@ -178,7 +179,8 @@ export default {
             vm.selectedSubtitleEnabled,
             vm.selectedSeasonFoldersEnabled,
             vm.selectedSceneEnabled,
-            vm.selectedAnimeEnabled
+            vm.selectedAnimeEnabled,
+            vm.selectedShowLists
         ].join(), () => {
             this.update();
         });

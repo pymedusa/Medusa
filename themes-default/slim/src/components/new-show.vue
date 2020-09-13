@@ -25,47 +25,57 @@
                         </div>
                         <div v-else class="stepDiv">
                             <div class="row">
-                                <div class="col-lg-12 show-add-options">
-                                    <div class="show-add-option">
-                                        <input type="text" v-model.trim="nameToSearch" ref="nameToSearch" @keyup.enter="searchIndexers" class="form-control form-control-inline input-sm input350">
-                                    </div>
+                                <div class="col-lg-12">
+                                    <div class="row">
+                                        <div class="col-lg-12 show-add-options">
+                                            <div class="show-add-option">
+                                                <input type="text" v-model.trim="nameToSearch" ref="nameToSearch" @keyup.enter="searchIndexers" class="form-control form-control-inline input-sm input350">
+                                            </div>
 
-                                    <div class="show-add-option">
-                                        <language-select @update-language="indexerLanguage = $event"
-                                                         ref="indexerLanguage" :language="general.indexerDefaultLanguage"
-                                                         :available="indexers.main.validLanguages.join(',')"
-                                                         class="form-control form-control-inline input-sm"
-                                        />
-                                        <b>*</b>
-                                    </div>
+                                            <div class="show-add-option">
+                                                <language-select @update-language="indexerLanguage = $event"
+                                                                 ref="indexerLanguage" :language="general.indexerDefaultLanguage"
+                                                                 :available="indexers.main.validLanguages.join(',')"
+                                                                 class="form-control form-control-inline input-sm"
+                                                />
+                                                <b>*</b>
+                                            </div>
 
-                                    <div class="show-add-option">
-                                        <select v-model="indexerId" class="form-control form-control-inline input-sm">
-                                            <option v-for="option in indexerListOptions" :value="option.value" :key="option.value">
-                                                {{ option.text }}
-                                            </option>
-                                        </select>
-                                    </div>
+                                            <div class="show-add-option">
+                                                <select v-model="indexerId" class="form-control form-control-inline input-sm">
+                                                    <option v-for="option in indexerListOptions" :value="option.value" :key="option.value">
+                                                        {{ option.text }}
+                                                    </option>
+                                                </select>
+                                            </div>
 
-                                    <div class="show-add-option">
-                                        <input class="btn-medusa btn-inline" type="button" value="Search" @click="searchIndexers">
-                                    </div>
-
-                                    <div name="filter-exact-results">
-                                        <div class="">
-                                            <toggle-button :width="45" :height="22" v-model="searchExact" sync />
-                                            <p style="display: inline">Filter the results by exact string</p>
+                                            <div class="show-add-option">
+                                                <input class="btn-medusa btn-inline" type="button" value="Search" @click="searchIndexers">
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div style="display: inline-block">
-                                        <p style="padding: 20px 0;">
-                                            <b>*</b> This will only affect the language of the retrieved metadata file contents and episode filenames.<br>
-                                            This <b>DOES NOT</b> allow Medusa to download non-english TV episodes!
-                                        </p>
+                                    <div class="row">
+                                        <div class="col-lg-12">
+                                            <div name="filter-exact-results">
+                                                <div class="">
+                                                    <toggle-button :width="45" :height="22" v-model="searchExact" sync />
+                                                    <p style="display: inline">Filter the results by exact string</p>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
 
-
+                                    <div class="row">
+                                        <div class="col-lg-12">
+                                            <div style="display: inline-block">
+                                                <p style="padding: 20px 0;">
+                                                    <b>*</b> This will only affect the language of the retrieved metadata file contents and episode filenames.<br>
+                                                    This <b>DOES NOT</b> allow Medusa to download non-english TV episodes!
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -683,6 +693,7 @@ export default {
             this.selectedShowOptions.release.whitelist = options.release.whitelist;
             this.selectedShowOptions.quality.allowed = options.quality.allowed;
             this.selectedShowOptions.quality.preferred = options.quality.preferred;
+            this.selectedShowOptions.showLists = options.showLists;
         }
     },
     watch: {
