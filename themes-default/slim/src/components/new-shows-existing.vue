@@ -47,10 +47,11 @@
                                 <th>Directory</th>
                                 <th width="20%">Show Name (tvshow.nfo)</th>
                                 <th width="20%">Indexer</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(curDir, curDirIndex) in filteredDirList" :key="curDirIndex">
+                            <tr :ref="`curdirindex-${curDirIndex}`" v-for="(curDir, curDirIndex) in filteredDirList" :key="curDirIndex">
                                 <td class="col-checkbox">
                                     <input type="checkbox" v-model="curDir.selected" :value="curDir.path" class="seriesDirCheck">
                                 </td>
@@ -68,6 +69,9 @@
                                         <option v-for="indexer in Object.values(indexers.indexers)" :key="indexer.id" :value="indexer.id">{{indexer.name}}</option>
                                     </select>
                                 </td>
+                                <td align="center">
+                                    <button type="button" class="btn-medusa btn-inline" @click="manualAddNewShow($event, curDirIndex)">Add</button>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -83,9 +87,10 @@
 <script>
 import { mapState } from 'vuex';
 import RootDirs from './root-dirs.vue';
-import { AddShowOptions } from '.';
+import { AddShowOptions, NewShow } from '.';
 import { AppLink } from './helpers';
 import { api, apiRoute } from '../api';
+import VgtHeaderRowVue from '../../../../../../../vue-good-table/src/components/VgtHeaderRow.vue';
 
 export default {
     components: {
@@ -121,7 +126,8 @@ export default {
                     preferred: []
                 },
                 showLists: []
-            }
+            },
+            addShowComponents: [] // An array of mounted new-show.vue components.
         };
     },
     mounted() {
@@ -341,6 +347,58 @@ export default {
             this.presetShowOptions.quality.allowed = options.quality.allowed;
             this.presetShowOptions.quality.preferred = options.quality.preferred;
             this.presetShowOptions.showLists = options.showLists;
+        },
+        /**
+         * Mount the new-show.vue component and provide nfo info if available.
+         * @param {object} event - Triggered event
+         * @param {number} curDirIndex - Index of the looped filteredDirList array.
+         */
+        manualAddNewShow(event, curDirIndex) {
+            const { addShowComponents, filteredDirList } = this;
+
+            const curDir = filteredDirList[curDirIndex];
+            const providedInfo = {
+                use: false,
+                showId: 0,
+                showName: '',
+                showDir: curDir.path,
+                indexerId: 0,
+                indexerLanguage: 'en'
+            };
+
+            if (curDir.metadata.indexer) {
+                providedInfo.indexerId = curDir.metadata.indexer;
+            }
+
+            if (curDir.metadata.seriesId) {
+                providedInfo.showId = curDir.metadata.seriesId;
+            }
+
+            if (curDir.metadata.seriesName) {
+                providedInfo.showName = curDir.metadata.seriesName;
+            }
+
+            providedInfo.use = providedInfo.indexerId !== 0 && providedInfo.showId !== 0 && providedInfo.showName;
+
+            const NewShowClass = Vue.extend(NewShow); // eslint-disable-line no-undef
+            const instance = new NewShowClass({
+                propsData: { providedInfo },
+                parent: this
+            });
+
+            // Need these, because we want it to span the width of the parent table row.
+            const row = document.createElement('tr');
+            row.style.columnSpan = 'all';
+            const cell = document.createElement('td');
+            cell.setAttribute('colspan', '9999');
+
+            const wrapper = document.createElement('div'); // Just used to mount on.
+            row.append(cell);
+            cell.append(wrapper);
+            this.$refs[`curdirindex-${curDirIndex}`][0].after(row);
+
+            instance.$mount(wrapper);
+            addShowComponents.push(instance);
         }
     },
     watch: {

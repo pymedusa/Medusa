@@ -1,160 +1,161 @@
 <template>
     <div class="newShowPortal">
-        <div id="config-components">
-            <ul><li><app-link href="#core-component-group1">Add New Show</app-link></li></ul>
-            <div id="core-component-group1" class="tab-pane active component-group">
-                <div id="displayText">Adding show <b v-html="showName" /> {{showPathPreposition}} <b v-html="showPath" /></div>
-                <br>
-                <form id="addShowForm" @submit.prevent="">
-                    <fieldset class="sectionwrap">
-                        <legend class="legendStep">Find a show on selected indexer(s)</legend>
-                        <div v-if="providedInfo.use" class="stepDiv">
-                            Show retrieved from existing metadata:
-                            <span v-if="providedInfo.indexerId !== 0 && providedInfo.showId !== 0">
-                                <app-link :href="indexers[providedInfo.indexerId].showUrl + providedInfo.showId.toString()">
+        <vue-tabs>
+            <v-tab key="add_new_show" title="Add New Show">
+                <div id="core-component-group1" class="tab-pane active component-group">
+                    <div id="displayText">Adding show <b v-html="showName" /> {{showPathPreposition}} <b v-html="showPath" /></div>
+                    <br>
+                    <form id="addShowForm" @submit.prevent="">
+                        <fieldset class="sectionwrap">
+                            <legend class="legendStep">Find a show on selected indexer(s)</legend>
+                            <div v-if="providedInfo.use" class="stepDiv">
+                                Show retrieved from existing metadata:
+                                <span v-if="providedInfo.indexerId !== 0 && providedInfo.showId !== 0">
+                                    <app-link :href="`${getIndexer(providedInfo.indexerId).showUrl}${providedInfo.showId}`">
+                                        <b>{{ providedInfo.showName }}</b>
+                                    </app-link>
+                                    <br>
+                                    Show indexer:
+                                    <b>{{ getIndexer(providedInfo.indexerId).name }}</b>
+                                    <img height="16" width="16" :src="`images/'${getIndexer(providedInfo.indexerId).icon}`">
+                                </span>
+                                <span v-else>
                                     <b>{{ providedInfo.showName }}</b>
-                                </app-link>
-                                <br>
-                                Show indexer:
-                                <b>{{ indexers[providedInfo.indexerId].name }}</b>
-                                <img height="16" width="16" :src="'images/' + indexers[providedInfo.indexerId].icon">
-                            </span>
-                            <span v-else>
-                                <b>{{ providedInfo.showName }}</b>
-                            </span>
-                        </div>
-                        <div v-else class="stepDiv">
-                            <div class="row">
-                                <div class="col-lg-12">
-                                    <div class="row">
-                                        <div class="col-lg-12 show-add-options">
-                                            <div class="show-add-option">
-                                                <input type="text" v-model.trim="nameToSearch" ref="nameToSearch" @keyup.enter="searchIndexers" class="form-control form-control-inline input-sm input350">
-                                            </div>
+                                </span>
+                            </div>
+                            <div v-else class="stepDiv">
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <div class="row">
+                                            <div class="col-lg-12 show-add-options">
+                                                <div class="show-add-option">
+                                                    <input type="text" v-model.trim="nameToSearch" ref="nameToSearch" @keyup.enter="searchIndexers" class="form-control form-control-inline input-sm input350">
+                                                </div>
 
-                                            <div class="show-add-option">
-                                                <language-select @update-language="indexerLanguage = $event"
-                                                                 ref="indexerLanguage" :language="general.indexerDefaultLanguage"
-                                                                 :available="indexers.main.validLanguages.join(',')"
-                                                                 class="form-control form-control-inline input-sm"
-                                                />
-                                                <b>*</b>
-                                            </div>
+                                                <div class="show-add-option">
+                                                    <language-select @update-language="indexerLanguage = $event"
+                                                                     ref="indexerLanguage" :language="general.indexerDefaultLanguage"
+                                                                     :available="indexers.main.validLanguages.join(',')"
+                                                                     class="form-control form-control-inline input-sm"
+                                                    />
+                                                    <b>*</b>
+                                                </div>
 
-                                            <div class="show-add-option">
-                                                <select v-model="indexerId" class="form-control form-control-inline input-sm">
-                                                    <option v-for="option in indexerListOptions" :value="option.value" :key="option.value">
-                                                        {{ option.text }}
-                                                    </option>
-                                                </select>
-                                            </div>
+                                                <div class="show-add-option">
+                                                    <select v-model="indexerId" class="form-control form-control-inline input-sm">
+                                                        <option v-for="option in indexerListOptions" :value="option.value" :key="option.value">
+                                                            {{ option.text }}
+                                                        </option>
+                                                    </select>
+                                                </div>
 
-                                            <div class="show-add-option">
-                                                <input class="btn-medusa btn-inline" type="button" value="Search" @click="searchIndexers">
+                                                <div class="show-add-option">
+                                                    <input class="btn-medusa btn-inline" type="button" value="Search" @click="searchIndexers">
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    <div class="row">
-                                        <div class="col-lg-12">
-                                            <div name="filter-exact-results">
-                                                <div class="">
-                                                    <toggle-button :width="45" :height="22" v-model="searchExact" sync />
-                                                    <p style="display: inline">Filter the results by exact string</p>
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div name="filter-exact-results">
+                                                    <div class="">
+                                                        <toggle-button :width="45" :height="22" v-model="searchExact" sync />
+                                                        <p style="display: inline">Filter the results by exact string</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div style="display: inline-block">
+                                                    <p style="padding: 20px 0;">
+                                                        <b>*</b> This will only affect the language of the retrieved metadata file contents and episode filenames.<br>
+                                                        This <b>DOES NOT</b> allow Medusa to download non-english TV episodes!
+                                                    </p>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
+                                </div>
 
-                                    <div class="row">
-                                        <div class="col-lg-12">
-                                            <div style="display: inline-block">
-                                                <p style="padding: 20px 0;">
-                                                    <b>*</b> This will only affect the language of the retrieved metadata file contents and episode filenames.<br>
-                                                    This <b>DOES NOT</b> allow Medusa to download non-english TV episodes!
-                                                </p>
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <div v-show="displayStatus === 'searching'">
+                                            <img :src="spinnerSrc" height="32" width="32">
+                                            Searching <b>{{ currentSearch.query }}</b>
+                                            on {{ currentSearch.indexerName }}
+                                            in {{ currentSearch.languageName }}...
+                                        </div>
+                                        <div v-if="displayStatus === 'results'" class="search-results">
+                                            <legend class="legendStep">Search Results:</legend>
+                                            <table v-if="filteredSearchResults.length !== 0" class="search-results">
+                                                <thead>
+                                                    <tr>
+                                                        <th />
+                                                        <th>Show Name</th>
+                                                        <th class="premiere">Premiere</th>
+                                                        <th class="network">Network</th>
+                                                        <th class="indexer">Indexer</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr v-for="result in filteredSearchResults" :key="result.slug" @click="selectResult(result)" :class="{ selected: selectedShowSlug === result.slug }">
+                                                        <td class="search-result">
+                                                            <input v-if="!result.alreadyAdded" v-model="selectedShowSlug" type="radio" :value="result.slug">
+                                                            <app-link v-else :href="result.alreadyAdded" title="Show already added - jump to show page">
+                                                                <img height="16" width="16" src="images/ico/favicon-16.png">
+                                                            </app-link>
+                                                        </td>
+                                                        <td>
+                                                            <app-link :href="result.indexerShowUrl" title="Go to the show's page on the indexer site">
+                                                                <b>{{ result.showName }}</b>
+                                                            </app-link>
+                                                        </td>
+                                                        <td class="premiere">{{ result.premiereDate }}</td>
+                                                        <td class="network">{{ result.network }}</td>
+                                                        <td class="indexer">
+                                                            {{ result.indexerName }}
+                                                            <img height="16" width="16" :src="result.indexerIcon">
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <div v-else class="no-results">
+                                                <b>No results found, try a different search.</b>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div class="row">
-                                <div class="col-lg-12">
-                                    <div v-show="displayStatus === 'searching'">
-                                        <img :src="spinnerSrc" height="32" width="32">
-                                        Searching <b>{{ currentSearch.query }}</b>
-                                        on {{ currentSearch.indexerName }}
-                                        in {{ currentSearch.languageName }}...
-                                    </div>
-                                    <div v-if="displayStatus === 'results'" class="search-results">
-                                        <legend class="legendStep">Search Results:</legend>
-                                        <table v-if="filteredSearchResults.length !== 0" class="search-results">
-                                            <thead>
-                                                <tr>
-                                                    <th />
-                                                    <th>Show Name</th>
-                                                    <th class="premiere">Premiere</th>
-                                                    <th class="network">Network</th>
-                                                    <th class="indexer">Indexer</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr v-for="result in filteredSearchResults" :key="result.slug" @click="selectResult(result)" :class="{ selected: selectedShowSlug === result.slug }">
-                                                    <td class="search-result">
-                                                        <input v-if="!result.alreadyAdded" v-model="selectedShowSlug" type="radio" :value="result.slug">
-                                                        <app-link v-else :href="result.alreadyAdded" title="Show already added - jump to show page">
-                                                            <img height="16" width="16" src="images/ico/favicon-16.png">
-                                                        </app-link>
-                                                    </td>
-                                                    <td>
-                                                        <app-link :href="result.indexerShowUrl" title="Go to the show's page on the indexer site">
-                                                            <b>{{ result.showName }}</b>
-                                                        </app-link>
-                                                    </td>
-                                                    <td class="premiere">{{ result.premiereDate }}</td>
-                                                    <td class="network">{{ result.network }}</td>
-                                                    <td class="indexer">
-                                                        {{ result.indexerName }}
-                                                        <img height="16" width="16" :src="result.indexerIcon">
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                        <div v-else class="no-results">
-                                            <b>No results found, try a different search.</b>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
-
-                        </div>
-                    </fieldset>
-                    <fieldset class="sectionwrap">
-                        <legend class="legendStep">Pick the parent folder</legend>
-                        <div v-if="providedInfo.showDir" class="stepDiv">
-                            Pre-chosen Destination Folder: <b>{{ providedInfo.showDir }}</b><br>
-                        </div>
-                        <div v-else class="stepDiv">
-                            <root-dirs @update="rootDirsUpdated" />
-                        </div>
-                    </fieldset>
-                    <fieldset class="sectionwrap">
-                        <legend class="legendStep">Customize options</legend>
-                        <div class="stepDiv">
-                            <add-show-options v-bind="{showName, enableAnimeOptions}" @change="updateOptions" @refresh="refreshOptionStep" />
-                        </div>
-                    </fieldset>
-                </form>
-                <br>
-                <div style="width: 100%; text-align: center;">
-                    <input @click.prevent="submitForm" class="btn-medusa" type="button" value="Add Show" :disabled="addButtonDisabled">
-                    <!-- <input v-if="skipShowVisible" @click.prevent="submitForm(true);" class="btn-medusa" type="button" value="Skip Show">
-                    <p v-if="otherShows.length !== 0"><i>({{ otherShows.length }} more {{ otherShows.length > 1 ? 'shows' : 'show' }} left)</i></p>
-                    <p v-else-if="skipShowVisible"><i>(last show)</i></p> -->
+                        </fieldset>
+                        <fieldset class="sectionwrap">
+                            <legend class="legendStep">Pick the parent folder</legend>
+                            <div v-if="providedInfo.showDir" class="stepDiv">
+                                Pre-chosen Destination Folder: <b>{{ providedInfo.showDir }}</b><br>
+                            </div>
+                            <div v-else class="stepDiv">
+                                <root-dirs @update="rootDirsUpdated" />
+                            </div>
+                        </fieldset>
+                        <fieldset class="sectionwrap">
+                            <legend class="legendStep">Customize options</legend>
+                            <div class="stepDiv">
+                                <add-show-options v-bind="{showName, enableAnimeOptions}" @change="updateOptions" @refresh="refreshOptionStep" />
+                            </div>
+                        </fieldset>
+                    </form>
+                    <br>
+                    <div style="width: 100%; text-align: center;">
+                        <input @click.prevent="submitForm" class="btn-medusa" type="button" value="Add Show" :disabled="addButtonDisabled">
+                        <!-- <input v-if="skipShowVisible" @click.prevent="submitForm(true);" class="btn-medusa" type="button" value="Skip Show">
+                        <p v-if="otherShows.length !== 0"><i>({{ otherShows.length }} more {{ otherShows.length > 1 ? 'shows' : 'show' }} left)</i></p>
+                        <p v-else-if="skipShowVisible"><i>(last show)</i></p> -->
+                    </div>
                 </div>
-            </div>
-        </div>
+            </v-tab>
+        </vue-tabs>
     </div>
 </template>
 <script>
@@ -165,6 +166,7 @@ import { AddShowOptions } from '.';
 import { AppLink, LanguageSelect } from './helpers';
 import { api, apiRoute } from '../api';
 import axios from 'axios';
+import { VueTabs, VTab } from 'vue-nav-tabs/dist/vue-tabs.js';
 
 export default {
     name: 'new-show',
@@ -173,20 +175,33 @@ export default {
         AppLink,
         ToggleButton,
         LanguageSelect,
-        RootDirs
+        RootDirs,
+        VueTabs,
+        VTab
+    },
+    props: {
+        providedInfo: {
+            default() {
+                return {
+                    use: false,
+                    showId: null,
+                    showName: '',
+                    showDir: '',
+                    indexerId: '',
+                    indexerLanguage: 'en'
+                };
+            }
+        }
     },
     data() {
         return {
             // @TODO: Fix Python conversions
             formwizard: null,
-            // otherShows: ${json.dumps(other_shows)},
 
             // Show Search
             searchStatus: '',
             searchResults: [],
             searchExact: false,
-            // indexers: ${json.dumps(valid_indexers)},
-            // validLanguages: ${json.dumps(indexerApi().config['valid_languages'])},
             nameToSearch: '', //'${json.dumps(default_show_name)},'
             indexerId: 0,
             indexerLanguage: null,
@@ -198,14 +213,14 @@ export default {
             },
 
             // Provided info used for pre configuring a search, when using it to add from existing.
-            providedInfo: {
-                use: false,
-                showId: null,
-                showName: '',
-                showDir: '',
-                indexerId: '',
-                indexerLanguage: 'en'
-            },
+            // providedInfo: {
+            //     use: false,
+            //     showId: null,
+            //     showName: '',
+            //     showDir: '',
+            //     indexerId: '',
+            //     indexerLanguage: 'en'
+            // },
 
             selectedRootDir: '',
             selectedShowSlug: '',
@@ -273,6 +288,9 @@ export default {
 
         // Set default indexer language.
         this.indexerLanguage = general.indexerDefaultLanguage;
+
+        // Set the default show name, if provided through show dir or show name.
+        this.nameToSearch = this.defaultShowName;
     },
     computed: {
         ...mapState({
@@ -325,7 +343,7 @@ export default {
         showPath() {
             const {
                 selectedRootDir,
-                // providedInfo,
+                providedInfo,
                 selectedShow } = this;
 
             const appendSepChar = path => {
@@ -343,11 +361,10 @@ export default {
 
             let showPath = 'unknown dir';
             // If we provided a show path, use that
-            // if (providedInfo.showDir) {
-            //     showPath = appendSepChar(providedInfo.showDir);
+            if (providedInfo.showDir) {
+                showPath = appendSepChar(providedInfo.showDir);
             // If we have a root dir selected, figure out the path
-            // } else
-            if (selectedRootDir) {
+            } else if (selectedRootDir) {
                 showPath = appendSepChar(selectedRootDir);
                 // If we have a show selected, use the sanitized name
                 const dirName = selectedShow ? selectedShow.sanitizedName : '??';
@@ -356,8 +373,7 @@ export default {
             return showPath;
         },
         showPathPreposition() {
-            // return this.providedInfo.showDir ? 'from' : 'into';
-            return 'into';
+            return this.providedInfo.showDir ? 'from' : 'into';
         },
         spinnerSrc() {
             const { layout } = this;
@@ -386,6 +402,22 @@ export default {
 
             const indexerOptions = Object.values(indexers.indexers).map(indexer => ({ value: indexer.id, text: indexer.name }));
             return [...allIndexers, ...indexerOptions];
+        },
+        defaultShowName() {
+            // Moved this logic from add_shows.py.
+            const { providedInfo } = this;
+            if (providedInfo.showName) {
+                return providedInfo.showName;
+            }
+
+            if (providedInfo.showDir) {
+                // Try to get a show name from the show dir.
+                const titleWithoutYear = providedInfo.showDir.replace(/\d{4}/gi, '');
+                titleWithoutYear.split(/[/\\]/).pop();
+                return titleWithoutYear;
+            }
+
+            return '';
         }
     },
     methods: {
@@ -694,6 +726,18 @@ export default {
             this.selectedShowOptions.quality.allowed = options.quality.allowed;
             this.selectedShowOptions.quality.preferred = options.quality.preferred;
             this.selectedShowOptions.showLists = options.showLists;
+        },
+        /**
+         * Helper to get the indexer object.
+         * @param {number} indexerId - indexers id
+         * @return {string} - The indexers base showUrl.
+         */
+        getIndexer(indexerId) {
+            const { indexers } = this;
+            if (!indexerId) {
+                return;
+            }
+            return Object.values(indexers.indexers).find(indexer => indexer.id === indexerId);
         }
     },
     watch: {

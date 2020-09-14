@@ -826,8 +826,8 @@ export default {
             });
 
             const node = document.createElement('div');
-            const subtitleRef = episode.season === 0 ? 'table-specials' : 'table-seasons';
-            this.$refs[subtitleRef].$refs[`row-${episode.originalIndex}`][0].after(node);
+            const tableRef = episode.season === 0 ? 'table-specials' : 'table-seasons';
+            this.$refs[tableRef].$refs[`row-${episode.originalIndex}`][0].after(node);
             instance.$mount(node);
             subtitleSearchComponents.push(instance);
         },
