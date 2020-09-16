@@ -12470,6 +12470,11 @@ vue-eslint-parser@^7.0.0:
     esquery "^1.0.1"
     lodash "^4.17.15"
 
+vue-form-wizard@0.8.4:
+  version "0.8.4"
+  resolved "https://registry.yarnpkg.com/vue-form-wizard/-/vue-form-wizard-0.8.4.tgz#ddf864c9709b7ba2a6323f59e5d6d17536b7800e"
+  integrity sha512-/Zk1+B7bz7qHFJ16mwu021lpPXWf/9Tlr2mTNG3J7M0Hdy3rgA802lWsbKYySns0B0qtsD8BYGjQ2Wyxgg+4uw==
+
 vue-good-table@p0psicles/vue-good-table#123464621c79f503224c2c2e363f8fca43c67c0d:
   version "2.19.3"
   resolved "https://codeload.github.com/p0psicles/vue-good-table/tar.gz/123464621c79f503224c2c2e363f8fca43c67c0d"

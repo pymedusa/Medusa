@@ -5,146 +5,158 @@
                 <div id="core-component-group1" class="tab-pane active component-group">
                     <div id="displayText">Adding show <b v-html="showName" /> {{showPathPreposition}} <b v-html="showPath" /></div>
                     <br>
+
                     <form id="addShowForm" @submit.prevent="">
-                        <fieldset class="sectionwrap">
-                            <legend class="legendStep">Find a show on selected indexer(s)</legend>
-                            <div v-if="providedInfo.use" class="stepDiv">
-                                Show retrieved from existing metadata:
-                                <span v-if="providedInfo.indexerId !== 0 && providedInfo.showId !== 0">
-                                    <app-link :href="`${getIndexer(providedInfo.indexerId).showUrl}${providedInfo.showId}`">
+
+                        <form-wizard ref="formwizard" class="formwizard" title="" subtitle="" @change="updateFormWizardStep">
+                             <template slot="step" scope="props">
+                                <!-- <wizard-step :tab="props.tab"
+                                    :transition="props.transition"
+                                    :key="props.tab.title"
+                                    :index="props.index">
+                                </wizard-step> -->
+                                <div class="step" :class="{disabledstep: !props.tab.active}" @click="navigateStep(props.index)">
+                                    Step {{props.index + 1}}<div class="smalltext">{{props.tab.title}}</div>
+                                </div>
+
+                            </template>
+                            <tab-content title="Find a show on selected indexer(s)">
+                                <div v-if="providedInfo.use" class="stepDiv">
+                                    Show retrieved from existing metadata:
+                                    <span v-if="providedInfo.indexerId !== 0 && providedInfo.showId !== 0">
+                                        <app-link :href="`${getIndexer(providedInfo.indexerId).showUrl}${providedInfo.showId}`">
+                                            <b>{{ providedInfo.showName }}</b>
+                                        </app-link>
+                                        <br>
+                                        Show indexer:
+                                        <b>{{ getIndexer(providedInfo.indexerId).name }}</b>
+                                        <img height="16" width="16" :src="`images/'${getIndexer(providedInfo.indexerId).icon}`">
+                                    </span>
+                                    <span v-else>
                                         <b>{{ providedInfo.showName }}</b>
-                                    </app-link>
-                                    <br>
-                                    Show indexer:
-                                    <b>{{ getIndexer(providedInfo.indexerId).name }}</b>
-                                    <img height="16" width="16" :src="`images/'${getIndexer(providedInfo.indexerId).icon}`">
-                                </span>
-                                <span v-else>
-                                    <b>{{ providedInfo.showName }}</b>
-                                </span>
-                            </div>
-                            <div v-else class="stepDiv">
-                                <div class="row">
-                                    <div class="col-lg-12">
-                                        <div class="row">
-                                            <div class="col-lg-12 show-add-options">
-                                                <div class="show-add-option">
-                                                    <input type="text" v-model.trim="nameToSearch" ref="nameToSearch" @keyup.enter="searchIndexers" class="form-control form-control-inline input-sm input350">
-                                                </div>
+                                    </span>
+                                </div>
+                                <div v-else class="stepDiv">
+                                    <div class="row">
+                                        <div class="col-lg-12">
+                                            <div class="row">
+                                                <div class="col-lg-12 show-add-options">
+                                                    <div class="show-add-option">
+                                                        <input type="text" v-model.trim="nameToSearch" ref="nameToSearch" @keyup.enter="searchIndexers" class="form-control form-control-inline input-sm input350">
+                                                    </div>
 
-                                                <div class="show-add-option">
-                                                    <language-select @update-language="indexerLanguage = $event"
-                                                                     ref="indexerLanguage" :language="general.indexerDefaultLanguage"
-                                                                     :available="indexers.main.validLanguages.join(',')"
-                                                                     class="form-control form-control-inline input-sm"
-                                                    />
-                                                    <b>*</b>
-                                                </div>
+                                                    <div class="show-add-option">
+                                                        <language-select @update-language="indexerLanguage = $event"
+                                                                         ref="indexerLanguage" :language="general.indexerDefaultLanguage"
+                                                                         :available="indexers.main.validLanguages.join(',')"
+                                                                         class="form-control form-control-inline input-sm"
+                                                        />
+                                                        <b>*</b>
+                                                    </div>
 
-                                                <div class="show-add-option">
-                                                    <select v-model="indexerId" class="form-control form-control-inline input-sm">
-                                                        <option v-for="option in indexerListOptions" :value="option.value" :key="option.value">
-                                                            {{ option.text }}
-                                                        </option>
-                                                    </select>
-                                                </div>
+                                                    <div class="show-add-option">
+                                                        <select v-model="indexerId" class="form-control form-control-inline input-sm">
+                                                            <option v-for="option in indexerListOptions" :value="option.value" :key="option.value">
+                                                                {{ option.text }}
+                                                            </option>
+                                                        </select>
+                                                    </div>
 
-                                                <div class="show-add-option">
-                                                    <input class="btn-medusa btn-inline" type="button" value="Search" @click="searchIndexers">
+                                                    <div class="show-add-option">
+                                                        <input class="btn-medusa btn-inline" type="button" value="Search" @click="searchIndexers">
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div name="filter-exact-results">
-                                                    <div class="">
-                                                        <toggle-button :width="45" :height="22" v-model="searchExact" sync />
-                                                        <p style="display: inline">Filter the results by exact string</p>
+                                            <div class="row">
+                                                <div class="col-lg-12">
+                                                    <div name="filter-exact-results">
+                                                        <div class="">
+                                                            <toggle-button :width="45" :height="22" v-model="searchExact" sync />
+                                                            <p style="display: inline">Filter the results by exact string</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-lg-12">
+                                                    <div style="display: inline-block">
+                                                        <p style="padding: 20px 0;">
+                                                            <b>*</b> This will only affect the language of the retrieved metadata file contents and episode filenames.<br>
+                                                            This <b>DOES NOT</b> allow Medusa to download non-english TV episodes!
+                                                        </p>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>
 
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div style="display: inline-block">
-                                                    <p style="padding: 20px 0;">
-                                                        <b>*</b> This will only affect the language of the retrieved metadata file contents and episode filenames.<br>
-                                                        This <b>DOES NOT</b> allow Medusa to download non-english TV episodes!
-                                                    </p>
+                                    <div class="row">
+                                        <div class="col-lg-12">
+                                            <div v-show="displayStatus === 'searching'">
+                                                <img :src="spinnerSrc" height="32" width="32">
+                                                Searching <b>{{ currentSearch.query }}</b>
+                                                on {{ currentSearch.indexerName }}
+                                                in {{ currentSearch.languageName }}...
+                                            </div>
+                                            <div v-if="displayStatus === 'results'" class="search-results">
+                                                <legend class="legendStep">Search Results:</legend>
+                                                <table v-if="filteredSearchResults.length !== 0" class="search-results">
+                                                    <thead>
+                                                        <tr>
+                                                            <th />
+                                                            <th>Show Name</th>
+                                                            <th class="premiere">Premiere</th>
+                                                            <th class="network">Network</th>
+                                                            <th class="indexer">Indexer</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr v-for="result in filteredSearchResults" :key="result.slug" @click="selectResult(result)" :class="{ selected: selectedShowSlug === result.slug }">
+                                                            <td class="search-result">
+                                                                <input v-if="!result.alreadyAdded" v-model="selectedShowSlug" type="radio" :value="result.slug">
+                                                                <app-link v-else :href="result.alreadyAdded" title="Show already added - jump to show page">
+                                                                    <img height="16" width="16" src="images/ico/favicon-16.png">
+                                                                </app-link>
+                                                            </td>
+                                                            <td>
+                                                                <app-link :href="result.indexerShowUrl" title="Go to the show's page on the indexer site">
+                                                                    <b>{{ result.showName }}</b>
+                                                                </app-link>
+                                                            </td>
+                                                            <td class="premiere">{{ result.premiereDate }}</td>
+                                                            <td class="network">{{ result.network }}</td>
+                                                            <td class="indexer">
+                                                                {{ result.indexerName }}
+                                                                <img height="16" width="16" :src="result.indexerIcon">
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                                <div v-else class="no-results">
+                                                    <b>No results found, try a different search.</b>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <div class="row">
-                                    <div class="col-lg-12">
-                                        <div v-show="displayStatus === 'searching'">
-                                            <img :src="spinnerSrc" height="32" width="32">
-                                            Searching <b>{{ currentSearch.query }}</b>
-                                            on {{ currentSearch.indexerName }}
-                                            in {{ currentSearch.languageName }}...
-                                        </div>
-                                        <div v-if="displayStatus === 'results'" class="search-results">
-                                            <legend class="legendStep">Search Results:</legend>
-                                            <table v-if="filteredSearchResults.length !== 0" class="search-results">
-                                                <thead>
-                                                    <tr>
-                                                        <th />
-                                                        <th>Show Name</th>
-                                                        <th class="premiere">Premiere</th>
-                                                        <th class="network">Network</th>
-                                                        <th class="indexer">Indexer</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr v-for="result in filteredSearchResults" :key="result.slug" @click="selectResult(result)" :class="{ selected: selectedShowSlug === result.slug }">
-                                                        <td class="search-result">
-                                                            <input v-if="!result.alreadyAdded" v-model="selectedShowSlug" type="radio" :value="result.slug">
-                                                            <app-link v-else :href="result.alreadyAdded" title="Show already added - jump to show page">
-                                                                <img height="16" width="16" src="images/ico/favicon-16.png">
-                                                            </app-link>
-                                                        </td>
-                                                        <td>
-                                                            <app-link :href="result.indexerShowUrl" title="Go to the show's page on the indexer site">
-                                                                <b>{{ result.showName }}</b>
-                                                            </app-link>
-                                                        </td>
-                                                        <td class="premiere">{{ result.premiereDate }}</td>
-                                                        <td class="network">{{ result.network }}</td>
-                                                        <td class="indexer">
-                                                            {{ result.indexerName }}
-                                                            <img height="16" width="16" :src="result.indexerIcon">
-                                                        </td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                            <div v-else class="no-results">
-                                                <b>No results found, try a different search.</b>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
-
-                            </div>
-                        </fieldset>
-                        <fieldset class="sectionwrap">
-                            <legend class="legendStep">Pick the parent folder</legend>
-                            <div v-if="providedInfo.showDir" class="stepDiv">
-                                Pre-chosen Destination Folder: <b>{{ providedInfo.showDir }}</b><br>
-                            </div>
-                            <div v-else class="stepDiv">
-                                <root-dirs @update="rootDirsUpdated" />
-                            </div>
-                        </fieldset>
-                        <fieldset class="sectionwrap">
-                            <legend class="legendStep">Customize options</legend>
-                            <div class="stepDiv">
-                                <add-show-options v-bind="{showName, enableAnimeOptions}" @change="updateOptions" @refresh="refreshOptionStep" />
-                            </div>
-                        </fieldset>
+                            </tab-content>
+                            <tab-content title="Pick the parent folder">
+                                <div v-if="providedInfo.showDir" class="stepDiv">
+                                    Pre-chosen Destination Folder: <b>{{ providedInfo.showDir }}</b><br>
+                                </div>
+                                <div v-else class="stepDiv">
+                                    <root-dirs @update="rootDirsUpdated" />
+                                </div>
+                            </tab-content>
+                            <tab-content title="Customize options">
+                                <div class="stepDiv">
+                                    <add-show-options v-bind="{showName, enableAnimeOptions}" @change="updateOptions" @refresh="refreshOptionStep" />
+                                </div>
+                            </tab-content>
+                        </form-wizard>
                     </form>
                     <br>
                     <div style="width: 100%; text-align: center;">
@@ -167,12 +179,15 @@ import { AppLink, LanguageSelect } from './helpers';
 import { api, apiRoute } from '../api';
 import axios from 'axios';
 import { VueTabs, VTab } from 'vue-nav-tabs/dist/vue-tabs.js';
+import { FormWizard, TabContent } from 'vue-form-wizard'
 
 export default {
     name: 'new-show',
     components: {
         AddShowOptions,
         AppLink,
+        FormWizard,
+        TabContent,
         ToggleButton,
         LanguageSelect,
         RootDirs,
@@ -195,8 +210,11 @@ export default {
     },
     data() {
         return {
-            // @TODO: Fix Python conversions
-            formwizard: null,
+            // Vueified jquery formwizard
+            formwizard: {
+                ref: null,
+                currentIndex: 0
+            },
 
             // Show Search
             searchStatus: '',
@@ -244,41 +262,41 @@ export default {
         };
     },
     mounted() {
-        const init = () => {
-            this.$watch('formwizard.currentsection', newValue => {
-                if (newValue === 0 && this.$refs.nameToSearch) {
-                    this.$refs.nameToSearch.focus();
-                }
-            });
+        // const init = () => {
+        //     this.$watch('formwizard.currentsection', newValue => {
+        //         if (newValue === 0 && this.$refs.nameToSearch) {
+        //             this.$refs.nameToSearch.focus();
+        //         }
+        //     });
 
-            setTimeout(() => {
-                const { providedInfo } = this;
-                const { use, showId, showDir } = providedInfo;
-                if (use && showId !== 0 && showDir) {
-                    this.formwizard.loadsection(2);
-                }
-            }, 100);
+        //     setTimeout(() => {
+        //         const { providedInfo } = this;
+        //         const { use, showId, showDir } = providedInfo;
+        //         if (use && showId !== 0 && showDir) {
+        //             this.formwizard.loadsection(2);
+        //         }
+        //     }, 100);
 
-            setTimeout(() => {
-                if (this.$refs.nameToSearch) {
-                    this.$refs.nameToSearch.focus();
+        //     setTimeout(() => {
+        //         if (this.$refs.nameToSearch) {
+        //             this.$refs.nameToSearch.focus();
 
-                    if (this.nameToSearch) {
-                        this.searchIndexers();
-                    }
-                }
-            }, this.formwizard.setting.revealfx[1]);
-        };
+        //             if (this.nameToSearch) {
+        //                 this.searchIndexers();
+        //             }
+        //         }
+        //     }, this.formwizard.setting.revealfx[1]);
+        // };
 
         /* JQuery Form to Form Wizard- (c) Dynamic Drive (www.dynamicdrive.com)
         *  This notice MUST stay intact for legal use
         *  Visit http://www.dynamicdrive.com/ for this script and 100s more. */
         // @TODO: we need to move to real forms instead of this
-        this.formwizard = new formtowizard({ // eslint-disable-line new-cap, no-undef
-            formid: 'addShowForm',
-            revealfx: ['slide', 300],
-            oninit: init
-        });
+        // this.formwizard = new formtowizard({ // eslint-disable-line new-cap, no-undef
+        //     formid: 'addShowForm',
+        //     revealfx: ['slide', 300],
+        //     oninit: init
+        // });
 
         const { general } = this;
         // Set the indexer to the indexer default.
@@ -291,6 +309,9 @@ export default {
 
         // Set the default show name, if provided through show dir or show name.
         this.nameToSearch = this.defaultShowName;
+
+        // Assign formwizard ref to this.formwizard.ref.
+        this.formwizard.ref = this.$refs.formwizard;
     },
     computed: {
         ...mapState({
@@ -611,7 +632,7 @@ export default {
                 })
             };
 
-            this.$nextTick(() => this.formwizard.loadsection(0)); // eslint-disable-line no-use-before-define
+            // this.$nextTick(() => this.formwizard.loadsection(0)); // eslint-disable-line no-use-before-define
 
             let data = null;
             try {
@@ -700,18 +721,24 @@ export default {
 
             this.searchStatus = '';
 
-            this.$nextTick(() => {
-                this.formwizard.loadsection(0); // eslint-disable-line no-use-before-define
-            });
+            // this.$nextTick(() => {
+            //     this.formwizard.loadsection(0); // eslint-disable-line no-use-before-define
+            // });
         },
         /**
          * The formwizard sets a fixed height when the step has been loaded. We need to refresh this on the option
          * page, when showing/hiding the release groups.
          */
         refreshOptionStep() {
-            if (this.formwizard.currentsection === 2) {
+            if (this.formwizard.currentStep === 2) {
                 this.$nextTick(() => this.formwizard.loadsection(2));
             }
+        },
+        updateFormWizardStep(_, nextIndex) {
+            this.formwizard.currentIndex = nextIndex;
+        },
+        navigateStep(newIndex) {
+            this.formwizard.ref.changeTab(0, newIndex);
         },
         updateOptions(options) {
             // Update seleted options from add-show-options.vue @change event.
@@ -755,6 +782,43 @@ export default {
     }
 };
 </script>
-<style>
+<style scoped>
+.formwizard >>> ul.wizard-nav {
+    display: flex;
+    justify-content: space-around;
+    padding-left: 0;
+}
 
+ul.wizard-nav > div.step {
+    width: 33.3333%;
+    display: table-cell;
+    font: bold 24px Arial, sans-serif;
+    font-style: normal;
+    font-variant-ligatures: normal;
+    font-variant-caps: normal;
+    font-variant-numeric: normal;
+    font-variant-east-asian: normal;
+    font-weight: bold;
+    font-stretch: normal;
+    font-size: 24px;
+    line-height: normal;
+    font-family: Arial, sans-serif;
+    border-bottom: 4px solid rgb(87, 68, 43);
+    cursor: pointer;
+}
+
+.formwizard >>> .wizard-nav .step {
+    margin: 12px 0;
+    border-bottom: 4px solid rgb(35, 175, 220);
+}
+
+.formwizard >>> ul.wizard-nav .disabledstep {
+    border-bottom: 4px solid rgb(17, 120, 179);
+}
+
+ul.wizard-nav .step .smalltext {
+    font-size: 13px;
+    font-weight: normal;
+    margin-bottom: 12px;
+}
 </style>
