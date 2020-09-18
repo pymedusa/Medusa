@@ -19,7 +19,7 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from medusa.subtitles import accept_any, accept_unknown, get_embedded_subtitles
 
-from rarfile import BadRarFile, NotRarFile, RarCannotExec, RarFile, Error, is_rarfile
+from rarfile import BadRarFile, NotRarFile, RarCannotExec, RarFile, Error, UNRAR_TOOL
 from six import iteritems
 
 
@@ -487,7 +487,7 @@ class ProcessResult(object):
                     skip_extraction = False
                     for file_in_archive in [os.path.basename(each.filename)
                                             for each in rar_handle.infolist()
-                                            if not each.isdir]:
+                                            if not each.isdir()]:
                         if not force and self.already_postprocessed(file_in_archive):
                             self.log('Archive file already post-processed, extraction skipped: {0}'.format
                                      (file_in_archive), logger.DEBUG)
@@ -504,7 +504,7 @@ class ProcessResult(object):
                         rar_handle.extractall(path=path)
 
                     for each in rar_handle.infolist():
-                        if not each.isdir:
+                        if not each.isdir():
                             basename = os.path.basename(each.filename)
                             unpacked_files.append(basename)
 
