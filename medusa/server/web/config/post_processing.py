@@ -17,9 +17,10 @@ from medusa.helper.exceptions import ex
 from medusa.server.web.config.handler import Config
 from medusa.server.web.core import PageTemplate
 
+import rarfile
+
 from tornroutes import route
 
-from unrar2 import RarFile
 
 
 @route('/config/postProcessing(/?.*)')
@@ -57,7 +58,7 @@ class ConfigPostProcessing(Config):
         config.change_PROCESS_AUTOMATICALLY(process_automatically)
 
         if unpack:
-            if self.isRarSupported() != 'not supported':
+            if self.is_rar_supported():
                 app.UNPACK = config.checkbox_to_value(unpack)
             else:
                 app.UNPACK = 0
@@ -170,20 +171,16 @@ class ConfigPostProcessing(Config):
             return 'invalid'
 
     @staticmethod
-    def isRarSupported():
+    def is_rar_supported():
         """
-        Test unpacking support.
-
-        Test Packing Support:
-            - Simulating in memory rar extraction on test.rar file
+        Check unpacking support.
         """
         try:
-            rar_path = os.path.join(app.PROG_DIR, app.LIB_FOLDER, 'unrar2', 'test.rar')
-            testing = RarFile(rar_path).read_files('*test.txt')
-            if testing[0][1] == b'This is only a test.':
-                return 'supported'
-            logger.log('Rar Not Supported: Can not read the content of test file', logger.ERROR)
-            return 'not supported'
+            rarfile.custom_check([rarfile.UNRAR_TOOL], True)
+        except rarfile.RarExecError:
+            logger.log('UNRAR tool not available.', logger.WARNING)
+            return False
         except Exception as msg:
             logger.log('Rar Not Supported: {error}'.format(error=ex(msg)), logger.ERROR)
-            return 'not supported'
+            return False
+        return True
