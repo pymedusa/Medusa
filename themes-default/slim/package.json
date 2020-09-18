@@ -89,7 +89,7 @@
     "eslint-plugin-eslint-comments": "3.2.0",
     "eslint-plugin-import": "2.22.0",
     "eslint-plugin-jest": "23.20.0",
-    "eslint-plugin-unicorn": "21.0.0",
+    "eslint-plugin-unicorn": "22.0.0",
     "eslint-plugin-vue": "6.2.2",
     "file-loader": "6.1.0",
     "filemanager-webpack-plugin": "2.0.5",
