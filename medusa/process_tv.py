@@ -19,7 +19,8 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from medusa.subtitles import accept_any, accept_unknown, get_embedded_subtitles
 
-from rarfile import BadRarFile, NotRarFile, RarCannotExec, RarFile, Error, UNRAR_TOOL
+from rarfile import BadRarFile, Error, NotRarFile, RarCannotExec, RarFile
+
 from six import iteritems
 
 

@@ -22,7 +22,6 @@ import rarfile
 from tornroutes import route
 
 
-
 @route('/config/postProcessing(/?.*)')
 class ConfigPostProcessing(Config):
     """Handler for Post Processing configuration."""
@@ -172,9 +171,7 @@ class ConfigPostProcessing(Config):
 
     @staticmethod
     def is_rar_supported():
-        """
-        Check unpacking support.
-        """
+        """Check rar unpacking support."""
         try:
             rarfile.custom_check([rarfile.UNRAR_TOOL], True)
         except rarfile.RarExecError:
