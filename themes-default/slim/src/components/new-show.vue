@@ -175,7 +175,7 @@ import { ToggleButton } from 'vue-js-toggle-button';
 import RootDirs from './root-dirs.vue';
 import { AddShowOptions } from '.';
 import { AppLink, LanguageSelect } from './helpers';
-import { api, apiRoute } from '../api';
+import { api } from '../api';
 import axios from 'axios';
 import { VueTabs, VTab } from 'vue-nav-tabs/dist/vue-tabs.js';
 import { FormWizard, TabContent } from 'vue-form-wizard';
@@ -310,12 +310,12 @@ export default {
         }),
         ...mapGetters(['indexerIdToName']),
         selectedShow() {
-            const { searchResults, selectedShowSlug } = this;
-            if (searchResults.length === 0 || !selectedShowSlug) {
+            const { filteredSearchResults, selectedShowSlug } = this;
+            if (filteredSearchResults.length === 0 || !filteredSearchResults) {
                 return null;
             }
 
-            return searchResults.find(s => s.slug === selectedShowSlug);
+            return filteredSearchResults.find(s => s.slug === selectedShowSlug);
         },
         addButtonDisabled() {
             const { selectedShowSlug, selectedRootDir, providedInfo } = this;
@@ -344,7 +344,7 @@ export default {
                 return providedInfo.showName;
             }
             // If they've picked a radio button then use that
-            if (selectedShow !== null) {
+            if (selectedShow) {
                 return selectedShow.showName;
             }
             // Not selected / not searched
@@ -432,20 +432,6 @@ export default {
     },
     methods: {
         async submitForm() {
-            // const formData = new FormData();
-
-            /**
-             * Append an array to a FormData object
-             * @param {FormData} appendTo - object to append to
-             * @param {string} fieldName - name of the field to append the values under
-             * @param {(string[]|number[])} array - the array to append
-             */
-            const appendArrayToFormData = (appendTo, fieldName, array) => {
-                for (const item of array) {
-                    appendTo.append(fieldName, item);
-                }
-            };
-
             const { addButtonDisabled } = this;
 
             // If they haven't picked a show or a root dir don't let them submit
@@ -505,50 +491,29 @@ export default {
             options.release = release;
             options.showlists = showLists;
 
-            // const response = await apiRoute.post('addShows/addNewShow', formData);
             let response = null;
             try {
-                // this.$snotify.info(
-                //     'Checking for a new version...'
-                // );
-                response = await api.post('series', { id: showId, options });
+                response = await api.post('series', { id: showId, options }, { timeout: 60000 });
+                if (response.status === 201) {
+                    this.$emit('added', response.data);
+                }
+                // If we're not using this component from addExistingShow, route to home.
+                if (this.$route.name === 'addNewShow') {
+                    this.$routes.push({ name: 'home' });
+                }
             } catch (error) {
-                this.$snotify.error(
-                    `Error trying to add show ${Object.keys(showId)[0]}${showId[Object.keys(showId)[0]]}`
-                );
-            }
-
-            const { data } = response;
-            const { result, message, redirect, params } = data;
-
-            if (message) {
-                if (result === false) {
-                    console.log('Error: ' + message);
+                if (error.includes('409')) {
+                    // Show already exists
+                    this.$snotify.error(
+                        'Show already exists',
+                        `Error trying to add show ${Object.keys(showId)[0]}${showId[Object.keys(showId)[0]]}`
+                    );
                 } else {
-                    console.log('Response: ' + message);
+                    this.$snotify.error(
+                        `Error trying to add show ${Object.keys(showId)[0]}${showId[Object.keys(showId)[0]]}`
+                    );
                 }
             }
-            // if (redirect) {
-            //     const baseUrl = apiRoute.defaults.baseURL;
-            //     if (params.length === 0) {
-            //         window.location.href = baseUrl + redirect;
-            //         return;
-            //     }
-
-            //     const form = document.createElement('form');
-            //     form.method = 'POST';
-            //     form.action = baseUrl + redirect;
-            //     form.acceptCharset = 'utf-8';
-
-            //     params.forEach(param => {
-            //         const element = document.createElement('input');
-            //         [element.name, element.value] = param; // Unpack
-            //         form.appen(element);
-            //     });
-
-            //     document.body.append(form);
-            //     form.submit();
-            // }
         },
         selectResult(result) {
             const { alreadyAdded } = result;
@@ -758,7 +723,7 @@ export default {
 
             // Select the first available result
             const firstAvailableResult = newResults.find(result => !result.alreadyAdded);
-            if (!this.selectedShowSlug && firstAvailableResult) {
+            if (firstAvailableResult) {
                 this.selectedShowSlug = firstAvailableResult.slug;
             }
         }
