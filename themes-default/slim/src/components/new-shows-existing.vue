@@ -13,7 +13,7 @@
                             <root-dirs @update:paths="rootDirsPathsUpdated" />
                         </div>
                         <div id="tabs-2" class="existingtabs">
-                            <add-show-options v-bind="{enableAnimeOptions}" @change="updateOptions" />
+                            <add-show-options disable-release-groups v-bind="{enableAnimeOptions}" @change="updateOptions" />
                         </div>
                     </div>
                     <br>
@@ -69,8 +69,9 @@
                                         <option v-for="indexer in Object.values(indexers.indexers)" :key="indexer.id" :value="indexer.id">{{indexer.name}}</option>
                                     </select>
                                 </td>
-                                <td align="center">
-                                    <button type="button" class="btn-medusa btn-inline" @click="manualAddNewShow($event, curDirIndex)">Add</button>
+                                <td align="center" :key="`td${curDirIndex}`">
+                                    <button v-if="addShowComponents[`curdirindex-${curDirIndex}`] === undefined" type="button" class="btn-medusa btn-inline" @click="manualAddNewShow($event, curDirIndex)" :key="`add${curDirIndex}`">Add</button>
+                                    <button v-else type="button" class="btn-medusa btn-inline" @click="closeAddShowComponent(curDirIndex)" :key="`close${curDirIndex}`">Close</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -85,12 +86,12 @@
 </template>
 
 <script>
+import Vue from 'vue';
 import { mapState } from 'vuex';
 import RootDirs from './root-dirs.vue';
 import { AddShowOptions, NewShow } from '.';
 import { AppLink } from './helpers';
 import { api, apiRoute } from '../api';
-import VgtHeaderRowVue from '../../../../../../../vue-good-table/src/components/VgtHeaderRow.vue';
 
 export default {
     components: {
@@ -127,17 +128,9 @@ export default {
                 },
                 showLists: []
             },
-            addShowComponents: [] // An array of mounted new-show.vue components.
+            addShowComponents: {} // An array of mounted new-show.vue components.
         };
     },
-    mounted() {
-        // Need to delay that a bit
-        setTimeout(() => {
-            // Hide the black/whitelist, because it can only be used for a single anime show
-            $.updateBlackWhiteList(undefined);
-        }, 500);
-    },
-    // TODO: Replace with Object spread (`...mapState`)
     computed: {
         ...mapState({
             config: state => state.config.general, // Used by `inc_addShowOptions.mako`
@@ -203,6 +196,9 @@ export default {
         }
     },
     methods: {
+        indexExist(index) {
+            return this.addShowComponents[`curdirindex-${index}`] === undefined;
+        },
         /**
          * Transform root dirs paths array, and select all the paths.
          * @param {string[]} paths - The root dir paths
@@ -378,9 +374,9 @@ export default {
                 providedInfo.showName = curDir.metadata.seriesName;
             }
 
-            providedInfo.use = providedInfo.indexerId !== 0 && providedInfo.showId !== 0 && providedInfo.showName;
+            providedInfo.use = Boolean(providedInfo.indexerId !== 0 && providedInfo.showId !== 0 && providedInfo.showName);
 
-            const NewShowClass = Vue.extend(NewShow); // eslint-disable-line no-undef
+            const NewShowClass = Vue.extend(NewShow);
             const instance = new NewShowClass({
                 propsData: { providedInfo },
                 parent: this
@@ -398,7 +394,14 @@ export default {
             this.$refs[`curdirindex-${curDirIndex}`][0].after(row);
 
             instance.$mount(wrapper);
-            addShowComponents.push(instance);
+            Vue.set(addShowComponents, `curdirindex-${curDirIndex}`, instance);
+        },
+        closeAddShowComponent(index) {
+            const { addShowComponents } = this;
+            addShowComponents[`curdirindex-${index}`].$destroy();
+            // Remove the element from the DOM
+            addShowComponents[`curdirindex-${index}`].$el.closest('tr').remove();
+            Vue.set(addShowComponents, `curdirindex-${index}`, undefined);
         }
     },
     watch: {

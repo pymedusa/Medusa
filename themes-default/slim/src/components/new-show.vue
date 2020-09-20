@@ -8,18 +8,17 @@
 
                     <form id="addShowForm" @submit.prevent="">
 
-                        <form-wizard ref="formwizard" class="formwizard" title="" subtitle="" @change="updateFormWizardStep">
-                             <template slot="step" scope="props">
-                                <!-- <wizard-step :tab="props.tab"
-                                    :transition="props.transition"
-                                    :key="props.tab.title"
-                                    :index="props.index">
-                                </wizard-step> -->
+                        <form-wizard ref="formwizard" class="formwizard" title="" subtitle="" @change="updateFormWizardStep" color="rgb(95, 95, 95)">
+                            <template slot="step" slot-scope="props">
                                 <div class="step" :class="{disabledstep: !props.tab.active}" @click="navigateStep(props.index)">
                                     Step {{props.index + 1}}<div class="smalltext">{{props.tab.title}}</div>
                                 </div>
-
                             </template>
+
+                            <template slot="finish">
+                                <button @click.prevent="submitForm" type="button" :disabled="addButtonDisabled">Add Show</button>
+                            </template>
+
                             <tab-content title="Find a show on selected indexer(s)">
                                 <div v-if="providedInfo.use" class="stepDiv">
                                     Show retrieved from existing metadata:
@@ -179,7 +178,7 @@ import { AppLink, LanguageSelect } from './helpers';
 import { api, apiRoute } from '../api';
 import axios from 'axios';
 import { VueTabs, VTab } from 'vue-nav-tabs/dist/vue-tabs.js';
-import { FormWizard, TabContent } from 'vue-form-wizard'
+import { FormWizard, TabContent } from 'vue-form-wizard';
 
 export default {
     name: 'new-show',
@@ -230,16 +229,6 @@ export default {
                 languageName: null
             },
 
-            // Provided info used for pre configuring a search, when using it to add from existing.
-            // providedInfo: {
-            //     use: false,
-            //     showId: null,
-            //     showName: '',
-            //     showDir: '',
-            //     indexerId: '',
-            //     indexerLanguage: 'en'
-            // },
-
             selectedRootDir: '',
             selectedShowSlug: '',
             selectedShowOptions: {
@@ -269,23 +258,23 @@ export default {
         //         }
         //     });
 
-        //     setTimeout(() => {
-        //         const { providedInfo } = this;
-        //         const { use, showId, showDir } = providedInfo;
-        //         if (use && showId !== 0 && showDir) {
-        //             this.formwizard.loadsection(2);
-        //         }
-        //     }, 100);
+        setTimeout(() => {
+            const { providedInfo, navigateStep } = this;
+            const { use, showId, showDir } = providedInfo;
+            if (use && showId !== 0 && showDir) {
+                navigateStep(2);
+            }
+        }, 100);
 
-        //     setTimeout(() => {
-        //         if (this.$refs.nameToSearch) {
-        //             this.$refs.nameToSearch.focus();
+        setTimeout(() => {
+            if (this.$refs.nameToSearch) {
+                this.$refs.nameToSearch.focus();
 
-        //             if (this.nameToSearch) {
-        //                 this.searchIndexers();
-        //             }
-        //         }
-        //     }, this.formwizard.setting.revealfx[1]);
+                if (this.nameToSearch) {
+                    this.searchIndexers();
+                }
+            }
+        }, 500);
         // };
 
         /* JQuery Form to Form Wizard- (c) Dynamic Drive (www.dynamicdrive.com)
@@ -426,7 +415,7 @@ export default {
         },
         defaultShowName() {
             // Moved this logic from add_shows.py.
-            const { providedInfo } = this;
+            const { providedInfo, showBaseName } = this;
             if (providedInfo.showName) {
                 return providedInfo.showName;
             }
@@ -435,15 +424,15 @@ export default {
                 // Try to get a show name from the show dir.
                 const titleWithoutYear = providedInfo.showDir.replace(/\d{4}/gi, '');
                 titleWithoutYear.split(/[/\\]/).pop();
-                return titleWithoutYear;
+                return showBaseName(titleWithoutYear);
             }
 
             return '';
         }
     },
     methods: {
-        async submitForm(skipShow) {
-            const formData = new FormData();
+        async submitForm() {
+            // const formData = new FormData();
 
             /**
              * Append an array to a FormData object
@@ -457,92 +446,78 @@ export default {
                 }
             };
 
-            // appendArrayToFormData(formData, 'other_shows', this.otherShows);
+            const { addButtonDisabled } = this;
 
-            if (skipShow && skipShow === true) {
-                const { currentSearch } = this;
-
-                formData.append('skipShow', 'true');
-
-                if (currentSearch.cancel) {
-                    // Abort current search
-                    currentSearch.cancel();
-                    currentSearch.cancel = null;
-                }
-            } else {
-                const { addButtonDisabled } = this;
-
-                // If they haven't picked a show or a root dir don't let them submit
-                if (addButtonDisabled) {
-                    this.$snotify.warning('You must choose a show and a parent folder to continue.');
-                    return;
-                }
-
-                // Collect all the needed form data.
-
-                const {
-                    indexerId,
-                    indexerLanguage,
-                    // providedInfo,
-                    selectedRootDir,
-                    selectedShow,
-                    selectedShowOptions
-                } = this;
-
-                // if (providedInfo.use) {
-                //     formData.append('indexer_lang', providedInfo.indexerLanguage);
-                //     formData.append('providedIndexer', providedInfo.indexerId);
-                //     formData.append('whichSeries', providedInfo.showId);
-                // } else {
-                //     formData.append('indexer_lang', indexerLanguage);
-                //     formData.append('providedIndexer', indexerId);
-                //     // @TODO: Remove the need for the `selectedShow.whichSeries` value
-                //     formData.append('whichSeries', selectedShow.whichSeries);
-                // }
-
-                formData.append('indexer_lang', indexerLanguage);
-                formData.append('providedIndexer', indexerId);
-                // @TODO: Remove the need for the `selectedShow.whichSeries` value
-                formData.append('whichSeries', selectedShow.whichSeries);
-
-                // if (providedInfo.showDir) {
-                //     formData.append('fullShowPath', providedInfo.showDir);
-                // } else {
-                //     formData.append('rootDir', selectedRootDir);
-                // }
-
-                formData.append('rootDir', selectedRootDir);
-
-                const {
-                    anime,
-                    quality,
-                    release,
-                    scene,
-                    seasonFolders,
-                    status,
-                    statusAfter,
-                    subtitles,
-                    showLists
-                } = selectedShowOptions;
-
-                // Show options
-                formData.append('defaultStatus', status);
-                formData.append('defaultStatusAfter', statusAfter);
-                formData.append('subtitles', Boolean(subtitles));
-                formData.append('anime', Boolean(anime));
-                formData.append('scene', Boolean(scene));
-                formData.append('season_folders', Boolean(seasonFolders));
-
-                appendArrayToFormData(formData, 'allowed_qualities', quality.allowed);
-                appendArrayToFormData(formData, 'preferred_qualities', quality.preferred);
-
-                appendArrayToFormData(formData, 'whitelist', release.whitelist);
-                appendArrayToFormData(formData, 'blacklist', release.blacklist);
-
-                appendArrayToFormData(formData, 'showLists', showLists);
+            // If they haven't picked a show or a root dir don't let them submit
+            if (addButtonDisabled) {
+                this.$snotify.warning('You must choose a show and a parent folder to continue.');
+                return;
             }
 
-            const response = await apiRoute.post('addShows/addNewShow', formData);
+            // Collect all the needed form data.
+
+            const {
+                indexerIdToName,
+                indexerLanguage,
+                providedInfo,
+                selectedRootDir,
+                selectedShow,
+                selectedShowOptions
+            } = this;
+
+            const showId = {};
+            const options = {};
+
+            if (providedInfo.use) {
+                options.language = providedInfo.indexerLanguage;
+                showId[indexerIdToName(providedInfo.indexerId)] = providedInfo.showId;
+            } else {
+                options.language = indexerLanguage;
+                showId[indexerIdToName(selectedShow.indexerId)] = selectedShow.showId;
+            }
+
+            if (providedInfo.showDir) {
+                options.showDir = providedInfo.showDir;
+            } else {
+                options.rootDir = selectedRootDir;
+            }
+
+            const {
+                anime,
+                quality,
+                release,
+                scene,
+                seasonFolders,
+                status,
+                statusAfter,
+                subtitles,
+                showLists
+            } = selectedShowOptions;
+
+            // Show options
+            options.status = status;
+            options.statusAfter = statusAfter;
+            options.subtitles = Boolean(subtitles);
+            options.anime = Boolean(anime);
+            options.scene = Boolean(scene);
+            options.seasonFolders = Boolean(seasonFolders);
+            options.quality = quality;
+            options.release = release;
+            options.showlists = showLists;
+
+            // const response = await apiRoute.post('addShows/addNewShow', formData);
+            let response = null;
+            try {
+                // this.$snotify.info(
+                //     'Checking for a new version...'
+                // );
+                response = await api.post('series', { id: showId, options });
+            } catch (error) {
+                this.$snotify.error(
+                    `Error trying to add show ${Object.keys(showId)[0]}${showId[Object.keys(showId)[0]]}`
+                );
+            }
+
             const { data } = response;
             const { result, message, redirect, params } = data;
 
@@ -553,27 +528,27 @@ export default {
                     console.log('Response: ' + message);
                 }
             }
-            if (redirect) {
-                const baseUrl = apiRoute.defaults.baseURL;
-                if (params.length === 0) {
-                    window.location.href = baseUrl + redirect;
-                    return;
-                }
+            // if (redirect) {
+            //     const baseUrl = apiRoute.defaults.baseURL;
+            //     if (params.length === 0) {
+            //         window.location.href = baseUrl + redirect;
+            //         return;
+            //     }
 
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = baseUrl + redirect;
-                form.acceptCharset = 'utf-8';
+            //     const form = document.createElement('form');
+            //     form.method = 'POST';
+            //     form.action = baseUrl + redirect;
+            //     form.acceptCharset = 'utf-8';
 
-                params.forEach(param => {
-                    const element = document.createElement('input');
-                    [element.name, element.value] = param; // Unpack
-                    form.appen(element);
-                });
+            //     params.forEach(param => {
+            //         const element = document.createElement('input');
+            //         [element.name, element.value] = param; // Unpack
+            //         form.appen(element);
+            //     });
 
-                document.body.append(form);
-                form.submit();
-            }
+            //     document.body.append(form);
+            //     form.submit();
+            // }
         },
         selectResult(result) {
             const { alreadyAdded } = result;
@@ -661,9 +636,6 @@ export default {
 
             this.searchResults = data.results
                 .map(result => {
-                    // Compute whichSeries value (without the 2 last items - sanitizedName and alreadyAdded)
-                    const whichSeries = result.slice(0, -2).join('|');
-
                     // Unpack result items 0 through 8 (Array)
                     let [
                         indexerName,
@@ -705,7 +677,6 @@ export default {
 
                     return {
                         slug,
-                        whichSeries,
                         indexerName,
                         indexerId,
                         indexerShowUrl,
@@ -765,6 +736,18 @@ export default {
                 return;
             }
             return Object.values(indexers.indexers).find(indexer => indexer.id === indexerId);
+        },
+        showBaseName(name) {
+            const sepChar = (() => {
+                if (name.includes('\\')) {
+                    return '\\';
+                }
+                if (name.includes('/')) {
+                    return '/';
+                }
+                return '';
+            })();
+            return name.split(sepChar).slice(-1)[0];
         }
     },
     watch: {
@@ -821,4 +804,30 @@ ul.wizard-nav .step .smalltext {
     font-weight: normal;
     margin-bottom: 12px;
 }
+
+.formwizard >>> .wizard-footer-left {
+    float: left;
+}
+
+.formwizard >>> .wizard-footer-right {
+    float: right;
+}
+
+.formwizard >>> .wizard-card-footer span {
+    padding: 3px 6px;
+    cursor: hand;
+    cursor: pointer;
+    opacity: 0.65;
+    /* move to themed */
+    color: rgb(255, 255, 255);
+    background: rgb(95, 95, 95);
+}
+
+.formwizard >>> .wizard-card-footer button {
+    border-width: 0;
+    /* move to themed */
+    background-color: rgb(95, 95, 95);
+    border-color: rgb(95, 95, 95); color: white;
+}
+
 </style>

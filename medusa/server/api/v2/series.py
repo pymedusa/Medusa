@@ -15,7 +15,7 @@ from medusa.server.api.v2.base import (
     iter_nested_items,
     set_nested_value
 )
-from medusa.tv.series import Series, SeriesIdentifier
+from medusa.tv.series import SaveSeriesException, Series, SeriesIdentifier
 
 from six import itervalues, viewitems
 
@@ -98,8 +98,10 @@ class SeriesHandler(BaseRequestHandler):
             return self._conflict('Series already exist added')
 
         series = Series.from_identifier(identifier)
-        if not Series.save_series(series):
-            return self._not_found('Series not found in the specified indexer')
+        try:
+            Series.save_series(series, options=data.get('options'))
+        except SaveSeriesException as error:
+            return self._not_found(error)
 
         return self._created(series.to_json(), identifier=identifier.slug)
 

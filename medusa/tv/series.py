@@ -28,6 +28,8 @@ from medusa import (
     network_timezones,
     notifiers,
     post_processor,
+    ui,
+    ws,
 )
 from medusa.black_and_white_list import BlackAndWhiteList
 from medusa.common import (
@@ -48,11 +50,7 @@ from medusa.common import (
     qualityPresets,
     statusStrings,
 )
-from medusa.helper.common import (
-    episode_num,
-    pretty_file_size,
-    try_int,
-)
+from medusa.helper.common import episode_num, pretty_file_size, sanitize_filename, try_int
 from medusa.helper.exceptions import (
     CantRefreshShowException,
     CantRemoveShowException,
@@ -64,7 +62,7 @@ from medusa.helper.exceptions import (
     ex,
 )
 from medusa.helpers.anidb import short_group_names
-from medusa.helpers.externals import get_externals, load_externals_from_db
+from medusa.helpers.externals import get_externals, load_externals_from_db, check_existing_shows
 from medusa.helpers.utils import dict_to_array, safe_get, to_camel_case
 from medusa.imdb import Imdb
 from medusa.indexers.api import indexerApi
@@ -76,6 +74,7 @@ from medusa.indexers.config import (
 from medusa.indexers.exceptions import (
     IndexerAttributeNotFound,
     IndexerException,
+    IndexerShowAlreadyInLibrary,
     IndexerSeasonNotFound,
 )
 from medusa.indexers.tmdb.api import Tmdb
@@ -101,7 +100,7 @@ from medusa.scene_exceptions import get_all_scene_exceptions, get_scene_exceptio
 from medusa.scene_numbering import (
     get_scene_absolute_numbering_for_show, get_scene_numbering_for_show,
     get_xem_absolute_numbering_for_show, get_xem_numbering_for_show,
-    numbering_tuple_to_dict,
+    numbering_tuple_to_dict, xem_refresh
 )
 from medusa.search import FORCED_SEARCH
 from medusa.show.show import Show
@@ -113,9 +112,10 @@ from medusa.tv.base import Identifier, TV
 from medusa.tv.episode import Episode
 from medusa.tv.indexer import Indexer
 
-from six import iteritems, itervalues, string_types, text_type, viewitems
+from six import binary_type, iteritems, itervalues, string_types, text_type, viewitems
 
 import ttl_cache
+from medusa.helpers import make_dir
 
 try:
     from send2trash import send2trash
@@ -127,6 +127,10 @@ MILLIS_YEAR_1900 = datetime.datetime(year=1900, month=1, day=1).toordinal()
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
+
+
+class SaveSeriesException(Exception):
+    """Generic exception used for adding a new series."""
 
 
 class SeriesIdentifier(Identifier):
@@ -162,10 +166,14 @@ class SeriesIdentifier(Identifier):
         """Slug."""
         return text_type(self)
 
-    @property
-    def api(self):
-        """Api."""
+    def get_indexer_api(self, options=None):
+        """Return an indexer api for this show."""
         indexer_api = indexerApi(self.indexer.id)
+        indexer_api_params = indexer_api.api_params.copy()
+
+        if options and options.get('language') is not None:
+            indexer_api_params['language'] = options['language']
+
         return indexer_api.indexer(**indexer_api.api_params)
 
     def __bool__(self):
@@ -279,23 +287,64 @@ class Series(TV):
 
     # TODO: Make this the single entry to add new series
     @classmethod
-    def save_series(cls, series):
+    def save_series(cls, series, options=None):
         """Save the specified series to medusa."""
         try:
-            api = series.identifier.api
+            api = series.identifier.get_indexer_api(options)
             series.load_from_indexer(tvapi=api)
             series.load_imdb_info()
-            app.showList.append(series)
-            series.save_to_db()
-            series.load_episodes_from_indexer(tvapi=api)
-            series.populate_cache()
-            return series
         except IndexerException as error:
             log.warning('Unable to load series from indexer: {0!r}'.format(error))
+            raise SaveSeriesException('Unable to load series from indexer: {0!r}'.format(error))
+
+        series.check_existing()
+
+        try:
+            series.configure(options)  # Add apiv2 provided options.
+        except KeyError as error:
+            log.error(
+                'Unable to add show {series_name} due to an error with one of the provided options: {error}',
+                {'series_name': series.name, 'error': error}
+            )
+            ui.notifications.error(
+                'Unable to add show {series_name} due to an error with one of the provided options: {error}'.format(
+                    series_name=series.name, error=error
+                )
+            )
+            raise SaveSeriesException(
+                'Unable to add show {series_name} due to an error with one of the provided options: {error}'.format(
+                    series_name=series.name, error=error
+                ))
+
+        except Exception as error:
+            log.error('Error trying to configure show: {0}', error)
+            log.debug(traceback.format_exc())
+            raise
+
+        app.showList.append(series)
+        series.save_to_db()
+
+        try:
+            series.load_episodes_from_indexer(tvapi=api, options=options)
+        except IndexerException as error:
+            log.warning('Unable to load series episodes from indexer: {0!r}'.format(error))
+            raise SaveSeriesException(
+                'Unable to load series episodes from indexer: {0!r}'.format(error)
+            )
+
+        series.write_metadata()
+        series.update_metadata()
+        series.populate_cache()
+        build_name_cache(series)  # update internal name cache
+        series.flush_episodes()
+        series.sync_trakt()
+        series.add_scene_numbering()
+        ws.Message('showAdded', series.to_json(detailed=False)).push()  # Send ws update to client
+        return series
 
     @property
     def identifier(self):
-        """Identifier."""
+        """Return a series identifier object."""
         return SeriesIdentifier(self.indexer, self.series_id)
 
     @property
@@ -1231,13 +1280,15 @@ class Series(TV):
 
         return scanned_eps
 
-    def load_episodes_from_indexer(self, seasons=None, tvapi=None):
+    def load_episodes_from_indexer(self, seasons=None, tvapi=None, options=None):
         """Load episodes from indexer.
 
         :param seasons: Only load episodes for these seasons (only if supported by the indexer)
         :type seasons: list of integers or integer
         :param tvapi: indexer_object
         :type tvapi: indexer object
+        :param options: options structure (passed throug apiv2)
+        :type options: dict
         :return:
         :rtype: dict(int -> dict(int -> bool))
         """
@@ -1311,6 +1362,11 @@ class Series(TV):
         log.debug(u'{id}: Saving indexer changes to database',
                   {'id': self.series_id})
         self.save_to_db()
+
+        # If we provide a statusAfter through the apiv2 series route options object.
+        # set it after we've added the episodes.
+        if options and options.get('statusAfter') is not None:
+            self.default_ep_status = options['statusAfter']
 
         return scanned_eps
 
@@ -1658,6 +1714,78 @@ class Series(TV):
         log.debug(u'{id}: Obtained info from IMDb: {imdb_info}',
                   {'id': self.series_id, 'imdb_info': self.imdb_info})
 
+    def check_existing(self):
+        """Check if we can already find this show in our current showList."""
+        try:
+            check_existing_shows(self.identifier.get_indexer_api(), self.identifier.indexer.id)
+        except IndexerShowAlreadyInLibrary as error:
+            log.warning(
+                'Could not add the show {series}, as it already is in your library.'
+                'Error: {error}',
+                {'series': self.name, 'error': error}
+            )
+            ui.notifications.error(
+                'Unable to add show',
+                'reason: {0}'.format(error)
+            )
+            raise SaveSeriesException(
+                'Unable to add show',
+                'reason: {0}'.format(error)
+            )
+
+    def configure(self, options):
+        """Configure series."""
+        # Let's try to create the show Dir if it's not provided. This way we force the show dir
+        # to build build using the Indexers provided series name
+        show_dir = options.get('showDir')
+        root_dir = options.get('rootDir')
+        if not show_dir and root_dir:
+            # show_name = get_showname_from_indexer(self.indexer, self.indexer_id, self.lang)
+            if self.name:
+                show_dir = os.path.join(root_dir, sanitize_filename(self.name))
+                dir_exists = make_dir(show_dir)
+                if not dir_exists:
+                    log.info("Unable to create the folder {0}, can't add the show", show_dir)
+                    return
+
+                helpers.chmod_as_parent(show_dir)
+            else:
+                log.info("Unable to get a show {0}, can't add the show", show_dir)
+                return
+
+        if show_dir:
+            self.location = text_type(show_dir, 'utf-8') if isinstance(show_dir, binary_type) else show_dir
+
+        self.subtitles = options['subtitles'] if options.get('subtitles') is not None else app.SUBTITLES_DEFAULT
+
+        if options.get('quality'):
+            self.qualities_preferred = options['quality']['preferred']
+            self.qualities_allowed = options['quality']['allowed']
+
+        self.season_folders = options['seasonFolders'] if options.get('seasonFolders') is not None \
+            else app.SEASON_FOLDERS_DEFAULT
+        self.anime = options['anime'] if options.get('anime') is not None else app.ANIME_DEFAULT
+        self.scene = options['scene'] if options.get('scene') is not None else app.SCENE_DEFAULT
+        self.paused = options['paused'] if options.get('paused') is not None else False
+        self.lang = options['language'] if options.get('language') is not None else app.INDEXER_DEFAULT_LANGUAGE
+        self.show_lists = options['showlists'] if options.get('showlists') is not None else []
+
+        if options.get('status') is not None:
+            # set up default new/missing episode status
+            log.info(
+                'Setting all previously aired episodes to the specified status: {status}',
+                {'status': statusStrings[options['status']]}
+            )
+            self.default_ep_status = options['status']
+
+        if self.anime:
+            self.release_groups = BlackAndWhiteList(self)
+            if options.get('release') is not None:
+                if options['release']['blacklist']:
+                    self.release_groups.set_black_keywords(options['release']['blacklist'])
+                if options['release']['whitelist']:
+                    self.release_groups.set_white_keywords(options['release']['whitelist'])
+
     def prev_episode(self):
         """Return the last aired episode air date.
 
@@ -1827,6 +1955,43 @@ class Series(TV):
         log.debug(u'{id}: Checking & filling cache for show {show}',
                   {'id': self.series_id, 'show': self.name})
         image_cache.fill_cache(self)
+
+    def sync_trakt(self):
+        """Sync trakt episodes if trakt is enabled."""
+        if app.USE_TRAKT:
+            # if there are specific episodes that need to be added by trakt
+            app.trakt_checker_scheduler.action.manage_new_show(self.show)
+
+            # add show to trakt.tv library
+            if app.TRAKT_SYNC:
+                app.trakt_checker_scheduler.action.add_show_trakt_library(self.show)
+
+            if app.TRAKT_SYNC_WATCHLIST:
+                log.info('update watchlist')
+                notifiers.trakt_notifier.update_watchlist(show_obj=self.show)
+
+    def add_scene_numbering(self):
+        """
+        Add XEM data to DB for show.
+
+        Warn the user if an episode number mapping is available on thexem.
+        Only use this method, through the self.save_series method!
+        """
+        xem_refresh(self, force=True)
+
+        # check if show has XEM mapping so we can determine if searches
+        # should go by scene numbering or indexer numbering. Warn the user.
+        if not self.scene and get_xem_numbering_for_show(self):
+            log.warning(
+                '{id}: while adding the show {title} we noticed thexem.de has an episode mapping available'
+                '\nyou might want to consider enabling the scene option for this show.',
+                {'id': self.series_id, 'title': self.name}
+            )
+            ui.notifications.message(
+                'consider enabling scene for this show',
+                'for show {title} you might want to consider enabling the scene option'
+                .format(title=self.name)
+            )
 
     def refresh_dir(self):
         """Refresh show using its location.
@@ -2259,7 +2424,8 @@ class Series(TV):
         """
         Configure the show lists, for this show.
 
-        :param show_lists: Comma separated list of show categories.
+        self._show_lists is stored as a comma separated string.
+        :param show_lists: A list of show categories.
         """
         self._show_lists = ','.join(show_lists) if show_lists else 'series'
 

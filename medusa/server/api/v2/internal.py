@@ -54,6 +54,28 @@ class InternalHandler(BaseRequestHandler):
 
         return resource_function()
 
+    def post(self, resource, path_param=None):
+        """Post internal data.
+
+        :param resource: a resource name
+        :param path_param:
+        :type path_param: str
+        """
+        if resource is None:
+            return self._bad_request('You must provide a resource name')
+
+        # Convert 'camelCase' to 'resource_snake_case'
+        resource_function_name = 'resource_' + re.sub('([A-Z]+)', r'_\1', resource).lower()
+        resource_function = getattr(self, resource_function_name, None)
+
+        if resource_function is None:
+            log.error('Unable to get function "{func}" for resource "{resource}"',
+                      {'func': resource_function_name, 'resource': resource})
+            return self._bad_request('{key} is a invalid resource'.format(key=resource))
+
+        return resource_function()
+
+
     # existingSeries
     def resource_existing_series(self):
         """Generate existing series folders data for adding existing shows."""

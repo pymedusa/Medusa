@@ -70,7 +70,7 @@
                 @input="selectedAnimeEnabled = $event"
             />
 
-            <div v-if="enableAnimeOptions && selectedAnimeEnabled" class="form-group">
+            <div ref="blackAndWhiteList" v-if="enableAnimeOptions && selectedAnimeEnabled && !disableReleaseGroups" class="form-group">
                 <div class="row">
                     <label for="anidbReleaseGroup" class="col-sm-2 control-label">
                         <span>Release Groups</span>
@@ -145,7 +145,8 @@ export default {
         enableAnimeOptions: {
             type: Boolean,
             default: false
-        }
+        },
+        disableReleaseGroups: Boolean
     },
     data() {
         return {

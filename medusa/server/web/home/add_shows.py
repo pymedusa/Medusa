@@ -385,48 +385,20 @@ class HomeAddShows(Home):
             redirect='home'
         )
 
-    def addNewShow(self, whichSeries=None, indexer_lang=None, rootDir=None, defaultStatus=None, quality_preset=None,
+    def addNewShow(self, indexer_lang=None, root_dir=None, default_status=None, quality_preset=None,
                    allowed_qualities=None, preferred_qualities=None, season_folders=None, subtitles=None,
-                   fullShowPath=None, other_shows=None, skipShow=None, providedIndexer=None, anime=None,
-                   scene=None, blacklist=None, whitelist=None, defaultStatusAfter=None, showlists=None):
+                   full_show_path=None, provided_indexer=None, provided_series_id=None, anime=None,
+                   scene=None, blacklist=None, whitelist=None, default_status_after=None, showlists=None):
         """
         Receive tvdb id, dir, and other options and create a show from them. If extra show dirs are
         provided then it forwards back to newShow, if not it goes to /home.
         """
-        provided_indexer = providedIndexer
-
         indexer_lang = app.INDEXER_DEFAULT_LANGUAGE if not indexer_lang else indexer_lang
 
-        # grab our list of other dirs if given
-        if not other_shows:
-            other_shows = []
-        elif not isinstance(other_shows, list):
-            other_shows = [other_shows]
-
-        other_shows = decode_shows(other_shows)
-
-        def finishAddShow():
-            # if there are no extra shows then go home
-            if not other_shows:
-                return json_response(redirect='/home/')
-
-            # go to add the next show
-            return json_response(
-                redirect='/addShows/newShow/',
-                params=[
-                    ('show_to_add' if not i else 'other_shows', cur_dir)
-                    for i, cur_dir in enumerate(other_shows)
-                ]
-            )
-
-        # if we're skipping then behave accordingly
-        if skipShow:
-            return finishAddShow()
-
         # sanity check on our inputs
-        if (not rootDir and not fullShowPath) or not whichSeries:
-            error_msg = 'Missing params, no Indexer ID or folder: {series!r} and {root!r}/{path!r}'.format(
-                series=whichSeries, root=rootDir, path=fullShowPath)
+        if not root_dir and not full_show_path:
+            error_msg = 'Missing params, no Indexer ID or folder: {root!r}/{path!r}'.format(
+                root=root_dir, path=full_show_path)
             log.error(error_msg)
             return json_response(
                 result=False,
@@ -434,39 +406,22 @@ class HomeAddShows(Home):
                 redirect='/home/'
             )
 
-        # figure out what show we're adding and where
-        series_pieces = whichSeries.split('|')
-        if (whichSeries and rootDir) or (whichSeries and fullShowPath and len(series_pieces) > 1):
-            if len(series_pieces) < 6:
-                log.error('Unable to add show due to show selection. Not enough arguments: {pieces!r}',
-                          {'pieces': series_pieces})
-                ui.notifications.error('Unknown error. Unable to add show due to problem with show selection.')
-                return json_response(
-                    result=False,
-                    message='Unable to add show due to show selection. Not enough arguments: {0!r}'.format(series_pieces),
-                    redirect='/addShows/existingShows/'
-                )
+        # if no indexer was provided use the default indexer set in General settings
+        if not provided_indexer:
+            provided_indexer = app.INDEXER_DEFAULT
 
-            indexer = int(series_pieces[1])
-            indexer_id = int(series_pieces[3])
-            show_name = series_pieces[4]
-        else:
-            # if no indexer was provided use the default indexer set in General settings
-            if not provided_indexer:
-                provided_indexer = app.INDEXER_DEFAULT
-
-            indexer = int(provided_indexer)
-            indexer_id = int(whichSeries)
-            show_name = os.path.basename(os.path.normpath(fullShowPath))
+        indexer = int(provided_indexer)
+        series_id = int(provided_series_id)
+        show_name = os.path.basename(os.path.normpath(full_show_path))
 
         # use the whole path if it's given, or else append the show name to the root dir to get the full show path
-        if fullShowPath:
-            show_dir = os.path.normpath(fullShowPath)
+        if full_show_path:
+            show_dir = os.path.normpath(full_show_path)
         else:
-            show_dir = os.path.join(rootDir, sanitize_filename(show_name))
+            show_dir = os.path.join(root_dir, sanitize_filename(show_name))
 
         # blanket policy - if the dir exists you should have used 'add existing show' numbnuts
-        if os.path.isdir(show_dir) and not fullShowPath:
+        if os.path.isdir(show_dir) and not full_show_path:
             ui.notifications.error('Unable to add show', 'Folder {path} exists already'.format(path=show_dir))
             return json_response(
                 result=False,
@@ -524,12 +479,12 @@ class HomeAddShows(Home):
         new_quality = Quality.combine_qualities([int(q) for q in allowed_qualities], [int(q) for q in preferred_qualities])
 
         # add the show
-        app.show_queue_scheduler.action.addShow(indexer, indexer_id, show_dir, int(defaultStatus), new_quality,
+        app.show_queue_scheduler.action.addShow(indexer, series_id, show_dir, int(default_status), new_quality,
                                                 season_folders, indexer_lang, subtitles, anime,
-                                                scene, None, blacklist, whitelist, int(defaultStatusAfter), showlists)
+                                                scene, None, blacklist, whitelist, int(default_status_after), showlists)
         ui.notifications.message('Show added', 'Adding the specified show into {path}'.format(path=show_dir))
 
-        return finishAddShow()
+        return json_response(redirect='/home/')
 
     @staticmethod
     def split_extra_show(extra_show):
