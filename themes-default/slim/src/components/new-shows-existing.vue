@@ -1,21 +1,16 @@
 <template>
     <div id="new-shows-existing" class="newShowPortal">
-        <div id="config-components">
-            <ul><li><app-link href="#core-component-group1">Add Existing Show</app-link></li></ul>
-            <div id="core-component-group1" class="tab-pane active component-group">
+        <vue-tabs>
+            <v-tab key="add_existing_show" title="Add Existing Show">
                 <form id="addShowForm" method="post" action="addShows/addExistingShows" accept-charset="utf-8">
-                    <div id="tabs">
-                        <ul>
-                            <li><app-link href="#tabs-1">Manage Directories</app-link></li>
-                            <li><app-link href="#tabs-2">Customize Options</app-link></li>
-                        </ul>
-                        <div id="tabs-1" class="existingtabs">
+                    <vue-tabs>
+                        <v-tab key="manage_directories" title="Manage Directories">
                             <root-dirs @update:paths="rootDirsPathsUpdated" />
-                        </div>
-                        <div id="tabs-2" class="existingtabs">
+                        </v-tab>
+                        <v-tab key="cutomize_options" title="Customize Options">
                             <add-show-options disable-release-groups v-bind="{enableAnimeOptions}" @change="updateOptions" />
-                        </div>
-                    </div>
+                        </v-tab>
+                    </vue-tabs>
                     <br>
                     <p>Medusa can add existing shows, using the current options, by using locally stored NFO/XML metadata to eliminate user interaction.
                         If you would rather have Medusa prompt you to customize each show, then use the checkbox below.</p>
@@ -80,24 +75,27 @@
                     <br>
                     <input class="btn-medusa" type="button" value="Submit" :disabled="isLoading" @click="submitSeriesDirs">
                 </form>
-            </div>
-        </div>
+            </v-tab>
+        </vue-tabs>
     </div>
 </template>
 
 <script>
 import Vue from 'vue';
+import { api, apiRoute } from '../api';
 import { mapState } from 'vuex';
 import RootDirs from './root-dirs.vue';
 import { AddShowOptions, NewShow } from '.';
 import { AppLink } from './helpers';
-import { api, apiRoute } from '../api';
+import { VueTabs, VTab } from 'vue-nav-tabs/dist/vue-tabs.js';
 
 export default {
     components: {
         AddShowOptions,
         AppLink,
-        RootDirs
+        RootDirs,
+        VTab,
+        VueTabs
     },
     data() {
         return {
