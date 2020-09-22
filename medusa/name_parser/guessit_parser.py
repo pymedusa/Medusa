@@ -105,13 +105,9 @@ def get_expected_titles(show_list):
             if not match:
                 continue
 
-            series, year, _ = match.groups()
-            if year and not valid_year(int(year)):
-                series = exception
-
-            if not any(char.isdigit() or char == '-' for char in series):
+            if not any(char.isdigit() or char == '-' for char in exception):
                 continue
 
-            expected_titles.append(series)
+            expected_titles.append(exception)
 
     return expected_titles
