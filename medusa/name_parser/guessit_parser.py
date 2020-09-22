@@ -7,8 +7,6 @@ import re
 from datetime import timedelta
 from time import time
 
-from guessit.rules.common.date import valid_year
-
 from medusa import app
 from medusa.name_parser.rules import default_api
 
