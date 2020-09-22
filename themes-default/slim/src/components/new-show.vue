@@ -493,13 +493,15 @@ export default {
 
             let response = null;
             try {
+                const { $router } = this;
                 response = await api.post('series', { id: showId, options }, { timeout: 60000 });
                 if (response.status === 201) {
                     this.$emit('added', response.data);
-                }
-                // If we're not using this component from addExistingShow, route to home.
-                if (this.$route.name === 'addNewShow') {
-                    this.$routes.push({ name: 'home' });
+
+                    // If we're not using this component from addExistingShow, route to home.
+                    if (this.$route.name === 'addNewShow') {
+                        $router.push({ name: 'home' });
+                    }
                 }
             } catch (error) {
                 if (error.includes('409')) {
@@ -508,10 +510,12 @@ export default {
                         'Show already exists',
                         `Error trying to add show ${Object.keys(showId)[0]}${showId[Object.keys(showId)[0]]}`
                     );
+                    this.$emit('error', { message: 'Show already exists' });
                 } else {
                     this.$snotify.error(
                         `Error trying to add show ${Object.keys(showId)[0]}${showId[Object.keys(showId)[0]]}`
                     );
+                    this.$emit('error', { message: `Error trying to add show ${Object.keys(showId)[0]}${showId[Object.keys(showId)[0]]}` });
                 }
             }
         },
