@@ -482,7 +482,8 @@ class ConfigHandler(BaseRequestHandler):
         'anime.anidb.username': StringField(app, 'ANIDB_USERNAME'),
         'anime.anidb.password': StringField(app, 'ANIDB_PASSWORD'),
         'anime.anidb.useMylist': BooleanField(app, 'ANIDB_USE_MYLIST'),
-        'anime.autoAnimeToList': BooleanField(app, 'AUTO_ANIME_TO_LIST')
+        'anime.autoAnimeToList': BooleanField(app, 'AUTO_ANIME_TO_LIST'),
+        'anime.showlistDefaultAnime': StringField(app, 'SHOWLIST_DEFAULT_ANIME')
     }
 
     def get(self, identifier, path_param=None):
@@ -1221,5 +1222,6 @@ class DataGenerator(object):
                 'password': app.ANIDB_PASSWORD,
                 'useMylist': bool(app.ANIDB_USE_MYLIST)
             },
-            'autoAnimeToList': bool(app.AUTO_ANIME_TO_LIST)
+            'autoAnimeToList': bool(app.AUTO_ANIME_TO_LIST),
+            'showlistDefaultAnime': app.SHOWLIST_DEFAULT_ANIME
         }

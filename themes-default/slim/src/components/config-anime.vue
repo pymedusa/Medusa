@@ -55,6 +55,10 @@
                                         <span>Connect every show marked as anime, to the 'Anime' show list?</span>
                                     </config-toggle-slider>
 
+                                    <config-textbox :disabled="!anime.autoAnimeToList" v-model="anime.showlistDefaultAnime" label="Showlists for Anime" id="showlist_default_anime">
+                                        <span>Customize the showslist when auto anime lists is enabled</span>
+                                    </config-textbox>
+
                                     <input type="submit"
                                            class="btn-medusa config_submitter"
                                            value="Save Changes"
@@ -76,7 +80,7 @@ import { AppLink, ConfigTextbox, ConfigToggleSlider } from './helpers';
 import { VueTabs, VTab } from 'vue-nav-tabs/dist/vue-tabs.js';
 
 export default {
-    name: 'config-post-processing',
+    name: 'config-anime',
     components: {
         AppLink,
         ConfigTextbox,

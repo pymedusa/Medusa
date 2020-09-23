@@ -220,6 +220,7 @@ class MedusaApp(object):
         self.SCENE_DEFAULT = False
         self.ANIME_DEFAULT = False
         self.SHOWLIST_DEFAULT = ['series']
+        self.SHOWLIST_DEFAULT_ANIME = 'anime'
         self.PROVIDER_ORDER = []
 
         self.NAMING_MULTI_EP = False

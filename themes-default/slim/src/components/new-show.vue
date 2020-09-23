@@ -400,11 +400,8 @@ export default {
             return 'results';
         },
         enableAnimeOptions() {
-            const { selectedShow } = this;
-            if (selectedShow && selectedShow.indexerId === 1) {
-                return true;
-            }
-            return false;
+            const { providedInfo, selectedShow } = this;
+            return Boolean((selectedShow && selectedShow.indexerId === 1) || (providedInfo.use && providedInfo.indexerId === 1));
         },
         indexerListOptions() {
             const { indexers } = this;

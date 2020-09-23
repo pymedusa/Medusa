@@ -100,6 +100,7 @@
                     :options="layout.show.showListOrder.map(list => list.toLowerCase())"
                     @input="selectedShowLists = $event"
                 />
+                <span>If no list selected, the default 'series' will apply</span>
             </config-template>
 
             <div class="form-group">
@@ -348,16 +349,17 @@ export default {
         },
         selectedAnimeEnabled(value) {
             const { anime } = this;
+            const { autoAnimeToList, showlistDefaultAnime } = anime;
 
-            if (anime.autoAnimeToList) {
+            if (autoAnimeToList) {
                 if (value) {
                     // Auto anime to list is enabled. If changing the show format to anime, add 'Anime' to show lists.
-                    this.selectedShowLists.push('anime');
+                    this.selectedShowLists = [showlistDefaultAnime];
                     // The filter makes sure there are unique strings.
                     this.selectedShowLists = this.selectedShowLists.filter((v, i, a) => a.indexOf(v) === i);
                 } else {
                     // Remove the anime list.
-                    this.selectedShowLists = this.selectedShowLists.filter(list => list.toLowerCase() !== 'anime');
+                    this.selectedShowLists = this.selectedShowLists.filter(list => list.toLowerCase() !== showlistDefaultAnime);
                 }
             }
 

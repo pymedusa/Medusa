@@ -7,7 +7,8 @@ const state = {
         password: null,
         useMylist: false
     },
-    autoAnimeToList: false
+    autoAnimeToList: false,
+    showlistDefaultAnime: null
 };
 
 const mutations = {
