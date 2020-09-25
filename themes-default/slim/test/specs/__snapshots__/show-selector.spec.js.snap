@@ -60,14 +60,14 @@ exports[`ShowSelector.test.js renders with articles(The|A|An) ignored in /home/d
         label="Anime"
       >
         <option
-          value="tvdb360438"
-        >
-          A Certain Scientific Accelerator
-        </option>
-        <option
           value="tvdb300835"
         >
           Ajin
+        </option>
+        <option
+          value="tvdb360438"
+        >
+          A Certain Scientific Accelerator
         </option>
         <option
           value="tvdb313867"
@@ -121,14 +121,14 @@ exports[`ShowSelector.test.js renders with shows in /home/displayShow 1`] = `
         label="Anime"
       >
         <option
-          value="tvdb300835"
-        >
-          Ajin
-        </option>
-        <option
           value="tvdb360438"
         >
           A Certain Scientific Accelerator
+        </option>
+        <option
+          value="tvdb300835"
+        >
+          Ajin
         </option>
         <option
           value="tvdb313867"
@@ -182,14 +182,14 @@ exports[`ShowSelector.test.js renders with shows in /home/editShow 1`] = `
         label="Anime"
       >
         <option
-          value="tvdb300835"
-        >
-          Ajin
-        </option>
-        <option
           value="tvdb360438"
         >
           A Certain Scientific Accelerator
+        </option>
+        <option
+          value="tvdb300835"
+        >
+          Ajin
         </option>
         <option
           value="tvdb313867"
@@ -243,14 +243,14 @@ exports[`ShowSelector.test.js renders with split sections in /home/displayShow 1
         label="Anime"
       >
         <option
-          value="tvdb300835"
-        >
-          Ajin
-        </option>
-        <option
           value="tvdb360438"
         >
           A Certain Scientific Accelerator
+        </option>
+        <option
+          value="tvdb300835"
+        >
+          Ajin
         </option>
         <option
           value="tvdb313867"
@@ -298,14 +298,14 @@ exports[`ShowSelector.test.js renders without placeholder in /home/displayShow 1
         label="Anime"
       >
         <option
-          value="tvdb300835"
-        >
-          Ajin
-        </option>
-        <option
           value="tvdb360438"
         >
           A Certain Scientific Accelerator
+        </option>
+        <option
+          value="tvdb300835"
+        >
+          Ajin
         </option>
         <option
           value="tvdb313867"
