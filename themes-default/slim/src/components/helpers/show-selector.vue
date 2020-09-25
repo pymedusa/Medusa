@@ -58,7 +58,7 @@ export default {
 
             const sortedShows = [...showsInLists];
 
-            const sortKey = title => (sortArticle ? title.replace(/^((?:the|a|an)\s)/i, '') : title).toLowerCase();
+            const sortKey = title => (sortArticle ? title : title.replace(/^((?:the|a|an)\s)/i, '')).toLowerCase();
             const sortFn = (showA, showB) => {
                 const titleA = sortKey(showA.title);
                 const titleB = sortKey(showB.title);
