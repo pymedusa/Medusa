@@ -165,8 +165,8 @@ class QBittorrentAPI(GenericClient):
         }
         if self.api >= (2, 0, 0):
             if os.path.isabs(app.TORRENT_PATH):
-                files['savepath'] = app.TORRENT_PATH
-        return self._request(method='post', files=files, cookies=self.session.cookies)
+                data['savepath'] = app.TORRENT_PATH
+        return self._request(method='post', data=data, files=files, cookies=self.session.cookies)
 
     def _set_torrent_label(self, result):
 
