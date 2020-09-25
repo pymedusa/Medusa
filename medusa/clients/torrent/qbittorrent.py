@@ -163,6 +163,7 @@ class QBittorrentAPI(GenericClient):
         files = {
             'torrents': result.content
         }
+        data = {}
         if self.api >= (2, 0, 0):
             if os.path.isabs(app.TORRENT_PATH):
                 data['savepath'] = app.TORRENT_PATH
