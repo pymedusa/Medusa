@@ -491,7 +491,7 @@ export default {
             let response = null;
             try {
                 const { $router } = this;
-                response = await api.post('series', { id: showId, options }, { timeout: 60000 });
+                response = await api.post('series', { id: showId, options }, { timeout: 180000, validateStatus: () => true });
                 if (response.status === 201) {
                     this.$emit('added', response.data);
 
@@ -501,7 +501,16 @@ export default {
                     }
                 }
             } catch (error) {
-                if (error.includes('409')) {
+                if (typeof (error) === 'object') {
+                    if (error.code === 'ECONNABORTED') {
+                        // Show already exists
+                        this.$snotify.error(
+                            'Show add timeout',
+                            `Error trying to add show ${Object.keys(showId)[0]}${showId[Object.keys(showId)[0]]}`
+                        );
+                        this.$emit('error', { message: 'Show add timeout' });
+                    }
+                } else if (error.includes('409')) {
                     // Show already exists
                     this.$snotify.error(
                         'Show already exists',

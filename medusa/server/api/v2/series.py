@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 
 import logging
 
-from medusa import ws
+from medusa import app, ws
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
@@ -82,7 +82,7 @@ class SeriesHandler(BaseRequestHandler):
             return self._bad_request('Series slug should not be specified')
 
         data = json_decode(self.request.body)
-        if not data or 'id' not in data:
+        if not data or 'id' not in data or 'options' not in data:
             return self._bad_request('Invalid series data')
 
         ids = {k: v for k, v in viewitems(data['id']) if k != 'imdb'}
@@ -93,17 +93,31 @@ class SeriesHandler(BaseRequestHandler):
         if not identifier:
             return self._bad_request('Invalid series identifier')
 
-        series = Series.find_by_identifier(identifier)
-        if series:
+        if Series.find_by_identifier(identifier):
             return self._conflict('Series already exist added')
 
-        series = Series.from_identifier(identifier)
         try:
-            Series.save_series(series, options=data.get('options'))
+            options = {
+                'default_status': data['options'].get('status'),
+                'quality': data['options'].get('quality', {'preferred': [], 'allowed': []}),
+                'season_folders': data['options'].get('seasonFolders'),
+                'lang': data['options'].get('language'),
+                'subtitles': data['options'].get('subtitles'),
+                'anime': data['options'].get('anime'),
+                'scene': data['options'].get('scene'),
+                'paused': data['options'].get('paused'),
+                'blacklist': data['options']['release'].get('blacklist', []) if data['options'].get('release') else None,
+                'whitelist: ': data['options']['release'].get('whitelist', []) if data['options'].get('release') else None,
+                'default_status_after': data['options'].get('statusAfter'),
+                'root_dir': data['options'].get('rootDir'),
+                'show_lists': data['options'].get('showLists')
+            }
+
+            app.show_queue_scheduler.action.addShow(identifier.indexer.id, identifier.id, data['options'].get('showDir'), **options)
         except SaveSeriesException as error:
             return self._not_found(error)
 
-        return self._created(series.to_json(), identifier=identifier.slug)
+        return self._created(identifier=identifier.slug)
 
     def patch(self, series_slug, path_param=None):
         """Patch series."""

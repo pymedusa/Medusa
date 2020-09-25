@@ -174,6 +174,11 @@ class SeriesIdentifier(Identifier):
         if options and options.get('language') is not None:
             indexer_api_params['language'] = options['language']
 
+        log.debug('{indexer_name}: {indexer_params!r}', {
+            'indexer_name': indexerApi(self.indexer.id).name,
+            'indexer_params': indexer_api_params
+        })
+
         return indexer_api.indexer(**indexer_api.api_params)
 
     def __bool__(self):
@@ -1736,10 +1741,11 @@ class Series(TV):
     def configure(self, options):
         """Configure series."""
         # Let's try to create the show Dir if it's not provided. This way we force the show dir
-        # to build build using the Indexers provided series name
+        # to build using the Indexers provided series name
         show_dir = options.get('showDir')
         root_dir = options.get('rootDir')
         if not show_dir and root_dir:
+            # I don't think we need to check this. We just create the folder after we already queried the indexer.
             # show_name = get_showname_from_indexer(self.indexer, self.indexer_id, self.lang)
             if self.name:
                 show_dir = os.path.join(root_dir, sanitize_filename(self.name))
