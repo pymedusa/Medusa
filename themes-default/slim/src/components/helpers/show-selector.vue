@@ -1,5 +1,5 @@
 <template>
-    <div v-if="showForRoutes" class="show-selector form-inline hidden-print">
+    <div class="show-selector form-inline hidden-print">
         <div class="select-show-group pull-left top-5 bottom-5">
             <select v-if="shows.length === 0" :class="selectClass" disabled>
                 <option>Loading...</option>
@@ -76,10 +76,6 @@ export default {
             });
 
             return sortedShows;
-        },
-        showForRoutes() {
-            const { $route } = this;
-            return ['show', 'editShow'].includes($route.name);
         }
     },
     watch: {
