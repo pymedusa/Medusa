@@ -515,23 +515,25 @@ class Home(WebRoot):
 
     @staticmethod
     def saveShowNotifyList(show=None, emails=None, prowlAPIs=None):
-        entries = {'emails': '', 'prowlAPIs': ''}
-
         series_identifier = SeriesIdentifier.from_slug(show)
         series_obj = Series.find_by_identifier(series_identifier)
 
-        if series_obj:
-            if series_obj.notify_list:
-                entries = series_obj.notify_list
+        # Create a new dict, to force the "dirty" flag on the Series object.
+        entries = {'emails': '', 'prowlAPIs': ''}
+
+        if not series_obj:
+            return 'show missing'
+
+        if series_obj.notify_list:
+            entries.update(series_obj.notify_list)
 
         if emails is not None:
             entries['emails'] = emails
-            series_obj.notify_list = entries
 
         if prowlAPIs is not None:
             entries['prowlAPIs'] = prowlAPIs
-            series_obj.notify_list = entries
 
+        series_obj.notify_list = entries
         series_obj.save_to_db()
 
         return 'OK'

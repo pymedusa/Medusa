@@ -7,6 +7,7 @@ import ast
 import copy
 import datetime
 import glob
+import json
 import logging
 import os.path
 import shutil
@@ -2026,6 +2027,7 @@ class Series(TV):
                           'scene': self.scene,
                           'sports': self.sports,
                           'subtitles': self.subtitles,
+                          'notify_list': json.dumps(self.notify_list),
                           'dvdorder': self.dvd_order,
                           'startyear': self.start_year,
                           'lang': self.lang,
