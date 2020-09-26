@@ -224,7 +224,7 @@ class Series(TV):
         self.paused = 0
         self.air_by_date = 0
         self.subtitles = enabled_subtitles or int(app.SUBTITLES_DEFAULT)
-        self.notify_list = {}
+        self._notify_list = {}
         self.dvd_order = 0
         self.lang = lang
         self._last_update_indexer = 1
@@ -2027,7 +2027,6 @@ class Series(TV):
                           'scene': self.scene,
                           'sports': self.sports,
                           'subtitles': self.subtitles,
-                          'notify_list': json.dumps(self.notify_list),
                           'dvdorder': self.dvd_order,
                           'startyear': self.start_year,
                           'lang': self.lang,
@@ -2053,6 +2052,25 @@ class Series(TV):
             main_db_con.upsert('imdb_info', new_value_dict, control_value_dict)
 
         self.reset_dirty()
+
+    @property
+    def notify_list(self):
+        return self._notify_list
+
+    @notify_list.setter
+    def notify_list(self, value):
+        """
+        Write notify list to db.
+
+        Use a dedicated api call, as changing a dict will not trigger the dirty method (without other hacks).
+        """
+        self._notify_list = value
+
+        main_db_con = db.DBConnection()
+        main_db_con.action(
+            'UPDATE tv_shows SET notify_list = ? WHERE indexer = ? AND indexer_id = ?',
+            [json.dumps(self.notify_list), self.indexer, self.series_id]
+        )
 
     def __str__(self):
         """Represent a string.
