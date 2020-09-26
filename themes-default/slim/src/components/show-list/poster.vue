@@ -100,7 +100,7 @@ export default {
                         const { stateLayout } = this;
                         const { sortArticle } = stateLayout;
 
-                        if (!sortArticle) {
+                        if (sortArticle) {
                             return row.title;
                         }
 
