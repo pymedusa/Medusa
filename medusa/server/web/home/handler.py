@@ -518,6 +518,7 @@ class Home(WebRoot):
         series_identifier = SeriesIdentifier.from_slug(show)
         series_obj = Series.find_by_identifier(series_identifier)
 
+        # Create a new dict, to force the "dirty" flag on the Series object.
         entries = {'emails': '', 'prowlAPIs': ''}
 
         if not series_obj:
@@ -533,7 +534,7 @@ class Home(WebRoot):
             entries['prowlAPIs'] = prowlAPIs
 
         series_obj.notify_list = entries
-        # series_obj.save_to_db()
+        series_obj.save_to_db()
 
         return 'OK'
 
