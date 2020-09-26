@@ -5,6 +5,9 @@
 #### Improvements
 
 #### Fixes
+- Fix notify lists for prowl and email ([8535](https://github.com/pymedusa/Medusa/pull/8535))
+- Fix shows sorting by article sort using (the, a, an) was reversed in config-general ([8532](https://github.com/pymedusa/Medusa/pull/8532))
+- Fix sending torrents to qBittorrent api version > 2.0.0 ([8528](https://github.com/pymedusa/Medusa/pull/8528))
 
 -----
 
