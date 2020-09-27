@@ -119,7 +119,7 @@ class SeriesHandler(BaseRequestHandler):
         except SaveSeriesException as error:
             return self._not_found(error)
 
-        return self._created(identifier=queue_item_obj.to_json())
+        return self._created(data=queue_item_obj.to_json)
 
     def patch(self, series_slug, path_param=None):
         """Patch series."""

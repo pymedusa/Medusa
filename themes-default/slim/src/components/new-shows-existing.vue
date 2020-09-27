@@ -65,8 +65,26 @@
                                     </select>
                                 </td>
                                 <td align="center" :key="`td${curDirIndex}`">
-                                    <button v-if="addShowComponents[`curdirindex-${curDirIndex}`] === undefined" type="button" class="btn-medusa btn-inline" @click="manualAddNewShow($event, curDirIndex)" :key="`add${curDirIndex}`">Add</button>
-                                    <button v-else type="button" class="btn-medusa btn-inline" @click="closeAddShowComponent(curDirIndex)" :key="`close${curDirIndex}`">Close</button>
+                                    <template v-if="addedShowQueueItems.find(item => item.providedInfo.curDirIndex === curDirIndex)">
+                                        <div class="step-container">
+                                            <div
+                                                :onmouseover="`document.getElementById('${`steps-${curDirIndex}`}').style.display = 'block';`"
+                                                :onmouseleave="`document.getElementById('${`steps-${curDirIndex}`}').style.display = 'none';`"
+                                            >
+                                                <span v-if="!addedShowQueueItems.find(item => item.providedInfo.curDirIndex === curDirIndex).success">Running...</span>
+                                                <span v-else>Added</span>
+                                            </div>
+                                            <div :id="`steps-${curDirIndex}`" class="stepdisplay" style="display: none;">
+                                                <ul>
+                                                    <li v-for="step of addedShowQueueItems.find(item => item.providedInfo.curDirIndex === curDirIndex).step" :key="step">{{step}}</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </template>
+                                    <template v-else>
+                                        <button v-if="addShowComponents[`curdirindex-${curDirIndex}`] === undefined" type="button" class="btn-medusa btn-inline" @click="manualAddNewShow($event, curDirIndex)" :key="`add${curDirIndex}`">Add</button>
+                                        <button v-else type="button" class="btn-medusa btn-inline" @click="closeAddShowComponent(curDirIndex)" :key="`close${curDirIndex}`">Close</button>
+                                    </template>
                                 </td>
                             </tr>
                         </tbody>
@@ -126,7 +144,8 @@ export default {
                 },
                 showLists: []
             },
-            addShowComponents: {} // An array of mounted new-show.vue components.
+            addShowComponents: {}, // An array of mounted new-show.vue components.
+            addedShowQueueItems: []
         };
     },
     computed: {
@@ -358,7 +377,8 @@ export default {
                 showName: '',
                 showDir: curDir.path,
                 indexerId: 0,
-                indexerLanguage: 'en'
+                indexerLanguage: 'en',
+                curDirIndex // Add so we can return it with the matching queueitem. This allows us to keep track.
             };
 
             if (curDir.metadata.indexer) {
@@ -379,6 +399,12 @@ export default {
             const instance = new NewShowClass({
                 propsData: { providedInfo },
                 parent: this
+            });
+
+            // Bind the 'added' event, as through that we receive the addShow queueitem.
+            instance.$on('added', queueitem => {
+                this.addedShowQueueItems.push(queueitem);
+                this.closeAddShowComponent(queueitem.providedInfo.curDirIndex);
             });
 
             // Need these, because we want it to span the width of the parent table row.
@@ -406,7 +432,42 @@ export default {
     watch: {
         selectedRootDirs() {
             this.update();
+        },
+        queueitems(queueItem) {
+            const { addedShowQueueItems } = this;
+            for (const [index, addedItem] of addedShowQueueItems.entries()) {
+                const foundItem = queueItem.find(item => item.identifier === addedItem.identifier);
+                if (foundItem) {
+                    // Merge the data
+                    Vue.set(this.addedShowQueueItems, index, { ...addedItem, ...foundItem });
+                }
+            }
         }
     }
 };
 </script>
+<style scoped>
+.step-container {
+    position: relative;
+}
+
+.stepdisplay {
+    position: absolute;
+    background-color: rgb(95, 95, 95);
+    font-size: 14px;
+    background-color: rgb(95, 95, 95);
+    border: 1px solid rgb(125, 125, 125);
+    z-index: 1;
+    width: auto;
+    white-space: nowrap;
+}
+
+.stepdisplay ul {
+    padding: 2px 5px 2px 5px;
+}
+
+.stepdisplay li {
+    list-style-type: none;
+    text-align: left;
+}
+</style>

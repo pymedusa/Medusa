@@ -247,7 +247,8 @@ export default {
                     preferred: []
                 },
                 showLists: []
-            }
+            },
+            addedQueueItem: null
         };
     },
     mounted() {
@@ -491,38 +492,38 @@ export default {
             let response = null;
             try {
                 const { $router } = this;
-                response = await api.post('series', { id: showId, options }, { timeout: 180000, validateStatus: () => true });
-                if (response.status === 201) {
-                    this.$emit('added', response.data);
+                response = await api.post('series', { id: showId, options }, { timeout: 180000 });
 
-                    // If we're not using this component from addExistingShow, route to home.
-                    if (this.$route.name === 'addNewShow') {
-                        $router.push({ name: 'home' });
-                    }
+                // If we're not using this component from addExistingShow, route to home.
+                if (this.$route.name === 'addNewShow') {
+                    $router.push({ name: 'home' });
+                } else {
+                    const { providedInfo } = this;
+                    this.$emit('added', { ...response.data, providedInfo });
                 }
             } catch (error) {
-                if (typeof (error) === 'object') {
-                    if (error.code === 'ECONNABORTED') {
-                        // Show already exists
-                        this.$snotify.error(
-                            'Show add timeout',
-                            `Error trying to add show ${Object.keys(showId)[0]}${showId[Object.keys(showId)[0]]}`
-                        );
-                        this.$emit('error', { message: 'Show add timeout' });
-                    }
-                } else if (error.includes('409')) {
-                    // Show already exists
-                    this.$snotify.error(
-                        'Show already exists',
-                        `Error trying to add show ${Object.keys(showId)[0]}${showId[Object.keys(showId)[0]]}`
-                    );
-                    this.$emit('error', { message: 'Show already exists' });
-                } else {
-                    this.$snotify.error(
-                        `Error trying to add show ${Object.keys(showId)[0]}${showId[Object.keys(showId)[0]]}`
-                    );
-                    this.$emit('error', { message: `Error trying to add show ${Object.keys(showId)[0]}${showId[Object.keys(showId)[0]]}` });
-                }
+                // if (typeof (error) === 'object') {
+                //     if (error.code === 'ECONNABORTED') {
+                //         // Show already exists
+                //         this.$snotify.error(
+                //             'Show add timeout',
+                //             `Error trying to add show ${Object.keys(showId)[0]}${showId[Object.keys(showId)[0]]}`
+                //         );
+                //         this.$emit('error', { message: 'Show add timeout' });
+                //     }
+                // } else if (error.includes('409')) {
+                //     // Show already exists
+                //     this.$snotify.error(
+                //         'Show already exists',
+                //         `Error trying to add show ${Object.keys(showId)[0]}${showId[Object.keys(showId)[0]]}`
+                //     );
+                //     this.$emit('error', { message: 'Show already exists' });
+                // } else {
+                this.$snotify.error(
+                    `Error trying to add show ${Object.keys(showId)[0]}${showId[Object.keys(showId)[0]]}`
+                );
+                this.$emit('error', { message: `Error trying to add show ${Object.keys(showId)[0]}${showId[Object.keys(showId)[0]]}` });
+                // }
             }
         },
         selectResult(result) {
