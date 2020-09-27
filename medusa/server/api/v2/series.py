@@ -113,11 +113,13 @@ class SeriesHandler(BaseRequestHandler):
                 'show_lists': data['options'].get('showLists')
             }
 
-            app.show_queue_scheduler.action.addShow(identifier.indexer.id, identifier.id, data['options'].get('showDir'), **options)
+            queue_item_obj = app.show_queue_scheduler.action.addShow(
+                identifier.indexer.id, identifier.id, data['options'].get('showDir'), **options
+            )
         except SaveSeriesException as error:
             return self._not_found(error)
 
-        return self._created(identifier=identifier.slug)
+        return self._created(identifier=queue_item_obj.to_json())
 
     def patch(self, series_slug, path_param=None):
         """Patch series."""

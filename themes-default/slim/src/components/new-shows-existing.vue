@@ -133,7 +133,8 @@ export default {
         ...mapState({
             config: state => state.config.general, // Used by `inc_addShowOptions.mako`
             indexers: state => state.config.indexers,
-            indexerDefault: state => state.config.general.indexerDefault
+            indexerDefault: state => state.config.general.indexerDefault,
+            queueitems: state => state.shows.queueitems
         }),
         selectedRootDirs() {
             return this.rootDirs.filter(rd => rd.selected);

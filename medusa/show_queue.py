@@ -294,6 +294,11 @@ class ShowQueueItem(generic_queue.QueueItem):
         generic_queue.QueueItem.__init__(self, ShowQueueActions.names[action_id], action_id)
         self.show = show
 
+        # Update the generic_queue.py to_json.
+        self.to_json.update({
+            'show': self.show
+        })
+
     def isInQueue(self):
         return self in app.show_queue_scheduler.action.queue + [
             app.show_queue_scheduler.action.currentItem]  # @UndefinedVariable
@@ -382,8 +387,20 @@ class QueueItemAdd(ShowQueueItem):
         show_slug = indexer_id_to_slug(self.indexer, self.indexer_id)
         series = Series.from_identifier(SeriesIdentifier.from_slug(show_slug))
 
+        step = []
+
+        # Small helper, to reduce code for messaging
+        def message_step(new_step):
+            step.append(new_step)
+            ws.Message('QueueItemShowAdd', dict(
+                step=step, **self.to_json
+            )).push()
+
         try:
             try:
+                # Push an update to any open Web UIs through the WebSocket
+                message_step('load show from {indexer}'.format(indexer=indexerApi(self.indexer).name))
+
                 api = series.identifier.get_indexer_api(self.options)
 
                 if getattr(api[self.indexer_id], 'seriesname', None) is None:
@@ -402,14 +419,17 @@ class QueueItemAdd(ShowQueueItem):
                     raise SaveSeriesException('Indexer is missing a showname in this language: {0!r}')
 
                 series.load_from_indexer(tvapi=api)
+
+                message_step('load info from imdb')
                 series.load_imdb_info()
             except IndexerException as error:
                 log.warning('Unable to load series from indexer: {0!r}'.format(error))
                 raise SaveSeriesException('Unable to load series from indexer: {0!r}'.format(error))
 
-            series.check_existing()
+            message_step('check if show is already added')
 
             try:
+                message_step('configure show options')
                 series.configure(self.options)
             except KeyError as error:
                 log.error(
@@ -435,6 +455,7 @@ class QueueItemAdd(ShowQueueItem):
             series.save_to_db()
 
             try:
+                message_step('load episodes from {indexer}'.format(indexer=indexerApi(self.indexer).name))
                 series.load_episodes_from_indexer(tvapi=api, options=self.options)
             except IndexerException as error:
                 log.warning('Unable to load series episodes from indexer: {0!r}'.format(error))
@@ -442,22 +463,27 @@ class QueueItemAdd(ShowQueueItem):
                     'Unable to load series episodes from indexer: {0!r}'.format(error)
                 )
 
+            message_step('create metadata in show folder')
             series.write_metadata()
             series.update_metadata()
             series.populate_cache()
             build_name_cache(series)  # update internal name cache
             series.flush_episodes()
             series.sync_trakt()
+
+            message_step('add scene numbering')
             series.add_scene_numbering()
 
-        except Exception as error:
+        except SaveSeriesException as error:
             log.warning('Unable to add series: {0!r}'.format(error))
+            self.success = False
             self._finish_early()
-            raise SaveSeriesException(
-                'Unable to load series episodes from indexer: {0!r}'.format(error)
-            )
+            log.debug(traceback.format_exc())
+
+        self.success = True
 
         ws.Message('showAdded', series.to_json(detailed=False)).push()  # Send ws update to client
+        message_step('finished')
         self.finish()
 
     def _finish_early(self):
