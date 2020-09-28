@@ -152,7 +152,7 @@
                             </tab-content>
                             <tab-content title="Customize options">
                                 <div class="stepDiv">
-                                    <add-show-options v-bind="{showName, enableAnimeOptions}" @change="updateOptions" @refresh="refreshOptionStep" />
+                                    <add-show-options v-bind="{showName, enableAnimeOptions, presetShowOptions}" @change="updateOptions" @refresh="refreshOptionStep" />
                                 </div>
                             </tab-content>
                         </form-wizard>
@@ -202,7 +202,24 @@ export default {
                     showName: '',
                     showDir: '',
                     indexerId: '',
-                    indexerLanguage: 'en'
+                    indexerLanguage: 'en',
+                    unattended: false
+                };
+            }
+        },
+        presetShowOptions: {
+            default() {
+                return {
+                    use: false,
+                    subtitles: null,
+                    status: null,
+                    statusAfter: null,
+                    seasonFolders: null,
+                    anime: null,
+                    scene: null,
+                    showLists: null,
+                    release: null,
+                    quality: null
                 };
             }
         }
@@ -219,7 +236,7 @@ export default {
             searchStatus: '',
             searchResults: [],
             searchExact: false,
-            nameToSearch: '', //'${json.dumps(default_show_name)},'
+            nameToSearch: '',
             indexerId: 0,
             indexerLanguage: null,
             currentSearch: {
@@ -302,6 +319,15 @@ export default {
 
         // Assign formwizard ref to this.formwizard.ref.
         this.formwizard.ref = this.$refs.formwizard;
+
+        // Check if this.providedInfo.unattended is provided together with the info we need to add a show without prompts.
+        if (this.providedInfo.use && this.providedInfo.unattended) {
+            this.submitForm();
+        }
+
+        if (this.providedInfo.showOptions) {
+
+        }
     },
     computed: {
         ...mapState({

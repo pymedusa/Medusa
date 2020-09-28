@@ -147,7 +147,23 @@ export default {
             type: Boolean,
             default: false
         },
-        disableReleaseGroups: Boolean
+        disableReleaseGroups: Boolean,
+        presetShowOptions: {
+            default() {
+                return {
+                    use: false,
+                    subtitles: null,
+                    status: null,
+                    statusAfter: null,
+                    seasonFolders: null,
+                    anime: null,
+                    scene: null,
+                    showLists: null,
+                    release: null,
+                    quality: null
+                };
+            }
+        }
     },
     data() {
         return {
@@ -170,7 +186,7 @@ export default {
         };
     },
     mounted() {
-        const { defaultConfig, update } = this;
+        const { defaultConfig, presetShowOptions, update } = this;
         this.selectedStatus = defaultConfig.status;
         this.selectedStatusAfter = defaultConfig.statusAfter;
         this.$nextTick(() => update());
@@ -186,6 +202,10 @@ export default {
         ].join(), () => {
             this.update();
         });
+
+        if (presetShowOptions.use) {
+            this.updateShowOptions(presetShowOptions);
+        }
     },
     computed: {
         ...mapState({
@@ -222,6 +242,7 @@ export default {
          */
         saveDefaultsDisabled() {
             const {
+                presetShowOptions,
                 enableAnimeOptions,
                 defaultConfig,
                 namingForceFolders,
@@ -234,6 +255,11 @@ export default {
                 selectedSceneEnabled,
                 selectedShowLists
             } = this;
+
+            // Disable the button if we provided show options.
+            if (presetShowOptions.use) {
+                return false;
+            }
 
             return [
                 selectedStatus === defaultConfig.status,
@@ -323,6 +349,19 @@ export default {
             }).finally(() => {
                 this.saving = false;
             });
+        },
+        updateShowOptions(options) {
+            const { layout, namingForceFolders } = this;
+
+            this.selectedStatus = options.status;
+            this.selectedStatusAfter = options.statusAfter;
+            this.selectedSubtitleEnabled = options.subtitles;
+            this.selectedAnimeEnabled = options.anime;
+            this.selectedSeasonFoldersEnabled = options.seasonFolders || namingForceFolders;
+            this.selectedSceneEnabled = options.scene;
+            this.selectedShowLists = options.showLists.filter(
+                list => layout.show.showListOrder.map(list => list.toLowerCase()).includes(list.toLowerCase())
+            ) || [];
         }
     },
 
@@ -366,17 +405,18 @@ export default {
             this.$emit('refresh');
             this.update();
         },
+        /**
+         * As soon as the defaultConfig is loaded. Set the selected* values to it.
+         * If a this.presetShowOptions was provided, use that.
+         * @param {object} newValue - default config object.
+         */
         defaultConfig(newValue) {
-            const { layout, namingForceFolders } = this;
-            this.selectedStatus = newValue.status;
-            this.selectedStatusAfter = newValue.statusAfter;
-            this.selectedSubtitleEnabled = newValue.subtitles;
-            this.selectedAnimeEnabled = newValue.anime;
-            this.selectedSeasonFoldersEnabled = newValue.seasonFolders || namingForceFolders;
-            this.selectedSceneEnabled = newValue.scene;
-            this.selectedShowLists = newValue.showLists.filter(
-                list => layout.show.showListOrder.map(list => list.toLowerCase()).includes(list.toLowerCase())
-            ) || [];
+            const { presetShowOptions, updateShowOptions } = this;
+            if (presetShowOptions.use) {
+                return;
+            }
+
+            updateShowOptions(newValue);
         }
     }
 };

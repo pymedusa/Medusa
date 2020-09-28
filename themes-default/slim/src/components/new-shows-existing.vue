@@ -2,7 +2,7 @@
     <div id="new-shows-existing" class="newShowPortal">
         <vue-tabs>
             <v-tab key="add_existing_show" title="Add Existing Show">
-                <form id="addShowForm" method="post" action="addShows/addExistingShows" accept-charset="utf-8">
+                <form id="addShowForm" @submit.prevent="" accept-charset="utf-8">
                     <vue-tabs>
                         <v-tab key="manage_directories" title="Manage Directories">
                             <root-dirs @update:paths="rootDirsPathsUpdated" />
@@ -15,6 +15,9 @@
                     <p>Medusa can add existing shows, using the current options, by using locally stored NFO/XML metadata to eliminate user interaction.
                         If you would rather have Medusa prompt you to customize each show, then use the checkbox below.</p>
                     <p><input type="checkbox" v-model="promptForSettings" id="promptForSettings"> <label for="promptForSettings">Prompt me to set settings for each show</label></p>
+                    <p>Select the shows you'd like to add. If the show has metadata available, you will not get prompted for settings unless the option "Prompt me to set settings for each show" is enabled.</p>
+                    <p>While shows are added, the shows that do <b>not</b> have metadata available, will prompt you with the "Add Show" form.</p>
+                    <button class="btn-medusa" :disabled="isLoading" @click="submitSeriesDirs">Start</button>
                     <hr>
                     <p><b>Displaying folders within these directories which aren't already added to Medusa:</b></p>
                     <ul id="rootDirStaticList">
@@ -82,7 +85,7 @@
                                         </div>
                                     </template>
                                     <template v-else>
-                                        <button v-if="addShowComponents[`curdirindex-${curDirIndex}`] === undefined" type="button" class="btn-medusa btn-inline" @click="manualAddNewShow($event, curDirIndex)" :key="`add${curDirIndex}`">Add</button>
+                                        <button v-if="addShowComponents[`curdirindex-${curDirIndex}`] === undefined" type="button" class="btn-medusa btn-inline" @click="openAddNewShow(curDirIndex)" :key="`add${curDirIndex}`">Add</button>
                                         <button v-else type="button" class="btn-medusa btn-inline" @click="closeAddShowComponent(curDirIndex)" :key="`close${curDirIndex}`">Close</button>
                                     </template>
                                 </td>
@@ -90,8 +93,7 @@
                         </tbody>
                     </table>
                     <br>
-                    <br>
-                    <input class="btn-medusa" type="button" value="Submit" :disabled="isLoading" @click="submitSeriesDirs">
+                    <button class="btn-medusa" :disabled="isLoading" @click="submitSeriesDirs">Start</button>
                 </form>
             </v-tab>
         </vue-tabs>
@@ -294,59 +296,65 @@ export default {
             const { showUrl } = Object.values(this.indexers.indexers).filter(indexer => indexer.id === curDir.metadata.indexer)[0];
             return `${showUrl}${curDir.metadata.seriesId}`;
         },
-        async submitSeriesDirs() {
+        submitSeriesDirs() {
             const dirList = this.filteredDirList.filter(dir => dir.selected);
             if (dirList.length === 0) {
                 return false;
             }
 
-            const formData = new FormData();
-            formData.append('promptForSettings', this.promptForSettings);
-            dirList.forEach(dir => {
-                const originalIndexer = dir.metadata.indexer;
-                let { seriesId } = dir.metadata;
-                if (originalIndexer !== null && originalIndexer !== dir.selectedIndexer) {
-                    seriesId = '';
-                }
+            // const formData = new FormData();
+            // formData.append('promptForSettings', this.promptForSettings);
 
-                const seriesToAdd = [dir.selectedIndexer, dir.path, seriesId, dir.metadata.seriesName]
-                    .filter(i => typeof (i) === 'number' || Boolean(i)).join('|');
-
-                formData.append('shows_to_add', seriesToAdd);
-            });
-
-            const response = await apiRoute.post('addShows/addExistingShows', formData);
-            const { data } = response;
-            const { result, message, redirect, params } = data;
-
-            if (message) {
-                if (result === false) {
-                    console.log('Error: ' + message);
-                } else {
-                    console.log('Response: ' + message);
-                }
+            for (const [curDirIndex, _] of dirList.entries()) {
+                // Loop through the existing shows.
+                this.openAddNewShow(curDirIndex, true);
             }
-            if (redirect) {
-                const baseUrl = apiRoute.defaults.baseURL;
-                if (params.length === 0) {
-                    window.location.href = baseUrl + redirect;
-                    return;
-                }
 
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = baseUrl + redirect;
-                form.acceptCharset = 'utf-8';
+            // dirList.forEach(dir => {
+            //     const originalIndexer = dir.metadata.indexer;
+            //     let { seriesId } = dir.metadata;
+            //     if (originalIndexer !== null && originalIndexer !== dir.selectedIndexer) {
+            //         seriesId = '';
+            //     }
 
-                params.forEach(param => {
-                    const element = document.createElement('input');
-                    [element.name, element.value] = param; // Unpack
-                    form.append(element);
-                });
+            //     // const seriesToAdd = [dir.selectedIndexer, dir.path, seriesId, dir.metadata.seriesName]
+            //     //     .filter(i => typeof (i) === 'number' || Boolean(i)).join('|');
 
-                document.body.append(form);
-                form.submit();
-            }
+            //     // formData.append('shows_to_add', seriesToAdd);
+            // });
+
+            // const response = await apiRoute.post('addShows/addExistingShows', formData);
+            // const { data } = response;
+            // const { result, message, redirect, params } = data;
+
+            // if (message) {
+            //     if (result === false) {
+            //         console.log('Error: ' + message);
+            //     } else {
+            //         console.log('Response: ' + message);
+            //     }
+            // }
+            // if (redirect) {
+            //     const baseUrl = apiRoute.defaults.baseURL;
+            //     if (params.length === 0) {
+            //         window.location.href = baseUrl + redirect;
+            //         return;
+            //     }
+
+            //     const form = document.createElement('form');
+            //     form.method = 'POST';
+            //     form.action = baseUrl + redirect;
+            //     form.acceptCharset = 'utf-8';
+
+            //     params.forEach(param => {
+            //         const element = document.createElement('input');
+            //         [element.name, element.value] = param; // Unpack
+            //         form.append(element);
+            //     });
+
+            //     document.body.append(form);
+            //     form.submit();
+            // }
         },
         updateOptions(options) {
             // Update seleted options from add-show-options.vue @change event.
@@ -364,11 +372,11 @@ export default {
         },
         /**
          * Mount the new-show.vue component and provide nfo info if available.
-         * @param {object} event - Triggered event
          * @param {number} curDirIndex - Index of the looped filteredDirList array.
+         * @param {boolean} unattended - true if shows should be added without prompting for show options.
          */
-        manualAddNewShow(event, curDirIndex) {
-            const { addShowComponents, filteredDirList } = this;
+        openAddNewShow(curDirIndex, unattended = false) {
+            const { addShowComponents, filteredDirList, presetShowOptions } = this;
 
             const curDir = filteredDirList[curDirIndex];
             const providedInfo = {
@@ -378,7 +386,8 @@ export default {
                 showDir: curDir.path,
                 indexerId: 0,
                 indexerLanguage: 'en',
-                curDirIndex // Add so we can return it with the matching queueitem. This allows us to keep track.
+                curDirIndex, // Add so we can return it with the matching queueitem. This allows us to keep track.,
+                unattended // Passed as a flag, to auto add the show if enabled.
             };
 
             if (curDir.metadata.indexer) {
@@ -394,10 +403,18 @@ export default {
             }
 
             providedInfo.use = Boolean(providedInfo.indexerId !== 0 && providedInfo.showId !== 0 && providedInfo.showName);
+            const propsData = {
+                providedInfo
+            };
+
+            if (this.promptForSettings) {
+                propsData.presetShowOptions = presetShowOptions;
+                propsData.presetShowOptions.use = true;
+            }
 
             const NewShowClass = Vue.extend(NewShow);
             const instance = new NewShowClass({
-                propsData: { providedInfo },
+                propsData,
                 parent: this
             });
 
