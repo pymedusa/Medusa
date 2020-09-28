@@ -374,7 +374,6 @@ class Series(TV):
     @property
     def network_logo_name(self):
         """Get the network logo name."""
-
         def sanitize_network_names(str):
             dict = ({
                     u'\u010C': 'C',  # Č

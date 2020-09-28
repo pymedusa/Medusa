@@ -109,7 +109,7 @@ setup(
         'pytest>=5.0.0 ; python_version >= "3.5"',
         'pytest-cov>=2.6.1',
         'pytest-flake8>=1.0.4',
-        'pytest-tornado5>=2.0.0',
+        'pytest-tornado>=0.8.1',
         'PyYAML>=5.1',
         'vcrpy<4.0.0 ; python_version < "3.5"',
         'vcrpy>=4.0.0 ; python_version >= "3.5"',
