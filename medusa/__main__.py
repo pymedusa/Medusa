@@ -1183,7 +1183,7 @@ class Application(object):
                                                                                      minute=random.randint(0, 59)))
 
             app.episode_update_scheduler = scheduler.Scheduler(episode_updater.EpisodeUpdater(),
-                                                               cycleTime=datetime.timedelta(minutes=2),
+                                                               cycleTime=datetime.timedelta(minutes=15),
                                                                threadName='EPISODEUPDATER',
                                                                silent=False)
 
