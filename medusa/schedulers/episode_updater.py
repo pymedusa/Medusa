@@ -77,7 +77,14 @@ class EpisodeUpdater(object):
                     series_obj = Show.find_by_id(app.showList, indexer_id, series_id)
 
                 # for when there is orphaned series in the database but not loaded into our show list
-                if not series_obj or series_obj.paused:
+                if not series_obj:
+                    continue
+
+                # update previous and next epiosode cache
+                series_obj.prev_airdate
+                series_obj.next_airdate
+
+                if series_obj.paused:
                     continue
 
             except MultipleShowObjectsException:
