@@ -83,7 +83,7 @@
     "copy-webpack-plugin": "6.1.1",
     "cross-env": "7.0.2",
     "css-loader": "3.6.0",
-    "eslint": "7.9.0",
+    "eslint": "7.10.0",
     "eslint-config-xo": "0.26.0",
     "eslint-import-resolver-webpack": "0.12.2",
     "eslint-plugin-eslint-comments": "3.2.0",
