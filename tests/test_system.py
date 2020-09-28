@@ -2,7 +2,7 @@
 """Tests for medusa.system module."""
 from __future__ import unicode_literals
 
-from medusa.event_queue import Events
+from medusa.queues.event_queue import Events
 from medusa.system.restart import Restart
 from medusa.system.shutdown import Shutdown
 

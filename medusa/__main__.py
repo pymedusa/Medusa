@@ -78,7 +78,6 @@ from medusa.config import (
     load_provider_setting, save_provider_setting
 )
 from medusa.databases import cache_db, failed_db, main_db
-from medusa.queues.event_queue import Events
 from medusa.indexers.config import INDEXER_TVDBV2, INDEXER_TVMAZE
 from medusa.init.filesystem import is_valid_encoding
 from medusa.providers.generic_provider import GenericProvider
@@ -86,14 +85,15 @@ from medusa.providers.nzb.newznab import NewznabProvider
 from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
 from medusa.providers.torrent.torznab.torznab import TorznabProvider
 from medusa.queues import show_queue
+from medusa.queues.event_queue import Events
+from medusa.schedulers import (
+    episode_updater, scheduler, show_updater, trakt_checker
+)
 from medusa.search.backlog import BacklogSearchScheduler, BacklogSearcher
 from medusa.search.daily import DailySearcher
 from medusa.search.proper import ProperFinder
 from medusa.search.queue import ForcedSearchQueue, SearchQueue, SnatchQueue
 from medusa.server.core import AppWebServer
-from medusa.schedulers import (
-    episode_updater, scheduler, show_updater, trakt_checker
-)
 from medusa.system.shutdown import Shutdown
 from medusa.themes import read_themes
 from medusa.tv import Series
