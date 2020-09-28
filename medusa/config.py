@@ -28,10 +28,11 @@ from builtins import str
 
 from contextlib2 import suppress
 
-from medusa import app, common, db, helpers, logger, naming, scheduler
+from medusa import app, common, db, helpers, logger, naming
 from medusa.helper.common import try_int
 from medusa.helpers.utils import split_and_strip
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.schedulers import scheduler
 from medusa.updater.version_checker import CheckVersion
 
 from requests.compat import urlsplit
