@@ -727,16 +727,17 @@ export default {
             setCurrentShow: 'setCurrentShow',
             setRecentShow: 'setRecentShow'
         }),
-        loadShow() {
-            const { setCurrentShow, id, indexer, getShow } = this;
+        async loadShow() {
+            const { setCurrentShow, id, indexer, initializeEpisodes, getShow } = this;
+            // We need detailed info for the xem / scene exceptions, so let's get it.
+            await getShow({ id, indexer, detailed: true });
+
             // Let's tell the store which show we currently want as current.
+            // Run this after getShow(), as it will trigger the initializeEpisodes() method.
             setCurrentShow({
                 indexer,
                 id
             });
-
-            // We need detailed info for the xem / scene exceptions, so let's get it.
-            getShow({ id, indexer, detailed: true });
         },
         statusQualityUpdate(event) {
             const { selectedEpisodes, setStatus, setQuality } = this;
@@ -1268,7 +1269,6 @@ export default {
             // When moving from editShow to displayShow we might not have loaded the episodes yet.
             // The watch on show.id.slug will also not be triggered.
             vm.loadShow();
-            vm.initializeEpisodes();
         });
     }
 };
