@@ -645,7 +645,7 @@ export default {
             setInputValidInvalid
         } = this;
 
-        loadShow();
+        // loadShow();
 
         ['load', 'resize'].map(event => {
             return window.addEventListener(event, () => {
@@ -1267,6 +1267,7 @@ export default {
             // Access to component instance via `vm`.
             // When moving from editShow to displayShow we might not have loaded the episodes yet.
             // The watch on show.id.slug will also not be triggered.
+            vm.loadShow();
             vm.initializeEpisodes();
         });
     }
