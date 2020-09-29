@@ -57,7 +57,7 @@ def update_network_dict():
     remote_networks = {}
     try:
         for line in response.text.splitlines():
-            (key, val) = line.strip().rsplit(u':', 1)
+            (key, val) = line.rsplit(':', 1)
             if key is None or val is None:
                 continue
             remote_networks[key] = val
@@ -68,7 +68,7 @@ def update_network_dict():
 
     # Don't continue because if empty dict, var `existing` be false for all networks, thus deleting all
     if not remote_networks:
-        logger.log(u'Unable to update network timezones as fetched network dict is empty', logger.WARNING)
+        logger.log('Unable to update network timezones as fetched network dict is empty', logger.WARNING)
         return
 
     cache_db_con = db.DBConnection('cache.db')
@@ -100,7 +100,7 @@ def update_network_dict():
         cache_db_con.mass_action(queries)
         load_network_dict()
 
-    logger.log(u'Finished updating network timezones', logger.DEBUG)
+    logger.log('Finished updating network timezones', logger.DEBUG)
 
 
 # load network timezones from db into dict
