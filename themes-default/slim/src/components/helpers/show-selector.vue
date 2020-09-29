@@ -86,7 +86,7 @@ export default {
         showSlug(newSlug) {
             this.selectedShowSlug = newSlug;
         },
-        selectedShowSlug(newSlug) {
+        async selectedShowSlug(newSlug) {
             if (!this.followSelection) {
                 return;
             }
@@ -98,6 +98,10 @@ export default {
             }
             const indexerName = selectedShow.indexer;
             const seriesId = selectedShow.id[indexerName];
+
+            // Get detailed show information. We need to wait for this, in order for the watch('show.id.slug') in displayShow
+            // to have the detailed show information.
+            await $store.dispatch('getShow', { id: seriesId, indexer: indexerName, detailed: true });
 
             // Make sure the correct show, has been set as current show.
             console.debug(`Setting current show to ${selectedShow.title}`);
