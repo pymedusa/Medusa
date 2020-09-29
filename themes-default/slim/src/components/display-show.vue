@@ -1154,6 +1154,11 @@ export default {
         },
         neededSeasons(page) {
             const { paginationPerPage, show } = this;
+            const { seasonCount } = show;
+            if (!seasonCount) {
+                return [];
+            }
+
             const seasons = show.seasonCount.length - 1;
 
             let pagesCount = 1;
@@ -1200,7 +1205,7 @@ export default {
         },
         initializeEpisodes() {
             const { getEpisodes, id, indexer, setRecentShow, show } = this;
-            if (!show.seasons) {
+            if (!show.seasons && show.seasonCount) {
                 // Load episodes for the first page.
                 this.loadEpisodes(1);
                 // Always get special episodes if available.

@@ -665,6 +665,7 @@ class Series(TV):
         } for alias in self.aliases]
 
     @property
+    @ttl_cache(25200.0)  # Caching as this is requested for the /home page.
     def xem_numbering(self):
         """Return series episode xem numbering."""
         return get_xem_numbering_for_show(self, refresh_data=False)
@@ -2128,7 +2129,6 @@ class Series(TV):
         data['network'] = self.network  # e.g. CBS
         data['type'] = self.classification  # e.g. Scripted
         data['status'] = self.status  # e.g. Continuing
-        data['seasonCount'] = dict_to_array(self.get_all_seasons(), key='season', value='episodeCount')
         data['airs'] = self.airs  # e.g. Thursday 8:00 PM
         data['airsFormatValid'] = network_timezones.test_timeformat(self.airs)
         data['language'] = self.lang
@@ -2200,6 +2200,7 @@ class Series(TV):
             if self.is_scene:
                 data['xemAbsoluteNumbering'] = dict_to_array(self.xem_absolute_numbering, key='absolute', value='sceneAbsolute')
                 data['sceneNumbering'] = numbering_tuple_to_dict(self.scene_numbering)
+            data['seasonCount'] = dict_to_array(self.get_all_seasons(), key='season', value='episodeCount')
 
         if episodes:
             all_episodes = self.get_all_episodes()
