@@ -665,7 +665,7 @@ class Series(TV):
         } for alias in self.aliases]
 
     @property
-    @ttl_cache(43200.0)  # Caching as this is requested for the /home page.
+    @ttl_cache(25200.0)  # Caching as this is requested for the /home page.
     def xem_numbering(self):
         """Return series episode xem numbering."""
         return get_xem_numbering_for_show(self, refresh_data=False)
