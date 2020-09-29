@@ -80,9 +80,12 @@ class EpisodeUpdater(object):
                 if not series_obj:
                     continue
 
-                # update previous and next epiosode cache
+                # update previous and next episode cache
                 series_obj.prev_airdate
                 series_obj.next_airdate
+
+                # update xem_numbering
+                series_obj.xem_numbering
 
                 if series_obj.paused:
                     continue
