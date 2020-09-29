@@ -457,6 +457,11 @@ class PageElement(object):
 
         :param tags: A list of PageElements.
         """
+        if isinstance(tags, Tag):
+            # Calling self.append() on another tag's contents will change
+            # the list we're iterating over. Make a list that won't
+            # change.
+            tags = list(tags.contents)
         for tag in tags:
             self.append(tag)
 
