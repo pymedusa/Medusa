@@ -1261,15 +1261,6 @@ export default {
                 initializeEpisodes();
             }
         }
-        // 'show.seasonCount': function(seasonCount) { // eslint-disable-line object-shorthand
-        //     const { initializeEpisodes, show } = this;
-        //     // Show.seasonCount is retrieved through the "detailed" flag. Trigger a download of episodes when detected.
-        //     if (seasonCount && !show.seasons) {
-        //         // This is still technically jQuery. Meaning whe're still letting jQuery do its thing on the entire dom.
-        //         updateSearchIcons(show.id.slug, this);
-        //         initializeEpisodes();
-        //     }
-        // }
     },
     beforeRouteEnter(to, from, next) {
         next(vm => {
