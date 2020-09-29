@@ -639,13 +639,10 @@ export default {
 
     mounted() {
         const {
-            loadShow,
             setEpisodeSceneNumbering,
             setAbsoluteSceneNumbering,
             setInputValidInvalid
         } = this;
-
-        // loadShow();
 
         ['load', 'resize'].map(event => {
             return window.addEventListener(event, () => {
@@ -728,7 +725,7 @@ export default {
             setRecentShow: 'setRecentShow'
         }),
         async loadShow() {
-            const { setCurrentShow, id, indexer, initializeEpisodes, getShow } = this;
+            const { setCurrentShow, id, indexer, getShow } = this;
             // We need detailed info for the xem / scene exceptions, so let's get it.
             await getShow({ id, indexer, detailed: true });
 
