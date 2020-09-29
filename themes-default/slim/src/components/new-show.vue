@@ -269,12 +269,12 @@ export default {
         };
     },
     mounted() {
-        // const init = () => {
-        //     this.$watch('formwizard.currentsection', newValue => {
-        //         if (newValue === 0 && this.$refs.nameToSearch) {
-        //             this.$refs.nameToSearch.focus();
-        //         }
-        //     });
+        // IF switching to the first tab, auto focus on the name field.
+        this.$watch('formwizard.currentIndex', newValue => {
+            if (newValue === 0 && this.$refs.nameToSearch) {
+                this.$refs.nameToSearch.focus();
+            }
+        });
 
         setTimeout(() => {
             const { providedInfo, navigateStep } = this;
@@ -323,10 +323,6 @@ export default {
         // Check if this.providedInfo.unattended is provided together with the info we need to add a show without prompts.
         if (this.providedInfo.use && this.providedInfo.unattended) {
             this.submitForm();
-        }
-
-        if (this.providedInfo.showOptions) {
-
         }
     },
     computed: {
@@ -465,10 +461,10 @@ export default {
             }
 
             // Collect all the needed form data.
-
             const {
                 indexerIdToName,
                 indexerLanguage,
+                presetShowOptions,
                 providedInfo,
                 selectedRootDir,
                 selectedShow,
@@ -490,6 +486,10 @@ export default {
                 options.showDir = providedInfo.showDir;
             } else {
                 options.rootDir = selectedRootDir;
+            }
+
+            if (presetShowOptions.use) {
+                this.selectedShowOptions = presetShowOptions;
             }
 
             const {
@@ -528,23 +528,6 @@ export default {
                     this.$emit('added', { ...response.data, providedInfo });
                 }
             } catch (error) {
-                // if (typeof (error) === 'object') {
-                //     if (error.code === 'ECONNABORTED') {
-                //         // Show already exists
-                //         this.$snotify.error(
-                //             'Show add timeout',
-                //             `Error trying to add show ${Object.keys(showId)[0]}${showId[Object.keys(showId)[0]]}`
-                //         );
-                //         this.$emit('error', { message: 'Show add timeout' });
-                //     }
-                // } else if (error.includes('409')) {
-                //     // Show already exists
-                //     this.$snotify.error(
-                //         'Show already exists',
-                //         `Error trying to add show ${Object.keys(showId)[0]}${showId[Object.keys(showId)[0]]}`
-                //     );
-                //     this.$emit('error', { message: 'Show already exists' });
-                // } else {
                 this.$snotify.error(
                     `Error trying to add show ${Object.keys(showId)[0]}${showId[Object.keys(showId)[0]]}`
                 );
@@ -714,7 +697,7 @@ export default {
             this.formwizard.ref.changeTab(0, newIndex);
         },
         updateOptions(options) {
-            // Update seleted options from add-show-options.vue @change event.
+            // Update selected options from add-show-options.vue @change event.
             this.selectedShowOptions.subtitles = options.subtitles;
             this.selectedShowOptions.status = options.status;
             this.selectedShowOptions.statusAfter = options.statusAfter;
