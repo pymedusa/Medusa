@@ -1153,10 +1153,14 @@ export default {
             this.loadEpisodes(params.currentPage);
         },
         neededSeasons(page) {
-            const { paginationPerPage, show } = this;
+            const { layout, paginationPerPage, show } = this;
             const { seasonCount } = show;
-            if (!seasonCount) {
+            if (!seasonCount || seasonCount.length === 0) {
                 return [];
+            }
+
+            if (!layout.show.pagination.enable) {
+                return seasonCount.filter(season => season.season !== 0).map(season => season.season).reverse();
             }
 
             const seasons = show.seasonCount.length - 1;
@@ -1190,7 +1194,7 @@ export default {
             return pages[page] || [];
         },
         loadEpisodes(page) {
-            const { id, indexer, getEpisodes } = this;
+            const { id, indexer, layout, getEpisodes, show } = this;
             // Wrap getEpisodes into an async/await function, so we can wait for the season to have been committed
             // before going on to the next one.
             const _getEpisodes = async (id, indexer) => {
@@ -1201,6 +1205,7 @@ export default {
                     await getEpisodes({ id, indexer, season }); // eslint-disable-line no-await-in-loop
                 }
             };
+
             _getEpisodes(id, indexer);
         },
         initializeEpisodes() {
