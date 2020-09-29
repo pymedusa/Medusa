@@ -1192,7 +1192,7 @@ export default {
             return pages[page] || [];
         },
         loadEpisodes(page) {
-            const { id, indexer, layout, getEpisodes, show } = this;
+            const { id, indexer, getEpisodes } = this;
             // Wrap getEpisodes into an async/await function, so we can wait for the season to have been committed
             // before going on to the next one.
             const _getEpisodes = async (id, indexer) => {
