@@ -235,6 +235,11 @@ export default {
             } = this;
             this.isotopeLoaded = true;
             calculateSize();
+
+            if (!this.$refs[`isotope-${listTitle}`]) {
+                return;
+            }
+
             // Render layout (for sizing)
             this.$refs[`isotope-${listTitle}`].layout();
             // Arrange & Sort
