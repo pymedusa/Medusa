@@ -82,32 +82,22 @@ export default {
         showSlug(newSlug) {
             this.selectedShowSlug = newSlug;
         },
-        async selectedShowSlug(newSlug) {
+        selectedShowSlug(newSlug) {
             if (!this.followSelection) {
                 return;
             }
 
-            const { $store, shows } = this;
+            const { shows } = this;
             const selectedShow = shows.find(show => show.id.slug === newSlug);
             if (!selectedShow) {
                 return;
             }
-            const indexerName = selectedShow.indexer;
-            const seriesId = selectedShow.id[indexerName];
 
-            // Get detailed show information. We need to wait for this, in order for the watch('show.id.slug') in displayShow
-            // to have the detailed show information.
-            await $store.dispatch('getShow', { id: seriesId, indexer: indexerName, detailed: true });
-
-            // Make sure the correct show, has been set as current show.
-            console.debug(`Setting current show to ${selectedShow.title}`);
-            $store.commit('currentShow', {
-                indexer: indexerName,
-                id: seriesId
-            });
+            const indexername = selectedShow.indexer;
+            const seriesid = String(selectedShow.id[indexername]);
 
             // To make it complete, make sure to switch route.
-            this.$router.push({ query: { indexername: indexerName, seriesid: String(seriesId) } });
+            this.$router.push({ query: { indexername, seriesid } });
         }
     }
 };
