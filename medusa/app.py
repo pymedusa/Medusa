@@ -7,6 +7,10 @@ import random
 import sys
 from threading import Lock
 
+CUSTOMIZABLE_LOGS = [
+    '{id}: Loading show info from database',
+]
+
 
 class MedusaApp(object):
     """Medusa app config."""
@@ -146,6 +150,7 @@ class MedusaApp(object):
         self.LOG_DIR = None
         self.LOG_NR = 5
         self.LOG_SIZE = 10.0
+        self._CUSTOM_LOGS = {}
 
         self.SOCKET_TIMEOUT = None
 
@@ -674,6 +679,34 @@ class MedusaApp(object):
         self.FALLBACK_PLEX_TIMEOUT = 3
         self.FALLBACK_PLEX_API_URL = 'https://tvdb2.plex.tv'
         self.TVDB_API_KEY = 'd99c8e7dac2307355af4ab88720a6c32'
+
+    @property
+    def custom_logs(self):
+        """Get custom logs."""
+        from medusa import db
+        main_db_con = db.DBConnection()
+        if not self._CUSTOM_LOGS:  # Load customs logs from db for first time.
+            for log in main_db_con.select('SELECT * FROM log_override'):
+                self._CUSTOM_LOGS[log['identifier']] = log['level']
+        return self._CUSTOM_LOGS
+
+    @custom_logs.setter
+    def custom_logs(self, logs):
+        """
+        Save custom logs.
+
+        :param logs: key/value pair of identifier (string): level (int)
+        """
+        # Update app attribute.
+        self._CUSTOM_LOGS = logs
+        # Update db.
+        from medusa import db
+        main_db_con = db.DBConnection()
+
+        for identifier, level in self._CUSTOM_LOGS.items():
+            control_value = {'identifier': identifier}
+            new_value = {'level': level}
+            main_db_con.upsert('log_override', new_value, control_value)
 
 
 app = MedusaApp()

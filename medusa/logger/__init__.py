@@ -626,42 +626,6 @@ class CensoredFormatter(logging.Formatter, object):
         return msg
 
 
-class UiCustomFormatter(logging.Formatter, object):
-    """Adjust log level, using overrides from UI."""
-
-    def __init__(self, fmt=None, datefmt=None, encoding='utf-8'):
-        """Constructor."""
-        super(UiCustomFormatter, self).__init__(fmt, datefmt)
-
-    def filter(self, record):
-        """Filter to add commit hash to log record, adjust log level and to add exception traceback for errors.
-
-        :param record:
-        :type record: logging.LogRecord
-        :return:
-        :rtype: bool
-        """
-        from medusa import db
-        main_db = db.DBConnection()
-        sql_results = main_db.select('SELECT * FROM log_override')
-
-        fullname = record.name
-        basename = fullname.split('.')[0]
-        # decrease = self.level_mapping.get(fullname) or self.level_mapping.get(basename) or 0
-        # level = max(DB, record.levelno - decrease)
-        # if record.levelno != level:
-        #     record.levelno = level
-        #     record.levelname = logging.getLevelName(record.levelno)
-
-        # # add exception traceback for errors
-        # if record.levelno == ERROR and record.exc_info is not False:
-        #     exc_info = sys.exc_info()
-        #     record.exc_info = exc_info if exc_info != (None, None, None) else None
-
-        return True
-
-
-
 class Logger(object):
     """Custom Logger."""
 

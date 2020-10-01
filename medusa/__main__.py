@@ -182,6 +182,19 @@ class Application(object):
                                    'Try to refresh the show, or move the images manually if you know '
                                    'what you are doing. Error: {error}', series=series_obj.name, error=error)
 
+    @staticmethod
+    def initialize_custom_logging():
+        """Load custom logging and insert into table if needed."""
+        from medusa.app import CUSTOMIZABLE_LOGS
+        main_db_con = db.DBConnection()
+        for identifier in CUSTOMIZABLE_LOGS:
+            sql_result = main_db_con.select('SELECT * FROM log_override WHERE identifier = ?', [identifier])
+
+            if not len(sql_result):
+                main_db_con.action('INSERT INTO log_override (identifier) VALUES (?)', [identifier])
+
+        # Update app.
+
     def start(self, args):
         """Start Application."""
         app.instance = self
@@ -353,6 +366,7 @@ class Application(object):
 
         self.clear_cache()
         self.migrate_images()
+        self.initialize_custom_logging()
 
         if self.forced_port:
             logger.info('Forcing web server to port {port}', port=self.forced_port)
