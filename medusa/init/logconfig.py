@@ -16,13 +16,14 @@ from six import text_type
 class StyleAdapter(logging.LoggerAdapter):
     """Logger Adapter with new string format style."""
 
-    adapter_members = {attr: attr for attr in dir(logging.LoggerAdapter) if not callable(attr) and
-                       not attr.startswith('__')}
+    adapter_members = {
+        attr: attr for attr in dir(logging.LoggerAdapter) if not callable(attr) and not attr.startswith('__')
+    }
     adapter_members.update({'warn': 'warning', 'fatal': 'critical'})
     reserved_keywords = getfullargspec(logging.Logger._log).args[1:]
 
     def __init__(self, target_logger, extra=None):
-        """Constructor.
+        """StyleAdapter constructor.
 
         :param target_logger:
         :type target_logger: logging.Logger

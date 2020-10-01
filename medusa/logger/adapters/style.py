@@ -8,6 +8,15 @@ import functools
 import logging
 import traceback
 
+from logging import (
+    CRITICAL,
+    DEBUG,
+    ERROR,
+    INFO,
+    NullHandler,
+    WARNING,
+)
+
 from six import text_type, viewitems
 from six.moves import collections_abc
 
@@ -107,3 +116,33 @@ class BraceAdapter(logging.LoggerAdapter):
         """Add exception information before delegating to self.log."""
         kwargs['exc_info'] = 1
         self.log(logging.ERROR, msg, *args, **kwargs)
+
+
+class CustomBraceAdapter(logging.LoggerAdapter):
+    """Add custom log level ovvrides to the Brace-formatted messages."""
+
+    def __init__(self, logger, extra=None):
+        """Initialize the Brace adapter with a logger."""
+        super(CustomBraceAdapter, self).__init__(logger, extra)
+        self.debug = functools.partial(self.log, logging.DEBUG)
+        self.info = functools.partial(self.log, logging.INFO)
+        self.warning = functools.partial(self.log, logging.WARNING)
+        self.error = functools.partial(self.log, logging.ERROR)
+        self.critical = functools.partial(self.log, logging.CRITICAL)
+
+        from medusa import db
+        main_db = db.DBConnection()
+        sql_results = main_db.select('SELECT * FROM log_override')
+
+        self.log_override = {}
+        for row in sql_results:
+            if row['level'] != 0:
+                self.log_override[row['identifier']] = row['level']
+
+    def log(self, level, msg, *args, **kwargs):
+        """Log a message at the specified level using Brace-formatting."""
+        # Set level
+        if msg in self.log_override:
+            level = self.log_override[msg]
+
+        self.logger.log(level, msg, **kwargs)

@@ -86,7 +86,7 @@ from medusa.indexers.utils import (
     reverse_mappings,
     slug_to_indexer_id
 )
-from medusa.logger.adapters.style import BraceAdapter
+from medusa.logger.adapters.style import CustomBraceAdapter
 from medusa.media.banner import ShowBanner
 from medusa.media.fan_art import ShowFanArt
 from medusa.media.network_logo import ShowNetworkLogo
@@ -126,7 +126,7 @@ except ImportError:
 
 MILLIS_YEAR_1900 = datetime.datetime(year=1900, month=1, day=1).toordinal()
 
-log = BraceAdapter(logging.getLogger(__name__))
+log = CustomBraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
