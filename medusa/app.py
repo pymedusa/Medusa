@@ -9,6 +9,7 @@ from threading import Lock
 
 CUSTOMIZABLE_LOGS = [
     '{id}: Loading show info from database',
+    'No NZB/Torrent providers found or enabled in the application config for daily searches. Please check your settings',
 ]
 
 

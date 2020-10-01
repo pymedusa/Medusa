@@ -111,12 +111,12 @@ class BraceAdapter(logging.LoggerAdapter):
         self.log(logging.ERROR, msg, *args, **kwargs)
 
 
-class CustomBraceAdapter(logging.LoggerAdapter):
+class CustomBraceAdapter(BraceAdapter):
     """Add custom log level ovvrides to the Brace-formatted messages."""
 
-    def __init__(self, logger, extra=None):
-        """Initialize the Custom Brace adapter with a logger."""
-        super(CustomBraceAdapter, self).__init__(logger, extra)
+    # def __init__(self, logger, extra=None):
+    #     """Initialize the Custom Brace adapter with a logger."""
+    #     super(CustomBraceAdapter, self).__init__(logger, extra)
 
     def log(self, level, msg, *args, **kwargs):
         """Log a message at the specified level using Brace-formatting."""
@@ -124,4 +124,4 @@ class CustomBraceAdapter(logging.LoggerAdapter):
         if msg in app.custom_logs and app.custom_logs[msg] > 0:
             level = app.custom_logs[msg]
 
-        self.logger.log(level, msg, **kwargs)
+        super(CustomBraceAdapter, self).log(level, msg, *args, **kwargs)
