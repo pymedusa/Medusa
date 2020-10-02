@@ -198,7 +198,8 @@ class GenericClient(object):
         if result.url.startswith('magnet:'):
             result.hash = re.findall(r'urn:btih:([\w]{32,40})', result.url)[0]
             if len(result.hash) == 32:
-                result.hash = b16encode(b32decode(result.hash)).lower()
+                hash_b16 = b16encode(b32decode(result.hash)).lower()
+                result.hash = hash_b16.decode('utf-8')
         else:
 
             try:
