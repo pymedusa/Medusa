@@ -72,42 +72,6 @@ export default {
 };
 </script>
 <style scoped>
-div.select-list ul {
-    padding-left: 0;
-}
-
-div.select-list li {
-    list-style-type: none;
-    display: flex;
-}
-
-div.select-list .new-item {
-    display: flex;
-}
-
-div.select-list .new-item-help {
-    font-weight: bold;
-    padding-top: 5px;
-}
-
-div.select-list input,
-div.select-list img {
-    display: inline-block;
-    box-sizing: border-box;
-}
-
-div.select-list.max-width {
-    max-width: 450px;
-}
-
-div.select-list .switch-input {
-    left: -8px;
-    top: 4px;
-    position: absolute;
-    z-index: 10;
-    opacity: 0.6;
-}
-
 div.wrapper > div {
     margin-bottom: 5px;
 }
