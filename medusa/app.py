@@ -684,7 +684,12 @@ class MedusaApp(object):
 
     @property
     def CUSTOM_LOGS(self):
-        """Get custom logs."""
+        """
+        Get custom logs.
+
+        Keeping this as a dict, for performance reasons.
+        :returns: A key/value pair of identifier:level.
+        """
         from medusa import db
         main_db_con = db.DBConnection()
         if not self._CUSTOM_LOGS:  # Load customs logs from db for first time.
@@ -697,10 +702,13 @@ class MedusaApp(object):
         """
         Save custom logs.
 
-        :param logs: key/value pair of identifier (string): level (int)
+        We need to pass an array of objects, as the apiv2 implementation does not allow passing of objects.
+        :param logs: Array of custom log objects. In format: [{'identifier': identifier, 'level': level}]
         """
         # Update app attribute.
-        self._CUSTOM_LOGS = logs
+        for log in logs:
+            self._CUSTOM_LOGS[log['identifier']] = log['level']
+
         # Update db.
         from medusa import db
         main_db_con = db.DBConnection()
