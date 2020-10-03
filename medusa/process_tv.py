@@ -41,15 +41,15 @@ class PostProcessorRunner(object):
         process_method = kwargs.pop('process_method', app.PROCESS_METHOD)
 
         if not os.path.isdir(path):
-            result = "Post-processing attempted but directory doesn't exist: {folder}"
-            log.warning(result, {'folder': path})
-            return result.format(foler=path)
+            result = "Post-processing attempted but directory doesn't exist: {path}"
+            log.warning(result, {'path': path})
+            return result.format(path=path)
 
         if not os.path.isabs(path):
             result = 'Post-processing attempted but directory is relative '
-            '(and probably not what you really want to process): {folder}'
-            log.warning(result, {'folder': path})
-            return result.format(folder=path)
+            '(and probably not what you really want to process): {path}'
+            log.warning(result, {'path': path})
+            return result.format(path=path)
 
         if app.post_processor_scheduler.action.amActive:
             result = 'Post-processor is already running.'
@@ -104,7 +104,7 @@ class ProcessResult(object):
             self.log_and_output('Unable to figure out what folder to process.'
                                 " If your download client and Medusa aren't on the same"
                                 ' machine, make sure to fill out the Post Processing Dir'
-                                ' field in the config.'
+                                ' field in the config.', level=logging.WARNING
             )
         setattr(self, '_directory', directory)
 
