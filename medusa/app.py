@@ -8,7 +8,8 @@ import sys
 from threading import Lock
 
 CUSTOMIZABLE_LOGS = [
-    '{id}: Loading show info from database',
+    'Missed file: {missed_file}',
+    'Problem(s) during processing, failed for the following files/folders: ',
     'No NZB/Torrent providers found or enabled in the application config for daily searches. Please check your settings',
 ]
 
@@ -687,7 +688,7 @@ class MedusaApp(object):
         from medusa import db
         main_db_con = db.DBConnection()
         if not self._CUSTOM_LOGS:  # Load customs logs from db for first time.
-            for log in main_db_con.select('SELECT * FROM log_override'):
+            for log in main_db_con.select('SELECT * FROM custom_logs'):
                 self._CUSTOM_LOGS[log['identifier']] = log['level']
         return self._CUSTOM_LOGS
 
@@ -707,7 +708,7 @@ class MedusaApp(object):
         for identifier, level in self._CUSTOM_LOGS.items():
             control_value = {'identifier': identifier}
             new_value = {'level': level}
-            main_db_con.upsert('log_override', new_value, control_value)
+            main_db_con.upsert('custom_logs', new_value, control_value)
 
 
 app = MedusaApp()

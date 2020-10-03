@@ -188,10 +188,10 @@ class Application(object):
         from medusa.app import CUSTOMIZABLE_LOGS
         main_db_con = db.DBConnection()
         for identifier in CUSTOMIZABLE_LOGS:
-            sql_result = main_db_con.select('SELECT * FROM log_override WHERE identifier = ?', [identifier])
+            sql_result = main_db_con.select('SELECT * FROM custom_logs WHERE identifier = ?', [identifier])
 
             if not len(sql_result):
-                main_db_con.action('INSERT INTO log_override (identifier) VALUES (?)', [identifier])
+                main_db_con.action('INSERT INTO custom_logs (identifier) VALUES (?)', [identifier])
 
         # Update app.
 
