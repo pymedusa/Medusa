@@ -683,7 +683,7 @@ class MedusaApp(object):
         self.TVDB_API_KEY = 'd99c8e7dac2307355af4ab88720a6c32'
 
     @property
-    def custom_logs(self):
+    def CUSTOM_LOGS(self):
         """Get custom logs."""
         from medusa import db
         main_db_con = db.DBConnection()
@@ -692,8 +692,8 @@ class MedusaApp(object):
                 self._CUSTOM_LOGS[log['identifier']] = log['level']
         return self._CUSTOM_LOGS
 
-    @custom_logs.setter
-    def custom_logs(self, logs):
+    @CUSTOM_LOGS.setter
+    def CUSTOM_LOGS(self, logs):
         """
         Save custom logs.
 

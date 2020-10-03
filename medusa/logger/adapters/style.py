@@ -117,7 +117,7 @@ class CustomBraceAdapter(BraceAdapter):
     def log(self, level, msg, *args, **kwargs):
         """Log a message at the specified level using Brace-formatting."""
         # Set level
-        if msg in app.custom_logs and app.custom_logs[msg] > 0:
-            level = app.custom_logs[msg]
+        if msg in app.CUSTOM_LOGS and app.CUSTOM_LOGS[msg] > 0:
+            level = app.CUSTOM_LOGS[msg]
 
         super(CustomBraceAdapter, self).log(level, msg, *args, **kwargs)
