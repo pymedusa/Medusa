@@ -7585,12 +7585,12 @@ jest-validate@^26.4.2:
     leven "^3.1.0"
     pretty-format "^26.4.2"
 
-jest-vue-matcher@1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/jest-vue-matcher/-/jest-vue-matcher-1.1.0.tgz#b2f4fb5bf775e939ab70d98396ddee6b58ca2c46"
-  integrity sha512-V2jrjDJe8ev9ej6h17QJylaGxQAOBgPL53AQFnT7Npoemqj6BCypf/BKLnmFx1ZRtkTiXH3uy1MzVM/WFSRuJw==
+jest-vue-matcher@2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/jest-vue-matcher/-/jest-vue-matcher-2.0.0.tgz#950c03cc714882ff80f1963b4173069594b55902"
+  integrity sha512-ggp1/ciinQ9qy6jkGOGOvTcUvDslsDNJrpZnh42wJQG57FiJGHexGGce9aQm5SpYZbwKUOmM3IcUtXS5YE1y/A==
   dependencies:
-    vue "^2.5.17"
+    vue "^2.6.11"
 
 jest-watcher@^26.3.0:
   version "26.3.0"
@@ -12726,12 +12726,12 @@ vue-truncate-collapsed@2.1.0:
   dependencies:
     html-truncate "^1.2.2"
 
-vue@2.6.12:
+vue@2.6.12, vue@^2.6.11:
   version "2.6.12"
   resolved "https://registry.yarnpkg.com/vue/-/vue-2.6.12.tgz#f5ebd4fa6bd2869403e29a896aed4904456c9123"
   integrity sha512-uhmLFETqPPNyuLLbsKz6ioJ4q7AZHzD8ZVFNATNyICSZouqP2Sz0rotWQC8UNBF6VGSCs5abnKJoStA6JbCbfg==
 
-vue@^2.1.0, vue@^2.5.17:
+vue@^2.1.0:
   version "2.6.11"
   resolved "https://registry.yarnpkg.com/vue/-/vue-2.6.11.tgz#76594d877d4b12234406e84e35275c6d514125c5"
   integrity sha512-VfPwgcGABbGAue9+sfrD4PuwFar7gPb1yl1UK1MwXoQPAw0BKSqWfoYCT/ThFrdEVWoI51dBuyCoiNU9bZDZxQ==
