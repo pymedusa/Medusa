@@ -65,10 +65,11 @@ from builtins import str
 from configobj import ConfigObj
 
 from medusa import (
-    app, cache, db, exception_handler, helpers,
+    cache, db, exception_handler, helpers,
     logger as app_logger, metadata, name_cache, naming,
     network_timezones, process_tv, providers, subtitles
 )
+from medusa.app import app
 from medusa.clients.torrent import torrent_checker
 from medusa.common import SD, SKIPPED, WANTED
 from medusa.config import (
@@ -193,7 +194,9 @@ class Application(object):
             if not len(sql_result):
                 main_db_con.action('INSERT INTO custom_logs (identifier) VALUES (?)', [identifier])
 
-        # Update app.
+        # Get custom_logs from db.
+        for log in main_db_con.select('SELECT * FROM custom_logs'):
+            app._CUSTOM_LOGS[log['identifier']] = log['level']
 
     def start(self, args):
         """Start Application."""

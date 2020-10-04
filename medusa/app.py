@@ -690,11 +690,6 @@ class MedusaApp(object):
         Keeping this as a dict, for performance reasons.
         :returns: A key/value pair of identifier:level.
         """
-        from medusa import db
-        main_db_con = db.DBConnection()
-        if not self._CUSTOM_LOGS:  # Load customs logs from db for first time.
-            for log in main_db_con.select('SELECT * FROM custom_logs'):
-                self._CUSTOM_LOGS[log['identifier']] = log['level']
         return self._CUSTOM_LOGS
 
     @CUSTOM_LOGS.setter
