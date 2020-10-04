@@ -351,7 +351,6 @@
             </div>
         </div>
 
-        <!-- eslint-disable @sharkykh/vue-extra/component-not-registered -->
         <modal name="query-start-backlog-search" @before-open="beforeBacklogSearchModalClose" :height="'auto'" :width="'80%'">
             <transition name="modal">
                 <div class="modal-mask">
@@ -398,7 +397,6 @@
                 </div>
             </transition>
         </modal>
-        <!--eslint-enable-->
     </div>
 </template>
 
@@ -414,16 +412,18 @@ import Backstretch from './backstretch.vue';
 import ShowHeader from './show-header.vue';
 import SubtitleSearch from './subtitle-search.vue';
 import QualityPill from './helpers/quality-pill.vue';
+import Modal from 'vue-js-modal';
 
 export default {
     name: 'show',
     components: {
         AppLink,
-        VueGoodTable,
         Backstretch,
+        Modal,
         PlotInfo,
+        QualityPill,
         ShowHeader,
-        QualityPill
+        VueGoodTable
     },
     mixins: [
         manageCookieMixin('displayShow')

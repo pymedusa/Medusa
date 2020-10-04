@@ -29,7 +29,7 @@ export default {
                 { value: 30, text: 'WARNING' },
                 { value: 40, text: 'ERROR' },
                 { value: 50, text: 'CRITICAL' },
-                { value: 0, text: 'DEFAULT'}
+                { value: 0, text: 'DEFAULT' }
             ]
         };
     },
