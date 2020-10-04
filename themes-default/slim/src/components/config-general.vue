@@ -540,6 +540,7 @@
             </form>
         </div>
 
+        <!-- eslint-disable @sharkykh/vue-extra/component-not-registered -->
         <modal name="query-upgrade-database" :height="'auto'" :width="'80%'">
             <transition name="modal">
                 <div class="modal-mask">
@@ -587,13 +588,13 @@
                 </div>
             </transition>
         </modal>
+        <!-- eslint-enable -->
     </div>
 </template>
 
 <script>
 import { api, apiRoute } from '../api.js';
 import { mapActions, mapGetters, mapState } from 'vuex';
-import Modal from 'vue-js-modal';
 import RootDirs from './root-dirs.vue';
 import {
     AppLink,
@@ -624,7 +625,6 @@ export default {
         ConfigToggleSlider,
         CustomLogs,
         LanguageSelect,
-        Modal,
         Multiselect,
         SortedSelectList,
         VPopover,
