@@ -14,7 +14,12 @@
                     <br>
                     <p>Medusa can add existing shows, using the current options, by using locally stored NFO/XML metadata to eliminate user interaction.
                         If you would rather have Medusa prompt you to customize each show, then use the checkbox below.</p>
-                    <p><input type="checkbox" v-model="promptForSettings" id="promptForSettings"> <label for="promptForSettings">Prompt me to set settings for each show</label></p>
+
+                    <p><toggle-button :width="45" :height="22" id="promptForSettings" v-model="promptForSettings" /> <label for="promptForSettings">Prompt me to set settings for each show</label></p>
+
+                    <p><toggle-button :width="45" :height="22" id="useCustomizeOptions" v-model="useCustomizeOptions" /> <label for="useCustomizeOptions">Use the customized options for each show</label></p>
+                    <span>By enabling this option, you will not be able to configure individual shows!</span>
+
                     <p>Select the shows you'd like to add. If the show has metadata available, you will not get prompted for settings unless the option "Prompt me to set settings for each show" is enabled.</p>
                     <p>While shows are added, the shows that do <b>not</b> have metadata available, will prompt you with the "Add Show" form.</p>
                     <button class="btn-medusa" :disabled="isLoading" @click="submitSeriesDirs">Start</button>
@@ -108,12 +113,14 @@ import RootDirs from './root-dirs.vue';
 import { AddShowOptions, NewShow } from '.';
 import { AppLink } from './helpers';
 import { VueTabs, VTab } from 'vue-nav-tabs/dist/vue-tabs.js';
+import { ToggleButton } from 'vue-js-toggle-button';
 
 export default {
     components: {
         AddShowOptions,
         AppLink,
         RootDirs,
+        ToggleButton,
         VTab,
         VueTabs
     },
@@ -127,6 +134,7 @@ export default {
             errorMessage: '',
             rootDirs: [],
             dirList: [],
+            useCustomizeOptions: false,
             promptForSettings: false,
             enableAnimeOptions: true,
             presetShowOptions: {
@@ -376,7 +384,7 @@ export default {
          * @param {boolean} unattended - true if shows should be added without prompting for show options.
          */
         openAddNewShow(curDirIndex, unattended = false) {
-            const { addShowComponents, filteredDirList, presetShowOptions } = this;
+            const { addShowComponents, filteredDirList, presetShowOptions, promptForSettings } = this;
 
             const curDir = filteredDirList[curDirIndex];
             const providedInfo = {
@@ -386,8 +394,9 @@ export default {
                 showDir: curDir.path,
                 indexerId: 0,
                 indexerLanguage: 'en',
-                curDirIndex, // Add so we can return it with the matching queueitem. This allows us to keep track.,
-                unattended // Passed as a flag, to auto add the show if enabled.
+                curDirIndex, // Add so we can return it with the matching queueitem. This allows us to keep track.
+                // If promptForSettings is enabled, negate out the unattended flag if enabled.
+                unattended: unattended && !promptForSettings // Passed as a flag, to auto add the show if enabled.
             };
 
             if (curDir.metadata.indexer) {
@@ -407,7 +416,8 @@ export default {
                 providedInfo
             };
 
-            if (this.promptForSettings) {
+            if (this.useCustomizeOptions) {
+                // Is useCustomizeOptions is enabled. The preset options are used.
                 propsData.presetShowOptions = presetShowOptions;
                 propsData.presetShowOptions.use = true;
             }
