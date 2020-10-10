@@ -644,6 +644,8 @@ export default {
             setInputValidInvalid
         } = this;
 
+        this.loadShow();
+
         ['load', 'resize'].map(event => {
             return window.addEventListener(event, () => {
                 this.reflowLayout();
@@ -725,7 +727,7 @@ export default {
             setRecentShow: 'setRecentShow'
         }),
         async loadShow() {
-            const { setCurrentShow, id, indexer, getShow } = this;
+            const { setCurrentShow, id, indexer, initializeEpisodes, getShow } = this;
             // We need detailed info for the xem / scene exceptions, so let's get it.
             await getShow({ id, indexer, detailed: true });
 
@@ -735,6 +737,9 @@ export default {
                 indexer,
                 id
             });
+
+            // Load all episodes
+            initializeEpisodes();
         },
         statusQualityUpdate(event) {
             const { selectedEpisodes, setStatus, setQuality } = this;
@@ -1256,22 +1261,12 @@ export default {
     },
     watch: {
         'show.id.slug': function(slug) { // eslint-disable-line object-shorthand
-            const { initializeEpisodes } = this;
             // Show's slug has changed, meaning the show's page has finished loading.
             if (slug) {
                 // This is still technically jQuery. Meaning whe're still letting jQuery do its thing on the entire dom.
                 updateSearchIcons(slug, this);
-                initializeEpisodes();
             }
         }
-    },
-    beforeRouteEnter(to, from, next) {
-        next(vm => {
-            // Access to component instance via `vm`.
-            // When moving from editShow to displayShow we might not have loaded the episodes yet.
-            // The watch on show.id.slug will also not be triggered.
-            vm.loadShow();
-        });
     }
 };
 </script>
