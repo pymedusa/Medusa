@@ -201,7 +201,7 @@ class AnimeBytes(TorrentProvider):
                 title_info = row.get('EditionData').get('EditionTitle')
 
                 def match_season_from_series_name():
-                    """Try getting a season from the series name"""
+                    """Try getting a season from the series name."""
                     season_match = re.match(r'.+[sS]eason.(\d+)$', group.get('SeriesName'))
                     if season_match:
                         return season_match.group(1)
@@ -272,19 +272,11 @@ class AnimeBytes(TorrentProvider):
                 if release_type == SEASON_PACK:
                     # Create the season pack release_name
                     # if `Season` is already in the SeriesName, we ommit adding it another time.
-                    if season:
-                        title = '{title}.{season}.{tags}' \
-                            '{release_group}'.format(title=show.name,
-                                                     season='S{0}'.format(season),
-                                                     tags=tags,
-                                                     release_group=release_group)
-                    else:
-                        # If season not found, that this might be a season 1 name, or season exception.
-                        # In both cases, we can omit the season tag.
-                        title = '{title}.{tags}' \
-                            '{release_group}'.format(title=group.get('SeriesName'),
-                                                     tags=tags,
-                                                     release_group=release_group)
+                    title = '{title}.{season}.{tags}' \
+                        '{release_group}'.format(title=show.name,
+                                                 season='S{0}'.format(season) if season else 'S01',
+                                                 tags=tags,
+                                                 release_group=release_group)
 
                 if release_type == MULTI_SEASON:
                     # Create the multi season pack release_name
