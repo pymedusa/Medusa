@@ -946,6 +946,7 @@ class AddShowLists(MoveSceneExceptions):
 
         self.inc_minor_version()
 
+
 class AddCustomLogs(AddShowLists):
     """Create a new table custom_logs in main.db."""
 

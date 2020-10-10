@@ -23,7 +23,7 @@ class StyleAdapter(logging.LoggerAdapter):
     reserved_keywords = getfullargspec(logging.Logger._log).args[1:]
 
     def __init__(self, target_logger, extra=None):
-        """StyleAdapter constructor.
+        """Init StyleAdapter.
 
         :param target_logger:
         :type target_logger: logging.Logger
@@ -69,7 +69,7 @@ class BraceMessage(object):
     """Log Message wrapper that applies new string format style."""
 
     def __init__(self, fmt, args, kwargs):
-        """Constructor.
+        """Init BraceMessage.
 
         :param fmt:
         :type fmt: logging.Formatter

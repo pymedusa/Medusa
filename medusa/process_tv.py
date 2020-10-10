@@ -101,10 +101,11 @@ class ProcessResult(object):
             )
             self.log_and_output('Trying to use folder: {directory}', level=logging.DEBUG, **{'directory': directory})
         else:
-            self.log_and_output('Unable to figure out what folder to process.'
-                                " If your download client and Medusa aren't on the same"
-                                ' machine, make sure to fill out the Post Processing Dir'
-                                ' field in the config.', level=logging.WARNING
+            self.log_and_output(
+                'Unable to figure out what folder to process.'
+                " If your download client and Medusa aren't on the same"
+                ' machine, make sure to fill out the Post Processing Dir'
+                ' field in the config.', level=logging.WARNING
             )
         setattr(self, '_directory', directory)
 
