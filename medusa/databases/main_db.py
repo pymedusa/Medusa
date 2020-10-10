@@ -951,9 +951,7 @@ class AddCustomLogs(AddShowLists):
     """Create a new table custom_logs in main.db."""
 
     def test(self):
-        """
-        Test if the version is at least 44.15
-        """
+        """Test if the version is at least 44.17."""
         return self.connection.version >= (44, 17)
 
     def execute(self):
@@ -963,8 +961,8 @@ class AddCustomLogs(AddShowLists):
 
         self.connection.action(
             'CREATE TABLE custom_logs '
-            '(row_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
-            'identifier	TEXT NOT NULL, '
+            '(log_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
+            'identifier TEXT NOT NULL, '
             'level INTEGER NOT NULL DEFAULT 0);'
         )
 
