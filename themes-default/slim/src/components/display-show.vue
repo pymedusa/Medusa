@@ -398,7 +398,7 @@
                 </div>
             </transition>
         </modal>
-        <!--eslint-enable-->
+        <!-- eslint-enable -->
     </div>
 </template>
 
@@ -419,11 +419,11 @@ export default {
     name: 'show',
     components: {
         AppLink,
-        VueGoodTable,
         Backstretch,
         PlotInfo,
+        QualityPill,
         ShowHeader,
-        QualityPill
+        VueGoodTable
     },
     mixins: [
         manageCookieMixin('displayShow')

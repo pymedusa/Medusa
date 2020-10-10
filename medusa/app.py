@@ -7,6 +7,12 @@ import random
 import sys
 from threading import Lock
 
+CUSTOMIZABLE_LOGS = [
+    'Missed file: {missed_file}',
+    'Problem(s) during processing, failed for the following files/folders: ',
+    'No NZB/Torrent providers found or enabled in the application config for daily searches. Please check your settings',
+]
+
 
 class MedusaApp(object):
     """Medusa app config."""
@@ -146,6 +152,7 @@ class MedusaApp(object):
         self.LOG_DIR = None
         self.LOG_NR = 5
         self.LOG_SIZE = 10.0
+        self._CUSTOM_LOGS = {}
 
         self.SOCKET_TIMEOUT = None
 
@@ -674,6 +681,37 @@ class MedusaApp(object):
         self.FALLBACK_PLEX_TIMEOUT = 3
         self.FALLBACK_PLEX_API_URL = 'https://tvdb2.plex.tv'
         self.TVDB_API_KEY = 'd99c8e7dac2307355af4ab88720a6c32'
+
+    @property
+    def CUSTOM_LOGS(self):
+        """
+        Get custom logs.
+
+        Keeping this as a dict, for performance reasons.
+        :returns: A key/value pair of identifier:level.
+        """
+        return self._CUSTOM_LOGS
+
+    @CUSTOM_LOGS.setter
+    def CUSTOM_LOGS(self, logs):
+        """
+        Save custom logs.
+
+        We need to pass an array of objects, as the apiv2 implementation does not allow passing of objects.
+        :param logs: Array of custom log objects. In format: [{'identifier': identifier, 'level': level}]
+        """
+        # Update app attribute.
+        for log in logs:
+            self._CUSTOM_LOGS[log['identifier']] = log['level']
+
+        # Update db.
+        from medusa import db
+        main_db_con = db.DBConnection()
+
+        for identifier, level in self._CUSTOM_LOGS.items():
+            control_value = {'identifier': identifier}
+            new_value = {'level': level}
+            main_db_con.upsert('custom_logs', new_value, control_value)
 
 
 app = MedusaApp()

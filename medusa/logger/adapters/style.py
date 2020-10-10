@@ -8,6 +8,8 @@ import functools
 import logging
 import traceback
 
+from medusa.app import app
+
 from six import text_type, viewitems
 from six.moves import collections_abc
 
@@ -107,3 +109,15 @@ class BraceAdapter(logging.LoggerAdapter):
         """Add exception information before delegating to self.log."""
         kwargs['exc_info'] = 1
         self.log(logging.ERROR, msg, *args, **kwargs)
+
+
+class CustomBraceAdapter(BraceAdapter):
+    """Add custom log level ovvrides to the Brace-formatted messages."""
+
+    def log(self, level, msg, *args, **kwargs):
+        """Log a message at the specified level using Brace-formatting."""
+        # Set level
+        if msg in app.CUSTOM_LOGS and app.CUSTOM_LOGS[msg] > 0:
+            level = app.CUSTOM_LOGS[msg]
+
+        super(CustomBraceAdapter, self).log(level, msg, *args, **kwargs)

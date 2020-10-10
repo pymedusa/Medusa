@@ -65,10 +65,11 @@ from builtins import str
 from configobj import ConfigObj
 
 from medusa import (
-    app, cache, db, exception_handler, helpers,
+    cache, db, exception_handler, helpers,
     logger as app_logger, metadata, name_cache, naming,
     network_timezones, process_tv, providers, subtitles
 )
+from medusa.app import app
 from medusa.clients.torrent import torrent_checker
 from medusa.common import SD, SKIPPED, WANTED
 from medusa.config import (
@@ -181,6 +182,21 @@ class Application(object):
                     logger.warning('Error while trying to move the images for series {series}. '
                                    'Try to refresh the show, or move the images manually if you know '
                                    'what you are doing. Error: {error}', series=series_obj.name, error=error)
+
+    @staticmethod
+    def initialize_custom_logging():
+        """Load custom logging and insert into table if needed."""
+        from medusa.app import CUSTOMIZABLE_LOGS
+        main_db_con = db.DBConnection()
+        for identifier in CUSTOMIZABLE_LOGS:
+            sql_result = main_db_con.select('SELECT * FROM custom_logs WHERE identifier = ?', [identifier])
+
+            if not len(sql_result):
+                main_db_con.action('INSERT INTO custom_logs (identifier) VALUES (?)', [identifier])
+
+        # Get custom_logs from db.
+        for log in main_db_con.select('SELECT * FROM custom_logs'):
+            app._CUSTOM_LOGS[log['identifier']] = log['level']
 
     def start(self, args):
         """Start Application."""
@@ -353,6 +369,7 @@ class Application(object):
 
         self.clear_cache()
         self.migrate_images()
+        self.initialize_custom_logging()
 
         if self.forced_port:
             logger.info('Forcing web server to port {port}', port=self.forced_port)
