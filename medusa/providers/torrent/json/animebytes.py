@@ -11,6 +11,7 @@ from medusa import tv
 from medusa.helper.common import convert_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
+from medusa.scene_numbering import get_indexer_numbering
 
 from requests.compat import urljoin
 
@@ -46,7 +47,7 @@ class AnimeBytes(TorrentProvider):
         self.proper_strings = []
 
         # Miscellaneous Options
-        self.freeleech = False
+        self.freeleech = True
         self.anime_only = True
 
         # Cache
@@ -87,6 +88,10 @@ class AnimeBytes(TorrentProvider):
             'torrent_pass': self.passkey,
         }
 
+        show = None
+        if ep_obj:
+            show = ep_obj.series
+
         for mode in search_strings:
             log.debug('Search Mode: {0}', mode)
 
@@ -108,11 +113,15 @@ class AnimeBytes(TorrentProvider):
                     log.debug('No data returned from provider')
                     continue
 
-                results += self.parse(jdata, mode)
+                if jdata['Matches'] == 0:
+                    log.debug('0 results returned from provider for this search')
+                    continue
+
+                results += self.parse(jdata, mode, show)
 
         return results
 
-    def parse(self, data, mode):
+    def parse(self, data, mode, show=None):
         """
         Parse search results for items.
 
@@ -121,6 +130,26 @@ class AnimeBytes(TorrentProvider):
 
         :return: A list of items found
         """
+        def get_season_from_series_name(series_name):
+            """
+            Compare the series_name to the aliases available for the searched show.
+
+            Compare names and try to map the scene_season to an indexer season if available.
+            """
+            if not show:
+                return
+
+            def clean(title):
+                """Clean title, for easier comparison."""
+                for char in '-:; ':
+                    title = title.replace(char, '')
+                return title.lower()
+
+            for alias in show.aliases:
+                if clean(alias.title) == clean(series_name):
+                    return get_indexer_numbering(show, alias.season)[0]
+            return
+
         items = []
 
         group_rows = data.get('Groups')
@@ -170,6 +199,15 @@ class AnimeBytes(TorrentProvider):
 
                 # Attempt and get a season or episode number
                 title_info = row.get('EditionData').get('EditionTitle')
+
+                def match_season_from_series_name():
+                    """Try getting a season from the series name"""
+                    season_match = re.match(r'.+[sS]eason.(\d+)$', group.get('SeriesName'))
+                    if season_match:
+                        return season_match.group(1)
+                    # Try getting the season from the SeriesName.
+                    return get_season_from_series_name(group.get('SeriesName'))
+
                 if title_info != '':
                     if title_info.startswith('Episodes'):
                         multi_ep_match = re.match(r'Episodes (\d+)-(\d+)', title_info)
@@ -180,6 +218,12 @@ class AnimeBytes(TorrentProvider):
                     elif title_info.startswith('Episode'):
                         episode = re.match('^Episode.([0-9]+)', title_info).group(1)
                         release_type = SINGLE_EP
+
+                        season_match = re.match(r'.+[sS]eason.(\d+)$', group.get('SeriesName'))
+                        if season_match:
+                            season = season_match.group(1)
+                        else:
+                            match_season_from_series_name()
                     elif title_info.startswith('Season'):
                         if re.match(r'Season.[0-9]+-[0-9]+.\([0-9-]+\)', title_info):
                             # We can read the season AND the episodes, but we can only process multiep.
@@ -190,22 +234,27 @@ class AnimeBytes(TorrentProvider):
                             release_type = MULTI_SEASON
                         else:
                             season = re.match('Season.([0-9]+)', title_info).group(1)
+
+                            # Try getting the season from the group['SeriesName']
+                            if not season:
+                                season = match_season_from_series_name()
                             release_type = SEASON_PACK
                 elif group.get('EpCount') > 0:
-                    # This is a season pack, but, let's use it as a multi ep for now
+                    # This is a season pack.
                     # 13 episodes -> SXXEXX-EXX
                     episode = group.get('EpCount')
-                    release_type = MULTI_EP
+                    # Try to get the season
+                    season = match_season_from_series_name()
+                    release_type = SEASON_PACK
 
                 # These are probably specials which we just can't handle anyways
                 if release_type == OTHER:
                     continue
 
                 if release_type == SINGLE_EP:
-                    # Create the single episode release_name
-                    # Single.Episode.TV.Show.SXXEXX[Episode.Part].[Episode.Title].TAGS.[LANGUAGE].720p.FORMAT.x264-GROUP
+                    # Create the single episode release_name (use the shows default title)
                     title = '{title}.{season}{episode}.{tags}' \
-                            '{release_group}'.format(title=group.get('SeriesName'),
+                            '{release_group}'.format(title=show.name,
                                                      season='S{0}'.format(season) if season else 'S01',
                                                      episode='E{0}'.format(episode),
                                                      tags=tags,
@@ -222,9 +271,18 @@ class AnimeBytes(TorrentProvider):
                                                      release_group=release_group)
                 if release_type == SEASON_PACK:
                     # Create the season pack release_name
-                    title = '{title}.{season}.{tags}' \
+                    # if `Season` is already in the SeriesName, we ommit adding it another time.
+                    if season:
+                        title = '{title}.{season}.{tags}' \
+                            '{release_group}'.format(title=show.name,
+                                                     season='S{0}'.format(season),
+                                                     tags=tags,
+                                                     release_group=release_group)
+                    else:
+                        # If season not found, that this might be a season 1 name, or season exception.
+                        # In both cases, we can omit the season tag.
+                        title = '{title}.{tags}' \
                             '{release_group}'.format(title=group.get('SeriesName'),
-                                                     season='S{0}'.format(season) if season else 'S01',
                                                      tags=tags,
                                                      release_group=release_group)
 
