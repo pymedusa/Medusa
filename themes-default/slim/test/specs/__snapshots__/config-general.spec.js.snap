@@ -1674,7 +1674,7 @@ exports[`ConfigGeneral.test.js renders 1`] = `
     </form>
   </div>
    
-  <modal-stub
+  <modal
     height="auto"
     name="query-upgrade-database"
     width="80%"
@@ -1738,9 +1738,9 @@ exports[`ConfigGeneral.test.js renders 1`] = `
         </div>
       </div>
     </transition-stub>
-  </modal-stub>
+  </modal>
    
-  <modal-stub
+  <modal
     height="auto"
     name="query-restart"
     width="80%"
@@ -1796,6 +1796,6 @@ exports[`ConfigGeneral.test.js renders 1`] = `
         </div>
       </div>
     </transition-stub>
-  </modal-stub>
+  </modal>
 </div>
 `;
