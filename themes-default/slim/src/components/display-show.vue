@@ -639,13 +639,12 @@ export default {
 
     mounted() {
         const {
-            loadShow,
             setEpisodeSceneNumbering,
             setAbsoluteSceneNumbering,
             setInputValidInvalid
         } = this;
 
-        loadShow();
+        this.loadShow();
 
         ['load', 'resize'].map(event => {
             return window.addEventListener(event, () => {
@@ -727,16 +726,20 @@ export default {
             setCurrentShow: 'setCurrentShow',
             setRecentShow: 'setRecentShow'
         }),
-        loadShow() {
-            const { setCurrentShow, id, indexer, getShow } = this;
+        async loadShow() {
+            const { setCurrentShow, id, indexer, initializeEpisodes, getShow } = this;
+            // We need detailed info for the xem / scene exceptions, so let's get it.
+            await getShow({ id, indexer, detailed: true });
+
             // Let's tell the store which show we currently want as current.
+            // Run this after getShow(), as it will trigger the initializeEpisodes() method.
             setCurrentShow({
                 indexer,
                 id
             });
 
-            // We need detailed info for the xem / scene exceptions, so let's get it.
-            getShow({ id, indexer, detailed: true });
+            // Load all episodes
+            initializeEpisodes();
         },
         statusQualityUpdate(event) {
             const { selectedEpisodes, setStatus, setQuality } = this;
@@ -1153,7 +1156,16 @@ export default {
             this.loadEpisodes(params.currentPage);
         },
         neededSeasons(page) {
-            const { paginationPerPage, show } = this;
+            const { layout, paginationPerPage, show } = this;
+            const { seasonCount } = show;
+            if (!seasonCount || seasonCount.length === 0) {
+                return [];
+            }
+
+            if (!layout.show.pagination.enable) {
+                return seasonCount.filter(season => season.season !== 0).map(season => season.season).reverse();
+            }
+
             const seasons = show.seasonCount.length - 1;
 
             let pagesCount = 1;
@@ -1196,11 +1208,12 @@ export default {
                     await getEpisodes({ id, indexer, season }); // eslint-disable-line no-await-in-loop
                 }
             };
+
             _getEpisodes(id, indexer);
         },
         initializeEpisodes() {
             const { getEpisodes, id, indexer, setRecentShow, show } = this;
-            if (!show.seasons) {
+            if (!show.seasons && show.seasonCount) {
                 // Load episodes for the first page.
                 this.loadEpisodes(1);
                 // Always get special episodes if available.
@@ -1248,22 +1261,12 @@ export default {
     },
     watch: {
         'show.id.slug': function(slug) { // eslint-disable-line object-shorthand
-            const { initializeEpisodes } = this;
             // Show's slug has changed, meaning the show's page has finished loading.
             if (slug) {
                 // This is still technically jQuery. Meaning whe're still letting jQuery do its thing on the entire dom.
                 updateSearchIcons(slug, this);
-                initializeEpisodes();
             }
         }
-    },
-    beforeRouteEnter(to, from, next) {
-        next(vm => {
-            // Access to component instance via `vm`.
-            // When moving from editShow to displayShow we might not have loaded the episodes yet.
-            // The watch on show.id.slug will also not be triggered.
-            vm.initializeEpisodes();
-        });
     }
 };
 </script>

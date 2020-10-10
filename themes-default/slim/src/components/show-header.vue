@@ -539,8 +539,12 @@ export default {
         },
         seasons() {
             const { show } = this;
+            const { seasonCount } = show;
+            if (!seasonCount) {
+                return [];
+            }
             // Only return an array with seasons (integers)
-            return show.seasonCount.map(season => season.season);
+            return seasonCount.map(season => season.season);
         },
         episodeTitle() {
             const { getEpisode, show, season, episode } = this;

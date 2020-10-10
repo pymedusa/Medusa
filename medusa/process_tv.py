@@ -19,11 +19,9 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from medusa.subtitles import accept_any, accept_unknown, get_embedded_subtitles
 
-from six import iteritems
+from rarfile import BadRarFile, Error, NotRarFile, RarCannotExec, RarFile
 
-from unrar2 import RarFile
-from unrar2.rar_exceptions import (ArchiveHeaderBroken, FileOpenError, IncorrectRARPassword, InvalidRARArchive,
-                                   InvalidRARArchiveUsage)
+from six import iteritems
 
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -479,11 +477,18 @@ class ProcessResult(object):
                 try:
                     rar_handle = RarFile(os.path.join(path, archive))
 
+                    # check that the rar doesnt need a password
+                    if rar_handle.needs_password():
+                        raise ValueError('Rar requires a password')
+
+                    # raise an exception if the rar file is broken
+                    rar_handle.testrar()
+
                     # Skip extraction if any file in archive has previously been extracted
                     skip_extraction = False
                     for file_in_archive in [os.path.basename(each.filename)
                                             for each in rar_handle.infolist()
-                                            if not each.isdir]:
+                                            if not each.isdir()]:
                         if not force and self.already_postprocessed(file_in_archive):
                             self.log('Archive file already post-processed, extraction skipped: {0}'.format
                                      (file_in_archive), logger.DEBUG)
@@ -497,26 +502,17 @@ class ProcessResult(object):
                             break
 
                     if not skip_extraction:
-                        rar_handle.extract(path=path, withSubpath=False, overwrite=False)
+                        rar_handle.extractall(path=path)
 
                     for each in rar_handle.infolist():
-                        if not each.isdir:
+                        if not each.isdir():
                             basename = os.path.basename(each.filename)
                             unpacked_files.append(basename)
 
                     del rar_handle
 
-                except ArchiveHeaderBroken:
-                    failure = ('Archive Header Broken', 'Unpacking failed because the Archive Header is Broken')
-                except IncorrectRARPassword:
-                    failure = ('Incorrect RAR Password', 'Unpacking failed because of an Incorrect Rar Password')
-                except FileOpenError:
-                    failure = ('File Open Error, check the parent folder and destination file permissions.',
-                               'Unpacking failed with a File Open Error (file permissions?)')
-                except InvalidRARArchiveUsage:
-                    failure = ('Invalid Rar Archive Usage', 'Unpacking Failed with Invalid Rar Archive Usage')
-                except InvalidRARArchive:
-                    failure = ('Invalid Rar Archive', 'Unpacking Failed with an Invalid Rar Archive Error')
+                except (BadRarFile, Error, NotRarFile, RarCannotExec, ValueError) as error:
+                    failure = (ex(error), 'Unpacking failed with a Rar error')
                 except Exception as error:
                     failure = (ex(error), 'Unpacking failed for an unknown reason')
 

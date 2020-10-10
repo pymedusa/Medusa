@@ -9,9 +9,10 @@ import threading
 import time
 import traceback
 
-from medusa import app, common, failed_history, generic_queue, history, ui, ws
+from medusa import app, common, failed_history, history, ui, ws
 from medusa.helpers import pretty_file_size
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.queues import generic_queue
 from medusa.search import BACKLOG_SEARCH, DAILY_SEARCH, FAILED_SEARCH, MANUAL_SEARCH, SNATCH_RESULT, SearchType
 from medusa.search.core import (
     search_for_needed_episodes,

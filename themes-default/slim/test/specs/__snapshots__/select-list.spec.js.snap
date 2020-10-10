@@ -60,6 +60,7 @@ exports[`SelectList.test.js renders with values 1`] = `
       >
         <input
           class="form-control input-sm"
+          disabled="disabled"
           type="text"
         />
          
@@ -68,7 +69,7 @@ exports[`SelectList.test.js renders with values 1`] = `
         >
           <div
             class="btn btn-default input-sm"
-            style="font-size: 14px;"
+            style="font-size: 14px; background-color: rgb(238, 238, 238);"
           >
             <i
               class="glyphicon glyphicon-remove"
@@ -84,6 +85,7 @@ exports[`SelectList.test.js renders with values 1`] = `
       >
         <input
           class="form-control input-sm"
+          disabled="disabled"
           type="text"
         />
          
@@ -92,7 +94,7 @@ exports[`SelectList.test.js renders with values 1`] = `
         >
           <div
             class="btn btn-default input-sm"
-            style="font-size: 14px;"
+            style="font-size: 14px; background-color: rgb(238, 238, 238);"
           >
             <i
               class="glyphicon glyphicon-remove"
@@ -108,6 +110,7 @@ exports[`SelectList.test.js renders with values 1`] = `
       >
         <input
           class="form-control input-sm"
+          disabled="disabled"
           type="text"
         />
          
@@ -116,7 +119,7 @@ exports[`SelectList.test.js renders with values 1`] = `
         >
           <div
             class="btn btn-default input-sm"
-            style="font-size: 14px;"
+            style="font-size: 14px; background-color: rgb(238, 238, 238);"
           >
             <i
               class="glyphicon glyphicon-remove"

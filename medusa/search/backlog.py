@@ -9,8 +9,9 @@ import threading
 from builtins import object
 from builtins import str
 
-from medusa import app, db, scheduler, ui
+from medusa import app, db, ui
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.schedulers import scheduler
 from medusa.search.queue import BacklogQueueItem
 
 from six import iteritems

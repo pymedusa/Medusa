@@ -12,7 +12,7 @@
                     <span :class="['pull-left', menuItem.icon]" /> {{ menuItem.title }}
                 </app-link>
 
-                <show-selector :show-slug="curShowSlug" follow-selection />
+                <show-selector v-if="showForRoutes" :show-slug="curShowSlug" follow-selection />
             </div>
         </div>
 
@@ -51,6 +51,10 @@ export default {
                 return indexername + seriesid;
             }
             return '';
+        },
+        showForRoutes() {
+            const { $route } = this;
+            return ['show', 'editShow'].includes($route.name);
         }
     },
     methods: {

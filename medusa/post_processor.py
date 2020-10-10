@@ -1111,7 +1111,7 @@ class PostProcessor(object):
 
                 # If the file season (ep_obj.season) is bigger than
                 # the indexer season (max_season[0]['max']), skip the file
-                if int(ep_obj.season) > int(max_season[0]['max']):
+                if max_season[0]['max'] and int(ep_obj.season) > int(max_season[0]['max']):
                     self.log(u'File has season {0}, while the indexer is on season {1}. '
                              u'The file may be incorrectly labeled or fake, aborting.'.format
                              (ep_obj.season, max_season[0]['max']))

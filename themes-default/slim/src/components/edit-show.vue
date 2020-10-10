@@ -372,14 +372,16 @@ export default {
         }),
         loadShow() {
             const { setCurrentShow, id, indexer, getShow } = this;
+
+            // We need detailed info for the xem / scene exceptions, so let's get it.
+            getShow({ id, indexer, detailed: true });
+
             // Let's tell the store which show we currently want as current.
+            // Run this after getShow(), as it will trigger the initializeEpisodes() method.
             setCurrentShow({
                 indexer,
                 id
             });
-
-            // We need detailed info for the xem / scene exceptions, so let's get it.
-            getShow({ id, indexer, detailed: true });
         },
         async saveShow(subject) {
             const { show, showLoaded } = this;

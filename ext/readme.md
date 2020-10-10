@@ -7,7 +7,7 @@ ext | `attrs` | [18.2.0](https://pypi.org/project/attrs/18.2.0/) | `imdbpie` | M
 ext | **`babelfish`** | [f403000](https://github.com/Diaoul/babelfish/tree/f403000dd63092cfaaae80be9f309fd85c7f20c9) | **`medusa`**, `guessit`, `knowit`, `subliminal` | -
 **ext2** | `backports.functools_lru_cache` | [1.6.1](https://pypi.org/project/backports.functools_lru_cache/1.6.1/) | `soupsieve` | File: `backports/functools_lru_cache.py`
 **ext2** | `backports_abc` | [0.5](https://pypi.org/project/backports_abc/0.5/) | `tornado` | File: `backports_abc.py`
-**ext2 ext3** | `beautifulsoup4` | [4.9.1](https://pypi.org/project/beautifulsoup4/4.9.1/) | **`medusa`**, `subliminal` | Module: `bs4`
+**ext2 ext3** | `beautifulsoup4` | [4.9.2](https://pypi.org/project/beautifulsoup4/4.9.2/) | **`medusa`**, `subliminal` | Module: `bs4`
 ext | `bencode.py` | [4.0.0](https://pypi.org/project/bencode.py/4.0.0/) | **`medusa`** | Modules: `bencodepy`, `bencode`<br>Monkey-patched, see `medusa/init/__init__.py`
 ext | **`boto`** | [2.48.0](https://pypi.org/project/boto/2.48.0/) | `imdbpie` | -
 ext | `CacheControl` | [0.12.6](https://pypi.org/project/CacheControl/0.12.6/) | **`medusa`** | Module: `cachecontrol`
@@ -42,7 +42,7 @@ ext | `MarkupSafe` | [1.1.1](https://pypi.org/project/MarkupSafe/1.1.1/) | `Mako
 ext | **`msgpack`** | [0.5.6](https://pypi.org/project/msgpack/0.5.6/) | `CacheControl` | -
 ext | **`oauthlib`** | [3.0.0](https://pypi.org/project/oauthlib/3.0.0/) | `requests-oauthlib` | -
 ext | `Pint` | [0.9](https://pypi.org/project/Pint/0.9/) | `knowit` | Module: `pint`
-ext | `profilehooks` | [1.11.2](https://pypi.org/project/profilehooks/1.11.2/) | **`medusa`** | File: `profilehooks.py`
+ext | `profilehooks` | [1.12.0](https://pypi.org/project/profilehooks/1.12.0/) | **`medusa`** | File: `profilehooks.py`
 ext | `PyGithub` | [1.45](https://pypi.org/project/PyGithub/1.45/) | **`medusa`** | Module: `github`
 ext | `PyJWT` | [1.7.1](https://pypi.org/project/pyjwt/1.7.1/) | **`medusa`**, `PyGithub` | Module: `jwt`
 ext | `pyparsing` | [2.4.7](https://pypi.org/project/pyparsing/2.4.7/) | `cloudscraper` | File: `pyparsing.py`
@@ -60,7 +60,7 @@ ext | `requests-toolbelt` | [0.9.1](https://pypi.org/project/requests-toolbelt/0
 **ext3** | `sgmllib3k` | [1.0.0](https://pypi.org/project/sgmllib3k/1.0.0/) | `feedparser` | File: `sgmllib.py`
 **ext2** | `singledispatch` | [3.4.0.3](https://pypi.org/project/singledispatch/3.4.0.3/) | `tornado` | Modules: `singledispatch.py`, `singledispatch_helpers.py`
 ext | `six` | [1.15.0](https://pypi.org/project/six/1.15.0/) | **`medusa`**, `adba`, `configobj`, `guessit`, `html5lib`, `imdbpie`, `knowit`, `PyGithub`, `rebulk`, `subliminal`, `tvdbapiv2`, `validators` | File: `six.py`
-ext | **`soupsieve`** | [1.9.5](https://pypi.org/project/soupsieve/1.9.5/) | `beautifulsoup4` | -
+ext | **`soupsieve`** | [1.9.6](https://pypi.org/project/soupsieve/1.9.6/) | `beautifulsoup4` | -
 ext | **`stevedore`** | [1.30.1](https://pypi.org/project/stevedore/1.30.1/) | `subliminal` | -
 ext | **`subliminal`** | [2.1.0](https://pypi.org/project/subliminal/2.1.0/) | **`medusa`** | -
 ext | **`tmdbsimple`** | [2.2.11](https://pypi.org/project/tmdbsimple/2.2.11/) | **`medusa`** | -
@@ -70,7 +70,7 @@ ext | `trans` | [2.1.0](https://pypi.org/project/trans/2.1.0/) | `imdbpie` | Fil
 ext | `ttl-cache` | [1.6](https://pypi.org/project/ttl-cache/1.6/) | **`medusa`** | File: `ttl_cache.py`
 ext | **`tvdbapiv2`** | pymedusa/[bf1272c](https://github.com/pymedusa/tvdbv2/tree/bf1272c9264c280c3048e89a1920e2bf5f386284) | **`medusa`** | -
 ext | **`urllib3`** | [1.24.1](https://pypi.org/project/urllib3/1.24.1/) | `requests` | -
-ext | **`validators`** | [0.16.0](https://pypi.org/project/validators/0.16.0/) | **`medusa`** | -
+ext | **`validators`** | [0.15.0](https://pypi.org/project/validators/0.15.0/) | **`medusa`** | -
 ext | **`webencodings`** | [0.5.1](https://pypi.org/project/webencodings/0.5.1/) | `html5lib` | -
 ext | **`wrapt`** | [1.10.11](https://pypi.org/project/wrapt/1.10.11/) | `deprecated` | -
 

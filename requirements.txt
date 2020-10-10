@@ -1,6 +1,6 @@
 adba @ https://codeload.github.com/pymedusa/adba/tar.gz/6efeff3a6bdcb6d45a4a79f424939ade2930e5f0
 babelfish @ https://codeload.github.com/Diaoul/babelfish/tar.gz/f403000dd63092cfaaae80be9f309fd85c7f20c9
-beautifulsoup4==4.9.1
+beautifulsoup4==4.9.2
 bencode.py==4.0.0
 CacheControl==0.12.6
 certifi==2020.6.20
@@ -24,7 +24,7 @@ jsonrpclib-pelix==0.4.1
 knowit @ https://codeload.github.com/ratoaq2/knowit/tar.gz/eea9ac18e38c930230cf81b5dca4a9af9fb10d4e
 Mako==1.1.3
 markdown2==2.3.9
-profilehooks==1.11.2
+profilehooks==1.12.0
 PyGithub==1.45
 PyJWT==1.7.1
 python-dateutil==2.8.1
@@ -41,4 +41,4 @@ tornado==5.1.1
 tornroutes==0.5.1
 ttl-cache==1.6
 tvdbapiv2 @ https://codeload.github.com/pymedusa/tvdbv2/tar.gz/bf1272c9264c280c3048e89a1920e2bf5f386284
-validators==0.16.0
+validators==0.15.0
