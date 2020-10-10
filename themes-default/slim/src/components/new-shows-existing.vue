@@ -15,10 +15,13 @@
                     <p>Medusa can add existing shows, using the current options, by using locally stored NFO/XML metadata to eliminate user interaction.
                         If you would rather have Medusa prompt you to customize each show, then use the checkbox below.</p>
 
-                    <p><toggle-button :width="45" :height="22" id="promptForSettings" v-model="promptForSettings" /> <label for="promptForSettings">Prompt me to set settings for each show</label></p>
+                    <p>
+                        <toggle-button :width="45" :height="22" id="promptForSettings" v-model="promptForSettings" /> <label for="promptForSettings">Prompt me to set settings for each show</label>
+                    </p>
 
-                    <p><toggle-button :width="45" :height="22" id="useCustomizeOptions" v-model="useCustomizeOptions" /> <label for="useCustomizeOptions">Use the customized options for each show</label></p>
-                    <span>By enabling this option, you will not be able to configure individual shows!</span>
+                    <p>
+                        <toggle-button :width="45" :height="22" id="useCustomizeOptions" v-model="useCustomizeOptions" /> <label for="useCustomizeOptions">Use the customized options for each show</label>
+                    </p>
 
                     <p>Select the shows you'd like to add. If the show has metadata available, you will not get prompted for settings unless the option "Prompt me to set settings for each show" is enabled.</p>
                     <p>While shows are added, the shows that do <b>not</b> have metadata available, will prompt you with the "Add Show" form.</p>
