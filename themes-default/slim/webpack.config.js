@@ -180,29 +180,26 @@ const webpackConfig = (env, mode) => ({
                 // This rule may get either actual `.css` files or the style blocks from `.vue` files.
                 // Here we delegate each request to use the appropriate loaders.
                 test: /\.css$/,
-                // https://webpack.js.org/configuration/module/#ruleuse
-                use({ resourceQuery }) {
+                oneOf: [
                     // Handle style blocks in `.vue` files
-                    // Based on this query: https://github.com/vuejs/vue-loader/blob/v15.8.3/lib/codegen/styleInjection.js#L28
-                    if (/^\?vue&type=style/.test(resourceQuery)) {
-                        return [
-                            'vue-style-loader',
-                            'css-loader'
-                        ];
-                    }
-
+                    {
+                        resourceQuery: /^\?vue&type=style/,
+                        use: ['vue-style-loader', 'css-loader']
+                    },
                     // Handle regular `.css` files
-                    return [
-                        {
-                            loader: MiniCssExtractPlugin.loader,
-                            options: {
-                                // Fixes loading fonts from the fonts folder
-                                publicPath: '../'
-                            }
-                        },
-                        'css-loader'
-                    ];
-                }
+                    {
+                        use: [
+                            {
+                                loader: MiniCssExtractPlugin.loader,
+                                options: {
+                                    // Fixes loading fonts from the fonts folder
+                                    publicPath: '../'
+                                }
+                            },
+                            'css-loader'
+                        ]
+                    }
+                ]
             },
             {
                 test: /\.(woff2?|ttf|eot|svg)$/,
