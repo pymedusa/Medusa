@@ -94,7 +94,7 @@ class PageTemplate(MakoTemplate):
             'realpage': '',
             'full_url': base_url + rh.request.uri
         }
-        
+
         if rh.request.headers.get('Host'):
             if rh.request.headers['Host'][0] == '[':
                 self.arguments['sbHost'] = re.match(r'^\[.*\]', rh.request.headers['Host'], re.X | re.M | re.S).group(0)
