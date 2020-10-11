@@ -98,7 +98,7 @@
     "gulp-changed": "4.0.2",
     "gulp-imagemin": "7.1.0",
     "imagemin-pngquant": "9.0.1",
-    "jest": "26.5.2",
+    "jest": "26.5.3",
     "jest-serializer-vue": "2.0.2",
     "jest-vue-matcher": "2.0.0",
     "mini-css-extract-plugin": "1.0.0",
