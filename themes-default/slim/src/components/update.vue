@@ -6,7 +6,7 @@
         </template>
         <template v-else>
             <div id="creating_backup">
-                Waiting for medusa to create a backup:
+                Waiting for Medusa to create a backup:
                 <state-switch :theme="layout.themeName" :state="backupStatus" />
             </div>
             <div v-if="backupStatus === 'yes'" id="starting_update">

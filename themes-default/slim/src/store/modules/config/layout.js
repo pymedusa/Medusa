@@ -3,12 +3,12 @@ import { api } from '../../../api';
 import formatDate from 'date-fns/format';
 import parseISO from 'date-fns/parseISO';
 import TimeAgo from 'javascript-time-ago';
-import timeAgoLocalEN from 'javascript-time-ago/locale/en';
+import en from 'javascript-time-ago/locale/en';
 
 import { convertDateFormat } from '../../../utils/core';
 
 // Add locale-specific relative date/time formatting rules.
-TimeAgo.addLocale(timeAgoLocalEN);
+TimeAgo.addDefaultLocale(en);
 
 const state = {
     show: {
