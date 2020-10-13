@@ -184,7 +184,15 @@ const webpackConfig = (env, mode) => ({
                     // Handle style blocks in `.vue` files
                     {
                         resourceQuery: /^\?vue&type=style/,
-                        use: ['vue-style-loader', 'css-loader']
+                        use: [
+                            'vue-style-loader',
+                            {
+                                loader: 'css-loader',
+                                options: {
+                                    esModule: false
+                                }
+                            }
+                        ]
                     },
                     // Handle regular `.css` files
                     {
