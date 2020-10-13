@@ -174,3 +174,36 @@ class MedusaSafeSession(MedusaSession):
             return None
 
         return resp
+
+
+class ProviderSession(MedusaSafeSession):
+    """Requests session for providers."""
+
+    def __init__(self, **kwargs):
+        """Init super and hook in the proxy if configured for providers."""
+        # Initialize request.session
+        super(ProviderSession, self).__init__(**kwargs)
+        # add provider proxies
+        self.proxies = factory.add_proxies('providers')
+
+
+class IndexerSession(MedusaSafeSession):
+    """Requests session for indexers."""
+
+    def __init__(self, **kwargs):
+        """Init super and hook in the proxy if configured for indexers."""
+        # Initialize request.session
+        super(IndexerSession, self).__init__(**kwargs)
+        # add provider proxies
+        self.proxies = factory.add_proxies('indexers')
+
+
+class ClientSession(MedusaSafeSession):
+    """Requests session for clients."""
+
+    def __init__(self, **kwargs):
+        """Init super and hook in the proxy if configured for clients."""
+        # Initialize request.session
+        super(ClientSession, self).__init__(**kwargs)
+        # add provider proxies
+        self.proxies = factory.add_proxies('clients')

@@ -27,9 +27,16 @@ def add_cache_control(session, cache_control_config):
     session.cache_controller = adapter.controller
 
 
-def add_proxies():
+def add_proxies(specific=None):
     # request session proxies
-    if app.PROXY_SETTING:
+    config = {
+        'providers': app.PROXY_PROVIDERS,
+        'indexers': app.PROXY_INDEXERS,
+        'clients': app.PROXY_CLIENTS,
+        None: app.PROXY_OTHERS
+    }
+
+    if app.PROXY_SETTING and config[specific]:
         log.debug('Using global proxy: ' + app.PROXY_SETTING)
         proxy = urlparse(app.PROXY_SETTING)
         address = app.PROXY_SETTING if proxy.scheme else 'http://' + app.PROXY_SETTING

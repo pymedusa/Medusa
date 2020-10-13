@@ -133,7 +133,10 @@ class ConfigHandler(BaseRequestHandler):
         'calendarUnprotected': BooleanField(app, 'CALENDAR_UNPROTECTED'),
         'calendarIcons': BooleanField(app, 'CALENDAR_ICONS'),
         'proxySetting': StringField(app, 'PROXY_SETTING'),
+        'proxyProviders': BooleanField(app, 'PROXY_PROVIDERS'),
         'proxyIndexers': BooleanField(app, 'PROXY_INDEXERS'),
+        'proxyClients': BooleanField(app, 'PROXY_CLIENTS'),
+        'proxyOthers': BooleanField(app, 'PROXY_OTHERS'),
 
         'skipRemovedFiles': BooleanField(app, 'SKIP_REMOVED_FILES'),
         'epDefaultDeletedStatus': IntegerField(app, 'EP_DEFAULT_DELETED_STATUS'),
@@ -671,8 +674,13 @@ class DataGenerator(object):
         section_data['encryptionVersion'] = bool(app.ENCRYPTION_VERSION)
         section_data['calendarUnprotected'] = bool(app.CALENDAR_UNPROTECTED)
         section_data['calendarIcons'] = bool(app.CALENDAR_ICONS)
+
         section_data['proxySetting'] = app.PROXY_SETTING
+        section_data['proxyProviders'] = bool(app.PROXY_PROVIDERS)
         section_data['proxyIndexers'] = bool(app.PROXY_INDEXERS)
+        section_data['proxyClients'] = bool(app.PROXY_CLIENTS)
+        section_data['proxyOthers'] = bool(app.PROXY_OTHERS)
+
         section_data['skipRemovedFiles'] = bool(app.SKIP_REMOVED_FILES)
         section_data['epDefaultDeletedStatus'] = app.EP_DEFAULT_DELETED_STATUS
         section_data['developer'] = bool(app.DEVELOPER)
