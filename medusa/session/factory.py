@@ -6,10 +6,6 @@ import logging
 from cachecontrol import CacheControlAdapter
 from cachecontrol.cache import DictCache
 
-from medusa.app import app
-
-from six.moves.urllib.parse import urlparse
-
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
