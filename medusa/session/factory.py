@@ -6,7 +6,7 @@ import logging
 from cachecontrol import CacheControlAdapter
 from cachecontrol.cache import DictCache
 
-from medusa import app
+from medusa.app import app
 
 from six.moves.urllib.parse import urlparse
 
@@ -25,24 +25,3 @@ def add_cache_control(session, cache_control_config):
     session.mount('http://', adapter)
     session.mount('https://', adapter)
     session.cache_controller = adapter.controller
-
-
-def add_proxies(specific=None):
-    # request session proxies
-    config = {
-        'providers': app.PROXY_PROVIDERS,
-        'indexers': app.PROXY_INDEXERS,
-        'clients': app.PROXY_CLIENTS,
-        None: app.PROXY_OTHERS
-    }
-
-    if app.PROXY_SETTING and config[specific]:
-        log.debug('Using global proxy: ' + app.PROXY_SETTING)
-        proxy = urlparse(app.PROXY_SETTING)
-        address = app.PROXY_SETTING if proxy.scheme else 'http://' + app.PROXY_SETTING
-        return {
-            'http': address,
-            'https': address,
-        }
-    else:
-        return None
