@@ -7834,10 +7834,10 @@ jake@^10.6.1:
     filelist "^1.0.1"
     minimatch "^3.0.4"
 
-javascript-time-ago@2.2.8:
-  version "2.2.8"
-  resolved "https://registry.yarnpkg.com/javascript-time-ago/-/javascript-time-ago-2.2.8.tgz#d2821816a648f4659f605e030418af7949f0564e"
-  integrity sha512-VU2GZ88QYl7zEfnKe2VecnPlXunr1awIAf21S13CRUUYlk6cVbmA81GApMXHIbDUfYfsJVcPjjB76KLEPO4fGA==
+javascript-time-ago@2.2.9:
+  version "2.2.9"
+  resolved "https://registry.yarnpkg.com/javascript-time-ago/-/javascript-time-ago-2.2.9.tgz#655385bd143971ff97fda01ddbf82ce1d16d97ea"
+  integrity sha512-wJ+nBScsRJ30qJnRWm8DD59G3imYe6fg+T9ddErm4+qxcR2xyBEpYQlDylQEafFIQg6cx/+V4myN4cR2ikQtiw==
   dependencies:
     relative-time-format "^1.0.5"
 
