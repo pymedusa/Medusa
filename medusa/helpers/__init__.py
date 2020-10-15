@@ -966,7 +966,7 @@ def decrypt(data, encryption_version=0):
 
 
 def full_sanitize_scene_name(name):
-    return re.sub('[. -?]', ' ', sanitize_scene_name(name)).lower().lstrip()
+    return re.sub('[. -]', ' ', sanitize_scene_name(name)).lower().lstrip()
 
 
 def get_show(name, try_indexers=False):

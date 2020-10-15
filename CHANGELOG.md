@@ -9,6 +9,10 @@
 - Fix shows sorting by article sort using (the, a, an) was reversed in config-general ([8532](https://github.com/pymedusa/Medusa/pull/8532))
 - Fix sending torrents to qBittorrent api version > 2.0.0 ([8528](https://github.com/pymedusa/Medusa/pull/8528))
 - Fix decoding torrent hash from magnet links ([8563](https://github.com/pymedusa/Medusa/pull/8563))
+- Fix provider AnimeBytes ([8609](https://github.com/pymedusa/Medusa/pull/8609))
+- Fix provider Speedcd ([8609](https://github.com/pymedusa/Medusa/pull/8609))
+- Fix season pack search, results not shown for multi-episode results ([8609](https://github.com/pymedusa/Medusa/pull/8609))
+
 
 -----
 

@@ -105,10 +105,6 @@ class SpeedCDProvider(TorrentProvider):
                     continue
 
                 html = response_json['Fs'][0][1][1][1]
-
-                if 'Nothing found' in html:
-                    continue
-
                 results += self.parse(html, mode)
 
         return results
