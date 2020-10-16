@@ -28,7 +28,7 @@
   "resolutions": {
     "**/jquery": "3.5.1",
     "**/date-fns": "2.16.1",
-    "jest/**/@babel/core": "7.12.1"
+    "jest/**/@babel/core": "7.12.3"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "1.2.32",
@@ -66,7 +66,7 @@
     "vuex": "3.5.1"
   },
   "devDependencies": {
-    "@babel/core": "7.12.1",
+    "@babel/core": "7.12.3",
     "@babel/plugin-transform-runtime": "7.12.1",
     "@babel/preset-env": "7.12.1",
     "@babel/runtime": "7.12.1",
