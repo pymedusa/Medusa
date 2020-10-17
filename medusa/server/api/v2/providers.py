@@ -65,12 +65,14 @@ class ProvidersHandler(BaseRequestHandler):
             start = arg_limit * (arg_page - 1) + 1
 
             for item in provider_results[start - 1:start - 1 + arg_limit]:
+                episodes = [int(ep) for ep in item['episodes'].strip('|').split('|') if ep != '']
                 yield {
                     'identifier': item['identifier'],
                     'release': item['name'],
                     'season': item['season'],
-                    'episodes': [int(ep) for ep in item['episodes'].strip('|').split('|') if ep != ''],
-                    'seasonPack': item['episodes'] == '||',
+                    'episodes': episodes,
+                    # For now if episodes is 0 or (multiepisode) mark as season pack.
+                    'seasonPack': len(episodes) == 0 or len(episodes) > 1,
                     'indexer': item['indexer'],
                     'seriesId': item['indexerid'],
                     'showSlug': show_slug,
