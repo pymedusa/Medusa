@@ -806,7 +806,9 @@ export default {
                                     title: 'Yes',
                                     handler: () => {
                                         this.$modal.hide('dialog');
-                                        this.switchIndexer();
+                                        this.indexerId = data.pathInfo.metadata.indexer;
+                                        this.nameToSearch = data.pathInfo.metadata.seriesId;
+                                        this.searchIndexers();
                                     }
                                 }
                             ]
@@ -816,13 +818,6 @@ export default {
             } catch (error) {
                 this.$snotify.warning('Error while checking for existing folder');
             }
-        },
-        switchIndexer() {
-            const { existingFolder } = this;
-
-            this.indexerId = existingFolder.metadata.indexer;
-            this.nameToSearch = existingFolder.metadata.seriesId;
-            this.searchIndexers();
         }
     },
     watch: {

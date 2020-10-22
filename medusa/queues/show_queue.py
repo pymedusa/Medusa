@@ -430,7 +430,7 @@ class QueueItemAdd(ShowQueueItem):
 
             try:
                 message_step('configure show options')
-                series.configure(self.options)
+                series.configure(self)
             except KeyError as error:
                 log.error(
                     'Unable to add show {series_name} due to an error with one of the provided options: {error}',

@@ -291,63 +291,6 @@ class Series(TV):
         """Create a series object from its identifier."""
         return Series(identifier.indexer.id, identifier.id)
 
-    # TODO: Make this the single entry to add new series
-    @classmethod
-    def save_series(cls, series, options=None):
-        """Save the specified series to medusa."""
-        try:
-            api = series.identifier.get_indexer_api(options)
-            series.load_from_indexer(tvapi=api)
-            series.load_imdb_info()
-        except IndexerException as error:
-            log.warning('Unable to load series from indexer: {0!r}'.format(error))
-            raise SaveSeriesException('Unable to load series from indexer: {0!r}'.format(error))
-
-        series.check_existing()
-
-        try:
-            series.configure(options)  # Add apiv2 provided options.
-        except KeyError as error:
-            log.error(
-                'Unable to add show {series_name} due to an error with one of the provided options: {error}',
-                {'series_name': series.name, 'error': error}
-            )
-            ui.notifications.error(
-                'Unable to add show {series_name} due to an error with one of the provided options: {error}'.format(
-                    series_name=series.name, error=error
-                )
-            )
-            raise SaveSeriesException(
-                'Unable to add show {series_name} due to an error with one of the provided options: {error}'.format(
-                    series_name=series.name, error=error
-                ))
-
-        except Exception as error:
-            log.error('Error trying to configure show: {0}', error)
-            log.debug(traceback.format_exc())
-            raise
-
-        app.showList.append(series)
-        series.save_to_db()
-
-        try:
-            series.load_episodes_from_indexer(tvapi=api, options=options)
-        except IndexerException as error:
-            log.warning('Unable to load series episodes from indexer: {0!r}'.format(error))
-            raise SaveSeriesException(
-                'Unable to load series episodes from indexer: {0!r}'.format(error)
-            )
-
-        series.write_metadata()
-        series.update_metadata()
-        series.populate_cache()
-        build_name_cache(series)  # update internal name cache
-        series.flush_episodes()
-        series.sync_trakt()
-        series.add_scene_numbering()
-        ws.Message('showAdded', series.to_json(detailed=False)).push()  # Send ws update to client
-        return series
-
     @property
     def identifier(self):
         """Return a series identifier object."""
@@ -1739,25 +1682,36 @@ class Series(TV):
                 'reason: {0}'.format(error)
             )
 
-    def configure(self, options):
+    def configure(self, queue_item):
         """Configure series."""
         # Let's try to create the show Dir if it's not provided. This way we force the show dir
         # to build using the Indexers provided series name
-        show_dir = options.get('showDir')
-        root_dir = options.get('rootDir')
+        options = queue_item.options
+        show_dir = queue_item.show_dir
+        root_dir = queue_item.root_dir
         if not show_dir and root_dir:
             # I don't think we need to check this. We just create the folder after we already queried the indexer.
             # show_name = get_showname_from_indexer(self.indexer, self.indexer_id, self.lang)
             if self.name:
                 show_dir = os.path.join(root_dir, sanitize_filename(self.name))
-                dir_exists = make_dir(show_dir)
-                if not dir_exists:
-                    log.info("Unable to create the folder {0}, can't add the show", show_dir)
-                    return
 
-                helpers.chmod_as_parent(show_dir)
+                # don't create show dir if config says not to
+                if app.ADD_SHOWS_WO_DIR:
+                    log.info('Skipping initial creation of {path} due to config.ini setting',
+                             {'path': show_dir})
+                else:
+                    dir_exists = make_dir(show_dir)
+                    if not dir_exists:
+                        log.error("Unable to create the folder {0}, can't add the show", show_dir)
+                        ui.notifications.error(
+                            'Unable to create folder',
+                            'folder: {0}'.format(show_dir)
+                        )
+                        return
+
+                    helpers.chmod_as_parent(show_dir)
             else:
-                log.info("Unable to get a show {0}, can't add the show", show_dir)
+                log.error("Unable to get a show {0}, can't add the show", show_dir)
                 return
 
         if show_dir:
@@ -1982,7 +1936,7 @@ class Series(TV):
         Add XEM data to DB for show.
 
         Warn the user if an episode number mapping is available on thexem.
-        Only use this method, through the self.save_series method!
+        Only use this method, through show_queue.QueueItemAdd().
         """
         xem_refresh(self, force=True)
 
