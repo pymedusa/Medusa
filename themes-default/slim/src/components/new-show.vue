@@ -1,5 +1,6 @@
 <template>
     <div class="newShowPortal">
+        <v-dialog />
         <vue-tabs>
             <v-tab key="add_new_show" title="Add New Show">
                 <div id="core-component-group1" class="tab-pane active component-group">
@@ -39,30 +40,40 @@
                                     <div class="row">
                                         <div class="col-lg-12">
                                             <div class="row">
-                                                <div class="col-lg-12 show-add-options">
-                                                    <div class="show-add-option">
-                                                        <input type="text" v-model.trim="nameToSearch" ref="nameToSearch" @keyup.enter="searchIndexers" class="form-control form-control-inline input-sm input350">
+                                                <div class="col-lg-12">
+                                                    <div class="row">
+                                                        <div v-if="existingFolder && existingFolder.pathExists" class="col-lg-12">
+                                                            <span>Show folder found for selected show: <strong>{{existingFolder.path}}</strong></span>
+                                                        </div>
                                                     </div>
 
-                                                    <div class="show-add-option">
-                                                        <language-select @update-language="indexerLanguage = $event"
-                                                                         ref="indexerLanguage" :language="general.indexerDefaultLanguage"
-                                                                         :available="indexers.main.validLanguages.join(',')"
-                                                                         class="form-control form-control-inline input-sm"
-                                                        />
-                                                        <b>*</b>
-                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-lg-12">
+                                                            <div class="show-add-option">
+                                                                <input type="text" v-model.trim="nameToSearch" ref="nameToSearch" @keyup.enter="searchIndexers" class="form-control form-control-inline input-sm input350">
+                                                            </div>
 
-                                                    <div class="show-add-option">
-                                                        <select v-model="indexerId" class="form-control form-control-inline input-sm">
-                                                            <option v-for="option in indexerListOptions" :value="option.value" :key="option.value">
-                                                                {{ option.text }}
-                                                            </option>
-                                                        </select>
-                                                    </div>
+                                                            <div class="show-add-option">
+                                                                <language-select @update-language="indexerLanguage = $event"
+                                                                                 ref="indexerLanguage" :language="general.indexerDefaultLanguage"
+                                                                                 :available="indexers.main.validLanguages.join(',')"
+                                                                                 class="form-control form-control-inline input-sm"
+                                                                />
+                                                                <b>*</b>
+                                                            </div>
 
-                                                    <div class="show-add-option">
-                                                        <input class="btn-medusa btn-inline" type="button" value="Search" @click="searchIndexers">
+                                                            <div class="show-add-option">
+                                                                <select v-model="indexerId" class="form-control form-control-inline input-sm">
+                                                                    <option v-for="option in indexerListOptions" :value="option.value" :key="option.value">
+                                                                        {{ option.text }}
+                                                                    </option>
+                                                                </select>
+                                                            </div>
+
+                                                            <div class="show-add-option">
+                                                                <input class="btn-medusa btn-inline" type="button" value="Search" @click="searchIndexers">
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -167,6 +178,31 @@
                 </div>
             </v-tab>
         </vue-tabs>
+
+        <!-- eslint-disable @sharkykh/vue-extra/component-not-registered -->
+        <modal name="existing-show-folder" :height="'auto'" :width="'80%'">
+            <transition name="modal">
+                <div class="modal-mask">
+                    <div class="modal-wrapper">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                <h4 class="modal-title">Show folder exists</h4>
+                            </div>
+                            <div class="modal-body">
+                                <p>The folder for the selected show already exists. And metadata was found.</p>
+                                <p v-if="this.existingFolder">The show has previously been added through the indexer {{indexerIdToName(this.existingFolder.indexerId)}}. Do you want to use this indexer?</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn-medusa btn-success" data-dismiss="modal" @click="switchIndexer; $modal.hide('existing-show-folder')">Yes</button>
+                                <button type="button" class="btn-medusa btn-success" data-dismiss="modal" @click="$modal.hide('existing-show-folder')">No</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </transition>
+        </modal>
+
     </div>
 </template>
 <script>
@@ -265,7 +301,8 @@ export default {
                 },
                 showLists: []
             },
-            addedQueueItem: null
+            addedQueueItem: null,
+            existingFolder: null
         };
     },
     mounted() {
@@ -733,6 +770,59 @@ export default {
                 return '';
             })();
             return name.split(sepChar).slice(-1)[0];
+        },
+        async checkFolder() {
+            // Check if selected show already has a folder in one of the root dirs.
+            const { indexerIdToName, selectedRootDir, selectedShow } = this;
+
+            if (!selectedShow) {
+                return;
+            }
+
+            const { showName } = selectedShow;
+
+            try {
+                const response = await api.get('internal/checkForExistingFolder', { params: {
+                    showdir: '', rootdir: selectedRootDir, title: showName
+                } });
+                const { data } = response;
+
+                if (data.pathInfo.pathExists) {
+                    this.existingFolder = data.pathInfo;
+                    if (data.pathInfo.metadata &&
+                        selectedShow.indexerId !== data.pathInfo.metadata.indexer &&
+                        selectedShow.showId !== data.pathInfo.metadata.seriesId) {
+                        this.$modal.show('dialog', {
+                            title: 'Existing show folder metadata found',
+                            text: `The folder for the selected show already exists. And metadata was found. \nThe show has previously been added through the indexer ${indexerIdToName(data.pathInfo.metadata.indexer)}. Do you want to use this indexer?`,
+                            buttons: [
+                                {
+                                    title: 'No',
+                                    handler: () => {
+                                        this.$modal.hide('dialog');
+                                    }
+                                },
+                                {
+                                    title: 'Yes',
+                                    handler: () => {
+                                        this.$modal.hide('dialog');
+                                        this.switchIndexer();
+                                    }
+                                }
+                            ]
+                        });
+                    }
+                }
+            } catch (error) {
+                this.$snotify.warning('Error while checking for existing folder');
+            }
+        },
+        switchIndexer() {
+            const { existingFolder } = this;
+
+            this.indexerId = existingFolder.metadata.indexer;
+            this.nameToSearch = existingFolder.metadata.seriesId;
+            this.searchIndexers();
         }
     },
     watch: {
@@ -746,6 +836,9 @@ export default {
             if (firstAvailableResult) {
                 this.selectedShowSlug = firstAvailableResult.slug;
             }
+        },
+        selectedShowSlug() {
+            this.checkFolder();
         }
     }
 };
@@ -813,6 +906,21 @@ ul.wizard-nav .step .smalltext {
     /* move to themed */
     background-color: rgb(95, 95, 95);
     border-color: rgb(95, 95, 95); color: white;
+}
+
+.show-add-option {
+    float: left;
+    padding-right: 10px;
+    line-height: 40px;
+}
+
+.newShowPortal >>> .vue-dialog {
+    background-color: rgb(34, 34, 34);
+    border: 1px solid rgb(125, 125, 125);
+}
+
+.newShowPortal >>> .vue-dialog-button {
+    background-color: rgb(55, 55, 55);
 }
 
 </style>

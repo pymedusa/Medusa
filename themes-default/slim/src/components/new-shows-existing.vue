@@ -304,68 +304,25 @@ export default {
             });
         },
         seriesIndexerUrl(curDir) {
-            const { showUrl } = Object.values(this.indexers.indexers).filter(indexer => indexer.id === curDir.metadata.indexer)[0];
+            const { showUrl } = Object.values(this.indexers.indexers).find(indexer => indexer.id === curDir.metadata.indexer);
             return `${showUrl}${curDir.metadata.seriesId}`;
         },
+        /**
+         * Loop through the selected shows and open an add-show dialog, if needed.
+         * Or add unattended if possible.
+         *
+         * @returns {void}
+         */
         submitSeriesDirs() {
             const dirList = this.filteredDirList.filter(dir => dir.selected);
             if (dirList.length === 0) {
                 return false;
             }
 
-            // const formData = new FormData();
-            // formData.append('promptForSettings', this.promptForSettings);
-
             for (const [curDirIndex, _] of dirList.entries()) {
                 // Loop through the existing shows.
                 this.openAddNewShow(curDirIndex, true);
             }
-
-            // dirList.forEach(dir => {
-            //     const originalIndexer = dir.metadata.indexer;
-            //     let { seriesId } = dir.metadata;
-            //     if (originalIndexer !== null && originalIndexer !== dir.selectedIndexer) {
-            //         seriesId = '';
-            //     }
-
-            //     // const seriesToAdd = [dir.selectedIndexer, dir.path, seriesId, dir.metadata.seriesName]
-            //     //     .filter(i => typeof (i) === 'number' || Boolean(i)).join('|');
-
-            //     // formData.append('shows_to_add', seriesToAdd);
-            // });
-
-            // const response = await apiRoute.post('addShows/addExistingShows', formData);
-            // const { data } = response;
-            // const { result, message, redirect, params } = data;
-
-            // if (message) {
-            //     if (result === false) {
-            //         console.log('Error: ' + message);
-            //     } else {
-            //         console.log('Response: ' + message);
-            //     }
-            // }
-            // if (redirect) {
-            //     const baseUrl = apiRoute.defaults.baseURL;
-            //     if (params.length === 0) {
-            //         window.location.href = baseUrl + redirect;
-            //         return;
-            //     }
-
-            //     const form = document.createElement('form');
-            //     form.method = 'POST';
-            //     form.action = baseUrl + redirect;
-            //     form.acceptCharset = 'utf-8';
-
-            //     params.forEach(param => {
-            //         const element = document.createElement('input');
-            //         [element.name, element.value] = param; // Unpack
-            //         form.append(element);
-            //     });
-
-            //     document.body.append(form);
-            //     form.submit();
-            // }
         },
         updateOptions(options) {
             // Update seleted options from add-show-options.vue @change event.

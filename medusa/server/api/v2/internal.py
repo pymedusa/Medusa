@@ -15,7 +15,7 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.tv.series import Series, SeriesIdentifier
 
-from six import iteritems, itervalues
+from six import binary_type, iteritems, itervalues, text_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -267,3 +267,38 @@ class InternalHandler(BaseRequestHandler):
             'languageId': language_id
         }
         return self._ok(data=data)
+
+    def resource_check_for_existing_folder(self):
+        """Check if the show selected, already has a folder located in one of the root dirs."""
+        show_dir = self.get_argument('showdir' '').strip()
+        root_dir = self.get_argument('rootdir', '').strip()
+        title = self.get_argument('title', '').strip()
+
+        if not show_dir and not(root_dir and title):
+            return self._bad_request({
+                'showDir': show_dir,
+                'rootDir': root_dir,
+                'title': title, 'error': 'missing information to determin location'
+            })
+
+        path = ''
+
+        if show_dir:
+            path = text_type(show_dir, 'utf-8') if isinstance(show_dir, binary_type) else show_dir
+        elif root_dir and title:
+            path = os.path.join(root_dir, sanitize_filename(title))
+
+        path_info = {'path': path}
+        path_info['pathExists'] = os.path.exists(path)
+        if path_info['pathExists']:
+            for cur_provider in itervalues(app.metadata_provider_dict):
+                (series_id, series_name, indexer) = cur_provider.retrieveShowMetadata(path_info['path'])
+                if all((series_id, series_name, indexer)):
+                    path_info['metadata'] = {
+                        'seriesId': try_int(series_id),
+                        'seriesName': series_name,
+                        'indexer': try_int(indexer)
+                    }
+                    break
+
+        return self._ok(data={'pathInfo': path_info})
