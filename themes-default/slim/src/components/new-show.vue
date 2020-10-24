@@ -1,6 +1,5 @@
 <template>
     <div class="newShowPortal">
-        <v-dialog />
         <vue-tabs>
             <v-tab key="add_new_show" title="Add New Show">
                 <div id="core-component-group1" class="tab-pane active component-group">
@@ -171,9 +170,6 @@
                     <br>
                     <div style="width: 100%; text-align: center;">
                         <input @click.prevent="submitForm" class="btn-medusa" type="button" value="Add Show" :disabled="addButtonDisabled">
-                        <!-- <input v-if="skipShowVisible" @click.prevent="submitForm(true);" class="btn-medusa" type="button" value="Skip Show">
-                        <p v-if="otherShows.length !== 0"><i>({{ otherShows.length }} more {{ otherShows.length > 1 ? 'shows' : 'show' }} left)</i></p>
-                        <p v-else-if="skipShowVisible"><i>(last show)</i></p> -->
                     </div>
                 </div>
             </v-tab>
@@ -211,6 +207,7 @@ import { ToggleButton } from 'vue-js-toggle-button';
 import RootDirs from './root-dirs.vue';
 import { AddShowOptions } from '.';
 import { AppLink, LanguageSelect } from './helpers';
+import ExistingShowDialog from './modals/existing-show-dialog.vue';
 import { api } from '../api';
 import axios from 'axios';
 import { VueTabs, VTab } from 'vue-nav-tabs/dist/vue-tabs.js';
@@ -330,17 +327,6 @@ export default {
                 }
             }
         }, 500);
-        // };
-
-        /* JQuery Form to Form Wizard- (c) Dynamic Drive (www.dynamicdrive.com)
-        *  This notice MUST stay intact for legal use
-        *  Visit http://www.dynamicdrive.com/ for this script and 100s more. */
-        // @TODO: we need to move to real forms instead of this
-        // this.formwizard = new formtowizard({ // eslint-disable-line new-cap, no-undef
-        //     formid: 'addShowForm',
-        //     revealfx: ['slide', 300],
-        //     oninit: init
-        // });
 
         const { general } = this;
         // Set the indexer to the indexer default.
@@ -393,10 +379,6 @@ export default {
 
             return searchResults;
         },
-        // skipShowVisible() {
-        //     const { otherShows, providedInfo } = this;
-        //     return otherShows.length !== 0 || providedInfo.use || providedInfo.showDir;
-        // },
         showName() {
             const { providedInfo, selectedShow } = this;
             // If we provided a show, use that
@@ -452,7 +434,7 @@ export default {
             return 'images/loading32' + themeSpinner + '.gif';
         },
         displayStatus() {
-            const { currentSearch, searchStatus } = this;
+            const { currentSearch } = this;
             if (currentSearch.cancel !== null) {
                 return 'searching';
             }
@@ -629,8 +611,6 @@ export default {
                 })
             };
 
-            // this.$nextTick(() => this.formwizard.loadsection(0)); // eslint-disable-line no-use-before-define
-
             let data = null;
             try {
                 const response = await api.get('internal/searchIndexersForShowName', config);
@@ -675,11 +655,6 @@ export default {
 
                     // Append showId to indexer show url
                     indexerShowUrl += showId;
-                    // TheTVDB.com no longer supports that feature
-                    // For now only add the languageId id to the tvdb url, as the others might have different routes.
-                    /* if (languageId && languageId !== '' && indexerId === 1) {
-                        indexerShowUrl += '&lid=' + languageId
-                    } */
 
                     // Discard 'N/A' and '1900-01-01'
                     const filter = string => ['N/A', '1900-01-01'].includes(string) ? '' : string;
@@ -714,9 +689,9 @@ export default {
 
             this.searchStatus = '';
 
-            // this.$nextTick(() => {
-            //     this.formwizard.loadsection(0); // eslint-disable-line no-use-before-define
-            // });
+            this.$nextTick(() => {
+                this.navigateStep(0);
+            });
         },
         /**
          * The formwizard sets a fixed height when the step has been loaded. We need to refresh this on the option
@@ -792,27 +767,18 @@ export default {
                     if (data.pathInfo.metadata &&
                         selectedShow.indexerId !== data.pathInfo.metadata.indexer &&
                         selectedShow.showId !== data.pathInfo.metadata.seriesId) {
-                        this.$modal.show('dialog', {
-                            title: 'Existing show folder metadata found',
-                            text: `The folder for the selected show already exists. And metadata was found. \nThe show has previously been added through the indexer ${indexerIdToName(data.pathInfo.metadata.indexer)}. Do you want to use this indexer?`,
-                            buttons: [
-                                {
-                                    title: 'No',
-                                    handler: () => {
-                                        this.$modal.hide('dialog');
-                                    }
-                                },
-                                {
-                                    title: 'Yes',
-                                    handler: () => {
-                                        this.$modal.hide('dialog');
-                                        this.indexerId = data.pathInfo.metadata.indexer;
-                                        this.nameToSearch = data.pathInfo.metadata.seriesId;
-                                        this.searchIndexers();
-                                    }
+                        this.$modal.show(ExistingShowDialog, {
+                            indexerName: indexerIdToName(data.pathInfo.metadata.indexer),
+                            eventCallback: param => {
+                                if (param.answer === 'yes') {
+                                    this.indexerId = data.pathInfo.metadata.indexer;
+                                    this.nameToSearch = data.pathInfo.metadata.seriesId;
+                                    this.searchIndexers();
                                 }
-                            ]
-                        });
+                            }
+                        },
+                        { height: 'auto' }
+                        );
                     }
                 }
             } catch (error) {

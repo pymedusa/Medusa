@@ -113,7 +113,7 @@ export const registerPlugins = () => {
     Vue.use(VueMeta);
     Vue.use(Snotify);
     Vue.use(VueCookies);
-    Vue.use(VModal, { dialog: true });
+    Vue.use(VModal, { dynamicDefault: { height: 'auto' } });
     Vue.use(VTooltip);
 
     // Set default cookie expire time
