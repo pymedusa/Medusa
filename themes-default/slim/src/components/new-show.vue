@@ -15,8 +15,16 @@
                                 </div>
                             </template>
 
+                            <template slot="prev">
+                                <button type="button" class="btn-medusa btn-inline">Back</button>
+                            </template>
+
+                            <template slot="next">
+                                <button type="button" class="btn-medusa btn-inline">Next</button>
+                            </template>
+
                             <template slot="finish">
-                                <button @click.prevent="submitForm" type="button" :disabled="addButtonDisabled">Add Show</button>
+                                <button @click.prevent="submitForm" type="button" class="btn-medusa btn-inline" :disabled="addButtonDisabled">Add Show</button>
                             </template>
 
                             <tab-content title="Find a show on selected indexer(s)">
@@ -169,7 +177,7 @@
                     </form>
                     <br>
                     <div style="width: 100%; text-align: center;">
-                        <input @click.prevent="submitForm" class="btn-medusa" type="button" value="Add Show" :disabled="addButtonDisabled">
+                        <input @click.prevent="submitForm" class="btn-medusa btn-inline" type="button" value="Add Show" :disabled="addButtonDisabled">
                     </div>
                 </div>
             </v-tab>
@@ -852,36 +860,10 @@ ul.wizard-nav .step .smalltext {
     float: right;
 }
 
-.formwizard >>> .wizard-card-footer span {
-    padding: 3px 6px;
-    cursor: hand;
-    cursor: pointer;
-    opacity: 0.65;
-    /* move to themed */
-    color: rgb(255, 255, 255);
-    background: rgb(95, 95, 95);
-}
-
-.formwizard >>> .wizard-card-footer button {
-    border-width: 0;
-    /* move to themed */
-    background-color: rgb(95, 95, 95);
-    border-color: rgb(95, 95, 95); color: white;
-}
-
 .show-add-option {
     float: left;
     padding-right: 10px;
     line-height: 40px;
-}
-
-.newShowPortal >>> .vue-dialog {
-    background-color: rgb(34, 34, 34);
-    border: 1px solid rgb(125, 125, 125);
-}
-
-.newShowPortal >>> .vue-dialog-button {
-    background-color: rgb(55, 55, 55);
 }
 
 </style>
