@@ -12682,10 +12682,10 @@ vue-template-es2015-compiler@^1.6.0, vue-template-es2015-compiler@^1.9.0:
   resolved "https://registry.yarnpkg.com/vue-template-es2015-compiler/-/vue-template-es2015-compiler-1.9.1.tgz#1ee3bc9a16ecbf5118be334bb15f9c46f82f5825"
   integrity sha512-4gDntzrifFnCEvyoO8PqyJDmguXgVPxKiIxrBKjIowvL9l+N66196+72XVYR8BBf1Uv1Fgt3bGevJ+sEmxfZzw==
 
-vue-truncate-collapsed@2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/vue-truncate-collapsed/-/vue-truncate-collapsed-2.1.0.tgz#19404ea332647542a7e81f4773d09749af4056bc"
-  integrity sha512-dEI682h9YAfVYkfsTCQYmNjwzJZqvaMNB0WqtqX0EL3cApZv7pjRuQKG2IvaKTI59NSco8NreMRsviL46RDRrQ==
+vue-truncate-collapsed@3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/vue-truncate-collapsed/-/vue-truncate-collapsed-3.0.1.tgz#ced6af3c7b097bcd97f8a95c32c417514579b57d"
+  integrity sha512-Xg4YPpJnvlm+72Y0MgcH27ZnJYD2v9sVLzmvoj5R+fNNxXKqVfpnihjcYUZA0zkSD4fbWUr43IRGEzRQFTqzPg==
   dependencies:
     html-truncate "^1.2.2"
 
