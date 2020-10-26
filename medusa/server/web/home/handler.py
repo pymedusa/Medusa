@@ -1740,7 +1740,7 @@ class Home(WebRoot):
             if sceneAbsolute is not None:
                 sceneAbsolute = int(sceneAbsolute)
 
-            set_scene_numbering(series_obj, absolute_number=forAbsolute, sceneAbsolute=sceneAbsolute)
+            set_scene_numbering(series_obj, absolute_number=forAbsolute, scene_absolute=sceneAbsolute)
         else:
             logger.log(u'setEpisodeSceneNumbering for {show} from {season}x{episode} to {scene_season}x{scene_episode}'.format
                        (show=series_obj.indexerid, season=forSeason, episode=forEpisode,
@@ -1755,7 +1755,7 @@ class Home(WebRoot):
 
             set_scene_numbering(
                 series_obj, season=forSeason, episode=forEpisode,
-                sceneSeason=sceneSeason, sceneEpisode=sceneEpisode
+                scene_season=sceneSeason, scene_episode=sceneEpisode
             )
 
         if series_obj.is_anime:

@@ -22,7 +22,8 @@ const state = {
         nr: null,
         size: null,
         subliminalLog: null,
-        privacyLevel: null
+        privacyLevel: null,
+        custom: {}
     },
     cpuPreset: null,
     subtitlesMulti: null,
@@ -180,8 +181,18 @@ const actions = {
             recentShows: state.recentShows
         };
         return api.patch('config/main', config);
-    }
+    },
+    setCustomLogs({ commit }, logs) {
+        // Convert back to object.
+        const reducedLogs = logs.reduce((obj, item) => ({ ...obj, [item.identifier]: item.level }), {});
 
+        return api.patch('config/main', { logs: { custom: logs } })
+            .then(() => {
+                return commit(ADD_CONFIG, {
+                    section: 'main', config: { logs: { custom: reducedLogs } }
+                });
+            });
+    }
 };
 
 export default {
