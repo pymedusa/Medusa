@@ -110,7 +110,7 @@
 
 <script>
 import Vue from 'vue';
-import { api, apiRoute } from '../api';
+import { api } from '../api';
 import { mapState } from 'vuex';
 import RootDirs from './root-dirs.vue';
 import { AddShowOptions, NewShow } from '.';
@@ -319,7 +319,7 @@ export default {
                 return false;
             }
 
-            for (const [curDirIndex, _] of dirList.entries()) {
+            for (const [curDirIndex] of dirList.entries()) {
                 // Loop through the existing shows.
                 this.openAddNewShow(curDirIndex, true);
             }
