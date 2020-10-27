@@ -55,9 +55,14 @@
                                         <span>Connect every show marked as anime, to the 'Anime' show list?</span>
                                     </config-toggle-slider>
 
-                                    <config-textbox :disabled="!anime.autoAnimeToList" v-model="anime.showlistDefaultAnime" label="Showlists for Anime" id="showlist_default_anime">
+                                    <config-template label-for="showlist_default_anime" label="Showlists for Anime">
+                                        <select :value="anime.showlistDefaultAnime" @input="updateShowlistDefault($event.currentTarget.value)" class="form-control input-sm">
+                                            <option v-for="option in availableShowLists" :value="option.value" :key="option.value">
+                                                {{ option.text }}
+                                            </option>
+                                        </select>
                                         <span>Customize the showslist when auto anime lists is enabled</span>
-                                    </config-textbox>
+                                    </config-template>
 
                                     <input type="submit"
                                            class="btn-medusa config_submitter"
@@ -76,13 +81,14 @@
 </template>
 <script>
 import { mapActions, mapState } from 'vuex';
-import { AppLink, ConfigTextbox, ConfigToggleSlider } from './helpers';
+import { AppLink, ConfigTemplate, ConfigTextbox, ConfigToggleSlider } from './helpers';
 import { VueTabs, VTab } from 'vue-nav-tabs/dist/vue-tabs.js';
 
 export default {
     name: 'config-anime',
     components: {
         AppLink,
+        ConfigTemplate,
         ConfigTextbox,
         ConfigToggleSlider,
         VueTabs,
@@ -95,7 +101,8 @@ export default {
     },
     methods: {
         ...mapActions([
-            'setConfig'
+            'setConfig',
+            'updateShowlistDefault'
         ]),
         async save() {
             const { anime, setConfig } = this;
@@ -123,8 +130,15 @@ export default {
     },
     computed: {
         ...mapState({
-            anime: state => state.config.anime
-        })
+            anime: state => state.config.anime,
+            layout: state => state.config.layout
+        }),
+        availableShowLists() {
+            const { layout } = this;
+            const { show } = layout;
+
+            return Object.values(show.showListOrder).map(list => ({ value: list, text: list }));
+        }
     }
 };
 </script>

@@ -540,7 +540,7 @@ export default {
             options.seasonFolders = Boolean(seasonFolders);
             options.quality = quality;
             options.release = release;
-            options.showlists = showLists;
+            options.showLists = showLists;
 
             let response = null;
             try {
