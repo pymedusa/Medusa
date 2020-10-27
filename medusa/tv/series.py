@@ -1312,10 +1312,10 @@ class Series(TV):
                   {'id': self.series_id})
         self.save_to_db()
 
-        # If we provide a statusAfter through the apiv2 series route options object.
+        # If we provide a default_status_after through the apiv2 series route options object.
         # set it after we've added the episodes.
-        if options and options.get('statusAfter') is not None:
-            self.default_ep_status = options['statusAfter']
+        if options and options.get('default_status_after') is not None:
+            self.default_ep_status = options['default_status_after']
 
         return scanned_eps
 
@@ -1723,21 +1723,21 @@ class Series(TV):
             self.qualities_preferred = options['quality']['preferred']
             self.qualities_allowed = options['quality']['allowed']
 
-        self.season_folders = options['seasonFolders'] if options.get('seasonFolders') is not None \
+        self.season_folders = options['season_folders'] if options.get('season_folders') is not None \
             else app.SEASON_FOLDERS_DEFAULT
         self.anime = options['anime'] if options.get('anime') is not None else app.ANIME_DEFAULT
         self.scene = options['scene'] if options.get('scene') is not None else app.SCENE_DEFAULT
         self.paused = options['paused'] if options.get('paused') is not None else False
         self.lang = options['language'] if options.get('language') is not None else app.INDEXER_DEFAULT_LANGUAGE
-        self.show_lists = options['showlists'] if options.get('showlists') is not None else []
+        self.show_lists = options['show_lists'] if options.get('show_lists') is not None else []
 
-        if options.get('status') is not None:
+        if options.get('default_status') is not None:
             # set up default new/missing episode status
             log.info(
                 'Setting all previously aired episodes to the specified status: {status}',
-                {'status': statusStrings[options['status']]}
+                {'status': statusStrings[options['default_status']]}
             )
-            self.default_ep_status = options['status']
+            self.default_ep_status = options['default_status']
 
         if self.anime:
             self.release_groups = BlackAndWhiteList(self)
