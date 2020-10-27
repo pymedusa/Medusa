@@ -10,7 +10,7 @@ from builtins import object
 from builtins import str
 
 from medusa import app, db, ui
-from medusa.common import ARCHIVED, DOWNLOADED, SKIPPED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, WANTED
+from medusa.common import ARCHIVED, DOWNLOADED, SKIPPED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, WANTED, Quality
 from medusa.helper.common import episode_num
 from medusa.helpers import get_title_without_year
 from medusa.indexers.config import EXTERNAL_IMDB, EXTERNAL_TRAKT, indexerConfig
@@ -586,9 +586,12 @@ class TraktChecker(object):
                     'id': indexer_id
                 })
 
+                allowed, preferred = Quality.split_quality(int(app.QUALITY_DEFAULT))
+                quality = {'allowed': allowed, 'preferred': preferred}
+
                 app.show_queue_scheduler.action.addShow(indexer, indexer_id, None,
                                                         default_status=status,
-                                                        quality=int(app.QUALITY_DEFAULT),
+                                                        quality=quality,
                                                         season_folders=int(app.SEASON_FOLDERS_DEFAULT),
                                                         paused=app.TRAKT_START_PAUSED,
                                                         default_status_after=status,

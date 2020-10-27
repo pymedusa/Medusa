@@ -300,7 +300,7 @@ class HomeAddShows(Home):
             if not isinstance(best_qualities, list):
                 best_qualities = [best_qualities]
 
-            quality = Quality.combine_qualities([int(q) for q in any_qualities], [int(q) for q in best_qualities])
+            quality = {'allowed': any_qualities, 'preferred': best_qualities}
 
             location = root_dir
 
@@ -330,9 +330,10 @@ class HomeAddShows(Home):
         show_dir = None
 
         # add the show
-        app.show_queue_scheduler.action.addShow(INDEXER_TVDBV2, int(series_id), show_dir, int(default_status), quality,
-                                                season_folders, indexer_lang, subtitles, anime, scene, None, blacklist,
-                                                whitelist, int(default_status_after), root_dir=location)
+        app.show_queue_scheduler.action.addShow(INDEXER_TVDBV2, int(series_id), show_dir, default_status=int(default_status), quality=quality,
+                                                season_folders=season_folders, lang=indexer_lang, subtitles=subtitles, anime=anime, scene=scene,
+                                                paused=None, blacklist=blacklist, whitelist=whitelist,
+                                                default_status_after=int(default_status_after), root_dir=location)
 
         ui.notifications.message('Show added', 'Adding the specified show {0}'.format(show_name))
 

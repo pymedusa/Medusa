@@ -242,7 +242,6 @@ class ShowQueue(generic_queue.GenericQueue):
         return queue_item_obj
 
     def addShow(self, indexer, indexer_id, show_dir, **options):
-
         if options.get('lang') is None:
             options['lang'] = app.INDEXER_DEFAULT_LANGUAGE
 
