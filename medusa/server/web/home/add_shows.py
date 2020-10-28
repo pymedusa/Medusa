@@ -306,7 +306,8 @@ class HomeAddShows(Home):
 
         else:
             default_status = app.STATUS_DEFAULT
-            quality = app.QUALITY_DEFAULT
+            allowed, preferred = Quality.split_quality(int(app.QUALITY_DEFAULT))
+            quality = {'allowed': allowed, 'preferred': preferred}
             season_folders = app.SEASON_FOLDERS_DEFAULT
             subtitles = app.SUBTITLES_DEFAULT
             anime = app.ANIME_DEFAULT
