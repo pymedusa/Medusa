@@ -5,15 +5,12 @@ from __future__ import unicode_literals
 import datetime
 import json
 import logging
-import os
-import re
 
 from medusa import app, config, helpers, ui
 from medusa.common import Quality
-from medusa.helper.common import sanitize_filename, try_int
+from medusa.helper.common import try_int
 from medusa.helpers import get_showname_from_indexer
 from medusa.helpers.anidb import short_group_names
-from medusa.indexers.api import indexerApi
 from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.web.core import PageTemplate
@@ -27,7 +24,7 @@ from requests import RequestException
 
 from simpleanidb import REQUEST_HOT
 
-from six import ensure_text, text_type
+from six import text_type
 
 from tornroutes import route
 

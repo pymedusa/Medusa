@@ -18,7 +18,6 @@
 from __future__ import unicode_literals
 
 import logging
-import os
 import traceback
 from builtins import object
 
@@ -26,45 +25,31 @@ from imdbpie.exceptions import ImdbAPIError
 
 from medusa import (
     app,
-    name_cache,
-    notifiers,
     scene_numbering,
     ui,
     ws,
 )
-from medusa.black_and_white_list import BlackAndWhiteList
-from medusa.common import WANTED, statusStrings
-from medusa.helper.common import episode_num, sanitize_filename
+from medusa.helper.common import episode_num
 from medusa.helper.exceptions import (
     CantRefreshShowException,
     CantRemoveShowException,
     CantUpdateShowException,
     EpisodeDeletedException,
-    MultipleShowObjectsException,
     ShowDirectoryNotFoundException
 )
-from medusa.helpers import (
-    chmod_as_parent,
-    delete_empty_folders,
-    get_showname_from_indexer,
-    make_dir,
-)
-from medusa.helpers.externals import check_existing_shows
 from medusa.image_cache import replace_images
 from medusa.indexers.api import indexerApi
 from medusa.indexers.exceptions import (
     IndexerAttributeNotFound,
     IndexerError,
     IndexerException,
-    IndexerShowAlreadyInLibrary,
-    IndexerShowNotFound,
     IndexerShowNotFoundInLanguage,
 )
 from medusa.indexers.utils import indexer_id_to_slug
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_cache import build_name_cache
-from medusa.tv.series import SaveSeriesException, Series, SeriesIdentifier
 from medusa.queues import generic_queue
+from medusa.tv.series import SaveSeriesException, Series, SeriesIdentifier
 
 from requests import RequestException
 

@@ -75,7 +75,6 @@ class InternalHandler(BaseRequestHandler):
 
         return resource_function()
 
-
     # existingSeries
     def resource_existing_series(self):
         """Generate existing series folders data for adding existing shows."""

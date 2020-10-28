@@ -30,7 +30,6 @@ from medusa import (
     notifiers,
     post_processor,
     ui,
-    ws,
 )
 from medusa.black_and_white_list import BlackAndWhiteList
 from medusa.common import (
@@ -63,7 +62,7 @@ from medusa.helper.exceptions import (
     ex,
 )
 from medusa.helpers.anidb import short_group_names
-from medusa.helpers.externals import get_externals, load_externals_from_db, check_existing_shows
+from medusa.helpers.externals import check_existing_shows, get_externals, load_externals_from_db
 from medusa.helpers.utils import dict_to_array, safe_get, to_camel_case
 from medusa.imdb import Imdb
 from medusa.indexers.api import indexerApi
@@ -73,10 +72,7 @@ from medusa.indexers.config import (
     indexerConfig
 )
 from medusa.indexers.exceptions import (
-    IndexerAttributeNotFound,
-    IndexerException,
-    IndexerShowAlreadyInLibrary,
-    IndexerSeasonNotFound,
+    IndexerAttributeNotFound, IndexerException, IndexerSeasonNotFound, IndexerShowAlreadyInLibrary
 )
 from medusa.indexers.tmdb.api import Tmdb
 from medusa.indexers.utils import (
@@ -85,6 +81,7 @@ from medusa.indexers.utils import (
     reverse_mappings,
     slug_to_indexer_id
 )
+from medusa.helpers import make_dir
 from medusa.logger.adapters.style import CustomBraceAdapter
 from medusa.media.banner import ShowBanner
 from medusa.media.fan_art import ShowFanArt
@@ -112,11 +109,9 @@ from medusa.subtitles import (
 from medusa.tv.base import Identifier, TV
 from medusa.tv.episode import Episode
 from medusa.tv.indexer import Indexer
-
 from six import binary_type, iteritems, itervalues, string_types, text_type, viewitems
 
 import ttl_cache
-from medusa.helpers import make_dir
 
 try:
     from send2trash import send2trash
