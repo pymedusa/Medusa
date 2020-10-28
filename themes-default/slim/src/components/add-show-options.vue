@@ -8,7 +8,7 @@
                     </label>
                     <div class="col-sm-10 content">
                         <quality-chooser
-                            :overall-quality="defaultConfig.quality"
+                            :overall-quality="showDefaults.quality"
                             @update:quality:allowed="quality.allowed = $event"
                             @update:quality:preferred="quality.preferred = $event"
                         />
@@ -186,9 +186,9 @@ export default {
         };
     },
     mounted() {
-        const { defaultConfig, presetShowOptions, update } = this;
-        this.selectedStatus = defaultConfig.status;
-        this.selectedStatusAfter = defaultConfig.statusAfter;
+        const { configLoaded, showDefaults, presetShowOptions, update } = this;
+        this.selectedStatus = showDefaults.status;
+        this.selectedStatusAfter = showDefaults.statusAfter;
         this.$nextTick(() => update());
 
         this.$watch(vm => [
@@ -205,11 +205,14 @@ export default {
 
         if (presetShowOptions.use) {
             this.updateShowOptions(presetShowOptions);
+        } else if (configLoaded) {
+            this.updateShowOptions(showDefaults);
         }
     },
     computed: {
         ...mapState({
-            defaultConfig: state => state.config.general.showDefaults,
+            showDefaults: state => state.config.general.showDefaults,
+            configLoaded: state => state.config.general.wikiUrl !== null,
             layout: state => state.config.layout,
             namingForceFolders: state => state.config.general.namingForceFolders,
             subtitlesEnabled: state => state.config.general.subtitles.enabled,
@@ -244,7 +247,7 @@ export default {
             const {
                 presetShowOptions,
                 enableAnimeOptions,
-                defaultConfig,
+                showDefaults,
                 namingForceFolders,
                 selectedStatus,
                 selectedStatusAfter,
@@ -262,14 +265,14 @@ export default {
             }
 
             return [
-                selectedStatus === defaultConfig.status,
-                selectedStatusAfter === defaultConfig.statusAfter,
-                combinedQualities === defaultConfig.quality,
-                selectedSeasonFoldersEnabled === (defaultConfig.seasonFolders || namingForceFolders),
-                selectedSubtitleEnabled === defaultConfig.subtitles,
-                !enableAnimeOptions || selectedAnimeEnabled === defaultConfig.anime,
-                selectedSceneEnabled === defaultConfig.scene,
-                selectedShowLists === defaultConfig.showLists
+                selectedStatus === showDefaults.status,
+                selectedStatusAfter === showDefaults.statusAfter,
+                combinedQualities === showDefaults.quality,
+                selectedSeasonFoldersEnabled === (showDefaults.seasonFolders || namingForceFolders),
+                selectedSubtitleEnabled === showDefaults.subtitles,
+                !enableAnimeOptions || selectedAnimeEnabled === showDefaults.anime,
+                selectedSceneEnabled === showDefaults.scene,
+                selectedShowLists === showDefaults.showLists
             ].every(Boolean);
         }
     },
@@ -406,11 +409,11 @@ export default {
             this.update();
         },
         /**
-         * As soon as the defaultConfig is loaded. Set the selected* values to it.
+         * As soon as the showDefaults is loaded. Set the selected* values to it.
          * If a this.presetShowOptions was provided, use that.
          * @param {object} newValue - default config object.
          */
-        defaultConfig(newValue) {
+        showDefaults(newValue) {
             const { presetShowOptions, updateShowOptions } = this;
             if (presetShowOptions.use) {
                 return;
