@@ -38,30 +38,28 @@ export default {
 
 .v-modal-footer > div {
     flex: 1;
-    padding: 1rem;
     text-align: center;
     border: 1px solid rgba(0, 0, 0, 0.2);
-    background:linear-gradient(to bottom, #242424 5%, #555555 100%);
-	background-color:#242424;
-	/* border:1px solid #4e6096; */
-	display:inline-block;
-	cursor:pointer;
-	color:#ffffff;
-	font-family:Arial;
-	font-size:15px;
-	font-weight:bold;
-	padding:11px 23px;
-	text-decoration:none;
-	text-shadow:0px -1px 0px #0a0d12;
+    background: linear-gradient(to bottom, #242424 5%, #555 100%);
+    background-color: #242424;
+    display: inline-block;
+    cursor: pointer;
+    color: #fff;
+    font-size: 15px;
+    font-weight: bold;
+    padding: 11px 23px;
+    text-decoration: none;
+    text-shadow: 0 -1px 0 #0a0d12;
 }
 
 .v-modal-footer > div:hover {
-	background:linear-gradient(to bottom, #555555 5%, #242424 100%);
-	background-color:#555555;
+    background: linear-gradient(to bottom, #555 5%, #242424 100%);
+    background-color: #555;
 }
+
 .v-modal-footer > div:hover:active {
-	position:relative;
-	top:1px;
+    position: relative;
+    top: 1px;
 }
 
 </style>

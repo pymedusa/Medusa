@@ -442,7 +442,6 @@ export default {
     position: absolute;
     background-color: rgb(95, 95, 95);
     font-size: 14px;
-    background-color: rgb(95, 95, 95);
     border: 1px solid rgb(125, 125, 125);
     z-index: 1;
     width: auto;
