@@ -279,6 +279,10 @@ class TVmaze(BaseIndexer):
                 log.warning('An episode has incomplete season/episode number (season: {0!r}, episode: {1!r})', seasnum, epno)
                 continue  # Skip to next episode
 
+            if epno == 0:
+                log.warning('Episode detected with number 0, skipping (season: {0!r}, episode: {1!r})', seasnum, epno)
+                continue  # Skip to next episode
+
             seas_no = int(seasnum)
             ep_no = int(epno)
 
