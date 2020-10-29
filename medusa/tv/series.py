@@ -61,6 +61,7 @@ from medusa.helper.exceptions import (
     ShowNotFoundException,
     ex,
 )
+from medusa.helpers import make_dir
 from medusa.helpers.anidb import short_group_names
 from medusa.helpers.externals import check_existing_shows, get_externals, load_externals_from_db
 from medusa.helpers.utils import dict_to_array, safe_get, to_camel_case
@@ -81,7 +82,6 @@ from medusa.indexers.utils import (
     reverse_mappings,
     slug_to_indexer_id
 )
-from medusa.helpers import make_dir
 from medusa.logger.adapters.style import CustomBraceAdapter
 from medusa.media.banner import ShowBanner
 from medusa.media.fan_art import ShowFanArt
@@ -109,6 +109,7 @@ from medusa.subtitles import (
 from medusa.tv.base import Identifier, TV
 from medusa.tv.episode import Episode
 from medusa.tv.indexer import Indexer
+
 from six import binary_type, iteritems, itervalues, string_types, text_type, viewitems
 
 import ttl_cache

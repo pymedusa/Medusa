@@ -39,7 +39,8 @@
                     "subtitles": false,
                     "seasonFolders": false,
                     "anime": false,
-                    "scene": false
+                    "scene": false,
+                    "showLists": ["Series"]
                 },
                 "logs": {
                     "debug": true,
@@ -1342,6 +1343,16 @@
                     ],
                     "ignoreUnknownSubs": false
                 }
+            },
+            "anime": {
+                "anidb": {
+                    "enabled": true,
+                    "username": "user",
+                    "password": "pass",
+                    "useMylist": false
+                },
+                "autoAnimeToList": true,
+                "showlistDefaultAnime": "Anime"
             }
         },
         "auth": {
