@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import datetime
 import logging
-import operator
 import re
 import threading
 import time
@@ -89,6 +88,13 @@ class SearchQueue(generic_queue.GenericQueue):
                 return True
         return False
 
+    def is_proper_search_in_progress(self):
+        """Check if proper search is in progress."""
+        for cur_item in self.queue + [self.currentItem]:
+            if isinstance(cur_item, ProperSearchQueueItem):
+                return True
+        return False
+
     def queue_length(self):
         """Get queue lenght."""
         length = {'backlog': 0, 'daily': 0}
@@ -101,8 +107,8 @@ class SearchQueue(generic_queue.GenericQueue):
 
     def add_item(self, item):
         """Add item to queue."""
-        if isinstance(item, DailySearchQueueItem):
-            # daily searches
+        if isinstance(item, (DailySearchQueueItem, ProperSearchQueueItem)):
+            # daily searches and proper searches
             generic_queue.GenericQueue.add_item(self, item)
         elif isinstance(item, (BacklogQueueItem, FailedQueueItem,
                                SnatchQueueItem, ManualSearchQueueItem)) \
@@ -761,12 +767,12 @@ class ProperSearchQueueItem(generic_queue.QueueItem):
         })
 
     def run(self):
-        """Run daily search thread."""
+        """Run proper search thread."""
         generic_queue.QueueItem.run(self)
         self.started = True
 
         try:
-            log.info('Beginning daily search for new episodes')
+            log.info('Beginning proper search for new episodes')
 
             # Push an update to any open Web UIs through the WebSocket
             ws.Message('QueueItemUpdate', self.to_json).push()

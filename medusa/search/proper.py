@@ -17,7 +17,7 @@ log.logger.addHandler(logging.NullHandler())
 
 
 class ProperFinder(object):  # pylint: disable=too-few-public-methods
-    """Proper finder class."""
+    """Proper finder class used by the proper_finder_scheduler."""
 
     def __init__(self):
         """Initialize the class."""
@@ -43,7 +43,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
         self.amActive = True
 
-        # queue a daily search
+        # queue a forced search
         app.search_queue_scheduler.action.add_item(
             ProperSearchQueueItem(
                 force=force,
