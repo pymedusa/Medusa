@@ -275,12 +275,8 @@ class TVmaze(BaseIndexer):
                                 'Please consider disabling DVD order for the show with TVmaze ID: {2}',
                                 seasnum, epno, tvmaze_id)
 
-            if seasnum is None or epno is None:
+            if seasnum is None or epno in (None, 0):
                 log.warning('An episode has incomplete season/episode number (season: {0!r}, episode: {1!r})', seasnum, epno)
-                continue  # Skip to next episode
-
-            if epno == 0:
-                log.warning('Episode detected with number 0, skipping (season: {0!r}, episode: {1!r})', seasnum, epno)
                 continue  # Skip to next episode
 
             seas_no = int(seasnum)
