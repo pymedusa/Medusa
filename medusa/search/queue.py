@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 import datetime
 import logging
+import operator
 import re
 import threading
 import time
@@ -793,7 +794,7 @@ class ProperSearchQueueItem(generic_queue.QueueItem):
             self._set_last_proper_search(datetime.datetime.today().toordinal())
 
             run_at = ''
-            if None is app.proper_finder_scheduler.start_time:
+            if app.proper_finder_scheduler.start_time is None:
                 run_in = app.proper_finder_scheduler.lastRun + \
                     app.proper_finder_scheduler.cycleTime - datetime.datetime.now()
                 hours, remainder = divmod(run_in.seconds, 3600)
@@ -802,8 +803,6 @@ class ProperSearchQueueItem(generic_queue.QueueItem):
                     '{0}h, {1}m'.format(hours, minutes) if 0 < hours else '{0}m, {1}s'.format(minutes, seconds))
 
             log.info('Completed the search for new propers{run_at}', {'run_at': run_at})
-
-            self.amActive = False
 
         # TODO: Remove the catch all exception.
         except Exception:
@@ -862,7 +861,7 @@ class ProperSearchQueueItem(generic_queue.QueueItem):
 
         threading.currentThread().name = original_thread_name
 
-        # take the list of unique propers and get it sorted by
+        # Take the list of unique propers and get it sorted by
         sorted_propers = sorted(list(itervalues(propers)), key=operator.attrgetter('date'), reverse=True)
         final_propers = []
 
