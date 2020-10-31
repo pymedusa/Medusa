@@ -131,6 +131,7 @@ const configRoutes = [
             title: 'Config - Anime',
             header: 'Anime',
             topMenu: 'config',
+            subMenu: configSubMenu,
             converted: true
         },
         component: () => import('../components/config-anime.vue')
