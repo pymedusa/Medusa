@@ -113,8 +113,10 @@ class IPTorrentsProvider(TorrentProvider):
                     if not all([title, download_url]):
                         continue
 
-                    seeders = int(row.find('td', attrs={'class': 'ac t_seeders'}).text)
-                    leechers = int(row.find('td', attrs={'class': 'ac t_leechers'}).text)
+                    # seeders = int(row.find('td', attrs={'class': 'ac t_seeders'}).text)
+                    # leechers = int(row.find('td', attrs={'class': 'ac t_leechers'}).text)
+                    seeders = int(row('td')[-2].text)
+                    leechers = int(row('td')[-1].text)
 
                     # Filter unseeded torrent
                     if seeders < self.minseed:
