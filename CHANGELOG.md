@@ -1,8 +1,10 @@
-## Unreleased
-
-#### New Features
+## 0.4.4 (2020-11-04)
 
 #### Improvements
+- Replace unrar2 with rarfile
+- Add EpisodeUpdater to scheduler
+- Don't strip channel names so they are matched correctly
+- Avoid exception when headers have no host
 
 #### Fixes
 - Fix notify lists for prowl and email ([8535](https://github.com/pymedusa/Medusa/pull/8535))
@@ -12,7 +14,9 @@
 - Fix provider AnimeBytes ([8609](https://github.com/pymedusa/Medusa/pull/8609))
 - Fix provider Speedcd ([8609](https://github.com/pymedusa/Medusa/pull/8609))
 - Fix season pack search, results not shown for multi-episode results ([8609](https://github.com/pymedusa/Medusa/pull/8609))
-
+- Fix scene exceptions with year not being used
+- Fix IPTorrents layout change
+- Use b64decode instead of deprecated decodestring for basic auth
 
 -----
 
