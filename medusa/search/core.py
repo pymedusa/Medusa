@@ -46,13 +46,13 @@ from medusa.helper.exceptions import (
 )
 from medusa.helpers import chmod_as_parent
 from medusa.helpers.utils import to_timestamp
-from medusa.logger.adapters.style import BraceAdapter
+from medusa.logger.adapters.style import CustomBraceAdapter
 from medusa.network_timezones import app_timezone
 from medusa.show import naming
 
 from six import iteritems, itervalues
 
-log = BraceAdapter(logging.getLogger(__name__))
+log = CustomBraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 

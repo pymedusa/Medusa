@@ -26,7 +26,6 @@ from imdbpie.exceptions import ImdbAPIError
 
 from medusa import (
     app,
-    generic_queue,
     name_cache,
     notifiers,
     scene_numbering,
@@ -62,6 +61,7 @@ from medusa.indexers.exceptions import (
     IndexerShowNotFoundInLanguage,
 )
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.queues import generic_queue
 from medusa.search.queue import (
     BacklogQueueItem
 )

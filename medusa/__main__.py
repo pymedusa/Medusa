@@ -65,11 +65,11 @@ from builtins import str
 from configobj import ConfigObj
 
 from medusa import (
-    app, cache, db, event_queue, exception_handler, helpers,
+    cache, db, exception_handler, helpers,
     logger as app_logger, metadata, name_cache, naming,
-    network_timezones, process_tv, providers, scheduler,
-    show_queue, show_updater, subtitles, trakt_checker
+    network_timezones, process_tv, providers, subtitles
 )
+from medusa.app import app
 from medusa.clients.torrent import torrent_checker
 from medusa.common import SD, SKIPPED, WANTED
 from medusa.config import (
@@ -79,13 +79,17 @@ from medusa.config import (
     load_provider_setting, save_provider_setting
 )
 from medusa.databases import cache_db, failed_db, main_db
-from medusa.event_queue import Events
 from medusa.indexers.config import INDEXER_TVDBV2, INDEXER_TVMAZE
 from medusa.init.filesystem import is_valid_encoding
 from medusa.providers.generic_provider import GenericProvider
 from medusa.providers.nzb.newznab import NewznabProvider
 from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
 from medusa.providers.torrent.torznab.torznab import TorznabProvider
+from medusa.queues import show_queue
+from medusa.queues.event_queue import Events
+from medusa.schedulers import (
+    episode_updater, scheduler, show_updater, trakt_checker
+)
 from medusa.search.backlog import BacklogSearchScheduler, BacklogSearcher
 from medusa.search.daily import DailySearcher
 from medusa.search.proper import ProperFinder
@@ -178,6 +182,21 @@ class Application(object):
                     logger.warning('Error while trying to move the images for series {series}. '
                                    'Try to refresh the show, or move the images manually if you know '
                                    'what you are doing. Error: {error}', series=series_obj.name, error=error)
+
+    @staticmethod
+    def initialize_custom_logging():
+        """Load custom logging and insert into table if needed."""
+        from medusa.app import CUSTOMIZABLE_LOGS
+        main_db_con = db.DBConnection()
+        for identifier in CUSTOMIZABLE_LOGS:
+            sql_result = main_db_con.select('SELECT * FROM custom_logs WHERE identifier = ?', [identifier])
+
+            if not len(sql_result):
+                main_db_con.action('INSERT INTO custom_logs (identifier) VALUES (?)', [identifier])
+
+        # Get custom_logs from db.
+        for log in main_db_con.select('SELECT * FROM custom_logs'):
+            app._CUSTOM_LOGS[log['identifier']] = log['level']
 
     def start(self, args):
         """Start Application."""
@@ -350,6 +369,7 @@ class Application(object):
 
         self.clear_cache()
         self.migrate_images()
+        self.initialize_custom_logging()
 
         if self.forced_port:
             logger.info('Forcing web server to port {port}', port=self.forced_port)
@@ -1179,6 +1199,11 @@ class Application(object):
                                                             start_time=datetime.time(hour=app.SHOWUPDATE_HOUR,
                                                                                      minute=random.randint(0, 59)))
 
+            app.episode_update_scheduler = scheduler.Scheduler(episode_updater.EpisodeUpdater(),
+                                                               cycleTime=datetime.timedelta(minutes=15),
+                                                               threadName='EPISODEUPDATER',
+                                                               silent=False)
+
             # snatcher used for manual search, manual picked results
             app.manual_snatch_scheduler = scheduler.Scheduler(SnatchQueue(),
                                                               cycleTime=datetime.timedelta(seconds=3),
@@ -1321,6 +1346,10 @@ class Application(object):
             app.show_update_scheduler.enable = True
             app.show_update_scheduler.start()
 
+            # start the episode updater
+            app.episode_update_scheduler.enable = True
+            app.episode_update_scheduler.start()
+
             # start the version checker
             app.version_check_scheduler.enable = True
             app.version_check_scheduler.start()
@@ -1397,6 +1426,7 @@ class Application(object):
                 app.daily_search_scheduler,
                 app.backlog_search_scheduler,
                 app.show_update_scheduler,
+                app.episode_update_scheduler,
                 app.version_check_scheduler,
                 app.show_queue_scheduler,
                 app.search_queue_scheduler,
@@ -2197,7 +2227,7 @@ class Application(object):
             if self.run_as_daemon and self.create_pid:
                 self.remove_pid_file(self.pid_file)
         finally:
-            if event == event_queue.Events.SystemEvent.RESTART:
+            if event == Events.SystemEvent.RESTART:
                 self.restart()
 
             # Make sure the logger has stopped, just in case

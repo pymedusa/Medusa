@@ -12,7 +12,7 @@ from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.common import cpu_presets
 from medusa.helpers.utils import int_default
 from medusa.sbdatetime import date_presets, time_presets
-from medusa.system.schedulers import all_schedulers
+from medusa.schedulers.utils import all_schedulers
 from tests.apiv2.conftest import TEST_API_KEY
 
 import pytest
@@ -72,6 +72,7 @@ def config_main(monkeypatch, app_config):
     section_data['logs']['size'] = float(app.LOG_SIZE)
     section_data['logs']['subliminalLog'] = bool(app.SUBLIMINAL_LOG)
     section_data['logs']['privacyLevel'] = app.PRIVACY_LEVEL
+    section_data['logs']['custom'] = app.CUSTOM_LOGS
 
     # Added for config - main, needs refactoring in the structure.
     section_data['launchBrowser'] = bool(app.LAUNCH_BROWSER)

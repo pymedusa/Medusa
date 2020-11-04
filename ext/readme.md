@@ -7,7 +7,7 @@ ext | `attrs` | [18.2.0](https://pypi.org/project/attrs/18.2.0/) | `imdbpie` | M
 ext | **`babelfish`** | [f403000](https://github.com/Diaoul/babelfish/tree/f403000dd63092cfaaae80be9f309fd85c7f20c9) | **`medusa`**, `guessit`, `knowit`, `subliminal` | -
 **ext2** | `backports.functools_lru_cache` | [1.6.1](https://pypi.org/project/backports.functools_lru_cache/1.6.1/) | `soupsieve` | File: `backports/functools_lru_cache.py`
 **ext2** | `backports_abc` | [0.5](https://pypi.org/project/backports_abc/0.5/) | `tornado` | File: `backports_abc.py`
-**ext2 ext3** | `beautifulsoup4` | [4.9.1](https://pypi.org/project/beautifulsoup4/4.9.1/) | **`medusa`**, `subliminal` | Module: `bs4`
+**ext2 ext3** | `beautifulsoup4` | [4.9.3](https://pypi.org/project/beautifulsoup4/4.9.3/) | **`medusa`**, `subliminal` | Module: `bs4`
 ext | `bencode.py` | [4.0.0](https://pypi.org/project/bencode.py/4.0.0/) | **`medusa`** | Modules: `bencodepy`, `bencode`<br>Monkey-patched, see `medusa/init/__init__.py`
 ext | **`boto`** | [2.48.0](https://pypi.org/project/boto/2.48.0/) | `imdbpie` | -
 ext | `CacheControl` | [0.12.6](https://pypi.org/project/CacheControl/0.12.6/) | **`medusa`** | Module: `cachecontrol`
@@ -37,7 +37,7 @@ ext | **`imdbpie`** | [5.6.4](https://pypi.org/project/imdbpie/5.6.4/) | **`medu
 ext | `jsonrpclib-pelix` | [0.4.1](https://pypi.org/project/jsonrpclib-pelix/0.4.1/) | **`medusa`** | Module: `jsonrpclib`
 ext | **`knowit`** | [eea9ac1](https://github.com/ratoaq2/knowit/tree/eea9ac18e38c930230cf81b5dca4a9af9fb10d4e) | **`medusa`** | -
 ext | `Mako` | [1.1.3](https://pypi.org/project/Mako/1.1.3/) | **`medusa`** | Module: `mako`
-ext | `markdown2` | [2.3.9](https://pypi.org/project/markdown2/2.3.9/) | **`medusa`** | File: `markdown2.py`
+ext | `markdown2` | [2.3.10](https://pypi.org/project/markdown2/2.3.10/) | **`medusa`** | File: `markdown2.py`
 ext | `MarkupSafe` | [1.1.1](https://pypi.org/project/MarkupSafe/1.1.1/) | `Mako` | Module: `markupsafe`
 ext | **`msgpack`** | [0.5.6](https://pypi.org/project/msgpack/0.5.6/) | `CacheControl` | -
 ext | **`oauthlib`** | [3.0.0](https://pypi.org/project/oauthlib/3.0.0/) | `requests-oauthlib` | -
@@ -60,7 +60,7 @@ ext | `requests-toolbelt` | [0.9.1](https://pypi.org/project/requests-toolbelt/0
 **ext3** | `sgmllib3k` | [1.0.0](https://pypi.org/project/sgmllib3k/1.0.0/) | `feedparser` | File: `sgmllib.py`
 **ext2** | `singledispatch` | [3.4.0.3](https://pypi.org/project/singledispatch/3.4.0.3/) | `tornado` | Modules: `singledispatch.py`, `singledispatch_helpers.py`
 ext | `six` | [1.15.0](https://pypi.org/project/six/1.15.0/) | **`medusa`**, `adba`, `configobj`, `guessit`, `html5lib`, `imdbpie`, `knowit`, `PyGithub`, `rebulk`, `subliminal`, `tvdbapiv2`, `validators` | File: `six.py`
-ext | **`soupsieve`** | [1.9.5](https://pypi.org/project/soupsieve/1.9.5/) | `beautifulsoup4` | -
+ext | **`soupsieve`** | [1.9.6](https://pypi.org/project/soupsieve/1.9.6/) | `beautifulsoup4` | -
 ext | **`stevedore`** | [1.30.1](https://pypi.org/project/stevedore/1.30.1/) | `subliminal` | -
 ext | **`subliminal`** | [2.1.0](https://pypi.org/project/subliminal/2.1.0/) | **`medusa`** | -
 ext | **`tmdbsimple`** | [2.2.11](https://pypi.org/project/tmdbsimple/2.2.11/) | **`medusa`** | -

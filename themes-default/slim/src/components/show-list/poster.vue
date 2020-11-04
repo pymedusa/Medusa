@@ -100,7 +100,7 @@ export default {
                         const { stateLayout } = this;
                         const { sortArticle } = stateLayout;
 
-                        if (!sortArticle) {
+                        if (sortArticle) {
                             return row.title;
                         }
 
@@ -235,6 +235,11 @@ export default {
             } = this;
             this.isotopeLoaded = true;
             calculateSize();
+
+            if (!this.$refs[`isotope-${listTitle}`]) {
+                return;
+            }
+
             // Render layout (for sizing)
             this.$refs[`isotope-${listTitle}`].layout();
             // Arrange & Sort

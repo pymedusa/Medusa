@@ -23,7 +23,8 @@ const homeRoutes = [
         meta: {
             topMenu: 'home',
             subMenu: showSubMenu,
-            converted: true
+            converted: true,
+            nocache: true // Use this flag, to have the router-view use :key="$route.fullPath"
         },
         component: () => import('../components/edit-show.vue')
     },
@@ -33,7 +34,8 @@ const homeRoutes = [
         meta: {
             topMenu: 'home',
             subMenu: showSubMenu,
-            converted: true
+            converted: true,
+            nocache: true // Use this flag, to have the router-view use :key="$route.fullPath"
         },
         component: () => import('../components/display-show.vue')
     },
@@ -43,7 +45,8 @@ const homeRoutes = [
         meta: {
             topMenu: 'home',
             subMenu: showSubMenu,
-            converted: true
+            converted: true,
+            nocache: true // Use this flag, to have the router-view use :key="$route.fullPath"
         },
         component: () => import('../components/snatch-selection.vue')
     },

@@ -417,6 +417,10 @@
                                         </span>
                                     </config-template>
 
+                                    <config-template label-for="custom_logs" label="Overwrite log levels for overwritable logs">
+                                        <custom-logs />
+                                    </config-template>
+
                                     <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
                                 </fieldset>
                             </div>
@@ -584,7 +588,7 @@
                 </div>
             </transition>
         </modal>
-        <!--eslint-enable-->
+        <!-- eslint-enable -->
     </div>
 </template>
 
@@ -598,6 +602,7 @@ import {
     ConfigTextbox,
     ConfigTextboxNumber,
     ConfigToggleSlider,
+    CustomLogs,
     LanguageSelect,
     SortedSelectList,
     StateSwitch
@@ -618,6 +623,7 @@ export default {
         ConfigTextbox,
         ConfigTextboxNumber,
         ConfigToggleSlider,
+        CustomLogs,
         LanguageSelect,
         Multiselect,
         SortedSelectList,

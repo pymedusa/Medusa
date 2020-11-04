@@ -23,7 +23,9 @@ from medusa.common import IGNORED, Quality, SKIPPED, WANTED, cpu_presets
 from medusa.helpers.utils import int_default, to_camel_case
 from medusa.indexers.config import INDEXER_TVDBV2, get_indexer_config
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.queues.utils import generate_show_queue
 from medusa.sbdatetime import date_presets, time_presets
+from medusa.schedulers.utils import generate_schedulers
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
     BooleanField,
@@ -35,10 +37,6 @@ from medusa.server.api.v2.base import (
     StringField,
     iter_nested_items,
     set_nested_value,
-)
-from medusa.system.schedulers import (
-    generate_schedulers,
-    generate_show_queue,
 )
 
 from six import iteritems, itervalues, text_type
@@ -147,6 +145,7 @@ class ConfigHandler(BaseRequestHandler):
         'logs.size': FloatField(app, 'LOG_SIZE'),
         'logs.subliminalLog': BooleanField(app, 'SUBLIMINAL_LOG'),
         'logs.privacyLevel': StringField(app, 'PRIVACY_LEVEL'),
+        'logs.custom': ListField(app, 'CUSTOM_LOGS'),
 
         'developer': BooleanField(app, 'DEVELOPER'),
 
@@ -621,6 +620,7 @@ class DataGenerator(object):
         section_data['logs']['size'] = float(app.LOG_SIZE)
         section_data['logs']['subliminalLog'] = bool(app.SUBLIMINAL_LOG)
         section_data['logs']['privacyLevel'] = app.PRIVACY_LEVEL
+        section_data['logs']['custom'] = app.CUSTOM_LOGS
 
         # Added for config - main, needs refactoring in the structure.
         section_data['launchBrowser'] = bool(app.LAUNCH_BROWSER)

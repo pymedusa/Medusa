@@ -1328,6 +1328,13 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   </span>
                 </config-template-stub>
                  
+                <config-template-stub
+                  label="Overwrite log levels for overwritable logs"
+                  labelfor="custom_logs"
+                >
+                  <custom-logs-stub />
+                </config-template-stub>
+                 
                 <input
                   class="btn-medusa config_submitter"
                   type="submit"

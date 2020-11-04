@@ -5,9 +5,9 @@
         <ul v-if="!csvMode">
             <li v-for="item of editItems" :key="item.id">
                 <div class="input-group">
-                    <input class="form-control input-sm" type="text" v-model="item.value" @input="removeEmpty(item)">
+                    <input disabled class="form-control input-sm" type="text" v-model="item.value" @input="removeEmpty(item)">
                     <div class="input-group-btn" @click="deleteItem(item)">
-                        <div style="font-size: 14px" class="btn btn-default input-sm">
+                        <div style="font-size: 14px; background-color: rgb(238, 238, 238);" class="btn btn-default input-sm">
                             <i class="glyphicon glyphicon-remove" title="Remove" />
                         </div>
                     </div>

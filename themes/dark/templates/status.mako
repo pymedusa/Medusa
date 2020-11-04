@@ -2,7 +2,7 @@
 <%!
     from medusa import app
     from medusa import helpers
-    from medusa.show_queue import ShowQueueActions
+    from medusa.queues.show_queue import ShowQueueActions
     from medusa.helper.common import dateTimeFormat
     from six import iteritems
 %>
@@ -13,6 +13,7 @@
         'Daily Search': 'daily_search_scheduler',
         'Backlog': 'backlog_search_scheduler',
         'Show Update': 'show_update_scheduler',
+        'Episode Update': 'episode_update_scheduler',
         'Version Check': 'version_check_scheduler',
         'Show Queue': 'show_queue_scheduler',
         'Search Queue': 'search_queue_scheduler',

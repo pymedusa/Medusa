@@ -515,23 +515,25 @@ class Home(WebRoot):
 
     @staticmethod
     def saveShowNotifyList(show=None, emails=None, prowlAPIs=None):
-        entries = {'emails': '', 'prowlAPIs': ''}
-
         series_identifier = SeriesIdentifier.from_slug(show)
         series_obj = Series.find_by_identifier(series_identifier)
 
-        if series_obj:
-            if series_obj.notify_list:
-                entries = series_obj.notify_list
+        # Create a new dict, to force the "dirty" flag on the Series object.
+        entries = {'emails': '', 'prowlAPIs': ''}
+
+        if not series_obj:
+            return 'show missing'
+
+        if series_obj.notify_list:
+            entries.update(series_obj.notify_list)
 
         if emails is not None:
             entries['emails'] = emails
-            series_obj.notify_list = entries
 
         if prowlAPIs is not None:
             entries['prowlAPIs'] = prowlAPIs
-            series_obj.notify_list = entries
 
+        series_obj.notify_list = entries
         series_obj.save_to_db()
 
         return 'OK'
@@ -1738,7 +1740,7 @@ class Home(WebRoot):
             if sceneAbsolute is not None:
                 sceneAbsolute = int(sceneAbsolute)
 
-            set_scene_numbering(series_obj, absolute_number=forAbsolute, sceneAbsolute=sceneAbsolute)
+            set_scene_numbering(series_obj, absolute_number=forAbsolute, scene_absolute=sceneAbsolute)
         else:
             logger.log(u'setEpisodeSceneNumbering for {show} from {season}x{episode} to {scene_season}x{scene_episode}'.format
                        (show=series_obj.indexerid, season=forSeason, episode=forEpisode,
@@ -1753,7 +1755,7 @@ class Home(WebRoot):
 
             set_scene_numbering(
                 series_obj, season=forSeason, episode=forEpisode,
-                sceneSeason=sceneSeason, sceneEpisode=sceneEpisode
+                scene_season=sceneSeason, scene_episode=sceneEpisode
             )
 
         if series_obj.is_anime:

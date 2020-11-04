@@ -1,5 +1,5 @@
 <template>
-    <div v-if="showForRoutes" class="show-selector form-inline hidden-print">
+    <div class="show-selector form-inline hidden-print">
         <div class="select-show-group pull-left top-5 bottom-5">
             <select v-if="shows.length === 0" :class="selectClass" disabled>
                 <option>Loading...</option>
@@ -58,7 +58,7 @@ export default {
 
             const sortedShows = [...showsInLists];
 
-            const sortKey = title => (sortArticle ? title.replace(/^((?:the|a|an)\s)/i, '') : title).toLowerCase();
+            const sortKey = title => (sortArticle ? title : title.replace(/^((?:the|a|an)\s)/i, '')).toLowerCase();
             const sortFn = (showA, showB) => {
                 const titleA = sortKey(showA.title);
                 const titleB = sortKey(showB.title);
@@ -76,10 +76,6 @@ export default {
             });
 
             return sortedShows;
-        },
-        showForRoutes() {
-            const { $route } = this;
-            return ['show', 'editShow'].includes($route.name);
         }
     },
     watch: {
@@ -91,23 +87,17 @@ export default {
                 return;
             }
 
-            const { $store, shows } = this;
+            const { shows } = this;
             const selectedShow = shows.find(show => show.id.slug === newSlug);
             if (!selectedShow) {
                 return;
             }
-            const indexerName = selectedShow.indexer;
-            const seriesId = selectedShow.id[indexerName];
 
-            // Make sure the correct show, has been set as current show.
-            console.debug(`Setting current show to ${selectedShow.title}`);
-            $store.commit('currentShow', {
-                indexer: indexerName,
-                id: seriesId
-            });
+            const indexername = selectedShow.indexer;
+            const seriesid = String(selectedShow.id[indexername]);
 
             // To make it complete, make sure to switch route.
-            this.$router.push({ query: { indexername: indexerName, seriesid: String(seriesId) } });
+            this.$router.push({ query: { indexername, seriesid } });
         }
     }
 };

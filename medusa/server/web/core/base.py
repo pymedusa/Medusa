@@ -95,10 +95,11 @@ class PageTemplate(MakoTemplate):
             'full_url': base_url + rh.request.uri
         }
 
-        if rh.request.headers['Host'][0] == '[':
-            self.arguments['sbHost'] = re.match(r'^\[.*\]', rh.request.headers['Host'], re.X | re.M | re.S).group(0)
-        else:
-            self.arguments['sbHost'] = re.match(r'^[^:]+', rh.request.headers['Host'], re.X | re.M | re.S).group(0)
+        if rh.request.headers.get('Host'):
+            if rh.request.headers['Host'][0] == '[':
+                self.arguments['sbHost'] = re.match(r'^\[.*\]', rh.request.headers['Host'], re.X | re.M | re.S).group(0)
+            else:
+                self.arguments['sbHost'] = re.match(r'^[^:]+', rh.request.headers['Host'], re.X | re.M | re.S).group(0)
         if 'X-Forwarded-Host' in rh.request.headers:
             self.arguments['sbHost'] = rh.request.headers['X-Forwarded-Host']
         if 'X-Forwarded-Port' in rh.request.headers:
