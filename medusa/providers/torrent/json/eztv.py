@@ -26,7 +26,7 @@ class EztvProvider(TorrentProvider):
         # Credentials
         self.public = True
 
-        # URLs 
+        # URLs
         self.url = 'https://eztv.re'
         self.urls = {
             'api': 'https://eztv.re/api/get-torrents',
