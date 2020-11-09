@@ -27,9 +27,9 @@ class EztvProvider(TorrentProvider):
         self.public = True
 
         # URLs
-        self.url = 'https://eztv.io'
+        self.url = 'https://eztv.re'
         self.urls = {
-            'api': 'https://eztv.io/api/get-torrents',
+            'api': 'https://eztv.re/api/get-torrents',
         }
 
         # Proper Strings
