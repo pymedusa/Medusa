@@ -2027,7 +2027,7 @@ class Series(TV):
                           'scene': self.scene,
                           'sports': self.sports,
                           'subtitles': self.subtitles,
-                          'notify_list': json.dumps(self.notify_list),
+                          'notify_list': json.dumps(self.notify_list) if self.notify_list else None,
                           'dvdorder': self.dvd_order,
                           'startyear': self.start_year,
                           'lang': self.lang,
