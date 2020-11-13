@@ -3,7 +3,6 @@
 """Series classes."""
 from __future__ import unicode_literals
 
-import ast
 import copy
 import datetime
 import glob
@@ -1482,7 +1481,7 @@ class Series(TV):
             self.sports = int(sql_results[0]['sports'] or 0)
             self.scene = int(sql_results[0]['scene'] or 0)
             self.subtitles = int(sql_results[0]['subtitles'] or 0)
-            self.notify_list = dict(ast.literal_eval(sql_results[0]['notify_list'] or '{}'))
+            self.notify_list = json.loads(sql_results[0]['notify_list'] or '{}')
             self.dvd_order = int(sql_results[0]['dvdorder'] or 0)
             self.quality = int(sql_results[0]['quality'] or Quality.NA)
             self.season_folders = int(not (sql_results[0]['flatten_folders'] or 0))  # TODO: Rename this in the DB
@@ -2027,7 +2026,7 @@ class Series(TV):
                           'scene': self.scene,
                           'sports': self.sports,
                           'subtitles': self.subtitles,
-                          'notify_list': json.dumps(self.notify_list) if self.notify_list else None,
+                          'notify_list': json.dumps(self.notify_list),
                           'dvdorder': self.dvd_order,
                           'startyear': self.start_year,
                           'lang': self.lang,
