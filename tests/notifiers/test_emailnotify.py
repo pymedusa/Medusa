@@ -173,7 +173,7 @@ def test__parse_name(p):
             'sameuser@pymedusa.com',
         }
     },
-    {  # p1 - show-specific, legacy
+    {  # p1 - show-specific, no emails legacy
         'show': 'Show Name',
         'EMAIL_LIST': [
             'admin@pymedusa.com',
@@ -181,7 +181,7 @@ def test__parse_name(p):
         ],
         'mocks': [
             ('medusa.db.DBConnection.select', [{
-                'notify_list': 'sameuser@pymedusa.com,user1@pymedusa.com'
+                'notify_list': None
             }])
         ],
         'expected': {
@@ -198,7 +198,7 @@ def test__parse_name(p):
         ],
         'mocks': [
             ('medusa.db.DBConnection.select', [{
-                'notify_list': ''
+                'notify_list': '{}'
             }])
         ],
         'expected': {
@@ -214,7 +214,7 @@ def test__parse_name(p):
         ],
         'mocks': [
             ('medusa.db.DBConnection.select', [{
-                'notify_list': text_type({'emails': 'sameuser@pymedusa.com,user1@pymedusa.com'})
+                'notify_list': '{"emails": "sameuser@pymedusa.com,user1@pymedusa.com"}'
             }])
         ],
         'expected': {
