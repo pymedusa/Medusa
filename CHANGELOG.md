@@ -8,6 +8,14 @@
 
 -----
 
+## 0.4.5 (2020-11-13)
+
+#### Fixes
+- Updated EZTV provider URL
+- Fixed email and prowl notifications
+
+-----
+
 ## 0.4.4 (2020-11-04)
 
 #### Improvements
