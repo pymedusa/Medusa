@@ -35,9 +35,9 @@ class TVChaosUKProvider(TorrentProvider):
         self.password = None
 
         # URLs
-        self.url = 'https://www.tvchaosuk.com'
+        self.url = 'https://tvchaosuk.com'
         self.urls = {
-            'login': urljoin(self.url, 'takelogin.php'),
+            'login': urljoin(self.url, 'login'),
             'index': urljoin(self.url, 'index.php'),
             'search': urljoin(self.url, 'browse.php'),
             'query': urljoin(self.url, 'scripts/autocomplete/query.php'),
@@ -196,12 +196,33 @@ class TVChaosUKProvider(TorrentProvider):
         if len(self.session.cookies) >= 4:
             return True
 
+        # Get the _token
+        response_token = self.session.get(self.urls['login'])
+        if not response_token or not response_token.text:
+            log.warning('Provider not reachable')
+            return False
+
+        match_token = re.search('<meta name="csrf-token" content="([^"]+)">', response_token.text)
+        match_captcha = re.search('<input type="hidden" name="_captcha" value="([^"]+)" />', response_token.text)
+        match_hash = re.search('<input type="hidden".+name="([^"]+)".+value="(\d+)"', response_token.text)
+
+        if not match_token or not match_captcha or not match_hash:
+            log.warning('Could not get token or captcha')
+            return False
+
+        token = match_token.group(1)
+        captcha = match_captcha.group(1)
+        hash_key = match_hash.group(1)
+        hash_value = match_hash.group(2)
+
         login_params = {
+            '_token': token,
             'username': self.username,
             'password': self.password,
-            'logout': 'no',
-            'submit': 'LOGIN',
-            'returnto': '/browse.php',
+            'remember': 'on',
+            '_captcha': captcha,
+            '_username': '',
+            hash_key: hash_value
         }
 
         response = self.session.post(self.urls['login'], data=login_params)
@@ -209,7 +230,7 @@ class TVChaosUKProvider(TorrentProvider):
             log.warning('Unable to connect to provider')
             return False
 
-        if re.search('Error: Username or password incorrect!', response.text):
+        if re.search('These credentials do not match our records', response.text):
             log.warning('Invalid username or password. Check your settings')
             return False
 
