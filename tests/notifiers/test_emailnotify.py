@@ -186,8 +186,7 @@ def test__parse_name(p):
         ],
         'expected': {
             'admin@pymedusa.com',
-            'sameuser@pymedusa.com',
-            'user1@pymedusa.com'
+            'sameuser@pymedusa.com'
         }
     },
     {  # p2 - show-specific, no emails
