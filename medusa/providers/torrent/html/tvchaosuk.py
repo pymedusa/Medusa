@@ -135,14 +135,12 @@ class TVChaosUKProvider(TorrentProvider):
             # Skip column headers
             for row in torrent_rows[1:]:
                 try:
-                    # # Skip highlighted torrents
-                    # if mode == 'RSS' and row.get('class') == ['highlight']:
-                    #     continue
-
-                    # if self.freeleech and not row.find('img', alt=re.compile('Free Torrent')):
-                    #     continue
-
                     cells = row('td')
+
+                    if self.freeleech:
+                        badges = cells[labels.index('Name')]('span', class_='badge-extra')
+                        if not 'Freeleech' in [badge.get_text(strip=True) for badge in badges]:
+                            continue
 
                     title = cells[labels.index('Name')].find('a', class_='view-torrent').get_text(strip=True)
                     download_url = cells[labels.index('Name')].find('button').parent['href']
