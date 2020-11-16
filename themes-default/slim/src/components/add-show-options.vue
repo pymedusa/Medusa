@@ -390,18 +390,18 @@ export default {
             immediate: false
         },
         selectedAnimeEnabled(value) {
-            const { anime } = this;
+            const { anime, config } = this;
             const { autoAnimeToList, showlistDefaultAnime } = anime;
 
             if (autoAnimeToList) {
                 if (value) {
                     // Auto anime to list is enabled. If changing the show format to anime, add 'Anime' to show lists.
-                    this.selectedShowLists = [showlistDefaultAnime];
+                    this.selectedShowLists = showlistDefaultAnime;
                     // The filter makes sure there are unique strings.
                     this.selectedShowLists = this.selectedShowLists.filter((v, i, a) => a.indexOf(v) === i);
                 } else {
-                    // Remove the anime list.
-                    this.selectedShowLists = this.selectedShowLists.filter(list => list.toLowerCase() !== showlistDefaultAnime);
+                    // Return to default show lists.
+                    this.selectedShowLists = config.showDefaults.showLists;
                 }
             }
 

@@ -8,7 +8,7 @@ const state = {
         useMylist: false
     },
     autoAnimeToList: false,
-    showlistDefaultAnime: null
+    showlistDefaultAnime: []
 };
 
 const mutations = {

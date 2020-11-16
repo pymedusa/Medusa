@@ -481,7 +481,7 @@ class ConfigHandler(BaseRequestHandler):
         'anime.anidb.password': StringField(app, 'ANIDB_PASSWORD'),
         'anime.anidb.useMylist': BooleanField(app, 'ANIDB_USE_MYLIST'),
         'anime.autoAnimeToList': BooleanField(app, 'AUTO_ANIME_TO_LIST'),
-        'anime.showlistDefaultAnime': StringField(app, 'SHOWLIST_DEFAULT_ANIME')
+        'anime.showlistDefaultAnime': ListField(app, 'SHOWLIST_DEFAULT_ANIME')
     }
 
     def get(self, identifier, path_param=None):

@@ -13,6 +13,7 @@
                                 <p>AniDB is non-profit database of anime information that is freely open to the public</p>
                             </div>
                             <div class="col-xs-12 col-md-10">
+
                                 <fieldset class="component-group-list">
                                     <config-toggle-slider v-model="anime.anidb.enabled" label="Use AniDB" id="use_anidb">
                                         <span>Should Medusa use data from AniDB?</span>
@@ -55,12 +56,12 @@
                                         <span>Connect every show marked as anime, to the 'Anime' show list?</span>
                                     </config-toggle-slider>
 
-                                    <config-template label-for="showlist_default_anime" label="Showlists for Anime">
-                                        <select :value="anime.showlistDefaultAnime" @input="updateShowlistDefault($event.currentTarget.value)" class="form-control input-sm">
-                                            <option v-for="option in availableShowLists" :value="option.value" :key="option.value">
-                                                {{ option.text }}
-                                            </option>
-                                        </select>
+                                    <config-template v-if="anime.autoAnimeToList" label-for="showlist_default_anime" label="Showlists for Anime">
+                                        <multiselect
+                                            v-model="animeShowlistDefaultAnime"
+                                            :multiple="true"
+                                            :options="layout.show.showListOrder"
+                                        />
                                         <span>Customize the showslist when auto anime lists is enabled</span>
                                     </config-template>
 
@@ -83,6 +84,8 @@
 import { mapActions, mapState } from 'vuex';
 import { AppLink, ConfigTemplate, ConfigTextbox, ConfigToggleSlider } from './helpers';
 import { VueTabs, VTab } from 'vue-nav-tabs/dist/vue-tabs.js';
+import Multiselect from 'vue-multiselect';
+import 'vue-multiselect/dist/vue-multiselect.min.css';
 
 export default {
     name: 'config-anime',
@@ -91,6 +94,7 @@ export default {
         ConfigTemplate,
         ConfigTextbox,
         ConfigToggleSlider,
+        Multiselect,
         VueTabs,
         VTab
     },
@@ -133,11 +137,15 @@ export default {
             anime: state => state.config.anime,
             layout: state => state.config.layout
         }),
-        availableShowLists() {
-            const { layout } = this;
-            const { show } = layout;
-
-            return Object.values(show.showListOrder).map(list => ({ value: list, text: list }));
+        animeShowlistDefaultAnime: {
+            get() {
+                const { anime } = this;
+                return anime.showlistDefaultAnime;
+            },
+            set(value) {
+                const { anime, updateShowlistDefault} = this;
+                updateShowlistDefault(value)
+            }
         }
     }
 };
