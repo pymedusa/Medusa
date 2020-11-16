@@ -5,6 +5,26 @@
 #### Improvements
 
 #### Fixes
+
+-----
+
+## 0.4.5 (2020-11-13)
+
+#### Fixes
+- Updated EZTV provider URL
+- Fixed email and prowl notifications
+
+-----
+
+## 0.4.4 (2020-11-04)
+
+#### Improvements
+- Replace unrar2 with rarfile
+- Add EpisodeUpdater to scheduler
+- Don't strip channel names so they are matched correctly
+- Avoid exception when headers have no host
+
+#### Fixes
 - Fix notify lists for prowl and email ([8535](https://github.com/pymedusa/Medusa/pull/8535))
 - Fix shows sorting by article sort using (the, a, an) was reversed in config-general ([8532](https://github.com/pymedusa/Medusa/pull/8532))
 - Fix sending torrents to qBittorrent api version > 2.0.0 ([8528](https://github.com/pymedusa/Medusa/pull/8528))
@@ -12,7 +32,9 @@
 - Fix provider AnimeBytes ([8609](https://github.com/pymedusa/Medusa/pull/8609))
 - Fix provider Speedcd ([8609](https://github.com/pymedusa/Medusa/pull/8609))
 - Fix season pack search, results not shown for multi-episode results ([8609](https://github.com/pymedusa/Medusa/pull/8609))
-
+- Fix scene exceptions with year not being used
+- Fix IPTorrents layout change
+- Use b64decode instead of deprecated decodestring for basic auth
 
 -----
 
