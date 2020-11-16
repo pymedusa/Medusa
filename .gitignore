@@ -70,7 +70,6 @@ build/
 dist/
 pymedusa.egg-info
 .eggs
-*.dll
 
 # Grunt/Gulp/Node build related #
 ######################

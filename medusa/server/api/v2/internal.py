@@ -281,7 +281,6 @@ class InternalHandler(BaseRequestHandler):
             })
 
         path = ''
-
         if show_dir:
             path = ensure_text(show_dir)
         elif root_dir and title:
