@@ -143,8 +143,8 @@ export default {
                 return anime.showlistDefaultAnime;
             },
             set(value) {
-                const { anime, updateShowlistDefault} = this;
-                updateShowlistDefault(value)
+                const { anime, updateShowlistDefault } = this;
+                updateShowlistDefault(value, anime.showlistDefaultAnime);
             }
         }
     }

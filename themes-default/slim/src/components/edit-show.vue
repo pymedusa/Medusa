@@ -478,7 +478,7 @@ export default {
             if (formatOption === 'anime' && anime.autoAnimeToList) {
                 if (value) {
                     // Auto anime to list is enabled. If changing the show format to anime, add 'Anime' to show lists.
-                    this.showLists = showlistDefaultAnime;
+                    this.showLists = anime.showlistDefaultAnime;
                     // The filter makes sure there are unique strings.
                     this.showLists = this.showLists.filter((v, i, a) => a.indexOf(v) === i);
                 } else {
