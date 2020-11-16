@@ -82,7 +82,7 @@ class SeriesHandler(BaseRequestHandler):
             return self._bad_request('Series slug should not be specified')
 
         data = json_decode(self.request.body)
-        if not data or 'id' not in data or 'options' not in data:
+        if not data or 'id' not in data:
             return self._bad_request('Invalid series data')
 
         ids = {k: v for k, v in viewitems(data['id']) if k != 'imdb'}
@@ -96,25 +96,27 @@ class SeriesHandler(BaseRequestHandler):
         if Series.find_by_identifier(identifier):
             return self._conflict('Series already exist added')
 
+        data_options = data.get('options', {})
+
         try:
             options = {
-                'default_status': data['options'].get('status'),
-                'quality': data['options'].get('quality', {'preferred': [], 'allowed': []}),
-                'season_folders': data['options'].get('seasonFolders'),
-                'lang': data['options'].get('language'),
-                'subtitles': data['options'].get('subtitles'),
-                'anime': data['options'].get('anime'),
-                'scene': data['options'].get('scene'),
-                'paused': data['options'].get('paused'),
-                'blacklist': data['options']['release'].get('blacklist', []) if data['options'].get('release') else None,
-                'whitelist: ': data['options']['release'].get('whitelist', []) if data['options'].get('release') else None,
-                'default_status_after': data['options'].get('statusAfter'),
-                'root_dir': data['options'].get('rootDir'),
-                'show_lists': data['options'].get('showLists')
+                'default_status': data_options.get('status'),
+                'quality': data_options.get('quality', {'preferred': [], 'allowed': []}),
+                'season_folders': data_options.get('seasonFolders'),
+                'lang': data_options.get('language'),
+                'subtitles': data_options.get('subtitles'),
+                'anime': data_options.get('anime'),
+                'scene': data_options.get('scene'),
+                'paused': data_options.get('paused'),
+                'blacklist': data_options['release'].get('blacklist', []) if data_options.get('release') else None,
+                'whitelist: ': data_options['release'].get('whitelist', []) if data_options.get('release') else None,
+                'default_status_after': data_options.get('statusAfter'),
+                'root_dir': data_options.get('rootDir'),
+                'show_lists': data_options.get('showLists')
             }
 
             queue_item_obj = app.show_queue_scheduler.action.addShow(
-                identifier.indexer.id, identifier.id, data['options'].get('showDir'), **options
+                identifier.indexer.id, identifier.id, data_options.get('showDir'), **options
             )
         except SaveSeriesException as error:
             return self._not_found(error)

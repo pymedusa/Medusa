@@ -110,7 +110,7 @@ from medusa.tv.base import Identifier, TV
 from medusa.tv.episode import Episode
 from medusa.tv.indexer import Indexer
 
-from six import binary_type, iteritems, itervalues, string_types, text_type, viewitems
+from six import ensure_text, iteritems, itervalues, string_types, text_type, viewitems
 
 import ttl_cache
 
@@ -1225,15 +1225,13 @@ class Series(TV):
 
         return scanned_eps
 
-    def load_episodes_from_indexer(self, seasons=None, tvapi=None, options=None):
+    def load_episodes_from_indexer(self, seasons=None, tvapi=None):
         """Load episodes from indexer.
 
         :param seasons: Only load episodes for these seasons (only if supported by the indexer)
         :type seasons: list of integers or integer
         :param tvapi: indexer_object
         :type tvapi: indexer object
-        :param options: options structure (passed throug apiv2)
-        :type options: dict
         :return:
         :rtype: dict(int -> dict(int -> bool))
         """
@@ -1307,11 +1305,6 @@ class Series(TV):
         log.debug(u'{id}: Saving indexer changes to database',
                   {'id': self.series_id})
         self.save_to_db()
-
-        # If we provide a default_status_after through the apiv2 series route options object.
-        # set it after we've added the episodes.
-        if options and options.get('default_status_after') is not None:
-            self.default_ep_status = options['default_status_after']
 
         return scanned_eps
 
@@ -1684,7 +1677,8 @@ class Series(TV):
         # to build using the Indexers provided series name
         options = queue_item.options
         show_dir = queue_item.show_dir
-        root_dir = queue_item.root_dir
+        root_dir = queue_item.root_dir or app.ROOT_DIRS[int(app.ROOT_DIRS[0]) + 1] if len(app.ROOT_DIRS) > 0 else None
+
         if not show_dir and root_dir:
             # I don't think we need to check this. We just create the folder after we already queried the indexer.
             # show_name = get_showname_from_indexer(self.indexer, self.indexer_id, self.lang)
@@ -1711,13 +1705,15 @@ class Series(TV):
                 return
 
         if show_dir:
-            self.location = text_type(show_dir, 'utf-8') if isinstance(show_dir, binary_type) else show_dir
+            self.location = ensure_text(show_dir)
 
         self.subtitles = options['subtitles'] if options.get('subtitles') is not None else app.SUBTITLES_DEFAULT
 
         if options.get('quality'):
-            self.qualities_preferred = options['quality']['preferred']
             self.qualities_allowed = options['quality']['allowed']
+            self.qualities_preferred = options['quality']['preferred']
+        else:
+            self.qualities_allowed, self.qualities_preferred = Quality.split_quality(int(app.QUALITY_DEFAULT))
 
         self.season_folders = options['season_folders'] if options.get('season_folders') is not None \
             else app.SEASON_FOLDERS_DEFAULT
@@ -1725,7 +1721,7 @@ class Series(TV):
         self.scene = options['scene'] if options.get('scene') is not None else app.SCENE_DEFAULT
         self.paused = options['paused'] if options.get('paused') is not None else False
         self.lang = options['language'] if options.get('language') is not None else app.INDEXER_DEFAULT_LANGUAGE
-        self.show_lists = options['show_lists'] if options.get('show_lists') is not None else []
+        self.show_lists = options['show_lists'] if options.get('show_lists') is not None else app.SHOWLISTS_DEFAULT
 
         if options.get('default_status') is not None:
             # set up default new/missing episode status
@@ -1734,6 +1730,8 @@ class Series(TV):
                 {'status': statusStrings[options['default_status']]}
             )
             self.default_ep_status = options['default_status']
+        else:
+            self.default_ep_status = app.STATUS_DEFAULT
 
         if self.anime:
             self.release_groups = BlackAndWhiteList(self)
@@ -1917,15 +1915,15 @@ class Series(TV):
         """Sync trakt episodes if trakt is enabled."""
         if app.USE_TRAKT:
             # if there are specific episodes that need to be added by trakt
-            app.trakt_checker_scheduler.action.manage_new_show(self.show)
+            app.trakt_checker_scheduler.action.manage_new_show(self)
 
             # add show to trakt.tv library
             if app.TRAKT_SYNC:
-                app.trakt_checker_scheduler.action.add_show_trakt_library(self.show)
+                app.trakt_checker_scheduler.action.add_show_trakt_library(self)
 
             if app.TRAKT_SYNC_WATCHLIST:
-                log.info('update watchlist')
-                notifiers.trakt_notifier.update_watchlist(show_obj=self.show)
+                log.info('updating trakt watchlist')
+                notifiers.trakt_notifier.update_watchlist(show_obj=self)
 
     def add_scene_numbering(self):
         """

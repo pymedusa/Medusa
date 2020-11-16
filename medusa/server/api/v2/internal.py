@@ -15,7 +15,7 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.tv.series import Series, SeriesIdentifier
 
-from six import binary_type, iteritems, itervalues, text_type
+from six import ensure_text, iteritems, itervalues
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -283,7 +283,7 @@ class InternalHandler(BaseRequestHandler):
         path = ''
 
         if show_dir:
-            path = text_type(show_dir, 'utf-8') if isinstance(show_dir, binary_type) else show_dir
+            path = ensure_text(show_dir)
         elif root_dir and title:
             path = os.path.join(root_dir, sanitize_filename(title))
 
@@ -294,9 +294,9 @@ class InternalHandler(BaseRequestHandler):
                 (series_id, series_name, indexer) = cur_provider.retrieveShowMetadata(path_info['path'])
                 if all((series_id, series_name, indexer)):
                     path_info['metadata'] = {
-                        'seriesId': try_int(series_id),
+                        'seriesId': int(series_id),
                         'seriesName': series_name,
-                        'indexer': try_int(indexer)
+                        'indexer': int(indexer)
                     }
                     break
 

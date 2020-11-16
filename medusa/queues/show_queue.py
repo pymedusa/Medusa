@@ -53,7 +53,7 @@ from medusa.tv.series import SaveSeriesException, Series, SeriesIdentifier
 
 from requests import RequestException
 
-from six import binary_type, text_type, viewitems
+from six import ensure_text, text_type, viewitems
 
 from traktor import TraktException
 
@@ -306,12 +306,7 @@ class QueueItemAdd(ShowQueueItem):
 
         self.indexer = indexer
         self.indexer_id = indexer_id
-
-        if isinstance(show_dir, binary_type):
-            self.show_dir = text_type(show_dir, 'utf-8')
-        else:
-            self.show_dir = show_dir
-
+        self.show_dir = ensure_text(show_dir) if show_dir else None
         self.default_status = options.get('default_status')
         self.quality = options.get('quality')
         self.season_folders = options.get('season_folders')
@@ -440,7 +435,12 @@ class QueueItemAdd(ShowQueueItem):
 
             try:
                 message_step('load episodes from {indexer}'.format(indexer=indexerApi(self.indexer).name))
-                series.load_episodes_from_indexer(tvapi=api, options=self.options)
+                series.load_episodes_from_indexer(tvapi=api)
+                # If we provide a default_status_after through the apiv2 series route options object.
+                # set it after we've added the episodes.
+                self.default_ep_status = self.options['default_status_after'] \
+                    if self.options.get('default_status_after') is not None else app.STATUS_DEFAULT_AFTER
+
             except IndexerException as error:
                 log.warning('Unable to load series episodes from indexer: {0!r}'.format(error))
                 raise SaveSeriesException(

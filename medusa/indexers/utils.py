@@ -41,10 +41,10 @@ def indexer_id_to_name(indexer):
 
 
 def indexer_id_to_slug(indexer, series_id):
-    """Translate a shows indexer and series_id to a slug.
+    """Translate a shows indexer and series id to a slug.
 
     :param indexer: The indexer id. For example 1 for tvdb and 3 for tvmaze.
-    :param indexer_id: The shows id, for the specific indexer.
+    :param series_id: The shows id, for the specific indexer.
     :return: A slug. For example tvdb1234 for indexer 1 and indexer id 1234.
     """
     return '{name}{series_id}'.format(name=indexerConfig[indexer]['identifier'], series_id=series_id)
