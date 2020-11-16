@@ -115,13 +115,14 @@ class QueueItem(threading.Thread):
         self.added = None
         self.queue_time = datetime.utcnow()
         self.start_time = None
+        self.success = None
         self._to_json = {
             'identifier': str(uuid4()),
             'name': self.name,
             'priority': self.priority,
             'actionId': self.action_id,
             'queueTime': str(self.queue_time),
-            'success': None
+            'success': self.success
         }
 
     def run(self):

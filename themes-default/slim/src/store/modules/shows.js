@@ -3,6 +3,7 @@ import Vue from 'vue';
 import { api } from '../../api';
 import {
     ADD_SHOW,
+    ADD_SHOW_QUEUE_ITEM,
     ADD_SHOW_CONFIG,
     ADD_SHOWS,
     ADD_SHOW_EPISODE,
@@ -27,7 +28,8 @@ const state = {
         current: null,
         display: false,
         finished: false
-    }
+    },
+    queueitems: []
 };
 
 const mutations = {
@@ -146,6 +148,15 @@ const mutations = {
         }
 
         currentShow.config.aliases.splice(currentShow.config.aliases.indexOf(exception), 1);
+    },
+    [ADD_SHOW_QUEUE_ITEM](state, queueItem) {
+        const existingQueueItem = state.queueitems.find(item => item.identifier === queueItem.identifier);
+
+        if (existingQueueItem) {
+            Vue.set(state.queueitems, state.queueitems.indexOf(existingQueueItem), { ...existingQueueItem, ...queueItem });
+        } else {
+            Vue.set(state.queueitems, state.queueitems.length, queueItem);
+        }
     }
 
 };
@@ -432,6 +443,11 @@ const actions = {
     setShowConfig(context, { show, config }) {
         const { commit } = context;
         commit(ADD_SHOW_CONFIG, { show, config });
+    },
+    updateShowQueueItem(context, queueItem) {
+        // Update store's search queue item. (provided through websocket)
+        const { commit } = context;
+        return commit(ADD_SHOW_QUEUE_ITEM, queueItem);
     }
 };
 

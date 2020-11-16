@@ -527,7 +527,6 @@ class BacklogQueueItem(generic_queue.QueueItem):
         self.priority = generic_queue.QueuePriorities.LOW
         self.name = 'BACKLOG-{indexer_id}'.format(indexer_id=show.indexerid)
 
-        self.success = None
         self.started = None
 
         self.show = show
@@ -536,7 +535,6 @@ class BacklogQueueItem(generic_queue.QueueItem):
         self.to_json.update({
             'show': self.show.to_json(),
             'segment': [ep.to_json() for ep in self.segment],
-            'success': self.success
         })
 
     def run(self):
