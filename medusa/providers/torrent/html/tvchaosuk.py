@@ -92,7 +92,7 @@ class TVChaosUKProvider(TorrentProvider):
 
                     search_params['search'] = quote(search_string)
 
-                response = self.session.get(self.urls['search'], params='&'.join("{}={}".format(k,v) for k, v in search_params.items()), headers=headers)
+                response = self.session.get(self.urls['search'], params='&'.join("{}={}".format(k, v) for k, v in search_params.items()), headers=headers)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue
