@@ -11,9 +11,7 @@ from medusa import tv
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import (
     convert_size,
-    try_int,
 )
-from medusa.helper.exceptions import AuthException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
@@ -83,8 +81,6 @@ class TVChaosUKProvider(TorrentProvider):
             'qty': 100,
         }
 
-        headers={'Content-Type': 'application/json; charset=UTF-8'}
-        
         for mode in search_strings:
             log.debug('Search mode: {0}', mode)
 
@@ -95,7 +91,7 @@ class TVChaosUKProvider(TorrentProvider):
                               {'search': search_string})
 
                     search_params['search'] = quote(search_string)
-                
+
                 response = self.session.get(self.urls['search'], params='&'.join("{}={}".format(k,v) for k, v in search_params.items()), headers=headers)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
@@ -119,8 +115,6 @@ class TVChaosUKProvider(TorrentProvider):
 
         items = []
 
-        keywords = kwargs.pop('keywords', None)
-
         with BS4Parser(data, 'html5lib') as html:
             torrent_table = html.find('table', class_='table')
             torrent_rows = torrent_table('tr') if torrent_table else []
@@ -139,12 +133,12 @@ class TVChaosUKProvider(TorrentProvider):
 
                     if self.freeleech:
                         badges = cells[labels.index('Name')]('span', class_='badge-extra')
-                        if not 'Freeleech' in [badge.get_text(strip=True) for badge in badges]:
+                        if 'Freeleech' not in [badge.get_text(strip=True) for badge in badges]:
                             continue
 
                     title = cells[labels.index('Name')].find('a', class_='view-torrent').get_text(strip=True)
                     download_url = cells[labels.index('Name')].find('button').parent['href']
- 
+
                     if not all([title, download_url]):
                         continue
 
@@ -194,9 +188,9 @@ class TVChaosUKProvider(TorrentProvider):
             log.warning('Provider not reachable')
             return False
 
-        match_token = re.search('<meta name="csrf-token" content="([^"]+)">', response_token.text)
-        match_captcha = re.search('<input type="hidden" name="_captcha" value="([^"]+)" />', response_token.text)
-        match_hash = re.search('<input type="hidden".+name="([^"]+)".+value="(\d+)"', response_token.text)
+        match_token = re.search(r'<meta name="csrf-token" content="([^"]+)">', response_token.text)
+        match_captcha = re.search(r'<input type="hidden" name="_captcha" value="([^"]+)" />', response_token.text)
+        match_hash = re.search(r'<input type="hidden".+name="([^"]+)".+value="(\d+)"', response_token.text)
 
         if not match_token or not match_captcha or not match_hash:
             log.warning('Could not get token or captcha')
