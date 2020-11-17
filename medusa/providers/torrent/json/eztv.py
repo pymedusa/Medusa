@@ -12,6 +12,8 @@ from medusa.indexers.utils import mappings
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
+from requests.compat import urljoin
+
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
@@ -27,9 +29,9 @@ class EztvProvider(TorrentProvider):
         self.public = True
 
         # URLs
-        self.url = 'https://eztv.io'
+        self.url = 'https://eztv.re'
         self.urls = {
-            'api': 'https://eztv.io/api/get-torrents',
+            'api': urljoin(self.url, 'api/get-torrents')
         }
 
         # Proper Strings

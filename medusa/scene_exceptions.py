@@ -163,7 +163,7 @@ def get_season_from_name(series_obj, exception_name):
         if season == -1:
             continue
         for exception in exceptions:
-            if exception.title == exception_name:
+            if exception.title.lower() == exception_name.lower():
                 return exception.season
 
 

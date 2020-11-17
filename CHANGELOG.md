@@ -3,12 +3,47 @@
 #### New Features
 
 #### Improvements
+- Vueified add existing shows ([8448](https://github.com/pymedusa/Medusa/pull/8448))
+  - Get real time progress update on the shows adding
+  - Add shows automatically when metadata is available
+  - Preset show options
+- Vueified add show ([8448](https://github.com/pymedusa/Medusa/pull/8448))
+  - No more page redirects when you add a show that already exists
+  - Select show list while adding show
+  - Map show lists to anime, when configured in config -> anime
+
+#### Fixes
+- Fixed provider TVChaosUK ([8737](https://github.com/pymedusa/Medusa/pull/8737))
+
+-----
+
+## 0.4.5 (2020-11-13)
+
+#### Fixes
+- Updated EZTV provider URL
+- Fixed email and prowl notifications
+
+-----
+
+## 0.4.4 (2020-11-04)
+
+#### Improvements
+- Replace unrar2 with rarfile
+- Add EpisodeUpdater to scheduler
+- Don't strip channel names so they are matched correctly
+- Avoid exception when headers have no host
 
 #### Fixes
 - Fix notify lists for prowl and email ([8535](https://github.com/pymedusa/Medusa/pull/8535))
 - Fix shows sorting by article sort using (the, a, an) was reversed in config-general ([8532](https://github.com/pymedusa/Medusa/pull/8532))
 - Fix sending torrents to qBittorrent api version > 2.0.0 ([8528](https://github.com/pymedusa/Medusa/pull/8528))
 - Fix decoding torrent hash from magnet links ([8563](https://github.com/pymedusa/Medusa/pull/8563))
+- Fix provider AnimeBytes ([8609](https://github.com/pymedusa/Medusa/pull/8609))
+- Fix provider Speedcd ([8609](https://github.com/pymedusa/Medusa/pull/8609))
+- Fix season pack search, results not shown for multi-episode results ([8609](https://github.com/pymedusa/Medusa/pull/8609))
+- Fix scene exceptions with year not being used
+- Fix IPTorrents layout change
+- Use b64decode instead of deprecated decodestring for basic auth
 
 -----
 
