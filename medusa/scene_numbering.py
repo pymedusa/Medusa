@@ -314,9 +314,9 @@ def get_indexer_numbering(series_obj, episode, season=None):
     """Find the numbering for a show episode and season.
 
     :param series_obj: Show object
-    :param season: Season number
     :param episode: Episode number
-    :return: The absolute number or None
+    :param season: Season number (optional)
+    :return: Tuple, (season, episode) or (None, None)
     """
     numbering = get_custom_numbering(series_obj, episode, season)
     if numbering:
@@ -361,8 +361,8 @@ def get_indexer_abs_numbering(series_obj, episode, season=None):
     """Find the absolute numbering for a show episode and season.
 
     :param series_obj: Show object
-    :param season: Season number
     :param episode: Episode number
+    :param season: Season number (optional)
     :return: The absolute number or None
     """
     abs_number = get_custom_abs_number(series_obj, episode, season)
