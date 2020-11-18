@@ -19,7 +19,7 @@ import pytest
         'indexer_incorrect_absolute_ep_episodes': 8,
         'mocks': [
             ('medusa.scene_exceptions.get_season_from_name', 2),
-            ('medusa.scene_numbering.get_indexer_absolute_numbering', 78),
+            ('medusa.scene_numbering.get_indexer_abs_numbering', 78),
             ('medusa.helpers.get_all_episodes_from_absolute_number', (4, [8]))
         ],
         'series_info':{
@@ -38,7 +38,7 @@ import pytest
         'indexer_incorrect_absolute_ep_episodes': 8,
         'mocks': [
             ('medusa.scene_exceptions.get_season_from_name', 2),
-            ('medusa.scene_numbering.get_indexer_absolute_numbering', 78),
+            ('medusa.scene_numbering.get_indexer_abs_numbering', 78),
             ('medusa.helpers.get_all_episodes_from_absolute_number', (4, [8]))
         ],
         'series_info': {
@@ -57,7 +57,7 @@ import pytest
         'indexer_incorrect_absolute_ep_episodes': 8,
         'mocks': [
             ('medusa.scene_exceptions.get_season_from_name', None),
-            ('medusa.scene_numbering.get_indexer_absolute_numbering', 8),
+            ('medusa.scene_numbering.get_indexer_abs_numbering', 8),
             ('medusa.helpers.get_all_episodes_from_absolute_number', (1, [8]))
         ],
         'series_info': {
@@ -73,7 +73,7 @@ import pytest
         'indexer': 262954,
         'mocks': [
             ('medusa.scene_exceptions.get_season_from_name', None),
-            ('medusa.scene_numbering.get_indexer_absolute_numbering', 26),
+            ('medusa.scene_numbering.get_indexer_abs_numbering', 26),
             ('medusa.helpers.get_all_episodes_from_absolute_number', (1, [26]))
         ],
         'series_info': {
@@ -89,7 +89,7 @@ import pytest
         'indexer': 262954,
         'mocks': [
             ('medusa.scene_exceptions.get_season_from_name', 3),
-            ('medusa.scene_numbering.get_indexer_absolute_numbering', 52),
+            ('medusa.scene_numbering.get_indexer_abs_numbering', 52),
             ('medusa.helpers.get_all_episodes_from_absolute_number', (2, [26]))
         ],
         'series_info': {
@@ -105,7 +105,7 @@ import pytest
         'indexer': 262954,
         'mocks': [
             ('medusa.scene_exceptions.get_season_from_name', 4),
-            ('medusa.scene_numbering.get_indexer_absolute_numbering', 100),
+            ('medusa.scene_numbering.get_indexer_abs_numbering', 100),
             ('medusa.helpers.get_all_episodes_from_absolute_number', (3, [26]))
         ],
         'series_info': {
@@ -169,7 +169,7 @@ import pytest
         'indexer': 262954,
         'mocks': [
             ('medusa.scene_exceptions.get_season_from_name', 2),
-            ('medusa.scene_numbering.get_indexer_absolute_numbering', 38),
+            ('medusa.scene_numbering.get_indexer_abs_numbering', 38),
             ('medusa.helpers.get_all_episodes_from_absolute_number', (2, [12])),
         ],
         'series_info': {
@@ -184,7 +184,7 @@ import pytest
         'indexer': 262954,
         'mocks': [
             ('medusa.scene_exceptions.get_season_from_name', 2),
-            ('medusa.scene_numbering.get_indexer_absolute_numbering', 38),
+            ('medusa.scene_numbering.get_indexer_abs_numbering', 38),
             ('medusa.helpers.get_all_episodes_from_absolute_number', (2, [12])),
         ],
         'series_info': {
