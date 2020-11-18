@@ -215,7 +215,7 @@ def get_scene_numbering(series_obj, episode, season=None):
         )
 
     if not rows:
-        return (None, None)
+        return None, None
 
     (new_sea, new_ep) = int(rows[0]['season']), int(rows[0]['episode'])
     log.debug('Found numbering {new} from scene for show {show} {ep}', {
@@ -272,7 +272,7 @@ def get_custom_numbering(series_obj, episode, season=None):
         )
 
     if not rows:
-        return (None, None)
+        return None, None
 
     (new_sea, new_ep) = int(rows[0]['season']), int(rows[0]['episode'])
     log.debug('Found numbering {new} from scene for show {show} {ep}', {
@@ -346,7 +346,7 @@ def get_indexer_numbering(series_obj, episode, season=None):
     if not rows:
         log.debug('No entries for numbering for show {show} {ep}',
                   {'show': series_obj.name, 'ep': episode_num(season, episode)})
-        return (None, None)
+        return None, None
 
     (new_sea, new_ep) = int(rows[0]['season']), int(rows[0]['episode'])
     log.debug('Found numbering {new} from indexer for show {show} {ep}', {

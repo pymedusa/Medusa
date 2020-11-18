@@ -148,14 +148,19 @@ class NameParser(object):
             season = season_number
             episode = episode_number
 
-            (season, episode) = scene_numbering.get_indexer_numbering(
+            (idx_season, idx_episode) = scene_numbering.get_indexer_numbering(
                 result.series,
                 season_number,
                 episode_number,
             )
 
-            new_episode_numbers.append(episode)
+            if idx_season is not None:
+                season = idx_season
+            if idx_episode is not None:
+                episode = idx_episode
+
             new_season_numbers.append(season)
+            new_episode_numbers.append(episode)
 
         return new_episode_numbers, new_season_numbers
 
@@ -193,9 +198,11 @@ class NameParser(object):
                 # E.g.: [HorribleSubs] Cardcaptor Sakura Clear Card - 08 [720p].mkv thetvdb s04, thexem s02
                 if season_exception is not None or result.series.is_scene:
                     # Get absolute number from custom numbering (1), XEM (2) or indexer (3)
-                    abs_ep = scene_numbering.get_indexer_abs_numbering(
+                    idx_abs_ep = scene_numbering.get_indexer_abs_numbering(
                         result.series, abs_ep, season=season_exception
                     )
+                    if idx_abs_ep is not None:
+                        abs_ep = idx_abs_ep
 
                 new_absolute_numbers.append(abs_ep)
 
@@ -235,22 +242,34 @@ class NameParser(object):
                 season = result.season_number
                 episode = episode_number
 
-                abs_ep = scene_numbering.get_indexer_abs_numbering(result.series, episode, season=season)
-                new_absolute_numbers.append(abs_ep)
+                idx_abs_ep = scene_numbering.get_indexer_abs_numbering(result.series, episode, season=season)
+                if idx_abs_ep is not None:
+                    new_absolute_numbers.append(idx_abs_ep)
+
+                (idx_season, idx_episode) = scene_numbering.get_indexer_numbering(
+                    result.series,
+                    result.season_number,
+                    episode_number
+                )
+
+                if idx_season is not None:
+                    season = idx_season
+                if idx_episode is not None:
+                    episode = idx_episode
+
+                new_season_numbers.append(season)
+                new_episode_numbers.append(episode)
 
                 if result.series.is_scene:
                     log.debug(
                         'Scene numbering enabled anime {name} using indexer numbering: {ep}',
-                        {'name': result.series.name, 'absolute': abs_ep, 'ep': episode_num(season, episode)}
+                        {'name': result.series.name, 'absolute': idx_abs_ep, 'ep': episode_num(season, episode)}
                     )
                 else:
                     log.debug(
                         'Anime series {name} using using indexer numbering #{absolute}: {ep}',
-                        {'name': result.series.name, 'absolute': abs_ep, 'ep': episode_num(season, episode)}
+                        {'name': result.series.name, 'absolute': idx_abs_ep, 'ep': episode_num(season, episode)}
                     )
-
-                new_episode_numbers.append(episode)
-                new_season_numbers.append(season)
 
         return new_episode_numbers, new_season_numbers, new_absolute_numbers
 
@@ -260,19 +279,25 @@ class NameParser(object):
         new_season_numbers = []
         new_absolute_numbers = []
 
-        season = scene_exceptions.get_season_from_name(result.series, result.series_name) or result.season_number
+        ex_season = scene_exceptions.get_season_from_name(result.series, result.series_name) or result.season_number
 
         for episode_number in result.episode_numbers:
+            season = ex_season
             episode = episode_number
 
-            (season, episode) = scene_numbering.get_indexer_numbering(
+            (idx_season, idx_episode) = scene_numbering.get_indexer_numbering(
                 result.series,
-                season,
+                ex_season,
                 episode_number
             )
 
-            new_episode_numbers.append(episode)
+            if idx_season is not None:
+                season = idx_season
+            if idx_episode is not None:
+                episode = idx_episode
+
             new_season_numbers.append(season)
+            new_episode_numbers.append(episode)
 
         return new_episode_numbers, new_season_numbers, new_absolute_numbers
 
