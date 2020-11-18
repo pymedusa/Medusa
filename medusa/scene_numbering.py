@@ -33,8 +33,8 @@ from medusa import db, logger
 from medusa.helper.common import episode_num
 from medusa.helper.exceptions import ex
 from medusa.indexers.api import indexerApi
-from medusa.scene_exceptions import safe_session
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.scene_exceptions import safe_session
 
 from six import viewitems
 

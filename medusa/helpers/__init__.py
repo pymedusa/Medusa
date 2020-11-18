@@ -42,7 +42,7 @@ import guessit
 
 from medusa import app, db
 from medusa.common import DOWNLOADED, USER_AGENT
-from medusa.helper.common import (episode_num, http_code_description, media_extensions,
+from medusa.helper.common import (http_code_description, media_extensions,
                                   pretty_file_size, subtitle_extensions)
 from medusa.helpers.utils import generate
 from medusa.imdb import Imdb
