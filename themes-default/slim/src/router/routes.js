@@ -368,8 +368,10 @@ const manageRoutes = [
         meta: {
             title: 'Manage Searches',
             header: 'Manage Searches',
-            topMenu: 'manage'
-        }
+            topMenu: 'manage',
+            converted: true
+        },
+        component: () => import('../components/manage-searches.vue')
     },
     {
         path: '/manage/massEdit',

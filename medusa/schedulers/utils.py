@@ -13,11 +13,13 @@ all_schedulers = [
     ('versionCheck', 'Version Check', 'version_check_scheduler'),
     ('showQueue', 'Show Queue', 'show_queue_scheduler'),
     ('searchQueue', 'Search Queue', 'search_queue_scheduler'),
+    ('forcedSearchQueue', 'Forced Search Queue', 'forced_search_queue_scheduler'),
     ('properFinder', 'Proper Finder', 'proper_finder_scheduler'),
     ('postProcess', 'Post Process', 'post_processor_scheduler'),
     ('subtitlesFinder', 'Subtitles Finder', 'subtitles_finder_scheduler'),
     ('traktChecker', 'Trakt Checker', 'trakt_checker_scheduler'),
     ('torrentChecker', 'Torrent Checker', 'torrent_checker_scheduler'),
+    ('snatchQueue', 'Snatch Queue', 'manual_snatch_scheduler'),
 ]
 
 
@@ -36,6 +38,12 @@ def _is_active(key, scheduler):
         return bool(scheduler.action.amActive)
     except AttributeError:
         return None
+
+
+def _queue_length(key, scheduler):
+    if key in ('searchQueue', 'forcedSearchQueue', 'snatchQueue'):
+        return scheduler.action.queue_length()
+    return 0
 
 
 def _scheduler_to_json(key, name, scheduler):
@@ -57,7 +65,8 @@ def _scheduler_to_json(key, name, scheduler):
         'cycleTime': timedelta_in_milliseconds(scheduler.cycleTime) or None,
         'nextRun': timedelta_in_milliseconds(scheduler.timeLeft()) if scheduler.enable else None,
         'lastRun': scheduler.lastRun.isoformat(),
-        'isSilent': bool(scheduler.silent)
+        'isSilent': bool(scheduler.silent),
+        'queueLength': _queue_length(key, scheduler),
     }
 
 

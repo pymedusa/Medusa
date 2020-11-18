@@ -1,0 +1,239 @@
+<template>
+<div class="align-left">
+    <div v-if="schedulerStatus" class="row">
+        <div class="col-lg-12">
+            <h3>Backlog Search:</h3>
+            <h5>Note: Limited by backlog days setting: last {{ search.general.backlogDays }} days</h5>
+            <button class="btn-medusa" @click="goTo('forceBacklog')">
+                <i class="icon-exclamation-sign"></i> Force
+            </button>
+            <button class="btn-medusa" @click="toggleBacklog">
+                <template v-if="schedulerStatus.backlogPaused"><i class="icon-play"></i> Unpause</template>
+                <template v-else><i class="icon-paused"></i> Pause</template>
+            </button>
+            <template v-if="!schedulerStatus.backlogRunning">Not in progress</template>
+            <template v-else>{{ schedulerStatus.backlogPaused ? 'Paused: ' : '' }}Currently running</template>                
+        </div>
+    </div>
+
+    <div v-if="schedulerStatus" class="row">
+        <div class="col-lg-12">
+            <h3>Daily Search:</h3>
+            <button class="btn-medusa" @click="goTo('forceSearch')">
+                <i class="icon-exclamation-sign"></i> Force
+            </button>
+            {{ schedulerStatus.dailySearchStatus ? 'In Progress' : 'Not in progress' }}    
+        </div>
+    </div>
+
+    <div v-if="schedulerStatus" class="row">
+        <div class="col-lg-12">
+            <h3>Propers Search:</h3>
+            <button class="btn-medusa" :disabled="!search.general.downloadPropers" @click="goTo('forceFindPropers')">
+                <i class="icon-exclamation-sign"></i> Force
+            </button>
+            <template v-if="!search.general.downloadPropers">Propers search disabled</template>
+            <template v-else>{{ schedulerStatus.findPropersStatus ? 'In Progress' : 'Not in progress' }}</template>        
+        </div>
+    </div>
+
+    <div v-if="schedulerStatus" class="row">
+        <div class="col-lg-12">
+                <h3>Subtitle Search:</h3>
+                <button class="btn-medusa" :disabled="!general.subtitles.enabled" @click="goTo('forceSubtitlesFinder')">
+                    <i class="icon-exclamation-sign"></i> Force
+                </button>
+                <template v-if="!general.subtitles.enabled">Subtitle search disabled</template>
+                <template v-else>{{ schedulerStatus.subtitlesFinderStatus ? 'In Progress' : 'Not in progress' }}</template>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <h3>Scene Exceptions:</h3>
+            <button class="btn-medusa" :disabled="sceneRefresh.inProgress" @click="forceSceneExceptionRefresh">
+                <i class="icon-exclamation-sign"></i> Force
+            </button>
+            <span v-show="sceneRefresh.message">
+                <img v-show="sceneRefresh.showSpinner" :src="spinnerSrc" height="16" width="16" />
+                {{ sceneRefresh.message }}
+            </span>
+            <ul class="simpleList" v-if="!sceneRefresh.inProgress && sceneExceptions.every(item => item.lastRefresh)">
+                <li v-for="item in sceneExceptions" :key="item.id">
+                    <app-link v-if="item.url" :href="item.url">Last updated {{ item.name }} exceptions</app-link>
+                    <template v-else>Last updated {{ item.name }} exceptions</template>
+                    {{ item.lastRefresh }}
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div v-if="schedulerStatus" class="row">
+        <div class="col-lg-12">
+            <h3>Search Queue:</h3>
+            <ul class="simpleList">
+                <li>Backlog: <i>{{ schedulerStatus.searchQueueLength.backlog }} pending items</i></li>
+                <li>Daily: <i>{{ schedulerStatus.searchQueueLength.daily }} pending items</i></li>
+                <li>Forced: <i>{{ schedulerStatus.forcedSearchQueueLength.backlog_search }} pending items</i></li>
+                <li>Manual: <i>{{ schedulerStatus.forcedSearchQueueLength.manual_search }} pending items</i></li>
+                <li>Failed: <i>{{ schedulerStatus.forcedSearchQueueLength.failed }} pending items</i></li>
+            </ul>
+        </div>
+    </div>
+</div>
+</template>
+
+<script>
+import { mapActions, mapGetters, mapState } from 'vuex';
+
+export default {
+    name: 'manage-searches',
+    data() {
+        return {
+            // Python conversions
+            // backlogPaused: ${json.dumps(backlogPaused)},
+            // backlogRunning: ${json.dumps(backlogRunning)},
+            // dailySearchStatus: ${json.dumps(dailySearchStatus)},
+            // findPropersStatus: ${json.dumps(findPropersStatus)},
+            // searchQueueLength: ${json.dumps(searchQueueLength)},
+            // forcedSearchQueueLength: ${json.dumps(forcedSearchQueueLength)},
+            // subtitlesFinderStatus: ${json.dumps(subtitlesFinderStatus)},
+
+            // backlogDays: ${json.dumps(app.BACKLOG_DAYS)},
+            // downloadPropers: ${json.dumps(app.DOWNLOAD_PROPERS)},
+
+            // JS only
+            sceneExceptions: [{
+                id: 'local',
+                name: "Medusa's",
+                url: 'https://github.com/pymedusa/Medusa/wiki/Scene-exceptions-and-numbering',
+                lastRefresh: ''
+            }, {
+                id: 'xem',
+                name: 'XEM',
+                url: 'http://thexem.de',
+                lastRefresh: ''
+            }, {
+                id: 'anidb',
+                name: 'AniDB',
+                url: '',
+                lastRefresh: ''
+            }],
+            sceneRefresh: {
+                inProgress: true,
+                showSpinner: false,
+                message: ''
+            }
+        };
+    },
+    computed: {
+        // @TODO: Replace with mapState
+        ...mapState({
+            general: state => state.config.general,
+            system: state => state.config.system,
+            search: state => state.config.search
+        }),
+        spinnerSrc() {
+            const { general } = this;
+            const { themeName } = general;
+            const themeSpinner = themeName === 'dark' ? '-dark' : '';
+            return 'images/loading32' + themeSpinner + '.gif';
+        },
+        schedulerStatus() {
+            const { system } = this;
+            const { schedulers } = system;
+
+            if (schedulers.length === 0) {
+                return;
+            }
+            
+            const backlog = schedulers.find(scheduler => scheduler.key === 'backlog');
+            const daily = schedulers.find(scheduler => scheduler.key === 'dailySearch');
+            const proper = schedulers.find(scheduler => scheduler.key === 'properFinder');
+            const postprocess = schedulers.find(scheduler => scheduler.key === 'postProcess');
+            const search = schedulers.find(scheduler => scheduler.key === 'searchQueue');
+            const forcedSearch = schedulers.find(scheduler => scheduler.key === 'forcedSearchQueue');
+            const subtitles = schedulers.find(scheduler => scheduler.key === 'subtitlesFinder');
+            
+            return {
+                backlogPaused: backlog.isEnabled === 'Paused',
+                backlogRunning: backlog.isActive,
+                dailySearchStatus: daily.isActive,
+                searchQueueLength: search.queueLength,
+                forcedSearchQueueLength: forcedSearch.queueLength,
+                subtitlesFinderStatus: subtitles.isActive
+            }
+        }
+    },
+    methods: {
+        /**
+         * Trigger the force refresh of all the exception types.
+         */
+        forceSceneExceptionRefresh() {
+            const { updateExceptionData, sceneRefresh } = this;
+            // Start a spinner.
+            sceneRefresh.showSpinner = true;
+            sceneRefresh.inProgress = true;
+            sceneRefresh.message = 'Retrieving scene exceptions...';
+
+            api.post('alias-source/all/operation', { type: 'REFRESH' }, {
+                timeout: 60000
+            }).then(() => {
+                api.get('alias-source').then(response => {
+                    updateExceptionData(response.data);
+                }).catch(error => {
+                    console.error('Trying to get scene exceptions failed with error: ' + error);
+                    sceneRefresh.showSpinner = false;
+                    sceneRefresh.inProgress = false;
+                    sceneRefresh.message = 'Trying to get scene exceptions failed with error: ' + error;
+                });
+
+                sceneRefresh.message = 'Finished updating scene exceptions.';
+            }).catch(error => {
+                console.error('Trying to update scene exceptions failed with error: ' + error);
+                sceneRefresh.message = 'Trying to update scene exceptions failed with error: ' + error;
+                sceneRefresh.inProgress = false;
+            }).finally(() => {
+                sceneRefresh.showSpinner = false;
+            });
+        },
+        /**
+         * Get total number current scene exceptions per source. Will request medusa, xem and anidb name exceptions.
+         * @param {Object[]} exceptions - A list of exception types with their last updates.
+         * @param {string} exceptions[].id - The name of the scene exception source.
+         * @param {number} exceptions[].lastRefresh - The last update of the scene exception source as a timestamp.
+         */
+        updateExceptionData(exceptions) {
+            const { sceneExceptions, sceneRefresh } = this;
+
+            for (const type of ['local', 'xem', 'anidb']) {
+                const data = exceptions.find(obj => obj.id === type);
+                const exception = sceneExceptions.find(item => item.id === type);
+                exception.lastRefresh = new Date(data.lastRefresh * 1000).toLocaleDateString();
+            }
+
+            sceneRefresh.inProgress = false;
+        },
+        goTo(url) {
+            const base = document.querySelector('base').getAttribute('href');
+            window.location.href = base + 'manage/manageSearches/' + url;
+        },
+        toggleBacklog() {
+            const { goTo, schedulerStatus, system } = this;
+            const { schedulers } = system;
+            goTo('pauseBacklog?paused=' + String(Number(!schedulerStatus.backlogPaused)));
+        }
+    },
+    mounted() {
+        // Initially load the exception types last updates on page load.
+        const { updateExceptionData } = this;
+        api.get('alias-source').then(response => {
+            updateExceptionData(response.data);
+        }).catch(error => {
+            console.error('Trying to get scene exceptions failed with error: ' + error);
+        });
+    }
+}
+</script>
+<style scoped>
+</style>

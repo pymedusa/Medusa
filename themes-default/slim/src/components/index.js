@@ -18,6 +18,7 @@ export { default as Home } from './home.vue';
 export { default as IRC } from './irc.vue';
 export { default as Login } from './login.vue';
 export { default as Logs } from './logs.vue';
+export { default as manageSearches } from './manage-searches.vue';
 export { default as ManualPostProcess } from './manual-post-process.vue';
 export { default as NewShow } from './new-show.vue';
 export { default as NewShowsExisting } from './new-shows-existing.vue';
