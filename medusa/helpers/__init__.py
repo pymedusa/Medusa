@@ -741,37 +741,6 @@ def fix_set_group_id(child_path):
                 {'path': child_path, 'gid': parent_gid})
 
 
-def get_absolute_number_from_season_and_episode(series_obj, season, episode):
-    """Find the absolute number for a show episode.
-
-    :param show: Show object
-    :param season: Season number
-    :param episode: Episode number
-    :return: The absolute number
-    """
-    absolute_number = None
-
-    if season and episode:
-        main_db_con = db.DBConnection()
-        sql = 'SELECT * FROM tv_episodes WHERE indexer = ? AND showid = ? AND season = ? AND episode = ?'
-        sql_results = main_db_con.select(sql, [series_obj.indexer, series_obj.series_id, season, episode])
-
-        if len(sql_results) == 1:
-            absolute_number = int(sql_results[0]['absolute_number'])
-            log.debug(
-                u'Found absolute number {absolute} for show {show} {ep}', {
-                    'absolute': absolute_number,
-                    'show': series_obj.name,
-                    'ep': episode_num(season, episode),
-                }
-            )
-        else:
-            log.debug(u'No entries for absolute number for show {show} {ep}',
-                      {'show': series_obj.name, 'ep': episode_num(season, episode)})
-
-    return absolute_number
-
-
 def get_all_episodes_from_absolute_number(show, absolute_numbers, indexer_id=None, indexer=None):
     episodes = []
     season = None

@@ -24,44 +24,23 @@
 from __future__ import unicode_literals
 
 import datetime
+import logging
 import time
 import traceback
 from builtins import str
 
 from medusa import db, logger
+from medusa.helper.common import episode_num
 from medusa.helper.exceptions import ex
-from medusa.helpers import get_absolute_number_from_season_and_episode
 from medusa.indexers.api import indexerApi
 from medusa.scene_exceptions import safe_session
+from medusa.logger.adapters.style import BraceAdapter
 
 from six import viewitems
 
 
-def get_scene_numbering(series_obj, season, episode, fallback_to_xem=True):
-    """
-    Returns a tuple, (season, episode), with the scene numbering (if there is one),
-    otherwise returns the xem numbering (if fallback_to_xem is set), otherwise
-    returns the TVDB numbering.
-    (so the return values will always be set)
-
-    :param series_obj: Series object.
-    :param season: int
-    :param episode: int
-    :param fallback_to_xem: bool If set (the default), check xem for matches if there is no local scene numbering
-    :return: (int, int) a tuple with (season, episode)
-    """
-    if series_obj is None or season is None or episode is None:
-        return season, episode
-
-    result = find_scene_numbering(series_obj, season, episode)
-    if result:
-        return result
-    else:
-        if fallback_to_xem:
-            xem_result = find_xem_numbering(series_obj, season, episode)
-            if xem_result:
-                return xem_result
-        return season, episode
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 def find_scene_numbering(series_obj, season, episode):
@@ -126,59 +105,7 @@ def find_scene_absolute_numbering(series_obj, absolute_number):
         return int(rows[0]['scene_absolute_number'])
 
 
-def get_indexer_numbering(series_obj, scene_season, scene_episode, fallback_to_xem=True):
-    """
-    Returns a tuple, (season, episode) with the TVDB numbering for (scene_season, scene_episode)
-
-    (this works like the reverse of get_scene_numbering)
-    """
-    if series_obj is None or scene_season is None or scene_episode is None:
-        return scene_season, scene_episode
-
-    main_db_con = db.DBConnection()
-    rows = main_db_con.select(
-        'SELECT season, episode FROM scene_numbering '
-        'WHERE indexer = ? AND indexer_id = ? AND scene_season = ? AND scene_episode = ?',
-        [series_obj.indexer, series_obj.series_id, scene_season, scene_episode]
-    )
-
-    if rows:
-        return int(rows[0]['season']), int(rows[0]['episode'])
-    else:
-        if fallback_to_xem:
-            return get_indexer_numbering_for_xem(series_obj, scene_season, scene_episode)
-        return scene_season, scene_episode
-
-
-def get_indexer_absolute_numbering(series_obj, scene_episode, fallback_to_xem=True, scene_season=None):
-    """
-    Returns a tuple, (season, episode, absolute_number) with the TVDB absolute numbering for (scene_episode)
-    (this works like the reverse of get_absolute_numbering)
-    """
-    if scene_season is not None:
-        # Get the real absolute number
-        real_episode = get_absolute_number_from_season_and_episode(
-            series_obj, scene_season, scene_episode
-        )
-        scene_episode = real_episode or scene_episode
-
-    main_db_con = db.DBConnection()
-    rows = main_db_con.select(
-        'SELECT absolute_number FROM scene_numbering '
-        'WHERE indexer = ? and indexer_id = ? and scene_absolute_number = ?',
-        [series_obj.indexer, series_obj.series_id, scene_episode])
-
-    if rows:
-        return int(rows[0]['absolute_number'])
-
-    if fallback_to_xem:
-        a = get_indexer_absolute_numbering_for_xem(series_obj, scene_episode)
-        return a or scene_episode
-
-    return scene_episode
-
-
-def set_scene_numbering(series_obj, season=None, episode=None,  # pylint:disable=too-many-arguments
+def set_scene_numbering(series_obj, season=None, episode=None,
                         absolute_number=None, scene_season=None,
                         scene_episode=None, scene_absolute=None):
     """
@@ -269,49 +196,212 @@ def find_xem_absolute_numbering(series_obj, absolute_number):
         return int(rows[0]['scene_absolute_number'])
 
 
-def get_indexer_numbering_for_xem(series_obj, scene_season, scene_episode):
-    """
-    Reverse of find_xem_numbering: lookup a tvdb season and episode using scene numbering
-
-    :param indexer_id: int
-    :param scene_season: int
-    :param scene_episode: int
-    :return: (int, int) a tuple of (season, episode)
-    """
-    if series_obj is None or scene_season is None or scene_episode is None:
-        return scene_season, scene_episode
-
+def get_scene_numbering(series_obj, episode, season=None):
     xem_refresh(series_obj)
+    main_db_con = db.DBConnection()
+
+    if season is None:
+        rows = main_db_con.select(
+            'SELECT season, episode FROM tv_episodes '
+            'WHERE indexer = ? AND showid = ? AND scene_absolute_number = ?',
+            [series_obj.indexer, series_obj.series_id, episode]
+        )
+    else:
+        rows = main_db_con.select(
+            'SELECT season, episode FROM tv_episodes '
+            'WHERE indexer = ? AND showid = ? '
+            'AND scene_season = ? AND scene_episode = ?',
+            [series_obj.indexer, series_obj.series_id, season, episode]
+        )
+
+    if not rows:
+        return (None, None)
+
+    (new_sea, new_ep) = int(rows[0]['season']), int(rows[0]['episode'])
+    log.debug('Found numbering {new} from scene for show {show} {ep}', {
+        'new': episode_num(new_sea, new_ep),
+        'show': series_obj.name,
+        'old': episode_num(season, episode)
+    })
+    return new_sea, new_ep
+
+
+def get_scene_abs_number(series_obj, episode, season=None):
+    xem_refresh(series_obj)
+    main_db_con = db.DBConnection()
+
+    if season is None:
+        rows = main_db_con.select(
+            'SELECT absolute_number FROM tv_episodes '
+            'WHERE indexer = ? AND showid = ? AND scene_absolute_number = ?',
+            [series_obj.indexer, series_obj.series_id, episode]
+        )
+    else:
+        rows = main_db_con.select(
+            'SELECT absolute_number FROM tv_episodes '
+            'WHERE indexer = ? AND showid = ? '
+            'AND scene_season = ? AND scene_episode = ?',
+            [series_obj.indexer, series_obj.series_id, season, episode]
+        )
+
+    if rows:
+        absolute_number = int(rows[0]['absolute_number'])
+        log.debug('Found absolute number {absolute} from scene for show {show} {ep}', {
+            'absolute': absolute_number,
+            'show': series_obj.name,
+            'ep': episode_num(season, episode),
+        })
+        return absolute_number
+
+
+def get_custom_numbering(series_obj, episode, season=None):
+    main_db_con = db.DBConnection()
+
+    if season is None:
+        rows = main_db_con.select(
+            'SELECT season, episode FROM scene_numbering '
+            'WHERE indexer = ? AND indexer_id = ? AND scene_absolute_number = ?',
+            [series_obj.indexer, series_obj.series_id, episode]
+        )
+    else:
+        rows = main_db_con.select(
+            'SELECT season, episode FROM scene_numbering '
+            'WHERE indexer = ? AND indexer_id = ? '
+            'AND scene_season = ? AND scene_episode = ?',
+            [series_obj.indexer, series_obj.series_id, season, episode]
+        )
+
+    if not rows:
+        return (None, None)
+
+    (new_sea, new_ep) = int(rows[0]['season']), int(rows[0]['episode'])
+    log.debug('Found numbering {new} from scene for show {show} {ep}', {
+        'new': episode_num(new_sea, new_ep),
+        'show': series_obj.name,
+        'old': episode_num(season, episode)
+    })
+    return new_sea, new_ep
+
+
+def get_custom_abs_number(series_obj, episode, season=None):
+    main_db_con = db.DBConnection()
+
+    if season is None:
+        rows = main_db_con.select(
+            'SELECT absolute_number FROM scene_numbering '
+            'WHERE indexer = ? AND indexer_id = ? AND scene_absolute_number = ?',
+            [series_obj.indexer, series_obj.series_id, episode]
+        )
+    else:
+        rows = main_db_con.select(
+            'SELECT absolute_number FROM scene_numbering '
+            'WHERE indexer = ? AND indexer_id = ? '
+            'AND scene_season = ? AND scene_episode = ?',
+            [series_obj.indexer, series_obj.series_id, season, episode]
+        )
+
+    if rows:
+        absolute_number = int(rows[0]['absolute_number'])
+        log.debug('Found absolute number {absolute} from custom for show {show} {ep}', {
+            'absolute': absolute_number,
+            'show': series_obj.name,
+            'ep': episode_num(season, episode),
+        })
+        return absolute_number
+
+
+def get_indexer_numbering(series_obj, episode, season=None):
+    """Find the numbering for a show episode and season.
+
+    :param series_obj: Show object
+    :param season: Season number
+    :param episode: Episode number
+    :return: The absolute number or None
+    """
+    numbering = get_custom_numbering(series_obj, episode, season)
+    if numbering:
+        return numbering
+
+    if series_obj.is_scene:
+        numbering = get_scene_numbering(series_obj, episode, season)
+        if numbering:
+            return numbering
+
+    if season is not None:
+        log.debug('Found numbering {new} from parser for show {show} {ep}', {
+            'new': episode_num(season, episode),
+            'show': series_obj.name,
+            'old': episode_num(season, episode)
+        })
+        return season, episode
 
     main_db_con = db.DBConnection()
     rows = main_db_con.select(
-        'SELECT season, episode '
-        'FROM tv_episodes '
+        'SELECT season, episode FROM tv_episodes '
         'WHERE indexer = ? AND showid = ? '
-        'AND scene_season = ? AND scene_episode = ?',
-        [series_obj.indexer, series_obj.series_id, scene_season, scene_episode]
+        'AND absolute_number = ?',
+        [series_obj.indexer, series_obj.series_id, episode]
+    )
+
+    if not rows:
+        log.debug('No entries for numbering for show {show} {ep}',
+                  {'show': series_obj.name, 'ep': episode_num(season, episode)})
+        return (None, None)
+
+    (new_sea, new_ep) = int(rows[0]['season']), int(rows[0]['episode'])
+    log.debug('Found numbering {new} from indexer for show {show} {ep}', {
+        'new': episode_num(new_sea, new_ep),
+        'show': series_obj.name,
+        'old': episode_num(season, episode)
+    })
+    return new_sea, new_ep
+
+
+def get_indexer_abs_numbering(series_obj, episode, season=None):
+    """Find the absolute numbering for a show episode and season.
+
+    :param series_obj: Show object
+    :param season: Season number
+    :param episode: Episode number
+    :return: The absolute number or None
+    """
+    abs_number = get_custom_abs_number(series_obj, episode, season)
+    if abs_number:
+        return abs_number
+
+    if series_obj.is_scene:
+        abs_number = get_scene_abs_number(series_obj, episode, season)
+        if abs_number:
+            return abs_number
+
+    if season is None:
+        abs_number = episode
+        log.debug('Found absolute number {absolute} from parser for show {show} {ep}', {
+            'absolute': abs_number,
+            'show': series_obj.name,
+            'ep': episode_num(season, episode),
+        })
+        return abs_number
+
+    main_db_con = db.DBConnection()
+    rows = main_db_con.select(
+        'SELECT absolute_number FROM tv_episodes '
+        'WHERE indexer = ? AND showid = ? '
+        'AND season = ? AND episode = ?',
+        [series_obj.indexer, series_obj.series_id, season, episode]
     )
 
     if rows:
-        return int(rows[0]['season']), int(rows[0]['episode'])
+        abs_number = int(rows[0]['absolute_number'])
+        log.debug('Found absolute number {absolute} from indexer for show {show} {ep}', {
+            'absolute': abs_number,
+            'show': series_obj.name,
+            'ep': episode_num(season, episode),
+        })
+        return abs_number
 
-    return scene_season, scene_episode
-
-
-def get_indexer_absolute_numbering_for_xem(series_obj, scene_episode):
-    """Reverse of find_xem_numbering: lookup a tvdb season and episode using scene numbering."""
-    xem_refresh(series_obj)
-
-    main_db_con = db.DBConnection()
-    rows = main_db_con.select(
-        'SELECT absolute_number '
-        'FROM tv_episodes '
-        'WHERE indexer = ? AND showid = ? '
-        'AND scene_absolute_number = ?',
-        [series_obj.indexer, series_obj.series_id, scene_episode])
-
-    if rows:
-        return int(rows[0]['absolute_number'])
+    log.debug('No entries for absolute number for show {show} {ep}',
+              {'show': series_obj.name, 'ep': episode_num(season, episode)})
 
 
 def get_scene_numbering_for_show(series_obj):

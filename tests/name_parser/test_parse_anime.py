@@ -122,7 +122,7 @@ import pytest
         'mocks': [
             ('medusa.scene_exceptions.get_season_from_name', None),
             ('medusa.scene_numbering.get_indexer_numbering', (2, 13)),
-            ('medusa.helpers.get_absolute_number_from_season_and_episode', 26),
+            ('medusa.helpers.get_indexer_abs_numbering', 26),
         ],
         'series_info': {
             'name': u"Ajin",
@@ -138,7 +138,7 @@ import pytest
         'mocks': [
             ('medusa.scene_exceptions.get_season_from_name', None),
             ('medusa.scene_numbering.get_indexer_numbering', (2, 13)),
-            ('medusa.helpers.get_absolute_number_from_season_and_episode', 26),
+            ('medusa.helpers.get_indexer_abs_numbering', 26),
         ],
         'series_info': {
             'name': u"Ajin",
@@ -202,7 +202,7 @@ import pytest
         'mocks': [
             ('medusa.scene_exceptions.get_season_from_name', 2),
             ('medusa.scene_numbering.get_indexer_numbering', (2, 12)),
-            ('medusa.helpers.get_absolute_number_from_season_and_episode', 38),
+            ('medusa.helpers.get_indexer_abs_numbering', 38),
         ],
         'series_info': {
             'name': u"JoJo's Bizarre Adventure",
@@ -218,7 +218,7 @@ import pytest
         'mocks': [
             ('medusa.scene_exceptions.get_season_from_name', None),
             ('medusa.scene_numbering.get_indexer_numbering', (3, 13)),
-            ('medusa.helpers.get_absolute_number_from_season_and_episode', 43),
+            ('medusa.helpers.get_indexer_abs_numbering', 43),
         ],
         'series_info': {
             'name': u"One Piece",
