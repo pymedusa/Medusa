@@ -218,7 +218,7 @@ def get_scene_numbering(series_obj, episode, season=None):
         return None, None
 
     (new_sea, new_ep) = int(rows[0]['season']), int(rows[0]['episode'])
-    log.debug('Found numbering {new} from scene for show {show} {ep}', {
+    log.debug('Found numbering {new} from scene for show {show} {old}', {
         'new': episode_num(new_sea, new_ep),
         'show': series_obj.name,
         'old': episode_num(season, episode)
@@ -275,7 +275,7 @@ def get_custom_numbering(series_obj, episode, season=None):
         return None, None
 
     (new_sea, new_ep) = int(rows[0]['season']), int(rows[0]['episode'])
-    log.debug('Found numbering {new} from scene for show {show} {ep}', {
+    log.debug('Found numbering {new} from scene for show {show} {old}', {
         'new': episode_num(new_sea, new_ep),
         'show': series_obj.name,
         'old': episode_num(season, episode)
@@ -319,16 +319,16 @@ def get_indexer_numbering(series_obj, episode, season=None):
     :return: Tuple, (season, episode) or (None, None)
     """
     numbering = get_custom_numbering(series_obj, episode, season)
-    if numbering:
+    if all(numbering):
         return numbering
 
     if series_obj.is_scene:
         numbering = get_scene_numbering(series_obj, episode, season)
-        if numbering:
+        if all(numbering):
             return numbering
 
     if season is not None:
-        log.debug('Found numbering {new} from parser for show {show} {ep}', {
+        log.debug('Found numbering {new} from parser for show {show} {old}', {
             'new': episode_num(season, episode),
             'show': series_obj.name,
             'old': episode_num(season, episode)
@@ -349,7 +349,7 @@ def get_indexer_numbering(series_obj, episode, season=None):
         return None, None
 
     (new_sea, new_ep) = int(rows[0]['season']), int(rows[0]['episode'])
-    log.debug('Found numbering {new} from indexer for show {show} {ep}', {
+    log.debug('Found numbering {new} from indexer for show {show} {old}', {
         'new': episode_num(new_sea, new_ep),
         'show': series_obj.name,
         'old': episode_num(season, episode)

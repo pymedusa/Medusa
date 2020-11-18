@@ -1760,16 +1760,10 @@ class Home(WebRoot):
 
         if series_obj.is_anime:
             sn = get_scene_absolute_numbering(series_obj, forAbsolute)
-            if sn:
-                result['sceneAbsolute'] = sn
-            else:
-                result['sceneAbsolute'] = None
+            result['sceneAbsolute'] = sn
         else:
-            sn = get_scene_numbering(series_obj, forSeason, forEpisode)
-            if sn:
-                (result['sceneSeason'], result['sceneEpisode']) = sn
-            else:
-                (result['sceneSeason'], result['sceneEpisode']) = (None, None)
+            sn = get_scene_numbering(series_obj, forEpisode, forSeason)
+            (result['sceneSeason'], result['sceneEpisode']) = sn
 
         return json.dumps(result)
 

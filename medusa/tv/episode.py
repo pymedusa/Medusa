@@ -679,8 +679,7 @@ class Episode(TV):
 
             if self.scene_season == 0 or self.scene_episode == 0:
                 self.scene_season, self.scene_episode = get_scene_numbering(
-                    self.series,
-                    self.season, self.episode
+                    self.series, self.episode, self.season
                 )
 
             if sql_results[0]['release_name'] is not None:
@@ -833,8 +832,7 @@ class Episode(TV):
         )
 
         self.scene_season, self.scene_episode = get_scene_numbering(
-            self.series,
-            self.season, self.episode
+            self.series, self.episode, self.season
         )
 
         self.description = getattr(my_ep, 'overview', '')
@@ -1027,9 +1025,7 @@ class Episode(TV):
                     )
 
                     self.scene_season, self.scene_episode = get_scene_numbering(
-                        self.series.series_id,
-                        self.series.indexer,
-                        self.season, self.episode
+                        self.series, self.episode, self.season
                     )
 
                     self.description = ep_details.findtext('plot')

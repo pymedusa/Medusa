@@ -150,8 +150,8 @@ class NameParser(object):
 
             (idx_season, idx_episode) = scene_numbering.get_indexer_numbering(
                 result.series,
-                season_number,
                 episode_number,
+                season_number
             )
 
             if idx_season is not None:
@@ -248,8 +248,8 @@ class NameParser(object):
 
                 (idx_season, idx_episode) = scene_numbering.get_indexer_numbering(
                     result.series,
-                    result.season_number,
-                    episode_number
+                    episode_number,
+                    result.season_number
                 )
 
                 if idx_season is not None:
@@ -287,8 +287,8 @@ class NameParser(object):
 
             (idx_season, idx_episode) = scene_numbering.get_indexer_numbering(
                 result.series,
-                ex_season,
-                episode_number
+                episode_number,
+                ex_season
             )
 
             if idx_season is not None:
