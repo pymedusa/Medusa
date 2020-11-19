@@ -76,7 +76,6 @@ from medusa.sbdatetime import sbdatetime
 from medusa.scene_numbering import (
     get_scene_absolute_numbering,
     get_scene_numbering,
-    xem_refresh,
 )
 from medusa.tv.base import Identifier, TV
 
