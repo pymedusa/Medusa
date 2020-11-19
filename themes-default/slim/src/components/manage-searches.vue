@@ -33,7 +33,7 @@
                 <i class="icon-exclamation-sign"></i> Force
             </button>
             <template v-if="!search.general.downloadPropers">Propers search disabled</template>
-            <template v-else>{{ schedulerStatus.findPropersStatus ? 'In Progress' : 'Not in progress' }}</template>        
+            <template v-else>{{ schedulerStatus.properSearchStatus ? 'In Progress' : 'Not in progress' }}</template>        
         </div>
     </div>
 
@@ -163,7 +163,8 @@ export default {
                 dailySearchStatus: daily.isActive,
                 searchQueueLength: search.queueLength,
                 forcedSearchQueueLength: forcedSearch.queueLength,
-                subtitlesFinderStatus: subtitles.isActive
+                subtitlesFinderStatus: subtitles.isActive,
+                properSearchStatus: proper.isActive 
             }
         }
     },

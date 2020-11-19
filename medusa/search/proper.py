@@ -41,8 +41,6 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             log.warning("Manual search is running. Can't start Find propers")
             return
 
-        self.amActive = True
-
         # queue a forced search
         app.search_queue_scheduler.action.add_item(
             ProperSearchQueueItem(
@@ -51,6 +49,3 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 ignore_processed_propers=self.ignore_processed_propers
             )
         )
-
-        self.amActive = False
-
