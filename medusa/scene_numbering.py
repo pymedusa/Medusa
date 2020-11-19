@@ -319,12 +319,12 @@ def get_indexer_numbering(series_obj, episode, season=None):
     :return: Tuple, (season, episode) or (None, None)
     """
     numbering = get_custom_numbering(series_obj, episode, season)
-    if all(numbering):
+    if all(number is not None for number in numbering):
         return numbering
 
     if series_obj.is_scene:
         numbering = get_scene_numbering(series_obj, episode, season)
-        if all(numbering):
+        if all(number is not None for number in numbering):
             return numbering
 
     if season is not None:
@@ -366,12 +366,12 @@ def get_indexer_abs_numbering(series_obj, episode, season=None):
     :return: The absolute number or None
     """
     abs_number = get_custom_abs_number(series_obj, episode, season)
-    if abs_number:
+    if abs_number is not None:
         return abs_number
 
     if series_obj.is_scene:
         abs_number = get_scene_abs_number(series_obj, episode, season)
-        if abs_number:
+        if abs_number is not None:
             return abs_number
 
     if season is None:
