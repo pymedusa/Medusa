@@ -664,9 +664,6 @@ class Episode(TV):
             self.indexerid = int(sql_results[0]['indexerid'])
             self.indexer = int(sql_results[0]['indexer'])
 
-            # FIXME: This shouldn't be part of a possible apiv2 episodes request
-            xem_refresh(self.series)
-
             self.scene_season = try_int(sql_results[0]['scene_season'], 0)
             self.scene_episode = try_int(sql_results[0]['scene_episode'], 0)
             self.scene_absolute_number = try_int(sql_results[0]['scene_absolute_number'], 0)
@@ -823,8 +820,6 @@ class Episode(TV):
         self.name = getattr(my_ep, 'episodename', '')
         self.season = season
         self.episode = episode
-
-        xem_refresh(self.series)
 
         self.scene_absolute_number = get_scene_absolute_numbering(
             self.series,

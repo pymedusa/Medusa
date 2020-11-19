@@ -1044,10 +1044,9 @@ class Home(WebRoot):
         if do_update_scene_numbering or do_erase_parsed_cache:
             try:
                 xem_refresh(series_obj)
-                time.sleep(cpu_presets[app.CPU_PRESET])
             except CantUpdateShowException as error:
                 errors += 1
-                logger.log("Unable to force an update on scene numbering for show '{show}': {error!r}".format
+                logger.log("Unable to update scene numbering for show '{show}': {error!r}".format
                            (show=series_obj.name, error=error), logger.WARNING)
 
             # Must erase cached DB results when toggling scene numbering
