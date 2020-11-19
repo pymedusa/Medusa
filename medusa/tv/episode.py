@@ -76,7 +76,6 @@ from medusa.sbdatetime import sbdatetime
 from medusa.scene_numbering import (
     get_scene_absolute_numbering,
     get_scene_numbering,
-    xem_refresh,
 )
 from medusa.tv.base import Identifier, TV
 
@@ -664,9 +663,6 @@ class Episode(TV):
             self.indexerid = int(sql_results[0]['indexerid'])
             self.indexer = int(sql_results[0]['indexer'])
 
-            # FIXME: This shouldn't be part of a possible apiv2 episodes request
-            xem_refresh(self.series)
-
             self.scene_season = try_int(sql_results[0]['scene_season'], 0)
             self.scene_episode = try_int(sql_results[0]['scene_episode'], 0)
             self.scene_absolute_number = try_int(sql_results[0]['scene_absolute_number'], 0)
@@ -679,8 +675,7 @@ class Episode(TV):
 
             if self.scene_season == 0 or self.scene_episode == 0:
                 self.scene_season, self.scene_episode = get_scene_numbering(
-                    self.series,
-                    self.season, self.episode
+                    self.series, self.episode, self.season
                 )
 
             if sql_results[0]['release_name'] is not None:
@@ -825,16 +820,13 @@ class Episode(TV):
         self.season = season
         self.episode = episode
 
-        xem_refresh(self.series)
-
         self.scene_absolute_number = get_scene_absolute_numbering(
             self.series,
             self.absolute_number
         )
 
         self.scene_season, self.scene_episode = get_scene_numbering(
-            self.series,
-            self.season, self.episode
+            self.series, self.episode, self.season
         )
 
         self.description = getattr(my_ep, 'overview', '')
@@ -1027,9 +1019,7 @@ class Episode(TV):
                     )
 
                     self.scene_season, self.scene_episode = get_scene_numbering(
-                        self.series.series_id,
-                        self.series.indexer,
-                        self.season, self.episode
+                        self.series, self.episode, self.season
                     )
 
                     self.description = ep_details.findtext('plot')
@@ -1560,9 +1550,9 @@ class Episode(TV):
             '%E': str(self.episode),
             '%0E': '%02d' % self.episode,
             '%XS': str(self.scene_season),
-            '%0XS': '%02d' % self.scene_season,
+            '%0XS': '%02d' % try_int(self.scene_season, self.season),
             '%XE': str(self.scene_episode),
-            '%0XE': '%02d' % self.scene_episode,
+            '%0XE': '%02d' % try_int(self.scene_episode, self.episode),
             '%AB': '%(#)03d' % {'#': self.absolute_number},
             '%XAB': '%(#)03d' % {'#': self.scene_absolute_number},
             '%RN': release_name(self.release_name),

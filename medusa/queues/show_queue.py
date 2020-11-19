@@ -504,7 +504,7 @@ class QueueItemRefresh(ShowQueueItem):
             self.show.populate_cache()
 
             # Load XEM data to DB for show
-            scene_numbering.xem_refresh(self.show)
+            scene_numbering.xem_refresh(self.show, force=True)
         except IndexerException as error:
             log.warning(
                 '{id}: Unable to contact {indexer}. Aborting: {error_msg}',
