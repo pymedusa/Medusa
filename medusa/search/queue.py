@@ -802,6 +802,9 @@ class ProperSearchQueueItem(generic_queue.QueueItem):
 
             log.info('Completed the search for new propers{run_at}', {'run_at': run_at})
 
+            # Push an update to any open Web UIs through the WebSocket
+            ws.Message('QueueItemUpdate', self.to_json).push()
+
         # TODO: Remove the catch all exception.
         except Exception:
             self.success = False

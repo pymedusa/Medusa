@@ -4,7 +4,7 @@
         <div class="col-lg-12">
             <h3>Backlog Search:</h3>
             <h5>Note: Limited by backlog days setting: last {{ search.general.backlogDays }} days</h5>
-            <button class="btn-medusa" @click="goTo('forceBacklog')">
+            <button class="btn-medusa" @click="forceBacklog">
                 <i class="icon-exclamation-sign"></i> Force
             </button>
             <button class="btn-medusa" @click="toggleBacklog">
@@ -19,7 +19,7 @@
     <div v-if="schedulerStatus" class="row">
         <div class="col-lg-12">
             <h3>Daily Search:</h3>
-            <button class="btn-medusa" @click="goTo('forceSearch')">
+            <button class="btn-medusa" @click="forceDaily">
                 <i class="icon-exclamation-sign"></i> Force
             </button>
             {{ schedulerStatus.dailySearchStatus ? 'In Progress' : 'Not in progress' }}    
@@ -29,7 +29,7 @@
     <div v-if="schedulerStatus" class="row">
         <div class="col-lg-12">
             <h3>Propers Search:</h3>
-            <button class="btn-medusa" :disabled="!search.general.downloadPropers" @click="goTo('forceFindPropers')">
+            <button class="btn-medusa" :disabled="!search.general.downloadPropers" @click="forceFindPropers">
                 <i class="icon-exclamation-sign"></i> Force
             </button>
             <template v-if="!search.general.downloadPropers">Propers search disabled</template>
@@ -40,7 +40,7 @@
     <div v-if="schedulerStatus" class="row">
         <div class="col-lg-12">
                 <h3>Subtitle Search:</h3>
-                <button class="btn-medusa" :disabled="!general.subtitles.enabled" @click="goTo('forceSubtitlesFinder')">
+                <button class="btn-medusa" :disabled="!general.subtitles.enabled" @click="forceSubtitlesFinder">
                     <i class="icon-exclamation-sign"></i> Force
                 </button>
                 <template v-if="!general.subtitles.enabled">Subtitle search disabled</template>
@@ -85,6 +85,7 @@
 
 <script>
 import { mapActions, mapGetters, mapState } from 'vuex';
+import { api } from '../api';
 
 export default {
     name: 'manage-searches',
@@ -131,7 +132,8 @@ export default {
         ...mapState({
             general: state => state.config.general,
             system: state => state.config.system,
-            search: state => state.config.search
+            search: state => state.config.search,
+            searchQueueItems: state => state.search.queueitems
         }),
         spinnerSrc() {
             const { general } = this;
@@ -166,6 +168,9 @@ export default {
         }
     },
     methods: {
+        ...mapActions({
+            getConfig: 'getConfig'
+        }),
         /**
          * Trigger the force refresh of all the exception types.
          */
@@ -214,14 +219,21 @@ export default {
 
             sceneRefresh.inProgress = false;
         },
-        goTo(url) {
-            const base = document.querySelector('base').getAttribute('href');
-            window.location.href = base + 'manage/manageSearches/' + url;
+        forceBacklog() {
+            api.put(`search/backlog`);
+        },
+        forceDaily() {
+            api.put(`search/daily`);
+        },
+        forceFindPropers() {
+            api.put(`search/proper`);
+        },
+        forceSubtitlesFinder() {
+            api.put(`search/subtitles`);
         },
         toggleBacklog() {
-            const { goTo, schedulerStatus, system } = this;
-            const { schedulers } = system;
-            goTo('pauseBacklog?paused=' + String(Number(!schedulerStatus.backlogPaused)));
+            const { schedulerStatus, system } = this;
+            api.put(`search/backlog`, { options: { paused: !schedulerStatus.backlogPaused }}) // eslint-disable-line no-undef
         }
     },
     mounted() {
@@ -232,6 +244,12 @@ export default {
         }).catch(error => {
             console.error('Trying to get scene exceptions failed with error: ' + error);
         });
+    },
+    watch: {
+        searchQueueItems() {
+            const { getConfig } = this;
+            getConfig('system');
+        }
     }
 }
 </script>

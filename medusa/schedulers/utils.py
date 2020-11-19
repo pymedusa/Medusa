@@ -34,6 +34,12 @@ def _is_active(key, scheduler):
     if key == 'backlog' and app.search_queue_scheduler.action.is_backlog_in_progress():
         return True
 
+    if key == 'dailySearch' and app.search_queue_scheduler.action.is_dailysearch_in_progress():
+        return True
+
+    if key == 'properFinder' and app.search_queue_scheduler.action.is_proper_search_in_progress():
+        return True
+
     try:
         return bool(scheduler.action.amActive)
     except AttributeError:
