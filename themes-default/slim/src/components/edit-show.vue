@@ -281,6 +281,7 @@ export default {
     },
     computed: {
         ...mapState({
+            general: state => state.config.general,
             indexers: state => state.config.indexers,
             anime: state => state.config.anime,
             layout: state => state.config.layout,
@@ -465,7 +466,7 @@ export default {
             this.show.language = value;
         },
         changeFormat(value, formatOption) {
-            const { anime } = this;
+            const { anime, general } = this;
             this.show.config[formatOption] = value;
             if (value) {
                 // Check each format option, disable the other options.
@@ -477,12 +478,12 @@ export default {
             if (formatOption === 'anime' && anime.autoAnimeToList) {
                 if (value) {
                     // Auto anime to list is enabled. If changing the show format to anime, add 'Anime' to show lists.
-                    this.showLists.push('anime');
+                    this.showLists = anime.showlistDefaultAnime;
                     // The filter makes sure there are unique strings.
                     this.showLists = this.showLists.filter((v, i, a) => a.indexOf(v) === i);
                 } else {
-                    // Auto anime to list is enabled. If changing the show format to anime, add 'Anime' to show lists.
-                    this.showLists = this.showLists.filter(list => list !== 'anime');
+                    // Return to default show lists.
+                    this.showLists = general.showDefaults.showLists;
                 }
             }
         }

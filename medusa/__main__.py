@@ -605,6 +605,7 @@ class Application(object):
             app.INDEXER_TIMEOUT = check_setting_int(app.CFG, 'General', 'indexer_timeout', 20)
             app.ANIME_DEFAULT = bool(check_setting_int(app.CFG, 'General', 'anime_default', 0))
             app.SCENE_DEFAULT = bool(check_setting_int(app.CFG, 'General', 'scene_default', 0))
+            app.SHOWLISTS_DEFAULT = check_setting_list(app.CFG, 'General', 'showlist_default', ['series'])
             app.PROVIDER_ORDER = check_setting_list(app.CFG, 'General', 'provider_order')
             app.NAMING_PATTERN = check_setting_str(app.CFG, 'General', 'naming_pattern', 'Season %0S/%SN - S%0SE%0E - %EN')
             app.NAMING_ABD_PATTERN = check_setting_str(app.CFG, 'General', 'naming_abd_pattern', '%SN - %A.D - %EN')
@@ -972,6 +973,7 @@ class Application(object):
             app.ANIME_SPLIT_HOME = bool(check_setting_int(app.CFG, 'ANIME', 'anime_split_home', 0))
             app.ANIME_SPLIT_HOME_IN_TABS = bool(check_setting_int(app.CFG, 'ANIME', 'anime_split_home_in_tabs', 0))
             app.AUTO_ANIME_TO_LIST = bool(check_setting_int(app.CFG, 'ANIME', 'auto_anime_to_list', 0))
+            app.SHOWLISTS_DEFAULT_ANIME = check_setting_list(app.CFG, 'ANIME', 'showlist_default_anime', [])
 
             app.METADATA_KODI = check_setting_list(app.CFG, 'General', 'metadata_kodi', ['0'] * 10, transform=int)
             app.METADATA_KODI_12PLUS = check_setting_list(app.CFG, 'General', 'metadata_kodi_12plus', ['0'] * 10, transform=int)
@@ -1559,6 +1561,7 @@ class Application(object):
         new_config['General']['tvdb_dvd_order_ep_ignore'] = int(app.TVDB_DVD_ORDER_EP_IGNORE)
         new_config['General']['anime_default'] = int(app.ANIME_DEFAULT)
         new_config['General']['scene_default'] = int(app.SCENE_DEFAULT)
+        new_config['General']['showlist_default'] = list(app.SHOWLISTS_DEFAULT)
         new_config['General']['provider_order'] = app.PROVIDER_ORDER
         new_config['General']['version_notify'] = int(app.VERSION_NOTIFY)
         new_config['General']['auto_update'] = int(app.AUTO_UPDATE)
@@ -2010,6 +2013,7 @@ class Application(object):
         new_config['ANIME']['anime_split_home'] = int(app.ANIME_SPLIT_HOME)
         new_config['ANIME']['anime_split_home_in_tabs'] = int(app.ANIME_SPLIT_HOME_IN_TABS)
         new_config['ANIME']['auto_anime_to_list'] = int(app.AUTO_ANIME_TO_LIST)
+        new_config['ANIME']['showlist_default_anime'] = list(app.SHOWLISTS_DEFAULT_ANIME)
 
         new_config.write()
 

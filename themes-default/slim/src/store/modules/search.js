@@ -20,8 +20,8 @@ const mutations = {
 const getters = {};
 
 const actions = {
-    updateQueueItem(context, queueItem) {
-        // Update local store
+    updateSearchQueueItem(context, queueItem) {
+        // Update store's search queue item. (provided through websocket)
         const { commit } = context;
         return commit(ADD_QUEUE_ITEM, queueItem);
     }
