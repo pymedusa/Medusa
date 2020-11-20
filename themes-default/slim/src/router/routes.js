@@ -92,7 +92,8 @@ const homeRoutes = [
         name: 'shutdown',
         meta: {
             header: 'Shutting down',
-            topMenu: 'system'
+            topMenu: 'system',
+            converted: true
         },
         component: () => import('../components/restart.vue'),
         props: { shutdown: true }
@@ -102,7 +103,8 @@ const homeRoutes = [
         name: 'update',
         meta: {
             header: 'Update Medusa',
-            topMenu: 'system'
+            topMenu: 'system',
+            converted: true
         },
         component: () => import('../components/update.vue')
     }
@@ -129,6 +131,7 @@ const configRoutes = [
             title: 'Config - Anime',
             header: 'Anime',
             topMenu: 'config',
+            subMenu: configSubMenu,
             converted: true
         },
         component: () => import('../components/config-anime.vue')
@@ -227,13 +230,15 @@ const addShowRoutes = [
         component: () => import('../components/add-shows.vue')
     },
     {
-        path: '/addShows/addExistingShows',
+        path: '/addShows/existingShows',
         name: 'addExistingShows',
         meta: {
             title: 'Add Existing Shows',
             header: 'Add Existing Shows',
-            topMenu: 'home'
-        }
+            topMenu: 'home',
+            converted: true
+        },
+        component: () => import('../components/new-shows-existing.vue')
     },
     {
         path: '/addShows/newShow',
@@ -241,8 +246,10 @@ const addShowRoutes = [
         meta: {
             title: 'Add New Show',
             header: 'Add New Show',
-            topMenu: 'home'
-        }
+            topMenu: 'home',
+            converted: true
+        },
+        component: () => import('../components/new-show.vue')
     },
     {
         path: '/addShows/trendingShows',
