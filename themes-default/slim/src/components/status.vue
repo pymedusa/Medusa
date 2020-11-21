@@ -180,6 +180,9 @@ export default {
         collectDiskSpace() {
             const { system } = this;
             const { diskSpace } = system;
+            if (diskSpace['tvDownloadDir'] === undefined) {
+                return [];
+            }
 
             return [diskSpace['tvDownloadDir'], ...diskSpace['rootDir']];
         }
