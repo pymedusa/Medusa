@@ -62,7 +62,7 @@
     "vue-snotify": "3.2.1",
     "vue-template-compiler": "2.6.12",
     "vue-truncate-collapsed": "3.0.1",
-    "vuedraggable": "2.24.3",
+    "vuedraggable": "4.0.0",
     "vueisotope": "3.1.2",
     "vuex": "3.5.1"
   },
