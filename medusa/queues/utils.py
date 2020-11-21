@@ -3,6 +3,8 @@
 from __future__ import unicode_literals
 
 from medusa import app
+from medusa.sbdatetime import sbdatetime
+from medusa.helpers import get_disk_space_usage
 from medusa.queues.generic_queue import QueuePriorities
 from medusa.queues.show_queue import ShowQueueActions
 
@@ -36,7 +38,7 @@ def _queued_show_to_json(item):
         'showDir': show_dir,
         'inProgress': bool(item.inProgress),
         'priority': priority,
-        'added': item.added.isoformat(),
+        'added': sbdatetime.convert_to_setting(item.added.replace(microsecond=0)).isoformat(),
         'queueType': ShowQueueActions.names[item.action_id],
     }
 
@@ -57,3 +59,35 @@ def generate_show_queue():
         queue.insert(0, app.show_queue_scheduler.action.currentItem)
 
     return [_queued_show_to_json(item) for item in queue]
+
+
+def generate_location_disk_space():
+    """
+    Generate a JSON-pickable object with disk space information.
+
+    Collect information on the TV_DOWNLOAD_DIR and the ROOT_DIRS.
+    :returns: Object with disk space information.
+    """
+    locations = {}
+    locations['tvDownloadDir'] = {
+        'type': 'TV Download Directory',
+        'location': app.TV_DOWNLOAD_DIR,
+        'freeSpace': get_disk_space_usage(app.TV_DOWNLOAD_DIR)
+    }
+
+    locations['rootDir'] = []
+    if app.ROOT_DIRS:
+        backend_pieces = app.ROOT_DIRS
+        backend_dirs = backend_pieces[1:]
+    else:
+        backend_dirs = []
+
+    if backend_dirs:
+        for location in backend_dirs:
+            locations['rootDir'].append({
+                'type': 'Media Root Directory',
+                'location': location,
+                'freeSpace': get_disk_space_usage(location)
+            })
+
+    return locations

@@ -3,7 +3,7 @@
 from __future__ import unicode_literals
 
 from medusa import app
-from medusa.helpers.utils import timedelta_in_milliseconds
+from medusa.sbdatetime import sbdatetime
 
 
 all_schedulers = [
@@ -68,9 +68,9 @@ def _scheduler_to_json(key, name, scheduler):
         'isEnabled': _is_enabled(key, scheduler),
         'isActive': _is_active(key, scheduler),
         'startTime': scheduler.start_time.isoformat() if scheduler.start_time else None,
-        'cycleTime': timedelta_in_milliseconds(scheduler.cycleTime) or None,
-        'nextRun': timedelta_in_milliseconds(scheduler.timeLeft()) if scheduler.enable else None,
-        'lastRun': scheduler.lastRun.isoformat(),
+        'cycleTime': int(scheduler.cycleTime.total_seconds()) or None,
+        'nextRun': int(scheduler.timeLeft().total_seconds()) if scheduler.enable else None,
+        'lastRun': sbdatetime.convert_to_setting(scheduler.lastRun.replace(microsecond=0)).isoformat(),
         'isSilent': bool(scheduler.silent),
         'queueLength': _queue_length(key, scheduler),
     }

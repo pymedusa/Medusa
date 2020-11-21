@@ -92,8 +92,7 @@ export const registerGlobalComponents = () => {
     components = components.concat([
         History,
         ManualPostProcess,
-        Schedule,
-        Status
+        Schedule
     ]);
 
     // Register the components globally

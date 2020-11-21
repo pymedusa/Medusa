@@ -202,3 +202,15 @@ export const forceBrowserReload = () => {
         window.location.reload(true);
     }
 };
+
+/**
+ * Divmod
+ * 
+ * Calculate a divider and mod.
+ * @returns {object} - And object with keys quotient and remainder. 
+ */
+export const divmod = (seconds, div) => {
+    const quotient = Math.floor(seconds/div);
+    const remainder = seconds % div;
+    return { quotient, remainder }
+}

@@ -73,8 +73,10 @@ const homeRoutes = [
         name: 'status',
         meta: {
             title: 'Status',
-            topMenu: 'system'
-        }
+            topMenu: 'system',
+            converted: true,
+        },
+        component: () => import('../components/status.vue')
     },
     {
         path: '/home/restart',

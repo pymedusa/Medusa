@@ -5,7 +5,7 @@ import parseISO from 'date-fns/parseISO';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
 
-import { convertDateFormat } from '../../../utils/core';
+import { convertDateFormat, divmod } from '../../../utils/core';
 
 // Add locale-specific relative date/time formatting rules.
 TimeAgo.addDefaultLocale(en);
@@ -91,6 +91,52 @@ const getters = {
     },
     getShowFilterByName: state => {
         return state.local.showFilterByName;
+    },
+    /**
+     * prettyTimeDelta
+     * 
+     * Translate seconds into a pretty hours, minutes, seconds representation.
+     * @returns {number} seconds - Number of seconds to translate.
+     */
+    prettyTimeDelta: state => seconds => {
+        let sign_str = '';
+        if (seconds < 0) {
+            sign_str = '-';
+        }
+    
+        let days = 0;
+        let hours = 0;
+        let minutes = 0;
+        
+        const daysSeconds = divmod(seconds, 86400);
+        days = daysSeconds.quotient;
+        seconds = daysSeconds.remainder;
+    
+        const hoursSeconds = divmod(seconds, 3600);
+        hours = hoursSeconds.quotient;
+        seconds = hoursSeconds.remainder;
+    
+        const minuteSeconds = divmod(seconds, 60);
+        minutes = minuteSeconds.quotient;
+        seconds = minuteSeconds.remainder;
+        
+        if (days > 0) {
+            sign_str += ` ${days}d`;
+        }
+    
+        if (hours > 0) {
+            sign_str += ` ${hours}h`;
+        }
+    
+        if (minutes > 0) {
+            sign_str += ` ${minutes}m`;
+        }
+    
+        if (seconds > 0) {
+            sign_str += ` ${seconds}s`;
+        }
+        
+        return sign_str;
     }
 
 };

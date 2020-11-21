@@ -70,6 +70,10 @@
                         </span>
                     </template>
 
+                    <div slot="emptystate">
+                        No search results available
+                    </div>
+
                 </vue-good-table>
             </div>
         </div>
