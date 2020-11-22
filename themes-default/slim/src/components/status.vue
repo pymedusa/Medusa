@@ -90,7 +90,7 @@
     </div>
 </template>
 <script>
-import { mapGetters, mapState } from 'vuex';
+import { mapActions, mapGetters, mapState } from 'vuex';
 import { VueGoodTable } from 'vue-good-table';
 
 export default {
@@ -185,6 +185,17 @@ export default {
             }
 
             return [diskSpace['tvDownloadDir'], ...diskSpace['rootDir']];
+        }
+    },
+    methods: {
+        ...mapActions({
+            getConfig: 'getConfig'
+        }),
+    },
+    watch: {
+        searchQueueItems() {
+            const { getConfig } = this;
+            getConfig('system');
         }
     }
 };
