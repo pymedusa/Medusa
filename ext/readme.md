@@ -23,12 +23,9 @@ ext | **`deprecated`** | [1.2.3](https://pypi.org/project/deprecated/1.2.3/) | `
 ext | **`dirtyjson`** | [1.0.7](https://pypi.org/project/dirtyjson/1.0.7/) | **`medusa`** | -
 ext | **`diskcache`** | [2.9.0](https://pypi.org/project/diskcache/2.9.0/) | `imdbpie` | -
 ext | `dogpile.cache` | [0.9.2](https://pypi.org/project/dogpile.cache/0.9.2/) | **`medusa`**, `subliminal` | Module: `dogpile`
-**ext2** | `enum34` | [1.1.6](https://pypi.org/project/enum34/1.1.6/) | **`medusa`** | Module: `enum`
 ext | **`enzyme`** | pymedusa/[665cf69](https://github.com/pymedusa/enzyme/tree/665cf6948aab1c249dcc99bd9624a81d17b3302a) | `knowit`, `subliminal` | -
 ext | **`feedparser`** | [2b11c80](https://github.com/kurtmckee/feedparser/tree/2b11c8028321ed43cbaf313f83b0c94820143d66) | **`medusa`** | Requires `sgmllib3k` on Python 3
 **ext2** | **`funcsigs`** | [1.0.2](https://pypi.org/project/funcsigs/1.0.2/) | `Pint` | -
-**ext2** | **`future`** | [0.17.1](https://pypi.org/project/future/0.17.1/) | **`medusa`** | Modules: `future`, `_dummy_thread`, `_markupbase`, `_thread`, `builtins`, `copyreg`, `html`, `http`, `libfuturize`, `libpasteurize`, `past`, `queue`, `reprlib`, `socketserver`, `tkinter`, `winreg`, `xmlrpc`
-**ext2** | `futures` | [3.2.0](https://pypi.org/project/futures/3.2.0/) | **`medusa`**, `subliminal`, `tornado` | Module: `concurrent/futures`
 ext | **`gntp`** | [1.0.3](https://pypi.org/project/gntp/1.0.3/) | **`medusa`** | -
 ext | **`guessit`** | [3.1.1](https://pypi.org/project/guessit/3.1.1/) | **`medusa`**, `subliminal` | -
 ext | **`html5lib`** | [1.1](https://pypi.org/project/html5lib/1.1/) | **`medusa`** (via `beautifulsoup4`) | -
