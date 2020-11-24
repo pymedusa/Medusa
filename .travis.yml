@@ -56,12 +56,6 @@ jobs:
         - yarn lint-css
         - yarn test
         - yarn coverage
-    # backend tests (py2.7) start here
-    - name: 'Backend tests (py2.7)'
-      python: '2.7'
-      env:
-        - TOXENV=py27
-      <<: *_backend_tests
     # backend tests (py3.6) start here
     - name: 'Backend tests (py3.6)'
       python: '3.6'
@@ -79,6 +73,12 @@ jobs:
       python: '3.8'
       env:
         - TOXENV=py38
+      <<: *_backend_tests
+    # backend tests (py3.9) start here
+    - name: 'Backend tests (py3.9)'
+      python: '3.9'
+      env:
+        - TOXENV=py39
       <<: *_backend_tests
     # dredd tests (py3.7) start here
     - name: 'Dredd tests (py3.7)'
