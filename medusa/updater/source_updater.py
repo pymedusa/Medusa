@@ -6,8 +6,8 @@ import logging
 import os
 import shutil
 import stat
-import tarfile
 import sys
+import tarfile
 
 from github import GithubException
 
