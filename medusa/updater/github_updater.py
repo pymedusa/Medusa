@@ -6,6 +6,7 @@ import logging
 import platform
 import re
 import subprocess
+import sys
 
 from medusa import app, notifiers
 from medusa.logger.adapters.style import BraceAdapter
@@ -299,6 +300,10 @@ class GitUpdateManager(UpdateManager):
         :return:
         :rtype: bool
         """
+        # Version 0.4.6 is the last version which will run on python 2.7.13.
+        if sys.version_info.major == 2:
+            return False
+
         return self._num_commits_ahead <= 0 or self._is_hard_reset_allowed()
 
     def update(self):
