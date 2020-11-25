@@ -1,6 +1,6 @@
-## Unreleased
+## 0.4.6 (25-11-2020)
 
-#### New Features
+Last version that runs on python 2!
 
 #### Improvements
 - Vueified add existing shows ([8448](https://github.com/pymedusa/Medusa/pull/8448))
