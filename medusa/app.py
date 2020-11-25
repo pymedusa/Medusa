@@ -226,6 +226,8 @@ class MedusaApp(object):
         self.INDEXER_TIMEOUT = None
         self.SCENE_DEFAULT = False
         self.ANIME_DEFAULT = False
+        self.SHOWLISTS_DEFAULT = ['series']
+        self.SHOWLISTS_DEFAULT_ANIME = []
         self.PROVIDER_ORDER = []
 
         self.NAMING_MULTI_EP = False

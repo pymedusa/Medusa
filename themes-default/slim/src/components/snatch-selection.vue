@@ -11,9 +11,9 @@
                      @update-overview-status="filterByOverviewStatus = $event"
         />
 
-        <show-history v-show="show && season" class="show-history" v-bind="{ show, season, episode }" :key="`history-${show.id.slug}-${season}-${episode || ''}`" />
+        <show-history v-show="show" class="show-history" v-bind="{ show, season, episode }" :key="`history-${show.id.slug}-${season}-${episode || ''}`" />
 
-        <show-results v-show="show && season" class="table-layout" v-bind="{ show, season, episode }" :key="`results-${show.id.slug}-${season}-${episode || ''}`" />
+        <show-results v-show="show" class="table-layout" v-bind="{ show, season, episode }" :key="`results-${show.id.slug}-${season}-${episode || ''}`" />
 
     </div>
 </template>
