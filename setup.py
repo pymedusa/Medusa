@@ -3,12 +3,73 @@
 import io
 import os
 import re
+import subprocess
 import sys
 
 from setuptools import setup
+from setuptools.command.install import install
 from setuptools.command.test import test as TestCommand
 
 here = os.path.abspath(os.path.dirname(__file__))
+
+# These requirements probably won't be needed
+# when `install_requires` is populated with `requirements.txt`
+tests_runtime_require = ['tornado==5.1.1', 'six>=1.13.0', 'profilehooks', 'contextlib2', ]
+
+
+tests_require = tests_runtime_require + [
+    # zipp v2.0.0 dropped support for Python 2 (flake8 -> importlib-metadata -> zipp)
+    'zipp < 2.0.0 ; python_version == "2.*"',
+    # configparser v5.0.0 dropped support for Python 2
+    'configparser < 5.0.0 ; python_version == "2.*"',
+    # pyparsing 3.0.0 dropped support for Python 2
+    'pyparsing < 3.0.0 ; python_version == "2.*"',
+    'flake8==3.7.9',
+    'pycodestyle==2.5.0',
+    'flake8-docstrings>=1.3.0',
+    'flake8-import-order>=0.18',
+    'flake8-quotes>=1.0.0',
+    'pep8-naming>=0.7.0',
+    'pytest<5.0.0 ; python_version < "3.5"',
+    'pytest>=5.0.0 ; python_version >= "3.5"',
+    'pytest-cov>=2.6.1',
+    'pytest-flake8>=1.0.4',
+    'pytest-tornado>=0.8.1',
+    'PyYAML>=5.1',
+    'vcrpy<4.0.0 ; python_version < "3.5"',
+    'vcrpy>=4.0.0 ; python_version >= "3.5"',
+    'mock<=3.0.5 ; python_version <= "3.5"',
+    'mock>=3.0.5 ; python_version > "3.5"',
+]
+
+
+class PyInstallTestDeps(install):
+    """Install pytest dependencies"""
+
+    def run(self):
+        install_list = []
+
+        for package in tests_require:
+            pack_split = package.split(';')
+            if len(pack_split) > 1:
+                pypi_pack, version = pack_split
+                version_match = re.search(r'.*python_version[^\d]+([\d.*]+).*', version)
+                if version_match:
+                    version_matched = version_match.group(1)
+                    if int(version_matched[0]) < sys.version_info.major:
+                        continue
+
+                install_list.append(pypi_pack)
+
+            if len(pack_split) == 1:
+                install.list.append(pypi_pack)
+
+        for pypi in install_list:
+            subprocess.run([
+                'pip',
+                'install',
+                pypi
+            ])
 
 
 class PyTest(TestCommand):
@@ -65,11 +126,6 @@ def packages():
 
     return result
 
-
-# These requirements probably won't be needed
-# when `install_requires` is populated with `requirements.txt`
-tests_runtime_require = ['tornado==5.1.1', 'six>=1.13.0', 'profilehooks', 'contextlib2', ]
-
 setup(
     name='pymedusa',
     description='Automatic Video Library Manager for TV Shows',
@@ -91,31 +147,8 @@ setup(
             'medusa = medusa.__main__:main'
         ]
     },
-    cmdclass={'test': PyTest},
-    tests_require=tests_runtime_require + [
-        # zipp v2.0.0 dropped support for Python 2 (flake8 -> importlib-metadata -> zipp)
-        'zipp < 2.0.0 ; python_version == "2.*"',
-        # configparser v5.0.0 dropped support for Python 2
-        'configparser < 5.0.0 ; python_version == "2.*"',
-        # pyparsing 3.0.0 dropped support for Python 2
-        'pyparsing < 3.0.0 ; python_version == "2.*"',
-        'flake8==3.7.9',
-        'pycodestyle==2.5.0',
-        'flake8-docstrings>=1.3.0',
-        'flake8-import-order>=0.18',
-        'flake8-quotes>=1.0.0',
-        'pep8-naming>=0.7.0',
-        'pytest<5.0.0 ; python_version < "3.5"',
-        'pytest>=5.0.0 ; python_version >= "3.5"',
-        'pytest-cov>=2.6.1',
-        'pytest-flake8>=1.0.4',
-        'pytest-tornado>=0.8.1',
-        'PyYAML>=5.1',
-        'vcrpy<4.0.0 ; python_version < "3.5"',
-        'vcrpy>=4.0.0 ; python_version >= "3.5"',
-        'mock<=3.0.5 ; python_version <= "3.5"',
-        'mock>=3.0.5 ; python_version > "3.5"',
-    ],
+    cmdclass={'test': PyTest, 'test_deps': PyInstallTestDeps},
+    tests_require=tests_require,
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: End Users/Desktop',

@@ -15,7 +15,7 @@ from github.MainClass import Github
 from github.Organization import Organization
 from github.Repository import Repository
 from medusa import app, cache
-from medusa.common import DOWNLOADED, Quality, SD
+from medusa.common import SD
 from medusa.helper.common import dateTimeFormat
 from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.logger import CensoredFormatter, ContextFilter, FORMATTER_PATTERN, instance
@@ -41,6 +41,13 @@ def pytest_collection_modifyitems(config, items):
         for item in reversed(items):
             if isinstance(item, pytest.Function):
                 items.remove(item)
+
+
+def pytest_configure(config):
+    # register an additional marker
+    config.addinivalue_line(
+        "markers", "gen_test: mark test as gen_test"
+    )
 
 
 def _construct_mapping(self, node, deep=False):
