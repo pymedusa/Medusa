@@ -3,6 +3,16 @@
 #### New Features
 
 #### Improvements
+
+#### Fixes
+
+-----
+
+## 0.4.6 (25-11-2020)
+
+Last version that runs on Python 2.7!
+
+#### Improvements
 - Vueified add existing shows ([8448](https://github.com/pymedusa/Medusa/pull/8448))
   - Get real time progress update on the shows adding
   - Add shows automatically when metadata is available
@@ -11,6 +21,7 @@
   - No more page redirects when you add a show that already exists
   - Select show list while adding show
   - Map show lists to anime, when configured in config -> anime
+- Refactored scene exception methods ([8753](https://github.com/pymedusa/Medusa/pull/8753))
 
 #### Fixes
 - Fixed provider TVChaosUK ([8737](https://github.com/pymedusa/Medusa/pull/8737))

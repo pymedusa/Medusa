@@ -93,52 +93,52 @@ const getters = {
         return state.local.showFilterByName;
     },
     /**
-     * prettyTimeDelta
-     * 
+     * PrettyTimeDelta
+     *
      * Translate seconds into a pretty hours, minutes, seconds representation.
+     * @param {object} state - State object.
      * @returns {number} seconds - Number of seconds to translate.
      */
-    prettyTimeDelta: state => seconds => {
-        let sign_str = '';
+    prettyTimeDelta: state => seconds => { // eslint-disable-line no-unused-vars
+        let signStr = '';
         if (seconds < 0) {
-            sign_str = '-';
+            signStr = '-';
         }
-    
+
         let days = 0;
         let hours = 0;
         let minutes = 0;
-        
+
         const daysSeconds = divmod(seconds, 86400);
         days = daysSeconds.quotient;
         seconds = daysSeconds.remainder;
-    
+
         const hoursSeconds = divmod(seconds, 3600);
         hours = hoursSeconds.quotient;
         seconds = hoursSeconds.remainder;
-    
+
         const minuteSeconds = divmod(seconds, 60);
         minutes = minuteSeconds.quotient;
         seconds = minuteSeconds.remainder;
-        
-        if (days > 0) {
-            sign_str += ` ${days}d`;
-        }
-    
-        if (hours > 0) {
-            sign_str += ` ${hours}h`;
-        }
-    
-        if (minutes > 0) {
-            sign_str += ` ${minutes}m`;
-        }
-    
-        if (seconds > 0) {
-            sign_str += ` ${seconds}s`;
-        }
-        
-        return sign_str;
-    }
 
+        if (days > 0) {
+            signStr += ` ${days}d`;
+        }
+
+        if (hours > 0) {
+            signStr += ` ${hours}h`;
+        }
+
+        if (minutes > 0) {
+            signStr += ` ${minutes}m`;
+        }
+
+        if (seconds > 0) {
+            signStr += ` ${seconds}s`;
+        }
+
+        return signStr;
+    }
 };
 
 const actions = {

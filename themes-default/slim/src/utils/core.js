@@ -205,12 +205,14 @@ export const forceBrowserReload = () => {
 
 /**
  * Divmod
- * 
+ *
  * Calculate a divider and mod.
- * @returns {object} - And object with keys quotient and remainder. 
+ * @param {number} seconds - Number of seconds to divmod.
+ * @param {number} div - Divider and modulus.
+ * @returns {object} - And object with keys quotient and remainder.
  */
 export const divmod = (seconds, div) => {
-    const quotient = Math.floor(seconds/div);
+    const quotient = Math.floor(seconds / div);
     const remainder = seconds % div;
-    return { quotient, remainder }
-}
+    return { quotient, remainder };
+};

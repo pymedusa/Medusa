@@ -37,7 +37,6 @@ import {
     SelectList,
     ShowSelector,
     StateSwitch,
-    Status,
     SubMenu
 } from './components';
 import store from './store';

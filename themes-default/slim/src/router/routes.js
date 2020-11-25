@@ -74,7 +74,7 @@ const homeRoutes = [
         meta: {
             title: 'Status',
             topMenu: 'system',
-            converted: true,
+            converted: true
         },
         component: () => import('../components/status.vue')
     },

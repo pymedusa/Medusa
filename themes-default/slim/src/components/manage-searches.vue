@@ -1,109 +1,100 @@
 <template>
-<div class="align-left">
-    <div v-if="schedulerStatus" class="row">
-        <div class="col-lg-12">
-            <h3>Backlog Search:</h3>
-            <h5>Note: Limited by backlog days setting: last {{ search.general.backlogDays }} days</h5>
-            <button class="btn-medusa" @click="forceBacklog">
-                <i class="icon-exclamation-sign"></i> Force
-            </button>
-            <button class="btn-medusa" @click="toggleBacklog">
-                <template v-if="schedulerStatus.backlogPaused"><i class="icon-play"></i> Unpause</template>
-                <template v-else><i class="icon-paused"></i> Pause</template>
-            </button>
-            <template v-if="!schedulerStatus.backlogRunning">Not in progress</template>
-            <template v-else>{{ schedulerStatus.backlogPaused ? 'Paused: ' : '' }}Currently running</template>                
+    <div class="align-left">
+        <div v-if="schedulerStatus" class="row">
+            <div class="col-lg-12">
+                <h3>Backlog Search:</h3>
+                <h5>Note: Limited by backlog days setting: last {{ search.general.backlogDays }} days</h5>
+                <button class="btn-medusa" @click="forceBacklog">
+                    <i class="icon-exclamation-sign" /> Force
+                </button>
+                <button class="btn-medusa" @click="toggleBacklog">
+                    <template v-if="schedulerStatus.backlogPaused"><i class="icon-play" /> Unpause</template>
+                    <template v-else><i class="icon-paused" /> Pause</template>
+                </button>
+                <template v-if="!schedulerStatus.backlogRunning">Not in progress</template>
+                <template v-else>{{ schedulerStatus.backlogPaused ? 'Paused: ' : '' }}Currently running</template>
+            </div>
         </div>
-    </div>
 
-    <div v-if="schedulerStatus" class="row">
-        <div class="col-lg-12">
-            <h3>Daily Search:</h3>
-            <button class="btn-medusa" @click="forceDaily">
-                <i class="icon-exclamation-sign"></i> Force
-            </button>
-            {{ schedulerStatus.dailySearchStatus ? 'In Progress' : 'Not in progress' }}    
+        <div v-if="schedulerStatus" class="row">
+            <div class="col-lg-12">
+                <h3>Daily Search:</h3>
+                <button class="btn-medusa" @click="forceDaily">
+                    <i class="icon-exclamation-sign" /> Force
+                </button>
+                {{ schedulerStatus.dailySearchStatus ? 'In Progress' : 'Not in progress' }}
+            </div>
         </div>
-    </div>
 
-    <div v-if="schedulerStatus" class="row">
-        <div class="col-lg-12">
-            <h3>Propers Search:</h3>
-            <button class="btn-medusa" :disabled="!search.general.downloadPropers" @click="forceFindPropers">
-                <i class="icon-exclamation-sign"></i> Force
-            </button>
-            <template v-if="!search.general.downloadPropers">Propers search disabled</template>
-            <template v-else>{{ schedulerStatus.properSearchStatus ? 'In Progress' : 'Not in progress' }}</template>        
+        <div v-if="schedulerStatus" class="row">
+            <div class="col-lg-12">
+                <h3>Propers Search:</h3>
+                <button class="btn-medusa" :disabled="!search.general.downloadPropers" @click="forceFindPropers">
+                    <i class="icon-exclamation-sign" /> Force
+                </button>
+                <template v-if="!search.general.downloadPropers">Propers search disabled</template>
+                <template v-else>{{ schedulerStatus.properSearchStatus ? 'In Progress' : 'Not in progress' }}</template>
+            </div>
         </div>
-    </div>
 
-    <div v-if="schedulerStatus" class="row">
-        <div class="col-lg-12">
+        <div v-if="schedulerStatus" class="row">
+            <div class="col-lg-12">
                 <h3>Subtitle Search:</h3>
                 <button class="btn-medusa" :disabled="!general.subtitles.enabled" @click="forceSubtitlesFinder">
-                    <i class="icon-exclamation-sign"></i> Force
+                    <i class="icon-exclamation-sign" /> Force
                 </button>
                 <template v-if="!general.subtitles.enabled">Subtitle search disabled</template>
                 <template v-else>{{ schedulerStatus.subtitlesFinderStatus ? 'In Progress' : 'Not in progress' }}</template>
+            </div>
         </div>
-    </div>
 
-    <div class="row">
-        <div class="col-lg-12">
-            <h3>Scene Exceptions:</h3>
-            <button class="btn-medusa" :disabled="sceneRefresh.inProgress" @click="forceSceneExceptionRefresh">
-                <i class="icon-exclamation-sign"></i> Force
-            </button>
-            <span v-show="sceneRefresh.message">
-                <img v-show="sceneRefresh.showSpinner" :src="spinnerSrc" height="16" width="16" />
-                {{ sceneRefresh.message }}
-            </span>
-            <ul class="simpleList" v-if="!sceneRefresh.inProgress && sceneExceptions.every(item => item.lastRefresh)">
-                <li v-for="item in sceneExceptions" :key="item.id">
-                    <app-link v-if="item.url" :href="item.url">Last updated {{ item.name }} exceptions</app-link>
-                    <template v-else>Last updated {{ item.name }} exceptions</template>
-                    {{ item.lastRefresh }}
-                </li>
-            </ul>
+        <div class="row">
+            <div class="col-lg-12">
+                <h3>Scene Exceptions:</h3>
+                <button class="btn-medusa" :disabled="sceneRefresh.inProgress" @click="forceSceneExceptionRefresh">
+                    <i class="icon-exclamation-sign" /> Force
+                </button>
+                <span v-show="sceneRefresh.message">
+                    <img v-show="sceneRefresh.showSpinner" :src="spinnerSrc" height="16" width="16">
+                    {{ sceneRefresh.message }}
+                </span>
+                <ul class="simpleList" v-if="!sceneRefresh.inProgress && sceneExceptions.every(item => item.lastRefresh)">
+                    <li v-for="item in sceneExceptions" :key="item.id">
+                        <app-link v-if="item.url" :href="item.url">Last updated {{ item.name }} exceptions</app-link>
+                        <template v-else>Last updated {{ item.name }} exceptions</template>
+                        {{ item.lastRefresh }}
+                    </li>
+                </ul>
+            </div>
         </div>
-    </div>
 
-    <div v-if="schedulerStatus" class="row">
-        <div class="col-lg-12">
-            <h3>Search Queue:</h3>
-            <ul class="simpleList">
-                <li>Backlog: <i>{{ schedulerStatus.searchQueueLength.backlog }} pending items</i></li>
-                <li>Daily: <i>{{ schedulerStatus.searchQueueLength.daily }} pending items</i></li>
-                <li>Forced: <i>{{ schedulerStatus.forcedSearchQueueLength.backlog_search }} pending items</i></li>
-                <li>Manual: <i>{{ schedulerStatus.forcedSearchQueueLength.manual_search }} pending items</i></li>
-                <li>Failed: <i>{{ schedulerStatus.forcedSearchQueueLength.failed }} pending items</i></li>
-            </ul>
+        <div v-if="schedulerStatus" class="row">
+            <div class="col-lg-12">
+                <h3>Search Queue:</h3>
+                <ul class="simpleList">
+                    <li>Backlog: <i>{{ schedulerStatus.searchQueueLength.backlog }} pending items</i></li>
+                    <li>Daily: <i>{{ schedulerStatus.searchQueueLength.daily }} pending items</i></li>
+                    <li>Forced: <i>{{ schedulerStatus.forcedSearchQueueLength.backlog_search }} pending items</i></li>
+                    <li>Manual: <i>{{ schedulerStatus.forcedSearchQueueLength.manual_search }} pending items</i></li>
+                    <li>Failed: <i>{{ schedulerStatus.forcedSearchQueueLength.failed }} pending items</i></li>
+                </ul>
+            </div>
         </div>
     </div>
-</div>
 </template>
 
 <script>
-import { mapActions, mapGetters, mapState } from 'vuex';
+import { mapActions, mapState } from 'vuex';
 import { api } from '../api';
+import { AppLink } from './helpers';
 
 export default {
     name: 'manage-searches',
+    components: {
+        AppLink
+    },
     data() {
         return {
-            // Python conversions
-            // backlogPaused: ${json.dumps(backlogPaused)},
-            // backlogRunning: ${json.dumps(backlogRunning)},
-            // dailySearchStatus: ${json.dumps(dailySearchStatus)},
-            // findPropersStatus: ${json.dumps(findPropersStatus)},
-            // searchQueueLength: ${json.dumps(searchQueueLength)},
-            // forcedSearchQueueLength: ${json.dumps(forcedSearchQueueLength)},
-            // subtitlesFinderStatus: ${json.dumps(subtitlesFinderStatus)},
-
-            // backlogDays: ${json.dumps(app.BACKLOG_DAYS)},
-            // downloadPropers: ${json.dumps(app.DOWNLOAD_PROPERS)},
-
-            // JS only
             sceneExceptions: [{
                 id: 'local',
                 name: "Medusa's",
@@ -148,15 +139,14 @@ export default {
             if (schedulers.length === 0) {
                 return;
             }
-            
+
             const backlog = schedulers.find(scheduler => scheduler.key === 'backlog');
             const daily = schedulers.find(scheduler => scheduler.key === 'dailySearch');
             const proper = schedulers.find(scheduler => scheduler.key === 'properFinder');
-            const postprocess = schedulers.find(scheduler => scheduler.key === 'postProcess');
             const search = schedulers.find(scheduler => scheduler.key === 'searchQueue');
             const forcedSearch = schedulers.find(scheduler => scheduler.key === 'forcedSearchQueue');
             const subtitles = schedulers.find(scheduler => scheduler.key === 'subtitlesFinder');
-            
+
             return {
                 backlogPaused: backlog.isEnabled === 'Paused',
                 backlogRunning: backlog.isActive,
@@ -164,8 +154,8 @@ export default {
                 searchQueueLength: search.queueLength,
                 forcedSearchQueueLength: forcedSearch.queueLength,
                 subtitlesFinderStatus: subtitles.isActive,
-                properSearchStatus: proper.isActive 
-            }
+                properSearchStatus: proper.isActive
+            };
         }
     },
     methods: {
@@ -221,20 +211,20 @@ export default {
             sceneRefresh.inProgress = false;
         },
         forceBacklog() {
-            api.put(`search/backlog`);
+            api.put('search/backlog');
         },
         forceDaily() {
-            api.put(`search/daily`);
+            api.put('search/daily');
         },
         forceFindPropers() {
-            api.put(`search/proper`);
+            api.put('search/proper');
         },
         forceSubtitlesFinder() {
-            api.put(`search/subtitles`);
+            api.put('search/subtitles');
         },
         toggleBacklog() {
-            const { schedulerStatus, system } = this;
-            api.put(`search/backlog`, { options: { paused: !schedulerStatus.backlogPaused }}) // eslint-disable-line no-undef
+            const { schedulerStatus } = this;
+            api.put('search/backlog', { options: { paused: !schedulerStatus.backlogPaused } }); // eslint-disable-line no-undef
         }
     },
     mounted() {
@@ -252,7 +242,7 @@ export default {
             getConfig('system');
         }
     }
-}
+};
 </script>
 <style scoped>
 </style>

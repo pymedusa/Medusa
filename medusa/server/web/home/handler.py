@@ -1051,10 +1051,9 @@ class Home(WebRoot):
         if do_update_scene_numbering or do_erase_parsed_cache:
             try:
                 xem_refresh(series_obj)
-                time.sleep(cpu_presets[app.CPU_PRESET])
             except CantUpdateShowException as error:
                 errors += 1
-                logger.log("Unable to force an update on scene numbering for show '{show}': {error!r}".format
+                logger.log("Unable to update scene numbering for show '{show}': {error!r}".format
                            (show=series_obj.name, error=error), logger.WARNING)
 
             # Must erase cached DB results when toggling scene numbering
@@ -1767,16 +1766,10 @@ class Home(WebRoot):
 
         if series_obj.is_anime:
             sn = get_scene_absolute_numbering(series_obj, forAbsolute)
-            if sn:
-                result['sceneAbsolute'] = sn
-            else:
-                result['sceneAbsolute'] = None
+            result['sceneAbsolute'] = sn
         else:
-            sn = get_scene_numbering(series_obj, forSeason, forEpisode)
-            if sn:
-                (result['sceneSeason'], result['sceneEpisode']) = sn
-            else:
-                (result['sceneSeason'], result['sceneEpisode']) = (None, None)
+            sn = get_scene_numbering(series_obj, forEpisode, forSeason)
+            (result['sceneSeason'], result['sceneEpisode']) = sn
 
         return json.dumps(result)
 
