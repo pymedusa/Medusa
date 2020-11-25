@@ -7,6 +7,7 @@ import os
 import shutil
 import stat
 import tarfile
+import sys
 
 from github import GithubException
 
@@ -109,6 +110,10 @@ class SourceUpdateManager(UpdateManager):
         :return:
         :rtype: bool
         """
+        # Version 0.4.6 is the last version which will run on python 2.7.13.
+        if sys.version_info.major == 2:
+            return False
+
         return True
 
     def check_for_update(self):
