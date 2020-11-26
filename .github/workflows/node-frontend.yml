@@ -21,7 +21,8 @@ jobs:
     - name: Check themes builds
       run: |
         mv ./.github/build-themes-check.sh ./themes-default/slim
-        ./themes-default/slim/build-themes-check.sh
+        cd ./themes-default/slim
+        sh build-themes-check.sh
     - name: Test lint
       working-directory: ./themes-default/slim
       run: yarn lint && yarn lint-css
