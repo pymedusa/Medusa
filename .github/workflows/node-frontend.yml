@@ -5,6 +5,9 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./themes-default/slim
     strategy:
       matrix:
         node-version: [14.x]
@@ -16,13 +19,11 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - name: Install dependencies
-      working-directory: ./themes-default/slim
       run: yarn install --ignore-scripts
     - name: Check themes builds
       run: ./.github/build-themes-check.sh
     - name: Test lint
-      run: yarn lint
-      run: yarn lint-css
+      run: yarn lint && yarn lint-css
     - name: Test build
       run: yarn test
     - name: Upload coverage to Codecov
