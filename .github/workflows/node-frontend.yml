@@ -22,7 +22,7 @@ jobs:
       run: |
         mv ./.github/build-themes-check.sh ./themes-default/slim
         cd ./themes-default/slim
-        sh build-themes-check.sh
+        bash build-themes-check.sh
     - name: Test lint
       working-directory: ./themes-default/slim
       run: yarn lint && yarn lint-css
