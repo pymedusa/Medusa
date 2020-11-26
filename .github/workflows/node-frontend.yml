@@ -1,0 +1,29 @@
+name: Frontend tests
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [14.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Install dependencies
+      working-directory: ./themes-default/slim
+      run: yarn install --ignore-scripts
+    - name: Check themes builds
+      run: ./.github/build-themes-check.sh
+    - name: Test lint
+      run: yarn lint
+      run: yarn lint-css
+    - name: Test build
+      run: yarn test
+    - name: Upload coverage to Codecov
+      run: yarn coverage

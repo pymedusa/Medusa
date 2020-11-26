@@ -1,4 +1,4 @@
-name: Python builds
+name: Backend tests
 
 on: [push]
 
