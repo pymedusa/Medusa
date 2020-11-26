@@ -21,7 +21,8 @@ jobs:
     - name: Install dependencies
       run: yarn install --ignore-scripts
     - name: Check themes builds
-      run: ./.github/build-themes-check.sh
+      working-directory: ./.github
+      run: build-themes-check.sh
     - name: Test lint
       run: yarn lint && yarn lint-css
     - name: Test build
