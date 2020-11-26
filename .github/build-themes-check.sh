@@ -2,7 +2,7 @@
 set -e
 
 # This script expects to be run in: `Medusa/themes-default/slim`
-path_to_built_themes="./themes/"
+path_to_built_themes="../../themes/"
 
 # Helper function to print the command before running it.
 run_verbose () {

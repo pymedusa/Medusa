@@ -15,13 +15,13 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - name: Install main dependencies
-      run: yarn install --ignore-scripts
     - name: Install themes dependencies
       working-directory: ./themes-default/slim
       run: yarn install --ignore-scripts
     - name: Check themes builds
-      run: ./.github/build-themes-check.sh
+      run: |
+        mv ./.github/build-themes-check.sh ./themes-default/slim
+        ./themes-default/slim/build-themes-check.sh
     - name: Test lint
       working-directory: ./themes-default/slim
       run: yarn lint && yarn lint-css
