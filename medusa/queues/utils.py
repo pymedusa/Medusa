@@ -3,10 +3,10 @@
 from __future__ import unicode_literals
 
 from medusa import app
-from medusa.sbdatetime import sbdatetime
 from medusa.helpers import get_disk_space_usage
 from medusa.queues.generic_queue import QueuePriorities
 from medusa.queues.show_queue import ShowQueueActions
+from medusa.sbdatetime import sbdatetime
 
 
 def _queued_show_to_json(item):
