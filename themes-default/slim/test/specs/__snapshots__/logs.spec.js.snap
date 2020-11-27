@@ -178,6 +178,11 @@ exports[`Logs.test.js renders 1`] = `
               Show Updater
             </option>
             <option
+              value="EPISODEUPDATER"
+            >
+              Episode Updater
+            </option>
+            <option
               value="Thread"
             >
               Thread

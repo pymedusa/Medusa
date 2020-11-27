@@ -108,6 +108,8 @@ class Formatter(EntitySubstitution):
         behavior consistent between Python 2 and Python 3, and preserves
         backwards compatibility with older versions of Beautiful Soup.
         """
+        if tag.attrs is None:
+            return []
         return sorted(tag.attrs.items())
 
    

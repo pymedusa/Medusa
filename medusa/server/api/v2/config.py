@@ -21,9 +21,11 @@ from medusa import (
 )
 from medusa.common import IGNORED, Quality, SKIPPED, WANTED, cpu_presets
 from medusa.helpers.utils import int_default, to_camel_case
-from medusa.indexers.indexer_config import INDEXER_TVDBV2, get_indexer_config
+from medusa.indexers.config import INDEXER_TVDBV2, get_indexer_config
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.queues.utils import generate_location_disk_space, generate_show_queue
 from medusa.sbdatetime import date_presets, time_presets
+from medusa.schedulers.utils import generate_schedulers
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
     BooleanField,
@@ -35,10 +37,6 @@ from medusa.server.api.v2.base import (
     StringField,
     iter_nested_items,
     set_nested_value,
-)
-from medusa.system.schedulers import (
-    generate_schedulers,
-    generate_show_queue,
 )
 
 from six import iteritems, itervalues, text_type
@@ -76,22 +74,21 @@ class ConfigHandler(BaseRequestHandler):
     #: path param
     path_param = ('path_param', r'\w+')
     #: allowed HTTP methods
-    allowed_methods = ('GET', 'PATCH', )
+    allowed_methods = ('GET', 'PATCH',)
     #: patch mapping
     patches = {
         # Main
-        'selectedRootIndex': IntegerField(app, 'SELECTED_ROOT'),
         'rootDirs': ListField(app, 'ROOT_DIRS'),
 
         'showDefaults.status': EnumField(app, 'STATUS_DEFAULT', (SKIPPED, WANTED, IGNORED), int),
         'showDefaults.statusAfter': EnumField(app, 'STATUS_DEFAULT_AFTER', (SKIPPED, WANTED, IGNORED), int),
         'showDefaults.quality': IntegerField(app, 'QUALITY_DEFAULT', validator=Quality.is_valid_combined_quality),
-        'showDefaults.subtitles': BooleanField(app, 'SUBTITLES_DEFAULT', validator=lambda v: app.USE_SUBTITLES,
-                                               converter=bool),
+        'showDefaults.subtitles': BooleanField(app, 'SUBTITLES_DEFAULT', converter=bool),
         'showDefaults.seasonFolders': BooleanField(app, 'SEASON_FOLDERS_DEFAULT', validator=season_folders_validator,
                                                    converter=bool),
         'showDefaults.anime': BooleanField(app, 'ANIME_DEFAULT', converter=bool),
         'showDefaults.scene': BooleanField(app, 'SCENE_DEFAULT', converter=bool),
+        'showDefaults.showLists': ListField(app, 'SHOWLISTS_DEFAULT'),
         'anonRedirect': StringField(app, 'ANON_REDIRECT'),
         'emby.enabled': BooleanField(app, 'USE_EMBY'),
 
@@ -148,6 +145,7 @@ class ConfigHandler(BaseRequestHandler):
         'logs.size': FloatField(app, 'LOG_SIZE'),
         'logs.subliminalLog': BooleanField(app, 'SUBLIMINAL_LOG'),
         'logs.privacyLevel': StringField(app, 'PRIVACY_LEVEL'),
+        'logs.custom': ListField(app, 'CUSTOM_LOGS'),
 
         'developer': BooleanField(app, 'DEVELOPER'),
 
@@ -401,6 +399,7 @@ class ConfigHandler(BaseRequestHandler):
         'notifiers.discord.notifyOnSnatch': BooleanField(app, 'DISCORD_NOTIFY_ONSNATCH'),
         'notifiers.discord.notifyOnDownload': BooleanField(app, 'DISCORD_NOTIFY_ONDOWNLOAD'),
         'notifiers.discord.notifyOnSubtitleDownload': BooleanField(app, 'DISCORD_NOTIFY_ONSUBTITLEDOWNLOAD'),
+        'notifiers.discord.name': StringField(app, 'DISCORD_NAME'),
 
         'notifiers.twitter.enabled': BooleanField(app, 'USE_TWITTER'),
         'notifiers.twitter.dmto': StringField(app, 'TWITTER_DMTO'),
@@ -460,8 +459,6 @@ class ConfigHandler(BaseRequestHandler):
         'layout.wide': BooleanField(app, 'LAYOUT_WIDE'),
         'layout.posterSortdir': IntegerField(app, 'POSTER_SORTDIR'),
         'layout.themeName': StringField(app, 'THEME_NAME', setter=theme_name_setter),
-        'layout.animeSplitHomeInTabs': BooleanField(app, 'ANIME_SPLIT_HOME'),
-        'layout.animeSplitHome': BooleanField(app, 'ANIME_SPLIT_HOME'),
         'layout.timezoneDisplay': StringField(app, 'TIMEZONE_DISPLAY'),
         'layout.trimZero': BooleanField(app, 'TRIM_ZERO'),
         'layout.sortArticle': BooleanField(app, 'SORT_ARTICLE'),
@@ -474,6 +471,17 @@ class ConfigHandler(BaseRequestHandler):
         'layout.backlogOverview.status': StringField(app, 'BACKLOG_STATUS'),
         'layout.timeStyle': StringField(app, 'TIME_PRESET_W_SECONDS'),
         'layout.dateStyle': StringField(app, 'DATE_PRESET'),
+        'layout.selectedRootIndex': IntegerField(app, 'SELECTED_ROOT'),
+
+        'layout.animeSplitHome': BooleanField(app, 'ANIME_SPLIT_HOME'),
+        'layout.splitHomeInTabs': BooleanField(app, 'ANIME_SPLIT_HOME_IN_TABS'),
+
+        'anime.anidb.enabled': BooleanField(app, 'USE_ANIDB'),
+        'anime.anidb.username': StringField(app, 'ANIDB_USERNAME'),
+        'anime.anidb.password': StringField(app, 'ANIDB_PASSWORD'),
+        'anime.anidb.useMylist': BooleanField(app, 'ANIDB_USE_MYLIST'),
+        'anime.autoAnimeToList': BooleanField(app, 'AUTO_ANIME_TO_LIST'),
+        'anime.showlistDefaultAnime': ListField(app, 'SHOWLISTS_DEFAULT_ANIME')
     }
 
     def get(self, identifier, path_param=None):
@@ -544,11 +552,10 @@ class ConfigHandler(BaseRequestHandler):
         app.instance.save_config()
 
         # Push an update to any open Web UIs through the WebSocket
-        msg = ws.Message('configUpdated', {
+        ws.Message('configUpdated', {
             'section': identifier,
             'config': DataGenerator.get_data(identifier)
-        })
-        msg.push()
+        }).push()
 
         return self._ok(data=accepted)
 
@@ -602,6 +609,7 @@ class DataGenerator(object):
         section_data['showDefaults']['seasonFolders'] = bool(app.SEASON_FOLDERS_DEFAULT)
         section_data['showDefaults']['anime'] = bool(app.ANIME_DEFAULT)
         section_data['showDefaults']['scene'] = bool(app.SCENE_DEFAULT)
+        section_data['showDefaults']['showLists'] = list(app.SHOWLISTS_DEFAULT)
 
         section_data['logs'] = {}
         section_data['logs']['debug'] = bool(app.DEBUG)
@@ -614,8 +622,7 @@ class DataGenerator(object):
         section_data['logs']['size'] = float(app.LOG_SIZE)
         section_data['logs']['subliminalLog'] = bool(app.SUBLIMINAL_LOG)
         section_data['logs']['privacyLevel'] = app.PRIVACY_LEVEL
-
-        section_data['selectedRootIndex'] = int_default(app.SELECTED_ROOT, -1)  # All paths
+        section_data['logs']['custom'] = app.CUSTOM_LOGS
 
         # Added for config - main, needs refactoring in the structure.
         section_data['launchBrowser'] = bool(app.LAUNCH_BROWSER)
@@ -965,6 +972,7 @@ class DataGenerator(object):
         section_data['discord']['notifyOnSubtitleDownload'] = bool(app.DISCORD_NOTIFY_ONSUBTITLEDOWNLOAD)
         section_data['discord']['webhook'] = app.DISCORD_WEBHOOK
         section_data['discord']['tts'] = bool(app.DISCORD_TTS)
+        section_data['discord']['name'] = app.DISCORD_NAME
 
         section_data['twitter'] = {}
         section_data['twitter']['enabled'] = bool(app.USE_TWITTER)
@@ -1023,6 +1031,7 @@ class DataGenerator(object):
         section_data['memoryUsage'] = helpers.memory_usage(pretty=True)
         section_data['schedulers'] = generate_schedulers()
         section_data['showQueue'] = generate_show_queue()
+        section_data['diskSpace'] = generate_location_disk_space()
 
         section_data['branch'] = app.BRANCH
         section_data['commitHash'] = app.CUR_COMMIT_HASH
@@ -1174,9 +1183,9 @@ class DataGenerator(object):
 
         section_data['wide'] = bool(app.LAYOUT_WIDE)
 
-        section_data['posterSortdir'] = int(app.POSTER_SORTDIR)
+        section_data['posterSortdir'] = int(app.POSTER_SORTDIR or 0)
         section_data['themeName'] = app.THEME_NAME
-        section_data['animeSplitHomeInTabs'] = bool(app.ANIME_SPLIT_HOME_IN_TABS)
+        section_data['splitHomeInTabs'] = bool(app.ANIME_SPLIT_HOME_IN_TABS)
         section_data['animeSplitHome'] = bool(app.ANIME_SPLIT_HOME)
         section_data['fanartBackground'] = bool(app.FANART_BACKGROUND)
         section_data['fanartBackgroundOpacity'] = float(app.FANART_BACKGROUND_OPACITY or 0)
@@ -1192,11 +1201,27 @@ class DataGenerator(object):
         section_data['comingEps'] = {}
         section_data['comingEps']['displayPaused'] = bool(app.COMING_EPS_DISPLAY_PAUSED)
         section_data['comingEps']['sort'] = app.COMING_EPS_SORT
-        section_data['comingEps']['missedRange'] = int(app.COMING_EPS_MISSED_RANGE)
+        section_data['comingEps']['missedRange'] = int(app.COMING_EPS_MISSED_RANGE or 0)
         section_data['comingEps']['layout'] = app.COMING_EPS_LAYOUT
 
         section_data['backlogOverview'] = {}
         section_data['backlogOverview']['status'] = app.BACKLOG_STATUS
         section_data['backlogOverview']['period'] = app.BACKLOG_PERIOD
 
+        section_data['selectedRootIndex'] = int_default(app.SELECTED_ROOT, -1)  # All paths
+
         return section_data
+
+    @staticmethod
+    def data_anime():
+        """Anime configuration."""
+        return {
+            'anidb': {
+                'enabled': bool(app.USE_ANIDB),
+                'username': app.ANIDB_USERNAME,
+                'password': app.ANIDB_PASSWORD,
+                'useMylist': bool(app.ANIDB_USE_MYLIST)
+            },
+            'autoAnimeToList': bool(app.AUTO_ANIME_TO_LIST),
+            'showlistDefaultAnime': app.SHOWLISTS_DEFAULT_ANIME
+        }

@@ -2,14 +2,15 @@
 
 exports[`SubMenu.test.js renders function-based sub menu 1`] = `
 <div
+  class="row"
   id="sub-menu-wrapper"
 >
   <div
-    class="row shadow"
+    class="col-md-12 shadow"
     id="sub-menu-container"
   >
     <div
-      class="submenu-default hidden-print col-md-12"
+      class="submenu-default hidden-print"
       id="sub-menu"
     >
       <app-link-stub
@@ -36,14 +37,15 @@ exports[`SubMenu.test.js renders function-based sub menu 1`] = `
 
 exports[`SubMenu.test.js renders simple sub menu 1`] = `
 <div
+  class="row"
   id="sub-menu-wrapper"
 >
   <div
-    class="row shadow"
+    class="col-md-12 shadow"
     id="sub-menu-container"
   >
     <div
-      class="submenu-default hidden-print col-md-12"
+      class="submenu-default hidden-print"
       id="sub-menu"
     >
       <app-link-stub

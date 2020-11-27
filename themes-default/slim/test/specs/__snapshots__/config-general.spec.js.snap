@@ -571,6 +571,33 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   </p>
                 </config-toggle-slider-stub>
                  
+                <config-template-stub
+                  label="show lists"
+                  labelfor="show_list_order"
+                >
+                  <sorted-select-list-stub
+                    listitems="Anime,Series"
+                    unique="true"
+                  />
+                   
+                  <p>
+                    Create and order different categories for your shows.
+                  </p>
+                </config-template-stub>
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="split_home_in_tabs"
+                  label="Split home in tabs"
+                  value="true"
+                >
+                  <span
+                    class="component-desc"
+                  >
+                    Use tabs when splitting show lists
+                  </span>
+                </config-toggle-slider-stub>
+                 
                 <config-textbox-number-stub
                   explanations=""
                   id="coming_eps_missed_range duration"
@@ -1301,6 +1328,13 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   </span>
                 </config-template-stub>
                  
+                <config-template-stub
+                  label="Overwrite log levels for overwritable logs"
+                  labelfor="custom_logs"
+                >
+                  <custom-logs-stub />
+                </config-template-stub>
+                 
                 <input
                   class="btn-medusa config_submitter"
                   type="submit"
@@ -1365,6 +1399,8 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   <p>
                     select branch to use (restart required)
                   </p>
+                   
+                  <!---->
                 </config-template-stub>
                  
                 <config-template-stub
@@ -1596,9 +1632,7 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                     value="Update Branches"
                   />
                    
-                  <span
-                    class="component-desc"
-                  >
+                  <span>
                     <b>
                       Note:
                     </b>
@@ -1639,5 +1673,129 @@ exports[`ConfigGeneral.test.js renders 1`] = `
       </div>
     </form>
   </div>
+   
+  <modal
+    height="auto"
+    name="query-upgrade-database"
+    width="80%"
+  >
+    <transition-stub
+      name="modal"
+    >
+      <div
+        class="modal-mask"
+      >
+        <div
+          class="modal-wrapper"
+        >
+          <div
+            class="modal-content"
+          >
+            <div
+              class="modal-header"
+            >
+              
+                            Upgrade database model?
+                        
+            </div>
+             
+            <div
+              class="modal-body"
+            >
+              <p>
+                Changing branch will upgrade your database
+              </p>
+               
+              <p>
+                You won't be able to downgrade afterward.
+              </p>
+               
+              <p>
+                Do you want to continue?
+              </p>
+            </div>
+             
+            <div
+              class="modal-footer"
+            >
+              <button
+                class="btn-medusa btn-danger"
+                data-dismiss="modal"
+                type="button"
+              >
+                No
+              </button>
+               
+              <button
+                class="btn-medusa btn-success"
+                data-dismiss="modal"
+                type="button"
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition-stub>
+  </modal>
+   
+  <modal
+    height="auto"
+    name="query-restart"
+    width="80%"
+  >
+    <transition-stub
+      name="modal"
+    >
+      <div
+        class="modal-mask"
+      >
+        <div
+          class="modal-wrapper"
+        >
+          <div
+            class="modal-content"
+          >
+            <div
+              class="modal-header"
+            >
+              
+                            Checking out a branch requires a restart
+                        
+            </div>
+             
+            <div
+              class="modal-body"
+            >
+              <p>
+                Would you like to start a restart of medusa now?
+              </p>
+            </div>
+             
+            <div
+              class="modal-footer"
+            >
+              <button
+                class="btn-medusa btn-danger"
+                data-dismiss="modal"
+                type="button"
+              >
+                No
+              </button>
+               
+              <button
+                class="btn-medusa btn-success"
+                data-dismiss="modal"
+                type="button"
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition-stub>
+  </modal>
 </div>
 `;

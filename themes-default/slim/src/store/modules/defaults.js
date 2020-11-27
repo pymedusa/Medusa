@@ -39,6 +39,8 @@ const state = {
         genres: [],
         id: {
             tvdb: null,
+            trakt: null,
+            imdb: null,
             slug: null
         },
         indexer: null,
@@ -95,6 +97,12 @@ const state = {
         // but we currently check to see if this property is defined before fetching the show with `?episodes=true`.
         // seasons: [],
         episodeCount: null
+    },
+    provider: {
+        id: null,
+        name: null,
+        config: {},
+        cache: []
     }
 };
 

@@ -182,3 +182,9 @@ class HTML5LibBuilderSmokeTest(SoupTest, HTML5TreeBuilderSmokeTest):
         soup = self.soup(markup, store_line_numbers=False)
         self.assertEqual("sourceline", soup.p.sourceline.name)
         self.assertEqual("sourcepos", soup.p.sourcepos.name)
+
+    def test_special_string_containers(self):
+        # The html5lib tree builder doesn't support this standard feature,
+        # because there's no way of knowing, when a string is created,
+        # where in the tree it will eventually end up.
+        pass

@@ -53,7 +53,7 @@ describe('SubMenu.test.js', () => {
                 name: '',
                 meta: {
                     subMenu: vm => {
-                        const { recentShows } = vm.$store.state.config;
+                        const { recentShows } = vm.$store.state.config.general;
                         return recentShows.map((show, index) => {
                             return {
                                 title: show.name,

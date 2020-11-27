@@ -22,15 +22,19 @@ from medusa.server.api.v2.alias_source import (
 from medusa.server.api.v2.auth import AuthHandler
 from medusa.server.api.v2.base import BaseRequestHandler, NotFoundHandler
 from medusa.server.api.v2.config import ConfigHandler
+from medusa.server.api.v2.episode_history import EpisodeHistoryHandler
 from medusa.server.api.v2.episodes import EpisodeHandler
+from medusa.server.api.v2.history import HistoryHandler
 from medusa.server.api.v2.internal import InternalHandler
 from medusa.server.api.v2.log import LogHandler
+from medusa.server.api.v2.providers import ProvidersHandler
 from medusa.server.api.v2.search import SearchHandler
 from medusa.server.api.v2.series import SeriesHandler
 from medusa.server.api.v2.series_asset import SeriesAssetHandler
 from medusa.server.api.v2.series_legacy import SeriesLegacyHandler
 from medusa.server.api.v2.series_operation import SeriesOperationHandler
 from medusa.server.api.v2.stats import StatsHandler
+from medusa.server.api.v2.system import SystemHandler
 from medusa.server.web import (
     CalendarHandler,
     KeyHandler,
@@ -80,6 +84,15 @@ def get_apiv2_handlers(base):
 
         # Order: Most specific to most generic
 
+        # /api/v2/providers
+        ProvidersHandler.create_app_handler(base),
+
+        # /api/v2/history/tvdb1234/episode
+        EpisodeHistoryHandler.create_app_handler(base),
+
+        # /api/v2/history
+        HistoryHandler.create_app_handler(base),
+
         # /api/v2/search
         SearchHandler.create_app_handler(base),
 
@@ -114,6 +127,9 @@ def get_apiv2_handlers(base):
 
         # /api/v2/alias
         AliasHandler.create_app_handler(base),
+
+        # /api/v2/system
+        SystemHandler.create_app_handler(base),
 
         # /api/v2/authenticate
         AuthHandler.create_app_handler(base),
@@ -287,7 +303,10 @@ class AppWebServer(threading.Thread):
 
             # We need to set the WindowsSelectorEventLoop event loop on python 3 (3.8 and higher) running on windows
             if sys.platform == 'win32':
-                asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+                try:
+                    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+                except AttributeError:  # Only available since Python 3.7.0
+                    pass
             asyncio.set_event_loop(asyncio.new_event_loop())
 
         if self.enable_https:

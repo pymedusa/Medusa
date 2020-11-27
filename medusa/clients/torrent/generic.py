@@ -12,7 +12,7 @@ from builtins import object
 from builtins import str
 from hashlib import sha1
 
-from bencode import BencodeDecodeError, bdecode, bencode
+from bencodepy import BencodeDecodeError, DEFAULT as BENCODE
 
 from medusa import app, db
 from medusa.helper.common import http_code_description
@@ -198,14 +198,15 @@ class GenericClient(object):
         if result.url.startswith('magnet:'):
             result.hash = re.findall(r'urn:btih:([\w]{32,40})', result.url)[0]
             if len(result.hash) == 32:
-                result.hash = b16encode(b32decode(result.hash)).lower()
+                hash_b16 = b16encode(b32decode(result.hash)).lower()
+                result.hash = hash_b16.decode('utf-8')
         else:
 
             try:
-                # `bencode.bdecode` is monkeypatched in `medusa.init`
-                torrent_bdecode = bdecode(result.content, allow_extra_data=True)
+                # `bencodepy` is monkeypatched in `medusa.init`
+                torrent_bdecode = BENCODE.decode(result.content, allow_extra_data=True)
                 info = torrent_bdecode['info']
-                result.hash = sha1(bencode(info)).hexdigest()
+                result.hash = sha1(BENCODE.encode(info)).hexdigest()
             except (BencodeDecodeError, KeyError):
                 log.warning(
                     'Unable to bdecode torrent. Invalid torrent: {name}. '

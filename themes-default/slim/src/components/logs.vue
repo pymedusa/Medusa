@@ -109,6 +109,7 @@ export default {
                 { value: 'SHOWQUEUE-SEASON-UPDATE', title: 'Show Season Queue (Update)' },
                 { value: 'SHOWQUEUE-UPDATE', title: 'Show Queue (Update)' },
                 { value: 'SHOWUPDATER', title: 'Show Updater' },
+                { value: 'EPISODEUPDATER', title: 'Episode Updater' },
                 { value: 'Thread', title: 'Thread' },
                 { value: 'TORNADO', title: 'Tornado' },
                 { value: 'TORRENTCHECKER', title: 'Torrent Checker' },
@@ -141,10 +142,10 @@ export default {
         }
     },
     computed: {
-        ...mapState([
-            'config',
-            'layout'
-        ]),
+        ...mapState({
+            config: state => state.config.general,
+            layout: state => state.config.layout
+        }),
         rawViewLink() {
             const qs = new URLSearchParams();
             qs.set('level', this.minLevel);

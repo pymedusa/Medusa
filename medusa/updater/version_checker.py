@@ -72,16 +72,16 @@ class CheckVersion(object):
                 os.mkdir(backupDir)
 
             if self._keeplatestbackup(backupDir) and self._backup(backupDir):
-                log.info(u'Config backup successful, updating...')
-                ui.notifications.message('Backup', 'Config backup successful, updating...')
+                log.info(u'Config backup successful')
+                ui.notifications.message('Backup', 'Config backup successful')
                 return True
             else:
-                log.warning(u'Config backup failed, aborting update')
-                ui.notifications.message('Backup', 'Config backup failed, aborting update')
+                log.warning(u'Config backup failed')
+                ui.notifications.message('Backup', 'Config backup failed')
                 return False
         except Exception as e:
             log.error(u'Update: Config backup failed. Error: {0!r}', e)
-            ui.notifications.message('Backup', 'Config backup failed, aborting update')
+            ui.notifications.message('Backup', 'Config backup failed')
             return False
 
     @staticmethod
@@ -163,12 +163,16 @@ class CheckVersion(object):
                 return False
 
         def showupdate_safe():
-            if not app.show_update_scheduler.action.amActive:
-                log.debug(u'We can proceed with the update. Shows are not being updated')
-                return True
-            else:
+            if app.show_update_scheduler.action.amActive:
                 log.debug(u"We can't proceed with the update. Shows are being updated")
                 return False
+
+            if app.episode_update_scheduler.action.amActive:
+                log.debug(u"We can't proceed with the update. Episodes are being updated")
+                return False
+
+            log.debug(u'We can proceed with the update. Shows or episodes are not being updated')
+            return True
 
         db_safe = db_safe(self)
         postprocessor_safe = postprocessor_safe()

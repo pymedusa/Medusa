@@ -67,9 +67,9 @@ from medusa.helper.common import (
 )
 from medusa.helper.exceptions import CantUpdateShowException, ShowDirectoryNotFoundException
 from medusa.helpers.quality import get_quality_string
-from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE
-from medusa.indexers.indexer_exceptions import IndexerError, IndexerShowNotFound
+from medusa.indexers.api import indexerApi
+from medusa.indexers.config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE
+from medusa.indexers.exceptions import IndexerError, IndexerShowNotFound
 from medusa.logger import LOGGING_LEVELS, filter_logline, read_loglines
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.media.banner import ShowBanner
@@ -2038,8 +2038,6 @@ class CMD_ShowAddExisting(ApiCall):
         # set indexer so we can pass it along when adding show to Medusa
         indexer = indexer_result['data']['results'][0]['indexer']
 
-        # use default quality as a fail-safe
-        new_quality = int(app.QUALITY_DEFAULT)
         i_quality_id = []
         a_quality_id = []
 
@@ -2050,12 +2048,12 @@ class CMD_ShowAddExisting(ApiCall):
             for quality in self.archive:
                 a_quality_id.append(quality_map[quality])
 
-        if i_quality_id or a_quality_id:
-            new_quality = Quality.combine_qualities(i_quality_id, a_quality_id)
+        if not self.initial and not self.archive:
+            i_quality_id, a_quality_id = Quality.split_quality(int(app.QUALITY_DEFAULT))
 
         app.show_queue_scheduler.action.addShow(
             int(indexer), int(self.indexerid), self.location,
-            default_status=app.STATUS_DEFAULT, quality=new_quality,
+            default_status=app.STATUS_DEFAULT, quality={'allowed': i_quality_id, 'preferred': a_quality_id},
             season_folders=int(self.season_folders), subtitles=self.subtitles,
             default_status_after=app.STATUS_DEFAULT_AFTER
         )
@@ -2132,8 +2130,6 @@ class CMD_ShowAddNew(ApiCall):
         if not os.path.isdir(self.location):
             return _responds(RESULT_FAILURE, msg='{0!r} is not a valid location'.format(self.location))
 
-        # use default quality as a fail-safe
-        new_quality = int(app.QUALITY_DEFAULT)
         i_quality_id = []
         a_quality_id = []
 
@@ -2144,8 +2140,8 @@ class CMD_ShowAddNew(ApiCall):
             for quality in self.archive:
                 a_quality_id.append(quality_map[quality])
 
-        if i_quality_id or a_quality_id:
-            new_quality = Quality.combine_qualities(i_quality_id, a_quality_id)
+        if not self.initial and not self.archive:
+            i_quality_id, a_quality_id = Quality.split_quality(int(app.QUALITY_DEFAULT))
 
         # use default status as a fail-safe
         new_status = app.STATUS_DEFAULT
@@ -2213,9 +2209,9 @@ class CMD_ShowAddNew(ApiCall):
 
         app.show_queue_scheduler.action.addShow(
             int(indexer), int(self.indexerid), show_path, default_status=new_status,
-            quality=new_quality, season_folders=int(self.season_folders),
-            lang=self.lang, subtitles=self.subtitles, anime=self.anime,
-            scene=self.scene, default_status_after=default_ep_status_after
+            quality={'allowed': i_quality_id, 'preferred': a_quality_id},
+            season_folders=int(self.season_folders), lang=self.lang, subtitles=self.subtitles,
+            anime=self.anime, scene=self.scene, default_status_after=default_ep_status_after
         )
 
         return _responds(RESULT_SUCCESS, {'name': indexer_name}, indexer_name + ' has been queued to be added')

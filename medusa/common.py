@@ -39,7 +39,7 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 INSTANCE_ID = text_type(uuid.uuid1())
-VERSION = '0.3.14'
+VERSION = '0.4.6'
 USER_AGENT = 'Medusa/{version} ({system}; {release}; {instance})'.format(
     version=VERSION, system=platform.system(), release=platform.release(),
     instance=INSTANCE_ID)

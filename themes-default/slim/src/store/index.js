@@ -3,21 +3,15 @@ import Vuex, { Store } from 'vuex';
 import VueNativeSock from 'vue-native-websocket';
 import {
     auth,
-    clients,
     config,
-    consts,
     defaults,
-    indexers,
-    layout,
-    metadata,
+    history,
     notifications,
-    notifiers,
-    postprocessing,
-    search,
+    provider,
     shows,
+    search,
     socket,
-    stats,
-    system
+    stats
 } from './modules';
 import {
     SOCKET_ONOPEN,
@@ -33,21 +27,15 @@ Vue.use(Vuex);
 const store = new Store({
     modules: {
         auth,
-        clients,
         config,
-        consts,
         defaults,
-        indexers,
-        layout,
-        metadata,
+        history,
         notifications,
-        notifiers,
-        postprocessing,
+        provider,
         search,
         shows,
         socket,
-        stats,
-        system
+        stats
     },
     state: {},
     mutations: {},
@@ -71,8 +59,14 @@ const passToStoreHandler = function(eventName, event, next) {
         } else if (event === 'configUpdated') {
             const { section, config } = data;
             this.store.dispatch('updateConfig', { section, config });
-        } else if (event === 'showUpdated') {
+        } else if (event === 'showUpdated' || event === 'showAdded') {
             this.store.dispatch('updateShow', data);
+        } else if (event === 'addManualSearchResult') {
+            this.store.dispatch('addManualSearchResult', data);
+        } else if (event === 'QueueItemUpdate') {
+            this.store.dispatch('updateSearchQueueItem', data);
+        } else if (event === 'QueueItemShowAdd') {
+            this.store.dispatch('updateShowQueueItem', data);
         } else {
             window.displayNotification('info', event, data);
         }

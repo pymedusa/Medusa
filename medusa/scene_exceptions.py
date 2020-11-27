@@ -13,8 +13,8 @@ import adba
 
 from medusa import app, db
 from medusa.helpers import sanitize_scene_name
-from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.api import indexerApi
+from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSafeSession
 
@@ -147,6 +147,26 @@ def get_season_scene_exceptions(series_obj, season=-1):
     return set(exceptions_list)
 
 
+def get_season_from_name(series_obj, exception_name):
+    """
+    Get season number from exceptions_cache for a series scene exception name.
+
+    Use this method if you expect to get back a season number from a scene exception.
+    :param series_obj: A Series object.
+    :param series_name: The scene exception name.
+
+    :return: The season number or None.
+    """
+    exceptions_list = exceptions_cache[(series_obj.indexer, series_obj.series_id)]
+    for season, exceptions in exceptions_list.items():
+        # Skip whole series exceptions
+        if season == -1:
+            continue
+        for exception in exceptions:
+            if exception.title.lower() == exception_name.lower():
+                return exception.season
+
+
 def get_all_scene_exceptions(series_obj):
     """
     Get all scene exceptions for a show ID.
@@ -157,22 +177,18 @@ def get_all_scene_exceptions(series_obj):
     return exceptions_cache.get((series_obj.indexer, series_obj.series_id), defaultdict(set))
 
 
-def get_scene_exceptions_by_name(show_name):
-    """Get the series_id, season and indexer of the scene exception."""
+def get_scene_exception_by_name(series_name):
+    """Get the season of a scene exception."""
     # Flatten the exceptions_cache.
-    scene_exceptions = set()
-    for exception_set in exceptions_cache.values():
-        for title_exception in exception_set.values():
-            scene_exceptions.update(title_exception)
+    scene_exceptions = []
+    for exception_set in list(exceptions_cache.values()):
+        for title_exception in list(exception_set.values()):
+            scene_exceptions += title_exception
 
-    matches = set()
     # First attempt exact match.
     for title_exception in scene_exceptions:
-        if show_name == title_exception.title:
-            matches.add(title_exception)
-
-    if matches:
-        return matches
+        if series_name == title_exception.title:
+            return title_exception
 
     # Let's try out some sanitized names.
     for title_exception in scene_exceptions:
@@ -182,15 +198,13 @@ def get_scene_exceptions_by_name(show_name):
             sanitized_name.lower().replace('.', ' '),
         )
 
-        if show_name.lower() in titles:
+        if series_name.lower() in titles:
             logger.debug(
                 'Scene exception lookup got series id {title_exception.series_id} '
                 'from indexer {title_exception.indexer},'
                 ' using that', title_exception=title_exception
             )
-            matches.add(title_exception)
-
-    return matches
+            return title_exception
 
 
 def update_scene_exceptions(series_obj, scene_exceptions):

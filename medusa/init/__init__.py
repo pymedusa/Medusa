@@ -37,6 +37,7 @@ def initialize():
     _configure_guessit()
     _configure_subliminal()
     _configure_knowit()
+    _configure_unrar()
 
 
 def _check_python_version():
@@ -158,24 +159,41 @@ def _strptime_workaround():
 
 def _monkey_patch_bdecode():
     """
-    Monkeypatch `bencode.bdecode` to add an option to allow extra data.
+    Monkeypatch `bencodepy` to add an option to allow extra data, and change the default parameters.
 
     This allows us to not raise an exception if bencoded data contains extra data after valid prefix.
     """
-    import bencode
+    import bencodepy
+    import bencodepy.compat
 
-    def _patched_bdecode(value, allow_extra_data=False):
-        try:
-            result, length = bencode.decode_func[value[0:1]](value, 0)
-        except (IndexError, KeyError, TypeError, ValueError):
-            raise bencode.BencodeDecodeError('not a valid bencoded string')
+    class CustomBencodeDecoder(bencodepy.BencodeDecoder):
+        def decode(self, value, allow_extra_data=False):
+            try:
+                value = bencodepy.compat.to_binary(value)
+                data, length = self.decode_func[value[0:1]](value, 0)
+            except (IndexError, KeyError, TypeError, ValueError):
+                raise bencodepy.BencodeDecodeError('not a valid bencoded string')
 
-        if length != len(value) and not allow_extra_data:
-            raise bencode.BencodeDecodeError('invalid bencoded value (data after valid prefix)')
+            if length != len(value) and not allow_extra_data:
+                raise bencodepy.BencodeDecodeError('invalid bencoded value (data after valid prefix)')
 
-        return result
+            return data
 
-    bencode.bdecode = _patched_bdecode
+    class CustomBencode(bencodepy.Bencode):
+        def __init__(self, encoding=None, encoding_fallback=None, dict_ordered=False, dict_ordered_sort=False):
+            self.decoder = CustomBencodeDecoder(
+                encoding=encoding,
+                encoding_fallback=encoding_fallback,
+                dict_ordered=dict_ordered,
+                dict_ordered_sort=dict_ordered_sort,
+            )
+            self.encoder = bencodepy.BencodeEncoder()
+
+        def decode(self, value, allow_extra_data=False):
+            return self.decoder.decode(value, allow_extra_data=allow_extra_data)
+
+    # Replace the default encoder
+    bencodepy.DEFAULT = CustomBencode(encoding='utf-8', encoding_fallback='value')
 
 
 def _configure_guessit():
@@ -220,3 +238,14 @@ def _configure_knowit():
         suggested_path = os.path.join(suggested_path, subfolder)
 
     api.initialize({'mediainfo': suggested_path})
+
+
+def _configure_unrar():
+    from knowit.utils import detect_os
+    import rarfile
+
+    os_family = detect_os()
+    suggested_path = os.path.join(_get_lib_location(app.LIB_FOLDER), 'native', os_family)
+    if os_family == 'windows':
+        unrar_path = os.path.join(suggested_path, 'UnRAR.exe')
+        rarfile.UNRAR_TOOL = unrar_path

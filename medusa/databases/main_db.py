@@ -10,7 +10,7 @@ import warnings
 from medusa import common, db, subtitles
 from medusa.databases import utils
 from medusa.helper.common import dateTimeFormat
-from medusa.indexers.indexer_config import STATUS_MAP
+from medusa.indexers.config import STATUS_MAP
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import NameParser
 
@@ -924,14 +924,59 @@ class MoveSceneExceptions(AddReleaseIgnoreRequireExcludeOptions):
         self.inc_minor_version()
 
 
-class AddSearchTemplates(MoveSceneExceptions):
+class AddShowLists(MoveSceneExceptions):
+    """Add show_lists field to tv_shows."""
+
+    def test(self):
+        """Test if the version is at least 44.16."""
+        return self.connection.version >= (44, 16)
+
+    def execute(self):
+        utils.backup_database(self.connection.path, self.connection.version)
+
+        log.info(u'Addin show_lists field to tv_shows.')
+        if not self.hasColumn('tv_shows', 'show_lists'):
+            self.addColumn('tv_shows', 'show_lists', 'text', 'series')
+
+            # Shows that are not flagged as anime, put in the anime list
+            self.connection.action("update tv_shows set show_lists = 'series' where anime = 0")
+
+            # Shows that are flagged as anime, put in the anime list
+            self.connection.action("update tv_shows set show_lists = 'anime' where anime = 1")
+
+        self.inc_minor_version()
+
+
+class AddCustomLogs(AddShowLists):
+    """Create a new table custom_logs in main.db."""
+
+    def test(self):
+        """Test if the version is at least 44.17."""
+        return self.connection.version >= (44, 17)
+
+    def execute(self):
+        utils.backup_database(self.connection.path, self.connection.version)
+
+        log.info('Creating a new table custom_logs in the main.db database.')
+
+        self.connection.action(
+            'CREATE TABLE custom_logs '
+            '(log_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
+            'identifier TEXT NOT NULL, '
+            'level INTEGER NOT NULL DEFAULT 0);'
+        )
+
+        self.inc_minor_version()
+
+
+class AddSearchTemplates(AddCustomLogs):
     """Create a new table search_templates in main.db."""
 
     def test(self):
         """
-        Test if the version is at least 44.16
+        Test if the version is at least 44.18
         """
-        return self.connection.version >= (44, 16)
+        return self.connection.version >= (44, 18)
 
     def execute(self):
         utils.backup_database(self.connection.path, self.connection.version)

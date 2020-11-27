@@ -30,7 +30,7 @@ window.app = new Vue({
             if (!backup.dir) return;
 
             backup.disabled = true;
-            backup.status = MEDUSA.config.loading;
+            backup.status = MEDUSA.config.layout.loading;
 
             $.get('config/backuprestore/backup', {
                 backupDir: backup.dir
@@ -45,7 +45,7 @@ window.app = new Vue({
             if (!restore.file) return;
 
             restore.disabled = true;
-            restore.status = MEDUSA.config.loading;
+            restore.status = MEDUSA.config.layout.loading;
 
             $.get('config/backuprestore/restore', {
                 backupFile: restore.file
@@ -75,9 +75,9 @@ window.app = new Vue({
                     </div>
                     <fieldset class="component-group-list">
                         <div class="field-pair">
-                            Select the folder you wish to save your backup file to:
+                            Select the folder you wish to save your backup-file to:
                             <br><br>
-                            <file-browser name="backupDir" title="Select backup folder to save to" local-storage-key="backupPath" @update="backup.dir = $event"></file-browser>
+                            <file-browser name="backupDir" title="Select folder to save to" local-storage-key="backupPath" @update="backup.dir = $event"></file-browser>
                             <br>
                             <input @click="runBackup" :disabled="backup.disabled" class="btn-medusa btn-inline" type="button" value="Backup" id="Backup" />
                             <br>

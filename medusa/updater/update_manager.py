@@ -5,10 +5,12 @@ from __future__ import unicode_literals
 import logging
 from distutils.version import LooseVersion
 
+from github import GithubException
+
 from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
 
-from six import text_type
+from requests.exceptions import RequestException
 
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -27,7 +29,7 @@ class UpdateManager(object):
 
     @staticmethod
     def get_update_url():
-        return app.WEB_ROOT + '/home/update/?pid=' + text_type(app.PID)
+        return app.WEB_ROOT + '/home/update'
 
     def current_version(self):
         """Get the current verion of the app."""
@@ -39,6 +41,10 @@ class UpdateManager(object):
 
     def is_latest_version(self):
         """Compare the current installed version with the remote version."""
-        if LooseVersion(self.newest_version) > LooseVersion(self.current_version):
-            return False
+        try:
+            if LooseVersion(self.newest_version) > LooseVersion(self.current_version):
+                return False
+        except (GithubException, RequestException) as error:
+            log.warning("Unable to contact GitHub, can't get latest version: {0!r}", error)
+
         return True

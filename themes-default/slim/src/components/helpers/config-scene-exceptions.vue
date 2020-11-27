@@ -95,6 +95,11 @@ export default {
     computed: {
         availableSeasons() {
             const { show } = this;
+            const { seasonCount } = show;
+
+            if (!seasonCount) {
+                return [];
+            }
 
             return [
                 ...[{ value: -1, description: 'Show Exception' }],

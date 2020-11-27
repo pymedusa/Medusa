@@ -6,7 +6,7 @@ from builtins import object
 from builtins import str
 
 from medusa import app
-from medusa.event_queue import Events
+from medusa.queues.event_queue import Events
 
 
 class Shutdown(object):

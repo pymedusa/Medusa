@@ -5,6 +5,7 @@
 from __future__ import unicode_literals
 
 import logging
+import os
 
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
@@ -150,6 +151,9 @@ class QBittorrentAPI(GenericClient):
         data = {
             'urls': result.url,
         }
+        if self.api >= (2, 0, 0):
+            if os.path.isabs(app.TORRENT_PATH):
+                data['savepath'] = app.TORRENT_PATH
         return self._request(method='post', data=data, cookies=self.session.cookies)
 
     def _add_torrent_file(self, result):
@@ -159,7 +163,11 @@ class QBittorrentAPI(GenericClient):
         files = {
             'torrents': result.content
         }
-        return self._request(method='post', files=files, cookies=self.session.cookies)
+        data = {}
+        if self.api >= (2, 0, 0):
+            if os.path.isabs(app.TORRENT_PATH):
+                data['savepath'] = app.TORRENT_PATH
+        return self._request(method='post', data=data, files=files, cookies=self.session.cookies)
 
     def _set_torrent_label(self, result):
 

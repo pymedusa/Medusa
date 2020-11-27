@@ -35,11 +35,11 @@ export default {
         AppLink
     },
     computed: {
-        ...mapState([
-            'layout',
-            'stats',
-            'system'
-        ]),
+        ...mapState({
+            layout: state => state.config.layout,
+            system: state => state.config.system,
+            stats: state => state.stats
+        }),
         ...mapGetters([
             'getStatus',
             'getScheduler'
@@ -92,7 +92,7 @@ export default {
          * @example
          */
         formatTimeDuration(durationInMs) {
-            const days = parseInt(durationInMs / 86400000, 10);
+            const days = Number.parseInt(durationInMs / 86400000, 10);
             let daysText = '';
             if (days > 0) {
                 daysText = String(days) + (days > 1 ? ' days, ' : ' day, ');

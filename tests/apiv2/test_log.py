@@ -8,13 +8,13 @@ import pytest
 
 
 @pytest.mark.gen_test
-def test_log_get(http_client, create_url, auth_headers, logger, commit_hash):
+async def test_log_get(http_client, create_url, auth_headers, logger, commit_hash):
     # given
     logger.info('Some {what} message', what='nice')
     url = create_url('/log')
 
     # when
-    response = yield http_client.fetch(url, **auth_headers)
+    response = await http_client.fetch(url, **auth_headers)
     actual = json.loads(response.body)
 
     # then
@@ -30,7 +30,7 @@ def test_log_get(http_client, create_url, auth_headers, logger, commit_hash):
 
 
 @pytest.mark.gen_test
-def test_log_get_pagination(http_client, create_url, auth_headers, logger, commit_hash):
+async def test_log_get_pagination(http_client, create_url, auth_headers, logger, commit_hash):
     # given
     logger.info('Some {what} message 1', what='nice')
     logger.info('Some {what} message 2', what='nice')
@@ -38,7 +38,7 @@ def test_log_get_pagination(http_client, create_url, auth_headers, logger, commi
     url = create_url('/log', limit=2, page=2)
 
     # when
-    response = yield http_client.fetch(url, **auth_headers)
+    response = await http_client.fetch(url, **auth_headers)
     actual = json.loads(response.body)
 
     # then
@@ -54,7 +54,7 @@ def test_log_get_pagination(http_client, create_url, auth_headers, logger, commi
 
 
 @pytest.mark.gen_test
-def test_log_post(monkeypatch, http_client, create_url, auth_headers, logger, read_loglines):
+async def test_log_post(monkeypatch, http_client, create_url, auth_headers, logger, read_loglines):
     # given
     monkeypatch.setattr(log, 'log', logger)
     url = create_url('/log')
@@ -69,7 +69,7 @@ def test_log_post(monkeypatch, http_client, create_url, auth_headers, logger, re
     }
 
     # when
-    response = yield http_client.fetch(url, method='POST', body=json.dumps(body), **auth_headers)
+    response = await http_client.fetch(url, method='POST', body=json.dumps(body), **auth_headers)
     actual = list(read_loglines)
 
     # then

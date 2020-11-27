@@ -12,16 +12,19 @@ const homeRoutes = [
         name: 'home',
         meta: {
             title: 'Home',
-            header: 'Show List',
-            topMenu: 'home'
-        }
+            topMenu: 'home',
+            converted: true
+        },
+        component: () => import('../components/home.vue')
     },
     {
         path: '/home/editShow',
         name: 'editShow',
         meta: {
             topMenu: 'home',
-            subMenu: showSubMenu
+            subMenu: showSubMenu,
+            converted: true,
+            nocache: true // Use this flag, to have the router-view use :key="$route.fullPath"
         },
         component: () => import('../components/edit-show.vue')
     },
@@ -30,7 +33,9 @@ const homeRoutes = [
         name: 'show',
         meta: {
             topMenu: 'home',
-            subMenu: showSubMenu
+            subMenu: showSubMenu,
+            converted: true,
+            nocache: true // Use this flag, to have the router-view use :key="$route.fullPath"
         },
         component: () => import('../components/display-show.vue')
     },
@@ -39,8 +44,11 @@ const homeRoutes = [
         name: 'snatchSelection',
         meta: {
             topMenu: 'home',
-            subMenu: showSubMenu
-        }
+            subMenu: showSubMenu,
+            converted: true,
+            nocache: true // Use this flag, to have the router-view use :key="$route.fullPath"
+        },
+        component: () => import('../components/snatch-selection.vue')
     },
     {
         path: '/home/testRename',
@@ -65,8 +73,10 @@ const homeRoutes = [
         name: 'status',
         meta: {
             title: 'Status',
-            topMenu: 'system'
-        }
+            topMenu: 'system',
+            converted: true
+        },
+        component: () => import('../components/status.vue')
     },
     {
         path: '/home/restart',
@@ -74,23 +84,31 @@ const homeRoutes = [
         meta: {
             title: 'Restarting...',
             header: 'Performing Restart',
-            topMenu: 'system'
-        }
+            topMenu: 'system',
+            converted: true
+        },
+        component: () => import('../components/restart.vue')
     },
     {
         path: '/home/shutdown',
         name: 'shutdown',
         meta: {
             header: 'Shutting down',
-            topMenu: 'system'
-        }
+            topMenu: 'system',
+            converted: true
+        },
+        component: () => import('../components/restart.vue'),
+        props: { shutdown: true }
     },
     {
         path: '/home/update',
         name: 'update',
         meta: {
-            topMenu: 'system'
-        }
+            header: 'Update Medusa',
+            topMenu: 'system',
+            converted: true
+        },
+        component: () => import('../components/update.vue')
     }
 ];
 
@@ -115,8 +133,10 @@ const configRoutes = [
             title: 'Config - Anime',
             header: 'Anime',
             topMenu: 'config',
-            subMenu: configSubMenu
-        }
+            subMenu: configSubMenu,
+            converted: true
+        },
+        component: () => import('../components/config-anime.vue')
     },
     {
         path: '/config/backuprestore',
@@ -156,8 +176,8 @@ const configRoutes = [
         path: '/config/postProcessing',
         name: 'configPostProcessing',
         meta: {
-            title: 'Config - Post Processing',
-            header: 'Post Processing',
+            title: 'Config - Post-Processing',
+            header: 'Post-Processing',
             topMenu: 'config',
             subMenu: configSubMenu,
             converted: true
@@ -212,13 +232,15 @@ const addShowRoutes = [
         component: () => import('../components/add-shows.vue')
     },
     {
-        path: '/addShows/addExistingShows',
+        path: '/addShows/existingShows',
         name: 'addExistingShows',
         meta: {
             title: 'Add Existing Shows',
             header: 'Add Existing Shows',
-            topMenu: 'home'
-        }
+            topMenu: 'home',
+            converted: true
+        },
+        component: () => import('../components/new-shows-existing.vue')
     },
     {
         path: '/addShows/newShow',
@@ -226,8 +248,10 @@ const addShowRoutes = [
         meta: {
             title: 'Add New Show',
             header: 'Add New Show',
-            topMenu: 'home'
-        }
+            topMenu: 'home',
+            converted: true
+        },
+        component: () => import('../components/new-show.vue')
     },
     {
         path: '/addShows/trendingShows',
@@ -346,8 +370,10 @@ const manageRoutes = [
         meta: {
             title: 'Manage Searches',
             header: 'Manage Searches',
-            topMenu: 'manage'
-        }
+            topMenu: 'manage',
+            converted: true
+        },
+        component: () => import('../components/manage-searches.vue')
     },
     {
         path: '/manage/massEdit',

@@ -1,8 +1,9 @@
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "pillTestCase"] }] */
 import Vuex, { Store } from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue } from '@vue/test-utils';
 import { QualityPill } from '../../src/components';
-import constsModule from '../../src/store/modules/consts';
+import consts from '../../src/store/modules/config/consts';
 import { generatePropTest } from '../helpers/generators';
 import fixtures from '../__fixtures__/common';
 
@@ -18,10 +19,15 @@ describe('QualityPill.test.js', () => {
         const { state } = fixtures;
         store = new Store({
             modules: {
-                consts: constsModule
+                consts: {
+                    getters: consts.getters,
+                    state: state.config.consts
+                },
+                config: {
+                    state: state.config
+                }
             }
         });
-        store.replaceState(state);
     });
 
     const pillTestCase = generatePropTest(QualityPill);

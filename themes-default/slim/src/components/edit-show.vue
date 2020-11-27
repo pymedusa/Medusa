@@ -14,15 +14,8 @@
 
         <div v-if="showLoaded" id="config" :class="{ summaryFanArt: layout.fanartBackground }">
             <form @submit.prevent="saveShow('all')" class="form-horizontal">
-                <div id="config-components">
-                    <ul>
-                        <li><app-link href="#core-component-group1">Main</app-link></li>
-                        <li><app-link href="#core-component-group2">Format</app-link></li>
-                        <li><app-link href="#core-component-group3">Advanced</app-link></li>
-                        <li v-show="show.config.templates"><app-link href="#core-component-group4">Search Templates</app-link></li>
-                    </ul>
-
-                    <div id="core-component-group1">
+                <vue-tabs>
+                    <v-tab title="Main">
                         <div class="component-group">
                             <h3>Main Settings</h3>
                             <fieldset class="component-group-list">
@@ -30,6 +23,7 @@
                                     <file-browser
                                         name="location"
                                         title="Select Show Location"
+                                        :key="show.id.slug"
                                         :initial-dir="show.config.location"
                                         @update="show.config.location = $event"
                                     />
@@ -79,9 +73,9 @@
                                 </config-toggle-slider>
                             </fieldset>
                         </div>
-                    </div>
+                    </v-tab>
 
-                    <div id="core-component-group2">
+                    <v-tab title="Format">
                         <div class="component-group">
                             <h3>Format Settings</h3>
                             <fieldset class="component-group-list">
@@ -127,11 +121,20 @@
                                     <span>use the DVD order instead of the air order</span>
                                     <div class="clear-left"><p>A "Force Full Update" is necessary, and if you have existing episodes you need to sort them manually.</p></div>
                                 </config-toggle-slider>
+
+                                <config-template label-for="show_lists" label="Display in show lists">
+                                    <multiselect
+                                        v-model="showLists"
+                                        :multiple="true"
+                                        :options="layout.show.showListOrder.map(list => list.toLowerCase())"
+                                    />
+                                </config-template>
+
                             </fieldset>
                         </div>
-                    </div>
+                    </v-tab>
 
-                    <div id="core-component-group3">
+                    <v-tab title="Advanced">
                         <div class="component-group">
                             <h3>Advanced Settings</h3>
                             <fieldset class="component-group-list">
@@ -191,9 +194,8 @@
 
                             </fieldset>
                         </div>
-                    </div>
-
-                    <div id="core-component-group4">
+                    </v-tab>
+                    <v-tab v-show="show.config.templates" title="Search Templates">
                         <div class="component-group">
                             <h3>Search Templates</h3>
                             <p>If you would like to have more control over the searches thrown at your torrent and usenet indexers, you can enable/disable and even add search templates.</p>
@@ -204,9 +206,8 @@
                                 />
                             </fieldset>
                         </div>
-                    </div>
-
-                </div>
+                    </v-tab>
+                </vue-tabs>
 
                 <br>
                 <input
@@ -225,7 +226,7 @@
 import { mapActions, mapGetters, mapState } from 'vuex';
 
 import { arrayUnique, arrayExclude, combineQualities } from '../utils/core';
-
+import { VueTabs, VTab } from 'vue-nav-tabs/dist/vue-tabs.js';
 import AnidbReleaseGroupUi from './anidb-release-group-ui.vue';
 import Backstretch from './backstretch.vue';
 import {
@@ -241,6 +242,9 @@ import {
     SelectList
 } from './helpers';
 
+import Multiselect from 'vue-multiselect';
+import 'vue-multiselect/dist/vue-multiselect.min.css';
+
 export default {
     name: 'edit-show',
     components: {
@@ -253,9 +257,12 @@ export default {
         ConfigToggleSlider,
         FileBrowser,
         LanguageSelect,
+        Multiselect,
         QualityChooser,
-        SearchTemplateContainer,
-        SelectList
+        SelectList,
+        VueTabs,
+        VTab
+        SearchTemplateContainer
     },
     metaInfo() {
         if (!this.show || !this.show.title) {
@@ -292,14 +299,27 @@ export default {
     },
     computed: {
         ...mapState({
-            indexers: state => state.indexers,
-            layout: state => state.layout,
-            episodeStatuses: state => state.consts.statuses
+            general: state => state.config.general,
+            indexers: state => state.config.indexers,
+            anime: state => state.config.anime,
+            layout: state => state.config.layout,
+            episodeStatuses: state => state.config.consts.statuses,
+            search: state => state.config.search
         }),
         ...mapGetters({
             show: 'getCurrentShow',
             getStatus: 'getStatus'
         }),
+        showLists: {
+            get() {
+                const { show } = this;
+                return show.config.showLists.map(list => list.toLowerCase());
+            },
+            set(value) {
+                const { show, setShowConfig } = this;
+                setShowConfig({ show, config: { ...show.config, showLists: value } });
+            }
+        },
         indexer() {
             return this.showIndexer || this.$route.query.indexername;
         },
@@ -331,10 +351,12 @@ export default {
             return this.saving === false ? 'Save Changes' : 'Saving...';
         },
         globalIgnored() {
-            return this.$store.state.search.filters.ignored.map(x => x.toLowerCase());
+            const { search } = this;
+            return search.filters.ignored.map(x => x.toLowerCase());
         },
         globalRequired() {
-            return this.$store.state.search.filters.required.map(x => x.toLowerCase());
+            const { search } = this;
+            return search.filters.required.map(x => x.toLowerCase());
         },
         effectiveIgnored() {
             const { globalIgnored } = this;
@@ -365,31 +387,25 @@ export default {
     created() {
         this.loadShow();
     },
-    updated() {
-        $('#config-components').tabs();
-    },
     methods: {
-        ...mapActions([
-            'getShow',
-            'setShow'
-        ]),
-        async loadShow(params) {
-            const { $store, id, indexer, getShow } = params || this;
+        ...mapActions({
+            getShow: 'getShow',
+            setShow: 'setShow',
+            setCurrentShow: 'setCurrentShow',
+            setShowConfig: 'setShowConfig'
+        }),
+        loadShow() {
+            const { setCurrentShow, id, indexer, getShow } = this;
+
+            // We need detailed info for the xem / scene exceptions, so let's get it.
+            getShow({ id, indexer, detailed: true });
 
             // Let's tell the store which show we currently want as current.
-            $store.commit('currentShow', { indexer, id });
-
-            try {
-                this.loadError = null;
-                await getShow({ indexer, id, detailed: false });
-            } catch (error) {
-                const { data } = error.response;
-                if (data && data.error) {
-                    this.loadError = data.error;
-                } else {
-                    this.loadError = String(error);
-                }
-            }
+            // Run this after getShow(), as it will trigger the initializeEpisodes() method.
+            setCurrentShow({
+                indexer,
+                id
+            });
         },
         async saveShow(subject) {
             const { show, showLoaded } = this;
@@ -431,6 +447,7 @@ export default {
                         allowed: showConfig.qualities.allowed
                     },
                     airdateOffset: showConfig.airdateOffset,
+                    showLists: showConfig.showLists,
                     templates: showConfig.templates,
                     searchTemplates: showConfig.searchTemplates
                 },
@@ -474,12 +491,25 @@ export default {
             this.show.language = value;
         },
         changeFormat(value, formatOption) {
+            const { anime, general } = this;
             this.show.config[formatOption] = value;
             if (value) {
                 // Check each format option, disable the other options.
                 ['anime', 'sports', 'airByDate'].filter(item => item !== formatOption).forEach(option => {
                     this.show.config[option] = false;
                 });
+            }
+
+            if (formatOption === 'anime' && anime.autoAnimeToList) {
+                if (value) {
+                    // Auto anime to list is enabled. If changing the show format to anime, add 'Anime' to show lists.
+                    this.showLists = anime.showlistDefaultAnime;
+                    // The filter makes sure there are unique strings.
+                    this.showLists = this.showLists.filter((v, i, a) => a.indexOf(v) === i);
+                } else {
+                    // Return to default show lists.
+                    this.showLists = general.showDefaults.showLists;
+                }
             }
         }
     }

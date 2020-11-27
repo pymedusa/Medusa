@@ -3,7 +3,7 @@
 from __future__ import unicode_literals
 
 from medusa import app
-from medusa.event_queue import Events
+from medusa.queues.event_queue import Events
 
 from six import text_type
 

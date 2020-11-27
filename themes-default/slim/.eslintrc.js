@@ -2,7 +2,7 @@
 module.exports = {
     parserOptions: {
         ecmaVersion: 2019,
-        parser: 'babel-eslint',
+        parser: '@babel/eslint-parser',
         sourceType: 'module',
         allowImportExportEverywhere: false,
         codeFrame: true,
@@ -31,7 +31,12 @@ module.exports = {
         'eslint-comments',
     ],
     settings: {
-        'import/resolver': 'webpack',
+        'import/resolver': {
+            webpack: {},
+            node: {
+                paths: ['src'],
+            },
+        },
     },
     rules: {
         indent: [
@@ -64,6 +69,12 @@ module.exports = {
         'valid-jsdoc': 'error',
         'padding-line-between-statements': 'off',
         'unicorn/prevent-abbreviations': 'off',
+        'unicorn/no-null': 'off',
+        'unicorn/no-useless-undefined': 'off',
+        'unicorn/no-reduce': 'off',
+        'unicorn/consistent-function-scoping': 'off',
+        'unicorn/prefer-optional-catch-binding': 'off',
+        'unicorn/no-fn-reference-in-iterator': 'off',
         'vue/html-indent': [
             'error',
             4,
