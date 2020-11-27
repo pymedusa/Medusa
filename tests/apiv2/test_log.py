@@ -61,7 +61,7 @@ async def test_log_post(monkeypatch, http_client, create_url, auth_headers, logg
     body = {
         'message': 'Some %s {here}',
         'args': ['nice'],
-        'kwargs': {p
+        'kwargs': {
             'here': 'message'
         },
         'level': 'ERROR',
