@@ -261,7 +261,7 @@ export default {
         QualityChooser,
         SelectList,
         VueTabs,
-        VTab
+        VTab,
         SearchTemplateContainer
     },
     metaInfo() {
