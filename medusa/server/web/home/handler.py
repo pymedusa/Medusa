@@ -586,23 +586,6 @@ class Home(WebRoot):
         """
         return PageTemplate(rh=self, filename='index.mako').render()
 
-        # tv_dir_free = helpers.get_disk_space_usage(app.TV_DOWNLOAD_DIR)
-        # root_dir = {}
-        # if app.ROOT_DIRS:
-        #     backend_pieces = app.ROOT_DIRS
-        #     backend_dirs = backend_pieces[1:]
-        # else:
-        #     backend_dirs = []
-
-        # if backend_dirs:
-        #     for subject in backend_dirs:
-        #         root_dir[subject] = helpers.get_disk_space_usage(subject)
-
-        # t = PageTemplate(rh=self, filename='status.mako')
-        # return t.render(title='Status', header='Status',
-        #                 tvdirFree=tv_dir_free, rootDir=root_dir,
-        #                 controller='home', action='status')
-
     def restart(self):
         """
         Render the restart page.

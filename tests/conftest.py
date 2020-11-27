@@ -43,13 +43,6 @@ def pytest_collection_modifyitems(config, items):
                 items.remove(item)
 
 
-def pytest_configure(config):
-    # register an additional marker
-    config.addinivalue_line(
-        "markers", "gen_test: mark test as gen_test"
-    )
-
-
 def _construct_mapping(self, node, deep=False):
     """Construct a custom yaml map to allow lists to be key of a map.
 
