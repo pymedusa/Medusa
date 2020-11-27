@@ -195,7 +195,7 @@
                             </fieldset>
                         </div>
                     </v-tab>
-                    <v-tab v-show="show.config.templates" title="Search Templates">
+                    <v-tab v-if="show.config.templates" title="Search Templates">
                         <div class="component-group">
                             <h3>Search Templates</h3>
                             <p>If you would like to have more control over the searches thrown at your torrent and usenet indexers, you can enable/disable and even add search templates.</p>
