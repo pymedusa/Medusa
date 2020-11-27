@@ -186,26 +186,26 @@ async def test_config_get_detailed(http_client, create_url, auth_headers, config
 
 
 @pytest.mark.gen_test
-def test_config_get_detailed_bad_request(http_client, create_url, auth_headers):
+async def test_config_get_detailed_bad_request(http_client, create_url, auth_headers):
     # given
     url = create_url('/config/main/abcdef/')
 
     # when
     with pytest.raises(HTTPError) as error:
-        http_client.fetch(url, **auth_headers)
+        await http_client.fetch(url, **auth_headers)
 
     # then
     assert 400 == error.value.code
 
 
 @pytest.mark.gen_test
-def test_config_get_not_found(http_client, create_url, auth_headers):
+async def test_config_get_not_found(http_client, create_url, auth_headers):
     # given
     url = create_url('/config/abcdef/')
 
     # when
     with pytest.raises(HTTPError) as error:
-        http_client.fetch(url, **auth_headers)
+        await http_client.fetch(url, **auth_headers)
 
     # then
     assert 404 == error.value.code
@@ -307,7 +307,14 @@ def config_system(monkeypatch):
     section_data['memoryUsage'] = memory_usage_mock()
     section_data['schedulers'] = [{'key': scheduler[0], 'name': scheduler[1]} for scheduler in all_schedulers]
     section_data['showQueue'] = []
-
+    section_data['diskSpace'] = {
+        'rootDir': [],
+        'tvDownloadDir': {
+            'freeSpace': False,
+            'location': None,
+            'type': 'TV Download Directory'
+        }
+    }
     section_data['branch'] = app.BRANCH
     section_data['commitHash'] = app.CUR_COMMIT_HASH
     section_data['release'] = app.APP_VERSION
