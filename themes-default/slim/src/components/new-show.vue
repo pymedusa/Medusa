@@ -451,7 +451,7 @@ export default {
         },
         enableAnimeOptions() {
             const { providedInfo, selectedShow } = this;
-            return Boolean((selectedShow && selectedShow.indexerId === 1) || (providedInfo.use && providedInfo.indexerId === 1));
+            return Boolean(selectedShow || (providedInfo.use && providedInfo.indexerId === 1));
         },
         indexerListOptions() {
             const { indexers } = this;
