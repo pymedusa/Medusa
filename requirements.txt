@@ -33,7 +33,7 @@ requests==2.25.0
 requests-oauthlib==1.3.0
 six==1.15.0
 subliminal==2.1.0
-tmdbsimple==2.2.11
+tmdbsimple==2.7.0
 tornado==5.1.1
 tornroutes==0.5.1
 ttl-cache==1.6
