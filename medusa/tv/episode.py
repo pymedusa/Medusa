@@ -259,9 +259,9 @@ class Episode(TV):
         self.version = 0
         self.release_group = ''
         self._location = filepath
-        self.scene_season = 0
-        self.scene_episode = 0
-        self.scene_absolute_number = 0
+        self._scene_season = None
+        self._scene_episode = 0
+        self._scene_absolute_number = 0
         self.manually_searched = False
         self.related_episodes = []
         self.wanted_quality = []
@@ -424,6 +424,45 @@ class Episode(TV):
     def status_name(self):
         """Return the status name."""
         return statusStrings[self.status]
+
+    @property
+    def scene_season(self):
+        """Return the scene season."""
+        if self._scene_season is None:
+            return self.season
+
+        return self._scene_season
+
+    @scene_season.setter
+    def scene_season(self, value):
+        """Set the scene season."""
+        self._scene_season = try_int(value, None)
+
+    @property
+    def scene_episode(self):
+        """Return the scene episode."""
+        if not self._scene_episode:
+            return self.episode
+
+        return self._scene_episode
+
+    @scene_episode.setter
+    def scene_episode(self, value):
+        """Set the scene episode."""
+        self._scene_season = try_int(value, 0)
+
+    @property
+    def scene_absolute_number(self):
+        """Return the scene absolute number."""
+        if not self._scene_absolute_number:
+            return self.absolute_number
+
+        return self._scene_absolute_number
+
+    @scene_absolute_number.setter
+    def scene_absolute_number(self, value):
+        """Set the scene absolute number."""
+        self._scene_absolute_number = try_int(value, 0)
 
     @property
     def quality_name(self):
@@ -663,9 +702,9 @@ class Episode(TV):
             self.indexerid = int(sql_results[0]['indexerid'])
             self.indexer = int(sql_results[0]['indexer'])
 
-            self.scene_season = try_int(sql_results[0]['scene_season'], 0)
-            self.scene_episode = try_int(sql_results[0]['scene_episode'], 0)
-            self.scene_absolute_number = try_int(sql_results[0]['scene_absolute_number'], 0)
+            self.scene_season = sql_results[0]['scene_season']
+            self.scene_episode = sql_results[0]['scene_episode']
+            self.scene_absolute_number = sql_results[0]['scene_absolute_number']
 
             if self.scene_absolute_number == 0:
                 self.scene_absolute_number = get_scene_absolute_numbering(
@@ -673,7 +712,7 @@ class Episode(TV):
                     self.absolute_number
                 )
 
-            if self.scene_season == 0 or self.scene_episode == 0:
+            if self.scene_season is None or self.scene_episode == 0:
                 self.scene_season, self.scene_episode = get_scene_numbering(
                     self.series, self.episode, self.season
                 )
