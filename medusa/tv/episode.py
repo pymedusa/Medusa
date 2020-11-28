@@ -449,7 +449,7 @@ class Episode(TV):
     @scene_episode.setter
     def scene_episode(self, value):
         """Set the scene episode."""
-        self._scene_season = try_int(value, 0)
+        self._scene_episode = try_int(value, 0)
 
     @property
     def scene_absolute_number(self):
