@@ -1170,6 +1170,12 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                  
                 <!---->
                  
+                <!---->
+                 
+                <!---->
+                 
+                <!---->
+                 
                 <config-toggle-slider-stub
                   explanations=""
                   id="skip_removed_files"
