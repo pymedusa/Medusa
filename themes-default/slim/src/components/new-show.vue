@@ -756,9 +756,10 @@ export default {
         },
         async checkFolder() {
             // Check if selected show already has a folder in one of the root dirs.
+            // We only check this for the addNewShow route.
             const { indexerIdToName, selectedRootDir, selectedShow } = this;
 
-            if (!selectedShow) {
+            if (this.$route.name === 'addExistingShows' || !selectedShow) {
                 return;
             }
 
