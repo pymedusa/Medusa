@@ -23,7 +23,7 @@ from medusa.common import IGNORED, Quality, SKIPPED, WANTED, cpu_presets
 from medusa.helpers.utils import int_default, to_camel_case
 from medusa.indexers.config import INDEXER_TVDBV2, get_indexer_config
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.queues.utils import generate_show_queue
+from medusa.queues.utils import generate_location_disk_space, generate_show_queue
 from medusa.sbdatetime import date_presets, time_presets
 from medusa.schedulers.utils import generate_schedulers
 from medusa.server.api.v2.base import (
@@ -83,12 +83,12 @@ class ConfigHandler(BaseRequestHandler):
         'showDefaults.status': EnumField(app, 'STATUS_DEFAULT', (SKIPPED, WANTED, IGNORED), int),
         'showDefaults.statusAfter': EnumField(app, 'STATUS_DEFAULT_AFTER', (SKIPPED, WANTED, IGNORED), int),
         'showDefaults.quality': IntegerField(app, 'QUALITY_DEFAULT', validator=Quality.is_valid_combined_quality),
-        'showDefaults.subtitles': BooleanField(app, 'SUBTITLES_DEFAULT', validator=lambda v: app.USE_SUBTITLES,
-                                               converter=bool),
+        'showDefaults.subtitles': BooleanField(app, 'SUBTITLES_DEFAULT', converter=bool),
         'showDefaults.seasonFolders': BooleanField(app, 'SEASON_FOLDERS_DEFAULT', validator=season_folders_validator,
                                                    converter=bool),
         'showDefaults.anime': BooleanField(app, 'ANIME_DEFAULT', converter=bool),
         'showDefaults.scene': BooleanField(app, 'SCENE_DEFAULT', converter=bool),
+        'showDefaults.showLists': ListField(app, 'SHOWLISTS_DEFAULT'),
         'anonRedirect': StringField(app, 'ANON_REDIRECT'),
         'emby.enabled': BooleanField(app, 'USE_EMBY'),
 
@@ -483,7 +483,8 @@ class ConfigHandler(BaseRequestHandler):
         'anime.anidb.username': StringField(app, 'ANIDB_USERNAME'),
         'anime.anidb.password': StringField(app, 'ANIDB_PASSWORD'),
         'anime.anidb.useMylist': BooleanField(app, 'ANIDB_USE_MYLIST'),
-        'anime.autoAnimeToList': BooleanField(app, 'AUTO_ANIME_TO_LIST')
+        'anime.autoAnimeToList': BooleanField(app, 'AUTO_ANIME_TO_LIST'),
+        'anime.showlistDefaultAnime': ListField(app, 'SHOWLISTS_DEFAULT_ANIME')
     }
 
     def get(self, identifier, path_param=None):
@@ -611,6 +612,7 @@ class DataGenerator(object):
         section_data['showDefaults']['seasonFolders'] = bool(app.SEASON_FOLDERS_DEFAULT)
         section_data['showDefaults']['anime'] = bool(app.ANIME_DEFAULT)
         section_data['showDefaults']['scene'] = bool(app.SCENE_DEFAULT)
+        section_data['showDefaults']['showLists'] = list(app.SHOWLISTS_DEFAULT)
 
         section_data['logs'] = {}
         section_data['logs']['debug'] = bool(app.DEBUG)
@@ -1037,6 +1039,7 @@ class DataGenerator(object):
         section_data['memoryUsage'] = helpers.memory_usage(pretty=True)
         section_data['schedulers'] = generate_schedulers()
         section_data['showQueue'] = generate_show_queue()
+        section_data['diskSpace'] = generate_location_disk_space()
 
         section_data['branch'] = app.BRANCH
         section_data['commitHash'] = app.CUR_COMMIT_HASH
@@ -1227,5 +1230,6 @@ class DataGenerator(object):
                 'password': app.ANIDB_PASSWORD,
                 'useMylist': bool(app.ANIDB_USE_MYLIST)
             },
-            'autoAnimeToList': bool(app.AUTO_ANIME_TO_LIST)
+            'autoAnimeToList': bool(app.AUTO_ANIME_TO_LIST),
+            'showlistDefaultAnime': app.SHOWLISTS_DEFAULT_ANIME
         }

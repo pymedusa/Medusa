@@ -60,6 +60,7 @@ def config_main(monkeypatch, app_config):
     section_data['showDefaults']['seasonFolders'] = bool(app.SEASON_FOLDERS_DEFAULT)
     section_data['showDefaults']['anime'] = bool(app.ANIME_DEFAULT)
     section_data['showDefaults']['scene'] = bool(app.SCENE_DEFAULT)
+    section_data['showDefaults']['showLists'] = list(app.SHOWLISTS_DEFAULT)
 
     section_data['logs'] = {}
     section_data['logs']['debug'] = bool(app.DEBUG)
@@ -150,14 +151,14 @@ def config_main(monkeypatch, app_config):
 
 
 @pytest.mark.gen_test
-def test_config_get(http_client, create_url, auth_headers, config_main):
+async def test_config_get(http_client, create_url, auth_headers, config_main):
     # given
     expected = config_main
 
     url = create_url('/config/main')
 
     # when
-    response = yield http_client.fetch(url, **auth_headers)
+    response = await http_client.fetch(url, **auth_headers)
 
     # then
     assert response.code == 200
@@ -171,13 +172,13 @@ def test_config_get(http_client, create_url, auth_headers, config_main):
     'wikiUrl',
     'sslVerify'
 ])
-def test_config_get_detailed(http_client, create_url, auth_headers, config_main, query):
+async def test_config_get_detailed(http_client, create_url, auth_headers, config_main, query):
     # given
     expected = config_main[query]
     url = create_url('/config/main/{0}/'.format(query))
 
     # when
-    response = yield http_client.fetch(url, **auth_headers)
+    response = await http_client.fetch(url, **auth_headers)
 
     # then
     assert response.code == 200
@@ -185,33 +186,33 @@ def test_config_get_detailed(http_client, create_url, auth_headers, config_main,
 
 
 @pytest.mark.gen_test
-def test_config_get_detailed_bad_request(http_client, create_url, auth_headers):
+async def test_config_get_detailed_bad_request(http_client, create_url, auth_headers):
     # given
     url = create_url('/config/main/abcdef/')
 
     # when
     with pytest.raises(HTTPError) as error:
-        yield http_client.fetch(url, **auth_headers)
+        await http_client.fetch(url, **auth_headers)
 
     # then
     assert 400 == error.value.code
 
 
 @pytest.mark.gen_test
-def test_config_get_not_found(http_client, create_url, auth_headers):
+async def test_config_get_not_found(http_client, create_url, auth_headers):
     # given
     url = create_url('/config/abcdef/')
 
     # when
     with pytest.raises(HTTPError) as error:
-        yield http_client.fetch(url, **auth_headers)
+        await http_client.fetch(url, **auth_headers)
 
     # then
     assert 404 == error.value.code
 
 
 @pytest.mark.gen_test
-def test_config_get_consts(http_client, create_url, auth_headers):
+async def test_config_get_consts(http_client, create_url, auth_headers):
     # given
 
     def gen_schema(data):
@@ -237,7 +238,7 @@ def test_config_get_consts(http_client, create_url, auth_headers):
     url = create_url('/config/consts')
 
     # when
-    response = yield http_client.fetch(url, **auth_headers)
+    response = await http_client.fetch(url, **auth_headers)
     data = json.loads(response.body)
 
     # then
@@ -282,14 +283,14 @@ def config_metadata(monkeypatch, app_config):
 
 
 @pytest.mark.gen_test
-def test_config_get_metadata(http_client, create_url, auth_headers, config_metadata):
+async def test_config_get_metadata(http_client, create_url, auth_headers, config_metadata):
     # given
     expected = config_metadata
 
     url = create_url('/config/metadata')
 
     # when
-    response = yield http_client.fetch(url, **auth_headers)
+    response = await http_client.fetch(url, **auth_headers)
 
     # then
     assert response.code == 200
@@ -306,7 +307,14 @@ def config_system(monkeypatch):
     section_data['memoryUsage'] = memory_usage_mock()
     section_data['schedulers'] = [{'key': scheduler[0], 'name': scheduler[1]} for scheduler in all_schedulers]
     section_data['showQueue'] = []
-
+    section_data['diskSpace'] = {
+        'rootDir': [],
+        'tvDownloadDir': {
+            'freeSpace': False,
+            'location': None,
+            'type': 'TV Download Directory'
+        }
+    }
     section_data['branch'] = app.BRANCH
     section_data['commitHash'] = app.CUR_COMMIT_HASH
     section_data['release'] = app.APP_VERSION
@@ -342,14 +350,14 @@ def config_system(monkeypatch):
 
 
 @pytest.mark.gen_test
-def test_config_get_system(http_client, create_url, auth_headers, config_system):
+async def test_config_get_system(http_client, create_url, auth_headers, config_system):
     # given
     expected = config_system
 
     url = create_url('/config/system')
 
     # when
-    response = yield http_client.fetch(url, **auth_headers)
+    response = await http_client.fetch(url, **auth_headers)
 
     # then
     assert response.code == 200
@@ -399,14 +407,14 @@ def config_postprocessing():
 
 
 @pytest.mark.gen_test
-def test_config_get_postprocessing(http_client, create_url, auth_headers, config_postprocessing):
+async def test_config_get_postprocessing(http_client, create_url, auth_headers, config_postprocessing):
     # given
     expected = config_postprocessing
 
     url = create_url('/config/postprocessing')
 
     # when
-    response = yield http_client.fetch(url, **auth_headers)
+    response = await http_client.fetch(url, **auth_headers)
 
     # then
     assert response.code == 200
@@ -466,14 +474,14 @@ def config_clients():
 
 
 @pytest.mark.gen_test
-def test_config_get_clients(http_client, create_url, auth_headers, config_clients):
+async def test_config_get_clients(http_client, create_url, auth_headers, config_clients):
     # given
     expected = config_clients
 
     url = create_url('/config/clients')
 
     # when
-    response = yield http_client.fetch(url, **auth_headers)
+    response = await http_client.fetch(url, **auth_headers)
 
     # then
     assert response.code == 200
@@ -690,14 +698,14 @@ def config_notifiers():
 
 
 @pytest.mark.gen_test
-def test_config_get_notifiers(http_client, create_url, auth_headers, config_notifiers):
+async def test_config_get_notifiers(http_client, create_url, auth_headers, config_notifiers):
     # given
     expected = config_notifiers
 
     url = create_url('/config/notifiers')
 
     # when
-    response = yield http_client.fetch(url, **auth_headers)
+    response = await http_client.fetch(url, **auth_headers)
 
     # then
     assert response.code == 200
@@ -744,14 +752,14 @@ def config_search():
 
 
 @pytest.mark.gen_test
-def test_config_get_search(http_client, create_url, auth_headers, config_search):
+async def test_config_get_search(http_client, create_url, auth_headers, config_search):
     # given
     expected = config_search
 
     url = create_url('/config/search')
 
     # when
-    response = yield http_client.fetch(url, **auth_headers)
+    response = await http_client.fetch(url, **auth_headers)
 
     # then
     assert response.code == 200
@@ -807,14 +815,14 @@ def config_layout():
 
 
 @pytest.mark.gen_test
-def test_config_get_layout(http_client, create_url, auth_headers, config_layout):
+async def test_config_get_layout(http_client, create_url, auth_headers, config_layout):
     # given
     expected = config_layout
 
     url = create_url('/config/layout')
 
     # when
-    response = yield http_client.fetch(url, **auth_headers)
+    response = await http_client.fetch(url, **auth_headers)
 
     # then
     assert response.code == 200

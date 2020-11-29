@@ -579,22 +579,12 @@ class Home(WebRoot):
             return 'Error sending Pushbullet notification'
 
     def status(self):
-        tv_dir_free = helpers.get_disk_space_usage(app.TV_DOWNLOAD_DIR)
-        root_dir = {}
-        if app.ROOT_DIRS:
-            backend_pieces = app.ROOT_DIRS
-            backend_dirs = backend_pieces[1:]
-        else:
-            backend_dirs = []
+        """
+        Render the status page.
 
-        if backend_dirs:
-            for subject in backend_dirs:
-                root_dir[subject] = helpers.get_disk_space_usage(subject)
-
-        t = PageTemplate(rh=self, filename='status.mako')
-        return t.render(title='Status', header='Status',
-                        tvdirFree=tv_dir_free, rootDir=root_dir,
-                        controller='home', action='status')
+        [Converted to VueRouter]
+        """
+        return PageTemplate(rh=self, filename='index.mako').render()
 
     def restart(self):
         """
@@ -1044,10 +1034,9 @@ class Home(WebRoot):
         if do_update_scene_numbering or do_erase_parsed_cache:
             try:
                 xem_refresh(series_obj)
-                time.sleep(cpu_presets[app.CPU_PRESET])
             except CantUpdateShowException as error:
                 errors += 1
-                logger.log("Unable to force an update on scene numbering for show '{show}': {error!r}".format
+                logger.log("Unable to update scene numbering for show '{show}': {error!r}".format
                            (show=series_obj.name, error=error), logger.WARNING)
 
             # Must erase cached DB results when toggling scene numbering
@@ -1740,7 +1729,7 @@ class Home(WebRoot):
             if sceneAbsolute is not None:
                 sceneAbsolute = int(sceneAbsolute)
 
-            set_scene_numbering(series_obj, absolute_number=forAbsolute, sceneAbsolute=sceneAbsolute)
+            set_scene_numbering(series_obj, absolute_number=forAbsolute, scene_absolute=sceneAbsolute)
         else:
             logger.log(u'setEpisodeSceneNumbering for {show} from {season}x{episode} to {scene_season}x{scene_episode}'.format
                        (show=series_obj.indexerid, season=forSeason, episode=forEpisode,
@@ -1755,21 +1744,15 @@ class Home(WebRoot):
 
             set_scene_numbering(
                 series_obj, season=forSeason, episode=forEpisode,
-                sceneSeason=sceneSeason, sceneEpisode=sceneEpisode
+                scene_season=sceneSeason, scene_episode=sceneEpisode
             )
 
         if series_obj.is_anime:
             sn = get_scene_absolute_numbering(series_obj, forAbsolute)
-            if sn:
-                result['sceneAbsolute'] = sn
-            else:
-                result['sceneAbsolute'] = None
+            result['sceneAbsolute'] = sn
         else:
-            sn = get_scene_numbering(series_obj, forSeason, forEpisode)
-            if sn:
-                (result['sceneSeason'], result['sceneEpisode']) = sn
-            else:
-                (result['sceneSeason'], result['sceneEpisode']) = (None, None)
+            sn = get_scene_numbering(series_obj, forEpisode, forSeason)
+            (result['sceneSeason'], result['sceneEpisode']) = sn
 
         return json.dumps(result)
 

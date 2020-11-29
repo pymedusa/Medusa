@@ -15,17 +15,13 @@ class ManageSearches(Manage):
         super(ManageSearches, self).__init__(*args, **kwargs)
 
     def index(self):
-        t = PageTemplate(rh=self, filename='manage_manageSearches.mako')
-        # t.backlogPI = api.backlog_search_scheduler.action.get_progress_indicator()
+        """
+        Render the home page.
 
-        return t.render(backlogPaused=app.search_queue_scheduler.action.is_backlog_paused(),
-                        backlogRunning=app.search_queue_scheduler.action.is_backlog_in_progress(),
-                        dailySearchStatus=app.daily_search_scheduler.action.amActive,
-                        findPropersStatus=app.proper_finder_scheduler.action.amActive,
-                        searchQueueLength=app.search_queue_scheduler.action.queue_length(),
-                        forcedSearchQueueLength=app.forced_search_queue_scheduler.action.queue_length(),
-                        subtitlesFinderStatus=app.subtitles_finder_scheduler.action.amActive,
-                        controller='manage', action='manageSearches')
+        [Converted to VueRouter]
+        """
+        t = PageTemplate(rh=self, filename='index.mako')
+        return t.render()
 
     def forceBacklog(self):
         # force it to run the next time it looks

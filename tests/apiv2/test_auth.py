@@ -8,14 +8,14 @@ import pytest
 
 
 @pytest.mark.gen_test
-def test_no_api_key(http_client, create_url):
+async def test_no_api_key(http_client, create_url):
     # given
     expected = {'error': 'No authorization token.'}
 
     url = create_url('/log', api_key=None)
 
     # when
-    response = yield http_client.fetch(url, raise_error=False)
+    response = await http_client.fetch(url, raise_error=False)
 
     # then
     assert response.code == 401
@@ -23,14 +23,14 @@ def test_no_api_key(http_client, create_url):
 
 
 @pytest.mark.gen_test
-def test_bad_api_key(http_client, create_url):
+async def test_bad_api_key(http_client, create_url):
     # given
     expected = {'error': 'No authorization token.'}
 
     url = create_url('/log', api_key='123')
 
     # when
-    response = yield http_client.fetch(url, raise_error=False)
+    response = await http_client.fetch(url, raise_error=False)
 
     # then
     assert response.code == 401

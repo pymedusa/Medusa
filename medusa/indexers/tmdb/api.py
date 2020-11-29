@@ -314,7 +314,7 @@ class Tmdb(BaseIndexer):
                         seasnum, epno, tmdb_id
                     )
 
-            if seasnum is None or epno is None:
+            if seasnum is None or epno in (None, 0):
                 log.warning('Invalid episode numbering (season: {0!r}, episode: {1!r})', seasnum, epno)
                 continue  # Skip to next episode
 

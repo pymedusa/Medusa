@@ -1,0 +1,112 @@
+/** Use this as table styling for all table layouts */
+.vgt-table-styling >>> .vgt-table {
+    width: 100%;
+    margin-right: auto;
+    margin-left: auto;
+    text-align: left;
+    border-spacing: 0;
+}
+
+.vgt-table-styling >>> .vgt-table th,
+.vgt-table-styling >>> .vgt-table td {
+    padding: 4px;
+    vertical-align: middle;
+}
+
+/* remove extra border from left edge */
+.vgt-table-styling >>> .vgt-table th:first-child,
+.vgt-table-styling >>> .vgt-table td:first-child {
+    border-left: none;
+}
+
+.vgt-table-styling >>> .vgt-table th {
+    text-align: center;
+    border-collapse: collapse;
+    font-weight: normal;
+}
+
+.vgt-table-styling >>> .vgt-table span.break-word {
+    word-wrap: break-word;
+}
+
+.vgt-table-styling >>> .vgt-table thead th.sorting.sorting-asc {
+    background-position-x: right;
+    background-position-y: bottom;
+}
+
+.vgt-table-styling >>> .vgt-table thead th.sorting {
+    background-repeat: no-repeat;
+}
+
+.vgt-table-styling >>> .vgt-table thead th {
+    padding: 4px;
+    cursor: default;
+}
+
+.vgt-table-styling >>> .vgt-table input.tablesorter-filter {
+    width: 98%;
+    height: auto;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.vgt-table-styling >>> .vgt-table tr.tablesorter-filter-row,
+.vgt-table-styling >>> .vgt-table tr.tablesorter-filter-row td {
+    text-align: center;
+}
+
+/* optional disabled input styling */
+.vgt-table-styling >>> .vgt-table input.tablesorter-filter-row .disabled {
+    display: none;
+}
+
+.tablesorter-header-inner {
+    padding: 0 2px;
+    text-align: center;
+}
+
+.vgt-table-styling >>> .vgt-table tfoot tr {
+    text-align: center;
+    border-collapse: collapse;
+}
+
+.vgt-table-styling >>> .vgt-table tfoot a {
+    text-decoration: none;
+}
+
+.vgt-table-styling >>> .vgt-table th.vgt-row-header {
+    text-align: left;
+}
+
+.vgt-table-styling >>> .vgt-table .season-header {
+    display: inline;
+    margin-left: 5px;
+}
+
+.vgt-table-styling >>> .vgt-table tr.spacer {
+    height: 25px;
+}
+
+.vgt-table-styling >>> .vgt-dropdown-menu {
+    position: absolute;
+    z-index: 1000;
+    float: left;
+    min-width: 160px;
+    padding: 5px 0;
+    margin: 2px 0 0;
+    font-size: 14px;
+    text-align: left;
+    list-style: none;
+    background-clip: padding-box;
+    border-radius: 4px;
+}
+
+.vgt-table-styling >>> .vgt-dropdown-menu > li > span {
+    display: block;
+    padding: 3px 20px;
+    clear: both;
+    font-weight: 400;
+    line-height: 1.42857143;
+    white-space: nowrap;
+}

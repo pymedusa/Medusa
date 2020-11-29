@@ -359,7 +359,7 @@ class TVDBv2(BaseIndexer):
                 seas_no = dvd_seas_no
                 ep_no = dvd_ep_no
 
-            if seas_no is None or ep_no is None:
+            if seas_no is None or ep_no in (None, 0):
                 log.warning('Invalid episode numbering (series: {0}({1}), season: {2!r}, episode: {3!r}) '
                             'Contact TVDB forums to have it fixed',
                             self.shows[tvdb_id]['seriesname'], tvdb_id, seas_no, ep_no)
