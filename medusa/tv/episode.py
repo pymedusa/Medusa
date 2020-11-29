@@ -864,6 +864,8 @@ class Episode(TV):
             self.absolute_number
         )
 
+        # TODO: Just me not understanding. If we're getting the show info from the indexer.
+        # Why are we trying to get the scene_season and scene_episode from the db?
         self.scene_season, self.scene_episode = get_scene_numbering(
             self.series, self.episode, self.season
         )
