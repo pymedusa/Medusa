@@ -167,15 +167,15 @@ class SeriesIdentifier(Identifier):
         indexer_api = indexerApi(self.indexer.id)
         indexer_api_params = indexer_api.api_params.copy()
 
-        if options and options.get('language') is not None:
-            indexer_api_params['language'] = options['language']
+        if options and options.get('lang') is not None:
+            indexer_api_params['language'] = options['lang']
 
         log.debug('{indexer_name}: {indexer_params!r}', {
             'indexer_name': indexerApi(self.indexer.id).name,
             'indexer_params': indexer_api_params
         })
 
-        return indexer_api.indexer(**indexer_api.api_params)
+        return indexer_api.indexer(**indexer_api_params)
 
     def __bool__(self):
         """Magic method."""
@@ -1719,7 +1719,7 @@ class Series(TV):
         self.anime = options['anime'] if options.get('anime') is not None else app.ANIME_DEFAULT
         self.scene = options['scene'] if options.get('scene') is not None else app.SCENE_DEFAULT
         self.paused = options['paused'] if options.get('paused') is not None else False
-        self.lang = options['language'] if options.get('language') is not None else app.INDEXER_DEFAULT_LANGUAGE
+        self.lang = options['lang'] if options.get('lang') is not None else app.INDEXER_DEFAULT_LANGUAGE
         self.show_lists = options['show_lists'] if options.get('show_lists') is not None else app.SHOWLISTS_DEFAULT
 
         if options.get('default_status') is not None:

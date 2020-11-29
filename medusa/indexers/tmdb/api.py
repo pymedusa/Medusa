@@ -233,7 +233,7 @@ class Tmdb(BaseIndexer):
         log.debug('Getting all show data for {0}', tmdb_id)
         try:
             results = self.tmdb.TV(tmdb_id).info(
-                language='{0},null'.format(request_language),
+                language='{0}'.format(request_language),
                 append_to_response=extra_info
             )
         except RequestException as error:
@@ -353,7 +353,7 @@ class Tmdb(BaseIndexer):
         _images = {}
 
         # Let's get the different type of images available for this series
-        params = {'include_image_language': '{search_language},null'.format(search_language=self.config['language'])}
+        params = {'include_image_language': '{search_language}'.format(search_language=self.config['language'])}
 
         try:
             images = self.tmdb.TV(tmdb_id).images(params=params)
