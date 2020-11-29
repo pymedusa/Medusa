@@ -23,7 +23,7 @@ from medusa.common import IGNORED, Quality, SKIPPED, WANTED, cpu_presets
 from medusa.helpers.utils import int_default, to_camel_case
 from medusa.indexers.config import INDEXER_TVDBV2, get_indexer_config
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.queues.utils import generate_show_queue
+from medusa.queues.utils import generate_location_disk_space, generate_show_queue
 from medusa.sbdatetime import date_presets, time_presets
 from medusa.schedulers.utils import generate_schedulers
 from medusa.server.api.v2.base import (
@@ -1031,6 +1031,7 @@ class DataGenerator(object):
         section_data['memoryUsage'] = helpers.memory_usage(pretty=True)
         section_data['schedulers'] = generate_schedulers()
         section_data['showQueue'] = generate_show_queue()
+        section_data['diskSpace'] = generate_location_disk_space()
 
         section_data['branch'] = app.BRANCH
         section_data['commitHash'] = app.CUR_COMMIT_HASH

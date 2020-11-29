@@ -60,6 +60,11 @@ class SearchHandler(BaseRequestHandler):
                 return self._search_daily()
             if identifier == 'backlog':
                 return self._search_backlog()
+            if identifier == 'proper':
+                return self._search_proper()
+            if identifier == 'subtitles':
+                return self._search_subtitles()
+
             else:
                 return self._bad_request("Body required for search type '{0}'".format(identifier))
 
@@ -89,7 +94,15 @@ class SearchHandler(BaseRequestHandler):
               ]
             }
         """
-        if not data:
+        if not data or not all([data.get('showSlug'), data.get('episodes'), data.get('season')]):
+            if data and data.get('options'):
+                if data.get('options').get('paused', False):
+                    app.search_queue_scheduler.action.pause_backlog()
+                    return self._accepted('Backlog search paused')
+                else:
+                    app.search_queue_scheduler.action.unpause_backlog()
+                    return self._accepted('Backlog search continued')
+
             # Trigger a full backlog search
             if app.backlog_search_scheduler.forceRun():
                 return self._accepted('Full backlog search started')
@@ -142,6 +155,26 @@ class SearchHandler(BaseRequestHandler):
             return self._accepted('Daily search started')
 
         return self._bad_request('Daily search already running')
+
+    def _search_proper(self):
+        """Queue a proper search.
+
+        :return:
+        """
+        if app.proper_finder_scheduler.forceRun():
+            return self._accepted('Proper search started')
+
+        return self._bad_request('Proper search already running')
+
+    def _search_subtitles(self):
+        """Queue a subtitle search.
+
+        :return:
+        """
+        if app.subtitles_finder_scheduler.forceRun():
+            return self._accepted('Subtitle search started')
+
+        return self._bad_request('Subtitle search already running')
 
     def _search_failed(self, data):
         """Queue a failed search.
