@@ -116,10 +116,6 @@
                             <span :title="props.row.file.location" class="addQTip">{{props.row.file.name}}</span>
                         </span>
 
-                        <span v-else-if="props.column.label == 'Download'">
-                            <app-link v-if="config.downloadUrl && props.row.file.location && ['Downloaded', 'Archived'].includes(props.row.status)" :href="config.downloadUrl + props.row.file.location">Download</app-link>
-                        </span>
-
                         <span v-else-if="props.column.label == 'Subtitles'" class="align-center">
                             <div class="subtitles" v-if="['Archived', 'Downloaded', 'Ignored', 'Skipped'].includes(props.row.status)">
                                 <div v-for="flag in props.row.subtitles" :key="flag">
@@ -280,10 +276,6 @@
 
                         <span v-else-if="props.column.label == 'File'">
                             <span :title="props.row.file.location" class="addQTip">{{props.row.file.name}}</span>
-                        </span>
-
-                        <span v-else-if="props.column.label == 'Download'">
-                            <app-link v-if="config.downloadUrl && props.row.file.location && ['Downloaded', 'Archived'].includes(props.row.status)" :href="config.downloadUrl + props.row.file.location">Download</app-link>
                         </span>
 
                         <span v-else-if="props.column.label == 'Subtitles'" class="align-center">

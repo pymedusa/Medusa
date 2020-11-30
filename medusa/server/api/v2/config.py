@@ -166,7 +166,6 @@ class ConfigHandler(BaseRequestHandler):
         'wikiUrl': StringField(app, 'WIKI_URL'),
         'donationsUrl': StringField(app, 'DONATIONS_URL'),
         'sourceUrl': StringField(app, 'APPLICATION_URL'),
-        'downloadUrl': StringField(app, 'DOWNLOAD_URL'),
         'subtitlesMulti': BooleanField(app, 'SUBTITLES_MULTI'),
         'namingForceFolders': BooleanField(app, 'NAMING_FORCE_FOLDERS'),
         'subtitles.enabled': BooleanField(app, 'USE_SUBTITLES'),
@@ -593,7 +592,6 @@ class DataGenerator(object):
         section_data['wikiUrl'] = app.WIKI_URL
         section_data['donationsUrl'] = app.DONATIONS_URL
         section_data['sourceUrl'] = app.APPLICATION_URL
-        section_data['downloadUrl'] = app.DOWNLOAD_URL
         section_data['subtitlesMulti'] = bool(app.SUBTITLES_MULTI)
         section_data['namingForceFolders'] = bool(app.NAMING_FORCE_FOLDERS)
         section_data['subtitles'] = {}
