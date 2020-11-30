@@ -25,6 +25,7 @@ export default {
 </script>
 <style>
 @import '../../style/v-tooltip.css';
+
 .plotInfo {
     cursor: help;
     float: right;
@@ -39,5 +40,4 @@ export default {
     top: 2px;
     opacity: 0.4;
 }
-
 </style>

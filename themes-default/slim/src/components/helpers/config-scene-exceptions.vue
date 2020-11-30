@@ -156,6 +156,7 @@ export default {
 </script>
 <style scoped>
 @import '../../style/v-tooltip.css';
+
 div.select-list ul {
     padding-left: 0;
 }
