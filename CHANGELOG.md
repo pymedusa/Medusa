@@ -1,6 +1,16 @@
 ## Unreleased
 
 #### New Features
+
+#### Improvements
+
+#### Fixes
+
+## 0.5.0 (30-11-2020)
+
+First Python 3.x version
+
+#### New Features
 - Separate proxy configs for Providers, Indexers, CLients (torrent/nzb) and others ([8605](https://github.com/pymedusa/Medusa/pull/8605))
 
 #### Improvements
