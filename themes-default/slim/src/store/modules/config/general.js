@@ -7,7 +7,6 @@ const state = {
     donationsUrl: null,
     namingForceFolders: null,
     sourceUrl: null,
-    downloadUrl: null,
     rootDirs: [],
     subtitles: {
         enabled: null

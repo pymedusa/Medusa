@@ -229,10 +229,6 @@
                                         <p><b>Note:</b> Use local timezone to start searching for episodes minutes after show ends (depends on your dailysearch frequency)</p>
                                     </config-template>
 
-                                    <config-textbox v-model="general.downloadUrl" label="Download url" id="download_url">
-                                        <span class="component-desc">URL where the shows can be downloaded.</span>
-                                    </config-textbox>
-
                                     <config-toggle-slider v-model="layout.show.pagination.enable" label="Use table pagination" id="show_pagination" />
 
                                     <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
