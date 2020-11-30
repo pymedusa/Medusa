@@ -8,6 +8,7 @@
 
 #### Fixes
 - Provider Nyaa.si: Correct the category that is used for anime searches ([8777](https://github.com/pymedusa/Medusa/pull/8777))
+- Indexer TMDB: Fix adding show using an alternative language ([8784](https://github.com/pymedusa/Medusa/pull/8784))
 
 -----
 
