@@ -41,7 +41,6 @@ def config_main(monkeypatch, app_config):
     section_data['wikiUrl'] = app.WIKI_URL
     section_data['donationsUrl'] = app.DONATIONS_URL
     section_data['sourceUrl'] = app.APPLICATION_URL
-    section_data['downloadUrl'] = app.DOWNLOAD_URL
     section_data['subtitlesMulti'] = bool(app.SUBTITLES_MULTI)
     section_data['namingForceFolders'] = bool(app.NAMING_FORCE_FOLDERS)
     section_data['subtitles'] = {}
