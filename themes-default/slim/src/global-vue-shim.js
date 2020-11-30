@@ -37,7 +37,6 @@ import {
     SelectList,
     ShowSelector,
     StateSwitch,
-    Status,
     SubMenu
 } from './components';
 import store from './store';
@@ -92,8 +91,7 @@ export const registerGlobalComponents = () => {
     components = components.concat([
         History,
         ManualPostProcess,
-        Schedule,
-        Status
+        Schedule
     ]);
 
     // Register the components globally

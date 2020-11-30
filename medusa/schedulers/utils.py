@@ -3,7 +3,7 @@
 from __future__ import unicode_literals
 
 from medusa import app
-from medusa.helpers.utils import timedelta_in_milliseconds
+from medusa.sbdatetime import sbdatetime
 
 
 all_schedulers = [
@@ -13,11 +13,13 @@ all_schedulers = [
     ('versionCheck', 'Version Check', 'version_check_scheduler'),
     ('showQueue', 'Show Queue', 'show_queue_scheduler'),
     ('searchQueue', 'Search Queue', 'search_queue_scheduler'),
+    ('forcedSearchQueue', 'Forced Search Queue', 'forced_search_queue_scheduler'),
     ('properFinder', 'Proper Finder', 'proper_finder_scheduler'),
     ('postProcess', 'Post Process', 'post_processor_scheduler'),
     ('subtitlesFinder', 'Subtitles Finder', 'subtitles_finder_scheduler'),
     ('traktChecker', 'Trakt Checker', 'trakt_checker_scheduler'),
     ('torrentChecker', 'Torrent Checker', 'torrent_checker_scheduler'),
+    ('snatchQueue', 'Snatch Queue', 'manual_snatch_scheduler'),
 ]
 
 
@@ -32,10 +34,22 @@ def _is_active(key, scheduler):
     if key == 'backlog' and app.search_queue_scheduler.action.is_backlog_in_progress():
         return True
 
+    if key == 'dailySearch' and app.search_queue_scheduler.action.is_dailysearch_in_progress():
+        return True
+
+    if key == 'properFinder' and app.search_queue_scheduler.action.is_proper_search_in_progress():
+        return True
+
     try:
         return bool(scheduler.action.amActive)
     except AttributeError:
         return None
+
+
+def _queue_length(key, scheduler):
+    if key in ('searchQueue', 'forcedSearchQueue', 'snatchQueue'):
+        return scheduler.action.queue_length()
+    return 0
 
 
 def _scheduler_to_json(key, name, scheduler):
@@ -54,10 +68,11 @@ def _scheduler_to_json(key, name, scheduler):
         'isEnabled': _is_enabled(key, scheduler),
         'isActive': _is_active(key, scheduler),
         'startTime': scheduler.start_time.isoformat() if scheduler.start_time else None,
-        'cycleTime': timedelta_in_milliseconds(scheduler.cycleTime) or None,
-        'nextRun': timedelta_in_milliseconds(scheduler.timeLeft()) if scheduler.enable else None,
-        'lastRun': scheduler.lastRun.isoformat(),
-        'isSilent': bool(scheduler.silent)
+        'cycleTime': int(scheduler.cycleTime.total_seconds()) or None,
+        'nextRun': int(scheduler.timeLeft().total_seconds()) if scheduler.enable else None,
+        'lastRun': sbdatetime.convert_to_setting(scheduler.lastRun.replace(microsecond=0)).isoformat(),
+        'isSilent': bool(scheduler.silent),
+        'queueLength': _queue_length(key, scheduler),
     }
 
 

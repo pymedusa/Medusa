@@ -451,7 +451,7 @@ export default {
         },
         enableAnimeOptions() {
             const { providedInfo, selectedShow } = this;
-            return Boolean((selectedShow && selectedShow.indexerId === 1) || (providedInfo.use && providedInfo.indexerId === 1));
+            return Boolean(selectedShow || (providedInfo.use && providedInfo.indexerId === 1));
         },
         indexerListOptions() {
             const { indexers } = this;
@@ -756,9 +756,10 @@ export default {
         },
         async checkFolder() {
             // Check if selected show already has a folder in one of the root dirs.
+            // We only check this for the addNewShow route.
             const { indexerIdToName, selectedRootDir, selectedShow } = this;
 
-            if (!selectedShow) {
+            if (this.$route.name === 'addExistingShows' || !selectedShow) {
                 return;
             }
 

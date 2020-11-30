@@ -86,7 +86,8 @@
                                 </config-toggle-slider>
 
                                 <config-toggle-slider :value="show.config.anime" @input="changeFormat($event, 'anime')" label="Anime" id="anime">
-                                    <span>enable if the show is Anime and episodes are released as Show.265 rather than Show.S02E03</span>
+                                    <span>enable if the shows episodes are released using absolute numbering</span>
+                                    <p>For example as Show.265 rather than Show.S02E03</p>
                                 </config-toggle-slider>
 
                                 <config-template v-if="show.config.anime" label-for="anidbReleaseGroup" label="Release Groups">

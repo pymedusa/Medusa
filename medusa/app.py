@@ -172,7 +172,11 @@ class MedusaApp(object):
 
         self.HANDLE_REVERSE_PROXY = False
         self.PROXY_SETTING = None
+        self.PROXY_PROVIDERS = True
         self.PROXY_INDEXERS = True
+        self.PROXY_CLIENTS = True
+        self.PROXY_OTHERS = True
+
         self.SSL_VERIFY = True
         self.SSL_CA_BUNDLE = None
 

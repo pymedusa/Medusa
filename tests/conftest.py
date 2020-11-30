@@ -15,7 +15,7 @@ from github.MainClass import Github
 from github.Organization import Organization
 from github.Repository import Repository
 from medusa import app, cache
-from medusa.common import DOWNLOADED, Quality, SD
+from medusa.common import SD
 from medusa.helper.common import dateTimeFormat
 from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.logger import CensoredFormatter, ContextFilter, FORMATTER_PATTERN, instance

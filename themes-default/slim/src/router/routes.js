@@ -73,8 +73,10 @@ const homeRoutes = [
         name: 'status',
         meta: {
             title: 'Status',
-            topMenu: 'system'
-        }
+            topMenu: 'system',
+            converted: true
+        },
+        component: () => import('../components/status.vue')
     },
     {
         path: '/home/restart',
@@ -368,8 +370,10 @@ const manageRoutes = [
         meta: {
             title: 'Manage Searches',
             header: 'Manage Searches',
-            topMenu: 'manage'
-        }
+            topMenu: 'manage',
+            converted: true
+        },
+        component: () => import('../components/manage-searches.vue')
     },
     {
         path: '/manage/massEdit',

@@ -33,6 +33,7 @@ const state = {
     memoryUsage: null,
     schedulers: [],
     showQueue: [],
+    diskSpace: [],
     sslVersion: null,
     pythonVersion: null,
     pid: null,

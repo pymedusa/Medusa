@@ -23,7 +23,7 @@ from medusa.common import IGNORED, Quality, SKIPPED, WANTED, cpu_presets
 from medusa.helpers.utils import int_default, to_camel_case
 from medusa.indexers.config import INDEXER_TVDBV2, get_indexer_config
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.queues.utils import generate_show_queue
+from medusa.queues.utils import generate_location_disk_space, generate_show_queue
 from medusa.sbdatetime import date_presets, time_presets
 from medusa.schedulers.utils import generate_schedulers
 from medusa.server.api.v2.base import (
@@ -133,7 +133,10 @@ class ConfigHandler(BaseRequestHandler):
         'calendarUnprotected': BooleanField(app, 'CALENDAR_UNPROTECTED'),
         'calendarIcons': BooleanField(app, 'CALENDAR_ICONS'),
         'proxySetting': StringField(app, 'PROXY_SETTING'),
+        'proxyProviders': BooleanField(app, 'PROXY_PROVIDERS'),
         'proxyIndexers': BooleanField(app, 'PROXY_INDEXERS'),
+        'proxyClients': BooleanField(app, 'PROXY_CLIENTS'),
+        'proxyOthers': BooleanField(app, 'PROXY_OTHERS'),
 
         'skipRemovedFiles': BooleanField(app, 'SKIP_REMOVED_FILES'),
         'epDefaultDeletedStatus': IntegerField(app, 'EP_DEFAULT_DELETED_STATUS'),
@@ -163,7 +166,6 @@ class ConfigHandler(BaseRequestHandler):
         'wikiUrl': StringField(app, 'WIKI_URL'),
         'donationsUrl': StringField(app, 'DONATIONS_URL'),
         'sourceUrl': StringField(app, 'APPLICATION_URL'),
-        'downloadUrl': StringField(app, 'DOWNLOAD_URL'),
         'subtitlesMulti': BooleanField(app, 'SUBTITLES_MULTI'),
         'namingForceFolders': BooleanField(app, 'NAMING_FORCE_FOLDERS'),
         'subtitles.enabled': BooleanField(app, 'USE_SUBTITLES'),
@@ -590,7 +592,6 @@ class DataGenerator(object):
         section_data['wikiUrl'] = app.WIKI_URL
         section_data['donationsUrl'] = app.DONATIONS_URL
         section_data['sourceUrl'] = app.APPLICATION_URL
-        section_data['downloadUrl'] = app.DOWNLOAD_URL
         section_data['subtitlesMulti'] = bool(app.SUBTITLES_MULTI)
         section_data['namingForceFolders'] = bool(app.NAMING_FORCE_FOLDERS)
         section_data['subtitles'] = {}
@@ -673,8 +674,13 @@ class DataGenerator(object):
         section_data['encryptionVersion'] = bool(app.ENCRYPTION_VERSION)
         section_data['calendarUnprotected'] = bool(app.CALENDAR_UNPROTECTED)
         section_data['calendarIcons'] = bool(app.CALENDAR_ICONS)
+
         section_data['proxySetting'] = app.PROXY_SETTING
+        section_data['proxyProviders'] = bool(app.PROXY_PROVIDERS)
         section_data['proxyIndexers'] = bool(app.PROXY_INDEXERS)
+        section_data['proxyClients'] = bool(app.PROXY_CLIENTS)
+        section_data['proxyOthers'] = bool(app.PROXY_OTHERS)
+
         section_data['skipRemovedFiles'] = bool(app.SKIP_REMOVED_FILES)
         section_data['epDefaultDeletedStatus'] = app.EP_DEFAULT_DELETED_STATUS
         section_data['developer'] = bool(app.DEVELOPER)
@@ -1031,6 +1037,7 @@ class DataGenerator(object):
         section_data['memoryUsage'] = helpers.memory_usage(pretty=True)
         section_data['schedulers'] = generate_schedulers()
         section_data['showQueue'] = generate_show_queue()
+        section_data['diskSpace'] = generate_location_disk_space()
 
         section_data['branch'] = app.BRANCH
         section_data['commitHash'] = app.CUR_COMMIT_HASH

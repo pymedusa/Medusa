@@ -578,7 +578,10 @@ class Application(object):
             app.CPU_PRESET = check_setting_str(app.CFG, 'General', 'cpu_preset', 'NORMAL')
             app.ANON_REDIRECT = check_setting_str(app.CFG, 'General', 'anon_redirect', 'http://dereferer.org/?')
             app.PROXY_SETTING = check_setting_str(app.CFG, 'General', 'proxy_setting', '')
+            app.PROXY_PROVIDERS = bool(check_setting_int(app.CFG, 'General', 'proxy_providers', 1))
             app.PROXY_INDEXERS = bool(check_setting_int(app.CFG, 'General', 'proxy_indexers', 1))
+            app.PROXY_CLIENTS = bool(check_setting_int(app.CFG, 'General', 'proxy_clients', 1))
+            app.PROXY_OTHERS = bool(check_setting_int(app.CFG, 'General', 'proxy_others', 1))
 
             # attempt to help prevent users from breaking links by using a bad url
             if not app.ANON_REDIRECT.endswith('?'):
@@ -1585,7 +1588,10 @@ class Application(object):
         new_config['General']['trash_rotate_logs'] = int(app.TRASH_ROTATE_LOGS)
         new_config['General']['sort_article'] = int(app.SORT_ARTICLE)
         new_config['General']['proxy_setting'] = app.PROXY_SETTING
+        new_config['General']['proxy_providers'] = int(app.PROXY_PROVIDERS)
         new_config['General']['proxy_indexers'] = int(app.PROXY_INDEXERS)
+        new_config['General']['proxy_clients'] = int(app.PROXY_CLIENTS)
+        new_config['General']['proxy_others'] = int(app.PROXY_OTHERS)
 
         new_config['General']['use_listview'] = int(app.USE_LISTVIEW)
         new_config['General']['metadata_kodi'] = app.METADATA_KODI
