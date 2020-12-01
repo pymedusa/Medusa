@@ -1625,6 +1625,10 @@ class Series(TV):
             log.warning(u'{id}: IMDbPie error while loading show info: {error}',
                         {'id': self.series_id, 'error': error})
             imdb_info = None
+        except Exception as error:
+            log.warning(u'{id}: IMDbPie error while loading show info: {error}',
+                        {'id': self.series_id, 'error': error})
+            imdb_info = None
 
         if not imdb_info:
             log.debug(u"{id}: IMDb didn't return any info for {imdb_id}, skipping update.",
