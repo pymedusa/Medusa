@@ -23,10 +23,8 @@ from medusa.indexers.exceptions import (
 )
 from medusa.indexers.ui import BaseUI, ConsoleUI
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.statistics import weights
 from medusa.session.core import IndexerSession
-
-import requests
+from medusa.statistics import weights
 
 from six import integer_types, itervalues, string_types, text_type, viewitems
 
