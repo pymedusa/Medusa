@@ -1621,7 +1621,7 @@ class Series(TV):
 
         try:
             imdb_info = imdb_api.get_title(self.imdb_id)
-        except LookupError as error:
+        except Exception as error:
             log.warning(u'{id}: IMDbPie error while loading show info: {error}',
                         {'id': self.series_id, 'error': error})
             imdb_info = None
