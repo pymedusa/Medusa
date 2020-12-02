@@ -36,7 +36,7 @@ from medusa.session.core import MedusaSession
 
 from simpleanidb import Anidb
 
-from six import PY2, ensure_str, text_type
+from six import PY2, ensure_text, text_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -252,7 +252,7 @@ def get_all_recommended_series_from_cache(indexers):
     indexers = ensure_list(indexers)
     all_series = []
     for indexer in indexers:
-        index = recommended_series_cache.get(ensure_str(indexer))
+        index = recommended_series_cache.get(ensure_text(indexer))
         if not index:
             continue
 

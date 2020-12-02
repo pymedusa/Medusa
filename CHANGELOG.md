@@ -6,6 +6,48 @@
 
 #### Fixes
 
+## 0.5.0 (30-11-2020)
+
+First Python 3.x version
+
+#### New Features
+- Separate proxy configs for Providers, Indexers, CLients (torrent/nzb) and others ([8605](https://github.com/pymedusa/Medusa/pull/8605))
+
+#### Improvements
+- Add absolute numbering to indexers tvmaze and tmdb, making them suitable for anime ([8777](https://github.com/pymedusa/Medusa/pull/8777))
+
+#### Fixes
+- Provider Nyaa.si: Correct the category that is used for anime searches ([8777](https://github.com/pymedusa/Medusa/pull/8777))
+- Indexer TMDB: Fix adding show using an alternative language ([8784](https://github.com/pymedusa/Medusa/pull/8784))
+
+-----
+
+## 0.4.6 (25-11-2020)
+
+Last version that runs on Python 2.7!
+
+#### Improvements
+- Vueified add existing shows ([8448](https://github.com/pymedusa/Medusa/pull/8448))
+  - Get real time progress update on the shows adding
+  - Add shows automatically when metadata is available
+  - Preset show options
+- Vueified add show ([8448](https://github.com/pymedusa/Medusa/pull/8448))
+  - No more page redirects when you add a show that already exists
+  - Select show list while adding show
+  - Map show lists to anime, when configured in config -> anime
+- Refactored scene exception methods ([8753](https://github.com/pymedusa/Medusa/pull/8753))
+
+#### Fixes
+- Fixed provider TVChaosUK ([8737](https://github.com/pymedusa/Medusa/pull/8737))
+
+-----
+
+## 0.4.5 (2020-11-13)
+
+#### Fixes
+- Updated EZTV provider URL
+- Fixed email and prowl notifications
+
 -----
 
 ## 0.4.4 (2020-11-04)

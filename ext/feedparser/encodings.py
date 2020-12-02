@@ -1,5 +1,5 @@
 # Character encoding routines
-# Copyright 2010-2015 Kurt McKee <contactme@kurtmckee.org>
+# Copyright 2010-2020 Kurt McKee <contactme@kurtmckee.org>
 # Copyright 2002-2008 Mark Pilgrim
 # All rights reserved.
 #
@@ -26,11 +26,8 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from __future__ import absolute_import, unicode_literals
-
 import cgi
 import codecs
-import collections
 import re
 
 try:
@@ -43,19 +40,14 @@ except ImportError:
     lazy_chardet_encoding = None
 else:
     def lazy_chardet_encoding(data):
-        chardet_encoding = chardet.detect(data)['encoding']
-        if not chardet_encoding:
-            chardet_encoding = ''
-        if isinstance(chardet_encoding, bytes_):
-            chardet_encoding = chardet_encoding.encode('ascii', 'ignore')
-        return chardet_encoding
+        return chardet.detect(data)['encoding'] or ''
 
 from .exceptions import (
-    CharacterEncodingOverride, CharacterEncodingUnknown, NonXMLContentType,
+    CharacterEncodingOverride,
+    CharacterEncodingUnknown,
+    NonXMLContentType,
 )
 
-bytes_ = type(b'')
-unicode_ = type('')
 
 # Each marker represents some of the characters of the opening XML
 # processing instruction ('<?xm') in the specified encoding.
@@ -69,17 +61,18 @@ ZERO_BYTES = '\x00\x00'
 
 # Match the opening XML declaration.
 # Example: <?xml version="1.0" encoding="utf-8"?>
-RE_XML_DECLARATION = re.compile('^<\?xml[^>]*?>')
+RE_XML_DECLARATION = re.compile(r'^<\?xml[^>]*?>')
 
 # Capture the value of the XML processing instruction's encoding attribute.
 # Example: <?xml version="1.0" encoding="utf-8"?>
-RE_XML_PI_ENCODING = re.compile(b'^<\?.*encoding=[\'"](.*?)[\'"].*\?>')
+RE_XML_PI_ENCODING = re.compile(br'^<\?.*encoding=[\'"](.*?)[\'"].*\?>')
+
 
 def convert_to_utf8(http_headers, data, result):
-    '''Detect and convert the character encoding to UTF-8.
+    """Detect and convert the character encoding to UTF-8.
 
     http_headers is a dictionary
-    data is a raw string (not Unicode)'''
+    data is a raw string (not Unicode)"""
 
     # This is so much trickier than it sounds, it's not even funny.
     # According to RFC 3023 ('XML Media Types'), if the HTTP Content-Type
@@ -124,7 +117,6 @@ def convert_to_utf8(http_headers, data, result):
 
     bom_encoding = ''
     xml_encoding = ''
-    rfc3023_encoding = ''
 
     # Look at the first few bytes of the document to guess what
     # its encoding may be. We only need to decode enough of the
@@ -191,21 +183,29 @@ def convert_to_utf8(http_headers, data, result):
     http_content_type = http_headers.get('content-type') or ''
     http_content_type, params = cgi.parse_header(http_content_type)
     http_encoding = params.get('charset', '').replace("'", "")
-    if isinstance(http_encoding, bytes_):
+    if isinstance(http_encoding, bytes):
         http_encoding = http_encoding.decode('utf-8', 'ignore')
 
     acceptable_content_type = 0
     application_content_types = ('application/xml', 'application/xml-dtd',
                                  'application/xml-external-parsed-entity')
     text_content_types = ('text/xml', 'text/xml-external-parsed-entity')
-    if (http_content_type in application_content_types) or \
-       (http_content_type.startswith('application/') and
-        http_content_type.endswith('+xml')):
+    if (
+            http_content_type in application_content_types
+            or (
+                    http_content_type.startswith('application/')
+                    and http_content_type.endswith('+xml')
+            )
+    ):
         acceptable_content_type = 1
         rfc3023_encoding = http_encoding or xml_encoding or 'utf-8'
-    elif (http_content_type in text_content_types) or \
-         (http_content_type.startswith('text/') and
-          http_content_type.endswith('+xml')):
+    elif (
+            http_content_type in text_content_types
+            or (
+                    http_content_type.startswith('text/')
+                    and http_content_type.endswith('+xml')
+            )
+    ):
         acceptable_content_type = 1
         rfc3023_encoding = http_encoding or 'us-ascii'
     elif http_content_type.startswith('text/'):
@@ -241,7 +241,7 @@ def convert_to_utf8(http_headers, data, result):
     # try: HTTP encoding, declared XML encoding, encoding sniffed from BOM
     for proposed_encoding in (rfc3023_encoding, xml_encoding, bom_encoding,
                               lazy_chardet_encoding, 'utf-8', 'windows-1252', 'iso-8859-2'):
-        if isinstance(proposed_encoding, collections.Callable):
+        if callable(proposed_encoding):
             proposed_encoding = proposed_encoding(data)
         if not proposed_encoding:
             continue

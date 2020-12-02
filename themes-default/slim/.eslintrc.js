@@ -31,7 +31,12 @@ module.exports = {
         'eslint-comments',
     ],
     settings: {
-        'import/resolver': 'webpack',
+        'import/resolver': {
+            webpack: {},
+            node: {
+                paths: ['src'],
+            },
+        },
     },
     rules: {
         indent: [

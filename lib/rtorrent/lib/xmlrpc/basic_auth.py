@@ -20,7 +20,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-from base64 import encodestring
+from base64 import encodebytes
 import string
 
 try:
@@ -39,7 +39,7 @@ class BasicAuthTransport(xmlrpc_client.Transport):
     def send_auth(self, h):
         if self.username is not None and self.password is not None:
             h.putheader('AUTHORIZATION', "Basic %s" % string.replace(
-                encodestring("%s:%s" % (self.username, self.password)),
+                encodebytes("%s:%s" % (self.username, self.password)),
                 "\012", ""
             ))
 

@@ -354,8 +354,9 @@ class Application(object):
         # Python 2 EOL warning
         if sys.version_info < (3,):
             logger.warning(
-                'As of October 1st 2020 Medusa will not run on Python 2.x any longer.\n'
-                'Python 2.x has passed its sunset date as you can read here: {python_sunset_url}\n'
+                'As of now Medusa will not run on Python 2.x any longer.\n'
+                'Release 0.4.6 is the last release that runs on Python 2.x\n'
+                'You can read more about the python 2.x sunset date here: {python_sunset_url}\n'
                 'Please upgrade your Python version to 3.6 or higher as soon as possible!',
                 python_sunset_url='https://tinyurl.com/y4zwbawq'
             )
@@ -577,7 +578,10 @@ class Application(object):
             app.CPU_PRESET = check_setting_str(app.CFG, 'General', 'cpu_preset', 'NORMAL')
             app.ANON_REDIRECT = check_setting_str(app.CFG, 'General', 'anon_redirect', 'http://dereferer.org/?')
             app.PROXY_SETTING = check_setting_str(app.CFG, 'General', 'proxy_setting', '')
+            app.PROXY_PROVIDERS = bool(check_setting_int(app.CFG, 'General', 'proxy_providers', 1))
             app.PROXY_INDEXERS = bool(check_setting_int(app.CFG, 'General', 'proxy_indexers', 1))
+            app.PROXY_CLIENTS = bool(check_setting_int(app.CFG, 'General', 'proxy_clients', 1))
+            app.PROXY_OTHERS = bool(check_setting_int(app.CFG, 'General', 'proxy_others', 1))
 
             # attempt to help prevent users from breaking links by using a bad url
             if not app.ANON_REDIRECT.endswith('?'):
@@ -605,6 +609,7 @@ class Application(object):
             app.INDEXER_TIMEOUT = check_setting_int(app.CFG, 'General', 'indexer_timeout', 20)
             app.ANIME_DEFAULT = bool(check_setting_int(app.CFG, 'General', 'anime_default', 0))
             app.SCENE_DEFAULT = bool(check_setting_int(app.CFG, 'General', 'scene_default', 0))
+            app.SHOWLISTS_DEFAULT = check_setting_list(app.CFG, 'General', 'showlist_default', ['series'])
             app.PROVIDER_ORDER = check_setting_list(app.CFG, 'General', 'provider_order')
             app.NAMING_PATTERN = check_setting_str(app.CFG, 'General', 'naming_pattern', 'Season %0S/%SN - S%0SE%0E - %EN')
             app.NAMING_ABD_PATTERN = check_setting_str(app.CFG, 'General', 'naming_abd_pattern', '%SN - %A.D - %EN')
@@ -972,6 +977,7 @@ class Application(object):
             app.ANIME_SPLIT_HOME = bool(check_setting_int(app.CFG, 'ANIME', 'anime_split_home', 0))
             app.ANIME_SPLIT_HOME_IN_TABS = bool(check_setting_int(app.CFG, 'ANIME', 'anime_split_home_in_tabs', 0))
             app.AUTO_ANIME_TO_LIST = bool(check_setting_int(app.CFG, 'ANIME', 'auto_anime_to_list', 0))
+            app.SHOWLISTS_DEFAULT_ANIME = check_setting_list(app.CFG, 'ANIME', 'showlist_default_anime', [])
 
             app.METADATA_KODI = check_setting_list(app.CFG, 'General', 'metadata_kodi', ['0'] * 10, transform=int)
             app.METADATA_KODI_12PLUS = check_setting_list(app.CFG, 'General', 'metadata_kodi_12plus', ['0'] * 10, transform=int)
@@ -1559,6 +1565,7 @@ class Application(object):
         new_config['General']['tvdb_dvd_order_ep_ignore'] = int(app.TVDB_DVD_ORDER_EP_IGNORE)
         new_config['General']['anime_default'] = int(app.ANIME_DEFAULT)
         new_config['General']['scene_default'] = int(app.SCENE_DEFAULT)
+        new_config['General']['showlist_default'] = list(app.SHOWLISTS_DEFAULT)
         new_config['General']['provider_order'] = app.PROVIDER_ORDER
         new_config['General']['version_notify'] = int(app.VERSION_NOTIFY)
         new_config['General']['auto_update'] = int(app.AUTO_UPDATE)
@@ -1581,7 +1588,10 @@ class Application(object):
         new_config['General']['trash_rotate_logs'] = int(app.TRASH_ROTATE_LOGS)
         new_config['General']['sort_article'] = int(app.SORT_ARTICLE)
         new_config['General']['proxy_setting'] = app.PROXY_SETTING
+        new_config['General']['proxy_providers'] = int(app.PROXY_PROVIDERS)
         new_config['General']['proxy_indexers'] = int(app.PROXY_INDEXERS)
+        new_config['General']['proxy_clients'] = int(app.PROXY_CLIENTS)
+        new_config['General']['proxy_others'] = int(app.PROXY_OTHERS)
 
         new_config['General']['use_listview'] = int(app.USE_LISTVIEW)
         new_config['General']['metadata_kodi'] = app.METADATA_KODI
@@ -2010,6 +2020,7 @@ class Application(object):
         new_config['ANIME']['anime_split_home'] = int(app.ANIME_SPLIT_HOME)
         new_config['ANIME']['anime_split_home_in_tabs'] = int(app.ANIME_SPLIT_HOME_IN_TABS)
         new_config['ANIME']['auto_anime_to_list'] = int(app.AUTO_ANIME_TO_LIST)
+        new_config['ANIME']['showlist_default_anime'] = list(app.SHOWLISTS_DEFAULT_ANIME)
 
         new_config.write()
 

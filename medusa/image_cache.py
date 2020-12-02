@@ -142,6 +142,10 @@ def which_type(path):
         return
 
     height, width = image_dimension
+    if not width or not height:
+        log.debug('Skipping image. zero width or height {0}', path)
+        return
+
     aspect_ratio = width / height
     log.debug('Image aspect ratio: {0}', aspect_ratio)
 

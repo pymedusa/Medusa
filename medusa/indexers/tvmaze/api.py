@@ -258,6 +258,8 @@ class TVmaze(BaseIndexer):
         if not isinstance(episodes, list):
             episodes = [episodes]
 
+        absolute_number_counter = 1
+
         for cur_ep in episodes:
             if self.config['dvdorder']:
                 log.debug('Using DVD ordering.')
@@ -281,6 +283,10 @@ class TVmaze(BaseIndexer):
 
             seas_no = int(seasnum)
             ep_no = int(epno)
+
+            if seas_no > 0:
+                cur_ep['absolute_number'] = absolute_number_counter
+                absolute_number_counter += 1
 
             for k, v in viewitems(cur_ep):
                 k = k.lower()

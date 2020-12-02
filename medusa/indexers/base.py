@@ -23,9 +23,8 @@ from medusa.indexers.exceptions import (
 )
 from medusa.indexers.ui import BaseUI, ConsoleUI
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.session.core import IndexerSession
 from medusa.statistics import weights
-
-import requests
 
 from six import integer_types, itervalues, string_types, text_type, viewitems
 
@@ -88,7 +87,7 @@ class BaseIndexer(object):
         else:
             raise ValueError('Invalid value for Cache {0!r} (type was {1})'.format(cache, type(cache)))
 
-        self.config['session'] = session if session else requests.Session()
+        self.config['session'] = session if session else IndexerSession(cache_control={'cache_etags': False})
 
         self.config['episodes_enabled'] = episodes
         self.config['banners_enabled'] = banners
