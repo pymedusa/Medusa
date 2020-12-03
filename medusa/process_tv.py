@@ -306,7 +306,7 @@ class ProcessResult(object):
             topdown = True if self.directory == path else False
             for root, dirs, files in os.walk(path, topdown=topdown):
                 if files:
-                    yield root, files
+                    yield root, files.sort()
                 if topdown:
                     break
                 del dirs  # unused variable
