@@ -156,7 +156,7 @@ def test_paths(monkeypatch, p, create_structure):
         'resource_name': 'show.name.s02e01.webrip.x264-kovalski.nzb',
         'failed': False,
         'expected': [('media/postprocess',
-                      ['show.name.s02e01.webrip.x264-kovalski.mkv', 'sample.mkv']),
+                      ['sample.mkv', 'show.name.s02e01.webrip.x264-kovalski.mkv']),
                      ('media/postprocess/subfolder', ['readme.txt'])
                      ],
         'structure': (
