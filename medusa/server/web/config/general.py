@@ -125,10 +125,7 @@ class ConfigGeneral(Config):
         app.NOTIFY_ON_LOGIN = config.checkbox_to_value(notify_on_login)
         app.WEB_PORT = int(web_port)
         app.WEB_IPV6 = config.checkbox_to_value(web_ipv6)
-        if config.checkbox_to_value(encryption_version) == 1:
-            app.ENCRYPTION_VERSION = 2
-        else:
-            app.ENCRYPTION_VERSION = 0
+        app.ENCRYPTION_VERSION = config.checkbox_to_value(encryption_version)
         app.WEB_USERNAME = web_username
         app.WEB_PASSWORD = web_password
         app.WEB_ROOT = web_root

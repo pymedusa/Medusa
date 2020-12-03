@@ -720,7 +720,9 @@ def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_
         censor_level = common.privacy_levels['stupid']
     else:
         censor_level = common.privacy_levels[censor_log]
+
     privacy_level = common.privacy_levels[app.PRIVACY_LEVEL]
+
     if bool(item_name.find('password') + 1) or encrypted:
         encryption_version = app.ENCRYPTION_VERSION
     else:
