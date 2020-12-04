@@ -17,14 +17,13 @@ get_size () {
 # Determine if and how to build the Webpack bundle.
 build_cmd=""
 build_mode=""
-# $TRAVIS_BRANCH is either a PR's target branch, or the current branch if it's a push build.
+# ${GITHUB_BASE_REF##*/} is a PR's target branch.
 # Do not build on other branches because it will cause conflicts on pull requests,
-#   where push builds build for development and PR builds build for production.
-echo ${GITHUB_BASE_REF##*/}
-if [[ $TRAVIS_BRANCH == "master" ]]; then
+# where push builds build for development and PR builds build for production.
+if [[ ${GITHUB_BASE_REF##*/} == "master" ]]; then
     build_cmd="yarn build"
     build_mode="production"
-elif [[ $TRAVIS_BRANCH == "develop" ]]; then
+elif [[ ${GITHUB_BASE_REF##*/} == "develop" ]]; then
     build_cmd="yarn dev"
     build_mode="development"
 fi
