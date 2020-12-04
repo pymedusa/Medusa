@@ -20,6 +20,7 @@ build_mode=""
 # $TRAVIS_BRANCH is either a PR's target branch, or the current branch if it's a push build.
 # Do not build on other branches because it will cause conflicts on pull requests,
 #   where push builds build for development and PR builds build for production.
+echo ${GITHUB_REF##*/}
 if [[ $TRAVIS_BRANCH == "master" ]]; then
     build_cmd="yarn build"
     build_mode="production"
