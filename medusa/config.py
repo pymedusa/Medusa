@@ -28,10 +28,11 @@ from builtins import str
 
 from contextlib2 import suppress
 
-from medusa import app, common, db, helpers, logger, naming, scheduler
+from medusa import app, common, db, helpers, logger, naming
 from medusa.helper.common import try_int
 from medusa.helpers.utils import split_and_strip
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.schedulers import scheduler
 from medusa.updater.version_checker import CheckVersion
 
 from requests.compat import urlsplit
@@ -719,7 +720,9 @@ def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_
         censor_level = common.privacy_levels['stupid']
     else:
         censor_level = common.privacy_levels[censor_log]
+
     privacy_level = common.privacy_levels[app.PRIVACY_LEVEL]
+
     if bool(item_name.find('password') + 1) or encrypted:
         encryption_version = app.ENCRYPTION_VERSION
     else:

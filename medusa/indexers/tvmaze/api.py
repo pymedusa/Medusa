@@ -258,6 +258,8 @@ class TVmaze(BaseIndexer):
         if not isinstance(episodes, list):
             episodes = [episodes]
 
+        absolute_number_counter = 1
+
         for cur_ep in episodes:
             if self.config['dvdorder']:
                 log.debug('Using DVD ordering.')
@@ -275,12 +277,16 @@ class TVmaze(BaseIndexer):
                                 'Please consider disabling DVD order for the show with TVmaze ID: {2}',
                                 seasnum, epno, tvmaze_id)
 
-            if seasnum is None or epno is None:
+            if seasnum is None or epno in (None, 0):
                 log.warning('An episode has incomplete season/episode number (season: {0!r}, episode: {1!r})', seasnum, epno)
                 continue  # Skip to next episode
 
             seas_no = int(seasnum)
             ep_no = int(epno)
+
+            if seas_no > 0:
+                cur_ep['absolute_number'] = absolute_number_counter
+                absolute_number_counter += 1
 
             for k, v in viewitems(cur_ep):
                 k = k.lower()

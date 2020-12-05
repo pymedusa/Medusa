@@ -229,10 +229,6 @@
                                         <p><b>Note:</b> Use local timezone to start searching for episodes minutes after show ends (depends on your dailysearch frequency)</p>
                                     </config-template>
 
-                                    <config-textbox v-model="general.downloadUrl" label="Download url" id="download_url">
-                                        <span class="component-desc">URL where the shows can be downloaded.</span>
-                                    </config-textbox>
-
                                     <config-toggle-slider v-model="layout.show.pagination.enable" label="Use table pagination" id="show_pagination" />
 
                                     <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
@@ -362,8 +358,20 @@
                                         <p>blank to disable or proxy to use when connecting to providers</p>
                                     </config-textbox>
 
+                                    <config-toggle-slider v-if="general.proxySetting !== ''" v-model="general.proxyProviders" label="Use proxy for providers" id="proxy_providers">
+                                        <p>use proxy host for connecting to providers (torrent & nzb)</p>
+                                    </config-toggle-slider>
+
                                     <config-toggle-slider v-if="general.proxySetting !== ''" v-model="general.proxyIndexers" label="Use proxy for indexers" id="proxy_indexers">
-                                        <p>use proxy host for connecting to indexers (thetvdb)</p>
+                                        <p>use proxy host for connecting to indexers (thetvdb, tmdb or tvmaze)</p>
+                                    </config-toggle-slider>
+
+                                    <config-toggle-slider v-if="general.proxySetting !== ''" v-model="general.proxyClients" label="Use proxy for clients" id="proxy_clients">
+                                        <p>use proxy host for connecting torrent or usenet clients (nzbGet excluded)</p>
+                                    </config-toggle-slider>
+
+                                    <config-toggle-slider v-if="general.proxySetting !== ''" v-model="general.proxyOthers" label="Use proxy for other sites" id="proxy_others">
+                                        <p>use proxy host for connecting to other sites.</p>
                                     </config-toggle-slider>
 
                                     <config-toggle-slider v-model="general.skipRemovedFiles" label="Skip Remove Detection" id="skip_removed_files">
@@ -415,6 +423,10 @@
                                             Set the level of log-filtering.
                                             Normal (default).
                                         </span>
+                                    </config-template>
+
+                                    <config-template label-for="custom_logs" label="Overwrite log levels for overwritable logs">
+                                        <custom-logs />
                                     </config-template>
 
                                     <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
@@ -584,7 +596,7 @@
                 </div>
             </transition>
         </modal>
-        <!--eslint-enable-->
+        <!-- eslint-enable -->
     </div>
 </template>
 
@@ -598,6 +610,7 @@ import {
     ConfigTextbox,
     ConfigTextboxNumber,
     ConfigToggleSlider,
+    CustomLogs,
     LanguageSelect,
     SortedSelectList,
     StateSwitch
@@ -618,6 +631,7 @@ export default {
         ConfigTextbox,
         ConfigTextboxNumber,
         ConfigToggleSlider,
+        CustomLogs,
         LanguageSelect,
         Multiselect,
         SortedSelectList,

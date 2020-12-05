@@ -36,9 +36,7 @@ import {
     ScrollButtons,
     SelectList,
     ShowSelector,
-    SnatchSelection,
     StateSwitch,
-    Status,
     SubMenu
 } from './components';
 import store from './store';
@@ -93,9 +91,7 @@ export const registerGlobalComponents = () => {
     components = components.concat([
         History,
         ManualPostProcess,
-        Schedule,
-        SnatchSelection,
-        Status
+        Schedule
     ]);
 
     // Register the components globally
@@ -115,7 +111,7 @@ export const registerPlugins = () => {
     Vue.use(VueMeta);
     Vue.use(Snotify);
     Vue.use(VueCookies);
-    Vue.use(VModal);
+    Vue.use(VModal, { dynamicDefault: { height: 'auto' } });
     Vue.use(VTooltip);
 
     // Set default cookie expire time

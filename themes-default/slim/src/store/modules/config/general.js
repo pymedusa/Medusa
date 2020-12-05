@@ -7,7 +7,6 @@ const state = {
     donationsUrl: null,
     namingForceFolders: null,
     sourceUrl: null,
-    downloadUrl: null,
     rootDirs: [],
     subtitles: {
         enabled: null
@@ -22,7 +21,8 @@ const state = {
         nr: null,
         size: null,
         subliminalLog: null,
-        privacyLevel: null
+        privacyLevel: null,
+        custom: {}
     },
     cpuPreset: null,
     subtitlesMulti: null,
@@ -36,7 +36,8 @@ const state = {
         subtitles: null,
         seasonFolders: null,
         anime: null,
-        scene: null
+        scene: null,
+        showLists: null
     },
     launchBrowser: null,
     defaultPage: null,
@@ -77,7 +78,10 @@ const state = {
     calendarUnprotected: null,
     calendarIcons: null,
     proxySetting: null,
+    proxyProviders: null,
+    proxyClients: null,
     proxyIndexers: null,
+    proxyOthers: null,
     skipRemovedFiles: null,
     epDefaultDeletedStatus: null,
     developer: null,
@@ -179,8 +183,18 @@ const actions = {
             recentShows: state.recentShows
         };
         return api.patch('config/main', config);
-    }
+    },
+    setCustomLogs({ commit }, logs) {
+        // Convert back to object.
+        const reducedLogs = logs.reduce((obj, item) => ({ ...obj, [item.identifier]: item.level }), {});
 
+        return api.patch('config/main', { logs: { custom: logs } })
+            .then(() => {
+                return commit(ADD_CONFIG, {
+                    section: 'main', config: { logs: { custom: reducedLogs } }
+                });
+            });
+    }
 };
 
 export default {

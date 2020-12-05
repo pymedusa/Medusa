@@ -37,6 +37,7 @@ def initialize():
     _configure_guessit()
     _configure_subliminal()
     _configure_knowit()
+    _configure_unrar()
 
 
 def _check_python_version():
@@ -237,3 +238,14 @@ def _configure_knowit():
         suggested_path = os.path.join(suggested_path, subfolder)
 
     api.initialize({'mediainfo': suggested_path})
+
+
+def _configure_unrar():
+    from knowit.utils import detect_os
+    import rarfile
+
+    os_family = detect_os()
+    suggested_path = os.path.join(_get_lib_location(app.LIB_FOLDER), 'native', os_family)
+    if os_family == 'windows':
+        unrar_path = os.path.join(suggested_path, 'UnRAR.exe')
+        rarfile.UNRAR_TOOL = unrar_path

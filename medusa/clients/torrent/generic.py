@@ -17,7 +17,7 @@ from bencodepy import BencodeDecodeError, DEFAULT as BENCODE
 from medusa import app, db
 from medusa.helper.common import http_code_description
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.session.core import MedusaSession
+from medusa.session.core import ClientSession
 
 import requests
 
@@ -49,7 +49,7 @@ class GenericClient(object):
         self.response = None
         self.auth = None
         self.last_time = time.time()
-        self.session = MedusaSession()
+        self.session = ClientSession()
         self.session.auth = (self.username, self.password)
 
     def _request(self, method='get', params=None, data=None, files=None, cookies=None):
@@ -195,7 +195,8 @@ class GenericClient(object):
         if result.url.startswith('magnet:'):
             result.hash = re.findall(r'urn:btih:([\w]{32,40})', result.url)[0]
             if len(result.hash) == 32:
-                result.hash = b16encode(b32decode(result.hash)).lower()
+                hash_b16 = b16encode(b32decode(result.hash)).lower()
+                result.hash = hash_b16.decode('utf-8')
         else:
 
             try:

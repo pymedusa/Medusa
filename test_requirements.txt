@@ -1,0 +1,22 @@
+# zipp v2.0.0 dropped support for Python 2 (flake8 -> importlib-metadata -> zipp)
+zipp < 2.0.0 ; python_version == "2.*"
+# configparser v5.0.0 dropped support for Python 2
+configparser < 5.0.0 ; python_version == "2.*"
+# pyparsing 3.0.0 dropped support for Python 2
+pyparsing < 3.0.0 ; python_version == "2.*"
+flake8==3.8.4
+pycodestyle==2.6.0
+flake8-docstrings==1.5.0
+flake8-import-order==0.18.1
+flake8-quotes==3.2.0
+pep8-naming==0.11.1
+pytest<5.0.0 ; python_version < "3.5"
+pytest>=5.0.0 ; python_version >= "3.5"
+pytest-cov==2.10.1
+pytest-flake8==1.0.6
+pytest-tornado==0.8.1
+PyYAML==5.3.1
+vcrpy<4.0.0 ; python_version < "3.5"
+vcrpy>=4.0.0 ; python_version >= "3.5"
+mock<=3.0.5 ; python_version <= "3.5"
+mock>=3.0.5 ; python_version > "3.5"

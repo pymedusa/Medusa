@@ -13,8 +13,8 @@ script: false
 
 # Use of YAML aliases inspired by https://link.medium.com/vUG5hZ9oW3
 # There's no support for concatenation so we must do this
-_node_version: &_node_version '12.13.0'
-_nvm_install: &_nvm_install nvm install v12.13.0
+_node_version: &_node_version '12.18.2'
+_nvm_install: &_nvm_install nvm install v12.18.2
 _install_yarn_bin: &_install_yarn_bin >-
   export PATH="$HOME/.yarn/bin:$PATH" &&
   travis_retry curl -o- -L https://yarnpkg.com/install.sh | bash
@@ -56,12 +56,6 @@ jobs:
         - yarn lint-css
         - yarn test
         - yarn coverage
-    # backend tests (py2.7) start here
-    - name: 'Backend tests (py2.7)'
-      python: '2.7'
-      env:
-        - TOXENV=py27
-      <<: *_backend_tests
     # backend tests (py3.6) start here
     - name: 'Backend tests (py3.6)'
       python: '3.6'
@@ -79,6 +73,12 @@ jobs:
       python: '3.8'
       env:
         - TOXENV=py38
+      <<: *_backend_tests
+    # backend tests (py3.9) start here
+    - name: 'Backend tests (py3.9)'
+      python: '3.9'
+      env:
+        - TOXENV=py39
       <<: *_backend_tests
     # dredd tests (py3.7) start here
     - name: 'Dredd tests (py3.7)'

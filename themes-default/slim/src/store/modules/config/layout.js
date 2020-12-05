@@ -3,12 +3,12 @@ import { api } from '../../../api';
 import formatDate from 'date-fns/format';
 import parseISO from 'date-fns/parseISO';
 import TimeAgo from 'javascript-time-ago';
-import timeAgoLocalEN from 'javascript-time-ago/locale/en';
+import en from 'javascript-time-ago/locale/en';
 
-import { convertDateFormat } from '../../../utils/core';
+import { convertDateFormat, divmod } from '../../../utils/core';
 
 // Add locale-specific relative date/time formatting rules.
-TimeAgo.addLocale(timeAgoLocalEN);
+TimeAgo.addDefaultLocale(en);
 
 const state = {
     show: {
@@ -91,8 +91,54 @@ const getters = {
     },
     getShowFilterByName: state => {
         return state.local.showFilterByName;
-    }
+    },
+    /**
+     * PrettyTimeDelta
+     *
+     * Translate seconds into a pretty hours, minutes, seconds representation.
+     * @param {object} state - State object.
+     * @returns {number} seconds - Number of seconds to translate.
+     */
+    prettyTimeDelta: state => seconds => { // eslint-disable-line no-unused-vars
+        let signStr = '';
+        if (seconds < 0) {
+            signStr = '-';
+        }
 
+        let days = 0;
+        let hours = 0;
+        let minutes = 0;
+
+        const daysSeconds = divmod(seconds, 86400);
+        days = daysSeconds.quotient;
+        seconds = daysSeconds.remainder;
+
+        const hoursSeconds = divmod(seconds, 3600);
+        hours = hoursSeconds.quotient;
+        seconds = hoursSeconds.remainder;
+
+        const minuteSeconds = divmod(seconds, 60);
+        minutes = minuteSeconds.quotient;
+        seconds = minuteSeconds.remainder;
+
+        if (days > 0) {
+            signStr += ` ${days}d`;
+        }
+
+        if (hours > 0) {
+            signStr += ` ${hours}h`;
+        }
+
+        if (minutes > 0) {
+            signStr += ` ${minutes}m`;
+        }
+
+        if (seconds > 0) {
+            signStr += ` ${seconds}s`;
+        }
+
+        return signStr;
+    }
 };
 
 const actions = {

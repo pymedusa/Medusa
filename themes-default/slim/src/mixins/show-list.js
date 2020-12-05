@@ -208,7 +208,7 @@ export const showlistTableMixin = {
             let titleX = x;
             let titleY = y;
 
-            if (sortArticle) {
+            if (!sortArticle) {
                 titleX = titleX.replace(/^((?:a(?!\s+to)n?)|the)\s/i, '').toLowerCase();
                 titleY = titleY.replace(/^((?:a(?!\s+to)n?)|the)\s/i, '').toLowerCase();
             }

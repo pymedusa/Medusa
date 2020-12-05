@@ -23,7 +23,9 @@ from medusa.common import IGNORED, Quality, SKIPPED, WANTED, cpu_presets
 from medusa.helpers.utils import int_default, to_camel_case
 from medusa.indexers.config import INDEXER_TVDBV2, get_indexer_config
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.queues.utils import generate_location_disk_space, generate_show_queue
 from medusa.sbdatetime import date_presets, time_presets
+from medusa.schedulers.utils import generate_schedulers
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
     BooleanField,
@@ -35,10 +37,6 @@ from medusa.server.api.v2.base import (
     StringField,
     iter_nested_items,
     set_nested_value,
-)
-from medusa.system.schedulers import (
-    generate_schedulers,
-    generate_show_queue,
 )
 
 from six import iteritems, itervalues, text_type
@@ -85,12 +83,12 @@ class ConfigHandler(BaseRequestHandler):
         'showDefaults.status': EnumField(app, 'STATUS_DEFAULT', (SKIPPED, WANTED, IGNORED), int),
         'showDefaults.statusAfter': EnumField(app, 'STATUS_DEFAULT_AFTER', (SKIPPED, WANTED, IGNORED), int),
         'showDefaults.quality': IntegerField(app, 'QUALITY_DEFAULT', validator=Quality.is_valid_combined_quality),
-        'showDefaults.subtitles': BooleanField(app, 'SUBTITLES_DEFAULT', validator=lambda v: app.USE_SUBTITLES,
-                                               converter=bool),
+        'showDefaults.subtitles': BooleanField(app, 'SUBTITLES_DEFAULT', converter=bool),
         'showDefaults.seasonFolders': BooleanField(app, 'SEASON_FOLDERS_DEFAULT', validator=season_folders_validator,
                                                    converter=bool),
         'showDefaults.anime': BooleanField(app, 'ANIME_DEFAULT', converter=bool),
         'showDefaults.scene': BooleanField(app, 'SCENE_DEFAULT', converter=bool),
+        'showDefaults.showLists': ListField(app, 'SHOWLISTS_DEFAULT'),
         'anonRedirect': StringField(app, 'ANON_REDIRECT'),
         'emby.enabled': BooleanField(app, 'USE_EMBY'),
 
@@ -135,7 +133,10 @@ class ConfigHandler(BaseRequestHandler):
         'calendarUnprotected': BooleanField(app, 'CALENDAR_UNPROTECTED'),
         'calendarIcons': BooleanField(app, 'CALENDAR_ICONS'),
         'proxySetting': StringField(app, 'PROXY_SETTING'),
+        'proxyProviders': BooleanField(app, 'PROXY_PROVIDERS'),
         'proxyIndexers': BooleanField(app, 'PROXY_INDEXERS'),
+        'proxyClients': BooleanField(app, 'PROXY_CLIENTS'),
+        'proxyOthers': BooleanField(app, 'PROXY_OTHERS'),
 
         'skipRemovedFiles': BooleanField(app, 'SKIP_REMOVED_FILES'),
         'epDefaultDeletedStatus': IntegerField(app, 'EP_DEFAULT_DELETED_STATUS'),
@@ -147,6 +148,7 @@ class ConfigHandler(BaseRequestHandler):
         'logs.size': FloatField(app, 'LOG_SIZE'),
         'logs.subliminalLog': BooleanField(app, 'SUBLIMINAL_LOG'),
         'logs.privacyLevel': StringField(app, 'PRIVACY_LEVEL'),
+        'logs.custom': ListField(app, 'CUSTOM_LOGS'),
 
         'developer': BooleanField(app, 'DEVELOPER'),
 
@@ -164,7 +166,6 @@ class ConfigHandler(BaseRequestHandler):
         'wikiUrl': StringField(app, 'WIKI_URL'),
         'donationsUrl': StringField(app, 'DONATIONS_URL'),
         'sourceUrl': StringField(app, 'APPLICATION_URL'),
-        'downloadUrl': StringField(app, 'DOWNLOAD_URL'),
         'subtitlesMulti': BooleanField(app, 'SUBTITLES_MULTI'),
         'namingForceFolders': BooleanField(app, 'NAMING_FORCE_FOLDERS'),
         'subtitles.enabled': BooleanField(app, 'USE_SUBTITLES'),
@@ -481,7 +482,8 @@ class ConfigHandler(BaseRequestHandler):
         'anime.anidb.username': StringField(app, 'ANIDB_USERNAME'),
         'anime.anidb.password': StringField(app, 'ANIDB_PASSWORD'),
         'anime.anidb.useMylist': BooleanField(app, 'ANIDB_USE_MYLIST'),
-        'anime.autoAnimeToList': BooleanField(app, 'AUTO_ANIME_TO_LIST')
+        'anime.autoAnimeToList': BooleanField(app, 'AUTO_ANIME_TO_LIST'),
+        'anime.showlistDefaultAnime': ListField(app, 'SHOWLISTS_DEFAULT_ANIME')
     }
 
     def get(self, identifier, path_param=None):
@@ -590,7 +592,6 @@ class DataGenerator(object):
         section_data['wikiUrl'] = app.WIKI_URL
         section_data['donationsUrl'] = app.DONATIONS_URL
         section_data['sourceUrl'] = app.APPLICATION_URL
-        section_data['downloadUrl'] = app.DOWNLOAD_URL
         section_data['subtitlesMulti'] = bool(app.SUBTITLES_MULTI)
         section_data['namingForceFolders'] = bool(app.NAMING_FORCE_FOLDERS)
         section_data['subtitles'] = {}
@@ -609,6 +610,7 @@ class DataGenerator(object):
         section_data['showDefaults']['seasonFolders'] = bool(app.SEASON_FOLDERS_DEFAULT)
         section_data['showDefaults']['anime'] = bool(app.ANIME_DEFAULT)
         section_data['showDefaults']['scene'] = bool(app.SCENE_DEFAULT)
+        section_data['showDefaults']['showLists'] = list(app.SHOWLISTS_DEFAULT)
 
         section_data['logs'] = {}
         section_data['logs']['debug'] = bool(app.DEBUG)
@@ -621,6 +623,7 @@ class DataGenerator(object):
         section_data['logs']['size'] = float(app.LOG_SIZE)
         section_data['logs']['subliminalLog'] = bool(app.SUBLIMINAL_LOG)
         section_data['logs']['privacyLevel'] = app.PRIVACY_LEVEL
+        section_data['logs']['custom'] = app.CUSTOM_LOGS
 
         # Added for config - main, needs refactoring in the structure.
         section_data['launchBrowser'] = bool(app.LAUNCH_BROWSER)
@@ -671,8 +674,13 @@ class DataGenerator(object):
         section_data['encryptionVersion'] = bool(app.ENCRYPTION_VERSION)
         section_data['calendarUnprotected'] = bool(app.CALENDAR_UNPROTECTED)
         section_data['calendarIcons'] = bool(app.CALENDAR_ICONS)
+
         section_data['proxySetting'] = app.PROXY_SETTING
+        section_data['proxyProviders'] = bool(app.PROXY_PROVIDERS)
         section_data['proxyIndexers'] = bool(app.PROXY_INDEXERS)
+        section_data['proxyClients'] = bool(app.PROXY_CLIENTS)
+        section_data['proxyOthers'] = bool(app.PROXY_OTHERS)
+
         section_data['skipRemovedFiles'] = bool(app.SKIP_REMOVED_FILES)
         section_data['epDefaultDeletedStatus'] = app.EP_DEFAULT_DELETED_STATUS
         section_data['developer'] = bool(app.DEVELOPER)
@@ -1029,6 +1037,7 @@ class DataGenerator(object):
         section_data['memoryUsage'] = helpers.memory_usage(pretty=True)
         section_data['schedulers'] = generate_schedulers()
         section_data['showQueue'] = generate_show_queue()
+        section_data['diskSpace'] = generate_location_disk_space()
 
         section_data['branch'] = app.BRANCH
         section_data['commitHash'] = app.CUR_COMMIT_HASH
@@ -1219,5 +1228,6 @@ class DataGenerator(object):
                 'password': app.ANIDB_PASSWORD,
                 'useMylist': bool(app.ANIDB_USE_MYLIST)
             },
-            'autoAnimeToList': bool(app.AUTO_ANIME_TO_LIST)
+            'autoAnimeToList': bool(app.AUTO_ANIME_TO_LIST),
+            'showlistDefaultAnime': app.SHOWLISTS_DEFAULT_ANIME
         }

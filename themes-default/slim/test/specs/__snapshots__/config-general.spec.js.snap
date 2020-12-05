@@ -769,22 +769,6 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   </p>
                 </config-template-stub>
                  
-                <config-textbox-stub
-                  explanations=""
-                  id="download_url"
-                  inputclass="form-control input-sm max-input350"
-                  label="Download url"
-                  placeholder=""
-                  type="text"
-                  value=""
-                >
-                  <span
-                    class="component-desc"
-                  >
-                    URL where the shows can be downloaded.
-                  </span>
-                </config-textbox-stub>
-                 
                 <config-toggle-slider-stub
                   explanations=""
                   id="show_pagination"
@@ -1170,6 +1154,12 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                  
                 <!---->
                  
+                <!---->
+                 
+                <!---->
+                 
+                <!---->
+                 
                 <config-toggle-slider-stub
                   explanations=""
                   id="skip_removed_files"
@@ -1326,6 +1316,13 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                                         Normal (default).
                                     
                   </span>
+                </config-template-stub>
+                 
+                <config-template-stub
+                  label="Overwrite log levels for overwritable logs"
+                  labelfor="custom_logs"
+                >
+                  <custom-logs-stub />
                 </config-template-stub>
                  
                 <input

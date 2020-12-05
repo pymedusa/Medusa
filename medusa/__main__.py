@@ -65,11 +65,11 @@ from builtins import str
 from configobj import ConfigObj
 
 from medusa import (
-    app, cache, db, event_queue, exception_handler, helpers,
+    cache, db, exception_handler, helpers,
     logger as app_logger, metadata, name_cache, naming,
-    network_timezones, process_tv, providers, scheduler,
-    show_queue, show_updater, subtitles, trakt_checker
+    network_timezones, process_tv, providers, subtitles
 )
+from medusa.app import app
 from medusa.clients.torrent import torrent_checker
 from medusa.common import SD, SKIPPED, WANTED
 from medusa.config import (
@@ -79,13 +79,17 @@ from medusa.config import (
     load_provider_setting, save_provider_setting
 )
 from medusa.databases import cache_db, failed_db, main_db
-from medusa.event_queue import Events
 from medusa.indexers.config import INDEXER_TVDBV2, INDEXER_TVMAZE
 from medusa.init.filesystem import is_valid_encoding
 from medusa.providers.generic_provider import GenericProvider
 from medusa.providers.nzb.newznab import NewznabProvider
 from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
 from medusa.providers.torrent.torznab.torznab import TorznabProvider
+from medusa.queues import show_queue
+from medusa.queues.event_queue import Events
+from medusa.schedulers import (
+    episode_updater, scheduler, show_updater, trakt_checker
+)
 from medusa.search.backlog import BacklogSearchScheduler, BacklogSearcher
 from medusa.search.daily import DailySearcher
 from medusa.search.proper import ProperFinder
@@ -178,6 +182,21 @@ class Application(object):
                     logger.warning('Error while trying to move the images for series {series}. '
                                    'Try to refresh the show, or move the images manually if you know '
                                    'what you are doing. Error: {error}', series=series_obj.name, error=error)
+
+    @staticmethod
+    def initialize_custom_logging():
+        """Load custom logging and insert into table if needed."""
+        from medusa.app import CUSTOMIZABLE_LOGS
+        main_db_con = db.DBConnection()
+        for identifier in CUSTOMIZABLE_LOGS:
+            sql_result = main_db_con.select('SELECT * FROM custom_logs WHERE identifier = ?', [identifier])
+
+            if not len(sql_result):
+                main_db_con.action('INSERT INTO custom_logs (identifier) VALUES (?)', [identifier])
+
+        # Get custom_logs from db.
+        for log in main_db_con.select('SELECT * FROM custom_logs'):
+            app._CUSTOM_LOGS[log['identifier']] = log['level']
 
     def start(self, args):
         """Start Application."""
@@ -335,8 +354,9 @@ class Application(object):
         # Python 2 EOL warning
         if sys.version_info < (3,):
             logger.warning(
-                'As of October 1st 2020 Medusa will not run on Python 2.x any longer.\n'
-                'Python 2.x has passed its sunset date as you can read here: {python_sunset_url}\n'
+                'As of now Medusa will not run on Python 2.x any longer.\n'
+                'Release 0.4.6 is the last release that runs on Python 2.x\n'
+                'You can read more about the python 2.x sunset date here: {python_sunset_url}\n'
                 'Please upgrade your Python version to 3.6 or higher as soon as possible!',
                 python_sunset_url='https://tinyurl.com/y4zwbawq'
             )
@@ -350,6 +370,7 @@ class Application(object):
 
         self.clear_cache()
         self.migrate_images()
+        self.initialize_custom_logging()
 
         if self.forced_port:
             logger.info('Forcing web server to port {port}', port=self.forced_port)
@@ -462,9 +483,7 @@ class Application(object):
 
             # git reset on update
             app.GIT_RESET = bool(check_setting_int(app.CFG, 'General', 'git_reset', 1))
-            app.GIT_RESET_BRANCHES = check_setting_list(app.CFG, 'General', 'git_reset_branches', app.GIT_RESET_BRANCHES)
-            if not app.GIT_RESET_BRANCHES:
-                app.GIT_RESET_BRANCHES = []
+            app.GIT_RESET_BRANCHES = check_setting_list(app.CFG, 'General', 'git_reset_branches', [])
 
             # current git branch
             app.BRANCH = check_setting_str(app.CFG, 'General', 'branch', '')
@@ -540,10 +559,8 @@ class Application(object):
             app.WEB_USERNAME = check_setting_str(app.CFG, 'General', 'web_username', '', censor_log='normal')
             app.WEB_PASSWORD = check_setting_str(app.CFG, 'General', 'web_password', '', censor_log='low')
             app.WEB_COOKIE_SECRET = check_setting_str(app.CFG, 'General', 'web_cookie_secret', helpers.generate_cookie_secret(), censor_log='low')
-            if not app.WEB_COOKIE_SECRET:
-                app.WEB_COOKIE_SECRET = helpers.generate_cookie_secret()
-
             app.WEB_USE_GZIP = bool(check_setting_int(app.CFG, 'General', 'web_use_gzip', 1))
+
             app.SUBLIMINAL_LOG = bool(check_setting_int(app.CFG, 'General', 'subliminal_log', 0))
             app.PRIVACY_LEVEL = check_setting_str(app.CFG, 'General', 'privacy_level', 'normal')
             app.SSL_VERIFY = bool(check_setting_int(app.CFG, 'General', 'ssl_verify', 1))
@@ -557,7 +574,10 @@ class Application(object):
             app.CPU_PRESET = check_setting_str(app.CFG, 'General', 'cpu_preset', 'NORMAL')
             app.ANON_REDIRECT = check_setting_str(app.CFG, 'General', 'anon_redirect', 'http://dereferer.org/?')
             app.PROXY_SETTING = check_setting_str(app.CFG, 'General', 'proxy_setting', '')
+            app.PROXY_PROVIDERS = bool(check_setting_int(app.CFG, 'General', 'proxy_providers', 1))
             app.PROXY_INDEXERS = bool(check_setting_int(app.CFG, 'General', 'proxy_indexers', 1))
+            app.PROXY_CLIENTS = bool(check_setting_int(app.CFG, 'General', 'proxy_clients', 1))
+            app.PROXY_OTHERS = bool(check_setting_int(app.CFG, 'General', 'proxy_others', 1))
 
             # attempt to help prevent users from breaking links by using a bad url
             if not app.ANON_REDIRECT.endswith('?'):
@@ -585,6 +605,7 @@ class Application(object):
             app.INDEXER_TIMEOUT = check_setting_int(app.CFG, 'General', 'indexer_timeout', 20)
             app.ANIME_DEFAULT = bool(check_setting_int(app.CFG, 'General', 'anime_default', 0))
             app.SCENE_DEFAULT = bool(check_setting_int(app.CFG, 'General', 'scene_default', 0))
+            app.SHOWLISTS_DEFAULT = check_setting_list(app.CFG, 'General', 'showlist_default', ['series'])
             app.PROVIDER_ORDER = check_setting_list(app.CFG, 'General', 'provider_order')
             app.NAMING_PATTERN = check_setting_str(app.CFG, 'General', 'naming_pattern', 'Season %0S/%SN - S%0SE%0E - %EN')
             app.NAMING_ABD_PATTERN = check_setting_str(app.CFG, 'General', 'naming_abd_pattern', '%SN - %A.D - %EN')
@@ -952,6 +973,7 @@ class Application(object):
             app.ANIME_SPLIT_HOME = bool(check_setting_int(app.CFG, 'ANIME', 'anime_split_home', 0))
             app.ANIME_SPLIT_HOME_IN_TABS = bool(check_setting_int(app.CFG, 'ANIME', 'anime_split_home_in_tabs', 0))
             app.AUTO_ANIME_TO_LIST = bool(check_setting_int(app.CFG, 'ANIME', 'auto_anime_to_list', 0))
+            app.SHOWLISTS_DEFAULT_ANIME = check_setting_list(app.CFG, 'ANIME', 'showlist_default_anime', [])
 
             app.METADATA_KODI = check_setting_list(app.CFG, 'General', 'metadata_kodi', ['0'] * 10, transform=int)
             app.METADATA_KODI_12PLUS = check_setting_list(app.CFG, 'General', 'metadata_kodi_12plus', ['0'] * 10, transform=int)
@@ -1179,6 +1201,11 @@ class Application(object):
                                                             start_time=datetime.time(hour=app.SHOWUPDATE_HOUR,
                                                                                      minute=random.randint(0, 59)))
 
+            app.episode_update_scheduler = scheduler.Scheduler(episode_updater.EpisodeUpdater(),
+                                                               cycleTime=datetime.timedelta(minutes=15),
+                                                               threadName='EPISODEUPDATER',
+                                                               silent=False)
+
             # snatcher used for manual search, manual picked results
             app.manual_snatch_scheduler = scheduler.Scheduler(SnatchQueue(),
                                                               cycleTime=datetime.timedelta(seconds=3),
@@ -1321,6 +1348,10 @@ class Application(object):
             app.show_update_scheduler.enable = True
             app.show_update_scheduler.start()
 
+            # start the episode updater
+            app.episode_update_scheduler.enable = True
+            app.episode_update_scheduler.start()
+
             # start the version checker
             app.version_check_scheduler.enable = True
             app.version_check_scheduler.start()
@@ -1397,6 +1428,7 @@ class Application(object):
                 app.daily_search_scheduler,
                 app.backlog_search_scheduler,
                 app.show_update_scheduler,
+                app.episode_update_scheduler,
                 app.version_check_scheduler,
                 app.show_queue_scheduler,
                 app.search_queue_scheduler,
@@ -1529,6 +1561,7 @@ class Application(object):
         new_config['General']['tvdb_dvd_order_ep_ignore'] = int(app.TVDB_DVD_ORDER_EP_IGNORE)
         new_config['General']['anime_default'] = int(app.ANIME_DEFAULT)
         new_config['General']['scene_default'] = int(app.SCENE_DEFAULT)
+        new_config['General']['showlist_default'] = list(app.SHOWLISTS_DEFAULT)
         new_config['General']['provider_order'] = app.PROVIDER_ORDER
         new_config['General']['version_notify'] = int(app.VERSION_NOTIFY)
         new_config['General']['auto_update'] = int(app.AUTO_UPDATE)
@@ -1551,7 +1584,10 @@ class Application(object):
         new_config['General']['trash_rotate_logs'] = int(app.TRASH_ROTATE_LOGS)
         new_config['General']['sort_article'] = int(app.SORT_ARTICLE)
         new_config['General']['proxy_setting'] = app.PROXY_SETTING
+        new_config['General']['proxy_providers'] = int(app.PROXY_PROVIDERS)
         new_config['General']['proxy_indexers'] = int(app.PROXY_INDEXERS)
+        new_config['General']['proxy_clients'] = int(app.PROXY_CLIENTS)
+        new_config['General']['proxy_others'] = int(app.PROXY_OTHERS)
 
         new_config['General']['use_listview'] = int(app.USE_LISTVIEW)
         new_config['General']['metadata_kodi'] = app.METADATA_KODI
@@ -1980,6 +2016,7 @@ class Application(object):
         new_config['ANIME']['anime_split_home'] = int(app.ANIME_SPLIT_HOME)
         new_config['ANIME']['anime_split_home_in_tabs'] = int(app.ANIME_SPLIT_HOME_IN_TABS)
         new_config['ANIME']['auto_anime_to_list'] = int(app.AUTO_ANIME_TO_LIST)
+        new_config['ANIME']['showlist_default_anime'] = list(app.SHOWLISTS_DEFAULT_ANIME)
 
         new_config.write()
 
@@ -2197,7 +2234,7 @@ class Application(object):
             if self.run_as_daemon and self.create_pid:
                 self.remove_pid_file(self.pid_file)
         finally:
-            if event == event_queue.Events.SystemEvent.RESTART:
+            if event == Events.SystemEvent.RESTART:
                 self.restart()
 
             # Make sure the logger has stopped, just in case

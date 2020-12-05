@@ -233,7 +233,7 @@ class Tmdb(BaseIndexer):
         log.debug('Getting all show data for {0}', tmdb_id)
         try:
             results = self.tmdb.TV(tmdb_id).info(
-                language='{0},null'.format(request_language),
+                language='{0}'.format(request_language),
                 append_to_response=extra_info
             )
         except RequestException as error:
@@ -295,6 +295,8 @@ class Tmdb(BaseIndexer):
         if not isinstance(episodes, list):
             episodes = [episodes]
 
+        absolute_number_counter = 1
+
         for cur_ep in episodes:
             if self.config['dvdorder']:
                 log.debug('Using DVD ordering.')
@@ -314,12 +316,16 @@ class Tmdb(BaseIndexer):
                         seasnum, epno, tmdb_id
                     )
 
-            if seasnum is None or epno is None:
+            if seasnum is None or epno in (None, 0):
                 log.warning('Invalid episode numbering (season: {0!r}, episode: {1!r})', seasnum, epno)
                 continue  # Skip to next episode
 
             seas_no = int(seasnum)
             ep_no = int(epno)
+
+            if seas_no > 0:
+                cur_ep['absolute_number'] = absolute_number_counter
+                absolute_number_counter += 1
 
             image_width = {'fanart': 'w1280', 'poster': 'w780', 'filename': 'w300'}
             for k, v in viewitems(cur_ep):
@@ -347,7 +353,7 @@ class Tmdb(BaseIndexer):
         _images = {}
 
         # Let's get the different type of images available for this series
-        params = {'include_image_language': '{search_language},null'.format(search_language=self.config['language'])}
+        params = {'include_image_language': '{search_language}'.format(search_language=self.config['language'])}
 
         try:
             images = self.tmdb.TV(tmdb_id).images(params=params)
