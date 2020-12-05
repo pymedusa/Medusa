@@ -1104,7 +1104,7 @@ class ProperSearchQueueItem(generic_queue.QueueItem):
 
             else:
                 # snatch it
-                snatch_episode(candidate)
+                snatch_result(candidate)
 
     @staticmethod
     def _canonical_name(name, clear_extension=False):
