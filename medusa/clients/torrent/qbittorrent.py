@@ -43,8 +43,17 @@ class QBittorrentAPI(GenericClient):
         self.api = None
 
     def torrent_completed(self, info_hash):
+        """Check if torrent has finished downloading."""
         properties = self._torrent_properties(info_hash)
         if properties['completion_date'] == -1:
+            return False
+        return True
+
+    def torrent_seeded(self, info_hash):
+        """Check if torrent has finished seeding."""
+        properties = self._torrent_properties(info_hash)
+        contents = self._torrent_contents(info_hash)
+        if properties['completion_date'] == -1 and contents['progress'] != 100:
             return False
         return True
 
@@ -84,7 +93,8 @@ class QBittorrentAPI(GenericClient):
             except Exception:
                 self.api = (1, 0, 0)
 
-        self.get_torrent_status('2fa71a2dbb7d53a39373a8c4e2c9d89aaa7a6db1')
+        # remove me later
+        self._torrent_properties('564c9b6e958df237ce248e4d5d7cbcf4f5a43e05')
         return auth
 
     def _get_auth_v2(self):
@@ -264,8 +274,28 @@ class QBittorrentAPI(GenericClient):
 
         log.info('Checking {client} torrent {hash} status.', {'client': self.name, 'hash': info_hash})
         if not self._request(method='post', data=data, cookies=self.session.cookies):
-            log.warning('Error while fetching torrent {hash} status.', {'hash': info_hash})
-            return
+            log.warning('Torrent hash {hash} not found.', {'hash': info_hash})
+            return {}
+
+        return self.response.json()
+
+    def _torrent_contents(self, info_hash):
+        """
+        Get torrent contents.
+
+        Used to get the torrent status.
+        The torrents/properties route, will provide if the torrent has finished downloading.
+        But we also want to know if seeding has been completed.
+        """
+        self.url = urljoin(self.host, 'api/v2/torrents/contents')
+        data = {
+            'hash': info_hash.lower(),
+        }
+
+        log.info('Checking {client} torrent {hash} contents.', {'client': self.name, 'hash': info_hash})
+        if not self._request(method='post', data=data, cookies=self.session.cookies):
+            log.warning('Torrent hash {hash} not found.', {'hash': info_hash})
+            return {}
 
         return self.response.json()
 
