@@ -9,18 +9,9 @@ import logging
 import os
 import re
 from base64 import b64encode
-from builtins import str
-from datetime import datetime, timedelta
 
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
-from medusa.helpers import (
-    get_extension,
-    is_already_processed_media,
-    is_info_hash_in_history,
-    is_info_hash_processed,
-    is_media_file,
-)
 from medusa.logger.adapters.style import BraceAdapter
 
 import requests.exceptions
@@ -35,7 +26,7 @@ class TransmissionAPI(GenericClient):
     """Transmission API class."""
 
     def __init__(self, host=None, username=None, password=None):
-        """Constructor.
+        """Transmission constructor.
 
         :param host:
         :type host: string
@@ -76,7 +67,13 @@ class TransmissionAPI(GenericClient):
                         {'name': self.name, 'error': error})
             return False
 
-        self.auth = re.search(r'X-Transmission-Session-Id:\s*(\w+)', self.response.text).group(1)
+        auth_match = re.search(r'X-Transmission-Session-Id:\s*(\w+)', self.response.text)
+
+        if not auth_match:
+            return False
+
+        if auth_match:
+            self.auth = auth_match.group(1)
 
         self.session.headers.update({'x-transmission-session-id': self.auth})
 
@@ -87,6 +84,10 @@ class TransmissionAPI(GenericClient):
         })
 
         self._request(method='post', data=post_data)
+
+        # remove me later
+        result = self._torrent_properties('6ed4c48cf23f453a90cef2022e3e8a72f5b786ae')
+
         return self.auth
 
     def _add_torrent_uri(self, result):
@@ -273,6 +274,16 @@ class TransmissionAPI(GenericClient):
             return
 
         return torrent[0]
+
+    def torrent_completed(self, info_hash):
+        """Check if torrent has finished downloading."""
+        properties = self._torrent_properties(info_hash)
+        return properties['status'] == 6 or self.torrent_seeded(info_hash)
+
+    def torrent_seeded(self, info_hash):
+        """Check if torrent has finished seeding."""
+        properties = self._torrent_properties(info_hash)
+        return properties['status'] == 0 and properties['isFinished']
 
 
 api = TransmissionAPI
