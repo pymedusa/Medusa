@@ -176,11 +176,11 @@ def send_nzb(nzb, proper=False):
 
         if nzbget_result:
             log.debug('NZB sent to NZBget successfully, queued with NZBID {nzbid}', {'nzbid': nzbget_result})
-            nzbget_result
+            return nzbget_result
         else:
             log.warning('NZBget could not add {name}.nzb to the queue',
                         {'name': nzb.name})
-            nzbget_result
+            return nzbget_result
     except Exception:
         log.warning('Connect Error to NZBget: could not add {name}.nzb to the'
                     ' queue', {'name': nzb.name})
