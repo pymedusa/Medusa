@@ -142,12 +142,12 @@ def snatch_result(result):
             result_downloaded = _download_result(result)
         elif app.NZB_METHOD == u'sabnzbd':
             result_downloaded = sab.send_nzb(result)
-            if result_downloaded > 0:
-                result.nzbid = result_downloaded
+            if result_downloaded:
+                result.nzb_id = result_downloaded
         elif app.NZB_METHOD == u'nzbget':
             result_downloaded = nzbget.send_nzb(result, is_proper)
             if result_downloaded > 0:
-                result.nzbid = result_downloaded
+                result.nzb_id = result_downloaded
         else:
             log.error(u'Unknown NZB action specified in config: {0}', app.NZB_METHOD)
             result_downloaded = False

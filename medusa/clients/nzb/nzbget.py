@@ -72,8 +72,6 @@ def test_nzb(host, username, password, use_https):
         password,
         host
     )
-    
-    look = get_nzb_by_id(3)
 
     return nzb_connection(url)
 
@@ -187,7 +185,7 @@ def send_nzb(nzb, proper=False):
         return -1
 
 
-def get_nzb_active():
+def _get_nzb_queue():
     """Return a list of all groups (nzbs) currently being donloaded or postprocessed."""
     url = 'http{}://{}:{}@{}/xmlrpc'.format(
         's' if app.NZBGET_USE_HTTPS else '',
@@ -205,7 +203,7 @@ def get_nzb_active():
     return nzb_groups
 
 
-def get_nzb_history():
+def _get_nzb_history():
     """Return a list of all groups (nzbs) from history."""
     url = 'http{}://{}:{}@{}/xmlrpc'.format(
         's' if app.NZBGET_USE_HTTPS else '',
@@ -225,12 +223,12 @@ def get_nzb_history():
 
 def get_nzb_by_id(nzb_id):
     """Look in download queue and history for a specific nzb."""
-    nzb_active = get_nzb_active()
+    nzb_active = _get_nzb_queue()
     for nzb in nzb_active:
         if nzb['NZBID'] == nzb_id:
             return nzb
 
-    nzb_history = get_nzb_history()
+    nzb_history = _get_nzb_history()
     for nzb in nzb_history:
         if nzb['NZBID'] == nzb_id:
             return nzb

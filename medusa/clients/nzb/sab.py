@@ -83,8 +83,10 @@ def send_nzb_get(params, nzb):
         result, text = _check_sab_response(data)
         log.debug('Result text from SAB: {0}', text)
         del text
-        return result
+        if result:
+            return data['nzo_ids'][0]
 
+    return False
 
 def send_nzb_post(params, nzb):
     """
@@ -116,12 +118,15 @@ def send_nzb_post(params, nzb):
         result, text = _check_sab_response(data)
         log.debug('Result text from SAB: {0}', text)
         del text
-        return result
+        if result:
+            return data['nzo_ids'][0]
+
+    return False
 
 
 def _check_sab_response(jdata):
     """
-    Check response from SAB
+    Check response from SAB.
 
     :param jdata: Response from requests api call
     :return: a list of (Boolean, string) which is True if SAB is not reporting an error
@@ -140,7 +145,7 @@ def _check_sab_response(jdata):
 
 def get_sab_access_method(host=None):
     """
-    Find out how we should connect to SAB
+    Find out how we should connect to SAB.
 
     :param host: hostname where SAB lives
     :return: (boolean, string) with True if method was successful
@@ -161,7 +166,7 @@ def get_sab_access_method(host=None):
 
 def test_authentication(host=None, username=None, password=None, apikey=None):
     """
-    Sends a simple API request to SAB to determine if the given connection information is connect
+    Send a simple API request to SAB to determine if the given connection information is connect.
 
     :param host: The host where SAB is running (incl port)
     :param username: The username to use for the HTTP request
@@ -177,9 +182,80 @@ def test_authentication(host=None, username=None, password=None, apikey=None):
     url = urljoin(host, 'api')
 
     data = session.get_json(url, params={'mode': 'queue'}, verify=False)
+
     if not data:
         log.info('Error connecting to sab, no data returned')
     else:
         # check the result and determine if it's good or not
         result, text = _check_sab_response(data)
         return result, 'success' if result else text
+
+
+def _get_nzb_queue(host=None):
+    """Return a list of all groups (nzbs) currently being donloaded or postprocessed."""
+    session.params.update({
+        'ma_username': app.SAB_USERNAME,
+        'ma_password': app.SAB_PASSWORD,
+        'apikey': app.SAB_APIKEY,
+    })
+
+    url = urljoin(app.SAB_HOST, 'api')
+    params = {
+        'mode': 'queue',
+        'limit': 100
+    }
+
+    data = session.get_json(url, params=params, verify=False)
+    if not data:
+        log.info('Error connecting to sab, no data returned')
+    else:
+        # check the result and determine if it's good or not
+        result, _ = _check_sab_response(data)
+        if result:
+            return data
+
+    return False
+
+
+def _get_nzb_history(host=None):
+    """Return a list of all groups (nzbs) currently in history."""
+    session.params.update({
+        'ma_username': app.SAB_USERNAME,
+        'ma_password': app.SAB_PASSWORD,
+        'apikey': app.SAB_APIKEY,
+    })
+
+    url = urljoin(app.SAB_HOST, 'api')
+
+    params = {
+        'mode': 'history',
+        'limit': 100
+    }
+
+    data = session.get_json(url, params=params, verify=False)
+    if not data:
+        log.info('Error connecting to sab, no data returned')
+    else:
+        # check the result and determine if it's good or not
+        result, _ = _check_sab_response(data)
+        if result:
+            return data
+
+    return False
+
+
+def get_nzb_by_id(nzo_id):
+    """Look in download queue and history for a specific nzb."""
+    nzb_active = _get_nzb_queue()
+    if nzb_active and nzb_active.get('queue'):
+        for nzb in nzb_active['queue']['slots']:
+            if nzb['NZBID'] == nzo_id:
+                return nzb
+
+    nzb_history = _get_nzb_history()
+    if nzb_history and nzb_history.get('history'):
+        for nzb in nzb_history['history']['slots']:
+            if nzb['nzo_id'] == nzo_id:
+                return nzb
+
+    return False
