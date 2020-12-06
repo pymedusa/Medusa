@@ -119,6 +119,9 @@ class RTorrentAPI(GenericClient):
         try:
             self.auth = None
             self._get_auth()
+
+            # remove me later
+            self._torrent_properties('042E5273116ED8C6B34666C5DB9046B10EC5D84B')
         except Exception:  # pylint: disable=broad-except
             return False, 'Error: Unable to connect to {name}'.format(name=self.name)
         else:
@@ -126,6 +129,26 @@ class RTorrentAPI(GenericClient):
                 return False, 'Error: Unable to get {name} Authentication, check your config!'.format(name=self.name)
             else:
                 return True, 'Success: Connected and Authenticated'
+
+    def _torrent_properties(self, info_hash):
+        """Get torrent properties."""
+        log.info('Checking {client} torrent {hash} status.', {'client': self.name, 'hash': info_hash})
+
+        torrent = self.auth.find_torrent(info_hash.upper())
+
+        if not torrent:
+            log.warning('Error while fetching torrent {hash} status.', {'hash': info_hash})
+
+        return torrent
+
+    def torrent_completed(self, info_hash):
+        """Check if torrent has finished downloading."""
+        properties = self._torrent_properties(info_hash)
+        return properties.complete
+
+    def torrent_seeded(self, info_hash):
+        """Check if torrent has finished seeding."""
+        return True
 
 
 api = RTorrentAPI
