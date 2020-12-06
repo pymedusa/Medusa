@@ -77,6 +77,8 @@ class SearchResult(object):
         self.version = -1
         # hash
         self.hash = None
+        # nzb_id (nzbget uses NZBID and SabNzbd uses ...)
+        self.nzb_id = None
         # proper_tags
         self.proper_tags = []
         # manually_searched
