@@ -212,7 +212,7 @@ class DelugeAPI(GenericClient):
                           {'name': self.name})
                 return None
 
-        self.get_torrent_status('e4d44da9e71a8f4411bc3fd82aad7689cfa0f07f')
+        self._torrent_properties('e4d44da9e71a8f4411bc3fd82aad7689cfa0f07f')
         return self.auth
 
     def _add_torrent_uri(self, result):
