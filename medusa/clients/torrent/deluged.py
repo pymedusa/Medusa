@@ -210,7 +210,7 @@ class DelugeRPC(object):
         """
         try:
             self.connect()
-            self.get_torrent_status('e4d44da9e71a8f4411bc3fd82aad7689cfa0f07f')
+            self._torrent_properties('e4d44da9e71a8f4411bc3fd82aad7689cfa0f07f')
         except Exception:
             return False
         else:
