@@ -335,3 +335,7 @@ class GenericClient(object):
         episode that has a `Downloaded` status
         """
         raise NotImplementedError
+
+    def torrent_completed(self, info_hash):
+        """Check if a specific torrent has finished seeding."""
+        raise NotImplementedError
