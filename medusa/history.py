@@ -62,9 +62,9 @@ def log_snatch(search_result):
         info_hash = search_result.hash.lower() if search_result.hash else None
         size = search_result.size
 
-        providerClass = search_result.provider
-        if providerClass is not None:
-            provider = providerClass.name
+        provider_class = search_result.provider
+        if provider_class is not None:
+            provider = provider_class.name
         else:
             provider = 'unknown'
 
@@ -73,8 +73,12 @@ def log_snatch(search_result):
 
         resource = search_result.name
 
+        download_client_id = None
+        if search_result.result_type in ('torrent', 'nzb'):
+            download_client_id = info_hash if search_result.result_type == 'torrent' else search_result.nzb_id
+
         _log_history_item(action, ep_obj, resource,
-                          provider, version, proper_tags, manually_searched, info_hash, size)
+                          provider, version, proper_tags, manually_searched, download_client_id, size)
 
 
 def log_download(ep_obj, filename, new_ep_quality, release_group=None, version=-1):
