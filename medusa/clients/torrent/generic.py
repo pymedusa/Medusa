@@ -310,7 +310,6 @@ class GenericClient(object):
         try:
             self._get_auth()
             if self.response.status_code == 200 and self.auth:
-                result = self.torrent_seeded('2DB8D458D5B39BC764DA314BE6CF57B501FDDA32')
                 return True, 'Success: Connected and Authenticated'
             else:
                 return False, 'Error: Unable to get {name} Authentication, check your config!'.format(name=self.name)
