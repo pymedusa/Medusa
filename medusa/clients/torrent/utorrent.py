@@ -50,7 +50,7 @@ class UTorrentAPI(GenericClient):
     """uTorrent API class."""
 
     def __init__(self, host=None, username=None, password=None):
-        """Constructor.
+        """Utorrent constructor.
 
         :param host:
         :type host: string
@@ -227,7 +227,31 @@ class UTorrentAPI(GenericClient):
         return self._torrents_list
 
     def _torrent_properties(self, info_hash):
-        """Get torrent properties."""
+        """Get torrent properties.
+
+        Api torrent response index.
+        array index;	field
+        0	HASH (string)
+        1	STATUS* (integer)
+        2	NAME (string)
+        3	SIZE (integer in bytes)
+        4	PERCENT PROGRESS (integer in per mils)
+        5	DOWNLOADED (integer in bytes)
+        6	UPLOADED (integer in bytes)
+        7	RATIO (integer in per mils)
+        8	UPLOAD SPEED (integer in bytes per second)
+        9	DOWNLOAD SPEED (integer in bytes per second)
+        10	ETA (integer in seconds)
+        11	LABEL (string)
+        12	PEERS CONNECTED (integer)
+        13	PEERS IN SWARM (integer)
+        14	SEEDS CONNECTED (integer)
+        15	SEEDS IN SWARM (integer)
+        16	AVAILABILITY (integer in 1/65536ths)
+        17	TORRENT QUEUE ORDER (integer)
+        18	REMAINING (integer in bytes)
+
+        """
         log.info('Checking {client} torrent {hash} status.', {'client': self.name, 'hash': info_hash})
 
         if not self._get_torrents():
@@ -237,6 +261,29 @@ class UTorrentAPI(GenericClient):
         for torrent in self._torrents_list:
             if torrent[0] == info_hash:
                 return torrent
+
+    def torrent_completed(self, info_hash):
+        """
+        Check if torrent has finished downloading.
+
+        Status field returns a bitwize value.
+        1 = Started
+        2 = Checking
+        4 = Start after check
+        8 = Checked
+        16 = Error
+        32 = Paused
+        64 = Queued
+        128 = Loaded
+        """
+        torrent = self._torrent_properties(info_hash)
+        # Apply bitwize AND with Started. And check if Progress is 100%.
+        return bool(torrent[1] & 1) and torrent[4] == 1000
+
+    def torrent_seeded(self, info_hash):
+        """Check if torrent has finished seeding."""
+        # Utorrent doesn't have a clear way of showing if seeding has finished through api.
+        return True
 
 
 api = UTorrentAPI
