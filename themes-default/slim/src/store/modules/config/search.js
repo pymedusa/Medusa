@@ -38,7 +38,7 @@ const state = {
         usenetRetention: 500,
         maxCacheAge: 30,
         backlogDays: 7,
-        torrentCheckerFrequency: 60,
+        downloadHandlerFrequency: 60,
         backlogFrequency: 720,
         cacheTrimming: false,
         downloadPropers: true,
@@ -46,7 +46,7 @@ const state = {
             enabled: null,
             deleteFailed: null
         },
-        minTorrentCheckerFrequency: 30,
+        mindownloadHandlerFrequency: 30,
         removeFromClient: false,
         randomizeProviders: false,
         propersSearchDays: 2,

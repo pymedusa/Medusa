@@ -50,7 +50,7 @@
                                         <p><b>Note:</b> For now only Transmission and Deluge are supported</p>
                                     </config-toggle-slider>
 
-                                    <config-textbox-number v-show="search.general.removeFromClient" :min="search.general.minTorrentCheckerFrequency" :step="1" v-model.number="search.general.torrentCheckerFrequency" label="Frequency to check torrents ratio" id="torrent_checker_frequency" :explanations="['Frequency in minutes to check torrent\'s ratio (default: 60)']" />
+                                    <config-textbox-number v-show="search.general.removeFromClient" :min="search.general.mindownloadHandlerFrequency" :step="1" v-model.number="search.general.downloadHandlerFrequency" label="Frequency to check torrents ratio" id="download_handler_frequency" :explanations="['Frequency in minutes to check torrent\'s ratio (default: 60)']" />
 
                                     <config-textbox-number :min="1" :step="1" v-model.number="search.general.usenetRetention" label="Usenet retention" id="usenet_retention" :explanations="['age limit in days for usenet articles to be used (e.g. 500)']" />
 

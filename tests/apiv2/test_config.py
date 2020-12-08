@@ -730,8 +730,8 @@ def config_search():
     section_data['general']['dailySearchFrequency'] = int_default(app.DAILYSEARCH_FREQUENCY, app.DEFAULT_DAILYSEARCH_FREQUENCY)
     section_data['general']['minDailySearchFrequency'] = int(app.MIN_DAILYSEARCH_FREQUENCY)
     section_data['general']['removeFromClient'] = bool(app.REMOVE_FROM_CLIENT)
-    section_data['general']['torrentCheckerFrequency'] = int_default(app.TORRENT_CHECKER_FREQUENCY, app.DEFAULT_TORRENT_CHECKER_FREQUENCY)
-    section_data['general']['minTorrentCheckerFrequency'] = int(app.MIN_TORRENT_CHECKER_FREQUENCY)
+    section_data['general']['downloadHandlerFrequency'] = int_default(app.DOWNLOAD_HANDLER_FREQUENCY, app.DEFAULT_DOWNLOAD_HANDLER_FREQUENCY)
+    section_data['general']['mindownloadHandlerFrequency'] = int(app.MIN_DOWNLOAD_HANDLER_FREQUENCY)
     section_data['general']['usenetRetention'] = int_default(app.USENET_RETENTION, 500)
     section_data['general']['trackersList'] = app.TRACKERS_LIST
     section_data['general']['allowHighPriority'] = bool(app.ALLOW_HIGH_PRIORITY)

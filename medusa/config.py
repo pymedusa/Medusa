@@ -197,7 +197,7 @@ def change_TV_DOWNLOAD_DIR(tv_download_dir):
 
 def change_AUTOPOSTPROCESSOR_FREQUENCY(freq):
     """
-    Change frequency of automatic postprocessing thread
+    Change frequency of automatic postprocessing thread.
     TODO: Make all thread frequency changers in config.py return True/False status
 
     :param freq: New frequency
@@ -210,23 +210,23 @@ def change_AUTOPOSTPROCESSOR_FREQUENCY(freq):
     app.post_processor_scheduler.cycleTime = datetime.timedelta(minutes=app.AUTOPOSTPROCESSOR_FREQUENCY)
 
 
-def change_TORRENT_CHECKER_FREQUENCY(freq):
+def change_DOWNLOAD_HANDLER_FREQUENCY(freq):
     """
-    Change frequency of Torrent Checker thread
+    Change frequency of Torrent Checker thread.
 
     :param freq: New frequency
     """
-    app.TORRENT_CHECKER_FREQUECY = try_int(freq, app.DEFAULT_TORRENT_CHECKER_FREQUENCY)
+    app.DOWNLOAD_HANDLER_FREQUECY = try_int(freq, app.DEFAULT_DOWNLOAD_HANDLER_FREQUENCY)
 
-    if app.TORRENT_CHECKER_FREQUECY < app.MIN_TORRENT_CHECKER_FREQUENCY:
-        app.TORRENT_CHECKER_FREQUECY = app.MIN_TORRENT_CHECKER_FREQUENCY
+    if app.DOWNLOAD_HANDLER_FREQUECY < app.MIN_DOWNLOAD_HANDLER_FREQUENCY:
+        app.DOWNLOAD_HANDLER_FREQUECY = app.MIN_DOWNLOAD_HANDLER_FREQUENCY
 
-    app.torrent_checker_scheduler.cycleTime = datetime.timedelta(minutes=app.TORRENT_CHECKER_FREQUECY)
+    app.download_handler_scheduler.cycleTime = datetime.timedelta(minutes=app.DOWNLOAD_HANDLER_FREQUECY)
 
 
 def change_DAILYSEARCH_FREQUENCY(freq):
     """
-    Change frequency of daily search thread
+    Change frequency of daily search thread.
 
     :param freq: New frequency
     """
@@ -240,7 +240,7 @@ def change_DAILYSEARCH_FREQUENCY(freq):
 
 def change_BACKLOG_FREQUENCY(freq):
     """
-    Change frequency of backlog thread
+    Change frequency of backlog thread.
 
     :param freq: New frequency
     """
@@ -255,7 +255,7 @@ def change_BACKLOG_FREQUENCY(freq):
 
 def change_PROPERS_FREQUENCY(check_propers_interval):
     """
-    Change frequency of backlog thread
+    Change frequency of backlog thread.
 
     :param freq: New frequency
     """
@@ -275,7 +275,7 @@ def change_PROPERS_FREQUENCY(check_propers_interval):
 
 def change_UPDATE_FREQUENCY(freq):
     """
-    Change frequency of daily updater thread
+    Change frequency of daily updater thread.
 
     :param freq: New frequency
     """
@@ -289,7 +289,7 @@ def change_UPDATE_FREQUENCY(freq):
 
 def change_SHOWUPDATE_HOUR(freq):
     """
-    Change frequency of show updater thread
+    Change frequency of show updater thread.
 
     :param freq: New frequency
     """
@@ -305,7 +305,7 @@ def change_SHOWUPDATE_HOUR(freq):
 
 def change_SUBTITLES_FINDER_FREQUENCY(subtitles_finder_frequency):
     """
-    Change frequency of subtitle thread
+    Change frequency of subtitle thread.
 
     :param subtitles_finder_frequency: New frequency
     """
@@ -317,7 +317,7 @@ def change_SUBTITLES_FINDER_FREQUENCY(subtitles_finder_frequency):
 
 def change_VERSION_NOTIFY(version_notify):
     """
-    Change frequency of versioncheck thread
+    Change frequency of versioncheck thread.
 
     :param version_notify: New frequency
     """
@@ -348,7 +348,7 @@ def change_GIT_PATH():
 
 def change_DOWNLOAD_PROPERS(download_propers):
     """
-    Enable/Disable proper download thread
+    Enable/Disable proper download thread.
     TODO: Make this return True/False on success/failure
 
     :param download_propers: New desired state
@@ -374,7 +374,7 @@ def change_DOWNLOAD_PROPERS(download_propers):
 
 def change_USE_TRAKT(use_trakt):
     """
-    Enable/disable trakt thread
+    Enable/disable trakt thread.
     TODO: Make this return true/false on success/failure
 
     :param use_trakt: New desired state
@@ -400,7 +400,7 @@ def change_USE_TRAKT(use_trakt):
 
 def change_USE_SUBTITLES(use_subtitles):
     """
-    Enable/Disable subtitle searcher
+    Enable/Disable subtitle searcher.
     TODO: Make this return true/false on success/failure
 
     :param use_subtitles: New desired state
@@ -426,7 +426,7 @@ def change_USE_SUBTITLES(use_subtitles):
 
 def change_PROCESS_AUTOMATICALLY(process_automatically):
     """
-    Enable/Disable postprocessor thread
+    Enable/Disable postprocessor thread.
     TODO: Make this return True/False on success/failure
 
     :param process_automatically: New desired state
@@ -452,7 +452,7 @@ def change_PROCESS_AUTOMATICALLY(process_automatically):
 
 def change_remove_from_client(new_state):
     """
-    Enable/disable TorrentChecker thread
+    Enable/disable DownloadHandler thread.
     TODO: Make this return true/false on success/failure
 
     :param new_state: New desired state
@@ -464,16 +464,16 @@ def change_remove_from_client(new_state):
 
     app.REMOVE_FROM_CLIENT = new_state
     if app.REMOVE_FROM_CLIENT:
-        if not app.torrent_checker_scheduler.enable:
-            log.info(u'Starting TORRENTCHECKER thread')
-            app.torrent_checker_scheduler.silent = False
-            app.torrent_checker_scheduler.enable = True
+        if not app.download_handler_scheduler.enable:
+            log.info(u'Starting DOWNLOADHANDLER thread')
+            app.download_handler_scheduler.silent = False
+            app.download_handler_scheduler.enable = True
         else:
-            log.info(u'Unable to start TORRENTCHECKER thread. Already running')
+            log.info(u'Unable to start DOWNLOADHANDLER thread. Already running')
     else:
-        app.torrent_checker_scheduler.enable = False
-        app.torrent_checker_scheduler.silent = True
-        log.info(u'Stopping TORRENTCHECKER thread')
+        app.download_handler_scheduler.enable = False
+        app.download_handler_scheduler.silent = True
+        log.info(u'Stopping DOWNLOADHANDLER thread')
 
 
 def change_theme(theme_name):
@@ -513,7 +513,7 @@ def change_theme(theme_name):
 
 
 def CheckSection(CFG, sec):
-    """ Check if INI section exists, if not create it """
+    """ Check if INI section exists, if not create it."""
 
     if sec in CFG:
         return True
@@ -524,7 +524,7 @@ def CheckSection(CFG, sec):
 
 def checkbox_to_value(option, value_on=1, value_off=0):
     """
-    Turns checkbox option 'on' or 'true' to value_on (1)
+    Turns checkbox option 'on' or 'true' to value_on (1).
     any other value returns value_off (0)
     """
 
@@ -539,7 +539,7 @@ def checkbox_to_value(option, value_on=1, value_off=0):
 
 def clean_host(host, default_port=None):
     """
-    Returns host or host:port or empty string from a given url or host
+    Returns host or host:port or empty string from a given url or host.
     If no port is found and default_port is given use host:default_port
     """
 
@@ -571,7 +571,7 @@ def clean_host(host, default_port=None):
 
 def clean_hosts(hosts, default_port=None):
     """
-    Returns list of cleaned hosts by clean_host
+    Returns list of cleaned hosts by clean_host.
 
     :param hosts: list of hosts
     :param default_port: default port to use
@@ -591,10 +591,8 @@ def clean_hosts(hosts, default_port=None):
 
 def clean_url(url):
     """
-    Returns an cleaned url starting with a scheme and folder with trailing /
-    or an empty string
+    Returns an cleaned url starting with a scheme and folder with trailing or an empty string.
     """
-
     if url and url.strip():
 
         url = url.strip()
@@ -624,7 +622,6 @@ def convert_csv_string_to_list(value, delimiter=',', trim=False):
     :param trim: Optionally trim the individual list items.
     :return: The delimited value as a list.
     """
-
     if not isinstance(value, (string_types, text_type)):
         return value
 
@@ -640,7 +637,7 @@ def convert_csv_string_to_list(value, delimiter=',', trim=False):
 # Check_setting_int                                                            #
 ################################################################################
 def minimax(val, default, low, high):
-    """ Return value forced within range """
+    """Return value forced within range."""
 
     val = try_int(val, default)
 

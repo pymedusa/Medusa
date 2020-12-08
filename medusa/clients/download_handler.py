@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-"""Torrent checker module."""
+"""Download handler module."""
 from __future__ import unicode_literals
 
 import logging
@@ -29,27 +29,28 @@ from requests import RequestException
 logger = logging.getLogger(__name__)
 
 
-class TorrentChecker(object):
+class DownloadHandler(object):
     """Torrent checker class."""
 
     def __init__(self):
         """Initialize the class."""
-        self.amActive = False
+        self.am_active = False
 
     def run(self, force=False):
         """Start the Torrent Checker Thread."""
-        self.amActive = True
+        self.am_active = True
 
         try:
-            client = torrent.get_client_class(app.TORRENT_METHOD)()
-            client.remove_ratio_reached()
+            # client = torrent.get_client_class(app.TORRENT_METHOD)()
+            # client.remove_ratio_reached()
+            pass
         except NotImplementedError:
             logger.warning('Feature not currently implemented for this torrent client({torrent_client})',
                            torrent_client=app.TORRENT_METHOD)
-        except RequestException as e:
+        except RequestException as error:
             logger.warning('Unable to connect to {torrent_client}. Error: {error}',
-                           torrent_client=app.TORRENT_METHOD, error=e)
+                           torrent_client=app.TORRENT_METHOD, error=error)
         except Exception:
             logger.exception('Exception while checking torrent status.')
         finally:
-            self.amActive = False
+            self.am_active = False

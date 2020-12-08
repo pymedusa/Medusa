@@ -112,7 +112,7 @@ export default {
                 { value: 'EPISODEUPDATER', title: 'Episode Updater' },
                 { value: 'Thread', title: 'Thread' },
                 { value: 'TORNADO', title: 'Tornado' },
-                { value: 'TORRENTCHECKER', title: 'Torrent Checker' },
+                { value: 'downloadHandler', title: 'Torrent Checker' },
                 { value: 'TRAKTCHECKER', title: 'Trakt Checker' }
             ]
         };

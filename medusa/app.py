@@ -104,7 +104,7 @@ class MedusaApp(object):
         self.post_processor_scheduler = None
         self.subtitles_finder_scheduler = None
         self.trakt_checker_scheduler = None
-        self.torrent_checker_scheduler = None
+        self.download_handler_scheduler = None
 
         self.showList = []
 
@@ -271,14 +271,14 @@ class MedusaApp(object):
         self.BACKLOG_FREQUENCY = None
         self.SHOWUPDATE_HOUR = None
 
-        self.DEFAULT_TORRENT_CHECKER_FREQUENCY = 60
+        self.DEFAULT_DOWNLOAD_HANDLER_FREQUENCY = 60
         self.DEFAULT_DAILYSEARCH_FREQUENCY = 40
         self.DEFAULT_BACKLOG_FREQUENCY = 21
         self.DEFAULT_UPDATE_FREQUENCY = 1
         self.DEFAULT_SHOWUPDATE_HOUR = random.randint(2, 4)
 
         self.MIN_AUTOPOSTPROCESSOR_FREQUENCY = 1
-        self.MIN_TORRENT_CHECKER_FREQUENCY = 30
+        self.MIN_DOWNLOAD_HANDLER_FREQUENCY = 30
         self.MIN_DAILYSEARCH_FREQUENCY = 10
         self.MIN_BACKLOG_FREQUENCY = 10
         self.MIN_UPDATE_FREQUENCY = 1
@@ -348,7 +348,7 @@ class MedusaApp(object):
         self.TORRENT_RPCURL = 'transmission'
         self.TORRENT_AUTH_TYPE = 'none'
         self.TORRENT_SEED_LOCATION = None
-        self.TORRENT_CHECKER_FREQUENCY = None
+        self.DOWNLOAD_HANDLER_FREQUENCY = None
 
         self.USE_KODI = False
         self.KODI_ALWAYS_ON = True

@@ -1849,9 +1849,9 @@ definitions:
                 type: integer
               removeFromClient:
                 type: boolean
-              torrentCheckerFrequency:
+              downloadHandlerFrequency:
                 type: integer
-              minTorrentCheckerFrequency:
+              mindownloadHandlerFrequency:
                 type: integer
               usenetRetention:
                 type: integer

@@ -763,7 +763,7 @@
                         "isSilent": true
                     },
                     {
-                        "key": "torrentChecker",
+                        "key": "downloadHandler",
                         "name": "Torrent Checker",
                         "isAlive": true,
                         "isEnabled": false,
@@ -1280,8 +1280,8 @@
                     "dailySearchFrequency": 10,
                     "minDailySearchFrequency": 10,
                     "removeFromClient": false,
-                    "torrentCheckerFrequency": 60,
-                    "minTorrentCheckerFrequency": 30,
+                    "downloadHandlerFrequency": 60,
+                    "mindownloadHandlerFrequency": 30,
                     "usenetRetention": 500,
                     "trackersList": [
                         "udp://tracker.coppersurfer.tk:6969/announce",

@@ -249,7 +249,7 @@ def get_nzb_by_id(nzo_id):
     nzb_active = _get_nzb_queue()
     if nzb_active and nzb_active.get('queue'):
         for nzb in nzb_active['queue']['slots']:
-            if nzb['NZBID'] == nzo_id:
+            if nzb['nzo_id'] == nzo_id:
                 return nzb
 
     nzb_history = _get_nzb_history()
@@ -257,5 +257,14 @@ def get_nzb_by_id(nzo_id):
         for nzb in nzb_history['history']['slots']:
             if nzb['nzo_id'] == nzo_id:
                 return nzb
+
+    return False
+
+
+def nzb_status(self, nzo_id):
+    """Return nzb status (Paused, Downloading, Downloaded, Failed, Extracting)."""
+    nzb = get_nzb_by_id(nzo_id)
+    if nzb:
+        return nzb['status']
 
     return False
