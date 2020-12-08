@@ -88,6 +88,7 @@ def send_nzb_get(params, nzb):
 
     return False
 
+
 def send_nzb_post(params, nzb):
     """
     Sends an NZB to SABnzbd via the API.

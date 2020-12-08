@@ -642,7 +642,7 @@ class Application(object):
                                                   check_setting_int(app.CFG, 'General', 'autopostprocessor_frequency', 10))
 
             app.DOWNLOAD_HANDLER_FREQUENCY = max(app.MIN_DOWNLOAD_HANDLER_FREQUENCY,
-                                                 check_setting_int(app.CFG, 'General', 'torrent_checker_frequency',
+                                                 check_setting_int(app.CFG, 'General', 'download_handler_frequency',
                                                                    app.DEFAULT_DOWNLOAD_HANDLER_FREQUENCY))
             app.DAILYSEARCH_FREQUENCY = max(app.MIN_DAILYSEARCH_FREQUENCY,
                                             check_setting_int(app.CFG, 'General', 'dailysearch_frequency', app.DEFAULT_DAILYSEARCH_FREQUENCY))
@@ -1257,9 +1257,10 @@ class Application(object):
                                                                  threadName='FINDSUBTITLES',
                                                                  silent=not app.USE_SUBTITLES)
 
-            update_interval = datetime.timedelta(minutes=app.DOWNLOAD_HANDLER_FREQUENCY)
+            # update_interval = datetime.timedelta(minutes=app.DOWNLOAD_HANDLER_FREQUENCY)
+            update_interval = 1
             app.download_handler_scheduler = scheduler.Scheduler(download_handler.DownloadHandler(),
-                                                                 cycleTime=update_interval,
+                                                                 cycleTime=datetime.timedelta(seconds=3),
                                                                  threadName='DOWNLOADHANDLER')
 
             app.__INITIALIZED__ = True
@@ -1409,9 +1410,13 @@ class Application(object):
             app.trakt_checker_scheduler.start()
 
             # Removed check for app.REMOVE_FROM_CLIENT for now.
-            if app.USE_TORRENTS and app.TORRENT_METHOD != 'blackhole':
+            if ((app.USE_TORRENTS and app.TORRENT_METHOD != 'blackhole')
+                    or (app.USE_NZBS and app.NZB_METHOD != 'blackhole')):
                 app.download_handler_scheduler.enable = True
-            app.download_handler_scheduler.silent = False
+                app.download_handler_scheduler.silent = False
+            else:
+                app.download_handler_scheduler.enable = False
+                app.download_handler_scheduler.silent = True
             app.download_handler_scheduler.start()
 
             app.started = True
@@ -1538,7 +1543,7 @@ class Application(object):
         new_config['General']['cache_trimming'] = int(app.CACHE_TRIMMING)
         new_config['General']['max_cache_age'] = int(app.MAX_CACHE_AGE)
         new_config['General']['autopostprocessor_frequency'] = int(app.AUTOPOSTPROCESSOR_FREQUENCY)
-        new_config['General']['torrent_checker_frequency'] = int(app.DOWNLOAD_HANDLER_FREQUENCY)
+        new_config['General']['download_handler_frequency'] = int(app.DOWNLOAD_HANDLER_FREQUENCY)
         new_config['General']['dailysearch_frequency'] = int(app.DAILYSEARCH_FREQUENCY)
         new_config['General']['backlog_frequency'] = int(app.BACKLOG_FREQUENCY)
         new_config['General']['update_frequency'] = int(app.UPDATE_FREQUENCY)

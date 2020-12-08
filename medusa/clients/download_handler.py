@@ -23,6 +23,7 @@ from builtins import object
 
 from medusa import app
 from medusa.clients import torrent
+from medusa.clients.nzb import nzbget, sab
 
 from requests import RequestException
 
@@ -30,27 +31,59 @@ logger = logging.getLogger(__name__)
 
 
 class DownloadHandler(object):
-    """Torrent checker class."""
+    """Download handler checker class."""
 
     def __init__(self):
         """Initialize the class."""
-        self.am_active = False
+        self.amActive = False
+
+    @staticmethod
+    def _check_torrents():
+        """
+        Check torrent client for completed torrents.
+
+        Start postprocessing if app.DOWNLOAD_HANDLING is enabled.
+        """
+        torrenet_client = torrent.get_client_class(app.TORRENT_METHOD)()
+
+    @staticmethod
+    def _check_nzbs():
+        """
+        Check torrent client for completed nzbs.
+
+        Start postprocessing if app.DOWNLOAD_HANDLING is enabled.
+        """
+        if app.NZB_METHOD == 'sabnzbd':
+            client = sab
+        if app.NZB_METHOD == 'nzbget':
+            client = nzbget
+
+        client._get_nzb_history()
+        pass
+
 
     def run(self, force=False):
-        """Start the Torrent Checker Thread."""
-        self.am_active = True
+        """Start the Download Handler Thread."""
+        if self.amActive:
+            logger.debug(u'Download handler is still running, not starting it again')
+            return
+
+        self.amActive = True
 
         try:
-            # client = torrent.get_client_class(app.TORRENT_METHOD)()
+            if app.USE_TORRENTS:
+                self._check_torrents()
+
+            if app.USE_NZBS:
+                self._check_nzbs()
             # client.remove_ratio_reached()
-            pass
         except NotImplementedError:
             logger.warning('Feature not currently implemented for this torrent client({torrent_client})',
                            torrent_client=app.TORRENT_METHOD)
         except RequestException as error:
             logger.warning('Unable to connect to {torrent_client}. Error: {error}',
                            torrent_client=app.TORRENT_METHOD, error=error)
-        except Exception:
-            logger.exception('Exception while checking torrent status.')
+        except Exception as error:
+            logger.exception('Exception while checking torrent status. with error: {error}', {'error': error})
         finally:
-            self.am_active = False
+            self.amActive = False
