@@ -40,13 +40,26 @@ class DownloadHandler(object):
         self.amActive = False
         self.main_db_con = db.DBConnection()
 
+    def _get_history_results_from_db(self):
+        return self.main_db_con.select('SELECT * FROM history WHERE info_hash is not null')
+
     def _check_torrents(self):
         """
         Check torrent client for completed torrents.
 
         Start postprocessing if app.DOWNLOAD_HANDLING is enabled.
         """
-        torrenet_client = torrent.get_client_class(app.TORRENT_METHOD)()
+        torrent_client = torrent.get_client_class(app.TORRENT_METHOD)()
+
+        for history_result in self._get_history_results_from_db():
+            if torrent_client.torrent_completed(history_result['info_hash']):
+                log.debug(
+                    u'Found torrent on {client} with info_hash {info_hash}',
+                    {
+                        'client': app.TORRENT_METHOD,
+                        'info_hash': history_result['info_hash']
+                    }
+                )
 
     def _check_nzbs(self):
         """
@@ -59,9 +72,7 @@ class DownloadHandler(object):
         if app.NZB_METHOD == 'nzbget':
             client = nzbget
 
-        history_results = self.main_db_con.select('SELECT * FROM history WHERE info_hash is not null')
-        # client._get_nzb_history()
-        for history_result in history_results:
+        for history_result in self._get_history_results_from_db():
             nzb_on_client = client.get_nzb_by_id(history_result['info_hash'])
             if nzb_on_client:
                 log.debug(

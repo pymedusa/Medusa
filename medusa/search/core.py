@@ -721,7 +721,8 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
                     multi_results, single_results = collect_candidates(
                         found_results, cur_provider, multi_results, single_results
                     )
-                    found_eps = itertools.chain(*(result.episodes for result in multi_results + single_results))
+                    # With season packs, episodes are not available. How do we handle those?
+                    found_eps = itertools.chain(*(result.episodes for result in multi_results + single_results if result.episodes))
                     needed_eps = [ep for ep in episodes if ep not in found_eps]
 
             except AuthException as error:

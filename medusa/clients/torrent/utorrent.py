@@ -211,6 +211,12 @@ class UTorrentAPI(GenericClient):
         })
 
     def _get_torrents(self):
+        """
+        Get all torrents from utorrent api.
+
+        Note! This is an expensive method. As when your looping through the history table to get a specific
+        info_hash, it will get all torrents for each info_hash. We might want to cache this one.
+        """
         if self._torrents_epoch:
             if time.time() - self._torrents_epoch <= 180:
                 return self._torrents_list
@@ -255,11 +261,11 @@ class UTorrentAPI(GenericClient):
         log.info('Checking {client} torrent {hash} status.', {'client': self.name, 'hash': info_hash})
 
         if not self._get_torrents():
-            log.warning('Error while fetching torrent {hash} status.', {'hash': info_hash})
+            log.debug('Could not locate torrent with {hash} status.', {'hash': info_hash})
             return
 
         for torrent in self._torrents_list:
-            if torrent[0] == info_hash:
+            if torrent[0] == info_hash.upper():
                 return torrent
 
     def torrent_completed(self, info_hash):
@@ -278,7 +284,9 @@ class UTorrentAPI(GenericClient):
         """
         torrent = self._torrent_properties(info_hash)
         # Apply bitwize AND with Started. And check if Progress is 100%.
-        return bool(torrent[1] & 1) and torrent[4] == 1000
+        if torrent:
+            return bool(torrent[1] & 1) and torrent[4] == 1000
+        return False
 
     def torrent_seeded(self, info_hash):
         """Check if torrent has finished seeding."""
