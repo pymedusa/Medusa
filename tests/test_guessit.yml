@@ -4497,3 +4497,14 @@
   screen_size: 1080p
   frame_rate: 60fps
   type: episode
+
+? "[QCE]Jujutsu.Kaisen.10.x264.AAC.720p"
+: title: Jujutsu Kaisen
+  episode: 10
+  absolute_episode: 10
+  release_group: QCE
+  video_codec: H.264
+  video_encoder: x264
+  audio_codec: AAC
+  screen_size: 720p
+  type: episode
