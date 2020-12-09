@@ -21,13 +21,15 @@ from __future__ import unicode_literals
 import logging
 from builtins import object
 
-from medusa import app
+from medusa import app, db
 from medusa.clients import torrent
 from medusa.clients.nzb import nzbget, sab
+from medusa.logger.adapters.style import BraceAdapter
 
 from requests import RequestException
 
-logger = logging.getLogger(__name__)
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class DownloadHandler(object):
@@ -36,9 +38,9 @@ class DownloadHandler(object):
     def __init__(self):
         """Initialize the class."""
         self.amActive = False
+        self.main_db_con = db.DBConnection()
 
-    @staticmethod
-    def _check_torrents():
+    def _check_torrents(self):
         """
         Check torrent client for completed torrents.
 
@@ -46,8 +48,7 @@ class DownloadHandler(object):
         """
         torrenet_client = torrent.get_client_class(app.TORRENT_METHOD)()
 
-    @staticmethod
-    def _check_nzbs():
+    def _check_nzbs(self):
         """
         Check torrent client for completed nzbs.
 
@@ -58,14 +59,24 @@ class DownloadHandler(object):
         if app.NZB_METHOD == 'nzbget':
             client = nzbget
 
-        client._get_nzb_history()
-        pass
-
+        history_results = self.main_db_con.select('SELECT * FROM history WHERE info_hash is not null')
+        # client._get_nzb_history()
+        for history_result in history_results:
+            nzb_on_client = client.get_nzb_by_id(history_result['info_hash'])
+            if nzb_on_client:
+                log.debug(
+                    u'Found nzb (status {status}) on {client} with info_hash {info_hash}',
+                    {
+                        'status': nzb_on_client['status'],
+                        'client': app.NZB_METHOD,
+                        'info_hash': history_result['info_hash']
+                    }
+                )
 
     def run(self, force=False):
         """Start the Download Handler Thread."""
         if self.amActive:
-            logger.debug(u'Download handler is still running, not starting it again')
+            log.debug(u'Download handler is still running, not starting it again')
             return
 
         self.amActive = True
@@ -78,12 +89,12 @@ class DownloadHandler(object):
                 self._check_nzbs()
             # client.remove_ratio_reached()
         except NotImplementedError:
-            logger.warning('Feature not currently implemented for this torrent client({torrent_client})',
-                           torrent_client=app.TORRENT_METHOD)
+            log.warning('Feature not currently implemented for this torrent client({torrent_client})',
+                        torrent_client=app.TORRENT_METHOD)
         except RequestException as error:
-            logger.warning('Unable to connect to {torrent_client}. Error: {error}',
-                           torrent_client=app.TORRENT_METHOD, error=error)
+            log.warning('Unable to connect to {torrent_client}. Error: {error}',
+                        torrent_client=app.TORRENT_METHOD, error=error)
         except Exception as error:
-            logger.exception('Exception while checking torrent status. with error: {error}', {'error': error})
+            log.exception('Exception while checking torrent status. with error: {error}', {'error': error})
         finally:
             self.amActive = False

@@ -20,6 +20,7 @@ all_schedulers = [
     ('traktChecker', 'Trakt Checker', 'trakt_checker_scheduler'),
     ('downloadHandler', 'Torrent Checker', 'download_handler_scheduler'),
     ('snatchQueue', 'Snatch Queue', 'manual_snatch_scheduler'),
+    ('downloadHandler', 'Download Handler', 'download_handler_scheduler'),
 ]
 
 

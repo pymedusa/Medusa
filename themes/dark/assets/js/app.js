@@ -9,9 +9,13 @@
 (self["webpackChunkslim"] = self["webpackChunkslim"] || []).push([["app"],{
 
 /***/ "./src/app.js":
-/*!********************!*
+/*!********************!*\
   !*** ./src/app.js ***!
   \********************/
+/*! namespace exports */
+/*! export default [provided] [no usage info] [missing usage info prevents renaming] */
+/*! other exports [not provided] [no usage info] */
+/*! runtime requirements: __webpack_require__, __webpack_exports__, __webpack_require__.r, __webpack_require__.d, __webpack_require__.* */
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";

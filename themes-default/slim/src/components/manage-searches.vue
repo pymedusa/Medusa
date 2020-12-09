@@ -48,6 +48,17 @@
             </div>
         </div>
 
+        <div v-if="schedulerStatus" class="row">
+            <div class="col-lg-12">
+                <h3>Download Handler:</h3>
+                <button class="btn-medusa" :disabled="schedulerStatus.downloadHandlerStatus" @click="forceDownloadHandler">
+                    <i class="icon-exclamation-sign" /> Force
+                </button>
+                <template>{{ schedulerStatus.downloadHandlerFinderStatus ? 'In Progress' : 'Not in progress' }}</template>
+            </div>
+        </div>
+
+
         <div class="row">
             <div class="col-lg-12">
                 <h3>Scene Exceptions:</h3>
@@ -146,6 +157,7 @@ export default {
             const search = schedulers.find(scheduler => scheduler.key === 'searchQueue');
             const forcedSearch = schedulers.find(scheduler => scheduler.key === 'forcedSearchQueue');
             const subtitles = schedulers.find(scheduler => scheduler.key === 'subtitlesFinder');
+            const downloadHandler = schedulers.find(scheduler => scheduler.key == 'downloadHandler');
 
             return {
                 backlogPaused: backlog.isEnabled === 'Paused',
@@ -154,7 +166,8 @@ export default {
                 searchQueueLength: search.queueLength,
                 forcedSearchQueueLength: forcedSearch.queueLength,
                 subtitlesFinderStatus: subtitles.isActive,
-                properSearchStatus: proper.isActive
+                properSearchStatus: proper.isActive,
+                downloadHandlerStatus: downloadHandler.isActive
             };
         }
     },
@@ -225,6 +238,9 @@ export default {
         toggleBacklog() {
             const { schedulerStatus } = this;
             api.put('search/backlog', { options: { paused: !schedulerStatus.backlogPaused } }); // eslint-disable-line no-undef
+        },
+        forceDownloadHandler() {
+            api.post('system/operation', { type: 'FORCEADH' });
         }
     },
     mounted() {

@@ -74,6 +74,12 @@ class SystemHandler(BaseRequestHandler):
             else:
                 return self._bad_request('Version already up to date')
 
+        if data['type'] == 'FORCEADH':
+            if app.download_handler_scheduler.forceRun():
+                return self._created()
+            else:
+                return self._bad_request('Failed starting download handler')
+
         return self._bad_request('Invalid operation')
 
     def _backup(self, branch=None):

@@ -1257,10 +1257,9 @@ class Application(object):
                                                                  threadName='FINDSUBTITLES',
                                                                  silent=not app.USE_SUBTITLES)
 
-            # update_interval = datetime.timedelta(minutes=app.DOWNLOAD_HANDLER_FREQUENCY)
-            update_interval = 1
+            update_interval = datetime.timedelta(minutes=app.DOWNLOAD_HANDLER_FREQUENCY)
             app.download_handler_scheduler = scheduler.Scheduler(download_handler.DownloadHandler(),
-                                                                 cycleTime=datetime.timedelta(seconds=3),
+                                                                 cycleTime=update_interval,
                                                                  threadName='DOWNLOADHANDLER')
 
             app.__INITIALIZED__ = True

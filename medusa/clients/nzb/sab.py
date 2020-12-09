@@ -194,15 +194,12 @@ def test_authentication(host=None, username=None, password=None, apikey=None):
 
 def _get_nzb_queue(host=None):
     """Return a list of all groups (nzbs) currently being donloaded or postprocessed."""
-    session.params.update({
-        'ma_username': app.SAB_USERNAME,
-        'ma_password': app.SAB_PASSWORD,
-        'apikey': app.SAB_APIKEY,
-    })
-
     url = urljoin(app.SAB_HOST, 'api')
     params = {
         'mode': 'queue',
+        'apikey': app.SAB_APIKEY,
+        'output': 'json',
+        'failed_only': 0,
         'limit': 100
     }
 
@@ -220,16 +217,13 @@ def _get_nzb_queue(host=None):
 
 def _get_nzb_history(host=None):
     """Return a list of all groups (nzbs) currently in history."""
-    session.params.update({
-        'ma_username': app.SAB_USERNAME,
-        'ma_password': app.SAB_PASSWORD,
-        'apikey': app.SAB_APIKEY,
-    })
-
     url = urljoin(app.SAB_HOST, 'api')
 
     params = {
         'mode': 'history',
+        'apikey': app.SAB_APIKEY,
+        'output': 'json',
+        'failed_only': 0,
         'limit': 100
     }
 
