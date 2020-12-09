@@ -1028,7 +1028,7 @@ class AbsoluteEpisodeWithX265(Rule):
     priority = POST_PROCESS
     consequence = [RemoveMatch, AppendMatch]
     non_words_re = re.compile(r'\W')
-    re_episode_with_x = re.compile(r'[\d]+.x26\d')
+    re_episode_with_x = re.compile(r'(?P<season>[\d]+).(?P<encoder>x26\d)')
     episode_words = ('e', 'episode', 'ep')
 
     def when(self, matches, context):
@@ -1046,7 +1046,8 @@ class AbsoluteEpisodeWithX265(Rule):
 
         if context.get('show_type') != 'normal' and matches.named('season') and not matches.named('episode'):
             seasons = matches.named('season')
-            if self.re_episode_with_x.search(matches.input_string):
+            tag_sxx_exx = matches.tagged('SxxExx')[0].initiator.advanced['value']
+            if self.re_episode_with_x.search(tag_sxx_exx):
                 season = seasons[0]
                 absolute_episode = copy.copy(season)
                 absolute_episode.name = 'absolute_episode'
