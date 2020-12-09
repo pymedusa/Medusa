@@ -1027,9 +1027,7 @@ class AbsoluteEpisodeWithX265(Rule):
 
     priority = POST_PROCESS
     consequence = [RemoveMatch, AppendMatch]
-    non_words_re = re.compile(r'\W')
     re_episode_with_x = re.compile(r'(?P<season>[\d]+).(?P<encoder>x26\d)')
-    episode_words = ('e', 'episode', 'ep')
 
     def when(self, matches, context):
         """Evaluate the rule.
@@ -1044,20 +1042,25 @@ class AbsoluteEpisodeWithX265(Rule):
         to_remove = []
         to_append = []
 
-        if context.get('show_type') != 'normal' and matches.named('season') and not matches.named('episode'):
-            seasons = matches.named('season')
-            tag_sxx_exx = matches.tagged('SxxExx')[0].initiator.advanced['value']
-            if self.re_episode_with_x.search(tag_sxx_exx):
-                season = seasons[0]
-                absolute_episode = copy.copy(season)
-                absolute_episode.name = 'absolute_episode'
-                episode = copy.copy(absolute_episode)
-                episode.name = 'episode'
-                to_append.append(absolute_episode)
-                to_append.append(episode)
-                to_remove.append(season)
+        if context.get('show_type') == 'normal' or not matches.named('season') or matches.named('episode'):
+            return
 
-        return to_remove, to_append
+        if not matches.tagged('SxxExx'):
+            return
+
+        tag_sxx_exx = matches.tagged('SxxExx')[0].initiator.advanced['value']
+        if self.re_episode_with_x.search(tag_sxx_exx):
+            seasons = matches.named('season')
+            season = seasons[0]
+            absolute_episode = copy.copy(season)
+            absolute_episode.name = 'absolute_episode'
+            episode = copy.copy(absolute_episode)
+            episode.name = 'episode'
+            to_append.append(absolute_episode)
+            to_append.append(episode)
+            to_remove.append(season)
+
+            return to_remove, to_append
 
 
 class FixEpisodeTitleAsMultiSeason(Rule):
