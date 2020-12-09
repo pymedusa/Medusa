@@ -976,8 +976,8 @@ class AbsoluteEpisodeNumbers(Rule):
                     if previous.name != 'episode':
                         if hole and self.non_words_re.sub('', hole.value).lower() in self.episode_words:
                             # if version is present, then it's an anime
-                            if (context.get('show_type') != 'anime' and
-                                    not matches.named('version') and not matches.tagged('anime')):
+                            if (context.get('show_type') != 'anime'
+                                and not matches.named('version') and not matches.tagged('anime')):
                                 # Some.Show.E07.1080p.HDTV.x265-GROUP
                                 # Some.Show.Episode.10.Some.Title.720p
                                 # not absolute episode
@@ -993,6 +993,70 @@ class AbsoluteEpisodeNumbers(Rule):
                 to_append.append(absolute_episode)
 
             return to_remove, to_append
+
+
+class AbsoluteEpisodeWithX265(Rule):
+    """An absolute episode number followed by a `.x` makes guessit parse it as a season.
+
+    Medusa absolute episode numbers rule where the episode is followed by `.x`
+
+    e.g.: "Show.Name.-.9.x265"
+
+    guessit -t episode ""Show.Name.-.9.x265""
+
+    without this rule:
+        For: Show.Name.-.9.x265
+        GuessIt found: {
+            "title": "Show Name",
+            "season": 9,
+            "video_codec": "H.265",
+            "video_encoder": "x265",
+            "type": "episode"
+        }
+    with this rule:
+        For: Show.Name.10.720p
+        GuessIt found: {
+            "title": "Show Name",
+            "episode": 9,
+            "absolute_episode": 9
+            "video_codec": "H.265",
+            "video_encoder": "x265",
+            "type": "episode"
+        }
+    """
+
+    priority = POST_PROCESS
+    consequence = [RemoveMatch, AppendMatch]
+    non_words_re = re.compile(r'\W')
+    re_episode_with_x = re.compile(r'[\d]+.x26\d')
+    episode_words = ('e', 'episode', 'ep')
+
+    def when(self, matches, context):
+        """Evaluate the rule.
+
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        # if it seems to be anime and it doesn't have season
+        to_remove = []
+        to_append = []
+
+        if context.get('show_type') != 'normal' and matches.named('season') and not matches.named('episode'):
+            seasons = matches.named('season')
+            if self.re_episode_with_x.search(matches.input_string):
+                season = seasons[0]
+                absolute_episode = copy.copy(season)
+                absolute_episode.name = 'absolute_episode'
+                episode = copy.copy(absolute_episode)
+                episode.name = 'episode'
+                to_append.append(absolute_episode)
+                to_append.append(episode)
+                to_remove.append(season)
+
+        return to_remove, to_append
 
 
 class FixEpisodeTitleAsMultiSeason(Rule):
@@ -1678,6 +1742,7 @@ def rules():
         AnimeWithSeasonMultipleEpisodeNumbers,
         AnimeAbsoluteEpisodeNumbers,
         AbsoluteEpisodeNumbers,
+        AbsoluteEpisodeWithX265,
         FixEpisodeTitleAsMultiSeason,
         OnePreGroupAsMultiEpisode,
         PartsAsEpisodeNumbers,
