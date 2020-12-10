@@ -4485,3 +4485,26 @@
   alternative_title: Redux presents The Uplifting Selection Vol
   source: Web
   type: episode
+
+? "[Raze].Jujutsu.Kaisen-09.x265.10bit.1080p.60fps"
+: title: Jujutsu Kaisen
+  episode: 9
+  absolute_episode: 9
+  release_group: Raze
+  video_codec: H.265
+  video_encoder: x265
+  color_depth: 10-bit
+  screen_size: 1080p
+  frame_rate: 60fps
+  type: episode
+
+? "[QCE]Jujutsu.Kaisen.10.x264.AAC.720p"
+: title: Jujutsu Kaisen
+  episode: 10
+  absolute_episode: 10
+  release_group: QCE
+  video_codec: H.264
+  video_encoder: x264
+  audio_codec: AAC
+  screen_size: 720p
+  type: episode
