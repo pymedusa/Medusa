@@ -100,7 +100,7 @@ def _download_result(result):
     return new_result
 
 
-def snatch_result(result):
+def snatch_episode(result):
     """
     Snatch a result that has been found.
 
@@ -142,12 +142,8 @@ def snatch_result(result):
             result_downloaded = _download_result(result)
         elif app.NZB_METHOD == u'sabnzbd':
             result_downloaded = sab.send_nzb(result)
-            if result_downloaded:
-                result.nzb_id = result_downloaded
         elif app.NZB_METHOD == u'nzbget':
-            result_downloaded = nzbget.send_nzb(result, is_proper)
-            if result_downloaded > 0:
-                result.nzb_id = result_downloaded
+            result_downloaded = nzbget.sendNZB(result, is_proper)
         else:
             log.error(u'Unknown NZB action specified in config: {0}', app.NZB_METHOD)
             result_downloaded = False
@@ -222,15 +218,16 @@ def snatch_result(result):
 
             sql_l.append(cur_ep_obj.get_sql())
 
-        notifiers.notify_snatch(cur_ep_obj, result)
+        if cur_ep_obj.status != common.DOWNLOADED:
+            notifiers.notify_snatch(cur_ep_obj, result)
 
-        if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
-            trakt_data.append((cur_ep_obj.season, cur_ep_obj.episode))
-            log.info(
-                u'Adding {0} {1} to Trakt watchlist',
-                result.series.name,
-                episode_num(cur_ep_obj.season, cur_ep_obj.episode),
-            )
+            if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
+                trakt_data.append((cur_ep_obj.season, cur_ep_obj.episode))
+                log.info(
+                    u'Adding {0} {1} to Trakt watchlist',
+                    result.series.name,
+                    episode_num(cur_ep_obj.season, cur_ep_obj.episode),
+                )
 
     if trakt_data:
         data_episode = notifiers.trakt_notifier.trakt_episode_data_generate(trakt_data)
@@ -721,8 +718,7 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
                     multi_results, single_results = collect_candidates(
                         found_results, cur_provider, multi_results, single_results
                     )
-                    # With season packs, episodes are not available. How do we handle those?
-                    found_eps = itertools.chain(*(result.episodes for result in multi_results + single_results if result.episodes))
+                    found_eps = itertools.chain(*(result.episodes for result in multi_results + single_results))
                     needed_eps = [ep for ep in episodes if ep not in found_eps]
 
             except AuthException as error:
