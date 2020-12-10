@@ -92,6 +92,10 @@ class GenericClient(object):
                       ' {name}: {error}', {'name': self.name, 'error': error})
             return False
 
+        if not self.response:
+            log.warning('{name}: Unable to reach torrent client', {'name': self.name})
+            return False
+
         if self.response.status_code == 401:
             log.error('{name}: Invalid Username or Password, check your config', {'name': self.name})
             return False
