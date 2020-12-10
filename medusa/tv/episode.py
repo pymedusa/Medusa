@@ -354,13 +354,15 @@ class Episode(TV):
             parse_result = NameParser(try_indexers=True).parse(filepath, cache_result=True)
             results = []
             if parse_result.series.is_anime and parse_result.ab_episode_numbers:
-                results = [parse_result.series.get_episode(absolute_number=episode_number, should_cache=False)
-                           for episode_number in parse_result.ab_episode_numbers]
+                episodes = (parse_result.series.get_episode(absolute_number=episode_number, should_cache=False)
+                            for episode_number in parse_result.ab_episode_numbers)
+                results = [ep for ep in episodes if ep is not None]
 
             if not parse_result.series.is_anime and parse_result.episode_numbers:
-                results = [parse_result.series.get_episode(season=parse_result.season_number,
-                                                           episode=episode_number, should_cache=False)
-                           for episode_number in parse_result.episode_numbers]
+                episodes = (parse_result.series.get_episode(season=parse_result.season_number,
+                                                            episode=episode_number, should_cache=False)
+                            for episode_number in parse_result.episode_numbers)
+                results = [ep for ep in episodes if ep is not None]
 
             for episode in results:
                 episode.related_episodes = list(results[1:])
@@ -1591,9 +1593,9 @@ class Episode(TV):
             '%E': str(self.episode),
             '%0E': '%02d' % self.episode,
             '%XS': str(self.scene_season),
-            '%0XS': '%02d' % try_int(self.scene_season, self.season),
+            '%0XS': '%02d' % self.scene_season,
             '%XE': str(self.scene_episode),
-            '%0XE': '%02d' % try_int(self.scene_episode, self.episode),
+            '%0XE': '%02d' % self.scene_episode,
             '%AB': '%(#)03d' % {'#': self.absolute_number},
             '%XAB': '%(#)03d' % {'#': self.scene_absolute_number},
             '%RN': release_name(self.release_name),

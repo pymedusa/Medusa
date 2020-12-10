@@ -995,7 +995,7 @@ class AbsoluteEpisodeNumbers(Rule):
             return to_remove, to_append
 
 
-class AbsoluteEpisodeWithX265(Rule):
+class AbsoluteEpisodeWithX26Y(Rule):
     """An absolute episode number followed by a `.x` makes guessit parse it as a season.
 
     Medusa absolute episode numbers rule where the episode is followed by `.x`
@@ -1038,10 +1038,10 @@ class AbsoluteEpisodeWithX265(Rule):
         :type context: dict
         :return:
         """
-        # if it seems to be anime and it doesn't have season
         to_remove = []
         to_append = []
 
+        # if it seems to be anime and it doesn't have a season
         if context.get('show_type') == 'normal' or not matches.named('season') or matches.named('episode'):
             return
 
@@ -1746,7 +1746,7 @@ def rules():
         AnimeWithSeasonMultipleEpisodeNumbers,
         AnimeAbsoluteEpisodeNumbers,
         AbsoluteEpisodeNumbers,
-        AbsoluteEpisodeWithX265,
+        AbsoluteEpisodeWithX26Y,
         FixEpisodeTitleAsMultiSeason,
         OnePreGroupAsMultiEpisode,
         PartsAsEpisodeNumbers,
