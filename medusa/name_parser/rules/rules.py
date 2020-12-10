@@ -1048,7 +1048,7 @@ class AbsoluteEpisodeWithX265(Rule):
         if not matches.tagged('SxxExx'):
             return
 
-        tag_sxx_exx = matches.tagged('SxxExx')[0].initiator.advanced['value']
+        tag_sxx_exx = matches.tagged('SxxExx')[-1].initiator.advanced['value']
         if self.re_episode_with_x.search(tag_sxx_exx):
             seasons = matches.named('season')
             season = seasons[0]
