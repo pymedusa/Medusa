@@ -10,7 +10,7 @@ ext | `bencode.py` | [4.0.0](https://pypi.org/project/bencode.py/4.0.0/) | **`me
 ext | **`boto`** | [2.48.0](https://pypi.org/project/boto/2.48.0/) | `imdbpie` | -
 ext | `CacheControl` | [0.12.6](https://pypi.org/project/CacheControl/0.12.6/) | **`medusa`** | Module: `cachecontrol`
 ext | **`certifi`** | [2020.11.8](https://pypi.org/project/certifi/2020.11.8/) | **`medusa`**, `requests`, `traktor` | -
-ext | **`chardet`** | [3.0.4](https://pypi.org/project/chardet/3.0.4/) | **`medusa`**, `pysrt`, `requests`, `subliminal` | -
+ext | **`chardet`** | [3.0.4](https://pypi.org/project/chardet/3.0.4/) | `pysrt`, `requests`, `subliminal` | -
 ext | **`cloudscraper`** | [1.2.46](https://pypi.org/project/cloudscraper/1.2.46/) | **`medusa`** | -
 ext | `configobj` | [5.0.6](https://pypi.org/project/configobj/5.0.6/) | **`medusa`** | Modules: `configobj.py`, `validate.py`, `_version.py`
 ext | `contextlib2` | [0.6.0.post1](https://pypi.org/project/contextlib2/0.6.0.post1/) | **`medusa`** | File: `contextlib2.py`
