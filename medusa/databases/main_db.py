@@ -967,3 +967,24 @@ class AddCustomLogs(AddShowLists):
         )
 
         self.inc_minor_version()
+
+
+class AddHistoryFDHFields(AddCustomLogs):
+    """Add columns provider_type and client_status to the history table."""
+
+    def test(self):
+        """Test if the version is at least 44.18."""
+        return self.connection.version >= (44, 18)
+
+    def execute(self):
+        utils.backup_database(self.connection.path, self.connection.version)
+
+        log.info(u'Adding column provider_type to the history table')
+        if not self.hasColumn('history', 'provider_type'):
+            self.addColumn('history', 'provider_type', 'TEXT', '')
+
+        log.info(u'Adding column client_status to the history table')
+        if not self.hasColumn('history', 'client_status'):
+            self.addColumn('history', 'client_status', 'INTEGER')
+
+        self.inc_minor_version()
