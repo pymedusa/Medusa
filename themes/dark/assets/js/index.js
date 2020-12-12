@@ -9,7 +9,7 @@
 (self["webpackChunkslim"] = self["webpackChunkslim"] || []).push([["index"],{
 
 /***/ "./src/index.js":
-/*!**********************!*
+/*!**********************!*\
   !*** ./src/index.js ***!
   \**********************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
