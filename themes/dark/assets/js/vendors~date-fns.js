@@ -9,7 +9,7 @@
 (self["webpackChunkslim"] = self["webpackChunkslim"] || []).push([["vendors~date-fns"],{
 
 /***/ "./node_modules/date-fns/esm/_lib/addLeadingZeros/index.js":
-/*!*****************************************************************!*
+/*!*****************************************************************!*\
   !*** ./node_modules/date-fns/esm/_lib/addLeadingZeros/index.js ***!
   \*****************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -20,7 +20,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ }),
 
 /***/ "./node_modules/date-fns/esm/_lib/format/formatters/index.js":
-/*!*******************************************************************!*
+/*!*******************************************************************!*\
   !*** ./node_modules/date-fns/esm/_lib/format/formatters/index.js ***!
   \*******************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -31,7 +31,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ }),
 
 /***/ "./node_modules/date-fns/esm/_lib/format/lightFormatters/index.js":
-/*!************************************************************************!*
+/*!************************************************************************!*\
   !*** ./node_modules/date-fns/esm/_lib/format/lightFormatters/index.js ***!
   \************************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -42,7 +42,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ }),
 
 /***/ "./node_modules/date-fns/esm/_lib/format/longFormatters/index.js":
-/*!***********************************************************************!*
+/*!***********************************************************************!*\
   !*** ./node_modules/date-fns/esm/_lib/format/longFormatters/index.js ***!
   \***********************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -53,7 +53,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ }),
 
 /***/ "./node_modules/date-fns/esm/_lib/getTimezoneOffsetInMilliseconds/index.js":
-/*!*********************************************************************************!*
+/*!*********************************************************************************!*\
   !*** ./node_modules/date-fns/esm/_lib/getTimezoneOffsetInMilliseconds/index.js ***!
   \*********************************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -64,7 +64,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ }),
 
 /***/ "./node_modules/date-fns/esm/_lib/getUTCDayOfYear/index.js":
-/*!*****************************************************************!*
+/*!*****************************************************************!*\
   !*** ./node_modules/date-fns/esm/_lib/getUTCDayOfYear/index.js ***!
   \*****************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -75,7 +75,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ }),
 
 /***/ "./node_modules/date-fns/esm/_lib/getUTCISOWeekYear/index.js":
-/*!*******************************************************************!*
+/*!*******************************************************************!*\
   !*** ./node_modules/date-fns/esm/_lib/getUTCISOWeekYear/index.js ***!
   \*******************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -86,7 +86,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ }),
 
 /***/ "./node_modules/date-fns/esm/_lib/getUTCISOWeek/index.js":
-/*!***************************************************************!*
+/*!***************************************************************!*\
   !*** ./node_modules/date-fns/esm/_lib/getUTCISOWeek/index.js ***!
   \***************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -97,7 +97,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ }),
 
 /***/ "./node_modules/date-fns/esm/_lib/getUTCWeekYear/index.js":
-/*!****************************************************************!*
+/*!****************************************************************!*\
   !*** ./node_modules/date-fns/esm/_lib/getUTCWeekYear/index.js ***!
   \****************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -108,7 +108,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ }),
 
 /***/ "./node_modules/date-fns/esm/_lib/getUTCWeek/index.js":
-/*!************************************************************!*
+/*!************************************************************!*\
   !*** ./node_modules/date-fns/esm/_lib/getUTCWeek/index.js ***!
   \************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -119,7 +119,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ }),
 
 /***/ "./node_modules/date-fns/esm/_lib/protectedTokens/index.js":
-/*!*****************************************************************!*
+/*!*****************************************************************!*\
   !*** ./node_modules/date-fns/esm/_lib/protectedTokens/index.js ***!
   \*****************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -130,7 +130,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ }),
 
 /***/ "./node_modules/date-fns/esm/_lib/requiredArgs/index.js":
-/*!**************************************************************!*
+/*!**************************************************************!*\
   !*** ./node_modules/date-fns/esm/_lib/requiredArgs/index.js ***!
   \**************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -141,7 +141,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ }),
 
 /***/ "./node_modules/date-fns/esm/_lib/startOfUTCISOWeekYear/index.js":
-/*!***********************************************************************!*
+/*!***********************************************************************!*\
   !*** ./node_modules/date-fns/esm/_lib/startOfUTCISOWeekYear/index.js ***!
   \***********************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -152,7 +152,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ }),
 
 /***/ "./node_modules/date-fns/esm/_lib/startOfUTCISOWeek/index.js":
-/*!*******************************************************************!*
+/*!*******************************************************************!*\
   !*** ./node_modules/date-fns/esm/_lib/startOfUTCISOWeek/index.js ***!
   \*******************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -163,7 +163,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ }),
 
 /***/ "./node_modules/date-fns/esm/_lib/startOfUTCWeekYear/index.js":
-/*!********************************************************************!*
+/*!********************************************************************!*\
   !*** ./node_modules/date-fns/esm/_lib/startOfUTCWeekYear/index.js ***!
   \********************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -174,7 +174,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ }),
 
 /***/ "./node_modules/date-fns/esm/_lib/startOfUTCWeek/index.js":
-/*!****************************************************************!*
+/*!****************************************************************!*\
   !*** ./node_modules/date-fns/esm/_lib/startOfUTCWeek/index.js ***!
   \****************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -185,7 +185,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ }),
 
 /***/ "./node_modules/date-fns/esm/_lib/toInteger/index.js":
-/*!***********************************************************!*
+/*!***********************************************************!*\
   !*** ./node_modules/date-fns/esm/_lib/toInteger/index.js ***!
   \***********************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -196,7 +196,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ }),
 
 /***/ "./node_modules/date-fns/esm/addMilliseconds/index.js":
-/*!************************************************************!*
+/*!************************************************************!*\
   !*** ./node_modules/date-fns/esm/addMilliseconds/index.js ***!
   \************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -207,7 +207,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ }),
 
 /***/ "./node_modules/date-fns/esm/format/index.js":
-/*!***************************************************!*
+/*!***************************************************!*\
   !*** ./node_modules/date-fns/esm/format/index.js ***!
   \***************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -218,7 +218,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ }),
 
 /***/ "./node_modules/date-fns/esm/isValid/index.js":
-/*!****************************************************!*
+/*!****************************************************!*\
   !*** ./node_modules/date-fns/esm/isValid/index.js ***!
   \****************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -229,7 +229,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ }),
 
 /***/ "./node_modules/date-fns/esm/locale/_lib/buildFormatLongFn/index.js":
-/*!**************************************************************************!*
+/*!**************************************************************************!*\
   !*** ./node_modules/date-fns/esm/locale/_lib/buildFormatLongFn/index.js ***!
   \**************************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -240,7 +240,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ }),
 
 /***/ "./node_modules/date-fns/esm/locale/_lib/buildLocalizeFn/index.js":
-/*!************************************************************************!*
+/*!************************************************************************!*\
   !*** ./node_modules/date-fns/esm/locale/_lib/buildLocalizeFn/index.js ***!
   \************************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -251,7 +251,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ }),
 
 /***/ "./node_modules/date-fns/esm/locale/_lib/buildMatchFn/index.js":
-/*!*********************************************************************!*
+/*!*********************************************************************!*\
   !*** ./node_modules/date-fns/esm/locale/_lib/buildMatchFn/index.js ***!
   \*********************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -262,7 +262,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ }),
 
 /***/ "./node_modules/date-fns/esm/locale/_lib/buildMatchPatternFn/index.js":
-/*!****************************************************************************!*
+/*!****************************************************************************!*\
   !*** ./node_modules/date-fns/esm/locale/_lib/buildMatchPatternFn/index.js ***!
   \****************************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -273,7 +273,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ }),
 
 /***/ "./node_modules/date-fns/esm/locale/en-US/_lib/formatDistance/index.js":
-/*!*****************************************************************************!*
+/*!*****************************************************************************!*\
   !*** ./node_modules/date-fns/esm/locale/en-US/_lib/formatDistance/index.js ***!
   \*****************************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -284,7 +284,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ }),
 
 /***/ "./node_modules/date-fns/esm/locale/en-US/_lib/formatLong/index.js":
-/*!*************************************************************************!*
+/*!*************************************************************************!*\
   !*** ./node_modules/date-fns/esm/locale/en-US/_lib/formatLong/index.js ***!
   \*************************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -295,7 +295,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ }),
 
 /***/ "./node_modules/date-fns/esm/locale/en-US/_lib/formatRelative/index.js":
-/*!*****************************************************************************!*
+/*!*****************************************************************************!*\
   !*** ./node_modules/date-fns/esm/locale/en-US/_lib/formatRelative/index.js ***!
   \*****************************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -306,7 +306,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ }),
 
 /***/ "./node_modules/date-fns/esm/locale/en-US/_lib/localize/index.js":
-/*!***********************************************************************!*
+/*!***********************************************************************!*\
   !*** ./node_modules/date-fns/esm/locale/en-US/_lib/localize/index.js ***!
   \***********************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -317,7 +317,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ }),
 
 /***/ "./node_modules/date-fns/esm/locale/en-US/_lib/match/index.js":
-/*!********************************************************************!*
+/*!********************************************************************!*\
   !*** ./node_modules/date-fns/esm/locale/en-US/_lib/match/index.js ***!
   \********************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -328,7 +328,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ }),
 
 /***/ "./node_modules/date-fns/esm/locale/en-US/index.js":
-/*!*********************************************************!*
+/*!*********************************************************!*\
   !*** ./node_modules/date-fns/esm/locale/en-US/index.js ***!
   \*********************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -339,7 +339,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ }),
 
 /***/ "./node_modules/date-fns/esm/parseISO/index.js":
-/*!*****************************************************!*
+/*!*****************************************************!*\
   !*** ./node_modules/date-fns/esm/parseISO/index.js ***!
   \*****************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -350,7 +350,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ }),
 
 /***/ "./node_modules/date-fns/esm/subMilliseconds/index.js":
-/*!************************************************************!*
+/*!************************************************************!*\
   !*** ./node_modules/date-fns/esm/subMilliseconds/index.js ***!
   \************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -361,7 +361,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ }),
 
 /***/ "./node_modules/date-fns/esm/toDate/index.js":
-/*!***************************************************!*
+/*!***************************************************!*\
   !*** ./node_modules/date-fns/esm/toDate/index.js ***!
   \***************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
