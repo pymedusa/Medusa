@@ -17,6 +17,9 @@ from medusa.logger.adapters.style import BraceAdapter
 from requests.compat import urljoin
 from requests.exceptions import RequestException
 
+import ttl_cache
+
+
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
@@ -210,6 +213,7 @@ class UTorrentAPI(GenericClient):
             'hash': info_hash,
         })
 
+    @ttl_cache(60.0)
     def _get_torrents(self):
         """
         Get all torrents from utorrent api.

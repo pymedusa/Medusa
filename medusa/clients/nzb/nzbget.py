@@ -13,7 +13,7 @@ from medusa.common import Quality
 from medusa.helper.common import try_int
 from medusa.logger.adapters.style import BraceAdapter
 
-from six import text_type
+import ttl_cache
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -185,6 +185,7 @@ def send_nzb(nzb, proper=False):
         return -1
 
 
+@ttl_cache(60.0)
 def _get_nzb_queue():
     """Return a list of all groups (nzbs) currently being donloaded or postprocessed."""
     url = 'http{}://{}:{}@{}/xmlrpc'.format(
@@ -203,6 +204,7 @@ def _get_nzb_queue():
     return nzb_groups
 
 
+@ttl_cache(60.0)
 def _get_nzb_history():
     """Return a list of all groups (nzbs) from history."""
     url = 'http{}://{}:{}@{}/xmlrpc'.format(
