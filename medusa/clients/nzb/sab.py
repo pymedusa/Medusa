@@ -14,11 +14,14 @@ import json
 import logging
 
 from medusa import app
+from medusa.clients.download_handler import ClientStatus
 from medusa.helper.common import sanitize_filename
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import ClientSession
 
 from requests.compat import urljoin
+
+import ttl_cache
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -192,6 +195,7 @@ def test_authentication(host=None, username=None, password=None, apikey=None):
         return result, 'success' if result else text
 
 
+@ttl_cache(60.0)
 def _get_nzb_queue(host=None):
     """Return a list of all groups (nzbs) currently being donloaded or postprocessed."""
     url = urljoin(app.SAB_HOST, 'api')
@@ -215,6 +219,7 @@ def _get_nzb_queue(host=None):
     return False
 
 
+@ttl_cache(60.0)
 def _get_nzb_history(host=None):
     """Return a list of all groups (nzbs) currently in history."""
     url = urljoin(app.SAB_HOST, 'api')
@@ -256,10 +261,16 @@ def get_nzb_by_id(nzo_id):
     return False
 
 
-def nzb_status(self, nzo_id):
-    """Return nzb status (Paused, Downloading, Downloaded, Failed, Extracting)."""
+def nzb_status(nzo_id):
+    """
+    Return nzb status (Paused, Downloading, Downloaded, Failed, Extracting).
+
+    :return: ClientStatus object.
+    """
     nzb = get_nzb_by_id(nzo_id)
     if nzb:
-        return nzb['status']
+        status = ClientStatus()
+        status.add_status_string(nzb['status'])
+        return status
 
     return False

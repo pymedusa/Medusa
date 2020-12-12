@@ -405,3 +405,93 @@ def pretty_date(d):
         return '1 hour ago'
     else:
         return '{} hours ago'.format(s // 3600)
+
+
+class ConstsBitwize(object):
+    """
+    Client status helper class.
+
+    For CONSTANTS attach an Enum().
+    For example:
+        ```
+        class ClientStatusEnum(Enum):
+            NA = 0  # 0
+            PAUSED = 1  # 1
+            DOWNLOADING = 1 << 1  # 2
+        ```
+
+    for STRINGS attach a dict Enum value -> String description.
+    For Example:
+        ```
+        STRINGS = {
+            CONSTANTS.NA: 'N/A',
+            CONSTANTS.PAUSED: 'Paused',
+            CONSTANTS.DOWNLOADING: 'Downloading'
+        }
+        ```
+    """
+
+    CONSTANTS = None
+    STRINGS = None
+
+    def __init__(self, status=0):
+        """Client status constructor."""
+        self.status = status
+        assert self.CONSTANTS is not None
+        assert self.STRINGS is not None
+        assert issubclass(type(self), ConstsBitwize)
+
+    @property
+    def strings_rev(self):
+        """Reverse the status strings."""
+        return {v: k for k, v in self.STRINGS.items()}
+
+    def add_status_string(self, status_string):
+        """Add a status using the status string."""
+        if not self.strings_rev.get(status_string):
+            raise Exception('Status {status} not a valid status'.format(status=status_string))
+
+        self.status = self.status | self.strings_rev.get(status_string).value
+
+    def add_status(self, status):
+        """Add bitwize status."""
+        self.status = self.status | status
+
+    def remove_status(self, status):
+        """Remove bitwize status."""
+        self.status = self.status ^ status
+
+    def set_status_array(self, status_array):
+        """Set the status from an array of status Consts (integers)."""
+        self.status = 0
+        for status in status_array:
+            self.status = self.status | status
+
+    def set_status_string_array(self, status_string_array):
+        """Set the status from an array of status strings (descriptions)."""
+        self.status = 0
+        for status in status_string_array:
+            self.add_status(self.strings_rev.get(status))
+
+    def status_to_array_string(self):
+        """Return array of status strings."""
+        return [self.STRINGS.get(status) for status in self]
+
+    def __str__(self):
+        """Sting repr of the class."""
+        return ', '.join(self.STRINGS.get(status) for status in self)
+
+    def __repr__(self):
+        """Repr of the class."""
+        return 'Status: {status} => {status_str}'.format(
+            status=self.status, status_str=', '.join([self.STRINGS.get(status) for status in self])
+        )
+
+    def __iter__(self):
+        """Object iterator."""
+        for cur_status in self.STRINGS.keys():
+            if cur_status.value & self.status:
+                yield cur_status
+
+    def __eq__(self, comp):
+        return self.status == comp.status

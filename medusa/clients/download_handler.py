@@ -20,16 +20,52 @@ from __future__ import unicode_literals
 
 import logging
 from builtins import object
+from enum import Enum
 
 from medusa import app, db
 from medusa.clients import torrent
 from medusa.clients.nzb import nzbget, sab
+from medusa.helper.common import ConstsBitwize
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests import RequestException
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
+
+
+class ClientStatusEnum(Enum):
+    """Enum to keep track of all the client statusses."""
+
+    NA = 0  # 0
+    PAUSED = 1  # 1
+    DOWNLOADING = 1 << 1  # 2
+    DOWNLOADED = 1 << 2  # 4
+    SEEDED = 1 << 3  # 8
+    FAILED = 1 << 4  # 16
+    EXTRACTING = 1 << 5  # 32
+    COMPLETED = 1 << 6  # 64
+    POSTPROCESSED = 1 << 7  # 128
+
+
+status_strings = {
+    ClientStatusEnum.NA: 'N/A',
+    ClientStatusEnum.PAUSED: 'Paused',
+    ClientStatusEnum.DOWNLOADING: 'Downloading',
+    ClientStatusEnum.DOWNLOADED: 'Downloaded',
+    ClientStatusEnum.SEEDED: 'Seeded',
+    ClientStatusEnum.FAILED: 'Failed',
+    ClientStatusEnum.EXTRACTING: 'Extracting',
+    ClientStatusEnum.COMPLETED: 'Completed',
+    ClientStatusEnum.POSTPROCESSED: 'Postprocessed',
+}
+
+
+class ClientStatus(ConstsBitwize):
+    """ClientStatus Class."""
+
+    CONSTANTS = ClientStatusEnum
+    STRINGS = status_strings
 
 
 class DownloadHandler(object):
@@ -41,7 +77,8 @@ class DownloadHandler(object):
         self.main_db_con = db.DBConnection()
 
     def _get_history_results_from_db(self):
-        return self.main_db_con.select('SELECT * FROM history WHERE info_hash is not null')
+        return self.main_db_con.select('SELECT * FROM history WHERE info_hash is not null AND client_status is not ?',
+                                       [ClientStatusEnum.COMPLETED.value])
 
     def _check_torrents(self):
         """
@@ -54,7 +91,7 @@ class DownloadHandler(object):
         for history_result in self._get_history_results_from_db():
             if torrent_client.torrent_completed(history_result['info_hash']):
                 log.debug(
-                    u'Found torrent on {client} with info_hash {info_hash}',
+                    'Found torrent on {client} with info_hash {info_hash}',
                     {
                         'client': app.TORRENT_METHOD,
                         'info_hash': history_result['info_hash']
@@ -75,19 +112,29 @@ class DownloadHandler(object):
         for history_result in self._get_history_results_from_db():
             nzb_on_client = client.get_nzb_by_id(history_result['info_hash'])
             if nzb_on_client:
+                status = client.nzb_status(history_result['info_hash'])
                 log.debug(
-                    u'Found nzb (status {status}) on {client} with info_hash {info_hash}',
+                    'Found nzb (status {status}) on {client} with info_hash {info_hash}',
                     {
-                        'status': nzb_on_client['status'],
+                        'status': status,
                         'client': app.NZB_METHOD,
                         'info_hash': history_result['info_hash']
                     }
                 )
+                if history_result['client_status'] != status.status:
+                    self.save_status_to_history(history_result, status)
+
+    def save_status_to_history(self, history_row, status):
+        """Update history record with a new status."""
+        log.info('Saving new status {status} for {resource} with info_hash {info_hash}',
+                 {'status': status, 'resource': history_row['resource'], 'info_hash': history_row['info_hash']})
+        self.main_db_con.action('UPDATE history set client_status = ? where info_hash = ?',
+                                [status.status, history_row['info_hash']])
 
     def run(self, force=False):
         """Start the Download Handler Thread."""
         if self.amActive:
-            log.debug(u'Download handler is still running, not starting it again')
+            log.debug('Download handler is still running, not starting it again')
             return
 
         self.amActive = True
