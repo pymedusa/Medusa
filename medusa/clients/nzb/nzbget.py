@@ -110,7 +110,7 @@ def send_nzb(nzb, proper=False):
     for cur_ep in nzb.episodes:
         if dupekey == '':
             dupekey = 'medusa-{slug}'.format(slug=cur_ep.series.identifier.slug)
-        dupekey += '-' + '{0}.{0}'.format(cur_ep.season, cur_ep.episode)
+        dupekey += '-' + '{0}.{1}'.format(cur_ep.season, cur_ep.episode)
         if datetime.date.today() - cur_ep.airdate <= datetime.timedelta(days=7):
             nzb_get_prio = app.NZBGET_PRIORITY
         else:
@@ -227,10 +227,53 @@ def get_nzb_by_id(nzb_id):
     """Look in download queue and history for a specific nzb."""
     nzb_active = _get_nzb_queue()
     for nzb in nzb_active:
-        if nzb['NZBID'] == nzb_id:
+        if nzb['NZBID'] == int(nzb_id):
             return nzb
 
     nzb_history = _get_nzb_history()
     for nzb in nzb_history:
-        if nzb['NZBID'] == nzb_id:
+        if nzb['NZBID'] == int(nzb_id):
             return nzb
+
+
+def nzb_status(nzo_id):
+    """
+    Return nzb status (Paused, Downloading, Downloaded, Failed, Extracting).
+
+    :return: ClientStatus object.
+    """
+    from medusa.clients.download_handler import ClientStatus
+
+    nzb = get_nzb_by_id(nzo_id)
+    status, reason = None, None
+    if nzb:
+        client_status = ClientStatus()
+        # Map status to a standard ClientStatus.
+        if '/' in nzb['Status']:
+            status, reason = nzb['Status'].split('/')
+        else:
+            status = nzb['Status']
+
+        # Queue status checks (Queued is not recorded as status)
+        if status == 'DOWNLOADING':
+            client_status.add_status_string('Downloading')
+
+        if status == 'PAUSED':
+            client_status.add_status_string('Paused')
+
+        if status == 'UNPACKING':
+            client_status.add_status_string('Extracting')
+
+        # History status checks.
+        if status == 'DELETED':  # Mostly because of duplicate checks.
+            client_status.add_status_string('Aborted')
+
+        if status == 'SUCCESS':
+            client_status.add_status_string('Completed')
+
+        if status == 'FAILURE':
+            status.add_status_string('Failure')
+
+        return client_status
+
+    return False
