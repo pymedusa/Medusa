@@ -37,26 +37,32 @@ log.logger.addHandler(logging.NullHandler())
 class ClientStatusEnum(Enum):
     """Enum to keep track of all the client statusses."""
 
-    NA = 0  # 0
+    SNATCHED = 0  # 0
     PAUSED = 1  # 1
     DOWNLOADING = 1 << 1  # 2
     DOWNLOADED = 1 << 2  # 4
     SEEDED = 1 << 3  # 8
+    # Can trigger a new snatch if configured.
     FAILED = 1 << 4  # 16
-    EXTRACTING = 1 << 5  # 32
-    COMPLETED = 1 << 6  # 64
-    POSTPROCESSED = 1 << 7  # 128
+    # Failed, but won't trigger a new snatch.
+    # Can be manually aborted, or Failed by client because it's a Dupe (see nzbget)
+    ABORTED = 1 << 5  # 32
+    EXTRACTING = 1 << 6  # 64
+    COMPLETED = 1 << 7  # 128
+    POSTPROCESSED = 1 << 8  # 256
 
 
 status_strings = {
-    ClientStatusEnum.NA: 'N/A',
+    ClientStatusEnum.SNATCHED: 'Snatched',
     ClientStatusEnum.PAUSED: 'Paused',
     ClientStatusEnum.DOWNLOADING: 'Downloading',
     ClientStatusEnum.DOWNLOADED: 'Downloaded',
     ClientStatusEnum.SEEDED: 'Seeded',
     ClientStatusEnum.FAILED: 'Failed',
+    ClientStatusEnum.ABORTED: 'Aborted',
     ClientStatusEnum.EXTRACTING: 'Extracting',
     ClientStatusEnum.COMPLETED: 'Completed',
+    # Reserved for the Medusa postprocessing (not that of the client!).
     ClientStatusEnum.POSTPROCESSED: 'Postprocessed',
 }
 
@@ -76,9 +82,30 @@ class DownloadHandler(object):
         self.amActive = False
         self.main_db_con = db.DBConnection()
 
-    def _get_history_results_from_db(self):
-        return self.main_db_con.select('SELECT * FROM history WHERE info_hash is not null AND client_status is not ?',
-                                       [ClientStatusEnum.COMPLETED.value])
+    def _get_history_results_from_db(self, provider_type, exclude_status=None):
+        params = [provider_type]
+        if exclude_status:
+            params += exclude_status
+        # Default
+        else:
+            params += [
+                ClientStatusEnum.FAILED.value,
+                ClientStatusEnum.ABORTED.value,
+                ClientStatusEnum.COMPLETED.value,
+            ]
+
+        return self.main_db_con.select(
+            'SELECT * FROM history WHERE info_hash is not null '
+            'AND provider_type = ? '
+            'AND client_status not in ({0})'.format(','.join(['?'] * (len(params) - 1))),
+            params)
+
+    def save_status_to_history(self, history_row, status):
+        """Update history record with a new status."""
+        log.info('Saving new status {status} for {resource} with info_hash {info_hash}',
+                 {'status': status, 'resource': history_row['resource'], 'info_hash': history_row['info_hash']})
+        self.main_db_con.action('UPDATE history set client_status = ? where info_hash = ?',
+                                [status.status, history_row['info_hash']])
 
     def _check_torrents(self):
         """
@@ -88,7 +115,7 @@ class DownloadHandler(object):
         """
         torrent_client = torrent.get_client_class(app.TORRENT_METHOD)()
 
-        for history_result in self._get_history_results_from_db():
+        for history_result in self._get_history_results_from_db('torrent'):
             if torrent_client.torrent_completed(history_result['info_hash']):
                 log.debug(
                     'Found torrent on {client} with info_hash {info_hash}',
@@ -109,7 +136,7 @@ class DownloadHandler(object):
         if app.NZB_METHOD == 'nzbget':
             client = nzbget
 
-        for history_result in self._get_history_results_from_db():
+        for history_result in self._get_history_results_from_db('nzb'):
             nzb_on_client = client.get_nzb_by_id(history_result['info_hash'])
             if nzb_on_client:
                 status = client.nzb_status(history_result['info_hash'])
@@ -123,13 +150,6 @@ class DownloadHandler(object):
                 )
                 if history_result['client_status'] != status.status:
                     self.save_status_to_history(history_result, status)
-
-    def save_status_to_history(self, history_row, status):
-        """Update history record with a new status."""
-        log.info('Saving new status {status} for {resource} with info_hash {info_hash}',
-                 {'status': status, 'resource': history_row['resource'], 'info_hash': history_row['info_hash']})
-        self.main_db_con.action('UPDATE history set client_status = ? where info_hash = ?',
-                                [status.status, history_row['info_hash']])
 
     def run(self, force=False):
         """Start the Download Handler Thread."""
