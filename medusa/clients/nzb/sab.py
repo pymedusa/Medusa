@@ -14,7 +14,6 @@ import json
 import logging
 
 from medusa import app
-from medusa.clients.download_handler import ClientStatus
 from medusa.helper.common import sanitize_filename
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import ClientSession
@@ -267,10 +266,12 @@ def nzb_status(nzo_id):
 
     :return: ClientStatus object.
     """
+    from medusa.clients.download_handler import ClientStatus
+
     nzb = get_nzb_by_id(nzo_id)
     if nzb:
-        status = ClientStatus()
-        status.add_status_string(nzb['status'])
-        return status
+        client_status = ClientStatus()
+        client_status.add_status_string(nzb['status'])
+        return client_status
 
     return False
