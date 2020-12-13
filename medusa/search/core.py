@@ -143,7 +143,7 @@ def snatch_result(result):
         elif app.NZB_METHOD == u'sabnzbd':
             result_downloaded = sab.send_nzb(result)
         elif app.NZB_METHOD == u'nzbget':
-            result_downloaded = nzbget.sendNZB(result, is_proper)
+            result_downloaded = nzbget.send_nzb(result, is_proper)
         else:
             log.error(u'Unknown NZB action specified in config: {0}', app.NZB_METHOD)
             result_downloaded = False
@@ -174,6 +174,12 @@ def snatch_result(result):
 
     if not result_downloaded:
         return False
+
+    # Assign the nzb_id depending on the method.
+    # We already have the info_hash (for torrents) in the SearchResult Object.
+    if result.result_type in (u'nzb', u'nzbdata') and app.NZB_METHOD != 'blackhole':
+        # We get this back from sabnzbd or nzbget
+        result.nzb_id = result_downloaded
 
     if app.USE_FAILED_DOWNLOADS:
         failed_history.log_snatch(result)
