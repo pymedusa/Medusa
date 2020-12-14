@@ -11,6 +11,7 @@ import time
 from collections import OrderedDict
 
 from medusa import app
+from medusa.clients.download_handler import ClientStatus
 from medusa.clients.torrent.generic import GenericClient
 from medusa.logger.adapters.style import BraceAdapter
 
@@ -293,14 +294,48 @@ class UTorrentAPI(GenericClient):
         """
         torrent = self._torrent_properties(info_hash)
         # Apply bitwize AND with Started. And check if Progress is 100%.
-        if torrent:
-            return bool(torrent[1] & 1) and torrent[4] == 1000
-        return False
+        if not torrent:
+            return False
+
+        return bool(torrent[1] & 1) and torrent[4] == 1000
 
     def torrent_seeded(self, info_hash):
         """Check if torrent has finished seeding."""
         # Utorrent doesn't have a clear way of showing if seeding has finished through api.
         return True
+
+    def torrent_status(self, info_hash):
+        """
+        Return torrent status.
+
+        Status field returns a bitwize value.
+        1 = Started
+        2 = Checking
+        4 = Start after check
+        8 = Checked
+        16 = Error
+        32 = Paused
+        64 = Queued
+        128 = Loaded
+        """
+        torrent = self._torrent_properties(info_hash)
+        if not torrent:
+            return
+
+        client_status = ClientStatus()
+        if torrent[1] & 1:
+            client_status.add_status_string('Downloading')
+
+        if torrent[1] & 32:
+            client_status.add_status_string('Paused')
+
+        if torrent[1] & 16:
+            client_status.add_status_string('Failed')
+
+        if self.torrent_completed(info_hash):
+            client_status.add_status_string('Completed')
+
+        return client_status
 
 
 api = UTorrentAPI
