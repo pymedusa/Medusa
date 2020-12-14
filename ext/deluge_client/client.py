@@ -79,7 +79,7 @@ class DelugeRPCClient(object):
 
     def connect(self):
         """
-        Connects to the Deluge instance
+        Connects to the Deluge instance.
         """
         self._connect()
         logger.debug('Connected to Deluge, detecting daemon version')

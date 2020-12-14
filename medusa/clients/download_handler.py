@@ -116,7 +116,8 @@ class DownloadHandler(object):
         torrent_client = torrent.get_client_class(app.TORRENT_METHOD)()
 
         for history_result in self._get_history_results_from_db('torrent'):
-            if torrent_client.torrent_completed(history_result['info_hash']):
+            status = torrent_client.torrent_status(history_result['info_hash'])
+            if status:
                 log.debug(
                     'Found torrent on {client} with info_hash {info_hash}',
                     {

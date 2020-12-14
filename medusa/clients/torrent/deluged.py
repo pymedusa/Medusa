@@ -15,6 +15,7 @@ from builtins import object
 from deluge_client import DelugeRPCClient
 
 from medusa import app
+from medusa.clients.download_handler import ClientStatus
 from medusa.clients.torrent.deluge import read_torrent_status
 from medusa.clients.torrent.generic import GenericClient
 from medusa.logger.adapters.style import BraceAdapter
@@ -28,7 +29,7 @@ class DelugeDAPI(GenericClient):
     """Deluge Daemon API class."""
 
     def __init__(self, host=None, username=None, password=None):
-        """Constructor.
+        """Deluge deamon Constructor.
 
         :param host:
         :type host: string
@@ -166,10 +167,63 @@ class DelugeDAPI(GenericClient):
             log.warning('Error while fetching torrents status')
             return
 
-        torrent_data = self.drpc.get_all_torrents()
+        torrent_data = self.drpc._torrent_properties()
         info_hash_to_remove = read_torrent_status(torrent_data)
         for info_hash in info_hash_to_remove:
             self.remove_torrent(info_hash)
+
+    def torrent_completed(self, info_hash):
+        """Check if the torrent has finished downloading."""
+        torrent_status = self.torrent_status(info_hash)
+        if not torrent_status:
+            return False
+
+        return str(torrent_status) == 'Completed'
+
+    def torrent_status(self, info_hash):
+        """
+        Return torrent status.
+
+        Example result:
+        ```
+            'hash': '35b814f1438054158b0bd07d305dc0edeb20b704'
+            'is_finished': False
+            'ratio': 0.0
+            'paused': False
+            'name': '[FFA] Haikyuu!!: To the Top 2nd Season - 11 [1080p][HEVC][Multiple Subtitle].mkv'
+            'stop_ratio': 2.0
+            'state': 'Downloading'
+            'progress': 23.362499237060547
+            'files': ({'index': 0, 'offset': 0, 'path': '[FFA] Haikyuu!!: To ...title].mkv', 'size': 362955692},)
+            'is_seed': False
+        ```
+        """
+        if not self.connect():
+            log.warning('Error while fetching torrents status')
+            return
+
+        torrent = self.drpc._torrent_properties(info_hash)
+        if not torrent:
+            return False
+
+        client_status = ClientStatus()
+        if torrent['state'] == 'Downloading':
+            client_status.add_status_string('Downloading')
+
+        if torrent['paused']:
+            client_status.add_status_string('Paused')
+
+        # TODO: Find out which state the torrent get's when it fails.
+        # if torrent[1] & 16:
+        #     client_status.add_status_string('Failed')
+
+        if torrent['is_finished']:
+            client_status.add_status_string('Completed')
+
+        if torrent['ratio'] >= torrent['stop_ratio']:
+            client_status.add_status_string('Seeded')
+
+        return client_status
 
 
 class DelugeRPC(object):
@@ -195,8 +249,12 @@ class DelugeRPC(object):
 
     def connect(self):
         """Connect to the host using synchronousdeluge API."""
-        self.client = DelugeRPCClient(self.host, self.port, self.username, self.password, decode_utf8=True)
-        self.client.connect()
+        try:
+            self.client = DelugeRPCClient(self.host, self.port, self.username, self.password, decode_utf8=True)
+            self.client.connect()
+        except Exception as error:
+            log.warning('Error while trying to connect to deluge daemon. Error: {error}', {'error': error})
+            raise
 
     def disconnect(self):
         """Disconnect RPC client."""
@@ -210,7 +268,7 @@ class DelugeRPC(object):
         """
         try:
             self.connect()
-            self._torrent_properties('e4d44da9e71a8f4411bc3fd82aad7689cfa0f07f')
+            # self._torrent_properties('e4d44da9e71a8f4411bc3fd82aad7689cfa0f07f')
         except Exception:
             return False
         else:
