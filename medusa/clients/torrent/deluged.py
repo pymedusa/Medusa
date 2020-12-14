@@ -180,6 +180,14 @@ class DelugeDAPI(GenericClient):
 
         return str(torrent_status) == 'Completed'
 
+    def torrent_seeded(self, info_hash):
+        """Check if the torrent has finished seeding."""
+        torrent_status = self.torrent_status(info_hash)
+        if not torrent_status:
+            return False
+
+        return str(torrent_status) == 'Seeded'
+
     def torrent_status(self, info_hash):
         """
         Return torrent status.
