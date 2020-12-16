@@ -15,4 +15,4 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - name: Check version
-      run: python check_version.py
+      run: python ./.github/check_version.py
