@@ -1045,7 +1045,7 @@ class Application(object):
 
             if app.VERSION_NOTIFY:
                 updater = CheckVersion().updater
-                if updater:
+                if updater and updater.current_version:
                     app.APP_VERSION = updater.current_version
 
             # initialize the static NZB and TORRENT providers
