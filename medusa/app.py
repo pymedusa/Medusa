@@ -10,6 +10,7 @@ from threading import Lock
 CUSTOMIZABLE_LOGS = [
     'Missed file: {missed_file}',
     'Problem(s) during processing, failed for the following files/folders: ',
+    'Processing failed for {file_path}: {process_fail_message}',
     'No NZB/Torrent providers found or enabled in the application config for daily searches. Please check your settings',
 ]
 
