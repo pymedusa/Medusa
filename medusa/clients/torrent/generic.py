@@ -75,8 +75,8 @@ class GenericClient(object):
 
         if not self.auth:
             log.warning('{name}: Authentication Failed', {'name': self.name})
-
             return False
+
         try:
             self.response = self.session.request(method, self.url, params=params, data=data, files=files,
                                                  cookies=cookies, timeout=120, verify=False)
@@ -92,13 +92,16 @@ class GenericClient(object):
                       ' {name}: {error}', {'name': self.name, 'error': error})
             return False
 
+        if not self.response:
+            log.warning('{name}: Unable to reach torrent client', {'name': self.name})
+            return False
+
         if self.response.status_code == 401:
             log.error('{name}: Invalid Username or Password,'
                       ' check your config', {'name': self.name})
             return False
 
         code_description = http_code_description(self.response.status_code)
-
         if code_description is not None:
             log.info('{name}: {code}',
                      {'name': self.name, 'code': code_description})

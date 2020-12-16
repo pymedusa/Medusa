@@ -483,9 +483,7 @@ class Application(object):
 
             # git reset on update
             app.GIT_RESET = bool(check_setting_int(app.CFG, 'General', 'git_reset', 1))
-            app.GIT_RESET_BRANCHES = check_setting_list(app.CFG, 'General', 'git_reset_branches', app.GIT_RESET_BRANCHES)
-            if not app.GIT_RESET_BRANCHES:
-                app.GIT_RESET_BRANCHES = []
+            app.GIT_RESET_BRANCHES = check_setting_list(app.CFG, 'General', 'git_reset_branches', [])
 
             # current git branch
             app.BRANCH = check_setting_str(app.CFG, 'General', 'branch', '')
@@ -561,10 +559,8 @@ class Application(object):
             app.WEB_USERNAME = check_setting_str(app.CFG, 'General', 'web_username', '', censor_log='normal')
             app.WEB_PASSWORD = check_setting_str(app.CFG, 'General', 'web_password', '', censor_log='low')
             app.WEB_COOKIE_SECRET = check_setting_str(app.CFG, 'General', 'web_cookie_secret', helpers.generate_cookie_secret(), censor_log='low')
-            if not app.WEB_COOKIE_SECRET:
-                app.WEB_COOKIE_SECRET = helpers.generate_cookie_secret()
-
             app.WEB_USE_GZIP = bool(check_setting_int(app.CFG, 'General', 'web_use_gzip', 1))
+
             app.SUBLIMINAL_LOG = bool(check_setting_int(app.CFG, 'General', 'subliminal_log', 0))
             app.PRIVACY_LEVEL = check_setting_str(app.CFG, 'General', 'privacy_level', 'normal')
             app.SSL_VERIFY = bool(check_setting_int(app.CFG, 'General', 'ssl_verify', 1))
@@ -1049,7 +1045,7 @@ class Application(object):
 
             if app.VERSION_NOTIFY:
                 updater = CheckVersion().updater
-                if updater:
+                if updater and updater.current_version:
                     app.APP_VERSION = updater.current_version
 
             # initialize the static NZB and TORRENT providers

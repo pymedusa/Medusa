@@ -157,6 +157,10 @@ class TraktPopular(object):
 
             for show in series:
                 try:
+                    # If there isn't a tvdb id available skip it. We can't add it anyway.
+                    if show['show']['ids']['tvdb'] is None:
+                        continue
+
                     if 'show' not in show:
                         show['show'] = show
 

@@ -51,14 +51,16 @@ class GitUpdateManager(UpdateManager):
         self.update_commit_hash()
         cur_version = self._run_git(self._git_path, 'describe --tags --abbrev=0 {0}'.format(
             self._cur_commit_hash))[0]
-        return cur_version.lstrip('v')
+        if cur_version:
+            return cur_version.lstrip('v')
 
     @property
     def newest_version(self):
         self.update_newest_commit_hash()
         new_version = self._run_git(self._git_path, 'describe --tags --abbrev=0 {0}'.format(
             self._newest_commit_hash))[0]
-        return new_version.lstrip('v')
+        if new_version:
+            return new_version.lstrip('v')
 
     @property
     def commits_behind(self):
@@ -379,8 +381,7 @@ class GitUpdateManager(UpdateManager):
 
         branches, _, exit_status = self._run_git(self._git_path, 'ls-remote --heads {0}'.format(app.GIT_REMOTE))
         if exit_status == 0 and branches:
-            if branches:
-                return re.findall(r'refs/heads/(.*)', branches)
+            return re.findall(r'refs/heads/(.*)', branches)
         return []
 
     def update_remote_origin(self):

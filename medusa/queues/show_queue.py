@@ -29,6 +29,7 @@ from medusa import (
     ui,
     ws,
 )
+from medusa.common import statusStrings
 from medusa.helper.common import episode_num
 from medusa.helper.exceptions import (
     CantRefreshShowException,
@@ -438,8 +439,7 @@ class QueueItemAdd(ShowQueueItem):
                 series.load_episodes_from_indexer(tvapi=api)
                 # If we provide a default_status_after through the apiv2 series route options object.
                 # set it after we've added the episodes.
-                self.default_ep_status = self.options['default_status_after'] \
-                    if self.options.get('default_status_after') is not None else app.STATUS_DEFAULT_AFTER
+                self.default_ep_status = self.options['default_status_after'] or app.STATUS_DEFAULT_AFTER
 
             except IndexerException as error:
                 log.warning('Unable to load series episodes from indexer: {0!r}'.format(error))
@@ -463,6 +463,11 @@ class QueueItemAdd(ShowQueueItem):
             self.success = False
             self._finish_early()
             log.debug(traceback.format_exc())
+
+        default_status = self.options['default_status'] or app.STATUS_DEFAULT
+        if statusStrings[default_status] == 'Wanted':
+            message_step('trigger backlog search')
+            app.backlog_search_scheduler.action.search_backlog([series])
 
         self.success = True
 

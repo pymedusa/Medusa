@@ -94,9 +94,9 @@ class SearchHandler(BaseRequestHandler):
               ]
             }
         """
-        if not data or not all([data.get('showSlug'), data.get('episodes'), data.get('season')]):
+        if not data or not all([data.get('showSlug'), data.get('episodes') or data.get('season')]):
             if data and data.get('options'):
-                if data.get('options').get('paused', False):
+                if data['options'].get('paused', False):
                     app.search_queue_scheduler.action.pause_backlog()
                     return self._accepted('Backlog search paused')
                 else:

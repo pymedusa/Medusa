@@ -1,7 +1,7 @@
 ## ext
 Folder | Package | Version / Commit | Used By | Notes / Modules
 :----: | :-----: | :--------------: | :------ | :--------------
-ext | **`adba`** | pymedusa/[6efeff3](https://github.com/pymedusa/adba/tree/6efeff3a6bdcb6d45a4a79f424939ade2930e5f0) | **`medusa`** | -
+ext | **`adba`** | pymedusa/[ad9a011](https://github.com/pymedusa/adba/tree/ad9a011b26e24b276baed5435981fee21a93c254) | **`medusa`** | -
 ext | `appdirs` | [1.4.3](https://pypi.org/project/appdirs/1.4.3/) | `simpleanidb`, `subliminal` (cli only) | File: `appdirs.py`
 ext | `attrs` | [18.2.0](https://pypi.org/project/attrs/18.2.0/) | `imdbpie` | Module: `attr`
 ext | **`babelfish`** | [f403000](https://github.com/Diaoul/babelfish/tree/f403000dd63092cfaaae80be9f309fd85c7f20c9) | **`medusa`**, `guessit`, `knowit`, `subliminal` | -
@@ -9,8 +9,8 @@ ext | `beautifulsoup4` | [4.9.3](https://pypi.org/project/beautifulsoup4/4.9.3/)
 ext | `bencode.py` | [4.0.0](https://pypi.org/project/bencode.py/4.0.0/) | **`medusa`** | Modules: `bencodepy`, `bencode`<br>Monkey-patched, see `medusa/init/__init__.py`
 ext | **`boto`** | [2.48.0](https://pypi.org/project/boto/2.48.0/) | `imdbpie` | -
 ext | `CacheControl` | [0.12.6](https://pypi.org/project/CacheControl/0.12.6/) | **`medusa`** | Module: `cachecontrol`
-ext | **`certifi`** | [2020.11.8](https://pypi.org/project/certifi/2020.11.8/) | **`medusa`**, `requests`, `traktor` | -
-ext | **`chardet`** | [3.0.4](https://pypi.org/project/chardet/3.0.4/) | **`medusa`**, `pysrt`, `requests`, `subliminal` | -
+ext | **`certifi`** | [2020.12.5](https://pypi.org/project/certifi/2020.12.5/) | **`medusa`**, `requests`, `traktor` | -
+ext | **`chardet`** | [3.0.4](https://pypi.org/project/chardet/3.0.4/) | `pysrt`, `requests`, `subliminal` | -
 ext | **`cloudscraper`** | [1.2.46](https://pypi.org/project/cloudscraper/1.2.46/) | **`medusa`** | -
 ext | `configobj` | [5.0.6](https://pypi.org/project/configobj/5.0.6/) | **`medusa`** | Modules: `configobj.py`, `validate.py`, `_version.py`
 ext | `contextlib2` | [0.6.0.post1](https://pypi.org/project/contextlib2/0.6.0.post1/) | **`medusa`** | File: `contextlib2.py`

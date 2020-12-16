@@ -860,7 +860,7 @@ class Series(TV):
         absolute_number = try_int(absolute_number, None)
 
         # if we get an anime get the real season and episode
-        if not season and not episode:
+        if season is None and not episode:
             main_db_con = db.DBConnection()
             sql = None
             sql_args = None
@@ -870,8 +870,7 @@ class Series(TV):
                     'FROM tv_episodes '
                     'WHERE indexer = ? '
                     'AND showid = ? '
-                    'AND absolute_number = ? '
-                    'AND season != 0'
+                    'AND absolute_number = ?'
                 )
                 sql_args = [self.indexer, self.series_id, absolute_number]
                 log.debug(u'{id}: Season and episode lookup for {show} using absolute number {absolute}',
@@ -1621,7 +1620,7 @@ class Series(TV):
 
         try:
             imdb_info = imdb_api.get_title(self.imdb_id)
-        except LookupError as error:
+        except Exception as error:
             log.warning(u'{id}: IMDbPie error while loading show info: {error}',
                         {'id': self.series_id, 'error': error})
             imdb_info = None
