@@ -10,18 +10,13 @@ import sys
 VERSION_FILE = 'medusa/common.py'
 VERSION_LINE_REGEXP = re.compile(r"VERSION = '([0-9.]+)'")
 
-TRAVIS_PULL_REQUEST = os.environ['GITHUB_EVENT_NAME']
-TRAVIS_PR_TARGET_BRANCH = os.environ['GITHUB_BASE_REF']
-TRAVIS_PR_SOURCE_BRANCH = os.environ['GITHUB_HEAD_REF']
-TRAVIS_BUILD_DIR = os.environ['GITHUB_WORKSPACE']
+GH_PULL_REQUEST = os.environ['GITHUB_EVENT_NAME']
+GH_PR_TARGET_BRANCH = os.environ['GITHUB_BASE_REF']
+GH_PR_SOURCE_BRANCH = os.environ['GITHUB_HEAD_REF']
+GH_BUILD_DIR = os.environ['GITHUB_WORKSPACE']
 
-print(TRAVIS_PULL_REQUEST)
-print(TRAVIS_PR_TARGET_BRANCH)
-print(TRAVIS_PR_SOURCE_BRANCH)
-print(TRAVIS_BUILD_DIR)
-
-TRAVIS_PR_TARGET_BRANCH = TRAVIS_PR_TARGET_BRANCH.lower()
-TRAVIS_PR_SOURCE_BRANCH = TRAVIS_PR_SOURCE_BRANCH.lower()
+GH_PR_TARGET_BRANCH = GH_PR_TARGET_BRANCH.lower()
+GH_PR_SOURCE_BRANCH = GH_PR_SOURCE_BRANCH.lower()
 
 
 class Version(object):
@@ -59,7 +54,7 @@ class Version(object):
 def search_file_for_version():
     """Get the app version from the code."""
     version_file = VERSION_FILE.split('/')
-    filename = os.path.abspath(os.path.join(TRAVIS_BUILD_DIR, *version_file))
+    filename = os.path.abspath(os.path.join(GH_BUILD_DIR, *version_file))
     with io.open(filename, 'r', encoding='utf-8') as fh:
         for line in fh:
             match = VERSION_LINE_REGEXP.match(line)
@@ -71,9 +66,9 @@ def search_file_for_version():
 
 # Are we merging either develop or a release branch into master in a pull request?
 if all((
-        TRAVIS_PULL_REQUEST == 'pull_request',
-        TRAVIS_PR_TARGET_BRANCH == 'master',
-        TRAVIS_PR_SOURCE_BRANCH == 'develop' or TRAVIS_PR_SOURCE_BRANCH.startswith('release/')
+        GH_PULL_REQUEST == 'pull_request',
+        GH_PR_TARGET_BRANCH == 'master',
+        GH_PR_SOURCE_BRANCH == 'develop' or GH_PR_SOURCE_BRANCH.startswith('release/')
 )):
     # Get lastest git tag on master branch
     proc = subprocess.call(['git', 'fetch', 'origin', 'master:master'])
