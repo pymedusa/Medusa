@@ -10,9 +10,9 @@ import sys
 VERSION_FILE = 'medusa/common.py'
 VERSION_LINE_REGEXP = re.compile(r"VERSION = '([0-9.]+)'")
 
-TRAVIS_PULL_REQUEST = os.environ['GITHUB_EVENT_NAME']  # 'false' if not a PR, otherwise - the PR number
+TRAVIS_PULL_REQUEST = os.environ['GITHUB_EVENT_NAME']
 TRAVIS_PR_TARGET_BRANCH = os.environ['GITHUB_BASE_REF']
-TRAVIS_PR_SOURCE_BRANCH = os.environ['GITHUB_REF']
+TRAVIS_PR_SOURCE_BRANCH = os.environ['GITHUB_HEAD_REF']
 TRAVIS_BUILD_DIR = os.environ['GITHUB_WORKSPACE']
 
 print(TRAVIS_PULL_REQUEST)
@@ -71,7 +71,7 @@ def search_file_for_version():
 
 # Are we merging either develop or a release branch into master in a pull request?
 if all((
-        TRAVIS_PULL_REQUEST != 'false',
+        TRAVIS_PULL_REQUEST == 'pull_request',
         TRAVIS_PR_TARGET_BRANCH == 'master',
         TRAVIS_PR_SOURCE_BRANCH == 'develop' or TRAVIS_PR_SOURCE_BRANCH.startswith('release/')
 )):
