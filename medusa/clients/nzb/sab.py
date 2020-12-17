@@ -260,6 +260,15 @@ def get_nzb_by_id(nzo_id):
     return False
 
 
+def nzb_completed(nzo_id):
+    """Check if an nzb has completed download."""
+    nzb = nzb_status(nzo_id)
+    if not nzb:
+        return False
+
+    return str(nzb) == 'Completed'
+
+
 def nzb_status(nzo_id):
     """
     Return nzb status (Paused, Downloading, Downloaded, Failed, Extracting).
