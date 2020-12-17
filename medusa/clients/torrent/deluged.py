@@ -231,6 +231,12 @@ class DelugeDAPI(GenericClient):
         if torrent['ratio'] >= torrent['stop_ratio']:
             client_status.add_status_string('Seeded')
 
+        # Store ratio
+        client_status.ratio = torrent['ratio']
+
+        # Store progress
+        client_status.progress = torrent['progress']
+
         return client_status
 
 
@@ -238,7 +244,7 @@ class DelugeRPC(object):
     """Deluge RPC client class."""
 
     def __init__(self, host='localhost', port=58846, username=None, password=None):
-        """Constructor.
+        """Deluge RPC Constructor.
 
         :param host:
         :type host: str
