@@ -8,6 +8,7 @@ import logging
 from base64 import b64encode
 
 from medusa import app
+from medusa.clients.download_handler import ClientStatus
 from medusa.clients.torrent.generic import GenericClient
 from medusa.helpers import (
     get_extension,
@@ -469,6 +470,85 @@ class DelugeAPI(GenericClient):
             return
 
         return self.response.json()['result']
+
+    def torrent_completed(self, info_hash):
+        """Check if the torrent has finished downloading."""
+        torrent_status = self.torrent_status(info_hash)
+        if not torrent_status:
+            return False
+
+        return str(torrent_status) == 'Completed'
+
+    def torrent_seeded(self, info_hash):
+        """Check if the torrent has finished seeding."""
+        torrent_status = self.torrent_status(info_hash)
+        if not torrent_status:
+            return False
+
+        return str(torrent_status) == 'Seeded'
+
+    def torrent_ratio(self, info_hash):
+        """Get torrent ratio."""
+        torrent_status = self.torrent_status(info_hash)
+        if not torrent_status:
+            return False
+
+        return torrent_status.ratio
+
+    def torrent_progress(self, info_hash):
+        """Get torrent download progress."""
+        torrent_status = self.torrent_status(info_hash)
+        if not torrent_status:
+            return False
+
+        return torrent_status.progress
+
+    def torrent_status(self, info_hash):
+        """
+        Return torrent status.
+
+        Example result:
+        ```
+            'hash': '35b814f1438054158b0bd07d305dc0edeb20b704'
+            'is_finished': False
+            'ratio': 0.0
+            'paused': False
+            'name': '[FFA] Haikyuu!!: To the Top 2nd Season - 11 [1080p][HEVC][Multiple Subtitle].mkv'
+            'stop_ratio': 2.0
+            'state': 'Downloading'
+            'progress': 23.362499237060547
+            'files': ({'index': 0, 'offset': 0, 'path': '[FFA] Haikyuu!!: To ...title].mkv', 'size': 362955692},)
+            'is_seed': False
+        ```
+        """
+        torrent = self._torrent_properties(info_hash)
+        if not torrent:
+            return False
+
+        client_status = ClientStatus()
+        if torrent['state'] == 'Downloading':
+            client_status.add_status_string('Downloading')
+
+        if torrent['paused']:
+            client_status.add_status_string('Paused')
+
+        # TODO: Find out which state the torrent get's when it fails.
+        # if torrent[1] & 16:
+        #     client_status.add_status_string('Failed')
+
+        if torrent['is_finished']:
+            client_status.add_status_string('Completed')
+
+        if torrent['ratio'] >= torrent['stop_ratio']:
+            client_status.add_status_string('Seeded')
+
+        # Store ratio
+        client_status.ratio = torrent['ratio']
+
+        # Store progress
+        client_status.progress = int(torrent['progress'])
+
+        return client_status
 
 
 api = DelugeAPI

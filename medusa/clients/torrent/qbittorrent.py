@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 import logging
 import os
+import time
 
 from medusa import app
 from medusa.clients.download_handler import ClientStatus
@@ -14,6 +15,8 @@ from medusa.logger.adapters.style import BraceAdapter
 
 from requests.auth import HTTPDigestAuth
 from requests.compat import urljoin
+
+import ttl_cache
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -79,8 +82,6 @@ class QBittorrentAPI(GenericClient):
             except Exception:
                 self.api = (1, 0, 0)
 
-        # remove me later
-        self._torrent_properties('564c9b6e958df237ce248e4d5d7cbcf4f5a43e05')
         return auth
 
     def _get_auth_v2(self):
@@ -246,24 +247,39 @@ class QBittorrentAPI(GenericClient):
 
         return self._request(method='post', data=data, cookies=self.session.cookies)
 
-    def _torrent_properties(self, info_hash):
-        """Get torrent properties."""
+    @ttl_cache(60.0)
+    def _get_torrents(self, filter=None, category=None, sort=None):
+        """Get all torrents from qbittorrent api."""
+        params = {}
         if self.api >= (2, 0, 0):
-            self.url = urljoin(self.host, 'api/v2/torrents/properties')
-            data = {
-                'hash': info_hash.lower(),
-            }
+            self.url = urljoin(self.host, 'api/v2/torrents/info')
+            if filter:
+                params['filter'] = filter
+            if category:
+                params['category'] = category
+            if sort:
+                params['sort'] = sort
         else:
-            self.url = urljoin(self.host, '/query/propertiesGeneral/{hash}'.format(
-                               hash=info_hash.lower()))
-            data = None
+            self.url = urljoin(self.host, 'json/torrents')
 
-        log.info('Checking {client} torrent {hash} status.', {'client': self.name, 'hash': info_hash})
-        if not self._request(method='post', data=data, cookies=self.session.cookies):
-            log.warning('Torrent hash {hash} not found.', {'hash': info_hash})
-            return {}
+        if not self._request(method='get', params=params, cookies=self.session.cookies):
+            log.warning('Error while fetching torrents.')
+            return []
 
         return self.response.json()
+
+    def _torrent_properties(self, info_hash):
+        """Get torrent properties."""
+        torrent_list = self._get_torrents()
+        if not torrent_list:
+            log.debug('Could not get any torrent from qbittorrent api.')
+            return
+
+        for torrent in torrent_list:
+            if torrent['hash'].lower() == info_hash.lower():
+                return torrent
+
+        log.debug('Could not locate torrent with {hash} status.', {'hash': info_hash})
 
     def _torrent_contents(self, info_hash):
         """
@@ -319,35 +335,38 @@ class QBittorrentAPI(GenericClient):
 
     def torrent_status(self, info_hash):
         """Return torrent status."""
+        # Set up the auth. We need it in the following methods.
+        if time.time() > self.last_time + 1800 or not self.auth:
+            self.last_time = time.time()
+            self._get_auth()
+
         torrent = self._torrent_properties(info_hash)
         if not torrent:
             return
 
         client_status = ClientStatus()
-        # if torrent.started:
-        #     client_status.add_status_string('Downloading')
+        if torrent['state'] in ('downloading', 'stalledDl', 'checkingDl', 'forceDl', 'metaDl', 'queuedDl'):
+            client_status.add_status_string('Downloading')
 
-        # if torrent.paused:
-        #     client_status.add_status_string('Paused')
+        if torrent['state'] in ('pausedUp', 'pausedDl'):
+            client_status.add_status_string('Paused')
 
-        # # if torrent['status'] == ?:
-        # #     client_status.add_status_string('Failed')
+        if torrent['state'] == 'error':
+            client_status.add_status_string('Failed')
 
-        if torrent['completion_date'] == -1:
+        if torrent['state'] in ('uploading', 'stalledUp', 'queuedUP', 'checkingUp', 'forcedUp'):
             client_status.add_status_string('Completed')
 
-        torrent_contents = self._torrent_contents(info_hash)
-        if torrent['completion_date'] == -1 and torrent_contents['progress'] != 100:
+        if torrent['ratio'] >= torrent['max_ratio']:
             client_status.add_status_string('Seeded')
 
         # Store ratio
-        # client_status.ratio = torrent.ratio
+        client_status.ratio = torrent['ratio'] * 1.0
 
         # Store progress
-        client_status.progress = torrent_contents['progress']
+        client_status.progress = int(torrent['downloaded'] / torrent['size'] * 100)
 
         return client_status
-    
 
 
 api = QBittorrentAPI

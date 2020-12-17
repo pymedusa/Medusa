@@ -227,20 +227,12 @@ class UTorrentAPI(GenericClient):
                 log.warning('{name}: Authentication Failed', {'name': self.name})
                 return False
 
-        if self._torrents_epoch:
-            if time.time() - self._torrents_epoch <= 180:
-                return self._torrents_list
-
         params = {'list': 1}
         if not self._request(params=params):
             log.warning('Error while fetching torrents.')
             return []
 
-        response = self.response.json()
-        self._torrents_list = response['torrents']
-        self._torrents_epoch = time.time()
-
-        return self._torrents_list
+        return self.response.json()
 
     def _torrent_properties(self, info_hash):
         """Get torrent properties.
@@ -271,12 +263,14 @@ class UTorrentAPI(GenericClient):
         log.info('Checking {client} torrent {hash} status.', {'client': self.name, 'hash': info_hash})
 
         if not self._get_torrents():
-            log.debug('Could not locate torrent with {hash} status.', {'hash': info_hash})
+            log.debug('Could not get any torrent from utorrent.')
             return
 
         for torrent in self._torrents_list:
             if torrent[0] == info_hash.upper():
                 return torrent
+
+        log.debug('Could not locate torrent with {hash} status.', {'hash': info_hash})
 
     def torrent_completed(self, info_hash):
         """Check if torrent has finished downloading."""

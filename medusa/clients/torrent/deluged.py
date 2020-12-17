@@ -188,6 +188,22 @@ class DelugeDAPI(GenericClient):
 
         return str(torrent_status) == 'Seeded'
 
+    def torrent_ratio(self, info_hash):
+        """Get torrent ratio."""
+        torrent_status = self.torrent_status(info_hash)
+        if not torrent_status:
+            return False
+
+        return torrent_status.ratio
+
+    def torrent_progress(self, info_hash):
+        """Get torrent download progress."""
+        torrent_status = self.torrent_status(info_hash)
+        if not torrent_status:
+            return False
+
+        return torrent_status.progress
+
     def torrent_status(self, info_hash):
         """
         Return torrent status.
@@ -235,7 +251,7 @@ class DelugeDAPI(GenericClient):
         client_status.ratio = torrent['ratio']
 
         # Store progress
-        client_status.progress = torrent['progress']
+        client_status.progress = int(torrent['progress'])
 
         return client_status
 
