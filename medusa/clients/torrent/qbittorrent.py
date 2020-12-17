@@ -8,6 +8,7 @@ import logging
 import os
 
 from medusa import app
+from medusa.clients.download_handler import ClientStatus
 from medusa.clients.torrent.generic import GenericClient
 from medusa.logger.adapters.style import BraceAdapter
 
@@ -41,21 +42,6 @@ class QBittorrentAPI(GenericClient):
         self.session.auth = HTTPDigestAuth(self.username, self.password)
 
         self.api = None
-
-    def torrent_completed(self, info_hash):
-        """Check if torrent has finished downloading."""
-        properties = self._torrent_properties(info_hash)
-        if properties['completion_date'] == -1:
-            return False
-        return True
-
-    def torrent_seeded(self, info_hash):
-        """Check if torrent has finished seeding."""
-        properties = self._torrent_properties(info_hash)
-        contents = self._torrent_contents(info_hash)
-        if properties['completion_date'] == -1 and contents['progress'] != 100:
-            return False
-        return True
 
     def _get_auth(self):
         """Authenticate with the client using the most recent API version available for use."""
@@ -298,6 +284,70 @@ class QBittorrentAPI(GenericClient):
             return {}
 
         return self.response.json()
+
+    def torrent_completed(self, info_hash):
+        """Check if torrent has finished downloading."""
+        torrent_status = self.torrent_status(info_hash)
+        if not torrent_status:
+            return False
+
+        return str(torrent_status) == 'Completed'
+
+    def torrent_seeded(self, info_hash):
+        """Check if torrent has finished seeding."""
+        torrent_status = self.torrent_status(info_hash)
+        if not torrent_status:
+            return False
+
+        return str(torrent_status) == 'Seeded'
+
+    def torrent_ratio(self, info_hash):
+        """Get torrent ratio."""
+        torrent_status = self.torrent_status(info_hash)
+        if not torrent_status:
+            return False
+
+        return torrent_status.ratio
+
+    def torrent_progress(self, info_hash):
+        """Get torrent download progress."""
+        torrent_status = self.torrent_status(info_hash)
+        if not torrent_status:
+            return False
+
+        return torrent_status.progress
+
+    def torrent_status(self, info_hash):
+        """Return torrent status."""
+        torrent = self._torrent_properties(info_hash)
+        if not torrent:
+            return
+
+        client_status = ClientStatus()
+        # if torrent.started:
+        #     client_status.add_status_string('Downloading')
+
+        # if torrent.paused:
+        #     client_status.add_status_string('Paused')
+
+        # # if torrent['status'] == ?:
+        # #     client_status.add_status_string('Failed')
+
+        if torrent['completion_date'] == -1:
+            client_status.add_status_string('Completed')
+
+        torrent_contents = self._torrent_contents(info_hash)
+        if torrent['completion_date'] == -1 and torrent_contents['progress'] != 100:
+            client_status.add_status_string('Seeded')
+
+        # Store ratio
+        # client_status.ratio = torrent.ratio
+
+        # Store progress
+        client_status.progress = torrent_contents['progress']
+
+        return client_status
+    
 
 
 api = QBittorrentAPI

@@ -279,30 +279,28 @@ class UTorrentAPI(GenericClient):
                 return torrent
 
     def torrent_completed(self, info_hash):
-        """
-        Check if torrent has finished downloading.
-
-        Status field returns a bitwize value.
-        1 = Started
-        2 = Checking
-        4 = Start after check
-        8 = Checked
-        16 = Error
-        32 = Paused
-        64 = Queued
-        128 = Loaded
-        """
-        torrent = self._torrent_properties(info_hash)
-        # Apply bitwize AND with Started. And check if Progress is 100%.
-        if not torrent:
+        """Check if torrent has finished downloading."""
+        torrent_status = self.torrent_status(info_hash)
+        if not torrent_status:
             return False
 
-        return bool(torrent[1] & 1) and torrent[4] == 1000
+        return str(torrent_status) == 'Completed'
 
-    def torrent_seeded(self, info_hash):
-        """Check if torrent has finished seeding."""
-        # Utorrent doesn't have a clear way of showing if seeding has finished through api.
-        return True
+    def torrent_ratio(self, info_hash):
+        """Get torrent ratio."""
+        torrent_status = self.torrent_status(info_hash)
+        if not torrent_status:
+            return False
+
+        return torrent_status.ratio
+
+    def torrent_progress(self, info_hash):
+        """Get torrent download progress."""
+        torrent_status = self.torrent_status(info_hash)
+        if not torrent_status:
+            return False
+
+        return torrent_status.progress
 
     def torrent_status(self, info_hash):
         """
@@ -332,8 +330,14 @@ class UTorrentAPI(GenericClient):
         if torrent[1] & 16:
             client_status.add_status_string('Failed')
 
-        if self.torrent_completed(info_hash):
+        if torrent[1] & 1 and torrent[4] == 1000:
             client_status.add_status_string('Completed')
+
+        # Store ratio
+        client_status.ratio = torrent[7] / 1000
+
+        # Store progress
+        client_status.progress = int(torrent[4] / 10)
 
         return client_status
 

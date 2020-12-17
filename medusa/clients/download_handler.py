@@ -73,6 +73,11 @@ class ClientStatus(ConstsBitwize):
     CONSTANTS = ClientStatusEnum
     STRINGS = status_strings
 
+    def __init_(self):
+        super(ClientStatus, self).__init__()
+        self.ratio = 0.0
+        self.progress = 0
+
 
 class DownloadHandler(object):
     """Download handler checker class."""

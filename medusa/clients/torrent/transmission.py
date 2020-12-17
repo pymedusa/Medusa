@@ -11,6 +11,7 @@ import re
 from base64 import b64encode
 
 from medusa import app
+from medusa.clients.download_handler import ClientStatus
 from medusa.clients.torrent.generic import GenericClient
 from medusa.logger.adapters.style import BraceAdapter
 
@@ -72,8 +73,7 @@ class TransmissionAPI(GenericClient):
         if not auth_match:
             return False
 
-        if auth_match:
-            self.auth = auth_match.group(1)
+        self.auth = auth_match.group(1)
 
         self.session.headers.update({'x-transmission-session-id': self.auth})
 
@@ -84,9 +84,6 @@ class TransmissionAPI(GenericClient):
         })
 
         self._request(method='post', data=post_data)
-
-        # remove me later
-        result = self._torrent_properties('6ed4c48cf23f453a90cef2022e3e8a72f5b786ae')
 
         return self.auth
 
@@ -270,20 +267,85 @@ class TransmissionAPI(GenericClient):
 
         torrent = self.response.json()['arguments']['torrents']
         if not torrent:
-            log.warning('Error while fetching torrent {hash} status.', {'hash': info_hash})
+            log.debug('Could not locate torrent with {hash} status.', {'hash': info_hash})
             return
 
         return torrent[0]
 
     def torrent_completed(self, info_hash):
         """Check if torrent has finished downloading."""
-        properties = self._torrent_properties(info_hash)
-        return properties['status'] == 6 or self.torrent_seeded(info_hash)
+        torrent_status = self.torrent_status(info_hash)
+        if not torrent_status:
+            return False
+
+        return str(torrent_status) == 'Completed'
 
     def torrent_seeded(self, info_hash):
-        """Check if torrent has finished seeding."""
-        properties = self._torrent_properties(info_hash)
-        return properties['status'] == 0 and properties['isFinished']
+        """Check if the torrent has finished seeding."""
+        torrent_status = self.torrent_status(info_hash)
+        if not torrent_status:
+            return False
+
+        return str(torrent_status) == 'Seeded'
+
+    def torrent_ratio(self, info_hash):
+        """Get torrent ratio."""
+        torrent_status = self.torrent_status(info_hash)
+        if not torrent_status:
+            return False
+
+        return torrent_status.ratio
+
+    def torrent_progress(self, info_hash):
+        """Get torrent download progress."""
+        torrent_status = self.torrent_status(info_hash)
+        if not torrent_status:
+            return False
+
+        return torrent_status.progress
+
+    def torrent_status(self, info_hash):
+        """
+        Return torrent status.
+
+        Status codes:
+        ```
+            0: "Stopped"
+            1: "Check waiting"
+            2: "Checking"
+            3: "Download waiting"
+            4: "Downloading"
+            5: "Seed waiting"
+            6: "Seeding"
+        ```
+        """
+        torrent = self._torrent_properties(info_hash)
+        if not torrent:
+            return
+
+        client_status = ClientStatus()
+        if torrent['status'] == 4:
+            client_status.add_status_string('Downloading')
+
+        if torrent['status'] == 0:
+            client_status.add_status_string('Paused')
+
+        # if torrent['status'] == ?:
+        #     client_status.add_status_string('Failed')
+
+        if torrent['status'] == 6:
+            client_status.add_status_string('Completed')
+
+        if torrent['status'] == 0 and torrent['isFinished']:
+            client_status.add_status_string('Seeded')
+
+        # Store ratio
+        client_status.ratio = torrent['uploadRatio'] * 1.0
+
+        # Store progress
+        client_status.progress = int(torrent['percentDone'] * 100)
+
+        return client_status
 
 
 api = TransmissionAPI
