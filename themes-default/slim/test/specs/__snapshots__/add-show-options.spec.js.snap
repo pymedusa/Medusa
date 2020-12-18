@@ -1,0 +1,875 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AddShowOptions.test.js renders with \`enable-anime-options\` disabled 1`] = `
+<div
+  id="add-show-options-content"
+>
+  <fieldset
+    class="component-group-list"
+  >
+    <div
+      class="form-group"
+    >
+      <div
+        class="row"
+      >
+        <label
+          class="col-sm-2 control-label"
+          for="customQuality"
+        >
+          <span>
+            Quality
+          </span>
+        </label>
+         
+        <div
+          class="col-sm-10 content"
+        >
+          <quality-chooser-stub
+            overallquality="328"
+          />
+        </div>
+      </div>
+    </div>
+     
+    <div
+      id="use-subtitles"
+    >
+      <div
+        id="config-toggle-slider-content"
+      >
+        <div
+          class="form-group"
+        >
+          <div
+            class="row"
+          >
+            <label
+              class="col-sm-2 control-label"
+              for="subtitles"
+            >
+              <span>
+                Subtitles
+              </span>
+            </label>
+             
+            <div
+              class="col-sm-10 content"
+            >
+              <toggle-button-stub
+                height="22"
+                id="subtitles"
+                name="subtitles"
+                sync=""
+                width="45"
+              />
+               
+              <p>
+                Download subtitles for this show?
+              </p>
+               
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+     
+    <div
+      class="form-group"
+    >
+      <div
+        class="row"
+      >
+        <label
+          class="col-sm-2 control-label"
+          for="defaultStatus"
+        >
+          <span>
+            Status for previously aired episodes
+          </span>
+        </label>
+         
+        <div
+          class="col-sm-10 content"
+        >
+          <select
+            class="form-control form-control-inline input-sm"
+            id="defaultStatus"
+          >
+            <option
+              value="5"
+            >
+              Skipped
+            </option>
+            <option
+              value="3"
+            >
+              Wanted
+            </option>
+            <option
+              value="7"
+            >
+              Ignored
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+     
+    <div
+      class="form-group"
+    >
+      <div
+        class="row"
+      >
+        <label
+          class="col-sm-2 control-label"
+          for="defaultStatusAfter"
+        >
+          <span>
+            Status for all future episodes
+          </span>
+        </label>
+         
+        <div
+          class="col-sm-10 content"
+        >
+          <select
+            class="form-control form-control-inline input-sm"
+            id="defaultStatusAfter"
+          >
+            <option
+              value="5"
+            >
+              Skipped
+            </option>
+            <option
+              value="3"
+            >
+              Wanted
+            </option>
+            <option
+              value="7"
+            >
+              Ignored
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+     
+    <div
+      id="config-toggle-slider-content"
+    >
+      <div
+        class="form-group"
+      >
+        <div
+          class="row"
+        >
+          <label
+            class="col-sm-2 control-label"
+            for="season_folders"
+          >
+            <span>
+              Season Folders
+            </span>
+          </label>
+           
+          <div
+            class="col-sm-10 content"
+          >
+            <toggle-button-stub
+              height="22"
+              id="season_folders"
+              name="season_folders"
+              sync=""
+              width="45"
+            />
+             
+            <p>
+              Group episodes by season folders?
+            </p>
+             
+          </div>
+        </div>
+      </div>
+    </div>
+     
+    <!---->
+     
+    <!---->
+     
+    <div
+      id="config-toggle-slider-content"
+    >
+      <div
+        class="form-group"
+      >
+        <div
+          class="row"
+        >
+          <label
+            class="col-sm-2 control-label"
+            for="scene"
+          >
+            <span>
+              Scene Numbering
+            </span>
+          </label>
+           
+          <div
+            class="col-sm-10 content"
+          >
+            <toggle-button-stub
+              height="22"
+              id="scene"
+              name="scene"
+              sync=""
+              width="45"
+            />
+             
+            <p>
+              Is this show scene numbered?
+            </p>
+             
+          </div>
+        </div>
+      </div>
+    </div>
+     
+    <div
+      id="config-template-content"
+    >
+      <div
+        class="form-group"
+      >
+        <div
+          class="row"
+        >
+          <label
+            class="col-sm-2 control-label"
+            for="show_lists"
+          >
+            <span>
+              Display in show lists
+            </span>
+          </label>
+           
+          <div
+            class="col-sm-10 content"
+          >
+            <div
+              class="multiselect"
+              tabindex="-1"
+            >
+              <div
+                class="multiselect__select"
+              />
+                
+              <div
+                class="multiselect__tags"
+              >
+                <div
+                  class="multiselect__tags-wrap"
+                  style="display: none;"
+                />
+                 
+                <!---->
+                 
+                <transition-stub
+                  name="multiselect__loading"
+                >
+                  <div
+                    class="multiselect__spinner"
+                    style="display: none;"
+                  />
+                </transition-stub>
+                 
+                <input
+                  autocomplete="nope"
+                  class="multiselect__input"
+                  name=""
+                  placeholder="Select option"
+                  style="width: 0px; position: absolute; padding: 0px;"
+                  tabindex="0"
+                  type="text"
+                />
+                 
+                <!---->
+                 
+                <span
+                  class="multiselect__placeholder"
+                >
+                  
+          Select option
+        
+                </span>
+              </div>
+               
+              <transition-stub
+                name="multiselect"
+              >
+                <div
+                  class="multiselect__content-wrapper"
+                  style="max-height: 300px; display: none;"
+                  tabindex="-1"
+                >
+                  <ul
+                    class="multiselect__content"
+                    style="display: inline-block;"
+                  >
+                     
+                    <!---->
+                     
+                    <li
+                      class="multiselect__element"
+                    >
+                      <span
+                        class="multiselect__option multiselect__option--highlight"
+                        data-deselect="Press enter to remove"
+                        data-select="Press enter to select"
+                        data-selected="Selected"
+                      >
+                        <span>
+                          anime
+                        </span>
+                      </span>
+                       
+                      <!---->
+                    </li>
+                    <li
+                      class="multiselect__element"
+                    >
+                      <span
+                        class="multiselect__option"
+                        data-deselect="Press enter to remove"
+                        data-select="Press enter to select"
+                        data-selected="Selected"
+                      >
+                        <span>
+                          series
+                        </span>
+                      </span>
+                       
+                      <!---->
+                    </li>
+                     
+                    <li
+                      style="display: none;"
+                    >
+                      <span
+                        class="multiselect__option"
+                      >
+                        No elements found. Consider changing the search query.
+                      </span>
+                    </li>
+                     
+                    <li
+                      style="display: none;"
+                    >
+                      <span
+                        class="multiselect__option"
+                      >
+                        List is empty.
+                      </span>
+                    </li>
+                     
+                  </ul>
+                </div>
+              </transition-stub>
+            </div>
+             
+            <span>
+              If no list selected, the default 'series' will apply
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+     
+    <div
+      class="form-group"
+    >
+      <div
+        class="row"
+      >
+        <label
+          class="col-sm-2 control-label"
+          for="saveDefaultsButton"
+        >
+          <span>
+            Use current values as the defaults
+          </span>
+        </label>
+         
+        <div
+          class="col-sm-10 content"
+        >
+          <button
+            class="btn-medusa btn-inline"
+            type="button"
+          >
+            Save Defaults
+          </button>
+        </div>
+      </div>
+    </div>
+  </fieldset>
+</div>
+`;
+
+exports[`AddShowOptions.test.js renders with \`enable-anime-options\` enabled 1`] = `
+<div
+  id="add-show-options-content"
+>
+  <fieldset
+    class="component-group-list"
+  >
+    <div
+      class="form-group"
+    >
+      <div
+        class="row"
+      >
+        <label
+          class="col-sm-2 control-label"
+          for="customQuality"
+        >
+          <span>
+            Quality
+          </span>
+        </label>
+         
+        <div
+          class="col-sm-10 content"
+        >
+          <quality-chooser-stub
+            overallquality="328"
+          />
+        </div>
+      </div>
+    </div>
+     
+    <div
+      id="use-subtitles"
+    >
+      <div
+        id="config-toggle-slider-content"
+      >
+        <div
+          class="form-group"
+        >
+          <div
+            class="row"
+          >
+            <label
+              class="col-sm-2 control-label"
+              for="subtitles"
+            >
+              <span>
+                Subtitles
+              </span>
+            </label>
+             
+            <div
+              class="col-sm-10 content"
+            >
+              <toggle-button-stub
+                height="22"
+                id="subtitles"
+                name="subtitles"
+                sync=""
+                width="45"
+              />
+               
+              <p>
+                Download subtitles for this show?
+              </p>
+               
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+     
+    <div
+      class="form-group"
+    >
+      <div
+        class="row"
+      >
+        <label
+          class="col-sm-2 control-label"
+          for="defaultStatus"
+        >
+          <span>
+            Status for previously aired episodes
+          </span>
+        </label>
+         
+        <div
+          class="col-sm-10 content"
+        >
+          <select
+            class="form-control form-control-inline input-sm"
+            id="defaultStatus"
+          >
+            <option
+              value="5"
+            >
+              Skipped
+            </option>
+            <option
+              value="3"
+            >
+              Wanted
+            </option>
+            <option
+              value="7"
+            >
+              Ignored
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+     
+    <div
+      class="form-group"
+    >
+      <div
+        class="row"
+      >
+        <label
+          class="col-sm-2 control-label"
+          for="defaultStatusAfter"
+        >
+          <span>
+            Status for all future episodes
+          </span>
+        </label>
+         
+        <div
+          class="col-sm-10 content"
+        >
+          <select
+            class="form-control form-control-inline input-sm"
+            id="defaultStatusAfter"
+          >
+            <option
+              value="5"
+            >
+              Skipped
+            </option>
+            <option
+              value="3"
+            >
+              Wanted
+            </option>
+            <option
+              value="7"
+            >
+              Ignored
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+     
+    <div
+      id="config-toggle-slider-content"
+    >
+      <div
+        class="form-group"
+      >
+        <div
+          class="row"
+        >
+          <label
+            class="col-sm-2 control-label"
+            for="season_folders"
+          >
+            <span>
+              Season Folders
+            </span>
+          </label>
+           
+          <div
+            class="col-sm-10 content"
+          >
+            <toggle-button-stub
+              height="22"
+              id="season_folders"
+              name="season_folders"
+              sync=""
+              width="45"
+            />
+             
+            <p>
+              Group episodes by season folders?
+            </p>
+             
+          </div>
+        </div>
+      </div>
+    </div>
+     
+    <div
+      id="config-toggle-slider-content"
+    >
+      <div
+        class="form-group"
+      >
+        <div
+          class="row"
+        >
+          <label
+            class="col-sm-2 control-label"
+            for="anime"
+          >
+            <span>
+              Anime
+            </span>
+          </label>
+           
+          <div
+            class="col-sm-10 content"
+          >
+            <toggle-button-stub
+              height="22"
+              id="anime"
+              name="anime"
+              sync=""
+              width="45"
+            />
+             
+            <p>
+              Is this show an Anime?
+            </p>
+             
+          </div>
+        </div>
+      </div>
+    </div>
+     
+    <!---->
+     
+    <div
+      id="config-toggle-slider-content"
+    >
+      <div
+        class="form-group"
+      >
+        <div
+          class="row"
+        >
+          <label
+            class="col-sm-2 control-label"
+            for="scene"
+          >
+            <span>
+              Scene Numbering
+            </span>
+          </label>
+           
+          <div
+            class="col-sm-10 content"
+          >
+            <toggle-button-stub
+              height="22"
+              id="scene"
+              name="scene"
+              sync=""
+              width="45"
+            />
+             
+            <p>
+              Is this show scene numbered?
+            </p>
+             
+          </div>
+        </div>
+      </div>
+    </div>
+     
+    <div
+      id="config-template-content"
+    >
+      <div
+        class="form-group"
+      >
+        <div
+          class="row"
+        >
+          <label
+            class="col-sm-2 control-label"
+            for="show_lists"
+          >
+            <span>
+              Display in show lists
+            </span>
+          </label>
+           
+          <div
+            class="col-sm-10 content"
+          >
+            <div
+              class="multiselect"
+              tabindex="-1"
+            >
+              <div
+                class="multiselect__select"
+              />
+                
+              <div
+                class="multiselect__tags"
+              >
+                <div
+                  class="multiselect__tags-wrap"
+                  style="display: none;"
+                />
+                 
+                <!---->
+                 
+                <transition-stub
+                  name="multiselect__loading"
+                >
+                  <div
+                    class="multiselect__spinner"
+                    style="display: none;"
+                  />
+                </transition-stub>
+                 
+                <input
+                  autocomplete="nope"
+                  class="multiselect__input"
+                  name=""
+                  placeholder="Select option"
+                  style="width: 0px; position: absolute; padding: 0px;"
+                  tabindex="0"
+                  type="text"
+                />
+                 
+                <!---->
+                 
+                <span
+                  class="multiselect__placeholder"
+                >
+                  
+          Select option
+        
+                </span>
+              </div>
+               
+              <transition-stub
+                name="multiselect"
+              >
+                <div
+                  class="multiselect__content-wrapper"
+                  style="max-height: 300px; display: none;"
+                  tabindex="-1"
+                >
+                  <ul
+                    class="multiselect__content"
+                    style="display: inline-block;"
+                  >
+                     
+                    <!---->
+                     
+                    <li
+                      class="multiselect__element"
+                    >
+                      <span
+                        class="multiselect__option multiselect__option--highlight"
+                        data-deselect="Press enter to remove"
+                        data-select="Press enter to select"
+                        data-selected="Selected"
+                      >
+                        <span>
+                          anime
+                        </span>
+                      </span>
+                       
+                      <!---->
+                    </li>
+                    <li
+                      class="multiselect__element"
+                    >
+                      <span
+                        class="multiselect__option"
+                        data-deselect="Press enter to remove"
+                        data-select="Press enter to select"
+                        data-selected="Selected"
+                      >
+                        <span>
+                          series
+                        </span>
+                      </span>
+                       
+                      <!---->
+                    </li>
+                     
+                    <li
+                      style="display: none;"
+                    >
+                      <span
+                        class="multiselect__option"
+                      >
+                        No elements found. Consider changing the search query.
+                      </span>
+                    </li>
+                     
+                    <li
+                      style="display: none;"
+                    >
+                      <span
+                        class="multiselect__option"
+                      >
+                        List is empty.
+                      </span>
+                    </li>
+                     
+                  </ul>
+                </div>
+              </transition-stub>
+            </div>
+             
+            <span>
+              If no list selected, the default 'series' will apply
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+     
+    <div
+      class="form-group"
+    >
+      <div
+        class="row"
+      >
+        <label
+          class="col-sm-2 control-label"
+          for="saveDefaultsButton"
+        >
+          <span>
+            Use current values as the defaults
+          </span>
+        </label>
+         
+        <div
+          class="col-sm-10 content"
+        >
+          <button
+            class="btn-medusa btn-inline"
+            type="button"
+          >
+            Save Defaults
+          </button>
+        </div>
+      </div>
+    </div>
+  </fieldset>
+</div>
+`;

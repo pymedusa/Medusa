@@ -4,9 +4,8 @@ from __future__ import unicode_literals
 
 import os
 import re
-import time
+import sys
 import traceback
-from builtins import str
 from concurrent.futures import ThreadPoolExecutor
 
 from mako.exceptions import RichTraceback
@@ -27,6 +26,7 @@ from requests.compat import urljoin
 
 from six import (
     iteritems,
+    text_type,
     viewitems,
 )
 
@@ -42,7 +42,6 @@ from tornado.web import (
 )
 
 from tornroutes import route
-
 
 mako_lookup = None
 mako_cache = None
@@ -75,8 +74,8 @@ class PageTemplate(MakoTemplate):
         lookup = get_lookup()
         self.template = lookup.get_template(filename)
 
-        base_url = (rh.request.headers.get('X-Forwarded-Proto', rh.request.protocol) + '://' +
-                    rh.request.headers.get('X-Forwarded-Host', rh.request.host))
+        base_url = (rh.request.headers.get('X-Forwarded-Proto', rh.request.protocol) + '://'
+                    + rh.request.headers.get('X-Forwarded-Host', rh.request.host))
 
         self.arguments = {
             'sbHttpPort': app.WEB_PORT,
@@ -85,11 +84,9 @@ class PageTemplate(MakoTemplate):
             'sbHandleReverseProxy': app.HANDLE_REVERSE_PROXY,
             'sbDefaultPage': app.DEFAULT_PAGE,
             'loggedIn': rh.get_current_user(),
-            'sbStartTime': rh.startTime,
-            'sbPID': str(app.PID),
+            'sbPID': text_type(app.PID),
             'title': 'FixME',
             'header': 'FixME',
-            'submenu': [],
             'controller': 'FixME',
             'action': 'FixME',
             'show': UNDEFINED,
@@ -98,10 +95,11 @@ class PageTemplate(MakoTemplate):
             'full_url': base_url + rh.request.uri
         }
 
-        if rh.request.headers['Host'][0] == '[':
-            self.arguments['sbHost'] = re.match(r'^\[.*\]', rh.request.headers['Host'], re.X | re.M | re.S).group(0)
-        else:
-            self.arguments['sbHost'] = re.match(r'^[^:]+', rh.request.headers['Host'], re.X | re.M | re.S).group(0)
+        if rh.request.headers.get('Host'):
+            if rh.request.headers['Host'][0] == '[':
+                self.arguments['sbHost'] = re.match(r'^\[.*\]', rh.request.headers['Host'], re.X | re.M | re.S).group(0)
+            else:
+                self.arguments['sbHost'] = re.match(r'^[^:]+', rh.request.headers['Host'], re.X | re.M | re.S).group(0)
         if 'X-Forwarded-Host' in rh.request.headers:
             self.arguments['sbHost'] = rh.request.headers['X-Forwarded-Host']
         if 'X-Forwarded-Port' in rh.request.headers:
@@ -115,7 +113,6 @@ class PageTemplate(MakoTemplate):
             if key not in kwargs:
                 kwargs[key] = self.arguments[key]
 
-        kwargs['makoStartTime'] = time.time()
         try:
             return self.template.render_unicode(*args, **kwargs)
         except Exception:
@@ -131,15 +128,8 @@ class PageTemplate(MakoTemplate):
 class BaseHandler(RequestHandler):
     """Base Handler for the server."""
 
-    startTime = 0.
-
-    def __init__(self, *args, **kwargs):
-        self.startTime = time.time()
-
-        super(BaseHandler, self).__init__(*args, **kwargs)
-
     def write_error(self, status_code, **kwargs):
-        """Base error Handler for 404's."""
+        """Error handler for 404's."""
         # handle 404 http errors
         if status_code == 404:
             url = self.request.uri
@@ -210,7 +200,11 @@ class BaseHandler(RequestHandler):
 class WebHandler(BaseHandler):
     """Base Handler for the web server."""
 
-    executor = ThreadPoolExecutor(thread_name_prefix='Thread')
+    # Python 3.5 doesn't support thread_name_prefix
+    if sys.version_info[:2] == (3, 5):
+        executor = ThreadPoolExecutor()
+    else:
+        executor = ThreadPoolExecutor(thread_name_prefix='Thread')
 
     def __init__(self, *args, **kwargs):
         super(WebHandler, self).__init__(*args, **kwargs)

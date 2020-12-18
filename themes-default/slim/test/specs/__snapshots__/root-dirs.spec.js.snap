@@ -1,0 +1,127 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RootDirs.test.js renders and changing default/selected: After changing the default root dir 1`] = `
+<div
+  id="root-dirs-wrapper"
+>
+  <div
+    class="root-dirs-selectbox"
+  >
+    <select
+      id="rootDirs"
+      name="rootDir"
+      size="6"
+    >
+      <option
+        value="/media/TV"
+      >
+        
+                /media/TV
+            
+      </option>
+      <option
+        value="/media/Anime/"
+      >
+        
+                * /media/Anime/
+            
+      </option>
+    </select>
+  </div>
+   
+  <div
+    class="root-dirs-controls"
+  >
+    <button
+      class="btn-medusa"
+      type="button"
+    >
+      New
+    </button>
+     
+    <button
+      class="btn-medusa"
+      type="button"
+    >
+      Edit
+    </button>
+     
+    <button
+      class="btn-medusa"
+      type="button"
+    >
+      Delete
+    </button>
+     
+    <button
+      class="btn-medusa"
+      type="button"
+    >
+      Set as Default *
+    </button>
+  </div>
+</div>
+`;
+
+exports[`RootDirs.test.js renders and changing default/selected: Base snapshot 1`] = `
+<div
+  id="root-dirs-wrapper"
+>
+  <div
+    class="root-dirs-selectbox"
+  >
+    <select
+      id="rootDirs"
+      name="rootDir"
+      size="6"
+    >
+      <option
+        value="/media/TV"
+      >
+        
+                /media/TV
+            
+      </option>
+      <option
+        value="/media/Anime/"
+      >
+        
+                * /media/Anime/
+            
+      </option>
+    </select>
+  </div>
+   
+  <div
+    class="root-dirs-controls"
+  >
+    <button
+      class="btn-medusa"
+      type="button"
+    >
+      New
+    </button>
+     
+    <button
+      class="btn-medusa"
+      type="button"
+    >
+      Edit
+    </button>
+     
+    <button
+      class="btn-medusa"
+      type="button"
+    >
+      Delete
+    </button>
+     
+    <button
+      class="btn-medusa"
+      type="button"
+    >
+      Set as Default *
+    </button>
+  </div>
+</div>
+`;

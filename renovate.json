@@ -2,6 +2,8 @@
   "extends": [
     "config:base"
   ],
+  "prHourlyLimit": 2,
+  "rebaseWhen": "conflicted",
   "baseBranches": [
     "develop"
   ],
@@ -20,10 +22,15 @@
         "allowedVersions": "<4"
       },
       {
+        "packageNames": ["jquery"],
+        "allowedVersions": ">=3.5.1"
+      },
+      {
         "packageNames": [
           "vue",
           "vue-template-compiler",
-          "@vue/test-utils"
+          "@vue/test-utils",
+          "vue-jest"
         ],
         "groupName": "vue-base"
       }
@@ -37,6 +44,22 @@
       {
         "packageNames": ["tornado"],
         "allowedVersions": "<6"
+      },
+      {
+        "packageNames": ["PyGithub"],
+        "allowedVersions": "<=1.45"
+      },
+      {
+        "packageNames": ["rarfile"],
+        "allowedVersions": "<=3.1"
+      }, 
+      {
+        "packageNames": ["dogpile.cache"],
+        "allowedVersions": "<1"
+      },
+      {
+        "packageNames": ["validators"],
+        "allowedVersions": "<0.16.0"
       }
     ]
   }

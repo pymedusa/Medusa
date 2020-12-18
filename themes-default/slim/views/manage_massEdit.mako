@@ -8,11 +8,17 @@
 %>
 <%block name="scripts">
 <script>
+const { mapState } = window.Vuex;
+
 window.app = {};
 window.app = new Vue({
     store,
     router,
     el: '#vue-wrap',
+    // TODO: Replace with Object spread (`...mapState`)
+    computed: Object.assign(mapState({
+        config: state => state.config.general
+    })),
     beforeMount() {
         $('#config-components').tabs();
     },
@@ -72,7 +78,7 @@ window.app = new Vue({
                         <div id="core-component-group1">
                             <div class="component-group">
                                 <h3>Main Settings</h3>
-                                <em class="note">NOTE: Changing any settings marked with (<span class="separator">*</span>) will force a refresh of the selected shows.</em><br>
+                                <em class="note"><b>Note:</b> Changing any settings marked with (<span class="separator">*</span>) will force a refresh of the selected shows.</em><br>
                                 <br>
                                 <fieldset class="component-group-list">
                                 <div class="field-pair">
@@ -119,16 +125,22 @@ window.app = new Vue({
                                         <span class="component-title">Quality</span>
                                         <span class="component-desc">
                                             <%
-                                                ## quality_value is None when the qualities of the edited shows differ
-                                                if quality_value is not None:
-                                                    initial_quality = int(quality_value)
+                                                if quality_value is None:
+                                                    ## The qualities of the edited shows differ
+                                                    qc_keep = 'keep'
+                                                    ## By passing `undefined` as the overall quality,
+                                                    ##   we're letting the component know to use the default show quality
+                                                    ##   when changing the preset to "Custom"
+                                                    qc_overall_quality = 'undefined'
                                                 else:
-                                                    initial_quality = int(app.QUALITY_DEFAULT)
-                                                allowed_qualities, preferred_qualities = Quality.split_quality(initial_quality)
-                                                overall_quality = Quality.combine_qualities(allowed_qualities, preferred_qualities)
+                                                    qc_keep = 'show'
+                                                    qc_overall_quality = int(quality_value)
                                             %>
-                                            <quality-chooser keep="${('show', 'keep')[quality_value is None]}"
-                                                             :overall-quality.number="${overall_quality}"></quality-chooser>
+                                            <quality-chooser
+                                                v-if="config.showDefaults.quality !== null"
+                                                keep="${qc_keep}"
+                                                :overall-quality="${qc_overall_quality}"
+                                            ></quality-chooser>
                                         </span>
                                     </label>
                                 </div>

@@ -19,7 +19,7 @@ class SeriesAssetHandler(BaseRequestHandler):
     #: allowed HTTP methods
     allowed_methods = ('GET', )
 
-    def http_get(self, series_slug, identifier, *args, **kwargs):
+    def get(self, series_slug, identifier, *args, **kwargs):
         """Get an asset."""
         series_identifier = SeriesIdentifier.from_slug(series_slug)
         if not series_identifier:
@@ -37,5 +37,7 @@ class SeriesAssetHandler(BaseRequestHandler):
         media = asset.media
         if not media:
             return self._not_found('{kind} not found'.format(kind=asset_type.capitalize()))
+
+        self.set_header('Cache-Control', 'max-age=86400')
 
         return self._ok(stream=media, content_type=asset.media_type)

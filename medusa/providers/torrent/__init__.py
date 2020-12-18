@@ -3,72 +3,27 @@
 """Initialize all torrent providers."""
 from __future__ import unicode_literals
 
-from medusa.providers.torrent.html import (
-    abnormal,
-    alpharatio,
-    anidex,
-    animetorrents,
-    archetorrent,
-    avistaz,
-    bithdtv,
-    bjshare,
-    cinemaz,
-    elitetracker,
-    hdspace,
-    hdtorrents,
-    hebits,
-    horriblesubs,
-    iptorrents,
-    limetorrents,
-    morethantv,
-    nebulance,
-    newpct,
-    pretome,
-    privatehd,
-    scenetime,
-    sdbits,
-    shanaproject,
-    speedcd,
-    thepiratebay,
-    tntvillage,
-    tokyotoshokan,
-    torrent9,
-    torrentbytes,
-    torrenting,
-    tvchaosuk,
-    yggtorrent,
-    zooqle,
-)
-from medusa.providers.torrent.json import (
-    animebytes,
-    bitcannon,
-    btn,
-    danishbits,
-    hdbits,
-    norbits,
-    rarbg,
-    torrentday,
-    torrentleech,
-    xthor,
-)
-from medusa.providers.torrent.rss import (
-    nyaa,
-    rsstorrent,
-    shazbat,
-)
-from medusa.providers.torrent.torznab import (
-    torznab,
-)
-from medusa.providers.torrent.xml import (
-    torrentz2,
-)
+import importlib
+import pkgutil
+import sys
 
-__all__ = [
-    'abnormal', 'alpharatio', 'animebytes', 'archetorrent', 'bithdtv', 'torrent9', 'danishbits',
-    'hdspace', 'hdtorrents', 'iptorrents', 'limetorrents', 'morethantv', 'torznab',
-    'newpct', 'pretome', 'sdbits', 'scenetime', 'speedcd', 'thepiratebay', 'tntvillage', 'tokyotoshokan',
-    'torrentbytes', 'torrentleech', 'nebulance', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon', 'btn',
-    'hdbits', 'norbits', 'rarbg', 'torrentday', 'nyaa', 'rsstorrent', 'shazbat', 'hebits',
-    'torrentz2', 'animetorrents', 'horriblesubs', 'anidex', 'shanaproject', 'torrenting', 'yggtorrent',
-    'elitetracker', 'privatehd', 'cinemaz', 'avistaz', 'bjshare'
-]
+
+def import_submodules(package_name):
+    package = sys.modules[package_name]
+
+    results = {}
+    for loader, name, is_pkg in pkgutil.iter_modules(package.__path__):
+        full_name = package_name + '.' + name
+        module = importlib.import_module(full_name)
+        setattr(sys.modules[__name__], name, module)
+
+        results[full_name] = module
+        if is_pkg:
+            valid_pkg = import_submodules(full_name)
+            if valid_pkg:
+                results.update(valid_pkg)
+
+    return results
+
+
+import_submodules(__name__)

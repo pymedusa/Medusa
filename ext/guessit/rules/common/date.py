@@ -57,13 +57,13 @@ def _guess_day_first_parameter(groups):  # pylint:disable=inconsistent-return-st
     if _is_int(groups[0]) and valid_year(int(groups[0][:4])):
         return False
     # If match ends with a long year, the day_first is forced to true.
-    elif _is_int(groups[-1]) and valid_year(int(groups[-1][-4:])):
+    if _is_int(groups[-1]) and valid_year(int(groups[-1][-4:])):
         return True
     # If match starts with a short year, then day_first is force to false.
-    elif _is_int(groups[0]) and int(groups[0][:2]) > 31:
+    if _is_int(groups[0]) and int(groups[0][:2]) > 31:
         return False
     # If match ends with a short year, then day_first is force to true.
-    elif _is_int(groups[-1]) and int(groups[-1][-2:]) > 31:
+    if _is_int(groups[-1]) and int(groups[-1][-2:]) > 31:
         return True
 
 

@@ -1,101 +1,193 @@
-import test from 'ava';
-import Vuex from 'vuex';
+import Vuex, { Store } from 'vuex';
 import VueRouter from 'vue-router';
-import { createLocalVue, mount } from '@vue/test-utils';
+import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { ShowSelector } from '../../src/components';
-import { state } from '../__fixtures__/common';
+import fixtures from '../__fixtures__/common';
 import { shows } from '../__fixtures__/shows';
+import showLists from '../__fixtures__/show-lists';
 
-test.beforeEach(t => {
-    t.context.localVue = createLocalVue();
-    t.context.localVue.use(Vuex);
-    t.context.localVue.use(VueRouter);
+describe('ShowSelector.test.js', () => {
+    let localVue;
+    let store;
+    let router;
 
-    const { Store } = Vuex;
-    t.context.state = state;
-    t.context.store = new Store({ state });
-});
+    beforeEach(() => {
+        localVue = createLocalVue();
+        localVue.use(Vuex);
+        localVue.use(VueRouter);
 
-test('renders "loading..." with empty show array', t => {
-    const { localVue, store } = t.context;
-    const wrapper = mount(ShowSelector, {
-        localVue,
-        computed: {
-            shows() {
-                return [];
+        const { state } = fixtures;
+        store = new Store({ state });
+        const routes = [
+            {
+                path: '/home/displayShow',
+                name: 'show',
+                component: () => import('../../src/components/display-show.vue')
             },
-            config() {
-                return {
-                    animeSplitHome: false,
-                    sortArticle: 'asc'
-                };
+            {
+                path: '/home/editShow',
+                name: 'editShow',
+                component: () => import('../../src/components/edit-show.vue')
             }
-        },
-        store
+        ];
+
+        router = new VueRouter({
+            routes
+        });
+
+        // Let's start navigating to displayShow, which should also display the show-selector.
+        router.push({ name: 'show', query: { indexername: 'tvdb', seriesid: String(12345) } });
     });
 
-    t.snapshot(wrapper.html());
-});
-
-test('renders with shows', t => {
-    const { localVue, store } = t.context;
-    const wrapper = mount(ShowSelector, {
-        localVue,
-        computed: {
-            shows() {
-                return shows;
+    it('renders "loading..." with empty show array in /home/displayShow', () => {
+        const wrapper = shallowMount(ShowSelector, {
+            localVue,
+            computed: {
+                showsInLists() {
+                    return [];
+                },
+                shows() {
+                    return [];
+                },
+                layout() {
+                    return {
+                        sortArticle: true
+                    };
+                }
             },
-            config() {
-                return {
-                    animeSplitHome: false,
-                    sortArticle: true
-                };
-            }
-        },
-        store
+            store,
+            router
+        });
+
+        expect(wrapper.element).toMatchSnapshot();
     });
 
-    t.snapshot(wrapper.html());
-});
-
-test('renders with articles(The|A|An) ignored', t => {
-    const { localVue, store } = t.context;
-    const wrapper = mount(ShowSelector, {
-        localVue,
-        computed: {
-            shows() {
-                return shows;
+    it('renders with shows in /home/displayShow', () => {
+        const wrapper = shallowMount(ShowSelector, {
+            localVue,
+            computed: {
+                showsInLists() {
+                    return showLists;
+                },
+                shows() {
+                    return shows;
+                },
+                layout() {
+                    return {
+                        sortArticle: true
+                    };
+                }
             },
-            config() {
-                return {
-                    animeSplitHome: false,
-                    sortArticle: false
-                };
-            }
-        },
-        store
+            propsData: {
+                placeholder: '-- Select a Show --'
+            },
+            store,
+            router
+        });
+
+        expect(wrapper.element).toMatchSnapshot();
     });
 
-    t.snapshot(wrapper.html());
-});
-
-test('renders with split sections', t => {
-    const { localVue, store } = t.context;
-    const wrapper = mount(ShowSelector, {
-        localVue,
-        computed: {
-            shows() {
-                return shows;
+    it('renders with articles(The|A|An) ignored in /home/displayShow', () => {
+        const wrapper = shallowMount(ShowSelector, {
+            localVue,
+            computed: {
+                showsInLists() {
+                    return showLists;
+                },
+                shows() {
+                    return shows;
+                },
+                layout() {
+                    return {
+                        sortArticle: false
+                    };
+                }
             },
-            config() {
-                return {
-                    animeSplitHome: false,
-                    sortArticle: 'asc'
-                };
-            }
-        },
-        store
+            propsData: {
+                placeholder: '-- Select a Show --'
+            },
+            store,
+            router
+        });
+
+        expect(wrapper.element).toMatchSnapshot();
     });
 
-    t.snapshot(wrapper.html());
+    it('renders with split sections in /home/displayShow', () => {
+        const wrapper = shallowMount(ShowSelector, {
+            localVue,
+            computed: {
+                showsInLists() {
+                    return showLists;
+                },
+                shows() {
+                    return shows;
+                },
+                layout() {
+                    return {
+                        sortArticle: true
+                    };
+                }
+            },
+            propsData: {
+                placeholder: '-- Select a Show --'
+            },
+            store,
+            router
+        });
+
+        expect(wrapper.element).toMatchSnapshot();
+    });
+
+    it('renders without placeholder in /home/displayShow', () => {
+        const wrapper = shallowMount(ShowSelector, {
+            localVue,
+            computed: {
+                showsInLists() {
+                    return showLists;
+                },
+                shows() {
+                    return shows;
+                },
+                layout() {
+                    return {
+                        sortArticle: true
+                    };
+                }
+            },
+            store,
+            router
+        });
+
+        expect(wrapper.element).toMatchSnapshot();
+    });
+
+    it('renders with shows in /home/editShow', () => {
+        // Navigate to editShow, which should also display the show-selector.
+        router.push({ name: 'editShow', query: { indexername: 'tvdb', seriesid: String(12345) } });
+        const wrapper = shallowMount(ShowSelector, {
+            localVue,
+            computed: {
+                showsInLists() {
+                    return showLists;
+                },
+                shows() {
+                    return shows;
+                },
+                layout() {
+                    return {
+                        sortArticle: true
+                    };
+                }
+            },
+            propsData: {
+                placeholder: '-- Select a Show --'
+            },
+            store,
+            router
+        });
+
+        expect(wrapper.element).toMatchSnapshot();
+    });
 });

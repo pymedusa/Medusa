@@ -7,7 +7,7 @@ coverage reports.  There's a third convenient decorator (`timecall`) that
 measures the duration of function execution without the extra profiling
 overhead.
 
-Usage example (Python 2.4 or newer)::
+Usage example::
 
     from profilehooks import profile, coverage
 
@@ -28,20 +28,6 @@ Or without imports, with some hack
         else: return n * fn(n-1)
 
     print(fn(42))
-
-
-Usage example (Python 2.3 or older)::
-
-    from profilehooks import profile, coverage
-
-    def fn(n):
-        if n < 2: return 1
-        else: return n * fn(n-1)
-
-    # Now wrap that function in a decorator
-    fn = profile(fn) # or coverage(fn)
-
-    print fn(42)
 
 Reports for all thusly decorated functions will be printed to sys.stdout
 on program termination.  You can alternatively request for immediate
@@ -74,7 +60,7 @@ Caveats
   executed.  For this reason coverage analysis now uses trace.py which is
   slower, but more accurate.
 
-Copyright (c) 2004--2017 Marius Gedminas <marius@gedmin.as>
+Copyright (c) 2004--2020 Marius Gedminas <marius@gedmin.as>
 Copyright (c) 2007 Hanno Schlichting
 Copyright (c) 2008 Florian Schulze
 
@@ -100,16 +86,19 @@ Released under the MIT licence since December 2006:
 
 (Previously it was distributed under the GNU General Public Licence.)
 """
+from __future__ import print_function
 
 __author__ = "Marius Gedminas <marius@gedmin.as>"
-__copyright__ = "Copyright 2004-2017 Marius Gedminas and contributors"
+__copyright__ = "Copyright 2004-2020 Marius Gedminas and contributors"
 __license__ = "MIT"
-__version__ = '1.10.0'
-__date__ = "2017-12-09"
-
+__version__ = '1.12.0'
+__date__ = "2020-08-20"
 
 import atexit
+
+import functools
 import inspect
+import logging
 import os
 import re
 import sys
@@ -145,11 +134,36 @@ try:
 except ImportError:
     cProfile = None
 
-
 # registry of available profilers
 AVAILABLE_PROFILERS = {}
 
 __all__ = ['coverage', 'coverage_with_hotshot', 'profile', 'timecall']
+
+
+# Use tokenize.open() on Python >= 3.2, fall back to open() on Python 2
+tokenize_open = getattr(tokenize, 'open', open)
+
+
+def _unwrap(fn):
+    # inspect.unwrap() doesn't exist on Python 2
+    if not hasattr(fn, '__wrapped__'):
+        return fn
+    else:
+        # intentionally using recursion here instead of a while loop to
+        # make cycles fail with a recursion error instead of looping forever.
+        return _unwrap(fn.__wrapped__)
+
+
+def _identify(fn):
+    fn = _unwrap(fn)
+    funcname = fn.__name__
+    filename = fn.__code__.co_filename
+    lineno = fn.__code__.co_firstlineno
+    return (funcname, filename, lineno)
+
+
+def _is_file_like(o):
+    return hasattr(o, 'write')
 
 
 def profile(fn=None, skip=0, filename=None, immediate=False, dirs=False,
@@ -160,8 +174,13 @@ def profile(fn=None, skip=0, filename=None, immediate=False, dirs=False,
 
     If `skip` is > 0, first `skip` calls to `fn` will not be profiled.
 
+    If `stdout` is not file-like and truthy, output will be printed to
+    sys.stdout. If it is a file-like object, output will be printed to it
+    instead. `stdout` must be writable in text mode (as opposed to binary)
+    if it is file-like.
+
     If `immediate` is False, profiling results will be printed to
-    sys.stdout on program termination.  Otherwise results will be printed
+    self.stdout on program termination.  Otherwise results will be printed
     after each call.  (If you don't want this, set stdout=False and specify a
     `filename` to store profile data.)
 
@@ -235,12 +254,9 @@ def profile(fn=None, skip=0, filename=None, immediate=False, dirs=False,
     # We cannot return fp or fp.__call__ directly as that would break method
     # definitions, instead we need to return a plain function.
 
+    @functools.wraps(fn)
     def new_fn(*args, **kw):
         return fp(*args, **kw)
-    new_fn.__doc__ = fn.__doc__
-    new_fn.__name__ = fn.__name__
-    new_fn.__dict__ = fn.__dict__
-    new_fn.__module__ = fn.__module__
     return new_fn
 
 
@@ -267,12 +283,9 @@ def coverage(fn):
     # We cannot return fp or fp.__call__ directly as that would break method
     # definitions, instead we need to return a plain function.
 
+    @functools.wraps(fn)
     def new_fn(*args, **kw):
         return fp(*args, **kw)
-    new_fn.__doc__ = fn.__doc__
-    new_fn.__name__ = fn.__name__
-    new_fn.__dict__ = fn.__dict__
-    new_fn.__module__ = fn.__module__
     return new_fn
 
 
@@ -289,12 +302,9 @@ def coverage_with_hotshot(fn):
     # We cannot return fp or fp.__call__ directly as that would break method
     # definitions, instead we need to return a plain function.
 
+    @functools.wraps(fn)
     def new_fn(*args, **kw):
         return fp(*args, **kw)
-    new_fn.__doc__ = fn.__doc__
-    new_fn.__name__ = fn.__name__
-    new_fn.__dict__ = fn.__dict__
-    new_fn.__module__ = fn.__module__
     return new_fn
 
 
@@ -319,15 +329,21 @@ class FuncProfile(object):
         self.fn = fn
         self.skip = skip
         self.filename = filename
-        self.immediate = immediate
+        self._immediate = immediate
         self.stdout = stdout
+        self._stdout_is_fp = self.stdout and _is_file_like(self.stdout)
         self.dirs = dirs
         self.sort = sort or ('cumulative', 'time', 'calls')
         if isinstance(self.sort, str):
             self.sort = (self.sort, )
         self.entries = entries
         self.reset_stats()
-        atexit.register(self.atexit)
+        if not self.immediate:
+            atexit.register(self.atexit)
+
+    @property
+    def immediate(self):
+        return self._immediate
 
     def __call__(self, *args, **kw):
         """Profile a singe call to the function."""
@@ -358,18 +374,20 @@ class FuncProfile(object):
         if self.filename:
             stats.dump_stats(self.filename)
         if self.stdout:
-            funcname = self.fn.__name__
-            filename = self.fn.__code__.co_filename
-            lineno = self.fn.__code__.co_firstlineno
-            print("")
-            print("*** PROFILER RESULTS ***")
-            print("%s (%s:%s)" % (funcname, filename, lineno))
+            funcname, filename, lineno = _identify(self.fn)
+            print_f = print
+            if self._stdout_is_fp:
+                print_f = functools.partial(print, file=self.stdout)
+
+            print_f("")
+            print_f("*** PROFILER RESULTS ***")
+            print_f("%s (%s:%s)" % (funcname, filename, lineno))
             if self.skipped:
                 skipped = " (%d calls not profiled)" % self.skipped
             else:
                 skipped = ""
-            print("function called %d times%s" % (self.ncalls, skipped))
-            print("")
+            print_f("function called %d times%s" % (self.ncalls, skipped))
+            print_f("")
             if not self.dirs:
                 stats.strip_dirs()
             stats.sort_stats(*self.sort)
@@ -377,19 +395,20 @@ class FuncProfile(object):
 
     def reset_stats(self):
         """Reset accumulated profiler statistics."""
+        # send stats printing to specified stdout if it's file-like
+        stream = self.stdout if self._stdout_is_fp else sys.stdout
+
         # Note: not using self.Profile, since pstats.Stats() fails then
-        self.stats = pstats.Stats(Profile())
+        self.stats = pstats.Stats(Profile(), stream=stream)
         self.ncalls = 0
         self.skipped = 0
 
     def atexit(self):
-        """Stop profiling and print profile information to sys.stdout.
+        """Stop profiling and print profile information to sys.stdout or self.stdout.
 
         This function is registered as an atexit hook.
         """
-        # XXX: uh, why even register this as an atexit hook if immediate is True?
-        if not self.immediate:
-            self.print_stats()
+        self.print_stats()
 
 
 AVAILABLE_PROFILERS['profile'] = FuncProfile
@@ -512,9 +531,7 @@ if hotshot is not None:
             This function is registered as an atexit hook.
             """
             self.profiler.close()
-            funcname = self.fn.__name__
-            filename = self.fn.__code__.co_filename
-            lineno = self.fn.__code__.co_firstlineno
+            funcname, filename, lineno = _identify(self.fn)
             print("")
             print("*** COVERAGE RESULTS ***")
             print("%s (%s:%s)" % (funcname, filename, lineno))
@@ -592,9 +609,7 @@ class TraceFuncCoverage:
 
         This function is registered as an atexit hook.
         """
-        funcname = self.fn.__name__
-        filename = self.fn.__code__.co_filename
-        lineno = self.fn.__code__.co_firstlineno
+        funcname, filename, lineno = _identify(self.fn)
         print("")
         print("*** COVERAGE RESULTS ***")
         print("%s (%s:%s)" % (funcname, filename, lineno))
@@ -634,8 +649,11 @@ class FuncSource:
         if self.filename is None:
             return
         strs = self._find_docstrings(self.filename)
-        lines = {ln for off, ln in dis.findlinestarts(self.fn.__code__)
-                 if ln not in strs}
+        lines = {
+            ln
+            for off, ln in dis.findlinestarts(_unwrap(self.fn).__code__)
+            if ln not in strs
+        }
         for lineno in lines:
             self.sourcelines.setdefault(lineno, 0)
         if lines:
@@ -649,8 +667,9 @@ class FuncSource:
         # Python 3.2 and removed in 3.6.
         strs = set()
         prev = token.INDENT  # so module docstring is detected as docstring
-        with open(filename) as f:
-            for ttype, tstr, start, end, line in tokenize.generate_tokens(f.readline):
+        with tokenize_open(filename) as f:
+            tokens = tokenize.generate_tokens(f.readline)
+            for ttype, tstr, start, end, line in tokens:
                 if ttype == token.STRING and prev == token.INDENT:
                     strs.update(range(start[0], end[0] + 1))
                 prev = ttype
@@ -699,7 +718,10 @@ class FuncSource:
         return ''.join(lines)
 
 
-def timecall(fn=None, immediate=True, timer=None):
+def timecall(
+        fn=None, immediate=True, timer=None,
+        log_name=None, log_level=logging.DEBUG,
+):
     """Wrap `fn` and print its execution time.
 
     Example::
@@ -720,30 +742,47 @@ def timecall(fn=None, immediate=True, timer=None):
 
         @timecall(timer=time.clock)
 
+    You can also log the output to a logger by specifying the name and level
+    of the logger to use, eg:
+
+        @timecall(immediate=True,
+                  log_name='profile_log',
+                  log_level=logging.DEBUG)
+
     """
     if fn is None:  # @timecall() syntax -- we are a decorator maker
         def decorator(fn):
-            return timecall(fn, immediate=immediate, timer=timer)
+            return timecall(
+                fn, immediate=immediate, timer=timer,
+                log_name=log_name, log_level=log_level,
+            )
         return decorator
     # @timecall syntax -- we are a decorator.
     if timer is None:
         timer = timeit.default_timer
-    fp = FuncTimer(fn, immediate=immediate, timer=timer)
+    fp = FuncTimer(
+        fn, immediate=immediate, timer=timer,
+        log_name=log_name, log_level=log_level,
+    )
     # We cannot return fp or fp.__call__ directly as that would break method
     # definitions, instead we need to return a plain function.
 
+    @functools.wraps(fn)
     def new_fn(*args, **kw):
         return fp(*args, **kw)
-    new_fn.__doc__ = fn.__doc__
-    new_fn.__name__ = fn.__name__
-    new_fn.__dict__ = fn.__dict__
-    new_fn.__module__ = fn.__module__
     return new_fn
 
 
 class FuncTimer(object):
 
-    def __init__(self, fn, immediate, timer):
+    def __init__(
+            self, fn, immediate, timer,
+            log_name=None, log_level=logging.DEBUG,
+    ):
+        self.logger = None
+        if log_name:
+            self.logger = logging.getLogger(log_name)
+        self.log_level = log_level
         self.fn = fn
         self.ncalls = 0
         self.totaltime = 0
@@ -757,32 +796,35 @@ class FuncTimer(object):
         fn = self.fn
         timer = self.timer
         self.ncalls += 1
+        start = timer()
         try:
-            start = timer()
             return fn(*args, **kw)
         finally:
             duration = timer() - start
             self.totaltime += duration
             if self.immediate:
-                funcname = fn.__name__
-                filename = fn.__code__.co_filename
-                lineno = fn.__code__.co_firstlineno
-                sys.stderr.write("\n  %s (%s:%s):\n    %.3f seconds\n\n" % (
-                    funcname, filename, lineno, duration
-                ))
-                sys.stderr.flush()
+                funcname, filename, lineno = _identify(fn)
+                message = "%s (%s:%s):\n    %.3f seconds\n\n" % (
+                    funcname, filename, lineno, duration,
+                )
+                if self.logger:
+                    self.logger.log(self.log_level, message)
+                else:
+                    sys.stderr.write("\n  " + message)
+                    sys.stderr.flush()
 
     def atexit(self):
         if not self.ncalls:
             return
-        funcname = self.fn.__name__
-        filename = self.fn.__code__.co_filename
-        lineno = self.fn.__code__.co_firstlineno
-        print("\n  %s (%s:%s):\n"
-              "    %d calls, %.3f seconds (%.3f seconds per call)\n" % (
-                  funcname, filename, lineno, self.ncalls,
-                  self.totaltime, self.totaltime / self.ncalls)
-              )
+        funcname, filename, lineno = _identify(self.fn)
+        message = "\n  %s (%s:%s):\n"\
+            "    %d calls, %.3f seconds (%.3f seconds per call)\n" % (
+                funcname, filename, lineno, self.ncalls,
+                self.totaltime, self.totaltime / self.ncalls)
+        if self.logger:
+            self.logger.log(self.log_level, message)
+        else:
+            print(message)
 
 
 if __name__ == '__main__':

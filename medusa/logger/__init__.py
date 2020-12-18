@@ -19,7 +19,6 @@
 
 from __future__ import unicode_literals
 
-import collections
 import datetime
 import io
 import logging
@@ -40,12 +39,15 @@ from logging import (
 )
 from logging.handlers import RotatingFileHandler
 
+import adba
+
 import knowit
 
 from medusa import app
 from medusa.init.logconfig import standard_logger
 
 from six import itervalues, string_types, text_type, viewitems
+from six.moves import collections_abc
 from six.moves.urllib.parse import quote
 
 import subliminal
@@ -66,7 +68,6 @@ LOGGING_LEVELS = {
 }
 
 FORMATTER_PATTERN = '%(asctime)s %(levelname)-8s %(threadName)s :: [%(curhash)s] %(message)s'
-default_encoding = 'utf-8'
 censored_items = {}
 censored = []
 
@@ -78,7 +79,9 @@ def rebuild_censored_list():
     for value in itervalues(censored_items):
         if not value:
             continue
-        if isinstance(value, collections.Iterable) and not isinstance(value, string_types):
+
+        if isinstance(value, collections_abc.Iterable) and not isinstance(
+                value, (string_types, bytes, bytearray)):
             for item in value:
                 if item and item != '0':
                     results.add(item)
@@ -88,13 +91,13 @@ def rebuild_censored_list():
     def quote_unicode(value):
         """Quote a unicode value by encoding it to bytes first."""
         if isinstance(value, text_type):
-            return quote(value.encode(default_encoding, 'replace'))
+            return quote(value.encode('utf-8', 'replace'))
         return quote(value)
 
     # set of censored items and urlencoded counterparts
     results |= {quote_unicode(item) for item in results}
     # convert set items to unicode and typecast to list
-    results = list({item.decode(default_encoding, 'replace')
+    results = list({item.decode('utf-8', 'replace')
                     if not isinstance(item, text_type) else item for item in results})
     # sort the list in order of descending length so that entire item is censored
     # e.g. password and password_1 both get censored instead of getting ********_1
@@ -145,7 +148,7 @@ def read_loglines(log_file=None, modification_time=None, start_index=0, max_line
     :param formatter: function to format the logline
     :type formatter: function
     :return:
-    :rtype: collections.Iterable of LogLine
+    :rtype: collections_abc.Iterable of LogLine
     """
     log_file = log_file or instance.log_file
     log_files = [log_file] + ['{file}.{index}'.format(file=log_file, index=i) for i in range(1, int(app.LOG_NR))]
@@ -200,53 +203,70 @@ def read_loglines(log_file=None, modification_time=None, start_index=0, max_line
                 yield formatter(logline)
 
 
-def reverse_readlines(filename, buf_size=2097152, encoding=default_encoding):
-    """A generator that returns the lines of a file in reverse order.
-
-    Thanks to Andomar: http://stackoverflow.com/a/23646049
-
-    :param filename:
-    :type filename: str
-    :param encoding:
-    :type encoding: str
-    :param buf_size:
-    :return:
-    :rtype: collections.Iterable of str
+def blocks_r(file_path, size=64 * 1024):
     """
-    new_line = '\n'
-    with io.open(filename, 'rb') as fh:
-        segment = None
-        offset = 0
-        fh.seek(0, os.SEEK_END)
-        file_size = remaining_size = fh.tell()
+    Yields the data within a file in reverse-ordered blocks of given size.
+
+    This code is part of the flyingcircus package: https://pypi.org/project/flyingcircus/
+    The code was adapted for our use case.
+    All credits go to the original author.
+
+    Note that:
+     - the content of the block is NOT reversed.
+
+    Args:
+        file_path (str): The input file path.
+        size (int): The block size.
+
+    Yields:
+        block (bytes): The data within the blocks.
+
+    """
+    with io.open(file_path, 'rb') as file_obj:
+        remaining_size = file_obj.seek(0, os.SEEK_END)
         while remaining_size > 0:
-            offset = min(file_size, offset + buf_size)
-            fh.seek(file_size - offset)
-            buf = fh.read(min(remaining_size, buf_size))
-            if os.name == 'nt':
-                buf = buf.decode(encoding, errors='replace')
-            if not isinstance(buf, text_type):
-                buf = text_type(buf, errors='replace')
-            remaining_size -= buf_size
-            lines = buf.split(new_line)
-            # the first line of the buffer is probably not a complete line so
-            # we'll save it and append it to the last line of the next buffer
-            # we read
-            if segment is not None:
-                # if the previous chunk starts right from the beginning of line
-                # do not concact the segment to the last line of new chunk
-                # instead, yield the segment first
-                if buf[-1] is not new_line:
-                    lines[-1] += segment
-                else:
-                    yield segment
-            segment = lines[0]
-            for index in range(len(lines) - 1, 0, -1):
-                if len(lines[index]):
-                    yield lines[index]
-        # Don't yield None if the file was empty
-        if segment is not None:
-            yield segment
+            block_size = min(remaining_size, size)
+            file_obj.seek(remaining_size - block_size)
+            block = file_obj.read(block_size)
+            remaining_size -= block_size
+            yield block
+
+
+def reverse_readlines(file_path, skip_empty=True, append_newline=False,
+                      block_size=128 * 1024, encoding='utf-8'):
+    """
+    Flexible function for reversing read lines incrementally.
+
+    This code is part of the flyingcircus package: https://pypi.org/project/flyingcircus/
+    The code was adapted for our use case.
+    All credits go to the original author.
+
+    Args:
+        file_path (str): The input file path.
+        skip_empty (bool): Skip empty lines.
+        append_newline (bool): Append a new line character at the end of each yielded line.
+        block_size (int): The block size.
+        encoding (str): The encoding for correct block size computation.
+
+    Yields:
+        line (str): The next line.
+
+    """
+    newline = '\n'
+    empty = ''
+    remainder = empty
+    block_generator = blocks_r
+    for block in block_generator(file_path, size=block_size):
+        lines = block.split(b'\n')
+        if remainder:
+            lines[-1] = lines[-1] + remainder
+        remainder = lines[0]
+        mask = slice(-1, 0, -1)
+        for line in lines[mask]:
+            if line or not skip_empty:
+                yield line.decode(encoding) + (newline if append_newline else empty)
+    if remainder or not skip_empty:
+        yield remainder.decode(encoding) + (newline if append_newline else empty)
 
 
 def filter_logline(logline, min_level=None, thread_name=None, search_query=None):
@@ -351,10 +371,35 @@ class LogLine(object):
     @property
     def issue_title(self):
         """Return the expected issue title for this logline."""
+        result = None
+
         if self.traceback_lines:
-            result = next((line for line in reversed(self.traceback_lines) if line.strip()), self.message)
-        else:
+            # Grab the first viable line from the end of the traceback lines
+            offset = 1
+            size = len(self.traceback_lines)
+            while offset < size:
+                # Grab the <-Nth> item from the list (-1, -2, ..., -N)
+                line = self.traceback_lines[-offset]
+
+                # Guessit errors have a template and tend to end in three lines that we don't want.
+                # The original exception is one line before these lines.
+                # --------------------------------------------------------------------
+                # Please report at https://github.com/guessit-io/guessit/issues.
+                # ====================================================================
+                if line.startswith('=' * 20):
+                    offset += 3
+                    continue
+
+                if line.strip():
+                    result = line
+                    break
+
+                offset += 1
+
+        # Not found a single viable traceback line, fall back to the log message.
+        if not result:
             result = self.message
+
         return result[:1000]
 
     def to_json(self):
@@ -534,10 +579,7 @@ class CensoredFormatter(logging.Formatter, object):
 
     absurd_re = re.compile(r'[\d\w]')
 
-    # Needed because Newznab apikey isn't stored as key=value in a section.
-    apikey_re = re.compile(r'(?P<before>[&?]r|[&?]apikey|[&?]api_key)(?:=|%3D)([^&]*)(?P<after>[&\w]?)', re.IGNORECASE)
-
-    def __init__(self, fmt=None, datefmt=None, encoding=default_encoding):
+    def __init__(self, fmt=None, datefmt=None, encoding='utf-8'):
         """Constructor."""
         super(CensoredFormatter, self).__init__(fmt, datefmt)
         self.encoding = encoding
@@ -572,8 +614,6 @@ class CensoredFormatter(logging.Formatter, object):
 
             for item in censored:
                 msg = msg.replace(item, '**********')  # must not give any hint about the length
-
-            msg = self.apikey_re.sub(r'\g<before>=**********\g<after>', msg)
 
         level = record.levelno
         if level in (WARNING, ERROR):
@@ -611,6 +651,7 @@ class Logger(object):
         self.loggers.extend([access_log, app_log, gen_log])
         self.loggers.extend(get_loggers(traktor))
         self.loggers.extend(get_loggers(knowit))
+        self.loggers.extend(get_loggers(adba))
 
         logging.addLevelName(DB, 'DB')  # add a new logging level DB
         logging.getLogger().addHandler(NullHandler())  # nullify root logger
@@ -644,7 +685,7 @@ class Logger(object):
         target_size = int(app.LOG_SIZE * 1024 * 1024)
         target_number = int(app.LOG_NR)
         if not self.file_handler or self.log_file != target_file or self.file_handler.backupCount != target_number or self.file_handler.maxBytes != target_size:
-            file_handler = RotatingFileHandler(target_file, maxBytes=target_size, backupCount=target_number, encoding=default_encoding)
+            file_handler = RotatingFileHandler(target_file, maxBytes=target_size, backupCount=target_number, encoding='utf-8')
             file_handler.setFormatter(CensoredFormatter(FORMATTER_PATTERN, dateTimeFormat))
             file_handler.setLevel(self.log_level)
 

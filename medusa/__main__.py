@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 # -*- coding: utf-8 -*
 # Author: Nic Wolfe <nic@wolfeden.ca>
 #
@@ -65,22 +65,31 @@ from builtins import str
 from configobj import ConfigObj
 
 from medusa import (
-    app, auto_post_processor, cache, db, event_queue, exception_handler,
-    helpers, logger as app_logger, metadata, name_cache, naming, network_timezones, providers,
-    scheduler, show_queue, show_updater, subtitles, torrent_checker, trakt_checker, version_checker
+    cache, db, exception_handler, helpers,
+    logger as app_logger, metadata, name_cache, naming,
+    network_timezones, process_tv, providers, subtitles
 )
+from medusa.app import app
+from medusa.clients.torrent import torrent_checker
 from medusa.common import SD, SKIPPED, WANTED
 from medusa.config import (
-    CheckSection, ConfigMigrator, check_setting_bool, check_setting_float, check_setting_int, check_setting_list,
-    check_setting_str, load_provider_setting, save_provider_setting
+    CheckSection, ConfigMigrator, check_setting_bool,
+    check_setting_float, check_setting_int,
+    check_setting_list, check_setting_str,
+    load_provider_setting, save_provider_setting
 )
 from medusa.databases import cache_db, failed_db, main_db
-from medusa.event_queue import Events
-from medusa.indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVMAZE
+from medusa.indexers.config import INDEXER_TVDBV2, INDEXER_TVMAZE
+from medusa.init.filesystem import is_valid_encoding
 from medusa.providers.generic_provider import GenericProvider
 from medusa.providers.nzb.newznab import NewznabProvider
 from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
 from medusa.providers.torrent.torznab.torznab import TorznabProvider
+from medusa.queues import show_queue
+from medusa.queues.event_queue import Events
+from medusa.schedulers import (
+    episode_updater, scheduler, show_updater, trakt_checker
+)
 from medusa.search.backlog import BacklogSearchScheduler, BacklogSearcher
 from medusa.search.daily import DailySearcher
 from medusa.search.proper import ProperFinder
@@ -89,38 +98,10 @@ from medusa.server.core import AppWebServer
 from medusa.system.shutdown import Shutdown
 from medusa.themes import read_themes
 from medusa.tv import Series
+from medusa.updater.version_checker import CheckVersion
 
-from six import text_type
 
 logger = logging.getLogger(__name__)
-
-
-def fix_incorrect_list_values(data):
-    """
-    @TODO: Remove this in a future version.
-
-    Due to a bug introduced in v0.2.9, the value might be a string representing a Python dict.
-    See: https://github.com/pymedusa/Medusa/issues/5155
-
-    Example: `"{u'id': 0, u'value': u'!sync'}"` to `"!sync"`
-    """
-    import ast
-
-    result = []
-    for item in data:
-        if not item:
-            continue
-        if not (item.startswith('{') and item.endswith('}')):
-            # Simple value, don't do anything to it
-            result.append(item)
-            continue
-        try:
-            # Get the value: `{u'id': 0, u'value': u'!sync'}` => `!sync`
-            result.append(ast.literal_eval(item)['value'])
-        except (SyntaxError, KeyError):
-            pass
-
-    return result
 
 
 class Application(object):
@@ -184,7 +165,8 @@ class Application(object):
 
                     # Check for the different possible images and move them.
                     for image_type in ('poster', 'fanart', 'banner'):
-                        image_name = '{series_id}.{image_type}.jpg'.format(series_id=series_obj.series_id, image_type=image_type)
+                        image_name = '{series_id}.{image_type}.jpg'.format(series_id=series_obj.series_id,
+                                                                           image_type=image_type)
                         src = os.path.join(app.CACHE_DIR, 'images', image_name)
                         dst = os.path.join(images_root_indexer, image_name)
                         if os.path.isfile(src) and not os.path.isfile(dst):
@@ -201,6 +183,21 @@ class Application(object):
                                    'Try to refresh the show, or move the images manually if you know '
                                    'what you are doing. Error: {error}', series=series_obj.name, error=error)
 
+    @staticmethod
+    def initialize_custom_logging():
+        """Load custom logging and insert into table if needed."""
+        from medusa.app import CUSTOMIZABLE_LOGS
+        main_db_con = db.DBConnection()
+        for identifier in CUSTOMIZABLE_LOGS:
+            sql_result = main_db_con.select('SELECT * FROM custom_logs WHERE identifier = ?', [identifier])
+
+            if not len(sql_result):
+                main_db_con.action('INSERT INTO custom_logs (identifier) VALUES (?)', [identifier])
+
+        # Get custom_logs from db.
+        for log in main_db_con.select('SELECT * FROM custom_logs'):
+            app._CUSTOM_LOGS[log['identifier']] = log['level']
+
     def start(self, args):
         """Start Application."""
         app.instance = self
@@ -213,31 +210,7 @@ class Application(object):
         app.PROG_DIR = os.path.dirname(app.MY_FULLNAME)
         app.DATA_DIR = app.PROG_DIR
         app.MY_ARGS = args
-
-        try:
-            locale.setlocale(locale.LC_ALL, '')
-            app.SYS_ENCODING = locale.getpreferredencoding()
-        except (locale.Error, IOError):
-            app.SYS_ENCODING = 'UTF-8'
-
-        # pylint: disable=no-member
-        if (not app.SYS_ENCODING or
-                app.SYS_ENCODING.lower() in ('ansi_x3.4-1968', 'us-ascii', 'ascii', 'charmap') or
-                (sys.platform.startswith('win') and
-                    sys.getwindowsversion()[0] >= 6 and
-                    text_type(getattr(sys.stdout, 'device', sys.stdout).encoding).lower() in ('cp65001', 'charmap'))):
-            app.SYS_ENCODING = 'UTF-8'
-
-        # TODO: Continue working on making this unnecessary, this hack creates all sorts of hellish problems
-        if not hasattr(sys, 'setdefaultencoding'):
-            reload(sys)
-
-        try:
-            # On non-unicode builds this will raise an AttributeError, if encoding type is not valid it throws a LookupError
-            sys.setdefaultencoding(app.SYS_ENCODING)  # pylint: disable=no-member
-        except (AttributeError, LookupError):
-            sys.exit('Sorry, you MUST add the Medusa folder to the PYTHONPATH environment variable or '
-                     'find another way to force Python to use {encoding} for string encoding.'.format(encoding=app.SYS_ENCODING))
+        app.SYS_ENCODING = sys.getfilesystemencoding()
 
         self.console_logging = (not hasattr(sys, 'frozen')) or (app.MY_NAME.lower().find('-console') > 0)
 
@@ -313,7 +286,7 @@ class Application(object):
             if self.run_as_daemon:
                 pid_dir = os.path.dirname(self.pid_file)
                 if not os.access(pid_dir, os.F_OK):
-                    sys.exit('PID dir: %s doesn\'t exist. Exiting.' % pid_dir)
+                    sys.exit("PID dir: %s doesn't exist. Exiting." % pid_dir)
                 if not os.access(pid_dir, os.W_OK):
                     sys.exit('PID dir: %s must be writable (write permissions). Exiting.' % pid_dir)
 
@@ -364,22 +337,40 @@ class Application(object):
 
         app.CFG = ConfigObj(app.CONFIG_FILE, encoding='UTF-8', default_encoding='UTF-8')
 
-        # Initialize the config and our threads
-        self.initialize(console_logging=self.console_logging)
-
         if self.run_as_daemon:
             self.daemonize()
 
         # Get PID
         app.PID = os.getpid()
 
+        # Initialize the config and our threads
+        self.initialize(console_logging=self.console_logging)
+
         # Build from the DB to start with
         self.load_shows_from_db()
 
         logger.info('Starting Medusa [{branch}] using {config!r}', branch=app.BRANCH, config=app.CONFIG_FILE)
 
+        # Python 2 EOL warning
+        if sys.version_info < (3,):
+            logger.warning(
+                'As of now Medusa will not run on Python 2.x any longer.\n'
+                'Release 0.4.6 is the last release that runs on Python 2.x\n'
+                'You can read more about the python 2.x sunset date here: {python_sunset_url}\n'
+                'Please upgrade your Python version to 3.6 or higher as soon as possible!',
+                python_sunset_url='https://tinyurl.com/y4zwbawq'
+            )
+
+        if not is_valid_encoding(app.SYS_ENCODING):
+            logger.warning(
+                'Your system is using an invalid encoding: {encoding}. Please change your encoding '
+                'as soon as possible or you could encounter unexpected issues.', encoding=app.SYS_ENCODING
+            )
+            app.SYS_ENCODING = 'utf-8'
+
         self.clear_cache()
         self.migrate_images()
+        self.initialize_custom_logging()
 
         if self.forced_port:
             logger.info('Forcing web server to port {port}', port=self.forced_port)
@@ -451,7 +442,7 @@ class Application(object):
 
             sections = [
                 'General', 'Blackhole', 'Newzbin', 'SABnzbd', 'NZBget', 'KODI', 'PLEX', 'Emby', 'Growl', 'Prowl', 'Twitter',
-                'Boxcar2', 'NMJ', 'NMJv2', 'Synology', 'Slack', 'SynologyNotifier', 'pyTivo', 'Pushalot', 'Pushbullet',
+                'Boxcar2', 'NMJ', 'NMJv2', 'Synology', 'Slack', 'SynologyNotifier', 'pyTivo', 'Pushalot', 'Pushbullet', 'Join',
                 'Subtitles', 'pyTivo',
             ]
 
@@ -469,6 +460,7 @@ class Application(object):
             app.GIT_PASSWORD = check_setting_str(app.CFG, 'General', 'git_password', '', censor_log='low')
             app.GIT_TOKEN = check_setting_str(app.CFG, 'General', 'git_token', '', censor_log='low', encrypted=True)
             app.DEVELOPER = bool(check_setting_int(app.CFG, 'General', 'developer', 0))
+            app.PYTHON_VERSION = check_setting_list(app.CFG, 'General', 'python_version', [], transform=int)
 
             # debugging
             app.DEBUG = bool(check_setting_int(app.CFG, 'General', 'debug', 0))
@@ -491,9 +483,7 @@ class Application(object):
 
             # git reset on update
             app.GIT_RESET = bool(check_setting_int(app.CFG, 'General', 'git_reset', 1))
-            app.GIT_RESET_BRANCHES = check_setting_list(app.CFG, 'General', 'git_reset_branches', app.GIT_RESET_BRANCHES)
-            if not app.GIT_RESET_BRANCHES:
-                app.GIT_RESET_BRANCHES = []
+            app.GIT_RESET_BRANCHES = check_setting_list(app.CFG, 'General', 'git_reset_branches', [])
 
             # current git branch
             app.BRANCH = check_setting_str(app.CFG, 'General', 'branch', '')
@@ -515,9 +505,20 @@ class Application(object):
 
             # current commit hash
             app.CUR_COMMIT_HASH = check_setting_str(app.CFG, 'General', 'cur_commit_hash', '')
+            # set current commit hash from environment variable, if needed
+            # use this to inject the commit hash information on immutable installations (e.g. Docker containers)
+            commit_hash_env = os.environ.get('MEDUSA_COMMIT_HASH')
+            if commit_hash_env and app.CUR_COMMIT_HASH != commit_hash_env:
+                app.CUR_COMMIT_HASH = commit_hash_env
 
             # current commit branch
             app.CUR_COMMIT_BRANCH = check_setting_str(app.CFG, 'General', 'cur_commit_branch', '')
+            # set current commit branch from environment variable, if needed
+            # use this to inject the branch information on immutable installations (e.g. Docker containers)
+            commit_branch_env = os.environ.get('MEDUSA_COMMIT_BRANCH')
+            if commit_branch_env and app.CUR_COMMIT_BRANCH != commit_branch_env:
+                app.CUR_COMMIT_BRANCH = commit_branch_env
+
             app.ACTUAL_CACHE_DIR = check_setting_str(app.CFG, 'General', 'cache_dir', 'cache')
 
             # fix bad configs due to buggy code
@@ -558,10 +559,8 @@ class Application(object):
             app.WEB_USERNAME = check_setting_str(app.CFG, 'General', 'web_username', '', censor_log='normal')
             app.WEB_PASSWORD = check_setting_str(app.CFG, 'General', 'web_password', '', censor_log='low')
             app.WEB_COOKIE_SECRET = check_setting_str(app.CFG, 'General', 'web_cookie_secret', helpers.generate_cookie_secret(), censor_log='low')
-            if not app.WEB_COOKIE_SECRET:
-                app.WEB_COOKIE_SECRET = helpers.generate_cookie_secret()
-
             app.WEB_USE_GZIP = bool(check_setting_int(app.CFG, 'General', 'web_use_gzip', 1))
+
             app.SUBLIMINAL_LOG = bool(check_setting_int(app.CFG, 'General', 'subliminal_log', 0))
             app.PRIVACY_LEVEL = check_setting_str(app.CFG, 'General', 'privacy_level', 'normal')
             app.SSL_VERIFY = bool(check_setting_int(app.CFG, 'General', 'ssl_verify', 1))
@@ -575,7 +574,10 @@ class Application(object):
             app.CPU_PRESET = check_setting_str(app.CFG, 'General', 'cpu_preset', 'NORMAL')
             app.ANON_REDIRECT = check_setting_str(app.CFG, 'General', 'anon_redirect', 'http://dereferer.org/?')
             app.PROXY_SETTING = check_setting_str(app.CFG, 'General', 'proxy_setting', '')
+            app.PROXY_PROVIDERS = bool(check_setting_int(app.CFG, 'General', 'proxy_providers', 1))
             app.PROXY_INDEXERS = bool(check_setting_int(app.CFG, 'General', 'proxy_indexers', 1))
+            app.PROXY_CLIENTS = bool(check_setting_int(app.CFG, 'General', 'proxy_clients', 1))
+            app.PROXY_OTHERS = bool(check_setting_int(app.CFG, 'General', 'proxy_others', 1))
 
             # attempt to help prevent users from breaking links by using a bad url
             if not app.ANON_REDIRECT.endswith('?'):
@@ -603,6 +605,7 @@ class Application(object):
             app.INDEXER_TIMEOUT = check_setting_int(app.CFG, 'General', 'indexer_timeout', 20)
             app.ANIME_DEFAULT = bool(check_setting_int(app.CFG, 'General', 'anime_default', 0))
             app.SCENE_DEFAULT = bool(check_setting_int(app.CFG, 'General', 'scene_default', 0))
+            app.SHOWLISTS_DEFAULT = check_setting_list(app.CFG, 'General', 'showlist_default', ['series'])
             app.PROVIDER_ORDER = check_setting_list(app.CFG, 'General', 'provider_order')
             app.NAMING_PATTERN = check_setting_str(app.CFG, 'General', 'naming_pattern', 'Season %0S/%SN - S%0SE%0E - %EN')
             app.NAMING_ABD_PATTERN = check_setting_str(app.CFG, 'General', 'naming_abd_pattern', '%SN - %A.D - %EN')
@@ -614,7 +617,6 @@ class Application(object):
             app.NAMING_CUSTOM_ANIME = bool(check_setting_int(app.CFG, 'General', 'naming_custom_anime', 0))
             app.NAMING_MULTI_EP = check_setting_int(app.CFG, 'General', 'naming_multi_ep', 1)
             app.NAMING_ANIME_MULTI_EP = check_setting_int(app.CFG, 'General', 'naming_anime_multi_ep', 1)
-            app.NAMING_FORCE_FOLDERS = naming.check_force_season_folders()
             app.NAMING_STRIP_YEAR = bool(check_setting_int(app.CFG, 'General', 'naming_strip_year', 0))
             app.USE_NZBS = bool(check_setting_int(app.CFG, 'General', 'use_nzbs', 0))
             app.USE_TORRENTS = bool(check_setting_int(app.CFG, 'General', 'use_torrents', 1))
@@ -622,7 +624,7 @@ class Application(object):
             app.NZB_METHOD = check_setting_str(app.CFG, 'General', 'nzb_method', 'blackhole', valid_values=('blackhole', 'sabnzbd', 'nzbget'))
             app.TORRENT_METHOD = check_setting_str(app.CFG, 'General', 'torrent_method', 'blackhole',
                                                    valid_values=('blackhole', 'utorrent', 'transmission', 'deluge',
-                                                                 'deluged', 'download_station', 'rtorrent', 'qbittorrent', 'mlnet'))
+                                                                 'deluged', 'downloadstation', 'rtorrent', 'qbittorrent', 'mlnet'))
 
             app.DOWNLOAD_PROPERS = bool(check_setting_int(app.CFG, 'General', 'download_propers', 1))
             app.PROPERS_SEARCH_DAYS = max(2, min(8, check_setting_int(app.CFG, 'General', 'propers_search_days', 2)))
@@ -632,17 +634,12 @@ class Application(object):
             app.RANDOMIZE_PROVIDERS = bool(check_setting_int(app.CFG, 'General', 'randomize_providers', 0))
             app.ALLOW_HIGH_PRIORITY = bool(check_setting_int(app.CFG, 'General', 'allow_high_priority', 1))
             app.SKIP_REMOVED_FILES = bool(check_setting_int(app.CFG, 'General', 'skip_removed_files', 0))
-
             app.ALLOWED_EXTENSIONS = check_setting_list(app.CFG, 'General', 'allowed_extensions', app.ALLOWED_EXTENSIONS)
-            # @TODO: Remove this in a future version.
-            app.ALLOWED_EXTENSIONS = fix_incorrect_list_values(app.ALLOWED_EXTENSIONS)
-
             app.USENET_RETENTION = check_setting_int(app.CFG, 'General', 'usenet_retention', 500)
             app.CACHE_TRIMMING = bool(check_setting_int(app.CFG, 'General', 'cache_trimming', 0))
             app.MAX_CACHE_AGE = check_setting_int(app.CFG, 'General', 'max_cache_age', 30)
             app.AUTOPOSTPROCESSOR_FREQUENCY = max(app.MIN_AUTOPOSTPROCESSOR_FREQUENCY,
-                                                  check_setting_int(app.CFG, 'General', 'autopostprocessor_frequency',
-                                                                    app.DEFAULT_AUTOPOSTPROCESSOR_FREQUENCY))
+                                                  check_setting_int(app.CFG, 'General', 'autopostprocessor_frequency', 10))
 
             app.TORRENT_CHECKER_FREQUENCY = max(app.MIN_TORRENT_CHECKER_FREQUENCY,
                                                 check_setting_int(app.CFG, 'General', 'torrent_checker_frequency',
@@ -678,11 +675,7 @@ class Application(object):
             app.MOVE_ASSOCIATED_FILES = bool(check_setting_int(app.CFG, 'General', 'move_associated_files', 0))
             app.POSTPONE_IF_SYNC_FILES = bool(check_setting_int(app.CFG, 'General', 'postpone_if_sync_files', 1))
             app.POSTPONE_IF_NO_SUBS = bool(check_setting_int(app.CFG, 'General', 'postpone_if_no_subs', 0))
-
             app.SYNC_FILES = check_setting_list(app.CFG, 'General', 'sync_files', app.SYNC_FILES)
-            # @TODO: Remove this in a future version.
-            app.SYNC_FILES = fix_incorrect_list_values(app.SYNC_FILES)
-
             app.NFO_RENAME = bool(check_setting_int(app.CFG, 'General', 'nfo_rename', 1))
             app.CREATE_MISSING_SHOW_DIRS = bool(check_setting_int(app.CFG, 'General', 'create_missing_show_dirs', 0))
             app.ADD_SHOWS_WO_DIR = bool(check_setting_int(app.CFG, 'General', 'add_shows_wo_dir', 0))
@@ -782,6 +775,16 @@ class Application(object):
             app.TELEGRAM_ID = check_setting_str(app.CFG, 'Telegram', 'telegram_id', '', censor_log='normal')
             app.TELEGRAM_APIKEY = check_setting_str(app.CFG, 'Telegram', 'telegram_apikey', '', censor_log='low')
 
+            app.USE_DISCORD = bool(check_setting_int(app.CFG, 'Discord', 'use_discord', 0))
+            app.DISCORD_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'Discord', 'discord_notify_onsnatch', 0))
+            app.DISCORD_NOTIFY_ONDOWNLOAD = bool(
+                check_setting_int(app.CFG, 'Discord', 'discord_notify_ondownload', 0))
+            app.DISCORD_NOTIFY_ONSUBTITLEDOWNLOAD = bool(
+                check_setting_int(app.CFG, 'Discord', 'discord_notify_onsubtitledownload', 0))
+            app.DISCORD_WEBHOOK = check_setting_str(app.CFG, 'Discord', 'discord_webhook', '', censor_log='normal')
+            app.DISCORD_TTS = check_setting_bool(app.CFG, 'Discord', 'discord_tts', 0)
+            app.DISCORD_NAME = check_setting_str(app.CFG, 'Discord', 'discord_name', '', censor_log='normal')
+
             app.USE_PROWL = bool(check_setting_int(app.CFG, 'Prowl', 'use_prowl', 0))
             app.PROWL_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'Prowl', 'prowl_notify_onsnatch', 0))
             app.PROWL_NOTIFY_ONDOWNLOAD = bool(check_setting_int(app.CFG, 'Prowl', 'prowl_notify_ondownload', 0))
@@ -813,7 +816,8 @@ class Application(object):
             app.PUSHOVER_USERKEY = check_setting_str(app.CFG, 'Pushover', 'pushover_userkey', '', censor_log='normal')
             app.PUSHOVER_APIKEY = check_setting_str(app.CFG, 'Pushover', 'pushover_apikey', '', censor_log='low')
             app.PUSHOVER_DEVICE = check_setting_list(app.CFG, 'Pushover', 'pushover_device', '')
-            app.PUSHOVER_SOUND = check_setting_str(app.CFG, 'Pushover', 'pushover_sound', 'pushover')
+            app.PUSHOVER_SOUND = check_setting_str(app.CFG, 'Pushover', 'pushover_sound', 'default')
+            app.PUSHOVER_PRIORITY = check_setting_str(app.CFG, 'Pushover', 'pushover_priority', '0')
 
             app.USE_LIBNOTIFY = bool(check_setting_int(app.CFG, 'Libnotify', 'use_libnotify', 0))
             app.LIBNOTIFY_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'Libnotify', 'libnotify_notify_onsnatch', 0))
@@ -892,6 +896,13 @@ class Application(object):
             app.PUSHBULLET_API = check_setting_str(app.CFG, 'Pushbullet', 'pushbullet_api', '', censor_log='low')
             app.PUSHBULLET_DEVICE = check_setting_str(app.CFG, 'Pushbullet', 'pushbullet_device', '')
 
+            app.USE_JOIN = bool(check_setting_int(app.CFG, 'Join', 'use_join', 0))
+            app.JOIN_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'Join', 'join_notify_onsnatch', 0))
+            app.JOIN_NOTIFY_ONDOWNLOAD = bool(check_setting_int(app.CFG, 'Join', 'join_notify_ondownload', 0))
+            app.JOIN_NOTIFY_ONSUBTITLEDOWNLOAD = bool(check_setting_int(app.CFG, 'Join', 'join_notify_onsubtitledownload', 0))
+            app.JOIN_API = check_setting_str(app.CFG, 'Join', 'join_api', '', censor_log='low')
+            app.JOIN_DEVICE = check_setting_str(app.CFG, 'Join', 'join_device', '')
+
             app.USE_EMAIL = bool(check_setting_int(app.CFG, 'Email', 'use_email', 0))
             app.EMAIL_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'Email', 'email_notify_onsnatch', 0))
             app.EMAIL_NOTIFY_ONDOWNLOAD = bool(check_setting_int(app.CFG, 'Email', 'email_notify_ondownload', 0))
@@ -927,9 +938,6 @@ class Application(object):
             app.ADDIC7ED_USER = check_setting_str(app.CFG, 'Subtitles', 'addic7ed_username', '', censor_log='normal')
             app.ADDIC7ED_PASS = check_setting_str(app.CFG, 'Subtitles', 'addic7ed_password', '', censor_log='low')
 
-            app.ITASA_USER = check_setting_str(app.CFG, 'Subtitles', 'itasa_username', '', censor_log='normal')
-            app.ITASA_PASS = check_setting_str(app.CFG, 'Subtitles', 'itasa_password', '', censor_log='low')
-
             app.LEGENDASTV_USER = check_setting_str(app.CFG, 'Subtitles', 'legendastv_username', '', censor_log='normal')
             app.LEGENDASTV_PASS = check_setting_str(app.CFG, 'Subtitles', 'legendastv_password', '', censor_log='low')
 
@@ -955,18 +963,17 @@ class Application(object):
             app.NO_RESTART = bool(check_setting_int(app.CFG, 'General', 'no_restart', 0))
 
             app.EXTRA_SCRIPTS = [x.strip() for x in check_setting_list(app.CFG, 'General', 'extra_scripts')]
-            # @TODO: Remove this in a future version.
-            app.EXTRA_SCRIPTS = fix_incorrect_list_values(app.EXTRA_SCRIPTS)
 
             app.USE_LISTVIEW = bool(check_setting_int(app.CFG, 'General', 'use_listview', 0))
 
-            app.ANIMESUPPORT = False
             app.USE_ANIDB = bool(check_setting_int(app.CFG, 'ANIDB', 'use_anidb', 0))
             app.ANIDB_USERNAME = check_setting_str(app.CFG, 'ANIDB', 'anidb_username', '', censor_log='normal')
             app.ANIDB_PASSWORD = check_setting_str(app.CFG, 'ANIDB', 'anidb_password', '', censor_log='low')
             app.ANIDB_USE_MYLIST = bool(check_setting_int(app.CFG, 'ANIDB', 'anidb_use_mylist', 0))
             app.ANIME_SPLIT_HOME = bool(check_setting_int(app.CFG, 'ANIME', 'anime_split_home', 0))
             app.ANIME_SPLIT_HOME_IN_TABS = bool(check_setting_int(app.CFG, 'ANIME', 'anime_split_home_in_tabs', 0))
+            app.AUTO_ANIME_TO_LIST = bool(check_setting_int(app.CFG, 'ANIME', 'auto_anime_to_list', 0))
+            app.SHOWLISTS_DEFAULT_ANIME = check_setting_list(app.CFG, 'ANIME', 'showlist_default_anime', [])
 
             app.METADATA_KODI = check_setting_list(app.CFG, 'General', 'metadata_kodi', ['0'] * 10, transform=int)
             app.METADATA_KODI_12PLUS = check_setting_list(app.CFG, 'General', 'metadata_kodi_12plus', ['0'] * 10, transform=int)
@@ -992,16 +999,16 @@ class Application(object):
             app.TIMEZONE_DISPLAY = check_setting_str(app.CFG, 'GUI', 'timezone_display', 'local')
             app.POSTER_SORTBY = check_setting_str(app.CFG, 'GUI', 'poster_sortby', 'name')
             app.POSTER_SORTDIR = check_setting_int(app.CFG, 'GUI', 'poster_sortdir', 1)
-            app.DISPLAY_ALL_SEASONS = bool(check_setting_int(app.CFG, 'General', 'display_all_seasons', 1))
             app.RECENTLY_DELETED = set()
             app.RELEASES_IN_PP = []
             app.GIT_REMOTE_BRANCHES = []
             app.KODI_LIBRARY_CLEAN_PENDING = False
             app.SELECTED_ROOT = check_setting_int(app.CFG, 'GUI', 'selected_root', -1)
-            app.BACKLOG_PERIOD = check_setting_str(app.CFG, 'GUI', 'backlog_period', 'all')
-            app.BACKLOG_STATUS = check_setting_str(app.CFG, 'GUI', 'backlog_status', 'all')
+            app.BACKLOG_PERIOD = check_setting_str(app.CFG, 'General', 'backlog_period', 'all')
+            app.BACKLOG_STATUS = check_setting_str(app.CFG, 'General', 'backlog_status', 'all')
             app.LAYOUT_WIDE = check_setting_bool(app.CFG, 'GUI', 'layout_wide', 0)
             app.SHOW_LIST_ORDER = check_setting_list(app.CFG, 'GUI', 'show_list_order', app.SHOW_LIST_ORDER)
+            app.SHOW_USE_PAGINATION = check_setting_bool(app.CFG, 'GUI', 'show_use_pagination', app.SHOW_USE_PAGINATION)
 
             app.FALLBACK_PLEX_ENABLE = check_setting_int(app.CFG, 'General', 'fallback_plex_enable', 1)
             app.FALLBACK_PLEX_NOTIFICATIONS = check_setting_int(app.CFG, 'General', 'fallback_plex_notifications', 1)
@@ -1014,6 +1021,10 @@ class Application(object):
             try:
                 import pwd
                 app.OS_USER = pwd.getpwuid(os.getuid()).pw_name
+            except KeyError:
+                # In the case of a usage with Docker run `user` feature, the username might not exist.
+                # See: https://docs.docker.com/engine/reference/run/#user
+                app.OS_USER = os.getuid()
             except ImportError:
                 try:
                     import getpass
@@ -1033,11 +1044,9 @@ class Application(object):
                 pass
 
             if app.VERSION_NOTIFY:
-                updater = version_checker.CheckVersion().updater
-                if updater:
-                    app.APP_VERSION = updater.get_cur_version()
-
-            app.MAJOR_DB_VERSION, app.MINOR_DB_VERSION = db.DBConnection().checkDBVersion()
+                updater = CheckVersion().updater
+                if updater and updater.current_version:
+                    app.APP_VERSION = updater.current_version
 
             # initialize the static NZB and TORRENT providers
             app.providerList = providers.make_provider_list()
@@ -1124,9 +1133,12 @@ class Application(object):
                 # Disable flag to erase cache
                 app.SUBTITLES_ERASE_CACHE = False
 
+            # Check if we start with a different Python version since last start
+            python_version_changed = self.migrate_python_version()
+
             # Check if we need to perform a restore of the cache folder
             Application.restore_cache_folder(app.CACHE_DIR)
-            cache.configure(app.CACHE_DIR)
+            cache.configure(app.CACHE_DIR, replace=python_version_changed)
 
             # Rebuild the censored list
             app_logger.rebuild_censored_list()
@@ -1151,6 +1163,11 @@ class Application(object):
             main_db_con = db.DBConnection()
             db.sanityCheckDatabase(main_db_con, main_db.MainSanityCheck)
 
+            app.MAJOR_DB_VERSION, app.MINOR_DB_VERSION = main_db_con.checkDBVersion()
+
+            # checks that require DB existence
+            app.NAMING_FORCE_FOLDERS = naming.check_force_season_folders()
+
             # migrate the config if it needs it
             migrator = ConfigMigrator(app.CFG)
             migrator.migrate_config()
@@ -1171,7 +1188,7 @@ class Application(object):
 
             # initialize schedulers
             # updaters
-            app.version_check_scheduler = scheduler.Scheduler(version_checker.CheckVersion(),
+            app.version_check_scheduler = scheduler.Scheduler(CheckVersion(),
                                                               cycleTime=datetime.timedelta(hours=app.UPDATE_FREQUENCY),
                                                               threadName='CHECKVERSION', silent=False)
 
@@ -1180,10 +1197,14 @@ class Application(object):
                                                            threadName='SHOWQUEUE')
 
             app.show_update_scheduler = scheduler.Scheduler(show_updater.ShowUpdater(),
-                                                            cycleTime=datetime.timedelta(hours=1),
                                                             threadName='SHOWUPDATER',
                                                             start_time=datetime.time(hour=app.SHOWUPDATE_HOUR,
                                                                                      minute=random.randint(0, 59)))
+
+            app.episode_update_scheduler = scheduler.Scheduler(episode_updater.EpisodeUpdater(),
+                                                               cycleTime=datetime.timedelta(minutes=15),
+                                                               threadName='EPISODEUPDATER',
+                                                               silent=False)
 
             # snatcher used for manual search, manual picked results
             app.manual_snatch_scheduler = scheduler.Scheduler(SnatchQueue(),
@@ -1202,54 +1223,44 @@ class Application(object):
             update_interval = datetime.timedelta(minutes=app.DAILYSEARCH_FREQUENCY)
             app.daily_search_scheduler = scheduler.Scheduler(DailySearcher(),
                                                              cycleTime=update_interval,
-                                                             threadName='DAILYSEARCHER',
-                                                             run_delay=update_interval)
+                                                             threadName='DAILYSEARCHER')
 
             update_interval = datetime.timedelta(minutes=app.BACKLOG_FREQUENCY)
             app.backlog_search_scheduler = BacklogSearchScheduler(BacklogSearcher(),
                                                                   cycleTime=update_interval,
-                                                                  threadName='BACKLOG',
-                                                                  run_delay=update_interval)
+                                                                  threadName='BACKLOG')
 
             if app.CHECK_PROPERS_INTERVAL in app.PROPERS_SEARCH_INTERVAL:
                 update_interval = datetime.timedelta(minutes=app.PROPERS_SEARCH_INTERVAL[app.CHECK_PROPERS_INTERVAL])
-                run_at = None
             else:
-                update_interval = datetime.timedelta(hours=1)
-                run_at = datetime.time(hour=1)  # 1 AM
+                update_interval = datetime.timedelta(hours=4)
 
             app.proper_finder_scheduler = scheduler.Scheduler(ProperFinder(),
                                                               cycleTime=update_interval,
-                                                              threadName='FINDPROPERS',
-                                                              start_time=run_at,
-                                                              run_delay=update_interval)
+                                                              threadName='FINDPROPERS')
 
             # processors
             update_interval = datetime.timedelta(minutes=app.AUTOPOSTPROCESSOR_FREQUENCY)
-            app.auto_post_processor_scheduler = scheduler.Scheduler(auto_post_processor.PostProcessor(),
-                                                                    cycleTime=update_interval,
-                                                                    threadName='POSTPROCESSOR',
-                                                                    silent=not app.PROCESS_AUTOMATICALLY,
-                                                                    run_delay=update_interval)
-            update_interval = datetime.timedelta(minutes=5)
+            app.post_processor_scheduler = scheduler.Scheduler(process_tv.PostProcessorRunner(),
+                                                               cycleTime=update_interval,
+                                                               threadName='POSTPROCESSOR',
+                                                               silent=not app.PROCESS_AUTOMATICALLY)
+
             app.trakt_checker_scheduler = scheduler.Scheduler(trakt_checker.TraktChecker(),
                                                               cycleTime=datetime.timedelta(hours=1),
                                                               threadName='TRAKTCHECKER',
-                                                              run_delay=update_interval,
                                                               silent=not app.USE_TRAKT)
 
             update_interval = datetime.timedelta(hours=app.SUBTITLES_FINDER_FREQUENCY)
             app.subtitles_finder_scheduler = scheduler.Scheduler(subtitles.SubtitlesFinder(),
                                                                  cycleTime=update_interval,
                                                                  threadName='FINDSUBTITLES',
-                                                                 run_delay=update_interval,
                                                                  silent=not app.USE_SUBTITLES)
 
             update_interval = datetime.timedelta(minutes=app.TORRENT_CHECKER_FREQUENCY)
             app.torrent_checker_scheduler = scheduler.Scheduler(torrent_checker.TorrentChecker(),
                                                                 cycleTime=update_interval,
-                                                                threadName='TORRENTCHECKER',
-                                                                run_delay=update_interval)
+                                                                threadName='TORRENTCHECKER')
 
             app.__INITIALIZED__ = True
             return True
@@ -1295,6 +1306,27 @@ class Application(object):
                 helpers.remove_folder(folder_path)
 
     @staticmethod
+    def migrate_python_version():
+        """
+        Perform some cleanups in case we switch between major Python versions.
+
+        It's possible to switch from Python version 2 to 3 or vice versa.
+        In that case we might wanna run some sanity actions, to make sure everything keeps working.
+
+        :return: True if the major Python version has changed since last start
+        :return type: Boolean
+        """
+        # TODO: Leaving this here as a marking for when we merge the python3 changes.
+        current_version = app.PYTHON_VERSION
+        app.PYTHON_VERSION = list(sys.version_info)[:3]
+
+        # Run some sanitation when switching between Python versions
+        if current_version and current_version[0] != app.PYTHON_VERSION[0]:
+            return True
+
+        return False
+
+    @staticmethod
     def start_threads():
         """Start application threads."""
         with app.INIT_LOCK:
@@ -1315,6 +1347,10 @@ class Application(object):
             # start the show updater
             app.show_update_scheduler.enable = True
             app.show_update_scheduler.start()
+
+            # start the episode updater
+            app.episode_update_scheduler.enable = True
+            app.episode_update_scheduler.start()
 
             # start the version checker
             app.version_check_scheduler.enable = True
@@ -1347,12 +1383,12 @@ class Application(object):
 
             # start the post processor
             if app.PROCESS_AUTOMATICALLY:
-                app.auto_post_processor_scheduler.silent = False
-                app.auto_post_processor_scheduler.enable = True
+                app.post_processor_scheduler.silent = False
+                app.post_processor_scheduler.enable = True
             else:
-                app.auto_post_processor_scheduler.enable = False
-                app.auto_post_processor_scheduler.silent = True
-            app.auto_post_processor_scheduler.start()
+                app.post_processor_scheduler.enable = False
+                app.post_processor_scheduler.silent = True
+            app.post_processor_scheduler.start()
 
             # start the subtitles finder
             if app.USE_SUBTITLES:
@@ -1392,12 +1428,13 @@ class Application(object):
                 app.daily_search_scheduler,
                 app.backlog_search_scheduler,
                 app.show_update_scheduler,
+                app.episode_update_scheduler,
                 app.version_check_scheduler,
                 app.show_queue_scheduler,
                 app.search_queue_scheduler,
                 app.forced_search_queue_scheduler,
                 app.manual_snatch_scheduler,
-                app.auto_post_processor_scheduler,
+                app.post_processor_scheduler,
                 app.trakt_checker_scheduler,
                 app.proper_finder_scheduler,
                 app.subtitles_finder_scheduler,
@@ -1524,6 +1561,7 @@ class Application(object):
         new_config['General']['tvdb_dvd_order_ep_ignore'] = int(app.TVDB_DVD_ORDER_EP_IGNORE)
         new_config['General']['anime_default'] = int(app.ANIME_DEFAULT)
         new_config['General']['scene_default'] = int(app.SCENE_DEFAULT)
+        new_config['General']['showlist_default'] = list(app.SHOWLISTS_DEFAULT)
         new_config['General']['provider_order'] = app.PROVIDER_ORDER
         new_config['General']['version_notify'] = int(app.VERSION_NOTIFY)
         new_config['General']['auto_update'] = int(app.AUTO_UPDATE)
@@ -1546,7 +1584,10 @@ class Application(object):
         new_config['General']['trash_rotate_logs'] = int(app.TRASH_ROTATE_LOGS)
         new_config['General']['sort_article'] = int(app.SORT_ARTICLE)
         new_config['General']['proxy_setting'] = app.PROXY_SETTING
+        new_config['General']['proxy_providers'] = int(app.PROXY_PROVIDERS)
         new_config['General']['proxy_indexers'] = int(app.PROXY_INDEXERS)
+        new_config['General']['proxy_clients'] = int(app.PROXY_CLIENTS)
+        new_config['General']['proxy_others'] = int(app.PROXY_OTHERS)
 
         new_config['General']['use_listview'] = int(app.USE_LISTVIEW)
         new_config['General']['metadata_kodi'] = app.METADATA_KODI
@@ -1592,7 +1633,7 @@ class Application(object):
         new_config['General']['calendar_icons'] = int(app.CALENDAR_ICONS)
         new_config['General']['no_restart'] = int(app.NO_RESTART)
         new_config['General']['developer'] = int(app.DEVELOPER)
-        new_config['General']['display_all_seasons'] = int(app.DISPLAY_ALL_SEASONS)
+        new_config['General']['python_version'] = app.PYTHON_VERSION
         new_config['General']['news_last_read'] = app.NEWS_LAST_READ
         new_config['General']['broken_providers'] = helpers.get_broken_providers() or app.BROKEN_PROVIDERS
         new_config['General']['selected_root'] = int(app.SELECTED_ROOT)
@@ -1754,6 +1795,15 @@ class Application(object):
         new_config['Telegram']['telegram_id'] = app.TELEGRAM_ID
         new_config['Telegram']['telegram_apikey'] = app.TELEGRAM_APIKEY
 
+        new_config['Discord'] = {}
+        new_config['Discord']['use_discord'] = int(app.USE_DISCORD)
+        new_config['Discord']['discord_notify_onsnatch'] = int(app.DISCORD_NOTIFY_ONSNATCH)
+        new_config['Discord']['discord_notify_ondownload'] = int(app.DISCORD_NOTIFY_ONDOWNLOAD)
+        new_config['Discord']['discord_notify_onsubtitledownload'] = int(app.DISCORD_NOTIFY_ONSUBTITLEDOWNLOAD)
+        new_config['Discord']['discord_webhook'] = app.DISCORD_WEBHOOK
+        new_config['Discord']['discord_tts'] = int(app.DISCORD_TTS)
+        new_config['Discord']['discord_name'] = app.DISCORD_NAME
+
         new_config['Prowl'] = {}
         new_config['Prowl']['use_prowl'] = int(app.USE_PROWL)
         new_config['Prowl']['prowl_notify_onsnatch'] = int(app.PROWL_NOTIFY_ONSNATCH)
@@ -1790,6 +1840,7 @@ class Application(object):
         new_config['Pushover']['pushover_apikey'] = app.PUSHOVER_APIKEY
         new_config['Pushover']['pushover_device'] = app.PUSHOVER_DEVICE
         new_config['Pushover']['pushover_sound'] = app.PUSHOVER_SOUND
+        new_config['Pushover']['pushover_priority'] = app.PUSHOVER_PRIORITY
 
         new_config['Libnotify'] = {}
         new_config['Libnotify']['use_libnotify'] = int(app.USE_LIBNOTIFY)
@@ -1869,6 +1920,14 @@ class Application(object):
         new_config['Pushbullet']['pushbullet_api'] = app.PUSHBULLET_API
         new_config['Pushbullet']['pushbullet_device'] = app.PUSHBULLET_DEVICE
 
+        new_config['Join'] = {}
+        new_config['Join']['use_join'] = int(app.USE_JOIN)
+        new_config['Join']['join_notify_onsnatch'] = int(app.JOIN_NOTIFY_ONSNATCH)
+        new_config['Join']['join_notify_ondownload'] = int(app.JOIN_NOTIFY_ONDOWNLOAD)
+        new_config['Join']['join_notify_onsubtitledownload'] = int(app.JOIN_NOTIFY_ONSUBTITLEDOWNLOAD)
+        new_config['Join']['join_api'] = app.JOIN_API
+        new_config['Join']['join_device'] = app.JOIN_DEVICE
+
         new_config['Email'] = {}
         new_config['Email']['use_email'] = int(app.USE_EMAIL)
         new_config['Email']['email_notify_onsnatch'] = int(app.EMAIL_NOTIFY_ONSNATCH)
@@ -1913,6 +1972,7 @@ class Application(object):
         new_config['GUI']['poster_sortdir'] = app.POSTER_SORTDIR
         new_config['GUI']['layout_wide'] = app.LAYOUT_WIDE
         new_config['GUI']['show_list_order'] = app.SHOW_LIST_ORDER
+        new_config['GUI']['show_use_pagination'] = app.SHOW_USE_PAGINATION
 
         new_config['Subtitles'] = {}
         new_config['Subtitles']['use_subtitles'] = int(app.USE_SUBTITLES)
@@ -1936,9 +1996,6 @@ class Application(object):
         new_config['Subtitles']['addic7ed_username'] = app.ADDIC7ED_USER
         new_config['Subtitles']['addic7ed_password'] = helpers.encrypt(app.ADDIC7ED_PASS, app.ENCRYPTION_VERSION)
 
-        new_config['Subtitles']['itasa_username'] = app.ITASA_USER
-        new_config['Subtitles']['itasa_password'] = helpers.encrypt(app.ITASA_PASS, app.ENCRYPTION_VERSION)
-
         new_config['Subtitles']['legendastv_username'] = app.LEGENDASTV_USER
         new_config['Subtitles']['legendastv_password'] = helpers.encrypt(app.LEGENDASTV_PASS, app.ENCRYPTION_VERSION)
 
@@ -1958,6 +2015,8 @@ class Application(object):
         new_config['ANIME'] = {}
         new_config['ANIME']['anime_split_home'] = int(app.ANIME_SPLIT_HOME)
         new_config['ANIME']['anime_split_home_in_tabs'] = int(app.ANIME_SPLIT_HOME_IN_TABS)
+        new_config['ANIME']['auto_anime_to_list'] = int(app.AUTO_ANIME_TO_LIST)
+        new_config['ANIME']['showlist_default_anime'] = list(app.SHOWLISTS_DEFAULT_ANIME)
 
         new_config.write()
 
@@ -2062,9 +2121,9 @@ class Application(object):
         sys.stderr.flush()
 
         devnull = getattr(os, 'devnull', '/dev/null')
-        stdin = file(devnull)
-        stdout = file(devnull, 'a+')
-        stderr = file(devnull, 'a+')
+        stdin = open(devnull)
+        stdout = open(devnull, 'a+')
+        stderr = open(devnull, 'a+')
 
         os.dup2(stdin.fileno(), getattr(sys.stdin, 'device', sys.stdin).fileno())
         os.dup2(stdout.fileno(), getattr(sys.stdout, 'device', sys.stdout).fileno())
@@ -2085,16 +2144,9 @@ class Application(object):
     @staticmethod
     def restart():
         """Restart application."""
-        install_type = app.version_check_scheduler.action.install_type
+        popen_list = [sys.executable, app.MY_FULLNAME]
 
-        popen_list = []
-
-        if install_type in ('git', 'source'):
-            popen_list = [sys.executable, app.MY_FULLNAME]
-        elif install_type == 'win':
-            logger.error('You are using a binary Windows build of Medusa. Please switch to using git.')
-
-        if popen_list and not app.NO_RESTART:
+        if not app.NO_RESTART:
             popen_list += app.MY_ARGS
             if '--nolaunch' not in popen_list:
                 popen_list += ['--nolaunch']
@@ -2131,6 +2183,7 @@ class Application(object):
         for sql_show in sql_results:
             try:
                 cur_show = Series(sql_show['indexer'], sql_show['indexer_id'])
+                cur_show.prev_episode()
                 cur_show.next_episode()
                 app.showList.append(cur_show)
             except Exception as error:
@@ -2181,7 +2234,7 @@ class Application(object):
             if self.run_as_daemon and self.create_pid:
                 self.remove_pid_file(self.pid_file)
         finally:
-            if event == event_queue.Events.SystemEvent.RESTART:
+            if event == Events.SystemEvent.RESTART:
                 self.restart()
 
             # Make sure the logger has stopped, just in case

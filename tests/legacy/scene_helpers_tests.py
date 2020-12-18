@@ -1,5 +1,6 @@
 # coding=utf-8
 """Test scene helpers."""
+from __future__ import unicode_literals
 
 import unittest
 
@@ -86,12 +87,12 @@ class SceneExceptionTestCase(test.AppTestDBCase):
 
     @unittest.expectedFailure
     def test_scene_ex_by_name(self):
-        self.assertEqual(scene_exceptions.get_scene_exceptions_by_name('Babylon5'), (70726, -1))
-        self.assertEqual(scene_exceptions.get_scene_exceptions_by_name('babylon 5'), (70726, -1))
-        self.assertEqual(scene_exceptions.get_scene_exceptions_by_name('Carlos 2010'), (164451, -1))
+        self.assertEqual(scene_exceptions.get_scene_exceptions_by_name('Babylon5'), None)
+        self.assertEqual(scene_exceptions.get_scene_exceptions_by_name('babylon 5'), None)
+        self.assertEqual(scene_exceptions.get_scene_exceptions_by_name('Carlos 2010'), None)
 
     def test_scene_ex_by_name_empty(self):
-        self.assertEqual(scene_exceptions.get_scene_exceptions_by_name('nothing useful'), [(None, None, None)])
+        self.assertEqual(scene_exceptions.get_scene_exception_by_name('nothing useful'), None)
 
     def test_scene_ex_reset_name_cache(self):
         # clear the exceptions

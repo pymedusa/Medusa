@@ -25,42 +25,64 @@ from __future__ import unicode_literals
 import json
 import logging
 import os
+import sys
 import time
 from collections import OrderedDict
 from datetime import date, datetime
 
-from future import standard_library
-
 from medusa import (
-    app, classes, db, helpers, image_cache, network_timezones,
-    process_tv, sbdatetime, subtitles, ui,
+    app,
+    classes,
+    db,
+    helpers,
+    image_cache,
+    network_timezones,
+    sbdatetime,
+    subtitles,
+    ui,
 )
 from medusa.common import (
-    ARCHIVED, DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_BEST,
-    SNATCHED_PROPER, UNAIRED, UNSET, WANTED, statusStrings,
+    ARCHIVED,
+    DOWNLOADED,
+    FAILED,
+    IGNORED,
+    Overview,
+    Quality,
+    SKIPPED,
+    SNATCHED,
+    SNATCHED_BEST,
+    SNATCHED_PROPER,
+    UNAIRED,
+    UNSET,
+    WANTED,
+    statusStrings,
 )
 from medusa.helper.common import (
-    dateFormat, dateTimeFormat, pretty_file_size, sanitize_filename,
-    timeFormat, try_int,
+    dateFormat,
+    dateTimeFormat,
+    pretty_file_size,
+    sanitize_filename,
+    timeFormat,
+    try_int,
 )
 from medusa.helper.exceptions import CantUpdateShowException, ShowDirectoryNotFoundException
 from medusa.helpers.quality import get_quality_string
-from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE
-from medusa.indexers.indexer_exceptions import IndexerError, IndexerShowIncomplete, IndexerShowNotFound
+from medusa.indexers.api import indexerApi
+from medusa.indexers.config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE
+from medusa.indexers.exceptions import IndexerError, IndexerShowNotFound
 from medusa.logger import LOGGING_LEVELS, filter_logline, read_loglines
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.media.banner import ShowBanner
 from medusa.media.fan_art import ShowFanArt
 from medusa.media.network_logo import ShowNetworkLogo
 from medusa.media.poster import ShowPoster
-from medusa.search.queue import BacklogQueueItem, ForcedSearchQueueItem
+from medusa.search.queue import BacklogQueueItem
 from medusa.show.coming_episodes import ComingEpisodes
 from medusa.show.history import History
 from medusa.show.show import Show
 from medusa.system.restart import Restart
 from medusa.system.shutdown import Shutdown
-from medusa.version_checker import CheckVersion
+from medusa.updater.version_checker import CheckVersion
 
 from requests.compat import unquote_plus
 
@@ -69,7 +91,9 @@ from six import binary_type, iteritems, itervalues, string_types, text_type, vie
 from tornado.web import RequestHandler
 
 
-standard_library.install_aliases()
+if sys.version_info[0] == 2:
+    from future import standard_library
+    standard_library.install_aliases()
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -102,7 +126,7 @@ result_type_map = {
 class ApiHandler(RequestHandler):
     """Api class that returns json results."""
 
-    version = 6  # use an int since float-point is unpredictable
+    version = 7  # use an int since float-point is unpredictable
 
     def __init__(self, *args, **kwargs):
         super(ApiHandler, self).__init__(*args, **kwargs)
@@ -111,7 +135,7 @@ class ApiHandler(RequestHandler):
     #     self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
 
     def get(self, *args, **kwargs):
-        kwargs = self.request.arguments
+        kwargs = {k: self.get_arguments(k) for k in self.request.arguments}
         for arg, value in iteritems(kwargs):
             if len(value) == 1:
                 kwargs[arg] = value[0]
@@ -140,9 +164,9 @@ class ApiHandler(RequestHandler):
         try:
             out_dict = _call_dispatcher(args, kwargs)
         except Exception as error:  # real internal error oohhh nooo :(
-            log.exception(u'API :: {0!r}', error.message)
+            log.exception(u'API :: {0!r}', error)
             error_data = {
-                'error_msg': error.message,
+                'error_msg': text_type(error),
                 'args': args,
                 'kwargs': kwargs
             }
@@ -173,7 +197,7 @@ class ApiHandler(RequestHandler):
         except Exception as error:  # if we fail to generate the output fake an error
             log.exception(u'API :: Traceback')
             out = '{{"result": "{0}", "message": "error while composing output: {1!r}"}}'.format(
-                result_type_map[RESULT_ERROR], error.message
+                result_type_map[RESULT_ERROR], error
             )
         return out
 
@@ -214,7 +238,7 @@ class ApiHandler(RequestHandler):
                         else:
                             cur_out_dict = _responds(RESULT_ERROR, 'No such cmd: {0!r}'.format(cmd))
                     except ApiError as error:  # Api errors that we raised, they are harmless
-                        cur_out_dict = _responds(RESULT_ERROR, msg=error.message)
+                        cur_out_dict = _responds(RESULT_ERROR, msg=text_type(error))
                 else:  # if someone chained one of the forbidden commands they will get an error for this one cmd
                     cur_out_dict = _responds(RESULT_ERROR, msg='The cmd {0!r} is not supported while chaining'.format(cmd))
 
@@ -733,7 +757,7 @@ class CMD_Episode(ApiCall):
         # absolute vs relative vs broken
         show_path = None
         try:
-            show_path = show_obj.location
+            show_path = show_obj.validate_location
         except ShowDirectoryNotFoundException:
             pass
 
@@ -794,7 +818,7 @@ class CMD_EpisodeSearch(ApiCall):
             return _responds(RESULT_FAILURE, msg='Episode not found')
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = ForcedSearchQueueItem(show_obj, [ep_obj])
+        ep_queue_item = BacklogQueueItem(show_obj, [ep_obj])
         app.forced_search_queue_scheduler.action.add_item(ep_queue_item)  # @UndefinedVariable
 
         # wait until the queue item tells us whether it worked or not
@@ -1077,7 +1101,7 @@ class CMD_History(ApiCall):
                 return {
                     'date': convert_date(cur_item.date),
                     'episode': cur_item.episode,
-                    'indexerid': cur_item.show_id,
+                    'indexer': cur_item.indexer_id,
                     'provider': cur_item.provider,
                     'quality': get_quality_string(cur_item.quality),
                     'resource': os.path.basename(cur_item.resource),
@@ -1085,9 +1109,7 @@ class CMD_History(ApiCall):
                     'season': cur_item.season,
                     'show_name': cur_item.show_name,
                     'status': statusStrings[cur_item.action],
-                    # Add tvdbid for backward compatibility
-                    # TODO: Make this actual tvdb id for other indexers
-                    'tvdbid': cur_item.show_id,
+                    'show_id': cur_item.show_id,
                 }
 
         results = [make_result(x, self.type) for x in history if x]
@@ -1304,9 +1326,14 @@ class CMD_PostProcess(ApiCall):
         if not self.type:
             self.type = 'manual'
 
-        data = process_tv.ProcessResult(self.path, process_method=self.process_method).process(
-            force=self.force_replace, is_priority=self.is_priority, delete_on=self.delete_files,
-            failed=self.failed, proc_type=self.type
+        data = app.post_processor_scheduler.action.run(
+            path=self.path,
+            process_method=self.process_method,
+            force=self.force_replace,
+            is_priority=self.is_priority,
+            delete_on=self.delete_files,
+            failed=self.failed,
+            proc_type=self.type
         )
 
         if not self.return_data:
@@ -1412,15 +1439,15 @@ class CMD_CheckVersion(ApiCall):
         data = {
             'current_version': {
                 'branch': check_version.get_branch(),
-                'commit': check_version.updater.get_cur_commit_hash(),
-                'version': check_version.updater.get_cur_version(),
+                'commit': check_version.updater.current_commit_hash,
+                'version': check_version.updater.current_version,
             },
             'latest_version': {
                 'branch': check_version.get_branch(),
-                'commit': check_version.updater.get_newest_commit_hash(),
-                'version': check_version.updater.get_newest_version(),
+                'commit': check_version.updater.newest_commit_hash,
+                'version': check_version.updater.newest_version,
             },
-            'commits_offset': check_version.updater.get_num_commits_behind(),
+            'commits_offset': check_version.updater.commits_behind,
             'needs_update': needs_update,
         }
 
@@ -1441,9 +1468,9 @@ class CMD_CheckScheduler(ApiCall):
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select('SELECT last_backlog FROM info')
 
-        backlog_paused = app.search_queue_scheduler.action.is_backlog_paused()  # @UndefinedVariable
-        backlog_running = app.search_queue_scheduler.action.is_backlog_in_progress()  # @UndefinedVariable
-        next_backlog = app.backlog_search_scheduler.next_run().strftime(dateFormat).decode(app.SYS_ENCODING)
+        backlog_paused = app.search_queue_scheduler.action.is_backlog_paused()
+        backlog_running = app.search_queue_scheduler.action.is_backlog_in_progress()
+        next_backlog = app.backlog_search_scheduler.next_run().strftime(dateFormat)
 
         data = {'backlog_is_paused': int(backlog_paused), 'backlog_is_running': int(backlog_running),
                 'last_backlog': _ordinal_to_date_form(sql_results[0]['last_backlog']),
@@ -1666,7 +1693,7 @@ class CMD_SearchIndexers(ApiCall):
 
                 try:
                     api_data = indexer_api[self.name]
-                except (IndexerShowNotFound, IndexerShowIncomplete, IndexerError):
+                except (IndexerShowNotFound, IndexerError):
                     log.warning(u'API :: Unable to find show with name {0}', self.name)
                     continue
 
@@ -1691,7 +1718,7 @@ class CMD_SearchIndexers(ApiCall):
 
                 try:
                     my_show = indexer_api[int(self.indexerid)]
-                except (IndexerShowNotFound, IndexerShowIncomplete, IndexerError):
+                except (IndexerShowNotFound, IndexerError):
                     log.warning(u'API :: Unable to find show with id {0}', self.indexerid)
                     return _responds(RESULT_SUCCESS, {'results': [], 'langid': lang_id})
 
@@ -1902,7 +1929,7 @@ class CMD_Show(ApiCall):
         show_dict['quality_details'] = {'initial': any_qualities, 'archive': best_qualities}
 
         try:
-            show_dict['location'] = show_obj.location
+            show_dict['location'] = show_obj.validate_location
         except ShowDirectoryNotFoundException:
             show_dict['location'] = ''
 
@@ -2011,8 +2038,6 @@ class CMD_ShowAddExisting(ApiCall):
         # set indexer so we can pass it along when adding show to Medusa
         indexer = indexer_result['data']['results'][0]['indexer']
 
-        # use default quality as a fail-safe
-        new_quality = int(app.QUALITY_DEFAULT)
         i_quality_id = []
         a_quality_id = []
 
@@ -2023,12 +2048,12 @@ class CMD_ShowAddExisting(ApiCall):
             for quality in self.archive:
                 a_quality_id.append(quality_map[quality])
 
-        if i_quality_id or a_quality_id:
-            new_quality = Quality.combine_qualities(i_quality_id, a_quality_id)
+        if not self.initial and not self.archive:
+            i_quality_id, a_quality_id = Quality.split_quality(int(app.QUALITY_DEFAULT))
 
         app.show_queue_scheduler.action.addShow(
             int(indexer), int(self.indexerid), self.location,
-            default_status=app.STATUS_DEFAULT, quality=new_quality,
+            default_status=app.STATUS_DEFAULT, quality={'allowed': i_quality_id, 'preferred': a_quality_id},
             season_folders=int(self.season_folders), subtitles=self.subtitles,
             default_status_after=app.STATUS_DEFAULT_AFTER
         )
@@ -2105,8 +2130,6 @@ class CMD_ShowAddNew(ApiCall):
         if not os.path.isdir(self.location):
             return _responds(RESULT_FAILURE, msg='{0!r} is not a valid location'.format(self.location))
 
-        # use default quality as a fail-safe
-        new_quality = int(app.QUALITY_DEFAULT)
         i_quality_id = []
         a_quality_id = []
 
@@ -2117,8 +2140,8 @@ class CMD_ShowAddNew(ApiCall):
             for quality in self.archive:
                 a_quality_id.append(quality_map[quality])
 
-        if i_quality_id or a_quality_id:
-            new_quality = Quality.combine_qualities(i_quality_id, a_quality_id)
+        if not self.initial and not self.archive:
+            i_quality_id, a_quality_id = Quality.split_quality(int(app.QUALITY_DEFAULT))
 
         # use default status as a fail-safe
         new_status = app.STATUS_DEFAULT
@@ -2186,9 +2209,9 @@ class CMD_ShowAddNew(ApiCall):
 
         app.show_queue_scheduler.action.addShow(
             int(indexer), int(self.indexerid), show_path, default_status=new_status,
-            quality=new_quality, season_folders=int(self.season_folders),
-            lang=self.lang, subtitles=self.subtitles, anime=self.anime,
-            scene=self.scene, default_status_after=default_ep_status_after
+            quality={'allowed': i_quality_id, 'preferred': a_quality_id},
+            season_folders=int(self.season_folders), lang=self.lang, subtitles=self.subtitles,
+            anime=self.anime, scene=self.scene, default_status_after=default_ep_status_after
         )
 
         return _responds(RESULT_SUCCESS, {'name': indexer_name}, indexer_name + ' has been queued to be added')
@@ -2769,7 +2792,7 @@ class CMD_ShowUpdate(ApiCall):
             app.show_queue_scheduler.action.updateShow(show_obj)
             return _responds(RESULT_SUCCESS, msg='{0} has queued to be updated'.format(show_obj.name))
         except CantUpdateShowException as error:
-            log.debug(u'API::Unable to update show: {0}', error.message)
+            log.debug(u'API::Unable to update show: {0!r}', error)
             return _responds(RESULT_FAILURE, msg='Unable to update {0}'.format(show_obj.name))
 
 

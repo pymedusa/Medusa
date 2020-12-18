@@ -5,21 +5,21 @@ from __future__ import unicode_literals
 import datetime
 import logging
 import re
-from builtins import str
+
 
 from babelfish import Country
 
 from medusa import helpers
 from medusa.app import TVDB_API_KEY
 from medusa.helper.common import dateFormat, episode_num
-from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
-from medusa.indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
-from medusa.indexers.tvdbv2.tvdbv2_api import API_BASE_TVDB
+from medusa.indexers.api import indexerApi
+from medusa.indexers.config import INDEXER_TVDBV2
+from medusa.indexers.exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
+from medusa.indexers.tvdbv2.api import API_BASE_TVDB
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.metadata import generic
 
-from six import string_types
+from six import string_types, text_type
 
 try:
     import xml.etree.cElementTree as etree
@@ -117,11 +117,11 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
 
         if getattr(my_show, 'rating', None):
             rating = etree.SubElement(tv_node, 'rating')
-            rating.text = str(my_show['rating'])
+            rating.text = text_type(my_show['rating'])
 
         if getattr(my_show, 'firstaired', None):
             try:
-                year_text = str(datetime.datetime.strptime(my_show['firstaired'], dateFormat).year)
+                year_text = text_type(datetime.datetime.strptime(my_show['firstaired'], dateFormat).year)
                 if year_text:
                     year = etree.SubElement(tv_node, 'year')
                     year.text = year_text
@@ -148,7 +148,12 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
 
         if getattr(my_show, 'id', None):
             indexer_id = etree.SubElement(tv_node, 'id')
-            indexer_id.text = str(my_show['id'])
+            indexer_id.text = text_type(my_show['id'])
+
+            uniqueid = etree.SubElement(tv_node, 'uniqueid')
+            uniqueid.set('type', series_obj.indexer_name)
+            uniqueid.set('default', 'true')
+            uniqueid.text = text_type(my_show['id'])
 
         if getattr(my_show, 'genre', None) and isinstance(my_show['genre'], string_types):
             for genre in self._split_info(my_show['genre']):
@@ -242,7 +247,7 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
                 return None
 
             if not getattr(my_ep, 'firstaired', None):
-                my_ep['firstaired'] = str(datetime.date.fromordinal(1))
+                my_ep['firstaired'] = text_type(datetime.date.fromordinal(1))
 
             if not getattr(my_ep, 'episodename', None):
                 log.debug(u'Not generating nfo because the ep has no title')
@@ -265,17 +270,19 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
                 showtitle.text = series_obj['seriesname']
 
             season = etree.SubElement(episode, 'season')
-            season.text = str(ep_to_write.season)
+            season.text = text_type(ep_to_write.season)
 
             episodenum = etree.SubElement(episode, 'episode')
-            episodenum.text = str(ep_to_write.episode)
+            episodenum.text = text_type(ep_to_write.episode)
 
             uniqueid = etree.SubElement(episode, 'uniqueid')
-            uniqueid.text = str(ep_to_write.indexerid)
+            uniqueid.set('type', ep_obj.indexer_name)
+            uniqueid.set('default', 'true')
+            uniqueid.text = text_type(ep_to_write.indexerid)
 
             if ep_to_write.airdate != datetime.date.fromordinal(1):
                 aired = etree.SubElement(episode, 'aired')
-                aired.text = str(ep_to_write.airdate)
+                aired.text = text_type(ep_to_write.airdate)
 
             if getattr(my_ep, 'overview', None):
                 plot = etree.SubElement(episode, 'plot')
@@ -283,7 +290,7 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
 
             if ep_to_write.season and getattr(series_obj, 'runtime', None):
                 runtime = etree.SubElement(episode, 'runtime')
-                runtime.text = str(series_obj['runtime'])
+                runtime.text = text_type(series_obj['runtime'])
 
             if getattr(my_ep, 'airsbefore_season', None):
                 displayseason = etree.SubElement(episode, 'displayseason')
@@ -302,7 +309,7 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
 
             if getattr(my_ep, 'rating', None):
                 rating = etree.SubElement(episode, 'rating')
-                rating.text = str(my_ep['rating'])
+                rating.text = text_type(my_ep['rating'])
 
             if getattr(my_ep, 'writer', None) and isinstance(my_ep['writer'], string_types):
                 for writer in self._split_info(my_ep['writer']):

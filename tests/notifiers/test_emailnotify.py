@@ -99,26 +99,26 @@ from six import text_type
         }
     },
     {  # p11 - [%SN - %AD - %EN] - hypen in episode name
-        'ep_name': 'Archer - 2017-08-12 - Danger Island - Disheartening Situation',
+        'ep_name': 'Archer - 2017 08 12 - Danger Island - Disheartening Situation',
         'expected': {
             'show': 'Archer',
-            'ep_id': '2017-08-12',
+            'ep_id': '2017 08 12',
             'episode': 'Danger Island - Disheartening Situation'
         }
     },
     {  # p12 - [%SN - %AD - %EN]
-        'ep_name': 'Jersey Shore Family Vacation - 2018-04-20 - Meatball Down',
+        'ep_name': 'Jersey Shore Family Vacation - 2018 04 20 - Meatball Down',
         'expected': {
             'show': 'Jersey Shore Family Vacation',
-            'ep_id': '2018-04-20',
+            'ep_id': '2018 04 20',
             'episode': 'Meatball Down'
         }
     },
     {  # p13 - [%SN - %AD - %EN] - empty episode name
-        'ep_name': 'Jersey Shore Family Vacation - 2018-04-20 - ',
+        'ep_name': 'Jersey Shore Family Vacation - 2018 04 20 - ',
         'expected': {
             'show': 'Jersey Shore Family Vacation',
-            'ep_id': '2018-04-20',
+            'ep_id': '2018 04 20',
             'episode': ''
         }
     },
@@ -173,7 +173,7 @@ def test__parse_name(p):
             'sameuser@pymedusa.com',
         }
     },
-    {  # p1 - show-specific, legacy
+    {  # p1 - show-specific, no emails legacy
         'show': 'Show Name',
         'EMAIL_LIST': [
             'admin@pymedusa.com',
@@ -181,13 +181,12 @@ def test__parse_name(p):
         ],
         'mocks': [
             ('medusa.db.DBConnection.select', [{
-                'notify_list': 'sameuser@pymedusa.com,user1@pymedusa.com'
+                'notify_list': None
             }])
         ],
         'expected': {
             'admin@pymedusa.com',
-            'sameuser@pymedusa.com',
-            'user1@pymedusa.com'
+            'sameuser@pymedusa.com'
         }
     },
     {  # p2 - show-specific, no emails
@@ -198,7 +197,7 @@ def test__parse_name(p):
         ],
         'mocks': [
             ('medusa.db.DBConnection.select', [{
-                'notify_list': ''
+                'notify_list': '{}'
             }])
         ],
         'expected': {
@@ -214,7 +213,7 @@ def test__parse_name(p):
         ],
         'mocks': [
             ('medusa.db.DBConnection.select', [{
-                'notify_list': text_type({'emails': 'sameuser@pymedusa.com,user1@pymedusa.com'})
+                'notify_list': '{"emails": "sameuser@pymedusa.com,user1@pymedusa.com"}'
             }])
         ],
         'expected': {

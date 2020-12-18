@@ -30,8 +30,11 @@
 #                                                                              #
 ################################################################################
 
-import github.GithubObject
+from __future__ import absolute_import
 
+import six
+
+import github.GithubObject
 import github.GitObject
 
 
@@ -72,10 +75,7 @@ class GitRef(github.GithubObject.CompletableGithubObject):
         :calls: `DELETE /repos/:owner/:repo/git/refs/:ref <http://developer.github.com/v3/git/refs>`_
         :rtype: None
         """
-        headers, data = self._requester.requestJsonAndCheck(
-            "DELETE",
-            self.url
-        )
+        headers, data = self._requester.requestJsonAndCheck("DELETE", self.url)
 
     def edit(self, sha, force=github.GithubObject.NotSet):
         """
@@ -84,7 +84,7 @@ class GitRef(github.GithubObject.CompletableGithubObject):
         :param force: bool
         :rtype: None
         """
-        assert isinstance(sha, (str, unicode)), sha
+        assert isinstance(sha, (str, six.text_type)), sha
         assert force is github.GithubObject.NotSet or isinstance(force, bool), force
         post_parameters = {
             "sha": sha,
@@ -92,9 +92,7 @@ class GitRef(github.GithubObject.CompletableGithubObject):
         if force is not github.GithubObject.NotSet:
             post_parameters["force"] = force
         headers, data = self._requester.requestJsonAndCheck(
-            "PATCH",
-            self.url,
-            input=post_parameters
+            "PATCH", self.url, input=post_parameters
         )
         self._useAttributes(data)
 
@@ -121,7 +119,9 @@ class GitRef(github.GithubObject.CompletableGithubObject):
 
     def _useAttributes(self, attributes):
         if "object" in attributes:  # pragma no branch
-            self._object = self._makeClassAttribute(github.GitObject.GitObject, attributes["object"])
+            self._object = self._makeClassAttribute(
+                github.GitObject.GitObject, attributes["object"]
+            )
         if "ref" in attributes:  # pragma no branch
             self._ref = self._makeStringAttribute(attributes["ref"])
         if "url" in attributes:  # pragma no branch

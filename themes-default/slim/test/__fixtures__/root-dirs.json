@@ -1,11 +1,13 @@
 {
-  "state": {
-    "config": {
-      "rootDirs": [
-        "1",
-        "/media/TV",
-        "/media/Anime/"
-      ]
+    "state": {
+        "config": {
+            "general": {
+                "rootDirs": [
+                    "1",
+                    "/media/TV",
+                    "/media/Anime/"
+                ]
+            }
+        }
     }
-  }
 }

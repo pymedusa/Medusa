@@ -1,0 +1,66 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Login.test.js renders 1`] = `
+<div
+  class="login"
+>
+  <form
+    action=""
+    method="post"
+  >
+    <h1>
+      Medusa
+    </h1>
+     
+    <div
+      class="ctrlHolder"
+    >
+      <input
+        autocomplete="off"
+        class="inlay"
+        name="username"
+        placeholder="Username"
+        type="text"
+      />
+    </div>
+     
+    <div
+      class="ctrlHolder"
+    >
+      <input
+        autocomplete="off"
+        class="inlay"
+        name="password"
+        placeholder="Password"
+        type="password"
+      />
+    </div>
+     
+    <div
+      class="ctrlHolder"
+    >
+      <label
+        class="remember_me"
+        title="for 30 days"
+      >
+        <input
+          checked="checked"
+          class="inlay"
+          id="remember_me"
+          name="remember_me"
+          type="checkbox"
+          value="1"
+        />
+         Remember me
+      </label>
+       
+      <input
+        class="button"
+        name="submit"
+        type="submit"
+        value="Login"
+      />
+    </div>
+  </form>
+</div>
+`;

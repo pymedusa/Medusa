@@ -41,12 +41,8 @@
 ? x264
 ? h.264
 ? x.264
-? mpeg4-AVC
 ? AVC
 ? AVCHD
-? AVCHD-SC
-? H.264-SC
-? H.264-AVCHD-SC
 ? -MPEG-4
 ? -mpeg4
 ? -mpeg
@@ -71,6 +67,21 @@
 ? h265-HP
 : video_codec: H.265
   video_profile: High
+
+? H.264-SC
+: video_codec: H.264
+  video_profile: Scalable Video Coding
+
+? mpeg4-AVC
+: video_codec: H.264
+  video_profile: Advanced Video Codec High Definition
+
+? AVCHD-SC
+? H.264-AVCHD-SC
+: video_codec: H.264
+  video_profile:
+  - Scalable Video Coding
+  - Advanced Video Codec High Definition
 
 ? VC1
 ? VC-1

@@ -3,9 +3,8 @@
 """
 video_codec and video_profile property
 """
-from rebulk.remodule import re
-
 from rebulk import Rebulk, Rule, RemoveMatch
+from rebulk.remodule import re
 
 from ..common import dash
 from ..common.pattern import is_disabled
@@ -36,14 +35,15 @@ def video_codec(config):  # pylint:disable=unused-argument
     rebulk.string('VP8', 'VP80', value='VP8')
     rebulk.string('VP9', value='VP9')
     rebulk.regex('[hx]-?263', value='H.263')
-    rebulk.regex('[hx]-?264(?:-?AVC(?:HD)?)?(?:-?SC)?', 'MPEG-?4(?:-?AVC(?:HD)?)', 'AVC(?:HD)?(?:-?SC)?', value='H.264')
-    rebulk.regex('[hx]-?265(?:-?HEVC)?', 'HEVC', value='H.265')
+    rebulk.regex('[hx]-?264', '(MPEG-?4)?AVC(?:HD)?', value='H.264')
+    rebulk.regex('[hx]-?265', 'HEVC', value='H.265')
     rebulk.regex('(?P<video_codec>hevc)(?P<color_depth>10)', value={'video_codec': 'H.265', 'color_depth': '10-bit'},
                  tags=['video-codec-suffix'], children=True)
 
     # http://blog.mediacoderhq.com/h264-profiles-and-levels/
-    # http://fr.wikipedia.org/wiki/H.264
-    rebulk.defaults(name="video_profile",
+    # https://en.wikipedia.org/wiki/H.264/MPEG-4_AVC
+    rebulk.defaults(clear=True,
+                    name="video_profile",
                     validator=seps_surround,
                     disabled=lambda context: is_disabled(context, 'video_profile'))
 
@@ -51,6 +51,14 @@ def video_codec(config):  # pylint:disable=unused-argument
     rebulk.string('XP', 'EP', value='Extended', tags='video_profile.rule')
     rebulk.string('MP', value='Main', tags='video_profile.rule')
     rebulk.string('HP', 'HiP', value='High', tags='video_profile.rule')
+
+    # https://en.wikipedia.org/wiki/Scalable_Video_Coding
+    rebulk.string('SC', 'SVC', value='Scalable Video Coding', tags='video_profile.rule')
+    # https://en.wikipedia.org/wiki/AVCHD
+    rebulk.regex('AVC(?:HD)?', value='Advanced Video Codec High Definition', tags='video_profile.rule')
+    # https://en.wikipedia.org/wiki/H.265/HEVC
+    rebulk.string('HEVC', value='High Efficiency Video Coding', tags='video_profile.rule')
+
     rebulk.regex('Hi422P', value='High 4:2:2')
     rebulk.regex('Hi444PP', value='High 4:4:4 Predictive')
     rebulk.regex('Hi10P?', value='High 10')  # no profile validation is required
@@ -58,7 +66,8 @@ def video_codec(config):  # pylint:disable=unused-argument
     rebulk.string('DXVA', value='DXVA', name='video_api',
                   disabled=lambda context: is_disabled(context, 'video_api'))
 
-    rebulk.defaults(name='color_depth',
+    rebulk.defaults(clear=True,
+                    name='color_depth',
                     validator=seps_surround,
                     disabled=lambda context: is_disabled(context, 'color_depth'))
     rebulk.regex('12.?bits?', value='12-bit')
@@ -107,7 +116,9 @@ class VideoProfileRule(Rule):
         profile_list = matches.named('video_profile', lambda match: 'video_profile.rule' in match.tags)
         ret = []
         for profile in profile_list:
-            codec = matches.previous(profile, lambda match: match.name == 'video_codec')
+            codec = matches.at_span(profile.span, lambda match: match.name == 'video_codec', 0)
+            if not codec:
+                codec = matches.previous(profile, lambda match: match.name == 'video_codec')
             if not codec:
                 codec = matches.next(profile, lambda match: match.name == 'video_codec')
             if not codec:

@@ -14,6 +14,8 @@ from rebulk.processors import POST_PROCESS
 from rebulk.rebulk import Rebulk
 from rebulk.rules import RemoveMatch, Rule
 
+import six
+
 
 def blacklist():
     """Blacklisted patterns.
@@ -48,14 +50,14 @@ def source():
     # More accurate sources
     rebulk.regex('BD-?Rip', 'BD(?=-?Mux)', value='BDRip',
                  conflict_solver=lambda match, other: other if other.name == 'source' else '__default__')
-    rebulk.regex('BD(?!\d)', value='BDRip', validator=seps_surround,
+    rebulk.regex(r'BD(?!\d)', value='BDRip', validator=seps_surround,
                  conflict_solver=lambda match, other: other if other.name == 'source' else '__default__')
     rebulk.regex('BR-?Rip', 'BR(?=-?Mux)', value='BRRip',
                  conflict_solver=lambda match, other: other if other.name == 'source' else '__default__')
     rebulk.regex('DVD-?Rip', value='DVDRip',
                  conflict_solver=lambda match, other: other if other.name == 'source' else '__default__')
 
-    rebulk.regex('DVD\d', value='DVD')
+    rebulk.regex(r'DVD\d', value='DVD')
 
     return rebulk
 
@@ -107,7 +109,10 @@ def container():
                     other.name == 'container' and 'extension' not in other.tags
                     else '__default__')
 
-    nzb = [b'nzb']
+    if six.PY3:
+        nzb = ['nzb']
+    else:
+        nzb = [b'nzb']
 
     rebulk.regex(r'\.' + build_or_pattern(nzb) + '$', exts=nzb, tags=['extension', 'torrent'])
 

@@ -16,8 +16,8 @@ from medusa import (
     tv,
 )
 from medusa.common import cpu_presets
-from medusa.helper.common import episode_num
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.helper.common import convert_size, episode_num
+from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
@@ -70,18 +70,11 @@ class BTNProvider(TorrentProvider):
             'base_url': 'https://api.broadcasthe.net',
         }
 
-        # Proper Strings
-        self.proper_strings = []
-
         # Miscellaneous Options
         self.supports_absolute_numbering = True
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Cache
-        self.cache = tv.Cache(self, min_time=10)  # Only poll BTN every 15 minutes max
+        self.cache = tv.Cache(self, min_time=15)
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
@@ -141,17 +134,18 @@ class BTNProvider(TorrentProvider):
             if not all([title, download_url]):
                 continue
 
-            seeders = row.get('Seeders', 1)
-            leechers = row.get('Leechers', 0)
+            seeders = int(row.get('Seeders', 1))
+            leechers = int(row.get('Leechers', 0))
 
             # Filter unseeded torrent
-            if seeders < min(self.minseed, 1):
-                log.debug("Discarding torrent because it doesn't meet the"
-                          ' minimum seeders: {0}. Seeders: {1}',
-                          title, seeders)
+            if seeders < self.minseed:
+                if mode != 'RSS':
+                    log.debug("Discarding torrent because it doesn't meet the"
+                              ' minimum seeders: {0}. Seeders: {1}',
+                              title, seeders)
                 continue
 
-            size = row.get('Size') or -1
+            size = convert_size(row.get('Size'), default=-1)
 
             pubdate_raw = row.get('Time')
             pubdate = self.parse_pubdate(pubdate_raw, fromtimestamp=True)
@@ -280,7 +274,7 @@ class BTNProvider(TorrentProvider):
                 log.warning('Incorrect authentication credentials.')
             elif (code, message) == (-32002, 'Call Limit Exceeded'):
                 log.warning('You have exceeded the limit of 150 calls per hour.')
-            elif code in (500, 524):
+            elif code in (500, 502, 521, 524):
                 log.warning('Provider is currently unavailable. Error: {code} {text}',
                             {'code': code, 'text': message})
             else:

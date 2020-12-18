@@ -1,0 +1,313 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Logs.test.js renders 1`] = `
+<div>
+  <div
+    class="col-md-12 pull-right"
+  >
+    <div
+      class="logging-filter-control pull-right"
+    >
+      <div
+        class="show-option"
+      >
+        <button
+          class="btn-medusa btn-inline"
+          type="button"
+        >
+          <i
+            class="glyphicon glyphicon-pause"
+          />
+          
+                    Pause
+                
+        </button>
+      </div>
+       
+      <div
+        class="show-option"
+      >
+        <span>
+          Logging level:
+                    
+          <select
+            class="form-control form-control-inline input-sm"
+          >
+            <option
+              value="DEBUG"
+            >
+              Debug
+            </option>
+            <option
+              value="INFO"
+            >
+              Info
+            </option>
+            <option
+              value="WARNING"
+            >
+              Warning
+            </option>
+            <option
+              value="ERROR"
+            >
+              Error
+            </option>
+          </select>
+        </span>
+      </div>
+       
+      <div
+        class="show-option"
+      >
+        <span>
+          Filter log by:
+                    
+          <select
+            class="form-control form-control-inline input-sm"
+          >
+            <option
+              value=""
+            >
+              &lt;No Filter&gt;
+            </option>
+             
+            <option
+              value="BACKLOG"
+            >
+              Backlog
+            </option>
+            <option
+              value="CHECKVERSION"
+            >
+              Check Version
+            </option>
+            <option
+              value="DAILYSEARCHER"
+            >
+              Daily Searcher
+            </option>
+            <option
+              value="ERROR"
+            >
+              Error
+            </option>
+            <option
+              value="EVENT"
+            >
+              Event
+            </option>
+            <option
+              value="FINDPROPERS"
+            >
+              Find Propers
+            </option>
+            <option
+              value="FINDSUBTITLES"
+            >
+              Find Subtitles
+            </option>
+            <option
+              value="MAIN"
+            >
+              Main
+            </option>
+            <option
+              value="POSTPROCESSOR"
+            >
+              PostProcessor
+            </option>
+            <option
+              value="SEARCHQUEUE"
+            >
+              Search Queue (All)
+            </option>
+            <option
+              value="SEARCHQUEUE-BACKLOG"
+            >
+              Search Queue (Backlog)
+            </option>
+            <option
+              value="SEARCHQUEUE-DAILY-SEARCH"
+            >
+              Search Queue (Daily Searcher)
+            </option>
+            <option
+              value="SEARCHQUEUE-FORCED"
+            >
+              Search Queue (Forced)
+            </option>
+            <option
+              value="SEARCHQUEUE-MANUAL"
+            >
+              Search Queue (Manual)
+            </option>
+            <option
+              value="SEARCHQUEUE-RETRY"
+            >
+              Search Queue (Retry/Failed)
+            </option>
+            <option
+              value="SEARCHQUEUE-RSS"
+            >
+              Search Queue (RSS)
+            </option>
+            <option
+              value="SHOWQUEUE"
+            >
+              Show Queue (All)
+            </option>
+            <option
+              value="SHOWQUEUE-REFRESH"
+            >
+              Show Queue (Refresh)
+            </option>
+            <option
+              value="SHOWQUEUE-SEASON-UPDATE"
+            >
+              Show Season Queue (Update)
+            </option>
+            <option
+              value="SHOWQUEUE-UPDATE"
+            >
+              Show Queue (Update)
+            </option>
+            <option
+              value="SHOWUPDATER"
+            >
+              Show Updater
+            </option>
+            <option
+              value="EPISODEUPDATER"
+            >
+              Episode Updater
+            </option>
+            <option
+              value="Thread"
+            >
+              Thread
+            </option>
+            <option
+              value="TORNADO"
+            >
+              Tornado
+            </option>
+            <option
+              value="TORRENTCHECKER"
+            >
+              Torrent Checker
+            </option>
+            <option
+              value="TRAKTCHECKER"
+            >
+              Trakt Checker
+            </option>
+          </select>
+        </span>
+      </div>
+       
+      <div
+        class="show-option"
+      >
+        <span>
+          Period:
+                    
+          <select
+            class="form-control form-control-inline input-sm"
+          >
+            <option
+              value="all"
+            >
+              All
+            </option>
+             
+            <option
+              value="one_day"
+            >
+              Last 24h
+            </option>
+             
+            <option
+              value="three_days"
+            >
+              Last 3 days
+            </option>
+             
+            <option
+              value="one_week"
+            >
+              Last 7 days
+            </option>
+          </select>
+        </span>
+      </div>
+       
+      <div
+        class="show-option"
+      >
+        <span>
+          Search log by:
+                    
+          <input
+            class="form-control form-control-inline input-sm"
+            placeholder="clear to reset"
+            type="text"
+          />
+        </span>
+      </div>
+    </div>
+  </div>
+   
+  <pre
+    class="col-md-12 fanartOpacity"
+  >
+    <div
+      class="notepad"
+    >
+      <app-link-stub
+        href="/api/v2/log?level=INFO&thread=&period=one_day&query=&limit=1000&api_key=1234567890ABCDEF1234567890ABCDEF&raw=true"
+        placeholder="indexer-to-name"
+      >
+        <img
+          src="images/notepad.png"
+        />
+      </app-link-stub>
+    </div>
+    <div>
+      2019-05-28 19:18:16 WARNING	CHECKVERSION :: [0a31350] git symbolic-ref -q HEAD returned no data
+    </div>
+    <div>
+      2019-05-28 19:01:54 ERROR	TORNADO :: [fab3029] Uncaught exception in APIv2: RuntimeError("generator didn't yield")
+Request: POST /api/v2/log (127.0.0.1)
+With body:
+{
+    "thread": "",
+    "message": "TEST",
+    "level": "INFO"
+}
+Traceback (most recent call last):
+  File "C:\\Dev\\Medusa\\ext\\tornado\\web.py", line 1592, in _execute
+    result = yield result
+  File "C:\\Dev\\Medusa\\ext\\tornado\\gen.py", line 1133, in run
+    value = future.result()
+  File "C:\\Dev\\Medusa\\ext\\tornado\\gen.py", line 1141, in run
+    yielded = self.gen.throw(*exc_info)
+  File "C:\\Dev\\Medusa\\medusa\\server\\api\\v2\\base.py", line 64, in async_call
+    content = yield IOLoop.current().run_in_executor(executor, prepared)
+  File "C:\\Dev\\Medusa\\ext\\tornado\\gen.py", line 1133, in run
+    value = future.result()
+  File "C:\\Python\\Python37\\lib\\concurrent\\futures\\thread.py", line 57, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\\Dev\\Medusa\\medusa\\server\\api\\v2\\log.py", line 159, in post
+    with rename_thread(new_name=thread):
+  File "C:\\Python\\Python37\\lib\\contextlib.py", line 114, in __enter__
+    raise RuntimeError("generator didn't yield") from None
+RuntimeError: generator didn't yield
+    </div>
+  </pre>
+   
+  <backstretch-stub
+    slug="tvdb294002"
+  />
+</div>
+`;

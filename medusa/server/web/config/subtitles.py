@@ -33,13 +33,12 @@ class ConfigSubtitles(Config):
         """
         t = PageTemplate(rh=self, filename='config_subtitles.mako')
 
-        return t.render(submenu=self.ConfigMenu(),
-                        controller='config', action='subtitlesPage')
+        return t.render(controller='config', action='subtitlesPage')
 
     def saveSubtitles(self, use_subtitles=None, subtitles_plugins=None, subtitles_languages=None, subtitles_dir=None, subtitles_perfect_match=None,
                       service_order=None, subtitles_history=None, subtitles_finder_frequency=None, subtitles_erase_cache=None,
                       subtitles_multi=None, embedded_subtitles_all=None, subtitles_extra_scripts=None, subtitles_pre_scripts=None, subtitles_hearing_impaired=None,
-                      addic7ed_user=None, addic7ed_pass=None, itasa_user=None, itasa_pass=None, legendastv_user=None, legendastv_pass=None, opensubtitles_user=None, opensubtitles_pass=None,
+                      addic7ed_user=None, addic7ed_pass=None, legendastv_user=None, legendastv_pass=None, opensubtitles_user=None, opensubtitles_pass=None,
                       subtitles_keep_only_wanted=None, embedded_subtitles_unknown_lang=None, subtitles_stop_at_first=None):
         """
         Save Subtitle Search related settings
@@ -66,8 +65,8 @@ class ConfigSubtitles(Config):
         services_str_list = service_order.split()
         subtitles_services_list = []
         subtitles_services_enabled = []
-        for curServiceStr in services_str_list:
-            cur_service, cur_enabled = curServiceStr.split(':')
+        for cur_service_str in services_str_list:
+            cur_service, cur_enabled = cur_service_str.split(':')
             subtitles_services_list.append(cur_service)
             subtitles_services_enabled.append(int(cur_enabled))
 
@@ -76,8 +75,6 @@ class ConfigSubtitles(Config):
 
         app.ADDIC7ED_USER = addic7ed_user or ''
         app.ADDIC7ED_PASS = addic7ed_pass or ''
-        app.ITASA_USER = itasa_user or ''
-        app.ITASA_PASS = itasa_pass or ''
         app.LEGENDASTV_USER = legendastv_user or ''
         app.LEGENDASTV_PASS = legendastv_pass or ''
         app.OPENSUBTITLES_USER = opensubtitles_user or ''

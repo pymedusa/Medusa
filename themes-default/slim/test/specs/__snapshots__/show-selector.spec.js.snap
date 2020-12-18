@@ -1,0 +1,319 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ShowSelector.test.js renders "loading..." with empty show array in /home/displayShow 1`] = `
+<div
+  class="show-selector form-inline hidden-print"
+>
+  <div
+    class="select-show-group pull-left top-5 bottom-5"
+  >
+    <select
+      class="select-show form-control input-sm-custom"
+      disabled="disabled"
+    >
+      <option>
+        Loading...
+      </option>
+    </select>
+  </div>
+</div>
+`;
+
+exports[`ShowSelector.test.js renders with articles(The|A|An) ignored in /home/displayShow 1`] = `
+<div
+  class="show-selector form-inline hidden-print"
+>
+  <div
+    class="select-show-group pull-left top-5 bottom-5"
+  >
+    <select
+      class="select-show form-control input-sm-custom"
+    >
+      <option
+        disabled="disabled"
+        hidden="hidden"
+        value="-- Select a Show --"
+      >
+        -- Select a Show --
+      </option>
+       
+      <optgroup
+        label="Series"
+      >
+        <option
+          value="tvdb76924"
+        >
+          Black Books
+        </option>
+        <option
+          value="tvdb330942"
+        >
+          Blue Planet II
+        </option>
+        <option
+          value="tvdb73787"
+        >
+          That '70s Show
+        </option>
+      </optgroup>
+      <optgroup
+        label="Anime"
+      >
+        <option
+          value="tvdb300835"
+        >
+          Ajin
+        </option>
+        <option
+          value="tvdb360438"
+        >
+          A Certain Scientific Accelerator
+        </option>
+        <option
+          value="tvdb313867"
+        >
+          Izetta, The Last Witch
+        </option>
+      </optgroup>
+    </select>
+  </div>
+</div>
+`;
+
+exports[`ShowSelector.test.js renders with shows in /home/displayShow 1`] = `
+<div
+  class="show-selector form-inline hidden-print"
+>
+  <div
+    class="select-show-group pull-left top-5 bottom-5"
+  >
+    <select
+      class="select-show form-control input-sm-custom"
+    >
+      <option
+        disabled="disabled"
+        hidden="hidden"
+        value="-- Select a Show --"
+      >
+        -- Select a Show --
+      </option>
+       
+      <optgroup
+        label="Series"
+      >
+        <option
+          value="tvdb76924"
+        >
+          Black Books
+        </option>
+        <option
+          value="tvdb330942"
+        >
+          Blue Planet II
+        </option>
+        <option
+          value="tvdb73787"
+        >
+          That '70s Show
+        </option>
+      </optgroup>
+      <optgroup
+        label="Anime"
+      >
+        <option
+          value="tvdb360438"
+        >
+          A Certain Scientific Accelerator
+        </option>
+        <option
+          value="tvdb300835"
+        >
+          Ajin
+        </option>
+        <option
+          value="tvdb313867"
+        >
+          Izetta, The Last Witch
+        </option>
+      </optgroup>
+    </select>
+  </div>
+</div>
+`;
+
+exports[`ShowSelector.test.js renders with shows in /home/editShow 1`] = `
+<div
+  class="show-selector form-inline hidden-print"
+>
+  <div
+    class="select-show-group pull-left top-5 bottom-5"
+  >
+    <select
+      class="select-show form-control input-sm-custom"
+    >
+      <option
+        disabled="disabled"
+        hidden="hidden"
+        value="-- Select a Show --"
+      >
+        -- Select a Show --
+      </option>
+       
+      <optgroup
+        label="Series"
+      >
+        <option
+          value="tvdb76924"
+        >
+          Black Books
+        </option>
+        <option
+          value="tvdb330942"
+        >
+          Blue Planet II
+        </option>
+        <option
+          value="tvdb73787"
+        >
+          That '70s Show
+        </option>
+      </optgroup>
+      <optgroup
+        label="Anime"
+      >
+        <option
+          value="tvdb360438"
+        >
+          A Certain Scientific Accelerator
+        </option>
+        <option
+          value="tvdb300835"
+        >
+          Ajin
+        </option>
+        <option
+          value="tvdb313867"
+        >
+          Izetta, The Last Witch
+        </option>
+      </optgroup>
+    </select>
+  </div>
+</div>
+`;
+
+exports[`ShowSelector.test.js renders with split sections in /home/displayShow 1`] = `
+<div
+  class="show-selector form-inline hidden-print"
+>
+  <div
+    class="select-show-group pull-left top-5 bottom-5"
+  >
+    <select
+      class="select-show form-control input-sm-custom"
+    >
+      <option
+        disabled="disabled"
+        hidden="hidden"
+        value="-- Select a Show --"
+      >
+        -- Select a Show --
+      </option>
+       
+      <optgroup
+        label="Series"
+      >
+        <option
+          value="tvdb76924"
+        >
+          Black Books
+        </option>
+        <option
+          value="tvdb330942"
+        >
+          Blue Planet II
+        </option>
+        <option
+          value="tvdb73787"
+        >
+          That '70s Show
+        </option>
+      </optgroup>
+      <optgroup
+        label="Anime"
+      >
+        <option
+          value="tvdb360438"
+        >
+          A Certain Scientific Accelerator
+        </option>
+        <option
+          value="tvdb300835"
+        >
+          Ajin
+        </option>
+        <option
+          value="tvdb313867"
+        >
+          Izetta, The Last Witch
+        </option>
+      </optgroup>
+    </select>
+  </div>
+</div>
+`;
+
+exports[`ShowSelector.test.js renders without placeholder in /home/displayShow 1`] = `
+<div
+  class="show-selector form-inline hidden-print"
+>
+  <div
+    class="select-show-group pull-left top-5 bottom-5"
+  >
+    <select
+      class="select-show form-control input-sm-custom"
+    >
+      <!---->
+       
+      <optgroup
+        label="Series"
+      >
+        <option
+          value="tvdb76924"
+        >
+          Black Books
+        </option>
+        <option
+          value="tvdb330942"
+        >
+          Blue Planet II
+        </option>
+        <option
+          value="tvdb73787"
+        >
+          That '70s Show
+        </option>
+      </optgroup>
+      <optgroup
+        label="Anime"
+      >
+        <option
+          value="tvdb360438"
+        >
+          A Certain Scientific Accelerator
+        </option>
+        <option
+          value="tvdb300835"
+        >
+          Ajin
+        </option>
+        <option
+          value="tvdb313867"
+        >
+          Izetta, The Last Witch
+        </option>
+      </optgroup>
+    </select>
+  </div>
+</div>
+`;

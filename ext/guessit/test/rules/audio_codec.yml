@@ -8,6 +8,9 @@
 ? +lame3.100
 : audio_codec: MP3
 
+? +MP2
+: audio_codec: MP2
+
 ? +DolbyDigital
 ? +DD
 ? +Dolby Digital

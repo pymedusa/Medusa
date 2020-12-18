@@ -1,20 +1,26 @@
 import Vue from 'vue';
-import Vuex from 'vuex';
+import Vuex, { Store } from 'vuex';
 import VueNativeSock from 'vue-native-websocket';
 import {
     auth,
     config,
     defaults,
-    metadata,
+    history,
     notifications,
-    qualities,
+    provider,
     shows,
+    search,
     socket,
-    statuses
+    stats
 } from './modules';
-import { SOCKET_ONMESSAGE } from './mutation-types';
-
-const { Store } = Vuex;
+import {
+    SOCKET_ONOPEN,
+    SOCKET_ONCLOSE,
+    SOCKET_ONERROR,
+    SOCKET_ONMESSAGE,
+    SOCKET_RECONNECT,
+    SOCKET_RECONNECT_ERROR
+} from './mutation-types';
 
 Vue.use(Vuex);
 
@@ -23,12 +29,13 @@ const store = new Store({
         auth,
         config,
         defaults,
-        metadata,
+        history,
         notifications,
-        qualities,
+        provider,
+        search,
         shows,
         socket,
-        statuses
+        stats
     },
     state: {},
     mutations: {},
@@ -41,7 +48,7 @@ const passToStoreHandler = function(eventName, event, next) {
     const target = eventName.toUpperCase();
     const eventData = event.data;
 
-    if (target === SOCKET_ONMESSAGE) {
+    if (target === 'SOCKET_ONMESSAGE') {
         const message = JSON.parse(eventData);
         const { data, event } = message;
 
@@ -52,6 +59,14 @@ const passToStoreHandler = function(eventName, event, next) {
         } else if (event === 'configUpdated') {
             const { section, config } = data;
             this.store.dispatch('updateConfig', { section, config });
+        } else if (event === 'showUpdated' || event === 'showAdded') {
+            this.store.dispatch('updateShow', data);
+        } else if (event === 'addManualSearchResult') {
+            this.store.dispatch('addManualSearchResult', data);
+        } else if (event === 'QueueItemUpdate') {
+            this.store.dispatch('updateSearchQueueItem', data);
+        } else if (event === 'QueueItemShowAdd') {
+            this.store.dispatch('updateShowQueueItem', data);
         } else {
             window.displayNotification('info', event, data);
         }
@@ -75,7 +90,15 @@ Vue.use(VueNativeSock, websocketUrl, {
     reconnection: true, // (Boolean) whether to reconnect automatically (false)
     reconnectionAttempts: 2, // (Number) number of reconnection attempts before giving up (Infinity),
     reconnectionDelay: 1000, // (Number) how long to initially wait before attempting a new (1000)
-    passToStoreHandler // (Function|<false-y>) Handler for events triggered by the WebSocket (false)
+    passToStoreHandler, // (Function|<false-y>) Handler for events triggered by the WebSocket (false)
+    mutations: {
+        SOCKET_ONOPEN,
+        SOCKET_ONCLOSE,
+        SOCKET_ONERROR,
+        SOCKET_ONMESSAGE,
+        SOCKET_RECONNECT,
+        SOCKET_RECONNECT_ERROR
+    }
 });
 
 export default store;

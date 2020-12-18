@@ -1,0 +1,1791 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ConfigGeneral.test.js renders 1`] = `
+<div
+  id="config-genaral"
+>
+  <div
+    id="config-content"
+  >
+    <form
+      id="configForm"
+      method="post"
+    >
+      <div
+        id="config-components"
+      >
+        <ul>
+          <li>
+            <app-link-stub
+              href="#misc"
+              placeholder="indexer-to-name"
+            >
+              Misc
+            </app-link-stub>
+          </li>
+           
+          <li>
+            <app-link-stub
+              href="#interface"
+              placeholder="indexer-to-name"
+            >
+              Interface
+            </app-link-stub>
+          </li>
+           
+          <li>
+            <app-link-stub
+              href="#advanced-settings"
+              placeholder="indexer-to-name"
+            >
+              Advanced Settings
+            </app-link-stub>
+          </li>
+        </ul>
+         
+        <div
+          id="misc"
+        >
+          <div
+            class="row component-group"
+          >
+            <div
+              class="component-group-desc col-xs-12 col-md-2"
+            >
+              <h3>
+                Misc
+              </h3>
+               
+              <p>
+                Startup options. Indexer options. Log and show file locations.
+              </p>
+               
+              <p>
+                <b>
+                  Some options may require a manual restart to take effect.
+                </b>
+              </p>
+            </div>
+             
+            <div
+              class="col-xs-12 col-md-10"
+            >
+              <fieldset
+                class="component-group-list"
+              >
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="launch_browser"
+                  label="Launch browser"
+                  value="true"
+                >
+                  <span>
+                    open the Medusa home page on startup
+                  </span>
+                </config-toggle-slider-stub>
+                 
+                <config-template-stub
+                  label="Initial page"
+                  labelfor="default_page"
+                >
+                  <select
+                    class="form-control input-sm"
+                    id="default_page"
+                    name="default_page"
+                  >
+                    <option
+                      value="home"
+                    >
+                      Shows
+                    </option>
+                    <option
+                      value="schedule"
+                    >
+                      Schedule
+                    </option>
+                    <option
+                      value="history"
+                    >
+                      History
+                    </option>
+                    <option
+                      value="news"
+                    >
+                      News
+                    </option>
+                    <option
+                      value="IRC"
+                    >
+                      IRC
+                    </option>
+                  </select>
+                   
+                  <span>
+                    when launching Medusa interface
+                  </span>
+                </config-template-stub>
+                 
+                <config-template-stub
+                  label="Send to trash for actions"
+                  labelfor="trash_remove_show"
+                >
+                  <label
+                    class="nextline-block"
+                    for="trash_remove_show"
+                  >
+                    <toggle-button-stub
+                      height="22"
+                      id="trash_remove_show"
+                      margin="3"
+                      name="trash_remove_show"
+                      speed="300"
+                      sync="true"
+                      width="45"
+                    />
+                     
+                    <p>
+                      when using show "Remove" and delete files
+                    </p>
+                  </label>
+                   
+                  <label
+                    class="nextline-block"
+                    for="trash_rotate_logs"
+                  >
+                    <toggle-button-stub
+                      height="22"
+                      id="trash_rotate_logs"
+                      margin="3"
+                      name="trash_rotate_logs"
+                      speed="300"
+                      sync="true"
+                      width="45"
+                    />
+                     
+                    <p>
+                      on scheduled deletes of the oldest log files
+                    </p>
+                  </label>
+                   
+                  <p>
+                    selected actions use trash (recycle bin) instead of the default permanent delete
+                  </p>
+                </config-template-stub>
+                 
+                <config-textbox-stub
+                  explanations=""
+                  id="log_id"
+                  inputclass="form-control input-sm max-input350"
+                  label="Location for Log files"
+                  placeholder=""
+                  type="text"
+                  value="Logs"
+                />
+                 
+                <config-textbox-number-stub
+                  explanations=""
+                  id="log_nr"
+                  inputclass="form-control input-sm input75"
+                  label="Number of Log files saved"
+                  min="1"
+                  placeholder=""
+                  step="1"
+                  value="5"
+                >
+                  <p>
+                    number of log files saved when rotating logs (default: 5) 
+                    <b>
+                      (REQUIRES RESTART)
+                    </b>
+                  </p>
+                </config-textbox-number-stub>
+                 
+                <config-textbox-number-stub
+                  explanations=""
+                  id="log_size"
+                  inputclass="form-control input-sm input75"
+                  label="Size of Log files saved"
+                  min="0.5"
+                  placeholder=""
+                  step="0.1"
+                  value="11"
+                >
+                  <p>
+                    maximum size in MB of the log file (default: 1MB) 
+                    <b>
+                      (REQUIRES RESTART)
+                    </b>
+                  </p>
+                </config-textbox-number-stub>
+                 
+                <config-template-stub
+                  label="Show root directories"
+                  labelfor="show_root_dir"
+                >
+                  <p>
+                    where the files of shows are located
+                  </p>
+                   
+                  <p>
+                    These changes are automatically saved!
+                  </p>
+                   
+                  <root-dirs-stub />
+                </config-template-stub>
+                 
+                <input
+                  class="btn-medusa config_submitter"
+                  type="submit"
+                  value="Save Changes"
+                />
+              </fieldset>
+            </div>
+          </div>
+           
+          <div
+            class="row component-group"
+          >
+            <div
+              class="component-group-desc col-xs-12 col-md-2"
+            >
+              <h3>
+                Indexer
+              </h3>
+               
+              <p>
+                Options for controlling the show indexers.
+              </p>
+            </div>
+             
+            <div
+              class="col-xs-12 col-md-10"
+            >
+              <fieldset
+                class="component-group-list"
+              >
+                <config-template-stub
+                  label="Default Indexer Language"
+                  labelfor="show_root_dir"
+                >
+                  <language-select-stub
+                    available="da,fi,nl,de,it,es,fr,pl,hu,el,tr,ru,he,ja,pt,zh,cs,sl,hr,ko,en,sv,no"
+                    class="form-control form-control-inline input-sm"
+                    language="en"
+                  />
+                   
+                  <span>
+                    for adding shows and metadata providers
+                  </span>
+                </config-template-stub>
+                 
+                <config-textbox-number-stub
+                  explanations=""
+                  id="showupdate_hour"
+                  inputclass="form-control input-sm input75"
+                  label="Choose hour to update shows"
+                  max="23"
+                  min="0"
+                  placeholder=""
+                  step="1"
+                  value="2"
+                >
+                  <p>
+                    with information such as next air dates, show ended, etc. Use 15 for 3pm, 4 for 4am etc.
+                  </p>
+                   
+                  <p>
+                    <b>
+                      Note:
+                    </b>
+                     minutes are randomized each time Medusa is started
+                  </p>
+                </config-textbox-number-stub>
+                 
+                <config-textbox-number-stub
+                  explanations=""
+                  id="indexer_timeout"
+                  inputclass="form-control input-sm input75"
+                  label="Timeout show indexer at"
+                  min="10"
+                  placeholder=""
+                  step="1"
+                  value="20"
+                >
+                  <p>
+                    seconds of inactivity when finding new shows (default:20)
+                  </p>
+                </config-textbox-number-stub>
+                 
+                <config-template-stub
+                  label="Use initial indexer set to"
+                  labelfor="indexer_default"
+                >
+                  <select
+                    class="form-control input-sm"
+                    id="indexer_default"
+                    name="indexer_default"
+                  >
+                    <option
+                      value="0"
+                    >
+                      
+                                            All Indexers
+                                        
+                    </option>
+                    <option
+                      value="1"
+                    >
+                      
+                                            TVDBv2
+                                        
+                    </option>
+                    <option
+                      value="3"
+                    >
+                      
+                                            TVmaze
+                                        
+                    </option>
+                    <option
+                      value="4"
+                    >
+                      
+                                            TMDB
+                                        
+                    </option>
+                  </select>
+                </config-template-stub>
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="fallback_plex_enable"
+                  label="Enable fallback to plex"
+                  value="true"
+                >
+                  <p>
+                    Plex provides a tvdb mirror, that can be utilized when Tvdb's api is unavailable.
+                  </p>
+                </config-toggle-slider-stub>
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="fallback_plex_notifications"
+                  label="Enable fallback notifications"
+                  value="true"
+                >
+                  <p>
+                    When this settings has been enabled, you may receive frequent notifications when falling back to the plex mirror.
+                  </p>
+                </config-toggle-slider-stub>
+                 
+                <config-textbox-number-stub
+                  explanations=""
+                  id="Fallback duration"
+                  inputclass="form-control input-sm input75"
+                  label="Timeout show indexer at"
+                  min="1"
+                  placeholder=""
+                  step="1"
+                  value="3"
+                >
+                  <p>
+                    Amount of hours after we try to revert back to the thetvdb.com api url (default:3).
+                  </p>
+                </config-textbox-number-stub>
+              </fieldset>
+            </div>
+          </div>
+           
+          <div
+            class="row component-group"
+          >
+            <div
+              class="component-group-desc col-xs-12 col-md-2"
+            >
+              <h3>
+                Updates
+              </h3>
+               
+              <p>
+                Options for software updates.
+              </p>
+            </div>
+             
+            <div
+              class="col-xs-12 col-md-10"
+            >
+              <fieldset
+                class="component-group-list"
+              >
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="version_notify"
+                  label="Check software updates"
+                  value="true"
+                >
+                  <p>
+                    and display notifications when updates are available.
+                                        Checks are run on startup and at the frequency set below*
+                  </p>
+                </config-toggle-slider-stub>
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="auto_update"
+                  label="Automatically update"
+                >
+                  <p>
+                    fetch and install software updates.
+                                        Updates are run on startup and in the background at the frequency set below*
+                  </p>
+                </config-toggle-slider-stub>
+                 
+                <config-textbox-number-stub
+                  explanations=""
+                  id="update_frequency duration"
+                  inputclass="form-control input-sm input75"
+                  label="Check the server every*"
+                  min="1"
+                  placeholder=""
+                  step="1"
+                  value="1"
+                >
+                  <p>
+                    hours for software updates (default:1)
+                  </p>
+                </config-textbox-number-stub>
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="notify_on_update"
+                  label="Notify on software update"
+                  value="true"
+                >
+                  <p>
+                    send a message to all enabled notifiers when Medusa has been updated
+                  </p>
+                </config-toggle-slider-stub>
+                 
+                <input
+                  class="btn-medusa config_submitter"
+                  type="submit"
+                  value="Save Changes"
+                />
+              </fieldset>
+            </div>
+          </div>
+        </div>
+         
+        <div
+          id="interface"
+        >
+          <div
+            class="row component-group"
+          >
+            <div
+              class="component-group-desc col-xs-12 col-md-2"
+            >
+              <h3>
+                User Interface
+              </h3>
+               
+              <p>
+                Options for visual appearance.
+              </p>
+            </div>
+             
+            <div
+              class="col-xs-12 col-md-10"
+            >
+              <fieldset
+                class="component-group-list"
+              >
+                <config-template-stub
+                  label="Display theme"
+                  labelfor="theme_name"
+                >
+                  <select
+                    class="form-control input-sm"
+                    id="theme_name"
+                    name="theme_name"
+                  >
+                    <option
+                      value="dark"
+                    >
+                      dark (0.1.0)
+                                        
+                    </option>
+                    <option
+                      value="light"
+                    >
+                      light (0.1.0)
+                                        
+                    </option>
+                  </select>
+                </config-template-stub>
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="layout_wide"
+                  label="Use wider layout"
+                >
+                  <p>
+                    uses all available space in the page
+                  </p>
+                </config-toggle-slider-stub>
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="fanart_background"
+                  label="Show fanart in the background"
+                  value="true"
+                >
+                  <p>
+                    on the show summary page
+                  </p>
+                </config-toggle-slider-stub>
+                 
+                <config-textbox-number-stub
+                  explanations=""
+                  id="fanart_background_opacity duration"
+                  inputclass="form-control input-sm input75"
+                  label="Fanart transparency"
+                  max="1"
+                  min="0.1"
+                  placeholder=""
+                  step="0.1"
+                  value="0.3"
+                >
+                  <p>
+                    Transparency of the fanart in the background
+                  </p>
+                </config-textbox-number-stub>
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="sort_article"
+                  label="Sort with 'The' 'A', 'An'"
+                >
+                  <p>
+                    include articles ("The", "A", "An") when sorting show lists
+                  </p>
+                </config-toggle-slider-stub>
+                 
+                <config-template-stub
+                  label="show lists"
+                  labelfor="show_list_order"
+                >
+                  <sorted-select-list-stub
+                    listitems="Anime,Series"
+                    unique="true"
+                  />
+                   
+                  <p>
+                    Create and order different categories for your shows.
+                  </p>
+                </config-template-stub>
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="split_home_in_tabs"
+                  label="Split home in tabs"
+                  value="true"
+                >
+                  <span
+                    class="component-desc"
+                  >
+                    Use tabs when splitting show lists
+                  </span>
+                </config-toggle-slider-stub>
+                 
+                <config-textbox-number-stub
+                  explanations=""
+                  id="coming_eps_missed_range duration"
+                  inputclass="form-control input-sm input75"
+                  label="Missed episodes range"
+                  min="7"
+                  placeholder=""
+                  step="1"
+                  value="7"
+                >
+                  <p>
+                    Set the range in days of the missed episodes in the Schedule page
+                  </p>
+                </config-textbox-number-stub>
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="fuzzy_dating"
+                  label="Display fuzzy dates"
+                >
+                  <p>
+                    move absolute dates into tooltips and display e.g. "Last Thu", "On Tue"
+                  </p>
+                </config-toggle-slider-stub>
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="trim_zero"
+                  label="Trim zero padding"
+                >
+                  <p>
+                    remove the leading number "0" shown on hour of day, and date of month
+                  </p>
+                </config-toggle-slider-stub>
+                 
+                <config-template-stub
+                  label="Date style"
+                  labelfor="date_preset"
+                >
+                  <select
+                    class="form-control input-sm"
+                    id="date_preset"
+                    name="date_preset"
+                  >
+                    <option
+                      value="%x"
+                    >
+                      Use System Default
+                    </option>
+                    <option
+                      value="%Y-%m-%d"
+                    >
+                      2019-11-21
+                    </option>
+                    <option
+                      value="%a, %Y-%m-%d"
+                    >
+                      Thu, 2019-11-21
+                    </option>
+                    <option
+                      value="%A, %Y-%m-%d"
+                    >
+                      Thursday, 2019-11-21
+                    </option>
+                    <option
+                      value="%y-%m-%d"
+                    >
+                      19-11-21
+                    </option>
+                    <option
+                      value="%a, %y-%m-%d"
+                    >
+                      Thu, 19-11-21
+                    </option>
+                    <option
+                      value="%A, %y-%m-%d"
+                    >
+                      Thursday, 19-11-21
+                    </option>
+                    <option
+                      value="%m/%d/%Y"
+                    >
+                      11/21/2019
+                    </option>
+                    <option
+                      value="%a, %m/%d/%Y"
+                    >
+                      Thu, 11/21/2019
+                    </option>
+                  </select>
+                </config-template-stub>
+                 
+                <config-template-stub
+                  label="Time style"
+                  labelfor="time_preset"
+                >
+                  <select
+                    class="form-control input-sm"
+                    id="time_preset"
+                    name="time_preset"
+                  >
+                    <option
+                      value="%I:%M:%S %p"
+                    >
+                      03:32:16 PM
+                    </option>
+                    <option
+                      value="%H:%M:%S"
+                    >
+                      15:32:16
+                    </option>
+                  </select>
+                   
+                  <span>
+                    <b>
+                      Note:
+                    </b>
+                     seconds are only shown on the History page
+                  </span>
+                </config-template-stub>
+                 
+                <config-template-stub
+                  label="Timezone"
+                  labelfor="timezone_display"
+                >
+                  <div
+                    class="radio-item"
+                  >
+                    <input
+                      id="timezone_display_local"
+                      name="timezone_display_local"
+                      type="radio"
+                      value="local"
+                    />
+                     
+                    <label
+                      for="one"
+                    >
+                      local
+                    </label>
+                  </div>
+                   
+                  <div
+                    class="radio-item"
+                  >
+                    <input
+                      id="timezone_display_network"
+                      name="timezone_display_network"
+                      type="radio"
+                      value="network"
+                    />
+                     
+                    <label
+                      for="one"
+                    >
+                      network
+                    </label>
+                  </div>
+                   
+                  <p>
+                    display dates and times in either your timezone or the shows network timezone
+                  </p>
+                   
+                  <p>
+                    <b>
+                      Note:
+                    </b>
+                     Use local timezone to start searching for episodes minutes after show ends (depends on your dailysearch frequency)
+                  </p>
+                </config-template-stub>
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="show_pagination"
+                  label="Use table pagination"
+                  value="true"
+                />
+                 
+                <input
+                  class="btn-medusa config_submitter"
+                  type="submit"
+                  value="Save Changes"
+                />
+              </fieldset>
+            </div>
+          </div>
+           
+          <div
+            class="row component-group"
+          >
+            <div
+              class="component-group-desc col-xs-12 col-md-2"
+            >
+              <h3>
+                Web Interface
+              </h3>
+               
+              <p>
+                It is recommended that you enable a username and password to secure Medusa from being tampered with remotely.
+              </p>
+               
+              <p>
+                <b>
+                  These options require a manual restart to take effect.
+                </b>
+              </p>
+            </div>
+             
+            <div
+              class="col-xs-12 col-md-10"
+            >
+              <fieldset
+                class="component-group-list"
+              >
+                <config-textbox-stub
+                  explanations=""
+                  id="api_key"
+                  inputclass="form-control input-sm max-input350"
+                  label="API key"
+                  placeholder=""
+                  readonly="readonly"
+                  type="text"
+                  value="34b11fbcc280af25381a32ac773a291e"
+                >
+                  <input
+                    class="btn-medusa btn-inline"
+                    id="generate_new_apikey"
+                    type="button"
+                    value="Generate"
+                  />
+                   
+                  <p>
+                    used to give 3rd party programs limited access to Medusa
+                  </p>
+                   
+                  <p>
+                    you can try all the features of the legacy API (v1) 
+                    <app-link-stub
+                      href="apibuilder/"
+                      placeholder="indexer-to-name"
+                    >
+                      here
+                    </app-link-stub>
+                  </p>
+                </config-textbox-stub>
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="web_log"
+                  label="HTTP logs"
+                >
+                  <p>
+                    enable logs from the internal Tornado web server
+                  </p>
+                </config-toggle-slider-stub>
+                 
+                <config-textbox-stub
+                  autocomplete="no"
+                  explanations=""
+                  id="web_username"
+                  inputclass="form-control input-sm max-input350"
+                  label="HTTP username"
+                  placeholder=""
+                  type="text"
+                  value="User"
+                >
+                  <p>
+                    set blank for no login
+                  </p>
+                </config-textbox-stub>
+                 
+                <config-textbox-stub
+                  autocomplete="no"
+                  explanations=""
+                  id="web_password"
+                  inputclass="form-control input-sm max-input350"
+                  label="HTTP password"
+                  placeholder=""
+                  type="password"
+                  value=""
+                >
+                  <p>
+                    blank = no authentication
+                  </p>
+                </config-textbox-stub>
+                 
+                <config-textbox-number-stub
+                  explanations=""
+                  id="web_port"
+                  inputclass="form-control input-sm input75"
+                  label="HTTP port"
+                  min="1"
+                  placeholder=""
+                  step="1"
+                  value="8081"
+                >
+                  <p>
+                    web port to browse and access Medusa (default:8081)
+                  </p>
+                </config-textbox-number-stub>
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="notify_on_login"
+                  label="Notify on login"
+                >
+                  <p>
+                    enable to be notified when a new login happens in webserver
+                  </p>
+                </config-toggle-slider-stub>
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="web_ipv6"
+                  label="Listen on IPv6"
+                  value="true"
+                >
+                  <p>
+                    enable to be notified when a new login happens in webserver
+                  </p>
+                </config-toggle-slider-stub>
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="enable_https"
+                  label="Enable HTTPS"
+                >
+                  <p>
+                    enable access to the web interface using a HTTPS address
+                  </p>
+                </config-toggle-slider-stub>
+                 
+                <!---->
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="handle_reverse_proxy"
+                  label="Reverse proxy headers"
+                >
+                  <p>
+                    accept the following reverse proxy headers (advanced)...
+                    <br />
+                    (X-Forwarded-For, X-Forwarded-Host, and X-Forwarded-Proto)
+                  </p>
+                </config-toggle-slider-stub>
+                 
+                <config-textbox-stub
+                  autocomplete="no"
+                  explanations=""
+                  id="web_root"
+                  inputclass="form-control input-sm max-input350"
+                  label="HTTP web root"
+                  placeholder=""
+                  type="text"
+                  value=""
+                >
+                  <p>
+                    Set a base URL, for use in reverse proxies.
+                  </p>
+                   
+                  <p>
+                    blank = disabled
+                  </p>
+                   
+                  <p>
+                    <b>
+                      Note:
+                    </b>
+                     Must restart to have effect. Keep in mind that any previously configured base URLs won't work, after this change.
+                  </p>
+                </config-textbox-stub>
+                 
+                <input
+                  class="btn-medusa config_submitter"
+                  type="submit"
+                  value="Save Changes"
+                />
+              </fieldset>
+            </div>
+          </div>
+        </div>
+         
+        <div
+          id="advanced-settings"
+        >
+          <div
+            class="row component-group"
+          >
+            <div
+              class="component-group-desc col-xs-12 col-md-2"
+            >
+              <h3>
+                Advanced Settings
+              </h3>
+            </div>
+             
+            <div
+              class="col-xs-12 col-md-10"
+            >
+              <fieldset
+                class="component-group-list"
+              >
+                <config-template-stub
+                  label="CPU throttling"
+                  labelfor="cpu_presets"
+                >
+                  <select
+                    class="form-control input-sm"
+                    id="cpu_presets"
+                    name="cpu_presets"
+                  >
+                    <option
+                      value="HIGH"
+                    >
+                      HIGH
+                    </option>
+                    <option
+                      value="NORMAL"
+                    >
+                      NORMAL
+                    </option>
+                    <option
+                      value="LOW"
+                    >
+                      LOW
+                    </option>
+                    <option
+                      value="DISABLED"
+                    >
+                      DISABLED
+                    </option>
+                  </select>
+                   
+                  <span>
+                    Normal (default). High is lower and Low is higher CPU use
+                  </span>
+                </config-template-stub>
+                 
+                <config-textbox-stub
+                  explanations=""
+                  id="anon_redirect"
+                  inputclass="form-control input-sm max-input350"
+                  label="Anonymous redirect"
+                  placeholder=""
+                  type="text"
+                  value="http://dereferer.org/?"
+                >
+                  <p>
+                    backlink protection via anonymizer service, must end in "?"
+                  </p>
+                </config-textbox-stub>
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="ssl_verify"
+                  label="Verify SSL Certs"
+                  value="true"
+                >
+                  <p>
+                    Verify SSL Certificates (Disable this for broken SSL installs (Like QNAP))
+                  </p>
+                </config-toggle-slider-stub>
+                 
+                <config-textbox-stub
+                  explanations=""
+                  id="ssl_ca_bundle"
+                  inputclass="form-control input-sm max-input350"
+                  label="SSL CA Bundle"
+                  placeholder=""
+                  type="text"
+                  value=""
+                >
+                  <p>
+                    Path to an SSL CA Bundle. Will replace default bundle(certifi) with the one specified.
+                  </p>
+                   
+                  <b>
+                    Note:
+                  </b>
+                   This only apply to call made using Medusa's Requests implementation.
+                                
+                </config-textbox-stub>
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="no_restart"
+                  label="No Restart"
+                >
+                  <p>
+                    Only shutdown when restarting Medusa.
+                                        Only select this when you have external software restarting Medusa automatically when it stops (like FireDaemon)
+                  </p>
+                </config-toggle-slider-stub>
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="encryption_version"
+                  label="Encrypt passwords"
+                >
+                  <p>
+                    in the 
+                    <code>
+                      config.ini
+                    </code>
+                     file.
+                                        
+                    <b>
+                      Warning:
+                    </b>
+                     Passwords must only contain 
+                    <app-link-stub
+                      href="https://en.wikipedia.org/wiki/ASCII#ASCII_printable_characters"
+                      placeholder="indexer-to-name"
+                    >
+                      ASCII characters
+                    </app-link-stub>
+                  </p>
+                </config-toggle-slider-stub>
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="calendar_unprotected"
+                  label="Unprotected calendar"
+                >
+                  <p>
+                    allow subscribing to the calendar without user and password.
+                                        Some services like Google Calendar only work this way
+                  </p>
+                </config-toggle-slider-stub>
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="calendar_icons"
+                  label="Google Calendar Icons"
+                >
+                  <p>
+                    show an icon next to exported calendar events in Google Calendar.
+                  </p>
+                </config-toggle-slider-stub>
+                 
+                <config-textbox-stub
+                  explanations=""
+                  id="proxy_setting"
+                  inputclass="form-control input-sm max-input350"
+                  label="Proxy host"
+                  placeholder=""
+                  type="text"
+                  value=""
+                >
+                  <p>
+                    blank to disable or proxy to use when connecting to providers
+                  </p>
+                </config-textbox-stub>
+                 
+                <!---->
+                 
+                <!---->
+                 
+                <!---->
+                 
+                <!---->
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="skip_removed_files"
+                  label="Skip Remove Detection"
+                >
+                  <span>
+                    <p>
+                      Skip detection of removed files. If disabled the episode will be set to the default deleted status
+                    </p>
+                     
+                    <b>
+                      Note:
+                    </b>
+                     This may mean Medusa misses renames as well
+                                    
+                  </span>
+                </config-toggle-slider-stub>
+                 
+                <config-template-stub
+                  label="Default deleted episode status"
+                  labelfor="ep_default_deleted_status"
+                >
+                  <select
+                    class="form-control input-sm margin-bottom-5"
+                    id="ep_default_deleted_status"
+                    name="ep_default_deleted_status"
+                  >
+                    <option
+                      disabled="disabled"
+                      value=""
+                    >
+                      Please select a default status
+                    </option>
+                     
+                    <option
+                      value="5"
+                    >
+                      Skipped
+                    </option>
+                    <option
+                      value="7"
+                    >
+                      Ignored
+                    </option>
+                    <option
+                      value="6"
+                    >
+                      Archived
+                    </option>
+                  </select>
+                   
+                  <span>
+                    Define the status to be set for media file that has been deleted.
+                  </span>
+                   
+                  <p>
+                    <b>
+                      Note:
+                    </b>
+                     Archived option will keep previous downloaded quality
+                  </p>
+                   
+                  <p>
+                    Example: Downloaded (1080p WEB-DL) ==&gt; Archived (1080p WEB-DL)
+                  </p>
+                </config-template-stub>
+                 
+                <input
+                  class="btn-medusa config_submitter"
+                  type="submit"
+                  value="Save Changes"
+                />
+              </fieldset>
+            </div>
+          </div>
+           
+          <div
+            class="row component-group"
+          >
+            <div
+              class="component-group-desc col-xs-12 col-md-2"
+            >
+              <h3>
+                Logging
+              </h3>
+            </div>
+             
+            <div
+              class="col-xs-12 col-md-10"
+            >
+              <fieldset
+                class="component-group-list"
+              >
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="debug"
+                  label="Enable debug"
+                  value="true"
+                >
+                  <p>
+                    Enable debug logs
+                  </p>
+                </config-toggle-slider-stub>
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="dbdebug"
+                  label="Enable DB debug"
+                >
+                  <p>
+                    Enable DB debug logs
+                  </p>
+                </config-toggle-slider-stub>
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="subliminal_log"
+                  label="Subliminal logs"
+                >
+                  <p>
+                    enable logs from subliminal library (subtitles)
+                  </p>
+                </config-toggle-slider-stub>
+                 
+                <config-template-stub
+                  label="Privacy"
+                  labelfor="privacy_level"
+                >
+                  <select
+                    class="form-control input-sm"
+                    id="privacy_level"
+                    name="privacy_level"
+                  >
+                    <option
+                      value="high"
+                    >
+                      HIGH
+                    </option>
+                    <option
+                      value="normal"
+                    >
+                      NORMAL
+                    </option>
+                    <option
+                      value="low"
+                    >
+                      LOW
+                    </option>
+                  </select>
+                   
+                  <span>
+                    
+                                        Set the level of log-filtering.
+                                        Normal (default).
+                                    
+                  </span>
+                </config-template-stub>
+                 
+                <config-template-stub
+                  label="Overwrite log levels for overwritable logs"
+                  labelfor="custom_logs"
+                >
+                  <custom-logs-stub />
+                </config-template-stub>
+                 
+                <input
+                  class="btn-medusa config_submitter"
+                  type="submit"
+                  value="Save Changes"
+                />
+              </fieldset>
+            </div>
+          </div>
+           
+          <div
+            class="row component-group"
+          >
+            <div
+              class="component-group-desc col-xs-12 col-md-2"
+            >
+              <h3>
+                GitHub
+              </h3>
+               
+              <p>
+                Options for github related features.
+              </p>
+            </div>
+             
+            <div
+              class="col-xs-12 col-md-10"
+            >
+              <fieldset
+                class="component-group-list"
+              >
+                <config-template-stub
+                  label="Branch version"
+                  labelfor="github_remote_branches"
+                >
+                  <select
+                    class="form-control input-sm margin-bottom-5"
+                    id="github_remote_branches"
+                    name="github_remote_branches"
+                  >
+                    <option
+                      disabled="disabled"
+                      value=""
+                    >
+                      Please select a branch
+                    </option>
+                     
+                    <option
+                      value="master"
+                    >
+                      master
+                    </option>
+                  </select>
+                   
+                  <input
+                    class="btn-medusa btn-inline"
+                    id="branchCheckout"
+                    style="margin-left: 6px;"
+                    type="button"
+                    value="Checkout Branch"
+                  />
+                   
+                  <p>
+                    select branch to use (restart required)
+                  </p>
+                   
+                  <!---->
+                </config-template-stub>
+                 
+                <config-template-stub
+                  label="GitHub authentication type"
+                  labelfor="date_presets"
+                >
+                  <div
+                    class="radio-item"
+                  >
+                    <input
+                      id="git_auth_type_basic"
+                      name="git_auth_type_basic"
+                      type="radio"
+                      value="0"
+                    />
+                     
+                    <label
+                      for="one"
+                    >
+                      Username and password
+                    </label>
+                  </div>
+                   
+                  <div
+                    class="radio-item"
+                  >
+                    <input
+                      id="git_auth_type_token"
+                      name="git_auth_type_token"
+                      type="radio"
+                      value="1"
+                    />
+                     
+                    <label
+                      for="one"
+                    >
+                      Personal access token
+                    </label>
+                  </div>
+                   
+                  <p>
+                    You must use a personal access token if you're using "two-factor authentication" on GitHub.
+                  </p>
+                </config-template-stub>
+                 
+                <div>
+                  <config-textbox-stub
+                    explanations=""
+                    id="git_username"
+                    inputclass="form-control input-sm max-input350"
+                    label="GitHub username"
+                    placeholder=""
+                    type="text"
+                    value=""
+                  >
+                    <p>
+                      *** (REQUIRED FOR SUBMITTING ISSUES) ***
+                    </p>
+                  </config-textbox-stub>
+                   
+                  <config-textbox-stub
+                    explanations=""
+                    id="git_password"
+                    inputclass="form-control input-sm max-input350"
+                    label="GitHub password"
+                    placeholder=""
+                    type="password"
+                    value=""
+                  >
+                    <p>
+                      *** (REQUIRED FOR SUBMITTING ISSUES) ***
+                    </p>
+                  </config-textbox-stub>
+                </div>
+                 
+                <div
+                  style="display: none;"
+                >
+                  <config-textbox-stub
+                    explanations=""
+                    id="git_token"
+                    inputclass="display-inline margin-bottom-5"
+                    label="GitHub personal access token"
+                    placeholder=""
+                    type="text"
+                    value=""
+                  >
+                    <v-popover-stub
+                      autohide="true"
+                      container="body"
+                      delay="0"
+                      handleresize="true"
+                      offset="16"
+                      openclass="open"
+                      placement="right"
+                      popoverarrowclass="tooltip-arrow popover-arrow"
+                      popoverbaseclass="tooltip-base"
+                      popoverclass="tooltip-themed-light"
+                      popoverinnerclass="tooltip-inner popover-inner"
+                      popoverwrapperclass="wrapper"
+                      popperoptions="[object Object]"
+                      trigger="click"
+                    >
+                      <input
+                        class="btn-medusa btn-inline"
+                        id="create_access_token"
+                        type="button"
+                        value="Generate Token"
+                      />
+                       
+                      <template>
+                        <div
+                          class="tooltip-title"
+                        >
+                          Github Token
+                        </div>
+                         
+                        <div
+                          class="tooltip-content"
+                        >
+                          <p>
+                            Copy the generated token and paste it in the token input box.
+                          </p>
+                           
+                          <p>
+                            <a
+                              href="http://dereferer.org/?https://github.com/settings/tokens/new?description=Medusa&scopes=gist,public_repo"
+                              target="_blank"
+                            >
+                              <input
+                                class="btn-medusa"
+                                type="button"
+                                value="Continue to Github..."
+                              />
+                            </a>
+                          </p>
+                          <br />
+                        </div>
+                      </template>
+                    </v-popover-stub>
+                     
+                    <p>
+                      *** (REQUIRED FOR SUBMITTING ISSUES) ***
+                    </p>
+                  </config-textbox-stub>
+                </div>
+                 
+                <config-textbox-stub
+                  explanations=""
+                  id="git_remote"
+                  inputclass="form-control input-sm max-input350"
+                  label="GitHub remote for branch"
+                  placeholder=""
+                  type="text"
+                  value="origin"
+                >
+                  <p>
+                    default:origin. Access repo configured remotes (save then refresh browser)
+                  </p>
+                </config-textbox-stub>
+                 
+                <config-textbox-stub
+                  explanations=""
+                  id="git_path"
+                  inputclass="form-control input-sm max-input350"
+                  label="Git executable path"
+                  placeholder=""
+                  type="text"
+                  value=""
+                >
+                  <p>
+                    only needed if OS is unable to locate git from env
+                  </p>
+                </config-textbox-stub>
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="git_reset"
+                  label="Git reset"
+                  value="true"
+                >
+                  <p>
+                    removes untracked files and performs a hard reset on git branch automatically to help resolve update issues
+                  </p>
+                </config-toggle-slider-stub>
+                 
+                <config-template-stub
+                  label="Branches to reset"
+                  labelfor="git_reset_branches"
+                >
+                  <multiselect-stub
+                    allowempty="true"
+                    blockkeys=""
+                    clearonselect="true"
+                    closeonselect="true"
+                    customlabel="function(t,e){return i(t)?\\"\\":e?t[e]:t}"
+                    deselectgrouplabel="Press enter to deselect group"
+                    deselectlabel="Press enter to remove"
+                    internalsearch="true"
+                    limit="99999"
+                    limittext="function(t){return\\"and \\".concat(t,\\" more\\")}"
+                    maxheight="300"
+                    multiple="true"
+                    name=""
+                    opendirection=""
+                    optionheight="40"
+                    options="develop,master"
+                    optionslimit="1000"
+                    placeholder="Select option"
+                    searchable="true"
+                    selectedlabel="Selected"
+                    selectgrouplabel="Press enter to select group"
+                    selectlabel="Press enter to select"
+                    showlabels="true"
+                    shownooptions="true"
+                    shownoresults="true"
+                    showpointer="true"
+                    tabindex="0"
+                    tagplaceholder="Press enter to create a tag"
+                    tagposition="top"
+                    value=""
+                  />
+                   
+                  <input
+                    class="btn-medusa btn-inline"
+                    id="branch_force_update"
+                    style="margin-left: 6px;"
+                    type="button"
+                    value="Update Branches"
+                  />
+                   
+                  <span>
+                    <b>
+                      Note:
+                    </b>
+                     Empty selection means that any branch could be reset.
+                  </span>
+                </config-template-stub>
+                 
+                <input
+                  class="btn-medusa config_submitter"
+                  type="submit"
+                  value="Save Changes"
+                />
+              </fieldset>
+            </div>
+          </div>
+        </div>
+         
+        <br />
+         
+        <h6
+          class="pull-right"
+        >
+          <b>
+            All non-absolute folder locations are relative to 
+            <span
+              class="path"
+            >
+              C:\\Medusa\\Data
+            </span>
+          </b>
+        </h6>
+         
+        <input
+          class="btn-medusa pull-left config_submitter button"
+          type="submit"
+          value="Save Changes"
+        />
+      </div>
+    </form>
+  </div>
+   
+  <modal
+    height="auto"
+    name="query-upgrade-database"
+    width="80%"
+  >
+    <transition-stub
+      name="modal"
+    >
+      <div
+        class="modal-mask"
+      >
+        <div
+          class="modal-wrapper"
+        >
+          <div
+            class="modal-content"
+          >
+            <div
+              class="modal-header"
+            >
+              
+                            Upgrade database model?
+                        
+            </div>
+             
+            <div
+              class="modal-body"
+            >
+              <p>
+                Changing branch will upgrade your database
+              </p>
+               
+              <p>
+                You won't be able to downgrade afterward.
+              </p>
+               
+              <p>
+                Do you want to continue?
+              </p>
+            </div>
+             
+            <div
+              class="modal-footer"
+            >
+              <button
+                class="btn-medusa btn-danger"
+                data-dismiss="modal"
+                type="button"
+              >
+                No
+              </button>
+               
+              <button
+                class="btn-medusa btn-success"
+                data-dismiss="modal"
+                type="button"
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition-stub>
+  </modal>
+   
+  <modal
+    height="auto"
+    name="query-restart"
+    width="80%"
+  >
+    <transition-stub
+      name="modal"
+    >
+      <div
+        class="modal-mask"
+      >
+        <div
+          class="modal-wrapper"
+        >
+          <div
+            class="modal-content"
+          >
+            <div
+              class="modal-header"
+            >
+              
+                            Checking out a branch requires a restart
+                        
+            </div>
+             
+            <div
+              class="modal-body"
+            >
+              <p>
+                Would you like to start a restart of medusa now?
+              </p>
+            </div>
+             
+            <div
+              class="modal-footer"
+            >
+              <button
+                class="btn-medusa btn-danger"
+                data-dismiss="modal"
+                type="button"
+              >
+                No
+              </button>
+               
+              <button
+                class="btn-medusa btn-success"
+                data-dismiss="modal"
+                type="button"
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition-stub>
+  </modal>
+</div>
+`;

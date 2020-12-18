@@ -22,13 +22,15 @@
 #                                                                              #
 ################################################################################
 
-import datetime
-import json
+from __future__ import absolute_import
+
+import six
 
 import github.GithubObject
 import github.ProjectColumn
 
-import Consts
+from . import Consts
+
 
 class Project(github.GithubObject.CompletableGithubObject):
     """
@@ -153,7 +155,22 @@ class Project(github.GithubObject.CompletableGithubObject):
             self._requester,
             self.columns_url,
             None,
-            {"Accept": Consts.mediaTypeProjectsPreview}
+            {"Accept": Consts.mediaTypeProjectsPreview},
+        )
+
+    def create_column(self, name):
+        """
+        calls: `POST https://developer.github.com/v3/projects/columns/#create-a-project-column>`_
+        :param name: string
+        """
+        assert isinstance(name, (str, six.text_type)), name
+        post_parameters = {"name": name}
+        import_header = {"Accept": Consts.mediaTypeProjectsPreview}
+        headers, data = self._requester.requestJsonAndCheck(
+            "POST", self.url + "/columns", headers=import_header, input=post_parameters
+        )
+        return github.ProjectColumn.ProjectColumn(
+            self._requester, headers, data, completed=True
         )
 
     def _initAttributes(self):
@@ -179,7 +196,9 @@ class Project(github.GithubObject.CompletableGithubObject):
         if "created_at" in attributes:  # pragma no branch
             self._created_at = self._makeDatetimeAttribute(attributes["created_at"])
         if "creator" in attributes:  # pragma no branch
-            self._creator = self._makeClassAttribute(github.NamedUser.NamedUser, attributes["creator"])
+            self._creator = self._makeClassAttribute(
+                github.NamedUser.NamedUser, attributes["creator"]
+            )
         if "html_url" in attributes:  # pragma no branch
             self._html_url = self._makeStringAttribute(attributes["html_url"])
         if "id" in attributes:  # pragma no branch

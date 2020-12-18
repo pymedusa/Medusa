@@ -23,6 +23,7 @@ import os
 import re
 import stat
 import subprocess
+import sys
 from builtins import object
 from builtins import str
 from collections import OrderedDict
@@ -69,7 +70,7 @@ from medusa.subtitles import from_code, from_ietf_code, get_subtitles_dir
 import rarfile
 from rarfile import Error as RarError, NeedFirstVolume
 
-from six import text_type, viewitems
+from six import viewitems
 
 # Most common language tags from IETF
 # https://datahub.io/core/language-codes#resource-ietf-language-tags
@@ -110,7 +111,7 @@ class PostProcessor(object):
         # relative path to the file that is being processed
         self.rel_path = self._get_rel_path()
         self.nzb_name = nzb_name
-        self.process_method = process_method if process_method else app.PROCESS_METHOD
+        self.process_method = process_method or app.PROCESS_METHOD
         self.in_history = False
         self.release_group = None
         self.release_name = None
@@ -208,7 +209,7 @@ class PostProcessor(object):
         files = self._search_files(file_path, subfolders=subfolders)
 
         # file path to the video file that is being processed (without extension)
-        processed_file_name = os.path.splitext(os.path.basename(file_path))[0].lower()
+        processed_file_name = os.path.splitext(os.path.basename(file_path))[0].lower() + '.'
 
         processed_names = (processed_file_name,)
         processed_names += tuple((_f for _f in (self._rar_basename(file_path, files),) if _f))
@@ -220,12 +221,12 @@ class PostProcessor(object):
             if found_file == file_path:
                 continue
 
-            # Exclude .rar files
-            if re.search(r'(^.+\.(rar|r\d+)$)', found_file):
-                continue
-
             # Exclude non-subtitle files with the 'only subtitles' option
             if subtitles_only and not is_subtitle(found_file):
+                continue
+
+            # Exclude .rar files
+            if re.search(r'(^.+\.(rar|r\d+)$)', found_file):
                 continue
 
             file_name = os.path.basename(found_file).lower()
@@ -304,7 +305,7 @@ class PostProcessor(object):
             pattern = new_pattern + pattern
 
         files = []
-        for root, __, filenames in os.walk(directory):
+        for root, _, filenames in os.walk(directory):
             for filename in fnmatch.filter(filenames, pattern):
                 files.append(os.path.join(root, filename))
             if not subfolders:
@@ -331,7 +332,7 @@ class PostProcessor(object):
                            u'Error: {message}'.format(name=rar, message=error), logger.WARNING)
                 continue
             if videofile in content:
-                return os.path.splitext(os.path.basename(rar))[0].lower()
+                return os.path.splitext(os.path.basename(rar))[0].lower() + '.'
 
     def _delete(self, files, associated_files=False):
         """
@@ -434,12 +435,16 @@ class PostProcessor(object):
             self.log(u'Must provide an action for the combined file operation', logger.ERROR)
             return
 
-        file_list = [file_path]
+        other_files = []
         if associated_files:
-            file_list += self.list_associated_files(file_path, refine=True)
-        elif subtitles:
-            file_list += self.list_associated_files(file_path, subtitles_only=True, refine=True)
+            other_files += self.list_associated_files(file_path, refine=True)
+        if subtitles:
+            other_files += self.list_associated_files(file_path, subfolders=True, subtitles_only=True, refine=True)
+            # Remove possible duplicates
+            if associated_files:
+                other_files = list(set(other_files))
 
+        file_list = [file_path] + other_files
         if not file_list:
             self.log(u'There were no files associated with {0}, not moving anything'.format
                      (file_path), logger.DEBUG)
@@ -507,6 +512,17 @@ class PostProcessor(object):
                          (cur_file_path, new_file_path, e), logger.ERROR)
                 raise EpisodePostProcessingFailedException('Unable to move and link the files to their new home')
 
+        def keeplink(cur_file_path, new_file_path):
+            self.log(u'Symbolic linking file from {0} to {1}'.format
+                     (cur_file_path, new_file_path), logger.DEBUG)
+            try:
+                helpers.symlink(cur_file_path, new_file_path)
+                helpers.chmod_as_parent(new_file_path)
+            except (IOError, OSError) as e:
+                self.log(u'Unable to link file {0} to {1}: {2!r}'.format
+                         (cur_file_path, new_file_path, e), logger.ERROR)
+                raise EpisodePostProcessingFailedException('Unable to move and link the files to their new home')
+
         def reflink(cur_file_path, new_file_path):
             self.log(u'Reflink file from {0} to {1}'.format(cur_file_path, new_basename), logger.DEBUG)
             try:
@@ -517,11 +533,11 @@ class PostProcessor(object):
                          (cur_file_path, new_file_path, e), logger.ERROR)
                 raise EpisodePostProcessingFailedException('Unable to copy the files to their new home')
 
-        action = {'copy': copy, 'move': move, 'hardlink': hardlink, 'symlink': symlink, 'reflink': reflink}.get(self.process_method)
+        action = {'copy': copy, 'move': move, 'hardlink': hardlink, 'symlink': symlink, 'reflink': reflink, 'keeplink': keeplink}.get(self.process_method)
         # Subtitle action should be move in case of hardlink|symlink|reflink as downloaded subtitle is not part of torrent
         subtitle_action = {'copy': copy, 'move': move, 'hardlink': move, 'symlink': move, 'reflink': move}.get(self.process_method)
-        self._combined_file_operation(file_path, new_path, new_basename, associated_files,
-                                      action=action, subtitle_action=subtitle_action, subtitles=subtitles)
+        self._combined_file_operation(file_path, new_path, new_basename, associated_files=associated_files,
+                                      action=action, subtitles=subtitles, subtitle_action=subtitle_action)
 
     @staticmethod
     def _build_anidb_episode(connection, file_path):
@@ -550,7 +566,7 @@ class PostProcessor(object):
 
             self.log(u'Adding the file to the anidb mylist', logger.DEBUG)
             try:
-                self.anidbEpisode.add_to_mylist(status=1)  # status = 1 sets the status of the file to "internal HDD"
+                self.anidbEpisode.add_to_mylist(state=1)  # state = 1 sets the state of the file to "internal HDD"
             except Exception as e:
                 self.log(u'Exception message: {0!r}'.format(e))
 
@@ -928,7 +944,7 @@ class PostProcessor(object):
             if current_quality in preferred:
                 return False, 'Current quality is Allowed but we already have a current Preferred. Ignoring quality'
             elif current_quality not in allowed:
-                return True, 'New quality is Allowed and we don\'t have a current Preferred. Accepting quality'
+                return True, "New quality is Allowed and we don't have a current Preferred. Accepting quality"
             elif new_quality > current_quality:
                 return True, 'New quality is higher than current Allowed. Accepting quality'
             elif new_quality < current_quality:
@@ -947,33 +963,25 @@ class PostProcessor(object):
         if not app.EXTRA_SCRIPTS:
             return
 
-        def _attempt_to_encode(item, _encoding):
-            if isinstance(item, text_type):
-                try:
-                    item = item.encode(_encoding)
-                except UnicodeEncodeError:
-                    pass  # ignore it
-                finally:
-                    return item
-
-        encoding = app.SYS_ENCODING
-
-        file_path = _attempt_to_encode(self.file_path, encoding)
-        ep_location = _attempt_to_encode(ep_obj.location, encoding)
+        ep_location = ep_obj.location
+        file_path = self.file_path
         indexer_id = str(ep_obj.series.indexerid)
         season = str(ep_obj.season)
         episode = str(ep_obj.episode)
         airdate = str(ep_obj.airdate)
 
-        for cur_script_name in app.EXTRA_SCRIPTS:
-            cur_script_name = _attempt_to_encode(cur_script_name, encoding)
+        for script_path in app.EXTRA_SCRIPTS:
 
-            # generate a safe command line string to execute the script and provide all the parameters
-            script_cmd = [piece for piece in re.split(r'(\'.*?\'|".*?"| )', cur_script_name) if piece.strip()]
-            script_cmd[0] = os.path.abspath(script_cmd[0])
-            self.log(u'Absolute path to script: {0}'.format(script_cmd[0]), logger.DEBUG)
+            if not os.path.isfile(script_path):
+                self.log(u'Extra script {0} is not a file.'.format(script_path), logger.WARNING)
+                continue
 
-            script_cmd += [ep_location, file_path, indexer_id, season, episode, airdate]
+            if not script_path.endswith('.py'):
+                self.log(u'Extra script {0} is not a Python file.'.format(script_path), logger.WARNING)
+                continue
+
+            self.log(u'Running extra script: {0}'.format(script_path), logger.INFO)
+            script_cmd = [sys.executable, script_path, ep_location, file_path, indexer_id, season, episode, airdate]
 
             # use subprocess to run the command and capture output
             self.log(u'Executing command: {0}'.format(script_cmd))
@@ -990,7 +998,7 @@ class PostProcessor(object):
                 self.log(u'Script result: {0}'.format(out), logger.DEBUG)
 
             except Exception as error:
-                self.log(u'Unable to run extra_script: {0!r}'.format(error))
+                self.log(u'Unable to run extra script: {0!r}'.format(error))
 
     def flag_kodi_clean_library(self):
         """Set flag to clean Kodi's library if Kodi is enabled."""
@@ -1103,7 +1111,7 @@ class PostProcessor(object):
 
                 # If the file season (ep_obj.season) is bigger than
                 # the indexer season (max_season[0]['max']), skip the file
-                if int(ep_obj.season) > int(max_season[0]['max']):
+                if max_season[0]['max'] and int(ep_obj.season) > int(max_season[0]['max']):
                     self.log(u'File has season {0}, while the indexer is on season {1}. '
                              u'The file may be incorrectly labeled or fake, aborting.'.format
                              (ep_obj.season, max_season[0]['max']))
@@ -1203,11 +1211,11 @@ class PostProcessor(object):
         # find the destination folder
         try:
             proper_path = ep_obj.proper_path()
-            proper_absolute_path = os.path.join(ep_obj.series.location, proper_path)
+            proper_absolute_path = os.path.join(ep_obj.series.validate_location, proper_path)
             dest_path = os.path.dirname(proper_absolute_path)
         except ShowDirectoryNotFoundException:
             raise EpisodePostProcessingFailedException(u"Unable to post-process an episode if the show dir '{0}' "
-                                                       u"doesn't exist, quitting".format(ep_obj.series.raw_location))
+                                                       u"doesn't exist, quitting".format(ep_obj.series.location))
 
         self.log(u'Destination folder for this episode: {0}'.format(dest_path), logger.DEBUG)
 
@@ -1232,13 +1240,13 @@ class PostProcessor(object):
 
         try:
             # do the action to the episode and associated files to the show dir
-            if self.process_method in ['copy', 'hardlink', 'move', 'symlink', 'reflink']:
+            if self.process_method in ['copy', 'hardlink', 'move', 'symlink', 'reflink', 'keeplink']:
                 if not self.process_method == 'hardlink':
                     if helpers.is_file_locked(self.file_path, False):
                         raise EpisodePostProcessingFailedException('File is locked for reading')
 
-                self.post_process_action(self.file_path, dest_path, new_base_name,
-                                         app.MOVE_ASSOCIATED_FILES, app.USE_SUBTITLES and ep_obj.series.subtitles)
+                self.post_process_action(self.file_path, dest_path, new_base_name, bool(app.MOVE_ASSOCIATED_FILES),
+                                         app.USE_SUBTITLES and bool(ep_obj.series.subtitles))
             else:
                 logger.log(u"'{0}' is an unknown file processing method. "
                            u"Please correct your app's usage of the API.".format(self.process_method), logger.WARNING)
@@ -1286,7 +1294,7 @@ class PostProcessor(object):
             history.log_download(cur_ep, self.file_path, new_ep_quality, self.release_group, new_ep_version)
 
         # send notifications
-        notifiers.notify_download(ep_obj._format_pattern('%SN - %Sx%0E - %EN - %QN'))
+        notifiers.notify_download(ep_obj)
         # do the library update for KODI
         notifiers.kodi_notifier.update_library(ep_obj.series.name)
         # do the library update for Plex
@@ -1304,9 +1312,8 @@ class PostProcessor(object):
 
         self._run_extra_scripts(ep_obj)
 
-        if not self.nzb_name and all([app.USE_TORRENTS,
-                                     app.PROCESS_METHOD in ('hardlink', 'symlink', 'reflink'),
-                                     app.TORRENT_SEED_LOCATION]):
+        if not self.nzb_name and all([app.USE_TORRENTS, app.TORRENT_SEED_LOCATION,
+                                      self.process_method in ('hardlink', 'symlink', 'reflink', 'keeplink')]):
             # Store self.info_hash and self.release_name so later we can remove from client if setting is enabled
             if self.info_hash:
                 existing_release_names = app.RECENTLY_POSTPROCESSED.get(self.info_hash, [])

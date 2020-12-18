@@ -72,6 +72,8 @@ def language(config, common_words):
 
 
 UNDETERMINED = babelfish.Language('und')
+MULTIPLE = babelfish.Language('mul')
+NON_SPECIFIC_LANGUAGES = frozenset([UNDETERMINED, MULTIPLE])
 
 
 class GuessitConverter(babelfish.LanguageReverseConverter):  # pylint: disable=missing-docstring
@@ -197,7 +199,7 @@ class LanguageFinder(object):
                  subtitle_prefixes, subtitle_suffixes,
                  lang_prefixes, lang_suffixes, weak_affixes):
         allowed_languages = context.get('allowed_languages') if context else None
-        self.allowed_languages = set([l.lower() for l in allowed_languages or []])
+        self.allowed_languages = {l.lower() for l in allowed_languages or []}
         self.weak_affixes = weak_affixes
         self.prefixes_map = {}
         self.suffixes_map = {}
@@ -388,7 +390,9 @@ class SubtitlePrefixLanguageRule(Rule):
                 to_remove.extend(matches.conflicting(lang))
                 if prefix in to_remove:
                     to_remove.remove(prefix)
-        return to_rename, to_remove
+        if to_rename or to_remove:
+            return to_rename, to_remove
+        return False
 
     def then(self, matches, when_response, context):
         to_rename, to_remove = when_response
@@ -425,7 +429,9 @@ class SubtitleSuffixLanguageRule(Rule):
                 to_append.append(lang)
                 if suffix in to_remove:
                     to_remove.remove(suffix)
-        return to_append, to_remove
+        if to_append or to_remove:
+            return to_append, to_remove
+        return False
 
     def then(self, matches, when_response, context):
         to_rename, to_remove = when_response
@@ -478,6 +484,7 @@ class RemoveInvalidLanguages(Rule):
     """Remove language matches that matches the blacklisted common words."""
 
     consequence = RemoveMatch
+    priority = 32
 
     def __init__(self, common_words):
         """Constructor."""

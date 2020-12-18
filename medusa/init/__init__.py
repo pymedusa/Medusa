@@ -11,12 +11,16 @@ import shutil
 import site
 import sys
 
+from medusa import app
+
 
 def initialize():
     """Initialize all fixes and workarounds."""
     _check_python_version()
     _configure_syspath()
-    _monkey_patch_fs_functions()
+    # Not working in python3, maybe it's not necessary anymore
+    if sys.version_info[0] == 2:
+        _monkey_patch_fs_functions()
     _monkey_patch_logging_functions()
     _early_basic_logging()
     _register_utf8_codec()
@@ -24,27 +28,26 @@ def initialize():
     _configure_mimetypes()
     _handle_old_tornado()
     _unload_system_dogpile()
-    _use_shutil_custom()
+    # Not working in python3, maybe it's not necessary anymore
+    if sys.version_info[0] == 2:
+        _use_shutil_custom()
     _urllib3_disable_warnings()
     _strptime_workaround()
     _monkey_patch_bdecode()
     _configure_guessit()
     _configure_subliminal()
     _configure_knowit()
+    _configure_unrar()
 
 
 def _check_python_version():
-    if sys.version_info < (2, 7):
-        print('Sorry, requires Python 2.7.x')
+    if sys.version_info < (2, 7) or (3,) < sys.version_info < (3, 5):
+        print('Sorry, requires Python 2.7.x or Python 3.5 and above')
         sys.exit(1)
 
 
-def _lib_location():
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'lib'))
-
-
-def _ext_lib_location():
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'ext'))
+def _get_lib_location(relative_path):
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', relative_path))
 
 
 def _configure_syspath():
@@ -55,21 +58,21 @@ def _configure_syspath():
     # For example: [ cwd, pathN, ..., path1, path0, <rest_of_sys.path> ]
 
     paths_to_insert = [
-        _lib_location(),
-        _ext_lib_location()
+        _get_lib_location(app.LIB_FOLDER),
+        _get_lib_location(app.EXT_FOLDER)
     ]
 
     if sys.version_info[0] == 2:
         # Add Python 2-only vendored libraries
         paths_to_insert.extend([
-            # path_to_lib2,
-            # path_to_ext2
+            _get_lib_location(app.LIB2_FOLDER),
+            _get_lib_location(app.EXT2_FOLDER)
         ])
     elif sys.version_info[0] == 3:
         # Add Python 3-only vendored libraries
         paths_to_insert.extend([
-            # path_to_lib3,
-            # path_to_ext3
+            _get_lib_location(app.LIB3_FOLDER),
+            _get_lib_location(app.EXT3_FOLDER)
         ])
 
     # Insert paths into `sys.path` and handle `.pth` files
@@ -156,24 +159,41 @@ def _strptime_workaround():
 
 def _monkey_patch_bdecode():
     """
-    Monkeypatch `bencode.bdecode` to add an option to allow extra data.
+    Monkeypatch `bencodepy` to add an option to allow extra data, and change the default parameters.
 
     This allows us to not raise an exception if bencoded data contains extra data after valid prefix.
     """
-    import bencode
+    import bencodepy
+    import bencodepy.compat
 
-    def _patched_bdecode(value, allow_extra_data=False):
-        try:
-            result, length = bencode.decode_func[value[0:1]](value, 0)
-        except (IndexError, KeyError, TypeError, ValueError):
-            raise bencode.BencodeDecodeError('not a valid bencoded string')
+    class CustomBencodeDecoder(bencodepy.BencodeDecoder):
+        def decode(self, value, allow_extra_data=False):
+            try:
+                value = bencodepy.compat.to_binary(value)
+                data, length = self.decode_func[value[0:1]](value, 0)
+            except (IndexError, KeyError, TypeError, ValueError):
+                raise bencodepy.BencodeDecodeError('not a valid bencoded string')
 
-        if length != len(value) and not allow_extra_data:
-            raise bencode.BencodeDecodeError('invalid bencoded value (data after valid prefix)')
+            if length != len(value) and not allow_extra_data:
+                raise bencodepy.BencodeDecodeError('invalid bencoded value (data after valid prefix)')
 
-        return result
+            return data
 
-    bencode.bdecode = _patched_bdecode
+    class CustomBencode(bencodepy.Bencode):
+        def __init__(self, encoding=None, encoding_fallback=None, dict_ordered=False, dict_ordered_sort=False):
+            self.decoder = CustomBencodeDecoder(
+                encoding=encoding,
+                encoding_fallback=encoding_fallback,
+                dict_ordered=dict_ordered,
+                dict_ordered_sort=dict_ordered_sort,
+            )
+            self.encoder = bencodepy.BencodeEncoder()
+
+        def decode(self, value, allow_extra_data=False):
+            return self.decoder.decode(value, allow_extra_data=allow_extra_data)
+
+    # Replace the default encoder
+    bencodepy.DEFAULT = CustomBencode(encoding='utf-8', encoding_fallback='value')
 
 
 def _configure_guessit():
@@ -199,7 +219,7 @@ def _configure_subliminal():
 
     # Register
     for name in ('napiprojekt = subliminal.providers.napiprojekt:NapiProjektProvider',
-                 'itasa = {basename}.subtitle_providers.itasa:ItaSAProvider'.format(basename=basename),
+                 'subtitulamos = {basename}.subtitle_providers.subtitulamos:SubtitulamosProvider'.format(basename=basename),
                  'wizdom = {basename}.subtitle_providers.wizdom:WizdomProvider'.format(basename=basename)):
         provider_manager.register(name)
 
@@ -212,9 +232,20 @@ def _configure_knowit():
     from knowit.utils import detect_os
 
     os_family = detect_os()
-    suggested_path = os.path.join(_lib_location(), 'native', os_family)
+    suggested_path = os.path.join(_get_lib_location(app.LIB_FOLDER), 'native', os_family)
     if os_family == 'windows':
         subfolder = 'x86_64' if sys.maxsize > 2 ** 32 else 'i386'
         suggested_path = os.path.join(suggested_path, subfolder)
 
     api.initialize({'mediainfo': suggested_path})
+
+
+def _configure_unrar():
+    from knowit.utils import detect_os
+    import rarfile
+
+    os_family = detect_os()
+    suggested_path = os.path.join(_get_lib_location(app.LIB_FOLDER), 'native', os_family)
+    if os_family == 'windows':
+        unrar_path = os.path.join(suggested_path, 'UnRAR.exe')
+        rarfile.UNRAR_TOOL = unrar_path

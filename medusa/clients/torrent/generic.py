@@ -12,12 +12,12 @@ from builtins import object
 from builtins import str
 from hashlib import sha1
 
-from bencode import BencodeDecodeError, bdecode, bencode
+from bencodepy import BencodeDecodeError, DEFAULT as BENCODE
 
 from medusa import app, db
 from medusa.helper.common import http_code_description
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.session.core import MedusaSession
+from medusa.session.core import ClientSession
 
 import requests
 
@@ -49,7 +49,7 @@ class GenericClient(object):
         self.response = None
         self.auth = None
         self.last_time = time.time()
-        self.session = MedusaSession()
+        self.session = ClientSession()
         self.session.auth = (self.username, self.password)
 
     def _request(self, method='get', params=None, data=None, files=None, cookies=None):
@@ -75,29 +75,25 @@ class GenericClient(object):
 
         if not self.auth:
             log.warning('{name}: Authentication Failed', {'name': self.name})
-
             return False
+
         try:
             self.response = self.session.request(method, self.url, params=params, data=data, files=files,
                                                  cookies=cookies, timeout=120, verify=False)
-        except requests.exceptions.ConnectionError as msg:
-            log.error('{name}: Unable to connect {error}',
-                      {'name': self.name, 'error': msg})
+        except (requests.exceptions.MissingSchema, requests.exceptions.InvalidURL) as error:
+            log.warning('{name}: Invalid Host: {error}', {'name': self.name, 'error': error})
             return False
-        except (requests.exceptions.MissingSchema, requests.exceptions.InvalidURL):
-            log.error('{name}: Invalid Host', {'name': self.name})
+        except requests.exceptions.RequestException as error:
+            log.warning('{name}: Error occurred during request: {error}',
+                        {'name': self.name, 'error': error})
             return False
-        except requests.exceptions.HTTPError as msg:
-            log.error('{name}: Invalid HTTP Request {error}',
-                      {'name': self.name, 'error': msg})
+        except Exception as error:
+            log.error('{name}: Unknown exception raised when sending torrent to'
+                      ' {name}: {error}', {'name': self.name, 'error': error})
             return False
-        except requests.exceptions.Timeout as msg:
-            log.warning('{name}: Connection Timeout {error}',
-                        {'name': self.name, 'error': msg})
-            return False
-        except Exception as msg:
-            log.error('{name}: Unknown exception raised when send torrent to'
-                      ' {name} : {error}', {'name': self.name, 'error': msg})
+
+        if not self.response:
+            log.warning('{name}: Unable to reach torrent client', {'name': self.name})
             return False
 
         if self.response.status_code == 401:
@@ -106,7 +102,6 @@ class GenericClient(object):
             return False
 
         code_description = http_code_description(self.response.status_code)
-
         if code_description is not None:
             log.info('{name}: {code}',
                      {'name': self.name, 'code': code_description})
@@ -206,14 +201,15 @@ class GenericClient(object):
         if result.url.startswith('magnet:'):
             result.hash = re.findall(r'urn:btih:([\w]{32,40})', result.url)[0]
             if len(result.hash) == 32:
-                result.hash = b16encode(b32decode(result.hash)).lower()
+                hash_b16 = b16encode(b32decode(result.hash)).lower()
+                result.hash = hash_b16.decode('utf-8')
         else:
 
             try:
-                # `bencode.bdecode` is monkeypatched in `medusa.init`
-                torrent_bdecode = bdecode(result.content, allow_extra_data=True)
+                # `bencodepy` is monkeypatched in `medusa.init`
+                torrent_bdecode = BENCODE.decode(result.content, allow_extra_data=True)
                 info = torrent_bdecode['info']
-                result.hash = sha1(bencode(info)).hexdigest()
+                result.hash = sha1(BENCODE.encode(info)).hexdigest()
             except (BencodeDecodeError, KeyError):
                 log.warning(
                     'Unable to bdecode torrent. Invalid torrent: {name}. '

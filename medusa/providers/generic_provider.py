@@ -5,13 +5,12 @@
 from __future__ import unicode_literals
 
 import logging
+import operator
 import re
 from builtins import map
 from builtins import object
 from builtins import str
-from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta
-from itertools import chain
 from os.path import join
 
 from dateutil import parser, tz
@@ -23,9 +22,7 @@ from medusa import (
     tv,
     ui,
 )
-from medusa.classes import (
-    SearchResult,
-)
+from medusa.classes import SearchResult
 from medusa.common import (
     MULTI_EP_RESULT,
     Quality,
@@ -39,22 +36,20 @@ from medusa.helper.common import (
 from medusa.helpers import (
     download_file,
 )
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import (
     InvalidNameException,
     InvalidShowException,
     NameParser,
 )
-from medusa.search import PROPER_SEARCH
-from medusa.session.core import MedusaSafeSession
+from medusa.search import FORCED_SEARCH, PROPER_SEARCH
+from medusa.session.core import ProviderSession
 from medusa.show.show import Show
 
 from pytimeparse import parse
 
 from requests.utils import add_dict_to_cookiejar, dict_from_cookiejar
-
-from six import itervalues
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -74,15 +69,6 @@ class GenericProvider(object):
         self.name = name
 
         self.anime_only = False
-        self.bt_cache_urls = [
-            'http://reflektor.karmorra.info/torrent/{info_hash}.torrent',
-            'https://torrent.cd/torrents/download/{info_hash}/.torrent',
-            'https://asnet.pw/download/{info_hash}/',
-            'http://p2pdl.com/download/{info_hash}',
-            'http://itorrents.org/torrent/{info_hash}.torrent',
-            'http://thetorrent.org/torrent/{info_hash}.torrent',
-            'https://cache.torrentgalaxy.org/get/{info_hash}',
-        ]
         self.cache = tv.Cache(self)
         self.enable_backlog = False
         self.enable_manualsearch = False
@@ -94,7 +80,7 @@ class GenericProvider(object):
         self.public = False
         self.search_fallback = False
         self.search_mode = None
-        self.session = MedusaSafeSession(cloudflare=True)
+        self.session = ProviderSession(cloudflare=True)
         self.session.headers.update(self.headers)
         self.series = None
         self.supports_absolute_numbering = False
@@ -205,62 +191,49 @@ class GenericProvider(object):
                     search_strings = self._get_episode_search_strings(episode_obj, add_string=term)
 
                     for item in self.search(search_strings[0], ep_obj=episode_obj):
-                        search_result = self.get_result()
-                        results.append(search_result)
-
-                        search_result.name, search_result.url = self._get_title_and_url(item)
-                        search_result.seeders, search_result.leechers = self._get_result_info(item)
-                        search_result.size = self._get_size(item)
-                        search_result.pubdate = self._get_pubdate(item)
-
-                        # This will be retrieved from the parser
-                        search_result.proper_tags = ''
+                        search_result = self.get_result(series=series_obj, item=item)
+                        if search_result in results:
+                            continue
 
                         search_result.search_type = PROPER_SEARCH
-                        search_result.date = datetime.today()
-                        search_result.series = series_obj
+                        results.append(search_result)
 
         return results
 
-    @staticmethod
-    def remove_duplicate_mappings(items, pk='link'):
+    def search_results_in_cache(self, episodes):
         """
-        Remove duplicate items from an iterable of mappings.
+        Search episodes based on param in cache.
 
-        :param items: An iterable of mappings
-        :param pk: Primary key for removing duplicates
-        :return: An iterable of unique mappings
+        Search the cache (db) for this provider
+        :param episodes: List of Episode objects
+
+        :return: A dict of search results, ordered by episode number
         """
-        return list(
-            itervalues(OrderedDict(
-                (item[pk], item)
-                for item in items
-            ))
-        )
+        return self.cache.find_episodes(episodes)
 
     def find_search_results(self, series, episodes, search_mode, forced_search=False, download_current_quality=False,
                             manual_search=False, manual_search_type='episode'):
-        """Search episodes based on param."""
+        """
+        Search episodes based on param.
+
+        Search the provider using http queries.
+        :param series: Series object
+        :param episodes: List of Episode objects
+        :param search_mode: 'eponly' or 'sponly'
+        :param forced_search: Flag if the search was triggered by a forced search
+        :param download_current_quality: Flag if we want to include an already downloaded quality in the new search
+        :param manual_search: Flag if the search was triggered by a manual search
+        :param manual_search_type: How the manual search was started: For example an 'episode' or 'season'
+
+        :return: A dict of search results, ordered by episode number.
+        """
         self._check_auth()
         self.series = series
 
-        results = {}
-        items_list = []
         season_search = (len(episodes) > 1 or manual_search_type == 'season') and search_mode == 'sponly'
+        results = []
 
         for episode in episodes:
-            if not manual_search:
-                cache_results = self.cache.find_needed_episodes(
-                    episode, forced_search=forced_search, down_cur_quality=download_current_quality
-                )
-                if cache_results:
-                    for episode_no in cache_results:
-                        if episode_no not in results:
-                            results[episode_no] = cache_results[episode_no]
-                        else:
-                            results[episode_no] += cache_results[episode_no]
-                    continue
-
             search_strings = []
             if season_search:
                 search_strings = self._get_season_search_strings(episode)
@@ -269,61 +242,35 @@ class GenericProvider(object):
 
             for search_string in search_strings:
                 # Find results from the provider
-                items_list += self.search(
-                    search_string, ep_obj=episode, manual_search=manual_search
-                )
+                items = self.search(search_string, ep_obj=episode, manual_search=manual_search)
+                for item in items:
+                    result = self.get_result(series=series, item=item)
+                    if result not in results:
+                        result.quality = Quality.quality_from_name(result.name, series.is_anime)
+                        results.append(result)
 
             # In season search, we can't loop in episodes lists as we
             # only need one episode to get the season string
             if search_mode == 'sponly':
                 break
 
-        # Remove duplicate items
-        unique_items = self.remove_duplicate_mappings(items_list)
-        log.debug('Found {0} unique items', len(unique_items))
-
-        # categorize the items into lists by quality
-        categorized_items = defaultdict(list)
-        for item in unique_items:
-            quality = self.get_quality(item, anime=series.is_anime)
-            categorized_items[quality].append(item)
+        log.debug('Found {0} unique search results', len(results))
 
         # sort qualities in descending order
-        sorted_qualities = sorted(categorized_items, reverse=True)
-        log.debug('Found qualities: {0}', sorted_qualities)
+        results.sort(key=operator.attrgetter('quality'), reverse=True)
 
-        # chain items sorted by quality
-        sorted_items = chain.from_iterable(
-            categorized_items[quality]
-            for quality in sorted_qualities
-        )
+        # Move through each item and parse with NameParser()
+        for search_result in results:
 
-        # unpack all of the quality lists into a single sorted list
-        items_list = list(sorted_items)
-
-        # Move through each item and parse it into a quality
-        search_results = []
-        for item in items_list:
-
-            # Make sure we start with a TorrentSearchResult, NZBDataSearchResult or NZBSearchResult search result obj.
-            search_result = self.get_result()
-            search_results.append(search_result)
-            search_result.item = item
+            if forced_search:
+                search_result.search_type = FORCED_SEARCH
             search_result.download_current_quality = download_current_quality
-            # FIXME: Should be changed to search_result.search_type
-            search_result.forced_search = forced_search
-
-            (search_result.name, search_result.url) = self._get_title_and_url(item)
-            (search_result.seeders, search_result.leechers) = self._get_result_info(item)
-
-            search_result.size = self._get_size(item)
-            search_result.pubdate = self._get_pubdate(item)
-
             search_result.result_wanted = True
 
             try:
-                search_result.parsed_result = NameParser(parse_method=('normal', 'anime')[series.is_anime]
-                                                         ).parse(search_result.name)
+                search_result.parsed_result = NameParser(
+                    parse_method=('normal', 'anime')[series.is_anime]).parse(
+                        search_result.name)
             except (InvalidNameException, InvalidShowException) as error:
                 log.debug('Error during parsing of release name: {release_name}, with error: {error}',
                           {'release_name': search_result.name, 'error': error})
@@ -380,11 +327,21 @@ class GenericProvider(object):
                             continue
 
                         # Compare the episodes and season from the result with what was searched.
-                        if not [searched_episode for searched_episode in episodes
-                                if searched_episode.season == search_result.parsed_result.season_number and
-                                (searched_episode.episode, searched_episode.scene_episode)
-                                [searched_episode.series.is_scene] in
-                                search_result.parsed_result.episode_numbers]:
+                        wanted_ep = False
+                        for searched_ep in episodes:
+                            if searched_ep.series.is_scene and searched_ep.scene_episode:
+                                season = searched_ep.scene_season
+                                episode = searched_ep.scene_episode
+                            else:
+                                season = searched_ep.season
+                                episode = searched_ep.episode
+
+                            if (season == search_result.parsed_result.season_number
+                                    and episode in search_result.parsed_result.episode_numbers):
+                                wanted_ep = True
+                                break
+
+                        if not wanted_ep:
                             log.debug(
                                 "The result {0} doesn't seem to match an episode that we are currently trying to "
                                 'snatch, skipping it', search_result.name
@@ -439,9 +396,10 @@ class GenericProvider(object):
                             search_result.actual_season = int(sql_results[0]['season'])
                             search_result.actual_episodes = [int(sql_results[0]['episode'])]
 
+        final_results = {}
         cl = []
         # Iterate again over the search results, and see if there is anything we want.
-        for search_result in search_results:
+        for search_result in results:
 
             # Try to cache the item if we want to.
             cache_result = search_result.add_result_to_cache(self.cache)
@@ -455,48 +413,40 @@ class GenericProvider(object):
 
             log.debug('Found result {0} at {1}', search_result.name, search_result.url)
 
-            search_result.create_episode_object()
-            # result = self.get_result(episode_object, search_result)
-            search_result.finish_search_result(self)
+            search_result.update_search_result()
 
-            if not search_result.actual_episodes:
-                episode_number = SEASON_RESULT
+            if search_result.episode_number == SEASON_RESULT:
                 log.debug('Found season pack result {0} at {1}', search_result.name, search_result.url)
-            elif len(search_result.actual_episodes) == 1:
-                episode_number = search_result.actual_episode
-                log.debug('Found single episode result {0} at {1}', search_result.name, search_result.url)
-            else:
-                episode_number = MULTI_EP_RESULT
+            elif search_result.episode_number == MULTI_EP_RESULT:
                 log.debug('Found multi-episode ({0}) result {1} at {2}',
                           ', '.join(map(str, search_result.parsed_result.episode_numbers)),
                           search_result.name,
                           search_result.url)
-            if episode_number not in results:
-                results[episode_number] = [search_result]
             else:
-                results[episode_number].append(search_result)
+                log.debug('Found single episode result {0} at {1}', search_result.name, search_result.url)
+
+            if search_result.episode_number not in final_results:
+                final_results[search_result.episode_number] = [search_result]
+            else:
+                final_results[search_result.episode_number].append(search_result)
 
         if cl:
             # Access to a protected member of a client class
             db = self.cache._get_db()
             db.mass_action(cl)
 
-        return results
+        return final_results
 
     def get_id(self):
         """Get ID of the provider."""
         return GenericProvider.make_id(self.name)
 
-    def get_quality(self, item, anime=False):
-        """Get quality of the result from its name."""
-        (title, _) = self._get_title_and_url(item)
-        quality = Quality.quality_from_name(title, anime)
-
-        return quality
-
-    def get_result(self, episodes=None):
+    def get_result(self, series, item=None, cache=None):
         """Get result."""
-        return self._get_result(episodes)
+        search_result = SearchResult(provider=self, series=series,
+                                     item=item, cache=cache)
+
+        return search_result
 
     def image_name(self):
         """Return provider image name."""
@@ -604,10 +554,6 @@ class GenericProvider(object):
         except (AttributeError, TypeError, ValueError):
             log.exception('Failed parsing publishing date: {0}', pubdate)
 
-    def _get_result(self, episodes=None):
-        """Get result."""
-        return SearchResult(episodes)
-
     def _create_air_by_date_search_string(self, show_scene_name, episode, search_string, add_string=None):
         """Create a search string used for series that are indexed by air date."""
         episode_string = show_scene_name + self.search_separator
@@ -635,20 +581,21 @@ class GenericProvider(object):
         """Create a search string used for as anime 'marked' shows."""
         episode_string = show_scene_name + self.search_separator
 
-        # If the show name is a season scene exception, we want to use the indexer episode number.
-        if (episode.scene_season > 1 and
-                show_scene_name in scene_exceptions.get_season_scene_exceptions(episode.series, episode.scene_season)):
-            # This is apparently a season exception, let's use the scene_episode instead of absolute
+        # If the show name is a season scene exception, we want to use the episode number
+        if episode.scene_season is not None and show_scene_name in scene_exceptions.get_season_scene_exceptions(
+                episode.series, episode.scene_season):
+            # This is apparently a season exception, let's use the episode instead of absolute
             ep = episode.scene_episode
         else:
-            ep = episode.scene_absolute_number
+            if episode.series.is_scene and episode.scene_absolute_number:
+                ep = episode.scene_absolute_number
+            else:
+                ep = episode.absolute_number
 
         episode_string += '{episode:0>2}'.format(episode=ep)
-        episode_string_fallback = episode_string + '{episode:0>3}'.format(episode=ep)
 
         if add_string:
             episode_string += self.search_separator + add_string
-            episode_string_fallback += self.search_separator + add_string
 
         search_string['Episode'].append(episode_string.strip())
 
@@ -656,9 +603,16 @@ class GenericProvider(object):
         """Create a default search string, used for standard type S01E01 tv series."""
         episode_string = show_scene_name + self.search_separator
 
+        if episode.series.is_scene and episode.scene_episode:
+            season_number = episode.scene_season
+            episode_number = episode.scene_episode
+        else:
+            season_number = episode.season
+            episode_number = episode.episode
+
         episode_string += config.naming_ep_type[2] % {
-            'seasonnumber': episode.scene_season,
-            'episodenumber': episode.scene_episode,
+            'seasonnumber': season_number,
+            'episodenumber': episode_number
         }
 
         if add_string:
@@ -676,7 +630,7 @@ class GenericProvider(object):
         }
 
         all_possible_show_names = episode.series.get_all_possible_names()
-        if episode.scene_season:
+        if episode.scene_season is not None:
             all_possible_show_names = all_possible_show_names.union(
                 episode.series.get_all_possible_names(season=episode.scene_season)
             )
@@ -759,6 +713,15 @@ class GenericProvider(object):
 
         return title, url
 
+    @staticmethod
+    def _get_identifier(item):
+        """
+        Return the identifier for the item.
+
+        By default this is the url. Providers can overwrite this, when needed.
+        """
+        return item.url
+
     @property
     def recent_results(self):
         """Return recent RSS results from provier."""
@@ -772,7 +735,7 @@ class GenericProvider(object):
         if items:
             add_to_list = []
             for item in items:
-                if item['link'] not in {cache_item['link'] for cache_item in recent_results[self.get_id()]}:
+                if item not in recent_results[self.get_id()]:
                     add_to_list += [item]
             results = add_to_list + recent_results[self.get_id()]
             recent_results[self.get_id()] = results[:self.max_recent_items]
@@ -807,14 +770,26 @@ class GenericProvider(object):
             return {'result': False,
                     'message': 'Cookie is not correctly formatted: {0}'.format(self.cookies)}
 
-        if not all(req_cookie in [x.rsplit('=', 1)[0] for x in self.cookies.split(';')]
-                   for req_cookie in self.required_cookies):
-            return {
-                'result': False,
-                'message': "You haven't configured the requied cookies. Please login at {provider_url}, "
-                           'and make sure you have copied the following cookies: {required_cookies!r}'
-                           .format(provider_url=self.name, required_cookies=self.required_cookies)
-            }
+        if self.required_cookies:
+            if self.name == 'Beyond-HD':
+                if not any('remember_web_' in x.rsplit('=', 1)[0] for x in self.cookies.split(';')):
+                    return {
+                        'result': False,
+                        'message': "You haven't configured the required cookies. Please login at {provider_url}, "
+                        'and make sure you have copied the following cookies: {required_cookies!r}'.format(
+                            provider_url=self.name, required_cookies=self.required_cookies
+                        )
+                    }
+            else:
+                if not all(req_cookie in [x.rsplit('=', 1)[0] for x in self.cookies.split(';')]
+                           for req_cookie in self.required_cookies):
+                    return {
+                        'result': False,
+                        'message': "You haven't configured the required cookies. Please login at {provider_url}, "
+                        'and make sure you have copied the following cookies: {required_cookies!r}'.format(
+                            provider_url=self.name, required_cookies=self.required_cookies
+                        )
+                    }
 
         # cookie_validator got at least one cookie key/value pair, let's return success
         add_dict_to_cookiejar(self.session.cookies, dict(x.rsplit('=', 1) for x in self.cookies.split(';')))
@@ -883,3 +858,49 @@ class GenericProvider(object):
     def __unicode__(self):
         """Return provider name and provider type."""
         return '{provider_name} ({provider_type})'.format(provider_name=self.name, provider_type=self.provider_type)
+
+    def to_json(self):
+        """Return a json representation for a provider."""
+        from medusa.providers.torrent.torrent_provider import TorrentProvider
+        return {
+            'name': self.name,
+            'id': self.get_id(),
+            'config': {
+                'enabled': self.enabled,
+                'search': {
+                    'backlog': {
+                        'enabled': self.enable_backlog
+                    },
+                    'manual': {
+                        'enabled': self.enable_backlog
+                    },
+                    'daily': {
+                        'enabled': self.enable_backlog,
+                        'maxRecentItems': self.max_recent_items,
+                        'stopAt': self.stop_at
+                    },
+                    'fallback': self.search_fallback,
+                    'mode': self.search_mode,
+                    'separator': self.search_separator,
+                    'seasonTemplates': self.season_templates,
+                    'delay': {
+                        'enabled': self.enable_search_delay,
+                        'duration': self.search_delay
+                    }
+                }
+            },
+            'animeOnly': self.anime_only,
+            'type': self.provider_type,
+            'public': self.public,
+            'btCacheUrls': self.bt_cache_urls if isinstance(self, TorrentProvider) else [],
+            'properStrings': self.proper_strings,
+            'headers': self.headers,
+            'supportsAbsoluteNumbering': self.supports_absolute_numbering,
+            'supportsBacklog': self.supports_backlog,
+            'url': self.url,
+            'urls': self.urls,
+            'cookies': {
+                'enabled': self.enable_cookies,
+                'required': self.cookies
+            }
+        }

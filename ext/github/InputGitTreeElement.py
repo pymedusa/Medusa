@@ -28,6 +28,10 @@
 #                                                                              #
 ################################################################################
 
+from __future__ import absolute_import
+
+import six
+
 import github.GithubObject
 
 
@@ -36,20 +40,33 @@ class InputGitTreeElement(object):
     This class represents InputGitTreeElements
     """
 
-    def __init__(self, path, mode, type, content=github.GithubObject.NotSet, sha=github.GithubObject.NotSet):
+    def __init__(
+        self,
+        path,
+        mode,
+        type,
+        content=github.GithubObject.NotSet,
+        sha=github.GithubObject.NotSet,
+    ):
         """
         :param path: string
         :param mode: string
         :param type: string
         :param content: string
-        :param sha: string
+        :param sha: string or None
         """
 
-        assert isinstance(path, (str, unicode)), path
-        assert isinstance(mode, (str, unicode)), mode
-        assert isinstance(type, (str, unicode)), type
-        assert content is github.GithubObject.NotSet or isinstance(content, (str, unicode)), content
-        assert sha is github.GithubObject.NotSet or isinstance(sha, (str, unicode)), sha
+        assert isinstance(path, (str, six.text_type)), path
+        assert isinstance(mode, (str, six.text_type)), mode
+        assert isinstance(type, (str, six.text_type)), type
+        assert content is github.GithubObject.NotSet or isinstance(
+            content, (str, six.text_type)
+        ), content
+        assert (
+            sha is github.GithubObject.NotSet
+            or sha is None
+            or isinstance(sha, (str, six.text_type))
+        ), sha
         self.__path = path
         self.__mode = mode
         self.__type = type

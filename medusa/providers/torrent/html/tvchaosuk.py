@@ -11,13 +11,11 @@ from medusa import tv
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import (
     convert_size,
-    try_int,
 )
-from medusa.helper.exceptions import AuthException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
-from requests.compat import urljoin
+from requests.compat import quote, urljoin
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -35,12 +33,10 @@ class TVChaosUKProvider(TorrentProvider):
         self.password = None
 
         # URLs
-        self.url = 'https://www.tvchaosuk.com'
+        self.url = 'https://tvchaosuk.com'
         self.urls = {
-            'login': urljoin(self.url, 'takelogin.php'),
-            'index': urljoin(self.url, 'index.php'),
-            'search': urljoin(self.url, 'browse.php'),
-            'query': urljoin(self.url, 'scripts/autocomplete/query.php'),
+            'login': urljoin(self.url, 'login'),
+            'search': urljoin(self.url, 'torrents/filter')
         }
 
         # Proper Strings
@@ -50,12 +46,11 @@ class TVChaosUKProvider(TorrentProvider):
         # Miscellaneous Options
         self.freeleech = None
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Cache
         self.cache = tv.Cache(self)
+
+        # Store _token as it's needed for searches.
+        self._token = ''
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
@@ -67,16 +62,23 @@ class TVChaosUKProvider(TorrentProvider):
         :returns: A list of search results (structure)
         """
         results = []
-        if not self.login():
+        if not self.login() or not self._token:
             return results
 
         # Search Params
         search_params = {
-            'do': 'search',
-            'search_type': 't_name',
-            'category': 0,
-            'include_dead_torrents': 'no',
-            'submit': 'search',
+            '_token': self._token,
+            'search': '',
+            'description': '',
+            'uploader': '',
+            'imdb': '',
+            'tvdb': '',
+            'view': 'list',
+            'tmdb': '',
+            'start_year': '',
+            'end_year': '',
+            'page': 0,
+            'qty': 100,
         }
 
         for mode in search_strings:
@@ -84,15 +86,13 @@ class TVChaosUKProvider(TorrentProvider):
 
             for search_string in search_strings[mode]:
 
-                if mode == 'Season':
-                    search_string = re.sub(r'(.*)S0?', r'\1Series ', search_string)
-
-                elif mode != 'RSS':
+                if mode != 'RSS':
                     log.debug('Search string: {search}',
                               {'search': search_string})
 
-                search_params['keywords'] = search_string
-                response = self.session.post(self.urls['search'], data=search_params)
+                    search_params['search'] = quote(search_string)
+
+                response = self.session.get(self.urls['search'], params='&'.join('{}={}'.format(k, v) for k, v in search_params.items()))
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue
@@ -111,14 +111,12 @@ class TVChaosUKProvider(TorrentProvider):
         :return: A list of items found
         """
         # Units
-        units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
+        units = ['B', 'KB', 'MIB', 'GIB', 'TB', 'PB']
 
         items = []
 
-        keywords = kwargs.pop('keywords', None)
-
         with BS4Parser(data, 'html5lib') as html:
-            torrent_table = html.find(id='sortabletable')
+            torrent_table = html.find('table', class_='table')
             torrent_rows = torrent_table('tr') if torrent_table else []
 
             # Continue only if at least one release is found
@@ -126,64 +124,48 @@ class TVChaosUKProvider(TorrentProvider):
                 log.debug('Data returned from provider does not contain any torrents')
                 return items
 
-            labels = [label.img['title'] if label.img else label.get_text(strip=True) for label in
-                      torrent_rows[0]('td')]
+            labels = [label.get_text(strip=True) for label in torrent_rows[0]('th')]
 
             # Skip column headers
             for row in torrent_rows[1:]:
                 try:
-                    # Skip highlighted torrents
-                    if mode == 'RSS' and row.get('class') == ['highlight']:
-                        continue
+                    cells = row('td')
 
-                    if self.freeleech and not row.find('img', alt=re.compile('Free Torrent')):
-                        continue
+                    if self.freeleech:
+                        badges = cells[labels.index('Name')]('span', class_='badge-extra')
+                        if 'Freeleech' not in [badge.get_text(strip=True) for badge in badges]:
+                            continue
 
-                    title = row.find(class_='tooltip-content')
-                    title = title.div.get_text(strip=True) if title else None
-                    download_url = row.find(title='Click to Download this Torrent!')
-                    download_url = download_url.parent['href'] if download_url else None
+                    title = cells[labels.index('Name')].find('a', class_='view-torrent').get_text(strip=True)
+                    download_url = cells[labels.index('Name')].find('button').parent['href']
+
                     if not all([title, download_url]):
                         continue
 
-                    if title.endswith('...'):
-                        title = self.get_full_title(title)
-
-                    seeders = try_int(row.find(title='Seeders').get_text(strip=True))
-                    leechers = try_int(row.find(title='Leechers').get_text(strip=True))
+                    seeders = int(cells[labels.index('S')].get_text(strip=True))
+                    leechers = int(cells[labels.index('L')].get_text(strip=True))
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
                                       ' minimum seeders: {0}. Seeders: {1}',
                                       title, seeders)
                         continue
 
-                    # Chop off tracker/channel prefix or we cant parse the result!
-                    if mode != 'RSS' and keywords:
-                        show_name_first_word = re.search(r'^[^ .]+', keywords).group()
-                        if not title.startswith(show_name_first_word):
-                            title = re.sub(r'.*(' + show_name_first_word + '.*)', r'\1', title)
-
-                    # Change title from Series to Season, or we can't parse
-                    if mode == 'Season':
-                        title = re.sub(r'(.*)(?i)Series', r'\1Season', title)
-
-                    # Strip year from the end or we can't parse it!
-                    title = re.sub(r'(.*)[\. ]?\(\d{4}\)', r'\1', title)
-                    title = re.sub(r'\s+', r' ', title)
-
-                    torrent_size = row('td')[labels.index('Size')].get_text(strip=True)
+                    torrent_size = cells[labels.index('Size')].get_text(strip=True)
                     size = convert_size(torrent_size, units=units) or -1
 
+                    pubdate_raw = cells[labels.index('Created at')].get_text(strip=True)
+                    pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
+
                     item = {
-                        'title': title + '.hdtv.x264',
+                        'title': title,
                         'link': download_url,
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',
@@ -200,12 +182,33 @@ class TVChaosUKProvider(TorrentProvider):
         if len(self.session.cookies) >= 4:
             return True
 
+        # Get the _token
+        response_token = self.session.get(self.urls['login'])
+        if not response_token or not response_token.text:
+            log.warning('Provider not reachable')
+            return False
+
+        match_token = re.search(r'<meta name="csrf-token" content="([^"]+)">', response_token.text)
+        match_captcha = re.search(r'<input type="hidden" name="_captcha" value="([^"]+)" />', response_token.text)
+        match_hash = re.search(r'<input type="hidden".+name="([^"]+)".+value="(\d+)"', response_token.text)
+
+        if not match_token or not match_captcha or not match_hash:
+            log.warning('Could not get token or captcha')
+            return False
+
+        self._token = match_token.group(1)
+        captcha = match_captcha.group(1)
+        hash_key = match_hash.group(1)
+        hash_value = match_hash.group(2)
+
         login_params = {
+            '_token': self._token,
             'username': self.username,
             'password': self.password,
-            'logout': 'no',
-            'submit': 'LOGIN',
-            'returnto': '/browse.php',
+            'remember': 'on',
+            '_captcha': captcha,
+            '_username': '',
+            hash_key: hash_value
         }
 
         response = self.session.post(self.urls['login'], data=login_params)
@@ -213,34 +216,11 @@ class TVChaosUKProvider(TorrentProvider):
             log.warning('Unable to connect to provider')
             return False
 
-        if re.search('Error: Username or password incorrect!', response.text):
+        if re.search('These credentials do not match our records', response.text):
             log.warning('Invalid username or password. Check your settings')
             return False
 
         return True
-
-    def _check_auth(self):
-        if self.username and self.password:
-            return True
-
-        raise AuthException('Your authentication credentials for {0} are missing,'
-                            ' check your config.'.format(self.name))
-
-    def get_full_title(self, title):
-        """Get full title of release as provider add a "..." in the end of title in the html."""
-        # Strip trailing 3 dots
-        title = title[:-3]
-        search_params = {'input': title}
-        response = self.session.get(self.urls['query'], params=search_params)
-        if not response or not response.text:
-            log.debug("Couldn't retrieve the full release title")
-            return title
-
-        with BS4Parser(response.text, 'html5lib') as html:
-            titles = html('results')
-            for item in titles:
-                title = item.text
-        return title
 
 
 provider = TVChaosUKProvider()

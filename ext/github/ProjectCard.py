@@ -22,7 +22,7 @@
 #                                                                              #
 ################################################################################
 
-import json
+from __future__ import absolute_import
 
 import github.GithubObject
 
@@ -31,6 +31,8 @@ import github.GithubObject
 #
 # See also https://developer.github.com/v4/object/projectcard for the next generation GitHub API,
 # which may point the way to where the API is likely headed and what might come back to v3. E.g. ProjectCard.content member.
+
+
 class ProjectCard(github.GithubObject.CompletableGithubObject):
     """
     This class represents Project Cards. The reference can be found here https://developer.github.com/v3/projects/cards
@@ -117,20 +119,18 @@ class ProjectCard(github.GithubObject.CompletableGithubObject):
         :calls: `GET /repos/:owner/:repo/pulls/:number <https://developer.github.com/v3/pulls/#get-a-single-pull-request>`_
         :rtype: :class:`github.PullRequest.PullRequest` or :class:`github.Issue.Issue`
         """
-        if self.content_url == None:
+        if self.content_url is None:
             return None
-            
+
         if content_type == "PullRequest":
             headers, data = self._requester.requestJsonAndCheck(
-                "GET",
-                self.content_url.replace("issues", "pulls")
+                "GET", self.content_url.replace("issues", "pulls")
             )
-            return github.PullRequest.PullRequest(self._requester, headers, data, completed=True)
+            return github.PullRequest.PullRequest(
+                self._requester, headers, data, completed=True
+            )
         elif content_type is github.GithubObject.NotSet or content_type == "Issue":
-            headers, data = self._requester.requestJsonAndCheck(
-                "GET",
-                self.content_url
-            )
+            headers, data = self._requester.requestJsonAndCheck("GET", self.content_url)
             return github.Issue.Issue(self._requester, headers, data, completed=True)
         else:
             assert False, "Unknown content type: %s" % content_type
@@ -157,7 +157,9 @@ class ProjectCard(github.GithubObject.CompletableGithubObject):
         if "created_at" in attributes:  # pragma no branch
             self._created_at = self._makeDatetimeAttribute(attributes["created_at"])
         if "creator" in attributes:  # pragma no branch
-            self._creator = self._makeClassAttribute(github.NamedUser.NamedUser, attributes["creator"])
+            self._creator = self._makeClassAttribute(
+                github.NamedUser.NamedUser, attributes["creator"]
+            )
         if "id" in attributes:  # pragma no branch
             self._id = self._makeIntAttribute(attributes["id"])
         if "node_id" in attributes:  # pragma no branch

@@ -46,10 +46,6 @@ class SceneTimeProvider(TorrentProvider):
         self.cookies = ''
         self.required_cookies = ('uid', 'pass')
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Cache
         self.cache = tv.Cache(self)
 
@@ -113,7 +109,8 @@ class SceneTimeProvider(TorrentProvider):
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
-            torrent_rows = html.find('div', id='torrenttable').find_all('tr')
+            torrent_table = html.find('div', id='torrenttable')
+            torrent_rows = torrent_table.find_all('tr') if torrent_table else []
 
             # Continue only if at least one release is found
             if len(torrent_rows) < 2:
@@ -146,7 +143,7 @@ class SceneTimeProvider(TorrentProvider):
                     leechers = try_int(cells[labels.index('Leechers')].get_text(strip=True))
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
                                       ' minimum seeders: {0}. Seeders: {1}',

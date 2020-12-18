@@ -27,9 +27,12 @@ def website(config):
     rebulk = rebulk.regex_defaults(flags=re.IGNORECASE).string_defaults(ignore_case=True)
     rebulk.defaults(name="website")
 
-    tlds = [l.strip().decode('utf-8')
-            for l in resource_stream('guessit', 'tlds-alpha-by-domain.txt').readlines()
-            if b'--' not in l][1:]  # All registered domain extension
+    with resource_stream('guessit', 'tlds-alpha-by-domain.txt') as tld_file:
+        tlds = [
+            tld.strip().decode('utf-8')
+            for tld in tld_file.readlines()
+            if b'--' not in tld
+        ][1:]  # All registered domain extension
 
     safe_tlds = config['safe_tlds']  # For sure a website extension
     safe_subdomains = config['safe_subdomains']  # For sure a website subdomain
@@ -64,7 +67,7 @@ def website(config):
             """
             Validator for next website matches
             """
-            return any(name in ['season', 'episode', 'year'] for name in match.names)
+            return match.named('season', 'episode', 'year')
 
         def when(self, matches, context):
             to_remove = []
@@ -77,7 +80,9 @@ def website(config):
                 if not safe:
                     suffix = matches.next(website_match, PreferTitleOverWebsite.valid_followers, 0)
                     if suffix:
-                        to_remove.append(website_match)
+                        group = matches.markers.at_match(website_match, lambda marker: marker.name == 'group', 0)
+                        if not group:
+                            to_remove.append(website_match)
             return to_remove
 
     rebulk.rules(PreferTitleOverWebsite, ValidateWebsitePrefix)

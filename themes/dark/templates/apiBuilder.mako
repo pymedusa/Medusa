@@ -1,6 +1,6 @@
 <%!
     from medusa import app
-    from six import binary_type
+    from six import text_type
 %>
 <!DOCTYPE html>
 <html>
@@ -133,16 +133,19 @@
             </div>
         </div>
         <script type="text/javascript">
-        var commands = ${sorted([binary_type(_) for _ in commands])};
+        var commands = ${sorted([text_type(_) for _ in commands])};
         var episodes = ${episodes};
         </script>
 
         ## These contain all the Webpack-imported modules
         <script src="js/vendors.js?${sbPID}"></script>
+        <script src="js/vendors~date-fns.js?${sbPID}"></script>
         <script src="js/medusa-runtime.js?${sbPID}"></script>
+
         <script src="js/index.js?${sbPID}"></script>
 
         <script src="js/vender.min.js?${sbPID}"></script>
+
         <script src="js/apibuilder.js?${sbPID}"></script>
     </body>
 </html>

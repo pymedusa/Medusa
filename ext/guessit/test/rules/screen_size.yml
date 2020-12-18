@@ -257,3 +257,24 @@
 ? Test.File.720p60
 ? Test.File.720p120
 : screen_size: 720p
+
+? Test.File.400p
+: options:
+    advanced_config:
+      screen_size:
+        progressive: ["400"]
+  screen_size: 400p
+
+? Test.File2.400p
+: options:
+    advanced_config:
+      screen_size:
+        progressive: ["400"]
+  screen_size: 400p
+
+? Test.File.720p
+: options:
+    advanced_config:
+      screen_size:
+        progressive: ["400"]
+  screen_size: 720p

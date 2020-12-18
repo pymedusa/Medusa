@@ -31,10 +31,13 @@ class ConfigGeneral(Config):
         super(ConfigGeneral, self).__init__(*args, **kwargs)
 
     def index(self):
-        t = PageTemplate(rh=self, filename='config_general.mako')
+        """
+        Render the general configuration page.
 
-        return t.render(submenu=self.ConfigMenu(),
-                        controller='config', action='index')
+        [Converted to VueRouter]
+        """
+        t = PageTemplate(rh=self, filename='index.mako')
+        return t.render()
 
     @staticmethod
     def generate_api_key():
@@ -73,13 +76,12 @@ class ConfigGeneral(Config):
                     fuzzy_dating=None, trim_zero=None, date_preset=None, date_preset_na=None, time_preset=None,
                     indexer_timeout=None, download_url=None, rootDir=None, theme_name=None, default_page=None,
                     git_reset=None, git_reset_branches=None, git_auth_type=0, git_username=None, git_password=None, git_token=None,
-                    display_all_seasons=None, subliminal_log=None, privacy_level='normal', fanart_background=None, fanart_background_opacity=None,
+                    subliminal_log=None, privacy_level='normal', fanart_background=None, fanart_background_opacity=None,
                     dbdebug=None, fallback_plex_enable=1, fallback_plex_notifications=1, fallback_plex_timeout=3, web_root=None, ssl_ca_bundle=None):
 
         results = []
 
         # Misc
-        app.DOWNLOAD_URL = download_url
         app.INDEXER_DEFAULT_LANGUAGE = indexerDefaultLang
         app.EP_DEFAULT_DELETED_STATUS = int(ep_default_deleted_status)
         app.SKIP_REMOVED_FILES = config.checkbox_to_value(skip_removed_files)
@@ -106,7 +108,8 @@ class ConfigGeneral(Config):
         app.GIT_PASSWORD = git_password
         app.GIT_TOKEN = git_token
         app.GIT_RESET = config.checkbox_to_value(git_reset)
-        app.GIT_RESET_BRANCHES = helpers.ensure_list(git_reset_branches)
+        app.GIT_RESET_BRANCHES = [helpers.to_text(branch) for branch in
+                                  helpers.ensure_list(git_reset_branches)]
         if app.GIT_PATH != git_path:
             app.GIT_PATH = git_path
             config.change_GIT_PATH()
@@ -119,14 +122,10 @@ class ConfigGeneral(Config):
         app.SSL_CA_BUNDLE = ssl_ca_bundle
         # app.LOG_DIR is set in config.change_LOG_DIR()
         app.COMING_EPS_MISSED_RANGE = int(coming_eps_missed_range)
-        app.DISPLAY_ALL_SEASONS = config.checkbox_to_value(display_all_seasons)
         app.NOTIFY_ON_LOGIN = config.checkbox_to_value(notify_on_login)
         app.WEB_PORT = int(web_port)
         app.WEB_IPV6 = config.checkbox_to_value(web_ipv6)
-        if config.checkbox_to_value(encryption_version) == 1:
-            app.ENCRYPTION_VERSION = 2
-        else:
-            app.ENCRYPTION_VERSION = 0
+        app.ENCRYPTION_VERSION = config.checkbox_to_value(encryption_version)
         app.WEB_USERNAME = web_username
         app.WEB_PASSWORD = web_password
         app.WEB_ROOT = web_root

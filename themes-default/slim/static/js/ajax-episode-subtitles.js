@@ -3,8 +3,8 @@ const startAjaxEpisodeSubtitles = function() { // eslint-disable-line no-unused-
     let selectedEpisode;
     const searchTypesList = ['.epSubtitlesSearch', '.epSubtitlesSearchPP', '.epRedownloadSubtitle', '.epSearch', '.epRetry', '.epManualSearch'];
     const subtitlesResultModal = $('#manualSubtitleSearchModal');
-    const { subtitlesMulti } = MEDUSA.config;
-    const loadingSpinner = 'images/loading32' + MEDUSA.config.themeSpinner + '.gif';
+    const { subtitlesMulti } = MEDUSA.config.general;
+    const loadingSpinner = 'images/loading32' + MEDUSA.config.layout.themeSpinner + '.gif';
 
     function disableAllSearches() {
         // Disables all other searches while manual searching for subtitles
@@ -152,17 +152,24 @@ const startAjaxEpisodeSubtitles = function() { // eslint-disable-line no-unused-
                             });
                         }
                         let subtitleScore = subtitle.score;
-                        const subtitleName = subtitle.filename.substring(0, 99);
+                        const subtitleName = subtitle.filename.slice(0, 99);
                         // If hash match, don't show missingGuess
                         if (subtitle.sub_score >= subtitle.max_score) {
                             missingGuess = '';
                         }
+                        // If hearing impaired, add an icon next to subtitle filename
+                        let hearingImpairedTitle = '';
+                        let hearingImpairedImage = '';
+                        if (subtitle.hearing_impaired) {
+                            hearingImpairedTitle = 'hearing impaired ';
+                            hearingImpairedImage = '<img src="images/hearing_impaired.png" width="16" height="16"/> ';
+                        }
                         // If perfect match, add a checkmark next to subtitle filename
                         let checkmark = '';
                         if (subtitle.sub_score >= subtitle.min_score) {
-                            checkmark = '<img src="images/save.png" width="16" height="16"/>';
+                            checkmark = ' <img src="images/save.png" width="16" height="16"/>';
                         }
-                        const subtitleLink = '<a href="#" id="pickSub" title="Download subtitle: ' + subtitle.filename + '" subtitleID="subtitleid-' + subtitle.id + '">' + subtitleName + checkmark + '</a>';
+                        const subtitleLink = '<a href="#" id="pickSub" title="Download ' + hearingImpairedTitle + 'subtitle: ' + subtitle.filename + '" subtitleID="subtitleid-' + subtitle.id + '">' + hearingImpairedImage + subtitleName + checkmark + '</a>';
                         // Make subtitle score always between 0 and 10
                         if (subtitleScore > 10) {
                             subtitleScore = 10;

@@ -30,11 +30,6 @@ module.exports = function(grunt) { // eslint-disable-line xo/filename-case
                 dependencies: {
                 },
                 mainFiles: {
-                    tablesorter: [
-                        'dist/js/jquery.tablesorter.combined.js',
-                        'dist/js/widgets/widget-columnSelector.min.js',
-                        'dist/css/theme.blue.min.css'
-                    ],
                     isotope: [
                         'dist/isotope.pkgd.min.js'
                     ],

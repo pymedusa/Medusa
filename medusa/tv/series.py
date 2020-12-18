@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import copy
 import datetime
 import glob
+import json
 import logging
 import os.path
 import shutil
@@ -15,9 +16,9 @@ import warnings
 from builtins import map
 from builtins import str
 from collections import (
-    namedtuple,
+    OrderedDict, namedtuple
 )
-from itertools import groupby
+from itertools import chain, groupby
 
 from medusa import (
     app,
@@ -27,6 +28,7 @@ from medusa import (
     network_timezones,
     notifiers,
     post_processor,
+    ui,
 )
 from medusa.black_and_white_list import BlackAndWhiteList
 from medusa.common import (
@@ -47,13 +49,9 @@ from medusa.common import (
     qualityPresets,
     statusStrings,
 )
-from medusa.helper.common import (
-    episode_num,
-    pretty_file_size,
-    try_int,
-)
+from medusa.helper.common import episode_num, pretty_file_size, sanitize_filename, try_int
 from medusa.helper.exceptions import (
-    AnidbAdbaConnectionException,
+    CantRefreshShowException,
     CantRemoveShowException,
     EpisodeDeletedException,
     EpisodeNotFoundException,
@@ -62,29 +60,28 @@ from medusa.helper.exceptions import (
     ShowNotFoundException,
     ex,
 )
-from medusa.helpers.anidb import get_release_groups_for_anime, short_group_names
-from medusa.helpers.externals import get_externals, load_externals_from_db
-from medusa.helpers.utils import safe_get
+from medusa.helpers import make_dir
+from medusa.helpers.anidb import short_group_names
+from medusa.helpers.externals import check_existing_shows, get_externals, load_externals_from_db
+from medusa.helpers.utils import dict_to_array, safe_get, to_camel_case
 from medusa.imdb import Imdb
-from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_config import (
+from medusa.indexers.api import indexerApi
+from medusa.indexers.config import (
     INDEXER_TVRAGE,
     STATUS_MAP,
     indexerConfig
 )
-from medusa.indexers.indexer_exceptions import (
-    IndexerAttributeNotFound,
-    IndexerException,
-    IndexerSeasonNotFound,
+from medusa.indexers.exceptions import (
+    IndexerAttributeNotFound, IndexerException, IndexerSeasonNotFound, IndexerShowAlreadyInLibrary
 )
-from medusa.indexers.tmdb.tmdb import Tmdb
+from medusa.indexers.tmdb.api import Tmdb
 from medusa.indexers.utils import (
     indexer_id_to_slug,
     mappings,
     reverse_mappings,
     slug_to_indexer_id
 )
-from medusa.logger.adapters.style import BraceAdapter
+from medusa.logger.adapters.style import CustomBraceAdapter
 from medusa.media.banner import ShowBanner
 from medusa.media.fan_art import ShowFanArt
 from medusa.media.network_logo import ShowNetworkLogo
@@ -96,7 +93,13 @@ from medusa.name_parser.parser import (
     NameParser,
 )
 from medusa.sbdatetime import sbdatetime
-from medusa.scene_exceptions import get_scene_exceptions, update_scene_exceptions
+from medusa.scene_exceptions import get_all_scene_exceptions, get_scene_exceptions, update_scene_exceptions
+from medusa.scene_numbering import (
+    get_scene_absolute_numbering_for_show, get_scene_numbering_for_show,
+    get_xem_absolute_numbering_for_show, get_xem_numbering_for_show,
+    numbering_tuple_to_dict, xem_refresh
+)
+from medusa.search import FORCED_SEARCH
 from medusa.show.show import Show
 from medusa.subtitles import (
     code_from_code,
@@ -106,7 +109,9 @@ from medusa.tv.base import Identifier, TV
 from medusa.tv.episode import Episode
 from medusa.tv.indexer import Indexer
 
-from six import iteritems, itervalues, string_types, text_type, viewitems
+from six import ensure_text, iteritems, itervalues, string_types, text_type, viewitems
+
+import ttl_cache
 
 try:
     from send2trash import send2trash
@@ -116,8 +121,12 @@ except ImportError:
 
 MILLIS_YEAR_1900 = datetime.datetime(year=1900, month=1, day=1).toordinal()
 
-log = BraceAdapter(logging.getLogger(__name__))
+log = CustomBraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
+
+
+class SaveSeriesException(Exception):
+    """Generic exception used for adding a new series."""
 
 
 class SeriesIdentifier(Identifier):
@@ -153,11 +162,20 @@ class SeriesIdentifier(Identifier):
         """Slug."""
         return text_type(self)
 
-    @property
-    def api(self):
-        """Api."""
+    def get_indexer_api(self, options=None):
+        """Return an indexer api for this show."""
         indexer_api = indexerApi(self.indexer.id)
-        return indexer_api.indexer(**indexer_api.api_params)
+        indexer_api_params = indexer_api.api_params.copy()
+
+        if options and options.get('lang') is not None:
+            indexer_api_params['language'] = options['lang']
+
+        log.debug('{indexer_name}: {indexer_params!r}', {
+            'indexer_name': indexerApi(self.indexer.id).name,
+            'indexer_params': indexer_api_params
+        })
+
+        return indexer_api.indexer(**indexer_api_params)
 
     def __bool__(self):
         """Magic method."""
@@ -196,6 +214,7 @@ class Series(TV):
         """
         super(Series, self).__init__(indexer, indexerid, {'episodes', 'next_aired', 'release_groups', 'exceptions',
                                                           'external', 'imdb_info'})
+        self.show_id = None
         self.name = ''
         self.imdb_id = ''
         self.network = ''
@@ -207,27 +226,34 @@ class Series(TV):
         self.season_folders = season_folders or int(app.SEASON_FOLDERS_DEFAULT)
         self.status = 'Unknown'
         self._airs = ''
+        # Amount of hours we want to start searching early (-1) or late (1) for new episodes
+        self.airdate_offset = 0
         self.start_year = 0
         self.paused = 0
         self.air_by_date = 0
         self.subtitles = enabled_subtitles or int(app.SUBTITLES_DEFAULT)
+        self.notify_list = {}
         self.dvd_order = 0
         self.lang = lang
-        self.last_update_indexer = 1
+        self._last_update_indexer = 1
         self.sports = 0
         self.anime = 0
         self.scene = 0
         self.rls_ignore_words = ''
         self.rls_require_words = ''
+        self.rls_ignore_exclude = 0
+        self.rls_require_exclude = 0
         self.default_ep_status = SKIPPED
         self._location = ''
         self.episodes = {}
-        self.next_aired = ''
+        self._prev_aired = 0
+        self._next_aired = 0
         self.release_groups = None
         self.exceptions = set()
         self.externals = {}
         self._cached_indexer_api = None
         self.plot = None
+        self._show_lists = None
 
         other_show = Show.find_by_id(app.showList, self.indexer, self.series_id)
         if other_show is not None:
@@ -260,25 +286,9 @@ class Series(TV):
         """Create a series object from its identifier."""
         return Series(identifier.indexer.id, identifier.id)
 
-    # TODO: Make this the single entry to add new series
-    @classmethod
-    def save_series(cls, series):
-        """Save the specified series to medusa."""
-        try:
-            api = series.identifier.api
-            series.load_from_indexer(tvapi=api)
-            series.load_imdb_info()
-            app.showList.append(series)
-            series.save_to_db()
-            series.load_episodes_from_indexer(tvapi=api)
-            series.populate_cache()
-            return series
-        except IndexerException as error:
-            log.warning('Unable to load series from indexer: {0!r}'.format(error))
-
     @property
     def identifier(self):
-        """Identifier."""
+        """Return a series identifier object."""
         return SeriesIdentifier(self.indexer, self.series_id)
 
     @property
@@ -356,21 +366,85 @@ class Series(TV):
     @property
     def network_logo_name(self):
         """Get the network logo name."""
-        return self.network.replace(u'\u00C9', 'e').replace(u'\u00E9', 'e').replace(' ', '-').lower()
+        def sanitize_network_names(str):
+            dict = ({
+                    u'\u010C': 'C',  # Č
+                    u'\u00E1': 'a',  # á
+                    u'\u00E9': 'e',  # é
+                    u'\u00F1': 'n',  # ñ
+                    u'\u00C9': 'e',  # É
+                    u'\u05E7': 'q',  # ק
+                    u'\u05E9': 's',  # ש
+                    u'\u05EA': 't',  # ת
+                    ' ': '-'})
+            for key in dict:
+                str = str.replace(key, dict[key])
+            return str.lower()
+
+        return sanitize_network_names(self.network)
 
     @property
-    def raw_location(self):
-        """Get the raw show location, unvalidated."""
-        return self._location
+    def validate_location(self):
+        """Legacy call to location with a validation when ADD_SHOWS_WO_DIR is set."""
+        if app.CREATE_MISSING_SHOW_DIRS or self.is_location_valid():
+            return self._location
+        raise ShowDirectoryNotFoundException(u'Show folder does not exist.')
 
     @property
     def location(self):
         """Get the show location."""
-        # no directory check needed if missing
-        # show directories are created during post-processing
-        if app.CREATE_MISSING_SHOW_DIRS or self.is_location_valid():
-            return self._location
-        raise ShowDirectoryNotFoundException(u'Show folder does not exist.')
+        return self._location
+
+    @location.setter
+    def location(self, value):
+        old_location = os.path.normpath(self._location)
+        new_location = os.path.normpath(value)
+
+        log.debug(
+            u'{indexer} {id}: Setting location: {location}', {
+                'indexer': indexerApi(self.indexer).name,
+                'id': self.series_id,
+                'location': new_location,
+            }
+        )
+
+        if new_location == old_location:
+            return
+
+        # Don't validate directory if user wants to add shows without creating a dir
+        if app.ADD_SHOWS_WO_DIR or self.is_location_valid(value):
+            self._location = new_location
+            return
+
+        changed_location = True
+        log.info('Changing show location to: {new}', {'new': new_location})
+        if not os.path.isdir(new_location):
+            if app.CREATE_MISSING_SHOW_DIRS:
+                log.info(u"Show directory doesn't exist, creating it")
+                try:
+                    os.mkdir(new_location)
+                except OSError as error:
+                    changed_location = False
+                    log.warning(u"Unable to create the show directory '{location}'. Error: {msg}",
+                                {'location': new_location, 'msg': error})
+                else:
+                    log.info(u'New show directory created')
+                    helpers.chmod_as_parent(new_location)
+            else:
+                changed_location = False
+                log.warning("New location '{location}' does not exist. "
+                            "Enable setting '(Config - Postprocessing) Create missing show dirs'", {'location': new_location})
+
+        # Save new location only if we changed it
+        if changed_location:
+            self._location = new_location
+
+        if changed_location and os.path.isdir(new_location):
+            try:
+                app.show_queue_scheduler.action.refreshShow(self)
+            except CantRefreshShowException as error:
+                log.warning("Unable to refresh show '{show}'. Error: {error}",
+                            {'show': self.name, 'error': error})
 
     @property
     def indexer_name(self):
@@ -381,21 +455,6 @@ class Series(TV):
     def indexer_slug(self):
         """Return the slug name of the series. Example: tvdb1234."""
         return indexer_id_to_slug(self.indexer, self.series_id)
-
-    @location.setter
-    def location(self, value):
-        log.debug(
-            u'{indexer} {id}: Setting location: {location}', {
-                'indexer': indexerApi(self.indexer).name,
-                'id': self.series_id,
-                'location': value,
-            }
-        )
-        # Don't validate directory if user wants to add shows without creating a dir
-        if app.ADD_SHOWS_WO_DIR or self.is_location_valid(value):
-            self._location = value
-        else:
-            raise ShowDirectoryNotFoundException(u'Invalid show folder!')
 
     @property
     def current_qualities(self):
@@ -426,7 +485,7 @@ class Series(TV):
     @property
     def size(self):
         """Size of the show on disk."""
-        return helpers.get_size(self.raw_location)
+        return helpers.get_size(self.location)
 
     def show_size(self, pretty=False):
         """
@@ -502,11 +561,42 @@ class Series(TV):
         return self.imdb_info.get('certificates')
 
     @property
+    def last_update_indexer(self):
+        """Return last indexer update as epoch."""
+        update_date = datetime.date.fromordinal(self._last_update_indexer)
+        epoch_date = update_date - datetime.date.fromtimestamp(0)
+        return int(epoch_date.total_seconds())
+
+    @property
+    def prev_aired(self):
+        """Return last aired episode ordinal."""
+        self._prev_aired = self.prev_episode()
+        return self._prev_aired
+
+    @property
+    def next_aired(self):
+        """Return next aired episode ordinal."""
+        today = datetime.date.today().toordinal()
+        if not self._next_aired or self._next_aired < today:
+            self._next_aired = self.next_episode()
+        return self._next_aired
+
+    @property
+    @ttl_cache(43200.0)
+    def prev_airdate(self):
+        """Return last aired episode airdate."""
+        return (
+            sbdatetime.convert_to_setting(network_timezones.parse_date_time(self.prev_aired, self.airs, self.network))
+            if self.prev_aired > MILLIS_YEAR_1900 else None
+        )
+
+    @property
+    @ttl_cache(43200.0)
     def next_airdate(self):
-        """Return next airdate."""
+        """Return next aired episode airdate."""
         return (
             sbdatetime.convert_to_setting(network_timezones.parse_date_time(self.next_aired, self.airs, self.network))
-            if try_int(self.next_aired, 1) > MILLIS_YEAR_1900 else None
+            if self.next_aired > MILLIS_YEAR_1900 else None
         )
 
     @property
@@ -539,20 +629,53 @@ class Series(TV):
     @property
     def banner(self):
         """Return banner path."""
-        img_type = image_cache.POSTER
+        img_type = image_cache.BANNER
         return image_cache.get_artwork(img_type, self)
 
     @property
     def aliases(self):
         """Return series aliases."""
-        return self.exceptions or get_scene_exceptions(self)
+        if self.exceptions:
+            return self.exceptions
+
+        return set(chain(*itervalues(get_all_scene_exceptions(self))))
 
     @aliases.setter
     def aliases(self, exceptions):
         """Set the series aliases."""
-        self.exceptions = exceptions
         update_scene_exceptions(self, exceptions)
+        self.exceptions = set(chain(*itervalues(get_all_scene_exceptions(self))))
         build_name_cache(self)
+
+    @property
+    def aliases_to_json(self):
+        """Return aliases as a dict."""
+        return [{
+            'season': alias.season,
+            'title': alias.title,
+            'custom': alias.custom
+        } for alias in self.aliases]
+
+    @property
+    @ttl_cache(25200.0)  # Caching as this is requested for the /home page.
+    def xem_numbering(self):
+        """Return series episode xem numbering."""
+        return get_xem_numbering_for_show(self, refresh_data=False)
+
+    @property
+    def xem_absolute_numbering(self):
+        """Return series xem absolute numbering."""
+        return get_xem_absolute_numbering_for_show(self)
+
+    @property
+    def scene_absolute_numbering(self):
+        """Return series scene absolute numbering."""
+        return get_scene_absolute_numbering_for_show(self)
+
+    @property
+    def scene_numbering(self):
+        """Return series scene numbering."""
+        return get_scene_numbering_for_show(self)
 
     @property
     def release_ignore_words(self):
@@ -579,13 +702,13 @@ class Series(TV):
         return bw_list.blacklist
 
     @blacklist.setter
-    def blacklist(self, value):
+    def blacklist(self, group_names):
         """
         Set the anime's blacklisted release groups.
 
-        :param value: A list of blacklist release groups.
+        :param group_names: A list of blacklist release group names.
         """
-        self.release_groups.set_black_keywords(short_group_names([v['name'] for v in value]))
+        self.release_groups.set_black_keywords(short_group_names(group_names))
 
     @property
     def whitelist(self):
@@ -594,19 +717,22 @@ class Series(TV):
         return bw_list.whitelist
 
     @whitelist.setter
-    def whitelist(self, value):
+    def whitelist(self, group_names):
         """
         Set the anime's whitelisted release groups.
 
-        :param value: A list of whitelist release groups.
+        :param group_names: A list of whitelist release group names.
         """
-        self.release_groups.set_white_keywords(short_group_names([v['name'] for v in value]))
+        self.release_groups.set_white_keywords(short_group_names(group_names))
 
     @staticmethod
-    def normalize_status(series_status):
+    def normalize_status(status):
         """Return a normalized status given current indexer status."""
-        default_status = 'Unknown'
-        return STATUS_MAP.get(series_status.lower(), default_status) if series_status else default_status
+        for medusa_status, indexer_mappings in viewitems(STATUS_MAP):
+            if status.lower() in indexer_mappings:
+                return medusa_status
+
+        return 'Unknown'
 
     def flush_episodes(self):
         """Delete references to anything that's not in the internal lists."""
@@ -734,7 +860,7 @@ class Series(TV):
         absolute_number = try_int(absolute_number, None)
 
         # if we get an anime get the real season and episode
-        if not season and not episode:
+        if season is None and not episode:
             main_db_con = db.DBConnection()
             sql = None
             sql_args = None
@@ -744,8 +870,7 @@ class Series(TV):
                     'FROM tv_episodes '
                     'WHERE indexer = ? '
                     'AND showid = ? '
-                    'AND absolute_number = ? '
-                    'AND season != 0'
+                    'AND absolute_number = ?'
                 )
                 sql_args = [self.indexer, self.series_id, absolute_number]
                 log.debug(u'{id}: Season and episode lookup for {show} using absolute number {absolute}',
@@ -800,77 +925,6 @@ class Series(TV):
 
         return ep
 
-    def should_update(self, update_date=datetime.date.today()):
-        """Whether the show information should be updated.
-
-        :param update_date:
-        :type update_date: datetime.date
-        :return:
-        :rtype: bool
-        """
-        # if show is 'paused' do not update_date
-        if self.paused:
-            log.info(u'{id}: Show {show} is paused. Update skipped',
-                     {'id': self.series_id, 'show': self.name})
-            return False
-
-        # if show is not 'Ended' always update (status 'Continuing')
-        if self.status == 'Continuing':
-            return True
-
-        # run logic against the current show latest aired and next unaired data to
-        # see if we should bypass 'Ended' status
-
-        graceperiod = datetime.timedelta(days=30)
-
-        last_airdate = datetime.date.fromordinal(1)
-
-        # get latest aired episode to compare against today - graceperiod and today + graceperiod
-        main_db_con = db.DBConnection()
-        sql_result = main_db_con.select(
-            'SELECT '
-            '  IFNULL(MAX(airdate), 0) as last_aired '
-            'FROM '
-            '  tv_episodes '
-            'WHERE '
-            '  showid = ? '
-            '  AND season > 0 '
-            '  AND airdate > 1 '
-            '  AND status > 1',
-            [self.series_id])
-
-        if sql_result and sql_result[0]['last_aired'] != 0:
-            last_airdate = datetime.date.fromordinal(sql_result[0]['last_aired'])
-            if (update_date - graceperiod) <= last_airdate <= (update_date + graceperiod):
-                return True
-
-        # get next upcoming UNAIRED episode to compare against today + graceperiod
-        sql_result = main_db_con.select(
-            'SELECT '
-            '  IFNULL(MIN(airdate), 0) as airing_next '
-            'FROM '
-            '  tv_episodes '
-            'WHERE '
-            '  showid = ? '
-            '  AND season > 0 '
-            '  AND airdate > 1 '
-            '  AND status = 1',
-            [self.series_id])
-
-        if sql_result and sql_result[0]['airing_next'] != 0:
-            next_airdate = datetime.date.fromordinal(sql_result[0]['airing_next'])
-            if next_airdate <= (update_date + graceperiod):
-                return True
-
-        last_update_indexer = datetime.date.fromordinal(self.last_update_indexer)
-
-        # in the first year after ended (last airdate), update every 30 days
-        if (update_date - last_airdate) < datetime.timedelta(days=450) and (
-                (update_date - last_update_indexer) > datetime.timedelta(days=30)):
-            return True
-
-        return False
-
     def show_words(self):
         """Return all related words to show: preferred, undesired, ignore, require."""
         words = namedtuple('show_words', ['preferred_words', 'undesired_words', 'ignored_words', 'required_words'])
@@ -885,13 +939,21 @@ class Series(TV):
 
         # If word is in global ignore and also in show require, then remove it from global ignore
         # Join new global ignore with show ignore
-        final_ignore = show_ignore + [i for i in global_ignore if i.lower() not in [r.lower() for r in show_require]]
-        # If word is in global require and also in show ignore, then remove it from global require
+        if not self.rls_ignore_exclude:
+            final_ignore = show_ignore + [i for i in global_ignore if i.lower() not in [r.lower() for r in show_require]]
+        else:
+            final_ignore = [i for i in global_ignore if i.lower() not in [r.lower() for r in show_require] and
+                            i.lower() not in [sh_i.lower() for sh_i in show_ignore]]
+        # If word is in global require and also in show ignore, then remove it from global requires
         # Join new global required with show require
-        final_require = show_require + [i for i in global_require if i.lower() not in [r.lower() for r in show_ignore]]
+        if not self.rls_require_exclude:
+            final_require = show_require + [i for i in global_require if i.lower() not in [r.lower() for r in show_ignore]]
+        else:
+            final_require = [gl_r for gl_r in global_require if gl_r.lower() not in [r.lower() for r in show_ignore] and
+                             gl_r.lower() not in [sh_r.lower() for sh_r in show_require]]
 
-        ignored_words = final_ignore
-        required_words = final_require
+        ignored_words = list(OrderedDict.fromkeys(final_ignore))
+        required_words = list(OrderedDict.fromkeys(final_require))
 
         return words(preferred_words, undesired_words, ignored_words, required_words)
 
@@ -908,7 +970,7 @@ class Series(TV):
         :param show_only:
         :type show_only: bool
         """
-        if not self.is_location_valid():
+        if not app.CREATE_MISSING_SHOW_DIRS and not self.is_location_valid():
             log.warning("{id}: Show directory doesn't exist, skipping NFO generation",
                         {'id': self.series_id})
             return
@@ -951,8 +1013,8 @@ class Series(TV):
 
     def update_metadata(self):
         """Update show metadata files."""
-        if not self.is_location_valid():
-            log.warning(u"{id}: Show directory doesn't exist, skipping NFO generation",
+        if not app.CREATE_MISSING_SHOW_DIRS and not self.is_location_valid():
+            log.warning(u"{id}: Show directory doesn't exist, skipping NFO update",
                         {'id': self.series_id})
             return
 
@@ -973,7 +1035,7 @@ class Series(TV):
 
     def load_episodes_from_dir(self):
         """Find all media files in the show folder and create episodes for as many as possible."""
-        if not self.is_location_valid():
+        if not app.CREATE_MISSING_SHOW_DIRS and not self.is_location_valid():
             log.warning(u"{id}: Show directory doesn't exist, not loading episodes from disk",
                         {'id': self.series_id})
             return
@@ -1110,10 +1172,10 @@ class Series(TV):
                     cached_seasons[cur_season] = cached_show[cur_season]
                 except IndexerSeasonNotFound as error:
                     log.debug(
-                        u'{id}: {error_msg} (unaired/deleted) in the indexer {indexer} for {show}.'
+                        u'{id}: {error_msg!r} (unaired/deleted) in the indexer {indexer} for {show}.'
                         u' Removing existing records from database', {
                             'id': cur_show_id,
-                            'error_msg': error.message,
+                            'error_msg': error,
                             'indexer': indexerApi(self.indexer).name,
                             'show': cur_show_name,
                         }
@@ -1237,7 +1299,7 @@ class Series(TV):
             main_db_con.mass_action(sql_l)
 
         # Done updating save last update date
-        self.last_update_indexer = datetime.date.today().toordinal()
+        self._last_update_indexer = datetime.date.today().toordinal()
         log.debug(u'{id}: Saving indexer changes to database',
                   {'id': self.series_id})
         self.save_to_db()
@@ -1299,7 +1361,7 @@ class Series(TV):
             parse_result = NameParser(series=self, try_indexers=True, parse_method=(
                 'normal', 'anime')[self.is_anime]).parse(filepath)
         except (InvalidNameException, InvalidShowException) as error:
-            log.debug(u'{indexerid}: {error}',
+            log.debug(u'{indexer_id}: {error}',
                       {'indexer_id': self.series_id, 'error': error})
             return None
 
@@ -1383,6 +1445,7 @@ class Series(TV):
                      {'id': self.series_id})
             return
         else:
+            self.show_id = int(sql_results[0]['show_id'] or 0)
             self.indexer = int(sql_results[0]['indexer'] or 0)
 
             if not self.name:
@@ -1410,8 +1473,9 @@ class Series(TV):
             self.sports = int(sql_results[0]['sports'] or 0)
             self.scene = int(sql_results[0]['scene'] or 0)
             self.subtitles = int(sql_results[0]['subtitles'] or 0)
+            self.notify_list = json.loads(sql_results[0]['notify_list'] or '{}')
             self.dvd_order = int(sql_results[0]['dvdorder'] or 0)
-            self.quality = int(sql_results[0]['quality'] or UNSET)
+            self.quality = int(sql_results[0]['quality'] or Quality.NA)
             self.season_folders = int(not (sql_results[0]['flatten_folders'] or 0))  # TODO: Rename this in the DB
             self.paused = int(sql_results[0]['paused'] or 0)
             self._location = sql_results[0]['location']  # skip location validation
@@ -1419,22 +1483,27 @@ class Series(TV):
             if not self.lang:
                 self.lang = sql_results[0]['lang']
 
-            self.last_update_indexer = sql_results[0]['last_update_indexer']
+            self._last_update_indexer = sql_results[0]['last_update_indexer']
 
             self.rls_ignore_words = sql_results[0]['rls_ignore_words']
             self.rls_require_words = sql_results[0]['rls_require_words']
+            self.rls_ignore_exclude = sql_results[0]['rls_ignore_exclude']
+            self.rls_require_exclude = sql_results[0]['rls_require_exclude']
 
             self.default_ep_status = int(sql_results[0]['default_ep_status'] or SKIPPED)
 
             if not self.imdb_id:
                 self.imdb_id = sql_results[0]['imdb_id']
 
-            self.release_groups = BlackAndWhiteList(self)
-
             self.plot = sql_results[0]['plot']
+            self.airdate_offset = int(sql_results[0]['airdate_offset'] or 0)
+
+            self.release_groups = BlackAndWhiteList(self)
 
             # Load external id's from indexer_mappings table.
             self.externals = load_externals_from_db(self.indexer, self.series_id)
+
+            self._show_lists = sql_results[0]['show_lists']
 
         # Get IMDb_info from database
         main_db_con = db.DBConnection()
@@ -1551,7 +1620,7 @@ class Series(TV):
 
         try:
             imdb_info = imdb_api.get_title(self.imdb_id)
-        except LookupError as error:
+        except Exception as error:
             log.warning(u'{id}: IMDbPie error while loading show info: {error}',
                         {'id': self.series_id, 'error': error})
             imdb_info = None
@@ -1581,50 +1650,173 @@ class Series(TV):
         log.debug(u'{id}: Obtained info from IMDb: {imdb_info}',
                   {'id': self.series_id, 'imdb_info': self.imdb_info})
 
+    def check_existing(self):
+        """Check if we can already find this show in our current showList."""
+        try:
+            check_existing_shows(self.identifier.get_indexer_api(), self.identifier.indexer.id)
+        except IndexerShowAlreadyInLibrary as error:
+            log.warning(
+                'Could not add the show {series}, as it already is in your library.'
+                'Error: {error}',
+                {'series': self.name, 'error': error}
+            )
+            ui.notifications.error(
+                'Unable to add show',
+                'reason: {0}'.format(error)
+            )
+            raise SaveSeriesException(
+                'Unable to add show',
+                'reason: {0}'.format(error)
+            )
+
+    def configure(self, queue_item):
+        """Configure series."""
+        # Let's try to create the show Dir if it's not provided. This way we force the show dir
+        # to build using the Indexers provided series name
+        options = queue_item.options
+        show_dir = queue_item.show_dir
+        root_dir = queue_item.root_dir or app.ROOT_DIRS[int(app.ROOT_DIRS[0]) + 1] if len(app.ROOT_DIRS) > 0 else None
+
+        if not show_dir and root_dir:
+            # I don't think we need to check this. We just create the folder after we already queried the indexer.
+            # show_name = get_showname_from_indexer(self.indexer, self.indexer_id, self.lang)
+            if self.name:
+                show_dir = os.path.join(root_dir, sanitize_filename(self.name))
+
+                # don't create show dir if config says not to
+                if app.ADD_SHOWS_WO_DIR:
+                    log.info('Skipping initial creation of {path} due to config.ini setting',
+                             {'path': show_dir})
+                else:
+                    dir_exists = make_dir(show_dir)
+                    if not dir_exists:
+                        log.error("Unable to create the folder {0}, can't add the show", show_dir)
+                        ui.notifications.error(
+                            'Unable to create folder',
+                            'folder: {0}'.format(show_dir)
+                        )
+                        return
+
+                    helpers.chmod_as_parent(show_dir)
+            else:
+                log.error("Unable to get a show {0}, can't add the show", show_dir)
+                return
+
+        if show_dir:
+            self.location = ensure_text(show_dir)
+
+        self.subtitles = options['subtitles'] if options.get('subtitles') is not None else app.SUBTITLES_DEFAULT
+
+        if options.get('quality'):
+            self.qualities_allowed = options['quality']['allowed']
+            self.qualities_preferred = options['quality']['preferred']
+        else:
+            self.qualities_allowed, self.qualities_preferred = Quality.split_quality(int(app.QUALITY_DEFAULT))
+
+        self.season_folders = options['season_folders'] if options.get('season_folders') is not None \
+            else app.SEASON_FOLDERS_DEFAULT
+        self.anime = options['anime'] if options.get('anime') is not None else app.ANIME_DEFAULT
+        self.scene = options['scene'] if options.get('scene') is not None else app.SCENE_DEFAULT
+        self.paused = options['paused'] if options.get('paused') is not None else False
+        self.lang = options['lang'] if options.get('lang') is not None else app.INDEXER_DEFAULT_LANGUAGE
+        self.show_lists = options['show_lists'] if options.get('show_lists') is not None else app.SHOWLISTS_DEFAULT
+
+        if options.get('default_status') is not None:
+            # set up default new/missing episode status
+            log.info(
+                'Setting all previously aired episodes to the specified status: {status}',
+                {'status': statusStrings[options['default_status']]}
+            )
+            self.default_ep_status = options['default_status']
+        else:
+            self.default_ep_status = app.STATUS_DEFAULT
+
+        if self.anime:
+            self.release_groups = BlackAndWhiteList(self)
+            if options.get('release') is not None:
+                if options['release']['blacklist']:
+                    self.release_groups.set_black_keywords(options['release']['blacklist'])
+                if options['release']['whitelist']:
+                    self.release_groups.set_white_keywords(options['release']['whitelist'])
+
+    def prev_episode(self):
+        """Return the last aired episode air date.
+
+        :return:
+        :rtype: datetime.date
+        """
+        log.debug(u'{id}: Finding the episode which aired last', {'id': self.series_id})
+
+        today = datetime.date.today().toordinal()
+        main_db_con = db.DBConnection()
+        sql_results = main_db_con.select(
+            'SELECT '
+            '  airdate,'
+            '  season,'
+            '  episode '
+            'FROM '
+            '  tv_episodes '
+            'WHERE '
+            '  indexer = ?'
+            '  AND showid = ? '
+            '  AND airdate < ? '
+            '  AND status <> ? '
+            'ORDER BY'
+            '  airdate '
+            'DESC LIMIT 1',
+            [self.indexer, self.series_id, today, UNAIRED])
+
+        if sql_results is None or len(sql_results) == 0:
+            log.debug(u'{id}: Could not find a previous aired episode', {'id': self.series_id})
+        else:
+            log.debug(
+                u'{id}: Found previous aired episode number {ep}', {
+                    'id': self.series_id,
+                    'ep': episode_num(sql_results[0]['season'], sql_results[0]['episode'])
+                }
+            )
+            self._prev_aired = sql_results[0]['airdate']
+
+        return self._prev_aired
+
     def next_episode(self):
         """Return the next episode air date.
 
         :return:
         :rtype: datetime.date
         """
-        log.debug(u'{id}: Finding the episode which airs next',
-                  {'id': self.series_id})
+        log.debug(u'{id}: Finding the episode which airs next', {'id': self.series_id})
 
-        cur_date = datetime.date.today().toordinal()
-        if not self.next_aired or self.next_aired and cur_date > self.next_aired:
-            main_db_con = db.DBConnection()
-            sql_results = main_db_con.select(
-                'SELECT '
-                '  airdate,'
-                '  season,'
-                '  episode '
-                'FROM '
-                '  tv_episodes '
-                'WHERE '
-                '  indexer = ?'
-                '  AND showid = ? '
-                '  AND airdate >= ? '
-                '  AND status IN (?,?) '
-                'ORDER BY'
-                '  airdate '
-                'ASC LIMIT 1',
-                [self.indexer, self.series_id, datetime.date.today().toordinal(), UNAIRED, WANTED])
+        today = datetime.date.today().toordinal()
+        main_db_con = db.DBConnection()
+        sql_results = main_db_con.select(
+            'SELECT '
+            '  airdate,'
+            '  season,'
+            '  episode '
+            'FROM '
+            '  tv_episodes '
+            'WHERE '
+            '  indexer = ?'
+            '  AND showid = ? '
+            '  AND airdate >= ? '
+            'ORDER BY'
+            '  airdate '
+            'ASC LIMIT 1',
+            [self.indexer, self.series_id, today])
 
-            if sql_results is None or len(sql_results) == 0:
-                log.debug(u'{id}: No episode found... need to implement a show status',
-                          {'id': self.series_id})
-                self.next_aired = u''
-            else:
-                log.debug(
-                    u'{id}: Found episode {ep}', {
-                        'id': self.series_id,
-                        'ep': episode_num(sql_results[0]['season'],
-                                          sql_results[0]['episode']),
-                    }
-                )
-                self.next_aired = sql_results[0]['airdate']
+        if sql_results is None or len(sql_results) == 0:
+            log.debug(u'{id}: Could not find a next episode', {'id': self.series_id})
+        else:
+            log.debug(
+                u'{id}: Found episode {ep}', {
+                    'id': self.series_id,
+                    'ep': episode_num(sql_results[0]['season'], sql_results[0]['episode']),
+                }
+            )
+            self._next_aired = sql_results[0]['airdate']
 
-        return self.next_aired
+        return self._next_aired
 
     def delete_show(self, full=False):
         """Delete the tv show from the database.
@@ -1670,6 +1862,7 @@ class Series(TV):
         # remove entire show folder
         if full:
             try:
+                self.validate_location  # Let's get the exception out of the way asap.
                 log.info(u'{id}: Attempt to {action} show folder {location}',
                          {'id': self.series_id, 'action': action, 'location': self.location})
                 # check first the read-only attribute
@@ -1690,17 +1883,17 @@ class Series(TV):
                     shutil.rmtree(self.location)
 
                 log.info(u'{id}: {action} show folder {location}',
-                         {'id': self.series_id, 'action': action, 'location': self.raw_location})
+                         {'id': self.series_id, 'action': action, 'location': self.location})
 
             except ShowDirectoryNotFoundException:
                 log.warning(u'{id}: Show folder {location} does not exist. No need to {action}',
-                            {'id': self.series_id, 'action': action, 'location': self.raw_location})
+                            {'id': self.series_id, 'action': action, 'location': self.location})
             except OSError as error:
                 log.warning(
                     u'{id}: Unable to {action} {location}. Error: {error_msg}', {
                         'id': self.series_id,
                         'action': action,
-                        'location': self.raw_location,
+                        'location': self.location,
                         'error_msg': ex(error),
                     }
                 )
@@ -1715,6 +1908,43 @@ class Series(TV):
         log.debug(u'{id}: Checking & filling cache for show {show}',
                   {'id': self.series_id, 'show': self.name})
         image_cache.fill_cache(self)
+
+    def sync_trakt(self):
+        """Sync trakt episodes if trakt is enabled."""
+        if app.USE_TRAKT:
+            # if there are specific episodes that need to be added by trakt
+            app.trakt_checker_scheduler.action.manage_new_show(self)
+
+            # add show to trakt.tv library
+            if app.TRAKT_SYNC:
+                app.trakt_checker_scheduler.action.add_show_trakt_library(self)
+
+            if app.TRAKT_SYNC_WATCHLIST:
+                log.info('updating trakt watchlist')
+                notifiers.trakt_notifier.update_watchlist(show_obj=self)
+
+    def add_scene_numbering(self):
+        """
+        Add XEM data to DB for show.
+
+        Warn the user if an episode number mapping is available on thexem.
+        Only use this method, through show_queue.QueueItemAdd().
+        """
+        xem_refresh(self, force=True)
+
+        # check if show has XEM mapping so we can determine if searches
+        # should go by scene numbering or indexer numbering. Warn the user.
+        if not self.scene and get_xem_numbering_for_show(self):
+            log.warning(
+                '{id}: while adding the show {title} we noticed thexem.de has an episode mapping available'
+                '\nyou might want to consider enabling the scene option for this show.',
+                {'id': self.series_id, 'title': self.name}
+            )
+            ui.notifications.message(
+                'consider enabling scene for this show',
+                'for show {title} you might want to consider enabling the scene option'
+                .format(title=self.name)
+            )
 
     def refresh_dir(self):
         """Refresh show using its location.
@@ -1862,6 +2092,33 @@ class Series(TV):
         for episode in episodes:
             episode.download_subtitles()
 
+    @property
+    def show_queue_status(self):
+        """Return a status the show checking the queue scheduler if there is currently an action queued or active."""
+        return [
+            {'action': 'isBeingAdded',
+             'active': app.show_queue_scheduler.action.isBeingAdded(self),
+             'message': 'This show is in the process of being downloaded - the info below is incomplete'},
+            {'action': 'isBeingUpdated',
+             'active': app.show_queue_scheduler.action.isBeingUpdated(self),
+             'message': 'The information on this page is in the process of being updated'},
+            {'action': 'isBeingRefreshed',
+             'active': app.show_queue_scheduler.action.isBeingRefreshed(self),
+             'message': 'The episodes below are currently being refreshed from disk'},
+            {'action': 'isBeingSubtitled',
+             'active': app.show_queue_scheduler.action.isBeingSubtitled(self),
+             'message': 'Currently downloading subtitles for this show'},
+            {'action': 'isInRefreshQueue',
+             'active': app.show_queue_scheduler.action.isInRefreshQueue(self),
+             'message': 'This show is queued to be refreshed'},
+            {'action': 'isInUpdateQueue',
+             'active': app.show_queue_scheduler.action.isInUpdateQueue(self),
+             'message': 'This show is queued and awaiting an update'},
+            {'action': 'isInSubtitleQueue',
+             'active': app.show_queue_scheduler.action.isInSubtitleQueue(self),
+             'message': 'This show is queued and awaiting subtitles download'},
+        ]
+
     def save_to_db(self):
         """Save to database."""
         if not self.dirty:
@@ -1872,7 +2129,7 @@ class Series(TV):
 
         control_value_dict = {'indexer': self.indexer, 'indexer_id': self.series_id}
         new_value_dict = {'show_name': self.name,
-                          'location': self.raw_location,  # skip location validation
+                          'location': self.location,  # skip location validation
                           'network': self.network,
                           'genre': self.genre,
                           'classification': self.classification,
@@ -1887,20 +2144,23 @@ class Series(TV):
                           'scene': self.scene,
                           'sports': self.sports,
                           'subtitles': self.subtitles,
+                          'notify_list': json.dumps(self.notify_list),
                           'dvdorder': self.dvd_order,
                           'startyear': self.start_year,
                           'lang': self.lang,
                           'imdb_id': self.imdb_id,
-                          'last_update_indexer': self.last_update_indexer,
+                          'last_update_indexer': self._last_update_indexer,
                           'rls_ignore_words': self.rls_ignore_words,
                           'rls_require_words': self.rls_require_words,
+                          'rls_ignore_exclude': self.rls_ignore_exclude,
+                          'rls_require_exclude': self.rls_require_exclude,
                           'default_ep_status': self.default_ep_status,
-                          'plot': self.plot}
+                          'plot': self.plot,
+                          'airdate_offset': self.airdate_offset,
+                          'show_lists': self._show_lists}
 
         main_db_con = db.DBConnection()
         main_db_con.upsert('tv_shows', new_value_dict, control_value_dict)
-
-        helpers.update_anime_support()
 
         if self.imdb_id and self.imdb_info.get('year'):
             control_value_dict = {'indexer': self.indexer, 'indexer_id': self.series_id}
@@ -1921,11 +2181,13 @@ class Series(TV):
         to_return += 'indexerid: ' + str(self.series_id) + '\n'
         to_return += 'indexer: ' + str(self.indexer) + '\n'
         to_return += 'name: ' + self.name + '\n'
-        to_return += 'location: ' + self.raw_location + '\n'  # skip location validation
+        to_return += 'location: ' + self.location + '\n'  # skip location validation
         if self.network:
             to_return += 'network: ' + self.network + '\n'
         if self.airs:
             to_return += 'airs: ' + self.airs + '\n'
+        if self.airdate_offset != 0:
+            to_return += 'airdate_offset: ' + str(self.airdate_offset) + '\n'
         to_return += 'status: ' + self.status + '\n'
         to_return += 'start_year: ' + str(self.start_year) + '\n'
         if self.genre:
@@ -1948,11 +2210,13 @@ class Series(TV):
         to_return += u'indexerid: {0}\n'.format(self.series_id)
         to_return += u'indexer: {0}\n'.format(self.indexer)
         to_return += u'name: {0}\n'.format(self.name)
-        to_return += u'location: {0}\n'.format(self.raw_location)  # skip location validation
+        to_return += u'location: {0}\n'.format(self.location)  # skip location validation
         if self.network:
             to_return += u'network: {0}\n'.format(self.network)
         if self.airs:
             to_return += u'airs: {0}\n'.format(self.airs)
+        if self.airdate_offset != 0:
+            to_return += 'airdate_offset: {0}\n'.format(self.airdate_offset)
         to_return += u'status: {0}\n'.format(self.status)
         to_return += u'start_year: {0}\n'.format(self.start_year)
         if self.genre:
@@ -1965,32 +2229,33 @@ class Series(TV):
         to_return += u'anime: {0}\n'.format(self.is_anime)
         return to_return
 
-    def to_json(self, detailed=True, fetch=False):
+    def to_json(self, detailed=False, episodes=False):
         """
         Return JSON representation.
 
         :param detailed: Append seasons & episodes data as well
-        :param fetch: Fetch and append external data (for example AniDB release groups)
         """
-        bw_list = self.release_groups or BlackAndWhiteList(self)
-
         data = {}
         data['id'] = {}
         data['id'][self.indexer_name] = self.series_id
         data['id']['imdb'] = text_type(self.imdb_id)
         data['id']['slug'] = self.identifier.slug
+        data['id']['trakt'] = self.externals.get('trakt_id')
         data['title'] = self.name
         data['indexer'] = self.indexer_name  # e.g. tvdb
         data['network'] = self.network  # e.g. CBS
         data['type'] = self.classification  # e.g. Scripted
         data['status'] = self.status  # e.g. Continuing
         data['airs'] = self.airs  # e.g. Thursday 8:00 PM
+        data['airsFormatValid'] = network_timezones.test_timeformat(self.airs)
         data['language'] = self.lang
         data['showType'] = self.show_type  # e.g. anime, sport, series
-        data['akas'] = self.imdb_akas
+        data['imdbInfo'] = {to_camel_case(k): v for k, v in viewitems(self.imdb_info)}
         data['year'] = {}
         data['year']['start'] = self.imdb_year or self.start_year
+        data['prevAirDate'] = self.prev_airdate.isoformat() if self.prev_airdate else None
         data['nextAirDate'] = self.next_airdate.isoformat() if self.next_airdate else None
+        data['lastUpdate'] = datetime.date.fromordinal(self._last_update_indexer).isoformat()
         data['runtime'] = self.imdb_runtime or self.runtime
         data['genres'] = self.genres
         data['rating'] = {}
@@ -2004,10 +2269,11 @@ class Series(TV):
         data['cache']['poster'] = self.poster
         data['cache']['banner'] = self.banner
         data['countries'] = self.countries  # e.g. ['ITALY', 'FRANCE']
-        data['country_codes'] = self.imdb_countries  # e.g. ['it', 'fr']
+        data['countryCodes'] = self.imdb_countries  # e.g. ['it', 'fr']
         data['plot'] = self.plot or self.imdb_plot
         data['config'] = {}
-        data['config']['location'] = self.raw_location
+        data['config']['location'] = self.location
+        data['config']['locationValid'] = self.is_location_valid()
         data['config']['qualities'] = {}
         data['config']['qualities']['allowed'] = self.qualities_allowed
         data['config']['qualities']['preferred'] = self.qualities_preferred
@@ -2021,38 +2287,48 @@ class Series(TV):
         data['config']['sports'] = self.is_sports
         data['config']['paused'] = bool(self.paused)
         data['config']['defaultEpisodeStatus'] = self.default_ep_status_name
-        data['config']['aliases'] = list(self.aliases)
+        data['config']['aliases'] = self.aliases_to_json
         data['config']['release'] = {}
         data['config']['release']['ignoredWords'] = self.release_ignore_words
         data['config']['release']['requiredWords'] = self.release_required_words
+        data['config']['release']['ignoredWordsExclude'] = bool(self.rls_ignore_exclude)
+        data['config']['release']['requiredWordsExclude'] = bool(self.rls_require_exclude)
+        data['config']['airdateOffset'] = self.airdate_offset
+        data['config']['showLists'] = self.show_lists
+
+        # Moved from detailed, as the home page, needs it to display the Xem icon.
+        data['xemNumbering'] = numbering_tuple_to_dict(self.xem_numbering)
 
         # These are for now considered anime-only options
         if self.is_anime:
+            bw_list = self.release_groups or BlackAndWhiteList(self)
             data['config']['release']['blacklist'] = bw_list.blacklist
             data['config']['release']['whitelist'] = bw_list.whitelist
 
-        # Fetch data from external sources
-        if fetch:
-            # These are for now considered anime-only options, as they query anidb for available release groups.
-            if self.is_anime:
-                try:
-                    data['config']['release']['allgroups'] = get_release_groups_for_anime(self.name)
-                except AnidbAdbaConnectionException as error:
-                    data['config']['release']['allgroups'] = []
-                    log.warning(
-                        'An anidb adba exception occurred when attempting to get the release groups for the show {show}'
-                        '\nError: {error}',
-                        {'show': self.name, 'error': error}
-                    )
+        # Make sure these are at least defined
+        data['sceneAbsoluteNumbering'] = []
+        data['xemAbsoluteNumbering'] = []
+        data['sceneNumbering'] = []
 
         if detailed:
-            episodes = self.get_all_episodes()
-            data['seasons'] = [list(v) for _, v in
-                               groupby([ep.to_json() for ep in episodes], lambda item: item['season'])]
-            data['episodeCount'] = len(episodes)
-            last_episode = episodes[-1] if episodes else None
+            data['size'] = self.size
+            data['showQueueStatus'] = self.show_queue_status
+            data['sceneAbsoluteNumbering'] = dict_to_array(self.scene_absolute_numbering, key='absolute', value='sceneAbsolute')
+            if self.is_scene:
+                data['xemAbsoluteNumbering'] = dict_to_array(self.xem_absolute_numbering, key='absolute', value='sceneAbsolute')
+                data['sceneNumbering'] = numbering_tuple_to_dict(self.scene_numbering)
+            data['seasonCount'] = dict_to_array(self.get_all_seasons(), key='season', value='episodeCount')
+
+        if episodes:
+            all_episodes = self.get_all_episodes()
+            data['episodeCount'] = len(all_episodes)
+            last_episode = all_episodes[-1] if all_episodes else None
             if self.status == 'Ended' and last_episode and last_episode.airdate:
                 data['year']['end'] = last_episode.airdate.year
+
+            data['seasons'] = [{'episodes': list(v), 'season': season}
+                               for season, v in
+                               groupby([ep.to_json() for ep in all_episodes], lambda item: item['season'])]
 
         return data
 
@@ -2088,6 +2364,25 @@ class Series(TV):
         """Configure qualities (combined) by adding the preferred qualities to it."""
         self.quality = Quality.combine_qualities(self.qualities_allowed, qualities_preferred)
 
+    @property
+    def show_lists(self):
+        """
+        Return series show lists.
+
+        :returns: A list of show categories.
+        """
+        return self._show_lists.split(',') if self._show_lists else ['series']
+
+    @show_lists.setter
+    def show_lists(self, show_lists):
+        """
+        Configure the show lists, for this show.
+
+        self._show_lists is stored as a comma separated string.
+        :param show_lists: A list of show categories.
+        """
+        self._show_lists = ','.join(show_lists) if show_lists else 'series'
+
     def get_all_possible_names(self, season=-1):
         """Get every possible variation of the name for a particular show.
 
@@ -2095,9 +2390,9 @@ class Series(TV):
         at the end of the name (e.g. "Show Name (AU)".
 
         show: a Series object that we should get the names of
-        Returns: all possible show names
+        :returns: all possible show names
         """
-        show_names = get_scene_exceptions(self, season)
+        show_names = {exception.title for exception in get_scene_exceptions(self, season)}
         show_names.add(self.name)
 
         new_show_names = set()
@@ -2132,7 +2427,7 @@ class Series(TV):
         return ', '.join([Quality.qualityStrings[quality] for quality in qualities or []
                           if quality and quality in Quality.qualityStrings]) or 'None'
 
-    def want_episode(self, season, episode, quality, forced_search=False,
+    def want_episode(self, season, episode, quality,
                      download_current_quality=False, search_type=None):
         """Whether or not the episode with the specified quality is wanted.
 
@@ -2151,6 +2446,8 @@ class Series(TV):
         :return:
         :rtype: bool
         """
+        forced_search = True if search_type == FORCED_SEARCH else False
+
         # if the quality isn't one we want under any circumstances then just say no
         allowed_qualities, preferred_qualities = self.current_qualities
         log.debug(
@@ -2198,7 +2495,7 @@ class Series(TV):
             )
             return False
 
-        cur_status, cur_quality = int(sql_results[0]['status']), int(sql_results[0]['quality'])
+        cur_status, cur_quality = int(sql_results[0]['status'] or UNSET), int(sql_results[0]['quality'] or Quality.NA)
         ep_status_text = statusStrings[cur_status]
         manually_searched = sql_results[0]['manually_searched']
 
@@ -2228,6 +2525,49 @@ class Series(TV):
             }
         )
         return should_replace
+
+    def want_episodes(self, season, episodes, quality,
+                      download_current_quality=False, search_type=None):
+        """Whether one or more episodes are wanted based on their quality and status.
+
+        Args:
+            season (int): Season number of the episode(s)
+            episodes (int): Episode number(s)
+            quality (int): Quality of the episode(s)
+            download_current_quality (bool, optional): Accept the same quality. Defaults to False.
+            search_type (SearchType, optional): The type used to search. Defaults to None.
+
+        Returns:
+            bool: Whether the episode(s) are wanted.
+
+        """
+        wanted_episodes = [
+            self.want_episode(season, episode, quality,
+                              download_current_quality=download_current_quality,
+                              search_type=search_type)
+            for episode in episodes
+        ]
+
+        if all(wanted_episodes):
+            log.info('Episodes {eps} of season {sea} are needed with this quality for {show}',
+                     {'eps': episodes, 'sea': season, 'show': self.name})
+            return True
+
+        elif not any(wanted_episodes):
+            log.debug('No episodes {eps} of season {sea} are needed with this quality for {show}',
+                      {'eps': episodes, 'sea': season, 'show': self.name})
+            return False
+        else:
+            # If there are 2 candidates and only one is wanted it
+            # is likely a single episode released as multi episode
+            if len(wanted_episodes) == 2:
+                log.info('Only 1 of episodes {eps} of season {sea} are needed with this quality for {show}',
+                         {'eps': episodes, 'sea': season, 'show': self.name})
+                return True
+            else:
+                log.debug(u'Only some episodes {eps} of season {sea} are needed with this quality for {show}',
+                          {'eps': episodes, 'sea': season, 'show': self.name})
+                return False
 
     def get_overview(self, ep_status, ep_quality, backlog_mode=False, manually_searched=False):
         """Get the Overview status from the Episode status.
@@ -2328,6 +2668,51 @@ class Series(TV):
             log.debug(u'No DOWNLOADED episodes for show ID: {show}',
                       {'show': self.name})
             return False
+
+    def get_wanted_segments(self, from_date=None):
+        """Get episodes that should be backlog searched."""
+        wanted = {}
+        if self.paused:
+            log.debug(u'Skipping backlog for {0} because the show is paused', self.name)
+            return wanted
+
+        log.debug(u'Seeing if we need anything from {0}', self.name)
+
+        from_date = from_date or datetime.date.fromordinal(1)
+
+        con = db.DBConnection()
+        sql_results = con.select(
+            'SELECT status, quality, season, episode, manually_searched '
+            'FROM tv_episodes '
+            'WHERE airdate > ?'
+            ' AND indexer = ? '
+            ' AND showid = ?',
+            [from_date.toordinal(), self.indexer, self.series_id]
+        )
+
+        # check through the list of statuses to see if we want any
+        for episode in sql_results:
+            cur_status, cur_quality = int(episode['status'] or UNSET), int(episode['quality'] or Quality.NA)
+            should_search, should_search_reason = Quality.should_search(
+                cur_status, cur_quality, self, episode['manually_searched']
+            )
+            if not should_search:
+                continue
+            log.debug(
+                u'Found needed backlog episodes for: {show} {ep}. Reason: {reason}', {
+                    'show': self.name,
+                    'ep': episode_num(episode['season'], episode['episode']),
+                    'reason': should_search_reason,
+                }
+            )
+            ep_obj = self.get_episode(episode['season'], episode['episode'])
+
+            if ep_obj.season not in wanted:
+                wanted[ep_obj.season] = [ep_obj]
+            else:
+                wanted[ep_obj.season].append(ep_obj)
+
+        return wanted
 
     def pause(self):
         """Pause the series."""

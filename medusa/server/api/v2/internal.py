@@ -8,14 +8,14 @@ import re
 
 from medusa import app, classes, db
 from medusa.helper.common import sanitize_filename, try_int
-from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_exceptions import IndexerException, IndexerUnavailable
+from medusa.indexers.api import indexerApi
+from medusa.indexers.exceptions import IndexerException, IndexerUnavailable
 from medusa.indexers.utils import reverse_mappings
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.tv.series import Series, SeriesIdentifier
 
-from six import iteritems, itervalues
+from six import ensure_text, iteritems, itervalues
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -33,8 +33,29 @@ class InternalHandler(BaseRequestHandler):
     #: allowed HTTP methods
     allowed_methods = ('GET', )
 
-    def http_get(self, resource, path_param=None):
+    def get(self, resource, path_param=None):
         """Query internal data.
+
+        :param resource: a resource name
+        :param path_param:
+        :type path_param: str
+        """
+        if resource is None:
+            return self._bad_request('You must provide a resource name')
+
+        # Convert 'camelCase' to 'resource_snake_case'
+        resource_function_name = 'resource_' + re.sub('([A-Z]+)', r'_\1', resource).lower()
+        resource_function = getattr(self, resource_function_name, None)
+
+        if resource_function is None:
+            log.error('Unable to get function "{func}" for resource "{resource}"',
+                      {'func': resource_function_name, 'resource': resource})
+            return self._bad_request('{key} is a invalid resource'.format(key=resource))
+
+        return resource_function()
+
+    def post(self, resource, path_param=None):
+        """Post internal data.
 
         :param resource: a resource name
         :param path_param:
@@ -172,9 +193,9 @@ class InternalHandler(BaseRequestHandler):
         if matches:
             search_terms.append('{0}({1})'.format(matches.group(1), matches.group(2)))
 
-        for searchTerm in search_terms:
+        for search_term in search_terms:
             # If search term begins with an article, let's also search for it without
-            matches = re.match(r'^(?:a|an|the) (.+)$', searchTerm, re.I)
+            matches = re.match(r'^(?:a|an|the) (.+)$', search_term, re.I)
             if matches:
                 search_terms.append(matches.group(1))
 
@@ -203,7 +224,11 @@ class InternalHandler(BaseRequestHandler):
                     # add search results
                     results.setdefault(indexer, []).extend(indexer_results)
                 except IndexerException as error:
-                    log.info('Error searching for show: {error}', {'error': error})
+                    log.info('Error searching for show. term(s): {terms} indexer: {indexer} error: {error}',
+                             {'terms': search_terms, 'indexer': indexer_api.name, 'error': error})
+                except Exception as error:
+                    log.error('Internal Error searching for show. term(s): {terms} indexer: {indexer} error: {error}',
+                              {'terms': search_terms, 'indexer': indexer_api.name, 'error': error})
 
         # Get all possible show ids
         all_show_ids = {}
@@ -225,10 +250,10 @@ class InternalHandler(BaseRequestHandler):
                         indexer,
                         indexer_api.config['show_url'],
                         show_id,
-                        show['seriesname'].encode('utf-8'),
+                        show['seriesname'],
                         show['firstaired'] or 'N/A',
-                        show.get('network', '').encode('utf-8') or 'N/A',
-                        sanitize_filename(show['seriesname']).encode('utf-8'),
+                        show.get('network', '') or 'N/A',
+                        sanitize_filename(show['seriesname']),
                         all_show_ids.get((indexer, show_id), False)
                     )
                 )
@@ -241,3 +266,37 @@ class InternalHandler(BaseRequestHandler):
             'languageId': language_id
         }
         return self._ok(data=data)
+
+    def resource_check_for_existing_folder(self):
+        """Check if the show selected, already has a folder located in one of the root dirs."""
+        show_dir = self.get_argument('showdir' '').strip()
+        root_dir = self.get_argument('rootdir', '').strip()
+        title = self.get_argument('title', '').strip()
+
+        if not show_dir and not(root_dir and title):
+            return self._bad_request({
+                'showDir': show_dir,
+                'rootDir': root_dir,
+                'title': title, 'error': 'missing information to determin location'
+            })
+
+        path = ''
+        if show_dir:
+            path = ensure_text(show_dir)
+        elif root_dir and title:
+            path = os.path.join(root_dir, sanitize_filename(title))
+
+        path_info = {'path': path}
+        path_info['pathExists'] = os.path.exists(path)
+        if path_info['pathExists']:
+            for cur_provider in itervalues(app.metadata_provider_dict):
+                (series_id, series_name, indexer) = cur_provider.retrieveShowMetadata(path_info['path'])
+                if all((series_id, series_name, indexer)):
+                    path_info['metadata'] = {
+                        'seriesId': int(series_id),
+                        'seriesName': series_name,
+                        'indexer': int(indexer)
+                    }
+                    break
+
+        return self._ok(data={'pathInfo': path_info})

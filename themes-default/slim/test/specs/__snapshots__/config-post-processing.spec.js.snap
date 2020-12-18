@@ -1,0 +1,3194 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ConfigPostProcessing.test.js renders 1`] = `
+<div
+  id="config"
+>
+  <div
+    id="config-content"
+  >
+    <form
+      class="form-horizontal"
+      id="configForm"
+    >
+      <div
+        id="config-components"
+      >
+        <ul>
+          <li>
+            <app-link-stub
+              href="#post-processing"
+              placeholder="indexer-to-name"
+            >
+              Post-Processing
+            </app-link-stub>
+          </li>
+           
+          <li>
+            <app-link-stub
+              href="#episode-naming"
+              placeholder="indexer-to-name"
+            >
+              Episode Naming
+            </app-link-stub>
+          </li>
+           
+          <li>
+            <app-link-stub
+              href="#metadata"
+              placeholder="indexer-to-name"
+            >
+              Metadata
+            </app-link-stub>
+          </li>
+        </ul>
+         
+        <div
+          id="post-processing"
+        >
+          <div
+            class="row component-group"
+          >
+            <div
+              class="component-group-desc col-xs-12 col-md-2"
+            >
+              <h3>
+                Scheduled Post-Processing
+              </h3>
+               
+              <p>
+                Settings that dictate how Medusa should process completed downloads.
+              </p>
+               
+              <p>
+                The scheduled post-processor will periodically scan a folder for media to process.
+              </p>
+            </div>
+             
+            <div
+              class="col-xs-12 col-md-10"
+            >
+              <fieldset
+                class="component-group-list"
+              >
+                <div
+                  class="form-group"
+                >
+                  <label
+                    class="col-sm-2 control-label"
+                    for="process_automatically"
+                  >
+                    <span>
+                      Scheduled Post-Processor
+                    </span>
+                  </label>
+                   
+                  <div
+                    class="col-sm-10 content"
+                  >
+                    <toggle-button-stub
+                      height="22"
+                      id="process_automatically"
+                      margin="3"
+                      name="process_automatically"
+                      speed="300"
+                      sync="true"
+                      value="true"
+                      width="45"
+                    />
+                     
+                    <p>
+                      Enable the scheduled post-processor to scan and process any files in your 
+                      <i>
+                        Post-Processing Dir
+                      </i>
+                      ?
+                    </p>
+                     
+                    <div
+                      class="clear-left"
+                    >
+                      <p>
+                        <b>
+                          Note:
+                        </b>
+                         Do not use if you use an external post-processing script
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                 
+                <div
+                  id="post-process-toggle-wrapper"
+                >
+                  <div
+                    class="form-group"
+                  >
+                    <label
+                      class="col-sm-2 control-label"
+                      for="tv_download_dir"
+                    >
+                      <span>
+                        Post-Processing Dir
+                      </span>
+                    </label>
+                     
+                    <div
+                      class="col-sm-10 content"
+                    >
+                      <file-browser-stub
+                        id="tv_download_dir"
+                        initialdir="C:\\\\Downloads\\\\TV"
+                        localstoragekey=""
+                        name="tv_download_dir"
+                        showbrowsebutton="true"
+                        title="Select series download location"
+                      />
+                       
+                      <span
+                        class="clear-left"
+                      >
+                        The folder where your download client puts the completed TV downloads.
+                      </span>
+                       
+                      <div
+                        class="clear-left"
+                      >
+                        <p>
+                          <b>
+                            Note:
+                          </b>
+                           Please use separate downloading and completed folders in your download client if possible.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                   
+                  <div
+                    class="form-group"
+                  >
+                    <label
+                      class="col-sm-2 control-label"
+                      for="process_method"
+                    >
+                      <span>
+                        Processing Method
+                      </span>
+                    </label>
+                     
+                    <div
+                      class="col-sm-10 content"
+                    >
+                      <select
+                        class="form-control input-sm"
+                        id="naming_multi_ep"
+                        name="naming_multi_ep"
+                      >
+                        <option
+                          value="copy"
+                        >
+                          Copy
+                        </option>
+                        <option
+                          value="move"
+                        >
+                          Move
+                        </option>
+                        <option
+                          value="hardlink"
+                        >
+                          Hard Link
+                        </option>
+                        <option
+                          value="symlink"
+                        >
+                          Symbolic Link
+                        </option>
+                        <option
+                          value="keeplink"
+                        >
+                          Keep Link
+                        </option>
+                      </select>
+                       
+                      <span>
+                        What method should be used to put files into the library?
+                      </span>
+                       
+                      <p>
+                        <b>
+                          Note:
+                        </b>
+                         If you keep seeding torrents after they finish, please avoid the 'move' processing method to prevent errors.
+                      </p>
+                       
+                      <!---->
+                    </div>
+                  </div>
+                   
+                  <div
+                    class="form-group"
+                  >
+                    <label
+                      class="col-sm-2 control-label"
+                      for="autopostprocessor_frequency"
+                    >
+                      <span>
+                        Auto Post-Processing Frequency
+                      </span>
+                    </label>
+                     
+                    <div
+                      class="col-sm-10 content"
+                    >
+                      <input
+                        class="form-control input-sm input75"
+                        id="autopostprocessor_frequency"
+                        min="10"
+                        name="autopostprocessor_frequency"
+                        step="1"
+                        type="number"
+                      />
+                       
+                      <span>
+                        Time in minutes to check for new files to auto post-process (min 10)
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </fieldset>
+            </div>
+          </div>
+           
+          <div
+            class="row component-group"
+          >
+            <div
+              class="component-group-desc col-xs-12 col-md-2"
+            >
+              <h3>
+                General Post-Processing
+              </h3>
+               
+              <p>
+                Generic post-processing settings that apply both to the scheduled post-processor as external scripts
+              </p>
+            </div>
+             
+            <div
+              class="col-xs-12 col-md-10"
+            >
+              <fieldset
+                class="component-group-list"
+              >
+                <div
+                  class="form-group"
+                >
+                  <label
+                    class="col-sm-2 control-label"
+                    for="postpone_if_sync_files"
+                  >
+                    <span>
+                      Postpone post-processing
+                    </span>
+                  </label>
+                   
+                  <div
+                    class="col-sm-10 content"
+                  >
+                    <toggle-button-stub
+                      height="22"
+                      id="postpone_if_sync_files"
+                      margin="3"
+                      name="postpone_if_sync_files"
+                      speed="300"
+                      sync="true"
+                      value="true"
+                      width="45"
+                    />
+                     
+                    <span>
+                      Wait to process a folder if sync files are present.
+                    </span>
+                  </div>
+                </div>
+                 
+                <div
+                  class="form-group"
+                >
+                  <label
+                    class="col-sm-2 control-label"
+                    for="sync_files"
+                  >
+                    <span>
+                      Sync File Extensions
+                    </span>
+                  </label>
+                   
+                  <div
+                    class="col-sm-10 content"
+                  >
+                    <select-list-stub
+                      csvenabled="true"
+                      id="sync_files"
+                      listitems="!sync,lftp-pget-status,part,bts,!qb,!qB"
+                      name="sync_files"
+                      unique="true"
+                    />
+                     
+                    <span>
+                      Comma separated list of extensions or filename globs Medusa ignores when post-processing
+                    </span>
+                  </div>
+                </div>
+                 
+                <div
+                  class="form-group"
+                >
+                  <label
+                    class="col-sm-2 control-label"
+                    for="postpone_if_no_subs"
+                  >
+                    <span>
+                      Postpone if no subtitle
+                    </span>
+                  </label>
+                   
+                  <div
+                    class="col-sm-10 content"
+                  >
+                    <toggle-button-stub
+                      height="22"
+                      id="postpone_if_no_subs"
+                      margin="3"
+                      name="postpone_if_no_subs"
+                      speed="300"
+                      sync="true"
+                      width="45"
+                    />
+                     
+                    <span>
+                      Wait to process a file until subtitles are present
+                    </span>
+                    <br />
+                     
+                    <span>
+                      Language names are allowed in subtitle filename (en.srt, pt-br.srt, ita.srt, etc.)
+                    </span>
+                    <br />
+                     
+                    <span>
+                      <b>
+                        Note:
+                      </b>
+                       Automatic post-processor should be disabled to avoid files with pending subtitles being processed over and over.
+                    </span>
+                    <br />
+                     
+                    <span>
+                      If you have any active show with subtitle search disabled, you must enable Automatic post-processor.
+                    </span>
+                  </div>
+                </div>
+                 
+                <div
+                  class="form-group"
+                >
+                  <label
+                    class="col-sm-2 control-label"
+                    for="rename_episodes"
+                  >
+                    <span>
+                      Rename Episodes
+                    </span>
+                  </label>
+                   
+                  <div
+                    class="col-sm-10 content"
+                  >
+                    <toggle-button-stub
+                      height="22"
+                      id="rename_episodes"
+                      margin="3"
+                      name="rename_episodes"
+                      speed="300"
+                      sync="true"
+                      value="true"
+                      width="45"
+                    />
+                     
+                    <span>
+                      Rename episode using the Episode Naming settings?
+                    </span>
+                  </div>
+                </div>
+                 
+                <div
+                  class="form-group"
+                >
+                  <label
+                    class="col-sm-2 control-label"
+                    for="create_missing_show_dirs"
+                  >
+                    <span>
+                      Create missing show directories
+                    </span>
+                  </label>
+                   
+                  <div
+                    class="col-sm-10 content"
+                  >
+                    <toggle-button-stub
+                      height="22"
+                      id="create_missing_show_dirs"
+                      margin="3"
+                      name="create_missing_show_dirs"
+                      speed="300"
+                      sync="true"
+                      width="45"
+                    />
+                     
+                    <span>
+                      Create missing show directories when they get deleted
+                    </span>
+                  </div>
+                </div>
+                 
+                <div
+                  class="form-group"
+                >
+                  <label
+                    class="col-sm-2 control-label"
+                    for="add_shows_wo_dir"
+                  >
+                    <span>
+                      Add shows without directory
+                    </span>
+                  </label>
+                   
+                  <div
+                    class="col-sm-10 content"
+                  >
+                    <toggle-button-stub
+                      height="22"
+                      id="add_shows_wo_dir"
+                      margin="3"
+                      name="add_shows_wo_dir"
+                      speed="300"
+                      sync="true"
+                      width="45"
+                    />
+                     
+                    <span>
+                      Add shows without creating a directory (not recommended)
+                    </span>
+                  </div>
+                </div>
+                 
+                <div
+                  class="form-group"
+                >
+                  <label
+                    class="col-sm-2 control-label"
+                    for="move_associated_files"
+                  >
+                    <span>
+                      Delete associated files
+                    </span>
+                  </label>
+                   
+                  <div
+                    class="col-sm-10 content"
+                  >
+                    <toggle-button-stub
+                      height="22"
+                      id="move_associated_files"
+                      margin="3"
+                      name="move_associated_files"
+                      speed="300"
+                      sync="true"
+                      width="45"
+                    />
+                     
+                    <span>
+                      Delete srt/srr/sfv/etc files while post-processing?
+                    </span>
+                  </div>
+                </div>
+                 
+                <div
+                  class="form-group"
+                >
+                  <label
+                    class="col-sm-2 control-label"
+                  >
+                    <span>
+                      Keep associated file extensions
+                    </span>
+                  </label>
+                   
+                  <div
+                    class="col-sm-10 content"
+                  >
+                    <select-list-stub
+                      csvenabled="true"
+                      id="allowed_extensions"
+                      listitems="nfo,idx,sub,srt"
+                      name="allowed_extensions"
+                      unique="true"
+                    />
+                     
+                    <span>
+                      Comma separated list of associated file extensions Medusa should keep while post-processing.
+                    </span>
+                    <br />
+                     
+                    <span>
+                      Leaving it empty means all associated files will be deleted
+                    </span>
+                  </div>
+                </div>
+                 
+                <div
+                  class="form-group"
+                >
+                  <label
+                    class="col-sm-2 control-label"
+                    for="nfo_rename"
+                  >
+                    <span>
+                      Rename .nfo file
+                    </span>
+                  </label>
+                   
+                  <div
+                    class="col-sm-10 content"
+                  >
+                    <toggle-button-stub
+                      height="22"
+                      id="nfo_rename"
+                      margin="3"
+                      name="nfo_rename"
+                      speed="300"
+                      sync="true"
+                      value="true"
+                      width="45"
+                    />
+                     
+                    <span>
+                      Rename the original .nfo file to .nfo-orig to avoid conflicts?
+                    </span>
+                  </div>
+                </div>
+                 
+                <div
+                  class="form-group"
+                >
+                  <label
+                    class="col-sm-2 control-label"
+                    for="airdate_episodes"
+                  >
+                    <span>
+                      Change File Date
+                    </span>
+                  </label>
+                   
+                  <div
+                    class="col-sm-10 content"
+                  >
+                    <toggle-button-stub
+                      height="22"
+                      id="airdate_episodes"
+                      margin="3"
+                      name="airdate_episodes"
+                      speed="300"
+                      sync="true"
+                      width="45"
+                    />
+                     
+                    <span>
+                      Set last modified filedate to the date that the episode aired?
+                    </span>
+                  </div>
+                </div>
+                 
+                <div
+                  class="form-group"
+                >
+                  <label
+                    class="col-sm-2 control-label"
+                    for="file_timestamp_timezone"
+                  >
+                    <span>
+                      Timezone for File Date:
+                    </span>
+                  </label>
+                   
+                  <div
+                    class="col-sm-10 content"
+                  >
+                    <select
+                      class="form-control input-sm"
+                      id="file_timestamp_timezone"
+                      name="file_timestamp_timezone"
+                    >
+                      <option
+                        value="local"
+                      >
+                        Local
+                      </option>
+                      <option
+                        value="network"
+                      >
+                        Network
+                      </option>
+                    </select>
+                     
+                    <span>
+                      What timezone should be used to change File Date?
+                    </span>
+                  </div>
+                </div>
+                 
+                <div
+                  class="form-group"
+                >
+                  <label
+                    class="col-sm-2 control-label"
+                    for="unpack"
+                  >
+                    <span>
+                      Unpack
+                    </span>
+                  </label>
+                   
+                  <div
+                    class="col-sm-10 content"
+                  >
+                    <toggle-button-stub
+                      height="22"
+                      id="unpack"
+                      margin="3"
+                      name="unpack"
+                      speed="300"
+                      sync="true"
+                      width="45"
+                    />
+                     
+                    <span>
+                      Unpack any TV releases in your 
+                      <i>
+                        TV Download Dir
+                      </i>
+                      ?
+                    </span>
+                    <br />
+                     
+                    <span>
+                      <b>
+                        Note:
+                      </b>
+                       Only working with RAR archive
+                    </span>
+                  </div>
+                </div>
+                 
+                <div
+                  class="form-group"
+                >
+                  <label
+                    class="col-sm-2 control-label"
+                    for="del_rar_contents"
+                  >
+                    <span>
+                      Delete RAR contents
+                    </span>
+                  </label>
+                   
+                  <div
+                    class="col-sm-10 content"
+                  >
+                    <toggle-button-stub
+                      height="22"
+                      id="del_rar_contents"
+                      margin="3"
+                      name="del_rar_contents"
+                      speed="300"
+                      sync="true"
+                      width="45"
+                    />
+                     
+                    <span>
+                      Delete content of RAR files, even if Process Method not set to move?
+                    </span>
+                  </div>
+                </div>
+                 
+                <div
+                  class="form-group"
+                >
+                  <label
+                    class="col-sm-2 control-label"
+                    for="no_delete"
+                  >
+                    <span>
+                      Don't delete empty folders
+                    </span>
+                  </label>
+                   
+                  <div
+                    class="col-sm-10 content"
+                  >
+                    <toggle-button-stub
+                      height="22"
+                      id="no_delete"
+                      margin="3"
+                      name="no_delete"
+                      speed="300"
+                      sync="true"
+                      width="45"
+                    />
+                     
+                    <span>
+                      Leave empty folders when post-processing?
+                    </span>
+                    <br />
+                     
+                    <span>
+                      <b>
+                        Note:
+                      </b>
+                       Can be overridden using manual post-processing
+                    </span>
+                  </div>
+                </div>
+                 
+                <div
+                  class="form-group"
+                >
+                  <label
+                    class="col-sm-2 control-label"
+                  >
+                    <span>
+                      Extra Scripts
+                    </span>
+                  </label>
+                   
+                  <div
+                    class="col-sm-10 content"
+                  >
+                    <select-list-stub
+                      csvenabled="true"
+                      id="extra_scripts"
+                      listitems=""
+                      name="extra_scripts"
+                      unique="true"
+                    />
+                     
+                    <span>
+                      See 
+                      <app-link-stub
+                        class="wikie"
+                        href="https://github.com/pymedusa/Medusa/wiki/Post-Processing#extra-scripts"
+                        placeholder="indexer-to-name"
+                      >
+                        <strong>
+                          Wiki
+                        </strong>
+                      </app-link-stub>
+                       for script arguments description and usage.
+                    </span>
+                  </div>
+                </div>
+              </fieldset>
+               
+              <input
+                class="btn-medusa config_submitter"
+                type="submit"
+                value="Save Changes"
+              />
+            </div>
+          </div>
+        </div>
+         
+        <div
+          id="episode-naming"
+        >
+          <div
+            class="row component-group"
+          >
+            <div
+              class="component-group-desc col-xs-12 col-md-2"
+            >
+              <h3>
+                Episode Naming
+              </h3>
+               
+              <p>
+                How Medusa will name and sort your episodes.
+              </p>
+            </div>
+             
+            <div
+              class="col-xs-12 col-md-10"
+            >
+              <fieldset
+                class="component-group-list"
+              >
+                <name-pattern-stub
+                  animenamingtype="0"
+                  class="component-item"
+                  enabled="true"
+                  flagloaded="true"
+                  multiepstyle="16"
+                  multiepstyles="[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]"
+                  namingpattern="Season %S/%S.N.S%0SE%0E.%RT.%SQ.N-%RG"
+                  namingpresets="[object Object],[object Object],[object Object],[object Object],[object Object]"
+                  type=""
+                />
+                 
+                <name-pattern-stub
+                  animenamingtype="0"
+                  class="component-item"
+                  flagloaded="true"
+                  multiepstyles=""
+                  namingpattern="%SN - %A-D - %EN"
+                  namingpresets="[object Object],[object Object],[object Object],[object Object],[object Object]"
+                  type="sports"
+                />
+                 
+                <name-pattern-stub
+                  animenamingtype="0"
+                  class="component-item"
+                  flagloaded="true"
+                  multiepstyles=""
+                  namingpattern="%SN - %A.D - %EN"
+                  namingpresets="[object Object],[object Object],[object Object],[object Object],[object Object]"
+                  type="airs by date"
+                />
+                 
+                <name-pattern-stub
+                  animenamingtype="3"
+                  class="component-item"
+                  flagloaded="true"
+                  multiepstyle="1"
+                  multiepstyles="[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]"
+                  namingpattern="%SN - S%0SE%0E - [%QN] [%RG]"
+                  namingpresets="[object Object],[object Object],[object Object],[object Object],[object Object]"
+                  type="anime"
+                />
+                 
+                <div
+                  class="form-group component-item"
+                >
+                  <label
+                    class="col-sm-2 control-label"
+                    for="naming_strip_year"
+                  >
+                    <span>
+                      Strip Show Year
+                    </span>
+                  </label>
+                   
+                  <div
+                    class="col-sm-10 content"
+                  >
+                    <toggle-button-stub
+                      height="22"
+                      id="naming_strip_year"
+                      margin="3"
+                      name="naming_strip_year"
+                      speed="300"
+                      sync="true"
+                      width="45"
+                    />
+                     
+                    <span>
+                      Remove the TV show's year when renaming the file?
+                    </span>
+                     
+                    <p>
+                      Only applies to shows that have year inside parentheses
+                    </p>
+                  </div>
+                </div>
+              </fieldset>
+            </div>
+          </div>
+        </div>
+         
+        <div
+          id="metadata"
+        >
+          <div
+            class="row component-group"
+          >
+            <div
+              class="component-group-desc col-xs-12 col-md-2"
+            >
+              <h3>
+                Metadata
+              </h3>
+               
+              <p>
+                The data associated to the data. These are files associated to a TV show in the form of images and text that, when supported, will enhance the viewing experience.
+              </p>
+            </div>
+             
+            <div
+              class="col-xs-12 col-md-10"
+            >
+              <fieldset
+                class="component-group-list"
+              >
+                <div
+                  class="form-group"
+                >
+                  <label
+                    class="col-sm-2 control-label"
+                    for="metadataType"
+                  >
+                    <span>
+                      Metadata Type
+                    </span>
+                  </label>
+                   
+                  <div
+                    class="col-sm-10 content"
+                  >
+                    <select
+                      class="form-control input-sm"
+                      id="metadataType"
+                      name="metadataType"
+                    >
+                      <option
+                        value="kodi_12plus"
+                      >
+                        KODI 12+
+                      </option>
+                      <option
+                        value="kodi"
+                      >
+                        KODI
+                      </option>
+                      <option
+                        value="mediabrowser"
+                      >
+                        MediaBrowser
+                      </option>
+                      <option
+                        value="wdtv"
+                      >
+                        WDTV
+                      </option>
+                      <option
+                        value="tivo"
+                      >
+                        TIVO
+                      </option>
+                      <option
+                        value="mede8er"
+                      >
+                        Mede8er
+                      </option>
+                      <option
+                        value="sony_ps3"
+                      >
+                        Sony PS3
+                      </option>
+                    </select>
+                     
+                    <span
+                      class="d-block"
+                    >
+                      Toggle the metadata options that you wish to be created. 
+                      <b>
+                        Multiple targets may be used.
+                      </b>
+                    </span>
+                  </div>
+                </div>
+                 
+                <div
+                  class="metadataDiv"
+                  id="provider.id"
+                  style="display: none;"
+                >
+                  <div
+                    class="metadata_options_wrapper"
+                  >
+                    <h4>
+                      Create:
+                    </h4>
+                     
+                    <div
+                      class="metadata_options"
+                    >
+                      <label
+                        for="kodi_12plus_show_metadata"
+                      >
+                        <input
+                          class="metadata_checkbox"
+                          id="kodi_12plus_show_metadata"
+                          type="checkbox"
+                        />
+                         Show Metadata
+                      </label>
+                       
+                      <label
+                        for="kodi_12plus_episode_metadata"
+                      >
+                        <input
+                          class="metadata_checkbox"
+                          id="kodi_12plus_episode_metadata"
+                          type="checkbox"
+                        />
+                         Episode Metadata
+                      </label>
+                       
+                      <label
+                        for="kodi_12plus_fanart"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="kodi_12plus_fanart"
+                          type="checkbox"
+                        />
+                         Show Fanart
+                      </label>
+                       
+                      <label
+                        for="kodi_12plus_poster"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="kodi_12plus_poster"
+                          type="checkbox"
+                        />
+                         Show Poster
+                      </label>
+                       
+                      <label
+                        for="kodi_12plus_banner"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="kodi_12plus_banner"
+                          type="checkbox"
+                        />
+                         Show Banner
+                      </label>
+                       
+                      <label
+                        for="kodi_12plus_episode_thumbnails"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="kodi_12plus_episode_thumbnails"
+                          type="checkbox"
+                        />
+                         Episode Thumbnails
+                      </label>
+                       
+                      <label
+                        for="kodi_12plus_season_posters"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="kodi_12plus_season_posters"
+                          type="checkbox"
+                        />
+                         Season Posters
+                      </label>
+                       
+                      <label
+                        for="kodi_12plus_season_banners"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="kodi_12plus_season_banners"
+                          type="checkbox"
+                        />
+                         Season Banners
+                      </label>
+                       
+                      <label
+                        for="kodi_12plus_season_all_poster"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="kodi_12plus_season_all_poster"
+                          type="checkbox"
+                        />
+                         Season All Poster
+                      </label>
+                       
+                      <label
+                        for="kodi_12plus_season_all_banner"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="kodi_12plus_season_all_banner"
+                          type="checkbox"
+                        />
+                         Season All Banner
+                      </label>
+                    </div>
+                  </div>
+                   
+                  <div
+                    class="metadata_example_wrapper"
+                  >
+                    <h4>
+                      Results:
+                    </h4>
+                     
+                    <div
+                      class="metadata_example"
+                    >
+                      <label
+                        for="kodi_12plus_show_metadata"
+                      >
+                        <span
+                          class=""
+                          id="kodi_12plus_eg_show_metadata"
+                        >
+                          <span>
+                            <span>
+                              tvshow.nfo
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="kodi_12plus_episode_metadata"
+                      >
+                        <span
+                          class=""
+                          id="kodi_12plus_eg_episode_metadata"
+                        >
+                          <span>
+                            <span>
+                              Season##\\
+                              <i>
+                                filename
+                              </i>
+                              .nfo
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="kodi_12plus_fanart"
+                      >
+                        <span
+                          class=""
+                          id="kodi_12plus_eg_fanart"
+                        >
+                          <span>
+                            <span>
+                              fanart.jpg
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="kodi_12plus_poster"
+                      >
+                        <span
+                          class=""
+                          id="kodi_12plus_eg_poster"
+                        >
+                          <span>
+                            <span>
+                              poster.jpg
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="kodi_12plus_banner"
+                      >
+                        <span
+                          class=""
+                          id="kodi_12plus_eg_banner"
+                        >
+                          <span>
+                            <span>
+                              banner.jpg
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="kodi_12plus_episode_thumbnails"
+                      >
+                        <span
+                          class=""
+                          id="kodi_12plus_eg_episode_thumbnails"
+                        >
+                          <span>
+                            <span>
+                              Season##\\
+                              <i>
+                                filename
+                              </i>
+                              -thumb.jpg
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="kodi_12plus_season_posters"
+                      >
+                        <span
+                          class=""
+                          id="kodi_12plus_eg_season_posters"
+                        >
+                          <span>
+                            <span>
+                              season##-poster.jpg
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="kodi_12plus_season_banners"
+                      >
+                        <span
+                          class=""
+                          id="kodi_12plus_eg_season_banners"
+                        >
+                          <span>
+                            <span>
+                              season##-banner.jpg
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="kodi_12plus_season_all_poster"
+                      >
+                        <span
+                          class=""
+                          id="kodi_12plus_eg_season_all_poster"
+                        >
+                          <span>
+                            <span>
+                              season-all-poster.jpg
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="kodi_12plus_season_all_banner"
+                      >
+                        <span
+                          class=""
+                          id="kodi_12plus_eg_season_all_banner"
+                        >
+                          <span>
+                            <span>
+                              season-all-banner.jpg
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="metadataDiv"
+                  id="provider.id"
+                  style="display: none;"
+                >
+                  <div
+                    class="metadata_options_wrapper"
+                  >
+                    <h4>
+                      Create:
+                    </h4>
+                     
+                    <div
+                      class="metadata_options"
+                    >
+                      <label
+                        for="kodi_show_metadata"
+                      >
+                        <input
+                          class="metadata_checkbox"
+                          id="kodi_show_metadata"
+                          type="checkbox"
+                        />
+                         Show Metadata
+                      </label>
+                       
+                      <label
+                        for="kodi_episode_metadata"
+                      >
+                        <input
+                          class="metadata_checkbox"
+                          id="kodi_episode_metadata"
+                          type="checkbox"
+                        />
+                         Episode Metadata
+                      </label>
+                       
+                      <label
+                        for="kodi_fanart"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="kodi_fanart"
+                          type="checkbox"
+                        />
+                         Show Fanart
+                      </label>
+                       
+                      <label
+                        for="kodi_poster"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="kodi_poster"
+                          type="checkbox"
+                        />
+                         Show Poster
+                      </label>
+                       
+                      <label
+                        for="kodi_banner"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="kodi_banner"
+                          type="checkbox"
+                        />
+                         Show Banner
+                      </label>
+                       
+                      <label
+                        for="kodi_episode_thumbnails"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="kodi_episode_thumbnails"
+                          type="checkbox"
+                        />
+                         Episode Thumbnails
+                      </label>
+                       
+                      <label
+                        for="kodi_season_posters"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="kodi_season_posters"
+                          type="checkbox"
+                        />
+                         Season Posters
+                      </label>
+                       
+                      <label
+                        for="kodi_season_banners"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="kodi_season_banners"
+                          type="checkbox"
+                        />
+                         Season Banners
+                      </label>
+                       
+                      <label
+                        for="kodi_season_all_poster"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="kodi_season_all_poster"
+                          type="checkbox"
+                        />
+                         Season All Poster
+                      </label>
+                       
+                      <label
+                        for="kodi_season_all_banner"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="kodi_season_all_banner"
+                          type="checkbox"
+                        />
+                         Season All Banner
+                      </label>
+                    </div>
+                  </div>
+                   
+                  <div
+                    class="metadata_example_wrapper"
+                  >
+                    <h4>
+                      Results:
+                    </h4>
+                     
+                    <div
+                      class="metadata_example"
+                    >
+                      <label
+                        for="kodi_show_metadata"
+                      >
+                        <span
+                          class="disabled"
+                          id="kodi_eg_show_metadata"
+                        >
+                          <span>
+                            <span>
+                              tvshow.nfo
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="kodi_episode_metadata"
+                      >
+                        <span
+                          class="disabled"
+                          id="kodi_eg_episode_metadata"
+                        >
+                          <span>
+                            <span>
+                              Season##\\
+                              <i>
+                                filename
+                              </i>
+                              .nfo
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="kodi_fanart"
+                      >
+                        <span
+                          class="disabled"
+                          id="kodi_eg_fanart"
+                        >
+                          <span>
+                            <span>
+                              fanart.jpg
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="kodi_poster"
+                      >
+                        <span
+                          class="disabled"
+                          id="kodi_eg_poster"
+                        >
+                          <span>
+                            <span>
+                              folder.jpg
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="kodi_banner"
+                      >
+                        <span
+                          class="disabled"
+                          id="kodi_eg_banner"
+                        >
+                          <span>
+                            <span>
+                              folder.jpg
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="kodi_episode_thumbnails"
+                      >
+                        <span
+                          class="disabled"
+                          id="kodi_eg_episode_thumbnails"
+                        >
+                          <span>
+                            <span>
+                              Season##\\
+                              <i>
+                                filename
+                              </i>
+                              .tbn
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="kodi_season_posters"
+                      >
+                        <span
+                          class="disabled"
+                          id="kodi_eg_season_posters"
+                        >
+                          <span>
+                            <span>
+                              season##.tbn
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="kodi_season_banners"
+                      >
+                        <span
+                          class="disabled"
+                          id="kodi_eg_season_banners"
+                        >
+                          <span>
+                            <span>
+                              season##-banner.jpg
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="kodi_season_all_poster"
+                      >
+                        <span
+                          class="disabled"
+                          id="kodi_eg_season_all_poster"
+                        >
+                          <span>
+                            <span>
+                              season-all.tbn
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="kodi_season_all_banner"
+                      >
+                        <span
+                          class="disabled"
+                          id="kodi_eg_season_all_banner"
+                        >
+                          <span>
+                            <span>
+                              season-all-banner.jpg
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="metadataDiv"
+                  id="provider.id"
+                  style="display: none;"
+                >
+                  <div
+                    class="metadata_options_wrapper"
+                  >
+                    <h4>
+                      Create:
+                    </h4>
+                     
+                    <div
+                      class="metadata_options"
+                    >
+                      <label
+                        for="mediabrowser_show_metadata"
+                      >
+                        <input
+                          class="metadata_checkbox"
+                          id="mediabrowser_show_metadata"
+                          type="checkbox"
+                        />
+                         Show Metadata
+                      </label>
+                       
+                      <label
+                        for="mediabrowser_episode_metadata"
+                      >
+                        <input
+                          class="metadata_checkbox"
+                          id="mediabrowser_episode_metadata"
+                          type="checkbox"
+                        />
+                         Episode Metadata
+                      </label>
+                       
+                      <label
+                        for="mediabrowser_fanart"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="mediabrowser_fanart"
+                          type="checkbox"
+                        />
+                         Show Fanart
+                      </label>
+                       
+                      <label
+                        for="mediabrowser_poster"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="mediabrowser_poster"
+                          type="checkbox"
+                        />
+                         Show Poster
+                      </label>
+                       
+                      <label
+                        for="mediabrowser_banner"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="mediabrowser_banner"
+                          type="checkbox"
+                        />
+                         Show Banner
+                      </label>
+                       
+                      <label
+                        for="mediabrowser_episode_thumbnails"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="mediabrowser_episode_thumbnails"
+                          type="checkbox"
+                        />
+                         Episode Thumbnails
+                      </label>
+                       
+                      <label
+                        for="mediabrowser_season_posters"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="mediabrowser_season_posters"
+                          type="checkbox"
+                        />
+                         Season Posters
+                      </label>
+                       
+                      <label
+                        for="mediabrowser_season_banners"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="mediabrowser_season_banners"
+                          type="checkbox"
+                        />
+                         Season Banners
+                      </label>
+                       
+                      <label
+                        for="mediabrowser_season_all_poster"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          disabled="disabled"
+                          id="mediabrowser_season_all_poster"
+                          type="checkbox"
+                        />
+                         Season All Poster
+                      </label>
+                       
+                      <label
+                        for="mediabrowser_season_all_banner"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          disabled="disabled"
+                          id="mediabrowser_season_all_banner"
+                          type="checkbox"
+                        />
+                         Season All Banner
+                      </label>
+                    </div>
+                  </div>
+                   
+                  <div
+                    class="metadata_example_wrapper"
+                  >
+                    <h4>
+                      Results:
+                    </h4>
+                     
+                    <div
+                      class="metadata_example"
+                    >
+                      <label
+                        for="mediabrowser_show_metadata"
+                      >
+                        <span
+                          class="disabled"
+                          id="mediabrowser_eg_show_metadata"
+                        >
+                          <span>
+                            <span>
+                              series.xml
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="mediabrowser_episode_metadata"
+                      >
+                        <span
+                          class="disabled"
+                          id="mediabrowser_eg_episode_metadata"
+                        >
+                          <span>
+                            <span>
+                              Season##\\metadata\\
+                              <i>
+                                filename
+                              </i>
+                              .xml
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="mediabrowser_fanart"
+                      >
+                        <span
+                          class="disabled"
+                          id="mediabrowser_eg_fanart"
+                        >
+                          <span>
+                            <span>
+                              backdrop.jpg
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="mediabrowser_poster"
+                      >
+                        <span
+                          class="disabled"
+                          id="mediabrowser_eg_poster"
+                        >
+                          <span>
+                            <span>
+                              folder.jpg
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="mediabrowser_banner"
+                      >
+                        <span
+                          class="disabled"
+                          id="mediabrowser_eg_banner"
+                        >
+                          <span>
+                            <span>
+                              banner.jpg
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="mediabrowser_episode_thumbnails"
+                      >
+                        <span
+                          class="disabled"
+                          id="mediabrowser_eg_episode_thumbnails"
+                        >
+                          <span>
+                            <span>
+                              Season##\\metadata\\
+                              <i>
+                                filename
+                              </i>
+                              .jpg
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="mediabrowser_season_posters"
+                      >
+                        <span
+                          class="disabled"
+                          id="mediabrowser_eg_season_posters"
+                        >
+                          <span>
+                            <span>
+                              Season##\\folder.jpg
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="mediabrowser_season_banners"
+                      >
+                        <span
+                          class="disabled"
+                          id="mediabrowser_eg_season_banners"
+                        >
+                          <span>
+                            <span>
+                              Season##\\banner.jpg
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="mediabrowser_season_all_poster"
+                      >
+                        <span
+                          class="disabled"
+                          id="mediabrowser_eg_season_all_poster"
+                        >
+                          <span>
+                            <span>
+                              <i>
+                                not supported
+                              </i>
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="mediabrowser_season_all_banner"
+                      >
+                        <span
+                          class="disabled"
+                          id="mediabrowser_eg_season_all_banner"
+                        >
+                          <span>
+                            <span>
+                              <i>
+                                not supported
+                              </i>
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="metadataDiv"
+                  id="provider.id"
+                  style="display: none;"
+                >
+                  <div
+                    class="metadata_options_wrapper"
+                  >
+                    <h4>
+                      Create:
+                    </h4>
+                     
+                    <div
+                      class="metadata_options"
+                    >
+                      <label
+                        for="wdtv_show_metadata"
+                      >
+                        <input
+                          class="metadata_checkbox"
+                          id="wdtv_show_metadata"
+                          type="checkbox"
+                        />
+                         Show Metadata
+                      </label>
+                       
+                      <label
+                        for="wdtv_episode_metadata"
+                      >
+                        <input
+                          class="metadata_checkbox"
+                          id="wdtv_episode_metadata"
+                          type="checkbox"
+                        />
+                         Episode Metadata
+                      </label>
+                       
+                      <label
+                        for="wdtv_fanart"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          disabled="disabled"
+                          id="wdtv_fanart"
+                          type="checkbox"
+                        />
+                         Show Fanart
+                      </label>
+                       
+                      <label
+                        for="wdtv_poster"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="wdtv_poster"
+                          type="checkbox"
+                        />
+                         Show Poster
+                      </label>
+                       
+                      <label
+                        for="wdtv_banner"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          disabled="disabled"
+                          id="wdtv_banner"
+                          type="checkbox"
+                        />
+                         Show Banner
+                      </label>
+                       
+                      <label
+                        for="wdtv_episode_thumbnails"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="wdtv_episode_thumbnails"
+                          type="checkbox"
+                        />
+                         Episode Thumbnails
+                      </label>
+                       
+                      <label
+                        for="wdtv_season_posters"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="wdtv_season_posters"
+                          type="checkbox"
+                        />
+                         Season Posters
+                      </label>
+                       
+                      <label
+                        for="wdtv_season_banners"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          disabled="disabled"
+                          id="wdtv_season_banners"
+                          type="checkbox"
+                        />
+                         Season Banners
+                      </label>
+                       
+                      <label
+                        for="wdtv_season_all_poster"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          disabled="disabled"
+                          id="wdtv_season_all_poster"
+                          type="checkbox"
+                        />
+                         Season All Poster
+                      </label>
+                       
+                      <label
+                        for="wdtv_season_all_banner"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          disabled="disabled"
+                          id="wdtv_season_all_banner"
+                          type="checkbox"
+                        />
+                         Season All Banner
+                      </label>
+                    </div>
+                  </div>
+                   
+                  <div
+                    class="metadata_example_wrapper"
+                  >
+                    <h4>
+                      Results:
+                    </h4>
+                     
+                    <div
+                      class="metadata_example"
+                    >
+                      <label
+                        for="wdtv_show_metadata"
+                      >
+                        <span
+                          class="disabled"
+                          id="wdtv_eg_show_metadata"
+                        >
+                          <span>
+                            <span>
+                              <i>
+                                not supported
+                              </i>
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="wdtv_episode_metadata"
+                      >
+                        <span
+                          class="disabled"
+                          id="wdtv_eg_episode_metadata"
+                        >
+                          <span>
+                            <span>
+                              Season##\\
+                              <i>
+                                filename
+                              </i>
+                              .xml
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="wdtv_fanart"
+                      >
+                        <span
+                          class="disabled"
+                          id="wdtv_eg_fanart"
+                        >
+                          <span>
+                            <span>
+                              <i>
+                                not supported
+                              </i>
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="wdtv_poster"
+                      >
+                        <span
+                          class="disabled"
+                          id="wdtv_eg_poster"
+                        >
+                          <span>
+                            <span>
+                              folder.jpg
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="wdtv_banner"
+                      >
+                        <span
+                          class="disabled"
+                          id="wdtv_eg_banner"
+                        >
+                          <span>
+                            <span>
+                              <i>
+                                not supported
+                              </i>
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="wdtv_episode_thumbnails"
+                      >
+                        <span
+                          class="disabled"
+                          id="wdtv_eg_episode_thumbnails"
+                        >
+                          <span>
+                            <span>
+                              Season##\\
+                              <i>
+                                filename
+                              </i>
+                              .metathumb
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="wdtv_season_posters"
+                      >
+                        <span
+                          class="disabled"
+                          id="wdtv_eg_season_posters"
+                        >
+                          <span>
+                            <span>
+                              Season##\\folder.jpg
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="wdtv_season_banners"
+                      >
+                        <span
+                          class="disabled"
+                          id="wdtv_eg_season_banners"
+                        >
+                          <span>
+                            <span>
+                              <i>
+                                not supported
+                              </i>
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="wdtv_season_all_poster"
+                      >
+                        <span
+                          class="disabled"
+                          id="wdtv_eg_season_all_poster"
+                        >
+                          <span>
+                            <span>
+                              <i>
+                                not supported
+                              </i>
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="wdtv_season_all_banner"
+                      >
+                        <span
+                          class="disabled"
+                          id="wdtv_eg_season_all_banner"
+                        >
+                          <span>
+                            <span>
+                              <i>
+                                not supported
+                              </i>
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="metadataDiv"
+                  id="provider.id"
+                  style="display: none;"
+                >
+                  <div
+                    class="metadata_options_wrapper"
+                  >
+                    <h4>
+                      Create:
+                    </h4>
+                     
+                    <div
+                      class="metadata_options"
+                    >
+                      <label
+                        for="tivo_show_metadata"
+                      >
+                        <input
+                          class="metadata_checkbox"
+                          id="tivo_show_metadata"
+                          type="checkbox"
+                        />
+                         Show Metadata
+                      </label>
+                       
+                      <label
+                        for="tivo_episode_metadata"
+                      >
+                        <input
+                          class="metadata_checkbox"
+                          id="tivo_episode_metadata"
+                          type="checkbox"
+                        />
+                         Episode Metadata
+                      </label>
+                       
+                      <label
+                        for="tivo_fanart"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          disabled="disabled"
+                          id="tivo_fanart"
+                          type="checkbox"
+                        />
+                         Show Fanart
+                      </label>
+                       
+                      <label
+                        for="tivo_poster"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          disabled="disabled"
+                          id="tivo_poster"
+                          type="checkbox"
+                        />
+                         Show Poster
+                      </label>
+                       
+                      <label
+                        for="tivo_banner"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          disabled="disabled"
+                          id="tivo_banner"
+                          type="checkbox"
+                        />
+                         Show Banner
+                      </label>
+                       
+                      <label
+                        for="tivo_episode_thumbnails"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          disabled="disabled"
+                          id="tivo_episode_thumbnails"
+                          type="checkbox"
+                        />
+                         Episode Thumbnails
+                      </label>
+                       
+                      <label
+                        for="tivo_season_posters"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          disabled="disabled"
+                          id="tivo_season_posters"
+                          type="checkbox"
+                        />
+                         Season Posters
+                      </label>
+                       
+                      <label
+                        for="tivo_season_banners"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          disabled="disabled"
+                          id="tivo_season_banners"
+                          type="checkbox"
+                        />
+                         Season Banners
+                      </label>
+                       
+                      <label
+                        for="tivo_season_all_poster"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          disabled="disabled"
+                          id="tivo_season_all_poster"
+                          type="checkbox"
+                        />
+                         Season All Poster
+                      </label>
+                       
+                      <label
+                        for="tivo_season_all_banner"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          disabled="disabled"
+                          id="tivo_season_all_banner"
+                          type="checkbox"
+                        />
+                         Season All Banner
+                      </label>
+                    </div>
+                  </div>
+                   
+                  <div
+                    class="metadata_example_wrapper"
+                  >
+                    <h4>
+                      Results:
+                    </h4>
+                     
+                    <div
+                      class="metadata_example"
+                    >
+                      <label
+                        for="tivo_show_metadata"
+                      >
+                        <span
+                          class="disabled"
+                          id="tivo_eg_show_metadata"
+                        >
+                          <span>
+                            <span>
+                              <i>
+                                not supported
+                              </i>
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="tivo_episode_metadata"
+                      >
+                        <span
+                          class="disabled"
+                          id="tivo_eg_episode_metadata"
+                        >
+                          <span>
+                            <span>
+                              Season##\\.meta\\
+                              <i>
+                                filename
+                              </i>
+                              .ext.txt
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="tivo_fanart"
+                      >
+                        <span
+                          class="disabled"
+                          id="tivo_eg_fanart"
+                        >
+                          <span>
+                            <span>
+                              <i>
+                                not supported
+                              </i>
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="tivo_poster"
+                      >
+                        <span
+                          class="disabled"
+                          id="tivo_eg_poster"
+                        >
+                          <span>
+                            <span>
+                              <i>
+                                not supported
+                              </i>
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="tivo_banner"
+                      >
+                        <span
+                          class="disabled"
+                          id="tivo_eg_banner"
+                        >
+                          <span>
+                            <span>
+                              <i>
+                                not supported
+                              </i>
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="tivo_episode_thumbnails"
+                      >
+                        <span
+                          class="disabled"
+                          id="tivo_eg_episode_thumbnails"
+                        >
+                          <span>
+                            <span>
+                              <i>
+                                not supported
+                              </i>
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="tivo_season_posters"
+                      >
+                        <span
+                          class="disabled"
+                          id="tivo_eg_season_posters"
+                        >
+                          <span>
+                            <span>
+                              <i>
+                                not supported
+                              </i>
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="tivo_season_banners"
+                      >
+                        <span
+                          class="disabled"
+                          id="tivo_eg_season_banners"
+                        >
+                          <span>
+                            <span>
+                              <i>
+                                not supported
+                              </i>
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="tivo_season_all_poster"
+                      >
+                        <span
+                          class="disabled"
+                          id="tivo_eg_season_all_poster"
+                        >
+                          <span>
+                            <span>
+                              <i>
+                                not supported
+                              </i>
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="tivo_season_all_banner"
+                      >
+                        <span
+                          class="disabled"
+                          id="tivo_eg_season_all_banner"
+                        >
+                          <span>
+                            <span>
+                              <i>
+                                not supported
+                              </i>
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="metadataDiv"
+                  id="provider.id"
+                  style="display: none;"
+                >
+                  <div
+                    class="metadata_options_wrapper"
+                  >
+                    <h4>
+                      Create:
+                    </h4>
+                     
+                    <div
+                      class="metadata_options"
+                    >
+                      <label
+                        for="mede8er_show_metadata"
+                      >
+                        <input
+                          class="metadata_checkbox"
+                          id="mede8er_show_metadata"
+                          type="checkbox"
+                        />
+                         Show Metadata
+                      </label>
+                       
+                      <label
+                        for="mede8er_episode_metadata"
+                      >
+                        <input
+                          class="metadata_checkbox"
+                          id="mede8er_episode_metadata"
+                          type="checkbox"
+                        />
+                         Episode Metadata
+                      </label>
+                       
+                      <label
+                        for="mede8er_fanart"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="mede8er_fanart"
+                          type="checkbox"
+                        />
+                         Show Fanart
+                      </label>
+                       
+                      <label
+                        for="mede8er_poster"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="mede8er_poster"
+                          type="checkbox"
+                        />
+                         Show Poster
+                      </label>
+                       
+                      <label
+                        for="mede8er_banner"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="mede8er_banner"
+                          type="checkbox"
+                        />
+                         Show Banner
+                      </label>
+                       
+                      <label
+                        for="mede8er_episode_thumbnails"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="mede8er_episode_thumbnails"
+                          type="checkbox"
+                        />
+                         Episode Thumbnails
+                      </label>
+                       
+                      <label
+                        for="mede8er_season_posters"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="mede8er_season_posters"
+                          type="checkbox"
+                        />
+                         Season Posters
+                      </label>
+                       
+                      <label
+                        for="mede8er_season_banners"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="mede8er_season_banners"
+                          type="checkbox"
+                        />
+                         Season Banners
+                      </label>
+                       
+                      <label
+                        for="mede8er_season_all_poster"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          disabled="disabled"
+                          id="mede8er_season_all_poster"
+                          type="checkbox"
+                        />
+                         Season All Poster
+                      </label>
+                       
+                      <label
+                        for="mede8er_season_all_banner"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          disabled="disabled"
+                          id="mede8er_season_all_banner"
+                          type="checkbox"
+                        />
+                         Season All Banner
+                      </label>
+                    </div>
+                  </div>
+                   
+                  <div
+                    class="metadata_example_wrapper"
+                  >
+                    <h4>
+                      Results:
+                    </h4>
+                     
+                    <div
+                      class="metadata_example"
+                    >
+                      <label
+                        for="mede8er_show_metadata"
+                      >
+                        <span
+                          class="disabled"
+                          id="mede8er_eg_show_metadata"
+                        >
+                          <span>
+                            <span>
+                              series.xml
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="mede8er_episode_metadata"
+                      >
+                        <span
+                          class="disabled"
+                          id="mede8er_eg_episode_metadata"
+                        >
+                          <span>
+                            <span>
+                              Season##\\
+                              <i>
+                                filename
+                              </i>
+                              .xml
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="mede8er_fanart"
+                      >
+                        <span
+                          class="disabled"
+                          id="mede8er_eg_fanart"
+                        >
+                          <span>
+                            <span>
+                              fanart.jpg
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="mede8er_poster"
+                      >
+                        <span
+                          class="disabled"
+                          id="mede8er_eg_poster"
+                        >
+                          <span>
+                            <span>
+                              folder.jpg
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="mede8er_banner"
+                      >
+                        <span
+                          class="disabled"
+                          id="mede8er_eg_banner"
+                        >
+                          <span>
+                            <span>
+                              banner.jpg
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="mede8er_episode_thumbnails"
+                      >
+                        <span
+                          class="disabled"
+                          id="mede8er_eg_episode_thumbnails"
+                        >
+                          <span>
+                            <span>
+                              Season##\\
+                              <i>
+                                filename
+                              </i>
+                              .jpg
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="mede8er_season_posters"
+                      >
+                        <span
+                          class="disabled"
+                          id="mede8er_eg_season_posters"
+                        >
+                          <span>
+                            <span>
+                              Season##\\folder.jpg
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="mede8er_season_banners"
+                      >
+                        <span
+                          class="disabled"
+                          id="mede8er_eg_season_banners"
+                        >
+                          <span>
+                            <span>
+                              Season##\\banner.jpg
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="mede8er_season_all_poster"
+                      >
+                        <span
+                          class="disabled"
+                          id="mede8er_eg_season_all_poster"
+                        >
+                          <span>
+                            <span>
+                              <i>
+                                not supported
+                              </i>
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="mede8er_season_all_banner"
+                      >
+                        <span
+                          class="disabled"
+                          id="mede8er_eg_season_all_banner"
+                        >
+                          <span>
+                            <span>
+                              <i>
+                                not supported
+                              </i>
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="metadataDiv"
+                  id="provider.id"
+                  style="display: none;"
+                >
+                  <div
+                    class="metadata_options_wrapper"
+                  >
+                    <h4>
+                      Create:
+                    </h4>
+                     
+                    <div
+                      class="metadata_options"
+                    >
+                      <label
+                        for="sony_ps3_show_metadata"
+                      >
+                        <input
+                          class="metadata_checkbox"
+                          id="sony_ps3_show_metadata"
+                          type="checkbox"
+                        />
+                         Show Metadata
+                      </label>
+                       
+                      <label
+                        for="sony_ps3_episode_metadata"
+                      >
+                        <input
+                          class="metadata_checkbox"
+                          disabled="disabled"
+                          id="sony_ps3_episode_metadata"
+                          type="checkbox"
+                        />
+                         Episode Metadata
+                      </label>
+                       
+                      <label
+                        for="sony_ps3_fanart"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          disabled="disabled"
+                          id="sony_ps3_fanart"
+                          type="checkbox"
+                        />
+                         Show Fanart
+                      </label>
+                       
+                      <label
+                        for="sony_ps3_poster"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="sony_ps3_poster"
+                          type="checkbox"
+                        />
+                         Show Poster
+                      </label>
+                       
+                      <label
+                        for="sony_ps3_banner"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          disabled="disabled"
+                          id="sony_ps3_banner"
+                          type="checkbox"
+                        />
+                         Show Banner
+                      </label>
+                       
+                      <label
+                        for="sony_ps3_episode_thumbnails"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="sony_ps3_episode_thumbnails"
+                          type="checkbox"
+                        />
+                         Episode Thumbnails
+                      </label>
+                       
+                      <label
+                        for="sony_ps3_season_posters"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          disabled="disabled"
+                          id="sony_ps3_season_posters"
+                          type="checkbox"
+                        />
+                         Season Posters
+                      </label>
+                       
+                      <label
+                        for="sony_ps3_season_banners"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          disabled="disabled"
+                          id="sony_ps3_season_banners"
+                          type="checkbox"
+                        />
+                         Season Banners
+                      </label>
+                       
+                      <label
+                        for="sony_ps3_season_all_poster"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          disabled="disabled"
+                          id="sony_ps3_season_all_poster"
+                          type="checkbox"
+                        />
+                         Season All Poster
+                      </label>
+                       
+                      <label
+                        for="sony_ps3_season_all_banner"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          disabled="disabled"
+                          id="sony_ps3_season_all_banner"
+                          type="checkbox"
+                        />
+                         Season All Banner
+                      </label>
+                    </div>
+                  </div>
+                   
+                  <div
+                    class="metadata_example_wrapper"
+                  >
+                    <h4>
+                      Results:
+                    </h4>
+                     
+                    <div
+                      class="metadata_example"
+                    >
+                      <label
+                        for="sony_ps3_show_metadata"
+                      >
+                        <span
+                          class="disabled"
+                          id="sony_ps3_eg_show_metadata"
+                        >
+                          <span>
+                            <span>
+                              <i>
+                                not supported
+                              </i>
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="sony_ps3_episode_metadata"
+                      >
+                        <span
+                          class="disabled"
+                          id="sony_ps3_eg_episode_metadata"
+                        >
+                          <span>
+                            <span>
+                              <i>
+                                not supported
+                              </i>
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="sony_ps3_fanart"
+                      >
+                        <span
+                          class="disabled"
+                          id="sony_ps3_eg_fanart"
+                        >
+                          <span>
+                            <span>
+                              <i>
+                                not supported
+                              </i>
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="sony_ps3_poster"
+                      >
+                        <span
+                          class="disabled"
+                          id="sony_ps3_eg_poster"
+                        >
+                          <span>
+                            <span>
+                              cover.jpg
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="sony_ps3_banner"
+                      >
+                        <span
+                          class="disabled"
+                          id="sony_ps3_eg_banner"
+                        >
+                          <span>
+                            <span>
+                              <i>
+                                not supported
+                              </i>
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="sony_ps3_episode_thumbnails"
+                      >
+                        <span
+                          class="disabled"
+                          id="sony_ps3_eg_episode_thumbnails"
+                        >
+                          <span>
+                            <span>
+                              Season##\\
+                              <i>
+                                filename
+                              </i>
+                              .ext.cover.jpg
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="sony_ps3_season_posters"
+                      >
+                        <span
+                          class="disabled"
+                          id="sony_ps3_eg_season_posters"
+                        >
+                          <span>
+                            <span>
+                              <i>
+                                not supported
+                              </i>
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="sony_ps3_season_banners"
+                      >
+                        <span
+                          class="disabled"
+                          id="sony_ps3_eg_season_banners"
+                        >
+                          <span>
+                            <span>
+                              <i>
+                                not supported
+                              </i>
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="sony_ps3_season_all_poster"
+                      >
+                        <span
+                          class="disabled"
+                          id="sony_ps3_eg_season_all_poster"
+                        >
+                          <span>
+                            <span>
+                              <i>
+                                not supported
+                              </i>
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                       
+                      <label
+                        for="sony_ps3_season_all_banner"
+                      >
+                        <span
+                          class="disabled"
+                          id="sony_ps3_eg_season_all_banner"
+                        >
+                          <span>
+                            <span>
+                              <i>
+                                not supported
+                              </i>
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </fieldset>
+               
+              <input
+                class="btn-medusa config_submitter"
+                type="submit"
+                value="Save Changes"
+              />
+            </div>
+          </div>
+        </div>
+         
+        <h6
+          class="pull-right"
+        >
+          <b>
+            All non-absolute folder locations are relative to 
+            <span
+              class="path"
+            >
+              C:\\Medusa\\Data
+            </span>
+          </b>
+        </h6>
+         
+        <input
+          class="btn-medusa pull-left config_submitter button"
+          type="submit"
+          value="Save Changes"
+        />
+      </div>
+    </form>
+  </div>
+</div>
+`;

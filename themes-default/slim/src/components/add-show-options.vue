@@ -7,25 +7,33 @@
                         <span>Quality</span>
                     </label>
                     <div class="col-sm-10 content">
-                        <quality-chooser :overall-quality="defaultConfig.quality" @update:quality:allowed="quality.allowed = $event" @update:quality:preferred="quality.preferred = $event"></quality-chooser>
+                        <quality-chooser
+                            :overall-quality="showDefaults.quality"
+                            @update:quality:allowed="quality.allowed = $event"
+                            @update:quality:preferred="quality.preferred = $event"
+                        />
                     </div>
                 </div>
             </div>
 
             <div v-if="subtitlesEnabled" id="use-subtitles">
-                <config-toggle-slider label="Subtitles" id="subtitles" :checked="defaultConfig.subtitles" @update="selectedSubtitleEnabled = $event"
-                    :explanations="['Download subtitles for this show?']">
-                </config-toggle-slider>
+                <config-toggle-slider
+                    label="Subtitles"
+                    id="subtitles"
+                    :value="selectedSubtitleEnabled"
+                    :explanations="['Download subtitles for this show?']"
+                    @input="selectedSubtitleEnabled = $event"
+                />
             </div>
 
-           <div class="form-group">
+            <div class="form-group">
                 <div class="row">
                     <label for="defaultStatus" class="col-sm-2 control-label">
                         <span>Status for previously aired episodes</span>
                     </label>
                     <div class="col-sm-10 content">
                         <select id="defaultStatus" class="form-control form-control-inline input-sm" v-model="selectedStatus">
-                            <option v-for="option in defaultEpisodeStatusOptions" :value="option.value" :key="option.value">{{ option.text }}</option>
+                            <option v-for="option in defaultEpisodeStatusOptions" :value="option.value" :key="option.value">{{ option.name }}</option>
                         </select>
                     </div>
                 </div>
@@ -38,36 +46,62 @@
                     </label>
                     <div class="col-sm-10 content">
                         <select id="defaultStatusAfter" class="form-control form-control-inline input-sm" v-model="selectedStatusAfter">
-                            <option v-for="option in defaultEpisodeStatusOptions" :value="option.value" :key="option.value">{{ option.text }}</option>
+                            <option v-for="option in defaultEpisodeStatusOptions" :value="option.value" :key="option.value">{{ option.name }}</option>
                         </select>
                     </div>
                 </div>
             </div>
 
-            <config-toggle-slider label="Season Folders" id="season_folders" :checked="defaultConfig.seasonFolders || namingForceFolders" :disabled="namingForceFolders"
-                :explanations="['Group episodes by season folders?']" @update="selectedSeasonFoldersEnabled = $event">
-            </config-toggle-slider>
+            <config-toggle-slider
+                label="Season Folders"
+                id="season_folders"
+                :value="selectedSeasonFoldersEnabled"
+                :disabled="namingForceFolders"
+                :explanations="['Group episodes by season folders?']"
+                @input="selectedSeasonFoldersEnabled = $event"
+            />
 
-            <config-toggle-slider v-if="enableAnimeOptions" label="Anime" id="anime" :checked="defaultConfig.anime"
-                :explanations="['Is this show an Anime?']" @update="selectedAnimeEnabled = $event">
-            </config-toggle-slider>
+            <config-toggle-slider
+                v-if="enableAnimeOptions"
+                label="Anime"
+                id="anime"
+                :value="selectedAnimeEnabled"
+                :explanations="['Is this show an Anime?']"
+                @input="selectedAnimeEnabled = $event"
+            />
 
-            <div v-if="enableAnimeOptions && selectedAnimeEnabled" class="form-group">
+            <div ref="blackAndWhiteList" v-if="enableAnimeOptions && selectedAnimeEnabled && !disableReleaseGroups" class="form-group">
                 <div class="row">
                     <label for="anidbReleaseGroup" class="col-sm-2 control-label">
                         <span>Release Groups</span>
                     </label>
                     <div class="col-sm-10 content">
-                        <anidb-release-group-ui class="max-width" :blacklist="release.blacklist" :whitelist="release.whitelist"
-                            :all-groups="release.allgroups" @change="onChangeReleaseGroupsAnime">
-                        </anidb-release-group-ui>
+                        <anidb-release-group-ui
+                            class="max-width"
+                            :show-name="showName"
+                            @change="onChangeReleaseGroupsAnime"
+                        />
                     </div>
                 </div>
             </div>
 
-            <config-toggle-slider label="Scene Numbering" id="scene" :checked="defaultConfig.scene"
-                :explanations="['Is this show scene numbered?']" @update="selectedSceneEnabled = $event">
-            </config-toggle-slider>
+            <config-toggle-slider
+                label="Scene Numbering"
+                id="scene"
+                :value="selectedSceneEnabled"
+                :explanations="['Is this show scene numbered?']"
+                @input="selectedSceneEnabled = $event"
+            />
+
+            <config-template label-for="show_lists" label="Display in show lists">
+                <multiselect
+                    v-model="selectedShowLists"
+                    :multiple="true"
+                    :options="layout.show.showListOrder.map(list => list.toLowerCase())"
+                    @input="selectedShowLists = $event"
+                />
+                <span>If no list selected, the default 'series' will apply</span>
+            </config-template>
 
             <div class="form-group">
                 <div class="row">
@@ -82,19 +116,26 @@
         </fieldset>
     </div>
 </template>
+
 <script>
-import { mapState } from 'vuex';
-import { apiRoute } from '../api';
-import { combineQualities } from '../utils';
-import ConfigToggleSlider from './config-toggle-slider.vue';
+import { mapActions, mapState, mapGetters } from 'vuex';
+import { combineQualities } from '../utils/core';
+import {
+    ConfigTemplate,
+    ConfigToggleSlider,
+    QualityChooser
+} from './helpers';
 import AnidbReleaseGroupUi from './anidb-release-group-ui.vue';
+import Multiselect from 'vue-multiselect';
 
 export default {
     name: 'add-show-options',
     components: {
         AnidbReleaseGroupUi,
-        ConfigToggleSlider
-        // @TODO: Add `QualityChooser`
+        ConfigTemplate,
+        ConfigToggleSlider,
+        Multiselect,
+        QualityChooser
     },
     props: {
         showName: {
@@ -105,6 +146,23 @@ export default {
         enableAnimeOptions: {
             type: Boolean,
             default: false
+        },
+        disableReleaseGroups: Boolean,
+        presetShowOptions: {
+            default() {
+                return {
+                    use: false,
+                    subtitles: null,
+                    status: null,
+                    statusAfter: null,
+                    seasonFolders: null,
+                    anime: null,
+                    scene: null,
+                    showLists: null,
+                    release: null,
+                    quality: null
+                };
+            }
         }
     },
     data() {
@@ -122,15 +180,15 @@ export default {
             selectedSceneEnabled: false,
             release: {
                 blacklist: [],
-                whitelist: [],
-                allgroups: []
-            }
+                whitelist: []
+            },
+            selectedShowLists: []
         };
     },
     mounted() {
-        const { defaultConfig, update } = this;
-        this.selectedStatus = defaultConfig.status;
-        this.selectedStatusAfter = defaultConfig.statusAfter;
+        const { configLoaded, showDefaults, presetShowOptions, update } = this;
+        this.selectedStatus = showDefaults.status;
+        this.selectedStatusAfter = showDefaults.statusAfter;
         this.$nextTick(() => update());
 
         this.$watch(vm => [
@@ -138,113 +196,39 @@ export default {
             vm.selectedStatusAfter,
             vm.selectedSubtitleEnabled,
             vm.selectedSeasonFoldersEnabled,
-            vm.selectedSceneEnabled
+            vm.selectedSceneEnabled,
+            vm.selectedAnimeEnabled,
+            vm.selectedShowLists
         ].join(), () => {
             this.update();
         });
-    },
-    methods: {
-        getReleaseGroups(showName) {
-            const params = {
-                series_name: showName // eslint-disable-line camelcase
-            };
 
-            return apiRoute
-                .get('home/fetch_releasegroups', { params, timeout: 30000 })
-                .then(response => response.data)
-                .catch(error => {
-                    this.$snotify.warning(
-                        `Error while trying to fetch release groups for show "${showName}": ${error || 'Unknown'}`,
-                        'Error'
-                    );
-                    console.warn(error);
-                    return null;
-                });
-        },
-        update() {
-            const {
-                selectedSubtitleEnabled,
-                selectedStatus,
-                selectedStatusAfter,
-                selectedSeasonFoldersEnabled,
-                selectedAnimeEnabled,
-                selectedSceneEnabled,
-                release,
-                quality
-            } = this;
-            this.$nextTick(() => {
-                this.$emit('change', {
-                    subtitles: selectedSubtitleEnabled,
-                    status: selectedStatus,
-                    statusAfter: selectedStatusAfter,
-                    seasonFolders: selectedSeasonFoldersEnabled,
-                    anime: selectedAnimeEnabled,
-                    scene: selectedSceneEnabled,
-                    release,
-                    quality
-                });
-            });
-        },
-        onChangeReleaseGroupsAnime(items) {
-            this.release.whitelist = items.filter(item => item.memberOf === 'whitelist').map(item => item.name);
-            this.release.blacklist = items.filter(item => item.memberOf === 'blacklist').map(item => item.name);
-            this.update();
-        },
-        saveDefaults() {
-            const {
-                $store,
-                selectedStatus,
-                selectedStatusAfter,
-                combinedQualities,
-                selectedSubtitleEnabled,
-                selectedSeasonFoldersEnabled,
-                selectedAnimeEnabled,
-                selectedSceneEnabled
-            } = this;
-
-            const section = 'main';
-            const config = {
-                showDefaults: {
-                    status: selectedStatus,
-                    statusAfter: selectedStatusAfter,
-                    quality: combinedQualities,
-                    subtitles: selectedSubtitleEnabled,
-                    seasonFolders: selectedSeasonFoldersEnabled,
-                    anime: selectedAnimeEnabled,
-                    scene: selectedSceneEnabled
-                }
-            };
-
-            this.saving = true;
-            $store.dispatch('setConfig', { section, config }).then(() => {
-                this.$snotify.success(
-                    'Your "add show" defaults have been set to your current selections.',
-                    'Saved Defaults'
-                );
-            }).catch(error => {
-                this.$snotify.error(
-                    'Error while trying to save "add show" defaults: ' + error.message || 'Unknown',
-                    'Error'
-                );
-            }).finally(() => {
-                this.saving = false;
-            });
+        if (presetShowOptions.use) {
+            this.updateShowOptions(presetShowOptions);
+        } else if (configLoaded) {
+            this.updateShowOptions(showDefaults);
         }
     },
     computed: {
         ...mapState({
-            defaultConfig: state => state.config.showDefaults,
-            namingForceFolders: state => state.config.namingForceFolders,
-            subtitlesEnabled: state => state.config.subtitles.enabled,
-            episodeStatuses: state => state.statuses
+            showDefaults: state => state.config.general.showDefaults,
+            configLoaded: state => state.config.general.wikiUrl !== null,
+            layout: state => state.config.layout,
+            namingForceFolders: state => state.config.general.namingForceFolders,
+            subtitlesEnabled: state => state.config.general.subtitles.enabled,
+            episodeStatuses: state => state.config.consts.statuses,
+            anime: state => state.config.anime
         }),
+        ...mapGetters([
+            'getStatus'
+        ]),
         defaultEpisodeStatusOptions() {
-            const { strings, values } = this.episodeStatuses;
-            const { skipped, wanted, ignored } = values;
-            return [skipped, wanted, ignored].map(value => ({
-                value,
-                text: strings[value]
-            }));
+            const { getStatus } = this;
+            if (this.episodeStatuses.length === 0) {
+                return [];
+            }
+            // Get status objects, in this order
+            return ['skipped', 'wanted', 'ignored'].map(key => getStatus({ key }));
         },
         /**
          * Calculate the combined value of the selected qualities.
@@ -261,50 +245,133 @@ export default {
          */
         saveDefaultsDisabled() {
             const {
+                presetShowOptions,
                 enableAnimeOptions,
-                defaultConfig,
+                showDefaults,
                 namingForceFolders,
-
                 selectedStatus,
                 selectedStatusAfter,
                 combinedQualities,
                 selectedSeasonFoldersEnabled,
                 selectedSubtitleEnabled,
                 selectedAnimeEnabled,
-                selectedSceneEnabled
+                selectedSceneEnabled,
+                selectedShowLists
             } = this;
 
+            // Disable the button if we provided show options.
+            if (presetShowOptions.use) {
+                return false;
+            }
+
             return [
-                selectedStatus === defaultConfig.status,
-                selectedStatusAfter === defaultConfig.statusAfter,
-                combinedQualities === defaultConfig.quality,
-                selectedSeasonFoldersEnabled === (defaultConfig.seasonFolders || namingForceFolders),
-                selectedSubtitleEnabled === defaultConfig.subtitles,
-                !enableAnimeOptions || selectedAnimeEnabled === defaultConfig.anime,
-                selectedSceneEnabled === defaultConfig.scene
+                selectedStatus === showDefaults.status,
+                selectedStatusAfter === showDefaults.statusAfter,
+                combinedQualities === showDefaults.quality,
+                selectedSeasonFoldersEnabled === (showDefaults.seasonFolders || namingForceFolders),
+                selectedSubtitleEnabled === showDefaults.subtitles,
+                !enableAnimeOptions || selectedAnimeEnabled === showDefaults.anime,
+                selectedSceneEnabled === showDefaults.scene,
+                selectedShowLists === showDefaults.showLists
             ].every(Boolean);
         }
     },
-    asyncComputed: {
-        releaseGroups() {
-            const { selectedAnimeEnabled, showName } = this;
-            if (!selectedAnimeEnabled || !showName) {
-                return Promise.resolve([]);
-            }
-
-            return this.getReleaseGroups(showName).then(result => {
-                if (result.groups) {
-                    return result.groups;
-                }
+    methods: {
+        ...mapActions({
+            setShowConfig: 'setShowConfig'
+        }),
+        update() {
+            const {
+                selectedSubtitleEnabled,
+                selectedStatus,
+                selectedStatusAfter,
+                selectedSeasonFoldersEnabled,
+                selectedAnimeEnabled,
+                selectedSceneEnabled,
+                selectedShowLists,
+                release,
+                quality
+            } = this;
+            this.$nextTick(() => {
+                this.$emit('change', {
+                    subtitles: selectedSubtitleEnabled,
+                    status: selectedStatus,
+                    statusAfter: selectedStatusAfter,
+                    seasonFolders: selectedSeasonFoldersEnabled,
+                    anime: selectedAnimeEnabled,
+                    scene: selectedSceneEnabled,
+                    showLists: selectedShowLists,
+                    release,
+                    quality
+                });
             });
+        },
+        onChangeReleaseGroupsAnime(groupNames) {
+            this.release.whitelist = groupNames.whitelist;
+            this.release.blacklist = groupNames.blacklist;
+            this.update();
+        },
+        saveDefaults() {
+            const {
+                $store,
+                selectedStatus,
+                selectedStatusAfter,
+                combinedQualities,
+                selectedSubtitleEnabled,
+                selectedSeasonFoldersEnabled,
+                selectedAnimeEnabled,
+                selectedSceneEnabled,
+                selectedShowLists
+            } = this;
+
+            const section = 'main';
+            const config = {
+                showDefaults: {
+                    status: selectedStatus,
+                    statusAfter: selectedStatusAfter,
+                    quality: combinedQualities,
+                    subtitles: selectedSubtitleEnabled,
+                    seasonFolders: selectedSeasonFoldersEnabled,
+                    anime: selectedAnimeEnabled,
+                    scene: selectedSceneEnabled,
+                    showLists: selectedShowLists
+                }
+            };
+
+            this.saving = true;
+            $store.dispatch('setConfig', { section, config }).then(() => {
+                this.$snotify.success(
+                    'Your "add show" defaults have been set to your current selections.',
+                    'Saved Defaults'
+                );
+            }).catch(error => {
+                this.$snotify.error(
+                    'Error while trying to save "add show" defaults: ' + (error.message || 'Unknown'),
+                    'Error'
+                );
+            }).finally(() => {
+                this.saving = false;
+            });
+        },
+        updateShowOptions(options) {
+            const { layout, namingForceFolders } = this;
+
+            this.selectedStatus = options.status;
+            this.selectedStatusAfter = options.statusAfter;
+            this.selectedSubtitleEnabled = options.subtitles;
+            this.selectedAnimeEnabled = options.anime;
+            this.selectedSeasonFoldersEnabled = options.seasonFolders || namingForceFolders;
+            this.selectedSceneEnabled = options.scene;
+            this.selectedShowLists = options.showLists.filter(
+                list => layout.show.showListOrder.map(list => list.toLowerCase()).includes(list.toLowerCase())
+            ) || [];
         }
     },
+
     watch: {
-        releaseGroups(groups) {
-            this.release.allgroups = groups;
-        },
         release: {
             handler() {
+                this.$emit('refresh');
                 this.update();
             },
             deep: true,
@@ -322,17 +389,41 @@ export default {
             deep: true,
             immediate: false
         },
-        selectedAnimeEnabled() {
+        selectedAnimeEnabled(value) {
+            const { anime, config } = this;
+            const { autoAnimeToList, showlistDefaultAnime } = anime;
+
+            if (autoAnimeToList) {
+                if (value) {
+                    // Auto anime to list is enabled. If changing the show format to anime, add 'Anime' to show lists.
+                    this.selectedShowLists = showlistDefaultAnime;
+                    // The filter makes sure there are unique strings.
+                    this.selectedShowLists = this.selectedShowLists.filter((v, i, a) => a.indexOf(v) === i);
+                } else {
+                    // Return to default show lists.
+                    this.selectedShowLists = config.showDefaults.showLists;
+                }
+            }
+
             this.$emit('refresh');
             this.update();
         },
-        defaultConfig(newValue) {
-            this.selectedStatus = newValue.status;
-            this.selectedStatusAfter = newValue.statusAfter;
+        /**
+         * As soon as the showDefaults is loaded. Set the selected* values to it.
+         * If a this.presetShowOptions was provided, use that.
+         * @param {object} newValue - default config object.
+         */
+        showDefaults(newValue) {
+            const { presetShowOptions, updateShowOptions } = this;
+            if (presetShowOptions.use) {
+                return;
+            }
+
+            updateShowOptions(newValue);
         }
     }
 };
 </script>
+
 <style>
-/* placeholder */
 </style>

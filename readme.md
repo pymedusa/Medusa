@@ -2,8 +2,8 @@
   <img src="https://cdn.rawgit.com/pymedusa/medusa.github.io/4360d494/images/logo/new-logo.png"/>
 </p>
 <p align="center" title="Build Status">
-  <a href="https://travis-ci.org/pymedusa/Medusa">
-    <img src="https://travis-ci.org/pymedusa/Medusa.svg?branch=develop" alt=""/>
+  <a href="https://travis-ci.com/github/pymedusa/Medusa">
+    <img src="https://api.travis-ci.com/pymedusa/Medusa.svg?branch=develop" alt=""/>
   </a>
   <a href="http://isitmaintained.com/project/pymedusa/Medusa" title="Average time to resolve an issue">
     <img src="http://isitmaintained.com/badge/resolution/pymedusa/Medusa.svg" alt="Average time to resolve an issue"/>
@@ -30,6 +30,7 @@
  - Supports TVMaze and TMDB indexers
  - Manual search episodes (you choose what to snatch based on all kind of info: provider, seeds, release group)
  - Manual search for subtitles (useful when subtitle has low score because of typo in filename or alternative title)
+ - Support for Python 3
  - Uses 'guessit' library to parse and enrich existing info (more precise than regexes)
  - Improved Anime shows support
  - Faster DailySearcher|Backlog|Find propers as we only process new items. Already processed items are discarded.
@@ -61,7 +62,20 @@
  - Real SSL certificate validation
 
 #### Dependencies
- To run Medusa from source you will need Python 2.7.10
+ To run Medusa from source you will need one of these Python versions:
+ * **Python 3** – 3.6.0 and newer
+
+#### Installation - direct
+ Start [here](https://github.com/pymedusa/Medusa/wiki/Installation-&-Configuration-Guides) to read the installation guides for different setups.
+
+#### Installation - Docker
+ There's a direct build available on [Dockerhub](https://hub.docker.com/r/pymedusa/medusa/) which is updated directly from this repo on every commit to master.
+
+ For alternate architectures, the [linuxserver.io](https://www.linuxserver.io) team have kindly produced docker images for X86, armhf and aarch64 platforms. This is built from an older intermediary Dockerfile.
+
+* X86 - [Dockerhub](https://hub.docker.com/r/linuxserver/medusa/), [Github](https://github.com/linuxserver/docker-medusa)
+* armhf - [Dockerhub](https://hub.docker.com/r/lsioarmhf/medusa/), [Github](https://github.com/linuxserver/docker-medusa-armhf)
+* aarch64 - [Dockerhub](https://hub.docker.com/r/lsioarmhf/medusa-aarch64/), [Github](https://github.com/linuxserver/docker-medusa-arm64)
 
 #### [![Feature Requests](https://cloud.githubusercontent.com/assets/390379/10127973/045b3a96-6560-11e5-9b20-31a2032956b2.png)](https://github.com/pymedusa/Medusa/issues?q=is%3Aopen+is%3Aissue+label%3A%22Feature+Request%22)
 
@@ -71,13 +85,15 @@
 
 ##### [Wiki](https://github.com/pymedusa/Medusa/wiki)
 
+##### [Discord](https://discord.gg/zMdAdUK)
+
 #### Important
 Before using this with your existing database (sickbeard.db) please make a backup copy of it and delete any other database files such as cache.db and failed.db if present<br>
 We HIGHLY recommend starting out with no database files at all to make this a fresh start but the choice is at your own risk.
 
 #### Supported providers
 
-A full list can be found [here](https://github.com/pymedusa/Medusa/wiki/Medusa-Search-Providers). Jackett is supported, however it must be configured [as follows](https://github.com/pymedusa/Medusa/wiki/Using-Jackett-with-Medusa).
+A partial list can be found [here](https://github.com/pymedusa/Medusa/wiki/Medusa-Search-Providers). Jackett is supported, however it must be configured [as follows](https://github.com/pymedusa/Medusa/wiki/Using-Jackett-with-Medusa).
 
 #### Special Thanks to:
 ![RARBG](https://rarbg.com/favicon.ico) [RARBG](https://rarbg.to)
@@ -99,7 +115,7 @@ A full list can be found [here](https://github.com/pymedusa/Medusa/wiki/Medusa-S
 #### News and Changelog
 [news.md has moved to a separate repo, click here](https://github.com/pymedusa/medusa.github.io/blob/master/news/news.md)
 
-[The changelog can be found here](https://github.com/pymedusa/Medusa/blob/develop/CHANGELOG.md)  
+[The changelog can be found here](https://github.com/pymedusa/Medusa/blob/develop/CHANGELOG.md)
 [The changelog for versions prior to v0.2.7 can be found here](https://github.com/pymedusa/medusa.github.io/blob/master/news/CHANGES.md)
 
 #### External dependencies
@@ -107,13 +123,3 @@ This product uses [MediaInfo](http://mediaarea.net/MediaInfo) library, Copyright
 
 Binaries for Windows and MacOS are included. Linux distributions need to manually install MediaInfo.
 MediaInfo is optional, but highly recommended since it increases the number of supported formats for video metadata extraction. Basic MKV metadata is supported when MediaInfo is not installed.
-
-#### Docker images
-
-The [linuxserver.io](https://www.linuxserver.io) team have kindly produced docker images for X86, armhf and aarch64 platforms. This is built from an older intermediary Dockerfile.
-
-* X86 - [Dockerhub](https://hub.docker.com/r/linuxserver/medusa/), [Github](https://github.com/linuxserver/docker-medusa)
-* armhf - [Dockerhub](https://hub.docker.com/r/lsioarmhf/medusa/), [Github](https://github.com/linuxserver/docker-medusa-armhf)
-* aarch64 - [Dockerhub](https://hub.docker.com/r/lsioarmhf/medusa-aarch64/), [Github](https://github.com/linuxserver/docker-medusa-arm64)
-
-There's also a direct build available here [Dockerhub](https://hub.docker.com/r/pymedusa/medusa/) which is updated directly from this repo on every commit.

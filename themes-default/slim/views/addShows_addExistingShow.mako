@@ -3,14 +3,16 @@
     import json
 
     from medusa import app
-    from medusa.indexers.indexer_api import indexerApi
-    from medusa.indexers.indexer_config import indexerConfig
+    from medusa.indexers.api import indexerApi
+    from medusa.indexers.config import indexerConfig
 
     from six import iteritems, text_type as str
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/add-show-options.js?${sbPID}"></script>
 <script>
+const { mapState } = window.Vuex;
+
 window.app = {};
 window.app = new Vue({
     store,
@@ -38,7 +40,11 @@ window.app = new Vue({
             $.updateBlackWhiteList(undefined);
         }, 500);
     },
-    computed: {
+    // TODO: Replace with Object spread (`...mapState`)
+    computed: Object.assign(mapState({
+        config: state => state.config.general // Used by `inc_addShowOptions.mako`
+    }),
+    {
         selectedRootDirs() {
             return this.rootDirs.filter(rd => rd.selected);
         },
@@ -81,7 +87,7 @@ window.app = new Vue({
                 });
             }
         }
-    },
+    }),
     methods: {
         /**
          * Transform root dirs paths array, and select all the paths.
@@ -171,7 +177,7 @@ window.app = new Vue({
                 const seriesToAdd = [dir.selectedIndexer, dir.path, seriesId, dir.metadata.seriesName]
                     .filter(i => typeof(i) === 'number' || Boolean(i)).join('|');
 
-                formData.append('shows_to_add', encodeURIComponent(seriesToAdd));
+                formData.append('shows_to_add', seriesToAdd);
             });
 
             const response = await apiRoute.post('addShows/addExistingShows', formData);
@@ -250,7 +256,7 @@ window.app = new Vue({
                 <br>
 
                 <span v-if="isLoading">
-                    <img id="searchingAnim" src="images/loading32.gif" height="32" width="32" /> loading folders...
+                    <img id="searchingAnime" src="images/loading32.gif" height="32" width="32" /> loading folders...
                 </span>
                 <template v-else>
                     <span v-if="errorMessage !== ''">

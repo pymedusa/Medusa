@@ -1,0 +1,630 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AppHeader.test.js renders 1`] = `
+<nav
+  class="navbar navbar-default navbar-fixed-top hidden-print"
+  role="navigation"
+>
+  <div
+    class="container-fluid"
+  >
+    <div
+      class="navbar-header"
+    >
+      <button
+        class="navbar-toggle collapsed"
+        data-target="#main_nav"
+        data-toggle="collapse"
+        type="button"
+      >
+        <span
+          class="floating-badge"
+        >
+          1
+        </span>
+         
+        <span
+          class="sr-only"
+        >
+          Toggle navigation
+        </span>
+         
+        <span
+          class="icon-bar"
+        />
+         
+        <span
+          class="icon-bar"
+        />
+         
+        <span
+          class="icon-bar"
+        />
+      </button>
+       
+      <app-link-stub
+        class="navbar-brand"
+        href="home/"
+        placeholder="indexer-to-name"
+        title="Medusa"
+      >
+        <img
+          alt="Medusa"
+          class="img-responsive pull-left"
+          src="images/medusa.png"
+          style="height: 50px;"
+        />
+      </app-link-stub>
+    </div>
+     
+    <div
+      class="collapse navbar-collapse"
+      id="main_nav"
+    >
+      <ul
+        class="nav navbar-nav navbar-right"
+      >
+        <li
+          class="navbar-split dropdown active"
+          id="NAVhome"
+        >
+          <app-link-stub
+            aria-haspopup="true"
+            class="dropdown-toggle"
+            data-hover="dropdown"
+            data-toggle="dropdown"
+            href="home/"
+            placeholder="indexer-to-name"
+          >
+            <span>
+              Shows
+            </span>
+             
+            <b
+              class="caret"
+            />
+          </app-link-stub>
+           
+          <ul
+            class="dropdown-menu"
+          >
+            <li>
+              <app-link-stub
+                href="home/"
+                placeholder="indexer-to-name"
+              >
+                <i
+                  class="menu-icon-home"
+                />
+                 Show List
+              </app-link-stub>
+            </li>
+             
+            <li>
+              <app-link-stub
+                href="addShows/"
+                placeholder="indexer-to-name"
+              >
+                <i
+                  class="menu-icon-addshow"
+                />
+                 Add Shows
+              </app-link-stub>
+            </li>
+             
+            <li>
+              <app-link-stub
+                href="addRecommended/"
+                placeholder="indexer-to-name"
+              >
+                <i
+                  class="menu-icon-addshow"
+                />
+                 Add Recommended Shows
+              </app-link-stub>
+            </li>
+             
+            <li>
+              <app-link-stub
+                href="home/postprocess/"
+                placeholder="indexer-to-name"
+              >
+                <i
+                  class="menu-icon-postprocess"
+                />
+                 Manual Post-Processing
+              </app-link-stub>
+            </li>
+             
+            <li
+              class="divider"
+              role="separator"
+            />
+             
+            <li>
+              <app-link-stub
+                href="home/displayShow?indexername=tvdb&seriesid=80379"
+                placeholder="indexer-to-name"
+              >
+                <i
+                  class="menu-icon-addshow"
+                />
+                 The Big Bang Theory
+                            
+              </app-link-stub>
+            </li>
+          </ul>
+           
+          <div
+            style="clear: both;"
+          />
+        </li>
+         
+        <li
+          class="navbar-split"
+          id="NAVschedule"
+        >
+          <app-link-stub
+            href="schedule/"
+            placeholder="indexer-to-name"
+          >
+            Schedule
+          </app-link-stub>
+        </li>
+         
+        <li
+          class="navbar-split"
+          id="NAVhistory"
+        >
+          <app-link-stub
+            href="history/"
+            placeholder="indexer-to-name"
+          >
+            History
+          </app-link-stub>
+        </li>
+         
+        <li
+          class="navbar-split dropdown"
+          id="NAVmanage"
+        >
+          <app-link-stub
+            aria-haspopup="true"
+            class="dropdown-toggle"
+            data-hover="dropdown"
+            data-toggle="dropdown"
+            href="manage/episodeStatuses/"
+            placeholder="indexer-to-name"
+          >
+            <span>
+              Manage
+            </span>
+             
+            <b
+              class="caret"
+            />
+          </app-link-stub>
+           
+          <ul
+            class="dropdown-menu"
+          >
+            <li>
+              <app-link-stub
+                href="manage/"
+                placeholder="indexer-to-name"
+              >
+                <i
+                  class="menu-icon-manage"
+                />
+                 Mass Update
+              </app-link-stub>
+            </li>
+             
+            <li>
+              <app-link-stub
+                href="manage/backlogOverview/"
+                placeholder="indexer-to-name"
+              >
+                <i
+                  class="menu-icon-backlog-view"
+                />
+                 Backlog Overview
+              </app-link-stub>
+            </li>
+             
+            <li>
+              <app-link-stub
+                href="manage/manageSearches/"
+                placeholder="indexer-to-name"
+              >
+                <i
+                  class="menu-icon-manage-searches"
+                />
+                 Manage Searches
+              </app-link-stub>
+            </li>
+             
+            <li>
+              <app-link-stub
+                href="manage/episodeStatuses/"
+                placeholder="indexer-to-name"
+              >
+                <i
+                  class="menu-icon-manage2"
+                />
+                 Episode Status Management
+              </app-link-stub>
+            </li>
+             
+            <!---->
+             
+            <li>
+              <app-link-stub
+                href="home/updateKODI/"
+                placeholder="indexer-to-name"
+              >
+                <i
+                  class="menu-icon-kodi"
+                />
+                 Update KODI
+              </app-link-stub>
+            </li>
+             
+            <!---->
+             
+            <!---->
+             
+            <li>
+              <app-link-stub
+                href="manage/failedDownloads/"
+                placeholder="indexer-to-name"
+              >
+                <i
+                  class="menu-icon-failed-download"
+                />
+                 Failed Downloads
+              </app-link-stub>
+            </li>
+             
+            <li>
+              <app-link-stub
+                href="manage/subtitleMissed/"
+                placeholder="indexer-to-name"
+              >
+                <i
+                  class="menu-icon-backlog"
+                />
+                 Missed Subtitle Management
+              </app-link-stub>
+            </li>
+             
+            <!---->
+          </ul>
+           
+          <div
+            style="clear: both;"
+          />
+        </li>
+         
+        <li
+          class="navbar-split dropdown"
+          id="NAVconfig"
+        >
+          <app-link-stub
+            aria-haspopup="true"
+            class="dropdown-toggle"
+            data-hover="dropdown"
+            data-toggle="dropdown"
+            href="config/"
+            placeholder="indexer-to-name"
+          >
+            <span
+              class="visible-xs-inline"
+            >
+              Config
+            </span>
+            <img
+              class="navbaricon hidden-xs"
+              src="images/menu/system18.png"
+            />
+             
+            <b
+              class="caret"
+            />
+          </app-link-stub>
+           
+          <ul
+            class="dropdown-menu"
+          >
+            <li>
+              <app-link-stub
+                href="config/"
+                placeholder="indexer-to-name"
+              >
+                <i
+                  class="menu-icon-help"
+                />
+                 Help & Info
+              </app-link-stub>
+            </li>
+             
+            <li>
+              <app-link-stub
+                href="config/general/"
+                placeholder="indexer-to-name"
+              >
+                <i
+                  class="menu-icon-config"
+                />
+                 General
+              </app-link-stub>
+            </li>
+             
+            <li>
+              <app-link-stub
+                href="config/backuprestore/"
+                placeholder="indexer-to-name"
+              >
+                <i
+                  class="menu-icon-backup"
+                />
+                 Backup & Restore
+              </app-link-stub>
+            </li>
+             
+            <li>
+              <app-link-stub
+                href="config/search/"
+                placeholder="indexer-to-name"
+              >
+                <i
+                  class="menu-icon-manage-searches"
+                />
+                 Search Settings
+              </app-link-stub>
+            </li>
+             
+            <li>
+              <app-link-stub
+                href="config/providers/"
+                placeholder="indexer-to-name"
+              >
+                <i
+                  class="menu-icon-provider"
+                />
+                 Search Providers
+              </app-link-stub>
+            </li>
+             
+            <li>
+              <app-link-stub
+                href="config/subtitles/"
+                placeholder="indexer-to-name"
+              >
+                <i
+                  class="menu-icon-backlog"
+                />
+                 Subtitles Settings
+              </app-link-stub>
+            </li>
+             
+            <li>
+              <app-link-stub
+                href="config/postProcessing/"
+                placeholder="indexer-to-name"
+              >
+                <i
+                  class="menu-icon-postprocess"
+                />
+                 Post-Processing
+              </app-link-stub>
+            </li>
+             
+            <li>
+              <app-link-stub
+                href="config/notifications/"
+                placeholder="indexer-to-name"
+              >
+                <i
+                  class="menu-icon-notification"
+                />
+                 Notifications
+              </app-link-stub>
+            </li>
+             
+            <li>
+              <app-link-stub
+                href="config/anime/"
+                placeholder="indexer-to-name"
+              >
+                <i
+                  class="menu-icon-anime"
+                />
+                 Anime
+              </app-link-stub>
+            </li>
+          </ul>
+           
+          <div
+            style="clear: both;"
+          />
+        </li>
+         
+        <li
+          class="navbar-split dropdown"
+          id="NAVsystem"
+        >
+          <app-link-stub
+            aria-haspopup="true"
+            class="padding-right-15 dropdown-toggle"
+            data-hover="dropdown"
+            data-toggle="dropdown"
+            href="home/status/"
+            placeholder="indexer-to-name"
+          >
+            <span
+              class="visible-xs-inline"
+            >
+              Tools
+            </span>
+            <img
+              class="navbaricon hidden-xs"
+              src="images/menu/system18-2.png"
+            />
+             
+            <span
+              class="badge"
+            >
+              1
+            </span>
+             
+            <b
+              class="caret"
+            />
+          </app-link-stub>
+           
+          <ul
+            class="dropdown-menu"
+          >
+            <li>
+              <app-link-stub
+                href="news/"
+                placeholder="indexer-to-name"
+              >
+                <i
+                  class="menu-icon-news"
+                />
+                 News 
+                <span
+                  class="badge"
+                >
+                  1
+                </span>
+              </app-link-stub>
+            </li>
+             
+            <li>
+              <app-link-stub
+                href="IRC/"
+                placeholder="indexer-to-name"
+              >
+                <i
+                  class="menu-icon-irc"
+                />
+                 IRC
+              </app-link-stub>
+            </li>
+             
+            <li>
+              <app-link-stub
+                href="changes/"
+                placeholder="indexer-to-name"
+              >
+                <i
+                  class="menu-icon-changelog"
+                />
+                 Changelog
+              </app-link-stub>
+            </li>
+             
+            <li
+              class="divider"
+              role="separator"
+            />
+             
+            <!---->
+             
+            <!---->
+             
+            <li>
+              <app-link-stub
+                href="errorlogs/viewlog/"
+                placeholder="indexer-to-name"
+              >
+                <i
+                  class="menu-icon-viewlog"
+                />
+                 View Log
+              </app-link-stub>
+            </li>
+             
+            <li
+              class="divider"
+              role="separator"
+            />
+             
+            <li>
+              <app-link-stub
+                href="home/update"
+                placeholder="indexer-to-name"
+              >
+                <i
+                  class="menu-icon-update"
+                />
+                 Check For Updates
+              </app-link-stub>
+            </li>
+             
+            <li>
+              <app-link-stub
+                href="home/restart"
+                placeholder="indexer-to-name"
+              >
+                <i
+                  class="menu-icon-restart"
+                />
+                 Restart
+              </app-link-stub>
+            </li>
+             
+            <li>
+              <app-link-stub
+                href="home/shutdown"
+                placeholder="indexer-to-name"
+              >
+                <i
+                  class="menu-icon-shutdown"
+                />
+                 Shutdown
+              </app-link-stub>
+            </li>
+             
+            <li>
+              <app-link-stub
+                href="logout"
+                placeholder="indexer-to-name"
+              >
+                <i
+                  class="menu-icon-shutdown"
+                />
+                 Logout
+              </app-link-stub>
+            </li>
+             
+            <li
+              class="divider"
+              role="separator"
+            />
+             
+            <li>
+              <app-link-stub
+                href="home/status/"
+                placeholder="indexer-to-name"
+              >
+                <i
+                  class="menu-icon-info"
+                />
+                 Server Status
+              </app-link-stub>
+            </li>
+          </ul>
+           
+          <div
+            style="clear: both;"
+          />
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+`;

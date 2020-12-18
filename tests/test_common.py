@@ -1,5 +1,6 @@
 # coding=utf-8
 """Tests for medusa.common.py."""
+from __future__ import unicode_literals
 
 from medusa.common import Quality
 

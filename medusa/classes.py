@@ -19,12 +19,18 @@
 from __future__ import unicode_literals
 
 import logging
+from datetime import datetime
 
 from dateutil import parser
 
-from medusa import app
-from medusa.common import Quality
+from medusa import app, ws
+from medusa.common import (
+    MULTI_EP_RESULT,
+    Quality,
+    SEASON_RESULT,
+)
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.search import SearchType
 
 from six import itervalues
 
@@ -35,100 +41,79 @@ log.logger.addHandler(logging.NullHandler())
 class SearchResult(object):
     """Represents a search result from a provider."""
 
-    def __init__(self, episodes=None, provider=None):
-        # list of Episode objects that this result is associated with
-        self.episodes = episodes
-
+    def __init__(self, provider, series, item=None, cache=None):
         # the search provider
         self.provider = provider
-
         # release series object
-        self.series = None
+        self.series = series
+        # Raw result in a dictionary
+        self.item = item
+        # Cached search result
+        self.cache = cache
 
+        # list of Episode objects that this result is associated with
+        self.episodes = None
         # URL to the NZB/torrent file
         self.url = ''
-
         # used by some providers to store extra info associated with the result
         self.extra_info = []
-
         # quality of the release
         self.quality = Quality.UNKNOWN
-
         # release name
         self.name = ''
-
         # size of the release (-1 = n/a)
         self.size = -1
-
         # seeders of the release
         self.seeders = -1
-
         # leechers of the release
         self.leechers = -1
-
         # update date
         self.date = None
-
         # release publish date
         self.pubdate = None
-
         # release group
         self.release_group = ''
-
         # version
         self.version = -1
-
         # hash
         self.hash = None
-
         # proper_tags
-        self.proper_tags = ''
-
+        self.proper_tags = []
         # manually_searched
-        self.manually_searched = False
-
+        self._manually_searched = False
         # content
         self.content = None
-
         # Result type like: nzb, nzbdata, torrent
         self.result_type = ''
-
         # Store the parse result, as it might be useful for other information later on.
         self.parsed_result = None
-
-        # Reference to the search_provider
-        self.provider = provider
-
-        # Raw result in a dictionary
-        self.item = None
-
-        # Store if the search was started by a forced search.
-        self.forced_search = None
-
+        # Store the epsiode number we use internally.
+        # This can be the single episode number, MULTI_EP_RESULT or SEASON_RESULT
+        self.episode_number = None
         # Search flag for specifying if we want to re-download the already downloaded quality.
         self.download_current_quality = None
-
         # Search flag for adding or not adding the search result to cache.
         self.add_cache_entry = True
-
         # Search flag for flagging if this is a same-day-special.
         self.same_day_special = False
-
         # Keep track if we really want to result.
         self.result_wanted = False
-
         # The actual parsed season. Stored as an integer.
         self.actual_season = None
-
         # The actual parsed episode. Stored as an iterable of integers.
         self._actual_episodes = None
-
-        # Some of the searches, expect a max of one episode object, per search result. Then this episode can be used
-        # to store a single episode number, as an int.
+        # Some of the searches, expect a max of one episode object, per search result.
+        # Then this episode can be used to store a single episode number, as an int.
         self._actual_episode = None
-
-        # Search type. For example MANUAL_SEARCH, FORCED_SEARCH, DAILY_SEARCH, PROPER_SEARCH
+        # Search type. Use the medusa.search.SearchType enum, as value.
+        # For example SearchType.MANUAL_SEARCH, SearchType.FORCED_SEARCH,
+        # SearchType.DAILY_SEARCH, SearchType.PROPER_SEARCH
         self.search_type = None
+
+        if item is not None:
+            self.update_search_result()
+        elif cache is not None:
+            self.update_from_db()
 
     @property
     def actual_episode(self):
@@ -149,6 +134,10 @@ class SearchResult(object):
             self._actual_episode = value[0]
 
     @property
+    def identifier(self):
+        return self.provider._get_identifier(self)
+
+    @property
     def show(self):
         log.warning(
             'Please use SearchResult.series and not show. Show has been deprecated.',
@@ -163,6 +152,24 @@ class SearchResult(object):
             DeprecationWarning,
         )
         self.series = value
+
+    @property
+    def manually_searched(self):
+        """
+        Shortcut to check if the result was retrieved using a manual search.
+
+        Preferably this property is not used, and the self.search_type property is directly evaluated.
+        """
+        return self._manually_searched or self.search_type == SearchType.MANUAL_SEARCH
+
+    @manually_searched.setter
+    def manually_searched(self, value):
+        """
+        Shortcut to check if the result was retrieved using a manual search.
+
+        Preferably this property is not used, and the self.search_type property is directly evaluated.
+        """
+        self._manually_searched = value
 
     def __str__(self):
 
@@ -196,6 +203,34 @@ class SearchResult(object):
 
         return '<{0}: {1}>'.format(type(self).__name__, result)
 
+    def to_json(self):
+        """Return JSON representation."""
+        return {
+            'identifier': self.identifier,
+            'release': self.name,
+            'season': self.actual_season,
+            'episodes': self.actual_episodes,
+            'seasonPack': len(self.actual_episodes) == 0 or len(self.actual_episodes) > 1,
+            'indexer': self.series.indexer,
+            'seriesId': self.series.series_id,
+            'showSlug': self.series.identifier.slug,
+            'url': self.url,
+            'time': datetime.now().replace(microsecond=0).isoformat(),
+            'quality': self.quality,
+            'releaseGroup': self.release_group,
+            'dateAdded': datetime.now().replace(microsecond=0).isoformat(),
+            'version': self.version,
+            'seeders': self.seeders,
+            'size': self.size,
+            'leechers': self.leechers,
+            'pubdate': self.pubdate.replace(microsecond=0).isoformat() if self.pubdate else None,
+            'provider': {
+                'id': self.provider.get_id(),
+                'name': self.provider.name,
+                'imageName': self.provider.image_name()
+            }
+        }
+
     def file_name(self):
         return u'{0}.{1}'.format(self.episodes[0].pretty_name(), self.result_type)
 
@@ -205,48 +240,108 @@ class SearchResult(object):
             # FIXME: Added repr parsing, as that prevents the logger from throwing an exception.
             # This can happen when there are unicode decoded chars in the release name.
             log.debug('Adding item from search to cache: {release_name!r}', release_name=self.name)
-            return cache.add_cache_entry(self.name, self.url, self.seeders,
-                                         self.leechers, self.size, self.pubdate, parsed_result=self.parsed_result)
-        return None
 
-    def create_episode_object(self):
+            # Push an update to any open Web UIs through the WebSocket
+            ws.Message('addManualSearchResult', self.to_json()).push()
+
+            return cache.add_cache_entry(self, parsed_result=self.parsed_result)
+
+    def _create_episode_objects(self):
         """Use this result to create an episode segment out of it."""
-        if self.actual_season and self.series:
+        if self.actual_season is not None and self.series:
             if self.actual_episodes:
-                self.episodes = [self.series.get_episode(self.actual_season, ep) for ep in self.actual_episodes]
+                episodes = (self.series.get_episode(self.actual_season, ep) for ep in self.actual_episodes)
+                self.episodes = [ep for ep in episodes if ep is not None]
+                if len(self.actual_episodes) == 1:
+                    self.episode_number = self.actual_episodes[0]
+                else:
+                    self.episode_number = MULTI_EP_RESULT
             else:
                 self.episodes = self.series.get_all_episodes(self.actual_season)
+                self.actual_episodes = [ep.episode for ep in self.episodes]
+                self.episode_number = SEASON_RESULT
+
         return self.episodes
 
-    def finish_search_result(self, provider):
-        self.size = provider._get_size(self.item)
-        self.pubdate = provider._get_pubdate(self.item)
+    def update_search_result(self):
+        self._create_episode_objects()
+
+        self.name, self.url = self.provider._get_title_and_url(self.item)
+        self.seeders, self.leechers = self.provider._get_result_info(self.item)
+        self.size = self.provider._get_size(self.item)
+        self.pubdate = self.provider._get_pubdate(self.item)
+        self.date = datetime.today()
+
+    def _episodes_from_cache(self):
+        series_obj = self.series
+        cached_data = self.cache
+
+        actual_season = int(cached_data['season'])
+        self.actual_season = actual_season
+
+        sql_episodes = cached_data['episodes'].strip('|')
+        # Season result
+        if not sql_episodes:
+            ep_objs = series_obj.get_all_episodes(actual_season)
+            self.actual_episodes = [ep.episode for ep in ep_objs]
+            self.episode_number = SEASON_RESULT
+
+        # Multi or single episode result
+        else:
+            actual_episodes = [int(ep) for ep in sql_episodes.split('|')]
+            episodes = (series_obj.get_episode(actual_season, ep) for ep in actual_episodes)
+            ep_objs = [ep for ep in episodes if ep is not None]
+
+            self.actual_episodes = actual_episodes
+            if len(actual_episodes) == 1:
+                self.episode_number = actual_episodes[0]
+            else:
+                self.episode_number = MULTI_EP_RESULT
+
+        return ep_objs
+
+    def update_from_db(self):
+        """Update local attributes from the cached result, recovered from db."""
+        cached_result = self.cache
+        self.episodes = self._episodes_from_cache()
+        self.url = cached_result['url']
+        self.quality = int(cached_result['quality'])
+        self.name = cached_result['name']
+        self.size = int(cached_result['size'])
+        self.seeders = int(cached_result['seeders'])
+        self.leechers = int(cached_result['leechers'])
+        self.release_group = cached_result['release_group']
+        self.version = int(cached_result['version'])
+        self.pubdate = parser.parse(cached_result['pubdate']) if cached_result['pubdate'] else None
+        self.proper_tags = cached_result['proper_tags'].split('|') \
+            if cached_result['proper_tags'] else []
+        self.date = datetime.today()
 
     def __eq__(self, other):
-        return self.__dict__ == other.__dict__
+        return self.identifier == other.identifier
 
 
 class NZBSearchResult(SearchResult):
     """Regular NZB result with an URL to the NZB."""
 
-    def __init__(self, episodes, provider=None):
-        super(NZBSearchResult, self).__init__(episodes, provider=provider)
+    def __init__(self, provider, series, item=None, cache=None):
+        super(NZBSearchResult, self).__init__(provider, series=series, item=item, cache=cache)
         self.result_type = u'nzb'
 
 
 class NZBDataSearchResult(SearchResult):
     """NZB result where the actual NZB XML data is stored in the extra_info."""
 
-    def __init__(self, episodes, provider=None):
-        super(NZBDataSearchResult, self).__init__(episodes, provider=provider)
+    def __init__(self, provider, series, item=None, cache=None):
+        super(NZBDataSearchResult, self).__init__(provider, series=series, item=item, cache=cache)
         self.result_type = u'nzbdata'
 
 
 class TorrentSearchResult(SearchResult):
     """Torrent result with an URL to the torrent."""
 
-    def __init__(self, episodes, provider=None):
-        super(TorrentSearchResult, self).__init__(episodes, provider=provider)
+    def __init__(self, provider, series, item=None, cache=None):
+        super(TorrentSearchResult, self).__init__(provider, series=series, item=item, cache=cache)
         self.result_type = u'torrent'
 
 
@@ -274,13 +369,16 @@ class AllShowsListUI(object):  # pylint: disable=too-few-public-methods
                 search_term = self.config['searchterm']
                 # try to pick a show that's in my show list
                 for cur_show in all_series:
-                    if cur_show in search_results:
+                    if [result for result in search_results if str(cur_show['id']) == str(result['id'])]:
                         continue
 
                     if 'seriesname' in cur_show:
                         series_names.append(cur_show['seriesname'])
-                    if 'aliasnames' in cur_show:
-                        series_names.extend(cur_show['aliasnames'].split('|'))
+                    if 'aliases' in cur_show:
+                        series_names.extend(cur_show['aliases'].split('|'))
+
+                    if search_term.isdigit():
+                        series_names.append(search_term)
 
                     for name in series_names:
                         if search_term.lower() in name.lower():

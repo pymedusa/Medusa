@@ -1,0 +1,47 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ShowHistory.test.js renders show-history component 1`] = `
+<div
+  class="show-history-wrapper"
+>
+  <div
+    class="row horizontal-scroll fanartBackground"
+  >
+    <div
+      class="col-md-12 top-15"
+    >
+      <div
+        class="button-row"
+        style="display: none;"
+      >
+        <button
+          class="btn-medusa top-5 bottom-5 pull-right"
+          id="showhistory"
+          type="button"
+        >
+          
+                    Show History
+                
+        </button>
+      </div>
+       
+      <vue-good-table-stub
+        columnfilteroptions="[object Object]"
+        columns="[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]"
+        groupoptions="[object Object]"
+        mode="local"
+        paginationoptions="[object Object]"
+        responsive="true"
+        rows=""
+        rowstyleclass="function () { [native code] }"
+        searchoptions="[object Object]"
+        selectoptions="[object Object]"
+        sortoptions="[object Object]"
+        style="display: none;"
+        styleclass="vgt-table condensed"
+        theme=""
+      />
+    </div>
+  </div>
+</div>
+`;

@@ -29,21 +29,18 @@
 ? +Wide Screen
 : other: Widescreen
 
-# Fix and Real must be surround by others properties to be matched.
-? DVD.Real.XViD
+# Fix must be surround by others properties to be matched.
 ? DVD.fix.XViD
-? -DVD.Real
 ? -DVD.Fix
-? -Real.XViD
 ? -Fix.XViD
-: other: Proper
-  proper_count: 1
+: other: Fix
+  -proper_count: 1
 
 ? -DVD.BlablaBla.Fix.Blablabla.XVID
 ? -DVD.BlablaBla.Fix.XVID
 ? -DVD.Fix.Blablabla.XVID
-: other: Proper
-  proper_count: 1
+: other: Fix
+  -proper_count: 1
 
 
 ? DVD.Real.PROPER.REPACK
@@ -51,7 +48,7 @@
   proper_count: 3
 
 
-? Proper
+? Proper.720p
 ? +Repack
 ? +Rerip
 : other: Proper
@@ -83,7 +80,7 @@
 ? Remux
 : other: Remux
 
-? 3D
+? 3D.2019
 : other: 3D
 
 ? HD

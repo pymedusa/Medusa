@@ -21,14 +21,14 @@ class AliasHandler(BaseRequestHandler):
     #: allowed HTTP methods
     allowed_methods = ('GET', 'POST', 'PUT', 'DELETE')
 
-    def http_get(self, identifier, path_param):
+    def get(self, identifier, path_param):
         """Query scene_exception information."""
-        cache_db_con = db.DBConnection('cache.db')
+        main_db_con = db.DBConnection()
         sql_base = ('SELECT '
                     '  exception_id, '
                     '  indexer, '
-                    '  indexer_id, '
-                    '  show_name, '
+                    '  series_id, '
+                    '  title, '
                     '  season, '
                     '  custom '
                     'FROM scene_exceptions ')
@@ -52,7 +52,7 @@ class AliasHandler(BaseRequestHandler):
 
             if series_identifier:
                 sql_where.append('indexer')
-                sql_where.append('indexer_id')
+                sql_where.append('series_id')
                 params += [series_identifier.indexer.id, series_identifier.id]
 
             if season is not None:
@@ -66,14 +66,14 @@ class AliasHandler(BaseRequestHandler):
         if sql_where:
             sql_base += ' WHERE ' + ' AND '.join([where + ' = ? ' for where in sql_where])
 
-        sql_results = cache_db_con.select(sql_base, params)
+        sql_results = main_db_con.select(sql_base, params)
 
         data = []
         for item in sql_results:
             d = {}
             d['id'] = item['exception_id']
-            d['series'] = SeriesIdentifier.from_id(item['indexer'], item['indexer_id']).slug
-            d['name'] = item['show_name']
+            d['series'] = SeriesIdentifier.from_id(item['indexer'], item['series_id']).slug
+            d['name'] = item['title']
             d['season'] = item['season'] if item['season'] >= 0 else None
             d['type'] = 'local' if item['custom'] else None
             data.append(d)
@@ -92,7 +92,7 @@ class AliasHandler(BaseRequestHandler):
 
         return self._ok(data=data)
 
-    def http_put(self, identifier, **kwargs):
+    def put(self, identifier, **kwargs):
         """Update alias information."""
         identifier = self._parse(identifier)
         if not identifier:
@@ -108,27 +108,27 @@ class AliasHandler(BaseRequestHandler):
         if not series_identifier:
             return self._bad_request('Invalid series')
 
-        cache_db_con = db.DBConnection('cache.db')
-        last_changes = cache_db_con.connection.total_changes
-        cache_db_con.action('UPDATE scene_exceptions'
-                            ' set indexer = ?'
-                            ', indexer_id = ?'
-                            ', show_name = ?'
-                            ', season = ?'
-                            ', custom = 1'
-                            ' WHERE exception_id = ?',
-                            [series_identifier.indexer.id,
-                             series_identifier.id,
-                             data['name'],
-                             data.get('season'),
-                             identifier])
+        main_db_con = db.DBConnection()
+        last_changes = main_db_con.connection.total_changes
+        main_db_con.action('UPDATE scene_exceptions'
+                           ' set indexer = ?'
+                           ', series_id = ?'
+                           ', title = ?'
+                           ', season = ?'
+                           ', custom = 1'
+                           ' WHERE exception_id = ?',
+                           [series_identifier.indexer.id,
+                            series_identifier.id,
+                            data['name'],
+                            data.get('season'),
+                            identifier])
 
-        if cache_db_con.connection.total_changes - last_changes != 1:
+        if main_db_con.connection.total_changes - last_changes != 1:
             return self._not_found('Alias not found')
 
         return self._no_content()
 
-    def http_post(self, identifier, **kwargs):
+    def post(self, identifier, **kwargs):
         """Add an alias."""
         if identifier is not None:
             return self._bad_request('Alias id should not be specified')
@@ -143,32 +143,32 @@ class AliasHandler(BaseRequestHandler):
         if not series_identifier:
             return self._bad_request('Invalid series')
 
-        cache_db_con = db.DBConnection('cache.db')
-        last_changes = cache_db_con.connection.total_changes
-        cursor = cache_db_con.action('INSERT INTO scene_exceptions'
-                                     ' (indexer, indexer_id, show_name, season, custom) '
-                                     ' values (?,?,?,?,1)',
-                                     [series_identifier.indexer.id,
-                                      series_identifier.id,
-                                      data['name'],
-                                      data.get('season')])
+        main_db_con = db.DBConnection()
+        last_changes = main_db_con.connection.total_changes
+        cursor = main_db_con.action('INSERT INTO scene_exceptions'
+                                    ' (indexer, series_id, title, season, custom) '
+                                    ' values (?,?,?,?,1)',
+                                    [series_identifier.indexer.id,
+                                     series_identifier.id,
+                                     data['name'],
+                                     data.get('season', -1)])
 
-        if cache_db_con.connection.total_changes - last_changes <= 0:
+        if main_db_con.connection.total_changes - last_changes <= 0:
             return self._conflict('Unable to create alias')
 
         data['id'] = cursor.lastrowid
         return self._created(data=data, identifier=data['id'])
 
-    def http_delete(self, identifier, **kwargs):
+    def delete(self, identifier, **kwargs):
         """Delete an alias."""
         identifier = self._parse(identifier)
         if not identifier:
             return self._bad_request('Invalid alias id')
 
-        cache_db_con = db.DBConnection('cache.db')
-        last_changes = cache_db_con.connection.total_changes
-        cache_db_con.action('DELETE FROM scene_exceptions WHERE exception_id = ?', [identifier])
-        if cache_db_con.connection.total_changes - last_changes <= 0:
+        main_db_con = db.DBConnection()
+        last_changes = main_db_con.connection.total_changes
+        main_db_con.action('DELETE FROM scene_exceptions WHERE exception_id = ?', [identifier])
+        if main_db_con.connection.total_changes - last_changes <= 0:
             return self._not_found('Alias not found')
 
         return self._no_content()

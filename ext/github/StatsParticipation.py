@@ -26,9 +26,9 @@
 #                                                                              #
 ################################################################################
 
-import github.GithubObject
+from __future__ import absolute_import
 
-import github.NamedUser
+import github.GithubObject
 
 
 class StatsParticipation(github.GithubObject.NonCompletableGithubObject):

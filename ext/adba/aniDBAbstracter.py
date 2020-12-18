@@ -28,6 +28,9 @@ from .aniDBmaper import AniDBMaper
 from .aniDBtvDBmaper import TvDBMap
 from .aniDBfileInfo import read_anidb_xml
 
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
+
 
 class aniDBabstractObject(object):
     def __init__(self, aniDB, load=False):
@@ -174,6 +177,9 @@ class Anime(aniDBabstractObject):
         if not self.allAnimeXML:
             self.allAnimeXML = read_anidb_xml(self.cache_path)
 
+        if not self.allAnimeXML:
+            return 0
+
         regex = re.compile('( \(\d{4}\))|[%s]' % re.escape(string.punctuation))  # remove any punctuation and e.g. ' (2011)'
         # regex = re.compile('[%s]'  % re.escape(string.punctuation)) # remove any punctuation and e.g. ' (2011)'
         name = regex.sub('', name.lower())
@@ -276,10 +282,10 @@ class Episode(aniDBabstractObject):
         try:
             self.aniDB.mylistadd(size=self.size, ed2k=self.ed2k, state=state, viewed=viewed, source=source, storage=storage, other=other)
         except Exception as e:
-            logging.exception("Exception: %s", e)
+            logger.exception("Exception: %s", e)
         else:
             # TODO: add the name or something
-            logging.info("Added the episode to anidb")
+            logger.info("Added the episode to anidb")
 
     def edit_to_mylist(self, state=None, viewed=None, source=None, storage=None, other=None):
         """
@@ -301,14 +307,14 @@ class Episode(aniDBabstractObject):
         try:
             edit_response = self.aniDB.mylistadd(size=self.size, ed2k=self.ed2k, edit=1, state=state, viewed=viewed, source=source, storage=storage, other=other)
         except Exception as e:
-            logging.exception("Exception: %s", e)
+            logger.exception("Exception: %s", e)
         # handling the case that the entry is not in anidb yet, non ideal to check the string but isinstance is having issue
         # currently raises an exception for less changes in the code, unsure if this is the ideal way to do so
         if edit_response.codestr == "NO_SUCH_MYLIST_ENTRY":
-            logging.info("attempted an edit before add")
+            logger.info("attempted an edit before add")
             raise AniDBError("Attempted to edit file without adding")
         else:
-            logging.info("Edited the episode in anidb")
+            logger.info("Edited the episode in anidb")
 
     def delete_from_mylist(self):
         if self.filePath and not (self.ed2k or self.size):
@@ -316,15 +322,15 @@ class Episode(aniDBabstractObject):
         try:
             self.aniDB.mylistdel(size=self.size, ed2k=self.ed2k)
         except Exception as e:
-            logging.exception("Exception: %s", e)
+            logger.exception("Exception: %s", e)
         else:
-            logging.info("Deleted the episode from anidb")
+            logger.info("Deleted the episode from anidb")
 
     @staticmethod
     def _calculate_file_stuff(filePath):
         if not filePath:
             return None, None
-        logging.info("Calculating the ed2k. Please wait...")
+        logger.info("Calculating the ed2k. Please wait...")
         ed2k = fileInfo.get_ED2K(filePath)
         size = fileInfo.get_file_size(filePath)
         return ed2k, size

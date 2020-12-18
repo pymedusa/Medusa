@@ -43,12 +43,8 @@ class IPTorrentsProvider(TorrentProvider):
         self.required_cookies = ('uid', 'pass')
         self.categories = '73=&60='
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Cache
-        self.cache = tv.Cache(self, min_time=10)  # Only poll IPTorrents every 10 minutes max
+        self.cache = tv.Cache(self)
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
@@ -112,26 +108,27 @@ class IPTorrentsProvider(TorrentProvider):
             # Skip column headers
             for row in torrents[1:]:
                 try:
-                    title = row('td')[1].find('a').text
-                    download_url = self.urls['base_url'] + row('td')[3].find('a')['href']
+                    table_data = row('td')
+                    title = table_data[1].find('a').text
+                    download_url = self.urls['base_url'] + table_data[3].find('a')['href']
                     if not all([title, download_url]):
                         continue
 
-                    seeders = int(row.find('td', attrs={'class': 'ac t_seeders'}).text)
-                    leechers = int(row.find('td', attrs={'class': 'ac t_leechers'}).text)
+                    seeders = int(table_data[7].text)
+                    leechers = int(table_data[8].text)
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
                                       ' minimum seeders: {0}. Seeders: {1}',
                                       title, seeders)
                         continue
 
-                    torrent_size = row('td')[5].text
+                    torrent_size = table_data[5].text
                     size = convert_size(torrent_size) or -1
 
-                    pubdate_raw = row('td')[1].find('div').get_text().split('|')[-1].strip()
+                    pubdate_raw = table_data[1].find('div').get_text().split('|')[-1].strip()
                     pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
 
                     item = {

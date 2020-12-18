@@ -28,11 +28,12 @@ from builtins import str
 
 from contextlib2 import suppress
 
-from medusa import app, common, db, helpers, logger, naming, scheduler
+from medusa import app, common, db, helpers, logger, naming
 from medusa.helper.common import try_int
 from medusa.helpers.utils import split_and_strip
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.version_checker import CheckVersion
+from medusa.schedulers import scheduler
+from medusa.updater.version_checker import CheckVersion
 
 from requests.compat import urlsplit
 
@@ -201,12 +202,12 @@ def change_AUTOPOSTPROCESSOR_FREQUENCY(freq):
 
     :param freq: New frequency
     """
-    app.AUTOPOSTPROCESSOR_FREQUENCY = try_int(freq, app.DEFAULT_AUTOPOSTPROCESSOR_FREQUENCY)
+    app.AUTOPOSTPROCESSOR_FREQUENCY = try_int(freq, 10)
 
     if app.AUTOPOSTPROCESSOR_FREQUENCY < app.MIN_AUTOPOSTPROCESSOR_FREQUENCY:
         app.AUTOPOSTPROCESSOR_FREQUENCY = app.MIN_AUTOPOSTPROCESSOR_FREQUENCY
 
-    app.auto_post_processor_scheduler.cycleTime = datetime.timedelta(minutes=app.AUTOPOSTPROCESSOR_FREQUENCY)
+    app.post_processor_scheduler.cycleTime = datetime.timedelta(minutes=app.AUTOPOSTPROCESSOR_FREQUENCY)
 
 
 def change_TORRENT_CHECKER_FREQUENCY(freq):
@@ -437,16 +438,16 @@ def change_PROCESS_AUTOMATICALLY(process_automatically):
 
     app.PROCESS_AUTOMATICALLY = process_automatically
     if app.PROCESS_AUTOMATICALLY:
-        if not app.auto_post_processor_scheduler.enable:
+        if not app.post_processor_scheduler.enable:
             log.info(u'Starting POSTPROCESSOR thread')
-            app.auto_post_processor_scheduler.silent = False
-            app.auto_post_processor_scheduler.enable = True
+            app.post_processor_scheduler.silent = False
+            app.post_processor_scheduler.enable = True
         else:
             log.info(u'Unable to start POSTPROCESSOR thread. Already running')
     else:
         log.info(u'Stopping POSTPROCESSOR thread')
-        app.auto_post_processor_scheduler.enable = False
-        app.auto_post_processor_scheduler.silent = True
+        app.post_processor_scheduler.enable = False
+        app.post_processor_scheduler.silent = True
 
 
 def change_remove_from_client(new_state):
@@ -495,7 +496,7 @@ def change_theme(theme_name):
     log.info('Switching theme from "{old}" to "{new}"', {'old': old_theme_name, 'new': theme_name})
 
     for rule in static_file_handlers.target.rules:
-        if old_data_root not in rule.target_kwargs['path']:
+        if not rule.target_kwargs['path'] or old_data_root not in rule.target_kwargs['path']:
             # Skip other static file handlers
             continue
 
@@ -719,7 +720,9 @@ def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_
         censor_level = common.privacy_levels['stupid']
     else:
         censor_level = common.privacy_levels[censor_log]
+
     privacy_level = common.privacy_levels[app.PRIVACY_LEVEL]
+
     if bool(item_name.find('password') + 1) or encrypted:
         encryption_version = app.ENCRYPTION_VERSION
     else:

@@ -35,9 +35,9 @@
   -cd: 1
   -cd_count: 3
 
-? This.Is.Us
+? This.is.Us
 : options: --exclude country
-  title: This Is Us
+  title: This is Us
   -country: US
 
 ? 2015.01.31
@@ -198,7 +198,7 @@
 ? DVD.Real.XViD
 ? DVD.fix.XViD
 : options: --exclude other
-  -other: Proper
+  -other: Fix
   -proper_count: 1
 
 ? Part 3
@@ -286,9 +286,9 @@
 : options: --exclude website
   -website: wawa.co.uk
 
-? movie.mkv
+? movie.mp4
 : options: --exclude mimetype
-  -mimetype: video/x-matroska
+  -mimetype: video/mp4
 
 ? another movie.mkv
 : options: --exclude container

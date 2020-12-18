@@ -201,10 +201,9 @@
 ? Series/My Name Is Earl/My.Name.Is.Earl.S01Extras.-.Bad.Karma.DVDRip.XviD.avi
 : title: My Name Is Earl
   season: 1
-  episode_title: Extras - Bad Karma
+  episode_title: Bad Karma
   source: DVD
-  other: Rip
-  episode_details: Extras
+  other: [Extras, Rip]
   video_codec: Xvid
 
 ? series/Freaks And Geeks/Season 1/Episode 4 - Kim Kelly Is My Friend-eng(1).srt
@@ -308,9 +307,8 @@
 : title: Futurama
   season: 3
   part: 3
-  other: Bonus
-  episode_title: Deleted Scenes
   source: DVD
+  other: Bonus
 
 ? Ben.and.Kate.S01E02.720p.HDTV.X264-DIMENSION.mkv
 : title: Ben and Kate
@@ -1022,7 +1020,7 @@
   release_group: NOGRP
   screen_size: 720p
   season: 2013
-  title: FlexGet
+  title: FlexGet Series
   episode_title: Title Here
   video_codec: H.264
   year: 2013
@@ -1674,7 +1672,7 @@
 
 ? Date.Series.10-11-2008.XViD
 : date: 2008-11-10
-  title: Date
+  title: Date Series
   video_codec: Xvid
 
 ? Scrubs/SEASON-06/Scrubs.S06E09.My.Perspective.DVDRip.XviD-WAT/scrubs.s06e09.dvdrip.xvid-wat.avi
@@ -1919,9 +1917,11 @@
 
 ? Duck.Dynasty.S02E07.Streik.German.DOKU.DL.WS.DVDRiP.x264-CDP
 : episode: 7
-  episode_title: Streik German
+  episode_title: Streik
   source: DVD
-  language: mul
+  language:
+    - German
+    - Multi
   other: [Documentary, Widescreen, Rip]
   release_group: CDP
   season: 2
@@ -1932,9 +1932,11 @@
 ? Family.Guy.S13E14.JOLO.German.AC3D.DL.720p.WebHD.x264-CDD
 : audio_codec: Dolby Digital
   episode: 14
-  episode_title: JOLO German
+  episode_title: JOLO
   source: Web
-  language: mul
+  language:
+    - German
+    - Multi
   release_group: CDD
   screen_size: 720p
   season: 13
@@ -3027,7 +3029,7 @@
   title: Show Name
   episode: [493, 494, 495, 496, 497, 498, 500, 501, 502, 503, 504, 505, 506, 507]
   screen_size: 720p
-  subtitle_language: fr
+  other: Variable Frame Rate
   video_codec: H.264
   audio_codec: AAC
   type: episode
@@ -3147,12 +3149,12 @@
 ? Broadchurch.S01.DIRFIX.720p.BluRay.x264-SHORTBREHD
 : title: Broadchurch
   season: 1
-  other: Proper
+  other: Fix
   screen_size: 720p
   source: Blu-ray
   video_codec: H.264
   release_group: SHORTBREHD
-  proper_count: 1
+  -proper_count: 1
   type: episode
 
 ? Simply Red - 2016-07-08 Montreux Jazz Festival 720p
@@ -3207,7 +3209,7 @@
 : title: Dr Ken
   season: 1
   episode: 21
-  other: Proper
+  other: Fix
   screen_size: 720p
   source: HDTV
   video_codec: H.264
@@ -3454,6 +3456,7 @@
   screen_size: 1080p
   source: HDTV
   video_codec: H.264
+  audio_codec: MP2
   release_group: NOGRP
   container: mkv
   type: episode
@@ -3711,6 +3714,7 @@
   audio_codec: AAC
   audio_channels: '2.0'
   video_codec: H.264
+  video_profile: Scalable Video Coding
   release_group: SDH
   type: episode
 
@@ -4493,4 +4497,197 @@
   season: [1, 3, 4]
   container: mp4
   screen_size: 1080p
+  type: episode
+
+? Bones.S03.720p.HDTV.x264-SCENE
+: title: Bones
+  season: 3
+  screen_size: 720p
+  source: HDTV
+  video_codec: H.264
+  release_group: SCENE
+  type: episode
+
+? shes.gotta.have.it.s01e08.720p.web.x264-strife.mkv
+: title: shes gotta have it
+  season: 1
+  episode: 8
+  screen_size: 720p
+  source: Web
+  video_codec: H.264
+  release_group: strife
+  type: episode
+
+? DuckTales.2017.S01E10.The.Missing.Links.of.Moorshire.PDTV.H.264.MP2-KIDKAT
+: title: DuckTales
+  year: 2017
+  season: 1
+  episode: 10
+  episode_title: The Missing Links of Moorshire
+  source: Digital TV
+  video_codec: H.264
+  audio_codec: MP2
+  release_group: KIDKAT
+  type: episode
+
+? Por Trece Razones - Temporada 2 [HDTV 720p][Cap.201][AC3 5.1 Castellano]/Por Trece Razones 2x01 [des202].mkv
+: title: Por Trece Razones
+  season: 2
+  source: HDTV
+  screen_size: 720p
+  episode: 1
+  audio_codec: Dolby Digital
+  audio_channels: '5.1'
+  language: Catalan
+  release_group: des202
+  container: mkv
+  type: episode
+
+? Cuerpo de Elite  - Temporada 1 [HDTV 720p][Cap.113][AC3 5.1 Esp Castellano]\CuerpoDeElite720p_113_desca202.mkv
+: title: Cuerpo de Elite
+  season: 1
+  source: HDTV
+  screen_size: 720p
+  episode: 13
+  audio_codec: Dolby Digital
+  audio_channels: '5.1'
+  language:
+  - Spanish
+  - Catalan
+  container: mkv
+  type: episode
+
+? Show.Name.S01E01.St.Patricks.Day.1080p.mkv
+: title: Show Name
+  season: 1
+  episode: 1
+  episode_title: St Patricks Day
+  screen_size: 1080p
+  container: mkv
+  type: episode
+
+? Show.Name.S01E01.St.Patricks.Day.1080p-grp.mkv
+: title: Show Name
+  season: 1
+  episode: 1
+  episode_title: St Patricks Day
+  screen_size: 1080p
+  release_group: grp
+  container: mkv
+  type: episode
+
+? Titans.2018.S01E09.Hank.And.Dawn.720p.DCU.WEB-DL.AAC2.0.H264-NTb
+: title: Titans
+  year: 2018
+  season: 1
+  episode: 9
+  episode_title: Hank And Dawn
+  screen_size: 720p
+  streaming_service: DC Universe
+  source: Web
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: H.264
+  release_group: NTb
+  type: episode
+
+? S.W.A.T.2017.S01E21.Treibjagd.German.Dubbed.DL.AmazonHD.x264-TVS
+: title: S.W.A.T.
+  year: 2017
+  season: 1
+  episode: 21
+  episode_title: Treibjagd
+  language:
+  - German
+  - Multi
+  streaming_service: Amazon Prime
+  other: HD
+  video_codec: H.264
+  release_group: TVS
+  type: episode
+
+? S.W.A.T.2017.S01E16.READNFO.720p.HDTV.x264-KILLERS
+: title: S.W.A.T.
+  year: 2017
+  season: 1
+  episode: 16
+  other: Read NFO
+  screen_size: 720p
+  source: HDTV
+  video_codec: H.264
+  release_group: KILLERS
+  type: episode
+
+? /mnt/NAS/NoSubsTVShows/Babylon 5/Season 01/Ep. 02 - Soul Hunter
+: title: Babylon 5
+  season: 1
+  episode: 2
+  episode_title: Soul Hunter
+  type: episode
+
+? This.is.Us.S01E01.HDTV.x264-KILLERS.mkv
+: title: This is Us
+  season: 1
+  episode: 1
+  source: HDTV
+  video_codec: H.264
+  release_group: KILLERS
+  container: mkv
+  type: episode
+
+? Videos/Office1080/The Office  (US)  (2005) Season 2 S02 + Extras  (1080p AMZN WEB-DL x265 HEVC 10bit AAC 2.0 LION)/The Office  (US)  (2005) - S02E12 - The Injury  (1080p AMZN WEB-DL x265 LION).mkv
+: title: The Office
+  country: US
+  year: 2005
+  season: 2
+  other: Extras
+  screen_size: 1080p
+  streaming_service: Amazon Prime
+  source: Web
+  video_codec: H.265
+  video_profile: High Efficiency Video Coding
+  color_depth: 10-bit
+  audio_codec: AAC
+  audio_channels: '2.0'
+  release_group: LION
+  episode: 12
+  episode_title: The Injury
+  container: mkv
+  type: episode
+
+? Thumping.Spike.2.E01.DF.WEBRip.720p-DRAMATV.mp4
+: title: Thumping Spike 2
+  episode: 1
+  source: Web
+  other: Rip
+  screen_size: 720p
+  streaming_service: DramaFever
+  release_group: DRAMATV
+  container: mp4
+  mimetype: video/mp4
+  type: episode
+
+? About.Time.E01.1080p.VIKI.WEB-DL-BLUEBERRY.mp4
+: title: About Time
+  episode: 1
+  screen_size: 1080p
+  streaming_service: Viki
+  source: Web 
+  release_group: BLUEBERRY
+  container: mp4
+  mimetype: video/mp4
+  type: episode
+
+? Eyes.Of.Dawn.1991.E01.480p.MBCVOD.AAC.x264-NOGPR.mp4
+: title: Eyes Of Dawn
+  year: 1991
+  season: 1991
+  episode: 1
+  screen_size: 480p
+  streaming_service: MBC
+  audio_codec: AAC
+  video_codec: H.264
+  release_group: NOGPR
+  container: mp4
+  mimetype: video/mp4
   type: episode

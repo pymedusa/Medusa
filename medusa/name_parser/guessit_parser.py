@@ -7,8 +7,6 @@ import re
 from datetime import timedelta
 from time import time
 
-from guessit.rules.common.date import valid_year
-
 from medusa import app
 from medusa.name_parser.rules import default_api
 
@@ -86,7 +84,7 @@ def get_expected_titles(show_list):
     """Return expected titles to be used by guessit.
 
     It iterates over user's show list and only returns a regex for titles that contains numbers
-    (since they can confuse guessit).
+    or dashes (since they can confuse guessit).
 
     :param show_list:
     :type show_list: list of medusa.tv.Series
@@ -95,23 +93,19 @@ def get_expected_titles(show_list):
     """
     expected_titles = []
     for show in show_list:
-        names = {show.name}.union(show.exceptions)
-        for name in names:
-            if name.isdigit():
+        exceptions = {show.name}.union({alias.title for alias in show.aliases})
+        for exception in exceptions:
+            if exception.isdigit():
                 # do not add numbers to expected titles.
                 continue
 
-            match = series_re.match(name)
+            match = series_re.match(exception)
             if not match:
                 continue
 
-            series, year, _ = match.groups()
-            if year and not valid_year(int(year)):
-                series = name
-
-            if not any([char.isdigit() for char in series]):
+            if not any(char.isdigit() or char == '-' for char in exception):
                 continue
 
-            expected_titles.append(series)
+            expected_titles.append(exception)
 
     return expected_titles

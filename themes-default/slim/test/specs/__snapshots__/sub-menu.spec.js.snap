@@ -1,0 +1,82 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SubMenu.test.js renders function-based sub menu 1`] = `
+<div
+  class="row"
+  id="sub-menu-wrapper"
+>
+  <div
+    class="col-md-12 shadow"
+    id="sub-menu-container"
+  >
+    <div
+      class="submenu-default hidden-print"
+      id="sub-menu"
+    >
+      <app-link-stub
+        class="btn-medusa top-5 bottom-5"
+        href="home/displayShow?indexername=tvdb&seriesid=80379"
+        placeholder="indexer-to-name"
+      >
+        <span
+          class="pull-left menu-icon-addshow"
+        />
+         The Big Bang Theory
+            
+      </app-link-stub>
+       
+      <!---->
+    </div>
+  </div>
+   
+  <div
+    class="btn-group"
+  />
+</div>
+`;
+
+exports[`SubMenu.test.js renders simple sub menu 1`] = `
+<div
+  class="row"
+  id="sub-menu-wrapper"
+>
+  <div
+    class="col-md-12 shadow"
+    id="sub-menu-container"
+  >
+    <div
+      class="submenu-default hidden-print"
+      id="sub-menu"
+    >
+      <app-link-stub
+        class="btn-medusa top-5 bottom-5"
+        href="config/anime/"
+        placeholder="indexer-to-name"
+      >
+        <span
+          class="pull-left menu-icon-anime"
+        />
+         Anime
+            
+      </app-link-stub>
+      <app-link-stub
+        class="btn-medusa top-5 bottom-5"
+        href="config/general/"
+        placeholder="indexer-to-name"
+      >
+        <span
+          class="pull-left menu-icon-config"
+        />
+         General
+            
+      </app-link-stub>
+       
+      <!---->
+    </div>
+  </div>
+   
+  <div
+    class="btn-group"
+  />
+</div>
+`;

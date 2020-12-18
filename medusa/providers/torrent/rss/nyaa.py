@@ -32,12 +32,7 @@ class NyaaProvider(TorrentProvider):
 
         # Miscellaneous Options
         self.supports_absolute_numbering = True
-        self.anime_only = True
         self.confirmed = False
-
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
 
         # Cache
         self.cache = tv.Cache(self, min_time=20)
@@ -48,15 +43,17 @@ class NyaaProvider(TorrentProvider):
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
-        :param ep_obj: Not used
+        :param ep_obj: An episode object
         :returns: A list of search results (structure)
         """
         results = []
 
         # Search Params
+        category = '1_0'
+
         search_params = {
             'page': 'rss',
-            'c': '1_0',  # All Anime
+            'c': category,
             'f': 0,  # No filter
             'q': '',
         }
@@ -113,10 +110,11 @@ class NyaaProvider(TorrentProvider):
                 leechers = try_int(item['nyaa_leechers'])
 
                 # Filter unseeded torrent
-                if seeders < min(self.minseed, 1):
+                if seeders < self.minseed:
                     if mode != 'RSS':
                         log.debug("Discarding torrent because it doesn't meet the"
-                                  ' minimum seeders: {0}. Seeders: {1}', title, seeders)
+                                  ' minimum seeders: {0}. Seeders: {1}',
+                                  title, seeders)
                     continue
 
                 size = convert_size(item['nyaa_size'], default=-1, units=units)

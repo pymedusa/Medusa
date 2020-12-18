@@ -1,0 +1,122 @@
+{
+    "plot": "A television anthology series that shows the dark side of life and technology.",
+    "status": "Continuing",
+    "network": "Netflix",
+    "language": "en",
+    "countries": ["UNITED KINGDOM"],
+    "seasonCount": [
+        { "season": 0, "episodeCount": 2 },
+        { "season": 1, "episodeCount": 3 },
+        { "season": 2, "episodeCount": 3 },
+        { "season": 3, "episodeCount": 6 },
+        { "season": 4, "episodeCount": 6 },
+        { "season": 5, "episodeCount": 3 }
+    ],
+    "classification": "",
+    "countryCodes": ["gb"],
+    "id": {
+        "trakt": 41793,
+        "tvdb": 253463,
+        "imdb": "tt2085059",
+        "slug": "tvdb253463"
+    },
+    "sceneNumbering": [],
+    "xemAbsoluteNumbering": [],
+    "config": {
+        "locationValid": true,
+        "sports": false,
+        "scene": false,
+        "airdateOffset": 0,
+        "defaultEpisodeStatus": "Wanted",
+        "airByDate": false,
+        "seasonFolders": true,
+        "dvdOrder": false,
+        "location": "/Shows/Black Mirror",
+        "paused": false,
+        "release": {
+            "requiredWordsExclude": false,
+            "requiredWords": [],
+            "ignoredWordsExclude": false,
+            "ignoredWords": []
+        },
+        "anime": false,
+        "qualities": {
+            "allowed": [8, 32, 64, 128, 256, 512],
+            "preferred": []
+        },
+        "subtitlesEnabled": true,
+        "aliases": []
+    },
+    "size": 29281778284,
+    "nextAirDate": "2019-06-05T09:00:00+02:00",
+    "type": "Scripted",
+    "imdbInfo": {
+        "certificates": "",
+        "lastUpdate": 737202,
+        "plot": "An anthology series exploring a twisted, high-tech world where humanity's greatest innovations and darkest instincts collide.",
+        "rating": "8.9",
+        "title": "Black Mirror",
+        "countries": "UNITED KINGDOM",
+        "votes": 312785,
+        "imdbId": "tt2085059",
+        "runtimes": 60,
+        "genres": "Drama|Sci-Fi|Thriller",
+        "indexer": 1,
+        "countryCodes": "gb",
+        "year": 2011,
+        "indexerId": 253463,
+        "imdbInfoId": 28,
+        "akas": ""
+    },
+    "rating": {
+        "imdb": {
+            "votes": 312785,
+            "rating": "8.9"
+        }
+    },
+    "showType": "series",
+    "xemNumbering": [],
+    "showQueueStatus": [{
+        "message": "This show is in the process of being downloaded - the info below is incomplete",
+        "active": false,
+        "action": "isBeingAdded"
+    }, {
+        "message": "The information on this page is in the process of being updated",
+        "active": false,
+        "action": "isBeingUpdated"
+    }, {
+        "message": "The episodes below are currently being refreshed from disk",
+        "active": false,
+        "action": "isBeingRefreshed"
+    }, {
+        "message": "Currently downloading subtitles for this show",
+        "active": false,
+        "action": "isBeingSubtitled"
+    }, {
+        "message": "This show is queued to be refreshed",
+        "active": false,
+        "action": "isInRefreshQueue"
+    }, {
+        "message": "This show is queued and awaiting an update",
+        "active": false,
+        "action": "isInUpdateQueue"
+    }, {
+        "message": "This show is queued and awaiting subtitles download",
+        "active": false,
+        "action": "isInSubtitleQueue"
+    }],
+    "runtime": 60,
+    "airs": "Wednesday 3:00 AM",
+    "cache": {
+        "poster": "/medusa-data/cache/images/tvdb/253463.poster.jpg",
+        "banner": "/medusa-data/cache/images/tvdb/253463.poster.jpg"
+    },
+    "sceneAbsoluteNumbering": [],
+    "title": "Black Mirror",
+    "genres": ["Science-Fiction", "Thriller", "Drama"],
+    "indexer": "tvdb",
+    "airsFormatValid": true,
+    "year": {
+        "start": 2011
+    }
+}

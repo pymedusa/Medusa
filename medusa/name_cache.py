@@ -21,7 +21,7 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 name_cache = {}
-nameCacheLock = threading.Lock()
+name_cache_lock = threading.Lock()
 
 
 def addNameToCache(name, indexer_id=1, series_id=0):
@@ -98,9 +98,9 @@ def build_name_cache(series_obj=None):
         series_identifier = (cache_series_obj.indexer, cache_series_obj.series_id)
         scene_exceptions = exceptions_cache[series_identifier].copy()
         names = {
-            full_sanitize_scene_name(name): series_identifier
+            full_sanitize_scene_name(exception.title): series_identifier
             for season_exceptions in itervalues(scene_exceptions)
-            for name in season_exceptions
+            for exception in season_exceptions
         }
         # Add original name to name cache
         series_name = full_sanitize_scene_name(cache_series_obj.name)
@@ -114,7 +114,7 @@ def build_name_cache(series_obj=None):
             'names': u', '.join(list(names))
         })
 
-    with nameCacheLock:
+    with name_cache_lock:
         retrieve_exceptions()
 
     # Create cache from db for the scene_exceptions.

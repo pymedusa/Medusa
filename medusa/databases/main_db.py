@@ -10,7 +10,7 @@ import warnings
 from medusa import common, db, subtitles
 from medusa.databases import utils
 from medusa.helper.common import dateTimeFormat
-from medusa.indexers.indexer_config import STATUS_MAP
+from medusa.indexers.config import STATUS_MAP
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import NameParser
 
@@ -21,9 +21,6 @@ log.logger.addHandler(logging.NullHandler())
 
 MIN_DB_VERSION = 40  # oldest db version we support migrating from
 MAX_DB_VERSION = 44
-
-# Used to check when checking for updates
-CURRENT_MINOR_DB_VERSION = 12
 
 
 class MainSanityCheck(db.DBSanityCheck):
@@ -159,8 +156,9 @@ class MainSanityCheck(db.DBSanityCheck):
                                    [common.UNAIRED, cur_unaired['episode_id']])
 
     def fix_indexer_show_statues(self):
-        for old_status, new_status in iteritems(STATUS_MAP):
-            self.connection.action('UPDATE tv_shows SET status = ? WHERE LOWER(status) = ?', [new_status, old_status])
+        for new_status, mappings in iteritems(STATUS_MAP):
+            for old_status in mappings:
+                self.connection.action('UPDATE tv_shows SET status = ? WHERE LOWER(status) = ?', [new_status, old_status])
 
     def fix_episode_statuses(self):
         sql_results = self.connection.select('SELECT episode_id, showid FROM tv_episodes WHERE status IS NULL')
@@ -257,7 +255,7 @@ class InitialSchema(db.SchemaUpgrade):
                 self.connection.action(query)
 
         else:
-            cur_db_version = self.checkDBVersion()
+            cur_db_version = self.checkMajorDBVersion()
 
             if cur_db_version < MIN_DB_VERSION:
                 log.error(
@@ -283,38 +281,38 @@ class InitialSchema(db.SchemaUpgrade):
 
 class AddVersionToTvEpisodes(InitialSchema):
     def test(self):
-        return self.checkDBVersion() >= 40
+        return self.checkMajorDBVersion() >= 40
 
     def execute(self):
-        utils.backup_database(self.connection.path, self.checkDBVersion())
+        utils.backup_database(self.connection.path, self.checkMajorDBVersion())
 
         log.info(u'Adding column version to tv_episodes and history')
         self.addColumn('tv_episodes', 'version', 'NUMERIC', '-1')
         self.addColumn('tv_episodes', 'release_group', 'TEXT', '')
         self.addColumn('history', 'version', 'NUMERIC', '-1')
 
-        self.incDBVersion()
+        self.incMajorDBVersion()
 
 
 class AddDefaultEpStatusToTvShows(AddVersionToTvEpisodes):
     def test(self):
-        return self.checkDBVersion() >= 41
+        return self.checkMajorDBVersion() >= 41
 
     def execute(self):
-        utils.backup_database(self.connection.path, self.checkDBVersion())
+        utils.backup_database(self.connection.path, self.checkMajorDBVersion())
 
         log.info(u'Adding column default_ep_status to tv_shows')
         self.addColumn('tv_shows', 'default_ep_status', 'NUMERIC', '-1')
 
-        self.incDBVersion()
+        self.incMajorDBVersion()
 
 
 class AlterTVShowsFieldTypes(AddDefaultEpStatusToTvShows):
     def test(self):
-        return self.checkDBVersion() >= 42
+        return self.checkMajorDBVersion() >= 42
 
     def execute(self):
-        utils.backup_database(self.connection.path, self.checkDBVersion())
+        utils.backup_database(self.connection.path, self.checkMajorDBVersion())
 
         log.info(u'Converting column indexer and default_ep_status field types to numeric')
         self.connection.action('DROP TABLE IF EXISTS tmp_tv_shows')
@@ -330,14 +328,14 @@ class AlterTVShowsFieldTypes(AddDefaultEpStatusToTvShows):
         self.connection.action('INSERT INTO tv_shows SELECT * FROM tmp_tv_shows')
         self.connection.action('DROP TABLE tmp_tv_shows')
 
-        self.incDBVersion()
+        self.incMajorDBVersion()
 
 
 class AddMinorVersion(AlterTVShowsFieldTypes):
     def test(self):
-        return self.checkDBVersion() >= 43 and self.hasColumn('db_version', 'db_minor_version')
+        return self.checkMajorDBVersion() >= 43 and self.hasColumn('db_version', 'db_minor_version')
 
-    def incDBVersion(self):
+    def incMajorDBVersion(self):
         warnings.warn('Deprecated: Use inc_major_version or inc_minor_version instead', DeprecationWarning)
 
     def inc_major_version(self):
@@ -346,6 +344,8 @@ class AddMinorVersion(AlterTVShowsFieldTypes):
         minor_version = 0
         self.connection.action('UPDATE db_version SET db_version = ?, db_minor_version = ?;',
                                [major_version, minor_version])
+        log.info(u'[MAIN-DB] Updated major version to: {}.{}', *self.connection.version)
+
         return self.connection.version
 
     def inc_minor_version(self):
@@ -353,18 +353,18 @@ class AddMinorVersion(AlterTVShowsFieldTypes):
         minor_version += 1
         self.connection.action('UPDATE db_version SET db_version = ?, db_minor_version = ?;',
                                [major_version, minor_version])
+        log.info(u'[MAIN-DB] Updated minor version to: {}.{}', *self.connection.version)
+
         return self.connection.version
 
     def execute(self):
-        utils.backup_database(self.connection.path, self.checkDBVersion())
+        utils.backup_database(self.connection.path, self.checkMajorDBVersion())
 
         log.info(u'Add minor version numbers to database')
         self.addColumn('db_version', 'db_minor_version')
 
         self.inc_major_version()
         self.inc_minor_version()
-
-        log.info(u'Updated to: {}.{}', *self.connection.version)
 
 
 class TestIncreaseMajorVersion(AddMinorVersion):
@@ -390,8 +390,6 @@ class TestIncreaseMajorVersion(AddMinorVersion):
         self.inc_major_version()
         self.inc_minor_version()
 
-        log.info(u'Updated to: {}.{}', *self.connection.version)
-
 
 class AddProperTags(TestIncreaseMajorVersion):
     """Adds column proper_tags to history table."""
@@ -415,8 +413,6 @@ class AddProperTags(TestIncreaseMajorVersion):
         # Call the update old propers once
         MainSanityCheck(self.connection).update_old_propers()
         self.inc_minor_version()
-
-        log.info(u'Updated to: {}.{}', *self.connection.version)
 
 
 class AddManualSearched(AddProperTags):
@@ -445,8 +441,6 @@ class AddManualSearched(AddProperTags):
         MainSanityCheck(self.connection).update_old_propers()
         self.inc_minor_version()
 
-        log.info(u'Updated to: {}.{}', *self.connection.version)
-
 
 class AddInfoHash(AddManualSearched):
     """Adds column info_hash to history table."""
@@ -465,8 +459,6 @@ class AddInfoHash(AddManualSearched):
             self.addColumn('history', 'info_hash', 'TEXT', None)
 
         self.inc_minor_version()
-
-        log.info(u'Updated to: {}.{}', *self.connection.version)
 
 
 class AddPlot(AddInfoHash):
@@ -491,8 +483,6 @@ class AddPlot(AddInfoHash):
 
         self.inc_minor_version()
 
-        log.info(u'Updated to: {}.{}', *self.connection.version)
-
 
 class AddResourceSize(AddPlot):
     """Adds column size to history table."""
@@ -511,8 +501,6 @@ class AddResourceSize(AddPlot):
             self.addColumn('history', 'size', 'NUMERIC', -1)
 
         self.inc_minor_version()
-
-        log.info(u'Updated to: {}.{}', *self.connection.version)
 
 
 class AddPKIndexerMapping(AddResourceSize):
@@ -536,8 +524,6 @@ class AddPKIndexerMapping(AddResourceSize):
         self.connection.action('DROP TABLE IF EXISTS new_indexer_mapping;')
 
         self.inc_minor_version()
-
-        log.info(u'Updated to: {}.{}', *self.connection.version)
 
 
 class AddIndexerInteger(AddPKIndexerMapping):
@@ -566,8 +552,6 @@ class AddIndexerInteger(AddPKIndexerMapping):
         self.connection.action('DROP TABLE IF EXISTS new_tv_episodoes;')
 
         self.inc_minor_version()
-
-        log.info(u'Updated to: {}.{}', *self.connection.version)
 
 
 class AddIndexerIds(AddIndexerInteger):
@@ -681,8 +665,6 @@ class AddIndexerIds(AddIndexerInteger):
 
         self.inc_minor_version()
 
-        log.info(u'Updated to: {}.{}', *self.connection.version)
-
         # Flag the image migration.
         from medusa import app
         app.MIGRATE_IMAGES = True
@@ -753,8 +735,6 @@ class AddSeparatedStatusQualityFields(AddIndexerIds):
 
         self.inc_minor_version()
 
-        log.info(u'Updated to: {}.{}', *self.connection.version)
-
 
 class ShiftQualities(AddSeparatedStatusQualityFields):
     """Shift all qualities one place to the left."""
@@ -770,8 +750,6 @@ class ShiftQualities(AddSeparatedStatusQualityFields):
         self.shift_episode_qualities()
         self.shift_history_qualities()
         self.inc_minor_version()
-
-        log.info(u'Updated to: {}.{}', *self.connection.version)
 
     def shift_tv_qualities(self):
         """
@@ -884,4 +862,108 @@ class AddEpisodeWatchedField(ShiftQualities):
         )
 
         self.connection.action('DROP TABLE tmp_tv_episodes;')
+        self.inc_minor_version()
+
+
+class AddTvshowStartSearchOffset(AddEpisodeWatchedField):
+    """Add tv_show airdate_offset field."""
+
+    def test(self):
+        """Test if the version is at least 44.13"""
+        return self.connection.version >= (44, 13)
+
+    def execute(self):
+        utils.backup_database(self.connection.path, self.connection.version)
+
+        log.info(u'Adding new airdate_offset field in the tv_shows table')
+        if not self.hasColumn('tv_shows', 'airdate_offset'):
+            self.addColumn('tv_shows', 'airdate_offset', 'NUMERIC', 0)
+
+        self.inc_minor_version()
+
+
+class AddReleaseIgnoreRequireExcludeOptions(AddTvshowStartSearchOffset):
+    """Add release ignore and require exclude option flags."""
+
+    def test(self):
+        """Test if the version is at least 44.14"""
+        return self.connection.version >= (44, 14)
+
+    def execute(self):
+        utils.backup_database(self.connection.path, self.connection.version)
+
+        log.info(u'Adding release ignore and require exclude option flags to the tv_shows table')
+        if not self.hasColumn('tv_shows', 'rls_require_exclude'):
+            self.addColumn('tv_shows', 'rls_require_exclude', 'NUMERIC', 0)
+        if not self.hasColumn('tv_shows', 'rls_ignore_exclude'):
+            self.addColumn('tv_shows', 'rls_ignore_exclude', 'NUMERIC', 0)
+
+        self.inc_minor_version()
+
+
+class MoveSceneExceptions(AddReleaseIgnoreRequireExcludeOptions):
+    """Create a new table scene_exceptions in main.db, as part of the process to move it from cache to main."""
+
+    def test(self):
+        """
+        Test if the version is at least 44.15
+        """
+        return self.connection.version >= (44, 15)
+
+    def execute(self):
+        utils.backup_database(self.connection.path, self.connection.version)
+
+        log.info('Creating a new table scene_exceptions in the main.db database.')
+
+        self.connection.action(
+            'CREATE TABLE scene_exceptions '
+            '(exception_id INTEGER PRIMARY KEY, indexer INTEGER, series_id INTEGER, title TEXT, '
+            'season NUMERIC DEFAULT -1, custom NUMERIC DEFAULT 0);'
+        )
+
+        self.inc_minor_version()
+
+
+class AddShowLists(MoveSceneExceptions):
+    """Add show_lists field to tv_shows."""
+
+    def test(self):
+        """Test if the version is at least 44.16."""
+        return self.connection.version >= (44, 16)
+
+    def execute(self):
+        utils.backup_database(self.connection.path, self.connection.version)
+
+        log.info(u'Addin show_lists field to tv_shows.')
+        if not self.hasColumn('tv_shows', 'show_lists'):
+            self.addColumn('tv_shows', 'show_lists', 'text', 'series')
+
+            # Shows that are not flagged as anime, put in the anime list
+            self.connection.action("update tv_shows set show_lists = 'series' where anime = 0")
+
+            # Shows that are flagged as anime, put in the anime list
+            self.connection.action("update tv_shows set show_lists = 'anime' where anime = 1")
+
+        self.inc_minor_version()
+
+
+class AddCustomLogs(AddShowLists):
+    """Create a new table custom_logs in main.db."""
+
+    def test(self):
+        """Test if the version is at least 44.17."""
+        return self.connection.version >= (44, 17)
+
+    def execute(self):
+        utils.backup_database(self.connection.path, self.connection.version)
+
+        log.info('Creating a new table custom_logs in the main.db database.')
+
+        self.connection.action(
+            'CREATE TABLE custom_logs '
+            '(log_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
+            'identifier TEXT NOT NULL, '
+            'level INTEGER NOT NULL DEFAULT 0);'
+        )
+
         self.inc_minor_version()

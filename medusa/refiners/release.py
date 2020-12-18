@@ -76,7 +76,7 @@ def refine(video, release_name=None, release_file=None, extension='release', **k
     release_name = get_release_name(release_file) or release_name
 
     if not release_name:
-        log.debug('No release name for {video}', {'video': video.name})
+        log.debug('No release name for {video!r}', {'video': video.name})
         return
 
     release_path = os.path.join(dirpath, release_name + fileext)
@@ -90,7 +90,7 @@ def refine(video, release_name=None, release_file=None, extension='release', **k
 
         if new_value and old_value != new_value:
             setattr(video, key, new_value)
-            log.debug('Attribute {key} changed from {old} to {new}',
+            log.debug('Attribute {key} changed from {old!r} to {new!r}',
                       {'key': key, 'old': old_value, 'new': new_value})
 
 

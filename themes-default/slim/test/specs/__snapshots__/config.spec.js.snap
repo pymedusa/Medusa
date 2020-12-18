@@ -1,0 +1,324 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Config.test.js renders 1`] = `
+<div
+  id="config-content"
+>
+  <table
+    border="0"
+    cellpadding="0"
+    cellspacing="1"
+    class="infoTable"
+    width="100%"
+  >
+    <tr>
+      <td>
+        <i
+          class="icon16-config-application"
+        />
+         Medusa Info:
+      </td>
+       
+      <td>
+        
+                Branch:
+                
+        <span>
+          <app-link-stub
+            href="https://github.com/pymedusa/Medusa/tree/master"
+            placeholder="indexer-to-name"
+          >
+            master
+          </app-link-stub>
+        </span>
+         
+        <br />
+        
+                Commit:
+                
+        <span>
+          <app-link-stub
+            href="https://github.com/pymedusa/Medusa/commit/f5973b28465246e67465d7d86bdc8aa74d13e659"
+            placeholder="indexer-to-name"
+          >
+            f5973b28465246e67465d7d86bdc8aa74d13e659
+          </app-link-stub>
+        </span>
+         
+        <br />
+        
+                Version:
+                
+        <span>
+          <app-link-stub
+            href="https://github.com/pymedusa/Medusa/releases/tag/v0.3.7"
+            placeholder="indexer-to-name"
+          >
+            0.3.7
+          </app-link-stub>
+        </span>
+         
+        <br />
+        
+                Database:
+                
+        <span>
+          44.15
+        </span>
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+        <i
+          class="icon16-config-python"
+        />
+         Python Version:
+      </td>
+      <td>
+        2.7.15 (v2.7.15:ca079a3ea3, Apr 30 2018, 16:30:26) [MSC v.1500 64 bit (AMD64)]
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+        <i
+          class="icon16-config-ssl"
+        />
+         SSL Version:
+      </td>
+      <td>
+        OpenSSL 1.1.1c  28 May 2019
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+        <i
+          class="icon16-config-os"
+        />
+         OS:
+      </td>
+      <td>
+        Windows-10-10.0.17763-SP0
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+        <i
+          class="icon16-config-locale"
+        />
+         Locale:
+      </td>
+      <td>
+        en_US.UTF8
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+         
+      </td>
+      <td>
+         
+      </td>
+    </tr>
+     
+    <tr
+      class="infoTableSeperator"
+    >
+      <td>
+         
+      </td>
+      <td>
+         
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+        <i
+          class="icon16-config-user"
+        />
+         User:
+      </td>
+      <td>
+        User
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+        <i
+          class="icon16-config-dir"
+        />
+         Program Folder:
+      </td>
+      <td>
+        C:\\Medusa
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+        <i
+          class="icon16-config-config"
+        />
+         Config File:
+      </td>
+      <td>
+        C:\\Medusa\\Data\\config.ini
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+        <i
+          class="icon16-config-db"
+        />
+         Database File:
+      </td>
+      <td>
+        C:\\Medusa\\Data\\main.db
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+        <i
+          class="icon16-config-cache"
+        />
+         Cache Folder:
+      </td>
+      <td>
+        C:\\Medusa\\Data\\cache
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+        <i
+          class="icon16-config-log"
+        />
+         Log Folder:
+      </td>
+      <td>
+        C:\\Medusa\\Data\\Logs
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+        <i
+          class="icon16-config-arguments"
+        />
+         Arguments:
+      </td>
+      <td>
+        <pre>
+          --nolaunch --datadir C:\\Medusa\\Data
+        </pre>
+      </td>
+    </tr>
+     
+    <!---->
+     
+    <!---->
+     
+    <tr>
+      <td>
+         
+      </td>
+      <td>
+         
+      </td>
+    </tr>
+     
+    <tr
+      class="infoTableSeperator"
+    >
+      <td>
+         
+      </td>
+      <td>
+         
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+        <i
+          class="icon16-config-web"
+        />
+         Website:
+      </td>
+      <td>
+        <app-link-stub
+          href="https://github.com/pymedusa/medusa.github.io"
+          placeholder="indexer-to-name"
+        >
+          https://github.com/pymedusa/medusa.github.io
+        </app-link-stub>
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+        <i
+          class="icon16-config-wiki"
+        />
+         Wiki:
+      </td>
+      <td>
+        <app-link-stub
+          href="https://github.com/pymedusa/Medusa/wiki"
+          placeholder="indexer-to-name"
+        >
+          https://github.com/pymedusa/Medusa/wiki
+        </app-link-stub>
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+        <i
+          class="icon16-config-github"
+        />
+         Source:
+      </td>
+      <td>
+        <app-link-stub
+          href="https://github.com/pymedusa/Medusa"
+          placeholder="indexer-to-name"
+        >
+          https://github.com/pymedusa/Medusa
+        </app-link-stub>
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+        <i
+          class="icon16-config-mirc"
+        />
+         IRC Chat:
+      </td>
+      <td>
+        <app-link-stub
+          href="irc://irc.freenode.net/#pymedusa"
+          placeholder="indexer-to-name"
+        >
+          <i>
+            #pymedusa
+          </i>
+           on 
+          <i>
+            irc.freenode.net
+          </i>
+        </app-link-stub>
+      </td>
+    </tr>
+  </table>
+</div>
+`;

@@ -26,8 +26,11 @@
 #                                                                              #
 ################################################################################
 
-import github.GithubObject
+from __future__ import absolute_import
 
+import six
+
+import github.GithubObject
 import github.NamedUser
 
 
@@ -111,6 +114,19 @@ class PullRequestReview(github.GithubObject.CompletableGithubObject):
         self._completeIfNotSet(self._submitted_at)
         return self._submitted_at.value
 
+    def dismiss(self, message):
+        """
+        :calls: `PUT /repos/:owner/:repo/pulls/:number/reviews/:review_id/dismissals <https://developer.github.com/v3/pulls/reviews/>`_
+        :rtype: None
+        """
+        assert isinstance(message, (str, six.text_type)), message
+        post_parameters = {"message": message}
+        headers, data = self._requester.requestJsonAndCheck(
+            "PUT",
+            self.pull_request_url + "/reviews/%s/dismissals" % self.id,
+            input=post_parameters,
+        )
+
     def _initAttributes(self):
         self._id = github.GithubObject.NotSet
         self._user = github.GithubObject.NotSet
@@ -126,7 +142,9 @@ class PullRequestReview(github.GithubObject.CompletableGithubObject):
         if "id" in attributes:  # pragma no branch
             self._id = self._makeIntAttribute(attributes["id"])
         if "user" in attributes:  # pragma no branch
-            self._user = self._makeClassAttribute(github.NamedUser.NamedUser, attributes["user"])
+            self._user = self._makeClassAttribute(
+                github.NamedUser.NamedUser, attributes["user"]
+            )
         if "body" in attributes:  # pragma no branch
             self._body = self._makeStringAttribute(attributes["body"])
         if "commit_id" in attributes:  # pragma no branch
@@ -138,6 +156,8 @@ class PullRequestReview(github.GithubObject.CompletableGithubObject):
         if "html_url" in attributes:  # pragma no branch
             self._html_url = self._makeStringAttribute(attributes["html_url"])
         if "pull_request_url" in attributes:  # pragma no branch
-            self._pull_request_url = self._makeStringAttribute(attributes["pull_request_url"])
+            self._pull_request_url = self._makeStringAttribute(
+                attributes["pull_request_url"]
+            )
         if "submitted_at" in attributes:  # pragma no branch
             self._submitted_at = self._makeDatetimeAttribute(attributes["submitted_at"])

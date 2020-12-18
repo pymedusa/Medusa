@@ -36,7 +36,7 @@ class YggtorrentProvider(TorrentProvider):
         self.password = None
 
         # URLs
-        self.url = 'https://www.yggtorrent.is'
+        self.url = 'https://www.yggtorrent.to'
         self.urls = {
             'auth': urljoin(self.url, 'user/ajax_usermenu'),
             'login': urljoin(self.url, 'user/login'),
@@ -47,9 +47,11 @@ class YggtorrentProvider(TorrentProvider):
         # Proper Strings
         self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
+        # Add Saison as a season pack search keyword, as this is a French provider.
+        self.season_templates = (
+            'S{season:0>2}',  # example: 'Series.Name.S03'
+            'Saison {season}',  # example: 'Series.Name.Saison 3'
+        )
 
         # Cache
         self.cache = tv.Cache(self, min_time=20)
@@ -136,7 +138,7 @@ class YggtorrentProvider(TorrentProvider):
                     leechers = try_int(cells[8].get_text(strip=True), 0)
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
                                       ' minimum seeders: {0}. Seeders: {1}',
@@ -177,7 +179,11 @@ class YggtorrentProvider(TorrentProvider):
         if not self._is_authenticated():
             login_url = self.get_redirect_url(self.urls['login'])
             login_resp = self.session.post(login_url, data=login_params)
-            if not login_resp:
+            if login_resp is None:
+                log.warning('Unable to connect to provider')
+                return False
+
+            if not login_resp.ok and login_resp.status_code == 401:
                 log.warning('Invalid username or password. Check your settings')
                 return False
 

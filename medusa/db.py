@@ -143,6 +143,7 @@ class DBConnection(object):
         db_minor_version = self.check_db_minor_version()
         if db_minor_version is None:
             db_minor_version = 0
+
         return self.check_db_major_version(), db_minor_version
 
     def check_db_major_version(self):
@@ -490,10 +491,10 @@ class SchemaUpgrade(object):
         self.connection.action('ALTER TABLE [%s] ADD %s %s' % (table, column, column_type))
         self.connection.action('UPDATE [%s] SET %s = ?' % (table, column), (default,))
 
-    def checkDBVersion(self):
-        return self.connection.checkDBVersion()
+    def checkMajorDBVersion(self):
+        return self.connection.checkDBVersion()[0]
 
-    def incDBVersion(self):
-        new_version = self.checkDBVersion() + 1
+    def incMajorDBVersion(self):
+        new_version = self.checkMajorDBVersion() + 1
         self.connection.action('UPDATE db_version SET db_version = ?', [new_version])
         return new_version

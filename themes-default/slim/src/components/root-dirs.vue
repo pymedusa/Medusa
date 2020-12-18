@@ -40,7 +40,7 @@ export default {
     },
     computed: {
         ...mapState({
-            rawRootDirs: state => state.config.rootDirs
+            rawRootDirs: state => state.config.general.rootDirs
         }),
         paths() {
             return this.rootDirs.map(rd => rd.path);
@@ -52,6 +52,7 @@ export default {
                 if (!selectedDir || rootDirs.length === 0) {
                     return null;
                 }
+
                 return selectedDir.path;
             },
             set(newRootDir) {
@@ -70,6 +71,7 @@ export default {
                 if (!defaultDir || rootDirs.length === 0) {
                     return null;
                 }
+
                 return defaultDir.path;
             },
             set(newRootDir) {
@@ -92,6 +94,7 @@ export default {
             if (rootDir.default) {
                 return `* ${rootDir.path}`;
             }
+
             return rootDir.path;
         }
     },
@@ -105,8 +108,9 @@ export default {
             if (rawRootDirs.length < 2) {
                 return [];
             }
+
             // Transform raw root dirs in the form of an array, to an array of objects
-            const defaultDir = parseInt(rawRootDirs[0], 10);
+            const defaultDir = Number.parseInt(rawRootDirs[0], 10);
             return rawRootDirs
                 .slice(1)
                 .map((path, index) => {
@@ -164,6 +168,7 @@ export default {
                             if (rd.path === selectedRootDir) {
                                 return accumlator;
                             }
+
                             const isNewRootDir = rd.path === path;
                             rd.selected = isNewRootDir;
                             rd.default = wasDefault && isNewRootDir;
@@ -220,6 +225,7 @@ export default {
             if (selectedRootDir === defaultRootDir) {
                 return;
             }
+
             this.defaultRootDir = selectedRootDir;
             saveRootDirs();
         },
@@ -235,6 +241,7 @@ export default {
                 const defaultIndex = rootDirs.findIndex(path => path === defaultRootDir);
                 rootDirs.splice(0, 0, defaultIndex.toString());
             }
+
             return $store.dispatch('setConfig', {
                 section: 'main',
                 config: {

@@ -3,7 +3,7 @@
 
 from __future__ import unicode_literals
 
-import ast
+import json
 import logging
 import re
 import smtplib
@@ -13,7 +13,13 @@ from email.mime.text import MIMEText
 from email.utils import formatdate
 
 from medusa import app, db
-from medusa.helper.encoding import ss
+from medusa.common import (
+    NOTIFY_DOWNLOAD,
+    NOTIFY_GIT_UPDATE,
+    NOTIFY_LOGIN,
+    NOTIFY_SUBTITLE_DOWNLOAD,
+    notifyStrings,
+)
 from medusa.logger.adapters.style import BraceAdapter
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -36,7 +42,7 @@ class Notifier(object):
 
     name_pattern = re.compile(
         r'(?P<show>.+?) - '
-        r'(?P<ep_id>S?\d+[Ex]\d+( - \d{3})?|\d{3}|\d{4}-\d{2}-\d{2}) - '
+        r'(?P<ep_id>S?\d+[Ex]\d+( - \d{3})?|\d{3}|\d{4} \d{2} \d{2}) - '
         r'(?P<episode>.*)'
     )
 
@@ -49,9 +55,9 @@ class Notifier(object):
 
         :return: True for no issue or False if there was an error
         """
-        msg = MIMEText('This is a test message from Medusa. If you\'re reading this, the test succeeded.')
+        msg = MIMEText("This is a test message from Medusa. If you're reading this, the test succeeded.")
         if app.EMAIL_SUBJECT:
-            msg['Subject'] = '[TEST] ' + app.EMAIL_SUBJECT
+            msg['Subject'] = '[TEST] {0}'.format(app.EMAIL_SUBJECT)
         else:
             msg['Subject'] = 'Medusa: Test Message'
         msg['From'] = smtp_from
@@ -59,17 +65,14 @@ class Notifier(object):
         msg['Date'] = formatdate(localtime=True)
         return self._sendmail(host, port, smtp_from, use_tls, user, pwd, [to], msg, True)
 
-    def notify_snatch(self, ep_name, is_proper, title='Snatched:'):
+    def notify_snatch(self, title, message):
         """
         Send a notification that an episode was snatched.
 
         ep_name: The name of the episode that was snatched
-        title: The title of the notification (optional)
         """
-        ep_name = ss(ep_name)
-
         if app.USE_EMAIL and app.EMAIL_NOTIFY_ONSNATCH:
-            parsed = self._parse_name(ep_name)
+            parsed = self._parse_name(message)
             to = self._generate_recipients(parsed['show'])
             if not to:
                 log.debug('Skipping email notify because there are no configured recipients')
@@ -92,34 +95,36 @@ class Notifier(object):
 
                 except Exception:
                     try:
-                        msg = MIMEText(ep_name)
+                        msg = MIMEText(message)
                     except Exception:
-                        msg = MIMEText('Episode Snatched')
+                        msg = MIMEText(title)
 
                 if app.EMAIL_SUBJECT:
-                    msg['Subject'] = '[SN] ' + app.EMAIL_SUBJECT
+                    msg['Subject'] = '{0}: {1}'.format(title, app.EMAIL_SUBJECT)
                 else:
-                    msg['Subject'] = 'Snatched: ' + ep_name
+                    msg['Subject'] = '{0}: {1}'.format(title, message)
                 msg['From'] = app.EMAIL_FROM
                 msg['To'] = ','.join(to)
                 msg['Date'] = formatdate(localtime=True)
+
                 if self._sendmail(app.EMAIL_HOST, app.EMAIL_PORT, app.EMAIL_FROM, app.EMAIL_TLS,
                                   app.EMAIL_USER, app.EMAIL_PASSWORD, to, msg):
                     log.debug('Snatch notification sent to {recipient} for {episode}',
-                              {'recipient': to, 'episode': ep_name})
+                              {'recipient': to, 'episode': message})
                 else:
                     log.warning('Snatch notification error: {0}', self.last_err)
 
-    def notify_download(self, ep_name, title='Completed:'):
+    def notify_download(self, ep_obj, title='Completed:'):
         """
         Send a notification that an episode was downloaded.
 
         ep_name: The name of the episode that was downloaded
         title: The title of the notification (optional)
         """
-        ep_name = ss(ep_name)
-
         if app.USE_EMAIL and app.EMAIL_NOTIFY_ONDOWNLOAD:
+            title = notifyStrings[NOTIFY_DOWNLOAD]
+            ep_name = ep_obj.pretty_name_with_quality()
+
             parsed = self._parse_name(ep_name)
             to = self._generate_recipients(parsed['show'])
             if not to:
@@ -145,15 +150,16 @@ class Notifier(object):
                     try:
                         msg = MIMEText(ep_name)
                     except Exception:
-                        msg = MIMEText('Episode Downloaded')
+                        msg = MIMEText(title)
 
                 if app.EMAIL_SUBJECT:
-                    msg['Subject'] = '[DL] ' + app.EMAIL_SUBJECT
+                    msg['Subject'] = '{0}: {1}'.format(title, app.EMAIL_SUBJECT)
                 else:
-                    msg['Subject'] = 'Downloaded: ' + ep_name
+                    msg['Subject'] = '{0}: {1}'.format(title, ep_name)
                 msg['From'] = app.EMAIL_FROM
                 msg['To'] = ','.join(to)
                 msg['Date'] = formatdate(localtime=True)
+
                 if self._sendmail(app.EMAIL_HOST, app.EMAIL_PORT, app.EMAIL_FROM, app.EMAIL_TLS,
                                   app.EMAIL_USER, app.EMAIL_PASSWORD, to, msg):
                     log.debug('Download notification sent to {recipient} for {episode}',
@@ -161,16 +167,17 @@ class Notifier(object):
                 else:
                     log.warning('Download notification error: {0}', self.last_err)
 
-    def notify_subtitle_download(self, ep_name, lang, title='Downloaded subtitle:'):
+    def notify_subtitle_download(self, ep_obj, lang):
         """
         Send a notification that a subtitle was downloaded.
 
         ep_name: The name of the episode that was downloaded
         lang: Subtitle language wanted
         """
-        ep_name = ss(ep_name)
-
         if app.USE_EMAIL and app.EMAIL_NOTIFY_ONSUBTITLEDOWNLOAD:
+            title = notifyStrings[NOTIFY_SUBTITLE_DOWNLOAD]
+            ep_name = ep_obj.pretty_name()
+
             parsed = self._parse_name(ep_name)
             to = self._generate_recipients(parsed['show'])
             if not to:
@@ -195,16 +202,17 @@ class Notifier(object):
                         'html'))
                 except Exception:
                     try:
-                        msg = MIMEText(ep_name + ': ' + lang)
+                        msg = MIMEText('{0}: {1}'.format(ep_name, lang))
                     except Exception:
-                        msg = MIMEText('Episode Subtitle Downloaded')
+                        msg = MIMEText(title)
 
                 if app.EMAIL_SUBJECT:
-                    msg['Subject'] = '[ST] ' + app.EMAIL_SUBJECT
+                    msg['Subject'] = '{0} [{1}]: {2}'.format(title, lang, app.EMAIL_SUBJECT)
                 else:
-                    msg['Subject'] = lang + ' Subtitle Downloaded: ' + ep_name
+                    msg['Subject'] = '{0} [{1}]: {2}'.format(title, lang, ep_name)
                 msg['From'] = app.EMAIL_FROM
                 msg['To'] = ','.join(to)
+
                 if self._sendmail(app.EMAIL_HOST, app.EMAIL_PORT, app.EMAIL_FROM, app.EMAIL_TLS,
                                   app.EMAIL_USER, app.EMAIL_PASSWORD, to, msg):
                     log.debug('Download notification sent to {recipient} for {episode}',
@@ -219,6 +227,7 @@ class Notifier(object):
         new_version: The commit Medusa was updated to
         """
         if app.USE_EMAIL:
+            title = notifyStrings[NOTIFY_GIT_UPDATE]
             to = self._generate_recipients(None)
             if not to:
                 log.debug('Skipping email notify because there are no configured recipients')
@@ -238,12 +247,13 @@ class Notifier(object):
                     try:
                         msg = MIMEText(new_version)
                     except Exception:
-                        msg = MIMEText('Medusa updated')
+                        msg = MIMEText(title)
 
-                msg['Subject'] = 'Updated: {0}'.format(new_version)
+                msg['Subject'] = '{0}: {1}'.format(title, new_version)
                 msg['From'] = app.EMAIL_FROM
                 msg['To'] = ','.join(to)
                 msg['Date'] = formatdate(localtime=True)
+
                 if self._sendmail(app.EMAIL_HOST, app.EMAIL_PORT, app.EMAIL_FROM, app.EMAIL_TLS,
                                   app.EMAIL_USER, app.EMAIL_PASSWORD, to, msg):
                     log.debug('Update notification sent to {recipient}',
@@ -258,6 +268,7 @@ class Notifier(object):
         ipaddress: The ip Medusa was logged into from
         """
         if app.USE_EMAIL:
+            title = notifyStrings[NOTIFY_LOGIN]
             to = self._generate_recipients(None)
             if not to:
                 log.debug('Skipping email notify because there are no configured recipients')
@@ -277,12 +288,13 @@ class Notifier(object):
                     try:
                         msg = MIMEText(ipaddress)
                     except Exception:
-                        msg = MIMEText('Medusa Remote Login')
+                        msg = MIMEText(title)
 
-                msg['Subject'] = 'New Login from IP: {0}'.format(ipaddress)
+                msg['Subject'] = '{0}: {1}'.format(title, ipaddress)
                 msg['From'] = app.EMAIL_FROM
                 msg['To'] = ','.join(to)
                 msg['Date'] = formatdate(localtime=True)
+
                 if self._sendmail(app.EMAIL_HOST, app.EMAIL_PORT, app.EMAIL_FROM, app.EMAIL_TLS,
                                   app.EMAIL_USER, app.EMAIL_PASSWORD, to, msg):
                     log.debug('Login notification sent to {recipient}', {'recipient': to})
@@ -310,13 +322,14 @@ class Notifier(object):
                 [show]
             )
             for row in sql_results:
-                notify_list = row['notify_list']
-                if not notify_list:
+                if not row['notify_list']:
                     continue
 
-                if notify_list[0] == '{':
-                    entries = dict(ast.literal_eval(notify_list))
-                    notify_list = entries['emails']
+                entries = json.loads(row['notify_list'])
+                if not entries:
+                    continue
+
+                notify_list = entries['emails']
 
                 addrs.extend(
                     addr for addr in notify_list.split(',')
@@ -360,7 +373,7 @@ class Notifier(object):
                 srv.ehlo()
             if user and pwd:
                 log.debug('Sending LOGIN command!')
-                srv.login(user.encode('utf-8'), pwd.encode('utf-8'))
+                srv.login(user, pwd)
 
             srv.sendmail(smtp_from, to, msg.as_string())
             srv.quit()
@@ -371,8 +384,6 @@ class Notifier(object):
 
     @classmethod
     def _parse_name(cls, ep_name):
-        ep_name = ss(ep_name)
-
         # @TODO: Prone to issues, best solution is to have a dictionary passed to notifiers
         match = cls.name_pattern.match(ep_name)
 
@@ -390,4 +401,5 @@ class Notifier(object):
 
         log.debug('Email notifier parsed "{0}" into {1!r}',
                   ep_name, result)
+
         return result

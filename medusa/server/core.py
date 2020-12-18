@@ -22,14 +22,19 @@ from medusa.server.api.v2.alias_source import (
 from medusa.server.api.v2.auth import AuthHandler
 from medusa.server.api.v2.base import BaseRequestHandler, NotFoundHandler
 from medusa.server.api.v2.config import ConfigHandler
+from medusa.server.api.v2.episode_history import EpisodeHistoryHandler
 from medusa.server.api.v2.episodes import EpisodeHandler
+from medusa.server.api.v2.history import HistoryHandler
 from medusa.server.api.v2.internal import InternalHandler
 from medusa.server.api.v2.log import LogHandler
+from medusa.server.api.v2.providers import ProvidersHandler
+from medusa.server.api.v2.search import SearchHandler
 from medusa.server.api.v2.series import SeriesHandler
 from medusa.server.api.v2.series_asset import SeriesAssetHandler
 from medusa.server.api.v2.series_legacy import SeriesLegacyHandler
 from medusa.server.api.v2.series_operation import SeriesOperationHandler
 from medusa.server.api.v2.stats import StatsHandler
+from medusa.server.api.v2.system import SystemHandler
 from medusa.server.web import (
     CalendarHandler,
     KeyHandler,
@@ -39,6 +44,8 @@ from medusa.server.web import (
 )
 from medusa.server.web.core.base import AuthenticatedStaticFileHandler
 from medusa.ws.handler import WebSocketUIHandler
+
+import six
 
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
@@ -50,6 +57,7 @@ from tornado.web import (
 )
 
 from tornroutes import route
+
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -73,7 +81,21 @@ def clean_url_path(*args, **kwargs):
 def get_apiv2_handlers(base):
     """Return api v2 handlers."""
     return [
+
         # Order: Most specific to most generic
+
+        # /api/v2/providers
+        ProvidersHandler.create_app_handler(base),
+
+        # /api/v2/history/tvdb1234/episode
+        EpisodeHistoryHandler.create_app_handler(base),
+
+        # /api/v2/history
+        HistoryHandler.create_app_handler(base),
+
+        # /api/v2/search
+        SearchHandler.create_app_handler(base),
+
         # /api/v2/series/tvdb1234/episode
         EpisodeHandler.create_app_handler(base),
 
@@ -105,6 +127,9 @@ def get_apiv2_handlers(base):
 
         # /api/v2/alias
         AliasHandler.create_app_handler(base),
+
+        # /api/v2/system
+        SystemHandler.create_app_handler(base),
 
         # /api/v2/authenticate
         AuthHandler.create_app_handler(base),
@@ -271,6 +296,19 @@ class AppWebServer(threading.Thread):
         return route.get_routes()
 
     def run(self):
+        # Start event loop in python3
+        if six.PY3:
+            import asyncio
+            import sys
+
+            # We need to set the WindowsSelectorEventLoop event loop on python 3 (3.8 and higher) running on windows
+            if sys.platform == 'win32':
+                try:
+                    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+                except AttributeError:  # Only available since Python 3.7.0
+                    pass
+            asyncio.set_event_loop(asyncio.new_event_loop())
+
         if self.enable_https:
             protocol = 'https'
             self.server = HTTPServer(self.app, ssl_options={'certfile': self.https_cert, 'keyfile': self.https_key})
@@ -285,25 +323,26 @@ class AppWebServer(threading.Thread):
 
         try:
             self.server.listen(self.options['port'], self.options['host'])
-        except Exception:
+        except Exception as ex:
             if app.LAUNCH_BROWSER and not self.daemon:
                 app.instance.launch_browser('https' if app.ENABLE_HTTPS else 'http', self.options['port'], app.WEB_ROOT)
                 log.info('Launching browser and exiting')
-            log.info('Could not start the web server on port {port}, already in use!', {
-                'port': self.options['port']
+            log.info('Could not start the web server on port {port}. Exception: {ex}', {
+                'port': self.options['port'],
+                'ex': ex
             })
             os._exit(1)  # pylint: disable=protected-access
 
         try:
             self.io_loop = IOLoop.current()
-            IOLoop.current().start()
+            self.io_loop.start()
         except (IOError, ValueError):
             # Ignore errors like 'ValueError: I/O operation on closed kqueue fd'. These might be thrown during a reload.
             pass
 
     def shutDown(self):
         self.alive = False
-        IOLoop.current().stop()
+        self.io_loop.stop()
 
     def log_request(self, handler):
         """
@@ -314,16 +353,23 @@ class AppWebServer(threading.Thread):
         if not app.WEB_LOG:
             return
 
+        level = None
         if handler.get_status() < 400:
             level = logging.INFO
         elif handler.get_status() < 500:
-            # Don't log normal RESTful responses as warnings
+            # Don't log normal APIv2 RESTful responses as warnings
             if isinstance(handler, BaseRequestHandler):
                 level = logging.INFO
             else:
                 level = logging.WARNING
         else:
-            level = logging.ERROR
+            # If a real exception was raised in APIv2,
+            # let `BaseRequestHandler.log_exception` handle the logging
+            if not isinstance(handler, BaseRequestHandler):
+                level = logging.ERROR
+
+        if level is None:
+            return
 
         log.log(
             level,

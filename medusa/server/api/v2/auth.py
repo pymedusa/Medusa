@@ -30,11 +30,11 @@ class AuthHandler(BaseRequestHandler):
     #: allowed HTTP methods
     allowed_methods = ('POST', )
 
-    def prepare(self):
-        """Prepare."""
-        pass
+    def _check_authentication(self):
+        """Override authentication check for the authentication endpoint."""
+        return None
 
-    def http_post(self, *args, **kwargs):
+    def post(self, *args, **kwargs):
         """Request JWT."""
         username = app.WEB_USERNAME
         password = app.WEB_PASSWORD
@@ -74,7 +74,7 @@ class AuthHandler(BaseRequestHandler):
                 'exp': time_now + int(exp),
                 'username': app.WEB_USERNAME,
                 'apiKey': app.API_KEY
-            }, app.ENCRYPTION_SECRET, algorithm='HS256')
+            }, app.ENCRYPTION_SECRET, algorithm='HS256').decode('utf-8')
         })
 
     def _failed_login(self, error=None):

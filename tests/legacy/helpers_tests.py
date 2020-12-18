@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 # coding=utf-8
 # Author: Dustyn Gibson <miigotu@gmail.com>
 #
@@ -18,13 +18,15 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 """Test helpers."""
-
-from __future__ import print_function
+from __future__ import unicode_literals
 
 import unittest
 
 from medusa import helpers
 from medusa.helper.common import media_extensions, subtitle_extensions
+
+from six import iteritems
+
 
 TEST_RESULT = 'Show.Name.S01E01.HDTV.x264-RLSGROUP'
 # TODO: py.test parameters
@@ -140,5 +142,5 @@ class HelpersFileTests(unittest.TestCase):
         }
 
         for cur_test in extension_tests, sample_tests, edge_cases:
-            for cur_name, expected_result in cur_test.items():
+            for cur_name, expected_result in iteritems(cur_test):
                 self.assertEqual(helpers.is_media_file(cur_name), expected_result, cur_name)

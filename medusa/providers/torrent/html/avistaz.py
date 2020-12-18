@@ -44,8 +44,6 @@ class AvistaZProvider(TorrentProvider):
         # Miscellaneous Options
         self.freeleech = False
 
-        # Torrent Stats
-
         # Cache
         self.cache = tv.Cache(self)  # only poll AvistaZ every 10 minutes max
 

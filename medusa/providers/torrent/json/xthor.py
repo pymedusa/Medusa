@@ -5,9 +5,10 @@
 from __future__ import unicode_literals
 
 import logging
+from time import sleep
 
 from medusa import tv
-from medusa.common import USER_AGENT
+from medusa.helper.common import convert_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
@@ -26,25 +27,22 @@ class XthorProvider(TorrentProvider):
         self.passkey = None
 
         # URLs
-        self.url = 'https://xthor.to'
+        self.url = 'https://xthor.tk'
         self.urls = {
-            'search': 'https://api.xthor.to',
+            'search': 'https://api.xthor.tk',
         }
 
         # Proper Strings
 
         # Miscellaneous Options
-        self.headers.update({'User-Agent': USER_AGENT})
         self.subcategories = [433, 637, 455, 639]
 
         # Torrent Stats
-        self.minseed = None
-        self.minleech = None
         self.confirmed = False
-        self.freeleech = None
+        self.freeleech = False
 
         # Cache
-        self.cache = tv.Cache(self, min_time=10)
+        self.cache = tv.Cache(self)
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
@@ -76,6 +74,7 @@ class XthorProvider(TorrentProvider):
                     search_params.pop('search', '')
 
                 data = self.session.get(self.urls['search'], params=search_params)
+                sleep(2)  # Limit to 1 request every 2 seconds.
                 if not data:
                     log.debug('No data returned from provider')
                     continue
@@ -129,18 +128,18 @@ class XthorProvider(TorrentProvider):
                 if not all([title, download_url]):
                     continue
 
-                seeders = row.get('seeders')
-                leechers = row.get('leechers')
+                seeders = int(row.get('seeders'))
+                leechers = int(row.get('leechers'))
 
                 # Filter unseeded torrent
-                if seeders < min(self.minseed, 1):
+                if seeders < self.minseed:
                     if mode != 'RSS':
-                        log.debug('Discarding torrent because it doesn\'t meet the'
+                        log.debug("Discarding torrent because it doesn't meet the"
                                   ' minimum seeders: {0}. Seeders: {1}',
                                   title, seeders)
                     continue
 
-                size = row.get('size') or -1
+                size = convert_size(row.get('size'), default=-1)
 
                 item = {
                     'title': title,

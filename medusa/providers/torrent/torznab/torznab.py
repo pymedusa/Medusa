@@ -14,7 +14,7 @@ from medusa import (
 )
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import convert_size
-from medusa.indexers.indexer_config import (
+from medusa.indexers.config import (
     INDEXER_TMDB,
     INDEXER_TVDBV2,
     INDEXER_TVMAZE,
@@ -43,12 +43,8 @@ class TorznabProvider(TorrentProvider):
 
         self.url = url or ''
         self.api_key = api_key or ''
-        self.cat_ids = cat_ids or ['5010', '5030', '5040']
+        self.cat_ids = cat_ids or ['5010', '5030', '5040', '7000']
         self.cap_tv_search = cap_tv_search or []
-
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
 
         # For now apply the additional season search string for all torznab providers.
         # If we want to limited this per provider, I suggest using a dict, with provider: [list of season templates]
@@ -57,6 +53,9 @@ class TorznabProvider(TorrentProvider):
             'S{season:0>2}',  # example: 'Series.Name S03'
             'Season {season}',  # example: 'Series.Name Season 3'
         )
+
+        # Proper Strings
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
 
         self.cache = tv.Cache(self)
 
@@ -179,10 +178,11 @@ class TorznabProvider(TorrentProvider):
                     seeders_attr = item.find('torznab:attr', attrs={'name': 'seeders'})
                     peers_attr = item.find('torznab:attr', attrs={'name': 'peers'})
                     seeders = int(seeders_attr.get('value', 0)) if seeders_attr else 1
-                    leechers = int(peers_attr.get('value', 0)) if peers_attr else 0
+                    peers = int(peers_attr.get('value', 0)) if peers_attr else 0
+                    leechers = peers - seeders if peers - seeders > 0 else 0
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
                                       ' minimum seeders: {0}. Seeders: {1}',
@@ -229,6 +229,15 @@ class TorznabProvider(TorrentProvider):
     def get_providers_list(providers):
         """Return custom rss torrent providers."""
         return [TorznabProvider(custom_provider) for custom_provider in providers]
+
+    @staticmethod
+    def _get_identifier(item):
+        """
+        Return the identifier for the item.
+
+        By default this is the url. Providers can overwrite this, when needed.
+        """
+        return '{name}_{size}'.format(name=item.name, size=item.size)
 
     def image_name(self):
         """

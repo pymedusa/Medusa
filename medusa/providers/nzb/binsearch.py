@@ -51,7 +51,7 @@ class BinSearchProvider(NZBProvider):
         # Miscellaneous Options
 
         # Cache
-        self.cache = tv.Cache(self, min_time=10)
+        self.cache = tv.Cache(self)
 
     def search(self, search_strings, **kwargs):
         """
@@ -272,7 +272,7 @@ class BinSearchProvider(NZBProvider):
             return None
 
         # Validate that the result has the content of a valid nzb.
-        if not BinSearchProvider.nzb_check_segment.search(response.content):
+        if not BinSearchProvider.nzb_check_segment.search(response.text):
             log.warning('Result returned from BinSearch was not a valid NZB')
             return None
 
@@ -287,6 +287,15 @@ class BinSearchProvider(NZBProvider):
         :return: size in bytes or -1
         """
         return item.get('size', -1)
+
+    @staticmethod
+    def _get_identifier(item):
+        """
+        Return the identifier for the item.
+
+        By default this is the url. Providers can overwrite this, when needed.
+        """
+        return '{name}_{size}'.format(name=item.name, size=item.size)
 
 
 provider = BinSearchProvider()

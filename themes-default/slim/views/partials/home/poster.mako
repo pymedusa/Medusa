@@ -9,7 +9,6 @@
     from medusa.helper.common import pretty_file_size
     from medusa.scene_numbering import get_xem_numbering_for_show
 %>
-<%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 <div class="loading-spinner"></div>
 
 <div id="poster-container">
@@ -88,7 +87,7 @@
             else:
                 den = 1
                 download_stat_tip = "Unaired"
-            progressbar_percent = nom * 100 / den
+            progressbar_percent = nom * 100 // den
             data_date = '6000000000.0'
             if cur_airs_next:
                 data_date = calendar.timegm(sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(cur_airs_next, cur_show.airs, cur_show.network)).timetuple())
@@ -107,7 +106,7 @@
                     </div>
                     <div class="poster-overlay">
                         <app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.indexerid}">
-                            <asset default="images/poster.png" show-slug="${cur_show.slug}" :lazy="false" type="posterThumb" cls="show-image" :link="false"></asset>
+                            <asset default-src="images/poster.png" show-slug="${cur_show.slug}" type="posterThumb" cls="show-image" :link="false"></asset>
                         </app-link>
                     </div>
                 </div>
@@ -155,14 +154,14 @@
                                     <td class="show-table">
                                     % if cur_show.network:
                                         <span title="${cur_show.network}">
-                                            <asset default="images/network/nonetwork.png" show-slug="${cur_show.slug}" :lazy="false" type="network" cls="show-network-image" :link="false" alt="${cur_show.network}" title="${cur_show.network}"></asset>
+                                            <asset default-src="images/network/nonetwork.png" show-slug="${cur_show.slug}" type="network" cls="show-network-image" :link="false" alt="${cur_show.network}" title="${cur_show.network}"></asset>
                                         </span>
                                     % else:
                                         <span title="No Network"><img class="show-network-image" src="images/network/nonetwork.png" alt="No Network" title="No Network" /></span>
                                     % endif
                                     </td>
                                     <td class="show-table">
-                                        ${renderQualityPill(cur_show.quality, showTitle=True, overrideClass="show-quality")}
+                                        <quality-pill :quality="${cur_show.quality}" show-title :override="{ class: 'show-quality' }"></quality-pill>
                                     </td>
                                 </tr>
                             </table>

@@ -815,10 +815,12 @@
 ? Das.Appartement.German.AC3D.DL.720p.BluRay.x264-TVP
 : audio_codec: Dolby Digital
   source: Blu-ray
-  language: mul
+  language:
+    - German
+    - Multi
   release_group: TVP
   screen_size: 720p
-  title: Das Appartement German
+  title: Das Appartement
   type: movie
   video_codec: H.264
 
@@ -1027,12 +1029,12 @@
 
 ? Hardwired.STV.NFOFiX.FRENCH.DVDRiP.XviD-SURViVAL
 : title: Hardwired
-  other: [Straight to Video, Proper, Rip]
+  other: [Straight to Video, Fix, Rip]
   language: french
   source: DVD
   video_codec: Xvid
   release_group: SURViVAL
-  proper_count: 1
+  -proper_count: 1
   type: movie
 
 ? Maze.Runner.The.Scorch.Trials.OM.2015.WEB-DLRip.by.Seven
@@ -1054,15 +1056,15 @@
 ? All.Fall.Down.x264.PROOFFIX-OUTLAWS
 : title: All Fall Down
   video_codec: H.264
-  other: Proper
+  other: Fix
   release_group: OUTLAWS
-  proper_count: 1
+  -proper_count: 1
   type: movie
 
 ? The.Last.Survivors.2014.PROOF.SAMPLE.FiX.BDRip.x264-TOPCAT
 : title: The Last Survivors
   year: 2014
-  other: [Proper, Rip]
+  other: [Fix, Rip]
   source: Blu-ray
   video_codec: H.264
   release_group: TOPCAT
@@ -1718,4 +1720,67 @@
   audio_codec: Dolby Digital
   language: [en, de, it]
   release_group: STANDARD
+  type: movie
+
+? Ant-Man.and.the.Wasp.2018.Digital.Extras.1080p.AMZN.WEB-DL.DDP5.1.H.264-NTG.mkv
+: title: Ant-Man and the Wasp
+  year: 2018
+  other: Extras
+  screen_size: 1080p
+  streaming_service: Amazon Prime
+  source: Web
+  audio_codec: Dolby Digital Plus
+  audio_channels: '5.1'
+  video_codec: H.264
+  release_group: NTG
+  type: movie
+
+? Ant-Man.and.the.Wasp.2018.1080p.AMZN.WEB-DL.DDP5.1.H.264-NTG.mkv
+: title: Ant-Man and the Wasp
+  year: 2018
+  screen_size: 1080p
+  streaming_service: Amazon Prime
+  source: Web
+  audio_codec: Dolby Digital Plus
+  audio_channels: '5.1'
+  video_codec: H.264
+  release_group: NTG
+  type: movie
+
+? Avengers.Infinity.War.2018.3D.Hybrid.REPACK.1080p.BluRay.REMUX.AVC.Atmos-EPSiLON.mk3d
+: title: Avengers Infinity War
+  year: 2018
+  other:
+  - 3D
+  - Proper
+  - Remux
+  proper_count: 1
+  screen_size: 1080p
+  source: Blu-ray
+  video_codec: H.264
+  audio_codec: Dolby Atmos
+  release_group: EPSiLON
+  container: mk3d
+  type: movie
+
+? Ouija.Seance.The.Final.Game.2018.1080p.WEB-DL.DD5.1.H264-CMRG
+: title: Ouija Seance The Final Game
+  year: 2018
+  screen_size: 1080p
+  source: Web
+  audio_codec: Dolby Digital
+  audio_channels: '5.1'
+  video_codec: H.264
+  release_group: CMRG
+  type: movie
+
+? The.Girl.in.the.Spiders.Web.2019.1080p.WEB-DL.x264.AC3-EVO.mkv
+: title: The Girl in the Spiders Web
+  year: 2019
+  screen_size: 1080p
+  source: Web
+  video_codec: H.264
+  audio_codec: Dolby Digital
+  release_group: EVO
+  container: mkv
   type: movie

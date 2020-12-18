@@ -7,9 +7,10 @@ import os
 
 import guessit
 import medusa.name_parser.guessit_parser as sut
+from medusa.scene_exceptions import TitleException
 from medusa import app
 import pytest
-from six import binary_type, text_type
+from six import binary_type, text_type, iteritems
 import yaml
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -27,7 +28,14 @@ def show_list(create_tvshow):
         create_tvshow(indexerid=6, name='60 Minutes'),
         create_tvshow(indexerid=7, name='Incredible Show 2007'),
         create_tvshow(indexerid=8, name='Mobile Suit Gundam UC RE:0096',
-                      exceptions=['Mobile Suit Gundam Unicorn RE 0096'], anime=1),
+                      exceptions=[TitleException(
+                          title='Mobile Suit Gundam Unicorn RE 0096',
+                          season=-1,
+                          indexer=1,
+                          series_id=8,
+                          custom=False
+                      )
+                      ], anime=1),
         create_tvshow(indexerid=9, name='R-15'),
         create_tvshow(indexerid=10, name='Super Show (1999)'),
         create_tvshow(indexerid=11, name='The 10 Anime Show', anime=1),
@@ -58,11 +66,11 @@ def _parameters(single_test=None):
     parameters = []
     input_file = os.path.join(__location__, __name__.split('.')[-1] + '.yml')
     with open(input_file, 'r') as stream:
-        data = yaml.load(stream)
+        data = yaml.load(stream, Loader=yaml.Loader)
 
-    for release_names, expected in data.items():
-        expected = {k: v for k, v in expected.items()}
-        for k, v in expected.items():
+    for release_names, expected in iteritems(data):
+        expected = {k: v for k, v in iteritems(expected)}
+        for k, v in iteritems(expected):
             if isinstance(v, binary_type):
                 expected[k] = text_type(v)
 
@@ -91,7 +99,7 @@ def test_guess(monkeypatch, show_list, release_name, expected):
     actual = guessit.guessit(release_name, options=options)
 
     # Then
-    actual = {k: _format_param(v) for k, v in actual.items()}
+    actual = {k: _format_param(v) for k, v in iteritems(actual)}
     expected['release_name'] = release_name
     actual['release_name'] = release_name
 

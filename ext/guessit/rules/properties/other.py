@@ -11,12 +11,12 @@ from rebulk.remodule import re
 from ..common import dash
 from ..common import seps
 from ..common.pattern import is_disabled
-from ..common.validators import seps_after, seps_before, seps_surround, compose
+from ..common.validators import seps_after, seps_before, seps_surround, and_
 from ...reutils import build_or_pattern
 from ...rules.common.formatters import raw_cleanup
 
 
-def other(config):  # pylint:disable=unused-argument
+def other(config):  # pylint:disable=unused-argument,too-many-statements
     """
     Builder for rebulk object.
 
@@ -35,11 +35,23 @@ def other(config):  # pylint:disable=unused-argument
     rebulk.regex('ws', 'wide-?screen', value='Widescreen')
     rebulk.regex('Re-?Enc(?:oded)?', value='Reencoded')
 
-    rebulk.string('Real', 'Fix', 'Fixed', value='Proper', tags=['has-neighbor-before', 'has-neighbor-after'])
-    rebulk.string('Proper', 'Repack', 'Rerip', 'Dirfix', 'Nfofix', 'Prooffix', value='Proper',
+    rebulk.string('Repack', 'Rerip', value='Proper',
                   tags=['streaming_service.prefix', 'streaming_service.suffix'])
-    rebulk.regex('(?:Proof-?)?Sample-?Fix', value='Proper',
+    rebulk.string('Proper', value='Proper',
+                  tags=['has-neighbor', 'streaming_service.prefix', 'streaming_service.suffix'])
+
+    rebulk.regex('Real-Proper', 'Real-Repack', 'Real-Rerip', value='Proper',
+                 tags=['streaming_service.prefix', 'streaming_service.suffix', 'real'])
+    rebulk.regex('Real', value='Proper',
+                 tags=['has-neighbor', 'streaming_service.prefix', 'streaming_service.suffix', 'real'])
+
+    rebulk.string('Fix', 'Fixed', value='Fix', tags=['has-neighbor-before', 'has-neighbor-after',
+                                                     'streaming_service.prefix', 'streaming_service.suffix'])
+    rebulk.string('Dirfix', 'Nfofix', 'Prooffix', value='Fix',
+                  tags=['streaming_service.prefix', 'streaming_service.suffix'])
+    rebulk.regex('(?:Proof-?)?Sample-?Fix', value='Fix',
                  tags=['streaming_service.prefix', 'streaming_service.suffix'])
+
     rebulk.string('Fansub', value='Fan Subtitled', tags='has-neighbor')
     rebulk.string('Fastsub', value='Fast Subtitled', tags='has-neighbor')
 
@@ -65,16 +77,18 @@ def other(config):  # pylint:disable=unused-argument
                  private_names=['completeArticle', 'completeWordsBefore', 'completeWordsAfter'],
                  value={'other': 'Complete'},
                  tags=['release-group-prefix'],
-                 validator={'__parent__': compose(seps_surround, validate_complete)})
+                 validator={'__parent__': and_(seps_surround, validate_complete)})
     rebulk.string('R5', value='Region 5')
     rebulk.string('RC', value='Region C')
     rebulk.regex('Pre-?Air', value='Preair')
-    rebulk.regex('(?:PS-?)?Vita', value='PS Vita')
+    rebulk.regex('(?:PS-?)Vita', value='PS Vita')
+    rebulk.regex('Vita', value='PS Vita', tags='has-neighbor')
     rebulk.regex('(HD)(?P<another>Rip)', value={'other': 'HD', 'another': 'Rip'},
                  private_parent=True, children=True, validator={'__parent__': seps_surround}, validate_all=True)
 
-    for value in ('Screener', 'Remux', '3D', 'PAL', 'SECAM', 'NTSC', 'XXX'):
+    for value in ('Screener', 'Remux', 'PAL', 'SECAM', 'NTSC', 'XXX'):
         rebulk.string(value, value=value)
+    rebulk.string('3D', value='3D', tags='has-neighbor')
 
     rebulk.string('HQ', value='High Quality', tags='uhdbluray-neighbor')
     rebulk.string('HR', value='High Resolution')
@@ -83,6 +97,7 @@ def other(config):  # pylint:disable=unused-argument
     rebulk.string('mHD', 'HDLight', value='Micro HD')
     rebulk.string('LDTV', value='Low Definition')
     rebulk.string('HFR', value='High Frame Rate')
+    rebulk.string('VFR', value='Variable Frame Rate')
     rebulk.string('HD', value='HD', validator=None,
                   tags=['streaming_service.prefix', 'streaming_service.suffix'])
     rebulk.regex('Full-?HD', 'FHD', value='Full HD', validator=None,
@@ -121,13 +136,15 @@ def other(config):  # pylint:disable=unused-argument
     rebulk.regex('BT-?2020', value='BT.2020', tags='uhdbluray-neighbor')
 
     rebulk.string('Sample', value='Sample', tags=['at-end', 'not-a-release-group'])
+    rebulk.string('Extras', value='Extras', tags='has-neighbor')
+    rebulk.regex('Digital-?Extras?', value='Extras')
     rebulk.string('Proof', value='Proof', tags=['at-end', 'not-a-release-group'])
     rebulk.string('Obfuscated', 'Scrambled', value='Obfuscated', tags=['at-end', 'not-a-release-group'])
     rebulk.string('xpost', 'postbot', 'asrequested', value='Repost', tags='not-a-release-group')
 
     rebulk.rules(RenameAnotherToOther, ValidateHasNeighbor, ValidateHasNeighborAfter, ValidateHasNeighborBefore,
                  ValidateScreenerRule, ValidateMuxRule, ValidateHardcodedSubs, ValidateStreamingServiceNeighbor,
-                 ValidateAtEnd, ProperCountRule)
+                 ValidateAtEnd, ValidateReal, ProperCountRule)
 
     return rebulk
 
@@ -150,7 +167,12 @@ class ProperCountRule(Rule):
                 raws[raw_cleanup(proper.raw)] = proper
             proper_count_match = copy.copy(propers[-1])
             proper_count_match.name = 'proper_count'
-            proper_count_match.value = len(raws)
+
+            value = 0
+            for raw in raws.values():
+                value += 2 if 'real' in raw.tags else 1
+
+            proper_count_match.value = value
             return proper_count_match
 
 
@@ -342,3 +364,20 @@ class ValidateAtEnd(Rule):
                     to_remove.append(match)
 
         return to_remove
+
+
+class ValidateReal(Rule):
+    """
+    Validate Real
+    """
+    consequence = RemoveMatch
+    priority = 64
+
+    def when(self, matches, context):
+        ret = []
+        for filepart in matches.markers.named('path'):
+            for match in matches.range(filepart.start, filepart.end, lambda m: m.name == 'other' and 'real' in m.tags):
+                if not matches.range(filepart.start, match.start):
+                    ret.append(match)
+
+        return ret

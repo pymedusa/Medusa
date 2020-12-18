@@ -1,0 +1,39 @@
+daily:
+  search_strings:
+    RSS: ['']
+  results:
+    - seeders: 50
+      pubdate: 2018-11-14 00:00:00
+      title: 9-1-1.S02E17.WEBRip.x264-ION10
+      leechers: 4
+      link: magnet:?xt=urn:btih:ffb036a2e2d1ac608d8599540e0c1d948af2021d
+      size: 459276288
+    - seeders: 61
+      pubdate: 2018-11-14 00:00:00
+      title: Dynasty.2017.S02E20.HDTV.x264-SVA[rarbg]
+      leechers: 8
+      link: magnet:?xt=urn:btih:041ce40b02a2347b35bfcc2f21d87db9a49fd443
+      size: 284164096
+    - seeders: 22
+      pubdate: 2018-11-14 00:00:00
+      title: Instynkt - Instinct (2018) [S01E01-02] [480p] [HDTV] [XViD] [AC3-H1] [Lektor PL]
+      leechers: 7
+      link: magnet:?xt=urn:btih:84f34f433c471d85ccd02e00c80419b155cdc202
+      size: 1363652116
+
+backlog:
+  search_strings:
+    Episode: ['The Rookie S01E16']
+  results:
+    - seeders: 51
+      pubdate: 2018-10-27 00:00:00
+      title: The.Rookie.S01E16.HDTV.x264-KILLERS[ettv]
+      leechers: 4
+      link: magnet:?xt=urn:btih:99f2b0c4fff047458db01492012eb9610309aef5
+      size: 329252864
+    - seeders: 35
+      pubdate: 2018-10-27 00:00:00
+      title: The.Rookie.S01E16.HDTV.x264-KILLERS[eztv].mkv
+      leechers: 0
+      link: magnet:?xt=urn:btih:2943421270f49ac6b3b7d5e4a91d41040e68c6ff
+      size: 329252864

@@ -19,7 +19,8 @@ from six import itervalues
 from subliminal import Provider
 from subliminal.cache import SHOW_EXPIRATION_TIME, region
 from subliminal.exceptions import ProviderError
-from subliminal.subtitle import Subtitle, fix_line_ending, guess_matches
+from subliminal.matches import guess_matches
+from subliminal.subtitle import Subtitle, fix_line_ending
 from subliminal.utils import sanitize
 from subliminal.video import Episode, Movie
 
@@ -91,6 +92,7 @@ class WizdomProvider(Provider):
 
     def initialize(self):
         self.session = Session()
+        self.session.headers['User-Agent'] = self.user_agent
 
     def terminate(self):
         self.session.close()
@@ -109,7 +111,7 @@ class WizdomProvider(Provider):
         # make the search
         logger.info('Searching IMDB ID for %r%r', title, '' if not year else ' ({})'.format(year))
         category = 'movie' if is_movie else 'tv'
-        title = title.replace('\'', '')
+        title = title.replace("'", '')
         # get TMDB ID first
         r = self.session.get('http://api.tmdb.org/3/search/{}?api_key={}&query={}{}&language=en'.format(
             category, self._tmdb_api_key, title, '' if not year else '&year={}'.format(year)))

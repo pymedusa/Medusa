@@ -34,7 +34,9 @@ class EnlargeGroupMatches(CustomRule):
             for match in matches.ending(group.end - 1):
                 ending.append(match)
 
-        return starting, ending
+        if starting or ending:
+            return starting, ending
+        return False
 
     def then(self, matches, when_response, context):
         starting, ending = when_response
@@ -192,6 +194,23 @@ class SeasonYear(Rule):
         return ret
 
 
+class YearSeason(Rule):
+    """
+    If a year is found, no season found, and episode is found, create an match with season.
+    """
+    priority = POST_PROCESS
+    consequence = AppendMatch
+
+    def when(self, matches, context):
+        ret = []
+        if not matches.named('season') and matches.named('episode'):
+            for year in matches.named('year'):
+                season = copy.copy(year)
+                season.name = 'season'
+                ret.append(season)
+        return ret
+
+
 class Processors(CustomRule):
     """
     Empty rule for ordering post_processing properly.
@@ -237,4 +256,4 @@ def processors(config):  # pylint:disable=unused-argument
     return Rebulk().rules(EnlargeGroupMatches, EquivalentHoles,
                           RemoveLessSpecificSeasonEpisode('season'),
                           RemoveLessSpecificSeasonEpisode('episode'),
-                          RemoveAmbiguous, SeasonYear, Processors, StripSeparators)
+                          RemoveAmbiguous, SeasonYear, YearSeason, Processors, StripSeparators)

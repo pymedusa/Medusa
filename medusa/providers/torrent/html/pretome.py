@@ -43,11 +43,7 @@ class PretomeProvider(TorrentProvider):
         }
 
         # Proper Strings
-        self.proper_strings = ['PROPER', 'REPACK', 'REAL']
-
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
 
         # Cache
         self.cache = tv.Cache(self)
@@ -126,7 +122,7 @@ class PretomeProvider(TorrentProvider):
                     leechers = try_int(cells[10].get_text())
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
                                       ' minimum seeders: {0}. Seeders: {1}',
@@ -136,13 +132,16 @@ class PretomeProvider(TorrentProvider):
                     torrent_size = self._norm_size(cells[7].get_text(strip=True))
                     size = convert_size(torrent_size) or -1
 
+                    pubdate_raw = cells[5].get_text()
+                    pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
+
                     item = {
                         'title': title,
                         'link': download_url,
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',
@@ -187,7 +186,7 @@ class PretomeProvider(TorrentProvider):
         """Normalize the size from the parsed string."""
         if not size_string:
             return size_string
-        return re.sub(r'(?P<unit>[A-Z]+)', ' \g<unit>', size_string)
+        return re.sub(r'(?P<unit>[A-Z]+)', r' \g<unit>', size_string)
 
 
 provider = PretomeProvider()

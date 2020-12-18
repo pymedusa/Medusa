@@ -37,13 +37,24 @@ like :class:`github.NamedUser.NamedUser` or :class:`github.Repository.Repository
 All classes inherit from :class:`github.GithubObject.GithubObject`.
 """
 
+from __future__ import absolute_import
+
 import logging
 
 from github.MainClass import Github, GithubIntegration
-from GithubException import GithubException, BadCredentialsException, UnknownObjectException, BadUserAgentException, RateLimitExceededException, BadAttributeException, TwoFactorException
-from InputFileContent import InputFileContent
-from InputGitAuthor import InputGitAuthor
-from InputGitTreeElement import InputGitTreeElement
+
+from .GithubException import (
+    BadAttributeException,
+    BadCredentialsException,
+    BadUserAgentException,
+    GithubException,
+    RateLimitExceededException,
+    TwoFactorException,
+    UnknownObjectException,
+)
+from .InputFileContent import InputFileContent
+from .InputGitAuthor import InputGitAuthor
+from .InputGitTreeElement import InputGitTreeElement
 
 
 def enable_console_debug_logging():  # pragma no cover (Function useful only outside test environment)
@@ -54,3 +65,20 @@ def enable_console_debug_logging():  # pragma no cover (Function useful only out
     logger = logging.getLogger("github")
     logger.setLevel(logging.DEBUG)
     logger.addHandler(logging.StreamHandler())
+
+
+__all__ = [
+    BadAttributeException,
+    BadCredentialsException,
+    BadUserAgentException,
+    enable_console_debug_logging,
+    Github,
+    GithubException,
+    GithubIntegration,
+    InputFileContent,
+    InputGitAuthor,
+    InputGitTreeElement,
+    RateLimitExceededException,
+    TwoFactorException,
+    UnknownObjectException,
+]

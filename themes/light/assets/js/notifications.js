@@ -19,9 +19,9 @@ window.displayNotification = (type, title, message, id) => {
         desktop: {
             tag: id
         },
-        text: String(message).replace(/<br[\s/]*(?:\s[^>]*)?>/ig, '\n') // eslint-disable-line unicorn/no-unsafe-regex
-            .replace(/<[/]?b(?:\s[^>]*)?>/ig, '*') // eslint-disable-line unicorn/no-unsafe-regex
-            .replace(/<i(?:\s[^>]*)?>/ig, '[').replace(/<[/]i>/ig, ']') // eslint-disable-line unicorn/no-unsafe-regex
-            .replace(/<(?:[/]?ul|\/li)(?:\s[^>]*)?>/ig, '').replace(/<li(?:\s[^>]*)?>/ig, '\n* ') // eslint-disable-line unicorn/no-unsafe-regex
+        text: String(message).replace(/<br[\s/]*(?:\s[^>]*)?>/gi, '\n')
+            .replace(/<\/?b(?:\s[^>]*)?>/gi, '*')
+            .replace(/<i(?:\s[^>]*)?>/gi, '[').replace(/<\/i>/gi, ']')
+            .replace(/<(?:\/?ul|\/li)(?:\s[^>]*)?>/gi, '').replace(/<li(?:\s[^>]*)?>/gi, '\n* ')
     });
 };

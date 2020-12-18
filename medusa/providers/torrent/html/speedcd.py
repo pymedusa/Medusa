@@ -5,18 +5,17 @@
 from __future__ import unicode_literals
 
 import logging
+import re
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
-from medusa.helper.common import (
-    convert_size,
-    try_int,
-)
+from medusa.helper.common import convert_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
+
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -36,9 +35,9 @@ class SpeedCDProvider(TorrentProvider):
         # URLs
         self.url = 'https://speed.cd'
         self.urls = {
-            'login': urljoin(self.url, 'login.php'),
-            'search': urljoin(self.url, 'browse.php'),
-            'login_post': None,
+            'API': urljoin(self.url, 'API'),
+            'checkpoint1': urljoin(self.url, 'checkpoint/API'),
+            'checkpoint2': urljoin(self.url, 'checkpoint/'),
         }
 
         # Proper Strings
@@ -46,10 +45,7 @@ class SpeedCDProvider(TorrentProvider):
 
         # Miscellaneous Options
         self.freeleech = False
-
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
+        self.enable_cookies = False
 
         # Cache
         self.cache = tv.Cache(self)
@@ -67,18 +63,11 @@ class SpeedCDProvider(TorrentProvider):
         if not self.login():
             return results
 
-        # http://speed.cd/browse.php?c49=1&c50=1&c52=1&c41=1&c55=1&c2=1&c30=1&freeleech=on&search=arrow&d=on
+        # http://speed.cd/browse/57/30/52/53/2/49/55/41/50/q/handmaid
         # Search Params
-        search_params = {
-            'c2': 1,  # TV/Episodes
-            'c30': 1,  # Anime
-            'c41': 1,  # TV/Packs
-            'c49': 1,  # TV/HD
-            'c50': 1,  # TV/Sports
-            'c52': 1,  # TV/B-Ray
-            'c55': 1,  # TV/Kids
-            'search': '',
-            'freeleech': 'on' if self.freeleech else None
+        data = {
+            'jxt': 2,
+            'jxw': 'b'
         }
 
         for mode in search_strings:
@@ -86,17 +75,34 @@ class SpeedCDProvider(TorrentProvider):
 
             for search_string in search_strings[mode]:
 
+                route = '/browse/57/30/52/53/2/49/55/41/50'
+                if self.freeleech:
+                    route += '/freeleech'
+
                 if mode != 'RSS':
                     log.debug('Search string: {search}',
                               {'search': search_string})
+                    route += '/q/' + search_string
 
-                search_params['search'] = search_string
-                response = self.session.get(self.urls['search'], params=search_params)
+                data['route'] = route
+                response = self.session.post(self.urls['API'], data=data)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue
 
-                results += self.parse(response.text, mode)
+                try:
+                    response_json = response.json()
+                except ValueError as e:
+                    log.warning(
+                        'Could not decode the response as json for the result,'
+                        ' searching {provider} with error {err_msg}',
+                        provider=self.name,
+                        err_msg=e
+                    )
+                    continue
+
+                html = response_json['Fs'][0][1][1][1]
+                results += self.parse(html, mode)
 
         return results
 
@@ -112,14 +118,7 @@ class SpeedCDProvider(TorrentProvider):
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
-            torrent_table = html.find('div', class_='boxContent')
-            torrent_table = torrent_table.find('table') if torrent_table else None
-            torrent_rows = torrent_table('tr') if torrent_table else []
-
-            # Continue only if at least one release is found
-            if len(torrent_rows) < 2:
-                log.debug('Data returned from provider does not contain any torrents')
-                return items
+            torrent_rows = html('tr')
 
             # Skip column headers
             for row in torrent_rows[1:]:
@@ -127,28 +126,27 @@ class SpeedCDProvider(TorrentProvider):
 
                 try:
                     title = cells[1].find('a').get_text()
-                    download_url = urljoin(self.url,
-                                           cells[2].find(title='Download').parent['href'])
+                    download_url = urljoin(self.url, cells[3].find('a')['href'])
                     if not all([title, download_url]):
                         continue
 
-                    seeders = try_int(cells[6].get_text(strip=True))
-                    leechers = try_int(cells[7].get_text(strip=True))
+                    seeders = int(cells[7].get_text(strip=True))
+                    leechers = int(cells[8].get_text(strip=True))
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
                                       ' minimum seeders: {0}. Seeders: {1}',
                                       title, seeders)
                         continue
 
-                    torrent_size = cells[4].get_text()
+                    torrent_size = cells[5].get_text()
                     torrent_size = torrent_size[:-2] + ' ' + torrent_size[-2:]
                     size = convert_size(torrent_size) or -1
 
-                    pubdate_raw = cells[1].find('span', class_='elapsedDate').get_text()
-                    pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
+                    pubdate_raw = cells[1].find('span', class_='elapsedDate')['title']
+                    pubdate = self.parse_pubdate(pubdate_raw)
 
                     item = {
                         'title': title,
@@ -173,39 +171,33 @@ class SpeedCDProvider(TorrentProvider):
         if any(dict_from_cookiejar(self.session.cookies).values()):
             return True
 
-        login_params = {
-            'username': self.username,
-            'password': self.password,
+        # Start posting username to API
+        login_params_step_1 = {
+            'username': self.username
         }
 
-        if not self.urls['login_post'] and not self.login_url():
-            log.debug('Unable to get login URL')
+        response = self.session.post(self.urls['checkpoint1'], data=login_params_step_1)
+        if not response or not response.text:
+            log.warning('Unable to connect to provider')
             return False
 
-        response = self.session.post(self.urls['login_post'], data=login_params)
-        if not response or not response.text:
-            log.debug('Unable to connect to provider using login URL: {url}',
-                      {'url': self.urls['login_post']})
-            return False
-        if 'incorrect username or password. please try again' in response.text.lower():
+        challenge_match = re.match(r'.*<input name=.+a.+value=\\"+(.*)\\".*type.*', response.text)
+        if not challenge_match:
             log.warning('Invalid username or password. Check your settings')
             return False
+
+        login_params_step_2 = {
+            'pwd': self.password,
+            'a': challenge_match.group(1)
+        }
+
+        response = self.session.post(self.urls['checkpoint2'], data=login_params_step_2)
+
+        if not re.search(self.username, response.text):
+            log.warning('Invalid username or password. Check your settings')
+            return False
+
         return True
-
-        log.warning('Unable to connect to provider')
-        return
-
-    def login_url(self):
-        """Get the login url (post) as speed.cd keeps changing it."""
-        response = self.session.get(self.urls['login'])
-        if not response or not response.text:
-            log.debug('Unable to connect to provider to get login URL')
-            return
-        data = BS4Parser(response.text, 'html5lib')
-        login_post = data.soup.find('form', id='loginform').get('action')
-        if login_post:
-            self.urls['login_post'] = urljoin(self.url, login_post)
-            return True
 
 
 provider = SpeedCDProvider()

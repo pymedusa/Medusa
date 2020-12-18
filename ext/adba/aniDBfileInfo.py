@@ -19,12 +19,16 @@
 
 import hashlib
 import logging
-import pickle
 import os
+import pickle
 import requests
 import sys
 import time
 import xml.etree.cElementTree as etree
+
+
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 
 # http://www.radicand.org/blog/orz/2010/2/21/edonkey2000-hash-in-python/
@@ -62,7 +66,7 @@ def get_ED2K(filePath, forceHash=False, cacheLocation=os.path.normpath(sys.path[
                 with open(cacheLocation, 'wb') as f:
                     pickle.dump(get_ED2K.ED2KCache, f, pickle.HIGHEST_PROTOCOL)
         except:
-            logging.error("Error occurred while writing back to disk")
+            logger.error("Error occurred while writing back to disk")
         return
 
     file_modified_time = os.path.getmtime(filePath)
@@ -128,8 +132,7 @@ def read_xml_into_etree(filePath):
             if not get_anime_titles_xml(filePath):
                 return
 
-    f = open(filePath, "r")
-    xml_a_setree = etree.ElementTree(file=f)
+    xml_a_setree = etree.ElementTree().parse(filePath)
     return xml_a_setree
 
 
@@ -137,7 +140,7 @@ def _remove_file_failed(file):
     try:
         os.remove(file)
     except OSError:
-        logging.warning("Error occurred while trying to remove file %s", file)
+        logger.warning("Error occurred while trying to remove file %s", file)
 
 
 def download_file(url, filename):

@@ -1,5 +1,7 @@
 # coding=utf-8
 """Tests for medusa.logger.py."""
+from __future__ import unicode_literals
+
 import os.path
 from datetime import datetime
 
@@ -55,8 +57,8 @@ class TestStandardLoggingApi(object):
         },
         {  # p1: Regression
             'message': 'This is an example: {json}',
-            'args': [{'json': {'a': 1}}],
-            'expected': "This is an example: {'a': 1}"
+            'args': [{'json': {5: 1}}],
+            'expected': 'This is an example: {5: 1}'
         },
     ])
     def test_logger__brace_adapter(self, logger, read_loglines, p):
@@ -110,21 +112,20 @@ def describe_logline(logline):
 
 
 @pytest.mark.parametrize('line_pattern', [
-    b'This is a example of log line with number {n}',
-    u'This is a example of unicode log line with number {n}',
-    b'This is a example of log line with number {n} using \xbb',
+    'This is a example of log line with number {n}',
 ])
 def test_reverse_readlines(create_file, line_pattern):
     # Given
     no_lines = 10000
-    filename = create_file(filename='samplefile.log', lines=[line_pattern.format(n=i) for i in range(0, no_lines)])
-    expected = [line_pattern.format(n=no_lines - i - 1) for i in range(0, no_lines)]
+    lines = [line_pattern.format(n=i).encode('utf-8') for i in list(range(0, no_lines))]
+    filename = create_file(filename='samplefile.log', lines=lines)
+    expected = [line_pattern.format(n=no_lines - i - 1) for i in list(range(0, no_lines))]
     for i, v in enumerate(expected):
         if not isinstance(v, text_type):
             expected[i] = text_type(v, errors='replace')
 
     # When
-    actual = list(sut.reverse_readlines(filename, buf_size=1024))
+    actual = list(sut.reverse_readlines(filename, block_size=1024))
 
     # Then
     assert expected == actual
@@ -134,7 +135,7 @@ def test_read_loglines(logger, commit_hash, logfile):
     # Given
     no_msgs = 200
     line_pattern = 'This is a example of log line with number {n}'
-    for i in range(0, no_msgs):
+    for i in list(range(0, no_msgs)):
         logger.warning(line_pattern.format(n=i + 1))
 
     # When
@@ -159,9 +160,9 @@ def test_read_loglines__with_traceback(logger, commit_hash, logfile):
     logger.info(line1)
     logger.debug(line2)
     try:
-        1 / 0
-    except ZeroDivisionError as e:
-        logger.exception(e.message)
+        1 // 0
+    except ZeroDivisionError as error:
+        logger.exception(error)
 
     # When
     actual = list(sut.read_loglines(logfile))
@@ -259,6 +260,84 @@ def test_read_loglines__with_traceback(logger, commit_hash, logfile):
             ]
         }
     },
+    {  # p4: Guessit error
+       # NOTE: The traceback lines are truncated, but still true to Guessit's template
+        'line': (
+            '2019-06-13 16:13:15 ERROR    FINDSUBTITLES :: [c1675ff] Exception generated: An internal error has occured in guessit.'
+            '\n===================== Guessit Exception Report ====================='
+            '\nversion=3.0.4.dev0'
+            '\nstring=Unit,.The.3x08.Play.16.HDTV-Caph.[tvu.org.ru].srt'
+            "\noptions={'type': 'episode'}"
+            '\n--------------------------------------------------------------------'
+            '\nTraceback (most recent call last):'
+            '\n  File "/home/pi/Medusa/ext/guessit/api.py", line 210, in guessit'
+            '\n    matches = self.rebulk.matches(string, options)'
+            '\n  File "/home/pi/Medusa/ext/rebulk/rebulk.py", line 288, in matches'
+            '\n    self._execute_rules(matches, context)'
+            '\n  File "/home/pi/Medusa/ext/rebulk/rebulk.py", line 319, in _execute_rules'
+            '\n    rules.execute_all_rules(matches, context)'
+            '\n  File "/home/pi/Medusa/ext/rebulk/rules.py", line 316, in execute_all_rules'
+            '\n    when_response = execute_rule(rule, matches, context)'
+            '\n  File "/home/pi/Medusa/ext/rebulk/rules.py", line 341, in execute_rule'
+            '\n    rule.then(matches, when_response, context)'
+            '\n  File "/home/pi/Medusa/ext/rebulk/rules.py", line 127, in then'
+            '\n    cons.then(matches, when_response, context)'
+            '\n  File "/home/pi/Medusa/ext/rebulk/rules.py", line 140, in then'
+            '\n    matches.remove(match)'
+            '\n  File "/usr/lib/python3.7/_collections_abc.py", line 1004, in remove'
+            '\n    del self[self.index(value)]'
+            '\n  File "/home/pi/Medusa/ext/rebulk/match.py", line 569, in __delitem__'
+            '\n    self._remove_match(match)'
+            '\n  File "/home/pi/Medusa/ext/rebulk/match.py", line 137, in _remove_match'
+            '\n    _BaseMatches._base_remove(self._tag_dict[tag], match)'
+            '\nValueError: list.remove(x): x not in list'
+            '\n--------------------------------------------------------------------'
+            '\nPlease report at https://github.com/guessit-io/guessit/issues.'
+            '\n===================================================================='
+        ),
+        'expected': {
+            'message': 'Exception generated: An internal error has occured in guessit.',
+            'issue_title': 'ValueError: list.remove(x): x not in list',
+            'timestamp': datetime(year=2019, month=6, day=13, hour=16, minute=13, second=15),
+            'level_name': 'ERROR',
+            'thread_name': 'FINDSUBTITLES',
+            'thread_id': None,
+            'extra': None,
+            'curhash': 'c1675ff',
+            'traceback_lines': [
+                '===================== Guessit Exception Report =====================',
+                'version=3.0.4.dev0',
+                'string=Unit,.The.3x08.Play.16.HDTV-Caph.[tvu.org.ru].srt',
+                "options={'type': 'episode'}",
+                '--------------------------------------------------------------------',
+                'Traceback (most recent call last):',
+                '  File "/home/pi/Medusa/ext/guessit/api.py", line 210, in guessit',
+                '    matches = self.rebulk.matches(string, options)',
+                '  File "/home/pi/Medusa/ext/rebulk/rebulk.py", line 288, in matches',
+                '    self._execute_rules(matches, context)',
+                '  File "/home/pi/Medusa/ext/rebulk/rebulk.py", line 319, in _execute_rules',
+                '    rules.execute_all_rules(matches, context)',
+                '  File "/home/pi/Medusa/ext/rebulk/rules.py", line 316, in execute_all_rules',
+                '    when_response = execute_rule(rule, matches, context)',
+                '  File "/home/pi/Medusa/ext/rebulk/rules.py", line 341, in execute_rule',
+                '    rule.then(matches, when_response, context)',
+                '  File "/home/pi/Medusa/ext/rebulk/rules.py", line 127, in then',
+                '    cons.then(matches, when_response, context)',
+                '  File "/home/pi/Medusa/ext/rebulk/rules.py", line 140, in then',
+                '    matches.remove(match)',
+                '  File "/usr/lib/python3.7/_collections_abc.py", line 1004, in remove',
+                '    del self[self.index(value)]',
+                '  File "/home/pi/Medusa/ext/rebulk/match.py", line 569, in __delitem__',
+                '    self._remove_match(match)',
+                '  File "/home/pi/Medusa/ext/rebulk/match.py", line 137, in _remove_match',
+                '    _BaseMatches._base_remove(self._tag_dict[tag], match)',
+                'ValueError: list.remove(x): x not in list',
+                '--------------------------------------------------------------------',
+                'Please report at https://github.com/guessit-io/guessit/issues.',
+                '====================================================================',
+            ]
+        }
+    },
 ])
 def test_from_line(p):
     # Given
@@ -340,8 +419,8 @@ def test_get_context_loglines__without_timestamp():
 def test_get_context_loglines(logger, read_loglines):
     # Given
     max_lines = 100
-    for i in range(1, 200):
-        logger.debug('line {}'.format(i))
+    for i in list(range(1, 200)):
+        logger.debug('line {0}'.format(i))
     loglines = list(read_loglines)
     logline = loglines[0]
     expected = reversed(loglines[:max_lines])
@@ -356,11 +435,11 @@ def test_get_context_loglines(logger, read_loglines):
 def test_read_loglines__max_traceback_depth(logger):
     # Given
     try:
-        1 / 0
+        1 // 0
     except ZeroDivisionError:
         logger.exception('Expected exception message')
     try:
-        123 / 0
+        123 // 0
     except ZeroDivisionError:
         logger.exception('Another Expected exception message')
 
@@ -381,7 +460,7 @@ def test_format_to_html(logger, read_loglines, app_config):
     prog_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     base_url = '../base'
     try:
-        1 / 0
+        1 // 0
     except ZeroDivisionError:
         logger.exception('Expected exception message')
     loglines = list(read_loglines)

@@ -24,10 +24,12 @@
 #                                                                              #
 ################################################################################
 
+from __future__ import absolute_import
+
 import github.GithubObject
 import github.NamedUser
 
-import Consts
+from . import Consts
 
 
 class Reaction(github.GithubObject.CompletableGithubObject):
@@ -78,7 +80,7 @@ class Reaction(github.GithubObject.CompletableGithubObject):
         self._requester.requestJsonAndCheck(
             "DELETE",
             self._parentUrl("") + "/reactions/" + str(self.id),
-            headers={'Accept': Consts.mediaTypeReactionsPreview}
+            headers={"Accept": Consts.mediaTypeReactionsPreview},
         )
 
     def _initAttributes(self):
@@ -95,4 +97,6 @@ class Reaction(github.GithubObject.CompletableGithubObject):
         if "id" in attributes:  # pragma no branch
             self._id = self._makeIntAttribute(attributes["id"])
         if "user" in attributes:  # pragma no branch
-            self._user = self._makeClassAttribute(github.NamedUser.NamedUser, attributes["user"])
+            self._user = self._makeClassAttribute(
+                github.NamedUser.NamedUser, attributes["user"]
+            )

@@ -1,0 +1,77 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SubtitleSearch renders empty subtitle component 1`] = `
+<tr
+  class="subtitle-search-wrapper"
+>
+  <td
+    colspan="9999"
+  >
+    <!---->
+     
+    <!---->
+     
+    <!---->
+  </td>
+</tr>
+`;
+
+exports[`SubtitleSearch renders subtitle component with manual subtitle results 1`] = `
+<tr
+  class="subtitle-search-wrapper"
+>
+  <td
+    colspan="9999"
+  >
+    <!---->
+     
+    <!---->
+     
+    <!---->
+  </td>
+</tr>
+`;
+
+exports[`SubtitleSearch renders subtitle component with question 1`] = `
+<tr
+  class="subtitle-search-wrapper"
+>
+  <td
+    colspan="9999"
+  >
+    <!---->
+     
+    <div
+      class="search-question"
+    >
+      <div
+        class="question"
+      >
+        <p>
+          Do you want to manually pick subtitles or let us choose it for you?
+        </p>
+      </div>
+       
+      <div
+        class="options"
+      >
+        <button
+          class="btn-medusa btn-info"
+          type="button"
+        >
+          Auto
+        </button>
+         
+        <button
+          class="btn-medusa btn-success"
+          type="button"
+        >
+          Manual
+        </button>
+      </div>
+    </div>
+     
+    <!---->
+  </td>
+</tr>
+`;

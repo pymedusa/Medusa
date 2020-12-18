@@ -31,11 +31,14 @@
 #                                                                              #
 ################################################################################
 
-import urllib
+from __future__ import absolute_import
+
+import six
+import six.moves.urllib.parse
 
 import github.GithubObject
 
-import Consts
+from . import Consts
 
 
 class Label(github.GithubObject.CompletableGithubObject):
@@ -83,10 +86,7 @@ class Label(github.GithubObject.CompletableGithubObject):
         :calls: `DELETE /repos/:owner/:repo/labels/:name <http://developer.github.com/v3/issues/labels>`_
         :rtype: None
         """
-        headers, data = self._requester.requestJsonAndCheck(
-            "DELETE",
-            self.url
-        )
+        headers, data = self._requester.requestJsonAndCheck("DELETE", self.url)
 
     def edit(self, name, color, description=github.GithubObject.NotSet):
         """
@@ -96,9 +96,11 @@ class Label(github.GithubObject.CompletableGithubObject):
         :param description: string
         :rtype: None
         """
-        assert isinstance(name, (str, unicode)), name
-        assert isinstance(color, (str, unicode)), color
-        assert description is github.GithubObject.NotSet or isinstance(description, (str, unicode)), description
+        assert isinstance(name, (str, six.text_type)), name
+        assert isinstance(color, (str, six.text_type)), color
+        assert description is github.GithubObject.NotSet or isinstance(
+            description, (str, six.text_type)
+        ), description
         post_parameters = {
             "name": name,
             "color": color,
@@ -109,13 +111,13 @@ class Label(github.GithubObject.CompletableGithubObject):
             "PATCH",
             self.url,
             input=post_parameters,
-            headers={'Accept': Consts.mediaTypeLabelDescriptionSearchPreview}
+            headers={"Accept": Consts.mediaTypeLabelDescriptionSearchPreview},
         )
         self._useAttributes(data)
 
     @property
     def _identity(self):
-        return urllib.quote(self.name)
+        return six.moves.urllib.parse.quote(self.name)
 
     def _initAttributes(self):
         self._color = github.GithubObject.NotSet

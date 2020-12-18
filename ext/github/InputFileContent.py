@@ -28,6 +28,10 @@
 #                                                                              #
 ################################################################################
 
+from __future__ import absolute_import
+
+import six
+
 import github.GithubObject
 
 
@@ -42,8 +46,10 @@ class InputFileContent(object):
         :param new_name: string
         """
 
-        assert isinstance(content, (str, unicode)), content
-        assert new_name is github.GithubObject.NotSet or isinstance(new_name, (str, unicode)), new_name
+        assert isinstance(content, (str, six.text_type)), content
+        assert new_name is github.GithubObject.NotSet or isinstance(
+            new_name, (str, six.text_type)
+        ), new_name
         self.__newName = new_name
         self.__content = content
 

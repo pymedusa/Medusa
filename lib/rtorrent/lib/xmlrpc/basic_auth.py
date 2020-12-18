@@ -20,14 +20,18 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-from base64 import encodestring
+from base64 import encodebytes
 import string
-import xmlrpclib
+
+try:
+    import xmlrpc.client as xmlrpc_client
+except ImportError:
+    import xmlrpclib as xmlrpc_client
 
 
-class BasicAuthTransport(xmlrpclib.Transport):
+class BasicAuthTransport(xmlrpc_client.Transport):
     def __init__(self, username=None, password=None):
-        xmlrpclib.Transport.__init__(self)
+        xmlrpc_client.Transport.__init__(self)
 
         self.username = username
         self.password = password
@@ -35,7 +39,7 @@ class BasicAuthTransport(xmlrpclib.Transport):
     def send_auth(self, h):
         if self.username is not None and self.password is not None:
             h.putheader('AUTHORIZATION', "Basic %s" % string.replace(
-                encodestring("%s:%s" % (self.username, self.password)),
+                encodebytes("%s:%s" % (self.username, self.password)),
                 "\012", ""
             ))
 
@@ -57,7 +61,7 @@ class BasicAuthTransport(xmlrpclib.Transport):
             if response.status == 200:
                 self.verbose = verbose
                 return self.parse_response(response)
-        except xmlrpclib.Fault:
+        except xmlrpc_client.Fault:
             raise
         except Exception:
             self.close()
@@ -66,7 +70,7 @@ class BasicAuthTransport(xmlrpclib.Transport):
         #discard any response data and raise exception
         if response.getheader("content-length", 0):
             response.read()
-        raise xmlrpclib.ProtocolError(
+        raise xmlrpc_client.ProtocolError(
             host + handler,
             response.status, response.reason,
             response.msg,

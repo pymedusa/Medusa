@@ -1,9 +1,11 @@
 export { default as auth } from './auth';
-export { default as config } from './config';
 export { default as defaults } from './defaults';
-export { default as metadata } from './metadata';
+export { default as history } from './history';
 export { default as notifications } from './notifications';
-export { default as qualities } from './qualities';
+export { default as provider } from './provider';
 export { default as shows } from './shows';
 export { default as socket } from './socket';
-export { default as statuses } from './statuses';
+export { default as stats } from './stats';
+export { default as config } from './config';
+export { default as search } from './search';
+// Export * from './configs/index.js';

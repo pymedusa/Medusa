@@ -3,75 +3,42 @@
 """All providers type init."""
 from __future__ import unicode_literals
 
+import importlib
 import pkgutil
+import sys
 from builtins import next
 from builtins import zip
-from os import sys
 from random import shuffle
 
 from medusa import app
-from medusa.providers.nzb import (
-    anizb, binsearch,
-)
-from medusa.providers.torrent import (
-    abnormal,
-    alpharatio,
-    anidex,
-    animebytes,
-    animetorrents,
-    archetorrent,
-    avistaz,
-    bitcannon,
-    bithdtv,
-    bjshare,
-    btn,
-    cinemaz,
-    danishbits,
-    elitetracker,
-    hdbits,
-    hdspace,
-    hdtorrents,
-    hebits,
-    horriblesubs,
-    iptorrents,
-    limetorrents,
-    morethantv,
-    nebulance,
-    newpct,
-    norbits,
-    nyaa,
-    pretome,
-    privatehd,
-    rarbg,
-    scenetime,
-    sdbits,
-    shanaproject,
-    shazbat,
-    speedcd,
-    thepiratebay,
-    tntvillage,
-    tokyotoshokan,
-    torrent9,
-    torrentbytes,
-    torrentday,
-    torrenting,
-    torrentleech,
-    torrentz2,
-    tvchaosuk,
-    xthor,
-    yggtorrent,
-    zooqle
-)
 
-__all__ = [
-    'btn', 'thepiratebay', 'torrentleech', 'hdtorrents', 'torrentday', 'hdbits',
-    'speedcd', 'nyaa', 'torrentbytes', 'torrent9', 'morethantv', 'tokyotoshokan', 'iptorrents',
-    'hebits', 'alpharatio', 'sdbits', 'shazbat', 'rarbg', 'tntvillage', 'binsearch', 'xthor',
-    'abnormal', 'scenetime', 'nebulance', 'tvchaosuk', 'bitcannon', 'torrentz2', 'pretome', 'anizb',
-    'hdspace', 'newpct', 'danishbits', 'limetorrents', 'norbits', 'bithdtv',
-    'zooqle', 'animebytes', 'animetorrents', 'horriblesubs', 'anidex', 'shanaproject', 'torrenting',
-    'yggtorrent', 'elitetracker', 'archetorrent', 'privatehd', 'cinemaz', 'avistaz', 'bjshare'
-]
+
+def import_providers(package_name):
+    provider_names = []
+
+    def import_submodules(subpackage_name):
+        package = sys.modules[subpackage_name]
+
+        results = {}
+        for loader, name, is_pkg in pkgutil.iter_modules(package.__path__):
+            full_name = subpackage_name + '.' + name
+            module = importlib.import_module(full_name)
+            if getattr(module, 'provider', None):
+                provider_names.append(name)
+
+            results[full_name] = module
+            if is_pkg:
+                valid_pkg = import_submodules(full_name)
+                if valid_pkg:
+                    results.update(valid_pkg)
+
+        return results
+
+    import_submodules(package_name)
+    return provider_names
+
+
+provider_names = import_providers(__name__)
 
 
 def sorted_provider_list(randomize=False):
@@ -102,7 +69,7 @@ def sorted_provider_list(randomize=False):
 
 
 def make_provider_list():
-    return [x.provider for x in (get_provider_module(y) for y in __all__) if x]
+    return [x.provider for x in (get_provider_module(y) for y in provider_names) if x]
 
 
 def get_provider_module(name):
@@ -111,7 +78,7 @@ def get_provider_module(name):
         path=__path__, prefix=__name__ + '.', onerror=lambda x: None) if ispkg]
 
     for prefix in prefixes:
-        if name in __all__ and prefix + name in sys.modules:
+        if name in provider_names and prefix + name in sys.modules:
             return sys.modules[prefix + name]
 
     raise Exception("Can't find {prefix}{name} in Providers".format(prefix=prefix, name=name))

@@ -30,8 +30,9 @@
 #                                                                              #
 ################################################################################
 
-import github.GithubObject
+from __future__ import absolute_import
 
+import github.GithubObject
 import github.GitTreeElement
 
 
@@ -80,6 +81,8 @@ class GitTree(github.GithubObject.CompletableGithubObject):
         if "sha" in attributes:  # pragma no branch
             self._sha = self._makeStringAttribute(attributes["sha"])
         if "tree" in attributes:  # pragma no branch
-            self._tree = self._makeListOfClassesAttribute(github.GitTreeElement.GitTreeElement, attributes["tree"])
+            self._tree = self._makeListOfClassesAttribute(
+                github.GitTreeElement.GitTreeElement, attributes["tree"]
+            )
         if "url" in attributes:  # pragma no branch
             self._url = self._makeStringAttribute(attributes["url"])
