@@ -28,6 +28,8 @@ def airs_date(airs_at):
     """convert a timestamp of the form '2015-02-01T05:30:00.000-08:00Z' to a
     python datetime object (with time zone information removed)
     """
+    if airs_at is None:
+        return None
     parsed = airs_at.split('-')[:-1]
     if len(parsed) == 2:
         return datetime.strptime(airs_at[:-1], '%Y-%m-%dT%H:%M:%S.000')

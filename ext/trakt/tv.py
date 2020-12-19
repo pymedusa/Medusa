@@ -6,13 +6,14 @@ from trakt.core import Airs, Alias, Comment, Genre, delete, get
 from trakt.errors import NotFoundException
 from trakt.sync import (Scrobbler, rate, comment, add_to_collection,
                         add_to_watchlist, add_to_history, remove_from_history,
-                        remove_from_collection, remove_from_watchlist, search)
+                        remove_from_collection, remove_from_watchlist, search,
+                        checkin_media, delete_checkin)
 from trakt.utils import slugify, extract_ids, airs_date, unicode_safe
 from trakt.people import Person
 
 __author__ = 'Jon Nappi'
 __all__ = ['dismiss_recommendation', 'get_recommended_shows', 'genres',
-           'popular_shows', 'trending_shows', 'updated_shows', 'collected_shows', 'watched_shows', 'played_shows', 'anticipated_shows', 'TVShow',
+           'popular_shows', 'trending_shows', 'updated_shows', 'TVShow',
            'TVEpisode', 'TVSeason', 'Translation']
 
 
@@ -60,42 +61,6 @@ def popular_shows():
 
 
 @get
-def watched_shows():
-    data = yield 'shows/watched'
-    shows = []
-    for show in data:
-        data = show.get('ids', {})
-        extract_ids(data)
-        data['year'] = show['year']
-        shows.append(TVShow(show['title'], **data))
-    yield shows
-
-
-@get
-def played_shows():
-    data = yield 'shows/played'
-    shows = []
-    for show in data:
-        data = show.get('ids', {})
-        extract_ids(data)
-        data['year'] = show['year']
-        shows.append(TVShow(show['title'], **data))
-    yield shows
-
-
-@get
-def anticipated_shows():
-    data = yield 'shows/anticipated'
-    shows = []
-    for show in data:
-        data = show.get('ids', {})
-        extract_ids(data)
-        data['year'] = show['year']
-        shows.append(TVShow(show['title'], **data))
-    yield shows
-
-
-@get
 def trending_shows():
     """All :class:`TVShow`'s being watched right now"""
     data = yield 'shows/trending'
@@ -107,18 +72,6 @@ def trending_shows():
         show_data['watchers'] = show.get('watchers')
         to_ret.append(TVShow(**show_data))
     yield to_ret
-
-
-@get
-def collected_shows():
-    data = yield 'shows/collected'
-    shows = []
-    for show in data:
-        data = show.get('ids', {})
-        extract_ids(data)
-        data['year'] = show['year']
-        shows.append(TVShow(show['title'], **data))
-    yield shows
 
 
 @get
@@ -144,6 +97,7 @@ class TVShow(object):
         self.trakt = self.tmdb = self._aliases = self._comments = None
         self._images = self._people = self._ratings = self._translations = None
         self._seasons = None
+        self._last_episode = self._next_episode = None
         self.title = title
         self.slug = slug or slugify(self.title)
         if len(kwargs) > 0:
@@ -297,8 +251,31 @@ class TVShow(object):
             self._seasons = []
             for season in data:
                 extract_ids(season)
-                self._seasons.append(TVSeason(self.title, **season))
+                self._seasons.append(TVSeason(self.title,
+                                              season['number'], **season))
         yield self._seasons
+
+    @property
+    @get
+    def last_episode(self):
+        """Returns the most recently aired :class:`TVEpisode`. If no episode
+        is found, `None` will be returned.
+        """
+        if self._last_episode is None:
+            data = yield (self.ext + '/last_episode?extended=full')
+            self._last_episode = data and TVEpisode(show=self.title, **data)
+        yield self._last_episode
+
+    @property
+    @get
+    def next_episode(self):
+        """Returns the next scheduled to air :class:`TVEpisode`. If no episode
+        is found, `None` will be returned.
+        """
+        if self._next_episode is None:
+            data = yield (self.ext + '/next_episode?extended=full')
+            self._next_episode = data and TVEpisode(show=self.title, **data)
+        yield self._next_episode
 
     @property
     @get
@@ -371,6 +348,11 @@ class TVShow(object):
 
     def remove_from_watchlist(self):
         remove_from_watchlist(self)
+
+    def to_json_singular(self):
+        return {'show': {
+            'title': self.title, 'year': self.year, 'ids': self.ids
+        }}
 
     def to_json(self):
         return {'shows': [{
@@ -459,7 +441,7 @@ class TVSeason(object):
     @get
     def _episode_getter(self, episode):
         """Recursive episode getter generator. Will attempt to get the
-        speicifed episode for this season, and if the requested episode wasn't
+        specified episode for this season, and if the requested episode wasn't
         found, then we return :const:`None` to indicate to the `episodes`
         property that we've already yielded all valid episodes for this season.
 
@@ -627,6 +609,32 @@ class TVEpisode(object):
         return airs_date(self.first_aired)
 
     @property
+    def first_aired_end_time(self):
+        """Python datetime object representing the corresponding end time of
+        the first_aired date of this episode
+        """
+        return self.end_time_from_custom_start(start_date=None)
+
+    def end_time_from_custom_start(self, start_date=None):
+        """Calculate a python datetime object representing the calculated end
+        time of an episode from the given start_date. ie, start_date +
+        runtime.
+
+        :param start_date: a datetime instance indicating the start date of a
+        given airing of this episode. Defaults to the first_aired_date of this
+        episode.
+        """
+        if start_date is None:
+            start_date = self.first_aired_date
+
+        # create a timedelta instance for the runtime of the episode
+        runtime = timedelta(minutes=self.runtime)
+
+        # calculate the end time as the difference between the first_aired_date
+        # and the runtime timedelta
+        return start_date + runtime
+
+    @property
     @get
     def ratings(self):
         """Ratings (between 0 and 10) and distribution for a movie."""
@@ -705,6 +713,37 @@ class TVEpisode(object):
             your plugin.
         """
         return Scrobbler(self, progress, app_version, app_date)
+
+    def checkin(self, app_version, app_date, message="", sharing=None,
+                venue_id="", venue_name="", delete=False):
+        """Checkin this :class:`TVEpisode` via the TraktTV API
+
+        :param app_version:Version number of the media center, be as specific
+            as you can including nightly build number, etc. Used to help debug
+            your plugin.
+        :param app_date: Build date of the media center. Used to help debug
+            your plugin.
+        :param message: Message used for sharing. If not sent, it will use the
+            watching string in the user settings.
+        :param sharing: Control sharing to any connected social networks.
+        :param venue_id: Foursquare venue ID.
+        :param venue_name: Foursquare venue name.
+        """
+        if delete:
+            delete_checkin()
+        checkin_media(self, app_version, app_date, message, sharing, venue_id,
+                      venue_name)
+
+    def to_json_singular(self):
+        """Return this :class:`TVEpisode` as a trakt recognizable JSON object
+        """
+        return {
+            'episode': {
+                'ids': {
+                    'trakt': self.trakt
+                }
+            }
+        }
 
     def to_json(self):
         """Return this :class:`TVEpisode` as a trakt recognizable JSON object

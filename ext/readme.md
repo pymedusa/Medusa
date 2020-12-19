@@ -47,17 +47,18 @@ ext | **`pytz`** | [2018.4](https://pypi.org/project/pytz/2018.4/) | `subliminal
 ext | `PyYAML` | [5.3.1](https://pypi.org/project/PyYAML/5.3.1/) | `knowit` | Module: `yaml`
 ext | `rarfile` | [3.1](https://pypi.org/project/rarfile/3.1/) | **`medusa`**, `subliminal` | File: `rarfile.py`
 ext | **`rebulk`** | [2.0.1](https://pypi.org/project/rebulk/2.0.1/) | **`medusa`**, `guessit` | -
-ext | **`requests`** | [2.25.1](https://pypi.org/project/requests/2.25.1/) | **`medusa`**, `adba`, `boto`, `CacheControl`, `cloudscraper`, `PyGithub`, `python-twitter`, `pytvmaze`, `requests-oauthlib`, `requests-toolbelt`, `rtorrent-python`, `simpleanidb`, `subliminal`, `tmdbsimple`, `traktor`, `tvdbapiv2` | -
-ext | `requests-oauthlib` | [1.3.0](https://pypi.org/project/requests-oauthlib/1.3.0/) | **`medusa`**, `python-twitter` | Module: `requests_oauthlib`
+ext | **`requests`** | [2.25.1](https://pypi.org/project/requests/2.25.1/) | **`medusa`**, `adba`, `boto`, `CacheControl`, `cloudscraper`, `PyGithub`, `python-twitter`, `pytvmaze`, `requests-oauthlib`, `requests-toolbelt`, `rtorrent-python`, `simpleanidb`, `subliminal`, `tmdbsimple`, `trakt`, `traktor`, `tvdbapiv2` | -
+ext | `requests-oauthlib` | [1.3.0](https://pypi.org/project/requests-oauthlib/1.3.0/) | **`medusa`**, `python-twitter`, `trakt` | Module: `requests_oauthlib`
 ext | `requests-toolbelt` | [0.9.1](https://pypi.org/project/requests-toolbelt/0.9.1/) | `cloudscraper` | Module: `requests_toolbelt`
 **ext3** | `sgmllib3k` | [1.0.0](https://pypi.org/project/sgmllib3k/1.0.0/) | `feedparser` | File: `sgmllib.py`
-ext | `six` | [1.15.0](https://pypi.org/project/six/1.15.0/) | **`medusa`**, `adba`, `configobj`, `guessit`, `html5lib`, `imdbpie`, `knowit`, `PyGithub`, `rebulk`, `subliminal`, `tvdbapiv2`, `validators` | File: `six.py`
+ext | `six` | [1.15.0](https://pypi.org/project/six/1.15.0/) | **`medusa`**, `adba`, `configobj`, `guessit`, `html5lib`, `imdbpie`, `knowit`, `PyGithub`, `rebulk`, `subliminal`, `trakt`, `tvdbapiv2`, `validators` | File: `six.py`
 ext | **`soupsieve`** | [1.9.6](https://pypi.org/project/soupsieve/1.9.6/) | `beautifulsoup4` | -
 ext | **`stevedore`** | [1.30.1](https://pypi.org/project/stevedore/1.30.1/) | `subliminal` | -
 ext | **`subliminal`** | [2.1.0](https://pypi.org/project/subliminal/2.1.0/) | **`medusa`** | -
 ext | **`tmdbsimple`** | [2.7.0](https://pypi.org/project/tmdbsimple/2.7.0/) | **`medusa`** | -
 ext | **`tornado`** | [5.1.1](https://pypi.org/project/tornado/5.1.1/) | **`medusa`**, `tornroutes` | -
 ext | **`tornroutes`** | [0.5.1](https://pypi.org/project/tornroutes/0.5.1/) | **`medusa`** | -
+ext | **`trakt`** | [2.14.1](https://pypi.org/project/trakt/2.14.1/) | **`medusa`** | -
 ext | `trans` | [2.1.0](https://pypi.org/project/trans/2.1.0/) | `imdbpie` | File: `trans.py`
 ext | `ttl-cache` | [1.6](https://pypi.org/project/ttl-cache/1.6/) | **`medusa`** | File: `ttl_cache.py`
 ext | **`tvdbapiv2`** | pymedusa/[bf1272c](https://github.com/pymedusa/tvdbv2/tree/bf1272c9264c280c3048e89a1920e2bf5f386284) | **`medusa`** | -

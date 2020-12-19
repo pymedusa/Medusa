@@ -7,6 +7,7 @@ import random
 import sys
 from threading import Lock
 
+
 CUSTOMIZABLE_LOGS = [
     'Missed file: {missed_file}',
     'Problem(s) during processing, failed for the following files/folders: ',
@@ -645,6 +646,7 @@ class MedusaApp(object):
         self.TRAKT_PIN_URL = 'https://trakt.tv/pin/4562'
         self.TRAKT_OAUTH_URL = 'https://trakt.tv/'
         self.TRAKT_API_URL = 'https://api.trakt.tv/'
+        self.TRAKT_DEVICE_CODE = {}
 
         self.FANART_API_KEY = '9b3afaf26f6241bdb57d6cc6bd798da7'
 

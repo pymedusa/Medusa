@@ -11,7 +11,7 @@ __all__ = ['TraktException', 'BadRequestException', 'OAuthException',
            'TraktUnavailable']
 
 
-class TraktException(BaseException):
+class TraktException(Exception):
     """Base Exception type for trakt module"""
     http_code = message = None
 
@@ -20,43 +20,43 @@ class TraktException(BaseException):
 
 
 class BadRequestException(TraktException):
-    """TraktException type to be raised when a 400 return code is recieved"""
+    """TraktException type to be raised when a 400 return code is received"""
     http_code = 400
     message = "Bad Request - request couldn't be parsed"
 
 
 class OAuthException(TraktException):
-    """TraktException type to be raised when a 401 return code is recieved"""
+    """TraktException type to be raised when a 401 return code is received"""
     http_code = 401
     message = 'Unauthorized - OAuth must be provided'
 
 
 class ForbiddenException(TraktException):
-    """TraktException type to be raised when a 403 return code is recieved"""
+    """TraktException type to be raised when a 403 return code is received"""
     http_code = 403
     message = 'Forbidden - invalid API key or unapproved app'
 
 
 class NotFoundException(TraktException):
-    """TraktException type to be raised when a 404 return code is recieved"""
+    """TraktException type to be raised when a 404 return code is received"""
     http_code = 404
     message = 'Not Found - method exists, but no record found'
 
 
 class ConflictException(TraktException):
-    """TraktException type to be raised when a 409 return code is recieved"""
+    """TraktException type to be raised when a 409 return code is received"""
     http_code = 409
     message = 'Conflict - resource already created'
 
 
 class ProcessException(TraktException):
-    """TraktException type to be raised when a 422 return code is recieved"""
+    """TraktException type to be raised when a 422 return code is received"""
     http_code = 422
     message = 'Unprocessable Entity - validation errors'
 
 
 class RateLimitException(TraktException):
-    """TraktException type to be raised when a 429 return code is recieved"""
+    """TraktException type to be raised when a 429 return code is received"""
     http_code = 429
     message = 'Rate Limit Exceeded'
 

@@ -2,7 +2,7 @@
 """This module contains Trakt.tv sync endpoint support functions"""
 from datetime import datetime
 
-from trakt.core import get, post
+from trakt.core import get, post, delete
 from trakt.utils import slugify, extract_ids, timestamp
 
 __author__ = 'Jon Nappi'
@@ -29,7 +29,7 @@ def comment(media, comment_body, spoiler=False, review=False):
     if not review and len(comment_body) > 200:
         review = True
     data = dict(comment=comment_body, spoiler=spoiler, review=review)
-    data.update(media.to_json())
+    data.update(media.to_json_singular())
     yield 'comments', data
 
 
@@ -90,64 +90,9 @@ def remove_from_history(media):
 def remove_from_watchlist(media):
     """Remove a :class:`TVShow` from your watchlist
 
-    :param media: The :clas:`TVShow` to remove from your watchlist
+    :param media: The :class:`TVShow` to remove from your watchlist
     """
     yield 'sync/watchlist/remove', media.to_json()
-
-
-@get
-def get_collection(media_type='shows', extended=False):
-    """Get a list of all :class:`TVShow`'s or :class:`Movie`'s in a users collection.
-    A collected item indicates availability to watch digitally or
-    on physical media.
-    """
-    valids = ('movies', 'shows')
-    if media_type not in valids:
-        raise ValueError('search_type must be one of {}'.format(valids))
-    data = yield 'sync/collection/{media_type}{extended}'.format(
-        media_type=media_type, extended=('', '?extended=metadata')[extended]
-    )
-    to_ret = []
-    for item in data:
-        to_ret = []
-        if media_type == 'movies':
-            extract_ids(item)
-            to_ret.append(Movie(**item))
-        else:  # media_type == 'shows'
-            data = item.get('ids', {})
-            extract_ids(data)
-            data['year'] = item['year']
-            to_ret.append(TVShow(item['title'], **data))
-    yield to_ret
-
-
-@get
-def get_watched(media_type='shows', extended=False):
-    """Get a list of all :class:`TVShow`'s or :class:`Movie`'s a user has watched
-    sorted by most plays.
-    If media_type is set to shows and you enable extended. `?extended=noseasons` is
-    added to the URL, it won't return season or episode info.
-    """
-    valids = ('movies', 'shows')
-    if media_type not in valids:
-        raise ValueError('search_type must be one of {}'.format(valids))
-    data = yield 'sync/watched/{media_type}{extended}'.format(
-        media_type=media_type, extended=('', '?extended=noseasons')[extended and media_type == 'shows']
-    )
-    to_ret = []
-    for item in data:
-        to_ret = []
-        if media_type == 'movies':
-            from trakt.movies import Movie
-            extract_ids(item)
-            to_ret.append(Movie(**item))
-        else:  # media_type == 'shows'
-            from trakt.tv import TVShow
-            data = item.get('ids', {})
-            extract_ids(data)
-            data['year'] = item['year']
-            to_ret.append(TVShow(item['title'], **data))
-    yield to_ret
 
 
 @post
@@ -169,65 +114,121 @@ def remove_from_collection(media):
     yield 'sync/collection/remove', media.to_json()
 
 
-@get
-def search(query, search_type='movie', year=None):
+def search(query, search_type='movie', year=None, slugify_query=False):
     """Perform a search query against all of trakt's media types
 
     :param query: Your search string
     :param search_type: The type of object you're looking for. Must be one of
         'movie', 'show', 'episode', or 'person'
+    :param year: This parameter is ignored as it is no longer a part of the
+        official API. It is left here as a valid arg for backwards
+        compatability.
+    :param slugify_query: A boolean indicating whether or not the provided
+        query should be slugified or not prior to executing the query.
     """
-    valids = ('movie', 'show', 'episode', 'person')
-    if search_type not in valids:
-        raise ValueError('search_type must be one of {}'.format(valids))
-    uri = 'search?query={query}&type={type}'.format(
-        query=slugify(query), type=search_type)
-
-    if year is not None:
-        uri += '&year={}'.format(year)
-
-    data = yield uri
-
-    for media_item in data:
-        extract_ids(media_item)
-
-    # Need to do imports here to prevent circular imports with modules that
-    # need to import Scrobblers
-    if search_type == 'movie':
-        from trakt.movies import Movie
-        yield [Movie(**d.pop('movie')) for d in data]
-    elif search_type == 'show':
-        from trakt.tv import TVShow
-        yield [TVShow(**d.pop('show')) for d in data]
-    elif search_type == 'episode':
-        from trakt.tv import TVEpisode
-        episodes = []
-        for episode in data:
-            show = episode.pop('show')
-            extract_ids(episode['episode'])
-            episodes.append(TVEpisode(show.get('title', None),
-                                      **episode['episode']))
-        yield episodes
-    elif search_type == 'person':
-        from trakt.people import Person
-        yield [Person(**d.pop('person')) for d in data]
+    # the new get_search_results expects a list of types, so handle this
+    # conversion to maintain backwards compatability
+    if isinstance(search_type, str):
+        search_type = [search_type]
+    results = get_search_results(query, search_type, slugify_query)
+    return [result.media for result in results]
 
 
 @get
-def search_by_id(query, id_type='imdb'):
-    """Perform a search query by using a Trakt.tv ID or other external ID
+def get_search_results(query, search_type=None, slugify_query=False):
+    """Perform a search query against all of trakt's media types
 
     :param query: Your search string
-    :param id_type: The type of object you're looking for. Must be one of
-        'trakt-movie', 'trakt-show', 'trakt-episode', 'imdb', 'tmdb', 'tvdb' or
-        'tvrage'
+    :param search_type: The types of objects you're looking for. Must be
+        specified as a list of strings containing any of 'movie', 'show',
+        'episode', or 'person'.
+    :param slugify_query: A boolean indicating whether or not the provided
+        query should be slugified or not prior to executing the query.
     """
-    valids = ('trakt-movie', 'trakt-show', 'trakt-episode', 'imdb', 'tmdb',
-              'tvdb', 'tvrage')
+    # if no search type was specified, then search everything
+    if search_type is None:
+        search_type = ['movie', 'show', 'episode', 'person']
+
+    # If requested, slugify the query prior to running the search
+    if slugify:
+        query = slugify(query)
+
+    uri = 'search/{type}?query={query}'.format(
+        query=query, type=','.join(search_type))
+
+    data = yield uri
+
+    # Need to do imports here to prevent circular imports with modules that
+    # need to import Scrobblers
+    results = []
+    for media_item in data:
+        extract_ids(media_item)
+        result = SearchResult(media_item['type'], media_item['score'])
+        if media_item['type'] == 'movie':
+            from trakt.movies import Movie
+            result.media = Movie(**media_item.pop('movie'))
+        elif media_item['type'] == 'show':
+            from trakt.tv import TVShow
+            result.media = TVShow(**media_item.pop('show'))
+        elif media_item['type'] == 'episode':
+            from trakt.tv import TVEpisode
+            show = media_item.pop('show')
+            result.media = TVEpisode(show.get('title', None),
+                                     **media_item.pop('episode'))
+        elif media_item['type'] == 'person':
+            from trakt.people import Person
+            result.media = Person(**media_item.pop('person'))
+        results.append(result)
+
+    yield results
+
+
+@get
+def search_by_id(query, id_type='imdb', media_type=None, slugify_query=False):
+    """Perform a search query by using a Trakt.tv ID or other external ID
+
+    :param query: Your search string, which should be an ID from your source
+    :param id_type: The source of the ID you're looking for. Must be one of
+        'trakt', trakt-movie', 'trakt-show', 'trakt-episode', 'trakt-person',
+        'imdb', 'tmdb', or 'tvdb'
+    :param media_type: The type of media you're looking for. May be one of
+        'movie', 'show', 'episode', or 'person', or a comma-separated list of
+        any combination of those. Null by default, which will return all types
+        of media that match the ID given.
+    :param slugify_query: A boolean indicating whether or not the provided
+        query should be slugified or not prior to executing the query.
+    """
+    valids = ('trakt', 'trakt-movie', 'trakt-show', 'trakt-episode',
+              'trakt-person', 'imdb', 'tmdb', 'tvdb')
+    id_types = {'trakt': 'trakt', 'trakt-movie': 'trakt',
+                'trakt-show': 'trakt', 'trakt-episode': 'trakt',
+                'trakt-person': 'trakt', 'imdb': 'imdb', 'tmdb': 'tmdb',
+                'tvdb': 'tvdb'}
     if id_type not in valids:
         raise ValueError('search_type must be one of {}'.format(valids))
-    data = yield 'search?id={query}&id_type={id_type}'.format(
-        query=slugify(query), id_type=id_type)
+    source = id_types.get(id_type)
+
+    media_types = {'trakt-movie': 'movie', 'trakt-show': 'show',
+                   'trakt-episode': 'episode', 'trakt-person': 'person'}
+
+    # If there was no media_type passed in, see if we can guess based off the
+    # ID source. None is still an option here, as that will return all possible
+    # types for a given source.
+    if media_type is None:
+        media_type = media_types.get(source, None)
+
+    # If requested, slugify the query prior to running the search
+    if slugify:
+        query = slugify(query)
+
+    # If media_type is still none, don't add it as a parameter to the search
+    if media_type is None:
+        uri = 'search/{source}/{query}'.format(
+            query=query, source=source)
+    else:
+        uri = 'search/{source}/{query}?type={media_type}'.format(
+            query=query, source=source, media_type=media_type)
+    data = yield uri
 
     for media_item in data:
         extract_ids(media_item)
@@ -249,6 +250,22 @@ def search_by_id(query, id_type='imdb'):
             from trakt.people import Person
             results.append(Person(**d.pop('person')))
     yield results
+
+
+@post
+def checkin_media(media, app_version, app_date, message="", sharing=None,
+                  venue_id="", venue_name=""):
+    """Checkin a media item
+    """
+    payload = dict(app_version=app_version, app_date=app_date, sharing=sharing,
+                   message=message, venue_id=venue_id, venue_name=venue_name)
+    payload.update(media.to_json_singular())
+    yield "checkin", payload
+
+
+@delete
+def delete_checkin():
+    yield "checkin"
 
 
 class Scrobbler(object):
@@ -304,23 +321,40 @@ class Scrobbler(object):
         """Handle actually posting the scrobbling data to trakt
 
         :param uri: The uri to post to
-        :param args: Any additional data to post to trakt alond with the
+        :param args: Any additional data to post to trakt along with the
             generic scrobbling data
         """
         payload = dict(progress=self.progress, app_version=self.version,
                        date=self.date)
-        payload.update(self.media.to_json())
+        payload.update(self.media.to_json_singular())
         yield uri, payload
 
     def __enter__(self):
         """Context manager support for `with Scrobbler` syntax. Begins
-        scrobbling the :class:`Scrobller`'s *media* object
+        scrobbling the :class:`Scrobbler`'s *media* object
         """
         self.start()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Context manager support for `with Scrobbler` syntax. Completes
-        scrobbling the :class:`Scrobller`'s *media* object
+        scrobbling the :class:`Scrobbler`'s *media* object
         """
         self.finish()
+
+
+class SearchResult(object):
+    """A SearchResult is an individual result item from the trakt.tv search
+    API. It wraps a single media entity whose type is indicated by the type
+    field.
+    """
+    def __init__(self, type, score, media=None):
+        """Create a new :class:`SearchResult` instance
+
+        :param type: The type of media object contained in this result.
+        :param score: The search result relevancy score of this item.
+        :param media: The wrapped media item returned by a search.
+        """
+        self.type = type
+        self.score = score
+        self.media = media

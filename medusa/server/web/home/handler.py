@@ -91,14 +91,16 @@ from requests.compat import (
 from six import iteritems, text_type
 from six.moves import map
 
+import trakt
+
 from tornroutes import route
 
-from traktor import (
-    MissingTokenException,
-    TokenExpiredException,
-    TraktApi,
-    TraktException,
-)
+# from traktor import (
+#     MissingTokenException,
+#     TokenExpiredException,
+#     TraktApi,
+#     TraktException,
+# )
 
 
 @route('/home(/?.*)')
@@ -453,39 +455,50 @@ class Home(WebRoot):
 
     @staticmethod
     def requestTraktDeviceCodeOauth():
-        print('Start a new Oauth device authentication request. Request is valid for 60 minutes.')
+        """Start Trakt OAuth device auth. Send request."""
+        logger.log('Start a new Oauth device authentication request. Request is valid for 60 minutes.', logger.INFO)
         app.TRAKT_DEVICE_CODE = trakt.core.get_device_code(app.TRAKT_API_KEY, app.TRAKT_API_SECRET)
         return json.dumps(app.TRAKT_DEVICE_CODE)
 
     @staticmethod
     def checkTrakTokenOauth():
-        print('Get new oauth token and refresh token')
+        """Check if the Trakt device OAuth request has been authenticated."""
+        logger.log('Start Trakt token request', logger.INFO)
         error = False
 
+        if not app.TRAKT_DEVICE_CODE.get('requested'):
+            logger.log('You need to request a token before checking authentication', logger.WARNING)
+            return json.dumps({'result': 'need to request first', 'error': True})
+
         if (app.TRAKT_DEVICE_CODE.get('requested') + app.TRAKT_DEVICE_CODE.get('requested')) < time.time():
+            logger.log('Trakt token Request expired', logger.INFO)
             return json.dumps({'result': 'request expired', 'error': True})
 
-        if app.TRAKT_DEVICE_CODE and app.TRAKT_DEVICE_CODE.get('device_code'):
-            # If PR: https://github.com/moogar0880/PyTrakt/pull/83 we can remove the exception handling, and make this
-            # allot cleaner
-            try:
-                trakt.CONFIG_PATH = os.path.join(app.CACHE_DIR, '.pytrakt.json')
-                response = trakt.core.get_device_token(
-                    app.TRAKT_DEVICE_CODE.get('device_code'), app.TRAKT_API_KEY, app.TRAKT_API_SECRET, store=True
-                )
-                response = response.json()
+        if not app.TRAKT_DEVICE_CODE.get('device_code'):
+            logger.log('You need to request a token before checking authentication. Missing device code.', logger.WARNING)
+            return json.dumps({'result': 'need to request first', 'error': True})
 
-                app.TRAKT_ACCESS_TOKEN, app.TRAKT_REFRESH_TOKEN = response.get('access_token'), response.get('refresh_token')
-                return json.dumps({'result': 'succesfully updated trakt access and refresh token'})
-            except Exception:
-                print('replace with logger: device_code hasnt been activated yet.')
-                return json.dumps({'result': 'device_code hasnt been activated yet.', 'error': error})
+        response = trakt.core.get_device_token(
+            app.TRAKT_DEVICE_CODE.get('device_code'), app.TRAKT_API_KEY, app.TRAKT_API_SECRET, store=True
+        )
 
-        return json.dumps({'result': 'Something went wrong', 'error': error})
+        if response.ok:
+            response_json = response.json()
+            app.TRAKT_ACCESS_TOKEN, app.TRAKT_REFRESH_TOKEN = \
+                response_json.get('access_token'), response_json.get('refresh_token')
+            return json.dumps({'result': 'succesfully updated trakt access and refresh token', 'error': False})
+        else:
+            if response.status_code == 400:
+                return json.dumps({'result': 'device code has not been activated yet', 'error': True})
+            if response.status_code == 409:
+                return json.dumps({'result': 'already activated this code', 'error': False})
+
+        logger.log(u'Something went wrong', logger.DEBUG)
+        return json.dumps({'result': 'Something went wrong'})
 
     @staticmethod
-    def testTrakt(username=None, blacklist_name=None):
-        return notifiers.trakt_notifier.test_notify(username, blacklist_name)
+    def testTrakt(blacklist_name=None):
+        return notifiers.trakt_notifier.test_notify(blacklist_name)
 
     @staticmethod
     def forceTraktSync():

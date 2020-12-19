@@ -11,6 +11,8 @@ from medusa.helpers import get_title_without_year
 from medusa.indexers.utils import get_trakt_indexer
 from medusa.logger.adapters.style import BraceAdapter
 
+from trakt import users
+
 # from traktor import AuthException, TokenExpiredException, TraktApi, TraktException
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -217,7 +219,7 @@ class Notifier(object):
         return post_data
 
     @staticmethod
-    def test_notify(username, blacklist_name=None):
+    def test_notify(blacklist_name=None):
         """Send a test notification to trakt with the given authentication info and returns a boolean.
 
         api: The api string to use
@@ -226,23 +228,19 @@ class Notifier(object):
         Returns: True if the request succeeded, False otherwise
         """
         try:
-            trakt_settings = {'trakt_api_secret': app.TRAKT_API_SECRET,
-                              'trakt_api_key': app.TRAKT_API_KEY,
-                              'trakt_access_token': app.TRAKT_ACCESS_TOKEN,
-                              'trakt_refresh_token': app.TRAKT_REFRESH_TOKEN}
-
-            trakt_api = TraktApi(app.SSL_VERIFY, app.TRAKT_TIMEOUT, **trakt_settings)
-            trakt_api.validate_account()
+            user = users.get_user_settings()
+            username = user['user']['username']
             if blacklist_name and blacklist_name is not None:
-                trakt_lists = trakt_api.request('users/' + username + '/lists')
+                trakt_lists = users.User(username).lists
+
                 found = False
                 for trakt_list in trakt_lists:
-                    if trakt_list['ids']['slug'] == blacklist_name:
+                    if trakt_list.slug == blacklist_name:
                         return 'Test notice sent successfully to Trakt'
                 if not found:
                     return "Trakt blacklist doesn't exists"
             else:
                 return 'Test notice sent successfully to Trakt'
-        except (TokenExpiredException, TraktException, AuthException) as error:
+        except Exception as error:
             log.warning('Unable to test TRAKT: {0!r}', error)
             return 'Test notice failed to Trakt: {0!r}'.format(error)

@@ -14,6 +14,7 @@ from collections import namedtuple
 from functools import wraps
 from requests.compat import urljoin
 from requests_oauthlib import OAuth2Session
+from datetime import datetime, timedelta
 from trakt import errors
 
 __author__ = 'Jon Nappi'
@@ -43,6 +44,12 @@ CONFIG_PATH = os.path.join(os.path.expanduser('~'), '.pytrakt.json')
 
 #: Your personal Trakt.tv OAUTH Bearer Token
 OAUTH_TOKEN = api_key = None
+
+# OAuth token validity checked
+OAUTH_TOKEN_VALID = None
+
+# Your OAUTH token expiration date
+OAUTH_EXPIRES_AT = None
 
 # Your OAUTH refresh token
 OAUTH_REFRESH = None
@@ -134,7 +141,22 @@ def pin_auth(pin=None, client_id=None, client_secret=None, store=False):
     return OAUTH_TOKEN
 
 
-def oauth_auth(username, client_id=None, client_secret=None, store=False):
+def _terminal_oauth_pin(authorization_url):
+    """Default OAuth callback used for terminal applications.
+
+    :param authorization_url: Predefined url by function `oauth_auth`. URL will
+        be prompted to you in the terminal
+    :return: OAuth PIN
+    """
+    print('Please go here and authorize,', authorization_url)
+
+    # Get the authorization verifier code from the callback url
+    response = six.moves.input('Paste the Code returned here: ')
+    return response
+
+
+def oauth_auth(username, client_id=None, client_secret=None, store=False,
+               oauth_cb=_terminal_oauth_pin):
     """Generate an access_token to allow your application to authenticate via
     OAuth
 
@@ -144,6 +166,8 @@ def oauth_auth(username, client_id=None, client_secret=None, store=False):
     :param store: Boolean flag used to determine if your trakt api auth data
         should be stored locally on the system. Default is :const:`False` for
         the security conscious
+    :param oauth_cb: Callback function to handle the retrieving of the OAuth
+        PIN. Default function `_terminal_oauth_pin` for terminal auth
     :return: Your OAuth access token
     """
     global CLIENT_ID, CLIENT_SECRET, OAUTH_TOKEN
@@ -158,21 +182,24 @@ def oauth_auth(username, client_id=None, client_secret=None, store=False):
     # OAuth endpoints given in the API documentation
     oauth = OAuth2Session(CLIENT_ID, redirect_uri=REDIRECT_URI, state=None)
 
-    # Redirect user to Trakt for authorization
+    # Authorization URL to redirect user to Trakt for authorization
     authorization_url, _ = oauth.authorization_url(authorization_base_url,
                                                    username=username)
-    print('Please go here and authorize,', authorization_url)
 
-    # Get the authorization verifier code from the callback url
-    response = six.moves.input('Paste the Code returned here: ')
+    # Calling callback function to get the OAuth PIN
+    oauth_pin = oauth_cb(authorization_url)
+
     # Fetch, assign, and return the access token
-    oauth.fetch_token(token_url, client_secret=CLIENT_SECRET, code=response)
+    oauth.fetch_token(token_url, client_secret=CLIENT_SECRET, code=oauth_pin)
     OAUTH_TOKEN = oauth.token['access_token']
+    OAUTH_REFRESH = oauth.token['refresh_token']
+    OAUTH_EXPIRES_AT = oauth.token["created_at"] + oauth.token["expires_in"]
 
     if store:
         _store(CLIENT_ID=CLIENT_ID, CLIENT_SECRET=CLIENT_SECRET,
-               OAUTH_TOKEN=OAUTH_TOKEN)
-    return oauth.token['access_token']
+               OAUTH_TOKEN=OAUTH_TOKEN, OAUTH_REFRESH=OAUTH_REFRESH,
+               OAUTH_EXPIRES_AT=OAUTH_EXPIRES_AT)
+    return OAUTH_TOKEN
 
 
 def get_device_code(client_id=None, client_secret=None):
@@ -246,11 +273,13 @@ def get_device_token(device_code, client_id=None, client_secret=None,
         data = response.json()
         OAUTH_TOKEN = data.get('access_token')
         OAUTH_REFRESH = data.get('refresh_token')
+        OAUTH_EXPIRES_AT = data.get("created_at") + data.get("expires_in")
 
         if store:
             _store(
                 CLIENT_ID=CLIENT_ID, CLIENT_SECRET=CLIENT_SECRET,
-                OAUTH_TOKEN=OAUTH_TOKEN, OAUTH_REFRESH=OAUTH_REFRESH
+                OAUTH_TOKEN=OAUTH_TOKEN, OAUTH_REFRESH=OAUTH_REFRESH,
+                OAUTH_EXPIRES_AT=OAUTH_EXPIRES_AT
             )
 
     return response
@@ -286,7 +315,7 @@ def device_auth(client_id=None, client_secret=None, store=False):
     }
 
     success_message = (
-        "You've been succesfully authenticated. "
+        "You've been successfully authenticated. "
         "With access_token {access_token} and refresh_token {refresh_token}"
     )
 
@@ -334,6 +363,55 @@ Comment = namedtuple('Comment', ['id', 'parent_id', 'created_at', 'comment',
                                  'updated_at', 'likes', 'user_rating'])
 
 
+def _validate_token(s):
+    """Check if current OAuth token has not expired"""
+    global OAUTH_TOKEN_VALID
+    current = datetime.utcnow()
+    expires_at = datetime.utcfromtimestamp(OAUTH_EXPIRES_AT)
+    if expires_at - current > timedelta(days=2):
+        OAUTH_TOKEN_VALID = True
+    else:
+        _refresh_token(s)
+
+
+def _refresh_token(s):
+    """Request Trakt API for a new valid OAuth token using refresh_token"""
+    global OAUTH_TOKEN, OAUTH_EXPIRES_AT, OAUTH_REFRESH, OAUTH_TOKEN_VALID
+    s.logger.info("OAuth token has expired, refreshing now...")
+    url = urljoin(BASE_URL, '/oauth/token')
+    data = {
+                'client_id': CLIENT_ID,
+                'client_secret': CLIENT_SECRET,
+                'refresh_token': OAUTH_REFRESH,
+                'redirect_uri': REDIRECT_URI,
+                'grant_type': 'refresh_token'
+            }
+    response = requests.post(url, json=data, headers=HEADERS)
+    s.logger.debug('RESPONSE [post] (%s): %s', url, str(response))
+    if response.status_code == 200:
+        data = response.json()
+        OAUTH_TOKEN = data.get("access_token")
+        OAUTH_REFRESH = data.get("refresh_token")
+        OAUTH_EXPIRES_AT = data.get("created_at") + data.get("expires_in")
+        OAUTH_TOKEN_VALID = True
+        s.logger.info(
+            "OAuth token successfully refreshed, valid until",
+            datetime.fromtimestamp(OAUTH_EXPIRES_AT)
+        )
+        _store(
+            CLIENT_ID=CLIENT_ID, CLIENT_SECRET=CLIENT_SECRET,
+            OAUTH_TOKEN=OAUTH_TOKEN, OAUTH_REFRESH=OAUTH_REFRESH,
+            OAUTH_EXPIRES_AT=OAUTH_EXPIRES_AT
+        )
+    elif response.status_code == 401:
+        s.logger.debug(
+            "Rejected - Unable to refresh expired OAuth token, "
+            "refresh_token is invalid"
+        )
+    elif response.status_code in s.error_map:
+        raise s.error_map[response.status_code]()
+
+
 def _bootstrapped(f):
     """Bootstrap your authentication environment when authentication is needed
     and if a file at `CONFIG_PATH` exists. The process is completed by setting
@@ -341,11 +419,11 @@ def _bootstrapped(f):
     """
     @wraps(f)
     def inner(*args, **kwargs):
-        global CLIENT_ID, CLIENT_SECRET, OAUTH_TOKEN, OAUTH_REFRESH
-        global APPLICATION_ID
+        global CLIENT_ID, CLIENT_SECRET, OAUTH_TOKEN, OAUTH_EXPIRES_AT
+        global OAUTH_REFRESH, APPLICATION_ID
         if (CLIENT_ID is None or CLIENT_SECRET is None) and \
                 os.path.exists(CONFIG_PATH):
-            # Load in trakt API auth data fron CONFIG_PATH
+            # Load in trakt API auth data from CONFIG_PATH
             with open(CONFIG_PATH) as config_file:
                 config_data = json.load(config_file)
 
@@ -355,11 +433,17 @@ def _bootstrapped(f):
                 CLIENT_SECRET = config_data.get('CLIENT_SECRET', None)
             if OAUTH_TOKEN is None:
                 OAUTH_TOKEN = config_data.get('OAUTH_TOKEN', None)
+            if OAUTH_EXPIRES_AT is None:
+                OAUTH_EXPIRES_AT = config_data.get('OAUTH_EXPIRES_AT', None)
             if OAUTH_REFRESH is None:
                 OAUTH_REFRESH = config_data.get('OAUTH_REFRESH', None)
             if APPLICATION_ID is None:
                 APPLICATION_ID = config_data.get('APPLICATION_ID', None)
 
+            # Check token validity and refresh token if needed
+            if (not OAUTH_TOKEN_VALID and OAUTH_EXPIRES_AT is not None and
+                    OAUTH_REFRESH is not None):
+                _validate_token(args[0])
             # For backwards compatability with trakt<=2.3.0
             if api_key is not None and OAUTH_TOKEN is None:
                 OAUTH_TOKEN = api_key
@@ -396,7 +480,7 @@ class Core(object):
         generator = f(*args, **kwargs)
         uri = next(generator)
         if not isinstance(uri, (str, tuple)):
-            # Allow properties to safetly yield arbitrary data
+            # Allow properties to safely yield arbitrary data
             return uri
         if isinstance(uri, tuple):
             uri, data = uri

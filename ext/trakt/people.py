@@ -91,7 +91,7 @@ class Person(object):
     @get
     def tv_credits(self):
         """Return a collection of TV Show credits that this :class:`Person` was
-        a cast or crew memeber on
+        a cast or crew member on
         """
         if self._tv_credits is None:
             data = yield self.ext_tv_credits
