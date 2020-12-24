@@ -600,7 +600,7 @@ class ParseResult(object):
 
 
 class BaseCache(object):
-    """Base cache"""
+    """Base cache."""
 
     def __init__(self, max_size=1000):
         """Initialize the cache with a maximum size."""
@@ -622,7 +622,7 @@ class BaseCache(object):
             self.cache[name] = value
 
     def get(self, name):
-        """Return a cache item from the cache
+        """Return a cache item from the cache.
 
         :param name:
         :type name: str
@@ -635,7 +635,7 @@ class BaseCache(object):
                 return self.cache[name]
 
     def remove(self, name):
-        """Remove a cache item given name"""
+        """Remove a cache item given name."""
         with self.lock:
             del self.cache[name]
             log.debug('Removed cache item for {name}', {'name': name})
