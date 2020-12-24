@@ -6,7 +6,7 @@ from trakt.core import get, post, delete
 from trakt.utils import slugify, extract_ids, timestamp
 
 __author__ = 'Jon Nappi'
-__all__ = ['Scrobbler', 'comment', 'rate', 'add_to_history',
+__all__ = ['Scrobbler', 'comment', 'rate', 'add_to_history', 'get_watchlist',
            'add_to_watchlist', 'remove_from_history', 'remove_from_watchlist',
            'add_to_collection', 'remove_from_collection', 'search',
            'search_by_id']
@@ -252,6 +252,128 @@ def search_by_id(query, id_type='imdb', media_type=None, slugify_query=False):
     yield results
 
 
+@get
+def get_watchlist(list_type=None, sort=None):
+    """
+    Get a watchlist.
+
+    optionally with a filter for a specific item type.
+    :param list_type: Optional Filter by a specific type.
+        Possible values: movies, shows, seasons or episodes.
+    :param sort: Optional sort. Only if the type is also sent.
+        Possible values: rank, added, released or title.
+    """
+    valid_type = ('movies', 'shows', 'seasons', 'episodes')
+    valid_sort = ('rank', 'added', 'released', 'title')
+
+    if list_type and list_type not in valid_type:
+        raise ValueError('list_type must be one of {}'.format(valid_type))
+
+    if sort and sort not in valid_sort:
+        raise ValueError('sort must be one of {}'.format(valid_sort))
+
+    uri = 'sync/watchlist'
+    if list_type:
+        uri += '/{}'.format(list_type)
+
+    if list_type and sort:
+        uri += '/{}'.format(sort)
+
+    data = yield uri
+    results = []
+    for d in data:
+        if 'episode' in d:
+            from trakt.tv import TVEpisode
+            show = d.pop('show')
+            extract_ids(d['episode'])
+            results.append(TVEpisode(show['title'], **d['episode']))
+        elif 'movie' in d:
+            from trakt.movies import Movie
+            results.append(Movie(**d.pop('movie')))
+        elif 'show' in d:
+            from trakt.tv import TVShow
+            results.append(TVShow(**d.pop('show')))
+
+    yield results
+
+
+@get
+def get_watched(list_type=None, extended=False):
+    """Returns all movies or shows a user has watched sorted by most plays.
+
+    If list_type is set to `shows` an extended is enabled, `extended=noseasons` is added to the URL.
+    It won't return season or episode info.
+    :param list_type: Optional Filter by a specific type.
+        Possible values: movies, shows, seasons or episodes.
+    :param extended: Boolean for adding `extended=noseasons` to the url.
+        Possible values: True, False.
+    """
+    valid_type = ('movies', 'shows', 'seasons', 'episodes')
+
+    if list_type and list_type not in valid_type:
+        raise ValueError('list_type must be one of {}'.format(valid_type))
+
+    uri = 'sync/watchlist'
+    if list_type:
+        uri += '/{}'.format(list_type)
+
+    if list_type == 'shows' and extended:
+        uri += '?extended=noseasons'
+
+    data = yield uri
+    results = []
+    for d in data:
+        if 'movie' in d:
+            from trakt.movies import Movie
+            results.append(Movie(**d.pop('movie')))
+        elif 'show' in d:
+            from trakt.tv import TVShow
+            results.append(TVShow(**d.pop('show')))
+
+    yield results
+
+
+@get
+def get_collection(list_type=None, extended=False):
+    """
+    Get all collected items in a user's collection.
+
+    A collected item indicates availability to watch digitally
+    or on physical media.
+
+    optionally with a filter for a specific item type.
+    :param list_type: Optional Filter by a specific type.
+        Possible values: movies or shows.
+    :param extended: A boolean indicating wether or not to return the
+        additional media_type, resolution, hdr, audio, audio_channels
+        and '3d' metadata. It will use null if the
+        metadata isn't set for an item.
+    """
+    valid_type = ('movies', 'shows')
+
+    if list_type and list_type not in valid_type:
+        raise ValueError('list_type must be one of {}'.format(valid_type))
+
+    uri = 'sync/watchlist'
+    if list_type:
+        uri += '/{}'.format(list_type)
+
+    if extended:
+        uri += '?extended=metadata'
+
+    data = yield uri
+    results = []
+    for d in data:
+        if 'movie' in d:
+            from trakt.movies import Movie
+            results.append(Movie(**d.pop('movie')))
+        elif 'show' in d:
+            from trakt.tv import TVShow
+            results.append(TVShow(**d.pop('show')))
+
+    yield results
+
+
 @post
 def checkin_media(media, app_version, app_date, message="", sharing=None,
                   venue_id="", venue_name=""):
@@ -321,8 +443,6 @@ class Scrobbler(object):
         """Handle actually posting the scrobbling data to trakt
 
         :param uri: The uri to post to
-        :param args: Any additional data to post to trakt along with the
-            generic scrobbling data
         """
         payload = dict(progress=self.progress, app_version=self.version,
                        date=self.date)
