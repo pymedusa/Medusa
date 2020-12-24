@@ -35,10 +35,7 @@ def get_recommended_shows(page=1, limit=10):
     first.
     """
     data = yield 'recommendations/shows?page={page}&limit={limit}'.format(page=page, limit=limit)
-    shows = []
-    for show in data:
-        shows.append(TVShow(**show))
-    yield shows
+    yield [TVShow(**d['show']) for d in data]
 
 
 @get
@@ -55,13 +52,8 @@ def popular_shows(page=1, limit=10, extended=None):
         uri += '&extended={extended}'.format(extended=extended)
 
     data = yield uri
-    shows = []
-    for show in data:
-        data = show.get('ids', {})
-        extract_ids(data)
-        data['year'] = show['year']
-        shows.append(TVShow(show['title'], **data))
-    yield shows
+    yield [TVShow(**d['show']) for d in data]
+
 
 
 @get
@@ -72,14 +64,7 @@ def trending_shows(page=1, limit=10, extended=None):
         uri += '&extended={extended}'.format(extended=extended)
 
     data = yield uri
-    to_ret = []
-    for show in data:
-        show_data = show.pop('show')
-        ids = show_data.pop('ids')
-        extract_ids(ids)
-        show_data['watchers'] = show.get('watchers')
-        to_ret.append(TVShow(**show_data))
-    yield to_ret
+    yield [TVShow(**d['show']) for d in data]
 
 
 @get
@@ -134,7 +119,6 @@ def played_shows(time_period='weekly', page=1, limit=10, extended=None):
         uri += '&extended={extended}'.format(extended=extended)
 
     data = yield uri
-
     yield [TVShow(**d['show']) for d in data]
 
 
