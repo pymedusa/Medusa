@@ -302,9 +302,12 @@ class NameParser(object):
         return new_episode_numbers, new_season_numbers, new_absolute_numbers
 
     def _parse_string(self, name):
-        guess = guessit.guessit(name, dict(show_type=self.show_type))
-        result = self.to_parse_result(name, guess)
+        guess = guessit_cache.get(name)
+        if not guess:
+            guess = guessit.guessit(name, dict(show_type=self.show_type))
+            guessit_cache.add(name, guess)
 
+        result = self.to_parse_result(name, guess)
         search_series = helpers.get_show(result.series_name, self.try_indexers) if not self.naming_pattern else None
 
         # confirm passed in show object indexer id matches result show object indexer id
@@ -376,7 +379,7 @@ class NameParser(object):
     @staticmethod
     def erase_cached_parse(indexer, indexer_id):
         """Remove all names from given indexer and indexer_id."""
-        name_parser_cache.remove(indexer, indexer_id)
+        name_parser_cache.remove_by_indexer(indexer, indexer_id)
 
     def parse(self, name, cache_result=True):
         """Parse the name into a ParseResult.
@@ -596,8 +599,8 @@ class ParseResult(object):
         return self.guess.get('video_codec')
 
 
-class NameParserCache(object):
-    """Name parser cache."""
+class BaseCache(object):
+    """Base cache"""
 
     def __init__(self, max_size=1000):
         """Initialize the cache with a maximum size."""
@@ -605,33 +608,43 @@ class NameParserCache(object):
         self.max_size = max_size
         self.lock = Lock()
 
-    def add(self, name, parse_result):
-        """Add the result to the parser cache.
+    def add(self, name, value):
+        """Add a cache item to the cache.
 
         :param name:
         :type name: str
-        :param parse_result:
-        :type parse_result: ParseResult
+        :param value:
+        :type value: object
         """
         with self.lock:
             while len(self.cache) >= self.max_size:
                 self.cache.popitem(last=False)
-            self.cache[name] = parse_result
+            self.cache[name] = value
 
     def get(self, name):
-        """Return the cached parsed result.
+        """Return a cache item from the cache
 
         :param name:
         :type name: str
         :return:
-        :rtype: ParseResult
+        :rtype: object
         """
         with self.lock:
             if name in self.cache:
-                log.debug('Using cached parse result for {name}', {'name': name})
+                log.debug('Using cache item for {name}', {'name': name})
                 return self.cache[name]
 
-    def remove(self, indexer, indexer_id):
+    def remove(self, name):
+        """Remove a cache item given name"""
+        with self.lock:
+            del self.cache[name]
+            log.debug('Removed cache item for {name}', {'name': name})
+
+
+class NameParserCache(BaseCache):
+    """Name parser cache."""
+
+    def remove_by_indexer(self, indexer, indexer_id):
         """Remove cache item given indexer and indexer_id."""
         with self.lock:
             to_remove = [
@@ -646,6 +659,7 @@ class NameParserCache(object):
 
 
 name_parser_cache = NameParserCache()
+guessit_cache = BaseCache(max_size=25000)
 
 
 class InvalidNameException(Exception):
