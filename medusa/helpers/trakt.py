@@ -25,7 +25,7 @@ def get_trakt_show_collection(trakt_list, limit=None):
     elif trakt_list == 'popular':
         return tv.popular_shows(limit=limit, extended='full,images')
     elif trakt_list == 'anticipated':
-        return tv.anticiated_shows(limit=limit, extended='full,images')
+        return tv.anticipated_shows(limit=limit, extended='full,images')
     elif trakt_list == 'collected':
         return tv.collected_shows(limit=limit, extended='full,images')
     elif trakt_list == 'watched':
@@ -39,4 +39,4 @@ def get_trakt_show_collection(trakt_list, limit=None):
     elif trakt_list == 'newseason':
         return calendar.SeasonCalendar(days=30, extended='full,images', returns='shows')
 
-    return tv.anticiated_shows()
+    return tv.anticipated_shows(limit=limit, extended='full,images')

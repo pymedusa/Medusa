@@ -35,7 +35,7 @@ def get_recommended_shows(page=1, limit=10):
     first.
     """
     data = yield 'recommendations/shows?page={page}&limit={limit}'.format(page=page, limit=limit)
-    yield [TVShow(**d['show']) for d in data]
+    yield [TVShow(**show) for show in data]
 
 
 @get
@@ -52,8 +52,7 @@ def popular_shows(page=1, limit=10, extended=None):
         uri += '&extended={extended}'.format(extended=extended)
 
     data = yield uri
-    yield [TVShow(**d['show']) for d in data]
-
+    yield [TVShow(**show) for show in data]
 
 
 @get
@@ -64,7 +63,7 @@ def trending_shows(page=1, limit=10, extended=None):
         uri += '&extended={extended}'.format(extended=extended)
 
     data = yield uri
-    yield [TVShow(**d['show']) for d in data]
+    yield [TVShow(**show['show']) for show in data]
 
 
 @get
@@ -82,7 +81,7 @@ def updated_shows(timestamp=None, page=1, limit=10, extended=None):
         uri += '&extended={extended}'.format(extended=extended)
 
     data = yield uri
-    yield [TVShow(**d['show']) for d in data]
+    yield [TVShow(**show) for show in data]
 
 
 @get
@@ -100,7 +99,7 @@ def recommended_shows(time_period='weekly', page=1, limit=10, extended=None):
         uri += '&extended={extended}'.format(extended=extended)
 
     data = yield uri
-    yield [TVShow(**d['show']) for d in data]
+    yield [TVShow(**show['show']) for show in data]
 
 
 @get
@@ -119,7 +118,7 @@ def played_shows(time_period='weekly', page=1, limit=10, extended=None):
         uri += '&extended={extended}'.format(extended=extended)
 
     data = yield uri
-    yield [TVShow(**d['show']) for d in data]
+    yield [TVShow(**show['show']) for show in data]
 
 
 @get
@@ -137,7 +136,7 @@ def watched_shows(time_period='weekly', page=1, limit=10, extended=None):
         uri += '&extended={extended}'.format(extended=extended)
 
     data = yield uri
-    yield [TVShow(**d['show']) for d in data]
+    yield [TVShow(**show['show']) for show in data]
 
 
 @get
@@ -149,23 +148,23 @@ def collected_shows(time_period='weekly', page=1, limit=10, extended=None):
         raise ValueError('time_period must be one of {}'.format(valid_time_period))
 
     uri = 'shows/collected/{time_period}?page={page}&limit={limit}'.format(
-        time_period=time_period, page=page, start=start
+        time_period=time_period, page=page, limit=limit
     )
     if extended:
         uri += '&extended={extended}'.format(extended=extended)
 
     data = yield uri
-    yield [TVShow(**d['show']) for d in data]
+    yield [TVShow(**show['show']) for show in data]
 
 
 @get
-def anticiated_shows(page=1, limit=10, extended=None):
+def anticipated_shows(page=1, limit=10, extended=None):
     """The most anticipated shows based on the number of lists a show appears on."""
     uri = 'shows/anticipated?page={page}&limit={limit}'.format(page=page, limit=limit)
     if extended:
         uri += '&extended={extended}'.format(extended=extended)
     data = yield uri
-    yield [TVShow(**d['show']) for d in data]
+    yield [TVShow(**show['show']) for show in data]
 
 
 class TVShow(object):
