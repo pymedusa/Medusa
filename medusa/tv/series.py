@@ -1901,7 +1901,7 @@ class Series(TV):
         if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
             log.debug(u'{id}: Removing show {show} from Trakt watchlist',
                       {'id': self.series_id, 'show': self.name})
-            notifiers.trakt_notifier.update_watchlist(self, update='remove')
+            notifiers.trakt_notifier.update_watchlist_show(self, remove=True)
 
     def populate_cache(self):
         """Populate image caching."""
@@ -1921,7 +1921,7 @@ class Series(TV):
 
             if app.TRAKT_SYNC_WATCHLIST:
                 log.info('updating trakt watchlist')
-                notifiers.trakt_notifier.update_watchlist(show_obj=self)
+                notifiers.trakt_notifier.update_watchlist_show(self)
 
     def add_scene_numbering(self):
         """

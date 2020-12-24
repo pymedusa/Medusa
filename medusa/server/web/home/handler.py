@@ -1356,9 +1356,7 @@ class Home(WebRoot):
                     # mass add to database
                     sql_l.append(ep_obj.get_sql())
 
-                    trakt_data.append((ep_obj.season, ep_obj.episode))
-
-            data = notifiers.trakt_notifier.trakt_episode_data_generate(trakt_data)
+                    trakt_data.append(ep_obj.season)
 
             if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
                 if status in [WANTED, FAILED]:
@@ -1369,8 +1367,10 @@ class Home(WebRoot):
                 logger.log('{action} episodes, showid: indexerid {show.indexerid}, Title {show.name} to Watchlist'.format(
                     action=upd, show=series_obj), logger.DEBUG)
 
-                if data:
-                    notifiers.trakt_notifier.update_watchlist(series_obj, data_episode=data, update=upd.lower())
+                if trakt_data:
+                    for ep_obj in trakt_data:
+                        notifiers.trakt_notifier.update_watchlist_episode(ep_obj)
+                    # notifiers.trakt_notifier.update_watchlist(series_obj, data_episode=data, update=upd.lower())
 
             if sql_l:
                 main_db_con = db.DBConnection()
