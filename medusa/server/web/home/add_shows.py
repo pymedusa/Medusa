@@ -11,6 +11,7 @@ from medusa.common import Quality
 from medusa.helper.common import try_int
 from medusa.helpers import get_showname_from_indexer
 from medusa.helpers.anidb import short_group_names
+from medusa.helpers.trakt import get_trakt_user
 from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.web.core import PageTemplate
@@ -27,8 +28,6 @@ from simpleanidb import REQUEST_HOT
 from six import text_type
 
 from tornroutes import route
-
-#from traktor import TraktApi
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -130,31 +129,10 @@ class HomeAddShows(Home):
         if traktList is None:
             traktList = ''
 
-        traktList = traktList.lower()
-
-        if traktList == 'trending':
-            page_url = 'shows/trending'
-        elif traktList == 'popular':
-            page_url = 'shows/popular'
-        elif traktList == 'anticipated':
-            page_url = 'shows/anticipated'
-        elif traktList == 'collected':
-            page_url = 'shows/collected'
-        elif traktList == 'watched':
-            page_url = 'shows/watched'
-        elif traktList == 'played':
-            page_url = 'shows/played'
-        elif traktList == 'recommended':
-            page_url = 'recommendations/shows'
-        elif traktList == 'newshow':
-            page_url = 'calendars/all/shows/new/%s/30' % datetime.date.today().strftime('%Y-%m-%d')
-        elif traktList == 'newseason':
-            page_url = 'calendars/all/shows/premieres/%s/30' % datetime.date.today().strftime('%Y-%m-%d')
-        else:
-            page_url = 'shows/anticipated'
+        trakt_list = traktList.lower()
 
         try:
-            (trakt_blacklist, recommended_shows, removed_from_medusa) = TraktPopular().fetch_popular_shows(page_url=page_url, trakt_list=traktList)
+            (trakt_blacklist, recommended_shows, removed_from_medusa) = TraktPopular().fetch_popular_shows(trakt_list)
         except Exception as e:
             error = e
 
@@ -201,16 +179,26 @@ class HomeAddShows(Home):
         # URL parameters
         data = {'shows': [{'ids': {'tvdb': seriesid}}]}
 
-        trakt_settings = {'trakt_api_secret': app.TRAKT_API_SECRET,
-                          'trakt_api_key': app.TRAKT_API_KEY,
-                          'trakt_access_token': app.TRAKT_ACCESS_TOKEN,
-                          'trakt_refresh_token': app.TRAKT_REFRESH_TOKEN}
-
         show_name = get_showname_from_indexer(INDEXER_TVDBV2, seriesid)
         try:
-            trakt_api = TraktApi(timeout=app.TRAKT_TIMEOUT, ssl_verify=app.SSL_VERIFY, **trakt_settings)
-            trakt_api.request('users/{0}/lists/{1}/items'.format
-                              (app.TRAKT_USERNAME, app.TRAKT_BLACKLIST_NAME), data, method='POST')
+            trakt_user = get_trakt_user()
+            blacklist = trakt_user.get_list(app.TRAKT_BLACKLIST_NAME)
+
+            if not blacklist:
+                ui.notifications.error(
+                    'Warning',
+                    'Could not find blacklist {blacklist} for user {user}.'.format(
+                        blacklist=app.TRAKT_BLACKLIST_NAME, user=trakt_user.username
+                    )
+                )
+                log.warning(
+                    'Could not find blacklist {blacklist} for user {user}.',
+                    {'blacklist': app.TRAKT_BLACKLIST_NAME, 'user': trakt_user.username}
+                )
+
+            # Add the show to the blacklist.
+            blacklist.add_items(data)
+
             ui.notifications.message('Success!',
                                      "Added show '{0}' to blacklist".format(show_name))
         except Exception as e:
