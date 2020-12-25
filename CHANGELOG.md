@@ -5,6 +5,7 @@
 #### Improvements
 
 #### Fixes
+- Fix setting default episode status (after) when adding a new show. ([8918](https://github.com/pymedusa/Medusa/pull/8918))
 
 -----
 
