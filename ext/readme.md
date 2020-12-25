@@ -23,7 +23,7 @@ ext | `dogpile.cache` | [0.9.2](https://pypi.org/project/dogpile.cache/0.9.2/) |
 ext | **`enzyme`** | pymedusa/[665cf69](https://github.com/pymedusa/enzyme/tree/665cf6948aab1c249dcc99bd9624a81d17b3302a) | `knowit`, `subliminal` | -
 ext | **`feedparser`** | [6.0.2](https://pypi.org/project/feedparser/6.0.2/) | **`medusa`** | Requires `sgmllib3k` on Python 3
 ext | **`gntp`** | [1.0.3](https://pypi.org/project/gntp/1.0.3/) | **`medusa`** | -
-ext | **`guessit`** | [3.1.1](https://pypi.org/project/guessit/3.1.1/) | **`medusa`**, `subliminal` | -
+ext | **`guessit`** | [3.2.0](https://pypi.org/project/guessit/3.2.0/) | **`medusa`**, `subliminal` | -
 ext | **`html5lib`** | [1.1](https://pypi.org/project/html5lib/1.1/) | **`medusa`** (via `beautifulsoup4`) | -
 ext | **`idna`** | [2.8](https://pypi.org/project/idna/2.8/) | `requests` | -
 ext | **`imdbpie`** | [5.6.4](https://pypi.org/project/imdbpie/5.6.4/) | **`medusa`** | -
@@ -46,12 +46,12 @@ ext | **`pytimeparse`** | pymedusa/[8f28325](https://github.com/pymedusa/pytimep
 ext | **`pytz`** | [2018.4](https://pypi.org/project/pytz/2018.4/) | `subliminal` | -
 ext | `PyYAML` | [5.3.1](https://pypi.org/project/PyYAML/5.3.1/) | `knowit` | Module: `yaml`
 ext | `rarfile` | [3.1](https://pypi.org/project/rarfile/3.1/) | **`medusa`**, `subliminal` | File: `rarfile.py`
-ext | **`rebulk`** | [2.0.1](https://pypi.org/project/rebulk/2.0.1/) | **`medusa`**, `guessit` | -
+ext | **`rebulk`** | [3.0.0](https://pypi.org/project/rebulk/3.0.0/) | **`medusa`**, `guessit` | -
 ext | **`requests`** | [2.25.1](https://pypi.org/project/requests/2.25.1/) | **`medusa`**, `adba`, `boto`, `CacheControl`, `cloudscraper`, `PyGithub`, `python-twitter`, `pytvmaze`, `requests-oauthlib`, `requests-toolbelt`, `rtorrent-python`, `simpleanidb`, `subliminal`, `tmdbsimple`, `traktor`, `tvdbapiv2` | -
 ext | `requests-oauthlib` | [1.3.0](https://pypi.org/project/requests-oauthlib/1.3.0/) | **`medusa`**, `python-twitter` | Module: `requests_oauthlib`
 ext | `requests-toolbelt` | [0.9.1](https://pypi.org/project/requests-toolbelt/0.9.1/) | `cloudscraper` | Module: `requests_toolbelt`
 **ext3** | `sgmllib3k` | [1.0.0](https://pypi.org/project/sgmllib3k/1.0.0/) | `feedparser` | File: `sgmllib.py`
-ext | `six` | [1.15.0](https://pypi.org/project/six/1.15.0/) | **`medusa`**, `adba`, `configobj`, `guessit`, `html5lib`, `imdbpie`, `knowit`, `PyGithub`, `rebulk`, `subliminal`, `tvdbapiv2`, `validators` | File: `six.py`
+ext | `six` | [1.15.0](https://pypi.org/project/six/1.15.0/) | **`medusa`**, `adba`, `configobj`, `html5lib`, `imdbpie`, `knowit`, `PyGithub`, `rebulk`, `subliminal`, `tvdbapiv2`, `validators` | File: `six.py`
 ext | **`soupsieve`** | [1.9.6](https://pypi.org/project/soupsieve/1.9.6/) | `beautifulsoup4` | -
 ext | **`stevedore`** | [1.30.1](https://pypi.org/project/stevedore/1.30.1/) | `subliminal` | -
 ext | **`subliminal`** | [2.1.0](https://pypi.org/project/subliminal/2.1.0/) | **`medusa`** | -
@@ -68,5 +68,4 @@ ext | **`wrapt`** | [1.10.11](https://pypi.org/project/wrapt/1.10.11/) | `deprec
 
 #### Notes:
 - `ext` compatible with Python 2 and Python 3
-- `ext2` only compatible with Python 2
 - `ext3` only compatible with Python 3

@@ -7,7 +7,6 @@ import os
 from io import open  # pylint: disable=redefined-builtin
 
 import babelfish
-import six  # pylint:disable=wrong-import-order
 import yaml  # pylint:disable=wrong-import-order
 from rebulk.remodule import re
 from rebulk.utils import is_iterable
@@ -161,7 +160,7 @@ class TestYml(object):
 
                 for string, expected in data.items():
                     TestYml.set_default(expected, default)
-                    string = TestYml.fix_encoding(string, expected)
+                    string = TestYml.fix_encoding(string)
 
                     entries.append((filename, string, expected))
                     unique_id = self._get_unique_id(entry_set, '[' + filename + '] ' + str(string))
@@ -178,17 +177,7 @@ class TestYml(object):
                     expected[k] = v
 
     @classmethod
-    def fix_encoding(cls, string, expected):
-        if six.PY2:
-            if isinstance(string, six.text_type):
-                string = string.encode('utf-8')
-            converts = []
-            for k, v in expected.items():
-                if isinstance(v, six.text_type):
-                    v = v.encode('utf-8')
-                    converts.append((k, v))
-            for k, v in converts:
-                expected[k] = v
+    def fix_encoding(cls, string):
         if not isinstance(string, str):
             string = str(string)
         return string
