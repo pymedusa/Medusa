@@ -69,12 +69,34 @@ def add_to_history(media, watched_at=None):
 
 
 @post
-def add_to_watchlist(media):
-    """Add a :class:`TVShow` to your watchlist
+def add_to_watchlist(media=None, media_type=None, media_objects=None):
+    """Add a :class:`TVShow` to your watchlist.
+
+    The trakt api allows for adding or removing multiple media objects
+        through an array. If you want to make us if this.
+        Make sure to leave media empty, and pass the media_type
+        ('movies', 'shows' or 'episodes')
+        and don't pass a value for `media`. Make sure to pass an array of
+        media objects to media_objects.
 
     :param media: The :class:`TVShow` object to add to your watchlist
+    :param media_type: The :string: media type key
+    :param media_objects: The :class:`TVShow` shows, :class:`TVEpisode` episodes,
+        or :class:`Movie` movies media object.
     """
-    yield 'sync/watchlist', media.to_json()
+    valid_type = ('movies', 'shows', 'episodes')
+
+    if media:
+        yield 'sync/watchlist', media.to_json()
+
+    if media_type and media_objects and isinstance(media_objects, list):
+        if media_type not in valid_type:
+            raise ValueError('media_type must be one of {}'.format(valid_type))
+
+        yield 'sync/watchlist', {
+            media_type: [media_object.to_json_singular()[media_type[:-1]]
+                         for media_object in media_objects]
+        }
 
 
 @post
@@ -87,31 +109,98 @@ def remove_from_history(media):
 
 
 @post
-def remove_from_watchlist(media):
-    """Remove a :class:`TVShow` from your watchlist
+def remove_from_watchlist(media=None, media_type=None, media_objects=None):
+    """Remove a :class:`TVShow` from your watchlist.
 
-    :param media: The :class:`TVShow` to remove from your watchlist
+    The trakt api allows for adding or removing multiple media objects
+        through an array. If you want to make us if this.
+        Make sure to leave media empty, and pass the media_type
+        ('movies', 'shows' or 'episodes')
+        and don't pass a value for `media`. Make sure to pass an array of
+        media objects to media_objects.
+
+    :param media: The :class:`TVShow` object to remove from your watchlist
+    :param media_type: The :string: media type key
+    :param media_objects: The :class:`TVShow` shows, :class:`TVEpisode` episodes,
+        or :class:`Movie` movies media object.
     """
-    yield 'sync/watchlist/remove', media.to_json()
+    valid_type = ('movies', 'shows', 'episodes')
+
+    if media:
+        yield 'sync/watchlist/remove', media.to_json()
+
+    if media_type and media_objects and isinstance(media_objects, list):
+        if media_type not in valid_type:
+            raise ValueError('media_type must be one of {}'.format(valid_type))
+
+        yield 'sync/watchlist/remove', {
+            media_type: [media_object.to_json_singular()[media_type[:-1]]
+                         for media_object in media_objects]
+        }
 
 
 @post
-def add_to_collection(media):
+def add_to_collection(media=None, media_type=None, media_objects=None):
     """Add a :class:`Movie`, :class:`TVShow`, or :class:`TVEpisode` to your
     collection
 
-    :param media: The media object to collect
+    The trakt api allows for adding or removing multiple media objects
+        through an array. If you want to make us if this.
+        Make sure to leave media empty, and pass the media_type
+        ('movies', 'shows' or 'episodes')
+        and don't pass a value for `media`. Make sure to pass an array of
+        media objects to media_objects.
+
+    :param media: The :class:`TVShow` shows, :class:`TVEpisode` episodes,
+        or :class:`Movie` movies media object.
+    :param media_type: The :string: media type key
+    :param media_objects: The :class:`TVShow` shows, :class:`TVEpisode` episodes,
+        or :class:`Movie` movies media object.
     """
-    yield 'sync/collection', media.to_json()
+    valid_type = ('movies', 'shows', 'episodes')
+
+    if media:
+        yield 'sync/collection', media.to_json()
+
+    if media_type and media_objects and isinstance(media_objects, list):
+        if media_type not in valid_type:
+            raise ValueError('media_type must be one of {}'.format(valid_type))
+
+        yield 'sync/collection', {
+            media_type: [media_object.to_json_singular()[media_type[:-1]]
+                         for media_object in media_objects]
+        }
 
 
 @post
-def remove_from_collection(media):
-    """Remove a media item from your collection
+def remove_from_collection(media=None, media_type=None, media_objects=None):
+    """Remove a :class:`TVShow` from your collection.
 
-    :param media: The media object to remove from your collection
+    The trakt api allows for adding or removing multiple media objects
+        through an array. If you want to make us if this.
+        Make sure to leave media empty, and pass the media_type
+        ('movies', 'shows' or 'episodes')
+        and don't pass a value for `media`. Make sure to pass an array of
+        media objects to media_objects.
+
+    :param media: The :class:`TVShow` object to remove from your collection
+    :param media_type: The :string: media type key
+    :param media_objects: The :class:`TVShow` shows, :class:`TVEpisode` episodes,
+        or :class:`Movie` movies media object.
     """
-    yield 'sync/collection/remove', media.to_json()
+    valid_type = ('movies', 'shows', 'episodes')
+
+    if media:
+        yield 'sync/collection/remove', media.to_json()
+
+    if media_type and media_objects and isinstance(media_objects, list):
+        if media_type not in valid_type:
+            raise ValueError('media_type must be one of {}'.format(valid_type))
+
+        yield 'sync/collection/remove', {
+            media_type: [media_object.to_json_singular()[media_type[:-1]]
+                         for media_object in media_objects]
+        }
 
 
 def search(query, search_type='movie', year=None, slugify_query=False):
