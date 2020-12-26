@@ -24,7 +24,7 @@ def test_main_unicode():
 
 
 def test_main_forced_unicode():
-    main([u'Fear.and.Loathing.in.Las.Vegas.FRENCH.ENGLISH.720p.HDDVD.DTS.x264-ESiR.mkv'])
+    main(['Fear.and.Loathing.in.Las.Vegas.FRENCH.ENGLISH.720p.HDDVD.DTS.x264-ESiR.mkv'])
 
 
 def test_main_verbose():
