@@ -99,103 +99,49 @@ class Notifier(object):
         data['ids'][get_trakt_indexer(show_obj.indexer)] = show_obj.indexerid
         trakt_tv_show = tv.TVShow(title, '', **data)
 
-        if remove:
-            sync.remove_from_watchlist(trakt_tv_show)
-        else:
-            sync.add_to_watchlist(trakt_tv_show)
+        try:
+            if remove:
+                sync.remove_from_watchlist(trakt_tv_show)
+            else:
+                sync.add_to_watchlist(trakt_tv_show)
+        # TODO: add more meaningfull exception
+        except Exception as error:
+            log.debug('Unable to update Trakt watchlist: {0!r}', error)
+            return False
+
+        return True
 
     @staticmethod
-    def update_watchlist_episode(ep_obj, remove=False):
-        """Use Trakt sync/watchlist to updata an episode."""
-        title = get_title_without_year(ep_obj.show_obj.name, ep_obj.show_obj.start_year)
-        data = {
-            'year': ep_obj.show_obj.start_year,
-            'ids': {},
-        }
-        data['ids'][get_trakt_indexer(ep_obj.show_obj.indexer)] = ep_obj.show_obj.indexerid
-        trakt_tv_episode = tv.TVEpisode(title, ep_obj.season, ep_obj.episode, **data)
-
-        if remove:
-            sync.remove_from_watchlist(trakt_tv_episode)
-        else:
-            sync.add_to_watchlist(trakt_tv_episode)
-
-    @staticmethod
-    def update_watchlist(show_obj=None, s=None, e=None, data_show=None, data_episode=None, update='add'):
-        """Send a request to trakt indicating that the given episode is part of our library.
-
-        show_obj: The Series object to add to trakt
-        s: season number
-        e: episode number
-        data_show: structured object of shows trakt type
-        data_episode: structured object of episodes trakt type
-        update: type o action add or remove
+    def update_watchlist_episode(episodes, remove=False):
         """
-        # Check if TRAKT supports that indexer
-        if not get_trakt_indexer(show_obj.indexer):
-            return
+        Use Trakt sync/watchlist to updata an episode.
 
-        if app.USE_TRAKT:
+        As we want to prevent Trakt.tv api rate limiting. Try to use the array of episodes
+            as much as possible.
+        :param episodes: An episode object or array of episode objects.
+        """
+        if not isinstance(episodes, list):
+            episodes = [episodes]
 
-            data = {}
-            trakt_tv_show = None
-            trakt_tv_episode = None
-            try:
-                # URL parameters
-                if show_obj is not None:
-                    title = get_title_without_year(show_obj.name, show_obj.start_year)
-                    data = {
-                        'title': title,
-                        'year': show_obj.start_year,
-                        'ids': {},
-                    }
-                    data['ids'][get_trakt_indexer(show_obj.indexer)] = show_obj.indexerid
-                    trakt_tv_show = tv.TVShow(title, '', **data)
-                elif data_show is not None:
-                    trakt_tv_show = tv.TVShow(title, '', **data_show)
-                else:
-                    log.warning(
-                        "There's a coding problem contact developer. It's needed to be provided at"
-                        ' least one of the two: data_show or show_obj',
-                    )
-                    return False
+        media_objects = []
+        for ep_obj in episodes:
+            title = get_title_without_year(ep_obj.series.name, ep_obj.series.start_year)
+            data = {
+                'year': ep_obj.series.start_year,
+                'ids': {},
+            }
+            data['ids'][get_trakt_indexer(ep_obj.series.indexer)] = ep_obj.series.indexerid
+            media_objects.append(tv.TVEpisode(title, ep_obj.season, ep_obj.episode, **data))
 
-                if data_episode is not None:
-                    data['shows'][0].update(data_episode)
-
-                elif s is not None:
-                    # trakt URL parameters
-                    season = {
-                        'season': [
-                            {
-                                'number': s,
-                            }
-                        ]
-                    }
-
-                    if e is not None:
-                        # trakt URL parameters
-                        episode = {
-                            'episodes': [
-                                {
-                                    'number': e
-                                }
-                            ]
-                        }
-
-                        season['season'][0].update(episode)
-
-                    data['shows'][0].update(season)
-
-                if update == 'add':
-                    sync.add_to_watchlist(data)
-                else:
-                    sync.remove_from_watchlist(data)
-
-            # TODO: add more meaningfull exception
-            except Exception as error:
-                log.debug('Unable to update Trakt watchlist: {0!r}', error)
-                return False
+        try:
+            if remove:
+                sync.remove_from_watchlist(media_type='episodes', media_objects=media_objects)
+            else:
+                sync.add_to_watchlist(media_type='episodes', media_objects=media_objects)
+        # TODO: add more meaningfull exception
+        except Exception as error:
+            log.debug('Unable to update Trakt watchlist: {0!r}', error)
+            return False
 
         return True
 
@@ -211,28 +157,6 @@ class Notifier(object):
         tv_show = tv.TVShow(show_id)
         tv_episode = tv.TVEpisode(tv_show, episode.season, episode.episode)
         tv_episode.add_to_watchlist()
-
-    @staticmethod
-    def trakt_episode_data_generate(data):
-        """Build the JSON structure to send back to Trakt."""
-        # Find how many unique season we have
-        unique_seasons = []
-        for season, episode in data:
-            if season not in unique_seasons:
-                unique_seasons.append(season)
-
-        # build the query
-        seasons_list = []
-        for searchedSeason in unique_seasons:
-            episodes_list = []
-            for season, episode in data:
-                if season == searchedSeason:
-                    episodes_list.append({'number': episode})
-            seasons_list.append({'number': searchedSeason, 'episodes': episodes_list})
-
-        post_data = {'seasons': seasons_list}
-
-        return post_data
 
     @staticmethod
     def test_notify(blacklist_name=None):
