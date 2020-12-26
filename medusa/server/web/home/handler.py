@@ -1251,6 +1251,7 @@ class Home(WebRoot):
 
     def setStatus(self, indexername=None, seriesid=None, eps=None, status=None, direct=False):
         # @TODO: Merge this with the other PUT commands for /api/v2/show/{id}
+        # Still used by manage/changeEpisodeStatuses (manage_episodeStatuses.mako)
         if not all([indexername, seriesid, eps, status]):
             error_message = 'You must specify a show and at least one episode'
             if direct:
@@ -1351,7 +1352,7 @@ class Home(WebRoot):
 
                     # Only in failed_history we set to FAILED.
                     if status != FAILED:
-                        ep_obj.status = status
+                        ep_obj._status = status
 
                     # mass add to database
                     sql_l.append(ep_obj.get_sql())

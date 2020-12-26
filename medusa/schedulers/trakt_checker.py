@@ -45,7 +45,7 @@ def set_episode_to_wanted(show, season, episode):
             })
             # figure out what segment the episode is in and remember it so we can backlog it
 
-            ep_obj.status = WANTED
+            ep_obj._status = WANTED
             # As we created the episode and updated the status, need to save to DB
             ep_obj.save_to_db()
 
@@ -63,7 +63,7 @@ class TraktChecker(object):
 
     def __init__(self):
         """Initialize the class."""
-        self.todoWanted = []
+        self.todo_wanted = []
         self.show_watchlist = {}
         self.episode_watchlist = {}
         self.collection_list = {}
@@ -75,7 +75,7 @@ class TraktChecker(object):
 
         # add shows from Trakt watchlist
         if app.TRAKT_SYNC_WATCHLIST:
-            self.todoWanted = []  # its about to all get re-added
+            self.todo_wanted = []  # its about to all get re-added
             if len(app.ROOT_DIRS) < 2:
                 log.warning('No default root directory')
                 ui.notifications.error('Unable to add show',
@@ -501,7 +501,7 @@ class TraktChecker(object):
                     else:
                         log.warning('Unable to find the new added show.'
                                     'Pilot will be set to wanted in the next Trakt run')
-                        self.todoWanted.append(indexer_id)
+                        self.todo_wanted.append(indexer_id)
             log.debug('Synced shows with Trakt watchlist')
 
     def sync_trakt_episodes(self):
@@ -596,10 +596,10 @@ class TraktChecker(object):
     def manage_new_show(self, show):
         """Set episodes to wanted for the recently added show."""
         log.debug("Checking for wanted episodes for show '{show}' in Trakt watchlist", {'show': show.name})
-        episodes = [i for i in self.todoWanted if i[0] == show.indexerid]
+        episodes = [i for i in self.todo_wanted if i[0] == show.indexerid]
 
         for episode in episodes:
-            self.todoWanted.remove(episode)
+            self.todo_wanted.remove(episode)
             set_episode_to_wanted(show, episode[1], episode[2])
 
     def _check_list(self, show_obj=None, indexer=None, indexer_id=None, season=None, episode=None, list_type=None):

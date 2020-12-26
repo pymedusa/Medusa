@@ -188,10 +188,10 @@ def snatch_episode(result):
     for cur_ep_obj in result.episodes:
         with cur_ep_obj.lock:
             if is_first_best_match(result):
-                cur_ep_obj.status = SNATCHED_BEST
+                cur_ep_obj._status = SNATCHED_BEST
                 cur_ep_obj.quality = result.quality
             else:
-                cur_ep_obj.status = end_status
+                cur_ep_obj._status = end_status
                 cur_ep_obj.quality = result.quality
             # Reset all others fields to the snatched status
             # New snatch by default doesn't have nfo/tbn
@@ -231,7 +231,6 @@ def snatch_episode(result):
 
     if trakt_data:
         for episode in trakt_data:
-            # data_episode = notifiers.trakt_notifier.trakt_episode_data_generate(trakt_data)
             notifiers.trakt_notifier.add_episode_to_watchlist(episode)
 
     if sql_l:

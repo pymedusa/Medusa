@@ -27,6 +27,8 @@ from medusa import (
 from medusa.common import (
     ARCHIVED,
     DOWNLOADED,
+    FAILED,
+    IGNORED,
     NAMING_DUPLICATE,
     NAMING_EXTEND,
     NAMING_LIMITED_EXTEND,
@@ -251,7 +253,7 @@ class Episode(TV):
         self.airdate = date.fromordinal(1)
         self.hasnfo = False
         self.hastbn = False
-        self.status = UNSET
+        self._status = UNSET
         self.quality = Quality.NA
         self.file_size = 0
         self.release_name = ''
@@ -421,6 +423,37 @@ class Episode(TV):
         )
 
         return date_parsed.isoformat()
+
+    @property
+    def status(self):
+        """Return the episode status."""
+        return self._status
+
+    @status.setter
+    def status(self, value):
+        self._status = value
+        self._sync_trakt(value)
+
+    def _sync_trakt(self, status):
+        """If Trakt enabled and trakt sync watchlist enabled, add/remove the episode from the watchlist."""
+        if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
+
+            upd = None
+            if status in [WANTED, FAILED]:
+                upd = 'Add'
+
+            elif status in [IGNORED, SKIPPED, DOWNLOADED, ARCHIVED]:
+                upd = 'Remove'
+
+            if not upd:
+                return
+
+            log.debug('{action} episodes, showid: indexerid {show_id},'
+                      'Title {show_name} to Watchlist', {
+                          'action': upd, 'show_id': self.series.series_id, 'show_name': self.series.name
+                      })
+
+            notifiers.trakt_notifier.update_watchlist_episode(self)
 
     @property
     def status_name(self):
@@ -689,7 +722,7 @@ class Episode(TV):
             self.subtitles_searchcount = sql_results[0]['subtitles_searchcount']
             self.subtitles_lastsearch = sql_results[0]['subtitles_lastsearch']
             self.airdate = date.fromordinal(int(sql_results[0]['airdate']))
-            self.status = int(sql_results[0]['status'] or UNSET)
+            self._status = int(sql_results[0]['status'] or UNSET)
             self.quality = int(sql_results[0]['quality'] or Quality.NA)
             self.watched = bool(sql_results[0]['watched'])
 
@@ -943,7 +976,7 @@ class Episode(TV):
                 # If is a leaked episode and user manually snatched, it will respect status
                 # If is a fake (manually snatched), when user set as FAILED, status will be WANTED
                 # and code below will make it UNAIRED again
-                self.status = UNAIRED
+                self._status = UNAIRED
                 log.debug(
                     '{id}: {series} {ep} airs in the future or has no air date, marking it {status}', {
                         'id': self.series.series_id,
@@ -955,7 +988,7 @@ class Episode(TV):
             elif self.status in (UNSET, UNAIRED):
                 # Only do UNAIRED/UNSET, it could already be snatched/ignored/skipped,
                 # or downloaded/archived to disconnected media
-                self.status = self.series.default_ep_status if self.season > 0 else SKIPPED  # auto-skip specials
+                self._status = self.series.default_ep_status if self.season > 0 else SKIPPED  # auto-skip specials
                 log.debug(
                     '{id}: {series} {ep} has already aired, marking it {status}', {
                         'id': self.series.series_id,
@@ -996,7 +1029,7 @@ class Episode(TV):
                     'old_status': statusStrings[self.status],
                 }
             )
-            self.status = UNSET
+            self._status = UNSET
 
         self.save_to_db()
 
@@ -2103,7 +2136,7 @@ class Episode(TV):
                 new_status = ARCHIVED
 
             with self.lock:
-                self.status = new_status
+                self._status = new_status
                 self.quality = new_quality
 
                 if not same_name:

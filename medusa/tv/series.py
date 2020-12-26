@@ -1996,8 +1996,8 @@ class Series(TV):
                 continue
 
             # if the path doesn't exist or if it's not in our show dir
-            if (not os.path.isfile(cur_loc) or
-                    not os.path.normpath(cur_loc).startswith(os.path.normpath(self.location))):
+            if (not os.path.isfile(cur_loc)
+                    or not os.path.normpath(cur_loc).startswith(os.path.normpath(self.location))):
 
                 # check if downloaded files still exist, update our data if this has changed
                 if not app.SKIP_REMOVED_FILES:
@@ -2019,7 +2019,7 @@ class Series(TV):
                                 }
                             )
 
-                            cur_ep.status = new_status
+                            cur_ep._status = new_status
                             cur_ep.subtitles = ''
                             cur_ep.subtitles_searchcount = 0
                             cur_ep.subtitles_lastsearch = ''
@@ -2656,7 +2656,7 @@ class Series(TV):
                     if final_status_only and Quality.should_search(ep_obj.status, ep_obj.quality, self,
                                                                    ep_obj.manually_searched)[0]:
                         continue
-                    ep_obj.status = ARCHIVED
+                    ep_obj._status = ARCHIVED
                     sql_list.append(ep_obj.get_sql())
         if sql_list:
             main_db_con = db.DBConnection()
