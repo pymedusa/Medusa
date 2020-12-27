@@ -448,9 +448,10 @@ class Episode(TV):
             if not upd:
                 return
 
-            log.debug('{action} episodes, showid: indexerid {show_id},'
+            log.debug('{action} episode {episode}, showid: indexerid {show_id},'
                       'Title {show_name} to Watchlist', {
-                          'action': upd, 'show_id': self.series.series_id, 'show_name': self.series.name
+                          'action': upd, 'episode': self.episode,
+                          'show_id': self.series.series_id, 'show_name': self.series.name
                       })
 
             notifiers.trakt_notifier.update_watchlist_episode(self)
