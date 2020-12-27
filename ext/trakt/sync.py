@@ -5,6 +5,7 @@ from datetime import datetime
 from trakt.core import get, post, delete
 from trakt.utils import slugify, extract_ids, timestamp
 
+
 __author__ = 'Jon Nappi'
 __all__ = ['Scrobbler', 'comment', 'rate', 'add_to_history', 'get_watchlist',
            'add_to_watchlist', 'remove_from_history', 'remove_from_watchlist',
@@ -30,7 +31,8 @@ def comment(media, comment_body, spoiler=False, review=False):
         review = True
     data = dict(comment=comment_body, spoiler=spoiler, review=review)
     data.update(media.to_json_singular())
-    yield 'comments', data
+    result = yield 'comments', data
+    yield result
 
 
 @post
@@ -48,7 +50,8 @@ def rate(media, rating, rated_at=None):
 
     data = dict(rating=rating, rated_at=timestamp(rated_at))
     data.update(media.ids)
-    yield 'sync/ratings', {media.media_type: [data]}
+    result = yield 'sync/ratings', {media.media_type: [data]}
+    yield result
 
 
 @post
@@ -65,38 +68,25 @@ def add_to_history(media, watched_at=None):
 
     data = dict(watched_at=timestamp(watched_at))
     data.update(media.ids)
-    yield 'sync/history', {media.media_type: [data]}
+    result = yield 'sync/history', {media.media_type: [data]}
+    yield result
 
 
 @post
-def add_to_watchlist(media=None, media_type=None, media_objects=None):
-    """Add a :class:`TVShow` to your watchlist.
-
-    The trakt api allows for adding or removing multiple media objects
-        through an array. If you want to make us if this.
-        Make sure to leave media empty, and pass the media_type
-        ('movies', 'shows' or 'episodes')
-        and don't pass a value for `media`. Make sure to pass an array of
-        media objects to media_objects.
-
-    :param media: The :class:`TVShow` object to add to your watchlist
-    :param media_type: The :string: media type key
-    :param media_objects: The :class:`TVShow` shows, :class:`TVEpisode` episodes,
-        or :class:`Movie` movies media object.
+def add_to_watchlist(media):
+    """Add a :class:`Movie`, :class:`TVShow`, or :class:`TVEpisode`
+        to your watchlist
     """
-    valid_type = ('movies', 'shows', 'episodes')
+    # Legacy support of using PyTrakt media objects.
+    from trakt.tv import TVEpisode, TVSeason, TVShow
+    from trakt.movies import Movie
+    if isinstance(media, (TVEpisode, TVSeason, TVShow, Movie)):
+        media_object = media.to_json()
+    else:
+        media_object = media
 
-    if media:
-        yield 'sync/watchlist', media.to_json()
-
-    if media_type and media_objects and isinstance(media_objects, list):
-        if media_type not in valid_type:
-            raise ValueError('media_type must be one of {}'.format(valid_type))
-
-        yield 'sync/watchlist', {
-            media_type: [media_object.to_json_singular()[media_type[:-1]]
-                         for media_object in media_objects]
-        }
+    result = yield 'sync/watchlist', media_object
+    yield result
 
 
 @post
@@ -105,102 +95,65 @@ def remove_from_history(media):
 
     :param media: The media object to remove from your history
     """
-    yield 'sync/history/remove', media.to_json()
+    from trakt.tv import TVEpisode, TVSeason, TVShow
+    from trakt.movies import Movie
+    # Legacy support of using PyTrakt media objects.
+    if isinstance(media, (TVEpisode, TVSeason, TVShow, Movie)):
+        media_object = media.to_json()
+    else:
+        media_object = media
+
+    result = yield 'sync/history/remove', media_object
+    yield result
 
 
 @post
 def remove_from_watchlist(media=None, media_type=None, media_objects=None):
     """Remove a :class:`TVShow` from your watchlist.
-
-    The trakt api allows for adding or removing multiple media objects
-        through an array. If you want to make us if this.
-        Make sure to leave media empty, and pass the media_type
-        ('movies', 'shows' or 'episodes')
-        and don't pass a value for `media`. Make sure to pass an array of
-        media objects to media_objects.
-
-    :param media: The :class:`TVShow` object to remove from your watchlist
-    :param media_type: The :string: media type key
-    :param media_objects: The :class:`TVShow` shows, :class:`TVEpisode` episodes,
-        or :class:`Movie` movies media object.
     """
-    valid_type = ('movies', 'shows', 'episodes')
+    from trakt.tv import TVEpisode, TVSeason, TVShow
+    from trakt.movies import Movie
+    # Legacy support of using PyTrakt media objects.
+    if isinstance(media, (TVEpisode, TVSeason, TVShow, Movie)):
+        media_object = media.to_json()
+    else:
+        media_object = media
 
-    if media:
-        yield 'sync/watchlist/remove', media.to_json()
-
-    if media_type and media_objects and isinstance(media_objects, list):
-        if media_type not in valid_type:
-            raise ValueError('media_type must be one of {}'.format(valid_type))
-
-        yield 'sync/watchlist/remove', {
-            media_type: [media_object.to_json_singular()[media_type[:-1]]
-                         for media_object in media_objects]
-        }
+    result = yield 'sync/watchlist/remove', media_object
+    yield result
 
 
 @post
 def add_to_collection(media=None, media_type=None, media_objects=None):
     """Add a :class:`Movie`, :class:`TVShow`, or :class:`TVEpisode` to your
     collection
-
-    The trakt api allows for adding or removing multiple media objects
-        through an array. If you want to make us if this.
-        Make sure to leave media empty, and pass the media_type
-        ('movies', 'shows' or 'episodes')
-        and don't pass a value for `media`. Make sure to pass an array of
-        media objects to media_objects.
-
-    :param media: The :class:`TVShow` shows, :class:`TVEpisode` episodes,
-        or :class:`Movie` movies media object.
-    :param media_type: The :string: media type key
-    :param media_objects: The :class:`TVShow` shows, :class:`TVEpisode` episodes,
-        or :class:`Movie` movies media object.
     """
-    valid_type = ('movies', 'shows', 'episodes')
+    from trakt.tv import TVEpisode, TVSeason, TVShow
+    from trakt.movies import Movie
+    # Legacy support of using PyTrakt media objects.
+    if isinstance(media, (TVEpisode, TVSeason, TVShow, Movie)):
+        media_object = media.to_json()
+    else:
+        media_object = media
 
-    if media:
-        yield 'sync/collection', media.to_json()
-
-    if media_type and media_objects and isinstance(media_objects, list):
-        if media_type not in valid_type:
-            raise ValueError('media_type must be one of {}'.format(valid_type))
-
-        yield 'sync/collection', {
-            media_type: [media_object.to_json_singular()[media_type[:-1]]
-                         for media_object in media_objects]
-        }
+    result = yield 'sync/collection', media_object
+    yield result
 
 
 @post
 def remove_from_collection(media=None, media_type=None, media_objects=None):
     """Remove a :class:`TVShow` from your collection.
-
-    The trakt api allows for adding or removing multiple media objects
-        through an array. If you want to make us if this.
-        Make sure to leave media empty, and pass the media_type
-        ('movies', 'shows' or 'episodes')
-        and don't pass a value for `media`. Make sure to pass an array of
-        media objects to media_objects.
-
-    :param media: The :class:`TVShow` object to remove from your collection
-    :param media_type: The :string: media type key
-    :param media_objects: The :class:`TVShow` shows, :class:`TVEpisode` episodes,
-        or :class:`Movie` movies media object.
     """
-    valid_type = ('movies', 'shows', 'episodes')
+    from trakt.tv import TVEpisode, TVSeason, TVShow
+    from trakt.movies import Movie
+    # Legacy support of using PyTrakt media objects.
+    if isinstance(media, (TVEpisode, TVSeason, TVShow, Movie)):
+        media_object = media.to_json()
+    else:
+        media_object = media
 
-    if media:
-        yield 'sync/collection/remove', media.to_json()
-
-    if media_type and media_objects and isinstance(media_objects, list):
-        if media_type not in valid_type:
-            raise ValueError('media_type must be one of {}'.format(valid_type))
-
-        yield 'sync/collection/remove', {
-            media_type: [media_object.to_json_singular()[media_type[:-1]]
-                         for media_object in media_objects]
-        }
+    result = yield 'sync/collection/remove', media_object
+    yield result
 
 
 def search(query, search_type='movie', year=None, slugify_query=False):
@@ -307,7 +260,7 @@ def search_by_id(query, id_type='imdb', media_type=None, slugify_query=False):
         media_type = media_types.get(source, None)
 
     # If requested, slugify the query prior to running the search
-    if slugify:
+    if slugify_query:
         query = slugify(query)
 
     # If media_type is still none, don't add it as a parameter to the search
@@ -328,7 +281,7 @@ def search_by_id(query, id_type='imdb', media_type=None, slugify_query=False):
             from trakt.tv import TVEpisode
             show = d.pop('show')
             extract_ids(d['episode'])
-            results.append(TVEpisode(show['title'], **d['episode']))
+            results.append(TVEpisode(show, **d['episode']))
         elif 'movie' in d:
             from trakt.movies import Movie
             results.append(Movie(**d.pop('movie')))
@@ -375,7 +328,7 @@ def get_watchlist(list_type=None, sort=None):
             from trakt.tv import TVEpisode
             show = d.pop('show')
             extract_ids(d['episode'])
-            results.append(TVEpisode(show['title'], **d['episode']))
+            results.append(TVEpisode(show, **d['episode']))
         elif 'movie' in d:
             from trakt.movies import Movie
             results.append(Movie(**d.pop('movie')))
@@ -471,7 +424,8 @@ def checkin_media(media, app_version, app_date, message="", sharing=None,
     payload = dict(app_version=app_version, app_date=app_date, sharing=sharing,
                    message=message, venue_id=venue_id, venue_name=venue_name)
     payload.update(media.to_json_singular())
-    yield "checkin", payload
+    result = yield "checkin", payload
+    yield result
 
 
 @delete
