@@ -2,6 +2,7 @@
 
 
 from trakt import calendar, tv, users
+from medusa.helpers import get_title_without_year
 
 
 def get_trakt_user():
@@ -40,3 +41,39 @@ def get_trakt_show_collection(trakt_list, limit=None):
         return calendar.SeasonCalendar(days=30, extended='full,images', returns='shows')
 
     return tv.anticipated_shows(limit=limit, extended='full,images')
+
+
+def create_show_structure(show_obj):
+    """Prepare a trakt standard media object. With the show identifier."""
+    show = {
+        'title': get_title_without_year(show_obj.name, show_obj.start_year),
+        'year': show_obj.start_year,
+        'ids': {}
+    }
+    for valid_trakt_id in ['tvdb_id', 'trakt_id', 'tmdb_id', 'imdb_id']:
+        if show_obj.externals.get(valid_trakt_id):
+            show['ids'][valid_trakt_id[:-3]] = show_obj.externals.get(valid_trakt_id)
+    return show
+
+
+def create_episode_structure(show_obj, episodes):
+    """Prepare a trakt standard media object. With the show and episode identifiers."""
+    if not isinstance(episodes, list):
+        episodes = [episodes]
+
+    show = create_show_structure(show_obj)
+
+    # Add episodes to the media_object.
+    show['seasons'] = []
+
+    for ep_obj in episodes:
+        if ep_obj.season not in show['seasons']:
+            show['seasons'].append({
+                'number': ep_obj.season,
+                'episodes': []
+            })
+
+        season = [s for s in show['seasons'] if s['number'] == ep_obj.season][0]
+        season['episodes'].append({'number': ep_obj.episode})
+
+    return show
