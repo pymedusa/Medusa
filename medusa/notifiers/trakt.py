@@ -8,7 +8,7 @@ from builtins import object
 
 from medusa import app
 from medusa.helpers import get_title_without_year
-from medusa.helpers.trakt import get_trakt_user
+from medusa.helpers.trakt import create_episode_structure, create_show_structure, get_trakt_user
 from medusa.indexers.utils import get_trakt_indexer
 from medusa.logger.adapters.style import BraceAdapter
 
@@ -88,28 +88,27 @@ class Notifier(object):
             except Exception as error:
                 log.debug('Unable to update Trakt: {0!r}', error)
 
+
     @staticmethod
     def update_watchlist_show(show_obj, remove=False):
         """Use Trakt sync/watchlist to updata a show."""
-        title = get_title_without_year(show_obj.name, show_obj.start_year)
-        data = {
-            'year': show_obj.start_year,
-            'ids': {},
-        }
-        data['ids'][get_trakt_indexer(show_obj.indexer)] = show_obj.indexerid
-        trakt_tv_show = tv.TVShow(title, '', **data)
+        trakt_media_object = {'shows': [create_show_structure(show_obj)]}
 
         try:
             if remove:
-                sync.remove_from_watchlist(trakt_tv_show)
+                result = sync.remove_from_watchlist(trakt_media_object)
             else:
-                sync.add_to_watchlist(trakt_tv_show)
+                result = sync.add_to_watchlist(trakt_media_object)
         # TODO: add more meaningfull exception
         except Exception as error:
             log.debug('Unable to update Trakt watchlist: {0!r}', error)
             return False
 
-        return True
+        if result and (result.get('added') or result.get('existing')):
+            if result['added']['shows']:
+                return True
+
+        return False
 
     @staticmethod
     def update_watchlist_episode(episodes, remove=False):
@@ -120,30 +119,21 @@ class Notifier(object):
             as much as possible.
         :param episodes: An episode object or array of episode objects.
         """
-        if not isinstance(episodes, list):
-            episodes = [episodes]
-
-        media_objects = []
-        for ep_obj in episodes:
-            title = get_title_without_year(ep_obj.series.name, ep_obj.series.start_year)
-            data = {
-                'year': ep_obj.series.start_year,
-                'ids': {},
-            }
-            data['ids'][get_trakt_indexer(ep_obj.series.indexer)] = ep_obj.series.indexerid
-            media_objects.append(tv.TVEpisode(title, ep_obj.season, ep_obj.episode, **data))
-
         try:
             if remove:
-                sync.remove_from_watchlist(media_type='episodes', media_objects=media_objects)
+                result = sync.remove_from_watchlist({'shows': [create_episode_structure(episodes)]})
             else:
-                sync.add_to_watchlist(media_type='episodes', media_objects=media_objects)
+                result = sync.add_to_watchlist({'shows': [create_episode_structure(episodes)]})
         # TODO: add more meaningfull exception
         except Exception as error:
             log.debug('Unable to update Trakt watchlist: {0!r}', error)
             return False
 
-        return True
+        if result and (result.get('added') or result.get('existing')):
+            if result['added']['episodes']:
+                return True
+
+        return False
 
     @staticmethod
     def add_episode_to_watchlist(episode):
