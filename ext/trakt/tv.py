@@ -13,8 +13,9 @@ from trakt.people import Person
 
 __author__ = 'Jon Nappi'
 __all__ = ['dismiss_recommendation', 'get_recommended_shows', 'genres',
-           'popular_shows', 'trending_shows', 'updated_shows', 'TVShow',
-           'TVEpisode', 'TVSeason', 'Translation']
+           'popular_shows', 'trending_shows', 'updated_shows', 'recommmended_shows', 
+           'played_shows', 'watched_shows', 'collected_shows', 'anticipated_shows',
+           'TVShow', 'TVEpisode', 'TVSeason', 'Translation']
 
 
 Translation = namedtuple('Translation', ['title', 'overview', 'language'])
@@ -34,7 +35,9 @@ def get_recommended_shows(page=1, limit=10):
     history and your friends. Results are returned with the top recommendation
     first.
     """
-    data = yield 'recommendations/shows?page={page}&limit={limit}'.format(page=page, limit=limit)
+    data = yield 'recommendations/shows?page={page}&limit={limit}'.format(
+        page=page, limit=limit
+    )
     yield [TVShow(**show) for show in data]
 
 
@@ -47,7 +50,9 @@ def genres():
 
 @get
 def popular_shows(page=1, limit=10, extended=None):
-    uri = 'shows/popular?page={page}&limit={limit}'.format(page=page, limit=limit)
+    uri = 'shows/popular?page={page}&limit={limit}'.format(
+        page=page, limit=limit
+    )
     if extended:
         uri += '&extended={extended}'.format(extended=extended)
 
@@ -58,7 +63,9 @@ def popular_shows(page=1, limit=10, extended=None):
 @get
 def trending_shows(page=1, limit=10, extended=None):
     """All :class:`TVShow`'s being watched right now"""
-    uri = 'shows/trending?page={page}&limit={limit}'.format(page=page, limit=limit)
+    uri = 'shows/trending?page={page}&limit={limit}'.format(
+        page=page, limit=limit
+    )
     if extended:
         uri += '&extended={extended}'.format(extended=extended)
 

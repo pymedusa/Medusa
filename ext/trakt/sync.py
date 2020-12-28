@@ -7,10 +7,10 @@ from trakt.utils import slugify, extract_ids, timestamp
 
 
 __author__ = 'Jon Nappi'
-__all__ = ['Scrobbler', 'comment', 'rate', 'add_to_history', 'get_watchlist',
-           'add_to_watchlist', 'remove_from_history', 'remove_from_watchlist',
-           'add_to_collection', 'remove_from_collection', 'search',
-           'search_by_id']
+__all__ = ['Scrobbler', 'comment', 'rate', 'add_to_history', 'get_collection',
+           'get_watchlist', 'add_to_watchlist', 'remove_from_history',
+           'remove_from_watchlist', 'add_to_collection', 'remove_from_collection',
+           'search', 'search_by_id']
 
 
 @post
@@ -76,8 +76,9 @@ def add_to_history(media, watched_at=None):
 def add_to_watchlist(media):
     """Add a :class:`Movie`, :class:`TVShow`, or :class:`TVEpisode`
         to your watchlist
+    :param media: Supports both the PyTrakt :class:`Movie`, :class:`TVShow`, etc.
+        But also supports passing custom json structures.
     """
-    # Legacy support of using PyTrakt media objects.
     from trakt.tv import TVEpisode, TVSeason, TVShow
     from trakt.movies import Movie
     if isinstance(media, (TVEpisode, TVSeason, TVShow, Movie)):
@@ -93,11 +94,11 @@ def add_to_watchlist(media):
 def remove_from_history(media):
     """Remove the specified media object from your history
 
-    :param media: The media object to remove from your history
+    :param media: Supports both the PyTrakt :class:`Movie`, :class:`TVShow`, etc.
+        But also supports passing custom json structures.
     """
     from trakt.tv import TVEpisode, TVSeason, TVShow
     from trakt.movies import Movie
-    # Legacy support of using PyTrakt media objects.
     if isinstance(media, (TVEpisode, TVSeason, TVShow, Movie)):
         media_object = media.to_json()
     else:
@@ -108,12 +109,13 @@ def remove_from_history(media):
 
 
 @post
-def remove_from_watchlist(media=None, media_type=None, media_objects=None):
+def remove_from_watchlist(media=None):
     """Remove a :class:`TVShow` from your watchlist.
+    :param media: Supports both the PyTrakt :class:`Movie`, :class:`TVShow`, etc.
+        But also supports passing custom json structures.
     """
     from trakt.tv import TVEpisode, TVSeason, TVShow
     from trakt.movies import Movie
-    # Legacy support of using PyTrakt media objects.
     if isinstance(media, (TVEpisode, TVSeason, TVShow, Movie)):
         media_object = media.to_json()
     else:
@@ -124,13 +126,14 @@ def remove_from_watchlist(media=None, media_type=None, media_objects=None):
 
 
 @post
-def add_to_collection(media=None, media_type=None, media_objects=None):
+def add_to_collection(media):
     """Add a :class:`Movie`, :class:`TVShow`, or :class:`TVEpisode` to your
     collection
+    :param media: Supports both the PyTrakt :class:`Movie`, :class:`TVShow`, etc.
+        But also supports passing custom json structures.
     """
     from trakt.tv import TVEpisode, TVSeason, TVShow
     from trakt.movies import Movie
-    # Legacy support of using PyTrakt media objects.
     if isinstance(media, (TVEpisode, TVSeason, TVShow, Movie)):
         media_object = media.to_json()
     else:
@@ -141,12 +144,13 @@ def add_to_collection(media=None, media_type=None, media_objects=None):
 
 
 @post
-def remove_from_collection(media=None, media_type=None, media_objects=None):
-    """Remove a :class:`TVShow` from your collection.
+def remove_from_collection(media):
+    """Remove a :class:`TVShow` from your collection
+    :param media: Supports both the PyTrakt :class:`Movie`, :class:`TVShow`, etc.
+        But also supports passing custom json structures.
     """
     from trakt.tv import TVEpisode, TVSeason, TVShow
     from trakt.movies import Movie
-    # Legacy support of using PyTrakt media objects.
     if isinstance(media, (TVEpisode, TVSeason, TVShow, Movie)):
         media_object = media.to_json()
     else:
@@ -192,7 +196,7 @@ def get_search_results(query, search_type=None, slugify_query=False):
         search_type = ['movie', 'show', 'episode', 'person']
 
     # If requested, slugify the query prior to running the search
-    if slugify:
+    if slugify_query:
         query = slugify(query)
 
     uri = 'search/{type}?query={query}'.format(
@@ -340,15 +344,12 @@ def get_watchlist(list_type=None, sort=None):
 
 
 @get
-def get_watched(list_type=None, extended=False):
-    """Returns all movies or shows a user has watched sorted by most plays.
+def get_watched(list_type=None, extended=None):
+    """Returns all movies or shows a user has watched sorted by most plays
 
-    If list_type is set to `shows` an extended is enabled, `extended=noseasons` is added to the URL.
-    It won't return season or episode info.
     :param list_type: Optional Filter by a specific type.
         Possible values: movies, shows, seasons or episodes.
-    :param extended: Boolean for adding `extended=noseasons` to the url.
-        Possible values: True, False.
+    :param extended: Optional value for requesting extended information.
     """
     valid_type = ('movies', 'shows', 'seasons', 'episodes')
 
@@ -360,7 +361,7 @@ def get_watched(list_type=None, extended=False):
         uri += '/{}'.format(list_type)
 
     if list_type == 'shows' and extended:
-        uri += '?extended=noseasons'
+        uri += '?extended={extended}'.format(extended=extended)
 
     data = yield uri
     results = []
@@ -376,20 +377,16 @@ def get_watched(list_type=None, extended=False):
 
 
 @get
-def get_collection(list_type=None, extended=False):
+def get_collection(list_type=None, extended=None):
     """
     Get all collected items in a user's collection.
 
     A collected item indicates availability to watch digitally
     or on physical media.
 
-    optionally with a filter for a specific item type.
     :param list_type: Optional Filter by a specific type.
         Possible values: movies or shows.
-    :param extended: A boolean indicating wether or not to return the
-        additional media_type, resolution, hdr, audio, audio_channels
-        and '3d' metadata. It will use null if the
-        metadata isn't set for an item.
+    :param extended: Optional value for requesting extended information.
     """
     valid_type = ('movies', 'shows')
 
@@ -401,7 +398,7 @@ def get_collection(list_type=None, extended=False):
         uri += '/{}'.format(list_type)
 
     if extended:
-        uri += '?extended=metadata'
+        uri += '?extended={extended}'.format(extended=extended)
 
     data = yield uri
     results = []

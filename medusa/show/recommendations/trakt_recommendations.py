@@ -108,7 +108,7 @@ class TraktPopular(object):
 
         try:
             not_liked_show = ''
-            library_shows = sync.get_watched('shows', extended=True) + sync.get_collection('shows', extended=True)
+            library_shows = sync.get_watched('shows', extended='noseasons') + sync.get_collection('shows', extended='full')
             medusa_shows = [show.indexerid for show in app.showList if show.indexerid]
             removed_from_medusa = [lshow.tvdb for lshow in library_shows if lshow.tvdb not in medusa_shows]
 
