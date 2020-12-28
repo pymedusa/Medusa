@@ -9,8 +9,6 @@ from collections import OrderedDict
 
 import guessit
 
-from medusa.name_parser.cache import BaseCache
-
 from medusa import (
     common,
     db,
@@ -26,6 +24,7 @@ from medusa.indexers.exceptions import (
     IndexerException,
 )
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.name_parser.cache import BaseCache
 
 from six import iteritems
 

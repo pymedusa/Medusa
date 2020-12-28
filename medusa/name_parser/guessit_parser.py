@@ -3,17 +3,15 @@
 """Guessit Name Parser."""
 from __future__ import unicode_literals
 
-import re
 import logging
-
+import re
 from datetime import timedelta
 from time import time
 
 from medusa import app
-from medusa.name_parser.rules import default_api
-from medusa.name_parser.cache import BaseCache
-
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.name_parser.cache import BaseCache
+from medusa.name_parser.rules import default_api
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -132,9 +130,7 @@ class GuessItCache(BaseCache):
         self.invalidation_object = None
 
     def get_or_invalidate(self, name, obj):
-        """Return an item from the cache if the obj matches the previous invalidation object.
-        Clears the cache and returns None if not."""
-
+        """Return an item from the cache if the obj matches the previous invalidation object. Clears the cache and returns None if not."""
         with self.lock:
             if not self.invalidation_object:
                 self.invalidation_object = obj

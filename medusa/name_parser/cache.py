@@ -1,6 +1,10 @@
+# coding=utf-8
+
+"""A thread-safe cache with a max size."""
+
+import logging
 from collections import OrderedDict
 from threading import Lock
-import logging
 
 from medusa.logger.adapters.style import BraceAdapter
 
@@ -42,7 +46,7 @@ class BaseCache(object):
             return self.thread_unsafe_get(name)
 
     def thread_unsafe_get(self, name):
-        """Return a cache item from the cache. This function doesn't lock and is therefore not thread safe. """
+        """Return a cache item from the cache. This function doesn't lock and is therefore not thread safe."""
         if name in self.cache:
             log.debug('Using cache item for {name}', {'name': name})
             return self.cache[name]
