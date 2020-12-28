@@ -6,9 +6,10 @@ from __future__ import unicode_literals
 import logging
 import time
 from collections import OrderedDict
-from threading import Lock
 
 import guessit
+
+from medusa.name_parser.cache import BaseCache
 
 from medusa import (
     common,
@@ -27,7 +28,6 @@ from medusa.indexers.exceptions import (
 from medusa.logger.adapters.style import BraceAdapter
 
 from six import iteritems
-
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -302,10 +302,7 @@ class NameParser(object):
         return new_episode_numbers, new_season_numbers, new_absolute_numbers
 
     def _parse_string(self, name):
-        guess = guessit_cache.get(name)
-        if not guess:
-            guess = guessit.guessit(name, dict(show_type=self.show_type))
-            guessit_cache.add(name, guess)
+        guess = guessit.guessit(name, dict(show_type=self.show_type))
 
         result = self.to_parse_result(name, guess)
         search_series = helpers.get_show(result.series_name, self.try_indexers) if not self.naming_pattern else None
@@ -599,48 +596,6 @@ class ParseResult(object):
         return self.guess.get('video_codec')
 
 
-class BaseCache(object):
-    """Base cache."""
-
-    def __init__(self, max_size=1000):
-        """Initialize the cache with a maximum size."""
-        self.cache = OrderedDict()
-        self.max_size = max_size
-        self.lock = Lock()
-
-    def add(self, name, value):
-        """Add a cache item to the cache.
-
-        :param name:
-        :type name: str
-        :param value:
-        :type value: object
-        """
-        with self.lock:
-            while len(self.cache) >= self.max_size:
-                self.cache.popitem(last=False)
-            self.cache[name] = value
-
-    def get(self, name):
-        """Return a cache item from the cache.
-
-        :param name:
-        :type name: str
-        :return:
-        :rtype: object
-        """
-        with self.lock:
-            if name in self.cache:
-                log.debug('Using cache item for {name}', {'name': name})
-                return self.cache[name]
-
-    def remove(self, name):
-        """Remove a cache item given name."""
-        with self.lock:
-            del self.cache[name]
-            log.debug('Removed cache item for {name}', {'name': name})
-
-
 class NameParserCache(BaseCache):
     """Name parser cache."""
 
@@ -659,7 +614,6 @@ class NameParserCache(BaseCache):
 
 
 name_parser_cache = NameParserCache()
-guessit_cache = BaseCache(max_size=25000)
 
 
 class InvalidNameException(Exception):
