@@ -9,6 +9,7 @@ import glob
 import json
 import logging
 import os.path
+import re
 import shutil
 import stat
 import traceback
@@ -201,6 +202,8 @@ class SeriesIdentifier(Identifier):
 class Series(TV):
     """Represent a TV Show."""
 
+    YEAR_MATCH = re.compile(r'.*\(\d{4}\)$')
+
     def __init__(self, indexer, indexerid, lang='', quality=None,
                  season_folders=None, enabled_subtitles=None):
         """Instantiate a Series with database information based on indexerid.
@@ -215,7 +218,7 @@ class Series(TV):
         super(Series, self).__init__(indexer, indexerid, {'episodes', 'next_aired', 'release_groups', 'exceptions',
                                                           'external', 'imdb_info'})
         self.show_id = None
-        self.name = ''
+        self._name = ''
         self.imdb_id = ''
         self.network = ''
         self.genre = ''
@@ -285,6 +288,19 @@ class Series(TV):
     def from_identifier(cls, identifier):
         """Create a series object from its identifier."""
         return Series(identifier.indexer.id, identifier.id)
+
+    @property
+    def name(self):
+        """Return shows name."""
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        """Set shows name."""
+        if all([app.ADD_TITLE_WITH_YEAR, not Series.YEAR_MATCH.match(value), self.start_year]):
+            self._name = '{name} ({year})'.format(name=value, year=self.start_year)
+        else:
+            self._name = value
 
     @property
     def identifier(self):
@@ -1448,6 +1464,7 @@ class Series(TV):
             self.show_id = int(sql_results[0]['show_id'] or 0)
             self.indexer = int(sql_results[0]['indexer'] or 0)
 
+            self.start_year = int(sql_results[0]['startyear'] or 0)
             if not self.name:
                 self.name = sql_results[0]['show_name']
             if not self.network:
@@ -1467,7 +1484,6 @@ class Series(TV):
             if self.airs is None or not network_timezones.test_timeformat(self.airs):
                 self.airs = ''
 
-            self.start_year = int(sql_results[0]['startyear'] or 0)
             self.air_by_date = int(sql_results[0]['air_by_date'] or 0)
             self.anime = int(sql_results[0]['anime'] or 0)
             self.sports = int(sql_results[0]['sports'] or 0)
@@ -1544,6 +1560,9 @@ class Series(TV):
         indexed_show = self.indexer_api[self.series_id]
 
         try:
+            if getattr(indexed_show, 'firstaired', ''):
+                self.start_year = int(str(indexed_show['firstaired']).split('-')[0])
+
             self.name = indexed_show['seriesname'].strip()
         except AttributeError:
             raise IndexerAttributeNotFound(
@@ -1568,9 +1587,6 @@ class Series(TV):
         if getattr(indexed_show, 'airs_dayofweek', '') and getattr(indexed_show, 'airs_time', ''):
             self.airs = '{airs_day_of_week} {airs_time}'.format(airs_day_of_week=indexed_show['airs_dayofweek'],
                                                                 airs_time=indexed_show['airs_time'])
-
-        if getattr(indexed_show, 'firstaired', ''):
-            self.start_year = int(str(indexed_show['firstaired']).split('-')[0])
 
         self.status = self.normalize_status(getattr(indexed_show, 'status', None))
 

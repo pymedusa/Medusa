@@ -618,6 +618,7 @@ class Application(object):
             app.NAMING_MULTI_EP = check_setting_int(app.CFG, 'General', 'naming_multi_ep', 1)
             app.NAMING_ANIME_MULTI_EP = check_setting_int(app.CFG, 'General', 'naming_anime_multi_ep', 1)
             app.NAMING_STRIP_YEAR = bool(check_setting_int(app.CFG, 'General', 'naming_strip_year', 0))
+            app.ADD_TITLE_WITH_YEAR = bool(check_setting_int(app.CFG, 'General', 'add_title_with_year', 0))
             app.USE_NZBS = bool(check_setting_int(app.CFG, 'General', 'use_nzbs', 0))
             app.USE_TORRENTS = bool(check_setting_int(app.CFG, 'General', 'use_torrents', 1))
 
@@ -1567,6 +1568,7 @@ class Application(object):
         new_config['General']['auto_update'] = int(app.AUTO_UPDATE)
         new_config['General']['notify_on_update'] = int(app.NOTIFY_ON_UPDATE)
         new_config['General']['naming_strip_year'] = int(app.NAMING_STRIP_YEAR)
+        new_config['General']['add_title_with_year'] = int(app.ADD_TITLE_WITH_YEAR)
         new_config['General']['naming_pattern'] = app.NAMING_PATTERN
         new_config['General']['naming_custom_abd'] = int(app.NAMING_CUSTOM_ABD)
         new_config['General']['naming_abd_pattern'] = app.NAMING_ABD_PATTERN
