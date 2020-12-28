@@ -7300,10 +7300,10 @@ isurl@^1.0.0-alpha5:
     has-to-string-tag-x "^1.2.0"
     is-object "^1.0.1"
 
-javascript-time-ago@2.3.3:
-  version "2.3.3"
-  resolved "https://registry.yarnpkg.com/javascript-time-ago/-/javascript-time-ago-2.3.3.tgz#eb438bf159cc919b4123881241314fc962aae3f7"
-  integrity sha512-T4aOCWRQPWv5wsOBiiktKxu1Zd0deIHK2ymKg8XO+MEFZKnZklBOHCXrKbEWPD2Qk2V+ekfmX976r+W1+3dWsw==
+javascript-time-ago@2.3.4:
+  version "2.3.4"
+  resolved "https://registry.yarnpkg.com/javascript-time-ago/-/javascript-time-ago-2.3.4.tgz#811f203df7998283f4d55305677b40b6e7742779"
+  integrity sha512-Tmy9C4MBGtC19AYhV8updznKqtiRSwJHIbDMeypsy3F0vxqgX5ytln4jwXRLVh82WW6ig4VGegi/Qhykpr4YQw==
   dependencies:
     relative-time-format "^1.0.5"
 
