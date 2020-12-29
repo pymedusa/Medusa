@@ -213,7 +213,7 @@ class ProcessResult(object):
                 self.log_and_output('Missed file: {missed_file}', level=logging.WARNING, **{'missed_file': missed_file})
 
         if all([app.USE_TORRENTS, app.TORRENT_SEED_LOCATION,
-                self.process_method in ('hardlink', 'symlink', 'reflink')]):
+                self.process_method in ('hardlink', 'symlink', 'reflink', 'copy')]):
             for info_hash, release_names in list(iteritems(app.RECENTLY_POSTPROCESSED)):
                 if self.move_torrent(info_hash, release_names):
                     app.RECENTLY_POSTPROCESSED.pop(info_hash, None)
