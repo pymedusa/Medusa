@@ -487,7 +487,7 @@ class MedusaApp(object):
         self.SLACK_NOTIFY_SUBTITLEDOWNLOAD = None
         self.SLACK_WEBHOOK = None
 
-        self.USE_TRAKT = False
+        self._USE_TRAKT = False
         self.TRAKT_USERNAME = None
         self.TRAKT_ACCESS_TOKEN = None
         self.TRAKT_REFRESH_TOKEN = None
@@ -721,6 +721,17 @@ class MedusaApp(object):
             control_value = {'identifier': identifier}
             new_value = {'level': level}
             main_db_con.upsert('custom_logs', new_value, control_value)
+
+    @property
+    def USE_TRAKT(self):
+        """Return USE_TRAKT value."""
+        return self._USE_TRAKT
+
+    @USE_TRAKT.setter
+    def USE_TRAKT(self, value):
+        """Set USE_TRAKT value and start trakt_checker thread if needed."""
+        from medusa import config
+        config.change_USE_TRAKT(bool(value))
 
 
 app = MedusaApp()
