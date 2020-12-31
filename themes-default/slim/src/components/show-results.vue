@@ -11,6 +11,7 @@
                     </template>
                 </div>
                 <vue-good-table v-show="show.id.slug"
+                                class="vgt-table-styling"
                                 ref="vgt-show-results"
                                 :columns="columns"
                                 :rows="combinedResults"
