@@ -11,8 +11,6 @@ import shlex
 
 from argparse import ArgumentParser
 
-import six
-
 
 def build_argument_parser():
     """
@@ -108,7 +106,7 @@ def parse_options(options=None, api=False):
     :return:
     :rtype:
     """
-    if isinstance(options, six.string_types):
+    if isinstance(options, str):
         args = shlex.split(options)
         options = vars(argument_parser.parse_args(args))
     elif options is None:
@@ -153,7 +151,7 @@ def load_config(options):
         cwd = os.getcwd()
         yaml_supported = False
         try:
-            import yaml  # pylint:disable=unused-variable,unused-import
+            import yaml  # pylint:disable=unused-variable,unused-import,import-outside-toplevel
             yaml_supported = True
         except ImportError:
             pass
@@ -250,13 +248,13 @@ def load_config_file(filepath):
             return json.load(config_file_data)
     if filepath.endswith('.yaml') or filepath.endswith('.yml'):
         try:
-            import yaml
+            import yaml  # pylint:disable=import-outside-toplevel
             with open(filepath) as config_file_data:
                 return yaml.load(config_file_data, yaml.SafeLoader)
-        except ImportError:  # pragma: no cover
+        except ImportError as err:  # pragma: no cover
             raise ConfigurationException('Configuration file extension is not supported. '
                                          'PyYAML should be installed to support "%s" file' % (
-                                             filepath,))
+                                             filepath,)) from err
 
     try:
         # Try to load input as JSON
