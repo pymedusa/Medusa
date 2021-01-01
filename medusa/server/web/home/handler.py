@@ -8,6 +8,8 @@ import time
 from datetime import date
 from textwrap import dedent
 
+from trakt.errors import TraktException
+
 from medusa import (
     app,
     config,
@@ -94,13 +96,6 @@ from six.moves import map
 import trakt
 
 from tornroutes import route
-
-# from traktor import (
-#     MissingTokenException,
-#     TokenExpiredException,
-#     TraktApi,
-#     TraktException,
-# )
 
 
 @route('/home(/?.*)')
@@ -457,14 +452,18 @@ class Home(WebRoot):
     def requestTraktDeviceCodeOauth():
         """Start Trakt OAuth device auth. Send request."""
         logger.log('Start a new Oauth device authentication request. Request is valid for 60 minutes.', logger.INFO)
-        app.TRAKT_DEVICE_CODE = trakt.core.get_device_code(app.TRAKT_API_KEY, app.TRAKT_API_SECRET)
+        try:
+            app.TRAKT_DEVICE_CODE = trakt.get_device_code(app.TRAKT_API_KEY, app.TRAKT_API_SECRET)
+        except TraktException as error:
+            logger.log('Unable to get trakt device code. Error: {error!r}'.format(error=error), logger.WARNING)
+            return json.dumps({'result': False})
+
         return json.dumps(app.TRAKT_DEVICE_CODE)
 
     @staticmethod
     def checkTrakTokenOauth():
         """Check if the Trakt device OAuth request has been authenticated."""
         logger.log('Start Trakt token request', logger.INFO)
-        error = False
 
         if not app.TRAKT_DEVICE_CODE.get('requested'):
             logger.log('You need to request a token before checking authentication', logger.WARNING)
@@ -478,9 +477,13 @@ class Home(WebRoot):
             logger.log('You need to request a token before checking authentication. Missing device code.', logger.WARNING)
             return json.dumps({'result': 'need to request first', 'error': True})
 
-        response = trakt.core.get_device_token(
-            app.TRAKT_DEVICE_CODE.get('device_code'), app.TRAKT_API_KEY, app.TRAKT_API_SECRET, store=True
-        )
+        try:
+            response = trakt.get_device_token(
+                app.TRAKT_DEVICE_CODE.get('device_code'), app.TRAKT_API_KEY, app.TRAKT_API_SECRET, store=True
+            )
+        except TraktException as error:
+            logger.log('Unable to get trakt device token. Error: {error!r}'.format(error=error), logger.WARNING)
+            return json.dumps({'result': 'Trakt error while retrieving device token', 'error': True})
 
         if response.ok:
             response_json = response.json()

@@ -150,7 +150,7 @@ class TraktPopular(object):
             blacklist = app.TRAKT_BLACKLIST_NAME not in ''
 
         except Exception as error:
-            log.warning('Could not connect to Trakt service: {0}', error)
+            log.exception('Could not connect to Trakt service: {0}', error)
             raise
 
         return blacklist, trending_shows, removed_from_medusa

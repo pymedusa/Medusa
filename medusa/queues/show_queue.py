@@ -56,8 +56,6 @@ from requests import RequestException
 
 from six import ensure_text, text_type, viewitems
 
-from traktor import TraktException
-
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 

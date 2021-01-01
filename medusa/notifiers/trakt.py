@@ -13,8 +13,8 @@ from medusa.indexers.utils import get_trakt_indexer
 from medusa.logger.adapters.style import BraceAdapter
 
 from trakt import sync, tv
+from trakt.errors import TraktException
 
-# from traktor import AuthException, TokenExpiredException, TraktApi, TraktException
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -83,11 +83,8 @@ class Notifier(object):
                 # update library
                 # trakt_api.request('sync/collection', data, method='POST')
                 sync.add_to_collection(data)
-
-            # TODO: Add more reasonable exceptions.
-            except Exception as error:
-                log.debug('Unable to update Trakt: {0!r}', error)
-
+            except TraktException as error:
+                log.warning('Unable to update Trakt: {error!r}', {'error': error})
 
     @staticmethod
     def update_watchlist_show(show_obj, remove=False):
@@ -99,9 +96,8 @@ class Notifier(object):
                 result = sync.remove_from_watchlist(trakt_media_object)
             else:
                 result = sync.add_to_watchlist(trakt_media_object)
-        # TODO: add more meaningfull exception
-        except Exception as error:
-            log.debug('Unable to update Trakt watchlist: {0!r}', error)
+        except TraktException as error:
+            log.warning('Unable to update Trakt: {error!r}', {'error': error})
             return False
 
         if result and (result.get('added') or result.get('existing')):
@@ -124,9 +120,8 @@ class Notifier(object):
                 result = sync.remove_from_watchlist({'shows': [create_episode_structure(episodes)]})
             else:
                 result = sync.add_to_watchlist({'shows': [create_episode_structure(episodes)]})
-        # TODO: add more meaningfull exception
-        except Exception as error:
-            log.debug('Unable to update Trakt watchlist: {0!r}', error)
+        except TraktException as error:
+            log.warning('Unable to update Trakt watchlist: {error!r}', {'error': error})
             return False
 
         if result and (result.get('added') or result.get('existing')):
@@ -144,9 +139,12 @@ class Notifier(object):
         """
         show_id = None
 
-        tv_show = tv.TVShow(show_id)
-        tv_episode = tv.TVEpisode(tv_show, episode.season, episode.episode)
-        tv_episode.add_to_watchlist()
+        try:
+            tv_show = tv.TVShow(show_id)
+            tv_episode = tv.TVEpisode(tv_show, episode.season, episode.episode)
+            tv_episode.add_to_watchlist()
+        except TraktException as error:
+            log.warning('Unable to add episode to watchlist: {error!r}', {'error': error})
 
     @staticmethod
     def test_notify(blacklist_name=None):
@@ -170,6 +168,6 @@ class Notifier(object):
                     return "Trakt blacklist doesn't exists"
             else:
                 return 'Test notice sent successfully to Trakt'
-        except Exception as error:
-            log.warning('Unable to test TRAKT: {0!r}', error)
+        except TraktException as error:
+            log.warning('Unable to test TRAKT: {error!r}', {'error': error})
             return 'Test notice failed to Trakt: {0!r}'.format(error)

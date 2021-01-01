@@ -15,7 +15,9 @@ from medusa.logger.adapters.style import BraceAdapter
 from requests.exceptions import RequestException
 
 from six import viewitems
+
 from trakt import sync
+from trakt.errors import TraktException
 
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -41,10 +43,14 @@ def get_trakt_externals(externals):
             }
         )
 
-        # id_lookup = '/search/{external_key}/{external_value}?type=show'
-        # url = id_lookup.format(external_key=trakt_mapping[external_key], external_value=externals[external_key])
-        # result = trakt_request(trakt_api, url)
-        result = sync.search_by_id(externals[external_key], id_type=trakt_mapping[external_key], media_type='show')
+        try:
+            result = sync.search_by_id(externals[external_key], id_type=trakt_mapping[external_key], media_type='show')
+        except TraktException as error:
+            log.warning('Error getting external key {external}, error: {error!r}', {
+                'external': trakt_mapping[external_key], 'error': error
+            })
+            return {}
+
         if result and len(result) and result[0].ids.get('ids'):
             ids = {trakt_mapping_rev[k]: v for k, v in result[0].ids.get('ids').items()
                    if v and trakt_mapping_rev.get(k)}

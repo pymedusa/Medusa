@@ -1,15 +1,28 @@
 """Module with Trakt helper methods."""
 
 
-from trakt import calendar, tv, users
+import logging
+
 from medusa.helpers import get_title_without_year
+from medusa.logger.adapters.style import BraceAdapter
+
+from trakt import calendar, tv, users
+from trakt.errors import TraktException
+
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 def get_trakt_user():
     """Get PyTrakt user object."""
-    user = users.get_user_settings()
-    username = user['user']['username']
-    return users.User(username)
+    try:
+        user = users.get_user_settings()
+        username = user['user']['username']
+        return users.User(username)
+    except TraktException as error:
+        log.warning('Unable to get trakt user, error: {error}', {'error': error})
+        raise
 
 
 def get_trakt_show_collection(trakt_list, limit=None):
@@ -21,26 +34,29 @@ def get_trakt_show_collection(trakt_list, limit=None):
     :param trakt_list: String description of the trakt list to return.
     :returns: Array of PyTrakt TvShow objects.
     """
-    if trakt_list == 'trending':
-        return tv.trending_shows(limit=limit, extended='full,images')
-    elif trakt_list == 'popular':
-        return tv.popular_shows(limit=limit, extended='full,images')
-    elif trakt_list == 'anticipated':
-        return tv.anticipated_shows(limit=limit, extended='full,images')
-    elif trakt_list == 'collected':
-        return tv.collected_shows(limit=limit, extended='full,images')
-    elif trakt_list == 'watched':
-        return tv.watched_shows(limit=limit, extended='full,images')
-    elif trakt_list == 'played':
-        return tv.played_shows(limit=limit, extended='full,images')
-    elif trakt_list == 'recommended':
-        return tv.recommended_shows(extended='full,images')
-    elif trakt_list == 'newshow':
-        return calendar.PremiereCalendar(days=30, extended='full,images', returns='shows')
-    elif trakt_list == 'newseason':
-        return calendar.SeasonCalendar(days=30, extended='full,images', returns='shows')
+    try:
+        if trakt_list == 'trending':
+            return tv.trending_shows(limit=limit, extended='full,images')
+        elif trakt_list == 'popular':
+            return tv.popular_shows(limit=limit, extended='full,images')
+        elif trakt_list == 'anticipated':
+            return tv.anticipated_shows(limit=limit, extended='full,images')
+        elif trakt_list == 'collected':
+            return tv.collected_shows(limit=limit, extended='full,images')
+        elif trakt_list == 'watched':
+            return tv.watched_shows(limit=limit, extended='full,images')
+        elif trakt_list == 'played':
+            return tv.played_shows(limit=limit, extended='full,images')
+        elif trakt_list == 'recommended':
+            return tv.recommended_shows(extended='full,images')
+        elif trakt_list == 'newshow':
+            return calendar.PremiereCalendar(days=30, extended='full,images', returns='shows')
+        elif trakt_list == 'newseason':
+            return calendar.SeasonCalendar(days=30, extended='full,images', returns='shows')
 
-    return tv.anticipated_shows(limit=limit, extended='full,images')
+        return tv.anticipated_shows(limit=limit, extended='full,images')
+    except TraktException as error:
+        log.warning('Unable to get trakt list {trakt_list}: {error!r}', {'trakt_list': trakt_list, 'error': error})
 
 
 def create_show_structure(show_obj):

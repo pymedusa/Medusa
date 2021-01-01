@@ -2,7 +2,6 @@
 
 from __future__ import unicode_literals
 
-import datetime
 import json
 import logging
 
@@ -27,7 +26,10 @@ from simpleanidb import REQUEST_HOT
 
 from six import text_type
 
+from trakt.errors import TraktException
+
 from tornroutes import route
+
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -201,11 +203,14 @@ class HomeAddShows(Home):
 
             ui.notifications.message('Success!',
                                      "Added show '{0}' to blacklist".format(show_name))
-        except Exception as e:
+        except TraktException as error:
             ui.notifications.error('Error!',
                                    "Unable to add show '{0}' to blacklist. Check logs.".format(show_name))
             log.warning("Error while adding show '{name}' to trakt blacklist: {error}",
-                        {'name': show_name, 'error': e})
+                        {'name': show_name, 'error': error})
+
+        except Exception as error:
+            log.exception('Error trying to add show to blacklist, error: {error}', {'error': error})
 
     def existingShows(self):
         """
