@@ -383,6 +383,9 @@ def change_USE_TRAKT(use_trakt):
 
     app._USE_TRAKT = use_trakt
     if app._USE_TRAKT:
+        # Trakt checker hasn't been initialized yet. Can't do anything with it right now.
+        if app.trakt_checker_scheduler is None:
+            return
         if not app.trakt_checker_scheduler.enable:
             log.info(u'Starting TRAKTCHECKER thread')
             app.trakt_checker_scheduler.silent = False
