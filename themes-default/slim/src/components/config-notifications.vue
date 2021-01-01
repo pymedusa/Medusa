@@ -1637,7 +1637,7 @@ export default {
         },
         checkTraktAuthenticated() {
             let counter = 0;
-            let i = setInterval(() => {
+            const i = setInterval(() => {
                 apiRoute('home/checkTrakTokenOauth')
                     .then(response => {
                         if (response.data) {
@@ -1646,13 +1646,12 @@ export default {
                                 clearInterval(i);
                                 this.traktRequestAuthenticated = true;
                                 this.traktUserCode = '';
-                                return;
                             }
                         }
                     });
 
                 counter++;
-                if(counter === 12) {
+                if (counter === 12) {
                     clearInterval(i);
                     this.traktRequestAuthenticated = false;
                     this.traktUserCode = '';
@@ -1674,7 +1673,7 @@ export default {
                 .then(result => {
                     $('#testTrakt-result').html(result.data);
                     $('#testTrakt').prop('disabled', false);
-                })
+                });
         },
         traktForceSync() {
             $('#testTrakt-result').html(MEDUSA.config.layout.loading);
