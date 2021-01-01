@@ -19,9 +19,10 @@ from trakt import errors
 
 __author__ = 'Jon Nappi'
 __all__ = ['Airs', 'Alias', 'Comment', 'Genre', 'get', 'delete', 'post', 'put',
-           'init', 'BASE_URL', 'CLIENT_ID', 'CLIENT_SECRET', 'REDIRECT_URI',
-           'HEADERS', 'CONFIG_PATH', 'OAUTH_TOKEN', 'OAUTH_REFRESH',
-           'PIN_AUTH', 'OAUTH_AUTH', 'AUTH_METHOD', 'APPLICATION_ID']
+           'init', 'BASE_URL', 'CLIENT_ID', 'CLIENT_SECRET', 'DEVICE_AUTH',
+           'REDIRECT_URI', 'HEADERS', 'CONFIG_PATH', 'OAUTH_TOKEN',
+           'OAUTH_REFRESH', 'PIN_AUTH', 'OAUTH_AUTH', 'AUTH_METHOD',
+           'APPLICATION_ID', 'get_device_code', 'get_device_token']
 
 #: The base url for the Trakt API. Can be modified to run against different
 #: Trakt.tv environments

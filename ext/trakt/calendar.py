@@ -3,7 +3,7 @@
 from pprint import pformat
 from trakt.core import get
 from trakt.movies import Movie
-from trakt.tv import TVEpisode, TVShow
+from trakt.tv import TVEpisode
 from trakt.utils import now, airs_date
 
 __author__ = 'Jon Nappi'
@@ -18,31 +18,19 @@ class Calendar(object):
     """
     url = None
 
-    def __init__(self, date=None, days=7, extended=None, returns='episodes'):
+    def __init__(self, date=None, days=7, extended=None):
         """Create a new :class:`Calendar` object
 
         :param date: Start date of this :class:`Calendar` in the format Ymd
             (i.e. 2011-04-21). Defaults to today
         :param days: Number of days for this :class:`Calendar`. Defaults to 7
             days
-        :param extended: Pass the `extended=full` param to the trakt api. Check
-            the trakt api docs for possible extended values.
-        :param returns: The trakt api returns episodes and shows. Use `episodes`
-            for an array of :class:`TvEpisode` or `shows` for an array of
-            :class:`TVShow`.
         """
         super(Calendar, self).__init__()
         self.date = date or now()
         self.days = days
         self._calendar = []
-
-        valid_type = ('shows', 'episodes')
-
-        if returns and returns not in valid_type:
-            raise ValueError('list_type must be one of {}'.format(valid_type))
-
         self.extended = extended
-        self.returns = returns
         self._get()
 
     def __getitem__(self, key):
@@ -78,21 +66,14 @@ class Calendar(object):
     def _build(self, data):
         """Build the calendar"""
         self._calendar = []
-
         for episode in data:
-            if self.returns == 'episodes':
-                show = episode.get('show', {}).get('title')
-                season = episode.get('episode', {}).get('season')
-                ep = episode.get('episode', {}).get('number')
-                e_data = {'airs_at': airs_date(episode.get('first_aired')),
-                          'ids': episode.get('episode').get('ids'),
-                          'title': episode.get('episode', {}).get('title')}
-                self._calendar.append(TVEpisode(show, season, ep, **e_data))
-            else:
-                show = episode.get('show')
-                show['airs_at'] = airs_date(show.get('first_aired'))
-                self._calendar.append(TVShow(**show))
-
+            show = episode.get('show', {}).get('title')
+            season = episode.get('episode', {}).get('season')
+            ep = episode.get('episode', {}).get('number')
+            e_data = {'airs_at': airs_date(episode.get('first_aired')),
+                      'ids': episode.get('episode').get('ids'),
+                      'title': episode.get('episode', {}).get('title')}
+            self._calendar.append(TVEpisode(show, season, ep, **e_data))
         self._calendar = sorted(self._calendar, key=lambda x: x.airs_at)
 
 

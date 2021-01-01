@@ -9,15 +9,15 @@ from trakt.utils import slugify, extract_ids, timestamp
 __author__ = 'Jon Nappi'
 __all__ = ['Scrobbler', 'comment', 'rate', 'add_to_history', 'get_collection',
            'get_watchlist', 'add_to_watchlist', 'remove_from_history',
-           'remove_from_watchlist', 'add_to_collection', 'remove_from_collection',
-           'search', 'search_by_id']
+           'remove_from_watchlist', 'add_to_collection',
+           'remove_from_collection', 'search', 'search_by_id']
 
 
 @post
 def comment(media, comment_body, spoiler=False, review=False):
     """Add a new comment to a :class:`Movie`, :class:`TVShow`, or
-    :class:`TVEpisode`. If you add a review, it needs to
-    be at least 200 words
+        :class:`TVEpisode`. If you add a review,
+        it needs to be at least 200 words.
 
     :param media: The media object to post the comment to
     :param comment_body: The content of comment
@@ -38,7 +38,7 @@ def comment(media, comment_body, spoiler=False, review=False):
 @post
 def rate(media, rating, rated_at=None):
     """Add a rating from 1 to 10 to a :class:`Movie`, :class:`TVShow`, or
-    :class:`TVEpisode`
+        :class:`TVEpisode`.
 
     :param media: The media object to post a rating to
     :param rating: A rating from 1 to 10 for the media item
@@ -57,7 +57,7 @@ def rate(media, rating, rated_at=None):
 @post
 def add_to_history(media, watched_at=None):
     """Add a :class:`Movie`, :class:`TVShow`, or :class:`TVEpisode` to your
-    watched history
+        watched history.
 
     :param media: The media object to add to your history
     :param watched_at: A `datetime.datetime` object indicating the time at
@@ -76,8 +76,8 @@ def add_to_history(media, watched_at=None):
 def add_to_watchlist(media):
     """Add a :class:`Movie`, :class:`TVShow`, or :class:`TVEpisode`
         to your watchlist
-    :param media: Supports both the PyTrakt :class:`Movie`, :class:`TVShow`, etc.
-        But also supports passing custom json structures.
+    :param media: Supports both the PyTrakt :class:`Movie`,
+        :class:`TVShow`, etc. But also supports passing custom json structures.
     """
     from trakt.tv import TVEpisode, TVSeason, TVShow
     from trakt.movies import Movie
@@ -94,8 +94,8 @@ def add_to_watchlist(media):
 def remove_from_history(media):
     """Remove the specified media object from your history
 
-    :param media: Supports both the PyTrakt :class:`Movie`, :class:`TVShow`, etc.
-        But also supports passing custom json structures.
+    :param media: Supports both the PyTrakt :class:`Movie`,
+        :class:`TVShow`, etc. But also supports passing custom json structures.
     """
     from trakt.tv import TVEpisode, TVSeason, TVShow
     from trakt.movies import Movie
@@ -111,8 +111,8 @@ def remove_from_history(media):
 @post
 def remove_from_watchlist(media=None):
     """Remove a :class:`TVShow` from your watchlist.
-    :param media: Supports both the PyTrakt :class:`Movie`, :class:`TVShow`, etc.
-        But also supports passing custom json structures.
+    :param media: Supports both the PyTrakt :class:`Movie`,
+        :class:`TVShow`, etc. But also supports passing custom json structures.
     """
     from trakt.tv import TVEpisode, TVSeason, TVShow
     from trakt.movies import Movie
@@ -127,10 +127,10 @@ def remove_from_watchlist(media=None):
 
 @post
 def add_to_collection(media):
-    """Add a :class:`Movie`, :class:`TVShow`, or :class:`TVEpisode` to your
-    collection
-    :param media: Supports both the PyTrakt :class:`Movie`, :class:`TVShow`, etc.
-        But also supports passing custom json structures.
+    """Add a :class:`Movie`, :class:`TVShow`, or :class:`TVEpisode
+        to your collection.
+    :param media: Supports both the PyTrakt :class:`Movie`,
+        :class:`TVShow`, etc. But also supports passing custom json structures.
     """
     from trakt.tv import TVEpisode, TVSeason, TVShow
     from trakt.movies import Movie
@@ -145,9 +145,9 @@ def add_to_collection(media):
 
 @post
 def remove_from_collection(media):
-    """Remove a :class:`TVShow` from your collection
-    :param media: Supports both the PyTrakt :class:`Movie`, :class:`TVShow`, etc.
-        But also supports passing custom json structures.
+    """Remove a :class:`TVShow` from your collection.
+    :param media: Supports both the PyTrakt :class:`Movie`,
+        :class:`TVShow`, etc. But also supports passing custom json structures.
     """
     from trakt.tv import TVEpisode, TVSeason, TVShow
     from trakt.movies import Movie
@@ -161,7 +161,7 @@ def remove_from_collection(media):
 
 
 def search(query, search_type='movie', year=None, slugify_query=False):
-    """Perform a search query against all of trakt's media types
+    """Perform a search query against all of trakt's media types.
 
     :param query: Your search string
     :param search_type: The type of object you're looking for. Must be one of
@@ -182,7 +182,7 @@ def search(query, search_type='movie', year=None, slugify_query=False):
 
 @get
 def get_search_results(query, search_type=None, slugify_query=False):
-    """Perform a search query against all of trakt's media types
+    """Perform a search query against all of trakt's media types.
 
     :param query: Your search string
     :param search_type: The types of objects you're looking for. Must be
@@ -231,7 +231,7 @@ def get_search_results(query, search_type=None, slugify_query=False):
 
 @get
 def search_by_id(query, id_type='imdb', media_type=None, slugify_query=False):
-    """Perform a search query by using a Trakt.tv ID or other external ID
+    """Perform a search query by using a Trakt.tv ID or other external ID.
 
     :param query: Your search string, which should be an ID from your source
     :param id_type: The source of the ID you're looking for. Must be one of
@@ -345,7 +345,7 @@ def get_watchlist(list_type=None, sort=None):
 
 @get
 def get_watched(list_type=None, extended=None):
-    """Returns all movies or shows a user has watched sorted by most plays
+    """Return all movies or shows a user has watched sorted by most plays.
 
     :param list_type: Optional Filter by a specific type.
         Possible values: movies, shows, seasons or episodes.
@@ -416,7 +416,7 @@ def get_collection(list_type=None, extended=None):
 @post
 def checkin_media(media, app_version, app_date, message="", sharing=None,
                   venue_id="", venue_name=""):
-    """Checkin a media item
+    """Checkin a media item.
     """
     payload = dict(app_version=app_version, app_date=app_date, sharing=sharing,
                    message=message, venue_id=venue_id, venue_name=venue_name)
@@ -432,9 +432,9 @@ def delete_checkin():
 
 class Scrobbler(object):
     """Scrobbling is a seemless and automated way to track what you're watching
-    in a media center. This class allows the media center to easily send events
-    that correspond to starting, pausing, stopping or finishing a movie or
-    episode.
+        in a media center. This class allows the media center to easily send
+        events that correspond to starting, pausing, stopping or finishing
+        a movie or episode.
     """
 
     def __init__(self, media, progress, app_version, app_date):
