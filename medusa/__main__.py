@@ -1017,7 +1017,7 @@ class Application(object):
             app.FALLBACK_PLEX_TIMEOUT = check_setting_int(app.CFG, 'General', 'fallback_plex_timeout', 3)
 
             # Initialize trakt config path.
-            trakt.CONFIG_PATH = os.path.join(app.CACHE_DIR, '.pytrakt.json')
+            trakt.core.CONFIG_PATH = os.path.join(app.CACHE_DIR, '.pytrakt.json')
 
             # reconfigure the logger
             app_logger.reconfigure()
