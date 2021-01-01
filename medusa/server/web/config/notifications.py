@@ -78,7 +78,7 @@ class ConfigNotifications(Config):
                           join_notify_onsubtitledownload=None, join_api=None, join_device=None,
                           use_email=None, email_notify_onsnatch=None, email_notify_ondownload=None,
                           email_notify_onsubtitledownload=None, email_host=None, email_port=25, email_from=None,
-                          email_tls=None, email_user=None, email_password=None, email_list=None, email_subject=None, email_show_list=None,
+                          email_user=None, email_password=None, email_list=None, email_subject=None, email_show_list=None,
                           email_show=None,
                           use_slack=None, slack_notify_onsnatch=None, slack_notify_ondownload=None, slack_notify_onsubtitledownload=None,
                           slack_webhook=None):
@@ -226,7 +226,6 @@ class ConfigNotifications(Config):
         app.EMAIL_HOST = config.clean_host(email_host)
         app.EMAIL_PORT = try_int(email_port, 25)
         app.EMAIL_FROM = email_from
-        app.EMAIL_TLS = config.checkbox_to_value(email_tls)
         app.EMAIL_USER = email_user
         app.EMAIL_PASSWORD = email_password
         app.EMAIL_LIST = [_.strip() for _ in email_list.split(',')]

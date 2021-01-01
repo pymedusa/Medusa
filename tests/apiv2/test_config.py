@@ -683,7 +683,6 @@ def config_notifiers():
     section_data['email']['host'] = app.EMAIL_HOST
     section_data['email']['port'] = app.EMAIL_PORT
     section_data['email']['from'] = app.EMAIL_FROM
-    section_data['email']['tls'] = bool(app.EMAIL_TLS)
     section_data['email']['username'] = app.EMAIL_USER
     section_data['email']['password'] = app.EMAIL_PASSWORD
     section_data['email']['addressList'] = app.EMAIL_LIST

@@ -909,7 +909,6 @@ class Application(object):
             app.EMAIL_NOTIFY_ONSUBTITLEDOWNLOAD = bool(check_setting_int(app.CFG, 'Email', 'email_notify_onsubtitledownload', 0))
             app.EMAIL_HOST = check_setting_str(app.CFG, 'Email', 'email_host', '')
             app.EMAIL_PORT = check_setting_int(app.CFG, 'Email', 'email_port', 25)
-            app.EMAIL_TLS = bool(check_setting_int(app.CFG, 'Email', 'email_tls', 0))
             app.EMAIL_USER = check_setting_str(app.CFG, 'Email', 'email_user', '', censor_log='normal')
             app.EMAIL_PASSWORD = check_setting_str(app.CFG, 'Email', 'email_password', '', censor_log='low')
             app.EMAIL_FROM = check_setting_str(app.CFG, 'Email', 'email_from', '')
@@ -1935,7 +1934,6 @@ class Application(object):
         new_config['Email']['email_notify_onsubtitledownload'] = int(app.EMAIL_NOTIFY_ONSUBTITLEDOWNLOAD)
         new_config['Email']['email_host'] = app.EMAIL_HOST
         new_config['Email']['email_port'] = int(app.EMAIL_PORT)
-        new_config['Email']['email_tls'] = int(app.EMAIL_TLS)
         new_config['Email']['email_user'] = app.EMAIL_USER
         new_config['Email']['email_password'] = helpers.encrypt(app.EMAIL_PASSWORD, app.ENCRYPTION_VERSION)
         new_config['Email']['email_from'] = app.EMAIL_FROM

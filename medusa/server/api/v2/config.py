@@ -431,7 +431,6 @@ class ConfigHandler(BaseRequestHandler):
         'notifiers.email.host': StringField(app, 'EMAIL_HOST'),
         'notifiers.email.port': IntegerField(app, 'EMAIL_PORT'),
         'notifiers.email.from': StringField(app, 'EMAIL_FROM'),
-        'notifiers.email.tls': BooleanField(app, 'EMAIL_TLS'),
         'notifiers.email.username': StringField(app, 'EMAIL_USER'),
         'notifiers.email.password': StringField(app, 'EMAIL_PASSWORD'),
         'notifiers.email.addressList': ListField(app, 'EMAIL_LIST'),
@@ -1014,7 +1013,6 @@ class DataGenerator(object):
         section_data['email']['host'] = app.EMAIL_HOST
         section_data['email']['port'] = app.EMAIL_PORT
         section_data['email']['from'] = app.EMAIL_FROM
-        section_data['email']['tls'] = bool(app.EMAIL_TLS)
         section_data['email']['username'] = app.EMAIL_USER
         section_data['email']['password'] = app.EMAIL_PASSWORD
         section_data['email']['addressList'] = app.EMAIL_LIST

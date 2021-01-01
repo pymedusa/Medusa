@@ -539,9 +539,9 @@ class Home(WebRoot):
         return 'OK'
 
     @staticmethod
-    def testEmail(host=None, port=None, smtp_from=None, use_tls=None, user=None, pwd=None, to=None):
+    def testEmail(host=None, port=None, smtp_from=None, user=None, pwd=None, to=None):
         host = config.clean_host(host)
-        if notifiers.email_notifier.test_notify(host, port, smtp_from, use_tls, user, pwd, to):
+        if notifiers.email_notifier.test_notify(host, port, smtp_from, user, pwd, to):
             return 'Test email sent successfully! Check inbox.'
         else:
             return 'ERROR: {error}'.format(error=notifiers.email_notifier.last_err)

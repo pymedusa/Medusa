@@ -538,7 +538,6 @@ class MedusaApp(object):
         self.EMAIL_NOTIFY_ONSUBTITLEDOWNLOAD = False
         self.EMAIL_HOST = None
         self.EMAIL_PORT = 25
-        self.EMAIL_TLS = False
         self.EMAIL_USER = None
         self.EMAIL_PASSWORD = None
         self.EMAIL_FROM = None

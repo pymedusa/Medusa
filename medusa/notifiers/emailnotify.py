@@ -49,7 +49,7 @@ class Notifier(object):
     def __init__(self):
         self.last_err = None
 
-    def test_notify(self, host, port, smtp_from, use_tls, user, pwd, to):
+    def test_notify(self, host, port, smtp_from, user, pwd, to):
         """
         Send a test notification.
 
@@ -63,7 +63,7 @@ class Notifier(object):
         msg['From'] = smtp_from
         msg['To'] = to
         msg['Date'] = formatdate(localtime=True)
-        return self._sendmail(host, port, smtp_from, use_tls, user, pwd, [to], msg, True)
+        return self._sendmail(host, port, smtp_from, user, pwd, [to], msg, True)
 
     def notify_snatch(self, title, message):
         """
@@ -107,7 +107,7 @@ class Notifier(object):
                 msg['To'] = ','.join(to)
                 msg['Date'] = formatdate(localtime=True)
 
-                if self._sendmail(app.EMAIL_HOST, app.EMAIL_PORT, app.EMAIL_FROM, app.EMAIL_TLS,
+                if self._sendmail(app.EMAIL_HOST, app.EMAIL_PORT, app.EMAIL_FROM,
                                   app.EMAIL_USER, app.EMAIL_PASSWORD, to, msg):
                     log.debug('Snatch notification sent to {recipient} for {episode}',
                               {'recipient': to, 'episode': message})
@@ -160,7 +160,7 @@ class Notifier(object):
                 msg['To'] = ','.join(to)
                 msg['Date'] = formatdate(localtime=True)
 
-                if self._sendmail(app.EMAIL_HOST, app.EMAIL_PORT, app.EMAIL_FROM, app.EMAIL_TLS,
+                if self._sendmail(app.EMAIL_HOST, app.EMAIL_PORT, app.EMAIL_FROM,
                                   app.EMAIL_USER, app.EMAIL_PASSWORD, to, msg):
                     log.debug('Download notification sent to {recipient} for {episode}',
                               {'recipient': to, 'episode': ep_name})
@@ -213,7 +213,7 @@ class Notifier(object):
                 msg['From'] = app.EMAIL_FROM
                 msg['To'] = ','.join(to)
 
-                if self._sendmail(app.EMAIL_HOST, app.EMAIL_PORT, app.EMAIL_FROM, app.EMAIL_TLS,
+                if self._sendmail(app.EMAIL_HOST, app.EMAIL_PORT, app.EMAIL_FROM,
                                   app.EMAIL_USER, app.EMAIL_PASSWORD, to, msg):
                     log.debug('Download notification sent to {recipient} for {episode}',
                               {'recipient': to, 'episode': ep_name})
@@ -254,7 +254,7 @@ class Notifier(object):
                 msg['To'] = ','.join(to)
                 msg['Date'] = formatdate(localtime=True)
 
-                if self._sendmail(app.EMAIL_HOST, app.EMAIL_PORT, app.EMAIL_FROM, app.EMAIL_TLS,
+                if self._sendmail(app.EMAIL_HOST, app.EMAIL_PORT, app.EMAIL_FROM,
                                   app.EMAIL_USER, app.EMAIL_PASSWORD, to, msg):
                     log.debug('Update notification sent to {recipient}',
                               {'recipient': to})
@@ -295,7 +295,7 @@ class Notifier(object):
                 msg['To'] = ','.join(to)
                 msg['Date'] = formatdate(localtime=True)
 
-                if self._sendmail(app.EMAIL_HOST, app.EMAIL_PORT, app.EMAIL_FROM, app.EMAIL_TLS,
+                if self._sendmail(app.EMAIL_HOST, app.EMAIL_PORT, app.EMAIL_FROM,
                                   app.EMAIL_USER, app.EMAIL_PASSWORD, to, msg):
                     log.debug('Login notification sent to {recipient}', {'recipient': to})
                 else:
@@ -340,45 +340,65 @@ class Notifier(object):
         log.debug('Notification recipients: {0}', addrs)
         return addrs
 
-    def _sendmail(self, host, port, smtp_from, use_tls, user, pwd, to, msg, smtp_debug=False):
+    def _sendmail(self, host, port, smtp_from, user, pwd, to, msg, smtp_debug=False):
         log.debug(
             'HOST: {host}; PORT: {port}; FROM: {sender}, TLS: {tls},'
             ' USER: {user}, PWD: {password}, TO: {recipient}', {
                 'host': host,
                 'port': port,
                 'sender': smtp_from,
-                'tls': use_tls,
                 'user': user,
                 'password': pwd,
                 'recipient': to,
             }
         )
         try:
-            srv = smtplib.SMTP(host, int(port))
+            srv = smtplib.SMTP_SSL(host, int(port))
+            log.debug("Connected to server %s:%s", host, port)
+        except:
+            # Non SSL mail server
+            log.debug("Non-SSL mail server detected reconnecting to server %s:%s", host, port)
+
+            try:
+                srv = smtplib.SMTP(host, int(port))
+            except Exception as error:
+                log.warning('Exception generated while sending e-mail: {0}', error)
+                # logger.log(traceback.format_exc(), logger.DEBUG)
+                self.last_err = '{0}'.format(error)
+                return False
+
+        try:
+            srv.ehlo()
         except Exception as error:
             log.warning('Exception generated while sending e-mail: {0}', error)
             # logger.log(traceback.format_exc(), logger.DEBUG)
             self.last_err = '{0}'.format(error)
             return False
 
+        if srv.ehlo_resp:
+            m = re.search(b"STARTTLS", srv.ehlo_resp, re.IGNORECASE)
+            if m:
+                log.debug("TLS mail server detected")
+                try:
+                    srv.starttls()
+                    srv.ehlo()
+                except Exception as error:
+                    log.warning('Exception generated while sending e-mail: {0}', error)
+                    # logger.log(traceback.format_exc(), logger.DEBUG)
+                    self.last_err = '{0}'.format(error)
+                    return False
+
         if smtp_debug:
             srv.set_debuglevel(1)
         try:
-            if use_tls in ('1', True) or (user and pwd):
-                log.debug('Sending initial EHLO command!')
-                srv.ehlo()
-            if use_tls in ('1', True):
-                log.debug('Sending STARTTLS command!')
-                srv.starttls()
-                srv.ehlo()
             if user and pwd:
                 log.debug('Sending LOGIN command!')
                 srv.login(user, pwd)
-
             srv.sendmail(smtp_from, to, msg.as_string())
             srv.quit()
             return True
         except Exception as error:
+            log.warning('Exception generated while sending e-mail: {0}', error)
             self.last_err = '{0}'.format(error)
             return False
 
