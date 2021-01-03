@@ -703,7 +703,7 @@ class MedusaApp(object):
 
         app_scheduler = getattr(self, scheduler)
         if app_scheduler is None:
-            # Trakt checker hasn't been initialized yet. Can't do anything with it right now.
+            # The thread hasn't been initialized yet. Can't do anything with it right now.
             return
 
         def thread_enable():
@@ -818,11 +818,7 @@ class MedusaApp(object):
     @TORRENT_CHECKER_FREQUENCY.setter
     def TORRENT_CHECKER_FREQUENCY(self, value):
         """Set app.TORRENT_CHECKER_FREQUENCY and reconfigure thread."""
-        self._TORRENT_CHECKER_FREQUENCY = value
-
-        from medusa import config
-        config.change_TORRENT_CHECKER_FREQUENCY(value)
-
+        self.handle_prop('TORRENT_CHECKER_FREQUENCY', value)
 
     @property
     def DAILYSEARCH_FREQUENCY(self):
@@ -832,10 +828,7 @@ class MedusaApp(object):
     @DAILYSEARCH_FREQUENCY.setter
     def DAILYSEARCH_FREQUENCY(self, value):
         """Set app.DAILYSEARCH_FREQUENCY and reconfigure thread."""
-        self._DAILYSEARCH_FREQUENCY = value
-
-        from medusa import config
-        config.change_DAILYSEARCH_FREQUENCY(value)
+        self.handle_prop('DAILYSEARCH_FREQUENCY', value)
 
     @property
     def BACKLOG_FREQUENCY(self):
@@ -845,8 +838,7 @@ class MedusaApp(object):
     @BACKLOG_FREQUENCY.setter
     def BACKLOG_FREQUENCY(self, value):
         """Set app.BACKLOG_FREQUENCY and reconfigure thread."""
-        from medusa import config
-        config.change_BACKLOG_FREQUENCY(value)
+        self.handle_prop('BACKLOG_FREQUENCY', value)
 
     @property
     def DOWNLOAD_PROPERS(self):
@@ -866,8 +858,7 @@ class MedusaApp(object):
     @CHECK_PROPERS_INTERVAL.setter
     def CHECK_PROPERS_INTERVAL(self, value):
         """Set app.CHECK_PROPERS_INTERVAL and reconfigure thread."""
-        from medusa import config
-        config.change_PROPERS_FREQUENCY(value)
+        self.handle_prop('CHECK_PROPERS_INTERVAL', value)
 
     @property
     def GIT_PATH(self):
@@ -885,10 +876,9 @@ class MedusaApp(object):
         return self._VERSION_NOTIFY
 
     @VERSION_NOTIFY.setter
-    def VERSION_NOTIFY(_, value):
+    def VERSION_NOTIFY(self, value):
         """Set VERSION_NOTIFY and reconfigure thread."""
-        from medusa import config
-        config.change_VERSION_NOTIFY(value)
+        self.handle_prop('VERSION_NOTIFY', value)
 
     @property
     def HTTPS_CERT(self):
@@ -898,10 +888,7 @@ class MedusaApp(object):
     @HTTPS_CERT.setter
     def HTTPS_CERT(self, value):
         """Change HTTPS_CERT."""
-        self._HTTPS_CERT = value
-
-        from medusa import config
-        config.change_HTTPS_CERT(value)
+        self.handle_prop('HTTPS_CERT', value)
 
     @property
     def HTTPS_KEY(self):
@@ -911,10 +898,7 @@ class MedusaApp(object):
     @HTTPS_KEY.setter
     def HTTPS_KEY(self, value):
         """Change HTTPS_KEY."""
-        self._HTTPS_KEY = value
-
-        from medusa import config
-        config.change_HTTPS_KEY(value)
+        self.handle_prop('HTTPS_KEY', value)
 
     @property
     def LOG_DIR(self):
@@ -922,10 +906,9 @@ class MedusaApp(object):
         return self._LOG_DIR
 
     @LOG_DIR.setter
-    def LOG_DIR(_, value):
+    def LOG_DIR(self, value):
         """Change LOG_DIR."""
-        from medusa import config
-        config.change_LOG_DIR(value)
+        self.handle_prop('LOG_DIR', value)
 
     @property
     def NZB_DIR(self):
@@ -933,10 +916,9 @@ class MedusaApp(object):
         return self._NZB_DIR
 
     @NZB_DIR.setter
-    def NZB_DIR(_, value):
+    def NZB_DIR(self, value):
         """Change NZB_DIR."""
-        from medusa import config
-        config.change_NZB_DIR(value)
+        self.handle_prop('NZB_DIR', value)
 
     @property
     def TORRENT_DIR(self):
@@ -944,10 +926,9 @@ class MedusaApp(object):
         return self._TORRENT_DIR
 
     @TORRENT_DIR.setter
-    def TORRENT_DIR(_, value):
+    def TORRENT_DIR(self, value):
         """Change TORRENT_DIR."""
-        from medusa import config
-        config.change_TORRENT_DIR(value)
+        self.handle_prop('TORRENT_DIR', value)
 
     @property
     def TV_DOWNLOAD_DIR(self):
@@ -955,10 +936,9 @@ class MedusaApp(object):
         return self._TV_DOWNLOAD_DIR
 
     @TV_DOWNLOAD_DIR.setter
-    def TV_DOWNLOAD_DIR(_, value):
+    def TV_DOWNLOAD_DIR(self, value):
         """Change TV_DOWNLOAD_DIR."""
-        from medusa import config
-        config.change_TV_DOWNLOAD_DIR(value)
+        self.handle_prop('TV_DOWNLOAD_DIR', value)
 
     @property
     def UPDATE_FREQUENCY(self):
@@ -966,10 +946,9 @@ class MedusaApp(object):
         return self._UPDATE_FREQUENCY
 
     @UPDATE_FREQUENCY.setter
-    def UPDATE_FREQUENCY(_, value):
+    def UPDATE_FREQUENCY(self, value):
         """Change UPDATE_FREQUENCY."""
-        from medusa import config
-        config.change_UPDATE_FREQUENCY(value)
+        self.handle_prop('UPDATE_FREQUENCY', value)
 
     @property
     def SHOWUPDATE_HOUR(self):
@@ -977,10 +956,9 @@ class MedusaApp(object):
         return self._SHOWUPDATE_HOUR
 
     @SHOWUPDATE_HOUR.setter
-    def SHOWUPDATE_HOUR(_, value):
+    def SHOWUPDATE_HOUR(self, value):
         """Change SHOWUPDATE_HOUR."""
-        from medusa import config
-        config.change_SHOWUPDATE_HOUR(value)
+        self.handle_prop('SHOWUPDATE_HOUR', value)
 
     @property
     def SUBTITLES_FINDER_FREQUENCY(self):
@@ -988,10 +966,9 @@ class MedusaApp(object):
         return self._SUBTITLES_FINDER_FREQUENCY
 
     @SUBTITLES_FINDER_FREQUENCY.setter
-    def SUBTITLES_FINDER_FREQUENCY(_, value):
+    def SUBTITLES_FINDER_FREQUENCY(self, value):
         """Change SUBTITLES_FINDER_FREQUENCY."""
-        from medusa import config
-        config.change_SUBTITLES_FINDER_FREQUENCY(value)
+        self.handle_prop('SUBTITLES_FINDER_FREQUENCY', value)
 
 
 app = MedusaApp()
