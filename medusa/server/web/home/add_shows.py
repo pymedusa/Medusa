@@ -26,9 +26,9 @@ from simpleanidb import REQUEST_HOT
 
 from six import text_type
 
-from trakt.errors import TraktException
-
 from tornroutes import route
+
+from trakt.errors import TraktException
 
 
 log = BraceAdapter(logging.getLogger(__name__))

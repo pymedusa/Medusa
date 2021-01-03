@@ -1,3 +1,4 @@
+"""Trakt recommendations module."""
 # coding=utf-8
 
 from __future__ import unicode_literals
@@ -21,6 +22,7 @@ from medusa.show.recommendations.recommended import (
 )
 
 from trakt import sync
+
 from tvdbapiv2.exceptions import ApiException
 
 

@@ -8,8 +8,6 @@ import time
 from datetime import date
 from textwrap import dedent
 
-from trakt.errors import TraktException
-
 from medusa import (
     app,
     config,
@@ -93,9 +91,10 @@ from requests.compat import (
 from six import iteritems, text_type
 from six.moves import map
 
-import trakt
-
 from tornroutes import route
+
+import trakt
+from trakt.errors import TraktException
 
 
 @route('/home(/?.*)')
