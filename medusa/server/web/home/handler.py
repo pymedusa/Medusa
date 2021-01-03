@@ -1373,7 +1373,6 @@ class Home(WebRoot):
                 if trakt_data:
                     for ep_obj in trakt_data:
                         notifiers.trakt_notifier.update_watchlist_episode(ep_obj)
-                    # notifiers.trakt_notifier.update_watchlist(series_obj, data_episode=data, update=upd.lower())
 
             if sql_l:
                 main_db_con = db.DBConnection()

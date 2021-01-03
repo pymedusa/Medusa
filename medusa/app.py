@@ -639,8 +639,6 @@ class MedusaApp(object):
         self.NO_RESTART = False
 
         self.TMDB_API_KEY = 'edc5f123313769de83a71e157758030b'
-        # TRAKT_API_KEY = 'd4161a7a106424551add171e5470112e4afdaf2438e6ef2fe0548edc75924868'
-
         self.TRAKT_API_KEY = '5c65f55e11d48c35385d9e8670615763a605fad28374c8ae553a7b7a50651ddd'
         self.TRAKT_API_SECRET = 'b53e32045ac122a445ef163e6d859403301ffe9b17fb8321d428531b69022a82'
         self.TRAKT_PIN_URL = 'https://trakt.tv/pin/4562'

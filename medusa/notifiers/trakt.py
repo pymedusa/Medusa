@@ -77,11 +77,9 @@ class Notifier(object):
 
                 if app.TRAKT_SYNC_WATCHLIST:
                     if app.TRAKT_REMOVE_SERIESLIST:
-                        # trakt_api.request('sync/watchlist/remove', data, method='POST')
                         sync.remove_from_watchlist(data)
 
                 # update library
-                # trakt_api.request('sync/collection', data, method='POST')
                 sync.add_to_collection(data)
             except TraktException as error:
                 log.warning('Unable to update Trakt: {error!r}', {'error': error})
