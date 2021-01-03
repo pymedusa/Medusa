@@ -7,6 +7,7 @@ import random
 import sys
 from threading import Lock
 
+
 CUSTOMIZABLE_LOGS = [
     'Missed file: {missed_file}',
     'Problem(s) during processing, failed for the following files/folders: ',
@@ -486,7 +487,7 @@ class MedusaApp(object):
         self.SLACK_NOTIFY_SUBTITLEDOWNLOAD = None
         self.SLACK_WEBHOOK = None
 
-        self.USE_TRAKT = False
+        self._USE_TRAKT = False
         self.TRAKT_USERNAME = None
         self.TRAKT_ACCESS_TOKEN = None
         self.TRAKT_REFRESH_TOKEN = None
@@ -638,13 +639,12 @@ class MedusaApp(object):
         self.NO_RESTART = False
 
         self.TMDB_API_KEY = 'edc5f123313769de83a71e157758030b'
-        # TRAKT_API_KEY = 'd4161a7a106424551add171e5470112e4afdaf2438e6ef2fe0548edc75924868'
-
         self.TRAKT_API_KEY = '5c65f55e11d48c35385d9e8670615763a605fad28374c8ae553a7b7a50651ddd'
         self.TRAKT_API_SECRET = 'b53e32045ac122a445ef163e6d859403301ffe9b17fb8321d428531b69022a82'
         self.TRAKT_PIN_URL = 'https://trakt.tv/pin/4562'
         self.TRAKT_OAUTH_URL = 'https://trakt.tv/'
         self.TRAKT_API_URL = 'https://api.trakt.tv/'
+        self.TRAKT_DEVICE_CODE = {}
 
         self.FANART_API_KEY = '9b3afaf26f6241bdb57d6cc6bd798da7'
 
@@ -719,6 +719,17 @@ class MedusaApp(object):
             control_value = {'identifier': identifier}
             new_value = {'level': level}
             main_db_con.upsert('custom_logs', new_value, control_value)
+
+    @property
+    def USE_TRAKT(self):
+        """Return USE_TRAKT value."""
+        return self._USE_TRAKT
+
+    @USE_TRAKT.setter
+    def USE_TRAKT(self, value):
+        """Set USE_TRAKT value and start trakt_checker thread if needed."""
+        from medusa import config
+        config.change_USE_TRAKT(bool(value))
 
 
 app = MedusaApp()

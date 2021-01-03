@@ -25,8 +25,7 @@ import os.path
 import re
 from builtins import object
 from builtins import str
-
-from contextlib2 import suppress
+from contextlib import suppress
 
 from medusa import app, common, db, helpers, logger, naming
 from medusa.helper.common import try_int
@@ -368,7 +367,7 @@ def change_DOWNLOAD_PROPERS(download_propers):
             log.info(u'Unable to start PROPERFINDER thread. Already running')
     else:
         app.proper_finder_scheduler.enable = False
-        app.trakt_checker_scheduler.silent = True
+        app.proper_finder_scheduler.silent = True
         log.info(u'Stopping PROPERFINDER thread')
 
 
@@ -379,13 +378,14 @@ def change_USE_TRAKT(use_trakt):
 
     :param use_trakt: New desired state
     """
-    use_trakt = checkbox_to_value(use_trakt)
-
-    if app.USE_TRAKT == use_trakt:
+    if app._USE_TRAKT == use_trakt:
         return
 
-    app.USE_TRAKT = use_trakt
-    if app.USE_TRAKT:
+    app._USE_TRAKT = use_trakt
+    if app._USE_TRAKT:
+        # Trakt checker hasn't been initialized yet. Can't do anything with it right now.
+        if app.trakt_checker_scheduler is None:
+            return
         if not app.trakt_checker_scheduler.enable:
             log.info(u'Starting TRAKTCHECKER thread')
             app.trakt_checker_scheduler.silent = False

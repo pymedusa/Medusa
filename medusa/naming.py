@@ -186,7 +186,7 @@ def generate_sample_ep(multi=None, abd=False, sports=False, anime_type=None):
     # make a fake episode object
     ep = Episode(series=series, season=2, episode=3)
 
-    ep.status = DOWNLOADED
+    ep._status = DOWNLOADED
     ep.quality = Quality.HDTV
     ep.airdate = datetime.date(2011, 3, 9)
     ep.name = 'Ep Name'
@@ -211,14 +211,14 @@ def generate_sample_ep(multi=None, abd=False, sports=False, anime_type=None):
 
         second_ep = Episode(series, 2, 4)
         second_ep.name = 'Ep Name (2)'
-        second_ep.status = DOWNLOADED
+        second_ep._status = DOWNLOADED
         second_ep.quality = Quality.HDTV
         second_ep.absolute_number = 14
         second_ep.release_name = ep.release_name
 
         third_ep = Episode(series, 2, 5)
         third_ep.name = 'Ep Name (3)'
-        third_ep.status = DOWNLOADED
+        third_ep._status = DOWNLOADED
         third_ep.quality = Quality.HDTV
         third_ep.absolute_number = 15
         third_ep.release_name = ep.release_name

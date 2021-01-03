@@ -93,12 +93,8 @@ from six.moves import map
 
 from tornroutes import route
 
-from traktor import (
-    MissingTokenException,
-    TokenExpiredException,
-    TraktApi,
-    TraktException,
-)
+import trakt
+from trakt.errors import TraktException
 
 
 @route('/home(/?.*)')
@@ -452,38 +448,59 @@ class Home(WebRoot):
             })
 
     @staticmethod
-    def getTraktToken(trakt_pin=None):
-        trakt_settings = {'trakt_api_key': app.TRAKT_API_KEY,
-                          'trakt_api_secret': app.TRAKT_API_SECRET}
-        trakt_api = TraktApi(app.SSL_VERIFY, app.TRAKT_TIMEOUT, **trakt_settings)
-        response = None
+    def requestTraktDeviceCodeOauth():
+        """Start Trakt OAuth device auth. Send request."""
+        logger.log('Start a new Oauth device authentication request. Request is valid for 60 minutes.', logger.INFO)
         try:
-            (access_token, refresh_token) = trakt_api.get_token(app.TRAKT_REFRESH_TOKEN, trakt_pin=trakt_pin)
-            if access_token and refresh_token:
-                app.TRAKT_ACCESS_TOKEN = access_token
-                app.TRAKT_REFRESH_TOKEN = refresh_token
-                response = trakt_api.validate_account()
-        except MissingTokenException:
-            ui.notifications.error('You need to get a PIN and authorize Medusa app')
-            return 'You need to get a PIN and authorize Medusa app'
-        except TokenExpiredException:
-            # Clear existing tokens
-            app.TRAKT_ACCESS_TOKEN = ''
-            app.TRAKT_REFRESH_TOKEN = ''
-            ui.notifications.error('TOKEN expired. Reload page, get a new PIN and authorize Medusa app')
-            return 'TOKEN expired. Reload page, get a new PIN and authorize Medusa app'
-        except TraktException:
-            ui.notifications.error("Connection error. Click 'Authorize Medusa' button again")
-            return "Connection error. Click 'Authorize Medusa' button again"
-        if response:
-            ui.notifications.message('Trakt Authorized')
-            return 'Trakt Authorized'
-        ui.notifications.error('Connection error. Reload the page to get new token!')
-        return 'Trakt Not Authorized!'
+            app.TRAKT_DEVICE_CODE = trakt.get_device_code(app.TRAKT_API_KEY, app.TRAKT_API_SECRET)
+        except TraktException as error:
+            logger.log('Unable to get trakt device code. Error: {error!r}'.format(error=error), logger.WARNING)
+            return json.dumps({'result': False})
+
+        return json.dumps(app.TRAKT_DEVICE_CODE)
 
     @staticmethod
-    def testTrakt(username=None, blacklist_name=None):
-        return notifiers.trakt_notifier.test_notify(username, blacklist_name)
+    def checkTrakTokenOauth():
+        """Check if the Trakt device OAuth request has been authenticated."""
+        logger.log('Start Trakt token request', logger.INFO)
+
+        if not app.TRAKT_DEVICE_CODE.get('requested'):
+            logger.log('You need to request a token before checking authentication', logger.WARNING)
+            return json.dumps({'result': 'need to request first', 'error': True})
+
+        if (app.TRAKT_DEVICE_CODE.get('requested') + app.TRAKT_DEVICE_CODE.get('requested')) < time.time():
+            logger.log('Trakt token Request expired', logger.INFO)
+            return json.dumps({'result': 'request expired', 'error': True})
+
+        if not app.TRAKT_DEVICE_CODE.get('device_code'):
+            logger.log('You need to request a token before checking authentication. Missing device code.', logger.WARNING)
+            return json.dumps({'result': 'need to request first', 'error': True})
+
+        try:
+            response = trakt.get_device_token(
+                app.TRAKT_DEVICE_CODE.get('device_code'), app.TRAKT_API_KEY, app.TRAKT_API_SECRET, store=True
+            )
+        except TraktException as error:
+            logger.log('Unable to get trakt device token. Error: {error!r}'.format(error=error), logger.WARNING)
+            return json.dumps({'result': 'Trakt error while retrieving device token', 'error': True})
+
+        if response.ok:
+            response_json = response.json()
+            app.TRAKT_ACCESS_TOKEN, app.TRAKT_REFRESH_TOKEN = \
+                response_json.get('access_token'), response_json.get('refresh_token')
+            return json.dumps({'result': 'succesfully updated trakt access and refresh token', 'error': False})
+        else:
+            if response.status_code == 400:
+                return json.dumps({'result': 'device code has not been activated yet', 'error': True})
+            if response.status_code == 409:
+                return json.dumps({'result': 'already activated this code', 'error': False})
+
+        logger.log(u'Something went wrong', logger.DEBUG)
+        return json.dumps({'result': 'Something went wrong'})
+
+    @staticmethod
+    def testTrakt(blacklist_name=None):
+        return notifiers.trakt_notifier.test_notify(blacklist_name)
 
     @staticmethod
     def forceTraktSync():
@@ -1236,6 +1253,7 @@ class Home(WebRoot):
 
     def setStatus(self, indexername=None, seriesid=None, eps=None, status=None, direct=False):
         # @TODO: Merge this with the other PUT commands for /api/v2/show/{id}
+        # Still used by manage/changeEpisodeStatuses (manage_episodeStatuses.mako)
         if not all([indexername, seriesid, eps, status]):
             error_message = 'You must specify a show and at least one episode'
             if direct:
@@ -1336,14 +1354,12 @@ class Home(WebRoot):
 
                     # Only in failed_history we set to FAILED.
                     if status != FAILED:
-                        ep_obj.status = status
+                        ep_obj._status = status
 
                     # mass add to database
                     sql_l.append(ep_obj.get_sql())
 
-                    trakt_data.append((ep_obj.season, ep_obj.episode))
-
-            data = notifiers.trakt_notifier.trakt_episode_data_generate(trakt_data)
+                    trakt_data.append(ep_obj.season)
 
             if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
                 if status in [WANTED, FAILED]:
@@ -1354,8 +1370,9 @@ class Home(WebRoot):
                 logger.log('{action} episodes, showid: indexerid {show.indexerid}, Title {show.name} to Watchlist'.format(
                     action=upd, show=series_obj), logger.DEBUG)
 
-                if data:
-                    notifiers.trakt_notifier.update_watchlist(series_obj, data_episode=data, update=upd.lower())
+                if trakt_data:
+                    for ep_obj in trakt_data:
+                        notifiers.trakt_notifier.update_watchlist_episode(ep_obj)
 
             if sql_l:
                 main_db_con = db.DBConnection()
