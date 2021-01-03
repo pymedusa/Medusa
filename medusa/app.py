@@ -725,9 +725,8 @@ class MedusaApp(object):
 
     @staticmethod
     def handle_prop(name, value):
-        """Helper for calling the change.change_PROP."""
+        """Route property setter."""
         from medusa import config
-        from inspect import signature
         change = 'change_{name}'.format(name=name)
         getattr(config, change)(value)
 
