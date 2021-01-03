@@ -723,6 +723,14 @@ class MedusaApp(object):
         elif app_scheduler.enable:
             thread_disable()
 
+    @staticmethod
+    def handle_prop(name, value):
+        """Helper for calling the change.change_PROP."""
+        from medusa import config
+        from inspect import signature
+        change = 'change_{name}'.format(name=name)
+        getattr(config, change)(value)
+
     @property
     def CUSTOM_LOGS(self):
         """
@@ -799,10 +807,9 @@ class MedusaApp(object):
         return self._AUTOPOSTPROCESSOR_FREQUENCY
 
     @AUTOPOSTPROCESSOR_FREQUENCY.setter
-    def AUTOPOSTPROCESSOR_FREQUENCY(_, value):
+    def AUTOPOSTPROCESSOR_FREQUENCY(self, value):
         """Set app.AUTOPOSTPROCESSOR_FREQUENCY and reconfigure thread."""
-        from medusa import config
-        config.change_AUTOPOSTPROCESSOR_FREQUENCY(value)
+        self.handle_prop('AUTOPOSTPROCESSOR_FREQUENCY', value)
 
     @property
     def TORRENT_CHECKER_FREQUENCY(self):
@@ -830,7 +837,6 @@ class MedusaApp(object):
 
         from medusa import config
         config.change_DAILYSEARCH_FREQUENCY(value)
-
 
     @property
     def BACKLOG_FREQUENCY(self):
@@ -872,10 +878,7 @@ class MedusaApp(object):
     @GIT_PATH.setter
     def GIT_PATH(self, value):
         """Set GIT_PATH and reconfigure thread."""
-        self._GIT_PATH = value
-
-        from medusa import config
-        config.change_GIT_PATH()
+        self.handle_prop('GIT_PATH', value)
 
     @property
     def VERSION_NOTIFY(self):

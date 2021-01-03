@@ -346,11 +346,12 @@ def change_VERSION_NOTIFY(version_notify):
         app.version_check_scheduler.forceRun()
 
 
-def change_GIT_PATH():
+def change_GIT_PATH(path):
     """
     Recreate the version_check scheduler when GIT_PATH is changed.
     Force a run to clear or set any error messages.
     """
+    app._GIT_PATH = path
     app.version_check_scheduler = None
     app.version_check_scheduler = scheduler.Scheduler(
         CheckVersion(), cycleTime=datetime.timedelta(hours=app._UPDATE_FREQUENCY), threadName='CHECKVERSION', silent=False)
