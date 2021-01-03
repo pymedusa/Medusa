@@ -80,10 +80,12 @@ def change_HTTPS_CERT(https_cert):
     :return: True on success, False on failure
     """
     if https_cert == '':
-        app.HTTPS_CERT = ''
+        app._HTTPS_CERT = ''
         return True
 
-    if os.path.normpath(app.HTTPS_CERT) != os.path.normpath(https_cert):
+    app_https_cert = os.path.normpath(app._HTTPS_CERT) if app._HTTPS_CERT else None
+
+    if app_https_cert != os.path.normpath(https_cert):
         if helpers.make_dir(os.path.dirname(os.path.abspath(https_cert))):
             app._HTTPS_CERT = os.path.normpath(https_cert)
             log.info(u'Changed https cert path to {cert_path}', {u'cert_path': https_cert})
@@ -101,10 +103,12 @@ def change_HTTPS_KEY(https_key):
     :return: True on success, False on failure
     """
     if https_key == '':
-        app.HTTPS_KEY = ''
+        app._HTTPS_KEY = ''
         return True
 
-    if os.path.normpath(app.HTTPS_KEY) != os.path.normpath(https_key):
+    app_https_key = os.path.normpath(app._HTTPS_KEY) if app._HTTPS_KEY else None
+
+    if app_https_key != os.path.normpath(https_key):
         if helpers.make_dir(os.path.dirname(os.path.abspath(https_key))):
             app._HTTPS_KEY = os.path.normpath(https_key)
             log.info(u'Changed https key path to {key_path}', {u'key_path': https_key})
@@ -210,6 +214,9 @@ def change_AUTOPOSTPROCESSOR_FREQUENCY(freq):
 
     :param freq: New frequency
     """
+    if app._AUTOPOSTPROCESSOR_FREQUENCY == freq:
+        return
+
     app._AUTOPOSTPROCESSOR_FREQUENCY = try_int(freq, 10)
 
     if app._AUTOPOSTPROCESSOR_FREQUENCY < app.MIN_AUTOPOSTPROCESSOR_FREQUENCY:
@@ -224,13 +231,16 @@ def change_TORRENT_CHECKER_FREQUENCY(freq):
 
     :param freq: New frequency
     """
-    app._TORRENT_CHECKER_FREQUECY = try_int(freq, app.DEFAULT_TORRENT_CHECKER_FREQUENCY)
+    if app._TORRENT_CHECKER_FREQUENCY == freq:
+        return
 
-    if app._TORRENT_CHECKER_FREQUECY < app.MIN_TORRENT_CHECKER_FREQUENCY:
-        app._TORRENT_CHECKER_FREQUECY = app.MIN_TORRENT_CHECKER_FREQUENCY
+    app._TORRENT_CHECKER_FREQUENCY = try_int(freq, app.DEFAULT_TORRENT_CHECKER_FREQUENCY)
+
+    if app._TORRENT_CHECKER_FREQUENCY < app.MIN_TORRENT_CHECKER_FREQUENCY:
+        app._TORRENT_CHECKER_FREQUENCY = app.MIN_TORRENT_CHECKER_FREQUENCY
 
     if app.torrent_checker_scheduler:
-        app.torrent_checker_scheduler.cycleTime = datetime.timedelta(minutes=app._TORRENT_CHECKER_FREQUECY)
+        app.torrent_checker_scheduler.cycleTime = datetime.timedelta(minutes=app._TORRENT_CHECKER_FREQUENCY)
 
 
 def change_DAILYSEARCH_FREQUENCY(freq):
@@ -239,6 +249,9 @@ def change_DAILYSEARCH_FREQUENCY(freq):
 
     :param freq: New frequency
     """
+    if app._DAILYSEARCH_FREQUENCY == freq:
+        return
+
     app._DAILYSEARCH_FREQUENCY = try_int(freq, app.DEFAULT_DAILYSEARCH_FREQUENCY)
 
     if app._DAILYSEARCH_FREQUENCY < app.MIN_DAILYSEARCH_FREQUENCY:
@@ -254,6 +267,9 @@ def change_BACKLOG_FREQUENCY(freq):
 
     :param freq: New frequency
     """
+    if app._BACKLOG_FREQUENCY == freq:
+        return
+
     app._BACKLOG_FREQUENCY = try_int(freq, app.DEFAULT_BACKLOG_FREQUENCY)
 
     app.MIN_BACKLOG_FREQUENCY = app.instance.get_backlog_cycle_time()
@@ -264,7 +280,7 @@ def change_BACKLOG_FREQUENCY(freq):
         app.backlog_search_scheduler.cycleTime = datetime.timedelta(minutes=app._BACKLOG_FREQUENCY)
 
 
-def change_PROPERS_FREQUENCY(check_propers_interval):
+def change_CHECK_PROPERS_INTERVAL(check_propers_interval):
     """
     Change frequency of backlog thread.
 
@@ -291,6 +307,9 @@ def change_UPDATE_FREQUENCY(freq):
 
     :param freq: New frequency
     """
+    if app._UPDATE_FREQUENCY == freq:
+        return
+
     app._UPDATE_FREQUENCY = try_int(freq, app.DEFAULT_UPDATE_FREQUENCY)
 
     if app._UPDATE_FREQUENCY < app.MIN_UPDATE_FREQUENCY:
@@ -306,6 +325,9 @@ def change_SHOWUPDATE_HOUR(freq):
 
     :param freq: New frequency
     """
+    if app._SHOWUPDATE_HOUR == freq:
+        return
+
     app._SHOWUPDATE_HOUR = try_int(freq, app.DEFAULT_SHOWUPDATE_HOUR)
 
     if app._SHOWUPDATE_HOUR > 23:
@@ -323,6 +345,9 @@ def change_SUBTITLES_FINDER_FREQUENCY(subtitles_finder_frequency):
 
     :param subtitles_finder_frequency: New frequency
     """
+    if app._SUBTITLES_FINDER_FREQUENCY == subtitles_finder_frequency:
+        return
+
     if subtitles_finder_frequency == '' or subtitles_finder_frequency is None:
         subtitles_finder_frequency = 1
 
@@ -335,22 +360,29 @@ def change_VERSION_NOTIFY(version_notify):
 
     :param version_notify: New frequency
     """
-    oldSetting = app._VERSION_NOTIFY
+    if app._VERSION_NOTIFY == version_notify:
+        return
+
+    old_setting = app._VERSION_NOTIFY
 
     app._VERSION_NOTIFY = version_notify
 
     if not version_notify:
         app.NEWEST_VERSION_STRING = None
 
-    if app.version_check_scheduler and oldSetting is False and version_notify is True:
+    if app.version_check_scheduler and old_setting is False and version_notify is True:
         app.version_check_scheduler.forceRun()
 
 
 def change_GIT_PATH(path):
     """
     Recreate the version_check scheduler when GIT_PATH is changed.
+
     Force a run to clear or set any error messages.
     """
+    if app._GIT_PATH == path:
+        return
+
     app._GIT_PATH = path
     app.version_check_scheduler = None
     app.version_check_scheduler = scheduler.Scheduler(
