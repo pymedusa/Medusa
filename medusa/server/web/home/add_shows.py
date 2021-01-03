@@ -17,7 +17,7 @@ from medusa.server.web.core import PageTemplate
 from medusa.server.web.home.handler import Home
 from medusa.show.recommendations.anidb import AnidbPopular
 from medusa.show.recommendations.imdb import ImdbPopular
-from medusa.show.recommendations.trakt_recommendations import TraktPopular
+from medusa.show.recommendations.trakt import TraktPopular
 from medusa.show.show import Show
 
 from requests import RequestException
