@@ -384,7 +384,7 @@ class Episode(TV):
         old_location = os.path.normpath(self._location)
         new_location = os.path.normpath(value)
 
-        if not self._location or new_location == old_location:
+        if new_location == old_location:
             return
 
         log.debug('{id}: Setter sets location to {location}',
