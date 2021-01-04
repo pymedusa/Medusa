@@ -97,7 +97,7 @@ def config_main(monkeypatch, app_config):
     section_data['availableThemes'] = [{'name': theme.name,
                                         'version': theme.version,
                                         'author': theme.author}
-                                        for theme in app.AVAILABLE_THEMES]
+                                       for theme in app.AVAILABLE_THEMES]
 
     section_data['timePresets'] = list(time_presets)
     section_data['datePresets'] = list(date_presets)
