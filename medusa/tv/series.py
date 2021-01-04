@@ -291,13 +291,13 @@ class Series(TV):
 
     @property
     def name(self):
-        """Return shows name."""
+        """Return show's name."""
         return self._name
 
     @name.setter
     def name(self, value):
-        """Set shows name."""
-        if all([app.ADD_TITLE_WITH_YEAR, not Series.YEAR_MATCH.match(value), self.start_year]):
+        """Set show's name."""
+        if all([app.ADD_TITLE_WITH_YEAR, self.start_year and not Series.YEAR_MATCH.match(value)]):
             self._name = '{name} ({year})'.format(name=value, year=self.start_year)
         else:
             self._name = value
@@ -1463,8 +1463,8 @@ class Series(TV):
         else:
             self.show_id = int(sql_results[0]['show_id'] or 0)
             self.indexer = int(sql_results[0]['indexer'] or 0)
-
             self.start_year = int(sql_results[0]['startyear'] or 0)
+
             if not self.name:
                 self.name = sql_results[0]['show_name']
             if not self.network:
@@ -1559,10 +1559,10 @@ class Series(TV):
         self.indexer_api = tvapi
         indexed_show = self.indexer_api[self.series_id]
 
-        try:
-            if getattr(indexed_show, 'firstaired', ''):
-                self.start_year = int(str(indexed_show['firstaired']).split('-')[0])
+        if getattr(indexed_show, 'firstaired', ''):
+            self.start_year = int(str(indexed_show['firstaired']).split('-')[0])
 
+        try:
             self.name = indexed_show['seriesname'].strip()
         except AttributeError:
             raise IndexerAttributeNotFound(
@@ -1663,7 +1663,7 @@ class Series(TV):
             'last_update': datetime.date.today().toordinal(),
         })
 
-        # Let's try to fix the shhow name (with year) if we have the year from the imdb info.
+        # Let's try to fix the show name (with year) if we have the year from the imdb info.
         if self.imdb_year and not self.start_year:
             self.start_year = self.imdb_year
             self.name = self.name  # We just want the setter to activate.
