@@ -793,6 +793,7 @@ class MedusaApp(object):
 
     @property
     def PROCESS_AUTOMATICALLY(self):
+        """Return PROCESS_AUTOMATICALLY."""
         return self._PROCESS_AUTOMATICALLY
 
     @PROCESS_AUTOMATICALLY.setter
