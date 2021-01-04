@@ -2,6 +2,7 @@
 """First module to initialize."""
 from __future__ import unicode_literals
 
+import logging
 import os
 import random
 import sys
@@ -118,7 +119,7 @@ class MedusaApp(object):
 
         self.NEWEST_VERSION = None
         self.NEWEST_VERSION_STRING = None
-        self.VERSION_NOTIFY = False
+        self._VERSION_NOTIFY = False
         self.AUTO_UPDATE = False
         self.NOTIFY_ON_UPDATE = False
         self.CUR_COMMIT_HASH = None
@@ -134,7 +135,7 @@ class MedusaApp(object):
         self.GIT_USERNAME = None
         self.GIT_PASSWORD = None
         self.GIT_TOKEN = None
-        self.GIT_PATH = None
+        self._GIT_PATH = None
         self.DEVELOPER = False
 
         self.NEWS_URL = '{base_url}/news/news.md'.format(base_url=self.BASE_PYMEDUSA_URL)
@@ -151,7 +152,7 @@ class MedusaApp(object):
         self.started = False
 
         self.ACTUAL_LOG_DIR = None
-        self.LOG_DIR = None
+        self._LOG_DIR = None
         self.LOG_NR = 5
         self.LOG_SIZE = 10.0
         self._CUSTOM_LOGS = {}
@@ -193,8 +194,8 @@ class MedusaApp(object):
 
         self.ENABLE_HTTPS = False
         self.NOTIFY_ON_LOGIN = False
-        self.HTTPS_CERT = None
-        self.HTTPS_KEY = None
+        self._HTTPS_CERT = None
+        self._HTTPS_KEY = None
 
         self.INDEXER_DEFAULT_LANGUAGE = None
         self.EP_DEFAULT_DELETED_STATUS = None
@@ -253,25 +254,25 @@ class MedusaApp(object):
         self.USE_TORRENTS = False
 
         self.NZB_METHOD = None
-        self.NZB_DIR = None
+        self._NZB_DIR = None
         self.USENET_RETENTION = None
         self.CACHE_TRIMMING = None
         self.MAX_CACHE_AGE = None
         self.TORRENT_METHOD = None
-        self.TORRENT_DIR = None
-        self.DOWNLOAD_PROPERS = False
-        self.CHECK_PROPERS_INTERVAL = None
+        self._TORRENT_DIR = None
+        self._DOWNLOAD_PROPERS = False
+        self._CHECK_PROPERS_INTERVAL = None
         self.PROPERS_SEARCH_DAYS = 2
-        self.REMOVE_FROM_CLIENT = False
+        self._REMOVE_FROM_CLIENT = False
         self.ALLOW_HIGH_PRIORITY = False
         self.SAB_FORCED = False
         self.RANDOMIZE_PROVIDERS = False
 
-        self.AUTOPOSTPROCESSOR_FREQUENCY = 10
-        self.DAILYSEARCH_FREQUENCY = None
-        self.UPDATE_FREQUENCY = None
-        self.BACKLOG_FREQUENCY = None
-        self.SHOWUPDATE_HOUR = None
+        self._AUTOPOSTPROCESSOR_FREQUENCY = 10
+        self._DAILYSEARCH_FREQUENCY = None
+        self._UPDATE_FREQUENCY = None
+        self._BACKLOG_FREQUENCY = None
+        self._SHOWUPDATE_HOUR = None
 
         self.DEFAULT_TORRENT_CHECKER_FREQUENCY = 60
         self.DEFAULT_DAILYSEARCH_FREQUENCY = 40
@@ -292,7 +293,7 @@ class MedusaApp(object):
         self.RENAME_EPISODES = False
         self.AIRDATE_EPISODES = False
         self.FILE_TIMESTAMP_TIMEZONE = None
-        self.PROCESS_AUTOMATICALLY = False
+        self._PROCESS_AUTOMATICALLY = False
         self.NO_DELETE = False
         self.KEEP_PROCESSED_DIR = False
         self.PROCESS_METHOD = None
@@ -301,7 +302,7 @@ class MedusaApp(object):
         self.POSTPONE_IF_SYNC_FILES = True
         self.POSTPONE_IF_NO_SUBS = False
         self.NFO_RENAME = True
-        self.TV_DOWNLOAD_DIR = None
+        self._TV_DOWNLOAD_DIR = None
         self.UNPACK = False
         self.SKIP_REMOVED_FILES = False
         self.ALLOWED_EXTENSIONS = ['srt', 'nfo', 'sub', 'idx']
@@ -350,7 +351,7 @@ class MedusaApp(object):
         self.TORRENT_RPCURL = 'transmission'
         self.TORRENT_AUTH_TYPE = 'none'
         self.TORRENT_SEED_LOCATION = None
-        self.TORRENT_CHECKER_FREQUENCY = None
+        self._TORRENT_CHECKER_FREQUENCY = None
 
         self.USE_KODI = False
         self.KODI_ALWAYS_ON = True
@@ -577,7 +578,7 @@ class MedusaApp(object):
         self.BACKLOG_STATUS = None
         self.LAYOUT_WIDE = False
 
-        self.USE_SUBTITLES = False
+        self._USE_SUBTITLES = False
         self.SUBTITLES_LANGUAGES = []
         self.SUBTITLES_DIR = ''
         self.SUBTITLES_SERVICES_LIST = []
@@ -588,7 +589,7 @@ class MedusaApp(object):
         self.ACCEPT_UNKNOWN_EMBEDDED_SUBS = False
         self.SUBTITLES_STOP_AT_FIRST = False
         self.SUBTITLES_HEARING_IMPAIRED = False
-        self.SUBTITLES_FINDER_FREQUENCY = 1
+        self._SUBTITLES_FINDER_FREQUENCY = 1
         self.SUBTITLES_MULTI = False
         self.SUBTITLES_EXTRA_SCRIPTS = []
         self.SUBTITLES_PRE_SCRIPTS = []
@@ -639,12 +640,13 @@ class MedusaApp(object):
         self.NO_RESTART = False
 
         self.TMDB_API_KEY = 'edc5f123313769de83a71e157758030b'
+        # TRAKT_API_KEY = 'd4161a7a106424551add171e5470112e4afdaf2438e6ef2fe0548edc75924868'
+
         self.TRAKT_API_KEY = '5c65f55e11d48c35385d9e8670615763a605fad28374c8ae553a7b7a50651ddd'
         self.TRAKT_API_SECRET = 'b53e32045ac122a445ef163e6d859403301ffe9b17fb8321d428531b69022a82'
         self.TRAKT_PIN_URL = 'https://trakt.tv/pin/4562'
         self.TRAKT_OAUTH_URL = 'https://trakt.tv/'
         self.TRAKT_API_URL = 'https://api.trakt.tv/'
-        self.TRAKT_DEVICE_CODE = {}
 
         self.FANART_API_KEY = '9b3afaf26f6241bdb57d6cc6bd798da7'
 
@@ -689,6 +691,45 @@ class MedusaApp(object):
         self.FALLBACK_PLEX_API_URL = 'https://tvdb2.plex.tv'
         self.TVDB_API_KEY = 'd99c8e7dac2307355af4ab88720a6c32'
 
+    def _init_scheduler(self, app_prop=None, scheduler=None, enabled=None):
+        from medusa.logger.adapters.style import BraceAdapter
+        log = BraceAdapter(logging.getLogger(__name__))
+        log.logger.addHandler(logging.NullHandler())
+
+        app_prop_old = getattr(self, '_{0}'.format(app_prop))
+        enabled = bool(enabled)
+        if app_prop_old == enabled:
+            return
+
+        app_scheduler = getattr(self, scheduler)
+        if app_scheduler is None:
+            # The thread hasn't been initialized yet. Can't do anything with it right now.
+            return
+
+        def thread_enable():
+            log.info('Enabling scheduler thread {scheduler}', {'scheduler': scheduler})
+            app_scheduler.silent = False
+            app_scheduler.enable = True
+
+        def thread_disable():
+            log.info('Disabling scheduler thread {scheduler}', {'scheduler': scheduler})
+            app_scheduler.enable = False
+            app_scheduler.silent = True
+
+        setattr(self, '_{0}'.format(app_prop), enabled)
+        if enabled:
+            if not app_scheduler.enable:
+                thread_enable()
+        elif app_scheduler.enable:
+            thread_disable()
+
+    @staticmethod
+    def handle_prop(name, value):
+        """Route property setter."""
+        from medusa import config
+        change = 'change_{name}'.format(name=name)
+        getattr(config, change)(value)
+
     @property
     def CUSTOM_LOGS(self):
         """
@@ -728,8 +769,207 @@ class MedusaApp(object):
     @USE_TRAKT.setter
     def USE_TRAKT(self, value):
         """Set USE_TRAKT value and start trakt_checker thread if needed."""
-        from medusa import config
-        config.change_USE_TRAKT(bool(value))
+        self._init_scheduler(app_prop='USE_TRAKT', scheduler='trakt_checker_scheduler', enabled=value)
+
+    @property
+    def REMOVE_FROM_CLIENT(self):
+        """Return REMOVE_FROM_CLIENT value."""
+        return self._REMOVE_FROM_CLIENT
+
+    @REMOVE_FROM_CLIENT.setter
+    def REMOVE_FROM_CLIENT(self, value):
+        """Set REMOVE_FROM_CLIENT value and start torrent_checker_scheduler thread if needed."""
+        self._init_scheduler(app_prop='REMOVE_FROM_CLIENT', scheduler='torrent_checker_scheduler', enabled=value)
+
+    @property
+    def USE_SUBTITLES(self):
+        """Return USE_TRAKT value."""
+        return self._USE_SUBTITLES
+
+    @USE_SUBTITLES.setter
+    def USE_SUBTITLES(self, value):
+        """Set USE_SUBTITLES value and start subtitles_finder_scheduler thread if needed."""
+        self._init_scheduler(app_prop='USE_SUBTITLES', scheduler='subtitles_finder_scheduler', enabled=value)
+
+    @property
+    def PROCESS_AUTOMATICALLY(self):
+        """Return PROCESS_AUTOMATICALLY."""
+        return self._PROCESS_AUTOMATICALLY
+
+    @PROCESS_AUTOMATICALLY.setter
+    def PROCESS_AUTOMATICALLY(self, value):
+        """Set PROCESS_AUTOMATICALLY value and start post_process_scheduler thread if needed."""
+        self._init_scheduler(app_prop='PROCESS_AUTOMATICALLY', scheduler='post_processor_scheduler', enabled=value)
+
+    @property
+    def AUTOPOSTPROCESSOR_FREQUENCY(self):
+        """Return app.AUTOPOSTPROCESSOR_FREQUENCY."""
+        return self._AUTOPOSTPROCESSOR_FREQUENCY
+
+    @AUTOPOSTPROCESSOR_FREQUENCY.setter
+    def AUTOPOSTPROCESSOR_FREQUENCY(self, value):
+        """Set app.AUTOPOSTPROCESSOR_FREQUENCY and reconfigure thread."""
+        self.handle_prop('AUTOPOSTPROCESSOR_FREQUENCY', value)
+
+    @property
+    def TORRENT_CHECKER_FREQUENCY(self):
+        """Return app.TORRENT_CHECKER_FREQUENCY."""
+        return self._TORRENT_CHECKER_FREQUENCY
+
+    @TORRENT_CHECKER_FREQUENCY.setter
+    def TORRENT_CHECKER_FREQUENCY(self, value):
+        """Set app.TORRENT_CHECKER_FREQUENCY and reconfigure thread."""
+        self.handle_prop('TORRENT_CHECKER_FREQUENCY', value)
+
+    @property
+    def DAILYSEARCH_FREQUENCY(self):
+        """Return app.DAILYSEARCH_FREQUENCY."""
+        return self._DAILYSEARCH_FREQUENCY
+
+    @DAILYSEARCH_FREQUENCY.setter
+    def DAILYSEARCH_FREQUENCY(self, value):
+        """Set app.DAILYSEARCH_FREQUENCY and reconfigure thread."""
+        self.handle_prop('DAILYSEARCH_FREQUENCY', value)
+
+    @property
+    def BACKLOG_FREQUENCY(self):
+        """Return app.BACKLOG_FREQUENCY."""
+        return self._BACKLOG_FREQUENCY
+
+    @BACKLOG_FREQUENCY.setter
+    def BACKLOG_FREQUENCY(self, value):
+        """Set app.BACKLOG_FREQUENCY and reconfigure thread."""
+        self.handle_prop('BACKLOG_FREQUENCY', value)
+
+    @property
+    def DOWNLOAD_PROPERS(self):
+        """Return app.DOWNLOAD_PROPERS."""
+        return self._DOWNLOAD_PROPERS
+
+    @DOWNLOAD_PROPERS.setter
+    def DOWNLOAD_PROPERS(self, value):
+        """Set DOWNLOAD_PROPERS value and start proper_finder_scheduler thread if needed."""
+        self._init_scheduler(app_prop='DOWNLOAD_PROPERS', scheduler='proper_finder_scheduler', enabled=value)
+
+    @property
+    def CHECK_PROPERS_INTERVAL(self):
+        """Return app.CHECK_PROPERS_INTERVAL."""
+        return self._CHECK_PROPERS_INTERVAL
+
+    @CHECK_PROPERS_INTERVAL.setter
+    def CHECK_PROPERS_INTERVAL(self, value):
+        """Set app.CHECK_PROPERS_INTERVAL and reconfigure thread."""
+        self.handle_prop('CHECK_PROPERS_INTERVAL', value)
+
+    @property
+    def GIT_PATH(self):
+        """Return app.GIT_PATH."""
+        return self._GIT_PATH
+
+    @GIT_PATH.setter
+    def GIT_PATH(self, value):
+        """Set GIT_PATH and reconfigure thread."""
+        self.handle_prop('GIT_PATH', value)
+
+    @property
+    def VERSION_NOTIFY(self):
+        """Return app.VERSION_NOTIFY."""
+        return self._VERSION_NOTIFY
+
+    @VERSION_NOTIFY.setter
+    def VERSION_NOTIFY(self, value):
+        """Set VERSION_NOTIFY and reconfigure thread."""
+        self.handle_prop('VERSION_NOTIFY', value)
+
+    @property
+    def HTTPS_CERT(self):
+        """Return app.HTTPS_CERT."""
+        return self._HTTPS_CERT
+
+    @HTTPS_CERT.setter
+    def HTTPS_CERT(self, value):
+        """Change HTTPS_CERT."""
+        self.handle_prop('HTTPS_CERT', value)
+
+    @property
+    def HTTPS_KEY(self):
+        """Return app.HTTPS_KEY."""
+        return self._HTTPS_KEY
+
+    @HTTPS_KEY.setter
+    def HTTPS_KEY(self, value):
+        """Change HTTPS_KEY."""
+        self.handle_prop('HTTPS_KEY', value)
+
+    @property
+    def LOG_DIR(self):
+        """Return app.LOG_DIR."""
+        return self._LOG_DIR
+
+    @LOG_DIR.setter
+    def LOG_DIR(self, value):
+        """Change LOG_DIR."""
+        self.handle_prop('LOG_DIR', value)
+
+    @property
+    def NZB_DIR(self):
+        """Return app.NZB_DIR."""
+        return self._NZB_DIR
+
+    @NZB_DIR.setter
+    def NZB_DIR(self, value):
+        """Change NZB_DIR."""
+        self.handle_prop('NZB_DIR', value)
+
+    @property
+    def TORRENT_DIR(self):
+        """Return app.TORRENT_DIR."""
+        return self._TORRENT_DIR
+
+    @TORRENT_DIR.setter
+    def TORRENT_DIR(self, value):
+        """Change TORRENT_DIR."""
+        self.handle_prop('TORRENT_DIR', value)
+
+    @property
+    def TV_DOWNLOAD_DIR(self):
+        """Return app.TV_DOWNLOAD_DIR."""
+        return self._TV_DOWNLOAD_DIR
+
+    @TV_DOWNLOAD_DIR.setter
+    def TV_DOWNLOAD_DIR(self, value):
+        """Change TV_DOWNLOAD_DIR."""
+        self.handle_prop('TV_DOWNLOAD_DIR', value)
+
+    @property
+    def UPDATE_FREQUENCY(self):
+        """Return app.UPDATE_FREQUENCY."""
+        return self._UPDATE_FREQUENCY
+
+    @UPDATE_FREQUENCY.setter
+    def UPDATE_FREQUENCY(self, value):
+        """Change UPDATE_FREQUENCY."""
+        self.handle_prop('UPDATE_FREQUENCY', value)
+
+    @property
+    def SHOWUPDATE_HOUR(self):
+        """Return app.SHOWUPDATE_HOUR."""
+        return self._SHOWUPDATE_HOUR
+
+    @SHOWUPDATE_HOUR.setter
+    def SHOWUPDATE_HOUR(self, value):
+        """Change SHOWUPDATE_HOUR."""
+        self.handle_prop('SHOWUPDATE_HOUR', value)
+
+    @property
+    def SUBTITLES_FINDER_FREQUENCY(self):
+        """Return app.SUBTITLES_FINDER_FREQUENCY."""
+        return self._SUBTITLES_FINDER_FREQUENCY
+
+    @SUBTITLES_FINDER_FREQUENCY.setter
+    def SUBTITLES_FINDER_FREQUENCY(self, value):
+        """Change SUBTITLES_FINDER_FREQUENCY."""
+        self.handle_prop('SUBTITLES_FINDER_FREQUENCY', value)
 
 
 app = MedusaApp()

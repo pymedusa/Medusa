@@ -3,7 +3,8 @@
 #### New Features
 
 #### Improvements
-- Replace trakt lib with PyTrakt (and switch to OAuth device authentication) ([8916](https://github.com/pymedusa/Medusa/pull/8916))
+- Replace trakt lib with PyTrakt (and switch to OAuth device authentication). ([8916](https://github.com/pymedusa/Medusa/pull/8916))
+- Make all thread schedulers hot-reload when enabled/disabled. ([8948](https://github.com/pymedusa/Medusa/pull/8948))
 
 #### Fixes
 - Fix setting default episode status (after) when adding a new show. ([8918](https://github.com/pymedusa/Medusa/pull/8918))
