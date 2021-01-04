@@ -56,7 +56,8 @@ from requests import RequestException
 
 from six import ensure_text, text_type, viewitems
 
-from traktor import TraktException
+from trakt.errors import TraktException
+
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -945,6 +946,9 @@ class QueueItemRemove(ShowQueueItem):
                     ' Error: {error_msg}',
                     {'id': self.show.series_id, 'show': self.show.name, 'error_msg': error}
                 )
+            except Exception as error:
+                log.exception('Exception occurred while trying to delete show {show}, error: {error',
+                              {'show': self.show.name, 'error': error})
 
         self.show.delete_show(full=self.full)
 
