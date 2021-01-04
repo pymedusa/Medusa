@@ -714,7 +714,7 @@ class Episode(TV):
             self.subtitles_searchcount = sql_results[0]['subtitles_searchcount']
             self.subtitles_lastsearch = sql_results[0]['subtitles_lastsearch']
             self.airdate = date.fromordinal(int(sql_results[0]['airdate']))
-            self._status = int(sql_results[0]['status'] or UNSET)
+            self.status = int(sql_results[0]['status'] or UNSET)
             self.quality = int(sql_results[0]['quality'] or Quality.NA)
             self.watched = bool(sql_results[0]['watched'])
 
@@ -2097,7 +2097,7 @@ class Episode(TV):
 
         old_location = self.location
         # Changing the name of the file might also change its quality
-        same_name = old_location and os.path.normpath(old_location) == os.path.normpath(filepath)
+        same_name = old_location and os.path.basename(old_location) == os.path.basename(filepath)
 
         old_size = self.file_size
         # Setting a location to episode, will get the size of the filepath
