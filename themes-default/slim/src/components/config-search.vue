@@ -246,6 +246,11 @@
                                                 <file-browser name="torrent_dir" title="Select .torrent black hole location" :initial-dir="clients.torrents.dir" @update="clients.torrents.dir = $event" />
                                                 <p><b>.torrent</b> files are stored at this location for external software to find and use</p>
                                             </config-template>
+                                            
+                                            <config-toggle-slider v-model="clients.torrents.saveMagnetFile" label="Save to .magnet" id="save_to_magnet">
+                                                <p>Save magnet uri to .magnet file if a magnet uri is availe. Fall back to .torrent if not.</p>
+                                            </config-toggle-slider>
+                                            
                                             <input type="submit"
                                                    class="btn-medusa config_submitter"
                                                    value="Save Changes"

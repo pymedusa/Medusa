@@ -628,7 +628,7 @@ class Application(object):
             app.TORRENT_METHOD = check_setting_str(app.CFG, 'General', 'torrent_method', 'blackhole',
                                                    valid_values=('blackhole', 'utorrent', 'transmission', 'deluge',
                                                                  'deluged', 'downloadstation', 'rtorrent', 'qbittorrent', 'mlnet'))
-
+            app.SAVE_MAGNET_FILE = bool(check_setting_int(app.CFG, 'General', 'save_magnet_file', 1))
             app.DOWNLOAD_PROPERS = bool(check_setting_int(app.CFG, 'General', 'download_propers', 1))
             app.PROPERS_SEARCH_DAYS = max(2, min(8, check_setting_int(app.CFG, 'General', 'propers_search_days', 2)))
             app.REMOVE_FROM_CLIENT = bool(check_setting_int(app.CFG, 'General', 'remove_from_client', 0))
@@ -1539,6 +1539,7 @@ class Application(object):
         new_config['General']['use_torrents'] = int(app.USE_TORRENTS)
         new_config['General']['nzb_method'] = app.NZB_METHOD
         new_config['General']['torrent_method'] = app.TORRENT_METHOD
+        new_config['General']['save_magnet_file'] = int(app.SAVE_MAGNET_FILE)
         new_config['General']['usenet_retention'] = int(app.USENET_RETENTION)
         new_config['General']['cache_trimming'] = int(app.CACHE_TRIMMING)
         new_config['General']['max_cache_age'] = int(app.MAX_CACHE_AGE)
