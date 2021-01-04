@@ -79,7 +79,7 @@ def change_HTTPS_CERT(https_cert):
     :param https_cert: path to the new certificate file
     :return: True on success, False on failure
     """
-    if https_cert == '':
+    if not https_cert:
         app._HTTPS_CERT = ''
         return True
 
@@ -102,7 +102,7 @@ def change_HTTPS_KEY(https_key):
     :param https_key: path to the new key file
     :return: True on success, False on failure
     """
-    if https_key == '':
+    if not https_key:
         app._HTTPS_KEY = ''
         return True
 
@@ -125,6 +125,10 @@ def change_LOG_DIR(log_dir):
     :param log_dir: Path to new logging directory
     :return: True on success, False on failure
     """
+    if not log_dir:
+        app._LOG_DIR = ''
+        return True
+
     abs_log_dir = os.path.normpath(os.path.join(app.DATA_DIR, log_dir))
     app_log_dir = os.path.normpath(app._LOG_DIR) if app._LOG_DIR else None
 
@@ -145,7 +149,7 @@ def change_NZB_DIR(nzb_dir):
     :param nzb_dir: New NZB Folder location
     :return: True on success, False on failure
     """
-    if nzb_dir == '':
+    if not nzb_dir:
         app._NZB_DIR = ''
         return True
 
@@ -168,7 +172,7 @@ def change_TORRENT_DIR(torrent_dir):
     :param torrent_dir: New torrent directory
     :return: True on success, False on failure
     """
-    if torrent_dir == '':
+    if not torrent_dir:
         app._TORRENT_DIR = ''
         return True
 
@@ -191,7 +195,7 @@ def change_TV_DOWNLOAD_DIR(tv_download_dir):
     :param tv_download_dir: New tv download directory
     :return: True on success, False on failure
     """
-    if tv_download_dir == '':
+    if not tv_download_dir:
         app._TV_DOWNLOAD_DIR = ''
         return True
 
