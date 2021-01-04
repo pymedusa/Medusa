@@ -239,7 +239,7 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   label="Append (year) to each show title"
                 >
                   <p>
-                    Make sure that each show title is added with (year) appended to it.
+                    Make sure that each show title is added with (year) appended to it
                   </p>
                 </config-toggle-slider-stub>
                  
