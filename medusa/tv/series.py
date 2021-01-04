@@ -1666,7 +1666,7 @@ class Series(TV):
         # Let's try to fix the shhow name (with year) if we have the year from the imdb info.
         if self.imdb_year and not self.start_year:
             self.start_year = self.imdb_year
-            self.name = self.name  # We just want to setter to activate.
+            self.name = self.name  # We just want the setter to activate.
 
         log.debug(u'{id}: Obtained info from IMDb: {imdb_info}',
                   {'id': self.series_id, 'imdb_info': self.imdb_info})
