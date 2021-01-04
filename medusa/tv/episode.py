@@ -381,10 +381,17 @@ class Episode(TV):
 
     @location.setter
     def location(self, value):
+        old_location = os.path.normpath(self._location)
+        new_location = os.path.normpath(value)
+
         log.debug('{id}: Setter sets location to {location}',
-                  {'id': self.series.series_id, 'location': value})
-        self._location = os.path.normpath(value)
-        self.file_size = os.path.getsize(value) if value and self.is_location_valid(value) else 0
+                  {'id': self.series.series_id, 'location': new_location})
+
+        if new_location == old_location:
+            return
+
+        self._location = new_location
+        self.file_size = os.path.getsize(new_location) if value and self.is_location_valid(new_location) else 0
 
     @property
     def indexer_name(self):

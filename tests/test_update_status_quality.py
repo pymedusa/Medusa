@@ -135,7 +135,7 @@ def create_episode(tvshow, create_tvepisode, create_file):
         'status': WANTED,
         'quality': Quality.NA,
         'filepath': 'Show.S01E16.HDTV.X264-GROUP.mkv',
-        'expected': (DOWNLOADED, Quality.SDTV)
+        'expected': (ARCHIVED, Quality.SDTV)
     },
     {  # p17: Previous status was Wanted
         'status': WANTED,
