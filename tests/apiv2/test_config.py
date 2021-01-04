@@ -46,6 +46,7 @@ def config_main(monkeypatch, app_config):
     section_data['subtitles'] = {}
     section_data['subtitles']['enabled'] = bool(app.USE_SUBTITLES)
     section_data['recentShows'] = app.SHOWS_RECENT
+    section_data['addTitleWithYear'] = bool(app.ADD_TITLE_WITH_YEAR)
 
     # Pick a random series to show as background.
     # TODO: Recreate this in Vue when the webapp has a reliable list of shows to choose from.

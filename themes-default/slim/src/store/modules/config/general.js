@@ -3,6 +3,7 @@ import { ADD_CONFIG } from '../../mutation-types';
 import { arrayUnique, arrayExclude } from '../../../utils/core';
 
 const state = {
+    addTitleWithYear: null,
     wikiUrl: null,
     donationsUrl: null,
     namingForceFolders: null,
