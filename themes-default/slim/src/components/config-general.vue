@@ -57,6 +57,10 @@
                                         <root-dirs />
                                     </config-template>
 
+                                    <config-toggle-slider v-model="general.addTitleWithYear" label="Append (year) to each show title" id="add_title_year">
+                                        <p>Make sure that each show title is added with (year) appended to it</p>
+                                    </config-toggle-slider>
+
                                     <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
                                 </fieldset>
                             </div>

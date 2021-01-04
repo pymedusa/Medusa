@@ -79,6 +79,7 @@ class ConfigHandler(BaseRequestHandler):
     patches = {
         # Main
         'rootDirs': ListField(app, 'ROOT_DIRS'),
+        'addTitleWithYear': BooleanField(app, 'ADD_TITLE_WITH_YEAR'),
 
         'showDefaults.status': EnumField(app, 'STATUS_DEFAULT', (SKIPPED, WANTED, IGNORED), int),
         'showDefaults.statusAfter': EnumField(app, 'STATUS_DEFAULT_AFTER', (SKIPPED, WANTED, IGNORED), int),
@@ -597,6 +598,7 @@ class DataGenerator(object):
         section_data['subtitles'] = {}
         section_data['subtitles']['enabled'] = bool(app.USE_SUBTITLES)
         section_data['recentShows'] = app.SHOWS_RECENT
+        section_data['addTitleWithYear'] = bool(app.ADD_TITLE_WITH_YEAR)
 
         # Pick a random series to show as background.
         # TODO: Recreate this in Vue when the webapp has a reliable list of shows to choose from.

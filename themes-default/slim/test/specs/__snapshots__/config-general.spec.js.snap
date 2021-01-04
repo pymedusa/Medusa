@@ -233,6 +233,16 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   <root-dirs-stub />
                 </config-template-stub>
                  
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="add_title_year"
+                  label="Append (year) to each show title"
+                >
+                  <p>
+                    Make sure that each show title is added with (year) appended to it
+                  </p>
+                </config-toggle-slider-stub>
+                 
                 <input
                   class="btn-medusa config_submitter"
                   type="submit"
