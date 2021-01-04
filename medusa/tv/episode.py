@@ -384,11 +384,11 @@ class Episode(TV):
         old_location = os.path.normpath(self._location)
         new_location = os.path.normpath(value)
 
+        if not self._location or new_location == old_location:
+            return
+
         log.debug('{id}: Setter sets location to {location}',
                   {'id': self.series.series_id, 'location': new_location})
-
-        if new_location == old_location:
-            return
 
         self._location = new_location
         self.file_size = os.path.getsize(new_location) if value and self.is_location_valid(new_location) else 0
