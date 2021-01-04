@@ -2042,7 +2042,7 @@ class Series(TV):
                                 }
                             )
 
-                            cur_ep._status = new_status
+                            cur_ep.status = new_status
                             cur_ep.subtitles = ''
                             cur_ep.subtitles_searchcount = 0
                             cur_ep.subtitles_lastsearch = ''
@@ -2679,8 +2679,9 @@ class Series(TV):
                     if final_status_only and Quality.should_search(ep_obj.status, ep_obj.quality, self,
                                                                    ep_obj.manually_searched)[0]:
                         continue
-                    ep_obj._status = ARCHIVED
+                    ep_obj.status = ARCHIVED
                     sql_list.append(ep_obj.get_sql())
+
         if sql_list:
             main_db_con = db.DBConnection()
             main_db_con.mass_action(sql_list)

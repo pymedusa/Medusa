@@ -1354,7 +1354,7 @@ class Home(WebRoot):
 
                     # Only in failed_history we set to FAILED.
                     if status != FAILED:
-                        ep_obj._status = status
+                        ep_obj.status = status
 
                     # mass add to database
                     sql_l.append(ep_obj.get_sql())

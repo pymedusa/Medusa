@@ -1181,7 +1181,7 @@ class PostProcessor(object):
                 else:
                     cur_ep.release_name = u''
 
-                cur_ep._status = DOWNLOADED
+                cur_ep.status = DOWNLOADED
                 cur_ep.quality = new_ep_quality
 
                 cur_ep.subtitles = u''
