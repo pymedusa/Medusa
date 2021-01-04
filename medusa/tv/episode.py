@@ -236,8 +236,7 @@ class Episode(TV):
              'scene_episode',
              'scene_absolute_number',
              'related_episodes',
-             'wanted_quality',
-             'loaded'
+             'wanted_quality'
              }
         )
         self.series = series
@@ -267,26 +266,10 @@ class Episode(TV):
         self.manually_searched = False
         self.related_episodes = []
         self.wanted_quality = []
-        self.loaded = False
         self.watched = False
         if series:
             self._specify_episode(self.season, self.episode)
             self.check_for_meta_files()
-
-    def __setattr__(self, key, value):
-        """Set attribute values for deprecated attributes."""
-        try:
-            refactor = self.__refactored[key]
-        except KeyError:
-            super(Episode, self).__setattr__(key, value)
-        else:
-            warnings.warn(
-                '{item} is deprecated, use {refactor} instead \n{trace}'.format(
-                    item=key, refactor=refactor, trace=traceback.print_stack(),
-                ),
-                DeprecationWarning
-            )
-            super(Episode, self).__setattr__(refactor, value)
 
     def __getattr__(self, item):
         """Get attribute values for deprecated attributes."""
@@ -335,8 +318,7 @@ class Episode(TV):
             raise ValueError
 
         if episode:
-            if episode.loaded or episode.load_from_db(episode.season, episode.episode):
-                return episode
+            return episode
 
     @staticmethod
     def from_filepath(filepath):
@@ -639,6 +621,8 @@ class Episode(TV):
         self.hasnfo = any(all_nfos)
         self.hastbn = any(all_tbns)
 
+        self.save_to_db()
+
         return oldhasnfo != self.hasnfo or oldhastbn != self.hastbn
 
     def _specify_episode(self, season, episode):
@@ -682,7 +666,7 @@ class Episode(TV):
         :return:
         :rtype: bool
         """
-        if self.loaded:
+        if not self.dirty:
             return True
 
         main_db_con = db.DBConnection()
@@ -765,7 +749,6 @@ class Episode(TV):
             if sql_results[0]['release_group'] is not None:
                 self.release_group = sql_results[0]['release_group']
 
-            self.loaded = True
             self.reset_dirty()
             return True
 
@@ -1203,7 +1186,6 @@ class Episode(TV):
         if self.check_for_meta_files():
             log.debug('{id}: Saving metadata changes to database',
                       {'id': self.series.series_id})
-            self.save_to_db()
 
     def __create_nfo(self, metadata_provider):
 
@@ -1400,9 +1382,7 @@ class Episode(TV):
             self.reset_dirty()
             return
 
-        self.loaded = False
         self.reset_dirty()
-
         return sql_query
 
     def save_to_db(self):
@@ -1449,7 +1429,6 @@ class Episode(TV):
         main_db_con = db.DBConnection()
         main_db_con.upsert('tv_episodes', new_value_dict, control_value_dict)
 
-        self.loaded = False
         self.reset_dirty()
 
     def full_path(self):

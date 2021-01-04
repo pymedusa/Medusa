@@ -51,8 +51,12 @@ class TV(object):
         :type key: str
         :param value:
         """
-        if key == '_location' or (not key.startswith('_') and key not in self.__ignored_properties):
-            self.__dirty |= self.__dict__.get(key) != value
+        if not key.startswith('_') and key not in self.__ignored_properties:
+            obj = getattr(self.__class__, key, None)
+            if obj and isinstance(obj, property):
+                self.__dirty = obj.__get__(self, key) != value
+            elif key in self.__dict__:
+                self.__dirty = self.__dict__.get(key) != value
 
         super(TV, self).__setattr__(key, value)
 
