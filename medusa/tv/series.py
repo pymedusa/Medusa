@@ -583,6 +583,11 @@ class Series(TV):
         epoch_date = update_date - datetime.date.fromtimestamp(0)
         return int(epoch_date.total_seconds())
 
+    @last_update_indexer.setter
+    def last_update_indexer(self, value):
+        """Set last indexer update (datetime.date.today().toordinal())."""
+        self._last_update_indexer = value
+
     @property
     def prev_aired(self):
         """Return last aired episode ordinal."""
@@ -1315,7 +1320,7 @@ class Series(TV):
             main_db_con.mass_action(sql_l)
 
         # Done updating save last update date
-        self._last_update_indexer = datetime.date.today().toordinal()
+        self.last_update_indexer = datetime.date.today().toordinal()
         log.debug(u'{id}: Saving indexer changes to database',
                   {'id': self.series_id})
         self.save_to_db()

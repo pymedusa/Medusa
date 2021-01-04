@@ -383,7 +383,7 @@ class Episode(TV):
     def location(self, value):
         log.debug('{id}: Setter sets location to {location}',
                   {'id': self.series.series_id, 'location': value})
-        self._location = value
+        self._location = os.path.normpath(value)
         self.file_size = os.path.getsize(value) if value and self.is_location_valid(value) else 0
 
     @property
@@ -713,7 +713,7 @@ class Episode(TV):
 
             # don't overwrite my location
             if sql_results[0]['location']:
-                self._location = os.path.normpath(sql_results[0]['location'])
+                self._location = sql_results[0]['location']
             if sql_results[0]['file_size']:
                 self.file_size = int(sql_results[0]['file_size'])
             else:
