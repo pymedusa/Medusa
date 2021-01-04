@@ -936,7 +936,7 @@ class Series(TV):
         else:
             ep = Episode(self, season, episode)
 
-        if ep is not None and ep.loaded and should_cache:
+        if ep is not None and should_cache:
             self.episodes[season][episode] = ep
 
         return ep
@@ -1443,6 +1443,8 @@ class Series(TV):
         return root_ep
 
     def _load_from_db(self):
+        if not self.dirty:
+            return True
 
         log.debug(u'{id}: Loading show info from database',
                   {'id': self.series_id})
