@@ -108,6 +108,7 @@ class MedusaApp(object):
         self.subtitles_finder_scheduler = None
         self.trakt_checker_scheduler = None
         self.torrent_checker_scheduler = None
+        self.episode_update_scheduler = None
 
         self.showList = []
 
@@ -701,6 +702,7 @@ class MedusaApp(object):
         if app_prop_old == enabled:
             return
 
+        setattr(self, '_{0}'.format(app_prop), enabled)
         app_scheduler = getattr(self, scheduler)
         if app_scheduler is None:
             # The thread hasn't been initialized yet. Can't do anything with it right now.
@@ -716,7 +718,6 @@ class MedusaApp(object):
             app_scheduler.enable = False
             app_scheduler.silent = True
 
-        setattr(self, '_{0}'.format(app_prop), enabled)
         if enabled:
             if not app_scheduler.enable:
                 thread_enable()
