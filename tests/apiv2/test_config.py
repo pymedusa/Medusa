@@ -367,6 +367,7 @@ async def test_config_get_system(http_client, create_url, auth_headers, config_s
     # hack
     json_response = json.loads(response.body)
     json_response['diskSpace']['tvDownloadDir']['location'] = None
+    json_response['diskSpace']['tvDownloadDir']['freeSpace'] = False
 
     assert expected == json_response
 
