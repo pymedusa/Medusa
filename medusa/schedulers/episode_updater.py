@@ -112,7 +112,7 @@ class EpisodeUpdater(object):
                     continue
 
             with cur_ep.lock:
-                cur_ep.status = series_obj.default_ep_status if cur_ep.season else common.SKIPPED
+                cur_ep._status = series_obj.default_ep_status if cur_ep.season else common.SKIPPED
                 log.info(
                     'Setting status ({status}) for show airing today: {name} {special}', {
                         'name': cur_ep.pretty_name(),

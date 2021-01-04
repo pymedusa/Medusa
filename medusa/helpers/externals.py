@@ -16,7 +16,9 @@ from requests.exceptions import RequestException
 
 from six import viewitems
 
-from traktor import AuthException, TokenExpiredException, TraktApi, TraktException
+from trakt import sync
+from trakt.errors import TraktException
+
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -27,27 +29,6 @@ def get_trakt_externals(externals):
 
     :param externals: Dictionary of key/value pairs with external id's.
     """
-    def trakt_request(api, trakt_url):
-        """Perform the request and handle possible token refresh."""
-        try:
-            trakt_result = api.request(trakt_url) or []
-            if api.access_token_refreshed:
-                app.TRAKT_ACCESS_TOKEN = api.access_token
-                app.TRAKT_REFRESH_TOKEN = api.refresh_token
-                app.instance.save_config()
-        except (AuthException, TraktException, TokenExpiredException) as error:
-            log.info(u'Could not use Trakt to enrich with externals: {0!r}', error)
-            return []
-        else:
-            return trakt_result
-
-    trakt_settings = {'trakt_api_key': app.TRAKT_API_KEY,
-                      'trakt_api_secret': app.TRAKT_API_SECRET,
-                      'trakt_access_token': app.TRAKT_ACCESS_TOKEN,
-                      'trakt_refresh_token': app.TRAKT_REFRESH_TOKEN}
-    trakt_api = TraktApi(app.SSL_VERIFY, app.TRAKT_TIMEOUT, **trakt_settings)
-
-    id_lookup = '/search/{external_key}/{external_value}?type=show'
     trakt_mapping = {'tvdb_id': 'tvdb', 'imdb_id': 'imdb', 'tmdb_id': 'tmdb', 'trakt_id': 'trakt'}
     trakt_mapping_rev = {v: k for k, v in viewitems(trakt_mapping)}
 
@@ -55,16 +36,23 @@ def get_trakt_externals(externals):
         if not trakt_mapping.get(external_key) or not externals[external_key]:
             continue
 
-        url = id_lookup.format(external_key=trakt_mapping[external_key], external_value=externals[external_key])
         log.debug(
             u'Looking for externals using Trakt and {indexer} id {number}', {
                 'indexer': trakt_mapping[external_key],
                 'number': externals[external_key],
             }
         )
-        result = trakt_request(trakt_api, url)
-        if result and len(result) and result[0].get('show') and result[0]['show'].get('ids'):
-            ids = {trakt_mapping_rev[k]: v for k, v in viewitems(result[0]['show'].get('ids'))
+
+        try:
+            result = sync.search_by_id(externals[external_key], id_type=trakt_mapping[external_key], media_type='show')
+        except TraktException as error:
+            log.warning('Error getting external key {external}, error: {error!r}', {
+                'external': trakt_mapping[external_key], 'error': error
+            })
+            return {}
+
+        if result and len(result) and result[0].ids.get('ids'):
+            ids = {trakt_mapping_rev[k]: v for k, v in result[0].ids.get('ids').items()
                    if v and trakt_mapping_rev.get(k)}
             return ids
     return {}
