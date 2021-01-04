@@ -391,7 +391,9 @@ class Episode(TV):
                   {'id': self.series.series_id, 'location': new_location})
 
         self._location = new_location
-        self.file_size = os.path.getsize(new_location) if value and self.is_location_valid(new_location) else 0
+
+        if value and self.is_location_valid(new_location):
+            self.file_size = os.path.getsize(new_location)
 
     @property
     def indexer_name(self):
@@ -2097,12 +2099,13 @@ class Episode(TV):
 
         old_location = self.location
         # Changing the name of the file might also change its quality
-        same_name = old_location and os.path.basename(old_location) == os.path.basename(filepath)
+        same_name = old_location and os.path.normpath(old_location) == os.path.normpath(filepath)
 
         old_size = self.file_size
         # Setting a location to episode, will get the size of the filepath
         with self.lock:
             self.location = filepath
+
         # If size from given filepath is 0 it means we couldn't determine file size
         same_size = old_size > 0 and self.file_size > 0 and self.file_size == old_size
 
