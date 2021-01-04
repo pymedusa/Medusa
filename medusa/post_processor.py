@@ -1181,7 +1181,7 @@ class PostProcessor(object):
                 else:
                     cur_ep.release_name = u''
 
-                cur_ep.status = DOWNLOADED
+                cur_ep._status = DOWNLOADED
                 cur_ep.quality = new_ep_quality
 
                 cur_ep.subtitles = u''
@@ -1313,7 +1313,7 @@ class PostProcessor(object):
         self._run_extra_scripts(ep_obj)
 
         if not self.nzb_name and all([app.USE_TORRENTS, app.TORRENT_SEED_LOCATION,
-                                      self.process_method in ('hardlink', 'symlink', 'reflink', 'keeplink')]):
+                                      self.process_method in ('hardlink', 'symlink', 'reflink', 'keeplink', 'copy')]):
             # Store self.info_hash and self.release_name so later we can remove from client if setting is enabled
             if self.info_hash:
                 existing_release_names = app.RECENTLY_POSTPROCESSED.get(self.info_hash, [])

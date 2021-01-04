@@ -10,7 +10,6 @@ import sys
 from random import choice
 
 from medusa import (
-    app,
     classes,
     common,
     config,
@@ -19,6 +18,7 @@ from medusa import (
     logger,
     ws,
 )
+from medusa.app import app
 from medusa.common import IGNORED, Quality, SKIPPED, WANTED, cpu_presets
 from medusa.helpers.utils import int_default, to_camel_case
 from medusa.indexers.config import INDEXER_TVDBV2, get_indexer_config

@@ -100,6 +100,8 @@ from medusa.themes import read_themes
 from medusa.tv import Series
 from medusa.updater.version_checker import CheckVersion
 
+import trakt
+
 
 logger = logging.getLogger(__name__)
 
@@ -1014,6 +1016,9 @@ class Application(object):
             app.FALLBACK_PLEX_NOTIFICATIONS = check_setting_int(app.CFG, 'General', 'fallback_plex_notifications', 1)
             app.FALLBACK_PLEX_TIMEOUT = check_setting_int(app.CFG, 'General', 'fallback_plex_timeout', 3)
 
+            # Initialize trakt config path.
+            trakt.core.CONFIG_PATH = os.path.join(app.CACHE_DIR, '.pytrakt.json')
+
             # reconfigure the logger
             app_logger.reconfigure()
 
@@ -1045,7 +1050,7 @@ class Application(object):
 
             if app.VERSION_NOTIFY:
                 updater = CheckVersion().updater
-                if updater:
+                if updater and updater.current_version:
                     app.APP_VERSION = updater.current_version
 
             # initialize the static NZB and TORRENT providers

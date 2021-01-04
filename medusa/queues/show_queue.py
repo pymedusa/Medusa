@@ -56,7 +56,8 @@ from requests import RequestException
 
 from six import ensure_text, text_type, viewitems
 
-from traktor import TraktException
+from trakt.errors import TraktException
+
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -439,7 +440,7 @@ class QueueItemAdd(ShowQueueItem):
                 series.load_episodes_from_indexer(tvapi=api)
                 # If we provide a default_status_after through the apiv2 series route options object.
                 # set it after we've added the episodes.
-                self.default_ep_status = self.options['default_status_after'] or app.STATUS_DEFAULT_AFTER
+                series.default_ep_status = self.options['default_status_after'] or app.STATUS_DEFAULT_AFTER
 
             except IndexerException as error:
                 log.warning('Unable to load series episodes from indexer: {0!r}'.format(error))
@@ -945,6 +946,9 @@ class QueueItemRemove(ShowQueueItem):
                     ' Error: {error_msg}',
                     {'id': self.show.series_id, 'show': self.show.name, 'error_msg': error}
                 )
+            except Exception as error:
+                log.exception('Exception occurred while trying to delete show {show}, error: {error',
+                              {'show': self.show.name, 'error': error})
 
         self.show.delete_show(full=self.full)
 

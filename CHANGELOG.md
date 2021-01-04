@@ -3,8 +3,29 @@
 #### New Features
 
 #### Improvements
+- Replace trakt lib with PyTrakt (and switch to OAuth device authentication). ([8916](https://github.com/pymedusa/Medusa/pull/8916))
+- Make all thread schedulers hot-reload when enabled/disabled. ([8948](https://github.com/pymedusa/Medusa/pull/8948))
 
 #### Fixes
+- Fix setting default episode status (after) when adding a new show. ([8918](https://github.com/pymedusa/Medusa/pull/8918))
+
+-----
+
+## 0.5.1 (16-12-2020)
+
+#### Improvements
+- Add Processing failed for ... to custom logs
+- Add and convert some network logos
+
+#### Fixes
+- Fix startup with git install without valid git
+- Fix rare ADBA exception
+- Fix rare anime parsing issue
+- Fix exception when torrent clients don't respond
+- Fix backlog search on new show add & wanted switch for old episodes
+- Fix issue with broken encrypted passwords
+
+-----
 
 ## 0.5.0 (30-11-2020)
 

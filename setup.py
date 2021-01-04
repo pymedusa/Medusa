@@ -106,7 +106,8 @@ setup(
         'flake8-quotes>=1.0.0',
         'pep8-naming>=0.7.0',
         'pytest<5.0.0 ; python_version < "3.5"',
-        'pytest>=5.0.0 ; python_version >= "3.5"',
+        # pytest 6.2.x bugged at the moment.
+        'pytest==6.1.2 ; python_version >= "3.5"',
         'pytest-cov>=2.6.1',
         'pytest-flake8>=1.0.4',
         'pytest-tornado>=0.8.1',
