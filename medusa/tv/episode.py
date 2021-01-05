@@ -381,10 +381,21 @@ class Episode(TV):
 
     @location.setter
     def location(self, value):
+        old_location = os.path.normpath(self._location)
+        new_location = os.path.normpath(value)
+
+        if value and self.is_location_valid(new_location):
+            self.file_size = os.path.getsize(new_location)
+        else:
+            self.file_size = 0
+
+        if new_location == old_location:
+            return
+
         log.debug('{id}: Setter sets location to {location}',
-                  {'id': self.series.series_id, 'location': value})
-        self._location = value
-        self.file_size = os.path.getsize(value) if value and self.is_location_valid(value) else 0
+                  {'id': self.series.series_id, 'location': new_location})
+
+        self._location = new_location
 
     @property
     def indexer_name(self):
@@ -707,13 +718,13 @@ class Episode(TV):
             self.subtitles_searchcount = sql_results[0]['subtitles_searchcount']
             self.subtitles_lastsearch = sql_results[0]['subtitles_lastsearch']
             self.airdate = date.fromordinal(int(sql_results[0]['airdate']))
-            self._status = int(sql_results[0]['status'] or UNSET)
+            self.status = int(sql_results[0]['status'] or UNSET)
             self.quality = int(sql_results[0]['quality'] or Quality.NA)
             self.watched = bool(sql_results[0]['watched'])
 
             # don't overwrite my location
             if sql_results[0]['location']:
-                self._location = os.path.normpath(sql_results[0]['location'])
+                self._location = sql_results[0]['location']
             if sql_results[0]['file_size']:
                 self.file_size = int(sql_results[0]['file_size'])
             else:
@@ -960,7 +971,7 @@ class Episode(TV):
                 # If is a leaked episode and user manually snatched, it will respect status
                 # If is a fake (manually snatched), when user set as FAILED, status will be WANTED
                 # and code below will make it UNAIRED again
-                self._status = UNAIRED
+                self.status = UNAIRED
                 log.debug(
                     '{id}: {series} {ep} airs in the future or has no air date, marking it {status}', {
                         'id': self.series.series_id,
@@ -972,7 +983,7 @@ class Episode(TV):
             elif self.status in (UNSET, UNAIRED):
                 # Only do UNAIRED/UNSET, it could already be snatched/ignored/skipped,
                 # or downloaded/archived to disconnected media
-                self._status = self.series.default_ep_status if self.season > 0 else SKIPPED  # auto-skip specials
+                self.status = self.series.default_ep_status if self.season > 0 else SKIPPED  # auto-skip specials
                 log.debug(
                     '{id}: {series} {ep} has already aired, marking it {status}', {
                         'id': self.series.series_id,
@@ -1013,7 +1024,7 @@ class Episode(TV):
                     'old_status': statusStrings[self.status],
                 }
             )
-            self._status = UNSET
+            self.status = UNSET
 
         self.save_to_db()
 
@@ -2096,6 +2107,7 @@ class Episode(TV):
         # Setting a location to episode, will get the size of the filepath
         with self.lock:
             self.location = filepath
+
         # If size from given filepath is 0 it means we couldn't determine file size
         same_size = old_size > 0 and self.file_size > 0 and self.file_size == old_size
 
@@ -2116,7 +2128,7 @@ class Episode(TV):
                 new_status = ARCHIVED
 
             with self.lock:
-                self._status = new_status
+                self.status = new_status
                 self.quality = new_quality
 
                 if not same_name:
