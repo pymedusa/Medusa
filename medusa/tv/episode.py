@@ -384,6 +384,11 @@ class Episode(TV):
         old_location = os.path.normpath(self._location)
         new_location = os.path.normpath(value)
 
+        if value and self.is_location_valid(new_location):
+            self.file_size = os.path.getsize(new_location)
+        else:
+            self.file_size = 0
+
         if new_location == old_location:
             return
 
@@ -391,9 +396,6 @@ class Episode(TV):
                   {'id': self.series.series_id, 'location': new_location})
 
         self._location = new_location
-
-        if value and self.is_location_valid(new_location):
-            self.file_size = os.path.getsize(new_location)
 
     @property
     def indexer_name(self):
