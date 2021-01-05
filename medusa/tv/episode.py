@@ -632,12 +632,13 @@ class Episode(TV):
         self.hasnfo = any(all_nfos)
         self.hastbn = any(all_tbns)
 
-        self.save_to_db()
+        changed = oldhasnfo != self.hasnfo or oldhastbn != self.hastbn
+        if changed:
+            self.save_to_db()
 
-        return oldhasnfo != self.hasnfo or oldhastbn != self.hastbn
+        return changed
 
     def _specify_episode(self, season, episode):
-
         sql_results = self.load_from_db(season, episode)
 
         if not sql_results:
