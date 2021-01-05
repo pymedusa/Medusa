@@ -1711,7 +1711,6 @@ export default {
                         host,
                         port,
                         smtp_from: from, // eslint-disable-line camelcase
-                        use_tls: tls, // eslint-disable-line camelcase
                         user,
                         pwd,
                         to
