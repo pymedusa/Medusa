@@ -10,10 +10,10 @@ import sys
 VERSION_FILE = 'medusa/common.py'
 VERSION_LINE_REGEXP = re.compile(r"VERSION = '([0-9.]+)'")
 
-GH_PULL_REQUEST = os.environ['GITHUB_EVENT_NAME']
-GH_PR_TARGET_BRANCH = os.environ['GITHUB_BASE_REF']
-GH_PR_SOURCE_BRANCH = os.environ['GITHUB_HEAD_REF']
-GH_BUILD_DIR = os.environ['GITHUB_WORKSPACE']
+GH_PULL_REQUEST = os.getenv('GITHUB_EVENT_NAME','push')
+GH_PR_TARGET_BRANCH = os.getenv('GITHUB_BASE_REF','master')
+GH_PR_SOURCE_BRANCH = os.getenv('GITHUB_HEAD_REF','master')
+GH_BUILD_DIR = os.getenv('GITHUB_WORKSPACE','./')
 
 GH_PR_TARGET_BRANCH = GH_PR_TARGET_BRANCH.lower()
 GH_PR_SOURCE_BRANCH = GH_PR_SOURCE_BRANCH.lower()
