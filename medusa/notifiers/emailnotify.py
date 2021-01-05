@@ -342,7 +342,7 @@ class Notifier(object):
 
     def _sendmail(self, host, port, smtp_from, user, pwd, to, msg, smtp_debug=False):
         log.debug(
-            'HOST: {host}; PORT: {port}; FROM: {sender}, TLS: {tls},'
+            'HOST: {host}; PORT: {port}; FROM: {sender},'
             ' USER: {user}, PWD: {password}, TO: {recipient}', {
                 'host': host,
                 'port': port,
