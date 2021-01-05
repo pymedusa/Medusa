@@ -131,19 +131,18 @@ class GuessItCache(BaseCache):
 
     def get_or_invalidate(self, name, obj):
         """Return an item from the cache if the obj matches the previous invalidation object. Clears the cache and returns None if not."""
-        with self.lock:
-            if not self.invalidation_object:
-                self.invalidation_object = obj
-
-            if self.invalidation_object == obj:
-                log.debug('Using guessit cache item for {name}', {'name': name})
-                return self.thread_unsafe_get(name)
-
-            log.debug('GuessIt cache was cleared due to invalidation object change: previous={previous} new={new}',
-                      {'previous': self.invalidation_object, 'new': obj})
+        if not self.invalidation_object:
             self.invalidation_object = obj
-            self.cache.clear()
-            return None
+
+        if self.invalidation_object == obj:
+            log.debug('Using guessit cache item for {name}', {'name': name})
+            return self.get(name)
+
+        log.debug('GuessIt cache was cleared due to invalidation object change: previous={previous} new={new}',
+                  {'previous': self.invalidation_object, 'new': obj})
+        self.invalidation_object = obj
+        self.clear()
+        return None
 
 
 guessit_cache = GuessItCache()

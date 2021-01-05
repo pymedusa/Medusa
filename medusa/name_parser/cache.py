@@ -43,16 +43,17 @@ class BaseCache(object):
         :rtype: object
         """
         with self.lock:
-            return self.thread_unsafe_get(name)
-
-    def thread_unsafe_get(self, name):
-        """Return a cache item from the cache. This function doesn't lock and is therefore not thread safe."""
-        if name in self.cache:
-            log.debug('Using cache item for {name}', {'name': name})
-            return self.cache[name]
+            if name in self.cache:
+                log.debug('Using cache item for {name}', {'name': name})
+                return self.cache[name]
 
     def remove(self, name):
         """Remove a cache item given name."""
         with self.lock:
             del self.cache[name]
             log.debug('Removed cache item for {name}', {'name': name})
+
+    def clear(self):
+        """Removes all items from the cache."""
+        with self.lock:
+            self.cache.clear()
