@@ -44,7 +44,7 @@
     "lodash": "4.17.20",
     "lozad": "1.16.0",
     "tablesorter": "2.31.3",
-    "v-tooltip": "2.0.3",
+    "v-tooltip": "2.1.2",
     "vue": "2.6.12",
     "vue-async-computed": "3.9.0",
     "vue-cookies": "1.7.4",
