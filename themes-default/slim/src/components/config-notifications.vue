@@ -879,7 +879,6 @@
                                             <config-textbox v-model="notifiers.email.host" label="SMTP host" id="email_host" :explanations="['hostname of your SMTP email server.']" @change="save()" />
                                             <config-textbox-number :min="1" :step="1" v-model="notifiers.email.port" label="SMTP port" id="email_port" :explanations="['port number used to connect to your SMTP host.']" @change="save()" />
                                             <config-textbox v-model="notifiers.email.from" label="SMTP from" id="email_from" :explanations="['sender email address, some hosts require a real address.']" @change="save()" />
-                                            <config-toggle-slider v-model="notifiers.email.tls" label="Use TLS" id="email_tls" :explanations="['check to use TLS encryption.']" @change="save()" />
                                             <config-textbox v-model="notifiers.email.username" label="SMTP username" id="email_username" :explanations="['(optional) your SMTP server username.']" @change="save()" />
                                             <config-textbox v-model="notifiers.email.password" type="password" label="SMTP password" id="email_password" :explanations="['(optional) your SMTP server password.']" @change="save()" />
 
@@ -1685,7 +1684,6 @@ export default {
             host = host.length > 0 ? host : null;
             let port = $('#email_port').val();
             port = port.length > 0 ? port : null;
-            const tls = $('#email_tls').find('input').is(':checked') ? 1 : 0;
             let from = $('#email_from').val();
             from = from.length > 0 ? from : 'root@localhost';
             const user = $('#email_username').val().trim();
