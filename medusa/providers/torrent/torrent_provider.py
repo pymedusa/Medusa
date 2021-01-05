@@ -137,6 +137,35 @@ class TorrentProvider(GenericProvider):
 
         return False
 
+    def _verify_magnet(self, file_name=None):
+        """Validate magnet file."""
+        if not file_name or not os.path.isfile(file_name):
+            return False
+
+        magnet = None
+        with open(file_name, 'rb', encoding='utf-8') as fp:
+            magnet = fp.read()
+
+        if self._get_info_from_magnet(magnet):
+            return True
+        return False
+
+    @staticmethod
+    def _get_torrent_name_from_magnet(magnet):
+        torrent_name = ''
+        try:
+            torrent_name = re.findall('dn=([^&]+)', magnet)[0]
+        except Exception:
+            torrent_name = 'NO_DOWNLOAD_NAME'
+        return torrent_name
+
+    @staticmethod
+    def _get_info_from_magnet(magnet):
+        info_hash = re.findall(r'urn:btih:([\w]{32,40})', magnet)[0].upper()
+        if len(info_hash) == 32:
+            info_hash = b16encode(b32decode(info_hash)).upper()
+        return info_hash
+
     def seed_ratio(self):
         """Return seed ratio of provider."""
         return self.ratio
@@ -184,15 +213,8 @@ class TorrentProvider(GenericProvider):
 
         if result.url.startswith('magnet:'):
             try:
-                info_hash = re.findall(r'urn:btih:([\w]{32,40})', result.url)[0].upper()
-
-                try:
-                    torrent_name = re.findall('dn=([^&]+)', result.url)[0]
-                except Exception:
-                    torrent_name = 'NO_DOWNLOAD_NAME'
-
-                if len(info_hash) == 32:
-                    info_hash = b16encode(b32decode(info_hash)).upper()
+                torrent_name = self._get_torrent_name_from_magnet(result.url)
+                info_hash = self._get_info_from_magnet(result.url)
 
                 if not info_hash:
                     log.error('Unable to extract torrent hash from magnet: {0}', result.url)
@@ -219,6 +241,6 @@ class TorrentProvider(GenericProvider):
             urls = [result.url]
 
         result_name = sanitize_filename(result.name)
-        filename = join(self._get_storage_dir(), result_name + '.' + self.provider_type)
+        filename = join(self._get_storage_dir(), result_name)
 
         return urls, filename
