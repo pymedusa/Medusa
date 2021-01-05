@@ -143,7 +143,7 @@ class TorrentProvider(GenericProvider):
             return False
 
         magnet = None
-        with open(file_name, 'rb', encoding='utf-8') as fp:
+        with open(file_name, 'r', encoding='utf-8') as fp:
             magnet = fp.read()
 
         if self._get_info_from_magnet(magnet):
