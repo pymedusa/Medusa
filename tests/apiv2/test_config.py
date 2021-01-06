@@ -452,6 +452,7 @@ def config_clients():
     section_data['torrents']['username'] = app.TORRENT_USERNAME
     section_data['torrents']['password'] = app.TORRENT_PASSWORD
     section_data['torrents']['verifySSL'] = bool(app.TORRENT_VERIFY_CERT)
+    section_data['torrents']['saveMagnetFile'] = bool(app.SAVE_MAGNET_FILE)
 
     section_data['nzb'] = {}
     section_data['nzb']['enabled'] = bool(app.USE_NZBS)
