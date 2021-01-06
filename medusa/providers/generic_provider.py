@@ -114,7 +114,7 @@ class GenericProvider(object):
 
     def create_magnet(self, filename, result):
         """
-        Create a .magnet file containing the magnet uri.
+        Create a .magnet file containing the Magnet URI.
 
         :param filename: base filename (without extension).
         :param result: SearchResult object.
@@ -175,7 +175,7 @@ class GenericProvider(object):
         return False
 
     def _make_url(self, result):
-        """Return url if result is a magnet link."""
+        """Return url if result is a Magnet link."""
         urls = []
         filename = ''
 

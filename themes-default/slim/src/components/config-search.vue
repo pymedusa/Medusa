@@ -248,8 +248,8 @@
                                             </config-template>
                                             
                                             <config-toggle-slider v-model="clients.torrents.saveMagnetFile" label="Save to .magnet" id="save_to_magnet">
-                                                <p>Save magnet uri to .magnet file if a magnet uri is available in stead of a torrent</p>
-                                                <p>A .magnet file is only created if this option is enabled and a torrent could not be downloaded from one of the online magnet registries</p>
+                                                <p>Save Magnet URI to a .magnet file if a Magnet URI is available in stead of a Torrent</p>
+                                                <p>A .magnet file is only created if this option is enabled and a Torrent could not be downloaded from one of the online Magnet registries</p>
                                             </config-toggle-slider>
                                             
                                             <input type="submit"
