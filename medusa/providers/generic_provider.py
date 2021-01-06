@@ -113,9 +113,13 @@ class GenericProvider(object):
         return cls.__name__
 
     def create_magnet(self, filename, result):
-        """Attempt to create a .magnet file, when enabled and downloading the torrent failed."""
-        # Saving the .torrent failed. app.SAVE_MAGNET_FILES is enabled.
-        # So let's create the magnet URI in filename.magnet.
+        """
+        Create a .magnet file containing the magnet uri.
+
+        :param filename: base filename (without extension).
+        :param result: SearchResult object.
+        :returns: True if the magnet file is created and verified.
+        """
         filename_ext = '{filename}.magnet'.format(filename=filename)
         log.info('Saving magnet file {result} to {location}',
                  {'result': result.name, 'location': filename_ext})
@@ -150,8 +154,10 @@ class GenericProvider(object):
 
             verify = False if self.public else None
 
-            filename_ext = '{filename}.{provider_type}'.format(filename=filename, provider_type=result.provider.provider_type)
-            if download_file('asdf' + url, filename_ext, session=self.session, headers=self.headers,
+            filename_ext = '{filename}.{provider_type}'.format(
+                filename=filename, provider_type=result.provider.provider_type
+            )
+            if download_file(url, filename_ext, session=self.session, headers=self.headers,
                              verify=verify):
 
                 if self._verify_download(filename_ext):

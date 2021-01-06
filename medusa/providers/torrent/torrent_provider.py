@@ -138,7 +138,13 @@ class TorrentProvider(GenericProvider):
         return False
 
     def _verify_magnet(self, file_name=None):
-        """Validate magnet file."""
+        """
+        Validate magnet file.
+
+        Check if the .magnet file exists and has a valid info_hash.
+        :param file_name: Absolute path to the .magnet file.
+        :returns: True or False
+        """
         if not file_name or not os.path.isfile(file_name):
             return False
 
@@ -151,17 +157,19 @@ class TorrentProvider(GenericProvider):
         return False
 
     @staticmethod
-    def _get_torrent_name_from_magnet(magnet):
+    def _get_torrent_name_from_magnet(magnet_uri):
+        """Try to extract a torrent name from a magnet URI."""
         torrent_name = ''
         try:
-            torrent_name = re.findall('dn=([^&]+)', magnet)[0]
+            torrent_name = re.findall('dn=([^&]+)', magnet_uri)[0]
         except Exception:
             torrent_name = 'NO_DOWNLOAD_NAME'
         return torrent_name
 
     @staticmethod
-    def _get_info_from_magnet(magnet):
-        info_hash = re.findall(r'urn:btih:([\w]{32,40})', magnet)[0].upper()
+    def _get_info_from_magnet(magnet_uri):
+        """Try to extract an info_hash from a magnet URI."""
+        info_hash = re.findall(r'urn:btih:([\w]{32,40})', magnet_uri)[0].upper()
         if len(info_hash) == 32:
             info_hash = b16encode(b32decode(info_hash)).upper()
         return info_hash
