@@ -89,7 +89,7 @@ class GenericProvider(object):
         self.url = ''
         self.urls = {}
 
-        # Ability to override the search separator. As for example anizb is using '*' in stead of space.
+        # Ability to override the search separator. As for example anizb is using '*' instead of space.
         self.search_separator = ' '
         self.season_templates = (
             'S{season:0>2}',  # example: 'Series.Name.S03'
@@ -613,7 +613,7 @@ class GenericProvider(object):
         # If the show name is a season scene exception, we want to use the episode number
         if episode.scene_season is not None and show_scene_name in scene_exceptions.get_season_scene_exceptions(
                 episode.series, episode.scene_season):
-            # This is apparently a season exception, let's use the episode in stead of absolute
+            # This is apparently a season exception, let's use the episode instead of absolute
             ep = episode.scene_episode
         else:
             if episode.series.is_scene and episode.scene_absolute_number:
