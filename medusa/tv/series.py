@@ -728,6 +728,7 @@ class Series(TV):
     def blacklist(self, group_names):
         """
         Set the anime's blacklisted release groups.
+
         :param group_names: A list of blacklist release group names.
         """
         self.release_groups.set_black_keywords(short_group_names(group_names))
@@ -742,6 +743,7 @@ class Series(TV):
     def whitelist(self, group_names):
         """
         Set the anime's whitelisted release groups.
+
         :param group_names: A list of whitelist release group names.
         """
         self.release_groups.set_white_keywords(short_group_names(group_names))
