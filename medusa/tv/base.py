@@ -75,6 +75,12 @@ class TV(object):
         """Reset the dirty flag."""
         self.__dirty = False
 
+    @property
+    def tvdb_id(self):
+        """Get the item's tvdb_id."""
+        if self.indexerid and self.indexer == INDEXER_TVDBV2:
+            return self.indexerid
+
     def __getstate__(self):
         """Make object serializable."""
         d = dict(self.__dict__)
