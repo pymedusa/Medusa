@@ -169,10 +169,13 @@ class TorrentProvider(GenericProvider):
     def _get_info_from_magnet(magnet_uri):
         """Try to extract an info_hash from a Magnet URI."""
         info_hash = re.findall(r'urn:btih:([\w]{32,40})', magnet_uri)[0].upper()
-        if not info_hash or not 32 <= len(info_hash) >= 40:
+        if not info_hash:
             return False
 
-        return b16encode(b32decode(info_hash)).upper()
+        if len(info_hash) == 32:
+            info_hash = b16encode(b32decode(info_hash)).upper()
+
+        return info_hash
 
     def seed_ratio(self):
         """Return seed ratio of provider."""

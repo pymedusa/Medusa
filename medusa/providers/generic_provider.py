@@ -124,7 +124,7 @@ class GenericProvider(object):
         log.info('Saving magnet file {result} to {location}',
                  {'result': result.name, 'location': filename_ext})
 
-        with open(filename, 'w', encoding='utf-8') as fp:
+        with open(filename_ext, 'w', encoding='utf-8') as fp:
             fp.write(result.url)
 
         if self._verify_magnet(filename_ext):
