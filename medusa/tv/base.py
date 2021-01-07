@@ -54,7 +54,9 @@ class TV(object):
         if not key.startswith('_') and key not in self.__ignored_properties:
             obj = getattr(self.__class__, key, None)
             if obj and isinstance(obj, property):
-                self.__dirty |= obj.__get__(self, key) != value
+                key_attr = f'_{key}'
+                if key_attr in self.__dict__:
+                    self.__dirty |= self.__dict__.get(key_attr) != value
             elif key in self.__dict__:
                 self.__dirty |= self.__dict__.get(key) != value
 

@@ -252,9 +252,9 @@ class Series(TV):
         self._prev_aired = 0
         self._next_aired = 0
         self.release_groups = None
-        self.exceptions = set()
+        self._aliases = set()
         self.externals = {}
-        self._cached_indexer_api = None
+        self._indexer_api = None
         self.plot = None
         self._show_lists = None
 
@@ -315,14 +315,14 @@ class Series(TV):
     @property
     def indexer_api(self):
         """Get an Indexer API instance."""
-        if not self._cached_indexer_api:
+        if not self._indexer_api:
             self.create_indexer()
-        return self._cached_indexer_api
+        return self._indexer_api
 
     @indexer_api.setter
     def indexer_api(self, value):
         """Set an Indexer API instance."""
-        self._cached_indexer_api = value
+        self._indexer_api = value
 
     def create_indexer(self, banners=False, actors=False, dvd_order=False, episodes=True):
         """Force the creation of a new Indexer API."""
@@ -448,8 +448,10 @@ class Series(TV):
                     helpers.chmod_as_parent(new_location)
             else:
                 changed_location = False
-                log.warning("New location '{location}' does not exist. "
-                            "Enable setting '(Config - Postprocessing) Create missing show dirs'", {'location': new_location})
+                log.warning(
+                    "New location '{location}' does not exist. "
+                    "Enable setting '(Config - Postprocessing) Create missing show dirs'",
+                    {'location': new_location})
 
         # Save new location only if we changed it
         if changed_location:
@@ -656,8 +658,8 @@ class Series(TV):
     @property
     def aliases(self):
         """Return series aliases."""
-        if self.exceptions:
-            return self.exceptions
+        if self._aliases:
+            return self._aliases
 
         return set(chain(*itervalues(get_all_scene_exceptions(self))))
 
@@ -665,7 +667,7 @@ class Series(TV):
     def aliases(self, exceptions):
         """Set the series aliases."""
         update_scene_exceptions(self, exceptions)
-        self.exceptions = set(chain(*itervalues(get_all_scene_exceptions(self))))
+        self._aliases = set(chain(*itervalues(get_all_scene_exceptions(self))))
         build_name_cache(self)
 
     @property
@@ -1563,8 +1565,8 @@ class Series(TV):
             }
         )
 
-        self.indexer_api = tvapi
-        indexed_show = self.indexer_api[self.series_id]
+        indexer_api = tvapi or self.indexer_api
+        indexed_show = indexer_api[self.series_id]
 
         if getattr(indexed_show, 'firstaired', ''):
             self.start_year = int(str(indexed_show['firstaired']).split('-')[0])
@@ -2377,15 +2379,15 @@ class Series(TV):
         """Return allowed qualities."""
         return Quality.split_quality(self.quality)[0]
 
-    @property
-    def qualities_preferred(self):
-        """Return preferred qualities."""
-        return Quality.split_quality(self.quality)[1]
-
     @qualities_allowed.setter
     def qualities_allowed(self, qualities_allowed):
         """Configure qualities (combined) by adding the allowed qualities to it."""
         self.quality = Quality.combine_qualities(qualities_allowed, self.qualities_preferred)
+
+    @property
+    def qualities_preferred(self):
+        """Return preferred qualities."""
+        return Quality.split_quality(self.quality)[1]
 
     @qualities_preferred.setter
     def qualities_preferred(self, qualities_preferred):
