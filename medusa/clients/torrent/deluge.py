@@ -8,7 +8,7 @@ import logging
 from base64 import b64encode
 
 from medusa import app
-from medusa.clients.download_handler import ClientStatus
+from medusa.schedulers.download_handler import ClientStatus
 from medusa.clients.torrent.generic import GenericClient
 from medusa.helpers import (
     get_extension,

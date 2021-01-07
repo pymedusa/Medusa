@@ -70,7 +70,7 @@ from medusa import (
     network_timezones, process_tv, providers, subtitles
 )
 from medusa.app import app
-from medusa.clients import download_handler
+from medusa.schedulers import download_handler
 from medusa.common import SD, SKIPPED, WANTED
 from medusa.config import (
     CheckSection, ConfigMigrator, check_setting_bool,

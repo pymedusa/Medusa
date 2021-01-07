@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 import datetime
 
 from medusa import db
-from medusa.clients.download_handler import ClientStatusEnum as ClientStatus
+from medusa.schedulers.download_handler import ClientStatusEnum as ClientStatus
 from medusa.common import FAILED, SNATCHED, SUBTITLED
 from medusa.show.history import History
 

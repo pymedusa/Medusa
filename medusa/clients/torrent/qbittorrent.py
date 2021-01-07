@@ -9,7 +9,7 @@ import os
 import time
 
 from medusa import app
-from medusa.clients.download_handler import ClientStatus
+from medusa.schedulers.download_handler import ClientStatus
 from medusa.clients.torrent.generic import GenericClient
 from medusa.logger.adapters.style import BraceAdapter
 

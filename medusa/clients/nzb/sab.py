@@ -275,12 +275,22 @@ def nzb_status(nzo_id):
 
     :return: ClientStatus object.
     """
-    from medusa.clients.download_handler import ClientStatus
+    from medusa.schedulers.download_handler import ClientStatus
 
     nzb = get_nzb_by_id(nzo_id)
-    if nzb:
-        client_status = ClientStatus()
-        client_status.add_status_string(nzb['status'])
-        return client_status
+    if not nzb:
+        return False
 
-    return False
+    client_status = ClientStatus()
+    client_status.add_status_string(nzb['status'])
+
+    # Get Progress
+    if nzb['status'] == 'Completed':
+        client_status.progress = 100
+    elif nzb.get('percentage'):
+        client_status.progress = int(nzb['percentage'])
+
+    # Get destination
+    client_status.destination = nzb.get('storage', '')
+
+    return client_status

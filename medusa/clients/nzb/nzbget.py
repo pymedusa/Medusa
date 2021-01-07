@@ -2,6 +2,7 @@
 
 from __future__ import unicode_literals
 
+from contextlib import suppress
 import datetime
 import logging
 import socket
@@ -227,13 +228,15 @@ def get_nzb_by_id(nzb_id):
     """Look in download queue and history for a specific nzb."""
     nzb_active = _get_nzb_queue()
     for nzb in nzb_active:
-        if nzb['NZBID'] == int(nzb_id):
-            return nzb
+        with suppress(ValueError):
+            if nzb['NZBID'] == int(nzb_id):
+                return nzb
 
     nzb_history = _get_nzb_history()
     for nzb in nzb_history:
-        if nzb['NZBID'] == int(nzb_id):
-            return nzb
+        with suppress(ValueError):
+            if nzb['NZBID'] == int(nzb_id):
+                return nzb
 
 
 def nzb_completed(nzo_id):
@@ -251,38 +254,46 @@ def nzb_status(nzo_id):
 
     :return: ClientStatus object.
     """
-    from medusa.clients.download_handler import ClientStatus
+    from medusa.schedulers.download_handler import ClientStatus
 
     nzb = get_nzb_by_id(nzo_id)
-    status, reason = None, None
-    if nzb:
-        client_status = ClientStatus()
-        # Map status to a standard ClientStatus.
-        if '/' in nzb['Status']:
-            status, reason = nzb['Status'].split('/')
-        else:
-            status = nzb['Status']
+    status = None
+    if not nzb:
+        return False
 
-        # Queue status checks (Queued is not recorded as status)
-        if status == 'DOWNLOADING':
-            client_status.add_status_string('Downloading')
+    client_status = ClientStatus()
+    # Map status to a standard ClientStatus.
+    if '/' in nzb['Status']:
+        status, _ = nzb['Status'].split('/')
+    else:
+        status = nzb['Status']
 
-        if status == 'PAUSED':
-            client_status.add_status_string('Paused')
+    # Queue status checks (Queued is not recorded as status)
+    if status == 'DOWNLOADING':
+        client_status.add_status_string('Downloading')
 
-        if status == 'UNPACKING':
-            client_status.add_status_string('Extracting')
+    if status == 'PAUSED':
+        client_status.add_status_string('Paused')
 
-        # History status checks.
-        if status == 'DELETED':  # Mostly because of duplicate checks.
-            client_status.add_status_string('Aborted')
+    if status == 'UNPACKING':
+        client_status.add_status_string('Extracting')
 
-        if status == 'SUCCESS':
-            client_status.add_status_string('Completed')
+    # History status checks.
+    if status == 'DELETED':  # Mostly because of duplicate checks.
+        client_status.add_status_string('Aborted')
 
-        if status == 'FAILURE':
-            status.add_status_string('Failure')
+    if status == 'SUCCESS':
+        client_status.add_status_string('Completed')
 
-        return client_status
+    if status == 'FAILURE':
+        status.add_status_string('Failure')
 
-    return False
+    # Get Progress
+    if status == 'SUCCESS':
+        client_status.progress = 100
+    elif nzb.get('percentage'):
+        client_status.progress = int(nzb['percentage'])
+
+    client_status.destination = nzb.get('DestDir', '')
+
+    return client_status
