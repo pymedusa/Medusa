@@ -123,8 +123,9 @@ class GenericProvider(object):
         filename_ext = '{filename}.magnet'.format(filename=filename)
         log.info('Saving magnet file {result} to {location}',
                  {'result': result.name, 'location': filename_ext})
-        with io.open(filename_ext, 'wb') as fp:
-            fp.write(result.url.encode('utf-8'))
+
+        with open(filename, 'w', encoding='utf-8') as fp:
+            fp.write(result.url)
 
         if self._verify_magnet(filename_ext):
             log.info('Saved .magnet file {result} to {location}',
@@ -157,7 +158,7 @@ class GenericProvider(object):
             filename_ext = '{filename}.{provider_type}'.format(
                 filename=filename, provider_type=result.provider.provider_type
             )
-            if download_file(url, filename_ext, session=self.session, headers=self.headers,
+            if download_file('lll' + url, filename_ext, session=self.session, headers=self.headers,
                              verify=verify):
 
                 if self._verify_download(filename_ext):
@@ -198,7 +199,7 @@ class GenericProvider(object):
 
         return urls, filename
 
-    def _verify_download(self, file_name=None):
+    def _verify_download(self, file_name):
         return True
 
     def get_content(self, url, params=None, timeout=30, **kwargs):

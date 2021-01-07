@@ -8,6 +8,7 @@ import logging
 import os
 import re
 from base64 import b16encode, b32decode
+from contextlib import suppress
 from os.path import join
 from random import shuffle
 
@@ -117,39 +118,39 @@ class TorrentProvider(GenericProvider):
 
         return title, download_url
 
-    def _verify_download(self, file_name=None):
+    def _verify_download(self, file_path):
         """Validate torrent file."""
-        if not file_name or not os.path.isfile(file_name):
+        if not file_path or not os.path.isfile(file_path):
             return False
 
         try:
-            with open(file_name, 'rb') as f:
+            with open(file_path, 'rb') as f:
                 # `bencodepy` is monkeypatched in `medusa.init`
                 meta_info = BENCODE.decode(f.read(), allow_extra_data=True)
             return 'info' in meta_info and meta_info['info']
         except BencodeDecodeError as error:
             log.debug('Failed to validate torrent file: {name}. Error: {error}',
-                      {'name': file_name, 'error': error})
+                      {'name': file_path, 'error': error})
 
-        remove_file_failed(file_name)
+        remove_file_failed(file_path)
         log.debug('{result} is not a valid torrent file',
-                  {'result': file_name})
+                  {'result': file_path})
 
         return False
 
-    def _verify_magnet(self, file_name=None):
+    def _verify_magnet(self, file_path):
         """
         Validate Magnet file.
 
         Check if the Magnet file exists and has a valid info_hash.
-        :param file_name: Absolute path to the Magnet file.
+        :param file_path: Absolute path to the Magnet file.
         :returns: True or False
         """
-        if not file_name or not os.path.isfile(file_name):
+        if not file_path or not os.path.isfile(file_path):
             return False
 
         magnet_uri = None
-        with open(file_name, 'r', encoding='utf-8') as fp:
+        with open(file_path, 'r', encoding='utf-8') as fp:
             magnet_uri = fp.read()
 
         if self._get_info_from_magnet(magnet_uri):
@@ -159,20 +160,19 @@ class TorrentProvider(GenericProvider):
     @staticmethod
     def _get_torrent_name_from_magnet(magnet_uri):
         """Try to extract a torrent name from a Magnet URI."""
-        torrent_name = ''
-        try:
+        torrent_name = 'NO_DOWNLOAD_NAME'
+        with suppress(Exception):
             torrent_name = re.findall('dn=([^&]+)', magnet_uri)[0]
-        except Exception:
-            torrent_name = 'NO_DOWNLOAD_NAME'
         return torrent_name
 
     @staticmethod
     def _get_info_from_magnet(magnet_uri):
         """Try to extract an info_hash from a Magnet URI."""
         info_hash = re.findall(r'urn:btih:([\w]{32,40})', magnet_uri)[0].upper()
-        if len(info_hash) == 32:
-            info_hash = b16encode(b32decode(info_hash)).upper()
-        return info_hash
+        if not info_hash or not 32 <= len(info_hash) >= 40:
+            return False
+
+        return b16encode(b32decode(info_hash)).upper()
 
     def seed_ratio(self):
         """Return seed ratio of provider."""
