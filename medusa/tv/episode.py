@@ -940,19 +940,6 @@ class Episode(TV):
                 self.delete_episode()
             return False
 
-        # don't update series status if series directory is missing, unless it's missing on purpose
-        if all([not self.series.is_location_valid(),
-                not app.CREATE_MISSING_SHOW_DIRS,
-                not app.ADD_SHOWS_WO_DIR]):
-            log.warning(
-                '{id}: {series} episode statuses unchanged. Location is missing: {location}', {
-                    'id': self.series.series_id,
-                    'series': self.series.name,
-                    'location': self.series.location,
-                }
-            )
-            return
-
         if self.location:
             log.debug(
                 '{id}: {series} {ep} status is {status!r}. Location: {location}', {
