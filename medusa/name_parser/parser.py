@@ -54,7 +54,7 @@ class NameParser(object):
         self.try_indexers = try_indexers
         self.naming_pattern = naming_pattern
         self.allow_multi_season = allow_multi_season
-        self.show_type = parse_method or ('anime' if series and series.is_anime else ('normal' if series else None))
+        self.show_type = parse_method or ('anime' if series and series.is_anime else 'normal')
 
     @staticmethod
     def _get_episodes_by_air_date(result):

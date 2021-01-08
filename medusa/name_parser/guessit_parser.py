@@ -73,7 +73,7 @@ def guessit(name, options=None):
     :rtype: dict
     """
     start_time = time()
-    final_options = dict(options) if options else dict()
+    final_options = dict(options) if options else dict(show_type='normal')
     final_options.update(dict(type='episode', implicit=True,
                               episode_prefer_number=final_options.get('show_type') == 'anime',
                               expected_title=get_expected_titles(app.showList),

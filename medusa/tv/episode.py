@@ -721,6 +721,7 @@ class Episode(TV):
             self.airdate = date.fromordinal(int(sql_results[0]['airdate']))
             self.status = int(sql_results[0]['status'] or UNSET)
             self.quality = int(sql_results[0]['quality'] or Quality.NA)
+            self.manually_searched = bool(sql_results[0]['manually_searched'])
             self.watched = bool(sql_results[0]['watched'])
 
             # don't overwrite my location
