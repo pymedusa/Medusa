@@ -174,7 +174,6 @@ class TorrentProvider(GenericProvider):
             return False
 
         info_hash = info_hash[0]
-
         if len(info_hash) == 32:
             info_hash = b16encode(b32decode(info_hash))
 
