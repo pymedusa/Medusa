@@ -2868,7 +2868,8 @@
 
 # Dubbed
 ? "[AnimeRG].Show.Name.-.03.[Eng.Dubbed].[720p].[WEB-DL].[JRR]"
-: title: Show Name
+: options: {show_type: anime}
+  title: Show Name
   absolute_episode: 3
   episode: 3
   language: en
