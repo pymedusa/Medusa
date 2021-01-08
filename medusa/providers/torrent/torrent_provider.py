@@ -163,19 +163,22 @@ class TorrentProvider(GenericProvider):
         torrent_name = 'NO_DOWNLOAD_NAME'
         with suppress(Exception):
             torrent_name = re.findall('dn=([^&]+)', magnet_uri)[0]
+
         return torrent_name
 
     @staticmethod
     def _get_info_from_magnet(magnet_uri):
         """Try to extract an info_hash from a Magnet URI."""
-        info_hash = re.findall(r'urn:btih:([\w]{32,40})', magnet_uri)[0].upper()
+        info_hash = re.findall(r'urn:btih:([\w]{32,40})', magnet_uri)
         if not info_hash:
             return False
 
-        if len(info_hash) == 32:
-            info_hash = b16encode(b32decode(info_hash)).upper()
+        info_hash = info_hash[0]
 
-        return info_hash
+        if len(info_hash) == 32:
+            info_hash = b16encode(b32decode(info_hash))
+
+        return info_hash.upper()
 
     def seed_ratio(self):
         """Return seed ratio of provider."""
