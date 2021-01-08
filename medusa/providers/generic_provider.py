@@ -157,7 +157,7 @@ class GenericProvider(object):
             filename_ext = '{filename}.{provider_type}'.format(
                 filename=filename, provider_type=result.provider.provider_type
             )
-            if download_file('lll' + url, filename_ext, session=self.session, headers=self.headers,
+            if download_file(url, filename_ext, session=self.session, headers=self.headers,
                              verify=verify):
 
                 if self._verify_download(filename_ext):
