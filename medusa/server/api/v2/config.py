@@ -181,6 +181,7 @@ class ConfigHandler(BaseRequestHandler):
         'clients.torrents.label': StringField(app, 'TORRENT_LABEL'),
         'clients.torrents.labelAnime': StringField(app, 'TORRENT_LABEL_ANIME'),
         'clients.torrents.method': StringField(app, 'TORRENT_METHOD'),
+        'clients.torrents.saveMagnetFile': BooleanField(app, 'SAVE_MAGNET_FILE'),
         'clients.torrents.password': StringField(app, 'TORRENT_PASSWORD'),
         'clients.torrents.path': StringField(app, 'TORRENT_PATH'),
         'clients.torrents.paused': BooleanField(app, 'TORRENT_PAUSED'),
@@ -1088,6 +1089,7 @@ class DataGenerator(object):
         section_data['torrents']['label'] = app.TORRENT_LABEL
         section_data['torrents']['labelAnime'] = app.TORRENT_LABEL_ANIME
         section_data['torrents']['method'] = app.TORRENT_METHOD
+        section_data['torrents']['saveMagnetFile'] = bool(app.SAVE_MAGNET_FILE)
         section_data['torrents']['path'] = app.TORRENT_PATH
         section_data['torrents']['paused'] = bool(app.TORRENT_PAUSED)
         section_data['torrents']['rpcUrl'] = app.TORRENT_RPCURL

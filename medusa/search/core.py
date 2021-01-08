@@ -151,6 +151,7 @@ def snatch_episode(result):
     # Torrents can be sent to clients or saved to disk
     elif result.result_type == u'torrent':
         # torrents are saved to disk when blackhole mode
+        # Handle SAVE_MAGNET_FILE
         if app.TORRENT_METHOD == u'blackhole':
             result_downloaded = _download_result(result)
         else:
