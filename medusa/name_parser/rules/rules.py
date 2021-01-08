@@ -957,8 +957,8 @@ class AbsoluteEpisodeNumbers(Rule):
         :type context: dict
         :return:
         """
-        # if it seems to be anime and it doesn't have season
-        if context.get('show_type') != 'normal' and not matches.named('season'):
+        # if it doesn't have a season
+        if not matches.named('season'):
             episodes = matches.named('episode')
             to_remove = []
             to_append = []
