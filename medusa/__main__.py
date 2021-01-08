@@ -93,7 +93,7 @@ from medusa.schedulers import (
 from medusa.search.backlog import BacklogSearchScheduler, BacklogSearcher
 from medusa.search.daily import DailySearcher
 from medusa.search.proper import ProperFinder
-from medusa.search.queue import ForcedSearchQueue, SearchQueue, SnatchQueue
+from medusa.search.queue import ForcedSearchQueue, PostProcessQueue, SearchQueue, SnatchQueue
 from medusa.server.core import AppWebServer
 from medusa.system.shutdown import Shutdown
 from medusa.themes import read_themes
@@ -1224,6 +1224,19 @@ class Application(object):
                                                                     cycleTime=datetime.timedelta(seconds=3),
                                                                     threadName='FORCEDSEARCHQUEUE')
 
+            # Post Processor queue scheduler
+            app.post_processor_queue_scheduler = scheduler.Scheduler(PostProcessQueue(),
+                                                                     cycleTime=datetime.timedelta(seconds=3),
+                                                                     threadName='POSTPROCESSORQUEUE')
+
+            # Schedule the periodic post processing
+            update_interval = datetime.timedelta(minutes=app.AUTOPOSTPROCESSOR_FREQUENCY)
+            app.post_processor_scheduler = scheduler.Scheduler(process_tv.PostProcessorRunner(),
+                                                               cycleTime=update_interval,
+                                                               threadName='POSTPROCESSOR',
+                                                               silent=not app.PROCESS_AUTOMATICALLY)
+
+
             # TODO: update_interval should take last daily/backlog times into account!
             update_interval = datetime.timedelta(minutes=app.DAILYSEARCH_FREQUENCY)
             app.daily_search_scheduler = scheduler.Scheduler(DailySearcher(),
@@ -1243,13 +1256,6 @@ class Application(object):
             app.proper_finder_scheduler = scheduler.Scheduler(ProperFinder(),
                                                               cycleTime=update_interval,
                                                               threadName='FINDPROPERS')
-
-            # processors
-            update_interval = datetime.timedelta(minutes=app.AUTOPOSTPROCESSOR_FREQUENCY)
-            app.post_processor_scheduler = scheduler.Scheduler(process_tv.PostProcessorRunner(),
-                                                               cycleTime=update_interval,
-                                                               threadName='POSTPROCESSOR',
-                                                               silent=not app.PROCESS_AUTOMATICALLY)
 
             app.trakt_checker_scheduler = scheduler.Scheduler(trakt_checker.TraktChecker(),
                                                               cycleTime=datetime.timedelta(hours=1),
@@ -1386,6 +1392,9 @@ class Application(object):
                 app.proper_finder_scheduler.silent = True
             app.proper_finder_scheduler.start()
 
+            app.post_processor_queue_scheduler.enable = True
+            app.post_processor_queue_scheduler.start()
+
             # start the post processor
             if app.PROCESS_AUTOMATICALLY:
                 app.post_processor_scheduler.silent = False
@@ -1444,11 +1453,12 @@ class Application(object):
                 app.search_queue_scheduler,
                 app.forced_search_queue_scheduler,
                 app.manual_snatch_scheduler,
-                app.post_processor_scheduler,
                 app.trakt_checker_scheduler,
                 app.proper_finder_scheduler,
                 app.subtitles_finder_scheduler,
                 app.download_handler_scheduler,
+                app.post_processor_scheduler,
+                app.post_processor_queue_scheduler,
                 app.events
             ]
 

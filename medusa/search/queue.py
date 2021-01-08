@@ -1146,6 +1146,47 @@ class ProperSearchQueueItem(generic_queue.QueueItem):
         return last_proper_search
 
 
+class PostProcessQueue(generic_queue.GenericQueue):
+    """Queue for queuing PostProcess queue objects."""
+
+    def __init__(self):
+        """Initialize the PostProcess queue object."""
+        generic_queue.GenericQueue.__init__(self)
+        self.queue_name = 'POSTPROCESSQUEUE'
+
+    def is_in_queue(self, path):
+        """
+        Check if the postprocess job is in queue based on it's path.
+
+        @param pp_job:
+        @return: True or False
+        """
+        for cur_item in self.queue:
+            if cur_item.path == path:
+                return True
+        return False
+
+    def queue_length(self):
+        """
+        Get the length of the current queue.
+
+        @return: length of queue
+        """
+        return {'postprocess': len(self.queue)}
+
+    def add_item(self, item):
+        """
+        Add a PostProcess queue item.
+
+        @param item: PostProcess gueue object
+        """
+        if not self.is_in_queue(item.path):
+            # backlog searches
+            generic_queue.GenericQueue.add_item(self, item)
+        else:
+            log.debug("Not adding item, it's already in the queue")
+
+
 def fifo(my_list, item, max_size=100):
     """Append item to queue and limit it to 100 items."""
     if len(my_list) >= max_size:

@@ -104,11 +104,12 @@ class MedusaApp(object):
         self.forced_search_queue_scheduler = None
         self.manual_snatch_scheduler = None
         self.proper_finder_scheduler = None
-        self.post_processor_scheduler = None
         self.subtitles_finder_scheduler = None
         self.trakt_checker_scheduler = None
         self.download_handler_scheduler = None
         self.episode_update_scheduler = None
+        self.post_processor_scheduler = None
+        self.post_processor_queue_scheduler = None
 
         self.showList = []
 

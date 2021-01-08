@@ -27,6 +27,7 @@ from medusa.clients import torrent
 from medusa.clients.nzb import nzbget, sab
 from medusa.helper.common import ConstsBitwize
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.process_tv import PostProcessQueueItem
 
 from requests import RequestException
 
@@ -177,23 +178,15 @@ class DownloadHandler(object):
                         'info_hash': history_result['info_hash']
                     }
                 )
+                self._postprocess(status.destination, history_result['info_hash'], history_result['resource'])
 
-    def _postprocess(self, proc_dir, resource_name):
+    def _postprocess(self, path, info_hash, resource_name):
         """Queue a postprocess action."""
-            proc_dir = _decode(proc_dir)
-            resource_name = _decode(nzbName)
-
-            result = app.post_processor_scheduler.action.run(
-                path=proc_dir,
-                process_method=process_method,
-                resource_name=resource_name,
-                force=argToBool(force),
-                is_priority=argToBool(is_priority),
-                delete_on=argToBool(delete_on),
-                failed=argToBool(failed),
-                proc_type=proc_type,
-                ignore_subs=argToBool(ignore_subs)
-            )
+        # TODO: Add a check for if not already queued or run.
+        # queue a postprocess action
+        queue_item = app.post_processor_queue_scheduler.action.add_item(
+            PostProcessQueueItem(path, info_hash, resource_name=resource_name)
+        )
 
     def _check_nzbs(self):
         """

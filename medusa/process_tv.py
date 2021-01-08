@@ -4,19 +4,23 @@
 
 from __future__ import unicode_literals
 
+import hashlib
 import logging
 import os
 import shutil
 import stat
+import traceback
 from builtins import object
 
-from medusa import app, db, failed_processor, helpers, notifiers, post_processor
+
+from medusa import app, db, failed_processor, helpers, notifiers, post_processor, ws
 from medusa.clients import torrent
 from medusa.common import DOWNLOADED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER
 from medusa.helper.common import is_sync_file
 from medusa.helper.exceptions import EpisodePostProcessingFailedException, FailedPostProcessingFailedException, ex
 from medusa.logger.adapters.style import CustomBraceAdapter
 from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from medusa.queues import generic_queue
 from medusa.subtitles import accept_any, accept_unknown, get_embedded_subtitles
 
 from rarfile import BadRarFile, Error, NotRarFile, RarCannotExec, RarFile
@@ -28,11 +32,58 @@ log = CustomBraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
+class PostProcessQueueItem(generic_queue.QueueItem):
+    """Post-process queue item class."""
+
+    def __init__(self, path, info_hash, resource_name=None, force=False):
+        """Initialize the class."""
+        generic_queue.QueueItem.__init__(self, u'Post Process')
+
+        self.success = None
+        self.started = None
+        self.path = path
+        self.info_hash = info_hash
+        self.resource_name = resource_name
+        self.force = force
+        # self.force = force
+        # self.processed_propers = processed_propers
+        # self.ignore_processed_propers = ignore_processed_propers
+
+        self.to_json.update({
+            'success': self.success,
+            'force': self.force
+        })
+
+    def run(self):
+        """Run postprocess queueitem thread."""
+        generic_queue.QueueItem.run(self)
+        self.started = True
+
+        try:
+            log.info('Beginning postprocessing for path {path}', {'path': self.path})
+
+            # Push an update to any open Web UIs through the WebSocket
+            ws.Message('QueueItemUpdate', self.to_json).push()
+            pp_result = ProcessResult(self.path).process(
+                resource_name=self.resource_name, force=self.force
+            )
+
+            log.info('Completed Postproccessing')
+
+            # Push an update to any open Web UIs through the WebSocket
+            ws.Message('QueueItemUpdate', self.to_json).push()
+
+        # TODO: Remove the catch all exception.
+        except Exception:
+            self.success = False
+            log.debug(traceback.format_exc())
+
+
 class PostProcessorRunner(object):
     """Post Processor Scheduler Action."""
 
     def __init__(self):
-        """Init method."""
+        """Initialize the class."""
         self.amActive = False
 
     def run(self, force=False, **kwargs):
