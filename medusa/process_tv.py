@@ -4,7 +4,6 @@
 
 from __future__ import unicode_literals
 
-import hashlib
 import logging
 import os
 import shutil
@@ -54,19 +53,43 @@ class PostProcessQueueItem(generic_queue.QueueItem):
             'force': self.force
         })
 
+    def update_resource(self, status):
+        """Update the resource in db, depending on the postprocess result."""
+        main_db_con = db.DBConnection()
+        main_db_con.action(
+            'UPDATE history set client_status = ? WHERE info_hash = ? AND resource = ?',
+            [status.status, self.info_hash, self.resource_name]
+        )
+
     def run(self):
         """Run postprocess queueitem thread."""
         generic_queue.QueueItem.run(self)
         self.started = True
+        from medusa.schedulers.download_handler import ClientStatus
+        status = ClientStatus()
 
         try:
             log.info('Beginning postprocessing for path {path}', {'path': self.path})
 
             # Push an update to any open Web UIs through the WebSocket
             ws.Message('QueueItemUpdate', self.to_json).push()
-            pp_result = ProcessResult(self.path).process(
+            process_results = ProcessResult(self.path)
+            process_results.process(
                 resource_name=self.resource_name, force=self.force
             )
+
+            # Resource postprocessed
+            status.add_status_string('Postprocessed')
+
+            # Store a bitwize combined status in db.history.
+            # If succeeded store Postprocessed + Completed. (384)
+            # If failed store Postprocessed + Failed. (272)
+            if process_results.succeeded:
+                status.add_status_string('Completed')
+            else:
+                status.add_status_string('Failed')
+
+            self.update_resource(status)
 
             log.info('Completed Postproccessing')
 
@@ -126,7 +149,7 @@ class ProcessResult(object):
         self.resource_name = None
         self.result = True
         self.succeeded = True
-        self.missedfiles = []
+        self.missed_files = []
         self.unwanted_files = []
         self.allowed_extensions = app.ALLOWED_EXTENSIONS
 
@@ -243,7 +266,7 @@ class ProcessResult(object):
                     self.log_and_output('Found temporary sync files in folder: {dir_path}', **{'dir_path': dir_path})
                     self.log_and_output('Skipping post-processing for folder: {dir_path}', **{'dir_path': dir_path})
 
-                    self.missedfiles.append('{0}: Sync files found'.format(dir_path))
+                    self.missed_files.append('{0}: Sync files found'.format(dir_path))
 
         if self.succeeded:
             self.log_and_output('Post-processing completed.')
@@ -252,15 +275,15 @@ class ProcessResult(object):
             if app.KODI_LIBRARY_CLEAN_PENDING and notifiers.kodi_notifier.clean_library():
                 app.KODI_LIBRARY_CLEAN_PENDING = False
 
-            if self.missedfiles:
+            if self.missed_files:
 
                 self.log_and_output('I did encounter some unprocessable items: ')
 
-                for missed_file in self.missedfiles:
+                for missed_file in self.missed_files:
                     self.log_and_output('Missed file: {missed_file}', level=logging.WARNING, **{'missed_file': missed_file})
         else:
             self.log_and_output('Problem(s) during processing, failed for the following files/folders: ', level=logging.WARNING)
-            for missed_file in self.missedfiles:
+            for missed_file in self.missed_files:
                 self.log_and_output('Missed file: {missed_file}', level=logging.WARNING, **{'missed_file': missed_file})
 
         if all([app.USE_TORRENTS, app.TORRENT_SEED_LOCATION,
@@ -305,7 +328,7 @@ class ProcessResult(object):
         folder = os.path.basename(path)
         if helpers.is_hidden_folder(path) or any(f == folder for f in self.IGNORED_FOLDERS):
             self.log_and_output('Ignoring folder: {folder}', level=logging.DEBUG, **{'folder': folder})
-            self.missedfiles.append('{0}: Hidden or ignored folder'.format(path))
+            self.missed_files.append('{0}: Hidden or ignored folder'.format(path))
             return False
 
         for root, dirs, files in os.walk(path):
@@ -334,7 +357,7 @@ class ProcessResult(object):
             failed = True
 
         if failed:
-            self.missedfiles.append('{0}: Failed download.'.format(path))
+            self.missed_files.append('{0}: Failed download.'.format(path))
             if app.USE_FAILED_DOWNLOADS:
                 self._process_failed(path)
             return False
@@ -342,7 +365,7 @@ class ProcessResult(object):
         # SABnzbd: _UNPACK_, NZBGet: _unpack
         if folder.startswith(('_UNPACK_', '_unpack')):
             self.log_and_output('The directory name indicates that this release is in the process of being unpacked.', level=logging.DEBUG)
-            self.missedfiles.append('{0}: Being unpacked.'.format(path))
+            self.missed_files.append('{0}: Being unpacked.'.format(path))
             return False
 
         return True
@@ -576,7 +599,7 @@ class ProcessResult(object):
 
                 if failure is not None:
                     self.log_and_output('Failed unpacking archive {archive}: {failure}', level=logging.WARNING, **{'archive': archive, 'failure': failure[0]})
-                    self.missedfiles.append('{0}: Unpacking failed: {1}'.format(archive, failure[1]))
+                    self.missed_files.append('{0}: Unpacking failed: {1}'.format(archive, failure[1]))
                     self.result = False
                     continue
 
@@ -658,14 +681,14 @@ class ProcessResult(object):
                 process_fail_message = ex(error)
 
             if processor:
-                self._output.append(processor.output)
+                self._output += processor._output
 
             if self.result:
                 self.log_and_output('Processing succeeded for {file_path}', **{'file_path': file_path})
             else:
                 self.log_and_output('Processing failed for {file_path}: {process_fail_message}',
                                     level=logging.WARNING, **{'file_path': file_path, 'process_fail_message': process_fail_message})
-                self.missedfiles.append('{0}: Processing failed: {1}'.format(file_path, process_fail_message))
+                self.missed_files.append('{0}: Processing failed: {1}'.format(file_path, process_fail_message))
                 self.succeeded = False
 
     def _process_postponed(self, processor, path, video, ignore_subs):
