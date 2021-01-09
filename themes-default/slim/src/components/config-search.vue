@@ -175,12 +175,6 @@
 
                                             <div class="testNotification" v-show="clientsConfig.nzb.sabnzbd.testStatus" v-html="clientsConfig.nzb.sabnzbd.testStatus" />
                                             <input @click="testSabnzbd" type="button" value="Test SABnzbd" class="btn-medusa test-button">
-                                            <input type="submit"
-                                                   class="btn-medusa config_submitter"
-                                                   value="Save Changes"
-                                                   :disabled="saving"
-                                            >
-                                            <br>
                                         </div>
 
                                         <div v-if="clients.nzb.method" v-show="clients.nzb.method === 'nzbget'" id="nzbget_settings">
@@ -209,15 +203,12 @@
 
                                             <div class="testNotification" v-show="clientsConfig.nzb.nzbget.testStatus" v-html="clientsConfig.nzb.nzbget.testStatus" />
                                             <input @click="testNzbget" type="button" value="Test NZBget" class="btn-medusa test-button">
-                                            <input type="submit"
-                                                   class="btn-medusa config_submitter"
-                                                   value="Save Changes"
-                                                   :disabled="saving"
-                                            >
+
                                             <br>
                                         </div><!-- /nzb.enabled //-->
                                     </div>
                                 </fieldset>
+                                <br>
                                 <input type="submit"
                                        class="btn-medusa config_submitter"
                                        value="Save Changes"
@@ -256,13 +247,6 @@
                                                 <p>Save Magnet URI to a .magnet file if a Magnet URI is available instead of a Torrent</p>
                                                 <p>A .magnet file is only created if this option is enabled and a Torrent could not be downloaded from one of the online Magnet registries</p>
                                             </config-toggle-slider>
-
-                                            <input type="submit"
-                                                   class="btn-medusa config_submitter"
-                                                   value="Save Changes"
-                                                   :disabled="saving"
-                                            >
-                                            <br>
                                         </div>
 
                                         <div v-if="clients.torrents.method" v-show="clients.torrents.method !== 'blackhole'">
@@ -355,15 +339,10 @@
 
                                             <div class="testNotification" v-show="clientsConfig.torrent[clients.torrents.method].testStatus" v-html="clientsConfig.torrent[clients.torrents.method].testStatus" />
                                             <input @click="testTorrentClient" type="button" value="Test Connection" class="btn-medusa test-button">
-                                            <input type="submit"
-                                                   class="btn-medusa config_submitter"
-                                                   value="Save Changes"
-                                                   :disabled="saving"
-                                            >
-                                            <br>
                                         </div>
                                     </div><!-- /torrent.enabled //-->
                                 </fieldset>
+                                <br>
                                 <input type="submit"
                                        class="btn-medusa config_submitter"
                                        value="Save Changes"
