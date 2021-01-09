@@ -218,6 +218,11 @@
                                         </div><!-- /nzb.enabled //-->
                                     </div>
                                 </fieldset>
+                                <input type="submit"
+                                       class="btn-medusa config_submitter"
+                                       value="Save Changes"
+                                       :disabled="saving"
+                                >
                             </div>
                         </div> <!-- /row -->
                     </div><!-- /#nzb-search //-->
@@ -359,16 +364,16 @@
                                         </div>
                                     </div><!-- /torrent.enabled //-->
                                 </fieldset>
+                                <input type="submit"
+                                       class="btn-medusa config_submitter"
+                                       value="Save Changes"
+                                       :disabled="saving"
+                                >
                             </div>
                         </div>
                     </div><!-- /#torrent-search //-->
                     <br>
                     <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">{{system.dataDir}}</span></b> </h6>
-                    <input type="submit"
-                           class="btn-medusa config_submitter"
-                           value="Save Changes"
-                           :disabled="saving"
-                    >
                 </div><!-- /config-components //-->
             </form>
         </div>

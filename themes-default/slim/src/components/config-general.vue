@@ -547,7 +547,6 @@
                     </div><!-- /component-group3 //-->
                     <br>
                     <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">{{system.dataDir}}</span></b> </h6>
-                    <input type="submit" class="btn-medusa pull-left config_submitter button" value="Save Changes">
                 </div><!-- /config-components -->
             </form>
         </div>
