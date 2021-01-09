@@ -913,6 +913,12 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                   </div>
                 </div>
               </fieldset>
+               
+              <input
+                class="btn-medusa config_submitter"
+                type="submit"
+                value="Save Changes"
+              />
             </div>
           </div>
         </div>
@@ -3181,12 +3187,6 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
             </span>
           </b>
         </h6>
-         
-        <input
-          class="btn-medusa pull-left config_submitter button"
-          type="submit"
-          value="Save Changes"
-        />
       </div>
     </form>
   </div>
