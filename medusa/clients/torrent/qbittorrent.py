@@ -154,6 +154,11 @@ class QBittorrentAPI(GenericClient):
         if self.api >= (2, 0, 0):
             if os.path.isabs(app.TORRENT_PATH):
                 data['savepath'] = app.TORRENT_PATH
+
+            label = app.TORRENT_LABEL_ANIME if result.series.is_anime else app.TORRENT_LABEL
+            if label:
+                data['category'] = label
+
         return self._request(method='post', data=data, cookies=self.session.cookies)
 
     def _add_torrent_file(self, result):
@@ -167,10 +172,16 @@ class QBittorrentAPI(GenericClient):
         if self.api >= (2, 0, 0):
             if os.path.isabs(app.TORRENT_PATH):
                 data['savepath'] = app.TORRENT_PATH
+
+            label = app.TORRENT_LABEL_ANIME if result.series.is_anime else app.TORRENT_LABEL
+            if label:
+                data['category'] = label
+
         return self._request(method='post', data=data, files=files, cookies=self.session.cookies)
 
     def _set_torrent_label(self, result):
 
+        return True
         label = app.TORRENT_LABEL_ANIME if result.series.is_anime else app.TORRENT_LABEL
         if not label:
             return True
