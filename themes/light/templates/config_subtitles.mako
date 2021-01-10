@@ -291,7 +291,6 @@ window.app = new Vue({
                         <br><input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                     </fieldset>
                 </div><!-- /component-group3 //-->
-                <br><input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
             </div><!-- /config-components //-->
         </form>
     </div>
