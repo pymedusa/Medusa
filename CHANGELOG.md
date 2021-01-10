@@ -1,6 +1,14 @@
-## 0.5.2 (10-01-2021)
+## Unreleased
 
 #### New Features
+
+#### Improvements
+
+#### Fixes
+
+-----
+
+## 0.5.2 (10-01-2021)
 
 #### Improvements
 - Replace trakt lib with PyTrakt (and switch to OAuth device authentication). ([8916](https://github.com/pymedusa/Medusa/pull/8916))
