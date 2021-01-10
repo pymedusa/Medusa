@@ -1719,7 +1719,6 @@ window.app = new Vue({
                     </fieldset>
                 </div><!-- /component-group5 //-->
                 % endif
-                <br><input type="submit" class="btn-medusa config_submitter_refresh" value="Save Changes" /><br>
             </div><!-- /config-components //-->
         </form>
     </div>

@@ -1181,18 +1181,14 @@ class PostProcessor(object):
                 else:
                     cur_ep.release_name = u''
 
-                cur_ep._status = DOWNLOADED
+                cur_ep.status = DOWNLOADED
                 cur_ep.quality = new_ep_quality
-
                 cur_ep.subtitles = u''
-
                 cur_ep.subtitles_searchcount = 0
-
                 cur_ep.subtitles_lastsearch = u'0001-01-01 00:00:00'
-
                 cur_ep.is_proper = self.is_proper
-
                 cur_ep.version = new_ep_version
+                cur_ep.manually_searched = self.manually_searched
 
                 if self.release_group:
                     cur_ep.release_group = self.release_group
@@ -1256,38 +1252,31 @@ class PostProcessor(object):
                      (self.file_path, dest_path, error), logger.ERROR)
             raise EpisodePostProcessingFailedException('Unable to move the files to their new home')
 
+        sql_l = []
         # download subtitles
-        if app.USE_SUBTITLES and ep_obj.series.subtitles:
-            for cur_ep in [ep_obj] + ep_obj.related_episodes:
-                with cur_ep.lock:
-                    cur_ep.location = os.path.join(dest_path, new_file_name)
+        for cur_ep in [ep_obj] + ep_obj.related_episodes:
+            with cur_ep.lock:
+                cur_ep.location = os.path.join(dest_path, new_file_name)
+
+                if app.USE_SUBTITLES and ep_obj.series.subtitles:
                     cur_ep.refresh_subtitles()
                     cur_ep.download_subtitles()
+
+                cur_ep.airdate_modify_stamp()
+
+                # generate nfo/tbn
+                try:
+                    cur_ep.create_meta_files()
+                except Exception:
+                    logger.log(u'Could not create/update meta files. Continuing with post-processing...')
+
+                sql_l.append(cur_ep.get_sql())
 
         # now that processing has finished, we can put the info in the DB.
         # If we do it earlier, then when processing fails, it won't try again.
         if sql_l:
             main_db_con = db.DBConnection()
             main_db_con.mass_action(sql_l)
-
-        # put the new location in the database
-        sql_l = []
-        for cur_ep in [ep_obj] + ep_obj.related_episodes:
-            with cur_ep.lock:
-                cur_ep.location = os.path.join(dest_path, new_file_name)
-                sql_l.append(cur_ep.get_sql())
-
-        if sql_l:
-            main_db_con = db.DBConnection()
-            main_db_con.mass_action(sql_l)
-
-        cur_ep.airdate_modify_stamp()
-
-        # generate nfo/tbn
-        try:
-            ep_obj.create_meta_files()
-        except Exception:
-            logger.log(u'Could not create/update meta files. Continuing with post-processing...')
 
         # log it to history episode and related episodes (multi-episode for example)
         for cur_ep in [ep_obj] + ep_obj.related_episodes:

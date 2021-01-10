@@ -8,7 +8,7 @@
 
                     <form id="addShowForm" @submit.prevent="">
 
-                        <form-wizard ref="formwizard" class="formwizard" title="" subtitle="" @change="updateFormWizardStep" color="rgb(95, 95, 95)">
+                        <form-wizard ref="formwizard" class="formwizard" title="" subtitle="" @on-change="updateFormWizardStep" color="rgb(95, 95, 95)">
                             <template slot="step" slot-scope="props">
                                 <div class="step" :class="{disabledstep: !props.tab.active}" @click="navigateStep(props.index)">
                                     Step {{props.index + 1}}<div class="smalltext">{{props.tab.title}}</div>
@@ -177,7 +177,9 @@
                     </form>
                     <br>
                     <div style="width: 100%; text-align: center;">
-                        <input @click.prevent="submitForm" class="btn-medusa btn-inline" type="button" value="Add Show" :disabled="addButtonDisabled">
+                        <input @click.prevent="submitForm" class="btn-medusa btn-inline"
+                               v-show="formwizard.currentIndex !== 2"
+                               type="button" value="Add Show" :disabled="addButtonDisabled">
                     </div>
                 </div>
             </v-tab>

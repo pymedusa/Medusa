@@ -9,6 +9,7 @@ import glob
 import json
 import logging
 import os.path
+import re
 import shutil
 import stat
 import traceback
@@ -201,6 +202,8 @@ class SeriesIdentifier(Identifier):
 class Series(TV):
     """Represent a TV Show."""
 
+    YEAR_MATCH = re.compile(r'.*\(\d{4}\)$')
+
     def __init__(self, indexer, indexerid, lang='', quality=None,
                  season_folders=None, enabled_subtitles=None):
         """Instantiate a Series with database information based on indexerid.
@@ -215,7 +218,7 @@ class Series(TV):
         super(Series, self).__init__(indexer, indexerid, {'episodes', 'next_aired', 'release_groups', 'exceptions',
                                                           'external', 'imdb_info'})
         self.show_id = None
-        self.name = ''
+        self._name = ''
         self.imdb_id = ''
         self.network = ''
         self.genre = ''
@@ -249,9 +252,9 @@ class Series(TV):
         self._prev_aired = 0
         self._next_aired = 0
         self.release_groups = None
-        self.exceptions = set()
+        self._aliases = set()
         self.externals = {}
-        self._cached_indexer_api = None
+        self._indexer_api = None
         self.plot = None
         self._show_lists = None
 
@@ -287,6 +290,19 @@ class Series(TV):
         return Series(identifier.indexer.id, identifier.id)
 
     @property
+    def name(self):
+        """Return show's name."""
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        """Set show's name."""
+        if all([app.ADD_TITLE_WITH_YEAR, self.start_year and not Series.YEAR_MATCH.match(value)]):
+            self._name = '{name} ({year})'.format(name=value, year=self.start_year)
+        else:
+            self._name = value
+
+    @property
     def identifier(self):
         """Return a series identifier object."""
         return SeriesIdentifier(self.indexer, self.series_id)
@@ -299,14 +315,14 @@ class Series(TV):
     @property
     def indexer_api(self):
         """Get an Indexer API instance."""
-        if not self._cached_indexer_api:
+        if not self._indexer_api:
             self.create_indexer()
-        return self._cached_indexer_api
+        return self._indexer_api
 
     @indexer_api.setter
     def indexer_api(self, value):
         """Set an Indexer API instance."""
-        self._cached_indexer_api = value
+        self._indexer_api = value
 
     def create_indexer(self, banners=False, actors=False, dvd_order=False, episodes=True):
         """Force the creation of a new Indexer API."""
@@ -432,8 +448,10 @@ class Series(TV):
                     helpers.chmod_as_parent(new_location)
             else:
                 changed_location = False
-                log.warning("New location '{location}' does not exist. "
-                            "Enable setting '(Config - Postprocessing) Create missing show dirs'", {'location': new_location})
+                log.warning(
+                    "New location '{location}' does not exist. "
+                    "Enable setting '(Config - Postprocessing) Create missing show dirs'",
+                    {'location': new_location})
 
         # Save new location only if we changed it
         if changed_location:
@@ -567,6 +585,11 @@ class Series(TV):
         epoch_date = update_date - datetime.date.fromtimestamp(0)
         return int(epoch_date.total_seconds())
 
+    @last_update_indexer.setter
+    def last_update_indexer(self, value):
+        """Set last indexer update (datetime.date.today().toordinal())."""
+        self._last_update_indexer = value
+
     @property
     def prev_aired(self):
         """Return last aired episode ordinal."""
@@ -635,8 +658,8 @@ class Series(TV):
     @property
     def aliases(self):
         """Return series aliases."""
-        if self.exceptions:
-            return self.exceptions
+        if self._aliases:
+            return self._aliases
 
         return set(chain(*itervalues(get_all_scene_exceptions(self))))
 
@@ -644,7 +667,7 @@ class Series(TV):
     def aliases(self, exceptions):
         """Set the series aliases."""
         update_scene_exceptions(self, exceptions)
-        self.exceptions = set(chain(*itervalues(get_all_scene_exceptions(self))))
+        self._aliases = set(chain(*itervalues(get_all_scene_exceptions(self))))
         build_name_cache(self)
 
     @property
@@ -920,7 +943,7 @@ class Series(TV):
         else:
             ep = Episode(self, season, episode)
 
-        if ep is not None and ep.loaded and should_cache:
+        if ep is not None and should_cache:
             self.episodes[season][episode] = ep
 
         return ep
@@ -1299,7 +1322,7 @@ class Series(TV):
             main_db_con.mass_action(sql_l)
 
         # Done updating save last update date
-        self._last_update_indexer = datetime.date.today().toordinal()
+        self.last_update_indexer = datetime.date.today().toordinal()
         log.debug(u'{id}: Saving indexer changes to database',
                   {'id': self.series_id})
         self.save_to_db()
@@ -1427,6 +1450,8 @@ class Series(TV):
         return root_ep
 
     def _load_from_db(self):
+        if not self.dirty:
+            return True
 
         log.debug(u'{id}: Loading show info from database',
                   {'id': self.series_id})
@@ -1447,6 +1472,7 @@ class Series(TV):
         else:
             self.show_id = int(sql_results[0]['show_id'] or 0)
             self.indexer = int(sql_results[0]['indexer'] or 0)
+            self.start_year = int(sql_results[0]['startyear'] or 0)
 
             if not self.name:
                 self.name = sql_results[0]['show_name']
@@ -1467,7 +1493,6 @@ class Series(TV):
             if self.airs is None or not network_timezones.test_timeformat(self.airs):
                 self.airs = ''
 
-            self.start_year = int(sql_results[0]['startyear'] or 0)
             self.air_by_date = int(sql_results[0]['air_by_date'] or 0)
             self.anime = int(sql_results[0]['anime'] or 0)
             self.sports = int(sql_results[0]['sports'] or 0)
@@ -1540,8 +1565,11 @@ class Series(TV):
             }
         )
 
-        self.indexer_api = tvapi
-        indexed_show = self.indexer_api[self.series_id]
+        indexer_api = tvapi or self.indexer_api
+        indexed_show = indexer_api[self.series_id]
+
+        if getattr(indexed_show, 'firstaired', ''):
+            self.start_year = int(str(indexed_show['firstaired']).split('-')[0])
 
         try:
             self.name = indexed_show['seriesname'].strip()
@@ -1568,9 +1596,6 @@ class Series(TV):
         if getattr(indexed_show, 'airs_dayofweek', '') and getattr(indexed_show, 'airs_time', ''):
             self.airs = '{airs_day_of_week} {airs_time}'.format(airs_day_of_week=indexed_show['airs_dayofweek'],
                                                                 airs_time=indexed_show['airs_time'])
-
-        if getattr(indexed_show, 'firstaired', ''):
-            self.start_year = int(str(indexed_show['firstaired']).split('-')[0])
 
         self.status = self.normalize_status(getattr(indexed_show, 'status', None))
 
@@ -1646,6 +1671,11 @@ class Series(TV):
             'plot': safe_get(imdb_info, ('plot', 'outline', 'text')),
             'last_update': datetime.date.today().toordinal(),
         })
+
+        # Let's try to fix the show name (with year) if we have the year from the imdb info.
+        if self.imdb_year and not self.start_year:
+            self.start_year = self.imdb_year
+            self.name = self.name  # We just want the setter to activate.
 
         log.debug(u'{id}: Obtained info from IMDb: {imdb_info}',
                   {'id': self.series_id, 'imdb_info': self.imdb_info})
@@ -2019,7 +2049,7 @@ class Series(TV):
                                 }
                             )
 
-                            cur_ep._status = new_status
+                            cur_ep.status = new_status
                             cur_ep.subtitles = ''
                             cur_ep.subtitles_searchcount = 0
                             cur_ep.subtitles_lastsearch = ''
@@ -2349,15 +2379,15 @@ class Series(TV):
         """Return allowed qualities."""
         return Quality.split_quality(self.quality)[0]
 
-    @property
-    def qualities_preferred(self):
-        """Return preferred qualities."""
-        return Quality.split_quality(self.quality)[1]
-
     @qualities_allowed.setter
     def qualities_allowed(self, qualities_allowed):
         """Configure qualities (combined) by adding the allowed qualities to it."""
         self.quality = Quality.combine_qualities(qualities_allowed, self.qualities_preferred)
+
+    @property
+    def qualities_preferred(self):
+        """Return preferred qualities."""
+        return Quality.split_quality(self.quality)[1]
 
     @qualities_preferred.setter
     def qualities_preferred(self, qualities_preferred):
@@ -2656,8 +2686,9 @@ class Series(TV):
                     if final_status_only and Quality.should_search(ep_obj.status, ep_obj.quality, self,
                                                                    ep_obj.manually_searched)[0]:
                         continue
-                    ep_obj._status = ARCHIVED
+                    ep_obj.status = ARCHIVED
                     sql_list.append(ep_obj.get_sql())
+
         if sql_list:
             main_db_con = db.DBConnection()
             main_db_con.mass_action(sql_list)

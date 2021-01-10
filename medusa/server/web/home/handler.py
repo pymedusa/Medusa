@@ -956,7 +956,7 @@ class Home(WebRoot):
             errors += 1
             return errors
 
-        series_obj.exceptions = get_scene_exceptions(series_obj)
+        series_obj.aliases = get_scene_exceptions(series_obj)
 
         season_folders = config.checkbox_to_value(season_folders)
         dvd_order = config.checkbox_to_value(dvd_order)
@@ -1354,7 +1354,7 @@ class Home(WebRoot):
 
                     # Only in failed_history we set to FAILED.
                     if status != FAILED:
-                        ep_obj._status = status
+                        ep_obj.status = status
 
                     # mass add to database
                     sql_l.append(ep_obj.get_sql())

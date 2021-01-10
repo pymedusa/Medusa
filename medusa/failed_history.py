@@ -157,14 +157,14 @@ def revert_episode(ep_obj):
                    (show=ep_obj.series.name, ep=episode_num(ep_obj.season, ep_obj.episode)))
         with ep_obj.lock:
             if ep_obj.episode in history_eps:
-                ep_obj._status = history_eps[ep_obj.episode]['status']
+                ep_obj.status = history_eps[ep_obj.episode]['status']
                 logger.log(u'Episode have a previous status to revert. Setting it back to {0}'.format
                            (statusStrings[ep_obj.status]), logger.DEBUG)
             else:
                 logger.log(u'Episode does not have a previous snatched status '
                            u'to revert. Setting it back to WANTED',
                            logger.DEBUG)
-                ep_obj._status = WANTED
+                ep_obj.status = WANTED
             ep_obj.save_to_db()
 
     except EpisodeNotFoundException as error:
@@ -182,7 +182,7 @@ def mark_failed(ep_obj):
     """
     try:
         with ep_obj.lock:
-            ep_obj._status = FAILED
+            ep_obj.status = FAILED
             ep_obj.save_to_db()
 
     except EpisodeNotFoundException as error:

@@ -206,6 +206,7 @@ class MedusaApp(object):
         self.ACTUAL_CACHE_DIR = None
         self.ROOT_DIRS = []
         self.TVDB_DVD_ORDER_EP_IGNORE = False
+        self.ADD_TITLE_WITH_YEAR = False
 
         self.TRASH_REMOVE_SHOW = False
         self.TRASH_ROTATE_LOGS = False
@@ -261,6 +262,7 @@ class MedusaApp(object):
         self.CACHE_TRIMMING = None
         self.MAX_CACHE_AGE = None
         self.TORRENT_METHOD = None
+        self.SAVE_MAGNET_FILE = False
         self._TORRENT_DIR = None
         self._DOWNLOAD_PROPERS = False
         self._CHECK_PROPERS_INTERVAL = None

@@ -38,8 +38,6 @@ from six import itervalues, text_type
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
-search_queue_lock = threading.Lock()
-
 SEARCH_HISTORY = []
 SEARCH_HISTORY_SIZE = 100
 

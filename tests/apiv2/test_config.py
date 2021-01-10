@@ -46,6 +46,7 @@ def config_main(monkeypatch, app_config):
     section_data['subtitles'] = {}
     section_data['subtitles']['enabled'] = bool(app.USE_SUBTITLES)
     section_data['recentShows'] = app.SHOWS_RECENT
+    section_data['addTitleWithYear'] = bool(app.ADD_TITLE_WITH_YEAR)
 
     # Pick a random series to show as background.
     # TODO: Recreate this in Vue when the webapp has a reliable list of shows to choose from.
@@ -451,6 +452,7 @@ def config_clients():
     section_data['torrents']['username'] = app.TORRENT_USERNAME
     section_data['torrents']['password'] = app.TORRENT_PASSWORD
     section_data['torrents']['verifySSL'] = bool(app.TORRENT_VERIFY_CERT)
+    section_data['torrents']['saveMagnetFile'] = bool(app.SAVE_MAGNET_FILE)
 
     section_data['nzb'] = {}
     section_data['nzb']['enabled'] = bool(app.USE_NZBS)

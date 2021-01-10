@@ -341,6 +341,13 @@
                                     </fieldset>
                                 </div>
                             </div>
+
+                            <br>
+                            <input type="submit"
+                                   class="btn-medusa config_submitter"
+                                   value="Save Changes"
+                                   :disabled="saving"
+                            >
                         </div><!-- #home-theater-nas //-->
 
                         <div id="devices">
@@ -739,6 +746,12 @@
                                 </div>
                             </div>
 
+                            <br>
+                            <input type="submit"
+                                   class="btn-medusa config_submitter"
+                                   value="Save Changes"
+                                   :disabled="saving"
+                            >
                         </div><!-- #devices //-->
 
                         <div id="social">
@@ -949,14 +962,13 @@
                                 </div>
                             </div>
 
+                            <br>
+                            <input type="submit"
+                                   class="btn-medusa config_submitter"
+                                   value="Save Changes"
+                                   :disabled="saving"
+                            >
                         </div><!-- #social //-->
-                        <br>
-                        <input type="submit"
-                               class="btn-medusa config_submitter"
-                               value="Save Changes"
-                               :disabled="saving"
-                        >
-                        <br>
                     </div><!-- #config-components //-->
                 </form><!-- #configForm //-->
             </div><!-- #config-content //-->

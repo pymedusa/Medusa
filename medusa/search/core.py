@@ -151,6 +151,7 @@ def snatch_result(result):
     # Torrents can be sent to clients or saved to disk
     elif result.result_type == u'torrent':
         # torrents are saved to disk when blackhole mode
+        # Handle SAVE_MAGNET_FILE
         if app.TORRENT_METHOD == u'blackhole':
             result_downloaded = _download_result(result)
         else:
@@ -194,10 +195,10 @@ def snatch_result(result):
     for cur_ep_obj in result.episodes:
         with cur_ep_obj.lock:
             if is_first_best_match(result):
-                cur_ep_obj._status = SNATCHED_BEST
+                cur_ep_obj.status = SNATCHED_BEST
                 cur_ep_obj.quality = result.quality
             else:
-                cur_ep_obj._status = end_status
+                cur_ep_obj.status = end_status
                 cur_ep_obj.quality = result.quality
             # Reset all others fields to the snatched status
             # New snatch by default doesn't have nfo/tbn

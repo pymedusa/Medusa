@@ -175,12 +175,6 @@
 
                                             <div class="testNotification" v-show="clientsConfig.nzb.sabnzbd.testStatus" v-html="clientsConfig.nzb.sabnzbd.testStatus" />
                                             <input @click="testSabnzbd" type="button" value="Test SABnzbd" class="btn-medusa test-button">
-                                            <input type="submit"
-                                                   class="btn-medusa config_submitter"
-                                                   value="Save Changes"
-                                                   :disabled="saving"
-                                            >
-                                            <br>
                                         </div>
 
                                         <div v-if="clients.nzb.method" v-show="clients.nzb.method === 'nzbget'" id="nzbget_settings">
@@ -209,15 +203,17 @@
 
                                             <div class="testNotification" v-show="clientsConfig.nzb.nzbget.testStatus" v-html="clientsConfig.nzb.nzbget.testStatus" />
                                             <input @click="testNzbget" type="button" value="Test NZBget" class="btn-medusa test-button">
-                                            <input type="submit"
-                                                   class="btn-medusa config_submitter"
-                                                   value="Save Changes"
-                                                   :disabled="saving"
-                                            >
+
                                             <br>
                                         </div><!-- /nzb.enabled //-->
                                     </div>
                                 </fieldset>
+                                <br>
+                                <input type="submit"
+                                       class="btn-medusa config_submitter"
+                                       value="Save Changes"
+                                       :disabled="saving"
+                                >
                             </div>
                         </div> <!-- /row -->
                     </div><!-- /#nzb-search //-->
@@ -246,18 +242,11 @@
                                                 <file-browser name="torrent_dir" title="Select .torrent black hole location" :initial-dir="clients.torrents.dir" @update="clients.torrents.dir = $event" />
                                                 <p><b>.torrent</b> files are stored at this location for external software to find and use</p>
                                             </config-template>
-                                            
+
                                             <config-toggle-slider v-model="clients.torrents.saveMagnetFile" label="Save to .magnet" id="save_to_magnet">
-                                                <p>Save magnet uri to .magnet file if a Magnet URI is available in stead of a Torrent</p>
-                                                <p>A .magnet file is only created if this option is enabled and a Torrent could not be downloaded from one of the online magnet registries</p>
+                                                <p>Save Magnet URI to a .magnet file if a Magnet URI is available instead of a Torrent</p>
+                                                <p>A .magnet file is only created if this option is enabled and a Torrent could not be downloaded from one of the online Magnet registries</p>
                                             </config-toggle-slider>
-                                            
-                                            <input type="submit"
-                                                   class="btn-medusa config_submitter"
-                                                   value="Save Changes"
-                                                   :disabled="saving"
-                                            >
-                                            <br>
                                         </div>
 
                                         <div v-if="clients.torrents.method" v-show="clients.torrents.method !== 'blackhole'">
@@ -350,25 +339,20 @@
 
                                             <div class="testNotification" v-show="clientsConfig.torrent[clients.torrents.method].testStatus" v-html="clientsConfig.torrent[clients.torrents.method].testStatus" />
                                             <input @click="testTorrentClient" type="button" value="Test Connection" class="btn-medusa test-button">
-                                            <input type="submit"
-                                                   class="btn-medusa config_submitter"
-                                                   value="Save Changes"
-                                                   :disabled="saving"
-                                            >
-                                            <br>
                                         </div>
                                     </div><!-- /torrent.enabled //-->
                                 </fieldset>
+                                <br>
+                                <input type="submit"
+                                       class="btn-medusa config_submitter"
+                                       value="Save Changes"
+                                       :disabled="saving"
+                                >
                             </div>
                         </div>
                     </div><!-- /#torrent-search //-->
                     <br>
                     <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">{{system.dataDir}}</span></b> </h6>
-                    <input type="submit"
-                           class="btn-medusa config_submitter"
-                           value="Save Changes"
-                           :disabled="saving"
-                    >
                 </div><!-- /config-components //-->
             </form>
         </div>
