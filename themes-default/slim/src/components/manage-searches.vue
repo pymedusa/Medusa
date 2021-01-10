@@ -135,7 +135,7 @@ export default {
             general: state => state.config.general,
             system: state => state.config.system,
             search: state => state.config.search,
-            searchQueueItems: state => state.search.queueitems
+            queueItems: state => state.queue.queueitems
         }),
         spinnerSrc() {
             const { general } = this;
@@ -253,7 +253,7 @@ export default {
         });
     },
     watch: {
-        searchQueueItems() {
+        queueItems() {
             const { getConfig } = this;
             getConfig('system');
         }

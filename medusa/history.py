@@ -21,12 +21,12 @@ from __future__ import unicode_literals
 import datetime
 
 from medusa import db
-from medusa.schedulers.download_handler import ClientStatusEnum as ClientStatus
 from medusa.common import FAILED, SNATCHED, SUBTITLED
+from medusa.schedulers.download_handler import ClientStatusEnum as ClientStatus
 from medusa.show.history import History
 
 
-def _log_history_item(action, ep_obj, resource=None, provider=None, version=-1, proper_tags='',
+def _log_history_item(action, ep_obj, resource=None, provider=None, proper_tags='',
                       manually_searched=False, info_hash=None, size=-1, search_result=None):
     """
     Insert a history item in DB.
@@ -37,12 +37,12 @@ def _log_history_item(action, ep_obj, resource=None, provider=None, version=-1, 
     :param ep_obj: episode object
     :param resource: resource used
     :param provider: provider class used
-    :param version: tracked version of file (defaults to -1)
     :param search_result: SearchResult object
     """
     log_date = datetime.datetime.today().strftime(History.date_format)
     provider_type = None
     client_status = None
+    version = ep_obj.version
 
     if search_result:
         resource = search_result.name
@@ -92,7 +92,7 @@ def log_snatch(search_result):
         _log_history_item(action, ep_obj, search_result=search_result)
 
 
-def log_download(ep_obj, filename, new_ep_quality, release_group=None, version=-1):
+def log_download(ep_obj, filename, release_group=None):
     """
     Log history of download.
 
@@ -112,7 +112,7 @@ def log_download(ep_obj, filename, new_ep_quality, release_group=None, version=-
 
     action = ep_obj.status
 
-    _log_history_item(action, ep_obj, filename, provider, version, size=size)
+    _log_history_item(action, ep_obj, filename, provider, size=size)
 
 
 def log_subtitle(ep_obj, subtitle_result):

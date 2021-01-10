@@ -50,7 +50,7 @@
                                         <p><b>Note:</b> For now only Transmission and Deluge are supported</p>
                                     </config-toggle-slider>
 
-                                    <config-textbox-number v-show="search.general.removeFromClient" :min="search.general.mindownloadHandlerFrequency" :step="1" v-model.number="search.general.downloadHandlerFrequency" label="Frequency to check torrents ratio" id="download_handler_frequency" :explanations="['Frequency in minutes to check torrent\'s ratio (default: 60)']" />
+                                    <config-textbox-number v-show="search.general.removeFromClient" :min="search.general.minTorrentCheckerFrequency" :step="1" v-model.number="search.general.torrentCheckerFrequency" label="Frequency to check torrents ratio" id="torrent_checker_frequency" :explanations="['Frequency in minutes to check torrent\'s ratio (default: 60)']" />
 
                                     <config-textbox-number :min="1" :step="1" v-model.number="search.general.usenetRetention" label="Usenet retention" id="usenet_retention" :explanations="['age limit in days for usenet articles to be used (e.g. 500)']" />
 
@@ -246,6 +246,12 @@
                                                 <file-browser name="torrent_dir" title="Select .torrent black hole location" :initial-dir="clients.torrents.dir" @update="clients.torrents.dir = $event" />
                                                 <p><b>.torrent</b> files are stored at this location for external software to find and use</p>
                                             </config-template>
+                                            
+                                            <config-toggle-slider v-model="clients.torrents.saveMagnetFile" label="Save to .magnet" id="save_to_magnet">
+                                                <p>Save magnet uri to .magnet file if a Magnet URI is available in stead of a Torrent</p>
+                                                <p>A .magnet file is only created if this option is enabled and a Torrent could not be downloaded from one of the online magnet registries</p>
+                                            </config-toggle-slider>
+                                            
                                             <input type="submit"
                                                    class="btn-medusa config_submitter"
                                                    value="Save Changes"

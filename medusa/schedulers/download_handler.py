@@ -119,10 +119,10 @@ class DownloadHandler(object):
 
     def save_status_to_history(self, history_row, status):
         """Update history record with a new status."""
-        log.info('Saving new status {status} for {resource} with info_hash {info_hash}',
+        log.info('Updating status {status} for {resource} with info_hash {info_hash}',
                  {'status': status, 'resource': history_row['resource'], 'info_hash': history_row['info_hash']})
-        self.main_db_con.action('UPDATE history set client_status = ? where info_hash = ?',
-                                [status.status, history_row['info_hash']])
+        self.main_db_con.action('UPDATE history set client_status = ? WHERE info_hash = ? AND resource = ?',
+                                [status.status, history_row['info_hash'], history_row['resource']])
 
     def _check_torrents(self):
         """

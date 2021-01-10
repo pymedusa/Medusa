@@ -90,7 +90,6 @@ export const registerGlobalComponents = () => {
     // @TODO: These need to be converted to Vue SFCs
     components = components.concat([
         History,
-        ManualPostProcess,
         Schedule
     ]);
 

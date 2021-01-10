@@ -34,7 +34,9 @@ log.logger.addHandler(logging.NullHandler())
 class PostProcessQueueItem(generic_queue.QueueItem):
     """Post-process queue item class."""
 
-    def __init__(self, path, info_hash, resource_name=None, force=False):
+    def __init__(self, path=None, info_hash=None, resource_name=None, force=False,
+                 is_priority=False, process_method=None, delete_on=False, failed=False,
+                 proc_type='auto', ignore_subs=False):
         """Initialize the class."""
         generic_queue.QueueItem.__init__(self, u'Post Process')
 
@@ -44,13 +46,28 @@ class PostProcessQueueItem(generic_queue.QueueItem):
         self.info_hash = info_hash
         self.resource_name = resource_name
         self.force = force
-        # self.force = force
-        # self.processed_propers = processed_propers
-        # self.ignore_processed_propers = ignore_processed_propers
+        self.is_priority = is_priority
+        self.process_method = process_method
+        self.delete_on = delete_on
+        self.failed = failed
+        self.proc_type = proc_type
+        self.ignore_subs = ignore_subs
 
         self.to_json.update({
             'success': self.success,
-            'force': self.force
+            'force': self.force,
+            'config': {
+                'path': self.path,
+                'info_hash': self.info_hash,
+                'resource_name': self.resource_name,
+                'force': self.force,
+                'is_priority': self.is_priority,
+                'process_method': self.process_method,
+                'delete_on': self.delete_on,
+                'failed': self.failed,
+                'proc_type': self.proc_type,
+                'ignore_subs': self.ignore_subs,
+            }
         })
 
     def update_resource(self, status):
@@ -73,9 +90,19 @@ class PostProcessQueueItem(generic_queue.QueueItem):
 
             # Push an update to any open Web UIs through the WebSocket
             ws.Message('QueueItemUpdate', self.to_json).push()
-            process_results = ProcessResult(self.path)
+
+            path = self.path or app.TV_DOWNLOAD_DIR
+            process_method = self.process_method or app.PROCESS_METHOD
+
+            process_results = ProcessResult(path, process_method)
             process_results.process(
-                resource_name=self.resource_name, force=self.force
+                resource_name=self.resource_name,
+                force=self.force,
+                is_priority=self.is_priority,
+                delete_on=self.delete_on,
+                failed=self.failed,
+                proc_type=self.proc_type,
+                ignore_subs=self.ignore_subs
             )
 
             # Resource postprocessed
@@ -86,13 +113,17 @@ class PostProcessQueueItem(generic_queue.QueueItem):
             # If failed store Postprocessed + Failed. (272)
             if process_results.succeeded:
                 status.add_status_string('Completed')
+                self.success = True
             else:
                 status.add_status_string('Failed')
+                self.success = False
 
             self.update_resource(status)
 
             log.info('Completed Postproccessing')
 
+            if process_results._output:
+                self.to_json.update({'output': process_results._output})
             # Push an update to any open Web UIs through the WebSocket
             ws.Message('QueueItemUpdate', self.to_json).push()
 

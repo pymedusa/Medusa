@@ -65,8 +65,10 @@ const homeRoutes = [
         meta: {
             title: 'Manual Post-Processing',
             header: 'Manual Post-Processing',
-            topMenu: 'home'
-        }
+            topMenu: 'home',
+            converted: true
+        },
+        component: () => import('../components/manual-post-process.vue')
     },
     {
         path: '/home/status',

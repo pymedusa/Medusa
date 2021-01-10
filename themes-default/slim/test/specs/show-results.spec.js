@@ -28,7 +28,7 @@ describe('ShowResults.test.js', () => {
                 }
             }
         } },
-        ...{ search: {
+        ...{ queue: {
             queueitems: []
         } }
     };
@@ -63,8 +63,8 @@ describe('ShowResults.test.js', () => {
                 config: {
                     state: state.config
                 },
-                search: {
-                    state: state.search
+                queue: {
+                    state: state.queue
                 }
             }
         });
