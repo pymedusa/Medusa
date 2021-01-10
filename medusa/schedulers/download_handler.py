@@ -148,7 +148,11 @@ class DownloadHandler(object):
 
     def _update_nzb_status(self, client):
         """Update snatched nzb (in db) with current state on client."""
-        for history_result in self._get_history_results_from_db('nzb'):
+        postprocessed = [
+            ClientStatusEnum.COMPLETED.value | ClientStatusEnum.POSTPROCESSED.value,
+            ClientStatusEnum.FAILED.value | ClientStatusEnum.POSTPROCESSED.value,
+        ]
+        for history_result in self._get_history_results_from_db('nzb', exclude_status=postprocessed):
             nzb_on_client = client.get_nzb_by_id(history_result['info_hash'])
             if nzb_on_client:
                 status = client.nzb_status(history_result['info_hash'])
@@ -164,8 +168,14 @@ class DownloadHandler(object):
                     self.save_status_to_history(history_result, status)
 
     def _check_nzb_for_postprocessing(self, client):
+        # Combine bitwize postprocessed + completed.
+        postprocessed = [
+            ClientStatusEnum.COMPLETED.value | ClientStatusEnum.POSTPROCESSED.value,
+            ClientStatusEnum.FAILED.value | ClientStatusEnum.POSTPROCESSED.value,
+        ]
         for history_result in self._get_history_results_from_db(
-            'nzb', exclude_status=[], include_status=[ClientStatusEnum.COMPLETED.value]
+            'nzb', exclude_status=postprocessed,
+            include_status=[ClientStatusEnum.COMPLETED.value, ClientStatusEnum.FAILED.value],
         ):
             nzb_on_client = client.get_nzb_by_id(history_result['info_hash'])
             if nzb_on_client:
@@ -178,15 +188,18 @@ class DownloadHandler(object):
                         'info_hash': history_result['info_hash']
                     }
                 )
-                self._postprocess(status.destination, history_result['info_hash'], history_result['resource'])
+                self._postprocess(
+                    status.destination, history_result['info_hash'], history_result['resource'],
+                    failed=str(status) == 'Failed'
+                )
 
-    def _postprocess(self, path, info_hash, resource_name):
+    def _postprocess(self, path, info_hash, resource_name, failed=False):
         """Queue a postprocess action."""
         # TODO: Add a check for if not already queued or run.
         # queue a postprocess action
-        queue_item = app.post_processor_queue_scheduler.action.add_item(
-            PostProcessQueueItem(path, info_hash, resource_name=resource_name)
-        )
+        queue_item = PostProcessQueueItem(path, info_hash, resource_name=resource_name, failed=failed)
+        app.post_processor_queue_scheduler.action.add_item(queue_item)
+        pass
 
     def _check_nzbs(self):
         """

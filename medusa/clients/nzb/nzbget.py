@@ -286,7 +286,7 @@ def nzb_status(nzo_id):
         client_status.add_status_string('Completed')
 
     if status == 'FAILURE':
-        status.add_status_string('Failure')
+        client_status.add_status_string('Failed')
 
     # Get Progress
     if status == 'SUCCESS':
