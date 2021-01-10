@@ -213,7 +213,7 @@ class ProcessResult(object):
                 self.log_and_output('Missed file: {missed_file}', level=logging.WARNING, **{'missed_file': missed_file})
 
         if all([app.USE_TORRENTS, app.TORRENT_SEED_LOCATION,
-                self.process_method in ('hardlink', 'symlink', 'reflink')]):
+                self.process_method in ('hardlink', 'symlink', 'reflink', 'copy')]):
             for info_hash, release_names in list(iteritems(app.RECENTLY_POSTPROCESSED)):
                 if self.move_torrent(info_hash, release_names):
                     app.RECENTLY_POSTPROCESSED.pop(info_hash, None)
@@ -487,9 +487,6 @@ class ProcessResult(object):
                     if rar_handle.needs_password():
                         raise ValueError('Rar requires a password')
 
-                    # raise an exception if the rar file is broken
-                    rar_handle.testrar()
-
                     # Skip extraction if any file in archive has previously been extracted
                     skip_extraction = False
                     for file_in_archive in [os.path.basename(each.filename)
@@ -508,6 +505,8 @@ class ProcessResult(object):
                             break
 
                     if not skip_extraction:
+                        # raise an exception if the rar file is broken
+                        rar_handle.testrar()
                         rar_handle.extractall(path=path)
 
                     for each in rar_handle.infolist():

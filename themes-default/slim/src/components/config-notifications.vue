@@ -341,6 +341,13 @@
                                     </fieldset>
                                 </div>
                             </div>
+
+                            <br>
+                            <input type="submit"
+                                   class="btn-medusa config_submitter"
+                                   value="Save Changes"
+                                   :disabled="saving"
+                            >
                         </div><!-- #home-theater-nas //-->
 
                         <div id="devices">
@@ -739,6 +746,12 @@
                                 </div>
                             </div>
 
+                            <br>
+                            <input type="submit"
+                                   class="btn-medusa config_submitter"
+                                   value="Save Changes"
+                                   :disabled="saving"
+                            >
                         </div><!-- #devices //-->
 
                         <div id="social">
@@ -784,6 +797,7 @@
                             </div>
 
                             <div class="row component-group">
+                                <a href="#trakt" />
                                 <div class="component-group-desc col-xs-12 col-md-2">
                                     <span class="icon-notifiers-trakt" title="Trakt" />
                                     <h3><app-link href="https://trakt.tv/">Trakt</app-link></h3>
@@ -795,13 +809,11 @@
                                         <config-toggle-slider v-model="notifiers.trakt.enabled" label="Enable" id="use_trakt" :explanations="['Send Trakt.tv notifications?']" @change="save()" />
                                         <div v-show="notifiers.trakt.enabled" id="content-use-trakt-client"> <!-- show based on notifiers.trakt.enabled -->
 
-                                            <config-textbox v-model="notifiers.trakt.username" label="Username" id="trakt_username" :explanations="['username of your Trakt account.']" @change="save()" />
-
-                                            <config-template label-for="trakt_pin" label="Trakt PIN">
-                                                <input type="text" name="trakt_pin" id="trakt_pin" value="" style="display: inline" class="form-control input-sm max-input250" :disabled="notifiers.trakt.accessToken">
-                                                <input type="button" class="btn-medusa" :value="traktNewTokenMessage" id="TraktGetPin" @click="TraktGetPin">
-                                                <input type="button" class="btn-medusa hide" value="Authorize Medusa" id="authTrakt" @click="authTrakt">
-                                                <p>PIN code to authorize Medusa to access Trakt on your behalf.</p>
+                                            <config-template label-for="trakt_request_auth" label="">
+                                                <input type="button" class="btn-medusa" value="Connect to your trakt account" id="Trakt" @click="TraktRequestDeviceCode">
+                                                <span style="display: inline" v-if="traktRequestSend && traktUserCode">Use this code in the popup: {{traktUserCode}}</span>
+                                                <p v-if="traktRequestSend && traktUserCode && traktRequestMessage">Trakt request status: {{traktRequestMessage}}</p>
+                                                <p v-if="traktRequestAuthenticated && traktRequestMessage">{{traktRequestMessage}}</p>
                                             </config-template>
 
                                             <config-textbox-number v-model="notifiers.trakt.timeout" label="API Timeout" id="trakt_timeout" :explanations="['Seconds to wait for Trakt API to respond. (Use 0 to wait forever)']" />
@@ -820,8 +832,7 @@
                                                                        'Kodi detects that the episode was deleted and removes from collection which causes Medusa to re-add it. This causes a loop between Medusa and Kodi adding and deleting the episode.']"
                                                                   @change="save()" />
                                             <div v-show="notifiers.trakt.sync" id="content-use-trakt-client">
-                                                <config-toggle-slider v-model="notifiers.trakt.removeWatchlist" label="Remove Episodes From Collection" id="trakt_remove_watchlist" :explanations="['Remove an Episode from your Trakt Collection if it is not in your Medusa Library.',
-                                                                                                                                                                                                    'Note:Don\'t enable this setting if you use the Trakt addon for Kodi or any other script that syncs your library.']" @change="save()" />
+                                                <config-toggle-slider v-model="notifiers.trakt.removeWatchlist" label="Remove Episodes From Collection" id="trakt_remove_watchlist" :explanations="['Remove an Episode from your Trakt Collection if it is not in your Medusa Library.',                                                                                                                                                                                                    'Note:Don\'t enable this setting if you use the Trakt addon for Kodi or any other script that syncs your library.']" @change="save()" />
                                             </div>
 
                                             <config-toggle-slider v-model="notifiers.trakt.syncWatchlist" label="Sync watchlist" id="trakt_sync_watchlist" :explanations="
@@ -951,14 +962,13 @@
                                 </div>
                             </div>
 
+                            <br>
+                            <input type="submit"
+                                   class="btn-medusa config_submitter"
+                                   value="Save Changes"
+                                   :disabled="saving"
+                            >
                         </div><!-- #social //-->
-                        <br>
-                        <input type="submit"
-                               class="btn-medusa config_submitter"
-                               value="Save Changes"
-                               :disabled="saving"
-                        >
-                        <br>
                     </div><!-- #config-components //-->
                 </form><!-- #configForm //-->
             </div><!-- #config-content //-->
@@ -1037,6 +1047,10 @@ export default {
             pushbulletDeviceOptions: [
                 { text: 'All devices', value: '' }
             ],
+            traktRequestSend: false,
+            traktRequestAuthenticated: false,
+            traktUserCode: '',
+            traktRequestMessage: '',
             traktMethodOptions: [
                 { text: 'Skip all', value: 0 },
                 { text: 'Download pilot only', value: 1 },
@@ -1057,10 +1071,6 @@ export default {
             indexers: state => state.config.indexers,
             notifiers: state => state.config.notifiers
         }),
-        traktNewTokenMessage() {
-            const { accessToken } = this.notifiers.trakt;
-            return 'Get ' + accessToken ? 'New ' : ' Trakt PIN';
-        },
         traktIndexersOptions() {
             const { indexers } = this;
             const { traktIndexers } = indexers.main;
@@ -1625,51 +1635,57 @@ export default {
                 $('#testSlack').prop('disabled', false);
             });
         },
-        TraktGetPin() {
-            window.open($('#trakt_pin_url').val(), 'popUp', 'toolbar=no, scrollbars=no, resizable=no, top=200, left=200, width=650, height=550');
-            $('#trakt_pin').prop('disabled', false);
-        },
-        authTrakt() {
-            const trakt = {};
-            trakt.pin = $('#trakt_pin').val();
-            if (trakt.pin.length !== 0) {
-                $.get('home/getTraktToken', {
-                    trakt_pin: trakt.pin // eslint-disable-line camelcase
-                }).done(data => {
-                    $('#testTrakt-result').html(data);
-                    $('#authTrakt').addClass('hide');
-                    $('#trakt_pin').prop('disabled', true);
-                    $('#trakt_pin').val('');
-                    $('#TraktGetPin').removeClass('hide');
-                });
+        async TraktRequestDeviceCode() {
+            this.traktUserCode = '';
+            this.traktRequestAuthenticated = false;
+            const response = await apiRoute('home/requestTraktDeviceCodeOauth');
+            if (response.data) {
+                this.traktVerificationUrl = response.data.verification_url;
+                window.open(response.data.verification_url, 'popUp', 'toolbar=no, scrollbars=no, resizable=no, top=200, left=200, width=650, height=550');
+                this.traktRequestSend = true;
+                this.traktUserCode = response.data.user_code;
+                this.checkTraktAuthenticated();
             }
+        },
+        checkTraktAuthenticated() {
+            let counter = 0;
+            const i = setInterval(() => {
+                apiRoute('home/checkTrakTokenOauth')
+                    .then(response => {
+                        if (response.data) {
+                            this.traktRequestMessage = response.data.result;
+                            if (!response.data.error) {
+                                clearInterval(i);
+                                this.traktRequestAuthenticated = true;
+                                this.traktUserCode = '';
+                            }
+                        }
+                    });
+
+                counter++;
+                if (counter === 12) {
+                    clearInterval(i);
+                    this.traktRequestAuthenticated = false;
+                    this.traktUserCode = '';
+                }
+            }, 5000);
         },
         testTrakt() {
             const trakt = {};
-            trakt.username = $.trim($('#trakt_username').val());
             trakt.trendingBlacklist = $.trim($('#trakt_blacklist_name').val());
-            if (!trakt.username) {
-                $('#testTrakt-result').html('Please fill out the necessary fields above.');
-                $('#trakt_username').addRemoveWarningClass(trakt.username);
-                return;
-            }
 
             if (/\s/g.test(trakt.trendingBlacklist)) {
                 $('#testTrakt-result').html('Check blacklist name; the value needs to be a trakt slug');
                 $('#trakt_blacklist_name').addClass('warning');
                 return;
             }
-            $('#trakt_username').removeClass('warning');
             $('#trakt_blacklist_name').removeClass('warning');
-            $(this).prop('disabled', true);
             $('#testTrakt-result').html(MEDUSA.config.layout.loading);
-            $.get('home/testTrakt', {
-                username: trakt.username,
-                blacklist_name: trakt.trendingBlacklist // eslint-disable-line camelcase
-            }).done(data => {
-                $('#testTrakt-result').html(data);
-                $('#testTrakt').prop('disabled', false);
-            });
+            apiRoute(`home/testTrakt?blacklist_name=${trakt.trendingBlacklist}`)
+                .then(result => {
+                    $('#testTrakt-result').html(result.data);
+                    $('#testTrakt').prop('disabled', false);
+                });
         },
         traktForceSync() {
             $('#testTrakt-result').html(MEDUSA.config.layout.loading);

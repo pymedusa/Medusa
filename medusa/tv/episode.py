@@ -27,6 +27,8 @@ from medusa import (
 from medusa.common import (
     ARCHIVED,
     DOWNLOADED,
+    FAILED,
+    IGNORED,
     NAMING_DUPLICATE,
     NAMING_EXTEND,
     NAMING_LIMITED_EXTEND,
@@ -234,8 +236,7 @@ class Episode(TV):
              'scene_episode',
              'scene_absolute_number',
              'related_episodes',
-             'wanted_quality',
-             'loaded'
+             'wanted_quality'
              }
         )
         self.series = series
@@ -251,7 +252,7 @@ class Episode(TV):
         self.airdate = date.fromordinal(1)
         self.hasnfo = False
         self.hastbn = False
-        self.status = UNSET
+        self._status = UNSET
         self.quality = Quality.NA
         self.file_size = 0
         self.release_name = ''
@@ -265,26 +266,10 @@ class Episode(TV):
         self.manually_searched = False
         self.related_episodes = []
         self.wanted_quality = []
-        self.loaded = False
         self.watched = False
         if series:
             self._specify_episode(self.season, self.episode)
             self.check_for_meta_files()
-
-    def __setattr__(self, key, value):
-        """Set attribute values for deprecated attributes."""
-        try:
-            refactor = self.__refactored[key]
-        except KeyError:
-            super(Episode, self).__setattr__(key, value)
-        else:
-            warnings.warn(
-                '{item} is deprecated, use {refactor} instead \n{trace}'.format(
-                    item=key, refactor=refactor, trace=traceback.print_stack(),
-                ),
-                DeprecationWarning
-            )
-            super(Episode, self).__setattr__(refactor, value)
 
     def __getattr__(self, item):
         """Get attribute values for deprecated attributes."""
@@ -333,8 +318,7 @@ class Episode(TV):
             raise ValueError
 
         if episode:
-            if episode.loaded or episode.load_from_db(episode.season, episode.episode):
-                return episode
+            return episode
 
     @staticmethod
     def from_filepath(filepath):
@@ -397,10 +381,21 @@ class Episode(TV):
 
     @location.setter
     def location(self, value):
+        old_location = os.path.normpath(self._location)
+        new_location = os.path.normpath(value)
+
+        if value and self.is_location_valid(new_location):
+            self.file_size = os.path.getsize(new_location)
+        else:
+            self.file_size = 0
+
+        if new_location == old_location:
+            return
+
         log.debug('{id}: Setter sets location to {location}',
-                  {'id': self.series.series_id, 'location': value})
-        self._location = value
-        self.file_size = os.path.getsize(value) if value and self.is_location_valid(value) else 0
+                  {'id': self.series.series_id, 'location': new_location})
+
+        self._location = new_location
 
     @property
     def indexer_name(self):
@@ -421,6 +416,38 @@ class Episode(TV):
         )
 
         return date_parsed.isoformat()
+
+    @property
+    def status(self):
+        """Return the episode status."""
+        return self._status
+
+    @status.setter
+    def status(self, value):
+        self._status = value
+        self._sync_trakt(value)
+
+    def _sync_trakt(self, status):
+        """If Trakt enabled and trakt sync watchlist enabled, add/remove the episode from the watchlist."""
+        if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
+
+            upd = None
+            if status in [WANTED, FAILED]:
+                upd = 'Add'
+
+            elif status in [IGNORED, SKIPPED, DOWNLOADED, ARCHIVED]:
+                upd = 'Remove'
+
+            if not upd:
+                return
+
+            log.debug('{action} episode {episode}, showid: indexerid {show_id},'
+                      'Title {show_name} to Watchlist', {
+                          'action': upd, 'episode': self.episode,
+                          'show_id': self.series.series_id, 'show_name': self.series.name
+                      })
+
+            notifiers.trakt_notifier.update_watchlist_episode(self)
 
     @property
     def status_name(self):
@@ -605,10 +632,13 @@ class Episode(TV):
         self.hasnfo = any(all_nfos)
         self.hastbn = any(all_tbns)
 
-        return oldhasnfo != self.hasnfo or oldhastbn != self.hastbn
+        changed = oldhasnfo != self.hasnfo or oldhastbn != self.hastbn
+        if changed:
+            self.save_to_db()
+
+        return changed
 
     def _specify_episode(self, season, episode):
-
         sql_results = self.load_from_db(season, episode)
 
         if not sql_results:
@@ -648,7 +678,7 @@ class Episode(TV):
         :return:
         :rtype: bool
         """
-        if self.loaded:
+        if not self.dirty:
             return True
 
         main_db_con = db.DBConnection()
@@ -691,11 +721,12 @@ class Episode(TV):
             self.airdate = date.fromordinal(int(sql_results[0]['airdate']))
             self.status = int(sql_results[0]['status'] or UNSET)
             self.quality = int(sql_results[0]['quality'] or Quality.NA)
+            self.manually_searched = bool(sql_results[0]['manually_searched'])
             self.watched = bool(sql_results[0]['watched'])
 
             # don't overwrite my location
             if sql_results[0]['location']:
-                self._location = os.path.normpath(sql_results[0]['location'])
+                self._location = sql_results[0]['location']
             if sql_results[0]['file_size']:
                 self.file_size = int(sql_results[0]['file_size'])
             else:
@@ -731,7 +762,6 @@ class Episode(TV):
             if sql_results[0]['release_group'] is not None:
                 self.release_group = sql_results[0]['release_group']
 
-            self.loaded = True
             self.reset_dirty()
             return True
 
@@ -910,19 +940,6 @@ class Episode(TV):
             if self.indexerid != -1:
                 self.delete_episode()
             return False
-
-        # don't update series status if series directory is missing, unless it's missing on purpose
-        if all([not self.series.is_location_valid(),
-                not app.CREATE_MISSING_SHOW_DIRS,
-                not app.ADD_SHOWS_WO_DIR]):
-            log.warning(
-                '{id}: {series} episode statuses unchanged. Location is missing: {location}', {
-                    'id': self.series.series_id,
-                    'series': self.series.name,
-                    'location': self.series.location,
-                }
-            )
-            return
 
         if self.location:
             log.debug(
@@ -1169,7 +1186,6 @@ class Episode(TV):
         if self.check_for_meta_files():
             log.debug('{id}: Saving metadata changes to database',
                       {'id': self.series.series_id})
-            self.save_to_db()
 
     def __create_nfo(self, metadata_provider):
 
@@ -1366,9 +1382,7 @@ class Episode(TV):
             self.reset_dirty()
             return
 
-        self.loaded = False
         self.reset_dirty()
-
         return sql_query
 
     def save_to_db(self):
@@ -1415,7 +1429,6 @@ class Episode(TV):
         main_db_con = db.DBConnection()
         main_db_con.upsert('tv_episodes', new_value_dict, control_value_dict)
 
-        self.loaded = False
         self.reset_dirty()
 
     def full_path(self):
@@ -2083,6 +2096,7 @@ class Episode(TV):
         # Setting a location to episode, will get the size of the filepath
         with self.lock:
             self.location = filepath
+
         # If size from given filepath is 0 it means we couldn't determine file size
         same_size = old_size > 0 and self.file_size > 0 and self.file_size == old_size
 

@@ -3,7 +3,7 @@
 """
 streaming_service property
 """
-import re
+from rebulk.remodule import re
 
 from rebulk import Rebulk
 from rebulk.rules import Rule, RemoveMatch

@@ -34,7 +34,7 @@ from medusa.helper.common import (
     sanitize_filename,
 )
 from medusa.helpers import (
-    download_file,
+    chmod_as_parent, download_file,
 )
 from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
@@ -111,6 +111,28 @@ class GenericProvider(object):
         """Return the name of the current class."""
         return cls.__name__
 
+    def create_magnet(self, filename, result):
+        """
+        Create a .magnet file containing the Magnet URI.
+
+        :param filename: base filename (without extension).
+        :param result: SearchResult object.
+        :returns: True if the magnet file is created and verified.
+        """
+        filename_ext = '{filename}.magnet'.format(filename=filename)
+        log.info('Saving magnet file {result} to {location}',
+                 {'result': result.name, 'location': filename_ext})
+
+        with open(filename_ext, 'w', encoding='utf-8') as fp:
+            fp.write(result.url)
+
+        if self._verify_magnet(filename_ext):
+            log.info('Saved .magnet file {result} to {location}',
+                     {'result': result.name, 'location': filename_ext})
+            chmod_as_parent(filename)
+            return True
+        return False
+
     def download_result(self, result):
         """Download result from provider."""
         if not self.login():
@@ -132,12 +154,19 @@ class GenericProvider(object):
 
             verify = False if self.public else None
 
-            if download_file(url, filename, session=self.session, headers=self.headers,
+            filename_ext = '{filename}.{provider_type}'.format(
+                filename=filename, provider_type=result.provider.provider_type
+            )
+            if download_file(url, filename_ext, session=self.session, headers=self.headers,
                              verify=verify):
 
-                if self._verify_download(filename):
+                if self._verify_download(filename_ext):
                     log.info('Saved {result} to {location}',
-                             {'result': result.name, 'location': filename})
+                             {'result': result.name, 'location': filename_ext})
+                    return True
+
+            if result.url.startswith('magnet:') and app.SAVE_MAGNET_FILE:
+                if self.create_magnet(filename, result):
                     return True
 
         log.warning('Failed to download any results for {result}',
@@ -146,7 +175,7 @@ class GenericProvider(object):
         return False
 
     def _make_url(self, result):
-        """Return url if result is a magnet link."""
+        """Return url if result is a Magnet link."""
         urls = []
         filename = ''
 
@@ -169,7 +198,7 @@ class GenericProvider(object):
 
         return urls, filename
 
-    def _verify_download(self, file_name=None):
+    def _verify_download(self, file_name):
         return True
 
     def get_content(self, url, params=None, timeout=30, **kwargs):

@@ -10,7 +10,6 @@ import sys
 from random import choice
 
 from medusa import (
-    app,
     classes,
     common,
     config,
@@ -19,6 +18,7 @@ from medusa import (
     logger,
     ws,
 )
+from medusa.app import app
 from medusa.common import IGNORED, Quality, SKIPPED, WANTED, cpu_presets
 from medusa.helpers.utils import int_default, to_camel_case
 from medusa.indexers.config import INDEXER_TVDBV2, get_indexer_config
@@ -79,6 +79,7 @@ class ConfigHandler(BaseRequestHandler):
     patches = {
         # Main
         'rootDirs': ListField(app, 'ROOT_DIRS'),
+        'addTitleWithYear': BooleanField(app, 'ADD_TITLE_WITH_YEAR'),
 
         'showDefaults.status': EnumField(app, 'STATUS_DEFAULT', (SKIPPED, WANTED, IGNORED), int),
         'showDefaults.statusAfter': EnumField(app, 'STATUS_DEFAULT_AFTER', (SKIPPED, WANTED, IGNORED), int),
@@ -180,6 +181,7 @@ class ConfigHandler(BaseRequestHandler):
         'clients.torrents.label': StringField(app, 'TORRENT_LABEL'),
         'clients.torrents.labelAnime': StringField(app, 'TORRENT_LABEL_ANIME'),
         'clients.torrents.method': StringField(app, 'TORRENT_METHOD'),
+        'clients.torrents.saveMagnetFile': BooleanField(app, 'SAVE_MAGNET_FILE'),
         'clients.torrents.password': StringField(app, 'TORRENT_PASSWORD'),
         'clients.torrents.path': StringField(app, 'TORRENT_PATH'),
         'clients.torrents.paused': BooleanField(app, 'TORRENT_PAUSED'),
@@ -597,6 +599,7 @@ class DataGenerator(object):
         section_data['subtitles'] = {}
         section_data['subtitles']['enabled'] = bool(app.USE_SUBTITLES)
         section_data['recentShows'] = app.SHOWS_RECENT
+        section_data['addTitleWithYear'] = bool(app.ADD_TITLE_WITH_YEAR)
 
         # Pick a random series to show as background.
         # TODO: Recreate this in Vue when the webapp has a reliable list of shows to choose from.
@@ -1086,6 +1089,7 @@ class DataGenerator(object):
         section_data['torrents']['label'] = app.TORRENT_LABEL
         section_data['torrents']['labelAnime'] = app.TORRENT_LABEL_ANIME
         section_data['torrents']['method'] = app.TORRENT_METHOD
+        section_data['torrents']['saveMagnetFile'] = bool(app.SAVE_MAGNET_FILE)
         section_data['torrents']['path'] = app.TORRENT_PATH
         section_data['torrents']['paused'] = bool(app.TORRENT_PAUSED)
         section_data['torrents']['rpcUrl'] = app.TORRENT_RPCURL

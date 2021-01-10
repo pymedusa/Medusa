@@ -296,6 +296,12 @@
                                         </div>
                                     </div>
                                 </fieldset>
+
+                                <input type="submit"
+                                       class="btn-medusa config_submitter"
+                                       value="Save Changes"
+                                       :disabled="saving"
+                                >
                             </div>
                         </div>
                     </div>
@@ -364,11 +370,6 @@
                     </div> <!-- end of metatdata id -->
 
                     <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">{{system.dataDir}}</span></b> </h6>
-                    <input type="submit"
-                           class="btn-medusa pull-left config_submitter button"
-                           value="Save Changes"
-                           :disabled="saving"
-                    >
                 </div><!--/config-components//-->
             </form>
         </div><!--/config-content//-->

@@ -233,12 +233,14 @@ const webpackConfig = (env, mode) => ({
         // Copy bundled assets for each theme
         // Only use for assets emitted by Webpack.
         new FileManagerPlugin({
-            onEnd: {
-                copy: [
-                    ...perTheme(copyAssets('js')),
-                    ...perTheme(copyAssets('css')),
-                    ...perTheme(copyAssets('fonts'))
-                ]
+            events: {
+                onEnd: {
+                    copy: [
+                        ...perTheme(copyAssets('js')),
+                        ...perTheme(copyAssets('css')),
+                        ...perTheme(copyAssets('fonts'))
+                    ]
+                }
             }
         }),
         // Copy static files for each theme

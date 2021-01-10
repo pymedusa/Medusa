@@ -1247,7 +1247,8 @@
 ? - "[Group].Show.Name.S2.-.19.[1080p]"
   - /Show.Name.S2/[Group].Show.Name.S2.-.19.[1080p]
   - /Show Name S2/[Group].Show.Name.S2.-.19.[1080p]
-: title: Show Name S2
+: options: {show_type: anime}
+  title: Show Name S2
   absolute_episode: 19
   episode: 19
   screen_size: 1080p
@@ -1256,44 +1257,46 @@
 
 # AnimeWithSeasonAbsoluteEpisodeNumbers (negative scenario)
 ? "[Group].Show.Name.G2.-.19.[1080p]"
-: title: Show Name G2
+: options: {show_type: anime}
+  title: Show Name G2
   absolute_episode: 19
   episode: 19
   screen_size: 1080p
   release_group: Group
   type: episode
 
-# AnimeWithSeasonAbsoluteEpisodeNumbers (options show_type='normal', it disables this rule since it's only for animes)
+# AnimeWithSeasonAbsoluteEpisodeNumbers (anime, auto detected)
 ? "[Group].Show.Name.S2.-.19.[1080p]"
-: options: {show_type: normal}
-  title: Show Name
-  season: 2
-  episode_title: '19'
+: title: Show Name S2
+  absolute_episode: 19
+  episode: 19
   screen_size: 1080p
   release_group: Group
   type: episode
 
 # AnimeAbsoluteEpisodeNumbers
 ? "[Group].Show.Name.-.102.[720p]"
-: title: Show Name
+: options: {show_type: anime}
+  title: Show Name
   absolute_episode: 102
   episode: 102
   screen_size: 720p
   release_group: Group
   type: episode
 
-# AnimeAbsoluteEpisodeNumbers (options show_type='normal', it disables this rule since it's only for animes)
+# AnimeAbsoluteEpisodeNumbers (anime, auto detected)
 ? "[Group].Show.Name.-.102.[720p]"
-: options: {show_type: normal}
-  title: Show Name
+: title: Show Name
   episode: 102
+  absolute_episode: 102
   screen_size: 720p
   release_group: Group
   type: episode
 
 # AbsoluteEpisodeNumbers
 ? Show.Name.10.720p
-: title: Show Name
+: options: {show_type: anime}
+  title: Show Name
   absolute_episode: 10
   episode: 10
   screen_size: 720p
@@ -1301,8 +1304,8 @@
 
 # AbsoluteEpisodeNumbers (options show_type='normal', it disables this rule since it's only for animes)
 ? Show.Name.10.720p
-: options: {show_type: normal}
-  title: Show Name
+: title: Show Name
+  absolute_episode: 10
   episode: 10
   screen_size: 720p
   type: episode
@@ -2064,7 +2067,8 @@
 
 # Corner Case: Episode 2 with a number after it
 ? "[GroupName].Show.Name.-.02.5.(Special).[BD.1080p]"
-: title: Show Name 2
+: options: {show_type: anime}
+  title: Show Name 2
   absolute_episode: 5
   episode: 5
   episode_details: Special
@@ -2864,7 +2868,8 @@
 
 # Dubbed
 ? "[AnimeRG].Show.Name.-.03.[Eng.Dubbed].[720p].[WEB-DL].[JRR]"
-: title: Show Name
+: options: {show_type: anime}
+  title: Show Name
   absolute_episode: 3
   episode: 3
   language: en
@@ -3311,7 +3316,8 @@
 # Anime with numbers in title inside a folder (folder without season info)
 # Anime with numbers and using _ as separators
 ? 'C:\folder\[GROUP]_An_Anime_Show_100_-_10_[1080p]_mkv_-_`[GROUP]_An_Anime_Show_100_-_10_[1080p]_vol03+04_par2`'
-: title: An Anime Show 100
+: options: {show_type: anime}
+  title: An Anime Show 100
   absolute_episode: 10
   episode: 10
   screen_size: 1080p
@@ -4487,7 +4493,8 @@
   type: episode
 
 ? "[Raze].Jujutsu.Kaisen-09.x265.10bit.1080p.60fps"
-: title: Jujutsu Kaisen
+: options: {show_type: anime}
+  title: Jujutsu Kaisen
   episode: 9
   absolute_episode: 9
   release_group: Raze
@@ -4499,7 +4506,8 @@
   type: episode
 
 ? "[QCE]Jujutsu.Kaisen.10.x264.AAC.720p"
-: title: Jujutsu Kaisen
+: options: {show_type: anime}
+  title: Jujutsu Kaisen
   episode: 10
   absolute_episode: 10
   release_group: QCE
