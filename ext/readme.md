@@ -58,6 +58,7 @@ ext | **`subliminal`** | [2.1.0](https://pypi.org/project/subliminal/2.1.0/) | *
 ext | **`tmdbsimple`** | [2.7.0](https://pypi.org/project/tmdbsimple/2.7.0/) | **`medusa`** | -
 ext | **`tornado`** | [5.1.1](https://pypi.org/project/tornado/5.1.1/) | **`medusa`**, `tornroutes` | -
 ext | **`tornroutes`** | [0.5.1](https://pypi.org/project/tornroutes/0.5.1/) | **`medusa`** | -
+ext | **`trakt`** | [2.14.1](https://pypi.org/project/trakt/2.14.1/) | **`medusa`** | -
 ext | `trans` | [2.1.0](https://pypi.org/project/trans/2.1.0/) | `imdbpie` | File: `trans.py`
 ext | `ttl-cache` | [1.6](https://pypi.org/project/ttl-cache/1.6/) | **`medusa`** | File: `ttl_cache.py`
 ext | **`tvdbapiv2`** | pymedusa/[bf1272c](https://github.com/pymedusa/tvdbv2/tree/bf1272c9264c280c3048e89a1920e2bf5f386284) | **`medusa`** | -

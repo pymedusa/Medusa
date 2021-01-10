@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 import logging
 import time
 from collections import OrderedDict
-from threading import Lock
 
 import guessit
 
@@ -25,9 +24,9 @@ from medusa.indexers.exceptions import (
     IndexerException,
 )
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.name_parser.cache import BaseCache
 
 from six import iteritems
-
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -55,7 +54,7 @@ class NameParser(object):
         self.try_indexers = try_indexers
         self.naming_pattern = naming_pattern
         self.allow_multi_season = allow_multi_season
-        self.show_type = parse_method or ('anime' if series and series.is_anime else ('normal' if series else None))
+        self.show_type = parse_method or ('anime' if series and series.is_anime else 'normal')
 
     @staticmethod
     def _get_episodes_by_air_date(result):
@@ -303,8 +302,8 @@ class NameParser(object):
 
     def _parse_string(self, name):
         guess = guessit.guessit(name, dict(show_type=self.show_type))
-        result = self.to_parse_result(name, guess)
 
+        result = self.to_parse_result(name, guess)
         search_series = helpers.get_show(result.series_name, self.try_indexers) if not self.naming_pattern else None
 
         # confirm passed in show object indexer id matches result show object indexer id
@@ -376,7 +375,7 @@ class NameParser(object):
     @staticmethod
     def erase_cached_parse(indexer, indexer_id):
         """Remove all names from given indexer and indexer_id."""
-        name_parser_cache.remove(indexer, indexer_id)
+        name_parser_cache.remove_by_indexer(indexer, indexer_id)
 
     def parse(self, name, cache_result=True):
         """Parse the name into a ParseResult.
@@ -596,42 +595,10 @@ class ParseResult(object):
         return self.guess.get('video_codec')
 
 
-class NameParserCache(object):
+class NameParserCache(BaseCache):
     """Name parser cache."""
 
-    def __init__(self, max_size=1000):
-        """Initialize the cache with a maximum size."""
-        self.cache = OrderedDict()
-        self.max_size = max_size
-        self.lock = Lock()
-
-    def add(self, name, parse_result):
-        """Add the result to the parser cache.
-
-        :param name:
-        :type name: str
-        :param parse_result:
-        :type parse_result: ParseResult
-        """
-        with self.lock:
-            while len(self.cache) >= self.max_size:
-                self.cache.popitem(last=False)
-            self.cache[name] = parse_result
-
-    def get(self, name):
-        """Return the cached parsed result.
-
-        :param name:
-        :type name: str
-        :return:
-        :rtype: ParseResult
-        """
-        with self.lock:
-            if name in self.cache:
-                log.debug('Using cached parse result for {name}', {'name': name})
-                return self.cache[name]
-
-    def remove(self, indexer, indexer_id):
+    def remove_by_indexer(self, indexer, indexer_id):
         """Remove cache item given indexer and indexer_id."""
         with self.lock:
             to_remove = [

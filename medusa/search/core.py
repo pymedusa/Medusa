@@ -151,6 +151,7 @@ def snatch_episode(result):
     # Torrents can be sent to clients or saved to disk
     elif result.result_type == u'torrent':
         # torrents are saved to disk when blackhole mode
+        # Handle SAVE_MAGNET_FILE
         if app.TORRENT_METHOD == u'blackhole':
             result_downloaded = _download_result(result)
         else:
@@ -222,7 +223,7 @@ def snatch_episode(result):
             notifiers.notify_snatch(cur_ep_obj, result)
 
             if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
-                trakt_data.append((cur_ep_obj.season, cur_ep_obj.episode))
+                trakt_data.append(cur_ep_obj)
                 log.info(
                     u'Adding {0} {1} to Trakt watchlist',
                     result.series.name,
@@ -230,9 +231,8 @@ def snatch_episode(result):
                 )
 
     if trakt_data:
-        data_episode = notifiers.trakt_notifier.trakt_episode_data_generate(trakt_data)
-        if data_episode:
-            notifiers.trakt_notifier.update_watchlist(result.series, data_episode=data_episode, update=u'add')
+        for episode in trakt_data:
+            notifiers.trakt_notifier.add_episode_to_watchlist(episode)
 
     if sql_l:
         main_db_con = db.DBConnection()

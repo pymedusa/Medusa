@@ -46,7 +46,11 @@ class ConfigSubtitles(Config):
         results = []
 
         config.change_SUBTITLES_FINDER_FREQUENCY(subtitles_finder_frequency)
-        config.change_USE_SUBTITLES(use_subtitles)
+        app._init_scheduler(
+            app_prop='USE_SUBTITLES',
+            scheduler='subtitles_finder_scheduler',
+            enabled=config.checkbox_to_value(use_subtitles)
+        )
         app.SUBTITLES_ERASE_CACHE = config.checkbox_to_value(subtitles_erase_cache)
         app.SUBTITLES_LANGUAGES = [code.strip() for code in subtitles_languages.split(',') if code.strip() in subtitles.subtitle_code_filter()] if subtitles_languages else []
         app.SUBTITLES_DIR = subtitles_dir

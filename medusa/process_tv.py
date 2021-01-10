@@ -487,9 +487,6 @@ class ProcessResult(object):
                     if rar_handle.needs_password():
                         raise ValueError('Rar requires a password')
 
-                    # raise an exception if the rar file is broken
-                    rar_handle.testrar()
-
                     # Skip extraction if any file in archive has previously been extracted
                     skip_extraction = False
                     for file_in_archive in [os.path.basename(each.filename)
@@ -508,6 +505,8 @@ class ProcessResult(object):
                             break
 
                     if not skip_extraction:
+                        # raise an exception if the rar file is broken
+                        rar_handle.testrar()
                         rar_handle.extractall(path=path)
 
                     for each in rar_handle.infolist():

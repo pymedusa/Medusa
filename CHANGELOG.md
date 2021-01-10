@@ -3,9 +3,13 @@
 #### New Features
 
 #### Improvements
+- Replace trakt lib with PyTrakt (and switch to OAuth device authentication). ([8916](https://github.com/pymedusa/Medusa/pull/8916))
+- Make all thread schedulers hot-reload when enabled/disabled. ([8948](https://github.com/pymedusa/Medusa/pull/8948))
+- Add an option to create .magnet files when a torrent can't be downloaded from a magnet URI, using one of the magnet cache registries. ([8955](https://github.com/pymedusa/Medusa/pull/8955))
 
 #### Fixes
 - Fix setting default episode status (after) when adding a new show. ([8918](https://github.com/pymedusa/Medusa/pull/8918))
+- Fix provider anidex. Add a bypass to it's DDOS-Gaurd protection. ([8955](https://github.com/pymedusa/Medusa/pull/8955))
 
 -----
 

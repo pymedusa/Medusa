@@ -100,6 +100,8 @@ from medusa.themes import read_themes
 from medusa.tv import Series
 from medusa.updater.version_checker import CheckVersion
 
+import trakt
+
 
 logger = logging.getLogger(__name__)
 
@@ -618,6 +620,7 @@ class Application(object):
             app.NAMING_MULTI_EP = check_setting_int(app.CFG, 'General', 'naming_multi_ep', 1)
             app.NAMING_ANIME_MULTI_EP = check_setting_int(app.CFG, 'General', 'naming_anime_multi_ep', 1)
             app.NAMING_STRIP_YEAR = bool(check_setting_int(app.CFG, 'General', 'naming_strip_year', 0))
+            app.ADD_TITLE_WITH_YEAR = bool(check_setting_int(app.CFG, 'General', 'add_title_with_year', 0))
             app.USE_NZBS = bool(check_setting_int(app.CFG, 'General', 'use_nzbs', 0))
             app.USE_TORRENTS = bool(check_setting_int(app.CFG, 'General', 'use_torrents', 1))
 
@@ -625,7 +628,7 @@ class Application(object):
             app.TORRENT_METHOD = check_setting_str(app.CFG, 'General', 'torrent_method', 'blackhole',
                                                    valid_values=('blackhole', 'utorrent', 'transmission', 'deluge',
                                                                  'deluged', 'downloadstation', 'rtorrent', 'qbittorrent', 'mlnet'))
-
+            app.SAVE_MAGNET_FILE = bool(check_setting_int(app.CFG, 'General', 'save_magnet_file', 1))
             app.DOWNLOAD_PROPERS = bool(check_setting_int(app.CFG, 'General', 'download_propers', 1))
             app.PROPERS_SEARCH_DAYS = max(2, min(8, check_setting_int(app.CFG, 'General', 'propers_search_days', 2)))
             app.REMOVE_FROM_CLIENT = bool(check_setting_int(app.CFG, 'General', 'remove_from_client', 0))
@@ -1012,6 +1015,9 @@ class Application(object):
             app.FALLBACK_PLEX_ENABLE = check_setting_int(app.CFG, 'General', 'fallback_plex_enable', 1)
             app.FALLBACK_PLEX_NOTIFICATIONS = check_setting_int(app.CFG, 'General', 'fallback_plex_notifications', 1)
             app.FALLBACK_PLEX_TIMEOUT = check_setting_int(app.CFG, 'General', 'fallback_plex_timeout', 3)
+
+            # Initialize trakt config path.
+            trakt.core.CONFIG_PATH = os.path.join(app.CACHE_DIR, '.pytrakt.json')
 
             # reconfigure the logger
             app_logger.reconfigure()
@@ -1532,6 +1538,7 @@ class Application(object):
         new_config['General']['use_torrents'] = int(app.USE_TORRENTS)
         new_config['General']['nzb_method'] = app.NZB_METHOD
         new_config['General']['torrent_method'] = app.TORRENT_METHOD
+        new_config['General']['save_magnet_file'] = int(app.SAVE_MAGNET_FILE)
         new_config['General']['usenet_retention'] = int(app.USENET_RETENTION)
         new_config['General']['cache_trimming'] = int(app.CACHE_TRIMMING)
         new_config['General']['max_cache_age'] = int(app.MAX_CACHE_AGE)
@@ -1566,6 +1573,7 @@ class Application(object):
         new_config['General']['auto_update'] = int(app.AUTO_UPDATE)
         new_config['General']['notify_on_update'] = int(app.NOTIFY_ON_UPDATE)
         new_config['General']['naming_strip_year'] = int(app.NAMING_STRIP_YEAR)
+        new_config['General']['add_title_with_year'] = int(app.ADD_TITLE_WITH_YEAR)
         new_config['General']['naming_pattern'] = app.NAMING_PATTERN
         new_config['General']['naming_custom_abd'] = int(app.NAMING_CUSTOM_ABD)
         new_config['General']['naming_abd_pattern'] = app.NAMING_ABD_PATTERN

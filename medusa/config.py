@@ -28,7 +28,8 @@ from builtins import str
 
 from contextlib2 import suppress
 
-from medusa import app, common, db, helpers, logger, naming
+from medusa import common, db, helpers, logger, naming
+from medusa.app import app
 from medusa.helper.common import try_int
 from medusa.helpers.utils import split_and_strip
 from medusa.logger.adapters.style import BraceAdapter
@@ -78,13 +79,15 @@ def change_HTTPS_CERT(https_cert):
     :param https_cert: path to the new certificate file
     :return: True on success, False on failure
     """
-    if https_cert == '':
-        app.HTTPS_CERT = ''
+    if not https_cert:
+        app._HTTPS_CERT = ''
         return True
 
-    if os.path.normpath(app.HTTPS_CERT) != os.path.normpath(https_cert):
+    app_https_cert = os.path.normpath(app._HTTPS_CERT) if app._HTTPS_CERT else None
+
+    if app_https_cert != os.path.normpath(https_cert):
         if helpers.make_dir(os.path.dirname(os.path.abspath(https_cert))):
-            app.HTTPS_CERT = os.path.normpath(https_cert)
+            app._HTTPS_CERT = os.path.normpath(https_cert)
             log.info(u'Changed https cert path to {cert_path}', {u'cert_path': https_cert})
         else:
             return False
@@ -99,13 +102,15 @@ def change_HTTPS_KEY(https_key):
     :param https_key: path to the new key file
     :return: True on success, False on failure
     """
-    if https_key == '':
-        app.HTTPS_KEY = ''
+    if not https_key:
+        app._HTTPS_KEY = ''
         return True
 
-    if os.path.normpath(app.HTTPS_KEY) != os.path.normpath(https_key):
+    app_https_key = os.path.normpath(app._HTTPS_KEY) if app._HTTPS_KEY else None
+
+    if app_https_key != os.path.normpath(https_key):
         if helpers.make_dir(os.path.dirname(os.path.abspath(https_key))):
-            app.HTTPS_KEY = os.path.normpath(https_key)
+            app._HTTPS_KEY = os.path.normpath(https_key)
             log.info(u'Changed https key path to {key_path}', {u'key_path': https_key})
         else:
             return False
@@ -120,14 +125,19 @@ def change_LOG_DIR(log_dir):
     :param log_dir: Path to new logging directory
     :return: True on success, False on failure
     """
-    abs_log_dir = os.path.normpath(os.path.join(app.DATA_DIR, log_dir))
+    if not log_dir:
+        app._LOG_DIR = ''
+        return True
 
-    if os.path.normpath(app.LOG_DIR) != abs_log_dir:
+    abs_log_dir = os.path.normpath(os.path.join(app.DATA_DIR, log_dir))
+    app_log_dir = os.path.normpath(app._LOG_DIR) if app._LOG_DIR else None
+
+    if app_log_dir != abs_log_dir:
         if not helpers.make_dir(abs_log_dir):
             return False
 
         app.ACTUAL_LOG_DIR = os.path.normpath(log_dir)
-        app.LOG_DIR = abs_log_dir
+        app._LOG_DIR = abs_log_dir
 
     return True
 
@@ -139,13 +149,15 @@ def change_NZB_DIR(nzb_dir):
     :param nzb_dir: New NZB Folder location
     :return: True on success, False on failure
     """
-    if nzb_dir == '':
-        app.NZB_DIR = ''
+    if not nzb_dir:
+        app._NZB_DIR = ''
         return True
 
-    if os.path.normpath(app.NZB_DIR) != os.path.normpath(nzb_dir):
+    app_nzb_dir = os.path.normpath(app._NZB_DIR) if app._NZB_DIR else None
+
+    if app_nzb_dir != os.path.normpath(nzb_dir):
         if helpers.make_dir(nzb_dir):
-            app.NZB_DIR = os.path.normpath(nzb_dir)
+            app._NZB_DIR = os.path.normpath(nzb_dir)
             log.info(u'Changed NZB folder to {nzb_dir}', {'nzb_dir': nzb_dir})
         else:
             return False
@@ -160,13 +172,15 @@ def change_TORRENT_DIR(torrent_dir):
     :param torrent_dir: New torrent directory
     :return: True on success, False on failure
     """
-    if torrent_dir == '':
-        app.TORRENT_DIR = ''
+    if not torrent_dir:
+        app._TORRENT_DIR = ''
         return True
 
-    if os.path.normpath(app.TORRENT_DIR) != os.path.normpath(torrent_dir):
+    app_torrent_dir = os.path.normpath(app._TORRENT_DIR) if app._TORRENT_DIR else None
+
+    if app_torrent_dir != os.path.normpath(torrent_dir):
         if helpers.make_dir(torrent_dir):
-            app.TORRENT_DIR = os.path.normpath(torrent_dir)
+            app._TORRENT_DIR = os.path.normpath(torrent_dir)
             log.info(u'Changed torrent folder to {torrent_dir}', {u'torrent_dir': torrent_dir})
         else:
             return False
@@ -181,13 +195,15 @@ def change_TV_DOWNLOAD_DIR(tv_download_dir):
     :param tv_download_dir: New tv download directory
     :return: True on success, False on failure
     """
-    if tv_download_dir == '':
-        app.TV_DOWNLOAD_DIR = ''
+    if not tv_download_dir:
+        app._TV_DOWNLOAD_DIR = ''
         return True
 
-    if os.path.normpath(app.TV_DOWNLOAD_DIR) != os.path.normpath(tv_download_dir):
+    app_tv_download_dir = os.path.normpath(app._TV_DOWNLOAD_DIR) if app._TV_DOWNLOAD_DIR else None
+
+    if app_tv_download_dir != os.path.normpath(tv_download_dir):
         if helpers.make_dir(tv_download_dir):
-            app.TV_DOWNLOAD_DIR = os.path.normpath(tv_download_dir)
+            app._TV_DOWNLOAD_DIR = os.path.normpath(tv_download_dir)
             log.info(u'Changed TV download folder to {tv_download_dir}', {u'tv_download_dir': tv_download_dir})
         else:
             return False
@@ -197,283 +213,187 @@ def change_TV_DOWNLOAD_DIR(tv_download_dir):
 
 def change_AUTOPOSTPROCESSOR_FREQUENCY(freq):
     """
-    Change frequency of automatic postprocessing thread
+    Change frequency of automatic postprocessing thread.
     TODO: Make all thread frequency changers in config.py return True/False status
 
     :param freq: New frequency
     """
-    app.AUTOPOSTPROCESSOR_FREQUENCY = try_int(freq, 10)
+    if app._AUTOPOSTPROCESSOR_FREQUENCY == freq:
+        return
 
-    if app.AUTOPOSTPROCESSOR_FREQUENCY < app.MIN_AUTOPOSTPROCESSOR_FREQUENCY:
-        app.AUTOPOSTPROCESSOR_FREQUENCY = app.MIN_AUTOPOSTPROCESSOR_FREQUENCY
+    app._AUTOPOSTPROCESSOR_FREQUENCY = try_int(freq, 10)
 
-    app.post_processor_scheduler.cycleTime = datetime.timedelta(minutes=app.AUTOPOSTPROCESSOR_FREQUENCY)
+    if app._AUTOPOSTPROCESSOR_FREQUENCY < app.MIN_AUTOPOSTPROCESSOR_FREQUENCY:
+        app._AUTOPOSTPROCESSOR_FREQUENCY = app.MIN_AUTOPOSTPROCESSOR_FREQUENCY
+    if app.post_processor_scheduler:
+        app.post_processor_scheduler.cycleTime = datetime.timedelta(minutes=app._AUTOPOSTPROCESSOR_FREQUENCY)
 
 
 def change_TORRENT_CHECKER_FREQUENCY(freq):
     """
-    Change frequency of Torrent Checker thread
+    Change frequency of Torrent Checker thread.
 
     :param freq: New frequency
     """
-    app.TORRENT_CHECKER_FREQUECY = try_int(freq, app.DEFAULT_TORRENT_CHECKER_FREQUENCY)
+    if app._TORRENT_CHECKER_FREQUENCY == freq:
+        return
 
-    if app.TORRENT_CHECKER_FREQUECY < app.MIN_TORRENT_CHECKER_FREQUENCY:
-        app.TORRENT_CHECKER_FREQUECY = app.MIN_TORRENT_CHECKER_FREQUENCY
+    app._TORRENT_CHECKER_FREQUENCY = try_int(freq, app.DEFAULT_TORRENT_CHECKER_FREQUENCY)
 
-    app.torrent_checker_scheduler.cycleTime = datetime.timedelta(minutes=app.TORRENT_CHECKER_FREQUECY)
+    if app._TORRENT_CHECKER_FREQUENCY < app.MIN_TORRENT_CHECKER_FREQUENCY:
+        app._TORRENT_CHECKER_FREQUENCY = app.MIN_TORRENT_CHECKER_FREQUENCY
+
+    if app.torrent_checker_scheduler:
+        app.torrent_checker_scheduler.cycleTime = datetime.timedelta(minutes=app._TORRENT_CHECKER_FREQUENCY)
 
 
 def change_DAILYSEARCH_FREQUENCY(freq):
     """
-    Change frequency of daily search thread
+    Change frequency of daily search thread.
 
     :param freq: New frequency
     """
-    app.DAILYSEARCH_FREQUENCY = try_int(freq, app.DEFAULT_DAILYSEARCH_FREQUENCY)
+    if app._DAILYSEARCH_FREQUENCY == freq:
+        return
 
-    if app.DAILYSEARCH_FREQUENCY < app.MIN_DAILYSEARCH_FREQUENCY:
-        app.DAILYSEARCH_FREQUENCY = app.MIN_DAILYSEARCH_FREQUENCY
+    app._DAILYSEARCH_FREQUENCY = try_int(freq, app.DEFAULT_DAILYSEARCH_FREQUENCY)
 
-    app.daily_search_scheduler.cycleTime = datetime.timedelta(minutes=app.DAILYSEARCH_FREQUENCY)
+    if app._DAILYSEARCH_FREQUENCY < app.MIN_DAILYSEARCH_FREQUENCY:
+        app._DAILYSEARCH_FREQUENCY = app.MIN_DAILYSEARCH_FREQUENCY
+
+    if app.daily_search_scheduler:
+        app.daily_search_scheduler.cycleTime = datetime.timedelta(minutes=app._DAILYSEARCH_FREQUENCY)
 
 
 def change_BACKLOG_FREQUENCY(freq):
     """
-    Change frequency of backlog thread
+    Change frequency of backlog thread.
 
     :param freq: New frequency
     """
-    app.BACKLOG_FREQUENCY = try_int(freq, app.DEFAULT_BACKLOG_FREQUENCY)
-
-    app.MIN_BACKLOG_FREQUENCY = app.instance.get_backlog_cycle_time()
-    if app.BACKLOG_FREQUENCY < app.MIN_BACKLOG_FREQUENCY:
-        app.BACKLOG_FREQUENCY = app.MIN_BACKLOG_FREQUENCY
-
-    app.backlog_search_scheduler.cycleTime = datetime.timedelta(minutes=app.BACKLOG_FREQUENCY)
-
-
-def change_PROPERS_FREQUENCY(check_propers_interval):
-    """
-    Change frequency of backlog thread
-
-    :param freq: New frequency
-    """
-    if not app.DOWNLOAD_PROPERS:
+    if app._BACKLOG_FREQUENCY == freq:
         return
 
-    if app.CHECK_PROPERS_INTERVAL == check_propers_interval:
+    app._BACKLOG_FREQUENCY = try_int(freq, app.DEFAULT_BACKLOG_FREQUENCY)
+
+    app.MIN_BACKLOG_FREQUENCY = app.instance.get_backlog_cycle_time()
+    if app._BACKLOG_FREQUENCY < app.MIN_BACKLOG_FREQUENCY:
+        app._BACKLOG_FREQUENCY = app.MIN_BACKLOG_FREQUENCY
+
+    if app.backlog_search_scheduler:
+        app.backlog_search_scheduler.cycleTime = datetime.timedelta(minutes=app._BACKLOG_FREQUENCY)
+
+
+def change_CHECK_PROPERS_INTERVAL(check_propers_interval):
+    """
+    Change frequency of backlog thread.
+
+    :param freq: New frequency
+    """
+    if not app._DOWNLOAD_PROPERS:
+        return
+
+    if app._CHECK_PROPERS_INTERVAL == check_propers_interval:
         return
 
     if check_propers_interval in app.PROPERS_SEARCH_INTERVAL:
         update_interval = datetime.timedelta(minutes=app.PROPERS_SEARCH_INTERVAL[check_propers_interval])
     else:
         update_interval = datetime.timedelta(hours=1)
-    app.CHECK_PROPERS_INTERVAL = check_propers_interval
-    app.proper_finder_scheduler.cycleTime = update_interval
+    app._CHECK_PROPERS_INTERVAL = check_propers_interval
+    if app.proper_finder_scheduler:
+        app.proper_finder_scheduler.cycleTime = update_interval
 
 
 def change_UPDATE_FREQUENCY(freq):
     """
-    Change frequency of daily updater thread
+    Change frequency of daily updater thread.
 
     :param freq: New frequency
     """
-    app.UPDATE_FREQUENCY = try_int(freq, app.DEFAULT_UPDATE_FREQUENCY)
+    if app._UPDATE_FREQUENCY == freq:
+        return
 
-    if app.UPDATE_FREQUENCY < app.MIN_UPDATE_FREQUENCY:
-        app.UPDATE_FREQUENCY = app.MIN_UPDATE_FREQUENCY
+    app._UPDATE_FREQUENCY = try_int(freq, app.DEFAULT_UPDATE_FREQUENCY)
 
-    app.version_check_scheduler.cycleTime = datetime.timedelta(hours=app.UPDATE_FREQUENCY)
+    if app._UPDATE_FREQUENCY < app.MIN_UPDATE_FREQUENCY:
+        app._UPDATE_FREQUENCY = app.MIN_UPDATE_FREQUENCY
+
+    if app.version_check_scheduler:
+        app.version_check_scheduler.cycleTime = datetime.timedelta(hours=app._UPDATE_FREQUENCY)
 
 
 def change_SHOWUPDATE_HOUR(freq):
     """
-    Change frequency of show updater thread
+    Change frequency of show updater thread.
 
     :param freq: New frequency
     """
-    app.SHOWUPDATE_HOUR = try_int(freq, app.DEFAULT_SHOWUPDATE_HOUR)
+    if app._SHOWUPDATE_HOUR == freq:
+        return
 
-    if app.SHOWUPDATE_HOUR > 23:
-        app.SHOWUPDATE_HOUR = 0
-    elif app.SHOWUPDATE_HOUR < 0:
-        app.SHOWUPDATE_HOUR = 0
+    app._SHOWUPDATE_HOUR = try_int(freq, app.DEFAULT_SHOWUPDATE_HOUR)
 
-    app.show_update_scheduler.start_time = datetime.time(hour=app.SHOWUPDATE_HOUR)
+    if app._SHOWUPDATE_HOUR > 23:
+        app._SHOWUPDATE_HOUR = 0
+    elif app._SHOWUPDATE_HOUR < 0:
+        app._SHOWUPDATE_HOUR = 0
+
+    if app.show_update_scheduler:
+        app.show_update_scheduler.start_time = datetime.time(hour=app._SHOWUPDATE_HOUR)
 
 
 def change_SUBTITLES_FINDER_FREQUENCY(subtitles_finder_frequency):
     """
-    Change frequency of subtitle thread
+    Change frequency of subtitle thread.
 
     :param subtitles_finder_frequency: New frequency
     """
+    if app._SUBTITLES_FINDER_FREQUENCY == subtitles_finder_frequency:
+        return
+
     if subtitles_finder_frequency == '' or subtitles_finder_frequency is None:
         subtitles_finder_frequency = 1
 
-    app.SUBTITLES_FINDER_FREQUENCY = try_int(subtitles_finder_frequency, 1)
+    app._SUBTITLES_FINDER_FREQUENCY = try_int(subtitles_finder_frequency, 1)
 
 
 def change_VERSION_NOTIFY(version_notify):
     """
-    Change frequency of versioncheck thread
+    Change frequency of versioncheck thread.
 
     :param version_notify: New frequency
     """
+    if app._VERSION_NOTIFY == version_notify:
+        return
 
-    oldSetting = app.VERSION_NOTIFY
+    old_setting = app._VERSION_NOTIFY
 
-    app.VERSION_NOTIFY = version_notify
+    app._VERSION_NOTIFY = version_notify
 
     if not version_notify:
         app.NEWEST_VERSION_STRING = None
 
-    if oldSetting is False and version_notify is True:
+    if app.version_check_scheduler and old_setting is False and version_notify is True:
         app.version_check_scheduler.forceRun()
 
 
-def change_GIT_PATH():
+def change_GIT_PATH(path):
     """
     Recreate the version_check scheduler when GIT_PATH is changed.
+
     Force a run to clear or set any error messages.
     """
+    if app._GIT_PATH == path:
+        return
+
+    app._GIT_PATH = path
     app.version_check_scheduler = None
     app.version_check_scheduler = scheduler.Scheduler(
-        CheckVersion(), cycleTime=datetime.timedelta(hours=app.UPDATE_FREQUENCY), threadName='CHECKVERSION', silent=False)
+        CheckVersion(), cycleTime=datetime.timedelta(hours=app._UPDATE_FREQUENCY), threadName='CHECKVERSION', silent=False)
     app.version_check_scheduler.enable = True
     app.version_check_scheduler.start()
     app.version_check_scheduler.forceRun()
-
-
-def change_DOWNLOAD_PROPERS(download_propers):
-    """
-    Enable/Disable proper download thread
-    TODO: Make this return True/False on success/failure
-
-    :param download_propers: New desired state
-    """
-    download_propers = checkbox_to_value(download_propers)
-
-    if app.DOWNLOAD_PROPERS == download_propers:
-        return
-
-    app.DOWNLOAD_PROPERS = download_propers
-    if app.DOWNLOAD_PROPERS:
-        if not app.proper_finder_scheduler.enable:
-            log.info(u'Starting PROPERFINDER thread')
-            app.proper_finder_scheduler.silent = False
-            app.proper_finder_scheduler.enable = True
-        else:
-            log.info(u'Unable to start PROPERFINDER thread. Already running')
-    else:
-        app.proper_finder_scheduler.enable = False
-        app.trakt_checker_scheduler.silent = True
-        log.info(u'Stopping PROPERFINDER thread')
-
-
-def change_USE_TRAKT(use_trakt):
-    """
-    Enable/disable trakt thread
-    TODO: Make this return true/false on success/failure
-
-    :param use_trakt: New desired state
-    """
-    use_trakt = checkbox_to_value(use_trakt)
-
-    if app.USE_TRAKT == use_trakt:
-        return
-
-    app.USE_TRAKT = use_trakt
-    if app.USE_TRAKT:
-        if not app.trakt_checker_scheduler.enable:
-            log.info(u'Starting TRAKTCHECKER thread')
-            app.trakt_checker_scheduler.silent = False
-            app.trakt_checker_scheduler.enable = True
-        else:
-            log.info(u'Unable to start TRAKTCHECKER thread. Already running')
-    else:
-        app.trakt_checker_scheduler.enable = False
-        app.trakt_checker_scheduler.silent = True
-        log.info(u'Stopping TRAKTCHECKER thread')
-
-
-def change_USE_SUBTITLES(use_subtitles):
-    """
-    Enable/Disable subtitle searcher
-    TODO: Make this return true/false on success/failure
-
-    :param use_subtitles: New desired state
-    """
-    use_subtitles = checkbox_to_value(use_subtitles)
-
-    if app.USE_SUBTITLES == use_subtitles:
-        return
-
-    app.USE_SUBTITLES = use_subtitles
-    if app.USE_SUBTITLES:
-        if not app.subtitles_finder_scheduler.enable:
-            log.info(u'Starting SUBTITLESFINDER thread')
-            app.subtitles_finder_scheduler.silent = False
-            app.subtitles_finder_scheduler.enable = True
-        else:
-            log.info(u'Unable to start SUBTITLESFINDER thread. Already running')
-    else:
-        app.subtitles_finder_scheduler.enable = False
-        app.subtitles_finder_scheduler.silent = True
-        log.info(u'Stopping SUBTITLESFINDER thread')
-
-
-def change_PROCESS_AUTOMATICALLY(process_automatically):
-    """
-    Enable/Disable postprocessor thread
-    TODO: Make this return True/False on success/failure
-
-    :param process_automatically: New desired state
-    """
-    process_automatically = checkbox_to_value(process_automatically)
-
-    if app.PROCESS_AUTOMATICALLY == process_automatically:
-        return
-
-    app.PROCESS_AUTOMATICALLY = process_automatically
-    if app.PROCESS_AUTOMATICALLY:
-        if not app.post_processor_scheduler.enable:
-            log.info(u'Starting POSTPROCESSOR thread')
-            app.post_processor_scheduler.silent = False
-            app.post_processor_scheduler.enable = True
-        else:
-            log.info(u'Unable to start POSTPROCESSOR thread. Already running')
-    else:
-        log.info(u'Stopping POSTPROCESSOR thread')
-        app.post_processor_scheduler.enable = False
-        app.post_processor_scheduler.silent = True
-
-
-def change_remove_from_client(new_state):
-    """
-    Enable/disable TorrentChecker thread
-    TODO: Make this return true/false on success/failure
-
-    :param new_state: New desired state
-    """
-    new_state = checkbox_to_value(new_state)
-
-    if app.REMOVE_FROM_CLIENT == new_state:
-        return
-
-    app.REMOVE_FROM_CLIENT = new_state
-    if app.REMOVE_FROM_CLIENT:
-        if not app.torrent_checker_scheduler.enable:
-            log.info(u'Starting TORRENTCHECKER thread')
-            app.torrent_checker_scheduler.silent = False
-            app.torrent_checker_scheduler.enable = True
-        else:
-            log.info(u'Unable to start TORRENTCHECKER thread. Already running')
-    else:
-        app.torrent_checker_scheduler.enable = False
-        app.torrent_checker_scheduler.silent = True
-        log.info(u'Stopping TORRENTCHECKER thread')
 
 
 def change_theme(theme_name):
