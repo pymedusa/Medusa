@@ -158,7 +158,6 @@ export default {
     watch: {
         'postprocessing.processMethod': function(value) {
             if (value) {
-                debugger;
                 this.processMethod = value;
             }
         },
