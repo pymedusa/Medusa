@@ -105,7 +105,7 @@ class Notifier(object):
         return False
 
     @staticmethod
-    def update_watchlist_episode(episodes, remove=False):
+    def update_watchlist_episode(show_obj, episodes, remove=False):
         """
         Use Trakt sync/watchlist to updata an episode.
 
@@ -115,9 +115,9 @@ class Notifier(object):
         """
         try:
             if remove:
-                result = sync.remove_from_watchlist({'shows': [create_episode_structure(episodes)]})
+                result = sync.remove_from_watchlist({'shows': [create_episode_structure(show_obj, episodes)]})
             else:
-                result = sync.add_to_watchlist({'shows': [create_episode_structure(episodes)]})
+                result = sync.add_to_watchlist({'shows': [create_episode_structure(show_obj, episodes)]})
         except TraktException as error:
             log.warning('Unable to update Trakt watchlist: {error!r}', {'error': error})
             return False

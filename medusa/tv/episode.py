@@ -447,7 +447,7 @@ class Episode(TV):
                           'show_id': self.series.series_id, 'show_name': self.series.name
                       })
 
-            notifiers.trakt_notifier.update_watchlist_episode(self)
+            notifiers.trakt_notifier.update_watchlist_episode(self.series, self)
 
     @property
     def status_name(self):
