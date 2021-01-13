@@ -230,13 +230,13 @@ def update_scene_exceptions(series_obj, scene_exceptions):
         # A change has been made to the scene exception list.
 
         # Prevent adding duplicate scene exceptions.
-        if exception['title'] not in exceptions_cache[(series_obj.indexer, series_obj.series_id)][exception['season']]:
+        if exception.title not in exceptions_cache[(series_obj.indexer, series_obj.series_id)][exception.season]:
             # Add to db
             main_db_con.action(
                 'INSERT INTO scene_exceptions '
                 '(indexer, series_id, title, season, custom) '
                 'VALUES (?,?,?,?,?)',
-                [series_obj.indexer, series_obj.series_id, exception['title'], exception['season'], exception['custom']]
+                [series_obj.indexer, series_obj.series_id, exception.title, exception.season, exception.custom]
             )
 
 
