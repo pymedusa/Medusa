@@ -1019,6 +1019,7 @@ class Application(object):
 
             # Initialize trakt config path.
             trakt.core.CONFIG_PATH = os.path.join(app.CACHE_DIR, '.pytrakt.json')
+            trakt.core.load_config()
 
             # reconfigure the logger
             app_logger.reconfigure()
