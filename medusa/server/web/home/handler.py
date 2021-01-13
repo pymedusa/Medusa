@@ -51,8 +51,7 @@ from medusa.helpers.anidb import get_release_groups_for_anime
 from medusa.indexers.api import indexerApi
 from medusa.indexers.utils import indexer_name_to_id
 from medusa.scene_exceptions import (
-    get_all_scene_exceptions,
-    get_scene_exceptions,
+    get_all_scene_exceptions
 )
 from medusa.scene_numbering import (
     get_scene_absolute_numbering,
