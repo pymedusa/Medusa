@@ -111,12 +111,12 @@ class PostProcessQueueItem(generic_queue.QueueItem):
             # Store a bitwize combined status in db.history.
             # If succeeded store Postprocessed + Completed. (384)
             # If failed store Postprocessed + Failed. (272)
-            if process_results.succeeded:
-                status.add_status_string('Completed')
-                self.success = True
-            else:
+            if self.failed or not process_results.succeeded:
                 status.add_status_string('Failed')
                 self.success = False
+            else:
+                status.add_status_string('Completed')
+                self.success = True
 
             self.update_resource(status)
 
