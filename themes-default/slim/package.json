@@ -31,8 +31,8 @@
     "jest/**/@babel/core": "7.12.10"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "1.2.32",
-    "@fortawesome/free-solid-svg-icons": "5.15.1",
+    "@fortawesome/fontawesome-svg-core": "1.2.34",
+    "@fortawesome/free-solid-svg-icons": "5.15.2",
     "@fortawesome/vue-fontawesome": "2.0.2",
     "axios": "0.21.1",
     "bootstrap": "3.4.1",
