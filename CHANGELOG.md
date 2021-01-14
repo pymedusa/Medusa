@@ -8,6 +8,13 @@
 
 -----
 
+## 0.5.3 (12-01-2021)
+
+#### Fixes
+- Fix trakt sync exception ([8994](https://github.com/pymedusa/Medusa/pull/8994))
+
+-----
+
 ## 0.5.2 (10-01-2021)
 
 #### Improvements
@@ -17,7 +24,7 @@
 
 #### Fixes
 - Fix setting default episode status (after) when adding a new show. ([8918](https://github.com/pymedusa/Medusa/pull/8918))
-- Fix provider anidex. Add a bypass to it's DDOS-Gaurd protection. ([8955](https://github.com/pymedusa/Medusa/pull/8955))
+- Fix provider anidex. Add a bypass to its DDOS-Guard protection. ([8955](https://github.com/pymedusa/Medusa/pull/8955))
 
 -----
 

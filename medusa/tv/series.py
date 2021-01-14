@@ -665,7 +665,11 @@ class Series(TV):
 
     @aliases.setter
     def aliases(self, exceptions):
-        """Set the series aliases."""
+        """
+        Set the series aliases.
+
+        :param exceptions: Array of dictionaries.
+        """
         update_scene_exceptions(self, exceptions)
         self._aliases = set(chain(*itervalues(get_all_scene_exceptions(self))))
         build_name_cache(self)
