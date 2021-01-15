@@ -424,8 +424,9 @@ class Episode(TV):
 
     @status.setter
     def status(self, value):
-        self._status = value
-        self._sync_trakt(value)
+        if value != self._status:
+            self._status = value
+            # self._sync_trakt(value)
 
     def _sync_trakt(self, status):
         """If Trakt enabled and trakt sync watchlist enabled, add/remove the episode from the watchlist."""
