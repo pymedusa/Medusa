@@ -94,16 +94,19 @@ class PostProcessQueueItem(generic_queue.QueueItem):
             path = self.path or app.TV_DOWNLOAD_DIR
             process_method = self.process_method or app.PROCESS_METHOD
 
-            process_results = ProcessResult(path, process_method)
+            process_results = ProcessResult(path, process_method, failed=self.failed)
             process_results.process(
                 resource_name=self.resource_name,
                 force=self.force,
                 is_priority=self.is_priority,
                 delete_on=self.delete_on,
-                failed=self.failed,
                 proc_type=self.proc_type,
                 ignore_subs=self.ignore_subs
             )
+
+            # A user might want to use advanced post-processing, but opt-out of failed download handling.
+            if process_results.failed and app.USE_FAILED_DOWNLOADS:
+                process_results.process_failed(path)
 
             # Resource postprocessed
             status.add_status_string('Postprocessed')
@@ -144,6 +147,7 @@ class PostProcessorRunner(object):
         """Run the postprocessor."""
         path = kwargs.pop('path', app.TV_DOWNLOAD_DIR)
         process_method = kwargs.pop('process_method', app.PROCESS_METHOD)
+        failed = kwargs.pop('failed', False)
 
         if not os.path.isdir(path):
             result = "Post-processing attempted but directory doesn't exist: {path}"
@@ -163,7 +167,15 @@ class PostProcessorRunner(object):
 
         try:
             self.amActive = True
-            return ProcessResult(path, process_method).process(force=force, **kwargs)
+            process_results = ProcessResult(path, process_method, failed=failed)
+            process_results.process(force=force, **kwargs)
+
+            # Only initiate failed download handling, if enabled.
+            if process_results.failed and app.USE_FAILED_DOWNLOADS:
+                process_results.process_failed(path)
+
+            return process_results.output
+
         finally:
             self.amActive = False
 
@@ -172,11 +184,18 @@ class ProcessResult(object):
 
     IGNORED_FOLDERS = ('@eaDir', '#recycle', '.@__thumb',)
 
-    def __init__(self, path, process_method=None):
+    def __init__(self, path, process_method=None, failed=False):
+        """
+        Initialize ProcessResult object.
 
+        :param path: The root path to start postprocessing from.
+        :param process_method: Process method ('copy', 'move', 'hardlink', 'symlink', 'keeplink').
+        :param failed: Start the ProcessResult with a failed download.
+        """
         self._output = []
         self.directory = path
         self.process_method = process_method or app.PROCESS_METHOD
+        self.failed = failed
         self.resource_name = None
         self.result = True
         self.succeeded = True
@@ -248,7 +267,7 @@ class ProcessResult(object):
         log.log(level, message, kwargs)
         self._output.append(message.format(**kwargs))
 
-    def process(self, resource_name=None, force=False, is_priority=None, delete_on=False, failed=False,
+    def process(self, resource_name=None, force=False, is_priority=None, delete_on=False,
                 proc_type='auto', ignore_subs=False):
         """
         Scan through the files in the root directory and process whatever media files are found.
@@ -257,22 +276,21 @@ class ProcessResult(object):
         :param force: True to postprocess already postprocessed files
         :param is_priority: Boolean for whether or not is a priority download
         :param delete_on: Boolean for whether or not it should delete files
-        :param failed: Boolean for whether or not the download failed
         :param proc_type: Type of postprocessing auto or manual
         :param ignore_subs: True to ignore setting 'postpone if no subs'
         """
-        if not self.directory:
-            return self.output
-
         if resource_name:
             self.resource_name = resource_name
+
+        if not self.directory:
+            return self.output
 
         if app.POSTPONE_IF_NO_SUBS:
             self.log_and_output("Feature 'postpone post-processing if no subtitle available' is enabled.")
 
         for path in self.paths:
 
-            if not self.should_process(path, failed):
+            if not self.should_process(path):
                 continue
 
             self.result = True
@@ -344,16 +362,15 @@ class ProcessResult(object):
                 if self.delete_folder(path, check_empty=check_empty):
                     self.log_and_output('Deleted folder: {path}', level=logging.DEBUG, **{'path': path})
 
-    def should_process(self, path, failed=False):
+    def should_process(self, path):
         """
         Determine if a directory should be processed.
 
         :param path: Path we want to verify
-        :param failed: (optional) Mark the directory as failed
         :return: True if the directory is valid for processing, otherwise False
         :rtype: Boolean
         """
-        if not self._is_valid_folder(path, failed):
+        if not self._is_valid_folder(path):
             return False
 
         folder = os.path.basename(path)
@@ -364,7 +381,7 @@ class ProcessResult(object):
 
         for root, dirs, files in os.walk(path):
             for subfolder in dirs:
-                if not self._is_valid_folder(os.path.join(root, subfolder), failed):
+                if not self._is_valid_folder(os.path.join(root, subfolder)):
                     return False
             for each_file in files:
                 if helpers.is_media_file(each_file) or helpers.is_rar_file(each_file):
@@ -376,21 +393,21 @@ class ProcessResult(object):
         self.log_and_output('No processable items found in folder: {path}', level=logging.DEBUG, **{'path': path})
         return False
 
-    def _is_valid_folder(self, path, failed):
+    def _is_valid_folder(self, path):
         """Verify folder validity based on the checks below."""
         folder = os.path.basename(path)
 
         if folder.startswith('_FAILED_'):
             self.log_and_output('The directory name indicates it failed to extract.', level=logging.DEBUG)
-            failed = True
+            self.failed = True
         elif folder.startswith('_UNDERSIZED_'):
             self.log_and_output('The directory name indicates that it was previously rejected for being undersized.', level=logging.DEBUG)
-            failed = True
+            self.failed = True
 
-        if failed:
+        if self.failed:
             self.missed_files.append('{0}: Failed download.'.format(path))
-            if app.USE_FAILED_DOWNLOADS:
-                self._process_failed(path)
+            # if app.USE_FAILED_DOWNLOADS:
+            #     self._process_failed(path)
             return False
 
         # SABnzbd: _UNPACK_, NZBGet: _unpack
@@ -751,8 +768,10 @@ class ProcessResult(object):
                                 'Continuing the post-processing of this file: {video}', **{'video': video})
         return True
 
-    def _process_failed(self, path):
-        """Process a download that did not complete correctly."""
+    def process_failed(self, path):
+        """
+        Process a download that did not complete correctly.
+        """
         try:
             processor = failed_processor.FailedProcessor(path, self.resource_name)
             self.result = processor.process()
