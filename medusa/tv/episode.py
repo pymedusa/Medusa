@@ -424,8 +424,7 @@ class Episode(TV):
 
     @status.setter
     def status(self, value):
-        if value != self._status:
-            self._status = value
+        self._status = value
 
     def _sync_trakt(self, status):
         """
