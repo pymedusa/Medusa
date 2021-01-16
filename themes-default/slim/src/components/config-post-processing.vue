@@ -31,31 +31,6 @@
 
                                     <div v-show="postprocessing.processAutomatically" id="post-process-toggle-wrapper">
                                         <div class="form-group">
-                                            <label for="tv_download_dir" class="col-sm-2 control-label">
-                                                <span>Post-Processing Dir</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <file-browser id="tv_download_dir" name="tv_download_dir" title="Select series download location" :initial-dir="postprocessing.showDownloadDir" @update="postprocessing.showDownloadDir = $event" />
-                                                <span class="clear-left">The folder where your download client puts the completed TV downloads.</span>
-                                                <div class="clear-left"><p><b>Note:</b> Please use separate downloading and completed folders in your download client if possible.</p></div>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label for="process_method" class="col-sm-2 control-label">
-                                                <span>Processing Method</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <select id="naming_multi_ep" name="naming_multi_ep" v-model="postprocessing.processMethod" class="form-control input-sm">
-                                                    <option :value="option.value" v-for="option in processMethods" :key="option.value">{{ option.text }}</option>
-                                                </select>
-                                                <span>What method should be used to put files into the library?</span>
-                                                <p><b>Note:</b> If you keep seeding torrents after they finish, please avoid the 'move' processing method to prevent errors.</p>
-                                                <p v-if="postprocessing.processMethod == 'reflink'">To use reference linking, the <app-link href="http://www.dereferer.org/?https://pypi.python.org/pypi/reflink/0.1.4">reflink package</app-link> needs to be installed.</p>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-group">
                                             <label for="autopostprocessor_frequency" class="col-sm-2 control-label">
                                                 <span>Auto Post-Processing Frequency</span>
                                             </label>
@@ -104,6 +79,32 @@
                             </div>
                             <div class="col-xs-12 col-md-10">
                                 <fieldset class="component-group-list">
+                                    <div class="form-group">
+                                        <label for="tv_download_dir" class="col-sm-2 control-label">
+                                            <span>Post-Processing Dir</span>
+                                        </label>
+                                        <div class="col-sm-10 content">
+                                            <file-browser id="tv_download_dir" name="tv_download_dir" title="Select series download location" :initial-dir="postprocessing.showDownloadDir" @update="postprocessing.showDownloadDir = $event" />
+                                            <span class="clear-left">The folder where your download client puts the completed TV downloads.</span>
+                                            <div class="clear-left"><p><b>Note:</b> Please use separate downloading and completed folders in your download client if possible.</p></div>
+                                            <span>The Post processing dir is also used when your download client is running on a different machine. It will try to map a postprocessed folder to PP dir.</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="process_method" class="col-sm-2 control-label">
+                                            <span>Processing Method</span>
+                                        </label>
+                                        <div class="col-sm-10 content">
+                                            <select id="naming_multi_ep" name="naming_multi_ep" v-model="postprocessing.processMethod" class="form-control input-sm">
+                                                <option :value="option.value" v-for="option in processMethods" :key="option.value">{{ option.text }}</option>
+                                            </select>
+                                            <span>What method should be used to put files into the library?</span>
+                                            <p><b>Note:</b> If you keep seeding torrents after they finish, please avoid the 'move' processing method to prevent errors.</p>
+                                            <p v-if="postprocessing.processMethod == 'reflink'">To use reference linking, the <app-link href="http://www.dereferer.org/?https://pypi.python.org/pypi/reflink/0.1.4">reflink package</app-link> needs to be installed.</p>
+                                        </div>
+                                    </div>
+
                                     <div class="form-group">
                                         <label for="postpone_if_sync_files" class="col-sm-2 control-label">
                                             <span>Postpone post-processing</span>
