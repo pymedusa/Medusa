@@ -662,11 +662,11 @@ class TraktChecker(object):
             for collected_show in self.collection_list:
                 if not getattr(collected_show, trakt_indexer) == indexer_id:
                     continue
-                if 'seasons' in collected_show:
-                    for season_item in collected_show['seasons']:
-                        for episode_item in season_item['episodes']:
-                            trakt_season = season_item['number']
-                            trakt_episode = episode_item['number']
+                if hasattr(collected_show, 'seasons'):
+                    for season_item in collected_show.seasons:
+                        for episode_item in season_item.episodes:
+                            trakt_season = season_item.number
+                            trakt_episode = episode_item.number
                             if trakt_season == season and trakt_episode == episode:
                                 return True
                 else:
