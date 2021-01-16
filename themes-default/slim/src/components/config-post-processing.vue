@@ -71,6 +71,34 @@
 
                         <div class="row component-group">
                             <div class="component-group-desc col-xs-12 col-md-2">
+                                <h3>Automated Download Handling</h3>
+                                <p>Check clients directly through api's for completed or failed downloads.</p>
+                                <p>The download handler will periodically connect to the nzb or torrent clients and check for completed and failed downloads.</p>
+                            </div>
+
+                            <div class="col-xs-12 col-md-10">
+                                <fieldset class="component-group-list">
+                                    <div class="form-group">
+                                        <label for="process_automatically" class="col-sm-2 control-label">
+                                            <span>Enable download handler</span>
+                                            <span style="color: red">experimental</span>
+                                        </label>
+                                        <div class="col-sm-10 content">
+                                            <toggle-button :width="45" :height="22" id="enable_download_handler" name="enable_download_handler" v-model="postprocessing.downloadHandler.enabled" sync />
+                                            <p>Enable download handler</p>
+                                            <p><b>Note:</b>Do not combine with scheduled post processing or external pp scripts!</p>
+                                        </div>
+                                    </div>
+
+                                <div v-show="postprocessing.downloadHandler.enabled" id="post-process-toggle-wrapper">
+                                    <config-textbox-number :min="postprocessing.downloadHandler.minFrequency" :step="1" v-model.number="postprocessing.downloadHandler.frequency" label="Download handler frequency" id="download_handler_frequency" :explanations="['Frequency to check on the download clients (default: 60)']" />
+                                </div>
+                                </fieldset>
+                            </div> <!-- end of col -->
+                        </div> <!-- end of row -->
+
+                        <div class="row component-group">
+                            <div class="component-group-desc col-xs-12 col-md-2">
                                 <h3>General Post-Processing</h3>
                                 <p>Generic post-processing settings that apply both to the scheduled post-processor as external scripts</p>
                             </div>

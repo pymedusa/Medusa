@@ -79,6 +79,7 @@ from medusa.config import (
     load_provider_setting, save_provider_setting
 )
 from medusa.databases import cache_db, failed_db, main_db
+from medusa.failed_history import trim_history
 from medusa.indexers.config import INDEXER_TVDBV2, INDEXER_TVMAZE
 from medusa.init.filesystem import is_valid_encoding
 from medusa.providers.generic_provider import GenericProvider
@@ -421,9 +422,10 @@ class Application(object):
         # Pre-populate network timezones, it isn't thread safe
         network_timezones.update_network_dict()
 
-        # # why???
-        # if app.USE_FAILED_DOWNLOADS:
-        #     failed_history.trim_history()
+        # The failed_history table keeps track of recent failed downloads.
+        # There is no need for 'old' records.
+        if app.USE_FAILED_DOWNLOADS:
+            trim_history()
 
         # # Check for metadata indexer updates for shows (Disabled until we use api)
         # app.show_update_scheduler.forceRun()
@@ -947,6 +949,8 @@ class Application(object):
             app.OPENSUBTITLES_USER = check_setting_str(app.CFG, 'Subtitles', 'opensubtitles_username', '', censor_log='normal')
             app.OPENSUBTITLES_PASS = check_setting_str(app.CFG, 'Subtitles', 'opensubtitles_password', '', censor_log='low')
 
+            app.USE_DOWNLOAD_HANDLER = bool(check_setting_int(app.CFG, 'DownloadHandler', 'use_download_handling', 0))
+
             app.USE_FAILED_DOWNLOADS = bool(check_setting_int(app.CFG, 'FailedDownloads', 'use_failed_downloads', 0))
             app.DELETE_FAILED = bool(check_setting_int(app.CFG, 'FailedDownloads', 'delete_failed', 0))
 
@@ -1425,8 +1429,9 @@ class Application(object):
             app.trakt_checker_scheduler.start()
 
             # Removed check for app.REMOVE_FROM_CLIENT for now.
-            if ((app.USE_TORRENTS and app.TORRENT_METHOD != 'blackhole')
-                    or (app.USE_NZBS and app.NZB_METHOD != 'blackhole')):
+            if (app.USE_DOWNLOAD_HANDLER
+                    and ((app.USE_TORRENTS and app.TORRENT_METHOD != 'blackhole')
+                         or (app.USE_NZBS and app.NZB_METHOD != 'blackhole'))):
                 app.download_handler_scheduler.enable = True
                 app.download_handler_scheduler.silent = False
             else:
@@ -2025,6 +2030,9 @@ class Application(object):
 
         new_config['Subtitles']['opensubtitles_username'] = app.OPENSUBTITLES_USER
         new_config['Subtitles']['opensubtitles_password'] = helpers.encrypt(app.OPENSUBTITLES_PASS, app.ENCRYPTION_VERSION)
+
+        new_config['DownloadHandler'] = {}
+        new_config['DownloadHandler']['use_download_handling'] = int(app.USE_DOWNLOAD_HANDLER)
 
         new_config['FailedDownloads'] = {}
         new_config['FailedDownloads']['use_failed_downloads'] = int(app.USE_FAILED_DOWNLOADS)

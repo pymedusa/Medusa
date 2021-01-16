@@ -285,7 +285,7 @@ class MedusaApp(object):
         self.DEFAULT_SHOWUPDATE_HOUR = random.randint(2, 4)
 
         self.MIN_AUTOPOSTPROCESSOR_FREQUENCY = 1
-        self.MIN_DOWNLOAD_HANDLER_FREQUENCY = 30
+        self.MIN_DOWNLOAD_HANDLER_FREQUENCY = 10
         self.MIN_DAILYSEARCH_FREQUENCY = 10
         self.MIN_BACKLOG_FREQUENCY = 10
         self.MIN_UPDATE_FREQUENCY = 1
@@ -609,6 +609,8 @@ class MedusaApp(object):
         self.OPENSUBTITLES_USER = None
         self.OPENSUBTITLES_PASS = None
 
+        self._USE_DOWNLOAD_HANDLER = False
+
         self.USE_FAILED_DOWNLOADS = False
         self.DELETE_FAILED = False
 
@@ -776,14 +778,24 @@ class MedusaApp(object):
         self._init_scheduler(app_prop='USE_TRAKT', scheduler='trakt_checker_scheduler', enabled=value)
 
     @property
+    def USE_DOWNLOAD_HANDLER(self):
+        """Return REMOVE_FROM_CLIENT value."""
+        return self._USE_DOWNLOAD_HANDLER
+
+    @USE_DOWNLOAD_HANDLER.setter
+    def USE_DOWNLOAD_HANDLER(self, value):
+        """Set USE_DOWNLOAD_HANDLER value and start download_handler_scheduler thread if needed."""
+        self._init_scheduler(app_prop='USE_DOWNLOAD_HANDLER', scheduler='download_handler_scheduler', enabled=value)
+
+    @property
     def REMOVE_FROM_CLIENT(self):
         """Return REMOVE_FROM_CLIENT value."""
         return self._REMOVE_FROM_CLIENT
 
     @REMOVE_FROM_CLIENT.setter
     def REMOVE_FROM_CLIENT(self, value):
-        """Set REMOVE_FROM_CLIENT value and start torrent_checker_scheduler thread if needed."""
-        self._init_scheduler(app_prop='REMOVE_FROM_CLIENT', scheduler='torrent_checker_scheduler', enabled=value)
+        """Set REMOVE_FROM_CLIENT value and start download_handler_scheduler thread if needed."""
+        self._init_scheduler(app_prop='REMOVE_FROM_CLIENT', scheduler='download_handler_scheduler', enabled=value)
 
     @property
     def USE_SUBTITLES(self):

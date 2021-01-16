@@ -406,8 +406,6 @@ class ProcessResult(object):
 
         if self.failed:
             self.missed_files.append('{0}: Failed download.'.format(path))
-            # if app.USE_FAILED_DOWNLOADS:
-            #     self._process_failed(path)
             return False
 
         # SABnzbd: _UNPACK_, NZBGet: _unpack

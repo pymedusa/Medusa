@@ -128,7 +128,7 @@ class DownloadHandler(object):
         """
         Check torrent client for completed torrents.
 
-        Start postprocessing if app.DOWNLOAD_HANDLING is enabled.
+        Start postprocessing if app.DOWNLOAD_HANDLER is enabled.
         """
         if app.TORRENT_METHOD == 'blackhole':
             return
@@ -205,7 +205,7 @@ class DownloadHandler(object):
         """
         Check nzb client for completed nzbs.
 
-        Start postprocessing if app.DOWNLOAD_HANDLING is enabled.
+        Start postprocessing if app.DOWNLOAD_HANDLER is enabled.
         """
         if app.NZB_METHOD == 'blackhole':
             return
