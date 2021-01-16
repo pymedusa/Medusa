@@ -377,7 +377,7 @@ class QBittorrentAPI(GenericClient):
 
         # Overwrite based on completion in size.
         if torrent['completed'] == torrent['size']:
-            client_status.add_status_string('Completed')
+            client_status.set_status_string_array(['Completed'])
 
         if torrent['ratio'] >= torrent['max_ratio']:
             client_status.add_status_string('Seeded')
