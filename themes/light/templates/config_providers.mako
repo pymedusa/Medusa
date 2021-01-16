@@ -1641,9 +1641,11 @@ window.app = new Vue({
                             </div>
                             <div id="torrentrss_add_div">
                                 <input type="button" class="btn-medusa torrentrss_save" id="torrentrss_add" value="Add" />
+                                <input type="submit" class="btn-medusa config_submitter_refresh" value="Save Changes" />
                             </div>
                             <div id="torrentrss_update_div" style="display: none;">
                                 <input type="button" class="btn-medusa btn-danger torrentrss_delete" id="torrentrss_delete" value="Delete" />
+                                <input type="submit" class="btn-medusa config_submitter_refresh" value="Save Changes" />
                             </div>
                         </div>
                     </fieldset>
@@ -1711,9 +1713,11 @@ window.app = new Vue({
                             </div>
                             <div id="torznab_add_div">
                                 <input class="btn-medusa" type="button" class="torznab_save" id="torznab_add" value="Add" />
+                                <input type="submit" class="btn-medusa config_submitter_refresh" value="Save Changes" />
                             </div>
                             <div id="torznab_update_div" style="display: none;">
                                 <input class="btn-medusa btn-danger torznab_delete" type="button" class="torznab_delete" id="torznab_delete" value="Delete" />
+                                <input type="submit" class="btn-medusa config_submitter_refresh" value="Save Changes" />
                             </div>
                         </div>
                     </fieldset>
