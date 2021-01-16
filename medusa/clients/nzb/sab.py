@@ -271,7 +271,7 @@ def nzb_completed(nzo_id):
 
 def nzb_status(nzo_id):
     """
-    Return nzb status (Paused, Downloading, Downloaded, Failed, Extracting).
+    Return nzb status (Paused, Downloading, Downloaded, Failed, Completed).
 
     :return: ClientStatus object.
     """
@@ -282,7 +282,11 @@ def nzb_status(nzo_id):
         return False
 
     client_status = ClientStatus()
-    client_status.add_status_string(nzb['status'])
+
+    if nzb['status'] in ('Paused', 'Downloading', 'Downloaded', 'Failed', 'Extracting', 'Completed'):
+        client_status.add_status_string(nzb['status'])
+    else:
+        client_status.add_status_string('Downloading')
 
     # Get Progress
     if nzb['status'] == 'Completed':
