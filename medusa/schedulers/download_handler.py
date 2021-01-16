@@ -124,6 +124,53 @@ class DownloadHandler(object):
         self.main_db_con.action('UPDATE history set client_status = ? WHERE info_hash = ? AND resource = ?',
                                 [status.status, history_row['info_hash'], history_row['resource']])
 
+    def _update_torrent_status(self, torrent_client):
+        """Update snatched torrents (in db) with current state on client."""
+        if app.TORRENT_METHOD == 'blackhole':
+            return
+
+        postprocessed = [
+            ClientStatusEnum.COMPLETED.value | ClientStatusEnum.POSTPROCESSED.value,
+            ClientStatusEnum.FAILED.value | ClientStatusEnum.POSTPROCESSED.value,
+        ]
+        for history_result in self._get_history_results_from_db('torrent', exclude_status=postprocessed):
+            status = torrent_client.torrent_status(history_result['info_hash'])
+            if status:
+                log.debug(
+                    'Found torrent on {client} with info_hash {info_hash}',
+                    {
+                        'client': app.TORRENT_METHOD,
+                        'info_hash': history_result['info_hash']
+                    }
+                )
+                if history_result['client_status'] != status.status:
+                    self.save_status_to_history(history_result, status)
+
+    def _check_torrent_for_postprocessing(self, torrent_client):
+        # Combine bitwize postprocessed + completed.
+        postprocessed = [
+            ClientStatusEnum.COMPLETED.value | ClientStatusEnum.POSTPROCESSED.value,
+            ClientStatusEnum.FAILED.value | ClientStatusEnum.POSTPROCESSED.value,
+        ]
+        for history_result in self._get_history_results_from_db(
+            'torrent', exclude_status=postprocessed,
+            include_status=[ClientStatusEnum.COMPLETED.value, ClientStatusEnum.FAILED.value],
+        ):
+            status = torrent_client.torrent_status(history_result['info_hash'])
+            if status:
+                log.debug(
+                    'Found torrent (status {status}) on {client} with info_hash {info_hash}',
+                    {
+                        'status': status,
+                        'client': app.TORRENT_METHOD,
+                        'info_hash': history_result['info_hash']
+                    }
+                )
+                self._postprocess(
+                    status.destination, history_result['info_hash'], history_result['resource'],
+                    failed=str(status) == 'Failed'
+                )
+
     def _check_torrents(self):
         """
         Check torrent client for completed torrents.
@@ -135,16 +182,8 @@ class DownloadHandler(object):
 
         torrent_client = torrent.get_client_class(app.TORRENT_METHOD)()
 
-        for history_result in self._get_history_results_from_db('torrent'):
-            status = torrent_client.torrent_status(history_result['info_hash'])
-            if status:
-                log.debug(
-                    'Found torrent on {client} with info_hash {info_hash}',
-                    {
-                        'client': app.TORRENT_METHOD,
-                        'info_hash': history_result['info_hash']
-                    }
-                )
+        self._update_torrent_status(torrent_client)
+        self._check_torrent_for_postprocessing(torrent_client)
 
     def _update_nzb_status(self, client):
         """Update snatched nzb (in db) with current state on client."""
