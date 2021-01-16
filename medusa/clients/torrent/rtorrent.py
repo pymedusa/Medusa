@@ -200,6 +200,9 @@ class RTorrentAPI(GenericClient):
         # Store progress
         client_status.progress = int(torrent.completed_bytes / torrent.bytes_done * 100)
 
+        # Store destination
+        client_status.destination = torrent.base_path
+
         return client_status
 
 

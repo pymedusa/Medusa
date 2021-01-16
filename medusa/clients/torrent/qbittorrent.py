@@ -98,6 +98,11 @@ class QBittorrentAPI(GenericClient):
                         {'name': self.name, 'error': error}, exc_info=1)
             return None
 
+        if not self.response:
+            log.warning('{name}: Could not connect, check your config',
+                        {'name': self.name})
+            return None
+
         if self.response.status_code == 200:
             if self.response.text == 'Fails.':
                 log.warning('{name}: Invalid Username or Password, check your config',
@@ -349,6 +354,9 @@ class QBittorrentAPI(GenericClient):
         if time.time() > self.last_time + 1800 or not self.auth:
             self.last_time = time.time()
             self._get_auth()
+
+        if not self.auth:
+            return
 
         torrent = self._torrent_properties(info_hash)
         if not torrent:
