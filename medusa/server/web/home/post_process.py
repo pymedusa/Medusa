@@ -2,17 +2,22 @@
 
 from __future__ import unicode_literals
 
+import logging
 import json
 
-from medusa import app, queues
+from medusa import app
+from medusa.logger.adapters.style import CustomBraceAdapter
 from medusa.process_tv import PostProcessQueueItem
 from medusa.server.web.core import PageTemplate
 from medusa.server.web.home.handler import Home
 
-
 from six import string_types, text_type
 
 from tornroutes import route
+
+
+log = CustomBraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 @route('/home/postprocess(/?.*)')
@@ -60,6 +65,10 @@ class HomePostProcess(Home):
         else:
             proc_dir = _decode(proc_dir)
             resource_name = _decode(nzbName)
+
+            log.info('Post processing called with:\npath: {path}\nresource: {resource}', {
+                'path': proc_dir, 'resource': resource_name
+            })
 
             # Might look strange to explicitly check both. But, it's so I have a third option.
             # And that is that neither of both is passed. For example when called by legacy third parties.
