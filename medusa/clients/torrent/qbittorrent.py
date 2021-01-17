@@ -364,23 +364,23 @@ class QBittorrentAPI(GenericClient):
 
         client_status = ClientStatus()
         if torrent['state'] in ('downloading', 'checkingDL', 'forcedDL', 'metaDL', 'queuedDL'):
-            client_status.add_status_string('Downloading')
+            client_status.set_status_string('Downloading')
 
         if torrent['state'] in ('pausedUp', 'pausedDL', 'stalledDL', 'stalledUP'):
-            client_status.add_status_string('Paused')
+            client_status.set_status_string('Paused')
 
         if torrent['state'] == 'error':
-            client_status.add_status_string('Failed')
+            client_status.set_status_string('Failed')
 
         if torrent['state'] in ('uploading', 'queuedUP', 'checkingUP', 'forcedUP'):
-            client_status.add_status_string('Completed')
+            client_status.set_status_string('Completed')
 
         # Overwrite based on completion in size.
         if torrent['completed'] == torrent['size']:
-            client_status.set_status_string_array(['Completed'])
+            client_status.set_status_string('Completed')
 
         if torrent['ratio'] >= torrent['max_ratio']:
-            client_status.add_status_string('Seeded')
+            client_status.set_status_string('Seeded')
 
         # Store ratio
         client_status.ratio = torrent['ratio'] * 1.0
@@ -390,6 +390,9 @@ class QBittorrentAPI(GenericClient):
 
         # Store destination
         client_status.destination = torrent['content_path']
+
+        # Store resource
+        client_status.resource = torrent['name']
 
         return client_status
 
