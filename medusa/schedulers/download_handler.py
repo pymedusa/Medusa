@@ -19,6 +19,8 @@
 from __future__ import unicode_literals
 
 import logging
+import re
+
 from builtins import object
 from enum import Enum
 
@@ -79,6 +81,29 @@ class ClientStatus(ConstsBitwize):
         self.ratio = 0.0
         self.progress = 0
         self.destination = ''
+        self.resource = ''
+
+    @staticmethod
+    def join_path(abs_path, file_name):
+        """
+        Join absolute path and file_name, with a delimiter based on the absolute path.
+
+        :param abs_path: Absolute path
+        :type abs_path: str
+        :param file_name: File Name
+        :type file_name: str
+
+        :returns: Concated string of absolute path and file name.
+        """
+        start_with_letter = re.compile(r'^\w:')
+
+        delimiter_windows = '\\'
+        delimiter_nix = '/'
+        delimiter = delimiter_nix
+        if start_with_letter.match(abs_path):
+            delimiter = delimiter_windows
+
+        return f'{abs_path}{delimiter}{file_name}'
 
 
 class DownloadHandler(object):
