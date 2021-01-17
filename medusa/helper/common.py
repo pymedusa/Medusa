@@ -453,6 +453,13 @@ class ConstsBitwize(object):
 
         self.status = self.status | self.strings_rev.get(status_string).value
 
+    def set_status_string(self, status_string):
+        """Set a status using the status string."""
+        if not self.strings_rev.get(status_string):
+            raise Exception('Status {status} not a valid status'.format(status=status_string))
+
+        self.status = self.strings_rev.get(status_string).value
+
     def add_status(self, status):
         """Add bitwize status."""
         self.status = self.status | status
