@@ -389,7 +389,7 @@ class QBittorrentAPI(GenericClient):
         client_status.progress = int(torrent['downloaded'] / torrent['size'] * 100)
 
         # Store destination
-        client_status.destination = torrent['content_path']
+        client_status.destination = torrent['save_path']
 
         # Store resource
         client_status.resource = torrent['name']

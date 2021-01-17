@@ -253,6 +253,12 @@ class DelugeDAPI(GenericClient):
         # Store progress
         client_status.progress = int(torrent['progress'])
 
+        # Store destination
+        client_status.destination = torrent['download_location']
+
+        # Store resource
+        client_status.resource = torrent['name']
+
         return client_status
 
 
@@ -505,7 +511,7 @@ class DelugeRPC(object):
             log.info('Checking DelugeD torrent {hash} status.', {'hash': info_hash})
             torrent_data = self.client.core.get_torrent_status(
                 info_hash, ('name', 'hash', 'progress', 'state', 'ratio', 'stop_ratio',
-                            'is_seed', 'is_finished', 'paused', 'files'))
+                            'is_seed', 'is_finished', 'paused', 'files', 'download_location'))
         except Exception:
             log.warning('Error while fetching torrent {hash} status.', {'hash': info_hash})
             return

@@ -232,7 +232,10 @@ class UTorrentAPI(GenericClient):
             log.warning('Error while fetching torrents.')
             return []
 
-        return self.response.json()
+        json_response = self.response.json()
+        if json_response.get('torrents'):
+            return json_response['torrents']
+        return []
 
     def _torrent_properties(self, info_hash):
         """Get torrent properties.
@@ -262,9 +265,12 @@ class UTorrentAPI(GenericClient):
         """
         log.info('Checking {client} torrent {hash} status.', {'client': self.name, 'hash': info_hash})
 
-        if not self._get_torrents():
+        torrent_list = self._get_torrents()
+        if not torrent_list:
             log.debug('Could not get any torrent from utorrent.')
             return
+
+        self._torrents_list = torrent_list
 
         for torrent in self._torrents_list:
             if torrent[0] == info_hash.upper():
@@ -316,22 +322,28 @@ class UTorrentAPI(GenericClient):
 
         client_status = ClientStatus()
         if torrent[1] & 1:
-            client_status.add_status_string('Downloading')
+            client_status.set_status_string('Downloading')
 
         if torrent[1] & 32:
-            client_status.add_status_string('Paused')
+            client_status.set_status_string('Paused')
 
         if torrent[1] & 16:
-            client_status.add_status_string('Failed')
+            client_status.set_status_string('Failed')
 
         if torrent[1] & 1 and torrent[4] == 1000:
-            client_status.add_status_string('Completed')
+            client_status.set_status_string('Completed')
 
         # Store ratio
         client_status.ratio = torrent[7] / 1000
 
         # Store progress
         client_status.progress = int(torrent[4] / 10)
+
+        # Store destination
+        client_status.destination = torrent[26]
+
+        # Store resource
+        client_status.resource = torrent[2]
 
         return client_status
 

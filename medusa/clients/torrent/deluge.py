@@ -459,7 +459,7 @@ class DelugeAPI(GenericClient):
             'params': [
                 info_hash,
                 ['name', 'hash', 'progress', 'state', 'ratio', 'stop_ratio',
-                 'is_seed', 'is_finished', 'paused', 'files'],
+                 'is_seed', 'is_finished', 'paused', 'files', 'download_location'],
             ],
             'id': 72,
         })
@@ -547,6 +547,12 @@ class DelugeAPI(GenericClient):
 
         # Store progress
         client_status.progress = int(torrent['progress'])
+
+        # Store destination
+        client_status.destination = torrent['download_location']
+
+        # Store resource
+        client_status.resource = torrent['name']
 
         return client_status
 

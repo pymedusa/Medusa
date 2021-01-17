@@ -192,7 +192,7 @@ class DownloadHandler(object):
                     }
                 )
                 self._postprocess(
-                    status.destination, history_result['info_hash'], history_result['resource'],
+                    status.destination, history_result['info_hash'], status.resource,
                     failed=str(status) == 'Failed'
                 )
 

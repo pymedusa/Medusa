@@ -281,6 +281,7 @@ class ProcessResult(object):
         """
         if resource_name:
             self.resource_name = resource_name
+            self.log_and_output('Processing resource: {resource}', level=logging.DEBUG, **{'resource': self.resource_name})
 
         if not self.directory:
             return self.output
