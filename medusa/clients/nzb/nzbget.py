@@ -296,4 +296,6 @@ def nzb_status(nzo_id):
 
     client_status.destination = nzb.get('DestDir', '')
 
+    client_status.resource = nzb.get('NZBFilename')
+
     return client_status

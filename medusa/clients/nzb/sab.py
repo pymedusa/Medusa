@@ -12,6 +12,7 @@ from __future__ import unicode_literals
 import datetime
 import json
 import logging
+from os.path import dirname
 
 from medusa import app
 from medusa.helper.common import sanitize_filename
@@ -294,7 +295,11 @@ def nzb_status(nzo_id):
     elif nzb.get('percentage'):
         client_status.progress = int(nzb['percentage'])
 
-    # Get destination
-    client_status.destination = nzb.get('storage', '')
+    # Store destination
+    storage = nzb.get('storage', '')
+    if storage:
+        client_status.destination = dirname(storage)
+
+    client_status.resource = nzb.get('nzb_name')
 
     return client_status
