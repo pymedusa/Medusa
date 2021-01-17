@@ -203,6 +203,9 @@ class RTorrentAPI(GenericClient):
         # Store destination
         client_status.destination = torrent.base_path
 
+        # Store resource
+        client_status.resource = torrent.base_filename
+
         return client_status
 
 
