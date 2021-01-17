@@ -254,8 +254,8 @@ class TransmissionAPI(GenericClient):
 
         return_params = {
             'ids': info_hash,
-            'fields': ['name', 'hashString', 'percentDone', 'status',
-                       'isStalled', 'errorString', 'seedRatioLimit',
+            'fields': ['name', 'hashString', 'percentDone', 'status', 'percentDone', 'downloadDir',
+                       'isStalled', 'errorString', 'seedRatioLimit', 'torrent-file', 'name',
                        'isFinished', 'uploadRatio', 'seedIdleLimit', 'activityDate']
         }
 
@@ -325,25 +325,31 @@ class TransmissionAPI(GenericClient):
 
         client_status = ClientStatus()
         if torrent['status'] == 4:
-            client_status.add_status_string('Downloading')
+            client_status.set_status_string('Downloading')
 
         if torrent['status'] == 0:
-            client_status.add_status_string('Paused')
+            client_status.set_status_string('Paused')
 
         # if torrent['status'] == ?:
-        #     client_status.add_status_string('Failed')
+        #     client_status.set_status_string('Failed')
 
         if torrent['status'] == 6:
-            client_status.add_status_string('Completed')
+            client_status.set_status_string('Completed')
 
         if torrent['status'] == 0 and torrent['isFinished']:
-            client_status.add_status_string('Seeded')
+            client_status.set_status_string('Seeded')
 
         # Store ratio
         client_status.ratio = torrent['uploadRatio'] * 1.0
 
         # Store progress
         client_status.progress = int(torrent['percentDone'] * 100)
+
+        # Store destination
+        client_status.destination = client_status.join_path(torrent['downloadDir'], torrent['name'])
+
+        # Store resource
+        client_status.resource = torrent['name']
 
         return client_status
 
