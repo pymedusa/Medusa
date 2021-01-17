@@ -183,16 +183,16 @@ class RTorrentAPI(GenericClient):
 
         client_status = ClientStatus()
         if torrent.started:
-            client_status.add_status_string('Downloading')
+            client_status.set_status_string('Downloading')
 
         if torrent.paused:
-            client_status.add_status_string('Paused')
+            client_status.set_status_string('Paused')
 
         # # if torrent['status'] == ?:
-        # #     client_status.add_status_string('Failed')
+        # #     client_status.set_status_string('Failed')
 
         if torrent.complete:
-            client_status.add_status_string('Completed')
+            client_status.set_status_string('Completed')
 
         # Store ratio
         client_status.ratio = torrent.ratio
