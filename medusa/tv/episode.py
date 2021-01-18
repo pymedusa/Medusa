@@ -424,12 +424,15 @@ class Episode(TV):
 
     @status.setter
     def status(self, value):
-        if value != self._status:
-            self._status = value
-            # self._sync_trakt(value)
+        self._status = value
 
     def _sync_trakt(self, status):
-        """If Trakt enabled and trakt sync watchlist enabled, add/remove the episode from the watchlist."""
+        """
+        If Trakt enabled and trakt sync watchlist enabled, add/remove the episode from the watchlist.
+
+        @TODO: Move this out of episode.py. As this is not something we'd want to do on every episode.
+            We should use trakt's /sync route instead.
+        """
         if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
 
             upd = None

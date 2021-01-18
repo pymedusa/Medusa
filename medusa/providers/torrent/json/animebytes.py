@@ -208,12 +208,12 @@ class AnimeBytes(TorrentProvider):
                         else:
                             season = re.match('Season.([0-9]+)', title_info).group(1)
                             release_type = SEASON_PACK
-                elif group.get('EpCount') > 0 and group.get('GroupName') != 'TV Special':
+                elif group.get('GroupName') != 'TV Special':
                     # This is a season pack.
                     # 13 episodes -> SXXEXX-EXX
                     episode = int(group.get('EpCount'))
                     multi_ep_start = 1
-                    multi_ep_end = episode
+                    multi_ep_end = episode if episode > 0 else None
                     # Because we sometime get names without a season number, like season scene exceptions.
                     # This is the most reliable way of creating a multi-episode release name.
                     release_type = MULTI_EP
@@ -253,7 +253,7 @@ class AnimeBytes(TorrentProvider):
                         title = '{title}.{multi_episode_start}-{multi_episode_end}.{tags}' \
                                 '{release_group}'.format(title=group.get('SeriesName'),
                                                          multi_episode_start='E{0:02d}'.format(int(multi_ep_start)),
-                                                         multi_episode_end='E{0:02d}'.format(int(multi_ep_end)),
+                                                         multi_episode_end='E{0:02d}'.format(int(multi_ep_end)) if multi_ep_end else 'Unknown',
                                                          tags=tags,
                                                          release_group=release_group)
                     else:
@@ -261,7 +261,7 @@ class AnimeBytes(TorrentProvider):
                                 '{release_group}'.format(title=group.get('SeriesName'),
                                                          season='S{0:02d}'.format(season) if season else 'S01',
                                                          multi_episode_start='E{0:02d}'.format(int(multi_ep_start)),
-                                                         multi_episode_end='E{0:02d}'.format(int(multi_ep_end)),
+                                                         multi_episode_end='E{0:02d}'.format(int(multi_ep_end)) if multi_ep_end else 'Unknown',
                                                          tags=tags,
                                                          release_group=release_group)
                 if release_type == SEASON_PACK:
