@@ -75,7 +75,7 @@ class PostProcessQueueItem(generic_queue.QueueItem):
         main_db_con = db.DBConnection()
         main_db_con.action(
             'UPDATE history set client_status = ? WHERE info_hash = ? AND resource = ?',
-            [status.status, self.info_hash, self.resource_name]
+            [status.status, self.info_hash]
         )
 
     def run(self):

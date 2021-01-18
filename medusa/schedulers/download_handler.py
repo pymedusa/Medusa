@@ -173,7 +173,11 @@ class DownloadHandler(object):
 
         for history_result in self._get_history_results_from_db(
             client_type, exclude_status=postprocessed,
-            include_status=[ClientStatusEnum.COMPLETED.value, ClientStatusEnum.FAILED.value],
+            include_status=[
+                ClientStatusEnum.COMPLETED.value,
+                ClientStatusEnum.FAILED.value,
+                ClientStatusEnum.SEEDED.value,
+            ],
         ):
             status = client.get_status(history_result['info_hash'])
             if status:
