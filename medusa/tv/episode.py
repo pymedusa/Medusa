@@ -229,7 +229,10 @@ class Episode(TV):
     def __init__(self, series, season, episode, filepath=''):
         """Instantiate a Episode with database information."""
         super(Episode, self).__init__(
-            int(series.indexer) if series else 0, 0, {'series', 'related_episodes', 'wanted_quality'})
+            int(series.indexer) if series else 0,
+            int(series.indexerid) if series else 0,
+            {'series', 'related_episodes', 'wanted_quality'})
+
         self.series = series
         self.name = ''
         self.season = season
