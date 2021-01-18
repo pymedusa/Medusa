@@ -202,6 +202,7 @@ class ProcessResult(object):
         self.missed_files = []
         self.unwanted_files = []
         self.allowed_extensions = app.ALLOWED_EXTENSIONS
+        self.process_file = False
 
     @property
     def directory(self):
@@ -267,28 +268,8 @@ class ProcessResult(object):
         log.log(level, message, kwargs)
         self._output.append(message.format(**kwargs))
 
-    def process(self, resource_name=None, force=False, is_priority=None, delete_on=False,
-                proc_type='auto', ignore_subs=False):
-        """
-        Scan through the files in the root directory and process whatever media files are found.
-
-        :param resource_name: The resource that will be processed directly
-        :param force: True to postprocess already postprocessed files
-        :param is_priority: Boolean for whether or not is a priority download
-        :param delete_on: Boolean for whether or not it should delete files
-        :param proc_type: Type of postprocessing auto or manual
-        :param ignore_subs: True to ignore setting 'postpone if no subs'
-        """
-        if resource_name:
-            self.resource_name = resource_name
-            self.log_and_output('Processing resource: {resource}', level=logging.DEBUG, **{'resource': self.resource_name})
-
-        if not self.directory:
-            return self.output
-
-        if app.POSTPONE_IF_NO_SUBS:
-            self.log_and_output("Feature 'postpone post-processing if no subtitle available' is enabled.")
-
+    def process_path(self, force=False, is_priority=None, delete_on=False, proc_type='auto', ignore_subs=False):
+        """Process path."""
         for path in self.paths:
 
             if not self.should_process(path):
@@ -317,6 +298,58 @@ class ProcessResult(object):
                     self.log_and_output('Skipping post-processing for folder: {dir_path}', **{'dir_path': dir_path})
 
                     self.missed_files.append('{0}: Sync files found'.format(dir_path))
+
+    def process_resource(self, force=False, is_priority=None, delete_on=False, proc_type='auto', ignore_subs=False):
+        """Process resource directly."""
+        self.log_and_output('Processing folder: {dir_path}', level=logging.DEBUG, **{'dir_path': self.directory})
+
+        # self.prepare_files(self.directory, [self.resource_name], force)
+        self.process_files(self.directory, force=force, is_priority=is_priority,
+                           ignore_subs=ignore_subs)
+        self._clean_up(self.directory, proc_type, delete=delete_on)
+
+    def process(self, resource_name=None, force=False, is_priority=None, delete_on=False,
+                proc_type='auto', ignore_subs=False):
+        """
+        Scan through the files in the root directory and process whatever media files are found.
+
+        :param resource_name: The resource that will be processed directly
+        :param force: True to postprocess already postprocessed files
+        :param is_priority: Boolean for whether or not is a priority download
+        :param delete_on: Boolean for whether or not it should delete files
+        :param proc_type: Type of postprocessing auto or manual
+        :param ignore_subs: True to ignore setting 'postpone if no subs'
+        """
+        if resource_name:
+            self.resource_name = resource_name
+            self.log_and_output('Processing resource: {resource}', level=logging.DEBUG, **{'resource': self.resource_name})
+
+        if not self.directory:
+            return self.output
+
+        if app.POSTPONE_IF_NO_SUBS:
+            self.log_and_output("Feature 'postpone post-processing if no subtitle available' is enabled.")
+
+        if os.path.isabs(self.resource_name):
+            self.process_file = os.path.isfile(self.resource_name)
+        else:
+            self.process_file = os.path.isfile(os.path.join(self.directory, self.resource_name))
+
+        if self.process_file:
+            self.log_and_output('Postprocessing {resource} as a single file', level=logging.DEBUG, **{'resource': self.resource_name})
+
+        if not self.process_file:
+            self.process_path(
+                force=False, is_priority=None,
+                delete_on=False, proc_type='auto',
+                ignore_subs=False
+            )
+        else:
+            self.process_file(
+                force=False, is_priority=None,
+                delete_on=False, proc_type='auto',
+                ignore_subs=False
+            )
 
         if self.succeeded:
             self.log_and_output('Post-processing completed.')
@@ -434,7 +467,16 @@ class ProcessResult(object):
                 del dirs  # unused variable
 
     def prepare_files(self, path, files, force=False):
-        """Prepare files for post-processing."""
+        """
+        Prepare files for post-processing.
+
+        Separate the Rar and Video files. -> self.video_files
+            Extract the rar files. -> self.rar_content
+            Collect new video files. -> self.video_in_rar
+            List unwanted files -> self.unwanted_files
+        :param path: Path to start looking for rar/video files.
+        :param files: 
+        """
         video_files = []
         rar_files = []
         for each_file in files:

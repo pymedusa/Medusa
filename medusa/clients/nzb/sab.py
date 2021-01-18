@@ -285,9 +285,9 @@ def nzb_status(nzo_id):
     client_status = ClientStatus()
 
     if nzb['status'] in ('Paused', 'Downloading', 'Downloaded', 'Failed', 'Extracting', 'Completed'):
-        client_status.add_status_string(nzb['status'])
+        client_status.set_status_string(nzb['status'])
     else:
-        client_status.add_status_string('Downloading')
+        client_status.set_status_string('Downloading')
 
     # Get Progress
     if nzb['status'] == 'Completed':

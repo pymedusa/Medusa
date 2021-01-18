@@ -227,13 +227,13 @@ def _get_nzb_history():
 def get_nzb_by_id(nzb_id):
     """Look in download queue and history for a specific nzb."""
     nzb_active = _get_nzb_queue()
-    for nzb in nzb_active:
+    for nzb in nzb_active or []:
         with suppress(ValueError):
             if nzb['NZBID'] == int(nzb_id):
                 return nzb
 
     nzb_history = _get_nzb_history()
-    for nzb in nzb_history:
+    for nzb in nzb_history or []:
         with suppress(ValueError):
             if nzb['NZBID'] == int(nzb_id):
                 return nzb
@@ -270,23 +270,23 @@ def nzb_status(nzo_id):
 
     # Queue status checks (Queued is not recorded as status)
     if status == 'DOWNLOADING':
-        client_status.add_status_string('Downloading')
+        client_status.set_status_string('Downloading')
 
     if status == 'PAUSED':
-        client_status.add_status_string('Paused')
+        client_status.set_status_string('Paused')
 
     if status == 'UNPACKING':
-        client_status.add_status_string('Extracting')
+        client_status.set_status_string('Extracting')
 
     # History status checks.
     if status == 'DELETED':  # Mostly because of duplicate checks.
-        client_status.add_status_string('Aborted')
+        client_status.set_status_string('Aborted')
 
     if status == 'SUCCESS':
-        client_status.add_status_string('Completed')
+        client_status.set_status_string('Completed')
 
     if status == 'FAILURE':
-        client_status.add_status_string('Failed')
+        client_status.set_status_string('Failed')
 
     # Get Progress
     if status == 'SUCCESS':
