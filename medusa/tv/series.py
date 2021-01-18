@@ -217,7 +217,7 @@ class Series(TV):
         """
         super(Series, self).__init__(
             indexer, indexerid,
-            {'episodes', 'release_groups', 'imdb_info'})
+            {'episodes', 'next_aired', 'release_groups', 'imdb_info'})
 
         self.show_id = None
         self._name = ''
