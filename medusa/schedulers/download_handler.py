@@ -183,10 +183,11 @@ class DownloadHandler(object):
             status = client.get_status(history_result['info_hash'])
             if status:
                 log.debug(
-                    'Found torrent (status {status}) on {client} with info_hash {info_hash}',
+                    'Found {client_type} (status {status}) on {client} with info_hash {info_hash}',
                     {
+                        'client_type': client_type,
                         'status': status,
-                        'client': app.TORRENT_METHOD,
+                        'client': app.TORRENT_METHOD if client_type == 'torrent' else app.NZB_METHOD,
                         'info_hash': history_result['info_hash']
                     }
                 )
