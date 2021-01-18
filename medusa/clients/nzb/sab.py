@@ -12,7 +12,7 @@ from __future__ import unicode_literals
 import datetime
 import json
 import logging
-from os.path import dirname
+from os.path import basename, dirname
 
 from medusa import app
 from medusa.helper.common import sanitize_filename
@@ -299,7 +299,6 @@ def get_status(nzo_id):
     storage = nzb.get('storage', '')
     if storage:
         client_status.destination = dirname(storage)
-
-    client_status.resource = nzb.get('nzb_name')
+        client_status.resource = basename(storage)
 
     return client_status

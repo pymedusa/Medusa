@@ -82,6 +82,11 @@ class PostProcessQueueItem(generic_queue.QueueItem):
             'WHERE date = (select max(date) from history where info_hash = ?)',
             [status.status, self.info_hash]
         )
+        log.info('Updated postprocessed {path} with resourcee {resource} with new status {status}', {
+            'path': self.path,
+            'resource': self.resource_name,
+            'status': status
+        })
 
     def run(self):
         """Run postprocess queueitem thread."""
