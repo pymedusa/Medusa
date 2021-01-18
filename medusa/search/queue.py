@@ -1152,7 +1152,7 @@ class PostProcessQueue(generic_queue.GenericQueue):
         generic_queue.GenericQueue.__init__(self)
         self.queue_name = 'POSTPROCESSQUEUE'
 
-    def is_in_queue(self, path):
+    def is_in_queue(self, path, resource_name):
         """
         Check if the postprocess job is in queue based on it's path.
 
@@ -1160,7 +1160,7 @@ class PostProcessQueue(generic_queue.GenericQueue):
         @return: True or False
         """
         for cur_item in self.queue:
-            if cur_item.path == path:
+            if cur_item.path == path and cur_item.resource_name == resource_name:
                 return True
         return False
 
@@ -1178,8 +1178,8 @@ class PostProcessQueue(generic_queue.GenericQueue):
 
         @param item: PostProcess gueue object
         """
-        if not self.is_in_queue(item.path):
-            # backlog searches
+        if not self.is_in_queue(item.path, item.resource_name):
+            # Add PostProcessQueueItem item.
             generic_queue.GenericQueue.add_item(self, item)
         else:
             log.debug("Not adding item, it's already in the queue")
