@@ -71,10 +71,15 @@ class PostProcessQueueItem(generic_queue.QueueItem):
         })
 
     def update_resource(self, status):
-        """Update the resource in db, depending on the postprocess result."""
+        """
+        Update the resource in db, depending on the postprocess result.
+
+        Update the last found info_hash (in case there are duplicates).
+        """
         main_db_con = db.DBConnection()
         main_db_con.action(
-            'UPDATE history set client_status = ? WHERE info_hash = ?',
+            'UPDATE history set client_status = ? '
+            'WHERE date = (select max(date) from history where info_hash = ?)',
             [status.status, self.info_hash]
         )
 
