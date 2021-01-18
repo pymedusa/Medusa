@@ -729,6 +729,7 @@ class Series(TV):
 
     @property
     def release_groups(self):
+        """Return the BlackAndWhiteList object."""
         if not self._release_groups:
             self._release_groups = BlackAndWhiteList(self)
 
