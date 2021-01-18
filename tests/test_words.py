@@ -133,8 +133,8 @@ def test_combine_required_words(p, create_tvshow, app_config):
 
     # confirm passed in show object indexer id matches result show object indexer id
     series = create_tvshow(name=p['series_info']['name'])
-    series.rls_require_words = p['series']['required']
-    series.rls_require_exclude = p['series']['exclude_required']
+    series.release_required_words = p['series']['required']
+    series.release_required_exclude = p['series']['exclude_required']
 
     actual = series.show_words()
 
