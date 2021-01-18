@@ -76,7 +76,8 @@ class ClientStatus(ConstsBitwize):
     CONSTANTS = ClientStatusEnum
     STRINGS = status_strings
 
-    def __init_(self):
+    def __init__(self):
+        """Initialize ClientStatus object."""
         super(ClientStatus, self).__init__()
         self.ratio = 0.0
         self.progress = 0

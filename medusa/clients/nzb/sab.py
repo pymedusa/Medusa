@@ -298,7 +298,11 @@ def get_status(nzo_id):
     # Store destination
     storage = nzb.get('storage', '')
     if storage:
-        client_status.destination = dirname(storage)
-        client_status.resource = basename(storage)
+        if basename(storage) == nzb.get('name'):
+            client_status.destination = storage
+            client_status.resource = nzb.get('nzb_name')
+        else:
+            client_status.destination = dirname(storage)
+            client_status.resource = basename(storage)
 
     return client_status
