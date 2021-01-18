@@ -280,29 +280,29 @@ class UTorrentAPI(GenericClient):
 
     def torrent_completed(self, info_hash):
         """Check if torrent has finished downloading."""
-        torrent_status = self.torrent_status(info_hash)
-        if not torrent_status:
+        get_status = self.get_status(info_hash)
+        if not get_status:
             return False
 
-        return str(torrent_status) == 'Completed'
+        return str(get_status) == 'Completed'
 
     def torrent_ratio(self, info_hash):
         """Get torrent ratio."""
-        torrent_status = self.torrent_status(info_hash)
-        if not torrent_status:
+        get_status = self.get_status(info_hash)
+        if not get_status:
             return False
 
-        return torrent_status.ratio
+        return get_status.ratio
 
     def torrent_progress(self, info_hash):
         """Get torrent download progress."""
-        torrent_status = self.torrent_status(info_hash)
-        if not torrent_status:
+        get_status = self.get_status(info_hash)
+        if not get_status:
             return False
 
-        return torrent_status.progress
+        return get_status.progress
 
-    def torrent_status(self, info_hash):
+    def get_status(self, info_hash):
         """
         Return torrent status.
 

@@ -120,20 +120,10 @@ class DownloadHandler(object):
         query = 'SELECT * FROM history WHERE info_hash is not null AND provider_type = ?'
 
         format_param = {}
-        if exclude_status is not None:
+        if exclude_status:
             params += exclude_status
-            if exclude_status:
-                query += ' AND client_status not in ({exclude})'
-                format_param['exclude'] = ','.join(['?'] * (len(exclude_status)))
-        # Default
-        else:
-            params += [
-                ClientStatusEnum.FAILED.value,
-                ClientStatusEnum.ABORTED.value,
-                ClientStatusEnum.COMPLETED.value,
-            ]
             query += ' AND client_status not in ({exclude})'
-            format_param['exclude'] = '?,?,?'
+            format_param['exclude'] = ','.join(['?'] * (len(exclude_status)))
 
         if include_status:
             params += include_status
@@ -151,15 +141,13 @@ class DownloadHandler(object):
 
     def _update_torrent_status(self, torrent_client):
         """Update snatched torrents (in db) with current state on client."""
-        if app.TORRENT_METHOD == 'blackhole':
-            return
-
         postprocessed = [
             ClientStatusEnum.COMPLETED.value | ClientStatusEnum.POSTPROCESSED.value,
             ClientStatusEnum.FAILED.value | ClientStatusEnum.POSTPROCESSED.value,
+            ClientStatusEnum.SEEDED.value | ClientStatusEnum.POSTPROCESSED.value,
         ]
         for history_result in self._get_history_results_from_db('torrent', exclude_status=postprocessed):
-            status = torrent_client.torrent_status(history_result['info_hash'])
+            status = torrent_client.get_status(history_result['info_hash'])
             if status:
                 log.debug(
                     'Found torrent on {client} with info_hash {info_hash}',
@@ -176,12 +164,13 @@ class DownloadHandler(object):
         postprocessed = [
             ClientStatusEnum.COMPLETED.value | ClientStatusEnum.POSTPROCESSED.value,
             ClientStatusEnum.FAILED.value | ClientStatusEnum.POSTPROCESSED.value,
+            ClientStatusEnum.SEEDED.value | ClientStatusEnum.POSTPROCESSED.value,
         ]
         for history_result in self._get_history_results_from_db(
             'torrent', exclude_status=postprocessed,
             include_status=[ClientStatusEnum.COMPLETED.value, ClientStatusEnum.FAILED.value],
         ):
-            status = torrent_client.torrent_status(history_result['info_hash'])
+            status = torrent_client.get_status(history_result['info_hash'])
             if status:
                 log.debug(
                     'Found torrent (status {status}) on {client} with info_hash {info_hash}',
@@ -215,11 +204,12 @@ class DownloadHandler(object):
         postprocessed = [
             ClientStatusEnum.COMPLETED.value | ClientStatusEnum.POSTPROCESSED.value,
             ClientStatusEnum.FAILED.value | ClientStatusEnum.POSTPROCESSED.value,
+            ClientStatusEnum.SEEDED.value | ClientStatusEnum.POSTPROCESSED.value,
         ]
         for history_result in self._get_history_results_from_db('nzb', exclude_status=postprocessed):
             nzb_on_client = client.get_nzb_by_id(history_result['info_hash'])
             if nzb_on_client:
-                status = client.nzb_status(history_result['info_hash'])
+                status = client.get_status(history_result['info_hash'])
                 log.debug(
                     'Found nzb (status {status}) on {client} with info_hash {info_hash}',
                     {
@@ -237,13 +227,17 @@ class DownloadHandler(object):
             ClientStatusEnum.COMPLETED.value | ClientStatusEnum.POSTPROCESSED.value,
             ClientStatusEnum.FAILED.value | ClientStatusEnum.POSTPROCESSED.value,
         ]
+        ready_for_pp = [
+            ClientStatusEnum.COMPLETED.value,
+            ClientStatusEnum.FAILED.value,
+            ClientStatusEnum.SEEDED.value
+        ]
         for history_result in self._get_history_results_from_db(
-            'nzb', exclude_status=postprocessed,
-            include_status=[ClientStatusEnum.COMPLETED.value, ClientStatusEnum.FAILED.value],
+            'nzb', exclude_status=postprocessed, include_status=ready_for_pp,
         ):
             nzb_on_client = client.get_nzb_by_id(history_result['info_hash'])
             if nzb_on_client:
-                status = client.nzb_status(history_result['info_hash'])
+                status = client.get_status(history_result['info_hash'])
                 log.debug(
                     'Found nzb (status {status}) on {client} with info_hash {info_hash}',
                     {
