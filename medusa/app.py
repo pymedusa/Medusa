@@ -285,7 +285,7 @@ class MedusaApp(object):
         self.DEFAULT_SHOWUPDATE_HOUR = random.randint(2, 4)
 
         self.MIN_AUTOPOSTPROCESSOR_FREQUENCY = 1
-        self.MIN_DOWNLOAD_HANDLER_FREQUENCY = 10
+        self.MIN_DOWNLOAD_HANDLER_FREQUENCY = 5
         self.MIN_DAILYSEARCH_FREQUENCY = 10
         self.MIN_BACKLOG_FREQUENCY = 10
         self.MIN_UPDATE_FREQUENCY = 1
