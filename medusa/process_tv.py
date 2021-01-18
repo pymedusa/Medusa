@@ -74,7 +74,7 @@ class PostProcessQueueItem(generic_queue.QueueItem):
         """Update the resource in db, depending on the postprocess result."""
         main_db_con = db.DBConnection()
         main_db_con.action(
-            'UPDATE history set client_status = ? WHERE info_hash = ? AND resource = ?',
+            'UPDATE history set client_status = ? WHERE info_hash = ?',
             [status.status, self.info_hash]
         )
 
