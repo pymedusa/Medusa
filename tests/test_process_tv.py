@@ -7,6 +7,8 @@ from medusa import app
 from medusa.post_processor import PostProcessor
 from medusa.process_tv import ProcessResult
 
+from mock.mock import Mock
+
 import pytest
 
 
@@ -247,6 +249,71 @@ def test__process_postponed(monkeypatch, p, create_structure):
 
     # Then
     assert p['expected'] == result
+
+
+@pytest.mark.parametrize('p', [
+    {   # Resource name given, but not found
+        'path': 'media/postprocess/complete',
+        'resource_name': 'show.name.103.hdtv.x264-lol.mkv',
+        'expected': [],
+        'structure': (
+            'show.name.101.hdtv.x264-lol.mkv',
+            'show.name.102.hdtv.x264-lol.mkv',
+            'show.name.103.hdtv.x264-lol.en.srt',
+        )
+    },
+    {   # Resource name given and found
+        'path': 'media/postprocess/complete',
+        'resource_name': 'show.name.103.hdtv.x264-lol.mkv',
+        'expected': ['show.name.103.hdtv.x264-lol.mkv'],
+        'structure': (
+            'show.name.103.hdtv.x264-lol.mkv',
+            'show.name.102.hdtv.x264-lol.mkv',
+            'show.name.103.hdtv.x264-lol.en.srt',
+        )
+    },
+    {   # No resource name given
+        'path': 'media/postprocess/complete',
+        'expected': ['show.name.102.hdtv.x264-lol.mkv',
+                     'show.name.103.hdtv.x264-lol.mkv'],
+        'structure': (
+            'show.name.103.hdtv.x264-lol.mkv',
+            'show.name.102.hdtv.x264-lol.mkv',
+            'show.name.103.hdtv.x264-lol.en.srt',
+        )
+    },
+    {   # No resource name given and no valid files
+        'path': 'media/postprocess/complete',
+        'expected': [],
+        'structure': (
+            'show.name.103.hdtv.x264-lol.en.srt',
+        )
+    },
+    {   # Resource name given, resource is nzb
+        'path': 'media/postprocess/complete',
+        'resource_name': 'show.name.103.hdtv.x264-lol.nzb',
+        'expected': ['show.name.101.hdtv.x264-lol.mkv',
+                     'show.name.102.hdtv.x264-lol.mkv'],
+        'structure': (
+            'show.name.101.hdtv.x264-lol.mkv',
+            'show.name.102.hdtv.x264-lol.mkv',
+            'show.name.103.hdtv.x264-lol.en.srt',
+        )
+    }
+])
+def test__process(monkeypatch, p, create_structure):
+    """Run the test."""
+    # Given
+    test_path = create_structure(p['path'], structure=p['structure'])
+    path = os.path.join(test_path, os.path.normcase(p['path']))
+    sut = ProcessResult(path)
+    sut.process_media = Mock(return_value=None)
+
+    # When
+    sut.process(resource_name=p.get('resource_name'))
+
+    # Then
+    assert p['expected'] == sut.video_files
 
 
 @pytest.mark.parametrize('p', [

@@ -420,10 +420,14 @@ class ProcessResult(object):
     def _get_files(self, path):
         """Return the path to a folder and its contents as a tuple."""
         # If resource_name is a file and not an NZB, process it directly
-        if self.resource_name and (
-            not self.resource_name.endswith('.nzb') and os.path.isfile(os.path.join(path, self.resource_name))
-        ):
-            yield path, [self.resource_name]
+        if self.resource_name and not self.resource_name.endswith('.nzb'):
+            if os.path.isfile(os.path.join(path, self.resource_name)):
+                yield path, [self.resource_name]
+            else:
+                self.log_and_output(
+                    'Resource file {name} was not found!',
+                    level=logging.DEBUG,
+                    **{'name': self.resource_name})
         else:
             topdown = True if self.directory == path else False
             for root, dirs, files in os.walk(path, topdown=topdown):
