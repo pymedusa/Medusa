@@ -20,13 +20,13 @@ from __future__ import unicode_literals
 
 import logging
 import re
-
 from builtins import object
 from enum import Enum
 
 from medusa import app, db
 from medusa.clients import torrent
 from medusa.clients.nzb import nzbget, sab
+from medusa.clients.torrent.generic import GenericClient
 from medusa.helper.common import ConstsBitwize
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.process_tv import PostProcessQueueItem
@@ -139,15 +139,17 @@ class DownloadHandler(object):
         self.main_db_con.action('UPDATE history set client_status = ? WHERE info_hash = ? AND resource = ?',
                                 [status.status, history_row['info_hash'], history_row['resource']])
 
-    def _update_torrent_status(self, torrent_client):
-        """Update snatched torrents (in db) with current state on client."""
+    def _update_status(self, client):
+        """Update status (in db) with current state on client."""
         postprocessed = [
             ClientStatusEnum.COMPLETED.value | ClientStatusEnum.POSTPROCESSED.value,
             ClientStatusEnum.FAILED.value | ClientStatusEnum.POSTPROCESSED.value,
             ClientStatusEnum.SEEDED.value | ClientStatusEnum.POSTPROCESSED.value,
         ]
-        for history_result in self._get_history_results_from_db('torrent', exclude_status=postprocessed):
-            status = torrent_client.get_status(history_result['info_hash'])
+
+        client_type = 'torrent' if isinstance(client, GenericClient) else 'nzb'
+        for history_result in self._get_history_results_from_db(client_type, exclude_status=postprocessed):
+            status = client.get_status(history_result['info_hash'])
             if status:
                 log.debug(
                     'Found torrent on {client} with info_hash {info_hash}',
@@ -159,18 +161,21 @@ class DownloadHandler(object):
                 if history_result['client_status'] != status.status:
                     self.save_status_to_history(history_result, status)
 
-    def _check_torrent_for_postprocessing(self, torrent_client):
+    def _check_postprocess(self, client):
+        """Check the history table for ready available downlaods, that need to be post-processed."""
         # Combine bitwize postprocessed + completed.
         postprocessed = [
             ClientStatusEnum.COMPLETED.value | ClientStatusEnum.POSTPROCESSED.value,
             ClientStatusEnum.FAILED.value | ClientStatusEnum.POSTPROCESSED.value,
             ClientStatusEnum.SEEDED.value | ClientStatusEnum.POSTPROCESSED.value,
         ]
+        client_type = 'torrent' if isinstance(client, GenericClient) else 'nzb'
+
         for history_result in self._get_history_results_from_db(
-            'torrent', exclude_status=postprocessed,
+            client_type, exclude_status=postprocessed,
             include_status=[ClientStatusEnum.COMPLETED.value, ClientStatusEnum.FAILED.value],
         ):
-            status = torrent_client.get_status(history_result['info_hash'])
+            status = client.get_status(history_result['info_hash'])
             if status:
                 log.debug(
                     'Found torrent (status {status}) on {client} with info_hash {info_hash}',
@@ -196,60 +201,8 @@ class DownloadHandler(object):
 
         torrent_client = torrent.get_client_class(app.TORRENT_METHOD)()
 
-        self._update_torrent_status(torrent_client)
-        self._check_torrent_for_postprocessing(torrent_client)
-
-    def _update_nzb_status(self, client):
-        """Update snatched nzb (in db) with current state on client."""
-        postprocessed = [
-            ClientStatusEnum.COMPLETED.value | ClientStatusEnum.POSTPROCESSED.value,
-            ClientStatusEnum.FAILED.value | ClientStatusEnum.POSTPROCESSED.value,
-            ClientStatusEnum.SEEDED.value | ClientStatusEnum.POSTPROCESSED.value,
-        ]
-        for history_result in self._get_history_results_from_db('nzb', exclude_status=postprocessed):
-            nzb_on_client = client.get_nzb_by_id(history_result['info_hash'])
-            if nzb_on_client:
-                status = client.get_status(history_result['info_hash'])
-                log.debug(
-                    'Found nzb (status {status}) on {client} with info_hash {info_hash}',
-                    {
-                        'status': status,
-                        'client': app.NZB_METHOD,
-                        'info_hash': history_result['info_hash']
-                    }
-                )
-                if history_result['client_status'] != status.status:
-                    self.save_status_to_history(history_result, status)
-
-    def _check_nzb_for_postprocessing(self, client):
-        # Combine bitwize postprocessed + completed.
-        postprocessed = [
-            ClientStatusEnum.COMPLETED.value | ClientStatusEnum.POSTPROCESSED.value,
-            ClientStatusEnum.FAILED.value | ClientStatusEnum.POSTPROCESSED.value,
-        ]
-        ready_for_pp = [
-            ClientStatusEnum.COMPLETED.value,
-            ClientStatusEnum.FAILED.value,
-            ClientStatusEnum.SEEDED.value
-        ]
-        for history_result in self._get_history_results_from_db(
-            'nzb', exclude_status=postprocessed, include_status=ready_for_pp,
-        ):
-            nzb_on_client = client.get_nzb_by_id(history_result['info_hash'])
-            if nzb_on_client:
-                status = client.get_status(history_result['info_hash'])
-                log.debug(
-                    'Found nzb (status {status}) on {client} with info_hash {info_hash}',
-                    {
-                        'status': status,
-                        'client': app.NZB_METHOD,
-                        'info_hash': history_result['info_hash']
-                    }
-                )
-                self._postprocess(
-                    status.destination, history_result['info_hash'], history_result['resource'],
-                    failed=str(status) == 'Failed'
-                )
+        self._update_status(torrent_client)
+        self._check_postprocess(torrent_client)
 
     def _postprocess(self, path, info_hash, resource_name, failed=False):
         """Queue a postprocess action."""
@@ -273,8 +226,8 @@ class DownloadHandler(object):
         else:
             client = nzbget
 
-        self._update_nzb_status(client)
-        self._check_nzb_for_postprocessing(client)
+        self._update_status(client)
+        self._check_postprocess(client)
 
     def run(self, force=False):
         """Start the Download Handler Thread."""
