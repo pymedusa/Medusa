@@ -230,15 +230,9 @@ class Episode(TV):
         """Instantiate a Episode with database information."""
         super(Episode, self).__init__(
             int(series.indexer) if series else 0,
-            0,
-            {'series',
-             'scene_season',
-             'scene_episode',
-             'scene_absolute_number',
-             'related_episodes',
-             'wanted_quality'
-             }
-        )
+            int(series.indexerid) if series else 0,
+            {'series', 'related_episodes', 'wanted_quality'})
+
         self.series = series
         self.name = ''
         self.season = season
@@ -709,32 +703,39 @@ class Episode(TV):
             )
             return False
         else:
-            if sql_results[0]['name']:
-                self.name = sql_results[0]['name']
-
+            self.name = sql_results[0]['name'] or ''
             self.season = season
             self.episode = episode
             self.absolute_number = sql_results[0]['absolute_number']
-            self.description = sql_results[0]['description']
-            if not self.description:
-                self.description = ''
-            if sql_results[0]['subtitles'] and sql_results[0]['subtitles']:
+            self.description = sql_results[0]['description'] or ''
+
+            if sql_results[0]['subtitles']:
                 self.subtitles = sql_results[0]['subtitles'].split(',')
+
             self.subtitles_searchcount = sql_results[0]['subtitles_searchcount']
             self.subtitles_lastsearch = sql_results[0]['subtitles_lastsearch']
             self.airdate = date.fromordinal(int(sql_results[0]['airdate']))
             self.status = int(sql_results[0]['status'] or UNSET)
             self.quality = int(sql_results[0]['quality'] or Quality.NA)
-            self.manually_searched = bool(sql_results[0]['manually_searched'])
-            self.watched = bool(sql_results[0]['watched'])
+            self.file_size = int(sql_results[0]['file_size'] or 0)
 
-            # don't overwrite my location
+            if sql_results[0]['release_name'] is not None:
+                self.release_name = sql_results[0]['release_name']
+
+            if sql_results[0]['is_proper']:
+                self.is_proper = int(sql_results[0]['is_proper'])
+
+            if sql_results[0]['version']:
+                self.version = int(sql_results[0]['version'])
+
+            if sql_results[0]['release_group'] is not None:
+                self.release_group = sql_results[0]['release_group']
+
             if sql_results[0]['location']:
                 self._location = sql_results[0]['location']
-            if sql_results[0]['file_size']:
-                self.file_size = int(sql_results[0]['file_size'])
-            else:
-                self.file_size = 0
+
+            self.manually_searched = bool(sql_results[0]['manually_searched'])
+            self.watched = bool(sql_results[0]['watched'])
 
             self.indexerid = int(sql_results[0]['indexerid'])
             self.indexer = int(sql_results[0]['indexer'])
@@ -753,18 +754,6 @@ class Episode(TV):
                 self.scene_season, self.scene_episode = get_scene_numbering(
                     self.series, self.episode, self.season
                 )
-
-            if sql_results[0]['release_name'] is not None:
-                self.release_name = sql_results[0]['release_name']
-
-            if sql_results[0]['is_proper']:
-                self.is_proper = int(sql_results[0]['is_proper'])
-
-            if sql_results[0]['version']:
-                self.version = int(sql_results[0]['version'])
-
-            if sql_results[0]['release_group'] is not None:
-                self.release_group = sql_results[0]['release_group']
 
             self.reset_dirty()
             return True

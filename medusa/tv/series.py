@@ -215,8 +215,10 @@ class Series(TV):
         :param lang:
         :type lang: str
         """
-        super(Series, self).__init__(indexer, indexerid, {'episodes', 'next_aired', 'release_groups', 'exceptions',
-                                                          'external', 'imdb_info'})
+        super(Series, self).__init__(
+            indexer, indexerid,
+            {'episodes', 'next_aired', 'release_groups', 'imdb_info'})
+
         self.show_id = None
         self._name = ''
         self.imdb_id = ''
@@ -224,6 +226,7 @@ class Series(TV):
         self.genre = ''
         self.classification = ''
         self.runtime = 0
+        self.plot = None
         self.imdb_info = {}
         self.quality = quality or int(app.QUALITY_DEFAULT)
         self.season_folders = season_folders or int(app.SEASON_FOLDERS_DEFAULT)
@@ -242,21 +245,20 @@ class Series(TV):
         self.sports = 0
         self.anime = 0
         self.scene = 0
-        self.rls_ignore_words = ''
-        self.rls_require_words = ''
-        self.rls_ignore_exclude = 0
-        self.rls_require_exclude = 0
+        self._release_required_words = ''
+        self._release_ignored_words = ''
+        self.release_ignored_exclude = 0
+        self.release_required_exclude = 0
         self.default_ep_status = SKIPPED
         self._location = ''
         self.episodes = {}
         self._prev_aired = 0
         self._next_aired = 0
-        self.release_groups = None
+        self._release_groups = None
         self._aliases = set()
         self.externals = {}
         self._indexer_api = None
-        self.plot = None
-        self._show_lists = None
+        self._show_lists = ''
 
         other_show = Show.find_by_id(app.showList, self.indexer, self.series_id)
         if other_show is not None:
@@ -416,6 +418,9 @@ class Series(TV):
         old_location = os.path.normpath(self._location)
         new_location = os.path.normpath(value)
 
+        if new_location == old_location:
+            return
+
         log.debug(
             u'{indexer} {id}: Setting location: {location}', {
                 'indexer': indexerApi(self.indexer).name,
@@ -423,9 +428,6 @@ class Series(TV):
                 'location': new_location,
             }
         )
-
-        if new_location == old_location:
-            return
 
         # Don't validate directory if user wants to add shows without creating a dir
         if app.ADD_SHOWS_WO_DIR or self.is_location_valid(value):
@@ -641,7 +643,10 @@ class Series(TV):
     @airs.setter
     def airs(self, value):
         """Set episode time that series usually airs."""
-        self._airs = text_type(value).replace('am', ' AM').replace('pm', ' PM').replace('  ', ' ').strip()
+        if value is None or not network_timezones.test_timeformat(self._airs):
+            self._airs = ''
+        else:
+            self._airs = text_type(value).replace('am', ' AM').replace('pm', ' PM').replace('  ', ' ').strip()
 
     @property
     def poster(self):
@@ -705,28 +710,35 @@ class Series(TV):
         return get_scene_numbering_for_show(self)
 
     @property
-    def release_ignore_words(self):
+    def release_ignored_words(self):
         """Return release ignore words."""
-        return [v for v in (self.rls_ignore_words or '').split(',') if v]
+        return [v for v in self._release_ignored_words.split(',') if v]
 
-    @release_ignore_words.setter
-    def release_ignore_words(self, value):
-        self.rls_ignore_words = value if isinstance(value, string_types) else ','.join(value)
+    @release_ignored_words.setter
+    def release_ignored_words(self, value):
+        self._release_ignored_words = value if isinstance(value, string_types) else ','.join(value)
 
     @property
     def release_required_words(self):
         """Return release ignore words."""
-        return [v for v in (self.rls_require_words or '').split(',') if v]
+        return [v for v in (self._release_required_words or '').split(',') if v]
 
     @release_required_words.setter
     def release_required_words(self, value):
-        self.rls_require_words = value if isinstance(value, string_types) else ','.join(value)
+        self._release_required_words = value if isinstance(value, string_types) else ','.join(value)
+
+    @property
+    def release_groups(self):
+        """Return the BlackAndWhiteList object."""
+        if not self._release_groups:
+            self._release_groups = BlackAndWhiteList(self)
+
+        return self._release_groups
 
     @property
     def blacklist(self):
         """Return the anime's blacklisted release groups."""
-        bw_list = self.release_groups or BlackAndWhiteList(self)
-        return bw_list.blacklist
+        return self.release_groups.blacklist
 
     @blacklist.setter
     def blacklist(self, group_names):
@@ -740,8 +752,7 @@ class Series(TV):
     @property
     def whitelist(self):
         """Return the anime's whitelisted release groups."""
-        bw_list = self.release_groups or BlackAndWhiteList(self)
-        return bw_list.whitelist
+        return self.release_groups.whitelist
 
     @whitelist.setter
     def whitelist(self, group_names):
@@ -961,19 +972,19 @@ class Series(TV):
 
         global_ignore = app.IGNORE_WORDS
         global_require = app.REQUIRE_WORDS
-        show_ignore = self.rls_ignore_words.split(',') if self.rls_ignore_words else []
-        show_require = self.rls_require_words.split(',') if self.rls_require_words else []
+        show_ignore = self.release_ignored_words
+        show_require = self.release_required_words
 
         # If word is in global ignore and also in show require, then remove it from global ignore
         # Join new global ignore with show ignore
-        if not self.rls_ignore_exclude:
+        if not self.release_ignored_exclude:
             final_ignore = show_ignore + [i for i in global_ignore if i.lower() not in [r.lower() for r in show_require]]
         else:
             final_ignore = [i for i in global_ignore if i.lower() not in [r.lower() for r in show_require] and
                             i.lower() not in [sh_i.lower() for sh_i in show_ignore]]
         # If word is in global require and also in show ignore, then remove it from global requires
         # Join new global required with show require
-        if not self.rls_require_exclude:
+        if not self.release_required_exclude:
             final_require = show_require + [i for i in global_require if i.lower() not in [r.lower() for r in show_ignore]]
         else:
             final_require = [gl_r for gl_r in global_require if gl_r.lower() not in [r.lower() for r in show_ignore] and
@@ -1476,7 +1487,6 @@ class Series(TV):
         else:
             self.show_id = int(sql_results[0]['show_id'] or 0)
             self.indexer = int(sql_results[0]['indexer'] or 0)
-            self.start_year = int(sql_results[0]['startyear'] or 0)
 
             if not self.name:
                 self.name = sql_results[0]['show_name']
@@ -1487,52 +1497,40 @@ class Series(TV):
             if not self.classification:
                 self.classification = sql_results[0]['classification']
 
+            self.imdb_id = sql_results[0]['imdb_id']
             self.runtime = sql_results[0]['runtime']
-
-            self.status = sql_results[0]['status']
-            if self.status is None:
-                self.status = 'Unknown'
-
+            self.plot = sql_results[0]['plot']
+            self.quality = int(sql_results[0]['quality'] or Quality.NA)
+            self.season_folders = int(not (sql_results[0]['flatten_folders'] or 0))  # TODO: Rename this in the DB
+            self.status = sql_results[0]['status'] or 'Unknown'
             self.airs = sql_results[0]['airs']
-            if self.airs is None or not network_timezones.test_timeformat(self.airs):
-                self.airs = ''
 
+            self.airdate_offset = int(sql_results[0]['airdate_offset'] or 0)
+            self.start_year = int(sql_results[0]['startyear'] or 0)
+            self.paused = int(sql_results[0]['paused'] or 0)
             self.air_by_date = int(sql_results[0]['air_by_date'] or 0)
-            self.anime = int(sql_results[0]['anime'] or 0)
-            self.sports = int(sql_results[0]['sports'] or 0)
-            self.scene = int(sql_results[0]['scene'] or 0)
             self.subtitles = int(sql_results[0]['subtitles'] or 0)
             self.notify_list = json.loads(sql_results[0]['notify_list'] or '{}')
             self.dvd_order = int(sql_results[0]['dvdorder'] or 0)
-            self.quality = int(sql_results[0]['quality'] or Quality.NA)
-            self.season_folders = int(not (sql_results[0]['flatten_folders'] or 0))  # TODO: Rename this in the DB
-            self.paused = int(sql_results[0]['paused'] or 0)
-            self._location = sql_results[0]['location']  # skip location validation
+            self.lang = sql_results[0]['lang']
+            self.last_update_indexer = sql_results[0]['last_update_indexer']
 
-            if not self.lang:
-                self.lang = sql_results[0]['lang']
-
-            self._last_update_indexer = sql_results[0]['last_update_indexer']
-
-            self.rls_ignore_words = sql_results[0]['rls_ignore_words']
-            self.rls_require_words = sql_results[0]['rls_require_words']
-            self.rls_ignore_exclude = sql_results[0]['rls_ignore_exclude']
-            self.rls_require_exclude = sql_results[0]['rls_require_exclude']
+            self.sports = int(sql_results[0]['sports'] or 0)
+            self.anime = int(sql_results[0]['anime'] or 0)
+            self.scene = int(sql_results[0]['scene'] or 0)
 
             self.default_ep_status = int(sql_results[0]['default_ep_status'] or SKIPPED)
+            self._location = sql_results[0]['location']  # skip location validation
 
-            if not self.imdb_id:
-                self.imdb_id = sql_results[0]['imdb_id']
-
-            self.plot = sql_results[0]['plot']
-            self.airdate_offset = int(sql_results[0]['airdate_offset'] or 0)
-
-            self.release_groups = BlackAndWhiteList(self)
+            self.release_ignored_words = sql_results[0]['rls_ignore_words']
+            self.release_required_words = sql_results[0]['rls_require_words']
+            self.release_ignored_exclude = bool(sql_results[0]['rls_ignore_exclude'])
+            self.release_required_exclude = bool(sql_results[0]['rls_require_exclude'])
 
             # Load external id's from indexer_mappings table.
             self.externals = load_externals_from_db(self.indexer, self.series_id)
 
-            self._show_lists = sql_results[0]['show_lists']
+            self.show_lists = sql_results[0]['show_lists']
 
         # Get IMDb_info from database
         main_db_con = db.DBConnection()
@@ -1766,12 +1764,10 @@ class Series(TV):
             self.default_ep_status = app.STATUS_DEFAULT
 
         if self.anime:
-            self.release_groups = BlackAndWhiteList(self)
-            if options.get('release') is not None:
-                if options['release']['blacklist']:
-                    self.release_groups.set_black_keywords(options['release']['blacklist'])
-                if options['release']['whitelist']:
-                    self.release_groups.set_white_keywords(options['release']['whitelist'])
+            if options.get('blacklist'):
+                self.blacklist = options['blacklist']
+            if options.get('whitelist'):
+                self.whitelist = options['whitelist']
 
     def prev_episode(self):
         """Return the last aired episode air date.
@@ -2184,10 +2180,10 @@ class Series(TV):
                           'lang': self.lang,
                           'imdb_id': self.imdb_id,
                           'last_update_indexer': self._last_update_indexer,
-                          'rls_ignore_words': self.rls_ignore_words,
-                          'rls_require_words': self.rls_require_words,
-                          'rls_ignore_exclude': self.rls_ignore_exclude,
-                          'rls_require_exclude': self.rls_require_exclude,
+                          'rls_ignore_words': self._release_ignored_words,
+                          'rls_require_words': self._release_required_words,
+                          'rls_ignore_exclude': self.release_ignored_exclude,
+                          'rls_require_exclude': self.release_required_exclude,
                           'default_ep_status': self.default_ep_status,
                           'plot': self.plot,
                           'airdate_offset': self.airdate_offset,
@@ -2323,10 +2319,10 @@ class Series(TV):
         data['config']['defaultEpisodeStatus'] = self.default_ep_status_name
         data['config']['aliases'] = self.aliases_to_json
         data['config']['release'] = {}
-        data['config']['release']['ignoredWords'] = self.release_ignore_words
+        data['config']['release']['ignoredWords'] = self.release_ignored_words
         data['config']['release']['requiredWords'] = self.release_required_words
-        data['config']['release']['ignoredWordsExclude'] = bool(self.rls_ignore_exclude)
-        data['config']['release']['requiredWordsExclude'] = bool(self.rls_require_exclude)
+        data['config']['release']['ignoredWordsExclude'] = bool(self.release_ignored_exclude)
+        data['config']['release']['requiredWordsExclude'] = bool(self.release_required_exclude)
         data['config']['airdateOffset'] = self.airdate_offset
         data['config']['showLists'] = self.show_lists
 
@@ -2335,9 +2331,8 @@ class Series(TV):
 
         # These are for now considered anime-only options
         if self.is_anime:
-            bw_list = self.release_groups or BlackAndWhiteList(self)
-            data['config']['release']['blacklist'] = bw_list.blacklist
-            data['config']['release']['whitelist'] = bw_list.whitelist
+            data['config']['release']['blacklist'] = self.blacklist
+            data['config']['release']['whitelist'] = self.whitelist
 
         # Make sure these are at least defined
         data['sceneAbsoluteNumbering'] = []
@@ -2415,7 +2410,8 @@ class Series(TV):
         self._show_lists is stored as a comma separated string.
         :param show_lists: A list of show categories.
         """
-        self._show_lists = ','.join(show_lists) if show_lists else 'series'
+        lists = show_lists if isinstance(show_lists, string_types) else ','.join(show_lists)
+        self._show_lists = lists or 'series'
 
     def get_all_possible_names(self, season=-1):
         """Get every possible variation of the name for a particular show.
