@@ -1944,15 +1944,8 @@ class CMD_Show(ApiCall):
         show_dict['airs'] = text_type(show_obj.airs).replace('am', ' AM').replace('pm', ' PM').replace('  ', ' ')
         show_dict['dvdorder'] = (0, 1)[show_obj.dvd_order]
 
-        if show_obj.rls_require_words:
-            show_dict['rls_require_words'] = show_obj.rls_require_words.split(', ')
-        else:
-            show_dict['rls_require_words'] = []
-
-        if show_obj.rls_ignore_words:
-            show_dict['rls_ignore_words'] = show_obj.rls_ignore_words.split(', ')
-        else:
-            show_dict['rls_ignore_words'] = []
+        show_dict['release_required_words'] = show_obj.release_required_words
+        show_dict['release_ignored_words'] = show_obj.release_ignored_words
 
         show_dict['scene'] = (0, 1)[show_obj.scene]
         # show_dict['archive_firstmatch'] = (0, 1)[show_obj.archive_firstmatch]
