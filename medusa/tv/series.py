@@ -1530,7 +1530,7 @@ class Series(TV):
             # Load external id's from indexer_mappings table.
             self.externals = load_externals_from_db(self.indexer, self.series_id)
 
-            self.show_lists = sql_results[0]['show_lists']
+            self.show_lists = sql_results[0]['show_lists'] or 'series'
 
         # Get IMDb_info from database
         main_db_con = db.DBConnection()
