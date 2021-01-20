@@ -35,3 +35,8 @@ register_backend(
 register_backend(
     "dogpile.cache.redis", "dogpile.cache.backends.redis", "RedisBackend"
 )
+register_backend(
+    "dogpile.cache.redis_sentinel",
+    "dogpile.cache.backends.redis",
+    "RedisSentinelBackend",
+)

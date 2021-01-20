@@ -9,7 +9,7 @@ configobj==5.0.6
 contextlib2==0.6.0.post1
 deluge-client==1.9.0
 dirtyjson==1.0.7
-dogpile.cache==0.9.2
+dogpile.cache==1.1.1
 enzyme @ https://codeload.github.com/pymedusa/enzyme/tar.gz/665cf6948aab1c249dcc99bd9624a81d17b3302a
 feedparser==6.0.2
 gntp==1.0.3
@@ -38,4 +38,4 @@ tornroutes==0.5.1
 trakt==2.14.1
 ttl-cache==1.6
 tvdbapiv2 @ https://codeload.github.com/pymedusa/tvdbv2/tar.gz/bf1272c9264c280c3048e89a1920e2bf5f386284
-validators==0.15.0
+validators==0.18.2
