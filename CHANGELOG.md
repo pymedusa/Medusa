@@ -1,5 +1,6 @@
 ## 0.5.4 (20-01-2021)
 
+#### Fixes
  - Fix trakt authentication lost on restart ([9018](https://github.com/pymedusa/Medusa/pull/9018))
  - Fix issue with trying to mass update a show with scene exceptions ([9067](https://github.com/pymedusa/Medusa/pull/9067))
  - Fix a number of exceptions caused by new trakt implementation ([9038](https://github.com/pymedusa/Medusa/pull/9038))
