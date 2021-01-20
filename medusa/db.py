@@ -66,8 +66,8 @@ class DBConnection(object):
                 self._set_row_factory()
 
         except sqlite3.OperationalError:
-            logger.log(u'Please check your database owner/permissions: {}'.format(
-                       self.path, logger.WARNING))
+            logger.log(u'Please check your database owner/permissions: {0}'.format(
+                       self.path), logger.WARNING)
         except Exception as e:
             logger.log(u'DB error: ' + ex(e), logger.ERROR)
             raise
