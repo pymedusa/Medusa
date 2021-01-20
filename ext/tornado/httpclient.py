@@ -20,8 +20,6 @@ to switch to ``curl_httpclient`` for reasons such as the following:
 
 * ``curl_httpclient`` is faster.
 
-* ``curl_httpclient`` was the default prior to Tornado 2.0.
-
 Note that if you are using ``curl_httpclient``, it is highly
 recommended that you use a recent version of ``libcurl`` and
 ``pycurl``.  Currently the minimum supported version of libcurl is
@@ -38,18 +36,24 @@ To select ``curl_httpclient``, call `AsyncHTTPClient.configure` at startup::
     AsyncHTTPClient.configure("tornado.curl_httpclient.CurlAsyncHTTPClient")
 """
 
-from __future__ import absolute_import, division, print_function
-
+import datetime
 import functools
+from io import BytesIO
+import ssl
 import time
-import warnings
 import weakref
 
-from tornado.concurrent import Future, future_set_result_unless_cancelled
+from tornado.concurrent import (
+    Future,
+    future_set_result_unless_cancelled,
+    future_set_exception_unless_cancelled,
+)
 from tornado.escape import utf8, native_str
-from tornado import gen, httputil, stack_context
+from tornado import gen, httputil
 from tornado.ioloop import IOLoop
 from tornado.util import Configurable
+
+from typing import Type, Any, Union, Dict, Callable, Optional, cast
 
 
 class HTTPClient(object):
@@ -81,7 +85,12 @@ class HTTPClient(object):
        Use `AsyncHTTPClient` instead.
 
     """
-    def __init__(self, async_client_class=None, **kwargs):
+
+    def __init__(
+        self,
+        async_client_class: "Optional[Type[AsyncHTTPClient]]" = None,
+        **kwargs: Any
+    ) -> None:
         # Initialize self._closed at the beginning of the constructor
         # so that an exception raised here doesn't lead to confusing
         # failures in __del__.
@@ -89,23 +98,30 @@ class HTTPClient(object):
         self._io_loop = IOLoop(make_current=False)
         if async_client_class is None:
             async_client_class = AsyncHTTPClient
+
         # Create the client while our IOLoop is "current", without
         # clobbering the thread's real current IOLoop (if any).
-        self._async_client = self._io_loop.run_sync(
-            gen.coroutine(lambda: async_client_class(**kwargs)))
+        async def make_client() -> "AsyncHTTPClient":
+            await gen.sleep(0)
+            assert async_client_class is not None
+            return async_client_class(**kwargs)
+
+        self._async_client = self._io_loop.run_sync(make_client)
         self._closed = False
 
-    def __del__(self):
+    def __del__(self) -> None:
         self.close()
 
-    def close(self):
+    def close(self) -> None:
         """Closes the HTTPClient, freeing any resources used."""
         if not self._closed:
             self._async_client.close()
             self._io_loop.close()
             self._closed = True
 
-    def fetch(self, request, **kwargs):
+    def fetch(
+        self, request: Union["HTTPRequest", str], **kwargs: Any
+    ) -> "HTTPResponse":
         """Executes a request, returning an `HTTPResponse`.
 
         The request may be either a string URL or an `HTTPRequest` object.
@@ -115,8 +131,9 @@ class HTTPClient(object):
         If an error occurs during the fetch, we raise an `HTTPError` unless
         the ``raise_error`` keyword argument is set to False.
         """
-        response = self._io_loop.run_sync(functools.partial(
-            self._async_client.fetch, request, **kwargs))
+        response = self._io_loop.run_sync(
+            functools.partial(self._async_client.fetch, request, **kwargs)
+        )
         return response
 
 
@@ -158,23 +175,27 @@ class AsyncHTTPClient(Configurable):
        The ``io_loop`` argument (deprecated since version 4.1) has been removed.
 
     """
+
+    _instance_cache = None  # type: Dict[IOLoop, AsyncHTTPClient]
+
     @classmethod
-    def configurable_base(cls):
+    def configurable_base(cls) -> Type[Configurable]:
         return AsyncHTTPClient
 
     @classmethod
-    def configurable_default(cls):
+    def configurable_default(cls) -> Type[Configurable]:
         from tornado.simple_httpclient import SimpleAsyncHTTPClient
+
         return SimpleAsyncHTTPClient
 
     @classmethod
-    def _async_clients(cls):
-        attr_name = '_async_client_dict_' + cls.__name__
+    def _async_clients(cls) -> Dict[IOLoop, "AsyncHTTPClient"]:
+        attr_name = "_async_client_dict_" + cls.__name__
         if not hasattr(cls, attr_name):
             setattr(cls, attr_name, weakref.WeakKeyDictionary())
         return getattr(cls, attr_name)
 
-    def __new__(cls, force_instance=False, **kwargs):
+    def __new__(cls, force_instance: bool = False, **kwargs: Any) -> "AsyncHTTPClient":
         io_loop = IOLoop.current()
         if force_instance:
             instance_cache = None
@@ -182,7 +203,7 @@ class AsyncHTTPClient(Configurable):
             instance_cache = cls._async_clients()
         if instance_cache is not None and io_loop in instance_cache:
             return instance_cache[io_loop]
-        instance = super(AsyncHTTPClient, cls).__new__(cls, **kwargs)
+        instance = super(AsyncHTTPClient, cls).__new__(cls, **kwargs)  # type: ignore
         # Make sure the instance knows which cache to remove itself from.
         # It can't simply call _async_clients() because we may be in
         # __new__(AsyncHTTPClient) but instance.__class__ may be
@@ -192,14 +213,14 @@ class AsyncHTTPClient(Configurable):
             instance_cache[instance.io_loop] = instance
         return instance
 
-    def initialize(self, defaults=None):
+    def initialize(self, defaults: Optional[Dict[str, Any]] = None) -> None:
         self.io_loop = IOLoop.current()
         self.defaults = dict(HTTPRequest._DEFAULTS)
         if defaults is not None:
             self.defaults.update(defaults)
         self._closed = False
 
-    def close(self):
+    def close(self) -> None:
         """Destroys this HTTP client, freeing any file descriptors used.
 
         This method is **not needed in normal use** due to the way
@@ -216,11 +237,21 @@ class AsyncHTTPClient(Configurable):
             return
         self._closed = True
         if self._instance_cache is not None:
-            if self._instance_cache.get(self.io_loop) is not self:
+            cached_val = self._instance_cache.pop(self.io_loop, None)
+            # If there's an object other than self in the instance
+            # cache for our IOLoop, something has gotten mixed up. A
+            # value of None appears to be possible when this is called
+            # from a destructor (HTTPClient.__del__) as the weakref
+            # gets cleared before the destructor runs.
+            if cached_val is not None and cached_val is not self:
                 raise RuntimeError("inconsistent AsyncHTTPClient cache")
-            del self._instance_cache[self.io_loop]
 
-    def fetch(self, request, callback=None, raise_error=True, **kwargs):
+    def fetch(
+        self,
+        request: Union[str, "HTTPRequest"],
+        raise_error: bool = True,
+        **kwargs: Any
+    ) -> "Future[HTTPResponse]":
         """Executes a request, asynchronously returning an `HTTPResponse`.
 
         The request may be either a string URL or an `HTTPRequest` object.
@@ -240,17 +271,14 @@ class AsyncHTTPClient(Configurable):
         Instead, you must check the response's ``error`` attribute or
         call its `~HTTPResponse.rethrow` method.
 
-        .. deprecated:: 5.1
+        .. versionchanged:: 6.0
 
-           The ``callback`` argument is deprecated and will be removed
-           in 6.0. Use the returned `.Future` instead.
+           The ``callback`` argument was removed. Use the returned
+           `.Future` instead.
 
-           The ``raise_error=False`` argument currently suppresses
-           *all* errors, encapsulating them in `HTTPResponse` objects
-           with a 599 response code. This will change in Tornado 6.0:
-           ``raise_error=False`` will only affect the `HTTPError`
-           raised when a non-200 response code is used.
-
+           The ``raise_error=False`` argument only affects the
+           `HTTPError` raised when a non-200 response code is used,
+           instead of suppressing all errors.
         """
         if self._closed:
             raise RuntimeError("fetch() called on closed AsyncHTTPClient")
@@ -258,49 +286,35 @@ class AsyncHTTPClient(Configurable):
             request = HTTPRequest(url=request, **kwargs)
         else:
             if kwargs:
-                raise ValueError("kwargs can't be used if request is an HTTPRequest object")
+                raise ValueError(
+                    "kwargs can't be used if request is an HTTPRequest object"
+                )
         # We may modify this (to add Host, Accept-Encoding, etc),
         # so make sure we don't modify the caller's object.  This is also
         # where normal dicts get converted to HTTPHeaders objects.
         request.headers = httputil.HTTPHeaders(request.headers)
-        request = _RequestProxy(request, self.defaults)
-        future = Future()
-        if callback is not None:
-            warnings.warn("callback arguments are deprecated, use the returned Future instead",
-                          DeprecationWarning)
-            callback = stack_context.wrap(callback)
+        request_proxy = _RequestProxy(request, self.defaults)
+        future = Future()  # type: Future[HTTPResponse]
 
-            def handle_future(future):
-                exc = future.exception()
-                if isinstance(exc, HTTPError) and exc.response is not None:
-                    response = exc.response
-                elif exc is not None:
-                    response = HTTPResponse(
-                        request, 599, error=exc,
-                        request_time=time.time() - request.start_time)
-                else:
-                    response = future.result()
-                self.io_loop.add_callback(callback, response)
-            future.add_done_callback(handle_future)
+        def handle_response(response: "HTTPResponse") -> None:
+            if response.error:
+                if raise_error or not response._error_is_response_code:
+                    future_set_exception_unless_cancelled(future, response.error)
+                    return
+            future_set_result_unless_cancelled(future, response)
 
-        def handle_response(response):
-            if raise_error and response.error:
-                if isinstance(response.error, HTTPError):
-                    response.error.response = response
-                future.set_exception(response.error)
-            else:
-                if response.error and not response._error_is_response_code:
-                    warnings.warn("raise_error=False will allow '%s' to be raised in the future" %
-                                  response.error, DeprecationWarning)
-                future_set_result_unless_cancelled(future, response)
-        self.fetch_impl(request, handle_response)
+        self.fetch_impl(cast(HTTPRequest, request_proxy), handle_response)
         return future
 
-    def fetch_impl(self, request, callback):
+    def fetch_impl(
+        self, request: "HTTPRequest", callback: Callable[["HTTPResponse"], None]
+    ) -> None:
         raise NotImplementedError()
 
     @classmethod
-    def configure(cls, impl, **kwargs):
+    def configure(
+        cls, impl: "Union[None, str, Type[Configurable]]", **kwargs: Any
+    ) -> None:
         """Configures the `AsyncHTTPClient` subclass to use.
 
         ``AsyncHTTPClient()`` actually creates an instance of a subclass.
@@ -325,6 +339,8 @@ class AsyncHTTPClient(Configurable):
 class HTTPRequest(object):
     """HTTP client request object."""
 
+    _headers = None  # type: Union[Dict[str, str], httputil.HTTPHeaders]
+
     # Default values for HTTPRequest parameters.
     # Merged with the values on the request object by AsyncHTTPClient
     # implementations.
@@ -334,24 +350,49 @@ class HTTPRequest(object):
         follow_redirects=True,
         max_redirects=5,
         decompress_response=True,
-        proxy_password='',
+        proxy_password="",
         allow_nonstandard_methods=False,
-        validate_cert=True)
+        validate_cert=True,
+    )
 
-    def __init__(self, url, method="GET", headers=None, body=None,
-                 auth_username=None, auth_password=None, auth_mode=None,
-                 connect_timeout=None, request_timeout=None,
-                 if_modified_since=None, follow_redirects=None,
-                 max_redirects=None, user_agent=None, use_gzip=None,
-                 network_interface=None, streaming_callback=None,
-                 header_callback=None, prepare_curl_callback=None,
-                 proxy_host=None, proxy_port=None, proxy_username=None,
-                 proxy_password=None, proxy_auth_mode=None,
-                 allow_nonstandard_methods=None, validate_cert=None,
-                 ca_certs=None, allow_ipv6=None, client_key=None,
-                 client_cert=None, body_producer=None,
-                 expect_100_continue=False, decompress_response=None,
-                 ssl_options=None):
+    def __init__(
+        self,
+        url: str,
+        method: str = "GET",
+        headers: Optional[Union[Dict[str, str], httputil.HTTPHeaders]] = None,
+        body: Optional[Union[bytes, str]] = None,
+        auth_username: Optional[str] = None,
+        auth_password: Optional[str] = None,
+        auth_mode: Optional[str] = None,
+        connect_timeout: Optional[float] = None,
+        request_timeout: Optional[float] = None,
+        if_modified_since: Optional[Union[float, datetime.datetime]] = None,
+        follow_redirects: Optional[bool] = None,
+        max_redirects: Optional[int] = None,
+        user_agent: Optional[str] = None,
+        use_gzip: Optional[bool] = None,
+        network_interface: Optional[str] = None,
+        streaming_callback: Optional[Callable[[bytes], None]] = None,
+        header_callback: Optional[Callable[[str], None]] = None,
+        prepare_curl_callback: Optional[Callable[[Any], None]] = None,
+        proxy_host: Optional[str] = None,
+        proxy_port: Optional[int] = None,
+        proxy_username: Optional[str] = None,
+        proxy_password: Optional[str] = None,
+        proxy_auth_mode: Optional[str] = None,
+        allow_nonstandard_methods: Optional[bool] = None,
+        validate_cert: Optional[bool] = None,
+        ca_certs: Optional[str] = None,
+        allow_ipv6: Optional[bool] = None,
+        client_key: Optional[str] = None,
+        client_cert: Optional[str] = None,
+        body_producer: Optional[
+            Callable[[Callable[[bytes], None]], "Future[None]"]
+        ] = None,
+        expect_100_continue: bool = False,
+        decompress_response: Optional[bool] = None,
+        ssl_options: Optional[Union[Dict[str, Any], ssl.SSLContext]] = None,
+    ) -> None:
         r"""All parameters except ``url`` are optional.
 
         :arg str url: URL to fetch
@@ -360,7 +401,9 @@ class HTTPRequest(object):
         :type headers: `~tornado.httputil.HTTPHeaders` or `dict`
         :arg body: HTTP request body as a string (byte or unicode; if unicode
            the utf-8 encoding will be used)
-        :arg body_producer: Callable used for lazy/asynchronous request bodies.
+        :type body: `str` or `bytes`
+        :arg collections.abc.Callable body_producer: Callable used for
+           lazy/asynchronous request bodies.
            It is called with one argument, a ``write`` function, and should
            return a `.Future`.  It should call the write function with new
            data as it becomes available.  The write function returns a
@@ -378,9 +421,9 @@ class HTTPRequest(object):
            supports "basic" and "digest"; ``simple_httpclient`` only supports
            "basic"
         :arg float connect_timeout: Timeout for initial connection in seconds,
-           default 20 seconds
+           default 20 seconds (0 means no timeout)
         :arg float request_timeout: Timeout for entire request in seconds,
-           default 20 seconds
+           default 20 seconds (0 means no timeout)
         :arg if_modified_since: Timestamp for ``If-Modified-Since`` header
         :type if_modified_since: `datetime` or `float`
         :arg bool follow_redirects: Should redirects be followed automatically
@@ -392,8 +435,8 @@ class HTTPRequest(object):
            New in Tornado 4.0.
         :arg bool use_gzip: Deprecated alias for ``decompress_response``
            since Tornado 4.0.
-        :arg str network_interface: Network interface to use for request.
-           ``curl_httpclient`` only; see note below.
+        :arg str network_interface: Network interface or source IP to use for request.
+           See ``curl_httpclient`` note below.
         :arg collections.abc.Callable streaming_callback: If set, ``streaming_callback`` will
            be run with each chunk of data as it is received, and
            ``HTTPResponse.body`` and ``HTTPResponse.buffer`` will be empty in
@@ -433,11 +476,11 @@ class HTTPRequest(object):
            ``simple_httpclient`` (unsupported by ``curl_httpclient``).
            Overrides ``validate_cert``, ``ca_certs``, ``client_key``,
            and ``client_cert``.
-        :arg bool allow_ipv6: Use IPv6 when available?  Default is true.
+        :arg bool allow_ipv6: Use IPv6 when available?  Default is True.
         :arg bool expect_100_continue: If true, send the
            ``Expect: 100-continue`` header and wait for a continue response
            before sending the request body.  Only supported with
-           simple_httpclient.
+           ``simple_httpclient``.
 
         .. note::
 
@@ -465,10 +508,11 @@ class HTTPRequest(object):
         """
         # Note that some of these attributes go through property setters
         # defined below.
-        self.headers = headers
+        self.headers = headers  # type: ignore
         if if_modified_since:
             self.headers["If-Modified-Since"] = httputil.format_timestamp(
-                if_modified_since)
+                if_modified_since
+            )
         self.proxy_host = proxy_host
         self.proxy_port = proxy_port
         self.proxy_username = proxy_username
@@ -476,7 +520,7 @@ class HTTPRequest(object):
         self.proxy_auth_mode = proxy_auth_mode
         self.url = url
         self.method = method
-        self.body = body
+        self.body = body  # type: ignore
         self.body_producer = body_producer
         self.auth_username = auth_username
         self.auth_password = auth_password
@@ -487,7 +531,7 @@ class HTTPRequest(object):
         self.max_redirects = max_redirects
         self.user_agent = user_agent
         if decompress_response is not None:
-            self.decompress_response = decompress_response
+            self.decompress_response = decompress_response  # type: Optional[bool]
         else:
             self.decompress_response = use_gzip
         self.network_interface = network_interface
@@ -505,55 +549,26 @@ class HTTPRequest(object):
         self.start_time = time.time()
 
     @property
-    def headers(self):
-        return self._headers
+    def headers(self) -> httputil.HTTPHeaders:
+        # TODO: headers may actually be a plain dict until fairly late in
+        # the process (AsyncHTTPClient.fetch), but practically speaking,
+        # whenever the property is used they're already HTTPHeaders.
+        return self._headers  # type: ignore
 
     @headers.setter
-    def headers(self, value):
+    def headers(self, value: Union[Dict[str, str], httputil.HTTPHeaders]) -> None:
         if value is None:
             self._headers = httputil.HTTPHeaders()
         else:
-            self._headers = value
+            self._headers = value  # type: ignore
 
     @property
-    def body(self):
+    def body(self) -> bytes:
         return self._body
 
     @body.setter
-    def body(self, value):
+    def body(self, value: Union[bytes, str]) -> None:
         self._body = utf8(value)
-
-    @property
-    def body_producer(self):
-        return self._body_producer
-
-    @body_producer.setter
-    def body_producer(self, value):
-        self._body_producer = stack_context.wrap(value)
-
-    @property
-    def streaming_callback(self):
-        return self._streaming_callback
-
-    @streaming_callback.setter
-    def streaming_callback(self, value):
-        self._streaming_callback = stack_context.wrap(value)
-
-    @property
-    def header_callback(self):
-        return self._header_callback
-
-    @header_callback.setter
-    def header_callback(self, value):
-        self._header_callback = stack_context.wrap(value)
-
-    @property
-    def prepare_curl_callback(self):
-        return self._prepare_curl_callback
-
-    @prepare_curl_callback.setter
-    def prepare_curl_callback(self, value):
-        self._prepare_curl_callback = stack_context.wrap(value)
 
 
 class HTTPResponse(object):
@@ -561,34 +576,35 @@ class HTTPResponse(object):
 
     Attributes:
 
-    * request: HTTPRequest object
+    * ``request``: HTTPRequest object
 
-    * code: numeric HTTP status code, e.g. 200 or 404
+    * ``code``: numeric HTTP status code, e.g. 200 or 404
 
-    * reason: human-readable reason phrase describing the status code
+    * ``reason``: human-readable reason phrase describing the status code
 
-    * headers: `tornado.httputil.HTTPHeaders` object
+    * ``headers``: `tornado.httputil.HTTPHeaders` object
 
-    * effective_url: final location of the resource after following any
+    * ``effective_url``: final location of the resource after following any
       redirects
 
-    * buffer: ``cStringIO`` object for response body
+    * ``buffer``: ``cStringIO`` object for response body
 
-    * body: response body as bytes (created on demand from ``self.buffer``)
+    * ``body``: response body as bytes (created on demand from ``self.buffer``)
 
-    * error: Exception object, if any
+    * ``error``: Exception object, if any
 
-    * request_time: seconds from request start to finish. Includes all network
-      operations from DNS resolution to receiving the last byte of data.
-      Does not include time spent in the queue (due to the ``max_clients`` option).
-      If redirects were followed, only includes the final request.
+    * ``request_time``: seconds from request start to finish. Includes all
+      network operations from DNS resolution to receiving the last byte of
+      data. Does not include time spent in the queue (due to the
+      ``max_clients`` option). If redirects were followed, only includes
+      the final request.
 
-    * start_time: Time at which the HTTP operation started, based on `time.time`
-      (not the monotonic clock used by `.IOLoop.time`). May be ``None`` if the request
-      timed out while in the queue.
+    * ``start_time``: Time at which the HTTP operation started, based on
+      `time.time` (not the monotonic clock used by `.IOLoop.time`). May
+      be ``None`` if the request timed out while in the queue.
 
-    * time_info: dictionary of diagnostic timing information from the request.
-      Available data are subject to change, but currently uses timings
+    * ``time_info``: dictionary of diagnostic timing information from the
+      request. Available data are subject to change, but currently uses timings
       available from http://curl.haxx.se/libcurl/c/curl_easy_getinfo.html,
       plus ``queue``, which is the delay (if any) introduced by waiting for
       a slot under `AsyncHTTPClient`'s ``max_clients`` setting.
@@ -604,9 +620,25 @@ class HTTPResponse(object):
        is excluded in both implementations. ``request_time`` is now more accurate for
        ``curl_httpclient`` because it uses a monotonic clock when available.
     """
-    def __init__(self, request, code, headers=None, buffer=None,
-                 effective_url=None, error=None, request_time=None,
-                 time_info=None, reason=None, start_time=None):
+
+    # I'm not sure why these don't get type-inferred from the references in __init__.
+    error = None  # type: Optional[BaseException]
+    _error_is_response_code = False
+    request = None  # type: HTTPRequest
+
+    def __init__(
+        self,
+        request: HTTPRequest,
+        code: int,
+        headers: Optional[httputil.HTTPHeaders] = None,
+        buffer: Optional[BytesIO] = None,
+        effective_url: Optional[str] = None,
+        error: Optional[BaseException] = None,
+        request_time: Optional[float] = None,
+        time_info: Optional[Dict[str, float]] = None,
+        reason: Optional[str] = None,
+        start_time: Optional[float] = None,
+    ) -> None:
         if isinstance(request, _RequestProxy):
             self.request = request.request
         else:
@@ -618,7 +650,7 @@ class HTTPResponse(object):
         else:
             self.headers = httputil.HTTPHeaders()
         self.buffer = buffer
-        self._body = None
+        self._body = None  # type: Optional[bytes]
         if effective_url is None:
             self.effective_url = request.url
         else:
@@ -627,8 +659,7 @@ class HTTPResponse(object):
         if error is None:
             if self.code < 200 or self.code >= 300:
                 self._error_is_response_code = True
-                self.error = HTTPError(self.code, message=self.reason,
-                                       response=self)
+                self.error = HTTPError(self.code, message=self.reason, response=self)
             else:
                 self.error = None
         else:
@@ -638,20 +669,20 @@ class HTTPResponse(object):
         self.time_info = time_info or {}
 
     @property
-    def body(self):
+    def body(self) -> bytes:
         if self.buffer is None:
-            return None
+            return b""
         elif self._body is None:
             self._body = self.buffer.getvalue()
 
         return self._body
 
-    def rethrow(self):
+    def rethrow(self) -> None:
         """If there was an error on the request, raise an `HTTPError`."""
         if self.error:
             raise self.error
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         args = ",".join("%s=%r" % i for i in sorted(self.__dict__.items()))
         return "%s(%s)" % (self.__class__.__name__, args)
 
@@ -676,13 +707,19 @@ class HTTPClientError(Exception):
        `tornado.web.HTTPError`. The name ``tornado.httpclient.HTTPError`` remains
        as an alias.
     """
-    def __init__(self, code, message=None, response=None):
+
+    def __init__(
+        self,
+        code: int,
+        message: Optional[str] = None,
+        response: Optional[HTTPResponse] = None,
+    ) -> None:
         self.code = code
         self.message = message or httputil.responses.get(code, "Unknown")
         self.response = response
-        super(HTTPClientError, self).__init__(code, message, response)
+        super().__init__(code, message, response)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "HTTP %d: %s" % (self.code, self.message)
 
     # There is a cyclic reference between self and self.response,
@@ -700,11 +737,14 @@ class _RequestProxy(object):
 
     Used internally by AsyncHTTPClient implementations.
     """
-    def __init__(self, request, defaults):
+
+    def __init__(
+        self, request: HTTPRequest, defaults: Optional[Dict[str, Any]]
+    ) -> None:
         self.request = request
         self.defaults = defaults
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> Any:
         request_attr = getattr(self.request, name)
         if request_attr is not None:
             return request_attr
@@ -714,8 +754,9 @@ class _RequestProxy(object):
             return None
 
 
-def main():
+def main() -> None:
     from tornado.options import define, options, parse_command_line
+
     define("print_headers", type=bool, default=False)
     define("print_body", type=bool, default=True)
     define("follow_redirects", type=bool, default=True)
@@ -726,12 +767,13 @@ def main():
     client = HTTPClient()
     for arg in args:
         try:
-            response = client.fetch(arg,
-                                    follow_redirects=options.follow_redirects,
-                                    validate_cert=options.validate_cert,
-                                    proxy_host=options.proxy_host,
-                                    proxy_port=options.proxy_port,
-                                    )
+            response = client.fetch(
+                arg,
+                follow_redirects=options.follow_redirects,
+                validate_cert=options.validate_cert,
+                proxy_host=options.proxy_host,
+                proxy_port=options.proxy_port,
+            )
         except HTTPError as e:
             if e.response is not None:
                 response = e.response

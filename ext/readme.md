@@ -56,7 +56,7 @@ ext | **`soupsieve`** | [1.9.6](https://pypi.org/project/soupsieve/1.9.6/) | `be
 ext | **`stevedore`** | [1.30.1](https://pypi.org/project/stevedore/1.30.1/) | `subliminal` | -
 ext | **`subliminal`** | [2.1.0](https://pypi.org/project/subliminal/2.1.0/) | **`medusa`** | -
 ext | **`tmdbsimple`** | [2.7.0](https://pypi.org/project/tmdbsimple/2.7.0/) | **`medusa`** | -
-ext | **`tornado`** | [5.1.1](https://pypi.org/project/tornado/5.1.1/) | **`medusa`**, `tornroutes` | -
+ext | **`tornado`** | [6.1](https://pypi.org/project/tornado/6.1/) | **`medusa`**, `tornroutes` | -
 ext | **`tornroutes`** | [0.5.1](https://pypi.org/project/tornroutes/0.5.1/) | **`medusa`** | -
 ext | **`trakt`** | [2.14.1](https://pypi.org/project/trakt/2.14.1/) | **`medusa`** | -
 ext | `trans` | [2.1.0](https://pypi.org/project/trans/2.1.0/) | `imdbpie` | File: `trans.py`

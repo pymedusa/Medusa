@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # Copyright 2009 Facebook
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -39,30 +37,28 @@ supported by `gettext` and related tools).  If neither method is called,
 the `Locale.translate` method will simply return the original string.
 """
 
-from __future__ import absolute_import, division, print_function
-
 import codecs
 import csv
 import datetime
-from io import BytesIO
-import numbers
+import gettext
 import os
 import re
 
 from tornado import escape
 from tornado.log import gen_log
-from tornado.util import PY3
 
 from tornado._locale_data import LOCALE_NAMES
 
+from typing import Iterable, Any, Union, Dict, Optional
+
 _default_locale = "en_US"
-_translations = {}  # type: dict
+_translations = {}  # type: Dict[str, Any]
 _supported_locales = frozenset([_default_locale])
 _use_gettext = False
 CONTEXT_SEPARATOR = "\x04"
 
 
-def get(*locale_codes):
+def get(*locale_codes: str) -> "Locale":
     """Returns the closest match for the given locale codes.
 
     We iterate over all given locale codes in order. If we have a tight
@@ -76,7 +72,7 @@ def get(*locale_codes):
     return Locale.get_closest(*locale_codes)
 
 
-def set_default_locale(code):
+def set_default_locale(code: str) -> None:
     """Sets the default locale.
 
     The default locale is assumed to be the language used for all strings
@@ -90,7 +86,7 @@ def set_default_locale(code):
     _supported_locales = frozenset(list(_translations.keys()) + [_default_locale])
 
 
-def load_translations(directory, encoding=None):
+def load_translations(directory: str, encoding: Optional[str] = None) -> None:
     """Loads translations from CSV files in a directory.
 
     Translations are strings with optional Python-style named placeholders
@@ -133,54 +129,51 @@ def load_translations(directory, encoding=None):
             continue
         locale, extension = path.split(".")
         if not re.match("[a-z]+(_[A-Z]+)?$", locale):
-            gen_log.error("Unrecognized locale %r (path: %s)", locale,
-                          os.path.join(directory, path))
+            gen_log.error(
+                "Unrecognized locale %r (path: %s)",
+                locale,
+                os.path.join(directory, path),
+            )
             continue
         full_path = os.path.join(directory, path)
         if encoding is None:
             # Try to autodetect encoding based on the BOM.
-            with open(full_path, 'rb') as f:
-                data = f.read(len(codecs.BOM_UTF16_LE))
+            with open(full_path, "rb") as bf:
+                data = bf.read(len(codecs.BOM_UTF16_LE))
             if data in (codecs.BOM_UTF16_LE, codecs.BOM_UTF16_BE):
-                encoding = 'utf-16'
+                encoding = "utf-16"
             else:
                 # utf-8-sig is "utf-8 with optional BOM". It's discouraged
                 # in most cases but is common with CSV files because Excel
                 # cannot read utf-8 files without a BOM.
-                encoding = 'utf-8-sig'
-        if PY3:
-            # python 3: csv.reader requires a file open in text mode.
-            # Force utf8 to avoid dependence on $LANG environment variable.
-            f = open(full_path, "r", encoding=encoding)
-        else:
-            # python 2: csv can only handle byte strings (in ascii-compatible
-            # encodings), which we decode below. Transcode everything into
-            # utf8 before passing it to csv.reader.
-            f = BytesIO()
-            with codecs.open(full_path, "r", encoding=encoding) as infile:
-                f.write(escape.utf8(infile.read()))
-            f.seek(0)
-        _translations[locale] = {}
-        for i, row in enumerate(csv.reader(f)):
-            if not row or len(row) < 2:
-                continue
-            row = [escape.to_unicode(c).strip() for c in row]
-            english, translation = row[:2]
-            if len(row) > 2:
-                plural = row[2] or "unknown"
-            else:
-                plural = "unknown"
-            if plural not in ("plural", "singular", "unknown"):
-                gen_log.error("Unrecognized plural indicator %r in %s line %d",
-                              plural, path, i + 1)
-                continue
-            _translations[locale].setdefault(plural, {})[english] = translation
-        f.close()
+                encoding = "utf-8-sig"
+        # python 3: csv.reader requires a file open in text mode.
+        # Specify an encoding to avoid dependence on $LANG environment variable.
+        with open(full_path, encoding=encoding) as f:
+            _translations[locale] = {}
+            for i, row in enumerate(csv.reader(f)):
+                if not row or len(row) < 2:
+                    continue
+                row = [escape.to_unicode(c).strip() for c in row]
+                english, translation = row[:2]
+                if len(row) > 2:
+                    plural = row[2] or "unknown"
+                else:
+                    plural = "unknown"
+                if plural not in ("plural", "singular", "unknown"):
+                    gen_log.error(
+                        "Unrecognized plural indicator %r in %s line %d",
+                        plural,
+                        path,
+                        i + 1,
+                    )
+                    continue
+                _translations[locale].setdefault(plural, {})[english] = translation
     _supported_locales = frozenset(list(_translations.keys()) + [_default_locale])
     gen_log.debug("Supported locales: %s", sorted(_supported_locales))
 
 
-def load_gettext_translations(directory, domain):
+def load_gettext_translations(directory: str, domain: str) -> None:
     """Loads translations from `gettext`'s locale tree
 
     Locale tree is similar to system's ``/usr/share/locale``, like::
@@ -201,20 +194,20 @@ def load_gettext_translations(directory, domain):
 
         msgfmt mydomain.po -o {directory}/pt_BR/LC_MESSAGES/mydomain.mo
     """
-    import gettext
     global _translations
     global _supported_locales
     global _use_gettext
     _translations = {}
     for lang in os.listdir(directory):
-        if lang.startswith('.'):
+        if lang.startswith("."):
             continue  # skip .svn, etc
         if os.path.isfile(os.path.join(directory, lang)):
             continue
         try:
             os.stat(os.path.join(directory, lang, "LC_MESSAGES", domain + ".mo"))
-            _translations[lang] = gettext.translation(domain, directory,
-                                                      languages=[lang])
+            _translations[lang] = gettext.translation(
+                domain, directory, languages=[lang]
+            )
         except Exception as e:
             gen_log.error("Cannot load translation for '%s': %s", lang, str(e))
             continue
@@ -223,7 +216,7 @@ def load_gettext_translations(directory, domain):
     gen_log.debug("Supported locales: %s", sorted(_supported_locales))
 
 
-def get_supported_locales():
+def get_supported_locales() -> Iterable[str]:
     """Returns a list of all the supported locale codes."""
     return _supported_locales
 
@@ -234,8 +227,11 @@ class Locale(object):
     After calling one of `load_translations` or `load_gettext_translations`,
     call `get` or `get_closest` to get a Locale object.
     """
+
+    _cache = {}  # type: Dict[str, Locale]
+
     @classmethod
-    def get_closest(cls, *locale_codes):
+    def get_closest(cls, *locale_codes: str) -> "Locale":
         """Returns the closest match for the given locale code."""
         for code in locale_codes:
             if not code:
@@ -253,18 +249,16 @@ class Locale(object):
         return cls.get(_default_locale)
 
     @classmethod
-    def get(cls, code):
+    def get(cls, code: str) -> "Locale":
         """Returns the Locale for the given locale code.
 
         If it is not supported, we raise an exception.
         """
-        if not hasattr(cls, "_cache"):
-            cls._cache = {}
         if code not in cls._cache:
             assert code in _supported_locales
             translations = _translations.get(code, None)
             if translations is None:
-                locale = CSVLocale(code, {})
+                locale = CSVLocale(code, {})  # type: Locale
             elif _use_gettext:
                 locale = GettextLocale(code, translations)
             else:
@@ -272,7 +266,7 @@ class Locale(object):
             cls._cache[code] = locale
         return cls._cache[code]
 
-    def __init__(self, code, translations):
+    def __init__(self, code: str) -> None:
         self.code = code
         self.name = LOCALE_NAMES.get(code, {}).get("name", u"Unknown")
         self.rtl = False
@@ -280,19 +274,39 @@ class Locale(object):
             if self.code.startswith(prefix):
                 self.rtl = True
                 break
-        self.translations = translations
 
         # Initialize strings for date formatting
         _ = self.translate
         self._months = [
-            _("January"), _("February"), _("March"), _("April"),
-            _("May"), _("June"), _("July"), _("August"),
-            _("September"), _("October"), _("November"), _("December")]
+            _("January"),
+            _("February"),
+            _("March"),
+            _("April"),
+            _("May"),
+            _("June"),
+            _("July"),
+            _("August"),
+            _("September"),
+            _("October"),
+            _("November"),
+            _("December"),
+        ]
         self._weekdays = [
-            _("Monday"), _("Tuesday"), _("Wednesday"), _("Thursday"),
-            _("Friday"), _("Saturday"), _("Sunday")]
+            _("Monday"),
+            _("Tuesday"),
+            _("Wednesday"),
+            _("Thursday"),
+            _("Friday"),
+            _("Saturday"),
+            _("Sunday"),
+        ]
 
-    def translate(self, message, plural_message=None, count=None):
+    def translate(
+        self,
+        message: str,
+        plural_message: Optional[str] = None,
+        count: Optional[int] = None,
+    ) -> str:
         """Returns the translation for the given message for this locale.
 
         If ``plural_message`` is given, you must also provide
@@ -302,11 +316,23 @@ class Locale(object):
         """
         raise NotImplementedError()
 
-    def pgettext(self, context, message, plural_message=None, count=None):
+    def pgettext(
+        self,
+        context: str,
+        message: str,
+        plural_message: Optional[str] = None,
+        count: Optional[int] = None,
+    ) -> str:
         raise NotImplementedError()
 
-    def format_date(self, date, gmt_offset=0, relative=True, shorter=False,
-                    full_format=False):
+    def format_date(
+        self,
+        date: Union[int, float, datetime.datetime],
+        gmt_offset: int = 0,
+        relative: bool = True,
+        shorter: bool = False,
+        full_format: bool = False,
+    ) -> str:
         """Formats the given date (which should be GMT).
 
         By default, we return a relative time (e.g., "2 minutes ago"). You
@@ -318,7 +344,7 @@ class Locale(object):
         This method is primarily intended for dates in the past.
         For dates in the future, we fall back to full format.
         """
-        if isinstance(date, numbers.Real):
+        if isinstance(date, (int, float)):
             date = datetime.datetime.utcfromtimestamp(date)
         now = datetime.datetime.utcnow()
         if date > now:
@@ -342,56 +368,66 @@ class Locale(object):
         if not full_format:
             if relative and days == 0:
                 if seconds < 50:
-                    return _("1 second ago", "%(seconds)d seconds ago",
-                             seconds) % {"seconds": seconds}
+                    return _("1 second ago", "%(seconds)d seconds ago", seconds) % {
+                        "seconds": seconds
+                    }
 
                 if seconds < 50 * 60:
                     minutes = round(seconds / 60.0)
-                    return _("1 minute ago", "%(minutes)d minutes ago",
-                             minutes) % {"minutes": minutes}
+                    return _("1 minute ago", "%(minutes)d minutes ago", minutes) % {
+                        "minutes": minutes
+                    }
 
                 hours = round(seconds / (60.0 * 60))
-                return _("1 hour ago", "%(hours)d hours ago",
-                         hours) % {"hours": hours}
+                return _("1 hour ago", "%(hours)d hours ago", hours) % {"hours": hours}
 
             if days == 0:
                 format = _("%(time)s")
-            elif days == 1 and local_date.day == local_yesterday.day and \
-                    relative:
-                format = _("yesterday") if shorter else \
-                    _("yesterday at %(time)s")
+            elif days == 1 and local_date.day == local_yesterday.day and relative:
+                format = _("yesterday") if shorter else _("yesterday at %(time)s")
             elif days < 5:
-                format = _("%(weekday)s") if shorter else \
-                    _("%(weekday)s at %(time)s")
+                format = _("%(weekday)s") if shorter else _("%(weekday)s at %(time)s")
             elif days < 334:  # 11mo, since confusing for same month last year
-                format = _("%(month_name)s %(day)s") if shorter else \
-                    _("%(month_name)s %(day)s at %(time)s")
+                format = (
+                    _("%(month_name)s %(day)s")
+                    if shorter
+                    else _("%(month_name)s %(day)s at %(time)s")
+                )
 
         if format is None:
-            format = _("%(month_name)s %(day)s, %(year)s") if shorter else \
-                _("%(month_name)s %(day)s, %(year)s at %(time)s")
+            format = (
+                _("%(month_name)s %(day)s, %(year)s")
+                if shorter
+                else _("%(month_name)s %(day)s, %(year)s at %(time)s")
+            )
 
         tfhour_clock = self.code not in ("en", "en_US", "zh_CN")
         if tfhour_clock:
             str_time = "%d:%02d" % (local_date.hour, local_date.minute)
         elif self.code == "zh_CN":
             str_time = "%s%d:%02d" % (
-                (u'\u4e0a\u5348', u'\u4e0b\u5348')[local_date.hour >= 12],
-                local_date.hour % 12 or 12, local_date.minute)
+                (u"\u4e0a\u5348", u"\u4e0b\u5348")[local_date.hour >= 12],
+                local_date.hour % 12 or 12,
+                local_date.minute,
+            )
         else:
             str_time = "%d:%02d %s" % (
-                local_date.hour % 12 or 12, local_date.minute,
-                ("am", "pm")[local_date.hour >= 12])
+                local_date.hour % 12 or 12,
+                local_date.minute,
+                ("am", "pm")[local_date.hour >= 12],
+            )
 
         return format % {
             "month_name": self._months[local_date.month - 1],
             "weekday": self._weekdays[local_date.weekday()],
             "day": str(local_date.day),
             "year": str(local_date.year),
-            "time": str_time
+            "time": str_time,
         }
 
-    def format_day(self, date, gmt_offset=0, dow=True):
+    def format_day(
+        self, date: datetime.datetime, gmt_offset: int = 0, dow: bool = True
+    ) -> bool:
         """Formats the given date as a day of week.
 
         Example: "Monday, January 22". You can remove the day of week with
@@ -411,7 +447,7 @@ class Locale(object):
                 "day": str(local_date.day),
             }
 
-    def list(self, parts):
+    def list(self, parts: Any) -> str:
         """Returns a comma-separated list for the given list of parts.
 
         The format is, e.g., "A, B and C", "A and B" or just "A" for lists
@@ -422,27 +458,37 @@ class Locale(object):
             return ""
         if len(parts) == 1:
             return parts[0]
-        comma = u' \u0648 ' if self.code.startswith("fa") else u", "
+        comma = u" \u0648 " if self.code.startswith("fa") else u", "
         return _("%(commas)s and %(last)s") % {
             "commas": comma.join(parts[:-1]),
             "last": parts[len(parts) - 1],
         }
 
-    def friendly_number(self, value):
+    def friendly_number(self, value: int) -> str:
         """Returns a comma-separated number for the given integer."""
         if self.code not in ("en", "en_US"):
             return str(value)
-        value = str(value)
+        s = str(value)
         parts = []
-        while value:
-            parts.append(value[-3:])
-            value = value[:-3]
+        while s:
+            parts.append(s[-3:])
+            s = s[:-3]
         return ",".join(reversed(parts))
 
 
 class CSVLocale(Locale):
     """Locale implementation using tornado's CSV translation format."""
-    def translate(self, message, plural_message=None, count=None):
+
+    def __init__(self, code: str, translations: Dict[str, Dict[str, str]]) -> None:
+        self.translations = translations
+        super().__init__(code)
+
+    def translate(
+        self,
+        message: str,
+        plural_message: Optional[str] = None,
+        count: Optional[int] = None,
+    ) -> str:
         if plural_message is not None:
             assert count is not None
             if count != 1:
@@ -454,35 +500,47 @@ class CSVLocale(Locale):
             message_dict = self.translations.get("unknown", {})
         return message_dict.get(message, message)
 
-    def pgettext(self, context, message, plural_message=None, count=None):
+    def pgettext(
+        self,
+        context: str,
+        message: str,
+        plural_message: Optional[str] = None,
+        count: Optional[int] = None,
+    ) -> str:
         if self.translations:
-            gen_log.warning('pgettext is not supported by CSVLocale')
+            gen_log.warning("pgettext is not supported by CSVLocale")
         return self.translate(message, plural_message, count)
 
 
 class GettextLocale(Locale):
     """Locale implementation using the `gettext` module."""
-    def __init__(self, code, translations):
-        try:
-            # python 2
-            self.ngettext = translations.ungettext
-            self.gettext = translations.ugettext
-        except AttributeError:
-            # python 3
-            self.ngettext = translations.ngettext
-            self.gettext = translations.gettext
+
+    def __init__(self, code: str, translations: gettext.NullTranslations) -> None:
+        self.ngettext = translations.ngettext
+        self.gettext = translations.gettext
         # self.gettext must exist before __init__ is called, since it
         # calls into self.translate
-        super(GettextLocale, self).__init__(code, translations)
+        super().__init__(code)
 
-    def translate(self, message, plural_message=None, count=None):
+    def translate(
+        self,
+        message: str,
+        plural_message: Optional[str] = None,
+        count: Optional[int] = None,
+    ) -> str:
         if plural_message is not None:
             assert count is not None
             return self.ngettext(message, plural_message, count)
         else:
             return self.gettext(message)
 
-    def pgettext(self, context, message, plural_message=None, count=None):
+    def pgettext(
+        self,
+        context: str,
+        message: str,
+        plural_message: Optional[str] = None,
+        count: Optional[int] = None,
+    ) -> str:
         """Allows to set context for translation, accepts plural forms.
 
         Usage example::
@@ -504,9 +562,11 @@ class GettextLocale(Locale):
         """
         if plural_message is not None:
             assert count is not None
-            msgs_with_ctxt = ("%s%s%s" % (context, CONTEXT_SEPARATOR, message),
-                              "%s%s%s" % (context, CONTEXT_SEPARATOR, plural_message),
-                              count)
+            msgs_with_ctxt = (
+                "%s%s%s" % (context, CONTEXT_SEPARATOR, message),
+                "%s%s%s" % (context, CONTEXT_SEPARATOR, plural_message),
+                count,
+            )
             result = self.ngettext(*msgs_with_ctxt)
             if CONTEXT_SEPARATOR in result:
                 # Translation not found

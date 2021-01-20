@@ -14,11 +14,11 @@
 # under the License.
 
 """A non-blocking, single-threaded TCP server."""
-from __future__ import absolute_import, division, print_function
 
 import errno
 import os
 import socket
+import ssl
 
 from tornado import gen
 from tornado.log import app_log
@@ -28,11 +28,11 @@ from tornado.netutil import bind_sockets, add_accept_handler, ssl_wrap_socket
 from tornado import process
 from tornado.util import errno_from_exception
 
-try:
-    import ssl
-except ImportError:
-    # ssl is not available on Google App Engine.
-    ssl = None
+import typing
+from typing import Union, Dict, Any, Iterable, Optional, Awaitable
+
+if typing.TYPE_CHECKING:
+    from typing import Callable, List  # noqa: F401
 
 
 class TCPServer(object):
@@ -104,12 +104,17 @@ class TCPServer(object):
     .. versionchanged:: 5.0
        The ``io_loop`` argument has been removed.
     """
-    def __init__(self, ssl_options=None, max_buffer_size=None,
-                 read_chunk_size=None):
+
+    def __init__(
+        self,
+        ssl_options: Optional[Union[Dict[str, Any], ssl.SSLContext]] = None,
+        max_buffer_size: Optional[int] = None,
+        read_chunk_size: Optional[int] = None,
+    ) -> None:
         self.ssl_options = ssl_options
-        self._sockets = {}   # fd -> socket object
-        self._handlers = {}  # fd -> remove_handler callable
-        self._pending_sockets = []
+        self._sockets = {}  # type: Dict[int, socket.socket]
+        self._handlers = {}  # type: Dict[int, Callable[[], None]]
+        self._pending_sockets = []  # type: List[socket.socket]
         self._started = False
         self._stopped = False
         self.max_buffer_size = max_buffer_size
@@ -121,18 +126,21 @@ class TCPServer(object):
         # which seems like too much work
         if self.ssl_options is not None and isinstance(self.ssl_options, dict):
             # Only certfile is required: it can contain both keys
-            if 'certfile' not in self.ssl_options:
+            if "certfile" not in self.ssl_options:
                 raise KeyError('missing key "certfile" in ssl_options')
 
-            if not os.path.exists(self.ssl_options['certfile']):
-                raise ValueError('certfile "%s" does not exist' %
-                                 self.ssl_options['certfile'])
-            if ('keyfile' in self.ssl_options and
-                    not os.path.exists(self.ssl_options['keyfile'])):
-                raise ValueError('keyfile "%s" does not exist' %
-                                 self.ssl_options['keyfile'])
+            if not os.path.exists(self.ssl_options["certfile"]):
+                raise ValueError(
+                    'certfile "%s" does not exist' % self.ssl_options["certfile"]
+                )
+            if "keyfile" in self.ssl_options and not os.path.exists(
+                self.ssl_options["keyfile"]
+            ):
+                raise ValueError(
+                    'keyfile "%s" does not exist' % self.ssl_options["keyfile"]
+                )
 
-    def listen(self, port, address=""):
+    def listen(self, port: int, address: str = "") -> None:
         """Starts accepting connections on the given port.
 
         This method may be called more than once to listen on multiple ports.
@@ -143,7 +151,7 @@ class TCPServer(object):
         sockets = bind_sockets(port, address=address)
         self.add_sockets(sockets)
 
-    def add_sockets(self, sockets):
+    def add_sockets(self, sockets: Iterable[socket.socket]) -> None:
         """Makes this server start accepting connections on the given sockets.
 
         The ``sockets`` parameter is a list of socket objects such as
@@ -155,14 +163,21 @@ class TCPServer(object):
         for sock in sockets:
             self._sockets[sock.fileno()] = sock
             self._handlers[sock.fileno()] = add_accept_handler(
-                sock, self._handle_connection)
+                sock, self._handle_connection
+            )
 
-    def add_socket(self, socket):
+    def add_socket(self, socket: socket.socket) -> None:
         """Singular version of `add_sockets`.  Takes a single socket object."""
         self.add_sockets([socket])
 
-    def bind(self, port, address=None, family=socket.AF_UNSPEC, backlog=128,
-             reuse_port=False):
+    def bind(
+        self,
+        port: int,
+        address: Optional[str] = None,
+        family: socket.AddressFamily = socket.AF_UNSPEC,
+        backlog: int = 128,
+        reuse_port: bool = False,
+    ) -> None:
         """Binds this server to the given port on the given address.
 
         To start the server, call `start`. If you want to run this server
@@ -186,14 +201,17 @@ class TCPServer(object):
         .. versionchanged:: 4.4
            Added the ``reuse_port`` argument.
         """
-        sockets = bind_sockets(port, address=address, family=family,
-                               backlog=backlog, reuse_port=reuse_port)
+        sockets = bind_sockets(
+            port, address=address, family=family, backlog=backlog, reuse_port=reuse_port
+        )
         if self._started:
             self.add_sockets(sockets)
         else:
             self._pending_sockets.extend(sockets)
 
-    def start(self, num_processes=1):
+    def start(
+        self, num_processes: Optional[int] = 1, max_restarts: Optional[int] = None
+    ) -> None:
         """Starts this server in the `.IOLoop`.
 
         By default, we run the server in this process and do not fork any
@@ -212,16 +230,24 @@ class TCPServer(object):
         which defaults to True when ``debug=True``).
         When using multiple processes, no IOLoops can be created or
         referenced until after the call to ``TCPServer.start(n)``.
+
+        Values of ``num_processes`` other than 1 are not supported on Windows.
+
+        The ``max_restarts`` argument is passed to `.fork_processes`.
+
+        .. versionchanged:: 6.0
+
+           Added ``max_restarts`` argument.
         """
         assert not self._started
         self._started = True
         if num_processes != 1:
-            process.fork_processes(num_processes)
+            process.fork_processes(num_processes, max_restarts)
         sockets = self._pending_sockets
         self._pending_sockets = []
         self.add_sockets(sockets)
 
-    def stop(self):
+    def stop(self) -> None:
         """Stops listening for new connections.
 
         Requests currently in progress may still continue after the
@@ -236,7 +262,9 @@ class TCPServer(object):
             self._handlers.pop(fd)()
             sock.close()
 
-    def handle_stream(self, stream, address):
+    def handle_stream(
+        self, stream: IOStream, address: tuple
+    ) -> Optional[Awaitable[None]]:
         """Override to handle a new `.IOStream` from an incoming connection.
 
         This method may be a coroutine; if so any exceptions it raises
@@ -253,14 +281,16 @@ class TCPServer(object):
         """
         raise NotImplementedError()
 
-    def _handle_connection(self, connection, address):
+    def _handle_connection(self, connection: socket.socket, address: Any) -> None:
         if self.ssl_options is not None:
             assert ssl, "Python 2.6+ and OpenSSL required for SSL"
             try:
-                connection = ssl_wrap_socket(connection,
-                                             self.ssl_options,
-                                             server_side=True,
-                                             do_handshake_on_connect=False)
+                connection = ssl_wrap_socket(
+                    connection,
+                    self.ssl_options,
+                    server_side=True,
+                    do_handshake_on_connect=False,
+                )
             except ssl.SSLError as err:
                 if err.args[0] == ssl.SSL_ERROR_EOF:
                     return connection.close()
@@ -283,17 +313,22 @@ class TCPServer(object):
                     raise
         try:
             if self.ssl_options is not None:
-                stream = SSLIOStream(connection,
-                                     max_buffer_size=self.max_buffer_size,
-                                     read_chunk_size=self.read_chunk_size)
+                stream = SSLIOStream(
+                    connection,
+                    max_buffer_size=self.max_buffer_size,
+                    read_chunk_size=self.read_chunk_size,
+                )  # type: IOStream
             else:
-                stream = IOStream(connection,
-                                  max_buffer_size=self.max_buffer_size,
-                                  read_chunk_size=self.read_chunk_size)
+                stream = IOStream(
+                    connection,
+                    max_buffer_size=self.max_buffer_size,
+                    read_chunk_size=self.read_chunk_size,
+                )
 
             future = self.handle_stream(stream, address)
             if future is not None:
-                IOLoop.current().add_future(gen.convert_yielded(future),
-                                            lambda f: f.result())
+                IOLoop.current().add_future(
+                    gen.convert_yielded(future), lambda f: f.result()
+                )
         except Exception:
             app_log.error("Error in connection callback", exc_info=True)
