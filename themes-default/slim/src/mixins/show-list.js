@@ -80,8 +80,7 @@ export const showlistTableMixin = {
                         { value: false, text: 'no' }
                     ]
                 },
-                type: 'boolean',
-                hidden: getCookie('Active')
+                type: 'boolean',                hidden: getCookie('Active')
             }, {
                 label: 'Status',
                 field: 'status',
@@ -92,6 +91,7 @@ export const showlistTableMixin = {
             }, {
                 label: 'Xem',
                 field: this.fealdFnXem,
+                type: 'boolean',
                 filterOptions: {
                     enabled: true,
                     filterDropdownItems: [
@@ -99,7 +99,6 @@ export const showlistTableMixin = {
                         { value: false, text: 'no' }
                     ]
                 },
-                type: 'boolean',
                 hidden: getCookie('Xem')
             }]
         };
