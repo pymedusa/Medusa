@@ -643,7 +643,7 @@ class Series(TV):
     @airs.setter
     def airs(self, value):
         """Set episode time that series usually airs."""
-        if value is None or not network_timezones.test_timeformat(self._airs):
+        if value is None or not network_timezones.test_timeformat(value):
             self._airs = ''
         else:
             self._airs = text_type(value).replace('am', ' AM').replace('pm', ' PM').replace('  ', ' ').strip()
