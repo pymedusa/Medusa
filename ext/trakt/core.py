@@ -413,6 +413,30 @@ def _refresh_token(s):
         raise s.error_map[response.status_code]()
 
 
+def load_config():
+    """Manually load config from json config file."""
+    global CLIENT_ID, CLIENT_SECRET, OAUTH_TOKEN, OAUTH_EXPIRES_AT
+    global OAUTH_REFRESH, APPLICATION_ID, CONFIG_PATH
+    if (CLIENT_ID is None or CLIENT_SECRET is None) and \
+            os.path.exists(CONFIG_PATH):
+        # Load in trakt API auth data from CONFIG_PATH
+        with open(CONFIG_PATH) as config_file:
+            config_data = json.load(config_file)
+
+        if CLIENT_ID is None:
+            CLIENT_ID = config_data.get('CLIENT_ID', None)
+        if CLIENT_SECRET is None:
+            CLIENT_SECRET = config_data.get('CLIENT_SECRET', None)
+        if OAUTH_TOKEN is None:
+            OAUTH_TOKEN = config_data.get('OAUTH_TOKEN', None)
+        if OAUTH_EXPIRES_AT is None:
+            OAUTH_EXPIRES_AT = config_data.get('OAUTH_EXPIRES_AT', None)
+        if OAUTH_REFRESH is None:
+            OAUTH_REFRESH = config_data.get('OAUTH_REFRESH', None)
+        if APPLICATION_ID is None:
+            APPLICATION_ID = config_data.get('APPLICATION_ID', None)
+
+
 def _bootstrapped(f):
     """Bootstrap your authentication environment when authentication is needed
     and if a file at `CONFIG_PATH` exists. The process is completed by setting
@@ -420,34 +444,18 @@ def _bootstrapped(f):
     """
     @wraps(f)
     def inner(*args, **kwargs):
-        global CLIENT_ID, CLIENT_SECRET, OAUTH_TOKEN, OAUTH_EXPIRES_AT
-        global OAUTH_REFRESH, APPLICATION_ID
-        if (CLIENT_ID is None or CLIENT_SECRET is None) and \
-                os.path.exists(CONFIG_PATH):
-            # Load in trakt API auth data from CONFIG_PATH
-            with open(CONFIG_PATH) as config_file:
-                config_data = json.load(config_file)
+        global OAUTH_TOKEN_VALID, OAUTH_EXPIRES_AT
+        global OAUTH_REFRESH, OAUTH_TOKEN
 
-            if CLIENT_ID is None:
-                CLIENT_ID = config_data.get('CLIENT_ID', None)
-            if CLIENT_SECRET is None:
-                CLIENT_SECRET = config_data.get('CLIENT_SECRET', None)
-            if OAUTH_TOKEN is None:
-                OAUTH_TOKEN = config_data.get('OAUTH_TOKEN', None)
-            if OAUTH_EXPIRES_AT is None:
-                OAUTH_EXPIRES_AT = config_data.get('OAUTH_EXPIRES_AT', None)
-            if OAUTH_REFRESH is None:
-                OAUTH_REFRESH = config_data.get('OAUTH_REFRESH', None)
-            if APPLICATION_ID is None:
-                APPLICATION_ID = config_data.get('APPLICATION_ID', None)
+        load_config()
+        # Check token validity and refresh token if needed
+        if (not OAUTH_TOKEN_VALID and OAUTH_EXPIRES_AT is not None
+                and OAUTH_REFRESH is not None):
+            _validate_token(args[0])
+        # For backwards compatability with trakt<=2.3.0
+        if api_key is not None and OAUTH_TOKEN is None:
+            OAUTH_TOKEN = api_key
 
-            # Check token validity and refresh token if needed
-            if (not OAUTH_TOKEN_VALID and OAUTH_EXPIRES_AT is not None and
-                    OAUTH_REFRESH is not None):
-                _validate_token(args[0])
-            # For backwards compatability with trakt<=2.3.0
-            if api_key is not None and OAUTH_TOKEN is None:
-                OAUTH_TOKEN = api_key
         return f(*args, **kwargs)
     return inner
 

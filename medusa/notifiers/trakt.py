@@ -135,11 +135,10 @@ class Notifier(object):
 
         :params episode: Episode Object.
         """
-        show_id = None
+        show_id = str(episode.series.externals.get('trakt_id', episode.series.name))
 
         try:
-            tv_show = tv.TVShow(show_id)
-            tv_episode = tv.TVEpisode(tv_show, episode.season, episode.episode)
+            tv_episode = tv.TVEpisode(show_id, episode.season, episode.episode)
             tv_episode.add_to_watchlist()
         except TraktException as error:
             log.warning('Unable to add episode to watchlist: {error!r}', {'error': error})

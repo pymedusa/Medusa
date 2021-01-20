@@ -51,8 +51,7 @@ from medusa.helpers.anidb import get_release_groups_for_anime
 from medusa.indexers.api import indexerApi
 from medusa.indexers.utils import indexer_name_to_id
 from medusa.scene_exceptions import (
-    get_all_scene_exceptions,
-    get_scene_exceptions,
+    get_all_scene_exceptions
 )
 from medusa.scene_numbering import (
     get_scene_absolute_numbering,
@@ -955,8 +954,6 @@ class Home(WebRoot):
                 indexer=indexername, show=seriesid), logger.WARNING)
             errors += 1
             return errors
-
-        series_obj.aliases = get_scene_exceptions(series_obj)
 
         season_folders = config.checkbox_to_value(season_folders)
         dvd_order = config.checkbox_to_value(dvd_order)

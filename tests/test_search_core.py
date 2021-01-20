@@ -26,8 +26,8 @@ from six import iteritems
         },
         'series': {
             'quality': HD1080p,
-            'rls_ignore_words': 'BadRobot',  # Comma separated
-            'rls_require_words': 'h264,x265',  # Comma separated
+            'release_ignored_words': ['BadRobot'],  # Comma separated
+            'release_required_words': ['h264', 'x265'],  # Comma separated
         },
         'provider': {
             'minseed': 5,

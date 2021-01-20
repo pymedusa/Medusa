@@ -1,21 +1,27 @@
-# coding: utf-8
-from __future__ import absolute_import, division, print_function
+from io import StringIO
 import re
 import sys
 import datetime
+import unittest
 
 import tornado.escape
 from tornado.escape import utf8
-from tornado.test.util import unittest
 from tornado.util import (
-    raise_exc_info, Configurable, exec_in, ArgReplacer,
-    timedelta_to_seconds, import_object, re_unescape, is_finalizing, PY3,
+    raise_exc_info,
+    Configurable,
+    exec_in,
+    ArgReplacer,
+    timedelta_to_seconds,
+    import_object,
+    re_unescape,
+    is_finalizing,
 )
 
-if PY3:
-    from io import StringIO
-else:
-    from cStringIO import StringIO
+import typing
+from typing import cast
+
+if typing.TYPE_CHECKING:
+    from typing import Dict, Any  # noqa: F401
 
 
 class RaiseExcInfoTest(unittest.TestCase):
@@ -25,7 +31,7 @@ class RaiseExcInfoTest(unittest.TestCase):
         # doesn't have a "copy constructor"
         class TwoArgException(Exception):
             def __init__(self, a, b):
-                super(TwoArgException, self).__init__()
+                super().__init__()
                 self.a, self.b = a, b
 
         try:
@@ -99,15 +105,18 @@ class ConfigurableTest(unittest.TestCase):
 
         obj = TestConfig1(a=1)
         self.assertEqual(obj.a, 1)
-        obj = TestConfig2(b=2)
-        self.assertEqual(obj.b, 2)
+        obj2 = TestConfig2(b=2)
+        self.assertEqual(obj2.b, 2)
 
     def test_default(self):
-        obj = TestConfigurable()
+        # In these tests we combine a typing.cast to satisfy mypy with
+        # a runtime type-assertion. Without the cast, mypy would only
+        # let us access attributes of the base class.
+        obj = cast(TestConfig1, TestConfigurable())
         self.assertIsInstance(obj, TestConfig1)
         self.assertIs(obj.a, None)
 
-        obj = TestConfigurable(a=1)
+        obj = cast(TestConfig1, TestConfigurable(a=1))
         self.assertIsInstance(obj, TestConfig1)
         self.assertEqual(obj.a, 1)
 
@@ -115,11 +124,23 @@ class ConfigurableTest(unittest.TestCase):
 
     def test_config_class(self):
         TestConfigurable.configure(TestConfig2)
-        obj = TestConfigurable()
+        obj = cast(TestConfig2, TestConfigurable())
         self.assertIsInstance(obj, TestConfig2)
         self.assertIs(obj.b, None)
 
-        obj = TestConfigurable(b=2)
+        obj = cast(TestConfig2, TestConfigurable(b=2))
+        self.assertIsInstance(obj, TestConfig2)
+        self.assertEqual(obj.b, 2)
+
+        self.checkSubclasses()
+
+    def test_config_str(self):
+        TestConfigurable.configure("tornado.test.util_test.TestConfig2")
+        obj = cast(TestConfig2, TestConfigurable())
+        self.assertIsInstance(obj, TestConfig2)
+        self.assertIs(obj.b, None)
+
+        obj = cast(TestConfig2, TestConfigurable(b=2))
         self.assertIsInstance(obj, TestConfig2)
         self.assertEqual(obj.b, 2)
 
@@ -127,11 +148,11 @@ class ConfigurableTest(unittest.TestCase):
 
     def test_config_args(self):
         TestConfigurable.configure(None, a=3)
-        obj = TestConfigurable()
+        obj = cast(TestConfig1, TestConfigurable())
         self.assertIsInstance(obj, TestConfig1)
         self.assertEqual(obj.a, 3)
 
-        obj = TestConfigurable(42, a=4)
+        obj = cast(TestConfig1, TestConfigurable(42, a=4))
         self.assertIsInstance(obj, TestConfig1)
         self.assertEqual(obj.a, 4)
         self.assertEqual(obj.pos_arg, 42)
@@ -143,11 +164,11 @@ class ConfigurableTest(unittest.TestCase):
 
     def test_config_class_args(self):
         TestConfigurable.configure(TestConfig2, b=5)
-        obj = TestConfigurable()
+        obj = cast(TestConfig2, TestConfigurable())
         self.assertIsInstance(obj, TestConfig2)
         self.assertEqual(obj.b, 5)
 
-        obj = TestConfigurable(42, b=6)
+        obj = cast(TestConfig2, TestConfigurable(42, b=6))
         self.assertIsInstance(obj, TestConfig2)
         self.assertEqual(obj.b, 6)
         self.assertEqual(obj.pos_arg, 42)
@@ -159,15 +180,15 @@ class ConfigurableTest(unittest.TestCase):
 
     def test_config_multi_level(self):
         TestConfigurable.configure(TestConfig3, a=1)
-        obj = TestConfigurable()
+        obj = cast(TestConfig3A, TestConfigurable())
         self.assertIsInstance(obj, TestConfig3A)
         self.assertEqual(obj.a, 1)
 
         TestConfigurable.configure(TestConfig3)
         TestConfig3.configure(TestConfig3B, b=2)
-        obj = TestConfigurable()
-        self.assertIsInstance(obj, TestConfig3B)
-        self.assertEqual(obj.b, 2)
+        obj2 = cast(TestConfig3B, TestConfigurable())
+        self.assertIsInstance(obj2, TestConfig3B)
+        self.assertEqual(obj2.b, 2)
 
     def test_config_inner_level(self):
         # The inner level can be used even when the outer level
@@ -180,12 +201,12 @@ class ConfigurableTest(unittest.TestCase):
         self.assertIsInstance(obj, TestConfig3B)
 
         # Configuring the base doesn't configure the inner.
-        obj = TestConfigurable()
-        self.assertIsInstance(obj, TestConfig1)
+        obj2 = TestConfigurable()
+        self.assertIsInstance(obj2, TestConfig1)
         TestConfigurable.configure(TestConfig2)
 
-        obj = TestConfigurable()
-        self.assertIsInstance(obj, TestConfig2)
+        obj3 = TestConfigurable()
+        self.assertIsInstance(obj3, TestConfig2)
 
         obj = TestConfig3()
         self.assertIsInstance(obj, TestConfig3B)
@@ -193,49 +214,55 @@ class ConfigurableTest(unittest.TestCase):
 
 class UnicodeLiteralTest(unittest.TestCase):
     def test_unicode_escapes(self):
-        self.assertEqual(utf8(u'\u00e9'), b'\xc3\xa9')
+        self.assertEqual(utf8(u"\u00e9"), b"\xc3\xa9")
 
 
 class ExecInTest(unittest.TestCase):
-    # This test is python 2 only because there are no new future imports
-    # defined in python 3 yet.
-    @unittest.skipIf(sys.version_info >= print_function.getMandatoryRelease(),
-                     'no testable future imports')
+    # TODO(bdarnell): make a version of this test for one of the new
+    # future imports available in python 3.
+    @unittest.skip("no testable future imports")
     def test_no_inherit_future(self):
         # This file has from __future__ import print_function...
         f = StringIO()
-        print('hello', file=f)
+        print("hello", file=f)
         # ...but the template doesn't
         exec_in('print >> f, "world"', dict(f=f))
-        self.assertEqual(f.getvalue(), 'hello\nworld\n')
+        self.assertEqual(f.getvalue(), "hello\nworld\n")
 
 
 class ArgReplacerTest(unittest.TestCase):
     def setUp(self):
         def function(x, y, callback=None, z=None):
             pass
-        self.replacer = ArgReplacer(function, 'callback')
+
+        self.replacer = ArgReplacer(function, "callback")
 
     def test_omitted(self):
         args = (1, 2)
-        kwargs = dict()
+        kwargs = dict()  # type: Dict[str, Any]
         self.assertIs(self.replacer.get_old_value(args, kwargs), None)
-        self.assertEqual(self.replacer.replace('new', args, kwargs),
-                         (None, (1, 2), dict(callback='new')))
+        self.assertEqual(
+            self.replacer.replace("new", args, kwargs),
+            (None, (1, 2), dict(callback="new")),
+        )
 
     def test_position(self):
-        args = (1, 2, 'old', 3)
-        kwargs = dict()
-        self.assertEqual(self.replacer.get_old_value(args, kwargs), 'old')
-        self.assertEqual(self.replacer.replace('new', args, kwargs),
-                         ('old', [1, 2, 'new', 3], dict()))
+        args = (1, 2, "old", 3)
+        kwargs = dict()  # type: Dict[str, Any]
+        self.assertEqual(self.replacer.get_old_value(args, kwargs), "old")
+        self.assertEqual(
+            self.replacer.replace("new", args, kwargs),
+            ("old", [1, 2, "new", 3], dict()),
+        )
 
     def test_keyword(self):
         args = (1,)
-        kwargs = dict(y=2, callback='old', z=3)
-        self.assertEqual(self.replacer.get_old_value(args, kwargs), 'old')
-        self.assertEqual(self.replacer.replace('new', args, kwargs),
-                         ('old', (1,), dict(y=2, callback='new', z=3)))
+        kwargs = dict(y=2, callback="old", z=3)
+        self.assertEqual(self.replacer.get_old_value(args, kwargs), "old")
+        self.assertEqual(
+            self.replacer.replace("new", args, kwargs),
+            ("old", (1,), dict(y=2, callback="new", z=3)),
+        )
 
 
 class TimedeltaToSecondsTest(unittest.TestCase):
@@ -246,39 +273,34 @@ class TimedeltaToSecondsTest(unittest.TestCase):
 
 class ImportObjectTest(unittest.TestCase):
     def test_import_member(self):
-        self.assertIs(import_object('tornado.escape.utf8'), utf8)
+        self.assertIs(import_object("tornado.escape.utf8"), utf8)
 
     def test_import_member_unicode(self):
-        self.assertIs(import_object(u'tornado.escape.utf8'), utf8)
+        self.assertIs(import_object(u"tornado.escape.utf8"), utf8)
 
     def test_import_module(self):
-        self.assertIs(import_object('tornado.escape'), tornado.escape)
+        self.assertIs(import_object("tornado.escape"), tornado.escape)
 
     def test_import_module_unicode(self):
         # The internal implementation of __import__ differs depending on
         # whether the thing being imported is a module or not.
         # This variant requires a byte string in python 2.
-        self.assertIs(import_object(u'tornado.escape'), tornado.escape)
+        self.assertIs(import_object(u"tornado.escape"), tornado.escape)
 
 
 class ReUnescapeTest(unittest.TestCase):
     def test_re_unescape(self):
-        test_strings = (
-            '/favicon.ico',
-            'index.html',
-            'Hello, World!',
-            '!$@#%;',
-        )
+        test_strings = ("/favicon.ico", "index.html", "Hello, World!", "!$@#%;")
         for string in test_strings:
             self.assertEqual(string, re_unescape(re.escape(string)))
 
     def test_re_unescape_raises_error_on_invalid_input(self):
         with self.assertRaises(ValueError):
-            re_unescape('\\d')
+            re_unescape("\\d")
         with self.assertRaises(ValueError):
-            re_unescape('\\b')
+            re_unescape("\\b")
         with self.assertRaises(ValueError):
-            re_unescape('\\Z')
+            re_unescape("\\Z")
 
 
 class IsFinalizingTest(unittest.TestCase):

@@ -100,7 +100,6 @@ class MedusaSession(BaseSession):
 
     def _add_proxies(self):
         """As we're dependent on medusa app config. We need to set the proxy before the classes are initialized."""
-
         def get_proxy_setting():
             config = {
                 'ProviderSession': app.PROXY_PROVIDERS,

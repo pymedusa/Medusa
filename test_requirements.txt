@@ -12,10 +12,12 @@ flake8-quotes==3.2.0
 pep8-naming==0.11.1
 pytest<5.0.0 ; python_version < "3.5"
 pytest>=5.0.0 ; python_version >= "3.5"
-pytest-cov==2.10.1
+pytest-cov==2.11.1
 pytest-flake8==1.0.7
 pytest-tornado==0.8.1
 PyYAML==5.3.1
+six==1.15.0
+tornado==6.1
 vcrpy<4.0.0 ; python_version < "3.5"
 vcrpy>=4.0.0 ; python_version >= "3.5"
 mock<=3.0.5 ; python_version <= "3.5"
