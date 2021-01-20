@@ -21,10 +21,9 @@ import jwt
 from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
 
-from six import PY2, ensure_text, iteritems, string_types, text_type, viewitems
+from six import ensure_text, iteritems, string_types, text_type, viewitems
 from six.moves import collections_abc
 
-from tornado.concurrent import Future as TornadoFuture
 from tornado.gen import coroutine
 from tornado.httputil import url_concat
 from tornado.ioloop import IOLoop
