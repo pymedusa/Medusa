@@ -136,7 +136,7 @@ class MedusaApp(object):
         self.GIT_USERNAME = None
         self.GIT_PASSWORD = None
         self.GIT_TOKEN = None
-        self._GIT_PATH = None
+        self._GIT_PATH = ''
         self.DEVELOPER = False
 
         self.NEWS_URL = '{base_url}/news/news.md'.format(base_url=self.BASE_PYMEDUSA_URL)

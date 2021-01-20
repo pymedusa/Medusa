@@ -369,7 +369,7 @@ def change_VERSION_NOTIFY(version_notify):
 
     old_setting = app._VERSION_NOTIFY
 
-    app._VERSION_NOTIFY = version_notify
+    app._VERSION_NOTIFY = bool(version_notify)
 
     if not version_notify:
         app.NEWEST_VERSION_STRING = None
@@ -388,9 +388,18 @@ def change_GIT_PATH(path):
         return
 
     app._GIT_PATH = path
-    app.version_check_scheduler = None
+
+    if app.version_check_scheduler:
+        app.version_check_scheduler.stop.set()
+        app.version_check_scheduler.join(10)
+        app.version_check_scheduler = None
+
     app.version_check_scheduler = scheduler.Scheduler(
-        CheckVersion(), cycleTime=datetime.timedelta(hours=app._UPDATE_FREQUENCY), threadName='CHECKVERSION', silent=False)
+        CheckVersion(),
+        cycleTime=datetime.timedelta(hours=app._UPDATE_FREQUENCY),
+        threadName='CHECKVERSION',
+        silent=False)
+
     app.version_check_scheduler.enable = True
     app.version_check_scheduler.start()
     app.version_check_scheduler.forceRun()
@@ -824,7 +833,7 @@ class ConfigMigrator(object):
             else:
                 log.info(u'Proceeding with upgrade')
 
-            # do the migration, expect a method named _migrate_v<num>
+                # do the migration, expect a method named _migrate_v<num>
                 log.info(u'Migrating config up to version {version} {migration_name}',
                          {'version': next_version, 'migration_name': migration_name})
             getattr(self, '_migrate_v' + str(next_version))()
