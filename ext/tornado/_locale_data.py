@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # Copyright 2012 Facebook
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -15,8 +13,6 @@
 # under the License.
 
 """Data used by the tornado.locale module."""
-
-from __future__ import absolute_import, division, print_function
 
 LOCALE_NAMES = {
     "af_ZA": {"name_en": u"Afrikaans", "name": u"Afrikaans"},
