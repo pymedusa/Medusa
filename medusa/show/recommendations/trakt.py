@@ -48,7 +48,7 @@ class TraktPopular(object):
 
     @recommended_series_cache.cache_on_arguments(namespace='trakt', function_key_generator=create_key_from_series)
     def _create_recommended_show(self, storage_key, show):
-        """Create the RecommendedShow object from the returned showobj."""       
+        """Create the RecommendedShow object from the returned showobj."""
         rec_show = RecommendedShow(
             self,
             show.tvdb,
