@@ -72,7 +72,6 @@ class Calendar(object):
             first_aired = cal_item.get('first_aired')
             season = episode.get('season')
             ep_num = episode.get('number')
-            # show_data = cal_item.pop('show')
             extract_ids(show_data)
             show_data.update(show_data)
             e_data = {
