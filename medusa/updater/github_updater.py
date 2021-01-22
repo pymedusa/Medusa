@@ -324,7 +324,7 @@ class GitUpdateManager(UpdateManager):
         self.clean()
 
         current_branch = self._find_installed_branch()
-        if self.branch != current_branch:
+        if self.branch == current_branch:
             _, _, exit_status = self._run_git(self._git_path, 'pull -f {0} {1}'.format(app.GIT_REMOTE, self.branch))
         else:
             log.warning(
