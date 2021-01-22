@@ -330,7 +330,7 @@ class GitUpdateManager(UpdateManager):
             log.warning(
                 u"Couldn't determine current branch or current branch {current}"
                 u" doesn't match desired branch {desired}.\n"
-                u"Checkout the desired branch or try again later.", {
+                u'Checkout the desired branch or try again later.', {
                     'current': current_branch,
                     'desired': self.branch
                 })
