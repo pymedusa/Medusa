@@ -3,8 +3,8 @@
 from pprint import pformat
 from trakt.core import get
 from trakt.movies import Movie
-from trakt.tv import TVEpisode
-from trakt.utils import now, airs_date
+from trakt.tv import TVEpisode, TVShow
+from trakt.utils import extract_ids, now, airs_date
 
 __author__ = 'Jon Nappi'
 __all__ = ['Calendar', 'PremiereCalendar', 'MyPremiereCalendar',
@@ -66,14 +66,21 @@ class Calendar(object):
     def _build(self, data):
         """Build the calendar"""
         self._calendar = []
-        for episode in data:
-            show = episode.get('show', {}).get('title')
-            season = episode.get('episode', {}).get('season')
-            ep = episode.get('episode', {}).get('number')
-            e_data = {'airs_at': airs_date(episode.get('first_aired')),
-                      'ids': episode.get('episode').get('ids'),
-                      'title': episode.get('episode', {}).get('title')}
-            self._calendar.append(TVEpisode(show, season, ep, **e_data))
+        for cal_item in data:
+            show_data = cal_item.get('show', {})
+            episode = cal_item.get('episode', {})
+            first_aired = cal_item.get('first_aired')
+            season = episode.get('season')
+            ep_num = episode.get('number')
+            extract_ids(show_data)
+            show_data.update(show_data)
+            e_data = {
+                'airs_at': airs_date(first_aired),
+                'ids': episode.get('ids'),
+                'title': show_data.get('title'),
+                'show_data': TVShow(**show_data)
+            }
+            self._calendar.append(TVEpisode(show_data['trakt'], season, ep_num, **e_data))
         self._calendar = sorted(self._calendar, key=lambda x: x.airs_at)
 
 
