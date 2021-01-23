@@ -2,10 +2,14 @@
     <div id="update">
         <template v-if="!startUpdate">
             <span>Medusa will automatically create a backup before you update. Are you sure you want to update?</span>
-            <button id="update-now" class="btn-medusa btn-danger" @click="backup">Yes</button>
+            <button id="update-now" class="btn-medusa btn-danger" @click="performUpdate">Yes</button>
         </template>
         <template v-else>
-            <div id="creating_backup">
+            <div id="check_update">
+                Checking if medusa needs an update
+                <state-switch :theme="layout.themeName" :state="needUpdateStatus" />
+            </div>
+            <div v-if="needUpdateStatus === 'yes'" id="creating_backup">
                 Waiting for Medusa to create a backup:
                 <state-switch :theme="layout.themeName" :state="backupStatus" />
             </div>
@@ -40,7 +44,8 @@ export default {
         return {
             startUpdate: false,
             backupStatus: 'loading',
-            updateStatus: 'loading'
+            updateStatus: 'loading',
+            needUpdateStatus: 'loading'
         };
     },
     computed: {
@@ -50,12 +55,34 @@ export default {
         })
     },
     methods: {
-        async backup() {
+        /**
+         * Check if we need an update and start backup / update procedure.
+         */
+        performUpdate() {
+            const { backup, backupStatus, needUpdate, needUpdateStatus, update } = this;
+            
             this.startUpdate = true;
+            needUpdate();
+            if (needUpdateStatus === 'yes') {
+                backup();
+            }
+            
+            if (backupStatus === 'yes') {
+                update();
+            }
+        },
+        async needUpdate() {
+            try {
+                await api.post('system/operation', { type: 'NEED_UPDATE' });
+                this.needUpdateStatus = 'yes';
+            } catch (error) {
+                this.needUpdateStatus = 'no';
+            }
+        },
+        async backup() {
             try {
                 await api.post('system/operation', { type: 'BACKUP' }, { timeout: 1200000 });
                 this.backupStatus = 'yes';
-                this.update();
             } catch (error) {
                 this.backupStatus = 'no';
             }
