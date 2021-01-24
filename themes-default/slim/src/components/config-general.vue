@@ -761,7 +761,7 @@ export default {
             const { username, password, token } = general.git;
 
             if (!gitRemoteBranches.length > 0) {
-                getGitRemoteBranches()
+                getGitRemoteBranches();
             }
 
             let filteredBranches = [];
