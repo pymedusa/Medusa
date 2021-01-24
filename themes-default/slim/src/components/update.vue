@@ -58,44 +58,34 @@ export default {
         /**
          * Check if we need an update and start backup / update procedure.
          */
-        performUpdate() {
-            const { backup, backupStatus, needUpdate, needUpdateStatus, update } = this;
-
+        async performUpdate() {
             this.startUpdate = true;
-            needUpdate();
-            if (needUpdateStatus === 'yes') {
-                backup();
-            }
 
-            if (backupStatus === 'yes') {
-                update();
-            }
-        },
-        async needUpdate() {
             try {
                 await api.post('system/operation', { type: 'NEED_UPDATE' });
                 this.needUpdateStatus = 'yes';
             } catch (error) {
                 this.needUpdateStatus = 'no';
             }
-        },
-        async backup() {
-            try {
-                await api.post('system/operation', { type: 'BACKUP' }, { timeout: 1200000 });
-                this.backupStatus = 'yes';
-            } catch (error) {
-                this.backupStatus = 'no';
+
+            if (this.needUpdateStatus === 'yes') {
+                try {
+                    await api.post('system/operation', { type: 'BACKUP' }, { timeout: 1200000 });
+                    this.backupStatus = 'yes';
+                } catch (error) {
+                    this.backupStatus = 'no';
+                }
             }
-        },
-        async update() {
-            try {
-                await api.post('system/operation', { type: 'UPDATE' });
-                this.updateStatus = 'yes';
-            } catch (error) {
-                this.updateStatus = 'no';
+
+            if (this.backupStatus === 'yes') {
+                try {
+                    await api.post('system/operation', { type: 'UPDATE' });
+                    this.updateStatus = 'yes';
+                } catch (error) {
+                    this.updateStatus = 'no';
+                }
             }
         }
-
     }
 };
 </script>
