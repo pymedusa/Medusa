@@ -206,6 +206,11 @@ class RTorrentAPI(GenericClient):
         # Store resource
         client_status.resource = torrent.base_filename
 
+        log.info('Rtorrent torrent: [{name}] using state: [{state}]', {
+            'name': torrent['name'], 'state': torrent['state']
+        })
+
+
         return client_status
 
 
