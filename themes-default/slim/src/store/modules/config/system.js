@@ -1,5 +1,5 @@
 import { ADD_CONFIG, ADD_REMOTE_BRANCHES } from '../../mutation-types';
-import { apiRoute } from '../../../api.js'
+import { apiRoute } from '../../../api.js';
 
 /**
  * An object representing a scheduler.
