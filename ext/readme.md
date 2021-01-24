@@ -61,7 +61,7 @@ ext | **`tornroutes`** | [0.5.1](https://pypi.org/project/tornroutes/0.5.1/) | *
 ext | **`trakt`** | [2.14.1](https://pypi.org/project/trakt/2.14.1/) | **`medusa`** | -
 ext | `trans` | [2.1.0](https://pypi.org/project/trans/2.1.0/) | `imdbpie` | File: `trans.py`
 ext | `ttl-cache` | [1.6](https://pypi.org/project/ttl-cache/1.6/) | **`medusa`** | File: `ttl_cache.py`
-ext | **`tvdbapiv2`** | pymedusa/[bf1272c](https://github.com/pymedusa/tvdbv2/tree/bf1272c9264c280c3048e89a1920e2bf5f386284) | **`medusa`** | -
+ext | **`tvdbapiv2`** | pymedusa/[d6d0e9d](https://github.com/pymedusa/tvdbv2/tree/d6d0e9d98071c2d646beb997b336edbb0e98dfb7) | **`medusa`** | -
 ext | **`urllib3`** | [1.24.1](https://pypi.org/project/urllib3/1.24.1/) | `requests` | -
 ext | **`validators`** | [0.18.2](https://pypi.org/project/validators/0.18.2/) | **`medusa`** | -
 ext | **`webencodings`** | [0.5.1](https://pypi.org/project/webencodings/0.5.1/) | `html5lib` | -
