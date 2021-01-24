@@ -198,8 +198,8 @@ class RTorrentAPI(GenericClient):
         client_status.ratio = torrent.ratio
 
         # Store progress
-        # Disabled for now. as it can cause DivideByZero exception.
-        # client_status.progress = int(torrent.completed_bytes / torrent.bytes_done * 100)
+        if torrent.bytes_done:
+            client_status.progress = int(torrent.completed_bytes / torrent.bytes_done * 100)
 
         # Store destination
         client_status.destination = torrent.directory
