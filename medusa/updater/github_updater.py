@@ -323,10 +323,18 @@ class GitUpdateManager(UpdateManager):
         # Executing git clean before updating
         self.clean()
 
-        if self.branch == self._find_installed_branch():
+        current_branch = self._find_installed_branch()
+        if self.branch == current_branch:
             _, _, exit_status = self._run_git(self._git_path, 'pull -f {0} {1}'.format(app.GIT_REMOTE, self.branch))
         else:
-            _, _, exit_status = self._run_git(self._git_path, 'checkout -f ' + self.branch)
+            log.warning(
+                u"Couldn't determine current branch or current branch {current}"
+                u" doesn't match desired branch {desired}.\n"
+                u'Checkout the desired branch or try again later.', {
+                    'current': current_branch,
+                    'desired': self.branch
+                })
+            return False
 
         # Executing git clean after updating
         self.clean()
