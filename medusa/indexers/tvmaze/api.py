@@ -465,7 +465,9 @@ class TVmaze(BaseIndexer):
         results = []
         try:
             updates = self.tvmaze_api.show_updates()
-        except (ShowIndexError, UpdateNotFound):
+        except (AttributeError, ShowIndexError, UpdateNotFound):
+            # Tvmaze api depends on .status_code in.., but does not catch request exceptions.
+            # Therefor the AttributeError.
             return results
         except BaseError as e:
             log.warning('Getting show updates failed. Cause: {0}', e)

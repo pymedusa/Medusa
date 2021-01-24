@@ -1,46 +1,42 @@
-from __future__ import absolute_import, division, print_function
-
 import contextlib
 import os
 import platform
 import socket
 import sys
 import textwrap
+import typing  # noqa: F401
+import unittest
 import warnings
 
 from tornado.testing import bind_unused_port
 
-# Delegate the choice of unittest or unittest2 to tornado.testing.
-from tornado.testing import unittest
-
-skipIfNonUnix = unittest.skipIf(os.name != 'posix' or sys.platform == 'cygwin',
-                                "non-unix platform")
+skipIfNonUnix = unittest.skipIf(
+    os.name != "posix" or sys.platform == "cygwin", "non-unix platform"
+)
 
 # travis-ci.org runs our tests in an overworked virtual machine, which makes
 # timing-related tests unreliable.
-skipOnTravis = unittest.skipIf('TRAVIS' in os.environ,
-                               'timing tests unreliable on travis')
-
-skipOnAppEngine = unittest.skipIf('APPENGINE_RUNTIME' in os.environ,
-                                  'not available on Google App Engine')
+skipOnTravis = unittest.skipIf(
+    "TRAVIS" in os.environ, "timing tests unreliable on travis"
+)
 
 # Set the environment variable NO_NETWORK=1 to disable any tests that
 # depend on an external network.
-skipIfNoNetwork = unittest.skipIf('NO_NETWORK' in os.environ,
-                                  'network access disabled')
+skipIfNoNetwork = unittest.skipIf("NO_NETWORK" in os.environ, "network access disabled")
 
-skipBefore33 = unittest.skipIf(sys.version_info < (3, 3), 'PEP 380 (yield from) not available')
-skipBefore35 = unittest.skipIf(sys.version_info < (3, 5), 'PEP 492 (async/await) not available')
-skipNotCPython = unittest.skipIf(platform.python_implementation() != 'CPython',
-                                 'Not CPython implementation')
+skipNotCPython = unittest.skipIf(
+    platform.python_implementation() != "CPython", "Not CPython implementation"
+)
 
 # Used for tests affected by
 # https://bitbucket.org/pypy/pypy/issues/2616/incomplete-error-handling-in
 # TODO: remove this after pypy3 5.8 is obsolete.
-skipPypy3V58 = unittest.skipIf(platform.python_implementation() == 'PyPy' and
-                               sys.version_info > (3,) and
-                               sys.pypy_version_info < (5, 9),
-                               'pypy3 5.8 has buggy ssl module')
+skipPypy3V58 = unittest.skipIf(
+    platform.python_implementation() == "PyPy"
+    and sys.version_info > (3,)
+    and sys.pypy_version_info < (5, 9),  # type: ignore
+    "pypy3 5.8 has buggy ssl module",
+)
 
 
 def _detect_ipv6():
@@ -51,7 +47,7 @@ def _detect_ipv6():
     sock = None
     try:
         sock = socket.socket(socket.AF_INET6)
-        sock.bind(('::1', 0))
+        sock.bind(("::1", 0))
     except socket.error:
         return False
     finally:
@@ -60,7 +56,7 @@ def _detect_ipv6():
     return True
 
 
-skipIfNoIPv6 = unittest.skipIf(not _detect_ipv6(), 'ipv6 support not present')
+skipIfNoIPv6 = unittest.skipIf(not _detect_ipv6(), "ipv6 support not present")
 
 
 def refusing_port():
@@ -74,7 +70,7 @@ def refusing_port():
     # ephemeral port number to ensure that nothing can listen on that
     # port.
     server_socket, port = bind_unused_port()
-    server_socket.setblocking(1)
+    server_socket.setblocking(True)
     client_socket = socket.socket()
     client_socket.connect(("127.0.0.1", port))
     conn, client_addr = server_socket.accept()
@@ -93,7 +89,7 @@ def exec_test(caller_globals, caller_locals, s):
     # globals: it's all global from the perspective of code defined
     # in s.
     global_namespace = dict(caller_globals, **caller_locals)  # type: ignore
-    local_namespace = {}
+    local_namespace = {}  # type: typing.Dict[str, typing.Any]
     exec(textwrap.dedent(s), global_namespace, local_namespace)
     return local_namespace
 
@@ -114,5 +110,5 @@ def subTest(test, *args, **kwargs):
 def ignore_deprecation():
     """Context manager to ignore deprecation warnings."""
     with warnings.catch_warnings():
-        warnings.simplefilter('ignore', DeprecationWarning)
+        warnings.simplefilter("ignore", DeprecationWarning)
         yield

@@ -50,9 +50,11 @@ def get_trakt_show_collection(trakt_list, limit=None):
         elif trakt_list == 'recommended':
             return tv.recommended_shows(extended='full,images')
         elif trakt_list == 'newshow':
-            return calendar.PremiereCalendar(days=30, extended='full,images', returns='shows')
+            calendar_items = calendar.PremiereCalendar(days=30, extended='full,images')
+            return [tv_episode.show_data for tv_episode in calendar_items]
         elif trakt_list == 'newseason':
-            return calendar.SeasonCalendar(days=30, extended='full,images', returns='shows')
+            calendar_items = calendar.SeasonCalendar(days=15, extended='full,images')
+            return [tv_episode.show_data for tv_episode in calendar_items]
 
         return tv.anticipated_shows(limit=limit, extended='full,images')
     except TraktException as error:

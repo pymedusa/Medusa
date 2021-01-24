@@ -8,6 +8,19 @@
 
 -----
 
+## 0.5.4 (20-01-2021)
+
+#### Fixes
+ - Fix trakt authentication lost on restart ([9018](https://github.com/pymedusa/Medusa/pull/9018))
+ - Fix issue with trying to mass update a show with scene exceptions ([9067](https://github.com/pymedusa/Medusa/pull/9067))
+ - Fix a number of exceptions caused by new trakt implementation ([9038](https://github.com/pymedusa/Medusa/pull/9038))
+ - Fix black/white list not saved, when trying to add an exception when adding the show ([9047](https://github.com/pymedusa/Medusa/pull/9047))
+ - Avoid exception for shows that don't have show_lists in DB ([9050](https://github.com/pymedusa/Medusa/pull/9050))
+ - Fix version check scheduler running twice ([9057](https://github.com/pymedusa/Medusa/pull/9057))
+ - Fix show-list (table layout) Active column Filter is linked to Xem column Filter ([9066](https://github.com/pymedusa/Medusa/pull/9066))
+
+-----
+
 ## 0.5.3 (12-01-2021)
 
 #### Fixes

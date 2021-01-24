@@ -644,12 +644,12 @@ class Home(WebRoot):
             ui.notifications.message('Already on branch: ', branch)
             return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
 
-    def branchForceUpdate(self):
+    @staticmethod
+    def branchForceUpdate():
         return {
             'currentBranch': app.BRANCH,
             'resetBranches': app.GIT_RESET_BRANCHES,
-            'branches': [branch for branch in app.version_check_scheduler.action.list_remote_branches()
-                         if branch not in app.GIT_RESET_BRANCHES]
+            'branches': [branch for branch in app.version_check_scheduler.action.list_remote_branches()]
         }
 
     @staticmethod

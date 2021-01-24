@@ -7,12 +7,25 @@ Provides backends for talking to `memcached <http://memcached.org>`_.
 """
 
 import random
+import threading
 import time
+import typing
+from typing import Any
+from typing import Mapping
 
 from ..api import CacheBackend
 from ..api import NO_VALUE
 from ... import util
-from ...util import compat
+
+if typing.TYPE_CHECKING:
+    import memcache
+    import pylibmc
+    import bmemcached
+else:
+    # delayed import
+    memcache = None
+    pylibmc = None
+    bmemcached = None
 
 __all__ = (
     "GenericMemcachedBackend",
@@ -24,12 +37,7 @@ __all__ = (
 
 
 class MemcachedLock(object):
-    """Simple distributed lock using memcached.
-
-    This is an adaptation of the lock featured at
-    http://amix.dk/blog/post/19386
-
-    """
+    """Simple distributed lock using memcached."""
 
     def __init__(self, client_fn, key, timeout=0):
         self.client_fn = client_fn
@@ -107,9 +115,16 @@ class GenericMemcachedBackend(CacheBackend):
 
     """
 
-    set_arguments = {}
+    set_arguments: Mapping[str, Any] = {}
     """Additional arguments which will be passed
     to the :meth:`set` method."""
+
+    # No need to override serializer, as all the memcached libraries
+    # handles that themselves. Still, we support customizing the
+    # serializer/deserializer to use better default pickle protocol
+    # or completely different serialization mechanism
+    serializer = None
+    deserializer = None
 
     def __init__(self, arguments):
         self._imports()
@@ -138,7 +153,7 @@ class GenericMemcachedBackend(CacheBackend):
     def _clients(self):
         backend = self
 
-        class ClientPool(compat.threading.local):
+        class ClientPool(threading.local):
             def __init__(self):
                 self.memcached = backend._create_client()
 
@@ -179,6 +194,7 @@ class GenericMemcachedBackend(CacheBackend):
         self.client.set(key, value, **self.set_arguments)
 
     def set_multi(self, mapping):
+        mapping = {key: value for key, value in mapping.items()}
         self.client.set_multi(mapping, **self.set_arguments)
 
     def delete(self, key):
@@ -188,7 +204,7 @@ class GenericMemcachedBackend(CacheBackend):
         self.client.delete_multi(keys)
 
 
-class MemcacheArgs(object):
+class MemcacheArgs(GenericMemcachedBackend):
     """Mixin which provides support for the 'time' argument to set(),
     'min_compress_len' to other methods.
 
@@ -299,9 +315,21 @@ class BMemcachedBackend(GenericMemcachedBackend):
     python-binary-memcached>`_
     memcached client.
 
-    This is a pure Python memcached client which
-    includes the ability to authenticate with a memcached
-    server using SASL.
+    This is a pure Python memcached client which includes
+    security features like SASL and SSL/TLS.
+
+    SASL is a standard for adding authentication mechanisms
+    to protocols in a way that is protocol independent.
+
+    SSL/TLS is a security layer on end-to-end communication.
+    It provides following benefits:
+
+    * Encryption: Data is encrypted on the wire between
+      Memcached client and server.
+    * Authentication: Optionally, both server and client
+      authenticate each other.
+    * Integrity: Data is not tampered or altered when
+      transmitted between client and server
 
     A typical configuration using username/password::
 
@@ -317,6 +345,25 @@ class BMemcachedBackend(GenericMemcachedBackend):
             }
         )
 
+    A typical configuration using tls_context::
+
+        import ssl
+        from dogpile.cache import make_region
+
+        ctx = ssl.create_default_context(cafile="/path/to/my-ca.pem")
+
+        region = make_region().configure(
+            'dogpile.cache.bmemcached',
+            expiration_time = 3600,
+            arguments = {
+                'url':["127.0.0.1"],
+                'tls_context':ctx,
+            }
+        )
+
+    For advanced ways to configure TLS creating a more complex
+    tls_context visit https://docs.python.org/3/library/ssl.html
+
     Arguments which can be passed to the ``arguments``
     dictionary include:
 
@@ -324,12 +371,17 @@ class BMemcachedBackend(GenericMemcachedBackend):
      SASL authentication.
     :param password: optional password, will be used for
      SASL authentication.
+    :param tls_context: optional TLS context, will be used for
+     TLS connections.
+
+     .. versionadded:: 1.0.2
 
     """
 
     def __init__(self, arguments):
         self.username = arguments.get("username", None)
         self.password = arguments.get("password", None)
+        self.tls_context = arguments.get("tls_context", None)
         super(BMemcachedBackend, self).__init__(arguments)
 
     def _imports(self):
@@ -355,7 +407,10 @@ class BMemcachedBackend(GenericMemcachedBackend):
 
     def _create_client(self):
         return self.Client(
-            self.url, username=self.username, password=self.password
+            self.url,
+            username=self.username,
+            password=self.password,
+            tls_context=self.tls_context,
         )
 
     def delete_multi(self, keys):

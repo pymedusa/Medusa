@@ -42,24 +42,12 @@
     "labels": ["Update dep (Py)"],
     "packageRules": [
       {
-        "packageNames": ["tornado"],
-        "allowedVersions": "<6"
-      },
-      {
         "packageNames": ["PyGithub"],
         "allowedVersions": "<=1.45"
       },
       {
         "packageNames": ["rarfile"],
         "allowedVersions": "<=3.1"
-      }, 
-      {
-        "packageNames": ["dogpile.cache"],
-        "allowedVersions": "<1"
-      },
-      {
-        "packageNames": ["validators"],
-        "allowedVersions": "<0.16.0"
       }
     ]
   }
