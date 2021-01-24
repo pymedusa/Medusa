@@ -60,13 +60,13 @@ export default {
          */
         performUpdate() {
             const { backup, backupStatus, needUpdate, needUpdateStatus, update } = this;
-            
+
             this.startUpdate = true;
             needUpdate();
             if (needUpdateStatus === 'yes') {
                 backup();
             }
-            
+
             if (backupStatus === 'yes') {
                 update();
             }
