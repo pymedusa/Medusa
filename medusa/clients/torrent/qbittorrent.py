@@ -375,8 +375,8 @@ class QBittorrentAPI(GenericClient):
         if torrent['state'] in ('uploading', 'queuedUP', 'checkingUP', 'forcedUP', 'stalledUP'):
             client_status.set_status_string('Completed')
 
-        if torrent['ratio'] >= torrent['max_ratio']:
-            client_status.set_status_string('Seeded')
+        # if torrent['ratio'] >= torrent['max_ratio']:
+        #     client_status.set_status_string('Seeded')
 
         # Store ratio
         client_status.ratio = torrent['ratio'] * 1.0
