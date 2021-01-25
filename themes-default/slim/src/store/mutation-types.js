@@ -14,6 +14,7 @@ const NOTIFICATIONS_ENABLED = '🔔 Notifications Enabled';
 const NOTIFICATIONS_DISABLED = '🔔 Notifications Disabled';
 const ADD_CONFIG = '⚙️ Config added to store';
 const UPDATE_LAYOUT_LOCAL = '⚙️ Local layout updated in store';
+const ADD_REMOTE_BRANCHES = '⚙️ Add git remote branches to store';
 const ADD_SHOW = '📺 Show added to store';
 const ADD_SHOW_CONFIG = '📺 Show config updated in store';
 const ADD_SHOWS = '📺 Multiple Shows added to store in bulk';
@@ -56,6 +57,7 @@ export {
     ADD_SHOWS,
     ADD_SHOW_EPISODE,
     ADD_STATS,
+    ADD_REMOTE_BRANCHES,
     SET_STATS,
     SET_MAX_DOWNLOAD_COUNT,
     ADD_SHOW_SCENE_EXCEPTION,

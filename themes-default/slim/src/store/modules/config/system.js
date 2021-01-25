@@ -1,4 +1,5 @@
-import { ADD_CONFIG } from '../../mutation-types';
+import { ADD_CONFIG, ADD_REMOTE_BRANCHES } from '../../mutation-types';
+import { apiRoute } from '../../../api.js';
 
 /**
  * An object representing a scheduler.
@@ -67,6 +68,9 @@ const mutations = {
         if (section === 'system') {
             state = Object.assign(state, config);
         }
+    },
+    [ADD_REMOTE_BRANCHES](state, branches) {
+        state.gitRemoteBranches = branches;
     }
 };
 
@@ -83,7 +87,19 @@ const getters = {
     }
 };
 
-const actions = {};
+const actions = {
+    getGitRemoteBranches(context) {
+        const { commit } = context;
+        return apiRoute('home/branchForceUpdate')
+            .then(response => {
+                if (response.data && response.data.branches.length > 0) {
+                    commit(ADD_REMOTE_BRANCHES, response.data.branches);
+                    return response.data.branches;
+                }
+            });
+    }
+
+};
 
 export default {
     state,

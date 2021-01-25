@@ -2,10 +2,14 @@
     <div id="update">
         <template v-if="!startUpdate">
             <span>Medusa will automatically create a backup before you update. Are you sure you want to update?</span>
-            <button id="update-now" class="btn-medusa btn-danger" @click="backup">Yes</button>
+            <button id="update-now" class="btn-medusa btn-danger" @click="performUpdate">Yes</button>
         </template>
         <template v-else>
-            <div id="creating_backup">
+            <div id="check_update">
+                Checking if medusa needs an update
+                <state-switch :theme="layout.themeName" :state="needUpdateStatus" />
+            </div>
+            <div v-if="needUpdateStatus === 'yes'" id="creating_backup">
                 Waiting for Medusa to create a backup:
                 <state-switch :theme="layout.themeName" :state="backupStatus" />
             </div>
@@ -40,7 +44,8 @@ export default {
         return {
             startUpdate: false,
             backupStatus: 'loading',
-            updateStatus: 'loading'
+            updateStatus: 'loading',
+            needUpdateStatus: 'loading'
         };
     },
     computed: {
@@ -50,25 +55,37 @@ export default {
         })
     },
     methods: {
-        async backup() {
+        /**
+         * Check if we need an update and start backup / update procedure.
+         */
+        async performUpdate() {
             this.startUpdate = true;
+
             try {
-                await api.post('system/operation', { type: 'BACKUP' }, { timeout: 1200000 });
-                this.backupStatus = 'yes';
-                this.update();
+                await api.post('system/operation', { type: 'NEED_UPDATE' });
+                this.needUpdateStatus = 'yes';
             } catch (error) {
-                this.backupStatus = 'no';
+                this.needUpdateStatus = 'no';
             }
-        },
-        async update() {
-            try {
-                await api.post('system/operation', { type: 'UPDATE' });
-                this.updateStatus = 'yes';
-            } catch (error) {
-                this.updateStatus = 'no';
+
+            if (this.needUpdateStatus === 'yes') {
+                try {
+                    await api.post('system/operation', { type: 'BACKUP' }, { timeout: 1200000 });
+                    this.backupStatus = 'yes';
+                } catch (error) {
+                    this.backupStatus = 'no';
+                }
+            }
+
+            if (this.backupStatus === 'yes') {
+                try {
+                    await api.post('system/operation', { type: 'UPDATE' });
+                    this.updateStatus = 'yes';
+                } catch (error) {
+                    this.updateStatus = 'no';
+                }
             }
         }
-
     }
 };
 </script>

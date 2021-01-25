@@ -1,3 +1,12 @@
+## 0.5.5 (25-01-2021)
+
+#### Fixes
+ - Fix auto update causing malformed checkouts ([9088](https://github.com/pymedusa/Medusa/pull/9088))
+ - Fix trakt recommended shows causing an error when selecting season premiers or new shows ([9080](https://github.com/pymedusa/Medusa/pull/9080))
+ - Prevent exception when auth to medusa using basic authentication ([9100](https://github.com/pymedusa/Medusa/pull/9100))
+
+-----
+
 ## 0.5.4 (20-01-2021)
 
 #### Fixes
