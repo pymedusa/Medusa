@@ -55,7 +55,7 @@ ext | `six` | [1.15.0](https://pypi.org/project/six/1.15.0/) | **`medusa`**, `ad
 ext | **`soupsieve`** | [1.9.6](https://pypi.org/project/soupsieve/1.9.6/) | `beautifulsoup4` | -
 ext | **`stevedore`** | [1.30.1](https://pypi.org/project/stevedore/1.30.1/) | `subliminal` | -
 ext | **`subliminal`** | [2.1.0](https://pypi.org/project/subliminal/2.1.0/) | **`medusa`** | -
-ext | **`tmdbsimple`** | [2.7.0](https://pypi.org/project/tmdbsimple/2.7.0/) | **`medusa`** | -
+ext | **`tmdbsimple`** | [2.8.0](https://pypi.org/project/tmdbsimple/2.8.0/) | **`medusa`** | -
 ext | **`tornado`** | [6.1](https://pypi.org/project/tornado/6.1/) | **`medusa`**, `tornroutes` | -
 ext | **`tornroutes`** | [0.5.1](https://pypi.org/project/tornroutes/0.5.1/) | **`medusa`** | -
 ext | **`trakt`** | [8de5bfb](https://github.com/p0psicles/PyTrakt/tree/8de5bfb04b3d5ee54e4a3b25db0e4c341cc31384) | **`medusa`** | -
