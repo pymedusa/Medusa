@@ -30,7 +30,7 @@ ext | **`imdbpie`** | [5.6.4](https://pypi.org/project/imdbpie/5.6.4/) | **`medu
 ext | `jsonrpclib-pelix` | [0.4.2](https://pypi.org/project/jsonrpclib-pelix/0.4.2/) | **`medusa`** | Module: `jsonrpclib`
 ext | **`knowit`** | [eea9ac1](https://github.com/ratoaq2/knowit/tree/eea9ac18e38c930230cf81b5dca4a9af9fb10d4e) | **`medusa`** | -
 ext | `Mako` | [1.1.4](https://pypi.org/project/Mako/1.1.4/) | **`medusa`** | Module: `mako`
-ext | `markdown2` | [2.3.10](https://pypi.org/project/markdown2/2.3.10/) | **`medusa`** | File: `markdown2.py`
+ext | `markdown2` | [2.4.0](https://pypi.org/project/markdown2/2.4.0/) | **`medusa`** | File: `markdown2.py`
 ext | `MarkupSafe` | [1.1.1](https://pypi.org/project/MarkupSafe/1.1.1/) | `Mako` | Module: `markupsafe`
 ext | **`msgpack`** | [0.5.6](https://pypi.org/project/msgpack/0.5.6/) | `CacheControl` | -
 ext | **`oauthlib`** | [3.0.0](https://pypi.org/project/oauthlib/3.0.0/) | `requests-oauthlib` | -
@@ -58,7 +58,7 @@ ext | **`subliminal`** | [2.1.0](https://pypi.org/project/subliminal/2.1.0/) | *
 ext | **`tmdbsimple`** | [2.7.0](https://pypi.org/project/tmdbsimple/2.7.0/) | **`medusa`** | -
 ext | **`tornado`** | [6.1](https://pypi.org/project/tornado/6.1/) | **`medusa`**, `tornroutes` | -
 ext | **`tornroutes`** | [0.5.1](https://pypi.org/project/tornroutes/0.5.1/) | **`medusa`** | -
-ext | **`trakt`** | p0psicles/[8de5bfb](https://github.com/p0psicles/PyTrakt/tree/8de5bfb04b3d5ee54e4a3b25db0e4c341cc31384) | **`medusa`** | -
+ext | **`trakt`** | [8de5bfb](https://github.com/p0psicles/PyTrakt/tree/8de5bfb04b3d5ee54e4a3b25db0e4c341cc31384) | **`medusa`** | -
 ext | `trans` | [2.1.0](https://pypi.org/project/trans/2.1.0/) | `imdbpie` | File: `trans.py`
 ext | `ttl-cache` | [1.6](https://pypi.org/project/ttl-cache/1.6/) | **`medusa`** | File: `ttl_cache.py`
 ext | **`tvdbapiv2`** | pymedusa/[d6d0e9d](https://github.com/pymedusa/tvdbv2/tree/d6d0e9d98071c2d646beb997b336edbb0e98dfb7) | **`medusa`** | -
