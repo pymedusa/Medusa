@@ -27,7 +27,8 @@ from medusa.show.history import History
 
 
 def _log_history_item(action, ep_obj, resource=None, provider=None, proper_tags='',
-                      manually_searched=False, info_hash=None, size=-1, search_result=None):
+                      manually_searched=False, info_hash=None, size=-1, search_result=None,
+                      part_of_batch=False):
     """
     Insert a history item in DB.
 
@@ -72,12 +73,12 @@ def _log_history_item(action, ep_obj, resource=None, provider=None, proper_tags=
         'INSERT INTO history '
         '(action, date, indexer_id, showid, season, episode, quality, '
         'resource, provider, version, proper_tags, manually_searched, '
-        'info_hash, size, provider_type, client_status) '
-        'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+        'info_hash, size, provider_type, client_status, part_of_batch) '
+        'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
         [action, log_date, ep_obj.series.indexer, ep_obj.series.series_id,
          ep_obj.season, ep_obj.episode, ep_obj.quality, resource, provider,
          version, proper_tags, manually_searched, info_hash, size,
-         provider_type, client_status])
+         provider_type, client_status, part_of_batch])
 
 
 def log_snatch(search_result):
@@ -86,10 +87,11 @@ def log_snatch(search_result):
 
     :param search_result: search result object
     """
+    part_of_batch = search_result.episodes > 1
     for ep_obj in search_result.episodes:
         action = SNATCHED
         ep_obj.quality = search_result.quality
-        _log_history_item(action, ep_obj, search_result=search_result)
+        _log_history_item(action, ep_obj, search_result=search_result, part_of_batch=part_of_batch)
 
 
 def log_download(ep_obj, filename, release_group=None):

@@ -131,7 +131,20 @@ class DownloadHandler(object):
             query += ' AND client_status in ({include})'
             format_param['include'] = ','.join(['?'] * (len(include_status)))
 
-        return self.main_db_con.select(query.format(**format_param), params)
+        history_results = self.main_db_con.select(query.format(**format_param), params)
+
+        # If a history item is part of a batch, only return the first occurrence.
+
+        batch_results = {}
+        for result in history_results:
+            if result['part_of_batch']:
+                if result['info_hash'] not in batch_results:
+                    batch_results[result['info_hash']] = result
+            else:
+                yield result
+
+        for result in batch_results.values():
+            yield result
 
     def save_status_to_history(self, history_row, status):
         """Update history record with a new status."""
