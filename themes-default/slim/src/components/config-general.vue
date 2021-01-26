@@ -59,6 +59,8 @@
 
                                     <config-toggle-slider v-model="general.addTitleWithYear" label="Append (year) to each show title" id="add_title_year">
                                         <p>Make sure that each show title is added with (year) appended to it</p>
+                                        <p>The show title with year is only used for show folder creation as representation in the UI.</p>
+                                        <span style="color: red">experimental</span>
                                     </config-toggle-slider>
 
                                     <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
