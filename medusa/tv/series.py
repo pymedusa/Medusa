@@ -2211,7 +2211,7 @@ class Series(TV):
         to_return += f'indexer: {self.indexer}\n'
         to_return += f'name: {self.name}\n'
         to_return += f'title: {self.title}\n'
-        to_return += f'location: self.location'  # skip location validation
+        to_return += f'location: {self.location}'  # skip location validation
         if self.network:
             to_return += f'network: {self.network}\n'
         if self.airs:
