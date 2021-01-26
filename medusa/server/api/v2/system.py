@@ -59,7 +59,7 @@ class SystemHandler(BaseRequestHandler):
             if self._need_update():
                 return self._created()
             else:
-                return self._bad_request('update not needed')
+                return self._bad_request('Update not needed')
 
         if data['type'] == 'UPDATE':
             if self._update():
