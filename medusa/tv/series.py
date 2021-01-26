@@ -220,7 +220,8 @@ class Series(TV):
             {'episodes', 'next_aired', 'release_groups', 'imdb_info'})
 
         self.show_id = None
-        self._name = ''
+        self.name = ''
+        self._title = ''
         self.imdb_id = ''
         self.network = ''
         self.genre = ''
@@ -292,17 +293,16 @@ class Series(TV):
         return Series(identifier.indexer.id, identifier.id)
 
     @property
-    def name(self):
-        """Return show's name."""
-        return self._name
+    def title(self):
+        """Get show's title.
 
-    @name.setter
-    def name(self, value):
-        """Set show's name."""
-        if all([app.ADD_TITLE_WITH_YEAR, self.start_year and not Series.YEAR_MATCH.match(value)]):
-            self._name = '{name} ({year})'.format(name=value, year=self.start_year)
-        else:
-            self._name = value
+        The shows title is displayed in the UI and used for creating the shows folder and episodes.
+        The title is set for searches.
+        """
+        if all([app.ADD_TITLE_WITH_YEAR, self.start_year and not Series.YEAR_MATCH.match(self.name)]):
+            return '{name} ({year})'.format(name=self.name, year=self.start_year)
+
+        return self.name
 
     @property
     def identifier(self):
@@ -1677,7 +1677,6 @@ class Series(TV):
         # Let's try to fix the show name (with year) if we have the year from the imdb info.
         if self.imdb_year and not self.start_year:
             self.start_year = self.imdb_year
-            self.name = self.name  # We just want the setter to activate.
 
         log.debug(u'{id}: Obtained info from IMDb: {imdb_info}',
                   {'id': self.series_id, 'imdb_info': self.imdb_info})
@@ -1712,8 +1711,8 @@ class Series(TV):
         if not show_dir and root_dir:
             # I don't think we need to check this. We just create the folder after we already queried the indexer.
             # show_name = get_showname_from_indexer(self.indexer, self.indexer_id, self.lang)
-            if self.name:
-                show_dir = os.path.join(root_dir, sanitize_filename(self.name))
+            if self.title:
+                show_dir = os.path.join(root_dir, sanitize_filename(self.title))
 
                 # don't create show dir if config says not to
                 if app.ADD_SHOWS_WO_DIR:
@@ -2208,55 +2207,27 @@ class Series(TV):
         :rtype: str
         """
         to_return = ''
-        to_return += 'indexerid: ' + str(self.series_id) + '\n'
-        to_return += 'indexer: ' + str(self.indexer) + '\n'
-        to_return += 'name: ' + self.name + '\n'
-        to_return += 'location: ' + self.location + '\n'  # skip location validation
+        to_return += f'indexerid: {self.series_id}\n'
+        to_return += f'indexer: {self.indexer}\n'
+        to_return += f'name: {self.name}\n'
+        to_return += f'title: {self.title}\n'
+        to_return += f'location: self.location'  # skip location validation
         if self.network:
-            to_return += 'network: ' + self.network + '\n'
+            to_return += f'network: {self.network}\n'
         if self.airs:
-            to_return += 'airs: ' + self.airs + '\n'
+            to_return += f'airs: {self.airs}\n'
         if self.airdate_offset != 0:
-            to_return += 'airdate_offset: ' + str(self.airdate_offset) + '\n'
-        to_return += 'status: ' + self.status + '\n'
-        to_return += 'start_year: ' + str(self.start_year) + '\n'
+            to_return += f'airdate_offset: {self.airdate_offset}\n'
+        to_return += f'status: {self.status}\n'
+        to_return += f'start_year: {self.start_year}\n'
         if self.genre:
-            to_return += 'genre: ' + self.genre + '\n'
-        to_return += 'classification: ' + self.classification + '\n'
-        to_return += 'runtime: ' + str(self.runtime) + '\n'
-        to_return += 'quality: ' + str(self.quality) + '\n'
-        to_return += 'scene: ' + str(self.is_scene) + '\n'
-        to_return += 'sports: ' + str(self.is_sports) + '\n'
-        to_return += 'anime: ' + str(self.is_anime) + '\n'
-        return to_return
-
-    def __unicode__(self):
-        """Unicode representation.
-
-        :return:
-        :rtype: unicode
-        """
-        to_return = u''
-        to_return += u'indexerid: {0}\n'.format(self.series_id)
-        to_return += u'indexer: {0}\n'.format(self.indexer)
-        to_return += u'name: {0}\n'.format(self.name)
-        to_return += u'location: {0}\n'.format(self.location)  # skip location validation
-        if self.network:
-            to_return += u'network: {0}\n'.format(self.network)
-        if self.airs:
-            to_return += u'airs: {0}\n'.format(self.airs)
-        if self.airdate_offset != 0:
-            to_return += 'airdate_offset: {0}\n'.format(self.airdate_offset)
-        to_return += u'status: {0}\n'.format(self.status)
-        to_return += u'start_year: {0}\n'.format(self.start_year)
-        if self.genre:
-            to_return += u'genre: {0}\n'.format(self.genre)
-        to_return += u'classification: {0}\n'.format(self.classification)
-        to_return += u'runtime: {0}\n'.format(self.runtime)
-        to_return += u'quality: {0}\n'.format(self.quality)
-        to_return += u'scene: {0}\n'.format(self.is_scene)
-        to_return += u'sports: {0}\n'.format(self.is_sports)
-        to_return += u'anime: {0}\n'.format(self.is_anime)
+            to_return += f'genre: {self.genre}\n'
+        to_return += f'classification: {self.classification}\n'
+        to_return += f'runtime: {self.runtime}\n'
+        to_return += f'quality: {self.quality}\n'
+        to_return += f'scene: {self.is_scene}\n'
+        to_return += f'sports: {self.is_sports}\n'
+        to_return += f'anime: {self.is_anime}\n'
         return to_return
 
     def to_json(self, detailed=False, episodes=False):
@@ -2271,7 +2242,8 @@ class Series(TV):
         data['id']['imdb'] = text_type(self.imdb_id)
         data['id']['slug'] = self.identifier.slug
         data['id']['trakt'] = self.externals.get('trakt_id')
-        data['title'] = self.name
+        data['title'] = self.title  # Name plus (optional) year.
+        data['name'] = self.name
         data['indexer'] = self.indexer_name  # e.g. tvdb
         data['network'] = self.network  # e.g. CBS
         data['type'] = self.classification  # e.g. Scripted
