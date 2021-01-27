@@ -5,6 +5,7 @@
 #### Improvements
 
 #### Fixes
+ - Fix trakt authentication ([9130](https://github.com/pymedusa/Medusa/pull/9130))
 
 -----
 
