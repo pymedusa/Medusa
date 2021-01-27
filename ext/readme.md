@@ -58,7 +58,7 @@ ext | **`subliminal`** | [2.1.0](https://pypi.org/project/subliminal/2.1.0/) | *
 ext | **`tmdbsimple`** | [2.8.0](https://pypi.org/project/tmdbsimple/2.8.0/) | **`medusa`** | -
 ext | **`tornado`** | [6.1](https://pypi.org/project/tornado/6.1/) | **`medusa`**, `tornroutes` | -
 ext | **`tornroutes`** | [0.5.1](https://pypi.org/project/tornroutes/0.5.1/) | **`medusa`** | -
-ext | **`trakt`** | [8de5bfb](https://github.com/p0psicles/PyTrakt/tree/8de5bfb04b3d5ee54e4a3b25db0e4c341cc31384) | **`medusa`** | -
+ext | **`trakt`** | [2d7dc0e](https://github.com/p0psicles/PyTrakt/tree/2d7dc0e7fb5d284444c5d16c7fe7f2b8e56188ef) | **`medusa`** | -
 ext | `trans` | [2.1.0](https://pypi.org/project/trans/2.1.0/) | `imdbpie` | File: `trans.py`
 ext | `ttl-cache` | [1.6](https://pypi.org/project/ttl-cache/1.6/) | **`medusa`** | File: `ttl_cache.py`
 ext | **`tvdbapiv2`** | pymedusa/[d6d0e9d](https://github.com/pymedusa/tvdbv2/tree/d6d0e9d98071c2d646beb997b336edbb0e98dfb7) | **`medusa`** | -
