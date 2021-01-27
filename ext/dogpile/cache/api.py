@@ -85,6 +85,17 @@ class CacheMutex(abc.ABC):
 
         raise NotImplementedError()
 
+    @abc.abstractmethod
+    def locked(self) -> bool:
+        """Check if the mutex was acquired.
+
+        :return: true if the lock is acquired.
+
+        .. versionadded:: 1.1.2
+
+        """
+        raise NotImplementedError()
+
     @classmethod
     def __subclasshook__(cls, C):
         return hasattr(C, "acquire") and hasattr(C, "release")

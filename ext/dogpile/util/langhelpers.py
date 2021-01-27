@@ -149,3 +149,10 @@ class KeyReentrantMutex:
             # the thread ident and unlock.
             del self.keys[current_thread]
             self.mutex.release()
+
+    def locked(self):
+        current_thread = threading.get_ident()
+        keys = self.keys.get(current_thread)
+        if keys is None:
+            return False
+        return self.key in keys

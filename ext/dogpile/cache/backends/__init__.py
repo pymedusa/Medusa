@@ -25,6 +25,11 @@ register_backend(
     "MemcachedBackend",
 )
 register_backend(
+    "dogpile.cache.pymemcache",
+    "dogpile.cache.backends.memcached",
+    "PyMemcacheBackend",
+)
+register_backend(
     "dogpile.cache.memory", "dogpile.cache.backends.memory", "MemoryBackend"
 )
 register_backend(
