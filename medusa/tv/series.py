@@ -221,7 +221,6 @@ class Series(TV):
 
         self.show_id = None
         self.name = ''
-        self._title = ''
         self.imdb_id = ''
         self.network = ''
         self.genre = ''
