@@ -1,8 +1,4 @@
-## Unreleased
-
-#### New Features
-
-#### Improvements
+## 0.5.6 (27-01-2021)
 
 #### Fixes
  - Fix trakt authentication ([9130](https://github.com/pymedusa/Medusa/pull/9130))
