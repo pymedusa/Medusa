@@ -68,6 +68,9 @@ class TransmissionAPI(GenericClient):
                         {'name': self.name, 'error': error})
             return False
 
+        if not self.response:
+            return False
+
         auth_match = re.search(r'X-Transmission-Session-Id:\s*(\w+)', self.response.text)
 
         if not auth_match:
