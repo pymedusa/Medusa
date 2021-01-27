@@ -2,7 +2,7 @@
 """Interfaces to all of the People objects offered by the Trakt.tv API"""
 from trakt.core import get
 from trakt.sync import search
-from trakt.utils import slugify, extract_ids
+from trakt.utils import extract_ids, slugify
 
 __author__ = 'Jon Nappi'
 __all__ = ['Person', 'ActingCredit', 'CrewCredit', 'Credits', 'MovieCredits',
