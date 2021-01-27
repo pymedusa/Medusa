@@ -87,7 +87,7 @@ def log_snatch(search_result):
 
     :param search_result: search result object
     """
-    part_of_batch = search_result.episodes > 1
+    part_of_batch = len(search_result.episodes) > 1
     for ep_obj in search_result.episodes:
         action = SNATCHED
         ep_obj.quality = search_result.quality
