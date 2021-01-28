@@ -155,8 +155,7 @@ class TraktChecker(object):
             return
 
         if result and (result.get('added') or result.get('existing')):
-            if result['added']['shows']:
-                return True
+            return True
 
         return False
 

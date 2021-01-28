@@ -471,9 +471,9 @@ export default {
 
             if (providedInfo.showDir) {
                 // Try to get a show name from the show dir.
-                const titleWithoutYear = providedInfo.showDir.replace(/\d{4}/gi, '');
+                const titleWithoutYear = providedInfo.showDir.replace(/\(?\d{4}\)?/gi, '');
                 titleWithoutYear.split(/[/\\]/).pop();
-                return showBaseName(titleWithoutYear);
+                return showBaseName(titleWithoutYear).trim();
             }
 
             return '';

@@ -97,7 +97,7 @@ see <https://github.com/trentm/python-markdown2/wiki/Extras> for details):
 #   not yet sure if there implications with this. Compare 'pydoc sre'
 #   and 'perldoc perlre'.
 
-__version_info__ = (2, 3, 10)
+__version_info__ = (2, 4, 0)
 __version__ = '.'.join(map(str, __version_info__))
 __author__ = "Trent Mick"
 
@@ -452,7 +452,7 @@ class Markdown(object):
         r"(.*:\s+>\n\s+[\S\s]+?)(?=\n\w+\s*:\s*\w+\n|\Z)", re.MULTILINE
     )
     _key_val_list_pat = re.compile(
-        r"^-(?:[ \t]*([^:\s]*)(?:[ \t]*[:-][ \t]*(\S+))?)(?:\n((?:[ \t]+[^\n]+\n?)+))?",
+        r"^-(?:[ \t]*([^\n]*)(?:[ \t]*[:-][ \t]*(\S+))?)(?:\n((?:[ \t]+[^\n]+\n?)+))?",
         re.MULTILINE,
     )
     _key_val_dict_pat = re.compile(
@@ -532,7 +532,7 @@ class Markdown(object):
 
         return tail
 
-    _emacs_oneliner_vars_pat = re.compile(r"-\*-\s*([^\r\n]*?)\s*-\*-", re.UNICODE)
+    _emacs_oneliner_vars_pat = re.compile(r"-\*-\s*(?:(\S[^\r\n]*?)([\r\n]\s*)?)?-\*-", re.UNICODE)
     # This regular expression is intended to match blocks like this:
     #    PREFIX Local Variables: SUFFIX
     #    PREFIX mode: Tcl SUFFIX
@@ -892,8 +892,8 @@ class Markdown(object):
         '''
         # First pass to define all the references
         self.regex_defns = re.compile(r'''
-            \[\#(\w+)\s* # the counter.  Open square plus hash plus a word \1
-            ([^@]*)\s*   # Some optional characters, that aren't an @. \2
+            \[\#(\w+) # the counter.  Open square plus hash plus a word \1
+            ([^@]*)   # Some optional characters, that aren't an @. \2
             @(\w+)       # the id.  Should this be normed? \3
             ([^\]]*)\]   # The rest of the text up to the terminating ] \4
             ''', re.VERBOSE)
@@ -908,7 +908,7 @@ class Markdown(object):
             if len(match.groups()) != 4:
                 continue
             counter = match.group(1)
-            text_before = match.group(2)
+            text_before = match.group(2).strip()
             ref_id = match.group(3)
             text_after = match.group(4)
             number = counters.get(counter, 1)
@@ -1884,7 +1884,7 @@ class Markdown(object):
         pre_class_str = self._html_class_str_from_tag("pre")
 
         if "highlightjs-lang" in self.extras and lexer_name:
-            code_class_str = ' class="%s"' % lexer_name
+            code_class_str = ' class="%s language-%s"' % (lexer_name, lexer_name)
         else:
             code_class_str = self._html_class_str_from_tag("code")
 
@@ -1926,9 +1926,9 @@ class Markdown(object):
 
     _fenced_code_block_re = re.compile(r'''
         (?:\n+|\A\n?)
-        ^```\s*?([\w+-]+)?\s*?\n    # opening fence, $1 = optional lang
-        (.*?)                       # $2 = code block content
-        ^```[ \t]*\n                # closing fence
+        ^```\s{0,99}([\w+-]+)?\s{0,99}\n  # opening fence, $1 = optional lang
+        (.*?)                             # $2 = code block content
+        ^```[ \t]*\n                      # closing fence
         ''', re.M | re.X | re.S)
 
     def _fenced_code_block_sub(self, match):
@@ -2232,7 +2232,7 @@ class Markdown(object):
         text = self._naked_gt_re.sub('&gt;', text)
         return text
 
-    _incomplete_tags_re = re.compile("<(/?\w+?(?!\w).+?[\s/]+?)")
+    _incomplete_tags_re = re.compile(r"<(/?\w+?(?!\w).+?[\s/]+?)")
 
     def _encode_incomplete_tags(self, text):
         if self.safe_mode not in ("replace", "escape"):
