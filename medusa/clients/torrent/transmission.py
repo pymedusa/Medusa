@@ -68,7 +68,7 @@ class TransmissionAPI(GenericClient):
                         {'name': self.name, 'error': error})
             return False
 
-        if not self.response:
+        if self.response is None:
             return False
 
         auth_match = re.search(r'X-Transmission-Session-Id:\s*(\w+)', self.response.text)
@@ -349,7 +349,7 @@ class TransmissionAPI(GenericClient):
         client_status.progress = int(torrent['percentDone'] * 100)
 
         # Store destination
-        client_status.destination = client_status.join_path(torrent['downloadDir'], torrent['name'])
+        client_status.destination = torrent['downloadDir']
 
         # Store resource
         client_status.resource = torrent['name']
