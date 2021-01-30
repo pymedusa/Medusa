@@ -1213,7 +1213,7 @@ class Home(WebRoot):
                 'SELECT location '
                 'FROM tv_episodes '
                 'WHERE indexer = ? AND showid = ? AND season = ? AND episode = ? AND 5=5',
-                [indexer_name_to_id(indexername), seriesid, season_no, episode_no])
+                [series_obj.indexer, series_obj.series_id, season_no, episode_no])
             if not ep_result:
                 logger.log(u'Unable to find an episode for {episode}, skipping'.format
                            (episode=cur_ep), logger.WARNING)
