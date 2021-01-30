@@ -105,7 +105,7 @@
                         <img src="images/poster-back-dark.png"/>
                     </div>
                     <div class="poster-overlay">
-                        <app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.indexerid}">
+                        <app-link href="home/displayShow?showslug=${cur_show.indexer_name}${cur_show.indexerid}">
                             <asset default-src="images/poster.png" show-slug="${cur_show.slug}" type="posterThumb" cls="show-image" :link="false"></asset>
                         </app-link>
                     </div>

@@ -438,7 +438,7 @@ window.app = new Vue({
                         if (!alreadyAdded) return false;
                         // Extract existing show info
                         const [ matchIndexerName, matchShowId ] = alreadyAdded;
-                        return 'home/displayShow?indexername=' + matchIndexerName + '&seriesid=' + matchShowId;
+                        return 'home/displayShow?showslug=' + matchIndexerName + matchShowId;
                     })();
 
                     return {

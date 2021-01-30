@@ -12,7 +12,7 @@
                     <span :class="['pull-left', menuItem.icon]" /> {{ menuItem.title }}
                 </app-link>
 
-                <show-selector v-if="showForRoutes" :show-slug="curShowSlug" follow-selection />
+                <show-selector v-if="showForRoutes" :show-slug="$route.query.showslug" follow-selection />
             </div>
         </div>
 
@@ -45,12 +45,7 @@ export default {
             return subMenu.reduceRight(reducer, []);
         },
         curShowSlug() {
-            const { $route } = this;
-            const { indexername, seriesid } = $route.query;
-            if (indexername && seriesid) {
-                return indexername + seriesid;
-            }
-            return '';
+            return this.$route.query.slug;
         },
         showForRoutes() {
             const { $route } = this;

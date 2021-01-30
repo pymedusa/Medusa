@@ -18,7 +18,7 @@ from medusa.server.web.home.handler import Home
 from medusa.show.recommendations.anidb import AnidbPopular
 from medusa.show.recommendations.imdb import ImdbPopular
 from medusa.show.recommendations.trakt import TraktPopular
-from medusa.show.show import Show
+from medusa.tv.series import Series, SeriesIdentifier
 
 from requests import RequestException
 
@@ -221,7 +221,7 @@ class HomeAddShows(Home):
         t = PageTemplate(rh=self, filename='index.mako')
         return t.render(controller='addShows', action='addExistingShow')
 
-    def addShowByID(self, indexername=None, seriesid=None, show_name=None, which_series=None,
+    def addShowByID(self, showslug=None, show_name=None, which_series=None,
                     indexer_lang=None, root_dir=None, default_status=None,
                     quality_preset=None, any_qualities=None, best_qualities=None,
                     season_folders=None, subtitles=None, full_show_path=None,
@@ -232,9 +232,12 @@ class HomeAddShows(Home):
         Add's a new show with provided show options by indexer_id.
         Currently only TVDB and IMDB id's supported.
         """
-        series_id = seriesid
-        if indexername != 'tvdb':
-            series_id = helpers.get_tvdb_from_id(seriesid, indexername.upper())
+        identifier = SeriesIdentifier.from_slug(showslug)
+        series_id = identifier.id
+        indexername = identifier.indexer.slug
+
+        if identifier.indexer.slug != 'tvdb':
+            series_id = helpers.get_tvdb_from_id(identifier.id, indexername.upper())
             if not series_id:
                 log.info('Unable to find tvdb ID to add {name}', {'name': show_name})
                 ui.notifications.error(
@@ -246,7 +249,7 @@ class HomeAddShows(Home):
                     message='Unable to find tvdb ID to add {show}'.format(show=show_name)
                 )
 
-        if Show.find_by_id(app.showList, INDEXER_TVDBV2, series_id):
+        if Series.find_by_identifier(identifier):
             return json_response(
                 result=False,
                 message='Show already exists'

@@ -146,14 +146,14 @@ window.app = new Vue({
 
                             <div class="recommendedShowTitleIcons">
                                 % if cur_show.show_in_list:
-                                    <button class="btn-medusa btn-xs"><app-link href="home/displayShow?indexername=${cur_show.mapped_indexer_name}&seriesid=${cur_show.mapped_series_id}">In List</app-link></button>
+                                    <button class="btn-medusa btn-xs"><app-link href="home/displayShow?showslug=${cur_show.mapped_indexer_name}${cur_show.mapped_series_id}">In List</app-link></button>
                                 % else:
                                     <button class="btn-medusa btn-xs" data-isanime="1" data-indexer="${cur_show.mapped_indexer_name}"
                                     data-indexer-id="${cur_show.mapped_series_id}" data-show-name="${cur_show.title | u}"
                                     data-add-show>Add</button>
                                 % endif
                                 % if cur_show.mapped_series_id in removed_from_medusa:
-                                    <button class="btn-medusa btn-xs"><app-link href="home/displayShow?indexername=${cur_show.mapped_indexer_name}&seriesid=${cur_show.mapped_series_id}">Watched</app-link></button>
+                                    <button class="btn-medusa btn-xs"><app-link href="home/displayShow?showslug=${cur_show.mapped_indexer_name}${cur_show.mapped_series_id}">Watched</app-link></button>
                                 % endif
                                 % if trakt_b and not (cur_show.show_in_list or cur_show.mapped_series_id in removed_from_medusa):
                                     <button data-indexer-id="${cur_show.mapped_series_id}" class="btn-medusa btn-xs" data-blacklist-show>Blacklist</button>

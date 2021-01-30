@@ -166,7 +166,7 @@ export default {
 <style>
 /*
 @NOTE: This fixes the header blocking elements when using a hash link
-e.g. displayShow?indexername=tvdb&seriesid=83462#season-5
+e.g. displayShow?showslug=tvdb83462#season-5
 */
 [false-link]::before {
     content: '';

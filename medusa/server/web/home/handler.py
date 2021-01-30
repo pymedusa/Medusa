@@ -28,7 +28,6 @@ from medusa.common import (
     ARCHIVED,
     DOWNLOADED,
     FAILED,
-    IGNORED,
     Quality,
     SKIPPED,
     SNATCHED,
@@ -37,9 +36,7 @@ from medusa.common import (
     UNAIRED,
     WANTED,
     cpu_presets,
-    statusStrings,
 )
-from medusa.helper.common import enabled_providers
 from medusa.helper.exceptions import (
     AnidbAdbaConnectionException,
     CantRefreshShowException,
@@ -62,15 +59,11 @@ from medusa.scene_numbering import (
 )
 from medusa.search import SearchType
 from medusa.search.manual import (
-    SEARCH_STATUS_FINISHED,
-    SEARCH_STATUS_QUEUED,
-    SEARCH_STATUS_SEARCHING,
     collect_episodes_from_search_thread,
     update_finished_search_queue_item,
 )
 from medusa.search.queue import (
     BacklogQueueItem,
-    FailedQueueItem,
     SnatchQueueItem,
 )
 from medusa.server.web.core import (
@@ -682,15 +675,16 @@ class Home(WebRoot):
                 'message': 'General exception',
             })
 
-    def getSeasonSceneExceptions(self, indexername, seriesid):
+    def getSeasonSceneExceptions(self, showslug=None):
         """Get show name scene exceptions per season
 
         :param indexer: The shows indexer
         :param indexer_id: The shows indexer_id
         :return: A json with the scene exceptions per season.
         """
-        indexer_id = indexer_name_to_id(indexername)
-        series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
+        identifier = SeriesIdentifier.from_slug(showslug)
+        series_obj = Series.find_by_identifier(identifier)
+
         return json.dumps({
             'seasonExceptions': {season: list(exception_name) for season, exception_name
                                  in iteritems(get_all_scene_exceptions(series_obj))},
@@ -699,17 +693,17 @@ class Home(WebRoot):
                              in iteritems(get_xem_numbering_for_show(series_obj, refresh_data=False))}
         })
 
-    def displayShow(self, indexername=None, seriesid=None, ):
+    def displayShow(self, showslug):
         """
         Render the home page.
 
         [Converted to VueRouter]
         """
         try:
-            indexer_id = indexer_name_to_id(indexername)
-            series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
+            identifier = SeriesIdentifier.from_slug(showslug)
+            series_obj = Series.find_by_identifier(identifier)
         except (ValueError, TypeError):
-            return self._genericMessage('Error', 'Invalid series ID: {seriesid}'.format(seriesid=seriesid))
+            return self._genericMessage('Error', 'Invalid series: {show_slug}'.format(show_slug=showslug))
 
         if series_obj is None:
             return self._genericMessage('Error', 'Show not in show list')
@@ -780,87 +774,7 @@ class Home(WebRoot):
             'result': 'failure',
         })
 
-    def manualSearchCheckCache(self, indexername, seriesid, season=None, episode=None, manual_search_type='episode', **last_prov_updates):
-        """ Periodic check if the searchthread is still running for t   he selected show/season/ep
-        and if there are new results in the cache.db
-        """
-
-        refresh_results = 'refresh'
-
-        indexer_id = indexer_name_to_id(indexername)
-        series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
-
-        try:
-            int(episode)
-            int(season)
-        except ValueError:
-            return {'result': 'error'}
-
-        # To prevent it from keeping searching when no providers have been enabled
-        if not enabled_providers('manualsearch'):
-            return {'result': SEARCH_STATUS_FINISHED}
-
-        main_db_con = db.DBConnection('cache.db')
-
-        episodes_in_search = collect_episodes_from_search_thread(series_obj)
-
-        # Check if the requested ep is in a search thread
-        searched_item = [ep for ep in episodes_in_search
-                         if all([ep['show']['indexer'] == series_obj.identifier.indexer.id,
-                                 ep['show']['series_id'] == series_obj.identifier.id,
-                                 text_type(ep['episode']['season']) == season,
-                                 text_type(ep['episode']['episode']) == episode])]
-
-        # # No last_prov_updates available, let's assume we need to refresh until we get some
-        # if not last_prov_updates:
-        #     return {'result': REFRESH_RESULTS}
-
-        sql_episode = '' if manual_search_type == 'season' else episode
-
-        for provider, last_update in iteritems(last_prov_updates):
-            table_exists = main_db_con.select(
-                'SELECT name '
-                'FROM sqlite_master '
-                "WHERE type='table' AND name=?",
-                [provider]
-            )
-            if not table_exists:
-                continue
-            # Check if the cache table has a result for this show + season + ep wich has a later timestamp, then last_update
-            # FIXME: This will need to be adjusted when indexer field is added to the providers.
-            needs_update = main_db_con.select(
-                'SELECT * '
-                "FROM '{provider}' "
-                'WHERE episodes LIKE ? AND season = ? AND indexer = ? AND indexerid = ?  AND time > ?'.format(provider=provider),
-                ['%|{episodes}|%'.format(episodes=sql_episode), season, series_obj.indexer, series_obj.series_id, int(last_update)]
-            )
-
-            if needs_update:
-                return {'result': refresh_results}
-
-        # If the item is queued multiple times (don't know if this is possible),
-        # but then check if as soon as a search has finished
-        # Move on and show results
-        # Return a list of queues the episode has been found in
-        search_status = [item['search']['status'] for item in searched_item]
-        if not searched_item or all([last_prov_updates,
-                                     SEARCH_STATUS_QUEUED not in search_status,
-                                     SEARCH_STATUS_SEARCHING not in search_status,
-                                     SEARCH_STATUS_FINISHED in search_status]):
-            # If the ep not anymore in the QUEUED or SEARCHING Thread, and it has the status finished,
-            # return it as finished
-            return {'result': SEARCH_STATUS_FINISHED}
-
-        # Force a refresh when the last_prov_updates is empty due to the tables not existing yet.
-        # This can be removed if we make sure the provider cache tables always exist prior to the
-        # start of the first search
-        if not last_prov_updates and SEARCH_STATUS_FINISHED in search_status:
-            return {'result': refresh_results}
-
-        return {'result': searched_item[0]['search']['status']}
-
-    def snatchSelection(self, indexername, seriesid, season=None, episode=None, manual_search_type='episode',
-                        perform_search=0, down_cur_quality=0, show_all_results=0):
+    def snatchSelection(self, showslug, **query_args):
         """
         Render the home page.
 
@@ -868,10 +782,10 @@ class Home(WebRoot):
         """
         # @TODO: add more comprehensive show validation
         try:
-            indexer_id = indexer_name_to_id(indexername)
-            series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
+            identifier = SeriesIdentifier.from_slug(showslug)
+            series_obj = Series.find_by_identifier(identifier)
         except (ValueError, TypeError):
-            return self._genericMessage('Error', 'Invalid show ID: {series}'.format(series=seriesid))
+            return self._genericMessage('Error', 'Invalid show: {series}'.format(series=showslug))
 
         if series_obj is None:
             return self._genericMessage('Error', 'Show not in show list')
@@ -881,22 +795,6 @@ class Home(WebRoot):
         return t.render(
             controller='home', action='snatchSelection'
         )
-
-    @staticmethod
-    def sceneExceptions(indexername, seriesid):
-        # @TODO: Replace with plot from GET /api/v2/show/{id}
-        indexer_id = indexer_name_to_id(indexername)
-        series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
-        exceptions_list = get_all_scene_exceptions(series_obj)
-        if not exceptions_list:
-            return 'No scene exceptions'
-
-        out = []
-        for season, names in iter(sorted(iteritems(exceptions_list))):
-            if season == -1:
-                season = '*'
-            out.append('S{season}: {names}'.format(season=season, names=', '.join(names)))
-        return '<br>'.join(out)
 
     @staticmethod
     def check_show_for_language(series_obj, language):
@@ -1106,10 +1004,10 @@ class Home(WebRoot):
             logger.log(u'Unable to delete cached results for show: {show}'.format
                        (show=series_obj.name), logger.DEBUG)
 
-    def togglePause(self, indexername=None, seriesid=None):
+    def togglePause(self, showslug=None):
         # @TODO: Replace with PUT to update the state var /api/v2/show/{id}
-        indexer_name_to_id(indexername)
-        error, series_obj = Show.pause(indexer_name_to_id(indexername), seriesid)
+        identifier = SeriesIdentifier.from_slug(showslug)
+        error, series_obj = Show.pause(identifier.indexer.slug, identifier.id)
 
         if error is not None:
             return self._genericMessage('Error', error)
@@ -1117,12 +1015,13 @@ class Home(WebRoot):
         ui.notifications.message('{show} has been {state}'.format
                                  (show=series_obj.name, state='paused' if series_obj.paused else 'resumed'))
 
-        return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
+        return self.redirect('/home/displayShow?showslug={series_obj.slug}'.format(series_obj=series_obj))
 
-    def deleteShow(self, indexername=None, seriesid=None, full=0):
+    def deleteShow(self, showslug=None, full=0):
         # @TODO: Replace with DELETE to delete the show resource /api/v2/show/{id}
-        if seriesid and indexername:
-            error, series_obj = Show.delete(indexer_name_to_id(indexername), seriesid, full)
+        if showslug:
+            identifier = SeriesIdentifier.from_slug(showslug)
+            error, series_obj = Show.delete(identifier.indexer.slug, identifier.id, full)
 
             if error is not None:
                 return self._genericMessage('Error', error)
@@ -1141,9 +1040,10 @@ class Home(WebRoot):
         # Don't redirect to the default page, so the user can confirm that the show was deleted
         return self.redirect('/home/')
 
-    def refreshShow(self, indexername=None, seriesid=None):
+    def refreshShow(self, showslug=None):
         # @TODO: Replace with status=refresh from PATCH /api/v2/show/{id}
-        error, series_obj = Show.refresh(indexer_name_to_id(indexername), seriesid)
+        identifier = SeriesIdentifier.from_slug(showslug)
+        error, series_obj = Show.refresh(identifier.indexer.slug, identifier.id)
 
         # This is a show validation error
         if error is not None and series_obj is None:
@@ -1155,15 +1055,15 @@ class Home(WebRoot):
 
         time.sleep(cpu_presets[app.CPU_PRESET])
 
-        return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
+        return self.redirect('/home/displayShow?showslug={series_obj.slug}'.format(series_obj=series_obj))
 
-    def updateShow(self, indexername=None, seriesid=None):
+    def updateShow(self, showslug=None):
         # @TODO: Replace with status=update or status=updating from PATCH /api/v2/show/{id}
-        if seriesid is None:
+        if showslug is None:
             return self._genericMessage('Error', 'Invalid show ID')
 
-        indexer_id = indexer_name_to_id(indexername)
-        series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
+        identifier = SeriesIdentifier.from_slug(showslug)
+        series_obj = Series.find_by_identifier(identifier)
 
         if series_obj is None:
             return self._genericMessage('Error', 'Unable to find the specified show')
@@ -1177,14 +1077,14 @@ class Home(WebRoot):
         # just give it some time
         time.sleep(cpu_presets[app.CPU_PRESET])
 
-        return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
+        return self.redirect('/home/displayShow?showslug={series_obj.slug}'.format(series_obj=series_obj))
 
-    def subtitleShow(self, indexername=None, seriesid=None):
-        if seriesid is None:
+    def subtitleShow(self, showslug=None):
+        if showslug is None:
             return self._genericMessage('Error', 'Invalid show ID')
 
-        indexer_id = indexer_name_to_id(indexername)
-        series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
+        identifier = SeriesIdentifier.from_slug(showslug)
+        series_obj = Series.find_by_identifier(identifier)
 
         if series_obj is None:
             return self._genericMessage('Error', 'Unable to find the specified show')
@@ -1194,13 +1094,14 @@ class Home(WebRoot):
 
         time.sleep(cpu_presets[app.CPU_PRESET])
 
-        return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
+        return self.redirect('/home/displayShow?showslug={series_obj.slug}'.format(series_obj=series_obj))
 
-    def updateKODI(self, indexername=None, seriesid=None):
+    def updateKODI(self, showslug=None):
         series_name = series_obj = None
-        if seriesid:
-            indexer = indexer_name_to_id(indexername)
-            series_obj = Show.find_by_id(app.showList, indexer, seriesid)
+        if showslug:
+            identifier = SeriesIdentifier.from_slug(showslug)
+            series_obj = Series.find_by_identifier(identifier)
+
             if series_obj is None:
                 return self._genericMessage('Error', 'Unable to find the specified show')
 
@@ -1217,7 +1118,7 @@ class Home(WebRoot):
             ui.notifications.error('Unable to contact one or more KODI host(s): {host}'.format(host=host))
 
         if series_obj:
-            return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
+            return self.redirect('/home/displayShow?showslug={series_obj.slug}'.format(series_obj=series_obj))
         else:
             return self.redirect('/home/')
 
@@ -1229,11 +1130,12 @@ class Home(WebRoot):
             ui.notifications.error('Unable to contact Plex Media Server host: {host}'.format(host=', '.join(app.PLEX_SERVER_HOST)))
         return self.redirect('/home/')
 
-    def updateEMBY(self, indexername=None, seriesid=None):
+    def updateEMBY(self, showslug=None):
         series_obj = None
-        if seriesid:
-            indexer = indexer_name_to_id(indexername)
-            series_obj = Show.find_by_id(app.showList, indexer, seriesid)
+        if showslug:
+            identifier = SeriesIdentifier.from_slug(showslug)
+            series_obj = Series.find_by_identifier(identifier)
+
             if series_obj is None:
                 return self._genericMessage('Error', 'Unable to find the specified show')
 
@@ -1244,189 +1146,16 @@ class Home(WebRoot):
             ui.notifications.error('Unable to contact Emby host: {host}'.format(host=app.EMBY_HOST))
 
         if series_obj:
-            return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
+            return self.redirect('/home/displayShow?showslug={series_obj.slug}'.format(series_obj=series_obj))
         else:
             return self.redirect('/home/')
 
-    def setStatus(self, indexername=None, seriesid=None, eps=None, status=None, direct=False):
-        # @TODO: Merge this with the other PUT commands for /api/v2/show/{id}
-        # Still used by manage/changeEpisodeStatuses (manage_episodeStatuses.mako)
-        if not all([indexername, seriesid, eps, status]):
-            error_message = 'You must specify a show and at least one episode'
-            if direct:
-                ui.notifications.error('Error', error_message)
-                return json.dumps({
-                    'result': 'error',
-                })
-            else:
-                return self._genericMessage('Error', error_message)
-
-        status = int(status)
-        if status not in statusStrings:
-            error_message = 'Invalid status'
-            if direct:
-                ui.notifications.error('Error', error_message)
-                return json.dumps({
-                    'result': 'error',
-                })
-            else:
-                return self._genericMessage('Error', error_message)
-
-        series_obj = Show.find_by_id(app.showList, indexer_name_to_id(indexername), seriesid)
-
-        if not series_obj:
-            error_message = 'Error', 'Show not in show list'
-            if direct:
-                ui.notifications.error('Error', error_message)
-                return json.dumps({
-                    'result': 'error',
-                })
-            else:
-                return self._genericMessage('Error', error_message)
-
-        segments = {}
-        trakt_data = []
-        if eps:
-
-            sql_l = []
-            for cur_ep in eps.split('|'):
-
-                if not cur_ep:
-                    logger.log('Current episode was empty when trying to set status', logger.DEBUG)
-
-                logger.log('Attempting to set status for episode {series} {episode} to {status}'.format(
-                    series=series_obj.name, episode=cur_ep, status=status), logger.DEBUG)
-
-                season_no, episode_no = cur_ep.lstrip('s').split('e')
-                if not all([season_no, episode_no]):
-                    logger.log('Something went wrong when trying to set status, season: {season}, episode: {episode}'.format
-                               (season=season_no, episode=episode_no), logger.DEBUG)
-                    continue
-
-                ep_obj = series_obj.get_episode(season_no, episode_no)
-                if not ep_obj:
-                    return self._genericMessage('Error', "Episode couldn't be retrieved")
-
-                status = int(status)
-                if status in [WANTED, FAILED]:
-                    # figure out what episodes are wanted so we can backlog them
-                    if ep_obj.season in segments:
-                        segments[ep_obj.season].append(ep_obj)
-                    else:
-                        segments[ep_obj.season] = [ep_obj]
-
-                with ep_obj.lock:
-                    if ep_obj.status == UNAIRED:
-                        logger.log('Refusing to change status of {series} {episode} because it is UNAIRED'.format(
-                            series=series_obj.name, episode=cur_ep), logger.WARNING)
-                        continue
-
-                    snatched_qualities = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
-
-                    if status == DOWNLOADED and not (
-                            ep_obj.status in snatched_qualities + [DOWNLOADED] or
-                            os.path.isfile(ep_obj.location)):
-                        logger.log('Refusing to change status of {series} {episode} to DOWNLOADED'
-                                   " because it's not SNATCHED/DOWNLOADED or the file is missing".format(
-                                       series=series_obj.name, episode=cur_ep), logger.WARNING)
-                        continue
-
-                    if status == FAILED and ep_obj.status not in snatched_qualities + [DOWNLOADED, ARCHIVED]:
-                        logger.log('Refusing to change status of {series} {episode} to FAILED'
-                                   " because it's not SNATCHED/DOWNLOADED/ARCHIVED".format(
-                                       series=series_obj.name, episode=cur_ep), logger.WARNING)
-                        continue
-
-                    if status == WANTED:
-                        if ep_obj.status in [DOWNLOADED, ARCHIVED]:
-                            logger.log('Removing release_name of {series} {episode} as episode was changed to WANTED'.format(
-                                series=series_obj.name, episode=cur_ep), logger.DEBUG)
-                            ep_obj.release_name = ''
-
-                        if ep_obj.manually_searched:
-                            logger.log("Resetting 'manually searched' flag of {series} {episode}"
-                                       ' as episode was changed to WANTED'.format(
-                                           series=series_obj.name, episode=cur_ep), logger.DEBUG)
-                            ep_obj.manually_searched = False
-
-                    # Only in failed_history we set to FAILED.
-                    if status != FAILED:
-                        ep_obj.status = status
-
-                    # mass add to database
-                    sql_l.append(ep_obj.get_sql())
-
-                    trakt_data.append(ep_obj.season)
-
-            if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
-                if status in [WANTED, FAILED]:
-                    upd = 'Add'
-                elif status in [IGNORED, SKIPPED, DOWNLOADED, ARCHIVED]:
-                    upd = 'Remove'
-
-                logger.log('{action} episodes, showid: indexerid {show.indexerid}, Title {show.name} to Watchlist'.format(
-                    action=upd, show=series_obj), logger.DEBUG)
-
-                if trakt_data:
-                    for ep_obj in trakt_data:
-                        notifiers.trakt_notifier.update_watchlist_episode(series_obj, ep_obj)
-
-            if sql_l:
-                main_db_con = db.DBConnection()
-                main_db_con.mass_action(sql_l)
-
-        if status == WANTED and not series_obj.paused:
-            msg = 'Backlog was automatically started for the following seasons of <b>{show}</b>:<br>'.format(show=series_obj.name)
-            msg += '<ul>'
-
-            for season, segment in iteritems(segments):
-                cur_backlog_queue_item = BacklogQueueItem(series_obj, segment)
-                app.search_queue_scheduler.action.add_item(cur_backlog_queue_item)
-
-                msg += '<li>Season {season}</li>'.format(season=season)
-                logger.log(u'Sending backlog for {show} season {season} '
-                           u'because some episodes were set to wanted'.format
-                           (show=series_obj.name, season=season))
-
-            msg += '</ul>'
-
-            if segments:
-                ui.notifications.message('Backlog started', msg)
-        elif status == WANTED and series_obj.paused:
-            logger.log(u'Some episodes were set to wanted, but {show} is paused. '
-                       u'Not adding to Backlog until show is unpaused'.format
-                       (show=series_obj.name))
-
-        if status == FAILED:
-            msg = 'Retrying Search was automatically started for the following season of <b>{show}</b>:<br>'.format(show=series_obj.name)
-            msg += '<ul>'
-
-            for season, segment in iteritems(segments):
-                cur_failed_queue_item = FailedQueueItem(series_obj, segment)
-                app.search_queue_scheduler.action.add_item(cur_failed_queue_item)
-
-                msg += '<li>Season {season}</li>'.format(season=season)
-                logger.log(u'Retrying Search for {show} season {season} '
-                           u'because some episodes were set to failed'.format
-                           (show=series_obj.name, season=season))
-
-            msg += '</ul>'
-
-            if segments:
-                ui.notifications.message('Retry Search started', msg)
-
-        if direct:
-            return json.dumps({
-                'result': 'success',
-            })
-        else:
-            return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
-
-    def testRename(self, indexername=None, seriesid=None):
-        if not indexername or not seriesid:
+    def testRename(self, showslug=None):
+        if not showslug:
             return self._genericMessage('Error', 'You must specify a show')
 
-        series_obj = Show.find_by_id(app.showList, indexer_name_to_id(indexername), seriesid)
+        identifier = SeriesIdentifier.from_slug(showslug)
+        series_obj = Series.find_by_identifier(identifier)
 
         if series_obj is None:
             return self._genericMessage('Error', 'Show not in show list')
@@ -1455,12 +1184,12 @@ class Home(WebRoot):
         return t.render(ep_obj_list=ep_obj_rename_list, show=series_obj,
                         controller='home', action='previewRename')
 
-    def doRename(self, indexername=None, seriesid=None, eps=None):
-        if not all([indexername, seriesid, eps]):
+    def doRename(self, showslug=None, eps=None):
+        if not all([showslug, eps]):
             error_message = 'You must specify a show and at least one episode'
             return self._genericMessage('Error', error_message)
 
-        series_obj = Show.find_by_id(app.showList, indexer_name_to_id(indexername), seriesid)
+        series_obj = Series.find_by_identifier(SeriesIdentifier.from_slug(showslug))
 
         if series_obj is None:
             error_message = 'Error', 'Show not in show list'
@@ -1472,7 +1201,7 @@ class Home(WebRoot):
             return self._genericMessage('Error', "Can't rename episodes when the show dir is missing.")
 
         if eps is None:
-            return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
+            return self.redirect('/home/displayShow?showslug={series_obj.slug}'.format(series_obj=series_obj))
 
         main_db_con = db.DBConnection()
         for cur_ep in eps.split('|'):
@@ -1506,12 +1235,12 @@ class Home(WebRoot):
 
             root_ep_obj.rename()
 
-        return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
+        return self.redirect('/home/displayShow?showslug={series_obj.slug}'.format(series_obj=series_obj))
 
-    def searchEpisode(self, indexername=None, seriesid=None, season=None, episode=None):
+    def searchEpisode(self, showslug=None, season=None, episode=None):
         """Search for a single episode using a Backlog Search using providers that are backlog enabled."""
-        # retrieve the episode object and fail if we can't get one
-        series_obj = Show.find_by_id(app.showList, indexer_name_to_id(indexername), seriesid)
+        # retrieve the episode object and fail if we can't get one0
+        series_obj = Series.find_by_identifier(SeriesIdentifier.from_slug(showslug))
         ep_obj = series_obj.get_episode(season, episode)
         if not ep_obj:
             return json.dumps({
@@ -1539,7 +1268,7 @@ class Home(WebRoot):
                 'result': 'failure',
             })
 
-    def getManualSearchStatus(self, indexername=None, seriesid=None):
+    def getManualSearchStatus(self, showslug=None):
         """
         Returns the current ep_queue_item status for the current viewed show.
         Possible status: Downloaded, Snatched, etc...
@@ -1548,18 +1277,16 @@ class Home(WebRoot):
         :param seriesid: Id of series as identified by the indexer
         :return:
         """
-        indexer_id = indexer_name_to_id(indexername)
-        series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
+        series_obj = Series.find_by_identifier(SeriesIdentifier.from_slug(showslug))
         episodes = collect_episodes_from_search_thread(series_obj)
 
         return json.dumps({
             'episodes': episodes,
         })
 
-    def searchEpisodeSubtitles(self, indexername=None, seriesid=None, season=None, episode=None, lang=None):
+    def searchEpisodeSubtitles(self, showslug=None, season=None, episode=None, lang=None):
         # retrieve the episode object and fail if we can't get one
-        indexer_id = indexer_name_to_id(indexername)
-        series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
+        series_obj = Series.find_by_identifier(SeriesIdentifier.from_slug(showslug))
         ep_obj = series_obj.get_episode(season, episode)
         if not ep_obj:
             return json.dumps({
@@ -1594,23 +1321,26 @@ class Home(WebRoot):
             'description': description
         })
 
-    def manualSearchSubtitles(self, indexername=None, seriesid=None, season=None, episode=None, release_id=None, picked_id=None):
+    def manualSearchSubtitles(self, showslug=None, season=None, episode=None, release_id=None, picked_id=None):
         mode = 'downloading' if picked_id else 'searching'
         description = ''
+
         logger.log('Starting to manual {mode} subtitles'.format(mode=mode))
         try:
             if release_id:
                 # Release ID is sent when using postpone
                 release = app.RELEASES_IN_PP[int(release_id)]
-                seriesid = release['seriesid']
-                indexername = release['indexername']
+                indexer_name = release['indexername']
+                series_id = release['seriesid']
                 season = release['season']
                 episode = release['episode']
                 filepath = release['release']
+                identifier = SeriesIdentifier.from_id(indexer_name_to_id(indexer_name), series_id)
             else:
                 filepath = None
+                identifier = SeriesIdentifier.from_slug(showslug)
 
-            series_obj = Show.find_by_id(app.showList, indexer_name_to_id(indexername), seriesid)
+            series_obj = Series.find_by_identifier(identifier)
             ep_obj = series_obj.get_episode(season, episode)
             video_path = filepath or ep_obj.location
             release_name = ep_obj.release_name or os.path.basename(video_path)
@@ -1675,7 +1405,7 @@ class Home(WebRoot):
             'description': description
         })
 
-    def setSceneNumbering(self, indexername=None, seriesid=None, forSeason=None, forEpisode=None, forAbsolute=None, sceneSeason=None,
+    def setSceneNumbering(self, showslug=None, forSeason=None, forEpisode=None, forAbsolute=None, sceneSeason=None,
                           sceneEpisode=None, sceneAbsolute=None):
 
         # sanitize:
@@ -1686,13 +1416,13 @@ class Home(WebRoot):
         sceneEpisode = None if sceneEpisode in ['null', ''] else sceneEpisode
         sceneAbsolute = None if sceneAbsolute in ['null', ''] else sceneAbsolute
 
-        indexer_id = indexer_name_to_id(indexername)
-        series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
+        identifier = SeriesIdentifier.from_slug(showslug)
+        series_obj = Series.find_by_identifier(identifier)
 
         if not series_obj:
             return json.dumps({
                 'success': False,
-                'errorMessage': 'Could not find show {0} {1} to set scene numbering'.format(indexername, seriesid),
+                'errorMessage': 'Could not find show {show_slug} to set scene numbering'.format(show_slug=series_obj.slug),
             })
 
         # Check if this is an anime, because we can't set the Scene numbering for anime shows
@@ -1737,7 +1467,7 @@ class Home(WebRoot):
             })
         elif series_obj.is_anime:
             logger.log(u'Set absolute scene numbering for {show} from {absolute} to {scene_absolute}'.format
-                       (show=seriesid, absolute=forAbsolute, scene_absolute=sceneAbsolute), logger.DEBUG)
+                       (show=series_obj.slug, absolute=forAbsolute, scene_absolute=sceneAbsolute), logger.DEBUG)
 
             forAbsolute = int(forAbsolute)
             if sceneAbsolute is not None:
@@ -1769,34 +1499,6 @@ class Home(WebRoot):
             (result['sceneSeason'], result['sceneEpisode']) = sn
 
         return json.dumps(result)
-
-    def retryEpisode(self, indexername, seriesid, season, episode, down_cur_quality=0):
-        # retrieve the episode object and fail if we can't get one
-        indexer_id = indexer_name_to_id(indexername)
-        series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
-
-        ep_obj = series_obj.get_episode(season, episode)
-        if not ep_obj:
-            return json.dumps({
-                'result': 'failure',
-            })
-
-        # make a queue item for it and put it on the queue
-        ep_queue_item = FailedQueueItem(ep_obj.series, [ep_obj], bool(int(down_cur_quality)))  # pylint: disable=no-member
-        app.forced_search_queue_scheduler.action.add_item(ep_queue_item)
-
-        if not ep_queue_item.started and ep_queue_item.success is None:
-            return json.dumps(
-                {'result': 'success',
-                 })  # Search has not been started yet!
-        if ep_queue_item.started and ep_queue_item.success is None:
-            return json.dumps({
-                'result': 'success',
-            })
-        else:
-            return json.dumps({
-                'result': 'failure',
-            })
 
     @staticmethod
     def fetch_releasegroups(series_name):

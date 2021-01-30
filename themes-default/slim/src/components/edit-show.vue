@@ -4,7 +4,7 @@
         <backstretch v-if="showLoaded" :slug="show.id.slug" />
 
         <h1 v-if="showLoaded" class="header">
-            Edit Show - <app-link :href="`home/displayShow?indexername=${indexer}&seriesid=${id}`">{{ show.title }}</app-link>
+            Edit Show - <app-link :href="`home/displayShow?showslug=${showSlug}`">{{ show.title }}</app-link>
         </h1>
         <h1 v-else class="header">
             Edit Show<template v-if="!loadError"> (Loading...)</template>
@@ -92,9 +92,9 @@
 
                                 <config-template v-if="show.config.anime" label-for="anidbReleaseGroup" label="Release Groups">
                                     <anidb-release-group-ui
-                                        v-if="show.title"
+                                        v-if="show.name"
                                         class="max-width"
-                                        :show-name="show.title"
+                                        :show-name="show.name"
                                         :blacklist="show.config.release.blacklist"
                                         :whitelist="show.config.release.whitelist"
                                         @change="onChangeReleaseGroupsAnime"
@@ -262,16 +262,10 @@ export default {
     },
     props: {
         /**
-         * Show indexer
+         * Show Slug
          */
-        showIndexer: {
+        slug: {
             type: String
-        },
-        /**
-         * Show id
-         */
-        showId: {
-            type: Number
         }
     },
     data() {
@@ -303,11 +297,9 @@ export default {
                 setShowConfig({ show, config: { ...show.config, showLists: value } });
             }
         },
-        indexer() {
-            return this.showIndexer || this.$route.query.indexername;
-        },
-        id() {
-            return this.showId || Number(this.$route.query.seriesid) || undefined;
+        showSlug() {
+            const { slug } = this;
+            return slug || this.$route.query.showslug;
         },
         showLoaded() {
             return Boolean(this.show.id.slug);
@@ -373,17 +365,14 @@ export default {
             setShowConfig: 'setShowConfig'
         }),
         loadShow() {
-            const { setCurrentShow, id, indexer, getShow } = this;
+            const { setCurrentShow, getShow, showSlug } = this;
 
             // We need detailed info for the xem / scene exceptions, so let's get it.
-            getShow({ id, indexer, detailed: true });
+            getShow({showSlug, detailed: true });
 
             // Let's tell the store which show we currently want as current.
             // Run this after getShow(), as it will trigger the initializeEpisodes() method.
-            setCurrentShow({
-                indexer,
-                id
-            });
+            setCurrentShow(showSlug);
         },
         async saveShow(subject) {
             const { show, showLoaded } = this;
@@ -435,9 +424,9 @@ export default {
                 data.config.release.whitelist = showConfig.release.whitelist;
             }
 
-            const { indexer, id, setShow } = this;
+            const { showSlug, setShow } = this;
             try {
-                await setShow({ indexer, id, data });
+                await setShow({ showSlug, data });
                 this.$snotify.success(
                     'You may need to "Re-scan files" or "Force Full Update".',
                     'Saved',

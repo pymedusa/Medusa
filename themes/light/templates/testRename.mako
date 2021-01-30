@@ -55,8 +55,8 @@ window.app = new Vue({
                 return false;
             }
 
-            window.location.href = $('base').attr('href') + 'home/doRename?indexername=' + $('#indexer-name').attr('value') +
-                '&seriesid=' + $('#series-id').attr('value') + '&eps=' + epArr.join('|');
+            window.location.href = $('base').attr('href') + 'home/doRename?showslug=' + $('#indexer-name').attr('value') +
+                $('#series-id').attr('value') + '&eps=' + epArr.join('|');
         });
     }
 });
@@ -101,7 +101,7 @@ window.app = new Vue({
     </table>
     </div>
     <div class="col-md-10">
-        <input type="submit" value="Rename Selected" class="btn-medusa btn-success"> <app-link href="home/displayShow?indexername=${show.indexer_name}&seriesid=${show.series_id}" class="btn-medusa btn-danger">Cancel Rename</app-link>
+        <input type="submit" value="Rename Selected" class="btn-medusa btn-success"> <app-link href="home/displayShow?showslug=${show.indexer_name}${show.series_id}" class="btn-medusa btn-danger">Cancel Rename</app-link>
     </div>
 </div>
 <table id="testRenameTable" class="defaultTable ${"summaryFanArt" if app.FANART_BACKGROUND else ""}" cellspacing="1" border="0" cellpadding="0">
@@ -149,5 +149,5 @@ if len(epList) > 1:
     </tbody>
 % endfor
 </table><br>
-<input type="submit" value="Rename Selected" class="btn-medusa btn-success"> <app-link href="home/displayShow?indexername=${show.indexer_name}&seriesid=${show.series_id}" class="btn-medusa btn-danger">Cancel Rename</app-link>
+<input type="submit" value="Rename Selected" class="btn-medusa btn-success"> <app-link href="home/displayShow?showslug=${show.indexer_name}${show.series_id}" class="btn-medusa btn-danger">Cancel Rename</app-link>
 </%block>
