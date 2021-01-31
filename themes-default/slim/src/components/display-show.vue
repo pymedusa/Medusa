@@ -572,6 +572,7 @@ export default {
         }),
         /**
          * Translate slug to showIndexer for now
+         * @returns {string} Shows indexer short name.
          */
         indexer() {
             const { showSlug } = this;
@@ -579,6 +580,7 @@ export default {
         },
         /**
          * Translate slug to showId for now
+         * @returns {number} Shows id. 
          */
         id() {
             const { showSlug } = this;
@@ -765,7 +767,7 @@ export default {
                 });
         },
         setStatus(status, episodes) {
-            const { showSlug, getEpisodes, show } = this;
+            const { showSlug, getEpisodes } = this;
             const patchData = {};
 
             episodes.forEach(episode => {

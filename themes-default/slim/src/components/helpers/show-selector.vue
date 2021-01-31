@@ -40,7 +40,7 @@ export default {
     },
     data() {
         return {
-            $_selectedShow: ''
+            $_selectedShow: '' // eslint-disable-line camelcase
         };
     },
     computed: {
@@ -53,11 +53,11 @@ export default {
         }),
         selectedShowSlug: {
             get() {
-                const { placeHolder, showSlug, $_selectedShow } = this;
-                return $_selectedShow || showSlug || placeHolder;
+                const { placeHolder, showSlug, $_selectedShow } = this; // eslint-disable-line camelcase
+                return $_selectedShow || showSlug || placeHolder; // eslint-disable-line camelcase
             },
             set(newSlug) {
-                this.$_selectedShow = newSlug;
+                this.$_selectedShow = newSlug; // eslint-disable-line camelcase
             }
         },
         sortedLists() {
@@ -89,10 +89,10 @@ export default {
     methods: {
         ...mapActions({
             setCurrentShow: 'setCurrentShow',
-        }),        
+        }),
         async changeRoute(newShowSlug) {
             const { followSelection, shows, selectedShowSlug, setCurrentShow } = this;
-            this.$emit('change', newShowSlug); 
+            this.$emit('change', newShowSlug);
 
             if (!followSelection) {
                 return;
@@ -103,7 +103,7 @@ export default {
                 return;
             }
 
-            await setCurrentShow(newShowSlug);            
+            await setCurrentShow(newShowSlug);
 
             // To make it complete, make sure to switch route.
             this.$router.push({ query: { showslug: newShowSlug } });

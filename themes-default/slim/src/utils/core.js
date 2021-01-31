@@ -201,11 +201,11 @@ export const showSlugToId = showSlug => {
         return show;
     }
 
-    const match = showSlug.toLowerCase().match(/([a-z]+)([0-9]+)/)
+    const match = showSlug.toLowerCase().match(/([a-z]+)(\d+)/);
     show.indexer = match[1];
     show.showId = match[2];
     return show;
-}
+};
 
 /**
  * Force reload.

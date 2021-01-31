@@ -164,7 +164,7 @@ const getters = {
         /**
          * Get a show from the loaded shows state, identified by show slug.
          *
-         * @param {ShowIdentifier} show Show identifiers.
+         * @param {string} showSlug Show identifier.
          * @returns {object|undefined} Show object or undefined if not found.
          */
         const getShowById = showSlug => state.shows.find(show => show.id.slug === showSlug);
@@ -354,7 +354,7 @@ const actions = {
                     resolve();
                 })
                 .catch(error => {
-                    console.log(`Could not retrieve a episodes for show ${indexer}${id}, error: ${error}`);
+                    console.log(`Could not retrieve a episodes for show ${showSlug}, error: ${error}`);
                     reject(error);
                 });
         });

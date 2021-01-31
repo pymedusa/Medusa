@@ -59,8 +59,6 @@ export const showSubMenu = vm => {
     const { config } = $store.state;
     const { notifiers } = config;
 
-    const indexerName = $route.params.indexer || $route.query.indexername;
-    const showId = $route.params.id || $route.query.seriesid;
     const showSlug = $route.params.showSlug || $route.query.showslug;
 
     const show = $store.getters.getCurrentShow;

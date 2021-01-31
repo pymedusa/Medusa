@@ -368,7 +368,7 @@ export default {
             const { setCurrentShow, getShow, showSlug } = this;
 
             // We need detailed info for the xem / scene exceptions, so let's get it.
-            getShow({showSlug, detailed: true });
+            getShow({ showSlug, detailed: true });
 
             // Let's tell the store which show we currently want as current.
             // Run this after getShow(), as it will trigger the initializeEpisodes() method.
