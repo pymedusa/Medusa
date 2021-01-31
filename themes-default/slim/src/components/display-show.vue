@@ -580,7 +580,7 @@ export default {
         },
         /**
          * Translate slug to showId for now
-         * @returns {number} Shows id. 
+         * @returns {number} Shows id.
          */
         id() {
             const { showSlug } = this;

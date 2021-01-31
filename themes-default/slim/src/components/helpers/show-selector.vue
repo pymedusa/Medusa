@@ -88,7 +88,7 @@ export default {
     },
     methods: {
         ...mapActions({
-            setCurrentShow: 'setCurrentShow',
+            setCurrentShow: 'setCurrentShow'
         }),
         async changeRoute(newShowSlug) {
             const { followSelection, shows, selectedShowSlug, setCurrentShow } = this;
