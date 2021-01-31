@@ -1,14 +1,13 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import VueRouter from 'vue-router';
-import { createLocalVue, mount, shallowMount } from '@vue/test-utils';
+import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { AppHeader } from '../../src/components';
 import fixtures from '../__fixtures__/common';
 
 describe('AppHeader.test.js', () => {
     let localVue;
     let $store;
-    let routerBase;
     let route;
 
     beforeEach(() => {
@@ -20,11 +19,10 @@ describe('AppHeader.test.js', () => {
         $store = {
             state
         };
-        routerBase = '/';
 
         route = {
             path: '/home/displayShow',
-            // name: 'home',
+            name: 'home',
             query: {
                 showslug: 'tvdb253463'
             }
@@ -48,11 +46,11 @@ describe('AppHeader.test.js', () => {
         });
 
         const wrapper = shallowMount(AppHeader, {
-            localVue: localVue,
-            router: router,
+            localVue,
+            router,
             mocks: {
                 $store
-            },
+            }
         });
         wrapper.vm.$router.push(route);
 
