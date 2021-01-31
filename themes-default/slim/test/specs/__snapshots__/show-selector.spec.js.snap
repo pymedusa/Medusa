@@ -22,6 +22,7 @@ exports[`ShowSelector.test.js renders "loading..." with empty show array in /hom
 exports[`ShowSelector.test.js renders with articles(The|A|An) ignored in /home/displayShow 1`] = `
 <div
   class="show-selector form-inline hidden-print"
+  placeholder="-- Select a Show --"
 >
   <div
     class="select-show-group pull-left top-5 bottom-5"
@@ -29,13 +30,7 @@ exports[`ShowSelector.test.js renders with articles(The|A|An) ignored in /home/d
     <select
       class="select-show form-control input-sm-custom"
     >
-      <option
-        disabled="disabled"
-        hidden="hidden"
-        value="-- Select a Show --"
-      >
-        -- Select a Show --
-      </option>
+      <!---->
        
       <optgroup
         label="Series"
@@ -83,6 +78,7 @@ exports[`ShowSelector.test.js renders with articles(The|A|An) ignored in /home/d
 exports[`ShowSelector.test.js renders with shows in /home/displayShow 1`] = `
 <div
   class="show-selector form-inline hidden-print"
+  placeholder="-- Select a Show --"
 >
   <div
     class="select-show-group pull-left top-5 bottom-5"
@@ -90,13 +86,7 @@ exports[`ShowSelector.test.js renders with shows in /home/displayShow 1`] = `
     <select
       class="select-show form-control input-sm-custom"
     >
-      <option
-        disabled="disabled"
-        hidden="hidden"
-        value="-- Select a Show --"
-      >
-        -- Select a Show --
-      </option>
+      <!---->
        
       <optgroup
         label="Series"
@@ -144,6 +134,7 @@ exports[`ShowSelector.test.js renders with shows in /home/displayShow 1`] = `
 exports[`ShowSelector.test.js renders with shows in /home/editShow 1`] = `
 <div
   class="show-selector form-inline hidden-print"
+  placeholder="-- Select a Show --"
 >
   <div
     class="select-show-group pull-left top-5 bottom-5"
@@ -151,13 +142,7 @@ exports[`ShowSelector.test.js renders with shows in /home/editShow 1`] = `
     <select
       class="select-show form-control input-sm-custom"
     >
-      <option
-        disabled="disabled"
-        hidden="hidden"
-        value="-- Select a Show --"
-      >
-        -- Select a Show --
-      </option>
+      <!---->
        
       <optgroup
         label="Series"
@@ -205,6 +190,7 @@ exports[`ShowSelector.test.js renders with shows in /home/editShow 1`] = `
 exports[`ShowSelector.test.js renders with split sections in /home/displayShow 1`] = `
 <div
   class="show-selector form-inline hidden-print"
+  placeholder="-- Select a Show --"
 >
   <div
     class="select-show-group pull-left top-5 bottom-5"
@@ -212,13 +198,7 @@ exports[`ShowSelector.test.js renders with split sections in /home/displayShow 1
     <select
       class="select-show form-control input-sm-custom"
     >
-      <option
-        disabled="disabled"
-        hidden="hidden"
-        value="-- Select a Show --"
-      >
-        -- Select a Show --
-      </option>
+      <!---->
        
       <optgroup
         label="Series"

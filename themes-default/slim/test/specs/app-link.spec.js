@@ -92,12 +92,12 @@ describe('AppLink.test.js', () => {
             store,
             propsData: {
                 indexerId: '1',
-                href: 'home/displayShow?indexername=indexer-to-name&seriesid=12345'
+                href: 'home/displayShow?showslug=indexer-to-name12345'
             }
         });
 
         expect(wrapper.element).toMatchSnapshot();
-        expect(wrapper.attributes().href).toEqual('http://localhost:8081/home/displayShow?indexername=tvdb&seriesid=12345');
+        expect(wrapper.attributes().href).toEqual('http://localhost:8081/home/displayShow?showslug=tvdb12345');
         expect(wrapper.attributes().target).toEqual('_self');
         expect(wrapper.attributes().rel).toEqual(undefined);
     });

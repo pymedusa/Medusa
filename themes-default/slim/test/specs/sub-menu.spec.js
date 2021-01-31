@@ -57,7 +57,7 @@ describe('SubMenu.test.js', () => {
                         return recentShows.map((show, index) => {
                             return {
                                 title: show.name,
-                                path: `home/displayShow?indexername=${show.indexerName}&seriesid=${show.showId}`,
+                                path: `home/displayShow?showslug=${show.indexerName}${show.showId}`,
                                 requires: index % 2,
                                 icon: 'menu-icon-addshow'
                             };
