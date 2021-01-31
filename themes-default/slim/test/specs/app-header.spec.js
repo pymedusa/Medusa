@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import Vuex, { Store, createStore } from 'vuex';
+import Vuex from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue, mount, shallowMount } from '@vue/test-utils';
 import { AppHeader } from '../../src/components';
@@ -28,11 +28,6 @@ describe('AppHeader.test.js', () => {
             query: {
                 showslug: 'tvdb253463'
             }
-            // meta: {
-            //     topMenu: 'home',
-            //     converted: true,
-            //     nocache: true // Use this flag, to have the router-view use :key="$route.fullPath"
-            // }
         };
     });
 
