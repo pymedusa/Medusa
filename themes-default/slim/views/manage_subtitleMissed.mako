@@ -159,7 +159,7 @@ window.app = new Vue({
                 <% series_id = str(cur_series[0]) + '-' + str(cur_series[1]) %>
                 <tr id="${series_id}">
                     <th style="width: 1%;"><input type="checkbox" class="allCheck" data-indexer-id="${cur_series[0]}" data-series-id="${cur_series[1]}" id="allCheck-${series_id}" name="${series_id}-all"checked="checked" /></th>
-                    <th colspan="3" style="text-align: left;"><app-link indexer-id="${cur_series[0]}" class="whitelink" href="home/displayShow?indexername=indexer-to-name&seriesid=${cur_series[1]}">
+                    <th colspan="3" style="text-align: left;"><app-link indexer-id="${cur_series[0]}" class="whitelink" href="home/displayShow?showslug=indexer-to-name${cur_series[1]}">
                     ${show_names[(cur_series[0], cur_series[1])]}</app-link> (${ep_counts[(cur_series[0], cur_series[1])]}) <input type="button" class="pull-right get_more_eps btn-medusa" data-indexer-id="${cur_series[0]}" data-series-id="${cur_series[1]}" id="${series_id}" value="Expand" /></th>
                 </tr>
             % endfor

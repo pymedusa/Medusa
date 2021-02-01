@@ -72,7 +72,7 @@ window.app = new Vue({
            % endif
             <tr class="snatched" role="row" release_id=${index}>
                 <td class="tvShow" align="left">
-                    <app-link href="home/displayShow?indexername=${epResult['indexername']}&seriesid=${epResult['seriesid']}#season-${epResult['season']}">${epResult['show_name']}</app-link>
+                    <app-link href="home/displayShow?showslug=${epResult['indexername']}${epResult['seriesid']}#season-${epResult['season']}">${epResult['show_name']}</app-link>
                 </td>
                 <td class="tvShow" align="center">
                         ${episode_num(epResult['season'], epResult['episode'])}
@@ -132,7 +132,7 @@ window.app = new Vue({
            % endif
             <tr class="downloaded" role="row" release_id=${index}>
                 <td class="tvShow" align="left">
-                    <app-link href="home/displayShow?indexername=${epResult['indexername']}&seriesid=${epResult['seriesid']}#season-${epResult['season']}">${epResult['show_name']}</app-link>
+                    <app-link href="home/displayShow?showslug=${epResult['indexername']}${epResult['seriesid']}#season-${epResult['season']}">${epResult['show_name']}</app-link>
                 </td>
                 <td class="tvShow" align="center">
                         ${episode_num(epResult['season'], epResult['episode'])}

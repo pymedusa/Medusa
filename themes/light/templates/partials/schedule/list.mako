@@ -53,7 +53,7 @@
                 <% ends = sbdatetime.sbdatetime.convert_to_setting(cur_ep_enddate) %>
                 <time datetime="${ends.isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdatetime(ends)}</time>
             </td>
-            <td class="tvShow triggerhighlight" nowrap="nowrap"><app-link href="home/displayShow?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}">${cur_result['show_name']}</app-link>
+            <td class="tvShow triggerhighlight" nowrap="nowrap"><app-link href="home/displayShow?showslug=${indexer_id_to_name(cur_result['indexer'])}${cur_result['showid']}">${cur_result['show_name']}</app-link>
 % if bool(cur_result['paused']):
                 <span class="pause">[paused]</span>
 % endif
@@ -87,9 +87,9 @@
             </td>
             <td align="center" class="triggerhighlight">
             <app-link class="epSearch" id="forceUpdate-${cur_result['indexer']}x${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" name="forceUpdate-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}"
-                href="home/searchEpisode?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-search src="images/search16.png" width="16" height="16" alt="search" title="Forced Search" /></app-link>
+                href="home/searchEpisode?showslug=${indexer_id_to_name(cur_result['indexer'])}${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-search src="images/search16.png" width="16" height="16" alt="search" title="Forced Search" /></app-link>
             <app-link class="epManualSearch" id="forcedSearch-${cur_result['indexer']}x${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" name="forcedSearch-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}"
-                href="home/snatchSelection?indexername=${indexer_id_to_name(cur_result['indexer'])}&seriesid=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}&amp;manual_search_type=episode"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></app-link>
+                href="home/snatchSelection?showslug=${indexer_id_to_name(cur_result['indexer'])}${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}&amp;manual_search_type=episode"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></app-link>
             </td>
         </tr>
 % endfor

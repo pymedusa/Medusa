@@ -37,7 +37,7 @@ exports[`AppLink.test.js renders internal link 1`] = `
 exports[`AppLink.test.js renders internal link with placeholder 1`] = `
 <a
   class=""
-  href="http://localhost:8081/home/displayShow?indexername=tvdb&seriesid=12345"
+  href="http://localhost:8081/home/displayShow?showslug=tvdb12345"
   target="_self"
 />
 `;

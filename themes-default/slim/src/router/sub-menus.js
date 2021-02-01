@@ -59,8 +59,7 @@ export const showSubMenu = vm => {
     const { config } = $store.state;
     const { notifiers } = config;
 
-    const indexerName = $route.params.indexer || $route.query.indexername;
-    const showId = $route.params.id || $route.query.seriesid;
+    const showSlug = $route.params.showSlug || $route.query.showslug;
 
     const show = $store.getters.getCurrentShow;
     const { showQueueStatus } = show;
@@ -79,52 +78,52 @@ export const showSubMenu = vm => {
     /** @type {import('.').SubMenu} */
     let menu = [{
         title: 'Edit',
-        path: `home/editShow?indexername=${indexerName}&seriesid=${showId}`,
+        path: `home/editShow?showslug=${showSlug}`,
         icon: 'ui-icon ui-icon-pencil'
     }];
     if (!isBeingAdded && !isBeingUpdated) {
         menu = menu.concat([
             {
                 title: show.config.paused ? 'Resume' : 'Pause',
-                path: `home/togglePause?indexername=${indexerName}&seriesid=${showId}`,
+                path: `home/togglePause?showslug=${showSlug}`,
                 icon: `ui-icon ui-icon-${show.config.paused ? 'play' : 'pause'}`
             },
             {
                 title: 'Remove',
-                path: `home/deleteShow?indexername=${indexerName}&seriesid=${showId}`,
+                path: `home/deleteShow?showslug=${showSlug}`,
                 confirm: 'removeshow',
                 icon: 'ui-icon ui-icon-trash'
             },
             {
                 title: 'Re-scan files',
-                path: `home/refreshShow?indexername=${indexerName}&seriesid=${showId}`,
+                path: `home/refreshShow?showslug=${showSlug}`,
                 icon: 'ui-icon ui-icon-refresh'
             },
             {
                 title: 'Force Full Update',
-                path: `home/updateShow?indexername=${indexerName}&seriesid=${showId}`,
+                path: `home/updateShow?showslug=${showSlug}`,
                 icon: 'ui-icon ui-icon-transfer-e-w'
             },
             {
                 title: 'Update show in KODI',
-                path: `home/updateKODI?indexername=${indexerName}&seriesid=${showId}`,
+                path: `home/updateKODI?showslug=${showSlug}`,
                 requires: notifiers.kodi.enabled && notifiers.kodi.update.library,
                 icon: 'menu-icon-kodi'
             },
             {
                 title: 'Update show in Emby',
-                path: `home/updateEMBY?indexername=${indexerName}&seriesid=${showId}`,
+                path: `home/updateEMBY?showslug=${showSlug}`,
                 requires: notifiers.emby.enabled,
                 icon: 'menu-icon-emby'
             },
             {
                 title: 'Preview Rename',
-                path: `home/testRename?indexername=${indexerName}&seriesid=${showId}`,
+                path: `home/testRename?showslug=${showSlug}`,
                 icon: 'ui-icon ui-icon-tag'
             },
             {
                 title: 'Download Subtitles',
-                path: `home/subtitleShow?indexername=${indexerName}&seriesid=${showId}`,
+                path: `home/subtitleShow?showslug=${showSlug}`,
                 requires: config.general.subtitles.enabled && !isBeingSubtitled && show.config.subtitlesEnabled,
                 icon: 'menu-icon-backlog'
             }

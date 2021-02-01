@@ -408,7 +408,7 @@
                                             </config-template>
 
                                             <config-template label-for="prowl_show_notification_list" label="Show notification list">
-                                                <show-selector select-class="form-control input-sm max-input350" placeholder="-- Select a Show --" @change="prowlUpdateApiKeys($event)" />
+                                                <show-selector select-class="form-control input-sm max-input350" place-holder="-- Select a Show --" @change="prowlUpdateApiKeys($event)" />
                                             </config-template>
 
                                             <div class="form-group">
@@ -905,7 +905,7 @@
                                                  '(Leave blank for the default Medusa subject)']" @change="save()" />
 
                                             <config-template label-for="email_show" label="Show notification list">
-                                                <show-selector select-class="form-control input-sm max-input350" placeholder="-- Select a Show --" @change="emailUpdateShowEmail($event)" />
+                                                <show-selector select-class="form-control input-sm max-input350" place-holder="-- Select a Show --" @change="emailUpdateShowEmail($event)" />
                                             </config-template>
 
                                             <div class="form-group">

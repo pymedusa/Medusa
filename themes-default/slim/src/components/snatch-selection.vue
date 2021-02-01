@@ -5,7 +5,7 @@
 
         <show-header type="snatch-selection"
                      ref="show-header"
-                     :show-id="id"
+                     :slug="showSlug"
                      :show-indexer="indexer"
                      :manual-search-type="manualSearchType"
                      @update-overview-status="filterByOverviewStatus = $event"
@@ -33,6 +33,14 @@ export default {
         ShowHeader,
         ShowHistory,
         ShowResults
+    },
+    props: {
+        /**
+         * Show Slug
+        */
+        slug: {
+            type: String
+        }
     },
     metaInfo() {
         if (!this.show || !this.show.title) {
@@ -65,6 +73,10 @@ export default {
         },
         id() {
             return Number(this.$route.query.seriesid);
+        },
+        showSlug() {
+            const { slug } = this;
+            return slug || this.$route.query.showslug;
         },
         season() {
             return Number(this.$route.query.season);
