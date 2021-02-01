@@ -75,21 +75,21 @@ class SearchQueue(generic_queue.GenericQueue):
 
     def is_backlog_in_progress(self):
         """Check is backlog is in progress."""
-        for cur_item in self.queue + [self.currentItem]:
+        for cur_item in self.queue + [self.current_item]:
             if isinstance(cur_item, BacklogQueueItem):
                 return True
         return False
 
     def is_dailysearch_in_progress(self):
         """Check if daily search is in progress."""
-        for cur_item in self.queue + [self.currentItem]:
+        for cur_item in self.queue + [self.current_item]:
             if isinstance(cur_item, DailySearchQueueItem):
                 return True
         return False
 
     def is_proper_search_in_progress(self):
         """Check if proper search is in progress."""
-        for cur_item in self.queue + [self.currentItem]:
+        for cur_item in self.queue + [self.current_item]:
             if isinstance(cur_item, ProperSearchQueueItem):
                 return True
         return False
@@ -118,7 +118,7 @@ class SearchQueue(generic_queue.GenericQueue):
 
     def force_daily(self):
         """Force daily searched."""
-        if not self.is_dailysearch_in_progress and not self.currentItem.amActive:
+        if not self.is_dailysearch_in_progress and not self.current_item.amActive:
             self.force = True
             return True
         return False
@@ -183,7 +183,7 @@ class ForcedSearchQueue(generic_queue.GenericQueue):
 
         It doesn't check what's in queue.
         """
-        if isinstance(self.currentItem, (BacklogQueueItem, ManualSearchQueueItem, FailedQueueItem)):
+        if isinstance(self.current_item, (BacklogQueueItem, ManualSearchQueueItem, FailedQueueItem)):
             return True
         return False
 
@@ -1152,23 +1152,38 @@ class PostProcessQueue(generic_queue.GenericQueue):
         generic_queue.GenericQueue.__init__(self)
         self.queue_name = 'POSTPROCESSQUEUE'
 
-    def is_in_queue(self, path, resource_name):
+    def is_in_queue(self, item):
         """
-        Check if the postprocess job is in queue based on it's path.
+        Check if the postprocess job is in queue based on it's path and resource_name.
 
-        @param pp_job:
-        @return: True or False
+        :param item: New post-process queue item
+        :type item: :class:`PostProcessQueueItem` object.
+
+        :return: True or False
         """
-        for cur_item in self.queue:
-            if cur_item.path == path and cur_item.resource_name == resource_name:
+        for queue_item in self.queue:
+            if queue_item.path == item.path and queue_item.resource_name == item.resource_name:
                 return True
         return False
+
+    def is_running(self, item):
+        """Check if the postprocess job is currently running based on its path and resource_name.
+
+        :param item: New post-process queue item
+        :type item: :class:`PostProcessQueueItem` object.
+
+        :return: True or False
+        """
+        if not self.current_item:
+            return False
+
+        return item.path == self.current_item.path and item.resource_name == self.current_item.resource_name
 
     def queue_length(self):
         """
         Get the length of the current queue.
 
-        @return: length of queue
+        :return: length of queue
         """
         return {'postprocess': len(self.queue)}
 
@@ -1176,9 +1191,9 @@ class PostProcessQueue(generic_queue.GenericQueue):
         """
         Add a PostProcess queue item.
 
-        @param item: PostProcess gueue object
+        :param item: PostProcess gueue object
         """
-        if not self.is_in_queue(item.path, item.resource_name):
+        if not self.is_in_queue(item) and not self.is_running(item):
             # Add PostProcessQueueItem item.
             generic_queue.GenericQueue.add_item(self, item)
         else:

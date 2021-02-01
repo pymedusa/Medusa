@@ -57,8 +57,8 @@ def generate_show_queue():
     # Make a shallow copy of the current queue.
     queue = []
     queue.extend(app.show_queue_scheduler.action.queue)
-    if app.show_queue_scheduler.action.currentItem is not None:
-        queue.insert(0, app.show_queue_scheduler.action.currentItem)
+    if app.show_queue_scheduler.action.current_item is not None:
+        queue.insert(0, app.show_queue_scheduler.action.current_item)
 
     return [_queued_show_to_json(item) for item in queue]
 
@@ -75,8 +75,8 @@ def generate_postprocessing_queue():
     # Make a shallow copy of the current queue.
     queue = []
     queue.extend(app.post_processor_queue_scheduler.action.queue)
-    if app.post_processor_queue_scheduler.action.currentItem is not None:
-        queue.insert(0, app.post_processor_queue_scheduler.action.currentItem)
+    if app.post_processor_queue_scheduler.action.current_item is not None:
+        queue.insert(0, app.post_processor_queue_scheduler.action.current_item)
 
     def map_fields(queue_item):
         """Translate fields with Enums."""
