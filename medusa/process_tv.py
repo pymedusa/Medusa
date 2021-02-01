@@ -92,6 +92,7 @@ class PostProcessQueueItem(generic_queue.QueueItem):
         """Run postprocess queueitem thread."""
         generic_queue.QueueItem.run(self)
         self.started = True
+
         from medusa.schedulers.download_handler import ClientStatus
         status = ClientStatus()
 
