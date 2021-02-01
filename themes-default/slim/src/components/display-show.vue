@@ -1,7 +1,7 @@
 <template>
     <div class="display-show-template" :class="theme">
         <vue-snotify />
-        <backstretch v-if="show.id.slug && show.id[show.indexer] === id" :slug="show.id.slug" />
+        <backstretch v-if="show.id.slug" :slug="show.id.slug" />
         <input type="hidden" id="series-id" value="">
         <input type="hidden" id="indexer-name" value="">
         <input type="hidden" id="series-slug" value="">
@@ -397,7 +397,7 @@
 import debounce from 'lodash/debounce';
 import { mapState, mapGetters, mapActions } from 'vuex';
 import { AppLink, PlotInfo } from './helpers';
-import { humanFileSize, showSlugToId } from '../utils/core';
+import { humanFileSize } from '../utils/core';
 import { manageCookieMixin } from '../mixins/manage-cookie';
 import { addQTip, updateSearchIcons } from '../utils/jquery';
 import { VueGoodTable } from 'vue-good-table';
@@ -570,22 +570,6 @@ export default {
             getOverviewStatus: 'getOverviewStatus',
             fuzzyParseDateTime: 'fuzzyParseDateTime'
         }),
-        /**
-         * Translate slug to showIndexer for now
-         * @returns {string} Shows indexer short name.
-         */
-        indexer() {
-            const { showSlug } = this;
-            return showSlugToId(showSlug).indexer || this.$route.query.indexername;
-        },
-        /**
-         * Translate slug to showId for now
-         * @returns {number} Shows id.
-         */
-        id() {
-            const { showSlug } = this;
-            return showSlugToId(showSlug).showId || Number(this.$route.query.seriesid) || undefined;
-        },
         showSlug() {
             const { slug } = this;
             return slug || this.$route.query.showslug;

@@ -6,7 +6,6 @@
         <show-header type="snatch-selection"
                      ref="show-header"
                      :slug="showSlug"
-                     :show-indexer="indexer"
                      :manual-search-type="manualSearchType"
                      @update-overview-status="filterByOverviewStatus = $event"
         />
@@ -68,12 +67,6 @@ export default {
             getShowHistoryBySlug: 'getShowHistoryBySlug',
             getEpisode: 'getEpisode'
         }),
-        indexer() {
-            return this.$route.query.indexername;
-        },
-        id() {
-            return Number(this.$route.query.seriesid);
-        },
         showSlug() {
             const { slug } = this;
             return slug || this.$route.query.showslug;
@@ -124,22 +117,18 @@ export default {
     },
     mounted() {
         const {
-            indexer,
-            id,
             show,
+            showSlug,
             getShow,
             $store
         } = this;
 
         // Let's tell the store which show we currently want as current.
-        $store.commit('currentShow', {
-            indexer,
-            id
-        });
+        $store.commit('currentShow', showSlug);
 
         // We need the show info, so let's get it.
         if (!show || !show.id.slug) {
-            getShow({ id, indexer, detailed: false });
+            getShow({ showSlug, detailed: false });
         }
     }
 };
