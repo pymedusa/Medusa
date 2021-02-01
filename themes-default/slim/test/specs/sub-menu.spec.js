@@ -23,7 +23,6 @@ describe('SubMenu.test.js', () => {
     it('renders simple sub menu', () => {
         const router = new VueRouter({
             base: routerBase,
-            mode: 'history',
             routes: [{
                 path: '/',
                 name: '',
@@ -47,7 +46,6 @@ describe('SubMenu.test.js', () => {
     it('renders function-based sub menu', () => {
         const router = new VueRouter({
             base: routerBase,
-            mode: 'history',
             routes: [{
                 path: '/',
                 name: '',
@@ -57,7 +55,7 @@ describe('SubMenu.test.js', () => {
                         return recentShows.map((show, index) => {
                             return {
                                 title: show.name,
-                                path: `home/displayShow?showslug=${show.indexerName}${show.showId}`,
+                                path: `home/displayShow?showslug=${show.showSlug}`,
                                 requires: index % 2,
                                 icon: 'menu-icon-addshow'
                             };
@@ -72,6 +70,8 @@ describe('SubMenu.test.js', () => {
             router
         });
 
-        expect(wrapper.element).toMatchSnapshot();
+        Vue.nextTick(() => {
+            expect(wrapper.element).toMatchSnapshot();
+        });
     });
 });

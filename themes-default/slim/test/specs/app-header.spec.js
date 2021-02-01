@@ -8,7 +8,7 @@ import fixtures from '../__fixtures__/common';
 describe('AppHeader.test.js', () => {
     let localVue;
     let $store;
-    let route;
+    let routerBase;
 
     beforeEach(() => {
         localVue = createLocalVue();
@@ -20,17 +20,13 @@ describe('AppHeader.test.js', () => {
             state
         };
 
-        route = {
-            path: '/home/displayShow',
-            name: 'home',
-            query: {
-                showslug: 'tvdb253463'
-            }
-        };
+        routerBase = '/'; // This might be '/webroot'
     });
+
 
     it('renders', () => {
         const router = new VueRouter({
+            base: routerBase,
             routes: [{
                 path: '/home/displayShow',
                 name: 'show',
@@ -38,9 +34,7 @@ describe('AppHeader.test.js', () => {
                     showslug: 'tvdb253463'
                 },
                 meta: {
-                    topMenu: 'home',
-                    converted: true,
-                    nocache: true // Use this flag, to have the router-view use :key="$route.fullPath"
+                    topMenu: 'home'
                 }
             }]
         });
@@ -52,6 +46,17 @@ describe('AppHeader.test.js', () => {
                 $store
             }
         });
+
+        // We need to puth the query params on the route. Therefor we push a new route.
+        // The query params cannot be pulled from the routes: [{..}]. It has to be passed.
+        const route = {
+            path: '/home/displayShow',
+            name: 'show',
+            query: {
+                showslug: 'tvdb253463'
+            }
+        };
+
         wrapper.vm.$router.push(route);
 
         Vue.nextTick(() => {
