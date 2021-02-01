@@ -15,7 +15,7 @@ exports[`SubMenu.test.js renders function-based sub menu 1`] = `
     >
       <app-link-stub
         class="btn-medusa top-5 bottom-5"
-        href="home/displayShow?indexername=tvdb&seriesid=80379"
+        href="home/displayShow?showslug=tvdb80379"
         placeholder="indexer-to-name"
       >
         <span

@@ -191,6 +191,23 @@ export const episodeToSlug = (season, episode) => {
 };
 
 /**
+ * Transform a showSlug to separate indexer and showId.
+ * @param {string} showSlug - Show slug.
+ * @returns {object} Object with attributes indexer and showId.
+ */
+export const showSlugToId = showSlug => {
+    const show = { indexer: undefined, showId: undefined };
+    if (showSlug === undefined) {
+        return show;
+    }
+
+    const match = showSlug.toLowerCase().match(/([a-z]+)(\d+)/);
+    show.indexer = match[1];
+    show.showId = match[2];
+    return show;
+};
+
+/**
  * Force reload.
  * Force a reload of the page and ignore local cache.
  * window.location.reload(true) doesn't seem to work on chrome. But the self assign does.

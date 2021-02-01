@@ -56,7 +56,7 @@ window.app = new Vue({
             const searchStatusUrl = 'home/getManualSearchStatus';
             const indexerName = $('#indexer-name').val();
             const seriesId = $('#series-id').val();
-            const url = seriesId === undefined ? searchStatusUrl : searchStatusUrl + '?indexername=' + indexerName + '&seriesid=' + seriesId;
+            const url = seriesId === undefined ? searchStatusUrl : searchStatusUrl + '?showslug=' + indexerName + seriesId;
             $.ajax({
                 url,
                 error() {
@@ -227,7 +227,7 @@ window.app = new Vue({
                     <td class="row-seasonheader" colspan="5" style="vertical-align: bottom; width: auto;">
                         <div class="col-md-12">
                             <div class="col-md-6 left-30">
-                                <h3 style="display: inline;"><app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}">${cur_show.name}</app-link></h3>
+                                <h3 style="display: inline;"><app-link href="home/displayShow?showslug=${cur_show.indexer_name}${cur_show.series_id}">${cur_show.name}</app-link></h3>
                                  % if cur_show.quality in qualityPresets:
                                     &nbsp;&nbsp;&nbsp;&nbsp;<i>Quality:</i>&nbsp;&nbsp;<quality-pill :quality="${cur_show.quality}"></quality-pill>
                                  % endif
@@ -240,8 +240,8 @@ window.app = new Vue({
                                     % if showCounts[(cur_show.indexer, cur_show.series_id)][Overview.QUAL] > 0:
                                     <span class="listing-key qual">Quality: <b>${showCounts[(cur_show.indexer, cur_show.series_id)][Overview.QUAL]}</b></span>
                                     % endif
-                                    <app-link class="btn-medusa btn-inline forceBacklog" href="manage/backlogShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}"><i class="icon-play-circle icon-white"></i> Force Backlog</app-link>
-                                    <app-link class="btn-medusa btn-inline editShow" href="home/editShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}"><i class="icon-play-circle icon-white"></i> Edit Show</app-link>
+                                    <app-link class="btn-medusa btn-inline forceBacklog" href="manage/backlogShow?showslug=${cur_show.indexer_name}${cur_show.series_id}"><i class="icon-play-circle icon-white"></i> Force Backlog</app-link>
+                                    <app-link class="btn-medusa btn-inline editShow" href="home/editShow?showslug=${cur_show.indexer_name}${cur_show.series_id}"><i class="icon-play-circle icon-white"></i> Edit Show</app-link>
                                 </div>
                             </div>
                         </div>
@@ -308,10 +308,10 @@ window.app = new Vue({
                             % endif
                         </td>
                         <td class="col-search">
-                            <app-link class="epSearch" id="${str(cur_show.indexer)}x${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/searchEpisode?indexername=${cur_show.indexer_name}&amp;seriesid=${cur_show.series_id}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-search src="images/search16.png" width="16" height="16" alt="search" title="Forced Search" /></app-link>
-                            <app-link class="epManualSearch" id="${str(cur_show.indexer)}x${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/snatchSelection?indexername=${cur_show.indexer_name}&amp;seriesid=${cur_show.series_id}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></app-link>
+                            <app-link class="epSearch" id="${str(cur_show.indexer)}x${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/searchEpisode?showslug=${cur_show.indexer_name}${cur_show.series_id}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-search src="images/search16.png" width="16" height="16" alt="search" title="Forced Search" /></app-link>
+                            <app-link class="epManualSearch" id="${str(cur_show.indexer)}x${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/snatchSelection?showslug=${cur_show.indexer_name}${cur_show.series_id}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></app-link>
                             % if old_status == DOWNLOADED:
-                                <app-link class="epArchive" id="${str(cur_show.indexer)}x${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/setStatus?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}&eps=s${cur_result['season']}e${cur_result['episode']}&status=${ARCHIVED}&direct=1"><img data-ep-archive src="images/archive.png" width="16" height="16" alt="search" title="Archive episode" /></app-link>
+                                <app-link class="epArchive" id="${str(cur_show.indexer)}x${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/setStatus?showslug=${cur_show.indexer_name}${cur_show.series_id}&eps=s${cur_result['season']}e${cur_result['episode']}&status=${ARCHIVED}&direct=1"><img data-ep-archive src="images/archive.png" width="16" height="16" alt="search" title="Archive episode" /></app-link>
                             % endif
                         </td>
                     </tr>
