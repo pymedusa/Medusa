@@ -70,8 +70,6 @@ describe('SubMenu.test.js', () => {
             router
         });
 
-        Vue.nextTick(() => {
-            expect(wrapper.element).toMatchSnapshot();
-        });
+        expect(wrapper.element).toMatchSnapshot();
     });
 });

@@ -23,7 +23,6 @@ describe('AppHeader.test.js', () => {
         routerBase = '/'; // This might be '/webroot'
     });
 
-
     it('renders', () => {
         const router = new VueRouter({
             base: routerBase,
