@@ -1222,7 +1222,7 @@ export default {
             if (event.target.value === 'manual') {
                 // Use the router to navigate to snatchSelection.
                 $router.push({ name: 'snatchSelection', query: {
-                    showSlug: show.id.slug,
+                    showslug: show.id.slug,
                     season: episode.season,
                     episode: episode.episode
                 } });
