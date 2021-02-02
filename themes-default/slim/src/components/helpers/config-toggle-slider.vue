@@ -1,5 +1,5 @@
 <template>
-    <div id="config-toggle-slider-content">
+    <div v-if="!experimental || experimentalEnabled" id="config-toggle-slider-content">
         <div class="form-group">
             <div class="row">
                 <label :for="id" class="col-sm-2 control-label">
@@ -9,6 +9,7 @@
                     <toggle-button :width="45" :height="22" v-bind="{id, name: id, disabled}" v-model="localChecked" sync @input="updateValue()" />
                     <p v-for="(explanation, index) in explanations" :key="index">{{ explanation }}</p>
                     <slot />
+                    <span style="color: red" v-if="experimental">This is an experimental feature</span>
                 </div>
             </div>
         </div>
@@ -17,6 +18,7 @@
 
 <script>
 import { ToggleButton } from 'vue-js-toggle-button';
+import { mapState } from 'vuex';
 
 export default {
     name: 'config-toggle-slider',
@@ -43,7 +45,8 @@ export default {
         explanations: {
             type: Array,
             default: () => []
-        }
+        },
+        experimental: Boolean
     },
     data() {
         return {
@@ -53,6 +56,11 @@ export default {
     mounted() {
         const { value } = this;
         this.localChecked = value;
+    },
+    computed: {
+        ...mapState({
+            experimentalEnabled: state => state.config.general.experimental
+        })
     },
     watch: {
         value() {
