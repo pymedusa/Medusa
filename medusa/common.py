@@ -468,8 +468,7 @@ class Quality(object):
         :rtype: text_type
         """
         rel_type = ''
-        basename = os.path.basename(name)
-        name = os.path.splitext(basename)[0].lower()
+        name = name.lower()
         codec = re.search(r'[xh].?26[45]', name) or ''
 
         if codec and codec.group(0).endswith('4') or 'avc' in name:
