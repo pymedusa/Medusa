@@ -464,6 +464,9 @@ class Application(object):
             app.DEVELOPER = bool(check_setting_int(app.CFG, 'General', 'developer', 0))
             app.PYTHON_VERSION = check_setting_list(app.CFG, 'General', 'python_version', [], transform=int)
 
+            # Experimental flag
+            app.EXPERIMENTAL = bool(check_setting_int(app.CFG, 'General', 'experimental', 0))
+
             # debugging
             app.DEBUG = bool(check_setting_int(app.CFG, 'General', 'debug', 0))
             app.DBDEBUG = bool(check_setting_int(app.CFG, 'General', 'dbdebug', 0))
@@ -1648,6 +1651,7 @@ class Application(object):
         new_config['General']['selected_root'] = int(app.SELECTED_ROOT)
         new_config['General']['backlog_period'] = app.BACKLOG_PERIOD
         new_config['General']['backlog_status'] = app.BACKLOG_STATUS
+        new_config['General']['experimental'] = int(app.EXPERIMENTAL)
 
         new_config['General']['fallback_plex_enable'] = app.FALLBACK_PLEX_ENABLE
         new_config['General']['fallback_plex_notifications'] = app.FALLBACK_PLEX_NOTIFICATIONS
