@@ -165,6 +165,7 @@ class QBittorrentAPI(GenericClient):
                 data['savepath'] = app.TORRENT_PATH
 
             label = app.TORRENT_LABEL_ANIME if result.series.is_anime else app.TORRENT_LABEL
+
             if label:
                 data['category'] = label
 
@@ -183,6 +184,7 @@ class QBittorrentAPI(GenericClient):
                 data['savepath'] = app.TORRENT_PATH
 
             label = app.TORRENT_LABEL_ANIME if result.series.is_anime else app.TORRENT_LABEL
+
             if label:
                 data['category'] = label
 
