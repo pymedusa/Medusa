@@ -5,6 +5,7 @@
 #### Improvements
 
 #### Fixes
+ - Fix qbittorrent labels not always set ([9165](https://github.com/pymedusa/Medusa/pull/9165))
 
 -----
 
