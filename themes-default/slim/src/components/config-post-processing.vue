@@ -18,28 +18,16 @@
 
                             <div class="col-xs-12 col-md-10">
                                 <fieldset class="component-group-list">
-                                    <div class="form-group">
-                                        <label for="process_automatically" class="col-sm-2 control-label">
-                                            <span>Scheduled Post-Processor</span>
-                                        </label>
-                                        <div class="col-sm-10 content">
-                                            <toggle-button :width="45" :height="22" id="process_automatically" name="process_automatically" v-model="postprocessing.processAutomatically" sync />
-                                            <p>Enable the scheduled post-processor to scan and process any files in your <i>Post-Processing Dir</i>?</p>
-                                            <div class="clear-left"><p><b>Note:</b> Do not use if you use an external post-processing script</p></div>
-                                        </div>
-                                    </div>
+                                    <config-toggle-slider v-model="postprocessing.processAutomatically" label="Scheduled Post-Processor" id="process_automatically">
+                                        <p>Enable the scheduled post-processor to scan and process any files in your <i>Post-Processing Dir</i>?</p>
+                                        <div class="clear-left"><p><b>Note:</b> Do not use if you use an external post-processing script</p></div>
+                                    </config-toggle-slider>
 
-                                    <div v-show="postprocessing.processAutomatically" id="post-process-toggle-wrapper">
-                                        <div class="form-group">
-                                            <label for="autopostprocessor_frequency" class="col-sm-2 control-label">
-                                                <span>Auto Post-Processing Frequency</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <input type="number" min="10" step="1" name="autopostprocessor_frequency" id="autopostprocessor_frequency" v-model.number="postprocessing.autoPostprocessorFrequency" class="form-control input-sm input75">
-                                                <span>Time in minutes to check for new files to auto post-process (min 10)</span>
-                                            </div>
-                                        </div>
-                                    </div> <!-- End of content wrapper -->
+                                    <config-textbox-number v-show="postprocessing.processAutomatically" v-model="postprocessing.autoPostprocessorFrequency"
+                                        label="Auto Post-Processing Frequency" id="autopostprocessor_frequency" 
+                                        :min="10" :step="1">
+                                        <span>Time in minutes to check for new files to auto post-process (min 10)</span>
+                                    </config-textbox-number>
                                 </fieldset>
                             </div> <!-- end of col -->
                         </div> <!-- end of row -->
@@ -53,21 +41,17 @@
 
                             <div class="col-xs-12 col-md-10">
                                 <fieldset class="component-group-list">
-                                    <div class="form-group">
-                                        <label for="process_automatically" class="col-sm-2 control-label">
-                                            <span>Enable download handler</span>
-                                            <span style="color: red">experimental</span>
-                                        </label>
-                                        <div class="col-sm-10 content">
-                                            <toggle-button :width="45" :height="22" id="enable_download_handler" name="enable_download_handler" v-model="postprocessing.downloadHandler.enabled" sync />
-                                            <p>Enable download handler</p>
-                                            <p><b>Note:</b>Do not combine with scheduled post processing or external pp scripts!</p>
-                                        </div>
-                                    </div>
+                                    <config-toggle-slider v-model="postprocessing.downloadHandler.enabled" label="Enable download handler" id="enable_download_handler" experimental>
+                                        <p>Enable download handler</p>
+                                        <p><b>Note:</b>Do not combine with scheduled post processing or external pp scripts!</p>
+                                    </config-toggle-slider>
 
-                                <div v-show="postprocessing.downloadHandler.enabled" id="post-process-toggle-wrapper">
-                                    <config-textbox-number :min="postprocessing.downloadHandler.minFrequency" :step="1" v-model.number="postprocessing.downloadHandler.frequency" label="Download handler frequency" id="download_handler_frequency" :explanations="['Frequency to check on the download clients (default: 60)']" />
-                                </div>
+                                    <config-textbox-number v-show="postprocessing.downloadHandler.enabled" 
+                                        :min="postprocessing.downloadHandler.minFrequency" :step="1" 
+                                        v-model.number="postprocessing.downloadHandler.frequency" 
+                                        label="Download handler frequency" id="download_handler_frequency">
+                                        <p>Frequency to check on the download clients (default: 60)</p>
+                                    </config-textbox-number>
                                 </fieldset>
                             </div> <!-- end of col -->
                         </div> <!-- end of row -->
@@ -79,189 +63,93 @@
                             </div>
                             <div class="col-xs-12 col-md-10">
                                 <fieldset class="component-group-list">
-                                    <div class="form-group">
-                                        <label for="tv_download_dir" class="col-sm-2 control-label">
-                                            <span>Post-Processing Dir</span>
-                                        </label>
-                                        <div class="col-sm-10 content">
-                                            <file-browser id="tv_download_dir" name="tv_download_dir" title="Select series download location" :initial-dir="postprocessing.showDownloadDir" @update="postprocessing.showDownloadDir = $event" />
-                                            <span class="clear-left">The folder where your download client puts the completed TV downloads.</span>
-                                            <div class="clear-left"><p><b>Note:</b> Please use separate downloading and completed folders in your download client if possible.</p></div>
-                                            <span>The Post processing dir is also used when your download client is running on a different machine. It will try to map a postprocessed folder to PP dir.</span>
-                                        </div>
-                                    </div>
+                                    <config-template label-for="tv_download_dir" label="Post-Processing Dir">
+                                        <file-browser id="tv_download_dir" name="tv_download_dir" title="Select series download location" :initial-dir="postprocessing.showDownloadDir" @update="postprocessing.showDownloadDir = $event" />
+                                        <span class="clear-left">The folder where your download client puts the completed TV downloads.</span>
+                                        <div class="clear-left"><p><b>Note:</b> Please use separate downloading and completed folders in your download client if possible.</p></div>
+                                        <span>The Post processing dir is also used when your download client is running on a different machine. It will try to map a postprocessed folder to PP dir.</span>
+                                    </config-template>
 
-                                    <div class="form-group">
-                                        <label for="process_method" class="col-sm-2 control-label">
-                                            <span>Processing Method</span>
-                                        </label>
-                                        <div class="col-sm-10 content">
-                                            <select id="naming_multi_ep" name="naming_multi_ep" v-model="postprocessing.processMethod" class="form-control input-sm">
-                                                <option :value="option.value" v-for="option in processMethods" :key="option.value">{{ option.text }}</option>
-                                            </select>
-                                            <span>What method should be used to put files into the library?</span>
-                                            <p><b>Note:</b> If you keep seeding torrents after they finish, please avoid the 'move' processing method to prevent errors.</p>
-                                            <p v-if="postprocessing.processMethod == 'reflink'">To use reference linking, the <app-link href="http://www.dereferer.org/?https://pypi.python.org/pypi/reflink/0.1.4">reflink package</app-link> needs to be installed.</p>
-                                        </div>
-                                    </div>
+                                    <config-template label-for="processing_method" label="Processing Method">
+                                        <select id="naming_multi_ep" name="naming_multi_ep" v-model="postprocessing.processMethod" class="form-control input-sm">
+                                            <option :value="option.value" v-for="option in processMethods" :key="option.value">{{ option.text }}</option>
+                                        </select>
+                                        <span>What method should be used to put files into the library?</span>
+                                        <p><b>Note:</b> If you keep seeding torrents after they finish, please avoid the 'move' processing method to prevent errors.</p>
+                                        <p v-if="postprocessing.processMethod == 'reflink'">To use reference linking, the <app-link href="http://www.dereferer.org/?https://pypi.python.org/pypi/reflink/0.1.4">reflink package</app-link> needs to be installed.</p>
+                                    </config-template>
 
-                                    <div class="form-group">
-                                        <label for="postpone_if_sync_files" class="col-sm-2 control-label">
-                                            <span>Postpone post-processing</span>
-                                        </label>
-                                        <div class="col-sm-10 content">
-                                            <toggle-button :width="45" :height="22" id="postpone_if_sync_files" name="postpone_if_sync_files" v-model="postprocessing.postponeIfSyncFiles" sync />
-                                            <span>Wait to process a folder if sync files are present.</span>
-                                        </div>
-                                    </div>
+                                    <config-toggle-slider v-model="postprocessing.postponeIfSyncFiles" label="Postpone post-processing" id="postpone_if_sync_files">
+                                        <span>Wait to process a folder if sync files are present.</span>
+                                    </config-toggle-slider>
 
-                                    <div class="form-group">
-                                        <label for="sync_files" class="col-sm-2 control-label">
-                                            <span>Sync File Extensions</span>
-                                        </label>
-                                        <div class="col-sm-10 content">
-                                            <select-list name="sync_files" id="sync_files" csv-enabled :list-items="postprocessing.syncFiles" @change="onChangeSyncFiles" />
-                                            <span>Comma separated list of extensions or filename globs Medusa ignores when post-processing</span>
-                                        </div>
-                                    </div>
+                                    <config-template label-for="sync_files" label="Sync File Extensions">
+                                        <select-list name="sync_files" id="sync_files" csv-enabled :list-items="postprocessing.syncFiles" @change="onChangeSyncFiles" />
+                                        <span>Comma separated list of extensions or filename globs Medusa ignores when post-processing</span>
+                                    </config-template>
+                                    
+                                    <config-toggle-slider v-model="postprocessing.postponeIfNoSubs" label="Postpone if no subtitle" id="postpone_if_no_subs">
+                                        <span>Wait to process a file until subtitles are present</span><br>
+                                        <span>Language names are allowed in subtitle filename (en.srt, pt-br.srt, ita.srt, etc.)</span><br>
+                                        <span><b>Note:</b> Automatic post-processor should be disabled to avoid files with pending subtitles being processed over and over.</span><br>
+                                        <span>If you have any active show with subtitle search disabled, you must enable Automatic post-processor.</span>                                    
+                                    </config-toggle-slider>
 
-                                    <div class="form-group">
-                                        <label for="postpone_if_no_subs" class="col-sm-2 control-label">
-                                            <span>Postpone if no subtitle</span>
-                                        </label>
-                                        <div class="col-sm-10 content">
-                                            <toggle-button :width="45" :height="22" id="postpone_if_no_subs" name="postpone_if_no_subs" v-model="postprocessing.postponeIfNoSubs" sync />
-                                            <span>Wait to process a file until subtitles are present</span><br>
-                                            <span>Language names are allowed in subtitle filename (en.srt, pt-br.srt, ita.srt, etc.)</span><br>
-                                            <span><b>Note:</b> Automatic post-processor should be disabled to avoid files with pending subtitles being processed over and over.</span><br>
-                                            <span>If you have any active show with subtitle search disabled, you must enable Automatic post-processor.</span>
-                                        </div>
-                                    </div>
+                                    <config-toggle-slider v-model="postprocessing.renameEpisodes" label="Rename Episodes" id="rename_episodes">
+                                        <span>Rename episode using the Episode Naming settings?</span>
+                                    </config-toggle-slider>
 
-                                    <div class="form-group">
-                                        <label for="rename_episodes" class="col-sm-2 control-label">
-                                            <span>Rename Episodes</span>
-                                        </label>
-                                        <div class="col-sm-10 content">
-                                            <toggle-button :width="45" :height="22" id="rename_episodes" name="rename_episodes" v-model="postprocessing.renameEpisodes" sync />
-                                            <span>Rename episode using the Episode Naming settings?</span>
-                                        </div>
-                                    </div>
+                                    <config-toggle-slider v-model="postprocessing.createMissingShowDirs" label="Create missing show directories" id="create_missing_show_dirs">
+                                        <span>Create missing show directories when they get deleted</span>
+                                    </config-toggle-slider>
 
-                                    <div class="form-group">
-                                        <label for="create_missing_show_dirs" class="col-sm-2 control-label">
-                                            <span>Create missing show directories</span>
-                                        </label>
-                                        <div class="col-sm-10 content">
-                                            <toggle-button :width="45" :height="22" id="create_missing_show_dirs" name="create_missing_show_dirs" v-model="postprocessing.createMissingShowDirs" sync />
-                                            <span>Create missing show directories when they get deleted</span>
-                                        </div>
-                                    </div>
+                                    <config-toggle-slider v-model="postprocessing.addShowsWithoutDir" label="Add shows without directory" id="add_shows_wo_dir">
+                                        <span>Add shows without creating a directory (not recommended)</span>
+                                    </config-toggle-slider>
 
-                                    <div class="form-group">
-                                        <label for="add_shows_wo_dir" class="col-sm-2 control-label">
-                                            <span>Add shows without directory</span>
-                                        </label>
-                                        <div class="col-sm-10 content">
-                                            <toggle-button :width="45" :height="22" id="add_shows_wo_dir" name="add_shows_wo_dir" v-model="postprocessing.addShowsWithoutDir" sync />
-                                            <span>Add shows without creating a directory (not recommended)</span>
-                                        </div>
-                                    </div>
+                                    <config-toggle-slider v-model="postprocessing.moveAssociatedFiles" label="Delete associated files" id="move_associated_files">
+                                        <span>Delete srt/srr/sfv/etc files while post-processing?</span>
+                                    </config-toggle-slider>
 
-                                    <div class="form-group">
-                                        <label for="move_associated_files" class="col-sm-2 control-label">
-                                            <span>Delete associated files</span>
-                                        </label>
-                                        <div class="col-sm-10 content">
-                                            <toggle-button :width="45" :height="22" id="move_associated_files" name="move_associated_files" v-model="postprocessing.moveAssociatedFiles" sync />
-                                            <span>Delete srt/srr/sfv/etc files while post-processing?</span>
-                                        </div>
-                                    </div>
+                                    <config-template label-for="allowed_extensions" label="Keep associated file extensions">
+                                        <select-list name="allowed_extensions" id="allowed_extensions" csv-enabled :list-items="postprocessing.allowedExtensions" @change="onChangeAllowedExtensions" />
+                                        <span>Comma separated list of associated file extensions Medusa should keep while post-processing.</span><br>
+                                        <span>Leaving it empty means all associated files will be deleted</span>
+                                    </config-template>
 
-                                    <div class="form-group">
-                                        <label class="col-sm-2 control-label">
-                                            <span>Keep associated file extensions</span>
-                                        </label>
-                                        <div class="col-sm-10 content">
-                                            <select-list name="allowed_extensions" id="allowed_extensions" csv-enabled :list-items="postprocessing.allowedExtensions" @change="onChangeAllowedExtensions" />
-                                            <span>Comma separated list of associated file extensions Medusa should keep while post-processing.</span><br>
-                                            <span>Leaving it empty means all associated files will be deleted</span>
-                                        </div>
-                                    </div>
+                                    <config-toggle-slider v-model="postprocessing.nfoRename" label="Rename .nfo file" id="nfo_rename">
+                                        <span>Rename the original .nfo file to .nfo-orig to avoid conflicts?</span>
+                                    </config-toggle-slider>
 
-                                    <div class="form-group">
-                                        <label for="nfo_rename" class="col-sm-2 control-label">
-                                            <span>Rename .nfo file</span>
-                                        </label>
-                                        <div class="col-sm-10 content">
-                                            <toggle-button :width="45" :height="22" id="nfo_rename" name="nfo_rename" v-model="postprocessing.nfoRename" sync />
-                                            <span>Rename the original .nfo file to .nfo-orig to avoid conflicts?</span>
-                                        </div>
-                                    </div>
+                                    <config-toggle-slider v-model="postprocessing.airdateEpisodes" label="Change File Date" id="airdate_episodes">
+                                        <span>Set last modified filedate to the date that the episode aired?</span>
+                                    </config-toggle-slider>
 
-                                    <div class="form-group">
-                                        <label for="airdate_episodes" class="col-sm-2 control-label">
-                                            <span>Change File Date</span>
-                                        </label>
-                                        <div class="col-sm-10 content">
-                                            <toggle-button :width="45" :height="22" id="airdate_episodes" name="airdate_episodes" v-model="postprocessing.airdateEpisodes" sync />
-                                            <span>Set last modified filedate to the date that the episode aired?</span>
-                                        </div>
-                                    </div>
+                                    <config-template label-for="file_timestamp_timezone" label="Timezone for File Date">
+                                        <select id="file_timestamp_timezone" name="file_timestamp_timezone" v-model="postprocessing.fileTimestampTimezone" class="form-control input-sm">
+                                            <option :value="option.value" v-for="option in timezoneOptions" :key="option.value">{{ option.text }}</option>
+                                        </select>
+                                        <span>What timezone should be used to change File Date?</span>                                    
+                                    </config-template>
 
-                                    <div class="form-group">
-                                        <label for="file_timestamp_timezone" class="col-sm-2 control-label">
-                                            <span>Timezone for File Date:</span>
-                                        </label>
-                                        <div class="col-sm-10 content">
-                                            <select id="file_timestamp_timezone" name="file_timestamp_timezone" v-model="postprocessing.fileTimestampTimezone" class="form-control input-sm">
-                                                <option :value="option.value" v-for="option in timezoneOptions" :key="option.value">{{ option.text }}</option>
-                                            </select>
-                                            <span>What timezone should be used to change File Date?</span>
-                                        </div>
-                                    </div>
+                                    <config-toggle-slider v-model="postprocessing.unpack" label="Unpack" id="unpack">
+                                        <span>Unpack any TV releases in your <i>TV Download Dir</i>?</span><br>
+                                        <span><b>Note:</b> Only working with RAR archive</span>
+                                    </config-toggle-slider>
 
-                                    <div class="form-group">
-                                        <label for="unpack" class="col-sm-2 control-label">
-                                            <span>Unpack</span>
-                                        </label>
-                                        <div class="col-sm-10 content">
-                                            <toggle-button :width="45" :height="22" id="unpack" name="unpack" v-model="postprocessing.unpack" sync />
-                                            <span>Unpack any TV releases in your <i>TV Download Dir</i>?</span><br>
-                                            <span><b>Note:</b> Only working with RAR archive</span>
-                                        </div>
-                                    </div>
+                                    <config-toggle-slider v-model="postprocessing.deleteRarContent" label="Delete RAR contents" id="del_rar_contents">
+                                        <span>Delete content of RAR files, even if Process Method not set to move?</span>
+                                    </config-toggle-slider>
 
-                                    <div class="form-group">
-                                        <label for="del_rar_contents" class="col-sm-2 control-label">
-                                            <span>Delete RAR contents</span>
-                                        </label>
-                                        <div class="col-sm-10 content">
-                                            <toggle-button :width="45" :height="22" id="del_rar_contents" name="del_rar_contents" v-model="postprocessing.deleteRarContent" sync />
-                                            <span>Delete content of RAR files, even if Process Method not set to move?</span>
-                                        </div>
-                                    </div>
+                                    <config-toggle-slider v-model="postprocessing.noDelete" label="Don't delete empty folders" id="no_delete">
+                                        <span>Leave empty folders when post-processing?</span><br>
+                                        <span><b>Note:</b> Can be overridden using manual post-processing</span>
+                                    </config-toggle-slider>
 
-                                    <div class="form-group">
-                                        <label for="no_delete" class="col-sm-2 control-label">
-                                            <span>Don't delete empty folders</span>
-                                        </label>
-                                        <div class="col-sm-10 content">
-                                            <toggle-button :width="45" :height="22" id="no_delete" name="no_delete" v-model="postprocessing.noDelete" sync />
-                                            <span>Leave empty folders when post-processing?</span><br>
-                                            <span><b>Note:</b> Can be overridden using manual post-processing</span>
-                                        </div>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label class="col-sm-2 control-label">
-                                            <span>Extra Scripts</span>
-                                        </label>
-                                        <div class="col-sm-10 content">
-                                            <select-list name="extra_scripts" id="extra_scripts" csv-enabled :list-items="postprocessing.extraScripts" @change="onChangeExtraScripts" />
-                                            <span>See <app-link :href="postprocessing.extraScriptsUrl" class="wikie"><strong>Wiki</strong></app-link> for script arguments description and usage.</span>
-                                        </div>
-                                    </div>
+                                    <config-template label-for="extra_scripts" label="Extra Scripts">
+                                        <select-list name="extra_scripts" id="extra_scripts" csv-enabled :list-items="postprocessing.extraScripts" @change="onChangeExtraScripts" />
+                                        <span>See <app-link :href="postprocessing.extraScriptsUrl" class="wikie"><strong>Wiki</strong></app-link> for script arguments description and usage.</span>
+                                    </config-template>
                                 </fieldset>
                                 <input type="submit"
                                        class="btn-medusa config_submitter"
@@ -407,12 +295,21 @@
 <script>
 import { mapActions, mapState } from 'vuex';
 import { ToggleButton } from 'vue-js-toggle-button';
-import { AppLink, FileBrowser, NamePattern, SelectList } from './helpers';
+import { 
+    AppLink,
+    ConfigTextboxNumber,
+    ConfigToggleSlider,
+    FileBrowser,
+    NamePattern,
+    SelectList
+} from './helpers';
 
 export default {
     name: 'config-post-processing',
     components: {
         AppLink,
+        ConfigTextboxNumber,
+        ConfigToggleSlider,
         FileBrowser,
         NamePattern,
         SelectList,
