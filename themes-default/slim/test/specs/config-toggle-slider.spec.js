@@ -12,7 +12,6 @@ describe('ConfigToggleSlider.test.js', () => {
         $store = {
             state
         };
-
     });
 
     it('renders', () => {
@@ -81,5 +80,4 @@ describe('ConfigToggleSlider.test.js', () => {
 
         expect(wrapper.element).toMatchSnapshot();
     });
-
 });
