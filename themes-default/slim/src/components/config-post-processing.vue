@@ -199,19 +199,12 @@
                                         :enabled-naming-custom="postprocessing.naming.enableCustomNamingAnime" @change="saveNamingAnime" :flag-loaded="configLoaded"
                                     />
 
-                                    <div class="form-group component-item">
-                                        <label for="naming_strip_year" class="col-sm-2 control-label">
-                                            <span>Strip Show Year</span>
-                                        </label>
-                                        <div class="col-sm-10 content">
-                                            <toggle-button
-                                                :width="45" :height="22" id="naming_strip_year" name="naming_strip_year"
-                                                v-model="postprocessing.naming.stripYear" sync
-                                            />
-                                            <span>Remove the TV show's year when renaming the file?</span>
-                                            <p>Only applies to shows that have year inside parentheses</p>
-                                        </div>
-                                    </div>
+                                    
+                                    <config-toggle-slider v-model="postprocessing.naming.stripYear" label="Strip Show Year" id="naming_strip_year">
+                                        <span>Remove the TV show's year when renaming the file?</span>
+                                        <p>Only applies to shows that have year inside parentheses</p>
+                                    </config-toggle-slider>
+
                                 </fieldset>
 
                                 <input type="submit"
@@ -231,17 +224,12 @@
                             </div>
                             <div class="col-xs-12 col-md-10">
                                 <fieldset class="component-group-list">
-                                    <div class="form-group">
-                                        <label for="metadataType" class="col-sm-2 control-label">
-                                            <span>Metadata Type</span>
-                                        </label>
-                                        <div class="col-sm-10 content">
-                                            <select id="metadataType" name="metadataType" v-model="metadataProviderSelected" class="form-control input-sm">
-                                                <option :value="option.id" v-for="option in metadata.metadataProviders" :key="option.id">{{ option.name }}</option>
-                                            </select>
-                                            <span class="d-block">Toggle the metadata options that you wish to be created. <b>Multiple targets may be used.</b></span>
-                                        </div>
-                                    </div>
+                                    <config-template label-for="metadata_type" label="Metadata Type">
+                                        <select id="metadataType" name="metadataType" v-model="metadataProviderSelected" class="form-control input-sm">
+                                            <option :value="option.id" v-for="option in metadata.metadataProviders" :key="option.id">{{ option.name }}</option>
+                                        </select>
+                                        <span class="d-block">Toggle the metadata options that you wish to be created. <b>Multiple targets may be used.</b></span>
+                                    </config-template>
 
                                     <div class="metadataDiv" v-show="provider.id === metadataProviderSelected" v-for="provider in metadata.metadataProviders" :key="provider.id" id="provider.id">
                                         <div class="metadata_options_wrapper">
@@ -294,7 +282,6 @@
 </template>
 <script>
 import { mapActions, mapState } from 'vuex';
-import { ToggleButton } from 'vue-js-toggle-button';
 import { 
     AppLink,
     ConfigTextboxNumber,
@@ -312,8 +299,7 @@ export default {
         ConfigToggleSlider,
         FileBrowser,
         NamePattern,
-        SelectList,
-        ToggleButton
+        SelectList
     },
     data() {
         return {
