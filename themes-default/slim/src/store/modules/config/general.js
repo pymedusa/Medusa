@@ -86,6 +86,7 @@ const state = {
     skipRemovedFiles: null,
     epDefaultDeletedStatus: null,
     developer: null,
+    experimental: null,
     git: {
         username: null,
         password: null,

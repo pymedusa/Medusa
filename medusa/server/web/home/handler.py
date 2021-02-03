@@ -1277,7 +1277,10 @@ class Home(WebRoot):
         :param seriesid: Id of series as identified by the indexer
         :return:
         """
-        series_obj = Series.find_by_identifier(SeriesIdentifier.from_slug(showslug))
+        series_obj = None
+        if showslug:
+            identifier = SeriesIdentifier.from_slug(showslug)
+            series_obj = Series.find_by_identifier(identifier)
         episodes = collect_episodes_from_search_thread(series_obj)
 
         return json.dumps({

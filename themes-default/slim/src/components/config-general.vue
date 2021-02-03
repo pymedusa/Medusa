@@ -57,10 +57,9 @@
                                         <root-dirs />
                                     </config-template>
 
-                                    <config-toggle-slider v-model="general.addTitleWithYear" label="Append (year) to each show title" id="add_title_year">
+                                    <config-toggle-slider experimental v-model="general.addTitleWithYear" label="Append (year) to each show title" id="add_title_year">
                                         <p>Make sure that each show title is added with (year) appended to it</p>
                                         <p>The show title with year is only used for show folder creation as representation in the UI.</p>
-                                        <span style="color: red">experimental</span>
                                     </config-toggle-slider>
 
                                     <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
@@ -396,6 +395,10 @@
                                         <p><b>Note:</b> Archived option will keep previous downloaded quality</p>
                                         <p>Example: Downloaded (1080p WEB-DL) ==> Archived (1080p WEB-DL)</p>
                                     </config-template>
+
+                                    <config-toggle-slider v-model="general.experimental" label="Enable experimental features" id="experimental">
+                                        <p>allow for using experimental features</p>
+                                    </config-toggle-slider>
 
                                     <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
                                 </fieldset>

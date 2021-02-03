@@ -156,6 +156,7 @@ class ConfigHandler(BaseRequestHandler):
         'logs.custom': ListField(app, 'CUSTOM_LOGS'),
 
         'developer': BooleanField(app, 'DEVELOPER'),
+        'experimental': BooleanField(app, 'EXPERIMENTAL'),
 
         'git.username': StringField(app, 'GIT_USERNAME'),
         'git.password': StringField(app, 'GIT_PASSWORD'),
@@ -692,6 +693,7 @@ class DataGenerator(object):
         section_data['skipRemovedFiles'] = bool(app.SKIP_REMOVED_FILES)
         section_data['epDefaultDeletedStatus'] = app.EP_DEFAULT_DELETED_STATUS
         section_data['developer'] = bool(app.DEVELOPER)
+        section_data['experimental'] = bool(app.EXPERIMENTAL)
 
         section_data['git'] = {}
         section_data['git']['username'] = app.GIT_USERNAME

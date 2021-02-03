@@ -132,6 +132,7 @@ def config_main(monkeypatch, app_config):
     section_data['skipRemovedFiles'] = bool(app.SKIP_REMOVED_FILES)
     section_data['epDefaultDeletedStatus'] = app.EP_DEFAULT_DELETED_STATUS
     section_data['developer'] = bool(app.DEVELOPER)
+    section_data['experimental'] = bool(app.EXPERIMENTAL)
 
     section_data['git'] = {}
     section_data['git']['username'] = app.GIT_USERNAME

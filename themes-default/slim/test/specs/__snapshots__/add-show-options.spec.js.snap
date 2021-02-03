@@ -67,7 +67,8 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` disabled 1
               <p>
                 Download subtitles for this show?
               </p>
-               
+                
+              <!---->
             </div>
           </div>
         </div>
@@ -190,7 +191,8 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` disabled 1
             <p>
               Group episodes by season folders?
             </p>
-             
+              
+            <!---->
           </div>
         </div>
       </div>
@@ -232,7 +234,8 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` disabled 1
             <p>
               Is this show scene numbered?
             </p>
-             
+              
+            <!---->
           </div>
         </div>
       </div>
@@ -383,6 +386,8 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` disabled 1
             <span>
               If no list selected, the default 'series' will apply
             </span>
+             
+            <!---->
           </div>
         </div>
       </div>
@@ -486,7 +491,8 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` enabled 1`
               <p>
                 Download subtitles for this show?
               </p>
-               
+                
+              <!---->
             </div>
           </div>
         </div>
@@ -609,7 +615,8 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` enabled 1`
             <p>
               Group episodes by season folders?
             </p>
-             
+              
+            <!---->
           </div>
         </div>
       </div>
@@ -647,7 +654,8 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` enabled 1`
             <p>
               Is this show an Anime?
             </p>
-             
+              
+            <!---->
           </div>
         </div>
       </div>
@@ -687,7 +695,8 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` enabled 1`
             <p>
               Is this show scene numbered?
             </p>
-             
+              
+            <!---->
           </div>
         </div>
       </div>
@@ -838,6 +847,8 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` enabled 1`
             <span>
               If no list selected, the default 'series' will apply
             </span>
+             
+            <!---->
           </div>
         </div>
       </div>
