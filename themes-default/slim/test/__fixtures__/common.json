@@ -179,6 +179,7 @@
                 "skipRemovedFiles": false,
                 "epDefaultDeletedStatus": 6,
                 "developer": true,
+                "experimental": false,
                 "git": {
                     "username": "",
                     "password": "",

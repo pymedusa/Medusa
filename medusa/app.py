@@ -91,6 +91,8 @@ class MedusaApp(object):
         self.DAEMON = None
         self.NO_RESIZE = False
 
+        self.EXPERIMENTAL = False
+
         # system events
         self.events = None
 
