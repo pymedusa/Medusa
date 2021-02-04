@@ -252,6 +252,8 @@ class ConfigHandler(BaseRequestHandler):
         'postProcessing.downloadHandler.enabled': BooleanField(app, 'USE_DOWNLOAD_HANDLER'),
         'postProcessing.downloadHandler.frequency': IntegerField(app, 'DOWNLOAD_HANDLER_FREQUENCY'),
         'postProcessing.downloadHandler.minFrequency': IntegerField(app, 'MIN_DOWNLOAD_HANDLER_FREQUENCY'),
+        'postProcessing.downloadHandler.torrentSeedRatio': FloatField(app, 'TORRENT_SEED_RATIO'),
+        'postProcessing.downloadHandler.torrentSeedAction': StringField(app, 'TORRENT_SEED_ACTION'),
 
         'search.general.randomizeProviders': BooleanField(app, 'RANDOMIZE_PROVIDERS'),
         'search.general.downloadPropers': BooleanField(app, 'DOWNLOAD_PROPERS'),
@@ -1177,6 +1179,8 @@ class DataGenerator(object):
         section_data['downloadHandler']['enabled'] = bool(app.USE_DOWNLOAD_HANDLER)
         section_data['downloadHandler']['frequency'] = int_default(app.DOWNLOAD_HANDLER_FREQUENCY, app.DEFAULT_DOWNLOAD_HANDLER_FREQUENCY)
         section_data['downloadHandler']['minFrequency'] = int(app.MIN_DOWNLOAD_HANDLER_FREQUENCY)
+        section_data['downloadHandler']['torrentSeedRatio'] = float(app.TORRENT_SEED_RATIO)
+        section_data['downloadHandler']['torrentSeedAction'] = app.TORRENT_SEED_ACTION
 
         return section_data
 

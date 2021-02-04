@@ -264,6 +264,8 @@ class MedusaApp(object):
         self.CACHE_TRIMMING = None
         self.MAX_CACHE_AGE = None
         self.TORRENT_METHOD = None
+        self.TORRENT_SEED_RATIO = None
+        self.TORRENT_SEED_ACTION = None
         self.SAVE_MAGNET_FILE = False
         self._TORRENT_DIR = None
         self._DOWNLOAD_PROPERS = False

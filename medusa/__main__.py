@@ -953,6 +953,11 @@ class Application(object):
             app.OPENSUBTITLES_PASS = check_setting_str(app.CFG, 'Subtitles', 'opensubtitles_password', '', censor_log='low')
 
             app.USE_DOWNLOAD_HANDLER = bool(check_setting_int(app.CFG, 'DownloadHandler', 'use_download_handling', 0))
+            app.TORRENT_SEED_RATIO = float(check_setting_float(app.CFG, 'DownloadHandler', 'torrent_seed_ratio', 1.0))
+            app.TORRENT_SEED_ACTION = check_setting_str(
+                app.CFG, 'DownloadHandler', 'torrent_seed_action', '',
+                valid_values=('remove_after_process', 'remove_after_seeding', 'remove_with_data', 'pause_after_seeding', 'pause_after_process')
+            )
 
             app.USE_FAILED_DOWNLOADS = bool(check_setting_int(app.CFG, 'FailedDownloads', 'use_failed_downloads', 0))
             app.DELETE_FAILED = bool(check_setting_int(app.CFG, 'FailedDownloads', 'delete_failed', 0))
@@ -2037,6 +2042,8 @@ class Application(object):
 
         new_config['DownloadHandler'] = {}
         new_config['DownloadHandler']['use_download_handling'] = int(app.USE_DOWNLOAD_HANDLER)
+        new_config['DownloadHandler']['torrent_seed_ratio'] = float(app.TORRENT_SEED_RATIO)
+        new_config['DownloadHandler']['torrent_seed_action'] = app.TORRENT_SEED_ACTION
 
         new_config['FailedDownloads'] = {}
         new_config['FailedDownloads']['use_failed_downloads'] = int(app.USE_FAILED_DOWNLOADS)
