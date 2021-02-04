@@ -32,7 +32,7 @@
                             </div> <!-- end of col -->
                         </div> <!-- end of row -->
 
-                        <div class="row component-group">
+                        <div v-show="config.experimental" class="row component-group">
                             <div class="component-group-desc col-xs-12 col-md-2">
                                 <h3>Automated Download Handling</h3>
                                 <p>Check clients directly through api's for completed or failed downloads.</p>
@@ -52,6 +52,17 @@
                                         label="Download handler frequency" id="download_handler_frequency">
                                         <p>Frequency to check on the download clients (default: 60)</p>
                                     </config-textbox-number>
+
+                                    <config-textbox-number v-if="postprocessing.downloadHandler.enabled" v-model="postprocessing.downloadHandler.torrentSeedRatio" label="Global torrent seed ratio" id="torrent_seed_ratio" :step="0.1" :min="0" :max="100">
+                                        <p>Torrent seed ratio used to trigger a torrent seed action</p>
+                                    </config-textbox-number>
+
+                                    <config-template label-for="torrent_seed_action" label="Torrent seed action">
+                                        <select id="torrent_seed_action" name="torrent_seed_action" v-model="postprocessing.downloadHandler.torrentSeedAction" class="form-control input-sm">
+                                            <option :value="option.value" v-for="option in seedActions" :key="option.value">{{ option.text }}</option>
+                                        </select> 
+                                    </config-template>
+
                                 </fieldset>
                             </div> <!-- end of col -->
                         </div> <!-- end of row -->
@@ -316,6 +327,14 @@ export default {
                 { value: 'hardlink', text: 'Hard Link' },
                 { value: 'symlink', text: 'Symbolic Link' },
                 { value: 'keeplink', text: 'Keep Link' }
+            ],
+            seedActions: [
+                { value: '', text: 'No action'},
+                { value: 'remove_after_process', text: 'Remove torrent after Post-Process' },
+                { value: 'remove_after_seeding', text: 'Remove torrent after seed ratio reached' },
+                { value: 'remove_with_data', text: 'Remove torrent with data after seed ratio reached' },
+                { value: 'pause_after_process', text: 'Pause torrent after Post-Process' },
+                { value: 'pause_after_seeding', text: 'Pause torrent after seed ratio reached' }
             ],
             timezoneOptions: [
                 { value: 'local', text: 'Local' },
