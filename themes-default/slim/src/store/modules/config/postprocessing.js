@@ -39,7 +39,9 @@ const state = {
     downloadHandler: {
         enabled: null,
         frequency: null,
-        minFrequency: null
+        minFrequency: null,
+        torrentSeedRatio: null,
+        torrentSeedAction: null,
     }
 };
 
