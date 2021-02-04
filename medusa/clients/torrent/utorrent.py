@@ -195,10 +195,14 @@ class UTorrentAPI(GenericClient):
         })
 
     def _set_torrent_pause(self, result):
+        return self.pause_torrent(result.hash, 'stop' if app.TORRENT_PAUSED else 'start')
+
+    def pause_torrent(self, info_hash, state='stop'):
+        """Pause torrent."""
         return self._request(params={
             #  "stop" torrent, can always be resumed!
-            'action': 'stop' if app.TORRENT_PAUSED else 'start',
-            'hash': result.hash,
+            'action': state,
+            'hash': info_hash,
         })
 
     def remove_torrent(self, info_hash):

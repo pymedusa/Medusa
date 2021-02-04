@@ -203,7 +203,23 @@ class TransmissionAPI(GenericClient):
 
         return self.check_response()
 
-    def remove_torrent(self, info_hash):
+    def _set_torrent_pause(self, result):
+        if app.TORRENT_PAUSED:
+            self.pause_torrent(result.hash)
+        return True
+
+    def pause_torrent(self, info_hash):
+        """Pause torrent."""
+        post_data = json.dumps({
+            'arguments': {'ids': [info_hash]},
+            'method': 'torrent-stop'
+        })
+
+        self._request(method='post', data=post_data)
+
+        return self.check_response()
+
+    def remove_torrent(self, info_hash, delete_data=False):
         """Remove torrent from client using given info_hash.
 
         :param info_hash:
@@ -213,7 +229,7 @@ class TransmissionAPI(GenericClient):
         """
         arguments = {
             'ids': [info_hash],
-            'delete-local-data': 1,
+            'delete-local-data': int(delete_data),
         }
 
         post_data = json.dumps({

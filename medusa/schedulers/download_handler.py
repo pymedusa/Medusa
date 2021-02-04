@@ -53,6 +53,7 @@ class ClientStatusEnum(Enum):
     EXTRACTING = 1 << 6  # 64
     COMPLETED = 1 << 7  # 128
     POSTPROCESSED = 1 << 8  # 256
+    SEEDACTION = 1 << 9  # 512
 
 
 status_strings = {
@@ -67,6 +68,7 @@ status_strings = {
     ClientStatusEnum.COMPLETED: 'Completed',
     # Reserved for the Medusa postprocessing (not that of the client!).
     ClientStatusEnum.POSTPROCESSED: 'Postprocessed',
+    ClientStatusEnum.SEEDACTION: 'SeededAction'
 }
 
 
@@ -76,13 +78,15 @@ class ClientStatus(ConstsBitwize):
     CONSTANTS = ClientStatusEnum
     STRINGS = status_strings
 
-    def __init__(self):
+    def __init__(self, status_string=None):
         """Initialize ClientStatus object."""
         super(ClientStatus, self).__init__()
         self.ratio = 0.0
         self.progress = 0
         self.destination = ''
         self.resource = ''
+        if status_string:
+            self.set_status_string(status_string)
 
     @staticmethod
     def join_path(abs_path, file_name):
@@ -195,20 +199,77 @@ class DownloadHandler(object):
             ],
         ):
             status = client.get_status(history_result['info_hash'])
-            if status:
-                log.debug(
-                    'Found {client_type} (status {status}) on {client} with info_hash {info_hash}',
-                    {
-                        'client_type': client_type,
-                        'status': status,
-                        'client': app.TORRENT_METHOD if client_type == 'torrent' else app.NZB_METHOD,
-                        'info_hash': history_result['info_hash']
-                    }
-                )
-                self._postprocess(
-                    status.destination, history_result['info_hash'], status.resource,
-                    failed=str(status) == 'Failed'
-                )
+            if not status:
+                continue
+
+            log.debug(
+                'Found {client_type} (status {status}) on {client} with info_hash {info_hash}',
+                {
+                    'client_type': client_type,
+                    'status': status,
+                    'client': app.TORRENT_METHOD if client_type == 'torrent' else app.NZB_METHOD,
+                    'info_hash': history_result['info_hash']
+                }
+            )
+            self._postprocess(
+                status.destination, history_result['info_hash'], status.resource,
+                failed=str(status) == 'Failed'
+            )
+
+    def _check_torrent_ratio(self, client):
+        """Perform configured action after seed ratio reached (or by configuration)."""
+        if app.TORRENT_SEED_ACTION == '':
+            log.debug(
+                'No global ratio or provider ratio configured for {client}, skipping actions.',
+                {'client': client.name}
+            )
+            return
+
+        # The base ClienStatus to include in the query.
+        include = [
+            ClientStatusEnum.SEEDED.value,
+            ClientStatusEnum.SEEDED.value | ClientStatusEnum.POSTPROCESSED.value,
+            ClientStatusEnum.COMPLETED.value | ClientStatusEnum.POSTPROCESSED.value
+        ]
+
+        # Combine bitwize postprocessed + completed.
+        client_type = 'torrent' if isinstance(client, GenericClient) else 'nzb'
+
+        from medusa.providers import get_provider_module
+
+        for history_result in self._get_history_results_from_db(
+            client_type, include_status=include,
+        ):
+            provider_ratio = get_provider_module(history_result['provider']).provider.ratio
+            desired_ratio = provider_ratio or app.TORRENT_SEED_RATIO
+            if not desired_ratio:
+                continue
+
+            status = client.get_status(history_result['info_hash'])
+            if not status:
+                continue
+
+            if status.ratio < desired_ratio:
+                continue
+
+            log.debug(
+                'Ratio of ({ratio}) reached for torrent {info_hash}, starting action: {action}.',
+                {
+                    'ratio': status.ratio,
+                    'info_hash': history_result['info_hash'],
+                    'action': app.TORRENT_SEED_ACTION
+                }
+            )
+            hash = history_result['info_hash']
+            # Perform configured action.
+            if app.TORRENT_SEED_ACTION in ('remove_after_process', 'remove_after_seeding'):
+                # Remove torrent from client
+                client.remove_torrent(hash)
+            if app.TORRENT_SEED_ACTION in ('pause_after_process', 'pause_after_seeding'):
+                # Pause torrent on client
+                client.pause_torrent(hash)
+
+            self.save_status_to_history(history_result, ClientStatus('SeededAction'))
 
     def _check_torrents(self):
         """
@@ -223,6 +284,7 @@ class DownloadHandler(object):
 
         self._update_status(torrent_client)
         self._check_postprocess(torrent_client)
+        self._check_torrent_ratio(torrent_client)
 
     def _postprocess(self, path, info_hash, resource_name, failed=False):
         """Queue a postprocess action."""

@@ -140,7 +140,13 @@ class DelugeDAPI(GenericClient):
         return self.drpc.set_torrent_path(result.hash, path) if path else True
 
     def _set_torrent_pause(self, result):
-        return self.drpc.pause_torrent(result.hash) if app.TORRENT_PAUSED else True
+        if app.TORRENT_PAUSED:
+            return self.pause_torrent(result.hash)
+        return True
+
+    def pause_torrent(self, info_hash):
+        """Pause torrent."""
+        return self.drpc.pause_torrent(info_hash)
 
     def test_authentication(self):
         """Test connection using authentication.

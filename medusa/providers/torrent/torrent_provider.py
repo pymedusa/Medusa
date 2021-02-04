@@ -46,6 +46,10 @@ class TorrentProvider(GenericProvider):
         self.minseed = 0
         self.minleech = 0
 
+        # Ratio used for client actions when seed ratio reached.
+        # For example: Remove torrent when upload/download ratio (4.0) reached.
+        self.client_ratio = None
+
     def is_active(self):
         """Check if provider is enabled."""
         return bool(app.USE_TORRENTS) and self.is_enabled()

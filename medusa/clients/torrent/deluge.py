@@ -436,21 +436,23 @@ class DelugeAPI(GenericClient):
         return True
 
     def _set_torrent_pause(self, result):
-
+        """Pause torrent after adding, if setting app.TORRENT_PAUSED enabled."""
         if app.TORRENT_PAUSED:
-            post_data = json.dumps({
-                'method': 'core.pause_torrent',
-                'params': [
-                    [result.hash],
-                ],
-                'id': 9,
-            })
-
-            self._request(method='post', data=post_data)
-
-            return not self.response.json()['error']
-
+            return self.pause_torrent(result.hash)
         return True
+
+    def pause_torrent(self, info_hash):
+        """Pause a torrent by info_hash."""
+        post_data = json.dumps({
+            'method': 'core.pause_torrent',
+            'params': [
+                [info_hash],
+            ],
+            'id': 9,
+        })
+
+        self._request(method='post', data=post_data)
+        return not self.response.json()['error']
 
     def _torrent_properties(self, info_hash):
         """Get torrent properties."""
