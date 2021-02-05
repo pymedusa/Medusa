@@ -227,8 +227,6 @@ class DownloadHandler(object):
 
         # The base ClienStatus to include in the query.
         include = [
-            ClientStatusEnum.SEEDED.value,
-            ClientStatusEnum.SEEDED.value | ClientStatusEnum.POSTPROCESSED.value,
             ClientStatusEnum.COMPLETED.value | ClientStatusEnum.POSTPROCESSED.value
         ]
 
