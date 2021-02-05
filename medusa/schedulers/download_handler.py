@@ -235,12 +235,14 @@ class DownloadHandler(object):
         # Combine bitwize postprocessed + completed.
         client_type = 'torrent' if isinstance(client, GenericClient) else 'nzb'
 
-        from medusa.providers import get_provider_module
+        from medusa.providers import get_provider_class
+        from medusa.providers.generic_provider import GenericProvider
 
         for history_result in self._get_history_results_from_db(
             client_type, include_status=include,
         ):
-            provider_ratio = get_provider_module(history_result['provider']).provider.ratio
+            provider_id = GenericProvider.make_id(history_result['provider'])
+            provider_ratio = get_provider_class(provider_id).ratio
             desired_ratio = provider_ratio or app.TORRENT_SEED_RATIO
             if not desired_ratio:
                 continue
