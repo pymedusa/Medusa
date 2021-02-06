@@ -237,11 +237,10 @@ class DownloadHandler(object):
             'torrent', include_status=include,
         ):
             provider_id = GenericProvider.make_id(history_result['provider'])
-            log.debug('Retrieving ratio for provider {provider} with id: {provider_id}',
-                      {'provider': history_result['provider'], 'provider_id': provider_id})
-
             provider = get_provider_class(provider_id)
             if not provider:
+                log.debug('Skip provider {provider} with id: {provider_id}',
+                          {'provider': history_result['provider'], 'provider_id': provider_id})
                 continue
 
             provider_ratio = -1 if provider.ratio == '' else provider.ratio
