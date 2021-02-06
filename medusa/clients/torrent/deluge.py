@@ -277,7 +277,7 @@ class DelugeAPI(GenericClient):
 
         return not self.response.json()['error'] if self._request(method='post', data=post_data) else False
 
-    def remove_torrent(self, info_hash):
+    def _remove(self, info_hash, from_disk=False):
         """Remove torrent from client using given info_hash.
 
         :param info_hash:
@@ -289,13 +289,33 @@ class DelugeAPI(GenericClient):
             'method': 'core.remove_torrent',
             'params': [
                 info_hash,
-                True,
+                from_disk,
             ],
             'id': 5,
         })
 
         self._request(method='post', data=post_data)
         return not self.response.json()['error']
+
+    def remove_torrent(self, info_hash):
+        """Remove torrent from client using given info_hash.
+
+        :param info_hash:
+        :type info_hash: string
+        :return
+        :rtype: bool
+        """
+        return self._remove(logging.info)
+
+    def remove_torrent_data(self, info_hash):
+        """Remove torrent from client and disk using given info_hash.
+
+        :param info_hash:
+        :type info_hash: string
+        :return
+        :rtype: bool
+        """
+        return self._remove(info_hash, from_disk=True)
 
     def _set_torrent_label(self, result):
 

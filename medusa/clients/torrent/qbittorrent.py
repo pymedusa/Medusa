@@ -9,8 +9,8 @@ import os
 import time
 
 from medusa import app
-from medusa.schedulers.download_handler import ClientStatus
 from medusa.clients.torrent.generic import GenericClient
+from medusa.schedulers.download_handler import ClientStatus
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.auth import HTTPDigestAuth
@@ -247,24 +247,48 @@ class QBittorrentAPI(GenericClient):
         }
         return self._request(method='post', data=data, cookies=self.session.cookies)
 
-    def remove_torrent(self, info_hash):
+    def _remove(self, info_hash, from_disk=False):
         """Remove torrent from client using given info_hash.
 
-        :param info_hash:
+        :param info_hash: Info hash
         :type info_hash: string
+        :param from_disk:
+        :type from_disk: boolean
         :return
         :rtype: bool
         """
         data = {
             'hashes': info_hash.lower(),
         }
+        if from_disk:
+            data['deleteFiles'] = True
+
         if self.api >= (2, 0, 0):
             self.url = urljoin(self.host, 'api/v2/torrents/delete')
-            data['deleteFiles'] = True
         else:
             self.url = urljoin(self.host, 'command/deletePerm')
 
         return self._request(method='post', data=data, cookies=self.session.cookies)
+
+    def remove_torrent(self, info_hash):
+        """Remove torrent from client and disk using given info_hash.
+
+        :param info_hash:
+        :type info_hash: string
+        :return
+        :rtype: bool
+        """
+        return self._remove(info_hash)
+
+    def remove_torrent_data(self, info_hash):
+        """Remove torrent from client and disk using given info_hash.
+
+        :param info_hash:
+        :type info_hash: string
+        :return
+        :rtype: bool
+        """
+        return self._remove(info_hash, from_disk=True)
 
     @ttl_cache(60.0)
     def _get_torrents(self, filter=None, category=None, sort=None):

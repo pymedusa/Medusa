@@ -142,6 +142,20 @@ class RTorrentAPI(GenericClient):
 
         return torrent.pause()
 
+    def remove_torrent(self, info_hash):
+        """Get torrent and remove."""
+        log.info('Removing {client} torrent {hash} status.', {'client': self.name, 'hash': info_hash})
+        if not self._get_auth():
+            return False
+
+        torrent = self.auth.find_torrent(info_hash.upper())
+
+        if not torrent:
+            log.debug('Could not locate torrent with {hash} status.', {'hash': info_hash})
+            return
+
+        return torrent.erase()
+
     def _torrent_properties(self, info_hash):
         """Get torrent properties."""
         log.info('Checking {client} torrent {hash} status.', {'client': self.name, 'hash': info_hash})

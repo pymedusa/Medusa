@@ -205,6 +205,22 @@ class UTorrentAPI(GenericClient):
             'hash': info_hash,
         })
 
+    def _remove(self, info_hash, from_disk=False):
+        """Remove torrent from client using given info_hash.
+
+        :param info_hash:
+        :type info_hash: string
+        :param from_disk:
+        :type from_disk:
+        :return
+        :rtype: bool
+        """
+        action = 'remove' if not from_disk else 'removedatatorrent'
+        return self._request(params={
+            'action': action,
+            'hash': info_hash,
+        })
+
     def remove_torrent(self, info_hash):
         """Remove torrent from client using given info_hash.
 
@@ -213,10 +229,17 @@ class UTorrentAPI(GenericClient):
         :return
         :rtype: bool
         """
-        return self._request(params={
-            'action': 'removedatatorrent',
-            'hash': info_hash,
-        })
+        return self._remove(info_hash)
+
+    def remove_torrent_data(self, info_hash):
+        """Remove torrent from client and disk using given info_hash.
+
+        :param info_hash:
+        :type info_hash: string
+        :return
+        :rtype: bool
+        """
+        return self._remove(info_hash, from_disk=True)
 
     @ttl_cache(60.0)
     def _get_torrents(self):
@@ -336,6 +359,10 @@ class UTorrentAPI(GenericClient):
 
         if torrent[1] & 1 and torrent[4] == 1000:
             client_status.set_status_string('Completed')
+
+        if torrent[1] == 152:  # Checked + Error + Loaded
+            # Probably torrent removed.
+            client_status.set_status_string('Aborted')
 
         # Store ratio
         client_status.ratio = torrent[7] / 1000

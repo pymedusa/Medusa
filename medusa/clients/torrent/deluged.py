@@ -316,25 +316,6 @@ class DelugeRPC(object):
         else:
             return True
 
-    def remove_torrent_data(self, torrent_id):
-        """Remove torrent from client using given info_hash.
-
-        :param torrent_id:
-        :type torrent_id: str
-        :return:
-        :rtype: str or bool
-        """
-        try:
-            self.connect()
-            self.client.core.remove_torrent(torrent_id, True)
-        except Exception:
-            return False
-        else:
-            return True
-        finally:
-            if self.client:
-                self.disconnect()
-
     def move_storage(self, torrent_id, location):
         """Move torrent to new location and return torrent id/hash.
 
@@ -483,6 +464,44 @@ class DelugeRPC(object):
             self.connect()
             self.client.core.set_torrent_stop_at_ratio(torrent_id, True)
             self.client.core.set_torrent_stop_ratio(torrent_id, ratio)
+        except Exception:
+            return False
+        else:
+            return True
+        finally:
+            if self.client:
+                self.disconnect()
+
+    def remove_torrent_data(self, torrent_id):
+        """Remove torrent from client and disk using given info_hash.
+
+        :param torrent_id:
+        :type torrent_id: str
+        :return:
+        :rtype: str or bool
+        """
+        try:
+            self.connect()
+            self.client.core.remove_torrent(torrent_id, True)
+        except Exception:
+            return False
+        else:
+            return True
+        finally:
+            if self.client:
+                self.disconnect()
+
+    def remove_torrent(self, torrent_id):
+        """Remove torrent from client using given info_hash.
+
+        :param torrent_id:
+        :type torrent_id: str
+        :return:
+        :rtype: str or bool
+        """
+        try:
+            self.connect()
+            self.client.core.remove_torrent(torrent_id, False)
         except Exception:
             return False
         else:

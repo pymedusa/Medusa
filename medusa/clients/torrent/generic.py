@@ -330,6 +330,26 @@ class GenericClient(object):
         """
         raise NotImplementedError
 
+    def remove_torrent_data(self, info_hash):
+        """Remove torrent from client and from disk.
+
+        :param info_hash:
+        :type info_hash: string
+        :return
+        :rtype: bool
+        """
+        raise NotImplementedError
+
+    def pause_torrent(self, info_hash):
+        """Pause torrent.
+
+        :param info_hash:
+        :type info_hash: string
+        :return
+        :rtype: bool
+        """
+        raise NotImplementedError
+
     def remove_ratio_reached(self):
         """Remove all Medusa torrents that ratio was reached.
 
