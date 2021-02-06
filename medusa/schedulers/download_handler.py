@@ -230,14 +230,11 @@ class DownloadHandler(object):
             ClientStatusEnum.COMPLETED.value | ClientStatusEnum.POSTPROCESSED.value
         ]
 
-        # Combine bitwize postprocessed + completed.
-        client_type = 'torrent' if isinstance(client, GenericClient) else 'nzb'
-
         from medusa.providers import get_provider_class
         from medusa.providers.generic_provider import GenericProvider
 
         for history_result in self._get_history_results_from_db(
-            client_type, include_status=include,
+            'torrent', include_status=include,
         ):
             provider_id = GenericProvider.make_id(history_result['provider'])
             log.debug('Retrieving ratio for provider {provider} with id: {provider_id}',
