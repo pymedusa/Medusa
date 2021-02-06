@@ -956,7 +956,7 @@ class Application(object):
             app.TORRENT_SEED_RATIO = float(check_setting_float(app.CFG, 'DownloadHandler', 'torrent_seed_ratio', 1.0))
             app.TORRENT_SEED_ACTION = check_setting_str(
                 app.CFG, 'DownloadHandler', 'torrent_seed_action', '',
-                valid_values=('remove_after_process', 'remove_after_seeding', 'remove_with_data', 'pause_after_seeding', 'pause_after_process')
+                valid_values=('remove', 'pause', 'remove_with_data')
             )
 
             app.USE_FAILED_DOWNLOADS = bool(check_setting_int(app.CFG, 'FailedDownloads', 'use_failed_downloads', 0))
