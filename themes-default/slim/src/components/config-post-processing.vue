@@ -60,7 +60,8 @@
                                     <config-template label-for="torrent_seed_action" label="Torrent seed action">
                                         <select id="torrent_seed_action" name="torrent_seed_action" v-model="postprocessing.downloadHandler.torrentSeedAction" class="form-control input-sm">
                                             <option :value="option.value" v-for="option in seedActions" :key="option.value">{{ option.text }}</option>
-                                        </select> 
+                                        </select>
+                                        <p>Setting the ratio to 0, will have it perform the action directly after postprocessing.)</p>
                                     </config-template>
 
                                 </fieldset>
@@ -330,11 +331,9 @@ export default {
             ],
             seedActions: [
                 { value: '', text: 'No action'},
-                { value: 'remove_after_process', text: 'Remove torrent after Post-Process' },
-                { value: 'remove_after_seeding', text: 'Remove torrent after seed ratio reached' },
-                { value: 'remove_with_data', text: 'Remove torrent with data after seed ratio reached' },
-                { value: 'pause_after_process', text: 'Pause torrent after Post-Process' },
-                { value: 'pause_after_seeding', text: 'Pause torrent after seed ratio reached' }
+                { value: 'remove', text: 'Remove torrent' },
+                { value: 'remove_with_data', text: 'Remove torrent with data' },
+                { value: 'pause', text: 'Pause torrent' }
             ],
             timezoneOptions: [
                 { value: 'local', text: 'Local' },

@@ -241,16 +241,22 @@ class DownloadHandler(object):
         ):
             provider_id = GenericProvider.make_id(history_result['provider'])
             provider_ratio = get_provider_class(provider_id).ratio
-            desired_ratio = provider_ratio or app.TORRENT_SEED_RATIO
-            if not desired_ratio:
+            desired_ratio = provider_ratio if provider_ratio > -1 else app.TORRENT_SEED_RATIO
+
+            if desired_ratio == -1:
+                # Not sure if this option is of use.
                 continue
 
             status = client.get_status(history_result['info_hash'])
             if not status:
                 continue
 
-            if status.ratio < desired_ratio:
+            action_after_seeding = desired_ratio * 1.0 > 0.0
+            if status.ratio < desired_ratio * action_after_seeding:
                 continue
+
+            if not action_after_seeding:
+                log.debug('Action after seeding disabled')
 
             log.debug(
                 'Ratio of ({ratio}) reached for torrent {info_hash}, starting action: {action}.',
@@ -262,12 +268,17 @@ class DownloadHandler(object):
             )
             hash = history_result['info_hash']
             # Perform configured action.
-            if app.TORRENT_SEED_ACTION in ('remove_after_process', 'remove_after_seeding'):
+            if app.TORRENT_SEED_ACTION == 'remove':
                 # Remove torrent from client
                 client.remove_torrent(hash)
-            if app.TORRENT_SEED_ACTION in ('pause_after_process', 'pause_after_seeding'):
+            elif app.TORRENT_SEED_ACTION == 'pause':
                 # Pause torrent on client
                 client.pause_torrent(hash)
+            elif app.TORRENT_SEED_ACTION == 'remove_with_data':
+                pass
+            else:
+                log.debug('Invalid action {action}', {'action': app.TORRENT_SEED_ACTION})
+                continue
 
             self.save_status_to_history(history_result, ClientStatus('SeededAction'))
 

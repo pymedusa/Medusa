@@ -1106,7 +1106,7 @@ class Application(object):
                     load_provider_setting(app.CFG, provider, 'string', 'pin', '', censor_log='low')
                     load_provider_setting(app.CFG, provider, 'string', 'sorting', 'seeders')
                     load_provider_setting(app.CFG, provider, 'string', 'options', '')
-                    load_provider_setting(app.CFG, provider, 'string', 'ratio', '')
+                    load_provider_setting(app.CFG, provider, 'int', 'ratio', -1)
                     load_provider_setting(app.CFG, provider, 'bool', 'confirmed', 1)
                     load_provider_setting(app.CFG, provider, 'bool', 'ranked', 1)
                     load_provider_setting(app.CFG, provider, 'bool', 'engrelease', 0)

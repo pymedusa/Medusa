@@ -28,7 +28,7 @@ from builtins import str
 
 from contextlib2 import suppress
 
-from medusa import common, db, helpers, logger, naming
+from medusa import common, db, helpers, logger, naming, providers
 from medusa.app import app
 from medusa.helper.common import try_int
 from medusa.helpers.utils import split_and_strip
@@ -799,12 +799,13 @@ class ConfigMigrator(object):
             7: 'Use version 2 for password encryption',
             8: 'Convert Plex setting keys',
             9: 'Added setting "enable_manualsearch" for providers (dynamic setting)',
-            10: 'Convert all csv config items to lists'
+            10: 'Convert all csv config items to lists',
+            11: 'Convert provider ratio type string to int'
         }
 
     def migrate_config(self):
         """
-        Calls each successive migration until the config is the same version as SB expects
+        Calls each successive migration until the config is the same version as the app expects
         """
 
         if self.config_version > self.expected_config_version:
@@ -820,7 +821,7 @@ class ConfigMigrator(object):
             next_version = self.config_version + 1
 
             if next_version in self.migration_names:
-                migration_name = ': ' + self.migration_names[next_version]
+                migration_name = f': {self.migration_names[next_version]}'
             else:
                 migration_name = ''
 
@@ -1246,3 +1247,15 @@ class ConfigMigrator(object):
             app.NEWZNAB_PROVIDERS = [make_id(provider.name) for provider in app.newznabProviderList if not provider.default]
         except KeyError:
             app.NEWZNAB_PROVIDERS = []
+
+    def _migrate_v11(self):
+        """Convert all ratio values for torrent providers when '' -> -1."""
+        from medusa.providers.generic_provider import GenericProvider
+
+        all_providers = providers.sorted_provider_list()
+        for provider in all_providers:
+            if provider.provider_type == GenericProvider.TORRENT:
+                if provider.ratio == '':
+                    provider.ratio = -1
+                elif isinstance(provider.ratio, str):
+                    provider.ratio = int(provider.ratio)

@@ -72,7 +72,7 @@ class MedusaApp(object):
         self.CONFIG_FILE = None
 
         # This is the version of the config we EXPECT to find
-        self.CONFIG_VERSION = 10
+        self.CONFIG_VERSION = 11
 
         # Default encryption version (0 for None)
         self.ENCRYPTION_VERSION = 0
