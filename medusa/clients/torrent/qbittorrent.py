@@ -239,7 +239,7 @@ class QBittorrentAPI(GenericClient):
 
     def pause_torrent(self, info_hash, state='pause'):
         """Pause torrent."""
-        command = 'api/v2/torrents' if api >= (2, 0, 0) else 'command'
+        command = 'api/v2/torrents' if self.api >= (2, 0, 0) else 'command'
         hashes_key = 'hashes' if self.api >= (1, 18, 0) else 'hash'
         self.url = urljoin(self.host, '{command}/{state}'.format(command=command, state=state))
         data = {
