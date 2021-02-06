@@ -240,7 +240,11 @@ class DownloadHandler(object):
             client_type, include_status=include,
         ):
             provider_id = GenericProvider.make_id(history_result['provider'])
+            log.debug('Retrieving ratio for provider {provider} with id: {provider_id}',
+                      {'provider': history_result['provider'], 'provider_id': provider_id})
+
             provider_ratio = get_provider_class(provider_id).ratio
+            provider_ratio = -1 if provider_ratio == '' else provider_ratio
             desired_ratio = provider_ratio if provider_ratio > -1 else app.TORRENT_SEED_RATIO
 
             if desired_ratio == -1:
@@ -275,7 +279,8 @@ class DownloadHandler(object):
                 # Pause torrent on client
                 client.pause_torrent(hash)
             elif app.TORRENT_SEED_ACTION == 'remove_with_data':
-                pass
+                # Remove torrent and all files from disk (not implemented for each client!)
+                client.remove_torrent_data(hash)
             else:
                 log.debug('Invalid action {action}', {'action': app.TORRENT_SEED_ACTION})
                 continue

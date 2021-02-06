@@ -329,12 +329,6 @@ export default {
                 { value: 'symlink', text: 'Symbolic Link' },
                 { value: 'keeplink', text: 'Keep Link' }
             ],
-            seedActions: [
-                { value: '', text: 'No action'},
-                { value: 'remove', text: 'Remove torrent' },
-                { value: 'remove_with_data', text: 'Remove torrent with data' },
-                { value: 'pause', text: 'Pause torrent' }
-            ],
             timezoneOptions: [
                 { value: 'local', text: 'Local' },
                 { value: 'network', text: 'Network' }
@@ -449,6 +443,7 @@ export default {
             config: state => state.config.general,
             metadata: state => state.config.metadata,
             postprocessing: state => state.config.postprocessing,
+            torrentMethod: state => state.config.clients.torrents.method,
             system: state => state.config.system
         }),
         configLoaded() {
@@ -464,6 +459,20 @@ export default {
                 value: Number(k),
                 text: postprocessing.multiEpStrings[k]
             }));
+        },
+        seedActions() {
+            const { postprocessing, torrentMethod } = this;
+            let actions = [
+                { value: '', text: 'No action'},
+                { value: 'remove', text: 'Remove torrent' },
+                { value: 'pause', text: 'Pause torrent' }
+            ];
+            const remove_with_data = [{ value: 'remove_with_data', text: 'Remove torrent with data' }];
+
+            if (!['rtorrent'].includes(torrentMethod)) {
+                actions = [...actions, ...remove_with_data]
+            }
+            return actions
         }
     },
     beforeMount() {
