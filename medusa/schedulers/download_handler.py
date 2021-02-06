@@ -240,8 +240,11 @@ class DownloadHandler(object):
             log.debug('Retrieving ratio for provider {provider} with id: {provider_id}',
                       {'provider': history_result['provider'], 'provider_id': provider_id})
 
-            provider_ratio = get_provider_class(provider_id).ratio
-            provider_ratio = -1 if provider_ratio == '' else provider_ratio
+            provider = get_provider_class(provider_id)
+            if not provider:
+                continue
+
+            provider_ratio = -1 if provider.ratio == '' else provider.ratio
             desired_ratio = provider_ratio if provider_ratio > -1 else app.TORRENT_SEED_RATIO
 
             if desired_ratio == -1:
