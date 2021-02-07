@@ -408,7 +408,7 @@ class ProcessResult(object):
                 if helpers.is_media_file(each_file) or helpers.is_rar_file(each_file):
                     return True
             # Stop at first subdirectories if post-processing path
-            if self.directory == path:
+            if self.directory == path and not self.resource_name:
                 break
 
         self.log_and_output('No processable items found in folder: {path}', level=logging.DEBUG, **{'path': path})

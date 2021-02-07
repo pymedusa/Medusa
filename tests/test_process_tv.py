@@ -310,7 +310,17 @@ def test__process_postponed(monkeypatch, p, create_structure):
             'show.name.102.hdtv.x264-lol.mkv',
             'show.name.103.hdtv.x264-lol.en.srt',
         )
-    }
+    },
+    {   # path is TV_DOWNLOAD_DIR and NO_DELETE is True, folder should be kept
+        'path': 'media/postprocess',
+        'resource_name': 'show.name.103.hdtv.x264-lol.1',
+        'expected': ['show.name.103.hdtv.x264-lol.mkv'],
+        'structure': (
+            {'show.name.103.hdtv.x264-lol.1': (
+                'show.name.103.hdtv.x264-lol.mkv',
+            )},
+        )
+    },
 ])
 def test__process(monkeypatch, p, create_structure):
     """Run the test."""
@@ -420,7 +430,7 @@ def test__process(monkeypatch, p, create_structure):
         'process_method': 'move',
         'unwanted_files': ['readme.txt'],
         'no_delete': True
-    },
+    }
 ])
 def test__clean_up(monkeypatch, p, create_structure):
     """Run the test."""
