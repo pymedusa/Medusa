@@ -45,11 +45,6 @@
                                         <p>time in minutes between searches (min. {{search.general.minDailySearchFrequency}})</p>
                                     </config-textbox-number>
 
-                                    <config-toggle-slider v-if="clientsConfig.torrent[clients.torrents.method]" v-show="clientsConfig.torrent[clients.torrents.method].removeFromClientOption" v-model="search.general.removeFromClient" label="Remove torrents from client" id="remove_from_client">
-                                        <p>Remove torrent from client (also torrent data) when provider ratio is reached</p>
-                                        <p><b>Note:</b> For now only Transmission and Deluge are supported</p>
-                                    </config-toggle-slider>
-
                                     <config-textbox-number :min="1" :step="1" v-model.number="search.general.usenetRetention" label="Usenet retention" id="usenet_retention" :explanations="['age limit in days for usenet articles to be used (e.g. 500)']" />
 
                                     <config-template label-for="trackers_list" label="Trackers list">
