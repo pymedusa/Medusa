@@ -1,10 +1,10 @@
 <template>
-    <div class="current-downloads-wrapper">
+    <div class="history-wrapper">
         <div class="row horizontal-scroll" :class="{ fanartBackground: layout.fanartBackground }">
-            <div class="vgt-table-styling col-md-12 top-15">
+            <div class="col-md-12 top-15">
                 <vue-good-table v-show="history.length > 0"
                                 :columns="columns"
-                                :rows="filterHistory"
+                                :rows="history"
                                 :search-options="{
                                     enabled: false
                                 }"
@@ -16,7 +16,7 @@
                                     enabled: true
                                 }"
                                 styleClass="vgt-table condensed"
-                                
+                                :row-style-class="rowStyleClassFn"
                 >
                     <template slot="table-row" slot-scope="props">
 
@@ -161,11 +161,7 @@ export default {
         }),
         ...mapGetters({
             fuzzyParseDateTime: 'fuzzyParseDateTime'
-        }),
-        filterHistory() {
-            const { history } = this;
-            return history.filter(row => row.clientStatus);
-        }
+        })
     },
     methods: {
         humanFileSize,
@@ -185,4 +181,5 @@ export default {
     }
 };
 </script>
-<style scoped src='../style/vgt-table.css' />
+<style scoped>
+</style>
