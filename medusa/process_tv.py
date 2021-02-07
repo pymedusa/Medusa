@@ -456,10 +456,10 @@ class ProcessResult(object):
                 resource: [ReleaseGroup] Show Title (01-12) [1080p]
             """
             self.log_and_output(
-                'Using Resource [{name}] to process as a source folder',
+                'Same path and resource detected, using path [{name}] to process as a source folder',
                 level=logging.DEBUG,
-                **{'name': self.resource_name})
-            walk_path(combine_path)
+                **{'name': path})
+            walk_path(path)
             return
 
         if self.resource_name and self.resource_name.endswith('.nzb'):
@@ -475,7 +475,7 @@ class ProcessResult(object):
             walk_path(path)
             return
 
-        if self.path and not self.resource_name:
+        if path and not self.resource_name:
             """Example:
                 path: /downloads/completed
                 resource: ""
@@ -497,7 +497,7 @@ class ProcessResult(object):
                 note! resource is a file.
             """
             self.log_and_output(
-                'Using Resource [{name}] to process as a single file',
+                'File detected, Using Resource [{name}] to process as a single file',
                 level=logging.DEBUG,
                 **{'name': self.resource_name})
             yield path, [self.resource_name]
