@@ -243,7 +243,7 @@ class QBittorrentAPI(GenericClient):
         hashes_key = 'hashes' if self.api >= (1, 18, 0) else 'hash'
         self.url = urljoin(self.host, '{command}/{state}'.format(command=command, state=state))
         data = {
-            hashes_key: info_hash.lower(),
+            hashes_key: info_hash.lower()
         }
         return self._request(method='post', data=data, cookies=self.session.cookies)
 
@@ -260,8 +260,8 @@ class QBittorrentAPI(GenericClient):
         data = {
             'hashes': info_hash.lower(),
         }
-        if from_disk:
-            data['deleteFiles'] = True
+
+        data['deleteFiles'] = from_disk
 
         if self.api >= (2, 0, 0):
             self.url = urljoin(self.host, 'api/v2/torrents/delete')
