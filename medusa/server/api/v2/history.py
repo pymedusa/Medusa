@@ -32,7 +32,8 @@ class HistoryHandler(BaseRequestHandler):
         sql_base = """
             SELECT rowid, date, action, quality,
                    provider, version, resource, size, proper_tags,
-                   indexer_id, showid, season, episode, manually_searched, info_hash
+                   indexer_id, showid, season, episode, manually_searched,
+                   info_hash, provider_type, client_status, part_of_batch
             FROM history
         """
         params = []
@@ -94,10 +95,13 @@ class HistoryHandler(BaseRequestHandler):
                     'manuallySearched': bool(item['manually_searched']),
                     'infoHash': item['info_hash'],
                     'provider': provider,
-                    'release_name': release_name,
+                    'releaseName': release_name,
                     'releaseGroup': release_group,
                     'fileName': file_name,
-                    'subtitleLanguage': subtitle_language
+                    'subtitleLanguage': subtitle_language,
+                    'providerType': item['provider_type'],
+                    'clientStatus': item['client_status'],
+                    'partOfBatch': bool(item['part_of_batch'])
                 }
 
         if not results:
