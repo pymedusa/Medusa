@@ -516,8 +516,8 @@ class ProcessResult(object):
             Collect new video files. -> self.video_in_rar
             List unwanted files -> self.unwanted_files
         :param path: Path to start looking for rar/video files.
-        :param files:
-
+        :param files: Array of files.
+        """
         video_files = []
         rar_files = []
         for each_file in files:
