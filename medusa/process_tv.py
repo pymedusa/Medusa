@@ -431,34 +431,76 @@ class ProcessResult(object):
     def _get_files(self, path):
         """Return the path to a folder and its contents as a tuple."""
         # If resource_name is a file and not an NZB, process it directly
-        resource_name_is_folder = os.path.isdir(os.path.join(path, self.resource_name)) if self.resource_name else None
-        if self.resource_name and not self.resource_name.endswith('.nzb') and not resource_name_is_folder:
-            if os.path.isfile(os.path.join(path, self.resource_name)):
-                self.log_and_output(
-                    'Using Resource [{name}] to process as a single file',
-                    level=logging.DEBUG,
-                    **{'name': self.resource_name})
-                yield path, [self.resource_name]
-            else:
-                self.log_and_output(
-                    'Resource file {name} was not found!',
-                    level=logging.DEBUG,
-                    **{'name': self.resource_name})
-        else:
-            if resource_name_is_folder:
-                self.log_and_output(
-                    'Using Resource [{name}] to process as a source folder',
-                    level=logging.DEBUG,
-                    **{'name': self.resource_name})
-                path = os.path.join(path, self.resource_name)
-
-            topdown = True if self.directory == path else False
+        def walk_path(path_name):
+            topdown = True if self.directory == path_name else False
             for root, dirs, files in os.walk(path, topdown=topdown):
                 if files:
                     yield root, sorted(files)
                 if topdown:
                     break
                 del dirs  # unused variable
+
+        combine_path = path
+        path_and_resource_is_folder = None
+        if self.resource_name:
+            combine_path = os.path.join(path, self.resource_name)
+            path_and_resource_is_folder = os.path.isdir(combine_path)
+
+        if path_and_resource_is_folder:
+            walk_path(combine_path)
+            return
+
+        if not path_and_resource_is_folder and os.path.isdir(path) and os.path.basename(path) == self.resource_name:
+            """Example:
+                path: /downloads/completed/[ReleaseGroup] Show Title (01-12) [1080p]
+                resource: [ReleaseGroup] Show Title (01-12) [1080p]
+            """
+            self.log_and_output(
+                'Using Resource [{name}] to process as a source folder',
+                level=logging.DEBUG,
+                **{'name': self.resource_name})
+            walk_path(combine_path)
+            return
+
+        if self.resource_name and self.resource_name.endswith('.nzb'):
+            """Example:
+                path: /downloads/completed/[ReleaseGroup] Show Title (01-12) [1080p]
+                resource: [ReleaseGroup] Show Title (01-12) [1080p].nzb
+                note! resource is a folder.
+            """
+            self.log_and_output(
+                'Nzb folder detected, using path [{name}] to process as a source folder',
+                level=logging.DEBUG,
+                **{'name': path})
+            walk_path(path)
+            return
+
+        if self.path and not self.resource_name:
+            """Example:
+                path: /downloads/completed
+                resource: ""
+                note! resource is a folder.
+            """
+
+            self.log_and_output(
+                'No resource_name passed, using path [{name}] to process as a source folder',
+                level=logging.DEBUG,
+                **{'name': path})
+            walk_path(path)
+            return
+
+        # Process as a file
+        if os.path.isfile(combine_path):
+            """Example:
+                path: /downloads/completed
+                resource: [ReleaseGroup] Show Title S01E12 [1080p].mkv
+                note! resource is a file.
+            """
+            self.log_and_output(
+                'Using Resource [{name}] to process as a single file',
+                level=logging.DEBUG,
+                **{'name': self.resource_name})
+            yield path, [self.resource_name]
 
     def prepare_files(self, path, files, force=False):
         """
@@ -469,8 +511,8 @@ class ProcessResult(object):
             Collect new video files. -> self.video_in_rar
             List unwanted files -> self.unwanted_files
         :param path: Path to start looking for rar/video files.
-        :param files: 
-        """
+        :param files:
+
         video_files = []
         rar_files = []
         for each_file in files:
