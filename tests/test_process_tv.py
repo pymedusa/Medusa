@@ -57,10 +57,10 @@ def test_should_process(p, create_structure):
     # Given
     test_path = create_structure(p['path'], structure=p['structure'])
     path = os.path.join(test_path, os.path.normcase(p['path']))
-    sut = ProcessResult(path)
+    sut = ProcessResult(path, failed=p['failed'])
 
     # When
-    result = sut.should_process(path, p['failed'])
+    result = sut.should_process(path)
 
     # Then
     assert p['expected'] == result
@@ -119,7 +119,7 @@ def test_paths(monkeypatch, p, create_structure):
 
     # Then
     for result_path in result:
-        assert os.path.join(test_path, os.path.normcase(p['expected'])) == result_path
+        assert os.path.join(test_path, os.path.normcase(p['expected'])).lower() == result_path.lower()
 
 
 @pytest.mark.parametrize('p', [
@@ -292,6 +292,17 @@ def test__process_postponed(monkeypatch, p, create_structure):
     {   # Resource name given, resource is nzb
         'path': 'media/postprocess/complete',
         'resource_name': 'show.name.103.hdtv.x264-lol.nzb',
+        'expected': ['show.name.101.hdtv.x264-lol.mkv',
+                     'show.name.102.hdtv.x264-lol.mkv'],
+        'structure': (
+            'show.name.101.hdtv.x264-lol.mkv',
+            'show.name.102.hdtv.x264-lol.mkv',
+            'show.name.103.hdtv.x264-lol.en.srt',
+        )
+    },
+    {   # Resource name given, resource is the same as path basename.
+        'path': 'media/postprocess/complete/show.name.103.hdtv.x264-lol',
+        'resource_name': 'show.name.103.hdtv.x264-lol',
         'expected': ['show.name.101.hdtv.x264-lol.mkv',
                      'show.name.102.hdtv.x264-lol.mkv'],
         'structure': (
