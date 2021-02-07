@@ -123,14 +123,17 @@ class PostProcessQueueItem(generic_queue.QueueItem):
             status.add_status_string('Postprocessed')
 
             # Store a bitwize combined status in db.history.
-            # If succeeded store Postprocessed + Completed. (384)
-            # If failed store Postprocessed + Failed. (272)
-            if process_results.result:
-                status.add_status_string('Completed')
-                self.success = True
-            else:
-                status.add_status_string('Failed')
-                self.success = False
+
+            # Postpone the process, and setting the client_status.
+            if not process_results.postpone:
+                # If succeeded store Postprocessed + Completed. (384)
+                # If failed store Postprocessed + Failed. (272)
+                if process_results.result:
+                    status.add_status_string('Completed')
+                    self.success = True
+                else:
+                    status.add_status_string('Failed')
+                    self.success = False
 
             self.update_resource(status)
 
@@ -214,6 +217,7 @@ class ProcessResult(object):
         self.unwanted_files = []
         self.allowed_extensions = app.ALLOWED_EXTENSIONS
         self.process_file = False
+        self.postpone = False
 
     @property
     def directory(self):
@@ -310,9 +314,6 @@ class ProcessResult(object):
             self.result = True
 
             for dir_path, filelist in self._get_files(path):
-                # Keep track if processed anything.
-                processed_items = True
-
                 sync_files = (filename
                               for filename in filelist
                               if is_sync_file(filename))
@@ -326,8 +327,10 @@ class ProcessResult(object):
                     self.process_files(dir_path, force=force, is_priority=is_priority,
                                        ignore_subs=ignore_subs)
                     self._clean_up(dir_path, proc_type, delete=delete_on)
-
+                    # Keep track if processed anything.
+                    processed_items = True
                 else:
+                    self.postpone = True  # Flagging it, so we can handle it in the DOWNLOADHANDLER.
                     self.log_and_output('Found temporary sync files in folder: {dir_path}', **{'dir_path': dir_path})
                     self.log_and_output('Skipping post-processing for folder: {dir_path}', **{'dir_path': dir_path})
 
