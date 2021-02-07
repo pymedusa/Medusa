@@ -235,7 +235,7 @@ class QBittorrentAPI(GenericClient):
         return ok
 
     def _set_torrent_pause(self, result):
-        self.pause_torrent(result.hash, 'pause' if app.TORRENT_PAUSED else 'resume')
+        return self.pause_torrent(result.hash, state='pause' if app.TORRENT_PAUSED else 'resume')
 
     def pause_torrent(self, info_hash, state='pause'):
         """Pause torrent."""
