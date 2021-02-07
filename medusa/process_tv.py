@@ -466,7 +466,7 @@ class ProcessResult(object):
             """Example:
                 path: /downloads/completed/[ReleaseGroup] Show Title (01-12) [1080p]
                 resource: [ReleaseGroup] Show Title (01-12) [1080p].nzb
-                note! resource is a folder.
+                note! resource is not a folder or file!
             """
             self.log_and_output(
                 'Nzb folder detected, using path [{name}] to process as a source folder',
@@ -479,9 +479,7 @@ class ProcessResult(object):
             """Example:
                 path: /downloads/completed
                 resource: ""
-                note! resource is a folder.
             """
-
             self.log_and_output(
                 'No resource_name passed, using path [{name}] to process as a source folder',
                 level=logging.DEBUG,
@@ -501,6 +499,13 @@ class ProcessResult(object):
                 level=logging.DEBUG,
                 **{'name': self.resource_name})
             yield path, [self.resource_name]
+            return
+
+        # Catch all
+        self.log_and_output(
+            'Could not get a valid path or file for processing. path: [{path}], resource: [{resource}]',
+            level=logging.DEBUG,
+            **{'path': path, 'resource': self.resource_name})
 
     def prepare_files(self, path, files, force=False):
         """
