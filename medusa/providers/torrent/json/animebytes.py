@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 import logging
 import re
+from datetime import datetime, timedelta, timezone
 
 from medusa import tv
 from medusa.helper.common import convert_size
@@ -285,6 +286,11 @@ class AnimeBytes(TorrentProvider):
                 seeders = row.get('Seeders')
                 leechers = row.get('Leechers')
                 pubdate = self.parse_pubdate(row.get('UploadTime'))
+
+                # This is a workaround for an animebytes caching issue where newly created torrents are cached with
+                # zero seeders and leechers
+                if seeders == 0 and leechers == 0 and datetime.now(timezone.utc) - pubdate < timedelta(hours=1):
+                    seeders = 1
 
                 # Filter unseeded torrent
                 if seeders < self.minseed:
