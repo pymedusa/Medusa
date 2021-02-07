@@ -125,7 +125,7 @@ class PostProcessQueueItem(generic_queue.QueueItem):
             # Store a bitwize combined status in db.history.
             # If succeeded store Postprocessed + Completed. (384)
             # If failed store Postprocessed + Failed. (272)
-            if process_results.succeeded:
+            if process_results.result:
                 status.add_status_string('Completed')
                 self.success = True
             else:
@@ -301,6 +301,7 @@ class ProcessResult(object):
         if app.POSTPONE_IF_NO_SUBS:
             self.log_and_output("Feature 'postpone post-processing if no subtitle available' is enabled.")
 
+        processed_items = False
         for path in self.paths:
 
             if not self.should_process(path):
@@ -309,6 +310,8 @@ class ProcessResult(object):
             self.result = True
 
             for dir_path, filelist in self._get_files(path):
+                # Keep track if processed anything.
+                processed_items = True
 
                 sync_files = (filename
                               for filename in filelist
@@ -329,6 +332,10 @@ class ProcessResult(object):
                     self.log_and_output('Skipping post-processing for folder: {dir_path}', **{'dir_path': dir_path})
 
                     self.missed_files.append('{0}: Sync files found'.format(dir_path))
+
+        if not processed_items:
+            self.result = False
+
         if self.succeeded:
             self.log_and_output('Post-processing completed.')
 
@@ -337,7 +344,6 @@ class ProcessResult(object):
                 app.KODI_LIBRARY_CLEAN_PENDING = False
 
             if self.missed_files:
-
                 self.log_and_output('I did encounter some unprocessable items: ')
 
                 for missed_file in self.missed_files:
@@ -447,7 +453,7 @@ class ProcessResult(object):
             path_and_resource_is_folder = os.path.isdir(combine_path)
 
         if path_and_resource_is_folder:
-            walk_path(combine_path)
+            yield from walk_path(combine_path)
             return
 
         if not path_and_resource_is_folder and os.path.isdir(path) and os.path.basename(path) == self.resource_name:
@@ -459,7 +465,7 @@ class ProcessResult(object):
                 'Same path and resource detected, using path [{name}] to process as a source folder',
                 level=logging.DEBUG,
                 **{'name': path})
-            walk_path(path)
+            yield from walk_path(path)
             return
 
         if self.resource_name and self.resource_name.endswith('.nzb'):
@@ -472,7 +478,7 @@ class ProcessResult(object):
                 'Nzb folder detected, using path [{name}] to process as a source folder',
                 level=logging.DEBUG,
                 **{'name': path})
-            walk_path(path)
+            yield from walk_path(path)
             return
 
         if path and not self.resource_name:
@@ -484,7 +490,7 @@ class ProcessResult(object):
                 'No resource_name passed, using path [{name}] to process as a source folder',
                 level=logging.DEBUG,
                 **{'name': path})
-            walk_path(path)
+            yield from walk_path(path)
             return
 
         # Process as a file
