@@ -7,6 +7,7 @@ from os.path import basename
 from medusa import db
 from medusa.common import DOWNLOADED, FAILED, SNATCHED, SUBTITLED, statusStrings
 from medusa.providers.generic_provider import GenericProvider
+from medusa.schedulers.download_handler import ClientStatus
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.tv.series import SeriesIdentifier
 
@@ -80,6 +81,10 @@ class HistoryHandler(BaseRequestHandler):
                 if item['action'] == SUBTITLED:
                     subtitle_language = item['resource']
 
+                client_status_strings = ''
+                if item['client_status'] is not None:
+                    client_status_strings = str(ClientStatus(status=item['client_status']))
+
                 yield {
                     'id': item['rowid'],
                     'series': SeriesIdentifier.from_id(item['indexer_id'], item['showid']).slug,
@@ -100,7 +105,7 @@ class HistoryHandler(BaseRequestHandler):
                     'fileName': file_name,
                     'subtitleLanguage': subtitle_language,
                     'providerType': item['provider_type'],
-                    'clientStatus': item['client_status'],
+                    'clientStatus': client_status_strings,
                     'partOfBatch': bool(item['part_of_batch'])
                 }
 
