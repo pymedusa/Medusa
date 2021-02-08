@@ -78,13 +78,15 @@ class ClientStatus(ConstsBitwize):
     CONSTANTS = ClientStatusEnum
     STRINGS = status_strings
 
-    def __init__(self, status_string=None):
+    def __init__(self, status=0, status_string=None):
         """Initialize ClientStatus object."""
-        super(ClientStatus, self).__init__()
+        super(ClientStatus, self).__init__(status)
         self.ratio = 0.0
         self.progress = 0
         self.destination = ''
         self.resource = ''
+
+        # Overwrite the default set status using a string.
         if status_string:
             self.set_status_string(status_string)
 
@@ -284,7 +286,7 @@ class DownloadHandler(object):
                 log.debug('Invalid action {action}', {'action': app.TORRENT_SEED_ACTION})
                 continue
 
-            self.save_status_to_history(history_result, ClientStatus('SeededAction'))
+            self.save_status_to_history(history_result, ClientStatus(status_string='SeededAction'))
 
     def _check_torrents(self):
         """
