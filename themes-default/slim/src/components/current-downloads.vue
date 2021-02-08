@@ -61,6 +61,11 @@
                             <img v-else :src="`images/subtitles/flags/${props.row.resource}.png`" class="subtitle-flag" width="16" height="11" :alt="props.row.resource" onError="this.onerror=null;this.src='images/flags/unknown.png';">
                         </span>
 
+                        <span v-else-if="props.column.label === 'Release'">
+                            <span>{{props.formattedRow[props.column.field]}}</span>
+                            <font-awesome-icon v-if="props.row.partOfBatch" icon='images' v-tooltip.right="'This release is part of a batch or releases'" />
+                        </span>
+
                         <span v-else>
                             {{props.formattedRow[props.column.field]}}
                         </span>
@@ -78,12 +83,18 @@ import { humanFileSize, episodeToSlug } from '../utils/core';
 import { manageCookieMixin } from '../mixins/manage-cookie';
 import QualityPill from './helpers/quality-pill.vue';
 import { addQTip } from '../utils/jquery';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { VTooltip } from 'v-tooltip';
 
 export default {
-    name: 'show-history',
+    name: 'downloads',
     components: {
+        FontAwesomeIcon,
         VueGoodTable,
         QualityPill
+    },
+    directives: {
+        tooltip: VTooltip
     },
     mixins: [
         manageCookieMixin('downloadHistory')
@@ -133,13 +144,7 @@ export default {
         }, {
             label: 'Client Status',
             field: 'clientStatus',
-            type: 'number',
             hidden: getCookie('Client Status')
-        }, {
-            label: 'Part of batch',
-            field: 'partOfBatch',
-            type: 'boolean',
-            hidden: getCookie('Part of batch')
         }];
 
         return {
@@ -178,9 +183,6 @@ export default {
             this.$destroy();
             // Remove the element from the DOM
             this.$el.remove();
-        },
-        rowStyleClassFn(row) {
-            return row.statusName.toLowerCase() || 'skipped';
         }
     }
 };

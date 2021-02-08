@@ -7,9 +7,9 @@ import VueCookies from 'vue-cookies';
 import VModal from 'vue-js-modal';
 import { VTooltip } from 'v-tooltip';
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faAlignJustify } from '@fortawesome/free-solid-svg-icons';
+import { faAlignJustify, faImages } from '@fortawesome/free-solid-svg-icons';
 
-library.add(faAlignJustify);
+library.add([faAlignJustify, faImages]);
 
 import {
     AddShowOptions,
