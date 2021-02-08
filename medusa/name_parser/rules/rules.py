@@ -672,7 +672,7 @@ class AnimeWithSeasonMultipleEpisodeNumbers(Rule):
         if not (2 <= len(episodes) <= 4):
             return
 
-        unique_eps = set([ep.initiator.value for ep in episodes])
+        unique_eps = set([ep.initiator.value.lower() for ep in episodes])
         if len(unique_eps) != 2:
             return
 
@@ -1016,7 +1016,7 @@ class AbsoluteEpisodeWithX26Y(Rule):
             "type": "episode"
         }
     with this rule:
-        For: Show.Name.10.720p
+        For: Show.Name.-.9.x265
         GuessIt found: {
             "title": "Show Name",
             "episode": 9,
