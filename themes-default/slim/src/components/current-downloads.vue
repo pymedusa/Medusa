@@ -28,7 +28,7 @@
                             <quality-pill v-if="props.row.quality !== 0" :quality="props.row.quality" />
                         </span>
 
-                        <span v-else-if="props.column.label === 'Provider/Group'" class="align-center">
+                        <span v-else-if="props.column.label === 'Provider'" class="align-center">
                             <!-- These should get a provider icon -->
                             <template v-if="['Snatched', 'Failed'].includes(props.row.statusName)">
                                 <img  class="addQTip" style="margin-right: 5px;"
@@ -64,6 +64,10 @@
                         <span v-else-if="props.column.label === 'Release'">
                             <span>{{props.formattedRow[props.column.field]}}</span>
                             <font-awesome-icon v-if="props.row.partOfBatch" icon='images' v-tooltip.right="'This release is part of a batch or releases'" />
+                        </span>
+
+                        <span v-else-if="props.column.label === 'Client Status'">
+                            <span v-tooltip.right="props.formattedRow[props.column.field].status.join(', ')">{{props.formattedRow[props.column.field].string.join(', ')}}</span>
                         </span>
 
                         <span v-else>
@@ -118,9 +122,9 @@ export default {
             type: 'number',
             hidden: getCookie('Quality')
         }, {
-            label: 'Provider/Group',
+            label: 'Provider',
             field: 'provider.id',
-            hidden: getCookie('Provider/Group')
+            hidden: getCookie('Provider')
         }, {
             label: 'Release',
             field: 'resource',
@@ -169,7 +173,10 @@ export default {
         }),
         filterHistory() {
             const { history } = this;
-            return history.filter(row => row.clientStatus);
+            const downloading = [2]
+            return history
+                .filter(row => row.clientStatus && row.status === 2)
+                .filter(row => row.clientStatus.status.some(status => downloading.includes(status)))
         }
     },
     methods: {
@@ -187,4 +194,8 @@ export default {
     }
 };
 </script>
-<style scoped src='../style/vgt-table.css' />
+<style scoped src='../style/vgt-table.css'>
+</style>
+<style scoped>
+@import '../style/v-tooltip.css';
+</style>

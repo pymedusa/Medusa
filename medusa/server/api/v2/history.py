@@ -63,6 +63,8 @@ class HistoryHandler(BaseRequestHandler):
                 release_name = None
                 file_name = None
                 subtitle_language = None
+                show_slug = None
+                client_status = None
 
                 if item['action'] in (SNATCHED, FAILED):
                     provider.update({
@@ -81,13 +83,19 @@ class HistoryHandler(BaseRequestHandler):
                 if item['action'] == SUBTITLED:
                     subtitle_language = item['resource']
 
-                client_status_strings = ''
                 if item['client_status'] is not None:
-                    client_status_strings = str(ClientStatus(status=item['client_status']))
+                    status = ClientStatus(status=item['client_status'])
+                    client_status = {
+                        'status': [s.value for s in status],
+                        'string': status.status_to_array_string()
+                    }
+
+                if item['indexer_id'] and item['showid']:
+                    show_slug = SeriesIdentifier.from_id(item['indexer_id'], item['showid']).slug
 
                 yield {
                     'id': item['rowid'],
-                    'series': SeriesIdentifier.from_id(item['indexer_id'], item['showid']).slug,
+                    'series': show_slug,
                     'status': item['action'],
                     'statusName': statusStrings.get(item['action']),
                     'actionDate': item['date'],
@@ -105,7 +113,7 @@ class HistoryHandler(BaseRequestHandler):
                     'fileName': file_name,
                     'subtitleLanguage': subtitle_language,
                     'providerType': item['provider_type'],
-                    'clientStatus': client_status_strings,
+                    'clientStatus': client_status,
                     'partOfBatch': bool(item['part_of_batch'])
                 }
 
