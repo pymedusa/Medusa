@@ -1265,6 +1265,13 @@
                     "16": "Repeat (Separated)",
                     "32": "Extend (Limited, E-prefixed)",
                     "64": "Extend (Limited, e-prefixed)"
+                },
+                "downloadHandler": {
+                    "enabled": true,
+                    "frequency": 10,
+                    "minFrequency": 5,
+                    "torrentSeedRatio": 1,
+                    "torrentSeedAction": "remove"
                 }
             },
             "search": {
@@ -1278,7 +1285,6 @@
                     "minBacklogFrequency": 720,
                     "dailySearchFrequency": 10,
                     "minDailySearchFrequency": 10,
-                    "removeFromClient": false,
                     "downloadHandlerFrequency": 60,
                     "mindownloadHandlerFrequency": 30,
                     "usenetRetention": 500,

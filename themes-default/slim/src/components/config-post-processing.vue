@@ -298,6 +298,7 @@ import {
     AppLink,
     ConfigTextboxNumber,
     ConfigToggleSlider,
+    ConfigTemplate,
     FileBrowser,
     NamePattern,
     SelectList
@@ -309,6 +310,7 @@ export default {
         AppLink,
         ConfigTextboxNumber,
         ConfigToggleSlider,
+        ConfigTemplate,
         FileBrowser,
         NamePattern,
         SelectList

@@ -195,7 +195,7 @@ exports[`Logs.test.js renders 1`] = `
             <option
               value="downloadHandler"
             >
-              Torrent Checker
+              Download Handler
             </option>
             <option
               value="TRAKTCHECKER"
