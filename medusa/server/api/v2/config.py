@@ -810,7 +810,8 @@ class DataGenerator(object):
         section_data['general']['minBacklogFrequency'] = int(app.MIN_BACKLOG_FREQUENCY)
         section_data['general']['dailySearchFrequency'] = int_default(app.DAILYSEARCH_FREQUENCY, app.DEFAULT_DAILYSEARCH_FREQUENCY)
         section_data['general']['minDailySearchFrequency'] = int(app.MIN_DAILYSEARCH_FREQUENCY)
-        section_data['general']['removeFromClient'] = bool(app.REMOVE_FROM_CLIENT)
+        section_data['general']['downloadHandlerFrequency'] = int_default(app.DOWNLOAD_HANDLER_FREQUENCY, app.DEFAULT_DOWNLOAD_HANDLER_FREQUENCY)
+        section_data['general']['mindownloadHandlerFrequency'] = int(app.MIN_DOWNLOAD_HANDLER_FREQUENCY)
         section_data['general']['usenetRetention'] = int_default(app.USENET_RETENTION, 500)
         section_data['general']['trackersList'] = app.TRACKERS_LIST
         section_data['general']['allowHighPriority'] = bool(app.ALLOW_HIGH_PRIORITY)
@@ -1179,7 +1180,7 @@ class DataGenerator(object):
         section_data['downloadHandler']['enabled'] = bool(app.USE_DOWNLOAD_HANDLER)
         section_data['downloadHandler']['frequency'] = int_default(app.DOWNLOAD_HANDLER_FREQUENCY, app.DEFAULT_DOWNLOAD_HANDLER_FREQUENCY)
         section_data['downloadHandler']['minFrequency'] = int(app.MIN_DOWNLOAD_HANDLER_FREQUENCY)
-        section_data['downloadHandler']['torrentSeedRatio'] = float(app.TORRENT_SEED_RATIO)
+        section_data['downloadHandler']['torrentSeedRatio'] = float(app.TORRENT_SEED_RATIO) if app.TORRENT_SEED_RATIO is not None else -1
         section_data['downloadHandler']['torrentSeedAction'] = app.TORRENT_SEED_ACTION
 
         return section_data
