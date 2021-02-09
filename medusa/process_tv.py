@@ -88,13 +88,35 @@ class PostProcessQueueItem(generic_queue.QueueItem):
             'status': status
         })
 
+    def update_history(self, process_results):
+        """Update main.history table with process results."""
+        from medusa.schedulers.download_handler import ClientStatus
+        status = ClientStatus()
+
+        # Postpone the process, and setting the client_status.
+        if not process_results.postpone_any:
+            # Resource postprocessed
+            status.add_status_string('Postprocessed')
+
+            # If succeeded store Postprocessed + Completed. (384)
+            # If failed store Postprocessed + Failed. (272)
+            if process_results.result:
+                status.add_status_string('Completed')
+                self.success = True
+            else:
+                status.add_status_string('Failed')
+                self.success = False
+            self.update_resource(status)
+        else:
+            log.info('Postponed PP for: {path} and resource: {resource} keeping existing status', {
+                'path': self.path,
+                'resource': self.resource_name
+            })
+
     def run(self):
         """Run postprocess queueitem thread."""
         generic_queue.QueueItem.run(self)
         self.started = True
-
-        from medusa.schedulers.download_handler import ClientStatus
-        status = ClientStatus()
 
         try:
             log.info('Beginning postprocessing for path {path}', {'path': self.path})
@@ -119,23 +141,9 @@ class PostProcessQueueItem(generic_queue.QueueItem):
             if process_results.failed and app.USE_FAILED_DOWNLOADS:
                 process_results.process_failed(path)
 
-            # Resource postprocessed
-            status.add_status_string('Postprocessed')
-
-            # Store a bitwize combined status in db.history.
-
-            # Postpone the process, and setting the client_status.
-            if not process_results.postpone_processing:
-                # If succeeded store Postprocessed + Completed. (384)
-                # If failed store Postprocessed + Failed. (272)
-                if process_results.result:
-                    status.add_status_string('Completed')
-                    self.success = True
-                else:
-                    status.add_status_string('Failed')
-                    self.success = False
-
-            self.update_resource(status)
+            # In case we have an info_hash or (nzbid), update the history table with the pp results.
+            if self.info_hash:
+                self.update_history(process_results)
 
             log.info('Completed Postproccessing')
 
@@ -217,6 +225,8 @@ class ProcessResult(object):
         self.unwanted_files = []
         self.allowed_extensions = app.ALLOWED_EXTENSIONS
         self.process_file = False
+        # When multiple media folders/files processed. Flag postpone_any of any them was postponed.
+        self.postpone_any = False
 
     @property
     def directory(self):
@@ -330,6 +340,7 @@ class ProcessResult(object):
                     processed_items = True
                 else:
                     self.postpone_processing = True
+                    self.postpone_any = True
                     self.log_and_output('Found temporary sync files in folder: {dir_path}', **{'dir_path': dir_path})
                     self.log_and_output('Skipping post-processing for folder: {dir_path}', **{'dir_path': dir_path})
 
@@ -798,6 +809,8 @@ class ProcessResult(object):
         :param is_priority: Boolean, is this a priority download
         :param ignore_subs: True to ignore setting 'postpone if no subs'
         """
+        # Keep flag for a single media process.
+        # A path can have multiple media to process.
         self.postpone_processing = False
 
         for video in video_files:
@@ -851,6 +864,7 @@ class ProcessResult(object):
                         self.log_and_output('No subtitles associated. Postponing the post-processing of this file: {video}',
                                             level=logging.DEBUG, **{'video': video})
                         self.postpone_processing = True
+                        self.postpone_any = True
                         return False
                     else:
                         self.log_and_output('Found associated subtitles. '
