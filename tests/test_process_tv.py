@@ -321,6 +321,19 @@ def test__process_postponed(monkeypatch, p, create_structure):
             )},
         )
     },
+    {   # Resource name given, resource is a folder.
+        'path': 'media/postprocess/complete',
+        'resource_name': '[Black.Lightning.S04E01.1080p.WEB.H264-CAKES[rartv]]',
+        'expected': ['black.lightning.S04E01.1080p.web.h264-cakes[rartv].mkv'],
+        'structure': (
+            {'[Black.Lightning.S04E01.1080p.WEB.H264-CAKES[rartv]]': (
+                'RARBG.txt',
+                'RARBG_DO_NOT_MIRROR.exe',
+                'black.lightning.S04E01.1080p.web.h264-cakes[rartv].mkv',
+                'black.lightning.S04E01.1080p.web.h264-cakes[rartv].nfo',
+            )},
+        )
+    },
 ])
 def test__process(monkeypatch, p, create_structure):
     """Run the test."""
