@@ -74,7 +74,7 @@
 
 import { mapActions, mapGetters, mapState } from 'vuex';
 import { VueGoodTable } from 'vue-good-table';
-import { humanFileSize, episodeToSlug } from '../utils/core';
+import { humanFileSize } from '../utils/core';
 import { manageCookieMixin } from '../mixins/manage-cookie';
 import QualityPill from './helpers/quality-pill.vue';
 import { addQTip } from '../utils/jquery';
@@ -145,7 +145,7 @@ export default {
         return {
             columns,
             loading: false,
-            loadingMessage: '',
+            loadingMessage: ''
         };
     },
     mounted() {
