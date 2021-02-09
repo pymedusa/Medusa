@@ -82,7 +82,7 @@ class PostProcessQueueItem(generic_queue.QueueItem):
             'WHERE date = (select max(date) from history where info_hash = ?)',
             [status.status, self.info_hash]
         )
-        log.info('Updated postprocessed {path} with resourcee {resource} with new status {status}', {
+        log.info('Updated history with resource path: {path} and resource: {resource} with new status {status}', {
             'path': self.path,
             'resource': self.resource_name,
             'status': status
@@ -125,7 +125,7 @@ class PostProcessQueueItem(generic_queue.QueueItem):
             # Store a bitwize combined status in db.history.
 
             # Postpone the process, and setting the client_status.
-            if not process_results.postpone:
+            if not process_results.postpone_processing:
                 # If succeeded store Postprocessed + Completed. (384)
                 # If failed store Postprocessed + Failed. (272)
                 if process_results.result:
@@ -217,7 +217,6 @@ class ProcessResult(object):
         self.unwanted_files = []
         self.allowed_extensions = app.ALLOWED_EXTENSIONS
         self.process_file = False
-        self.postpone = False
 
     @property
     def directory(self):
@@ -330,7 +329,7 @@ class ProcessResult(object):
                     # Keep track if processed anything.
                     processed_items = True
                 else:
-                    self.postpone = True  # Flagging it, so we can handle it in the DOWNLOADHANDLER.
+                    self.postpone_processing = True
                     self.log_and_output('Found temporary sync files in folder: {dir_path}', **{'dir_path': dir_path})
                     self.log_and_output('Skipping post-processing for folder: {dir_path}', **{'dir_path': dir_path})
 
@@ -456,6 +455,11 @@ class ProcessResult(object):
             path_and_resource_is_folder = os.path.isdir(combine_path)
 
         if path_and_resource_is_folder:
+            self.log_and_output(
+                'Combined path with resource detected, using path [{combine_path}] to process as a source folder',
+                level=logging.DEBUG,
+                **{'combine_path': combine_path})
+
             yield from walk_path(combine_path)
             return
 
