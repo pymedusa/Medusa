@@ -176,7 +176,7 @@ export default {
             const downloading = [2]
             return history
                 .filter(row => row.clientStatus && row.status === 2)
-                .filter(row => row.clientStatus.status.some(status => downloading.includes(status)))
+                // .filter(row => row.clientStatus.status.some(status => downloading.includes(status)))
         }
     },
     methods: {
