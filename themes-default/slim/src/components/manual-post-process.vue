@@ -2,11 +2,11 @@
     <div>
         <form name="processForm" method="post" @submit.prevent="">
             <div class="row component-group">
-                <div class="component-group-desc col-xs-12 col-lg-4">
+                <div class="component-group-desc col-xs-12 col-lg-3">
                     <p>Manual post process a file or folder. For more options related to post-processing visit <app-link href="config/postprocessing">Post-Processing</app-link></p>
                 </div>
 
-                <div class="col-xs-12 col-lg-8">
+                <div class="col-xs-12 col-lg-9">
                     <config-template label="Process Method to be used" label-for="process_method">
                         <select id="process_method" name="process_method" v-model="processMethod" class="form-control input-sm">
                             <option v-for="option in availableMethods" :value="option.value" :key="option.value">
