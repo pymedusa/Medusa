@@ -58,7 +58,6 @@
             </div>
         </div>
 
-
         <div class="row">
             <div class="col-lg-12">
                 <h3>Scene Exceptions:</h3>
@@ -157,7 +156,7 @@ export default {
             const search = schedulers.find(scheduler => scheduler.key === 'searchQueue');
             const forcedSearch = schedulers.find(scheduler => scheduler.key === 'forcedSearchQueue');
             const subtitles = schedulers.find(scheduler => scheduler.key === 'subtitlesFinder');
-            const downloadHandler = schedulers.find(scheduler => scheduler.key == 'downloadHandler');
+            const downloadHandler = schedulers.find(scheduler => scheduler.key === 'downloadHandler');
 
             return {
                 backlogPaused: backlog.isEnabled === 'Paused',

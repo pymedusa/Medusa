@@ -18,8 +18,8 @@ const mutations = {
 };
 
 const getters = {
-    getQueueItemsByName: state => name => queueitems.filter(q => name.includes(q.name)),
-    getQueueItemsByIdentifier: state => identifier => queueitems.filter(q => q.identifier == identifier)
+    getQueueItemsByName: state => name => state.queueitems.filter(q => name.includes(q.name)),
+    getQueueItemsByIdentifier: state => identifier => state.queueitems.filter(q => q.identifier === identifier)
 };
 
 const actions = {

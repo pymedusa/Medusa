@@ -2,9 +2,9 @@
     <div>
         <form name="processForm" method="post" @submit.prevent="">
             <div class="row component-group">
-                <!-- <div class="component-group-desc col-xs-12 col-lg-4">
+                <div class="component-group-desc col-xs-12 col-lg-4">
                     <p>Manual post process a file or folder. For more options related to post-processing visit <app-link href="config/postprocessing">Post-Processing</app-link></p>
-                </div> -->
+                </div>
 
                 <div class="col-xs-12 col-lg-8">
                     <config-template label="Process Method to be used" label-for="process_method">
@@ -43,8 +43,8 @@
 
                 </div>
             </div>
-            <input id="submit" :disabled="queueIdentifier" class="btn-medusa" type="submit" value="Process" @click="start(runAsync=false)" />
-            <input id="submit" :disabled="queueIdentifier" class="btn-medusa" type="submit" value="Process Async" @click="start(runAsync=true)" />
+            <input id="submit" :disabled="queueIdentifier" class="btn-medusa" type="submit" value="Process" @click="start(runAsync=false)">
+            <input id="submit" :disabled="queueIdentifier" class="btn-medusa" type="submit" value="Process Async" @click="start(runAsync=true)">
         </form>
 
         <div v-if="failedMessage !== ''"><span style="color: red">{{failedMessage}}</span></div>
@@ -57,16 +57,17 @@
     </div>
 </template>
 <script>
-import { mapActions, mapGetters, mapState } from 'vuex';
+import { mapGetters, mapState } from 'vuex';
 import { apiRoute } from '../api';
-import { AppLink, FileBrowser } from './helpers';
-
+import { AppLink, FileBrowser, ConfigTemplate, ConfigToggleSlider } from './helpers';
 
 export default {
     name: 'manual-post-process',
     components: {
         AppLink,
-        File
+        FileBrowser,
+        ConfigTemplate,
+        ConfigToggleSlider
     },
     data() {
         return {
@@ -80,7 +81,7 @@ export default {
             failedMessage: '',
             logs: [],
             queueIdentifier: null
-        }
+        };
     },
     computed: {
         ...mapState({
@@ -100,8 +101,8 @@ export default {
                 { value: 'move', text: 'Move' },
                 { value: 'hardlink', text: 'Hard Link' },
                 { value: 'symlink', text: 'Symbolic Link' },
-                { value: 'keeplink', text: 'Keep Link' },
-            ]
+                { value: 'keeplink', text: 'Keep Link' }
+            ];
             if (postprocessing.reflinkAvailable) {
                 defaultMethods.push({ value: 'reflink', text: 'Reference Link' });
             }
@@ -110,10 +111,11 @@ export default {
     },
     methods: {
         /**
-         * Start postprocessing.
+         * Start postprocessing sync or async
+         * @param {Boolean} runAsync - Pass true for running a post-process job async.
          */
         start(runAsync) {
-            const { 
+            const {
                 processMethod, path, force, priority,
                 deleteOn, failed, ignoreSubs
             } = this;
@@ -124,61 +126,60 @@ export default {
             form.set('proc_dir', path);
             form.set('force', force);
             form.set('is_priority', priority);
-            form.set('delete_on', deleteOn );
+            form.set('delete_on', deleteOn);
             form.set('failed', failed);
             form.set('proc_type', 'manual');
             form.set('ignore_subs', ignoreSubs);
-            
+
             if (runAsync) {
                 form.set('run_async', true);
                 apiRoute.post('home/postprocess/processEpisode', form)
-                .then(response => {
-                    if (response && response.data.status === 'success') {
-                        this.logs.push(response.data.message.trim())
-                        this.queueIdentifier = response.data.queueItem.identifier;
-                    } else {
-                        if (response && response.data.message) {
+                    .then(response => {
+                        if (response && response.data.status === 'success') {
+                            this.logs.push(response.data.message.trim());
+                            this.queueIdentifier = response.data.queueItem.identifier;
+                        } else if (response && response.data.message) {
                             this.failedMessage = response.data.message;
                         } else {
                             this.failedMessage = 'Something went wrong, check logs';
                         }
-                    }
-                })
+                    });
             } else {
                 form.set('run_sync', true);
                 apiRoute.post('home/postprocess/processEpisode', form)
-                .then(response => {
-                    if (response && response.data.status === 'success') {
-                        this.logs = [...this.logs, ...response.data.output];
-                    }
-                })
+                    .then(response => {
+                        if (response && response.data.status === 'success') {
+                            this.logs = [...this.logs, ...response.data.output];
+                        }
+                    });
             }
         }
     },
     watch: {
-        'postprocessing.processMethod': function(value) {
+        'postprocessing.processMethod'(value) {
             if (value) {
                 this.processMethod = value;
             }
         },
-        'postprocessing.showDownloadDir': function(value) {
+        'postprocessing.showDownloadDir'(value) {
             if (value) {
                 this.path = value;
             }
         },
         queueitems(queueItems) {
             queueItems.filter(item => item.identifier === this.queueIdentifier).forEach(item => {
-                if (!item.success) {
-                    this.logs.push(`Started Post-processing on path: ${item.config.path}`);
-                } else {
+                // Loop through all queueItems and search for a specific queue identifier.
+                // If post-process job is finished, get the log lines for display.
+                if (item.success) {
                     this.logs.push(`Finished Post-processing on path: ${item.config.path}`);
                     this.queueIdentifier = null;
                     if (item.output) {
                         this.logs = [...this.logs, ...item.output];
                     }
-
+                } else {
+                    this.logs.push(`Started Post-processing on path: ${item.config.path}`);
                 }
-            })
+            });
         }
     }
 };

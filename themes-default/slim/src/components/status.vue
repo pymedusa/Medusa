@@ -72,7 +72,7 @@
                             <span v-if="props.row.startTime">
                                 {{fuzzyParseDateTime(props.row.startTime)}}
                             </span>
-                            <span v-else>TBD</span>                            
+                            <span v-else>TBD</span>
                         </span>
 
                         <span v-else>
@@ -85,7 +85,6 @@
                 </vue-good-table>
             </div>
         </div>
-
 
         <div class="row">
             <div class="col-lg-12">
@@ -178,29 +177,30 @@ export default {
                 dateOutputFormat: 'yyyy-MM-dd\'T\'HH:mm:ssXXX'
             }],
             columnsPostProcessQueue: [
-            {
-                label: 'Path',
-                field: 'config.path'
-            }, {
-                label: 'Resource',
-                field: 'config.resource_name'
-            }, {
-                label: 'Info Hash',
-                field: 'config.info_hash'
-            }, {
-                label: 'In Progress',
-                field: 'inProgress',
-                type: 'boolean'
-            }, {
-                label: 'Priority',
-                field: 'priority'
-            }, {
-                label: 'Started',
-                field: 'startTime',
-                type: 'date',
-                dateInputFormat: 'yyyy-MM-dd\'T\'HH:mm:ssXXX',
-                dateOutputFormat: 'yyyy-MM-dd\'T\'HH:mm:ssXXX'
-            }],
+                {
+                    label: 'Path',
+                    field: 'config.path'
+                }, {
+                    label: 'Resource',
+                    field: 'config.resource_name'
+                }, {
+                    label: 'Info Hash',
+                    field: 'config.info_hash'
+                }, {
+                    label: 'In Progress',
+                    field: 'inProgress',
+                    type: 'boolean'
+                }, {
+                    label: 'Priority',
+                    field: 'priority'
+                }, {
+                    label: 'Started',
+                    field: 'startTime',
+                    type: 'date',
+                    dateInputFormat: 'yyyy-MM-dd\'T\'HH:mm:ssXXX',
+                    dateOutputFormat: 'yyyy-MM-dd\'T\'HH:mm:ssXXX'
+                }
+            ],
             columnsDiskSpace: [{
                 label: 'type',
                 field: 'type'

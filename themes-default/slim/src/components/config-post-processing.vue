@@ -24,8 +24,8 @@
                                     </config-toggle-slider>
 
                                     <config-textbox-number v-show="postprocessing.processAutomatically" v-model="postprocessing.autoPostprocessorFrequency"
-                                        label="Auto Post-Processing Frequency" id="autopostprocessor_frequency" 
-                                        :min="10" :step="1">
+                                                           label="Auto Post-Processing Frequency" id="autopostprocessor_frequency"
+                                                           :min="10" :step="1">
                                         <span>Time in minutes to check for new files to auto post-process (min 10)</span>
                                     </config-textbox-number>
                                 </fieldset>
@@ -46,10 +46,10 @@
                                         <p><b>Note:</b>Do not combine with scheduled post processing or external pp scripts!</p>
                                     </config-toggle-slider>
 
-                                    <config-textbox-number v-show="postprocessing.downloadHandler.enabled" 
-                                        :min="postprocessing.downloadHandler.minFrequency" :step="1" 
-                                        v-model.number="postprocessing.downloadHandler.frequency" 
-                                        label="Download handler frequency" id="download_handler_frequency">
+                                    <config-textbox-number v-show="postprocessing.downloadHandler.enabled"
+                                                           :min="postprocessing.downloadHandler.minFrequency" :step="1"
+                                                           v-model.number="postprocessing.downloadHandler.frequency"
+                                                           label="Download handler frequency" id="download_handler_frequency">
                                         <p>Frequency to check on the download clients (default: 60)</p>
                                     </config-textbox-number>
 
@@ -99,12 +99,12 @@
                                         <select-list name="sync_files" id="sync_files" csv-enabled :list-items="postprocessing.syncFiles" @change="onChangeSyncFiles" />
                                         <span>Comma separated list of extensions or filename globs Medusa ignores when post-processing</span>
                                     </config-template>
-                                    
+
                                     <config-toggle-slider v-model="postprocessing.postponeIfNoSubs" label="Postpone if no subtitle" id="postpone_if_no_subs">
                                         <span>Wait to process a file until subtitles are present</span><br>
                                         <span>Language names are allowed in subtitle filename (en.srt, pt-br.srt, ita.srt, etc.)</span><br>
                                         <span><b>Note:</b> Automatic post-processor should be disabled to avoid files with pending subtitles being processed over and over.</span><br>
-                                        <span>If you have any active show with subtitle search disabled, you must enable Automatic post-processor.</span>                                    
+                                        <span>If you have any active show with subtitle search disabled, you must enable Automatic post-processor.</span>
                                     </config-toggle-slider>
 
                                     <config-toggle-slider v-model="postprocessing.renameEpisodes" label="Rename Episodes" id="rename_episodes">
@@ -141,7 +141,7 @@
                                         <select id="file_timestamp_timezone" name="file_timestamp_timezone" v-model="postprocessing.fileTimestampTimezone" class="form-control input-sm">
                                             <option :value="option.value" v-for="option in timezoneOptions" :key="option.value">{{ option.text }}</option>
                                         </select>
-                                        <span>What timezone should be used to change File Date?</span>                                    
+                                        <span>What timezone should be used to change File Date?</span>
                                     </config-template>
 
                                     <config-toggle-slider v-model="postprocessing.unpack" label="Unpack" id="unpack">
@@ -211,7 +211,6 @@
                                         :enabled-naming-custom="postprocessing.naming.enableCustomNamingAnime" @change="saveNamingAnime" :flag-loaded="configLoaded"
                                     />
 
-                                    
                                     <config-toggle-slider v-model="postprocessing.naming.stripYear" label="Strip Show Year" id="naming_strip_year">
                                         <span>Remove the TV show's year when renaming the file?</span>
                                         <p>Only applies to shows that have year inside parentheses</p>
@@ -294,7 +293,7 @@
 </template>
 <script>
 import { mapActions, mapState } from 'vuex';
-import { 
+import {
     AppLink,
     ConfigTextboxNumber,
     ConfigToggleSlider,
@@ -463,18 +462,18 @@ export default {
             }));
         },
         seedActions() {
-            const { postprocessing, torrentMethod } = this;
+            const { torrentMethod } = this;
             let actions = [
-                { value: '', text: 'No action'},
+                { value: '', text: 'No action' },
                 { value: 'remove', text: 'Remove torrent' },
                 { value: 'pause', text: 'Pause torrent' }
             ];
-            const remove_with_data = [{ value: 'remove_with_data', text: 'Remove torrent with data' }];
+            const removeWithData = [{ value: 'remove_with_data', text: 'Remove torrent with data' }];
 
             if (!['rtorrent'].includes(torrentMethod)) {
-                actions = [...actions, ...remove_with_data]
+                actions = [...actions, ...removeWithData];
             }
-            return actions
+            return actions;
         }
     },
     beforeMount() {

@@ -16,7 +16,7 @@
                                     enabled: true
                                 }"
                                 styleClass="vgt-table condensed"
-                                
+
                 >
                     <template slot="table-row" slot-scope="props">
 
@@ -63,7 +63,7 @@
 
                         <span v-else-if="props.column.label === 'Release'">
                             <span>{{props.formattedRow[props.column.field]}}</span>
-                            <font-awesome-icon v-if="props.row.partOfBatch" icon='images' v-tooltip.right="'This release is part of a batch or releases'" />
+                            <font-awesome-icon v-if="props.row.partOfBatch" icon="images" v-tooltip.right="'This release is part of a batch or releases'" />
                         </span>
 
                         <span v-else-if="props.column.label === 'Client Status'">
@@ -83,7 +83,7 @@
 
 import { mapActions, mapGetters, mapState } from 'vuex';
 import { VueGoodTable } from 'vue-good-table';
-import { humanFileSize, episodeToSlug } from '../utils/core';
+import { humanFileSize } from '../utils/core';
 import { manageCookieMixin } from '../mixins/manage-cookie';
 import QualityPill from './helpers/quality-pill.vue';
 import { addQTip } from '../utils/jquery';
@@ -154,7 +154,7 @@ export default {
         return {
             columns,
             loading: false,
-            loadingMessage: '',
+            loadingMessage: ''
         };
     },
     mounted() {
@@ -173,10 +173,10 @@ export default {
         }),
         filterHistory() {
             const { history } = this;
-            const downloading = [2]
+            // Const downloading = [2];
             return history
-                .filter(row => row.clientStatus && row.status === 2)
-                // .filter(row => row.clientStatus.status.some(status => downloading.includes(status)))
+                .filter(row => row.clientStatus && row.status === 2);
+            // .filter(row => row.clientStatus.status.some(status => downloading.includes(status)))
         }
     },
     methods: {

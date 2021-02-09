@@ -41,7 +41,7 @@ const state = {
         frequency: null,
         minFrequency: null,
         torrentSeedRatio: null,
-        torrentSeedAction: null,
+        torrentSeedAction: null
     }
 };
 
