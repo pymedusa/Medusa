@@ -35,7 +35,7 @@ subliminal==2.1.0
 tmdbsimple==2.8.0
 tornado==6.1
 tornroutes==0.5.1
-trakt @ https://codeload.github.com/p0psicles/PyTrakt/tar.gz/2d7dc0e7fb5d284444c5d16c7fe7f2b8e56188ef
+trakt==2.15.0
 ttl-cache==1.6
 tvdbapiv2 @ https://codeload.github.com/pymedusa/tvdbv2/tar.gz/d6d0e9d98071c2d646beb997b336edbb0e98dfb7
 validators==0.18.2
