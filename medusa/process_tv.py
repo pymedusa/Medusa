@@ -149,6 +149,9 @@ class PostProcessQueueItem(generic_queue.QueueItem):
 
             if process_results._output:
                 self.to_json.update({'output': process_results._output})
+
+            # Use success as a flag for a finished PP. PP it self can be succeeded or failed.
+            self.success = True
             # Push an update to any open Web UIs through the WebSocket
             ws.Message('QueueItemUpdate', self.to_json).push()
 
