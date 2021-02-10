@@ -10,8 +10,8 @@ import time
 
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
-from medusa.schedulers.download_handler import ClientStatus
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.schedulers.download_handler import ClientStatus
 
 from requests.auth import HTTPDigestAuth
 from requests.compat import urljoin

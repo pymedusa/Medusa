@@ -878,9 +878,7 @@ class ProcessResult(object):
         return True
 
     def process_failed(self, path):
-        """
-        Process a download that did not complete correctly.
-        """
+        """Process a download that did not complete correctly."""
         try:
             processor = failed_processor.FailedProcessor(path, self.resource_name)
             self.result = processor.process()

@@ -70,7 +70,6 @@ from medusa import (
     network_timezones, process_tv, providers, subtitles
 )
 from medusa.app import app
-from medusa.schedulers import download_handler
 from medusa.common import SD, SKIPPED, WANTED
 from medusa.config import (
     CheckSection, ConfigMigrator, check_setting_bool,
@@ -89,7 +88,7 @@ from medusa.providers.torrent.torznab.torznab import TorznabProvider
 from medusa.queues import show_queue
 from medusa.queues.event_queue import Events
 from medusa.schedulers import (
-    episode_updater, scheduler, show_updater, trakt_checker
+    download_handler, episode_updater, scheduler, show_updater, trakt_checker
 )
 from medusa.search.backlog import BacklogSearchScheduler, BacklogSearcher
 from medusa.search.daily import DailySearcher
@@ -1249,7 +1248,6 @@ class Application(object):
                                                                cycleTime=update_interval,
                                                                threadName='POSTPROCESSOR',
                                                                silent=not app.PROCESS_AUTOMATICALLY)
-
 
             # TODO: update_interval should take last daily/backlog times into account!
             update_interval = datetime.timedelta(minutes=app.DAILYSEARCH_FREQUENCY)

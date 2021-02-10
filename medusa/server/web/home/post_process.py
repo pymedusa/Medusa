@@ -2,8 +2,8 @@
 
 from __future__ import unicode_literals
 
-import logging
 import json
+import logging
 
 from medusa import app
 from medusa.logger.adapters.style import CustomBraceAdapter

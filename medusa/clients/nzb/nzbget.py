@@ -2,11 +2,11 @@
 
 from __future__ import unicode_literals
 
-from contextlib import suppress
 import datetime
 import logging
 import socket
 from base64 import standard_b64encode
+from contextlib import suppress
 from xmlrpc.client import Error, ProtocolError, ServerProxy
 
 from medusa import app

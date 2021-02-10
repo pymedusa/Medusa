@@ -158,9 +158,9 @@ def is_sync_file(filename):
     if isinstance(filename, (str, text_type)):
         extension = filename.rpartition('.')[2].lower()
 
-        return (extension in app.SYNC_FILES or
-                filename.startswith('.syncthing') or
-                any(fnmatch(filename, match) for match in app.SYNC_FILES))
+        return (extension in app.SYNC_FILES
+                or filename.startswith('.syncthing')
+                or any(fnmatch(filename, match) for match in app.SYNC_FILES))
 
     return False
 
@@ -361,9 +361,9 @@ def enabled_providers(search_type):
     """Return providers based on search type: daily, backlog and manual search."""
     from medusa import providers
     return [x for x in providers.sorted_provider_list(app.RANDOMIZE_PROVIDERS)
-            if x.is_active() and x.get_id() not in app.BROKEN_PROVIDERS and
-            hasattr(x, 'enable_{}'.format(search_type)) and
-            getattr(x, 'enable_{}'.format(search_type))]
+            if x.is_active() and x.get_id() not in app.BROKEN_PROVIDERS
+            and hasattr(x, 'enable_{}'.format(search_type))
+            and getattr(x, 'enable_{}'.format(search_type))]
 
 
 def remove_strings(old_string, unwanted_strings):
@@ -501,4 +501,5 @@ class ConstsBitwize(object):
                 yield cur_status
 
     def __eq__(self, comp):
+        """Comparison method."""
         return self.status == comp.status

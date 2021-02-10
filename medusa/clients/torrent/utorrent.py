@@ -7,13 +7,12 @@ from __future__ import unicode_literals
 import logging
 import os
 import re
-import time
 from collections import OrderedDict
 
 from medusa import app
-from medusa.schedulers.download_handler import ClientStatus
 from medusa.clients.torrent.generic import GenericClient
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.schedulers.download_handler import ClientStatus
 
 from requests.compat import urljoin
 from requests.exceptions import RequestException

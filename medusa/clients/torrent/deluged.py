@@ -15,10 +15,10 @@ from builtins import object
 from deluge_client import DelugeRPCClient
 
 from medusa import app
-from medusa.schedulers.download_handler import ClientStatus
 from medusa.clients.torrent.deluge import read_torrent_status
 from medusa.clients.torrent.generic import GenericClient
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.schedulers.download_handler import ClientStatus
 
 
 log = BraceAdapter(logging.getLogger(__name__))

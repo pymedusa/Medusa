@@ -8,7 +8,6 @@ import logging
 from base64 import b64encode
 
 from medusa import app
-from medusa.schedulers.download_handler import ClientStatus
 from medusa.clients.torrent.generic import GenericClient
 from medusa.helpers import (
     get_extension,
@@ -18,6 +17,7 @@ from medusa.helpers import (
     is_media_file,
 )
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.schedulers.download_handler import ClientStatus
 
 from requests.compat import urljoin
 from requests.exceptions import RequestException
