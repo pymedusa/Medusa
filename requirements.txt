@@ -13,7 +13,7 @@ dogpile.cache==1.1.2
 enzyme @ https://codeload.github.com/pymedusa/enzyme/tar.gz/665cf6948aab1c249dcc99bd9624a81d17b3302a
 feedparser==6.0.2
 gntp==1.0.3
-guessit==3.2.0
+guessit==3.3.1
 html5lib==1.1
 imdbpie==5.6.4
 jsonrpclib-pelix==0.4.2
