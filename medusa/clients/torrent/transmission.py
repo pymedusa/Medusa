@@ -219,7 +219,7 @@ class TransmissionAPI(GenericClient):
 
         return self.check_response()
 
-    def remove_torrent(self, info_hash, delete_data=False):
+    def _remove(self, info_hash, from_disk=False):
         """Remove torrent from client using given info_hash.
 
         :param info_hash:
@@ -229,7 +229,7 @@ class TransmissionAPI(GenericClient):
         """
         arguments = {
             'ids': [info_hash],
-            'delete-local-data': int(delete_data),
+            'delete-local-data': int(from_disk),
         }
 
         post_data = json.dumps({
@@ -240,6 +240,26 @@ class TransmissionAPI(GenericClient):
         self._request(method='post', data=post_data)
 
         return self.check_response()
+
+    def remove_torrent(self, info_hash):
+        """Remove torrent from client and disk using given info_hash.
+
+        :param info_hash:
+        :type info_hash: string
+        :return
+        :rtype: bool
+        """
+        return self._remove(info_hash)
+
+    def remove_torrent_data(self, info_hash):
+        """Remove torrent from client and disk using given info_hash.
+
+        :param info_hash:
+        :type info_hash: string
+        :return
+        :rtype: bool
+        """
+        return self._remove(info_hash, from_disk=True)
 
     def move_torrent(self, info_hash):
         """Set new torrent location given info_hash.
