@@ -95,7 +95,7 @@ function checkManualSearches() {
     const indexerName = $('#indexer-name').val();
     const seriesId = $('#series-id').val();
 
-    const url = seriesId === undefined ? searchStatusUrl : searchStatusUrl + '?indexername=' + indexerName + '&seriesid=' + seriesId;
+    const url = seriesId === undefined ? searchStatusUrl : `searchStatusUrl?showslug=${indexerName}${seriesId}`;
     $.ajax({
         url,
         error() {

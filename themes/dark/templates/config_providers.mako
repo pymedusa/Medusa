@@ -1580,9 +1580,11 @@ window.app = new Vue({
                             </div>
                             <div id="newznab_add_div">
                                 <input class="btn-medusa" type="button" class="newznab_save" id="newznab_add" value="Add" />
+                                <input type="submit" class="btn-medusa config_submitter_refresh" value="Save Changes" />
                             </div>
                             <div id="newznab_update_div" style="display: none;">
                                 <input class="btn-medusa btn-danger newznab_delete" type="button" class="newznab_delete" id="newznab_delete" value="Delete" />
+                                <input type="submit" class="btn-medusa config_submitter_refresh" value="Save Changes" />
                             </div>
                         </div>
                     </fieldset>

@@ -139,13 +139,12 @@ export default {
             const { config, currentShowRoute } = this;
             const { recentShows } = config;
 
-            const showAlreadyActive = show => !currentShowRoute.name === 'show' || !(show.indexerName === currentShowRoute.query.indexername && show.showId === Number(currentShowRoute.query.seriesid));
+            const hideActiveShow = show => !(currentShowRoute.name === 'show' && show.showSlug === currentShowRoute.query.showslug);
 
-            return recentShows.filter(showAlreadyActive)
+            return recentShows.filter(hideActiveShow)
                 .map(show => {
-                    const { name, indexerName, showId } = show;
-                    const link = `home/displayShow?indexername=${indexerName}&seriesid=${showId}`;
-                    return { name, link };
+                    const link = `home/displayShow?showslug=${show.showSlug}`;
+                    return { name: show.name, link };
                 });
         },
         topMenu() {

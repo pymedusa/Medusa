@@ -20,13 +20,11 @@
                 },
                 "recentShows": [
                     {
-                        "showId": 253463,
-                        "indexerName": "tvdb",
+                        "showSlug": "tvdb253463",
                         "name": "Black Mirror"
                     },
                     {
-                        "showId": 80379,
-                        "indexerName": "tvdb",
+                        "showSlug": "tvdb80379",
                         "name": "The Big Bang Theory"
                     }
                 ],
@@ -181,6 +179,7 @@
                 "skipRemovedFiles": false,
                 "epDefaultDeletedStatus": 6,
                 "developer": true,
+                "experimental": false,
                 "git": {
                     "username": "",
                     "password": "",

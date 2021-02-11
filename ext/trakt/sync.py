@@ -109,7 +109,7 @@ def remove_from_history(media):
 
 
 @post
-def remove_from_watchlist(media=None):
+def remove_from_watchlist(media):
     """Remove a :class:`TVShow` from your watchlist.
     :param media: Supports both the PyTrakt :class:`Movie`,
         :class:`TVShow`, etc. But also supports passing custom json structures.

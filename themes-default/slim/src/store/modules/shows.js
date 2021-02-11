@@ -20,8 +20,7 @@ import {
 const state = {
     shows: [],
     currentShow: {
-        indexer: null,
-        id: null
+        showSlug: null
     },
     loading: {
         total: null,
@@ -70,9 +69,8 @@ const mutations = {
         const existingShow = state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer]));
         existingShow.config = { ...existingShow.config, ...config };
     },
-    currentShow(state, { indexer, id }) {
-        state.currentShow.indexer = indexer;
-        state.currentShow.id = id;
+    currentShow(state, showSlug) {
+        state.currentShow.showSlug = showSlug;
     },
     setLoadingTotal(state, total) {
         state.loading.total = total;
@@ -164,12 +162,12 @@ const mutations = {
 const getters = {
     getShowById: state => {
         /**
-         * Get a show from the loaded shows state, identified by show ID and indexer name.
+         * Get a show from the loaded shows state, identified by show slug.
          *
-         * @param {ShowIdentifier} show Show identifiers.
+         * @param {string} showSlug Show identifier.
          * @returns {object|undefined} Show object or undefined if not found.
          */
-        const getShowById = ({ id, indexer }) => state.shows.find(show => Number(show.id[indexer]) === Number(id));
+        const getShowById = showSlug => state.shows.find(show => show.id.slug === showSlug);
         return getShowById;
     },
     getShowByTitle: state => title => state.shows.find(show => show.title === title),
@@ -182,7 +180,7 @@ const getters = {
         return show && show.seasons && show.seasons.find(s => s.season === season) ? show.seasons.find(s => s.season === season).episodes.find(ep => ep.episode === episode) : undefined;
     },
     getCurrentShow: (state, getters, rootState) => {
-        return state.shows.find(show => Number(show.id[state.currentShow.indexer]) === Number(state.currentShow.id)) || rootState.defaults.show;
+        return state.shows.find(show => show.id.slug === state.currentShow.showSlug) || rootState.defaults.show;
     },
     showsWithStats: (state, getters, rootState) => {
         if (!state.shows) {
@@ -301,7 +299,7 @@ const actions = {
      * @param {ShowIdentifier&ShowGetParameters} parameters Request parameters.
      * @returns {Promise} The API response.
      */
-    getShow(context, { indexer, id, detailed, episodes }) {
+    getShow(context, { showSlug, detailed, episodes }) {
         return new Promise((resolve, reject) => {
             const { commit } = context;
             const params = {};
@@ -318,7 +316,7 @@ const actions = {
                 timeout = 60000;
             }
 
-            api.get(`/series/${indexer}${id}`, { params, timeout })
+            api.get(`/series/${showSlug}`, { params, timeout })
                 .then(res => {
                     commit(ADD_SHOW, res.data);
                     resolve(res.data);
@@ -335,10 +333,10 @@ const actions = {
      * @param {ShowParameteres} parameters - Request parameters.
      * @returns {Promise} The API response.
      */
-    getEpisodes({ commit, getters }, { indexer, id, season }) {
+    getEpisodes({ commit, getters }, { showSlug, season }) {
         return new Promise((resolve, reject) => {
             const { getShowById } = getters;
-            const show = getShowById({ id, indexer });
+            const show = getShowById(showSlug);
 
             const limit = 1000;
             const params = {
@@ -350,13 +348,13 @@ const actions = {
             }
 
             // Get episodes
-            api.get(`/series/${indexer}${id}/episodes`, { params })
+            api.get(`/series/${showSlug}/episodes`, { params })
                 .then(response => {
                     commit(ADD_SHOW_EPISODE, { show, episodes: response.data });
                     resolve();
                 })
                 .catch(error => {
-                    console.log(`Could not retrieve a episodes for show ${indexer}${id}, error: ${error}`);
+                    console.log(`Could not retrieve a episodes for show ${showSlug}, error: ${error}`);
                     reject(error);
                 });
         });
@@ -418,9 +416,9 @@ const actions = {
 
         return shows.forEach(show => dispatch('getShow', show));
     },
-    setShow(context, { indexer, id, data }) {
+    setShow(_, { showSlug, data }) {
         // Update show, updated show will arrive over a WebSocket message
-        return api.patch(`series/${indexer}${id}`, data);
+        return api.patch(`series/${showSlug}`, data);
     },
     updateShow(context, show) {
         // Update local store
@@ -435,10 +433,13 @@ const actions = {
         const { commit } = context;
         commit(REMOVE_SHOW_SCENE_EXCEPTION, { show, exception });
     },
-    setCurrentShow(context, { indexer, id }) {
-        // Set current show
-        const { commit } = context;
-        return commit('currentShow', { indexer, id });
+    setCurrentShow(context, showSlug) {
+        return new Promise(resolve => {
+            // Set current show
+            const { commit } = context;
+            commit('currentShow', showSlug);
+            resolve();
+        });
     },
     setShowConfig(context, { show, config }) {
         const { commit } = context;

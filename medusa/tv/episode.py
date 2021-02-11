@@ -1576,7 +1576,8 @@ class Episode(TV):
             relgrp = app.UNKNOWN_RELEASE_GROUP
 
         # try to get the release encoder to comply with scene naming standards
-        encoder = Quality.scene_quality_from_name(self.release_name.replace(rel_grp[relgrp], ''), self.quality)
+        name = self.release_name.replace(rel_grp[relgrp], '') or remove_extension(os.path.basename(self.location))
+        encoder = Quality.scene_quality_from_name(name, self.quality)
         if encoder:
             log.debug('Found codec for {series} {ep}',
                       {'series': series_name, 'ep': ep_name})

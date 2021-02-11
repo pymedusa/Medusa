@@ -86,6 +86,7 @@ const state = {
     skipRemovedFiles: null,
     epDefaultDeletedStatus: null,
     developer: null,
+    experimental: null,
     git: {
         username: null,
         password: null,
@@ -116,7 +117,7 @@ const mutations = {
     addRecentShow(state, { show }) {
         state.recentShows = state.recentShows.filter(
             filterShow =>
-                !(filterShow.indexerName === show.indexerName && filterShow.showId === show.showId && filterShow.name === show.name)
+                !(filterShow.showSlug === show.showSlug && filterShow.name === show.name)
         );
 
         state.recentShows.unshift(show); // Add the new show object to the start of the array.

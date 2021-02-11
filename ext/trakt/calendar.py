@@ -77,7 +77,7 @@ class Calendar(object):
             e_data = {
                 'airs_at': airs_date(first_aired),
                 'ids': episode.get('ids'),
-                'title': show_data.get('title'),
+                'title': episode.get('title'),
                 'show_data': TVShow(**show_data)
             }
             self._calendar.append(

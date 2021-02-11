@@ -198,8 +198,12 @@ class GuessItApi(object):
                 for match in matches:
                     if isinstance(match.value, str):
                         match.value = match.value.encode("ascii")
-            return matches.to_dict(options.get('advanced', False), options.get('single_value', False),
-                                   options.get('enforce_list', False))
+            matches_dict = matches.to_dict(options.get('advanced', False), options.get('single_value', False),
+                                           options.get('enforce_list', False))
+            output_input_string = options.get('output_input_string', False)
+            if output_input_string:
+                matches_dict['input_string'] = matches.input_string
+            return matches_dict
         except Exception as err:
             raise GuessitException(string, options) from err
 

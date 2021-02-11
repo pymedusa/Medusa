@@ -27,8 +27,8 @@
   },
   "resolutions": {
     "**/jquery": "3.5.1",
-    "**/date-fns": "2.16.1",
-    "jest/**/@babel/core": "7.12.10"
+    "**/date-fns": "2.17.0",
+    "jest/**/@babel/core": "7.12.13"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "1.2.34",
@@ -37,7 +37,7 @@
     "axios": "0.21.1",
     "bootstrap": "3.4.1",
     "country-language": "0.1.7",
-    "date-fns": "2.16.1",
+    "date-fns": "2.17.0",
     "is-visible": "2.2.0",
     "javascript-time-ago": "2.3.4",
     "jquery": "3.5.1",
@@ -67,15 +67,15 @@
     "vuex": "3.6.2"
   },
   "devDependencies": {
-    "@babel/core": "7.12.10",
-    "@babel/eslint-parser": "7.12.1",
-    "@babel/plugin-transform-runtime": "7.12.10",
-    "@babel/preset-env": "7.12.11",
-    "@babel/runtime": "7.12.5",
+    "@babel/core": "7.12.13",
+    "@babel/eslint-parser": "7.12.13",
+    "@babel/plugin-transform-runtime": "7.12.15",
+    "@babel/preset-env": "7.12.13",
+    "@babel/runtime": "7.12.13",
     "@mapbox/stylelint-processor-arbitrary-tags": "0.3.0",
     "@sharkykh/eslint-plugin-vue-extra": "0.1.1",
     "@testing-library/jest-dom": "5.11.9",
-    "@vue/test-utils": "1.1.2",
+    "@vue/test-utils": "1.1.3",
     "babel-core": "7.0.0-bridge.0",
     "babel-loader": "8.2.2",
     "browser-env": "3.3.0",
@@ -83,8 +83,8 @@
     "codecov": "3.8.1",
     "copy-webpack-plugin": "7.0.0",
     "cross-env": "7.0.3",
-    "css-loader": "5.0.1",
-    "eslint": "7.18.0",
+    "css-loader": "5.0.2",
+    "eslint": "7.19.0",
     "eslint-config-xo": "0.26.0",
     "eslint-import-resolver-webpack": "0.13.0",
     "eslint-plugin-eslint-comments": "3.2.0",
@@ -102,7 +102,7 @@
     "jest": "26.6.3",
     "jest-serializer-vue": "2.0.2",
     "jest-vue-matcher": "2.0.0",
-    "mini-css-extract-plugin": "1.3.4",
+    "mini-css-extract-plugin": "1.3.6",
     "nyc": "15.1.0",
     "optimize-css-assets-webpack-plugin": "5.0.4",
     "stylelint": "13.9.0",
@@ -110,8 +110,8 @@
     "timekeeper": "2.2.0",
     "vue-jest": "3.0.7",
     "vue-loader": "15.9.6",
-    "webpack": "5.18.0",
-    "webpack-cli": "4.4.0"
+    "webpack": "5.21.2",
+    "webpack-cli": "4.5.0"
   },
   "stylelint": {
     "extends": "stylelint-config-standard",
