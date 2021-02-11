@@ -17,24 +17,31 @@ class History(WebRoot):
 
         self.history = HistoryTool()
 
-    def index(self, limit=None):
-        if limit is None:
-            if app.HISTORY_LIMIT:
-                limit = int(app.HISTORY_LIMIT)
-            else:
-                limit = 100
-        else:
-            limit = try_int(limit, 100)
+    def index(self):
+        """
+        Render the history page.
 
-        app.HISTORY_LIMIT = limit
+        [Converted to VueRouter]
+        """
+        t = PageTemplate(rh=self, filename='index.mako')
+        return t.render()
+        # if limit is None:
+        #     if app.HISTORY_LIMIT:
+        #         limit = int(app.HISTORY_LIMIT)
+        #     else:
+        #         limit = 100
+        # else:
+        #     limit = try_int(limit, 100)
 
-        app.instance.save_config()
+        # app.HISTORY_LIMIT = limit
 
-        history = self.history.get(limit)
+        # app.instance.save_config()
 
-        t = PageTemplate(rh=self, filename='history.mako')
-        return t.render(historyResults=history.detailed, compactResults=history.compact, limit=limit,
-                        controller='history', action='index')
+        # history = self.history.get(limit)
+
+        # t = PageTemplate(rh=self, filename='history.mako')
+        # return t.render(historyResults=history.detailed, compactResults=history.compact, limit=limit,
+        #                 controller='history', action='index')
 
     def clearHistory(self):
         # @TODO: Replace this with DELETE /api/v2/history

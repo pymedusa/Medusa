@@ -33,6 +33,7 @@ const ADD_SEARCH_RESULTS = '⛽ New search results added for provider';
 const ADD_QUEUE_ITEM = '🔍 Search queue item updated';
 const ADD_SHOW_QUEUE_ITEM = '📺 Show queue item added to store';
 const UPDATE_SHOWLIST_DEFAULT = '⚙️ Anime config showlist default updated';
+const INITIALIZE_HISTORY_STORE = '⚙️ Initialize history store';
 
 export {
     LOGIN_PENDING,
@@ -58,6 +59,7 @@ export {
     ADD_SHOW_EPISODE,
     ADD_STATS,
     ADD_REMOTE_BRANCHES,
+    INITIALIZE_HISTORY_STORE,
     SET_STATS,
     SET_MAX_DOWNLOAD_COUNT,
     ADD_SHOW_SCENE_EXCEPTION,

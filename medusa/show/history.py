@@ -44,7 +44,7 @@ class History(object):
             'WHERE 1 = 1'
         )
 
-    def get(self, limit=100, action=None):
+    def get(self, limit=100, action=None, show_obj=None):
         """
         :param limit: The maximum number of elements to return
         :param action: The type of action to filter in the history. Either 'downloaded' or 'snatched'. Anything else or
@@ -69,11 +69,16 @@ class History(object):
         filter_sql = 'AND action = ? '
         order_sql = 'ORDER BY date DESC '
 
+        show_params = []
+        if show_obj:
+            filter_sql += 'AND s.showid = ? AND s.indexer_id = ?'
+            show_params += [show_obj.series_id, show_obj.indexer]
+
         if parsed_action:
             sql_results = self.db.select(common_sql + filter_sql + order_sql,
-                                         [parsed_action])
+                                         [parsed_action] + show_params)
         else:
-            sql_results = self.db.select(common_sql + order_sql)
+            sql_results = self.db.select(common_sql + order_sql, show_params)
 
         detailed = []
         compact = dict()

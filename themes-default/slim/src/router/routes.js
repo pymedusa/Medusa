@@ -322,8 +322,10 @@ const historyRoute = {
         title: 'History',
         header: 'History',
         topMenu: 'history',
-        subMenu: historySubMenu
-    }
+        subMenu: historySubMenu,
+        converted: true
+    },
+    component: () => import('../components/history-new.vue')
 };
 
 /** @type {import('.').Route[]} */

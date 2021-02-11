@@ -1,21 +1,32 @@
 import Vue from 'vue';
 
 import { api } from '../../api';
-import { ADD_HISTORY, ADD_SHOW_HISTORY, ADD_SHOW_EPISODE_HISTORY } from '../mutation-types';
+import { ADD_HISTORY, ADD_SHOW_HISTORY, ADD_SHOW_EPISODE_HISTORY, INITIALIZE_HISTORY_STORE } from '../mutation-types';
 import { episodeToSlug } from '../../utils/core';
 
 const state = {
     history: [],
+    historyCompact: [],
     page: 0,
-    episodeHistory: {}
+    episodeHistory: {},
+    historyLast: null,
+    historyLastCompact: null
 };
 
 const mutations = {
-    [ADD_HISTORY](state, history) {
+    [ADD_HISTORY](state, { history, compact }) {
         // Update state
-        state.history.push(...history);
+        if (compact) {
+            state.historyCompact = history;
+        } else {
+            state.history = history;
+        }
+
+        // Update localStorage
+        const storeKey = compact ? 'historyCompact' : 'history';
+        localStorage.setItem(storeKey, JSON.stringify(state.history));
     },
-    [ADD_SHOW_HISTORY](state, { showSlug, history }) {
+    [ADD_SHOW_HISTORY](state, { showSlug, history, compact=false }) {
         // Add history data to episodeHistory, but without passing the show slug.
         for (const row of history) {
             if (!Object.keys(state.episodeHistory).includes(showSlug)) {
@@ -39,7 +50,41 @@ const mutations = {
         }
 
         Vue.set(state.episodeHistory[showSlug], episodeSlug, history);
-    }
+    },
+    [INITIALIZE_HISTORY_STORE](state) {
+        // Check if the ID exists
+        // Replace the state object with the stored item
+        // Get History
+        if (localStorage.getItem('history')){
+            const history = JSON.parse(localStorage.getItem('history'));
+            if (history) {
+                Vue.set(state, 'history', history);
+            }    
+        }
+
+        // Get show history
+        if (localStorage.getItem('showHistory')){
+            const showHistory = JSON.parse(localStorage.getItem('showHistory'));
+            if (showHistory) {
+                this.replaceState(
+                    Object.assign(state.history, showHistory)
+                );
+            }
+        }
+
+        // Get show history
+        if (localStorage.getItem('episodeHistory')){
+            const episodeHistory = JSON.parse(localStorage.getItem('episodeHistory'));
+            if (episodeHistory) {
+                this.replaceState(
+                    Object.assign(state.episodeHistory, episodeHistory)
+                );
+            }
+        }
+    },
+    // setHistoryLast(state, historyLast) {
+    //     state.historyLast = historyLast;
+    // }
 };
 
 const getters = {
@@ -100,23 +145,30 @@ const actions = {
         }
     },
     /**
-     * Get history from API and commit them to the store.
+     * Get detailed history from API and commit them to the store.
      *
      * @param {*} context - The store context.
      * @param {string} showSlug Slug for the show to get. If not provided, gets the first 1k shows.
      * @returns {undefined|Promise} undefined if `shows` was provided or the API response if not.
      */
-    async getHistory(context, showSlug) {
+    async getHistory(context, args) {
         const { commit, state } = context;
         const limit = 1000;
         const params = { limit };
         let url = '/history';
+        const showSlug = args ? args.showSlug : undefined;
+        const compact = args ? args.compact : undefined;
 
         if (showSlug) {
             url = `${url}/${showSlug}`;
         }
 
+        if (compact) {
+            params.compact = true;
+        }
+
         let lastPage = false;
+        let result = [];
         while (!lastPage) {
             let response = null;
             state.page += 1;
@@ -132,12 +184,7 @@ const actions = {
             }
 
             if (response) {
-                if (showSlug) {
-                    commit(ADD_SHOW_HISTORY, { showSlug, history: response.data });
-                } else {
-                    commit(ADD_HISTORY, response.data);
-                }
-
+                result.push(...response.data);
                 if (response.data.length < limit) {
                     lastPage = true;
                 }
@@ -145,6 +192,13 @@ const actions = {
                 lastPage = true;
             }
         }
+
+        if (showSlug) {
+            commit(ADD_SHOW_HISTORY, { showSlug, history: result, compact });
+        } else {
+            commit(ADD_HISTORY, { history: result, compact });
+        }            
+
     },
     /**
      * Get episode history from API and commit it to the store.
@@ -168,7 +222,10 @@ const actions = {
                     console.warn(`No episode history found for show ${showSlug} and episode ${episodeSlug}`);
                 });
         });
-    }
+    },
+    initHistoryStore({ commit }) {
+        commit(INITIALIZE_HISTORY_STORE);
+    },
 };
 
 export default {
