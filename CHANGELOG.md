@@ -8,6 +8,13 @@
 
 -----
 
+## 0.5.8 (11-02-2021)
+
+#### Fixes
+- Fix guessit exception when episode initiator is int ([9198](https://github.com/pymedusa/Medusa/pull/9198))
+
+-----
+
 ## 0.5.7 (11-02-2021)
 
 #### Fixes
