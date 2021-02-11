@@ -5,6 +5,12 @@
 #### Improvements
 
 #### Fixes
+
+-----
+
+## 0.5.7 (11-02-2021)
+
+#### Fixes
  - Fix qbittorrent labels not always set ([9165](https://github.com/pymedusa/Medusa/pull/9165))
  - Fix guessit exception because of missed unique episodes detection ([9184](https://github.com/pymedusa/Medusa/pull/9184))
 
