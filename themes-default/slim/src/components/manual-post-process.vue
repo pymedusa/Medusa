@@ -90,10 +90,6 @@ export default {
             search: state => state.config.search,
             queueitems: state => state.queue.queueitems
         }),
-        ...mapGetters({
-            getQueueItemsByName: 'getQueueItemsByName',
-            getQueueItemsByIdentifier: 'getQueueItemsByIdentifier'
-        }),
         availableMethods() {
             const { postprocessing } = this;
             const defaultMethods = [

@@ -18,12 +18,14 @@
 """Download handler module."""
 from __future__ import unicode_literals
 
+import datetime
 import logging
 import re
 from builtins import object
 from enum import Enum
+from uuid import uuid4
 
-from medusa import app, db
+from medusa import app, db, ws
 from medusa.clients import torrent
 from medusa.clients.nzb import nzbget, sab
 from medusa.clients.torrent.generic import GenericClient
@@ -118,8 +120,22 @@ class DownloadHandler(object):
 
     def __init__(self):
         """Initialize the class."""
+        self.name = 'DOWNLOADHANDLER'
         self.amActive = False
         self.main_db_con = db.DBConnection()
+        self.forced = False
+        self.queueTime = str(datetime.datetime.utcnow())
+        self.identifier = str(uuid4())
+
+    @property
+    def _to_json(self):
+        return {
+            'isActive': self.amActive,
+            'identifier': self.identifier,
+            'name': self.name,
+            'queueTime': self.queueTime,
+            'force': self.forced
+        }
 
     def _get_history_results_from_db(self, provider_type, exclude_status=None, include_status=None):
         params = [provider_type]
@@ -335,6 +351,8 @@ class DownloadHandler(object):
             return
 
         self.amActive = True
+        # Push an update to any open Web UIs through the WebSocket
+        ws.Message('QueueItemUpdate', self._to_json).push()
 
         try:
             if app.USE_TORRENTS:
@@ -353,3 +371,6 @@ class DownloadHandler(object):
             log.exception('Exception while checking torrent status. with error: {error}', {'error': error})
         finally:
             self.amActive = False
+            # Push an update to any open Web UIs through the WebSocket
+            ws.Message('QueueItemUpdate', self._to_json).push()
+
