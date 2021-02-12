@@ -1,6 +1,6 @@
 <template>
     <div class="show-results-wrapper">
-        <div class="row horizontal-scroll" :class="{ fanartBackground: layout.fanartBackground }">
+        <div class="row horizontal-scroll">
             <div class="col-md-12 top-15">
                 <div class="button-row">
                     <input class="btn-medusa manualSearchButton top-5 bottom-5" type="button"  value="Refresh Results" @click="getProviderResults">
@@ -219,7 +219,7 @@ export default {
             layout: state => state.config.layout,
             search: state => state.config.search,
             providers: state => state.provider.providers,
-            queueitems: state => state.queue.queueitems,
+            queueitems: state => state.search.queueitems,
             history: state => state.history.episodeHistory
         }),
         ...mapGetters({

@@ -27,7 +27,7 @@
                                 {{dateOrStatus(show)}}
                             </div>
                             <div v-show="fontSize !== null" class="show-details">
-                                <table :class="{fanartOpacity: stateLayout.fanartBackground}" class="show-details" width="100%" cellspacing="1" border="0" cellpadding="0">
+                                <table :class="{fanartOpacity: stateLayout.fanartBackgroundOpacity}" class="show-details" width="100%" cellspacing="1" border="0" cellpadding="0">
                                     <tr>
                                         <td class="show-table">
                                             <span class="show-dlstats" :style="{fontSize}" :title="`Downloaded: ${show.stats.episodes.downloaded}${!show.stats.episodes.snatched ? '' : '; Snatched:' + show.stats.episodes.snatched}; Total: ${show.stats.episodes.total}`">

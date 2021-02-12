@@ -14,7 +14,7 @@
                      @update-overview-status="filterByOverviewStatus = $event"
         />
 
-        <div class="row" :class="{ fanartBackground: layout.fanartBackground }">
+        <div class="row">
             <div class="col-md-12 top-15 displayShow horizontal-scroll">
                 <!-- Display non-special episodes, paginate if enabled -->
                 <vue-good-table v-if="show.seasons"
@@ -376,13 +376,12 @@
 
                             <div class="modal-body">
                                 <p>Starting to search for the episode</p>
-                                <p v-if="failedSearchEpisodes && failedSearchEpisodes.length === 1">Would you also like to mark episode {{failedSearchEpisodes[0].slug}} as "failed"? This will make sure the episode cannot be downloaded again</p>
-                                <p v-else-if="failedSearchEpisodes">Would you also like to mark episodes {{failedSearchEpisodes.map(ep => ep.slug).join(', ')}} as "failed"? This will make sure the episode cannot be downloaded again</p>
+                                <p v-if="failedSearchEpisode">Would you also like to mark episode {{failedSearchEpisode.slug}} as "failed"? This will make sure the episode cannot be downloaded again</p>
                             </div>
 
                             <div class="modal-footer">
-                                <button type="button" class="btn-medusa btn-danger" data-dismiss="modal" @click="search(failedSearchEpisodes, 'backlog'); $modal.hide('query-mark-failed-and-search')">No</button>
-                                <button type="button" class="btn-medusa btn-success" data-dismiss="modal" @click="search(failedSearchEpisodes, 'failed'); $modal.hide('query-mark-failed-and-search')">Yes</button>
+                                <button type="button" class="btn-medusa btn-danger" data-dismiss="modal" @click="search([failedSearchEpisode], 'backlog'); $modal.hide('query-mark-failed-and-search')">No</button>
+                                <button type="button" class="btn-medusa btn-success" data-dismiss="modal" @click="search([failedSearchEpisode], 'failed'); $modal.hide('query-mark-failed-and-search')">Yes</button>
                                 <button type="button" class="btn-medusa btn-danger" data-dismiss="modal" @click="$modal.hide('query-mark-failed-and-search')">Cancel</button>
                             </div>
                         </div>
@@ -552,7 +551,7 @@ export default {
             paginationPerPage: getPaginationPerPage(),
             selectedEpisodes: [],
             // We need to keep track of which episode where trying to search, for the vue-modal
-            failedSearchEpisodes: [],
+            failedSearchEpisode: null,
             backlogSearchEpisodes: [],
             filterByOverviewStatus: false,
             selectedSearch: 'search action'
@@ -769,14 +768,8 @@ export default {
                     console.error(String(error));
                 });
 
-            // New status Wanted
             if (status === 3) {
                 this.$modal.show('query-start-backlog-search', { episodes });
-            }
-
-            // New status Failed
-            if (status === 11) {
-                this.$modal.show('query-mark-failed-and-search', { episodes });
             }
         },
         parseDateFn(row) {
@@ -1015,7 +1008,7 @@ export default {
          * @param {Object} event - vue js modal event
          */
         beforeFailedSearchModalClose(event) {
-            this.failedSearchEpisodes = event.params.episodes;
+            this.failedSearchEpisode = event.params.episode;
         },
         retryDownload(episode) {
             const { stateSearch } = this;
@@ -1054,7 +1047,7 @@ export default {
                         this.$refs[`search-${episodes[0].slug}`].src = 'images/no16.png';
                     });
                 }).finally(() => {
-                    this.failedSearchEpisodes = [];
+                    this.failedSearchEpisode = null;
                     this.backlogSearchEpisodes = [];
                 });
         },
