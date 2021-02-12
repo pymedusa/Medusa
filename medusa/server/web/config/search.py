@@ -48,14 +48,13 @@ class ConfigSearch(Config):
                    torrent_dir=None, torrent_username=None, torrent_password=None, torrent_host=None,
                    torrent_label=None, torrent_label_anime=None, torrent_path=None, torrent_verify_cert=None,
                    torrent_seed_time=None, torrent_paused=None, torrent_high_bandwidth=None,
-                   torrent_rpcurl=None, torrent_auth_type=None, ignore_words=None, torrent_checker_frequency=None,
+                   torrent_rpcurl=None, torrent_auth_type=None, ignore_words=None, download_handler_frequency=None,
                    preferred_words=None, undesired_words=None, trackers_list=None, require_words=None,
                    ignored_subs_list=None, ignore_und_subs=None, cache_trimming=None, max_cache_age=None,
                    torrent_seed_location=None):
         """
         Save Search related settings
         """
-
         results = []
 
         if not config.change_NZB_DIR(nzb_dir):
@@ -65,7 +64,7 @@ class ConfigSearch(Config):
             results += ['Unable to create directory {dir}, dir not changed.'.format(dir=os.path.normpath(torrent_dir))]
 
         config.change_DAILYSEARCH_FREQUENCY(dailysearch_frequency)
-        config.change_TORRENT_CHECKER_FREQUENCY(torrent_checker_frequency)
+        config.change_DOWNLOAD_HANDLER_FREQUENCY(download_handler_frequency)
         config.change_BACKLOG_FREQUENCY(backlog_frequency)
         app.BACKLOG_DAYS = try_int(backlog_days, 7)
 

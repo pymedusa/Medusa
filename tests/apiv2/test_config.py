@@ -311,6 +311,7 @@ def config_system(monkeypatch):
     section_data['memoryUsage'] = memory_usage_mock()
     section_data['schedulers'] = [{'key': scheduler[0], 'name': scheduler[1]} for scheduler in all_schedulers]
     section_data['showQueue'] = []
+    section_data['postProcessQueue'] = []
     section_data['diskSpace'] = {
         'rootDir': [],
         'tvDownloadDir': {
@@ -412,6 +413,13 @@ def config_postprocessing():
     section_data['extraScripts'] = app.EXTRA_SCRIPTS
     section_data['extraScriptsUrl'] = app.EXTRA_SCRIPTS_URL
     section_data['multiEpStrings'] = {str(k): v for k, v in iteritems(common.MULTI_EP_STRINGS)}
+
+    section_data['downloadHandler'] = {}
+    section_data['downloadHandler']['enabled'] = bool(app.USE_DOWNLOAD_HANDLER)
+    section_data['downloadHandler']['frequency'] = int_default(app.DOWNLOAD_HANDLER_FREQUENCY, app.DEFAULT_DOWNLOAD_HANDLER_FREQUENCY)
+    section_data['downloadHandler']['minFrequency'] = int(app.MIN_DOWNLOAD_HANDLER_FREQUENCY)
+    section_data['downloadHandler']['torrentSeedRatio'] = float(app.TORRENT_SEED_RATIO) if app.TORRENT_SEED_RATIO is not None else -1
+    section_data['downloadHandler']['torrentSeedAction'] = app.TORRENT_SEED_ACTION
 
     return section_data
 
@@ -738,9 +746,8 @@ def config_search():
     section_data['general']['minBacklogFrequency'] = int(app.MIN_BACKLOG_FREQUENCY)
     section_data['general']['dailySearchFrequency'] = int_default(app.DAILYSEARCH_FREQUENCY, app.DEFAULT_DAILYSEARCH_FREQUENCY)
     section_data['general']['minDailySearchFrequency'] = int(app.MIN_DAILYSEARCH_FREQUENCY)
-    section_data['general']['removeFromClient'] = bool(app.REMOVE_FROM_CLIENT)
-    section_data['general']['torrentCheckerFrequency'] = int_default(app.TORRENT_CHECKER_FREQUENCY, app.DEFAULT_TORRENT_CHECKER_FREQUENCY)
-    section_data['general']['minTorrentCheckerFrequency'] = int(app.MIN_TORRENT_CHECKER_FREQUENCY)
+    section_data['general']['downloadHandlerFrequency'] = int_default(app.DOWNLOAD_HANDLER_FREQUENCY, app.DEFAULT_DOWNLOAD_HANDLER_FREQUENCY)
+    section_data['general']['mindownloadHandlerFrequency'] = int(app.MIN_DOWNLOAD_HANDLER_FREQUENCY)
     section_data['general']['usenetRetention'] = int_default(app.USENET_RETENTION, 500)
     section_data['general']['trackersList'] = app.TRACKERS_LIST
     section_data['general']['allowHighPriority'] = bool(app.ALLOW_HIGH_PRIORITY)

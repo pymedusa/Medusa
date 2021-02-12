@@ -70,7 +70,6 @@ from medusa import (
     network_timezones, process_tv, providers, subtitles
 )
 from medusa.app import app
-from medusa.clients.torrent import torrent_checker
 from medusa.common import SD, SKIPPED, WANTED
 from medusa.config import (
     CheckSection, ConfigMigrator, check_setting_bool,
@@ -79,6 +78,7 @@ from medusa.config import (
     load_provider_setting, save_provider_setting
 )
 from medusa.databases import cache_db, failed_db, main_db
+from medusa.failed_history import trim_history
 from medusa.indexers.config import INDEXER_TVDBV2, INDEXER_TVMAZE
 from medusa.init.filesystem import is_valid_encoding
 from medusa.providers.generic_provider import GenericProvider
@@ -88,12 +88,12 @@ from medusa.providers.torrent.torznab.torznab import TorznabProvider
 from medusa.queues import show_queue
 from medusa.queues.event_queue import Events
 from medusa.schedulers import (
-    episode_updater, scheduler, show_updater, trakt_checker
+    download_handler, episode_updater, scheduler, show_updater, trakt_checker
 )
 from medusa.search.backlog import BacklogSearchScheduler, BacklogSearcher
 from medusa.search.daily import DailySearcher
 from medusa.search.proper import ProperFinder
-from medusa.search.queue import ForcedSearchQueue, SearchQueue, SnatchQueue
+from medusa.search.queue import ForcedSearchQueue, PostProcessQueue, SearchQueue, SnatchQueue
 from medusa.server.core import AppWebServer
 from medusa.system.shutdown import Shutdown
 from medusa.themes import read_themes
@@ -421,9 +421,10 @@ class Application(object):
         # Pre-populate network timezones, it isn't thread safe
         network_timezones.update_network_dict()
 
-        # # why???
-        # if app.USE_FAILED_DOWNLOADS:
-        #     failed_history.trim_history()
+        # The failed_history table keeps track of recent failed downloads.
+        # There is no need for 'old' records.
+        if app.USE_FAILED_DOWNLOADS:
+            trim_history()
 
         # # Check for metadata indexer updates for shows (Disabled until we use api)
         # app.show_update_scheduler.forceRun()
@@ -647,9 +648,9 @@ class Application(object):
             app.AUTOPOSTPROCESSOR_FREQUENCY = max(app.MIN_AUTOPOSTPROCESSOR_FREQUENCY,
                                                   check_setting_int(app.CFG, 'General', 'autopostprocessor_frequency', 10))
 
-            app.TORRENT_CHECKER_FREQUENCY = max(app.MIN_TORRENT_CHECKER_FREQUENCY,
-                                                check_setting_int(app.CFG, 'General', 'torrent_checker_frequency',
-                                                                  app.DEFAULT_TORRENT_CHECKER_FREQUENCY))
+            app.DOWNLOAD_HANDLER_FREQUENCY = max(app.MIN_DOWNLOAD_HANDLER_FREQUENCY,
+                                                 check_setting_int(app.CFG, 'General', 'download_handler_frequency',
+                                                                   app.DEFAULT_DOWNLOAD_HANDLER_FREQUENCY))
             app.DAILYSEARCH_FREQUENCY = max(app.MIN_DAILYSEARCH_FREQUENCY,
                                             check_setting_int(app.CFG, 'General', 'dailysearch_frequency', app.DEFAULT_DAILYSEARCH_FREQUENCY))
             app.MIN_BACKLOG_FREQUENCY = Application.get_backlog_cycle_time()
@@ -950,6 +951,13 @@ class Application(object):
             app.OPENSUBTITLES_USER = check_setting_str(app.CFG, 'Subtitles', 'opensubtitles_username', '', censor_log='normal')
             app.OPENSUBTITLES_PASS = check_setting_str(app.CFG, 'Subtitles', 'opensubtitles_password', '', censor_log='low')
 
+            app.USE_DOWNLOAD_HANDLER = bool(check_setting_int(app.CFG, 'DownloadHandler', 'use_download_handling', 0))
+            app.TORRENT_SEED_RATIO = float(check_setting_float(app.CFG, 'DownloadHandler', 'torrent_seed_ratio', 1.0))
+            app.TORRENT_SEED_ACTION = check_setting_str(
+                app.CFG, 'DownloadHandler', 'torrent_seed_action', '',
+                valid_values=('remove', 'pause', 'remove_with_data', '')
+            )
+
             app.USE_FAILED_DOWNLOADS = bool(check_setting_int(app.CFG, 'FailedDownloads', 'use_failed_downloads', 0))
             app.DELETE_FAILED = bool(check_setting_int(app.CFG, 'FailedDownloads', 'delete_failed', 0))
 
@@ -1097,7 +1105,7 @@ class Application(object):
                     load_provider_setting(app.CFG, provider, 'string', 'pin', '', censor_log='low')
                     load_provider_setting(app.CFG, provider, 'string', 'sorting', 'seeders')
                     load_provider_setting(app.CFG, provider, 'string', 'options', '')
-                    load_provider_setting(app.CFG, provider, 'string', 'ratio', '')
+                    load_provider_setting(app.CFG, provider, 'int', 'ratio', -1)
                     load_provider_setting(app.CFG, provider, 'bool', 'confirmed', 1)
                     load_provider_setting(app.CFG, provider, 'bool', 'ranked', 1)
                     load_provider_setting(app.CFG, provider, 'bool', 'engrelease', 0)
@@ -1229,6 +1237,18 @@ class Application(object):
                                                                     cycleTime=datetime.timedelta(seconds=3),
                                                                     threadName='FORCEDSEARCHQUEUE')
 
+            # Post Processor queue scheduler
+            app.post_processor_queue_scheduler = scheduler.Scheduler(PostProcessQueue(),
+                                                                     cycleTime=datetime.timedelta(seconds=3),
+                                                                     threadName='POSTPROCESSORQUEUE')
+
+            # Schedule the periodic post processing
+            update_interval = datetime.timedelta(minutes=app.AUTOPOSTPROCESSOR_FREQUENCY)
+            app.post_processor_scheduler = scheduler.Scheduler(process_tv.PostProcessorRunner(),
+                                                               cycleTime=update_interval,
+                                                               threadName='POSTPROCESSOR',
+                                                               silent=not app.PROCESS_AUTOMATICALLY)
+
             # TODO: update_interval should take last daily/backlog times into account!
             update_interval = datetime.timedelta(minutes=app.DAILYSEARCH_FREQUENCY)
             app.daily_search_scheduler = scheduler.Scheduler(DailySearcher(),
@@ -1249,13 +1269,6 @@ class Application(object):
                                                               cycleTime=update_interval,
                                                               threadName='FINDPROPERS')
 
-            # processors
-            update_interval = datetime.timedelta(minutes=app.AUTOPOSTPROCESSOR_FREQUENCY)
-            app.post_processor_scheduler = scheduler.Scheduler(process_tv.PostProcessorRunner(),
-                                                               cycleTime=update_interval,
-                                                               threadName='POSTPROCESSOR',
-                                                               silent=not app.PROCESS_AUTOMATICALLY)
-
             app.trakt_checker_scheduler = scheduler.Scheduler(trakt_checker.TraktChecker(),
                                                               cycleTime=datetime.timedelta(hours=1),
                                                               threadName='TRAKTCHECKER',
@@ -1267,10 +1280,10 @@ class Application(object):
                                                                  threadName='FINDSUBTITLES',
                                                                  silent=not app.USE_SUBTITLES)
 
-            update_interval = datetime.timedelta(minutes=app.TORRENT_CHECKER_FREQUENCY)
-            app.torrent_checker_scheduler = scheduler.Scheduler(torrent_checker.TorrentChecker(),
-                                                                cycleTime=update_interval,
-                                                                threadName='TORRENTCHECKER')
+            update_interval = datetime.timedelta(minutes=app.DOWNLOAD_HANDLER_FREQUENCY)
+            app.download_handler_scheduler = scheduler.Scheduler(download_handler.DownloadHandler(),
+                                                                 cycleTime=update_interval,
+                                                                 threadName='DOWNLOADHANDLER')
 
             app.__INITIALIZED__ = True
             return True
@@ -1391,6 +1404,9 @@ class Application(object):
                 app.proper_finder_scheduler.silent = True
             app.proper_finder_scheduler.start()
 
+            app.post_processor_queue_scheduler.enable = True
+            app.post_processor_queue_scheduler.start()
+
             # start the post processor
             if app.PROCESS_AUTOMATICALLY:
                 app.post_processor_scheduler.silent = False
@@ -1418,10 +1434,16 @@ class Application(object):
                 app.trakt_checker_scheduler.silent = True
             app.trakt_checker_scheduler.start()
 
-            if app.USE_TORRENTS and app.REMOVE_FROM_CLIENT and app.TORRENT_METHOD != 'blackhole':
-                app.torrent_checker_scheduler.enable = True
-            app.torrent_checker_scheduler.silent = False
-            app.torrent_checker_scheduler.start()
+            # Removed check for app.REMOVE_FROM_CLIENT for now.
+            if (app.USE_DOWNLOAD_HANDLER
+                    and ((app.USE_TORRENTS and app.TORRENT_METHOD != 'blackhole')
+                         or (app.USE_NZBS and app.NZB_METHOD != 'blackhole'))):
+                app.download_handler_scheduler.enable = True
+                app.download_handler_scheduler.silent = False
+            else:
+                app.download_handler_scheduler.enable = False
+                app.download_handler_scheduler.silent = True
+            app.download_handler_scheduler.start()
 
             app.started = True
 
@@ -1444,11 +1466,12 @@ class Application(object):
                 app.search_queue_scheduler,
                 app.forced_search_queue_scheduler,
                 app.manual_snatch_scheduler,
-                app.post_processor_scheduler,
                 app.trakt_checker_scheduler,
                 app.proper_finder_scheduler,
                 app.subtitles_finder_scheduler,
-                app.torrent_checker_scheduler,
+                app.download_handler_scheduler,
+                app.post_processor_scheduler,
+                app.post_processor_queue_scheduler,
                 app.events
             ]
 
@@ -1548,7 +1571,7 @@ class Application(object):
         new_config['General']['cache_trimming'] = int(app.CACHE_TRIMMING)
         new_config['General']['max_cache_age'] = int(app.MAX_CACHE_AGE)
         new_config['General']['autopostprocessor_frequency'] = int(app.AUTOPOSTPROCESSOR_FREQUENCY)
-        new_config['General']['torrent_checker_frequency'] = int(app.TORRENT_CHECKER_FREQUENCY)
+        new_config['General']['download_handler_frequency'] = int(app.DOWNLOAD_HANDLER_FREQUENCY)
         new_config['General']['dailysearch_frequency'] = int(app.DAILYSEARCH_FREQUENCY)
         new_config['General']['backlog_frequency'] = int(app.BACKLOG_FREQUENCY)
         new_config['General']['update_frequency'] = int(app.UPDATE_FREQUENCY)
@@ -2014,6 +2037,11 @@ class Application(object):
 
         new_config['Subtitles']['opensubtitles_username'] = app.OPENSUBTITLES_USER
         new_config['Subtitles']['opensubtitles_password'] = helpers.encrypt(app.OPENSUBTITLES_PASS, app.ENCRYPTION_VERSION)
+
+        new_config['DownloadHandler'] = {}
+        new_config['DownloadHandler']['use_download_handling'] = int(app.USE_DOWNLOAD_HANDLER)
+        new_config['DownloadHandler']['torrent_seed_ratio'] = float(app.TORRENT_SEED_RATIO)
+        new_config['DownloadHandler']['torrent_seed_action'] = app.TORRENT_SEED_ACTION
 
         new_config['FailedDownloads'] = {}
         new_config['FailedDownloads']['use_failed_downloads'] = int(app.USE_FAILED_DOWNLOADS)

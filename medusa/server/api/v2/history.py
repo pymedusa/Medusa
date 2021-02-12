@@ -7,6 +7,7 @@ from os.path import basename
 from medusa import db
 from medusa.common import DOWNLOADED, FAILED, SNATCHED, SUBTITLED, statusStrings
 from medusa.providers.generic_provider import GenericProvider
+from medusa.schedulers.download_handler import ClientStatus
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.tv.series import SeriesIdentifier
 
@@ -32,7 +33,8 @@ class HistoryHandler(BaseRequestHandler):
         sql_base = """
             SELECT rowid, date, action, quality,
                    provider, version, resource, size, proper_tags,
-                   indexer_id, showid, season, episode, manually_searched, info_hash
+                   indexer_id, showid, season, episode, manually_searched,
+                   info_hash, provider_type, client_status, part_of_batch
             FROM history
         """
         params = []
@@ -61,6 +63,8 @@ class HistoryHandler(BaseRequestHandler):
                 release_name = None
                 file_name = None
                 subtitle_language = None
+                show_slug = None
+                client_status = None
 
                 if item['action'] in (SNATCHED, FAILED):
                     provider.update({
@@ -79,9 +83,19 @@ class HistoryHandler(BaseRequestHandler):
                 if item['action'] == SUBTITLED:
                     subtitle_language = item['resource']
 
+                if item['client_status'] is not None:
+                    status = ClientStatus(status=item['client_status'])
+                    client_status = {
+                        'status': [s.value for s in status],
+                        'string': status.status_to_array_string()
+                    }
+
+                if item['indexer_id'] and item['showid']:
+                    show_slug = SeriesIdentifier.from_id(item['indexer_id'], item['showid']).slug
+
                 yield {
                     'id': item['rowid'],
-                    'series': SeriesIdentifier.from_id(item['indexer_id'], item['showid']).slug,
+                    'series': show_slug,
                     'status': item['action'],
                     'statusName': statusStrings.get(item['action']),
                     'actionDate': item['date'],
@@ -94,10 +108,13 @@ class HistoryHandler(BaseRequestHandler):
                     'manuallySearched': bool(item['manually_searched']),
                     'infoHash': item['info_hash'],
                     'provider': provider,
-                    'release_name': release_name,
+                    'releaseName': release_name,
                     'releaseGroup': release_group,
                     'fileName': file_name,
-                    'subtitleLanguage': subtitle_language
+                    'subtitleLanguage': subtitle_language,
+                    'providerType': item['provider_type'],
+                    'clientStatus': client_status,
+                    'partOfBatch': bool(item['part_of_batch'])
                 }
 
         if not results:

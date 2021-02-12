@@ -65,8 +65,10 @@ const homeRoutes = [
         meta: {
             title: 'Manual Post-Processing',
             header: 'Manual Post-Processing',
-            topMenu: 'home'
-        }
+            topMenu: 'home',
+            converted: true
+        },
+        component: () => import('../components/manual-post-process.vue')
     },
     {
         path: '/home/status',
@@ -326,6 +328,18 @@ const historyRoute = {
     }
 };
 
+/** @type {import('.').Route} */
+const downloadsRoute = {
+    path: '/downloads',
+    name: 'downloads',
+    meta: {
+        title: 'Downloads',
+        header: 'Downloads',
+        converted: true
+    },
+    component: () => import('../components/current-downloads.vue')
+};
+
 /** @type {import('.').Route[]} */
 const manageRoutes = [
     {
@@ -490,6 +504,7 @@ export default [
     addRecommendedRoute,
     scheduleRoute,
     historyRoute,
+    downloadsRoute,
     ...manageRoutes,
     ...errorLogsRoutes,
     newsRoute,
