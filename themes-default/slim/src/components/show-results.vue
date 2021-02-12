@@ -219,7 +219,7 @@ export default {
             layout: state => state.config.layout,
             search: state => state.config.search,
             providers: state => state.provider.providers,
-            queueitems: state => state.search.queueitems,
+            queueitems: state => state.queue.queueitems,
             history: state => state.history.episodeHistory
         }),
         ...mapGetters({

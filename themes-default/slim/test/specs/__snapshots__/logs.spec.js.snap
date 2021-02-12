@@ -193,9 +193,9 @@ exports[`Logs.test.js renders 1`] = `
               Tornado
             </option>
             <option
-              value="downloadHandler"
+              value="TORRENTCHECKER"
             >
-              Download Handler
+              Torrent Checker
             </option>
             <option
               value="TRAKTCHECKER"
@@ -259,7 +259,7 @@ exports[`Logs.test.js renders 1`] = `
   </div>
    
   <pre
-    class="col-md-12 fanartOpacity"
+    class="col-md-12"
   >
     <div
       class="notepad"
