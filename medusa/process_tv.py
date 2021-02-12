@@ -243,6 +243,10 @@ class ProcessResult(object):
             self.log_and_output('Processing path: {path}', **{'path': path})
             directory = os.path.realpath(path)
 
+        elif os.path.isfile(path):
+            self.log_and_output('Processing path: {path} as a single file', **{'path': path})
+            directory = os.path.realpath(path)
+
         # If the client and the application are not on the same machine,
         # translate the directory into a network directory
         elif all([app.TV_DOWNLOAD_DIR, os.path.isdir(app.TV_DOWNLOAD_DIR),

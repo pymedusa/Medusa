@@ -251,11 +251,21 @@ def test__process_postponed(monkeypatch, p, create_structure):
     assert p['expected'] == result
 
 
+"""
+path: As how provided by the client (nzbToMedia webRoute/apiv1, Scheduled pp or download_handler)
+    to the process_tv.
+resource_name: Optional resource (file, folder, nzbName)
+expected: Expected result from process_tv.process()
+base_path: Base path used to create the temporary folder/file structure for the test.
+structure: Use a tuple to create test files. Pass a dict in the tuple to create a more advanced
+    folder file structure.
+"""
 @pytest.mark.parametrize('p', [
     {   # Resource name given, but not found
         'path': 'media/postprocess/complete',
         'resource_name': 'show.name.103.hdtv.x264-lol.mkv',
         'expected': [],
+        'base_path': 'media/postprocess/complete',
         'structure': (
             'show.name.101.hdtv.x264-lol.mkv',
             'show.name.102.hdtv.x264-lol.mkv',
@@ -266,6 +276,7 @@ def test__process_postponed(monkeypatch, p, create_structure):
         'path': 'media/postprocess/complete',
         'resource_name': 'show.name.103.hdtv.x264-lol.mkv',
         'expected': ['show.name.103.hdtv.x264-lol.mkv'],
+        'base_path': 'media/postprocess/complete',
         'structure': (
             'show.name.103.hdtv.x264-lol.mkv',
             'show.name.102.hdtv.x264-lol.mkv',
@@ -276,6 +287,7 @@ def test__process_postponed(monkeypatch, p, create_structure):
         'path': 'media/postprocess/complete',
         'expected': ['show.name.102.hdtv.x264-lol.mkv',
                      'show.name.103.hdtv.x264-lol.mkv'],
+        'base_path': 'media/postprocess/complete',
         'structure': (
             'show.name.103.hdtv.x264-lol.mkv',
             'show.name.102.hdtv.x264-lol.mkv',
@@ -285,6 +297,7 @@ def test__process_postponed(monkeypatch, p, create_structure):
     {   # No resource name given and no valid files
         'path': 'media/postprocess/complete',
         'expected': [],
+        'base_path': 'media/postprocess/complete',
         'structure': (
             'show.name.103.hdtv.x264-lol.en.srt',
         )
@@ -294,6 +307,7 @@ def test__process_postponed(monkeypatch, p, create_structure):
         'resource_name': 'show.name.103.hdtv.x264-lol.nzb',
         'expected': ['show.name.101.hdtv.x264-lol.mkv',
                      'show.name.102.hdtv.x264-lol.mkv'],
+        'base_path': 'media/postprocess/complete',
         'structure': (
             'show.name.101.hdtv.x264-lol.mkv',
             'show.name.102.hdtv.x264-lol.mkv',
@@ -305,6 +319,7 @@ def test__process_postponed(monkeypatch, p, create_structure):
         'resource_name': 'show.name.103.hdtv.x264-lol',
         'expected': ['show.name.101.hdtv.x264-lol.mkv',
                      'show.name.102.hdtv.x264-lol.mkv'],
+        'base_path': 'media/postprocess/complete/show.name.103.hdtv.x264-lol',
         'structure': (
             'show.name.101.hdtv.x264-lol.mkv',
             'show.name.102.hdtv.x264-lol.mkv',
@@ -315,6 +330,7 @@ def test__process_postponed(monkeypatch, p, create_structure):
         'path': 'media/postprocess',
         'resource_name': 'show.name.103.hdtv.x264-lol.1',
         'expected': ['show.name.103.hdtv.x264-lol.mkv'],
+        'base_path': 'media/postprocess',
         'structure': (
             {'show.name.103.hdtv.x264-lol.1': (
                 'show.name.103.hdtv.x264-lol.mkv',
@@ -325,6 +341,7 @@ def test__process_postponed(monkeypatch, p, create_structure):
         'path': 'media/postprocess/complete',
         'resource_name': '[Black.Lightning.S04E01.1080p.WEB.H264-CAKES[rartv]]',
         'expected': ['black.lightning.S04E01.1080p.web.h264-cakes[rartv].mkv'],
+        'base_path': 'media/postprocess/complete',
         'structure': (
             {'[Black.Lightning.S04E01.1080p.WEB.H264-CAKES[rartv]]': (
                 'RARBG.txt',
@@ -334,17 +351,39 @@ def test__process_postponed(monkeypatch, p, create_structure):
             )},
         )
     },
+    {   # Resource name given, resource is a file (path also has the file). (as nzbToMedia can provide it)
+        'path': 'media/postprocess/complete/[SubsPlease] Dr. Stone S2 - 05 (1080p) [C291694C].mkv',
+        'resource_name': '[SubsPlease] Dr. Stone S2 - 05 (1080p) [C291694C].mkv',
+        'expected': ['[SubsPlease] Dr. Stone S2 - 05 (1080p) [C291694C].mkv'],
+        'base_path': 'media/postprocess/complete/[SubsPlease] Dr. Stone S2 - 05 (1080p) [C291694C].mkv',
+        'structure': (
+            '[SubsPlease] Dr. Stone S2 - 05 (1080p) [C291694C].mkv',
+        )
+    },
+    {   # Only path is provided (full path to file). (as nzbToMedia can provide it when using apiv1)
+        'path': 'media/postprocess/complete/[SubsPlease] Dr. Stone S2 - 05 (1080p) [C291694C].mkv',
+        'expected': ['[SubsPlease] Dr. Stone S2 - 05 (1080p) [C291694C].mkv'],
+        'base_path': 'media/postprocess/complete',
+        'structure': (
+            '[SubsPlease] Dr. Stone S2 - 05 (1080p) [C291694C].mkv',
+        )
+    },
+
 ])
 def test__process(monkeypatch, p, create_structure):
     """Run the test."""
     # Given
-    test_path = create_structure(p['path'], structure=p['structure'])
+    test_path = create_structure(p['base_path'], structure=p['structure'])
     path = os.path.join(test_path, os.path.normcase(p['path']))
     sut = ProcessResult(path)
     sut.process_media = Mock(return_value=None)
 
     # When
-    sut.process(resource_name=p.get('resource_name'))
+    if p.get('resource_name'):
+        sut.process(resource_name=p.get('resource_name'))
+    else:
+        # apiv1 doesn't use resource_name
+        sut.process()
 
     # Then
     assert p['expected'] == sut.video_files
