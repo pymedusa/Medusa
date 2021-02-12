@@ -359,16 +359,7 @@ structure: Use a tuple to create test files. Pass a dict in the tuple to create 
         'structure': (
             '[SubsPlease] Dr. Stone S2 - 05 (1080p) [C291694C].mkv',
         )
-    },
-    {   # Only path is provided (full path to file). (as nzbToMedia can provide it when using apiv1)
-        'path': 'media/postprocess/complete/[SubsPlease] Dr. Stone S2 - 05 (1080p) [C291694C].mkv',
-        'expected': ['[SubsPlease] Dr. Stone S2 - 05 (1080p) [C291694C].mkv'],
-        'base_path': 'media/postprocess/complete',
-        'structure': (
-            '[SubsPlease] Dr. Stone S2 - 05 (1080p) [C291694C].mkv',
-        )
-    },
-
+    }
 ])
 def test__process(monkeypatch, p, create_structure):
     """Run the test."""
@@ -379,11 +370,7 @@ def test__process(monkeypatch, p, create_structure):
     sut.process_media = Mock(return_value=None)
 
     # When
-    if p.get('resource_name'):
-        sut.process(resource_name=p.get('resource_name'))
-    else:
-        # apiv1 doesn't use resource_name
-        sut.process()
+    sut.process(resource_name=p.get('resource_name'))
 
     # Then
     assert p['expected'] == sut.video_files
