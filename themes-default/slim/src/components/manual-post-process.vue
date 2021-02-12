@@ -57,7 +57,7 @@
     </div>
 </template>
 <script>
-import { mapGetters, mapState } from 'vuex';
+import { mapState } from 'vuex';
 import { apiRoute } from '../api';
 import { AppLink, FileBrowser, ConfigTemplate, ConfigToggleSlider } from './helpers';
 

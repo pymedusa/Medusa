@@ -162,7 +162,7 @@ export default {
             const downloadHandler = schedulers.find(scheduler => scheduler.key === 'downloadHandler');
 
             const downloadHanlderQueueItems = getQueueItemsByName('DOWNLOADHANDLER');
-            if (downloadHanlderQueueItems.length) {
+            if (downloadHanlderQueueItems.length > 0) {
                 // Found a queueitem from the DOWNLOADHANDLER. Check last item for an isActive state.
                 const lastItem = downloadHanlderQueueItems.slice(-1);
                 downloadHandler.isActive = lastItem[0].isActive;

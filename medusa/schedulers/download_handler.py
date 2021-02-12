@@ -373,4 +373,3 @@ class DownloadHandler(object):
             self.amActive = False
             # Push an update to any open Web UIs through the WebSocket
             ws.Message('QueueItemUpdate', self._to_json).push()
-
