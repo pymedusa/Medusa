@@ -27,6 +27,7 @@ from medusa.server.api.v2.episodes import EpisodeHandler
 from medusa.server.api.v2.history import HistoryHandler
 from medusa.server.api.v2.internal import InternalHandler
 from medusa.server.api.v2.log import LogHandler
+from medusa.server.api.v2.postprocess import PostProcessHandler
 from medusa.server.api.v2.providers import ProvidersHandler
 from medusa.server.api.v2.search import SearchHandler
 from medusa.server.api.v2.series import SeriesHandler
@@ -83,6 +84,8 @@ def get_apiv2_handlers(base):
     return [
 
         # Order: Most specific to most generic
+        # /api/v2/postprocess
+        PostProcessHandler.create_app_handler(base),
 
         # /api/v2/providers
         ProvidersHandler.create_app_handler(base),
