@@ -132,7 +132,7 @@ indexerConfig = {
         'api_params': {
             'language': 'de',
             'use_zip': True,
-            'session': MedusaSession(cache_control={'cache_etags': False}),
+            'session': IndexerSession(cache_control={'cache_etags': False}),
         },
         'xem_origin': 'tvdb',
         'icon': 'glotz16.png',
