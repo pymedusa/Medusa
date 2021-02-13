@@ -27,10 +27,6 @@
                     <font-awesome-icon v-if="props.row.partOfBatch" icon="images" v-tooltip.right="'This release is part of a batch or releases'" />
                 </span>
 
-                <span v-else-if="props.column.label === 'Quality'" class="align-center">
-                    <quality-pill v-if="props.row.quality !== 0" :quality="props.row.quality" />
-                </span>
-
                 <span v-else-if="props.column.label === 'Provider'" class="align-center">
                     <!-- These should get a provider icon -->
                     <template v-if="['Snatched', 'Failed'].includes(props.row.statusName)">
@@ -68,6 +64,10 @@
                 <span v-else-if="props.column.label === 'Release' && props.row.statusName === 'Subtitled'" class="align-center">
                     <img v-if="props.row.resource !== 'und'" :src="`images/subtitles/flags/${props.row.resource}.png`" width="16" height="11" :alt="props.row.resource" onError="this.onerror=null;this.src='images/flags/unknown.png';">
                     <img v-else :src="`images/subtitles/flags/${props.row.resource}.png`" class="subtitle-flag" width="16" height="11" :alt="props.row.resource" onError="this.onerror=null;this.src='images/flags/unknown.png';">
+                </span>
+
+                <span v-else-if="props.column.label === 'Quality'" class="align-center">
+                    <quality-pill v-if="props.row.quality !== 0" :quality="props.row.quality" />
                 </span>
 
                 <span v-else>
@@ -152,8 +152,8 @@ export default {
         };
     },
     mounted() {
-        const { checkLastHistory } = this;
-        checkLastHistory();
+        const { checkHistory } = this;
+        checkHistory({compact: false});
     },
     computed: {
         ...mapState({
@@ -174,7 +174,8 @@ export default {
     methods: {
         humanFileSize,
         ...mapActions({
-            getHistory: 'getHistory'
+            getHistory: 'getHistory',
+            checkHistory: 'checkHistory'
         }),
         close() {
             this.$emit('close');
@@ -182,30 +183,6 @@ export default {
             this.$destroy();
             // Remove the element from the DOM
             this.$el.remove();
-        },
-        checkLastHistory() {
-        // retrieve the last history item. Compare the record with state.history.setHistoryLast
-        // and get new history data.
-        const { getHistory, history, layout } = this;
-        const historyParams = {};
-
-        if (layout.historyLimit) {
-            historyParams.total = layout.historyLimit;
-        }
-
-        if (!history || history.length === 0) {
-            return getHistory();
-        }
-
-        api.get('/history', historyParams)
-            .then(response => {
-                if (response.data && response.data.date > history[0].actionDate) {
-                    getHistory();
-                }
-            })
-            .catch(() => {
-                console.info(`No history record found`);
-            });
         }
     },
     beforeCreate() {

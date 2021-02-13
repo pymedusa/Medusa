@@ -138,9 +138,9 @@ export default {
         };
     },
     mounted() {
-        const { getHistory, checkLastHistory } = this;
+        const { checkHistory } = this;
         // getHistory();
-        checkLastHistory();
+        checkHistory({compact: true});
     },
     computed: {
         ...mapState({
@@ -162,7 +162,8 @@ export default {
         humanFileSize,
         ...mapActions({
             getHistory: 'getHistory',
-            setLayout: 'setLayout'
+            setLayout: 'setLayout',
+            checkHistory: 'checkHistory'
         }),
         close() {
             this.$emit('close');

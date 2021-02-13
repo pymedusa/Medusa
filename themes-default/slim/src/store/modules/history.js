@@ -24,7 +24,7 @@ const mutations = {
 
         // Update localStorage
         const storeKey = compact ? 'historyCompact' : 'history';
-        localStorage.setItem(storeKey, JSON.stringify(state.history));
+        localStorage.setItem(storeKey, JSON.stringify(state[storeKey]));
     },
     [ADD_SHOW_HISTORY](state, { showSlug, history, compact=false }) {
         // Add history data to episodeHistory, but without passing the show slug.
@@ -62,6 +62,13 @@ const mutations = {
             }    
         }
 
+        if (localStorage.getItem('historyCompact')){
+            const historyCompact = JSON.parse(localStorage.getItem('historyCompact'));
+            if (historyCompact) {
+                Vue.set(state, 'historyCompact', historyCompact);
+            }    
+        }
+
         // Get show history
         if (localStorage.getItem('showHistory')){
             const showHistory = JSON.parse(localStorage.getItem('showHistory'));
@@ -81,10 +88,7 @@ const mutations = {
                 );
             }
         }
-    },
-    // setHistoryLast(state, historyLast) {
-    //     state.historyLast = historyLast;
-    // }
+    }
 };
 
 const getters = {
@@ -172,6 +176,7 @@ const actions = {
             params.total = total_rows;
         }
 
+        state.page = 0;
         let lastPage = false;
         let result = [];
         while (!lastPage) {
@@ -231,6 +236,44 @@ const actions = {
     initHistoryStore({ commit }) {
         commit(INITIALIZE_HISTORY_STORE);
     },
+    checkHistory({ state, rootState, dispatch }) {
+        // retrieve the last history item from api.
+        // Compare the states last history or historyCompact row.
+        // and get new history data.
+        const { layout } = rootState.config;
+        const params = { last: true };
+        const historyParams = {};
+
+        if (layout.historyLimit) {
+            historyParams.total = layout.historyLimit;
+        }
+
+        let history = [];
+        const compact = layout.history === 'compact';
+        if (compact) {
+            history = state.historyCompact;
+        } else {
+            history = state.history;
+        }
+
+        if (!history || history.length === 0) {
+            dispatch('getHistory', {compact: compact});
+        }
+
+        api.get('/history', { params })
+            .then(response => {
+                if (response.data && response.data.date > history[0].actionDate) {
+                    dispatch('getHistory', {compact: compact});
+                }
+            })
+            .catch(() => {
+                console.info(`No history record found`);
+            });
+    },
+    updateHistory({dispatch}, queueItem) {
+        // Update store's search queue item. (provided through websocket)
+        dispatch('checkHistory', {});
+    }
 };
 
 export default {
