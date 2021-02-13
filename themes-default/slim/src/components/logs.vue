@@ -49,7 +49,7 @@
             </div>
         </div>
 
-        <pre class="col-md-12" :class="{ fanartOpacity: layout.fanartBackground }"><!--
+        <pre class="col-md-12"><!--
             --><div class="notepad"><!--
                 --><app-link :href="rawViewLink"><!--
                     --><img src="images/notepad.png"><!--

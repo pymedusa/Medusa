@@ -1,6 +1,6 @@
 <template>
     <div class="current-downloads-wrapper">
-        <div class="row horizontal-scroll" :class="{ fanartBackground: layout.fanartBackground }">
+        <div class="row horizontal-scroll">
             <div class="vgt-table-styling col-md-12 top-15">
                 <vue-good-table v-show="history.length > 0"
                                 :columns="columns"

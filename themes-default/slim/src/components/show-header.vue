@@ -133,7 +133,7 @@
                             <!-- Show Summary -->
                             <div ref="summary" v-if="configLoaded" id="summary" class="col-md-12">
                                 <div class="row">
-                                    <div id="show-summary" :class="{summaryFanArt: layout.fanartBackground}" class="col-lg-9 col-md-8 col-sm-8 col-xs-12">
+                                    <div id="show-summary" class="col-lg-9 col-md-8 col-sm-8 col-xs-12">
                                         <table class="summaryTable pull-left">
                                             <tr v-if="show.plot">
                                                 <td colspan="2" style="padding-bottom: 15px;">
