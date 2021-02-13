@@ -698,6 +698,17 @@ class PostProcessor(object):
             self.log(u'{0}'.format(error), logger.DEBUG)
             return to_return
 
+        # if parsed result should be an anime, but doesn't have
+        # absolute numbering, parse again explicitly as anime
+        if parse_result.series and all([parse_result.series.is_anime,
+                                        not parse_result.is_anime]):
+            try:
+                parse_result.series.erase_cached_parse()
+                parse_result = NameParser(parse_method='anime').parse(name)
+            except (InvalidNameException, InvalidShowException) as error:
+                self.log(u'{0}'.format(error), logger.DEBUG)
+                return to_return
+
         if parse_result.series and all([parse_result.series.air_by_date or parse_result.series.is_sports,
                                         parse_result.is_air_by_date]):
             season = -1
