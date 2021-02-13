@@ -10,7 +10,7 @@ from medusa.indexers.glotz.api import GLOTZ
 from medusa.indexers.tmdb.api import Tmdb
 from medusa.indexers.tvdbv2.api import TVDBv2
 from medusa.indexers.tvmaze.api import TVmaze
-from medusa.session.core import MedusaSession
+from medusa.session.core import IndexerSession
 
 from six import iteritems
 
@@ -79,7 +79,7 @@ indexerConfig = {
         'api_params': {
             'language': 'en',
             'use_zip': True,
-            'session': MedusaSession(cache_control={'cache_etags': False}),
+            'session': IndexerSession(cache_control={'cache_etags': False}),
         },
         'xem_origin': 'tvdb',
         'icon': 'thetvdb16.png',
@@ -97,7 +97,7 @@ indexerConfig = {
         'api_params': {
             'language': 'en',
             'use_zip': True,
-            'session': MedusaSession(cache_control={'cache_etags': False}),
+            'session': IndexerSession(cache_control={'cache_etags': False}),
         },
         'xem_mapped_to': INDEXER_TVDBV2,
         'icon': 'tvmaze16.png',
@@ -115,7 +115,7 @@ indexerConfig = {
         'api_params': {
             'language': 'en',
             'use_zip': True,
-            'session': MedusaSession(cache_control={'cache_etags': False}),
+            'session': IndexerSession(cache_control={'cache_etags': False}),
         },
         'icon': 'tmdb16.png',
         'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tmdb.json'.format(base_url=app.BASE_PYMEDUSA_URL),

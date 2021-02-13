@@ -55,6 +55,12 @@ class SystemHandler(BaseRequestHandler):
                 ui.notifications.message('Already on branch: ', data['branch'])
                 return self._bad_request('Already on branch')
 
+        if data['type'] == 'NEED_UPDATE':
+            if self._need_update():
+                return self._created()
+            else:
+                return self._bad_request('Update not needed')
+
         if data['type'] == 'UPDATE':
             if self._update():
                 return self._created()
@@ -74,6 +80,12 @@ class SystemHandler(BaseRequestHandler):
             else:
                 return self._bad_request('Version already up to date')
 
+        if data['type'] == 'FORCEADH':
+            if app.download_handler_scheduler.forceRun():
+                return self._created()
+            else:
+                return self._bad_request('Failed starting download handler')
+
         return self._bad_request('Invalid operation')
 
     def _backup(self, branch=None):
@@ -89,12 +101,24 @@ class SystemHandler(BaseRequestHandler):
 
         return False
 
+    def _need_update(self, branch=None):
+        """Check if we need an update."""
+        checkversion = CheckVersion()
+        if branch:
+            checkversion.updater.branch = branch
+        if checkversion.updater.need_update():
+            return True
+        else:
+            ui.notifications.message('No updated needed{branch}'.format(
+                branch=' for branch {0}'.format(branch) if branch else ''
+            ), 'Check logs for more information.')
+
     def _update(self, branch=None):
         checkversion = CheckVersion()
         if branch:
             checkversion.updater.branch = branch
 
-        if checkversion.updater.need_update() and checkversion.updater.update():
+        if checkversion.updater.update():
             return True
         else:
             ui.notifications.message('Update failed{branch}'.format(

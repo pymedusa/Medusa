@@ -8,6 +8,152 @@
 
 -----
 
+## 0.5.8 (11-02-2021)
+
+#### Fixes
+- Fix guessit exception when episode initiator is int ([9198](https://github.com/pymedusa/Medusa/pull/9198))
+
+-----
+
+## 0.5.7 (11-02-2021)
+
+#### Fixes
+ - Fix qbittorrent labels not always set ([9165](https://github.com/pymedusa/Medusa/pull/9165))
+ - Fix guessit exception because of missed unique episodes detection ([9184](https://github.com/pymedusa/Medusa/pull/9184))
+
+-----
+
+## 0.5.6 (27-01-2021)
+
+#### Fixes
+ - Fix trakt authentication ([9130](https://github.com/pymedusa/Medusa/pull/9130))
+
+-----
+
+## 0.5.5 (25-01-2021)
+
+#### Fixes
+ - Fix auto update causing malformed checkouts ([9088](https://github.com/pymedusa/Medusa/pull/9088))
+ - Fix trakt recommended shows causing an error when selecting season premiers or new shows ([9080](https://github.com/pymedusa/Medusa/pull/9080))
+ - Prevent exception when auth to medusa using basic authentication ([9100](https://github.com/pymedusa/Medusa/pull/9100))
+
+-----
+
+## 0.5.4 (20-01-2021)
+
+#### Fixes
+ - Fix trakt authentication lost on restart ([9018](https://github.com/pymedusa/Medusa/pull/9018))
+ - Fix issue with trying to mass update a show with scene exceptions ([9067](https://github.com/pymedusa/Medusa/pull/9067))
+ - Fix a number of exceptions caused by new trakt implementation ([9038](https://github.com/pymedusa/Medusa/pull/9038))
+ - Fix black/white list not saved, when trying to add an exception when adding the show ([9047](https://github.com/pymedusa/Medusa/pull/9047))
+ - Avoid exception for shows that don't have show_lists in DB ([9050](https://github.com/pymedusa/Medusa/pull/9050))
+ - Fix version check scheduler running twice ([9057](https://github.com/pymedusa/Medusa/pull/9057))
+ - Fix show-list (table layout) Active column Filter is linked to Xem column Filter ([9066](https://github.com/pymedusa/Medusa/pull/9066))
+
+-----
+
+## 0.5.3 (12-01-2021)
+
+#### Fixes
+- Fix trakt sync exception ([8994](https://github.com/pymedusa/Medusa/pull/8994))
+
+-----
+
+## 0.5.2 (10-01-2021)
+
+#### Improvements
+- Replace trakt lib with PyTrakt (and switch to OAuth device authentication). ([8916](https://github.com/pymedusa/Medusa/pull/8916))
+- Make all thread schedulers hot-reload when enabled/disabled. ([8948](https://github.com/pymedusa/Medusa/pull/8948))
+- Add an option to create .magnet files when a torrent can't be downloaded from a magnet URI, using one of the magnet cache registries. ([8955](https://github.com/pymedusa/Medusa/pull/8955))
+
+#### Fixes
+- Fix setting default episode status (after) when adding a new show. ([8918](https://github.com/pymedusa/Medusa/pull/8918))
+- Fix provider anidex. Add a bypass to its DDOS-Guard protection. ([8955](https://github.com/pymedusa/Medusa/pull/8955))
+
+-----
+
+## 0.5.1 (16-12-2020)
+
+#### Improvements
+- Add Processing failed for ... to custom logs
+- Add and convert some network logos
+
+#### Fixes
+- Fix startup with git install without valid git
+- Fix rare ADBA exception
+- Fix rare anime parsing issue
+- Fix exception when torrent clients don't respond
+- Fix backlog search on new show add & wanted switch for old episodes
+- Fix issue with broken encrypted passwords
+
+-----
+
+## 0.5.0 (30-11-2020)
+
+First Python 3.x version
+
+#### New Features
+- Separate proxy configs for Providers, Indexers, CLients (torrent/nzb) and others ([8605](https://github.com/pymedusa/Medusa/pull/8605))
+
+#### Improvements
+- Add absolute numbering to indexers tvmaze and tmdb, making them suitable for anime ([8777](https://github.com/pymedusa/Medusa/pull/8777))
+
+#### Fixes
+- Provider Nyaa.si: Correct the category that is used for anime searches ([8777](https://github.com/pymedusa/Medusa/pull/8777))
+- Indexer TMDB: Fix adding show using an alternative language ([8784](https://github.com/pymedusa/Medusa/pull/8784))
+
+-----
+
+## 0.4.6 (25-11-2020)
+
+Last version that runs on Python 2.7!
+
+#### Improvements
+- Vueified add existing shows ([8448](https://github.com/pymedusa/Medusa/pull/8448))
+  - Get real time progress update on the shows adding
+  - Add shows automatically when metadata is available
+  - Preset show options
+- Vueified add show ([8448](https://github.com/pymedusa/Medusa/pull/8448))
+  - No more page redirects when you add a show that already exists
+  - Select show list while adding show
+  - Map show lists to anime, when configured in config -> anime
+- Refactored scene exception methods ([8753](https://github.com/pymedusa/Medusa/pull/8753))
+
+#### Fixes
+- Fixed provider TVChaosUK ([8737](https://github.com/pymedusa/Medusa/pull/8737))
+
+-----
+
+## 0.4.5 (2020-11-13)
+
+#### Fixes
+- Updated EZTV provider URL
+- Fixed email and prowl notifications
+
+-----
+
+## 0.4.4 (2020-11-04)
+
+#### Improvements
+- Replace unrar2 with rarfile
+- Add EpisodeUpdater to scheduler
+- Don't strip channel names so they are matched correctly
+- Avoid exception when headers have no host
+
+#### Fixes
+- Fix notify lists for prowl and email ([8535](https://github.com/pymedusa/Medusa/pull/8535))
+- Fix shows sorting by article sort using (the, a, an) was reversed in config-general ([8532](https://github.com/pymedusa/Medusa/pull/8532))
+- Fix sending torrents to qBittorrent api version > 2.0.0 ([8528](https://github.com/pymedusa/Medusa/pull/8528))
+- Fix decoding torrent hash from magnet links ([8563](https://github.com/pymedusa/Medusa/pull/8563))
+- Fix provider AnimeBytes ([8609](https://github.com/pymedusa/Medusa/pull/8609))
+- Fix provider Speedcd ([8609](https://github.com/pymedusa/Medusa/pull/8609))
+- Fix season pack search, results not shown for multi-episode results ([8609](https://github.com/pymedusa/Medusa/pull/8609))
+- Fix scene exceptions with year not being used
+- Fix IPTorrents layout change
+- Use b64decode instead of deprecated decodestring for basic auth
+
+-----
+
 ## 0.4.3 (2020-09-08)
 
 #### Improvements

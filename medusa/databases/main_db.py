@@ -945,3 +945,53 @@ class AddShowLists(MoveSceneExceptions):
             self.connection.action("update tv_shows set show_lists = 'anime' where anime = 1")
 
         self.inc_minor_version()
+
+
+class AddCustomLogs(AddShowLists):
+    """Create a new table custom_logs in main.db."""
+
+    def test(self):
+        """Test if the version is at least 44.17."""
+        return self.connection.version >= (44, 17)
+
+    def execute(self):
+        utils.backup_database(self.connection.path, self.connection.version)
+
+        log.info('Creating a new table custom_logs in the main.db database.')
+
+        self.connection.action(
+            'CREATE TABLE custom_logs '
+            '(log_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
+            'identifier TEXT NOT NULL, '
+            'level INTEGER NOT NULL DEFAULT 0);'
+        )
+
+        self.inc_minor_version()
+
+
+class AddHistoryFDHFields(AddCustomLogs):
+    """Add columns provider_type and client_status to the history table."""
+
+    def test(self):
+        """Test if the version is at least 44.18."""
+        return self.connection.version >= (44, 18)
+
+    def execute(self):
+        utils.backup_database(self.connection.path, self.connection.version)
+
+        # provider_type flags the history record as 'torrent' or 'nzb'
+        log.info(u'Adding column provider_type to the history table')
+        if not self.hasColumn('history', 'provider_type'):
+            self.addColumn('history', 'provider_type', 'TEXT', '')
+
+        # client_status tries to keep track of the status on the nzb/torrent client.
+        log.info(u'Adding column client_status to the history table')
+        if not self.hasColumn('history', 'client_status'):
+            self.addColumn('history', 'client_status', 'INTEGER')
+
+        # part_of_batch flags single snatch results as being part of a multi-ep result.
+        log.info(u'Adding column part_of_batch to the history table')
+        if not self.hasColumn('history', 'part_of_batch'):
+            self.addColumn('history', 'part_of_batch', 'INTEGER')
+
+        self.inc_minor_version()

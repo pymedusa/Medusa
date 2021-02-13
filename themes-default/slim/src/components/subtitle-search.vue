@@ -62,6 +62,11 @@
                             {{props.formattedRow[props.column.field]}}
                         </span>
                     </template>
+
+                    <div slot="emptystate">
+                        No subtitles found
+                    </div>
+
                 </vue-good-table>
             </div>
 
@@ -152,8 +157,7 @@ export default {
         subtitleParams() {
             const { episode, show } = this;
             const params = {
-                indexername: show.indexer,
-                seriesid: show.id[show.indexer],
+                showslug: show.id.slug,
                 season: episode.season,
                 episode: episode.episode
             };

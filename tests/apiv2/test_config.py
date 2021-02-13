@@ -12,7 +12,7 @@ from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.common import cpu_presets
 from medusa.helpers.utils import int_default
 from medusa.sbdatetime import date_presets, time_presets
-from medusa.system.schedulers import all_schedulers
+from medusa.schedulers.utils import all_schedulers
 from tests.apiv2.conftest import TEST_API_KEY
 
 import pytest
@@ -41,12 +41,12 @@ def config_main(monkeypatch, app_config):
     section_data['wikiUrl'] = app.WIKI_URL
     section_data['donationsUrl'] = app.DONATIONS_URL
     section_data['sourceUrl'] = app.APPLICATION_URL
-    section_data['downloadUrl'] = app.DOWNLOAD_URL
     section_data['subtitlesMulti'] = bool(app.SUBTITLES_MULTI)
     section_data['namingForceFolders'] = bool(app.NAMING_FORCE_FOLDERS)
     section_data['subtitles'] = {}
     section_data['subtitles']['enabled'] = bool(app.USE_SUBTITLES)
     section_data['recentShows'] = app.SHOWS_RECENT
+    section_data['addTitleWithYear'] = bool(app.ADD_TITLE_WITH_YEAR)
 
     # Pick a random series to show as background.
     # TODO: Recreate this in Vue when the webapp has a reliable list of shows to choose from.
@@ -60,6 +60,7 @@ def config_main(monkeypatch, app_config):
     section_data['showDefaults']['seasonFolders'] = bool(app.SEASON_FOLDERS_DEFAULT)
     section_data['showDefaults']['anime'] = bool(app.ANIME_DEFAULT)
     section_data['showDefaults']['scene'] = bool(app.SCENE_DEFAULT)
+    section_data['showDefaults']['showLists'] = list(app.SHOWLISTS_DEFAULT)
 
     section_data['logs'] = {}
     section_data['logs']['debug'] = bool(app.DEBUG)
@@ -72,6 +73,7 @@ def config_main(monkeypatch, app_config):
     section_data['logs']['size'] = float(app.LOG_SIZE)
     section_data['logs']['subliminalLog'] = bool(app.SUBLIMINAL_LOG)
     section_data['logs']['privacyLevel'] = app.PRIVACY_LEVEL
+    section_data['logs']['custom'] = app.CUSTOM_LOGS
 
     # Added for config - main, needs refactoring in the structure.
     section_data['launchBrowser'] = bool(app.LAUNCH_BROWSER)
@@ -96,7 +98,7 @@ def config_main(monkeypatch, app_config):
     section_data['availableThemes'] = [{'name': theme.name,
                                         'version': theme.version,
                                         'author': theme.author}
-                                        for theme in app.AVAILABLE_THEMES]
+                                       for theme in app.AVAILABLE_THEMES]
 
     section_data['timePresets'] = list(time_presets)
     section_data['datePresets'] = list(date_presets)
@@ -123,10 +125,14 @@ def config_main(monkeypatch, app_config):
     section_data['calendarUnprotected'] = bool(app.CALENDAR_UNPROTECTED)
     section_data['calendarIcons'] = bool(app.CALENDAR_ICONS)
     section_data['proxySetting'] = app.PROXY_SETTING
+    section_data['proxyProviders'] = bool(app.PROXY_PROVIDERS)
     section_data['proxyIndexers'] = bool(app.PROXY_INDEXERS)
+    section_data['proxyClients'] = bool(app.PROXY_CLIENTS)
+    section_data['proxyOthers'] = bool(app.PROXY_OTHERS)
     section_data['skipRemovedFiles'] = bool(app.SKIP_REMOVED_FILES)
     section_data['epDefaultDeletedStatus'] = app.EP_DEFAULT_DELETED_STATUS
     section_data['developer'] = bool(app.DEVELOPER)
+    section_data['experimental'] = bool(app.EXPERIMENTAL)
 
     section_data['git'] = {}
     section_data['git']['username'] = app.GIT_USERNAME
@@ -149,14 +155,14 @@ def config_main(monkeypatch, app_config):
 
 
 @pytest.mark.gen_test
-def test_config_get(http_client, create_url, auth_headers, config_main):
+async def test_config_get(http_client, create_url, auth_headers, config_main):
     # given
     expected = config_main
 
     url = create_url('/config/main')
 
     # when
-    response = yield http_client.fetch(url, **auth_headers)
+    response = await http_client.fetch(url, **auth_headers)
 
     # then
     assert response.code == 200
@@ -170,13 +176,13 @@ def test_config_get(http_client, create_url, auth_headers, config_main):
     'wikiUrl',
     'sslVerify'
 ])
-def test_config_get_detailed(http_client, create_url, auth_headers, config_main, query):
+async def test_config_get_detailed(http_client, create_url, auth_headers, config_main, query):
     # given
     expected = config_main[query]
     url = create_url('/config/main/{0}/'.format(query))
 
     # when
-    response = yield http_client.fetch(url, **auth_headers)
+    response = await http_client.fetch(url, **auth_headers)
 
     # then
     assert response.code == 200
@@ -184,33 +190,33 @@ def test_config_get_detailed(http_client, create_url, auth_headers, config_main,
 
 
 @pytest.mark.gen_test
-def test_config_get_detailed_bad_request(http_client, create_url, auth_headers):
+async def test_config_get_detailed_bad_request(http_client, create_url, auth_headers):
     # given
     url = create_url('/config/main/abcdef/')
 
     # when
     with pytest.raises(HTTPError) as error:
-        yield http_client.fetch(url, **auth_headers)
+        await http_client.fetch(url, **auth_headers)
 
     # then
     assert 400 == error.value.code
 
 
 @pytest.mark.gen_test
-def test_config_get_not_found(http_client, create_url, auth_headers):
+async def test_config_get_not_found(http_client, create_url, auth_headers):
     # given
     url = create_url('/config/abcdef/')
 
     # when
     with pytest.raises(HTTPError) as error:
-        yield http_client.fetch(url, **auth_headers)
+        await http_client.fetch(url, **auth_headers)
 
     # then
     assert 404 == error.value.code
 
 
 @pytest.mark.gen_test
-def test_config_get_consts(http_client, create_url, auth_headers):
+async def test_config_get_consts(http_client, create_url, auth_headers):
     # given
 
     def gen_schema(data):
@@ -236,7 +242,7 @@ def test_config_get_consts(http_client, create_url, auth_headers):
     url = create_url('/config/consts')
 
     # when
-    response = yield http_client.fetch(url, **auth_headers)
+    response = await http_client.fetch(url, **auth_headers)
     data = json.loads(response.body)
 
     # then
@@ -281,14 +287,14 @@ def config_metadata(monkeypatch, app_config):
 
 
 @pytest.mark.gen_test
-def test_config_get_metadata(http_client, create_url, auth_headers, config_metadata):
+async def test_config_get_metadata(http_client, create_url, auth_headers, config_metadata):
     # given
     expected = config_metadata
 
     url = create_url('/config/metadata')
 
     # when
-    response = yield http_client.fetch(url, **auth_headers)
+    response = await http_client.fetch(url, **auth_headers)
 
     # then
     assert response.code == 200
@@ -305,7 +311,15 @@ def config_system(monkeypatch):
     section_data['memoryUsage'] = memory_usage_mock()
     section_data['schedulers'] = [{'key': scheduler[0], 'name': scheduler[1]} for scheduler in all_schedulers]
     section_data['showQueue'] = []
-
+    section_data['postProcessQueue'] = []
+    section_data['diskSpace'] = {
+        'rootDir': [],
+        'tvDownloadDir': {
+            'freeSpace': False,
+            'location': None,
+            'type': 'TV Download Directory'
+        }
+    }
     section_data['branch'] = app.BRANCH
     section_data['commitHash'] = app.CUR_COMMIT_HASH
     section_data['release'] = app.APP_VERSION
@@ -341,18 +355,24 @@ def config_system(monkeypatch):
 
 
 @pytest.mark.gen_test
-def test_config_get_system(http_client, create_url, auth_headers, config_system):
+async def test_config_get_system(http_client, create_url, auth_headers, config_system):
     # given
     expected = config_system
 
     url = create_url('/config/system')
 
     # when
-    response = yield http_client.fetch(url, **auth_headers)
+    response = await http_client.fetch(url, **auth_headers)
 
     # then
     assert response.code == 200
-    assert expected == json.loads(response.body)
+
+    # hack
+    json_response = json.loads(response.body)
+    json_response['diskSpace']['tvDownloadDir']['location'] = None
+    json_response['diskSpace']['tvDownloadDir']['freeSpace'] = False
+
+    assert expected == json_response
 
 
 @pytest.fixture
@@ -394,18 +414,25 @@ def config_postprocessing():
     section_data['extraScriptsUrl'] = app.EXTRA_SCRIPTS_URL
     section_data['multiEpStrings'] = {str(k): v for k, v in iteritems(common.MULTI_EP_STRINGS)}
 
+    section_data['downloadHandler'] = {}
+    section_data['downloadHandler']['enabled'] = bool(app.USE_DOWNLOAD_HANDLER)
+    section_data['downloadHandler']['frequency'] = int_default(app.DOWNLOAD_HANDLER_FREQUENCY, app.DEFAULT_DOWNLOAD_HANDLER_FREQUENCY)
+    section_data['downloadHandler']['minFrequency'] = int(app.MIN_DOWNLOAD_HANDLER_FREQUENCY)
+    section_data['downloadHandler']['torrentSeedRatio'] = float(app.TORRENT_SEED_RATIO) if app.TORRENT_SEED_RATIO is not None else -1
+    section_data['downloadHandler']['torrentSeedAction'] = app.TORRENT_SEED_ACTION
+
     return section_data
 
 
 @pytest.mark.gen_test
-def test_config_get_postprocessing(http_client, create_url, auth_headers, config_postprocessing):
+async def test_config_get_postprocessing(http_client, create_url, auth_headers, config_postprocessing):
     # given
     expected = config_postprocessing
 
     url = create_url('/config/postprocessing')
 
     # when
-    response = yield http_client.fetch(url, **auth_headers)
+    response = await http_client.fetch(url, **auth_headers)
 
     # then
     assert response.code == 200
@@ -434,6 +461,7 @@ def config_clients():
     section_data['torrents']['username'] = app.TORRENT_USERNAME
     section_data['torrents']['password'] = app.TORRENT_PASSWORD
     section_data['torrents']['verifySSL'] = bool(app.TORRENT_VERIFY_CERT)
+    section_data['torrents']['saveMagnetFile'] = bool(app.SAVE_MAGNET_FILE)
 
     section_data['nzb'] = {}
     section_data['nzb']['enabled'] = bool(app.USE_NZBS)
@@ -465,14 +493,14 @@ def config_clients():
 
 
 @pytest.mark.gen_test
-def test_config_get_clients(http_client, create_url, auth_headers, config_clients):
+async def test_config_get_clients(http_client, create_url, auth_headers, config_clients):
     # given
     expected = config_clients
 
     url = create_url('/config/clients')
 
     # when
-    response = yield http_client.fetch(url, **auth_headers)
+    response = await http_client.fetch(url, **auth_headers)
 
     # then
     assert response.code == 200
@@ -689,14 +717,14 @@ def config_notifiers():
 
 
 @pytest.mark.gen_test
-def test_config_get_notifiers(http_client, create_url, auth_headers, config_notifiers):
+async def test_config_get_notifiers(http_client, create_url, auth_headers, config_notifiers):
     # given
     expected = config_notifiers
 
     url = create_url('/config/notifiers')
 
     # when
-    response = yield http_client.fetch(url, **auth_headers)
+    response = await http_client.fetch(url, **auth_headers)
 
     # then
     assert response.code == 200
@@ -718,9 +746,8 @@ def config_search():
     section_data['general']['minBacklogFrequency'] = int(app.MIN_BACKLOG_FREQUENCY)
     section_data['general']['dailySearchFrequency'] = int_default(app.DAILYSEARCH_FREQUENCY, app.DEFAULT_DAILYSEARCH_FREQUENCY)
     section_data['general']['minDailySearchFrequency'] = int(app.MIN_DAILYSEARCH_FREQUENCY)
-    section_data['general']['removeFromClient'] = bool(app.REMOVE_FROM_CLIENT)
-    section_data['general']['torrentCheckerFrequency'] = int_default(app.TORRENT_CHECKER_FREQUENCY, app.DEFAULT_TORRENT_CHECKER_FREQUENCY)
-    section_data['general']['minTorrentCheckerFrequency'] = int(app.MIN_TORRENT_CHECKER_FREQUENCY)
+    section_data['general']['downloadHandlerFrequency'] = int_default(app.DOWNLOAD_HANDLER_FREQUENCY, app.DEFAULT_DOWNLOAD_HANDLER_FREQUENCY)
+    section_data['general']['mindownloadHandlerFrequency'] = int(app.MIN_DOWNLOAD_HANDLER_FREQUENCY)
     section_data['general']['usenetRetention'] = int_default(app.USENET_RETENTION, 500)
     section_data['general']['trackersList'] = app.TRACKERS_LIST
     section_data['general']['allowHighPriority'] = bool(app.ALLOW_HIGH_PRIORITY)
@@ -743,14 +770,14 @@ def config_search():
 
 
 @pytest.mark.gen_test
-def test_config_get_search(http_client, create_url, auth_headers, config_search):
+async def test_config_get_search(http_client, create_url, auth_headers, config_search):
     # given
     expected = config_search
 
     url = create_url('/config/search')
 
     # when
-    response = yield http_client.fetch(url, **auth_headers)
+    response = await http_client.fetch(url, **auth_headers)
 
     # then
     assert response.code == 200
@@ -806,14 +833,14 @@ def config_layout():
 
 
 @pytest.mark.gen_test
-def test_config_get_layout(http_client, create_url, auth_headers, config_layout):
+async def test_config_get_layout(http_client, create_url, auth_headers, config_layout):
     # given
     expected = config_layout
 
     url = create_url('/config/layout')
 
     # when
-    response = yield http_client.fetch(url, **auth_headers)
+    response = await http_client.fetch(url, **auth_headers)
 
     # then
     assert response.code == 200

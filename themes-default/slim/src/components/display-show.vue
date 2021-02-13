@@ -9,13 +9,12 @@
         <show-header type="show"
                      ref="show-header"
                      @reflow="reflowLayout"
-                     :show-id="id"
-                     :show-indexer="indexer"
+                     :slug="showSlug"
                      @update="statusQualityUpdate"
                      @update-overview-status="filterByOverviewStatus = $event"
         />
 
-        <div class="row" :class="{ fanartBackground: layout.fanartBackground }">
+        <div class="row">
             <div class="col-md-12 top-15 displayShow horizontal-scroll">
                 <!-- Display non-special episodes, paginate if enabled -->
                 <vue-good-table v-if="show.seasons"
@@ -62,7 +61,7 @@
                         <h3 class="season-header toggle collapse"><app-link :name="'season-'+ props.row.season" />
                             {{ props.row.season > 0 ? 'Season ' + props.row.season : 'Specials' }}
                             <!-- Only show the search manual season search, when any of the episodes in it is not unaired -->
-                            <app-link v-if="anyEpisodeNotUnaired(props.row)" class="epManualSearch" :href="`home/snatchSelection?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}&amp;season=${props.row.season}&amp;episode=1&amp;manual_search_type=season`">
+                            <app-link v-if="anyEpisodeNotUnaired(props.row)" class="epManualSearch" :href="`home/snatchSelection?showslug=${show.id.slug}&amp;season=${props.row.season}&amp;episode=1&amp;manual_search_type=season`">
                                 <img v-if="config" data-ep-manual-search src="images/manualsearch-white.png" width="16" height="16" alt="search" title="Manual Search">
                             </app-link>
                             <div class="season-scene-exception" :data-season="props.row.season > 0 ? props.row.season : 'Specials'" />
@@ -116,10 +115,6 @@
                             <span :title="props.row.file.location" class="addQTip">{{props.row.file.name}}</span>
                         </span>
 
-                        <span v-else-if="props.column.label == 'Download'">
-                            <app-link v-if="config.downloadUrl && props.row.file.location && ['Downloaded', 'Archived'].includes(props.row.status)" :href="config.downloadUrl + props.row.file.location">Download</app-link>
-                        </span>
-
                         <span v-else-if="props.column.label == 'Subtitles'" class="align-center">
                             <div class="subtitles" v-if="['Archived', 'Downloaded', 'Ignored', 'Skipped'].includes(props.row.status)">
                                 <div v-for="flag in props.row.subtitles" :key="flag">
@@ -152,7 +147,7 @@
                                 >
                                 <app-link class="epManualSearch" :id="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`"
                                           :name="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`"
-                                          :href="`home/snatchSelection?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}&season=${props.row.season}&episode=${props.row.episode}`"
+                                          :href="`home/snatchSelection?showslug=${show.id.slug}&season=${props.row.season}&episode=${props.row.episode}`"
                                 >
                                     <img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search">
                                 </app-link>
@@ -228,7 +223,7 @@
                         <h3 class="season-header toggle collapse"><app-link :name="'season-'+ props.row.season" />
                             {{ props.row.season > 0 ? 'Season ' + props.row.season : 'Specials' }}
                             <!-- Only show the search manual season search, when any of the episodes in it is not unaired -->
-                            <app-link v-if="anyEpisodeNotUnaired(props.row)" class="epManualSearch" :href="`home/snatchSelection?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}&amp;season=${props.row.season}&amp;episode=1&amp;manual_search_type=season`">
+                            <app-link v-if="anyEpisodeNotUnaired(props.row)" class="epManualSearch" :href="`home/snatchSelection?showslug=${show.id.slug}&amp;season=${props.row.season}&amp;episode=1&amp;manual_search_type=season`">
                                 <img v-if="config" data-ep-manual-search src="images/manualsearch-white.png" width="16" height="16" alt="search" title="Manual Search">
                             </app-link>
                             <div class="season-scene-exception" :data-season="props.row.season > 0 ? props.row.season : 'Specials'" />
@@ -282,10 +277,6 @@
                             <span :title="props.row.file.location" class="addQTip">{{props.row.file.name}}</span>
                         </span>
 
-                        <span v-else-if="props.column.label == 'Download'">
-                            <app-link v-if="config.downloadUrl && props.row.file.location && ['Downloaded', 'Archived'].includes(props.row.status)" :href="config.downloadUrl + props.row.file.location">Download</app-link>
-                        </span>
-
                         <span v-else-if="props.column.label == 'Subtitles'" class="align-center">
                             <div class="subtitles" v-if="['Archived', 'Downloaded', 'Ignored', 'Skipped'].includes(props.row.status)">
                                 <div v-for="flag in props.row.subtitles" :key="flag">
@@ -314,7 +305,7 @@
                                 >
                                 <app-link class="epManualSearch" :id="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`"
                                           :name="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`"
-                                          :href="`home/snatchSelection?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}&season=${props.row.season}&episode=${props.row.episode}`"
+                                          :href="`home/snatchSelection?showslug=${show.id.slug}&season=${props.row.season}&episode=${props.row.episode}`"
                                 >
                                     <img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search">
                                 </app-link>
@@ -385,12 +376,13 @@
 
                             <div class="modal-body">
                                 <p>Starting to search for the episode</p>
-                                <p v-if="failedSearchEpisode">Would you also like to mark episode {{failedSearchEpisode.slug}} as "failed"? This will make sure the episode cannot be downloaded again</p>
+                                <p v-if="failedSearchEpisodes && failedSearchEpisodes.length === 1">Would you also like to mark episode {{failedSearchEpisodes[0].slug}} as "failed"? This will make sure the episode cannot be downloaded again</p>
+                                <p v-else-if="failedSearchEpisodes">Would you also like to mark episodes {{failedSearchEpisodes.map(ep => ep.slug).join(', ')}} as "failed"? This will make sure the episode cannot be downloaded again</p>
                             </div>
 
                             <div class="modal-footer">
-                                <button type="button" class="btn-medusa btn-danger" data-dismiss="modal" @click="search([failedSearchEpisode], 'backlog'); $modal.hide('query-mark-failed-and-search')">No</button>
-                                <button type="button" class="btn-medusa btn-success" data-dismiss="modal" @click="search([failedSearchEpisode], 'failed'); $modal.hide('query-mark-failed-and-search')">Yes</button>
+                                <button type="button" class="btn-medusa btn-danger" data-dismiss="modal" @click="search(failedSearchEpisodes, 'backlog'); $modal.hide('query-mark-failed-and-search')">No</button>
+                                <button type="button" class="btn-medusa btn-success" data-dismiss="modal" @click="search(failedSearchEpisodes, 'failed'); $modal.hide('query-mark-failed-and-search')">Yes</button>
                                 <button type="button" class="btn-medusa btn-danger" data-dismiss="modal" @click="$modal.hide('query-mark-failed-and-search')">Cancel</button>
                             </div>
                         </div>
@@ -398,7 +390,7 @@
                 </div>
             </transition>
         </modal>
-        <!--eslint-enable-->
+        <!-- eslint-enable -->
     </div>
 </template>
 
@@ -419,11 +411,11 @@ export default {
     name: 'show',
     components: {
         AppLink,
-        VueGoodTable,
         Backstretch,
         PlotInfo,
+        QualityPill,
         ShowHeader,
-        QualityPill
+        VueGoodTable
     },
     mixins: [
         manageCookieMixin('displayShow')
@@ -443,16 +435,10 @@ export default {
     },
     props: {
         /**
-         * Show indexer
+         * Show Slug
          */
-        showIndexer: {
+        slug: {
             type: String
-        },
-        /**
-         * Show id
-         */
-        showId: {
-            type: Number
         }
     },
     data() {
@@ -566,7 +552,7 @@ export default {
             paginationPerPage: getPaginationPerPage(),
             selectedEpisodes: [],
             // We need to keep track of which episode where trying to search, for the vue-modal
-            failedSearchEpisode: null,
+            failedSearchEpisodes: [],
             backlogSearchEpisodes: [],
             filterByOverviewStatus: false,
             selectedSearch: 'search action'
@@ -585,11 +571,9 @@ export default {
             getOverviewStatus: 'getOverviewStatus',
             fuzzyParseDateTime: 'fuzzyParseDateTime'
         }),
-        indexer() {
-            return this.showIndexer || this.$route.query.indexername;
-        },
-        id() {
-            return this.showId || Number(this.$route.query.seriesid) || undefined;
+        showSlug() {
+            const { slug } = this;
+            return slug || this.$route.query.showslug;
         },
         theme() {
             const { layout } = this;
@@ -639,13 +623,12 @@ export default {
 
     mounted() {
         const {
-            loadShow,
             setEpisodeSceneNumbering,
             setAbsoluteSceneNumbering,
             setInputValidInvalid
         } = this;
 
-        loadShow();
+        this.loadShow();
 
         ['load', 'resize'].map(event => {
             return window.addEventListener(event, () => {
@@ -727,16 +710,17 @@ export default {
             setCurrentShow: 'setCurrentShow',
             setRecentShow: 'setRecentShow'
         }),
-        loadShow() {
-            const { setCurrentShow, id, indexer, getShow } = this;
-            // Let's tell the store which show we currently want as current.
-            setCurrentShow({
-                indexer,
-                id
-            });
-
+        async loadShow() {
+            const { setCurrentShow, showSlug, initializeEpisodes, getShow } = this;
             // We need detailed info for the xem / scene exceptions, so let's get it.
-            getShow({ id, indexer, detailed: true });
+            await getShow({ showSlug, detailed: true });
+
+            // Let's tell the store which show we currently want as current.
+            // Run this after getShow(), as it will trigger the initializeEpisodes() method.
+            setCurrentShow(showSlug);
+
+            // Load all episodes
+            initializeEpisodes();
         },
         statusQualityUpdate(event) {
             const { selectedEpisodes, setStatus, setQuality } = this;
@@ -750,7 +734,7 @@ export default {
             }
         },
         setQuality(quality, episodes) {
-            const { id, indexer, getEpisodes, show } = this;
+            const { showSlug, getEpisodes, show } = this;
             const patchData = {};
 
             episodes.forEach(episode => {
@@ -761,32 +745,38 @@ export default {
                 .then(_ => {
                     console.info(`patched show ${show.id.slug} with quality ${quality}`);
                     [...new Set(episodes.map(episode => episode.season))].forEach(season => {
-                        getEpisodes({ id, indexer, season });
+                        getEpisodes({ showSlug, season });
                     });
                 }).catch(error => {
                     console.error(String(error));
                 });
         },
         setStatus(status, episodes) {
-            const { id, indexer, getEpisodes, show } = this;
+            const { showSlug, getEpisodes } = this;
             const patchData = {};
 
             episodes.forEach(episode => {
                 patchData[episode.slug] = { status };
             });
 
-            api.patch('series/' + show.id.slug + '/episodes', patchData) // eslint-disable-line no-undef
+            api.patch(`series/${showSlug}/episodes`, patchData) // eslint-disable-line no-undef
                 .then(_ => {
-                    console.info(`patched show ${show.id.slug} with status ${status}`);
+                    console.info(`patched show ${showSlug} with status ${status}`);
                     [...new Set(episodes.map(episode => episode.season))].forEach(season => {
-                        getEpisodes({ id, indexer, season });
+                        getEpisodes({ showSlug, season });
                     });
                 }).catch(error => {
                     console.error(String(error));
                 });
 
+            // New status Wanted
             if (status === 3) {
                 this.$modal.show('query-start-backlog-search', { episodes });
+            }
+
+            // New status Failed
+            if (status === 11) {
+                this.$modal.show('query-mark-failed-and-search', { episodes });
             }
         },
         parseDateFn(row) {
@@ -810,7 +800,7 @@ export default {
             return humanFileSize(headerRow.episodes.reduce((a, b) => a + (b.file.size || 0), 0));
         },
         searchSubtitle(event, episode, lang) {
-            const { id, indexer, getEpisodes, show, subtitleSearchComponents } = this;
+            const { showSlug, getEpisodes, show, subtitleSearchComponents } = this;
             const SubtitleSearchClass = Vue.extend(SubtitleSearch); // eslint-disable-line no-undef
             const instance = new SubtitleSearchClass({
                 propsData: { show, episode, key: episode.originalIndex, lang },
@@ -821,13 +811,13 @@ export default {
             instance.$on('update', event => {
                 // This could be replaced by the generic websocket updates in future.
                 if (event.reason === 'new subtitles found') {
-                    getEpisodes({ id, indexer, season: episode.season });
+                    getEpisodes({ showSlug, season: episode.season });
                 }
             });
 
             const node = document.createElement('div');
-            const subtitleRef = episode.season === 0 ? 'table-specials' : 'table-seasons';
-            this.$refs[subtitleRef].$refs[`row-${episode.originalIndex}`][0].after(node);
+            const tableRef = episode.season === 0 ? 'table-specials' : 'table-seasons';
+            this.$refs[tableRef].$refs[`row-${episode.originalIndex}`][0].after(node);
             instance.$mount(node);
             subtitleSearchComponents.push(instance);
         },
@@ -841,7 +831,7 @@ export default {
         }, 1000),
 
         setEpisodeSceneNumbering(forSeason, forEpisode, sceneSeason, sceneEpisode) {
-            const { $snotify, id, indexer, show } = this;
+            const { $snotify, show } = this;
 
             if (!show.config.scene) {
                 $snotify.warning(
@@ -860,8 +850,8 @@ export default {
             }
 
             $.getJSON('home/setSceneNumbering', {
-                indexername: indexer,
-                seriesid: id,
+                indexername: show.indexer,
+                seriesid: show.id[show.indexer],
                 forSeason,
                 forEpisode,
                 sceneSeason,
@@ -869,9 +859,9 @@ export default {
             }, data => {
                 // Set the values we get back
                 if (data.sceneSeason === null || data.sceneEpisode === null) {
-                    $('#sceneSeasonXEpisode_' + id + '_' + forSeason + '_' + forEpisode).val('');
+                    $(`#sceneSeasonXEpisode_${show.id[show.indexer]}_${forSeason}_${forEpisode}`).val('');
                 } else {
-                    $('#sceneSeasonXEpisode_' + id + '_' + forSeason + '_' + forEpisode).val(data.sceneSeason + 'x' + data.sceneEpisode);
+                    $(`#sceneSeasonXEpisode_${show.id[show.indexer]}_${forSeason}_${forEpisode}`).val(data.sceneSeason + 'x' + data.sceneEpisode);
                 }
 
                 if (!data.success) {
@@ -884,7 +874,7 @@ export default {
             });
         },
         setAbsoluteSceneNumbering(forAbsolute, sceneAbsolute) {
-            const { $snotify, id, indexer, show } = this;
+            const { $snotify, show } = this;
 
             if (!show.config.scene) {
                 $snotify.warning(
@@ -899,16 +889,16 @@ export default {
             }
 
             $.getJSON('home/setSceneNumbering', {
-                indexername: indexer,
-                seriesid: id,
+                indexername: show.indexer,
+                seriesid: show.id[show.indexer],
                 forAbsolute,
                 sceneAbsolute
             }, data => {
                 // Set the values we get back
                 if (data.sceneAbsolute === null) {
-                    $('#sceneAbsolute_' + id + '_' + forAbsolute).val('');
+                    $(`#sceneAbsolute_${show.id[show.indexer]}_${forAbsolute}`).val('');
                 } else {
-                    $('#sceneAbsolute_' + id + '_' + forAbsolute).val(data.sceneAbsolute);
+                    $(`#sceneAbsolute_${show.id[show.indexer]}_${forAbsolute}`).val(data.sceneAbsolute);
                 }
 
                 if (!data.success) {
@@ -1025,7 +1015,7 @@ export default {
          * @param {Object} event - vue js modal event
          */
         beforeFailedSearchModalClose(event) {
-            this.failedSearchEpisode = event.params.episode;
+            this.failedSearchEpisodes = event.params.episodes;
         },
         retryDownload(episode) {
             const { stateSearch } = this;
@@ -1064,7 +1054,7 @@ export default {
                         this.$refs[`search-${episodes[0].slug}`].src = 'images/no16.png';
                     });
                 }).finally(() => {
-                    this.failedSearchEpisode = null;
+                    this.failedSearchEpisodes = [];
                     this.backlogSearchEpisodes = [];
                 });
         },
@@ -1129,7 +1119,7 @@ export default {
             return bindData;
         },
         updateEpisodeWatched(episode, watched) {
-            const { id, indexer, getEpisodes, show } = this;
+            const { showSlug, getEpisodes, show } = this;
             const patchData = {};
 
             patchData[episode.slug] = { watched };
@@ -1137,7 +1127,7 @@ export default {
             api.patch(`series/${show.id.slug}/episodes`, patchData) // eslint-disable-line no-undef
                 .then(_ => {
                     console.info(`patched episode ${episode.slug} with watched set to ${watched}`);
-                    getEpisodes({ id, indexer, season: episode.season });
+                    getEpisodes({ showSlug, season: episode.season });
                 }).catch(error => {
                     console.error(String(error));
                 });
@@ -1153,7 +1143,16 @@ export default {
             this.loadEpisodes(params.currentPage);
         },
         neededSeasons(page) {
-            const { paginationPerPage, show } = this;
+            const { layout, paginationPerPage, show } = this;
+            const { seasonCount } = show;
+            if (!seasonCount || seasonCount.length === 0) {
+                return [];
+            }
+
+            if (!layout.show.pagination.enable) {
+                return seasonCount.filter(season => season.season !== 0).map(season => season.season).reverse();
+            }
+
             const seasons = show.seasonCount.length - 1;
 
             let pagesCount = 1;
@@ -1185,35 +1184,35 @@ export default {
             return pages[page] || [];
         },
         loadEpisodes(page) {
-            const { id, indexer, getEpisodes } = this;
+            const { showSlug, getEpisodes } = this;
             // Wrap getEpisodes into an async/await function, so we can wait for the season to have been committed
             // before going on to the next one.
-            const _getEpisodes = async (id, indexer) => {
+            const _getEpisodes = async showSlug => {
                 for (const season of this.neededSeasons(page)) {
                     // We're waiting for the results by design, to give vue the chance to update the dom.
                     // If we fire all the promises at once for, for example 25 seasons. We'll overload medusa's app
                     // and chance is high a number of requests will timeout.
-                    await getEpisodes({ id, indexer, season }); // eslint-disable-line no-await-in-loop
+                    await getEpisodes({ showSlug, season }); // eslint-disable-line no-await-in-loop
                 }
             };
-            _getEpisodes(id, indexer);
+
+            _getEpisodes(showSlug);
         },
         initializeEpisodes() {
-            const { getEpisodes, id, indexer, setRecentShow, show } = this;
-            if (!show.seasons) {
+            const { getEpisodes, showSlug, setRecentShow, show } = this;
+            if (!show.seasons && show.seasonCount) {
                 // Load episodes for the first page.
                 this.loadEpisodes(1);
                 // Always get special episodes if available.
                 if (show.seasonCount.length > 0 && show.seasonCount[0].season === 0) {
-                    getEpisodes({ id, indexer, season: 0 });
+                    getEpisodes({ showSlug, season: 0 });
                 }
             }
 
             if (show.id.slug) {
                 // For now i'm dumping this here
                 setRecentShow({
-                    indexerName: show.indexer,
-                    showId: show.id[show.indexer],
+                    showSlug: show.id.slug,
                     name: show.title
                 });
             }
@@ -1230,8 +1229,7 @@ export default {
             if (event.target.value === 'manual') {
                 // Use the router to navigate to snatchSelection.
                 $router.push({ name: 'snatchSelection', query: {
-                    indexername: show.indexer,
-                    seriesid: show.id[show.indexer],
+                    showslug: show.id.slug,
                     season: episode.season,
                     episode: episode.episode
                 } });
@@ -1248,22 +1246,12 @@ export default {
     },
     watch: {
         'show.id.slug': function(slug) { // eslint-disable-line object-shorthand
-            const { initializeEpisodes } = this;
             // Show's slug has changed, meaning the show's page has finished loading.
             if (slug) {
                 // This is still technically jQuery. Meaning whe're still letting jQuery do its thing on the entire dom.
                 updateSearchIcons(slug, this);
-                initializeEpisodes();
             }
         }
-    },
-    beforeRouteEnter(to, from, next) {
-        next(vm => {
-            // Access to component instance via `vm`.
-            // When moving from editShow to displayShow we might not have loaded the episodes yet.
-            // The watch on show.id.slug will also not be triggered.
-            vm.initializeEpisodes();
-        });
     }
 };
 </script>

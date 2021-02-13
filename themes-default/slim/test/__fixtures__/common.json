@@ -13,7 +13,6 @@
                 "wikiUrl": "https://github.com/pymedusa/Medusa/wiki",
                 "donationsUrl": "https://github.com/pymedusa/Medusa/wiki/Donations",
                 "sourceUrl": "https://github.com/pymedusa/Medusa",
-                "downloadUrl": "",
                 "subtitlesMulti": true,
                 "namingForceFolders": false,
                 "subtitles": {
@@ -21,13 +20,11 @@
                 },
                 "recentShows": [
                     {
-                        "showId": 253463,
-                        "indexerName": "tvdb",
+                        "showSlug": "tvdb253463",
                         "name": "Black Mirror"
                     },
                     {
-                        "showId": 80379,
-                        "indexerName": "tvdb",
+                        "showSlug": "tvdb80379",
                         "name": "The Big Bang Theory"
                     }
                 ],
@@ -39,7 +36,8 @@
                     "subtitles": false,
                     "seasonFolders": false,
                     "anime": false,
-                    "scene": false
+                    "scene": false,
+                    "showLists": ["Series"]
                 },
                 "logs": {
                     "debug": true,
@@ -181,6 +179,7 @@
                 "skipRemovedFiles": false,
                 "epDefaultDeletedStatus": 6,
                 "developer": true,
+                "experimental": false,
                 "git": {
                     "username": "",
                     "password": "",
@@ -763,7 +762,7 @@
                         "isSilent": true
                     },
                     {
-                        "key": "torrentChecker",
+                        "key": "downloadHandler",
                         "name": "Torrent Checker",
                         "isAlive": true,
                         "isEnabled": false,
@@ -1266,6 +1265,13 @@
                     "16": "Repeat (Separated)",
                     "32": "Extend (Limited, E-prefixed)",
                     "64": "Extend (Limited, e-prefixed)"
+                },
+                "downloadHandler": {
+                    "enabled": true,
+                    "frequency": 10,
+                    "minFrequency": 5,
+                    "torrentSeedRatio": 1,
+                    "torrentSeedAction": "remove"
                 }
             },
             "search": {
@@ -1279,9 +1285,8 @@
                     "minBacklogFrequency": 720,
                     "dailySearchFrequency": 10,
                     "minDailySearchFrequency": 10,
-                    "removeFromClient": false,
-                    "torrentCheckerFrequency": 60,
-                    "minTorrentCheckerFrequency": 30,
+                    "downloadHandlerFrequency": 60,
+                    "mindownloadHandlerFrequency": 30,
                     "usenetRetention": 500,
                     "trackersList": [
                         "udp://tracker.coppersurfer.tk:6969/announce",
@@ -1342,6 +1347,16 @@
                     ],
                     "ignoreUnknownSubs": false
                 }
+            },
+            "anime": {
+                "anidb": {
+                    "enabled": true,
+                    "username": "user",
+                    "password": "pass",
+                    "useMylist": false
+                },
+                "autoAnimeToList": true,
+                "showlistDefaultAnime": "Anime"
             }
         },
         "auth": {

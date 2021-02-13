@@ -82,7 +82,6 @@ class ConfigGeneral(Config):
         results = []
 
         # Misc
-        app.DOWNLOAD_URL = download_url
         app.INDEXER_DEFAULT_LANGUAGE = indexerDefaultLang
         app.EP_DEFAULT_DELETED_STATUS = int(ep_default_deleted_status)
         app.SKIP_REMOVED_FILES = config.checkbox_to_value(skip_removed_files)
@@ -111,9 +110,8 @@ class ConfigGeneral(Config):
         app.GIT_RESET = config.checkbox_to_value(git_reset)
         app.GIT_RESET_BRANCHES = [helpers.to_text(branch) for branch in
                                   helpers.ensure_list(git_reset_branches)]
-        if app.GIT_PATH != git_path:
+        if git_path is not None and app.GIT_PATH != git_path:
             app.GIT_PATH = git_path
-            config.change_GIT_PATH()
         app.GIT_REMOTE = git_remote
         app.CALENDAR_UNPROTECTED = config.checkbox_to_value(calendar_unprotected)
         app.CALENDAR_ICONS = config.checkbox_to_value(calendar_icons)
@@ -126,10 +124,7 @@ class ConfigGeneral(Config):
         app.NOTIFY_ON_LOGIN = config.checkbox_to_value(notify_on_login)
         app.WEB_PORT = int(web_port)
         app.WEB_IPV6 = config.checkbox_to_value(web_ipv6)
-        if config.checkbox_to_value(encryption_version) == 1:
-            app.ENCRYPTION_VERSION = 2
-        else:
-            app.ENCRYPTION_VERSION = 0
+        app.ENCRYPTION_VERSION = config.checkbox_to_value(encryption_version)
         app.WEB_USERNAME = web_username
         app.WEB_PASSWORD = web_password
         app.WEB_ROOT = web_root

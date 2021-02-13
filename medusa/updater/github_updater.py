@@ -6,6 +6,7 @@ import logging
 import platform
 import re
 import subprocess
+import sys
 
 from medusa import app, notifiers
 from medusa.logger.adapters.style import BraceAdapter
@@ -50,14 +51,16 @@ class GitUpdateManager(UpdateManager):
         self.update_commit_hash()
         cur_version = self._run_git(self._git_path, 'describe --tags --abbrev=0 {0}'.format(
             self._cur_commit_hash))[0]
-        return cur_version.lstrip('v')
+        if cur_version:
+            return cur_version.lstrip('v')
 
     @property
     def newest_version(self):
         self.update_newest_commit_hash()
         new_version = self._run_git(self._git_path, 'describe --tags --abbrev=0 {0}'.format(
             self._newest_commit_hash))[0]
-        return new_version.lstrip('v')
+        if new_version:
+            return new_version.lstrip('v')
 
     @property
     def commits_behind(self):
@@ -299,6 +302,10 @@ class GitUpdateManager(UpdateManager):
         :return:
         :rtype: bool
         """
+        # Version 0.4.6 is the last version which will run on python 2.7.13.
+        if sys.version_info.major == 2:
+            return False
+
         return self._num_commits_ahead <= 0 or self._is_hard_reset_allowed()
 
     def update(self):
@@ -316,10 +323,18 @@ class GitUpdateManager(UpdateManager):
         # Executing git clean before updating
         self.clean()
 
-        if self.branch == self._find_installed_branch():
+        current_branch = self._find_installed_branch()
+        if self.branch == current_branch:
             _, _, exit_status = self._run_git(self._git_path, 'pull -f {0} {1}'.format(app.GIT_REMOTE, self.branch))
         else:
-            _, _, exit_status = self._run_git(self._git_path, 'checkout -f ' + self.branch)
+            log.warning(
+                u"Couldn't determine current branch or current branch {current}"
+                u" doesn't match desired branch {desired}.\n"
+                u'Checkout the desired branch or try again later.', {
+                    'current': current_branch,
+                    'desired': self.branch
+                })
+            return False
 
         # Executing git clean after updating
         self.clean()
@@ -374,8 +389,7 @@ class GitUpdateManager(UpdateManager):
 
         branches, _, exit_status = self._run_git(self._git_path, 'ls-remote --heads {0}'.format(app.GIT_REMOTE))
         if exit_status == 0 and branches:
-            if branches:
-                return re.findall(r'refs/heads/(.*)', branches)
+            return re.findall(r'refs/heads/(.*)', branches)
         return []
 
     def update_remote_origin(self):

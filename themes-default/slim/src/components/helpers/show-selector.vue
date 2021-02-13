@@ -1,12 +1,12 @@
 <template>
-    <div v-if="showForRoutes" class="show-selector form-inline hidden-print">
+    <div class="show-selector form-inline hidden-print">
         <div class="select-show-group pull-left top-5 bottom-5">
             <select v-if="shows.length === 0" :class="selectClass" disabled>
                 <option>Loading...</option>
             </select>
-            <select v-else v-model="selectedShowSlug" :class="selectClass" @change="$emit('change', selectedShowSlug)">
-                <!-- placeholder -->
-                <option v-if="placeholder" :value="placeholder" disabled :selected="!selectedShowSlug" hidden>{{placeholder}}</option>
+            <select v-else v-model="selectedShowSlug" :class="selectClass" @change="changeRoute($event.target.value);">
+                <!-- placeHolder -->
+                <option v-if="placeHolder" :value="placeHolder" disabled :selected="!selectedShowSlug" hidden>{{placeHolder}}</option>
                 <!-- If there are multiple show lists -->
                 <template v-if="sortedLists && sortedLists.length > 1">
                     <optgroup v-for="list in sortedLists" :key="list.listTitle" :label="list.listTitle">
@@ -22,7 +22,7 @@
     </div> <!-- end of container -->
 </template>
 <script>
-import { mapGetters, mapState } from 'vuex';
+import { mapActions, mapGetters, mapState } from 'vuex';
 
 export default {
     name: 'show-selector',
@@ -32,16 +32,15 @@ export default {
             type: Boolean,
             default: false
         },
-        placeholder: String,
+        placeHolder: String,
         selectClass: {
             type: String,
             default: 'select-show form-control input-sm-custom'
         }
     },
     data() {
-        const selectedShowSlug = this.showSlug || this.placeholder;
         return {
-            selectedShowSlug
+            $_selectedShow: '' // eslint-disable-line camelcase
         };
     },
     computed: {
@@ -52,13 +51,22 @@ export default {
         ...mapGetters({
             showsInLists: 'showsInLists'
         }),
+        selectedShowSlug: {
+            get() {
+                const { placeHolder, showSlug, $_selectedShow } = this; // eslint-disable-line camelcase
+                return $_selectedShow || showSlug || placeHolder; // eslint-disable-line camelcase
+            },
+            set(newSlug) {
+                this.$_selectedShow = newSlug; // eslint-disable-line camelcase
+            }
+        },
         sortedLists() {
             const { layout, showsInLists } = this;
             const { sortArticle } = layout;
 
             const sortedShows = [...showsInLists];
 
-            const sortKey = title => (sortArticle ? title.replace(/^((?:the|a|an)\s)/i, '') : title).toLowerCase();
+            const sortKey = title => (sortArticle ? title : title.replace(/^((?:the|a|an)\s)/i, '')).toLowerCase();
             const sortFn = (showA, showB) => {
                 const titleA = sortKey(showA.title);
                 const titleB = sortKey(showB.title);
@@ -76,38 +84,34 @@ export default {
             });
 
             return sortedShows;
-        },
-        showForRoutes() {
-            const { $route } = this;
-            return ['show', 'editShow'].includes($route.name);
+        }
+    },
+    methods: {
+        ...mapActions({
+            setCurrentShow: 'setCurrentShow'
+        }),
+        async changeRoute(newShowSlug) {
+            const { followSelection, shows, selectedShowSlug, setCurrentShow } = this;
+            this.$emit('change', newShowSlug);
+
+            if (!followSelection) {
+                return;
+            }
+
+            const selectedShow = shows.find(show => show.id.slug === newShowSlug);
+            if (!selectedShow || selectedShowSlug === newShowSlug) {
+                return;
+            }
+
+            await setCurrentShow(newShowSlug);
+
+            // To make it complete, make sure to switch route.
+            this.$router.push({ query: { showslug: newShowSlug } });
         }
     },
     watch: {
         showSlug(newSlug) {
             this.selectedShowSlug = newSlug;
-        },
-        selectedShowSlug(newSlug) {
-            if (!this.followSelection) {
-                return;
-            }
-
-            const { $store, shows } = this;
-            const selectedShow = shows.find(show => show.id.slug === newSlug);
-            if (!selectedShow) {
-                return;
-            }
-            const indexerName = selectedShow.indexer;
-            const seriesId = selectedShow.id[indexerName];
-
-            // Make sure the correct show, has been set as current show.
-            console.debug(`Setting current show to ${selectedShow.title}`);
-            $store.commit('currentShow', {
-                indexer: indexerName,
-                id: seriesId
-            });
-
-            // To make it complete, make sure to switch route.
-            this.$router.push({ query: { indexername: indexerName, seriesid: String(seriesId) } });
         }
     }
 };

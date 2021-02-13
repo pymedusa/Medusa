@@ -1,6 +1,6 @@
 <template>
     <div class="show-results-wrapper">
-        <div class="row horizontal-scroll" :class="{ fanartBackground: layout.fanartBackground }">
+        <div class="row horizontal-scroll">
             <div class="col-md-12 top-15">
                 <div class="button-row">
                     <input class="btn-medusa manualSearchButton top-5 bottom-5" type="button"  value="Refresh Results" @click="getProviderResults">
@@ -31,8 +31,9 @@
                     <template slot="table-row" slot-scope="props">
                         <span v-if="props.column.label === 'Provider'" class="align-center">
                             <img :src="`images/providers/${props.row.provider.imageName}`"
-                                 :alt="props.row.provider.name" width="16" class="addQTip"
+                                 :alt="props.row.provider.name" width="16"
                                  :title="props.row.provider.name"
+                                 v-tooltip.right="props.row.provider.name"
                                  onError="this.onerror=null;this.src='images/providers/missing.png';"
                             >
                         </span>
@@ -70,6 +71,10 @@
                         </span>
                     </template>
 
+                    <div slot="emptystate">
+                        No search results available
+                    </div>
+
                 </vue-good-table>
             </div>
         </div>
@@ -84,7 +89,7 @@ import { manageCookieMixin } from '../mixins/manage-cookie';
 import { StateSwitch } from './helpers';
 import QualityPill from './helpers/quality-pill.vue';
 import { episodeToSlug, humanFileSize } from '../utils/core';
-import { addQTip } from '../utils/jquery';
+import { VTooltip } from 'v-tooltip';
 
 export default {
     name: 'show-results',
@@ -92,6 +97,9 @@ export default {
         VueGoodTable,
         StateSwitch,
         QualityPill
+    },
+    directives: {
+        tooltip: VTooltip
     },
     mixins: [
         manageCookieMixin('showResults')
@@ -204,8 +212,6 @@ export default {
         if (result.providersSearched > 0 && result.totalSearchResults.length === 0) {
             forceSearch();
         }
-
-        addQTip();
     },
     computed: {
         ...mapState({
@@ -213,7 +219,7 @@ export default {
             layout: state => state.config.layout,
             search: state => state.config.search,
             providers: state => state.provider.providers,
-            queueitems: state => state.search.queueitems,
+            queueitems: state => state.queue.queueitems,
             history: state => state.history.episodeHistory
         }),
         ...mapGetters({
@@ -396,9 +402,6 @@ export default {
                     await getShowEpisodeHistory({ showSlug: show.id.slug, episodeSlug });
                     await getProviderCacheResults({ showSlug: show.id.slug, season, episode });
                 }
-
-                // Update qTip
-                addQTip();
             },
             deep: true,
             immediate: false
@@ -407,4 +410,5 @@ export default {
 };
 </script>
 <style scoped>
+@import '../style/v-tooltip.css';
 </style>

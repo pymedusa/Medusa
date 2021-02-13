@@ -698,6 +698,17 @@ class PostProcessor(object):
             self.log(u'{0}'.format(error), logger.DEBUG)
             return to_return
 
+        # if parsed result should be an anime, but doesn't have
+        # absolute numbering, parse again explicitly as anime
+        if parse_result.series and all([parse_result.series.is_anime,
+                                        not parse_result.is_anime]):
+            try:
+                parse_result.series.erase_cached_parse()
+                parse_result = NameParser(parse_method='anime').parse(name)
+            except (InvalidNameException, InvalidShowException) as error:
+                self.log(u'{0}'.format(error), logger.DEBUG)
+                return to_return
+
         if parse_result.series and all([parse_result.series.air_by_date or parse_result.series.is_sports,
                                         parse_result.is_air_by_date]):
             season = -1
@@ -1183,16 +1194,12 @@ class PostProcessor(object):
 
                 cur_ep.status = DOWNLOADED
                 cur_ep.quality = new_ep_quality
-
                 cur_ep.subtitles = u''
-
                 cur_ep.subtitles_searchcount = 0
-
                 cur_ep.subtitles_lastsearch = u'0001-01-01 00:00:00'
-
                 cur_ep.is_proper = self.is_proper
-
                 cur_ep.version = new_ep_version
+                cur_ep.manually_searched = self.manually_searched
 
                 if self.release_group:
                     cur_ep.release_group = self.release_group
@@ -1256,13 +1263,25 @@ class PostProcessor(object):
                      (self.file_path, dest_path, error), logger.ERROR)
             raise EpisodePostProcessingFailedException('Unable to move the files to their new home')
 
+        sql_l = []
         # download subtitles
-        if app.USE_SUBTITLES and ep_obj.series.subtitles:
-            for cur_ep in [ep_obj] + ep_obj.related_episodes:
-                with cur_ep.lock:
-                    cur_ep.location = os.path.join(dest_path, new_file_name)
+        for cur_ep in [ep_obj] + ep_obj.related_episodes:
+            with cur_ep.lock:
+                cur_ep.location = os.path.join(dest_path, new_file_name)
+
+                if app.USE_SUBTITLES and ep_obj.series.subtitles:
                     cur_ep.refresh_subtitles()
                     cur_ep.download_subtitles()
+
+                cur_ep.airdate_modify_stamp()
+
+                # generate nfo/tbn
+                try:
+                    cur_ep.create_meta_files()
+                except Exception:
+                    logger.log(u'Could not create/update meta files. Continuing with post-processing...')
+
+                sql_l.append(cur_ep.get_sql())
 
         # now that processing has finished, we can put the info in the DB.
         # If we do it earlier, then when processing fails, it won't try again.
@@ -1270,28 +1289,9 @@ class PostProcessor(object):
             main_db_con = db.DBConnection()
             main_db_con.mass_action(sql_l)
 
-        # put the new location in the database
-        sql_l = []
-        for cur_ep in [ep_obj] + ep_obj.related_episodes:
-            with cur_ep.lock:
-                cur_ep.location = os.path.join(dest_path, new_file_name)
-                sql_l.append(cur_ep.get_sql())
-
-        if sql_l:
-            main_db_con = db.DBConnection()
-            main_db_con.mass_action(sql_l)
-
-        cur_ep.airdate_modify_stamp()
-
-        # generate nfo/tbn
-        try:
-            ep_obj.create_meta_files()
-        except Exception:
-            logger.log(u'Could not create/update meta files. Continuing with post-processing...')
-
         # log it to history episode and related episodes (multi-episode for example)
         for cur_ep in [ep_obj] + ep_obj.related_episodes:
-            history.log_download(cur_ep, self.file_path, new_ep_quality, self.release_group, new_ep_version)
+            history.log_download(cur_ep, self.file_path, self.release_group)
 
         # send notifications
         notifiers.notify_download(ep_obj)
@@ -1313,7 +1313,7 @@ class PostProcessor(object):
         self._run_extra_scripts(ep_obj)
 
         if not self.nzb_name and all([app.USE_TORRENTS, app.TORRENT_SEED_LOCATION,
-                                      self.process_method in ('hardlink', 'symlink', 'reflink', 'keeplink')]):
+                                      self.process_method in ('hardlink', 'symlink', 'reflink', 'keeplink', 'copy')]):
             # Store self.info_hash and self.release_name so later we can remove from client if setting is enabled
             if self.info_hash:
                 existing_release_names = app.RECENTLY_POSTPROCESSED.get(self.info_hash, [])

@@ -57,6 +57,11 @@
                                         <root-dirs />
                                     </config-template>
 
+                                    <config-toggle-slider experimental v-model="general.addTitleWithYear" label="Append (year) to each show title" id="add_title_year">
+                                        <p>Make sure that each show title is added with (year) appended to it</p>
+                                        <p>The show title with year is only used for show folder creation as representation in the UI.</p>
+                                    </config-toggle-slider>
+
                                     <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
                                 </fieldset>
                             </div>
@@ -229,10 +234,6 @@
                                         <p><b>Note:</b> Use local timezone to start searching for episodes minutes after show ends (depends on your dailysearch frequency)</p>
                                     </config-template>
 
-                                    <config-textbox v-model="general.downloadUrl" label="Download url" id="download_url">
-                                        <span class="component-desc">URL where the shows can be downloaded.</span>
-                                    </config-textbox>
-
                                     <config-toggle-slider v-model="layout.show.pagination.enable" label="Use table pagination" id="show_pagination" />
 
                                     <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
@@ -362,8 +363,20 @@
                                         <p>blank to disable or proxy to use when connecting to providers</p>
                                     </config-textbox>
 
+                                    <config-toggle-slider v-if="general.proxySetting !== ''" v-model="general.proxyProviders" label="Use proxy for providers" id="proxy_providers">
+                                        <p>use proxy host for connecting to providers (torrent & nzb)</p>
+                                    </config-toggle-slider>
+
                                     <config-toggle-slider v-if="general.proxySetting !== ''" v-model="general.proxyIndexers" label="Use proxy for indexers" id="proxy_indexers">
-                                        <p>use proxy host for connecting to indexers (thetvdb)</p>
+                                        <p>use proxy host for connecting to indexers (thetvdb, tmdb or tvmaze)</p>
+                                    </config-toggle-slider>
+
+                                    <config-toggle-slider v-if="general.proxySetting !== ''" v-model="general.proxyClients" label="Use proxy for clients" id="proxy_clients">
+                                        <p>use proxy host for connecting torrent or usenet clients (nzbGet excluded)</p>
+                                    </config-toggle-slider>
+
+                                    <config-toggle-slider v-if="general.proxySetting !== ''" v-model="general.proxyOthers" label="Use proxy for other sites" id="proxy_others">
+                                        <p>use proxy host for connecting to other sites.</p>
                                     </config-toggle-slider>
 
                                     <config-toggle-slider v-model="general.skipRemovedFiles" label="Skip Remove Detection" id="skip_removed_files">
@@ -382,6 +395,10 @@
                                         <p><b>Note:</b> Archived option will keep previous downloaded quality</p>
                                         <p>Example: Downloaded (1080p WEB-DL) ==> Archived (1080p WEB-DL)</p>
                                     </config-template>
+
+                                    <config-toggle-slider v-model="general.experimental" label="Enable experimental features" id="experimental">
+                                        <p>allow for using experimental features</p>
+                                    </config-toggle-slider>
 
                                     <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
                                 </fieldset>
@@ -417,6 +434,10 @@
                                         </span>
                                     </config-template>
 
+                                    <config-template label-for="custom_logs" label="Overwrite log levels for overwritable logs">
+                                        <custom-logs />
+                                    </config-template>
+
                                     <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
                                 </fieldset>
                             </div>
@@ -435,11 +456,11 @@
                                             <option disabled value="">Please select a branch</option>
                                             <option :value="option.value" v-for="option in githubRemoteBranchesOptions" :key="option.value">{{ option.text }}</option>
                                         </select>
-                                        <input :disabled="!githubBranches.length > 0"
+                                        <input :disabled="!gitRemoteBranches.length > 0"
                                                class="btn-medusa btn-inline" style="margin-left: 6px;" type="button" id="branchCheckout"
                                                value="Checkout Branch" @click="validateCheckoutBranch"
                                         >
-                                        <span v-if="!githubBranches.length > 0" style="color:rgb(255, 0, 0);"><p>Error: No branches found.</p></span>
+                                        <span v-if="!gitRemoteBranches.length > 0" style="color:rgb(255, 0, 0);"><p>Error: No branches found.</p></span>
                                         <p v-else>select branch to use (restart required)</p>
                                         <p v-if="checkoutBranchMessage">
                                             <state-switch state="loading" :theme="layout.themeName" />
@@ -519,9 +540,9 @@
                                         <multiselect
                                             v-model="general.git.resetBranches"
                                             :multiple="true"
-                                            :options="githubBranches"
+                                            :options="gitRemoteBranches"
                                         />
-                                        <input class="btn-medusa btn-inline" style="margin-left: 6px;" type="button" id="branch_force_update" value="Update Branches" @click="githubBranchForceUpdate">
+                                        <input class="btn-medusa btn-inline" style="margin-left: 6px;" type="button" id="branch_force_update" value="Update Branches" @click="gitRemoteBranches()">
                                         <span><b>Note:</b> Empty selection means that any branch could be reset.</span>
                                     </config-template>
                                     <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
@@ -531,7 +552,6 @@
                     </div><!-- /component-group3 //-->
                     <br>
                     <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">{{system.dataDir}}</span></b> </h6>
-                    <input type="submit" class="btn-medusa pull-left config_submitter button" value="Save Changes">
                 </div><!-- /config-components -->
             </form>
         </div>
@@ -584,7 +604,7 @@
                 </div>
             </transition>
         </modal>
-        <!--eslint-enable-->
+        <!-- eslint-enable -->
     </div>
 </template>
 
@@ -598,6 +618,7 @@ import {
     ConfigTextbox,
     ConfigTextboxNumber,
     ConfigToggleSlider,
+    CustomLogs,
     LanguageSelect,
     SortedSelectList,
     StateSwitch
@@ -618,6 +639,7 @@ export default {
         ConfigTextbox,
         ConfigTextboxNumber,
         ConfigToggleSlider,
+        CustomLogs,
         LanguageSelect,
         Multiselect,
         SortedSelectList,
@@ -647,7 +669,6 @@ export default {
         return {
             defaultPageOptions,
             privacyLevelOptions,
-            githubBranchesForced: [],
             resetBranchSelected: null,
             saving: false,
             selectedBranch: '',
@@ -741,28 +762,24 @@ export default {
             return [];
         },
         githubRemoteBranchesOptions() {
-            const { general, githubBranches, githubBranchForceUpdate, gitRemoteBranches } = this;
+            const { general, getGitRemoteBranches, gitRemoteBranches } = this;
             const { username, password, token } = general.git;
 
             if (!gitRemoteBranches.length > 0) {
-                githubBranchForceUpdate();
+                getGitRemoteBranches();
             }
 
             let filteredBranches = [];
 
             if (((username && password) || token) && general.developer) {
-                filteredBranches = githubBranches;
+                filteredBranches = gitRemoteBranches;
             } else if ((username && password) || token) {
-                filteredBranches = githubBranches.filter(branch => ['master', 'develop'].includes(branch));
+                filteredBranches = gitRemoteBranches.filter(branch => ['master', 'develop'].includes(branch));
             } else {
-                filteredBranches = githubBranches.filter(branch => ['master'].includes(branch));
+                filteredBranches = gitRemoteBranches.filter(branch => ['master'].includes(branch));
             }
 
             return filteredBranches.map(branch => ({ text: branch, value: branch }));
-        },
-        githubBranches() {
-            const { githubBranchesForced, gitRemoteBranches } = this;
-            return gitRemoteBranches || githubBranchesForced;
         },
         githubTokenPopover() {
             const { general } = this;
@@ -776,14 +793,9 @@ export default {
             setConfig: 'setConfig',
             setTheme: 'setTheme',
             getApiKey: 'getApiKey',
-            setLayoutShow: 'setLayoutShow'
+            setLayoutShow: 'setLayoutShow',
+            getGitRemoteBranches: 'getGitRemoteBranches'
         }),
-        async githubBranchForceUpdate() {
-            const response = await apiRoute('home/branchForceUpdate');
-            if (response.data._size > 0) {
-                this.githubBranchesForced = response.data.resetBranches;
-            }
-        },
         async generateApiKey() {
             const { getApiKey, save } = this;
             try {

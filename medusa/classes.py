@@ -77,6 +77,8 @@ class SearchResult(object):
         self.version = -1
         # hash
         self.hash = None
+        # nzb_id (nzbget uses NZBID and SabNzbd uses ...)
+        self.nzb_id = None
         # proper_tags
         self.proper_tags = []
         # manually_searched
@@ -210,7 +212,7 @@ class SearchResult(object):
             'release': self.name,
             'season': self.actual_season,
             'episodes': self.actual_episodes,
-            'seasonPack': len(self.actual_episodes) == 0,
+            'seasonPack': len(self.actual_episodes) == 0 or len(self.actual_episodes) > 1,
             'indexer': self.series.indexer,
             'seriesId': self.series.series_id,
             'showSlug': self.series.identifier.slug,
@@ -250,7 +252,8 @@ class SearchResult(object):
         """Use this result to create an episode segment out of it."""
         if self.actual_season is not None and self.series:
             if self.actual_episodes:
-                self.episodes = [self.series.get_episode(self.actual_season, ep) for ep in self.actual_episodes]
+                episodes = (self.series.get_episode(self.actual_season, ep) for ep in self.actual_episodes)
+                self.episodes = [ep for ep in episodes if ep is not None]
                 if len(self.actual_episodes) == 1:
                     self.episode_number = self.actual_episodes[0]
                 else:
@@ -288,7 +291,8 @@ class SearchResult(object):
         # Multi or single episode result
         else:
             actual_episodes = [int(ep) for ep in sql_episodes.split('|')]
-            ep_objs = [series_obj.get_episode(actual_season, ep) for ep in actual_episodes]
+            episodes = (series_obj.get_episode(actual_season, ep) for ep in actual_episodes)
+            ep_objs = [ep for ep in episodes if ep is not None]
 
             self.actual_episodes = actual_episodes
             if len(actual_episodes) == 1:

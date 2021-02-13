@@ -233,6 +233,21 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   <root-dirs-stub />
                 </config-template-stub>
                  
+                <config-toggle-slider-stub
+                  experimental="true"
+                  explanations=""
+                  id="add_title_year"
+                  label="Append (year) to each show title"
+                >
+                  <p>
+                    Make sure that each show title is added with (year) appended to it
+                  </p>
+                   
+                  <p>
+                    The show title with year is only used for show folder creation as representation in the UI.
+                  </p>
+                </config-toggle-slider-stub>
+                 
                 <input
                   class="btn-medusa config_submitter"
                   type="submit"
@@ -769,22 +784,6 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   </p>
                 </config-template-stub>
                  
-                <config-textbox-stub
-                  explanations=""
-                  id="download_url"
-                  inputclass="form-control input-sm max-input350"
-                  label="Download url"
-                  placeholder=""
-                  type="text"
-                  value=""
-                >
-                  <span
-                    class="component-desc"
-                  >
-                    URL where the shows can be downloaded.
-                  </span>
-                </config-textbox-stub>
-                 
                 <config-toggle-slider-stub
                   explanations=""
                   id="show_pagination"
@@ -1170,6 +1169,12 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                  
                 <!---->
                  
+                <!---->
+                 
+                <!---->
+                 
+                <!---->
+                 
                 <config-toggle-slider-stub
                   explanations=""
                   id="skip_removed_files"
@@ -1236,6 +1241,16 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                     Example: Downloaded (1080p WEB-DL) ==&gt; Archived (1080p WEB-DL)
                   </p>
                 </config-template-stub>
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="experimental"
+                  label="Enable experimental features"
+                >
+                  <p>
+                    allow for using experimental features
+                  </p>
+                </config-toggle-slider-stub>
                  
                 <input
                   class="btn-medusa config_submitter"
@@ -1326,6 +1341,13 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                                         Normal (default).
                                     
                   </span>
+                </config-template-stub>
+                 
+                <config-template-stub
+                  label="Overwrite log levels for overwritable logs"
+                  labelfor="custom_logs"
+                >
+                  <custom-logs-stub />
                 </config-template-stub>
                  
                 <input
@@ -1657,12 +1679,6 @@ exports[`ConfigGeneral.test.js renders 1`] = `
             </span>
           </b>
         </h6>
-         
-        <input
-          class="btn-medusa pull-left config_submitter button"
-          type="submit"
-          value="Save Changes"
-        />
       </div>
     </form>
   </div>

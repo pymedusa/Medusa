@@ -46,13 +46,13 @@ from medusa.helper.exceptions import (
 )
 from medusa.helpers import chmod_as_parent
 from medusa.helpers.utils import to_timestamp
-from medusa.logger.adapters.style import BraceAdapter
+from medusa.logger.adapters.style import CustomBraceAdapter
 from medusa.network_timezones import app_timezone
 from medusa.show import naming
 
 from six import iteritems, itervalues
 
-log = BraceAdapter(logging.getLogger(__name__))
+log = CustomBraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
@@ -100,7 +100,7 @@ def _download_result(result):
     return new_result
 
 
-def snatch_episode(result):
+def snatch_result(result):
     """
     Snatch a result that has been found.
 
@@ -143,7 +143,7 @@ def snatch_episode(result):
         elif app.NZB_METHOD == u'sabnzbd':
             result_downloaded = sab.send_nzb(result)
         elif app.NZB_METHOD == u'nzbget':
-            result_downloaded = nzbget.sendNZB(result, is_proper)
+            result_downloaded = nzbget.send_nzb(result, is_proper)
         else:
             log.error(u'Unknown NZB action specified in config: {0}', app.NZB_METHOD)
             result_downloaded = False
@@ -151,6 +151,7 @@ def snatch_episode(result):
     # Torrents can be sent to clients or saved to disk
     elif result.result_type == u'torrent':
         # torrents are saved to disk when blackhole mode
+        # Handle SAVE_MAGNET_FILE
         if app.TORRENT_METHOD == u'blackhole':
             result_downloaded = _download_result(result)
         else:
@@ -174,6 +175,12 @@ def snatch_episode(result):
 
     if not result_downloaded:
         return False
+
+    # Assign the nzb_id depending on the method.
+    # We already have the info_hash (for torrents) in the SearchResult Object.
+    if result.result_type in (u'nzb', u'nzbdata') and app.NZB_METHOD != 'blackhole':
+        # We get this back from sabnzbd or nzbget
+        result.nzb_id = result_downloaded
 
     if app.USE_FAILED_DOWNLOADS:
         failed_history.log_snatch(result)
@@ -222,7 +229,7 @@ def snatch_episode(result):
             notifiers.notify_snatch(cur_ep_obj, result)
 
             if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
-                trakt_data.append((cur_ep_obj.season, cur_ep_obj.episode))
+                trakt_data.append(cur_ep_obj)
                 log.info(
                     u'Adding {0} {1} to Trakt watchlist',
                     result.series.name,
@@ -230,9 +237,8 @@ def snatch_episode(result):
                 )
 
     if trakt_data:
-        data_episode = notifiers.trakt_notifier.trakt_episode_data_generate(trakt_data)
-        if data_episode:
-            notifiers.trakt_notifier.update_watchlist(result.series, data_episode=data_episode, update=u'add')
+        for episode in trakt_data:
+            notifiers.trakt_notifier.add_episode_to_watchlist(episode)
 
     if sql_l:
         main_db_con = db.DBConnection()

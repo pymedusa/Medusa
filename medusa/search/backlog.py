@@ -8,9 +8,11 @@ import logging
 import threading
 from builtins import object
 from builtins import str
+from uuid import uuid4
 
-from medusa import app, db, scheduler, ui
+from medusa import app, db, ui, ws
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.schedulers import scheduler
 from medusa.search.queue import BacklogQueueItem
 
 from six import iteritems
@@ -49,6 +51,13 @@ class BacklogSearcher(object):
         self.amWaiting = False
         self.forced = False
         self.currentSearchInfo = {}
+
+        self._to_json = {
+            'identifier': str(uuid4()),
+            'name': 'BACKLOG',
+            'queueTime': str(datetime.datetime.utcnow()),
+            'force': self.forced
+        }
 
         self._reset_pi()
 
@@ -166,7 +175,12 @@ class BacklogSearcher(object):
         try:
             if force:
                 self.forced = True
+
+            # Push an update to any open Web UIs through the WebSocket
+            ws.Message('QueueItemUpdate', self._to_json).push()
             self.search_backlog()
+            ws.Message('QueueItemUpdate', self._to_json).push()
+
         except Exception:
             self.amActive = False
             raise

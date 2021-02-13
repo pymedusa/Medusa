@@ -41,9 +41,10 @@ valid_thread_names = [
     'SHOWQUEUE-SEASON-UPDATE',
     'SHOWQUEUE-UPDATE',
     'SHOWUPDATER',
+    'EPISODEUPDATER',
     'THREAD',
     'TORNADO',
-    'TORRENTCHECKER',
+    'downloadHandler',
     'TRAKTCHECKER',
 ]
 

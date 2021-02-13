@@ -34,7 +34,7 @@ from medusa.helper.common import (
     sanitize_filename,
 )
 from medusa.helpers import (
-    download_file,
+    chmod_as_parent, download_file,
 )
 from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
@@ -44,7 +44,7 @@ from medusa.name_parser.parser import (
     NameParser,
 )
 from medusa.search import FORCED_SEARCH, PROPER_SEARCH
-from medusa.session.core import MedusaSafeSession
+from medusa.session.core import ProviderSession
 from medusa.show.show import Show
 
 from pytimeparse import parse
@@ -80,7 +80,7 @@ class GenericProvider(object):
         self.public = False
         self.search_fallback = False
         self.search_mode = None
-        self.session = MedusaSafeSession(cloudflare=True)
+        self.session = ProviderSession(cloudflare=True)
         self.session.headers.update(self.headers)
         self.series = None
         self.supports_absolute_numbering = False
@@ -111,6 +111,28 @@ class GenericProvider(object):
         """Return the name of the current class."""
         return cls.__name__
 
+    def create_magnet(self, filename, result):
+        """
+        Create a .magnet file containing the Magnet URI.
+
+        :param filename: base filename (without extension).
+        :param result: SearchResult object.
+        :returns: True if the magnet file is created and verified.
+        """
+        filename_ext = '{filename}.magnet'.format(filename=filename)
+        log.info('Saving magnet file {result} to {location}',
+                 {'result': result.name, 'location': filename_ext})
+
+        with open(filename_ext, 'w', encoding='utf-8') as fp:
+            fp.write(result.url)
+
+        if self._verify_magnet(filename_ext):
+            log.info('Saved .magnet file {result} to {location}',
+                     {'result': result.name, 'location': filename_ext})
+            chmod_as_parent(filename)
+            return True
+        return False
+
     def download_result(self, result):
         """Download result from provider."""
         if not self.login():
@@ -132,12 +154,19 @@ class GenericProvider(object):
 
             verify = False if self.public else None
 
-            if download_file(url, filename, session=self.session, headers=self.headers,
+            filename_ext = '{filename}.{provider_type}'.format(
+                filename=filename, provider_type=result.provider.provider_type
+            )
+            if download_file(url, filename_ext, session=self.session, headers=self.headers,
                              verify=verify):
 
-                if self._verify_download(filename):
+                if self._verify_download(filename_ext):
                     log.info('Saved {result} to {location}',
-                             {'result': result.name, 'location': filename})
+                             {'result': result.name, 'location': filename_ext})
+                    return True
+
+            if result.url.startswith('magnet:') and app.SAVE_MAGNET_FILE:
+                if self.create_magnet(filename, result):
                     return True
 
         log.warning('Failed to download any results for {result}',
@@ -146,7 +175,7 @@ class GenericProvider(object):
         return False
 
     def _make_url(self, result):
-        """Return url if result is a magnet link."""
+        """Return url if result is a Magnet link."""
         urls = []
         filename = ''
 
@@ -169,7 +198,7 @@ class GenericProvider(object):
 
         return urls, filename
 
-    def _verify_download(self, file_name=None):
+    def _verify_download(self, file_name):
         return True
 
     def get_content(self, url, params=None, timeout=30, **kwargs):
@@ -329,7 +358,7 @@ class GenericProvider(object):
                         # Compare the episodes and season from the result with what was searched.
                         wanted_ep = False
                         for searched_ep in episodes:
-                            if searched_ep.series.is_scene:
+                            if searched_ep.series.is_scene and searched_ep.scene_episode:
                                 season = searched_ep.scene_season
                                 episode = searched_ep.scene_episode
                             else:
@@ -582,12 +611,15 @@ class GenericProvider(object):
         episode_string = show_scene_name + self.search_separator
 
         # If the show name is a season scene exception, we want to use the episode number
-        if episode.scene_season > 0 and show_scene_name in scene_exceptions.get_season_scene_exceptions(
+        if episode.scene_season is not None and show_scene_name in scene_exceptions.get_season_scene_exceptions(
                 episode.series, episode.scene_season):
             # This is apparently a season exception, let's use the episode instead of absolute
             ep = episode.scene_episode
         else:
-            ep = episode.scene_absolute_number if episode.series.is_scene else episode.absolute_number
+            if episode.series.is_scene and episode.scene_absolute_number:
+                ep = episode.scene_absolute_number
+            else:
+                ep = episode.absolute_number
 
         episode_string += '{episode:0>2}'.format(episode=ep)
 
@@ -600,9 +632,16 @@ class GenericProvider(object):
         """Create a default search string, used for standard type S01E01 tv series."""
         episode_string = show_scene_name + self.search_separator
 
+        if episode.series.is_scene and episode.scene_episode:
+            season_number = episode.scene_season
+            episode_number = episode.scene_episode
+        else:
+            season_number = episode.season
+            episode_number = episode.episode
+
         episode_string += config.naming_ep_type[2] % {
-            'seasonnumber': episode.scene_season if episode.series.is_scene else episode.season,
-            'episodenumber': episode.scene_episode if episode.series.is_scene else episode.episode,
+            'seasonnumber': season_number,
+            'episodenumber': episode_number
         }
 
         if add_string:
@@ -620,7 +659,7 @@ class GenericProvider(object):
         }
 
         all_possible_show_names = episode.series.get_all_possible_names()
-        if episode.scene_season:
+        if episode.scene_season is not None:
             all_possible_show_names = all_possible_show_names.union(
                 episode.series.get_all_possible_names(season=episode.scene_season)
             )

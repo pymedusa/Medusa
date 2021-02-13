@@ -7,9 +7,9 @@ import VueCookies from 'vue-cookies';
 import VModal from 'vue-js-modal';
 import { VTooltip } from 'v-tooltip';
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faAlignJustify } from '@fortawesome/free-solid-svg-icons';
+import { faAlignJustify, faImages } from '@fortawesome/free-solid-svg-icons';
 
-library.add(faAlignJustify);
+library.add([faAlignJustify, faImages]);
 
 import {
     AddShowOptions,
@@ -27,7 +27,6 @@ import {
     History,
     LanguageSelect,
     LoadProgressBar,
-    ManualPostProcess,
     PlotInfo,
     QualityChooser,
     QualityPill,
@@ -36,9 +35,7 @@ import {
     ScrollButtons,
     SelectList,
     ShowSelector,
-    SnatchSelection,
     StateSwitch,
-    Status,
     SubMenu
 } from './components';
 import store from './store';
@@ -92,10 +89,7 @@ export const registerGlobalComponents = () => {
     // @TODO: These need to be converted to Vue SFCs
     components = components.concat([
         History,
-        ManualPostProcess,
-        Schedule,
-        SnatchSelection,
-        Status
+        Schedule
     ]);
 
     // Register the components globally
@@ -115,7 +109,7 @@ export const registerPlugins = () => {
     Vue.use(VueMeta);
     Vue.use(Snotify);
     Vue.use(VueCookies);
-    Vue.use(VModal);
+    Vue.use(VModal, { dynamicDefault: { height: 'auto' } });
     Vue.use(VTooltip);
 
     // Set default cookie expire time

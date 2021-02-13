@@ -2,7 +2,7 @@
 module.exports = {
     parserOptions: {
         ecmaVersion: 2019,
-        parser: 'babel-eslint',
+        parser: '@babel/eslint-parser',
         sourceType: 'module',
         allowImportExportEverywhere: false,
         codeFrame: true,
@@ -31,7 +31,12 @@ module.exports = {
         'eslint-comments',
     ],
     settings: {
-        'import/resolver': 'webpack',
+        'import/resolver': {
+            webpack: {},
+            node: {
+                paths: ['src'],
+            },
+        },
     },
     rules: {
         indent: [

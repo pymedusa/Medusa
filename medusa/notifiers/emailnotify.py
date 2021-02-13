@@ -3,7 +3,7 @@
 
 from __future__ import unicode_literals
 
-import ast
+import json
 import logging
 import re
 import smtplib
@@ -322,13 +322,14 @@ class Notifier(object):
                 [show]
             )
             for row in sql_results:
-                notify_list = row['notify_list']
-                if not notify_list:
+                if not row['notify_list']:
                     continue
 
-                if notify_list[0] == '{':
-                    entries = dict(ast.literal_eval(notify_list))
-                    notify_list = entries['emails']
+                entries = json.loads(row['notify_list'])
+                if not entries:
+                    continue
+
+                notify_list = entries['emails']
 
                 addrs.extend(
                     addr for addr in notify_list.split(',')

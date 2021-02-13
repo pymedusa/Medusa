@@ -13,6 +13,7 @@
                                 <p>AniDB is non-profit database of anime information that is freely open to the public</p>
                             </div>
                             <div class="col-xs-12 col-md-10">
+
                                 <fieldset class="component-group-list">
                                     <config-toggle-slider v-model="anime.anidb.enabled" label="Use AniDB" id="use_anidb">
                                         <span>Should Medusa use data from AniDB?</span>
@@ -32,14 +33,15 @@
                                         </config-toggle-slider>
 
                                     </div><!-- #content_use_anidb //-->
-                                    <input type="submit"
-                                           class="btn-medusa config_submitter"
-                                           value="Save Changes"
-                                           :disabled="saving"
-                                    >
                                 </fieldset><!-- .component-group-list //-->
                             </div>
                         </div>
+                        <br>
+                        <input type="submit"
+                               class="btn-medusa config_submitter"
+                               value="Save Changes"
+                               :disabled="saving"
+                        >
                     </v-tab>
 
                     <v-tab key="look_and_feel" title="Look &amp; Feel">
@@ -55,15 +57,23 @@
                                         <span>Connect every show marked as anime, to the 'Anime' show list?</span>
                                     </config-toggle-slider>
 
-                                    <input type="submit"
-                                           class="btn-medusa config_submitter"
-                                           value="Save Changes"
-                                           :disabled="saving"
-                                           @click="save"
-                                    >
+                                    <config-template v-if="anime.autoAnimeToList" label-for="showlist_default_anime" label="Showlists for Anime">
+                                        <multiselect
+                                            v-model="animeShowlistDefaultAnime"
+                                            :multiple="true"
+                                            :options="layout.show.showListOrder"
+                                        />
+                                        <span>Customize the showslist when auto anime lists is enabled</span>
+                                    </config-template>
                                 </fieldset><!-- .component-group-list //-->
                             </div>
                         </div><!-- row component-group //-->
+                        <br>
+                        <input type="submit"
+                               class="btn-medusa config_submitter"
+                               value="Save Changes"
+                               :disabled="saving"
+                        >
                     </v-tab>
                 </vue-tabs>
             </form><!-- #configForm //-->
@@ -72,15 +82,19 @@
 </template>
 <script>
 import { mapActions, mapState } from 'vuex';
-import { AppLink, ConfigTextbox, ConfigToggleSlider } from './helpers';
+import { AppLink, ConfigTemplate, ConfigTextbox, ConfigToggleSlider } from './helpers';
 import { VueTabs, VTab } from 'vue-nav-tabs/dist/vue-tabs.js';
+import Multiselect from 'vue-multiselect';
+import 'vue-multiselect/dist/vue-multiselect.min.css';
 
 export default {
-    name: 'config-post-processing',
+    name: 'config-anime',
     components: {
         AppLink,
+        ConfigTemplate,
         ConfigTextbox,
         ConfigToggleSlider,
+        Multiselect,
         VueTabs,
         VTab
     },
@@ -91,7 +105,8 @@ export default {
     },
     methods: {
         ...mapActions([
-            'setConfig'
+            'setConfig',
+            'updateShowlistDefault'
         ]),
         async save() {
             const { anime, setConfig } = this;
@@ -119,8 +134,19 @@ export default {
     },
     computed: {
         ...mapState({
-            anime: state => state.config.anime
-        })
+            anime: state => state.config.anime,
+            layout: state => state.config.layout
+        }),
+        animeShowlistDefaultAnime: {
+            get() {
+                const { anime } = this;
+                return anime.showlistDefaultAnime;
+            },
+            set(value) {
+                const { anime, updateShowlistDefault } = this;
+                updateShowlistDefault(value, anime.showlistDefaultAnime);
+            }
+        }
     }
 };
 </script>

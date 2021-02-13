@@ -13,7 +13,7 @@
                         :column-filter-options="{
                             enabled: true
                         }"
-                        :class="{fanartOpacity: stateLayout.fanartBackground}"
+                        :class="{fanartOpacity: stateLayout.fanartBackgroundOpacity}"
                         @on-sort-change="saveSorting"
         >
 
@@ -39,7 +39,7 @@
                 </span>
 
                 <span v-else-if="props.column.label === 'Show'" class="tvShow">
-                    <app-link :href="`home/displayShow?indexername=${props.row.indexer}&seriesid=${props.row.id[props.row.indexer]}`">{{ props.row.title }}</app-link>
+                    <app-link :href="`home/displayShow?showslug=${props.row.id.slug}`">{{ props.row.title }}</app-link>
                 </span>
 
                 <span v-else-if="props.column.label === 'Network'" class="align-center">

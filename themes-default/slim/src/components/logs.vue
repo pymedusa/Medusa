@@ -49,7 +49,7 @@
             </div>
         </div>
 
-        <pre class="col-md-12" :class="{ fanartOpacity: layout.fanartBackground }"><!--
+        <pre class="col-md-12"><!--
             --><div class="notepad"><!--
                 --><app-link :href="rawViewLink"><!--
                     --><img src="images/notepad.png"><!--
@@ -109,9 +109,10 @@ export default {
                 { value: 'SHOWQUEUE-SEASON-UPDATE', title: 'Show Season Queue (Update)' },
                 { value: 'SHOWQUEUE-UPDATE', title: 'Show Queue (Update)' },
                 { value: 'SHOWUPDATER', title: 'Show Updater' },
+                { value: 'EPISODEUPDATER', title: 'Episode Updater' },
                 { value: 'Thread', title: 'Thread' },
                 { value: 'TORNADO', title: 'Tornado' },
-                { value: 'TORRENTCHECKER', title: 'Torrent Checker' },
+                { value: 'downloadHandler', title: 'Download Handler' },
                 { value: 'TRAKTCHECKER', title: 'Trakt Checker' }
             ]
         };

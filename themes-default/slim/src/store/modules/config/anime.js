@@ -1,14 +1,14 @@
-import { ADD_CONFIG } from '../../mutation-types';
+import { ADD_CONFIG, UPDATE_SHOWLIST_DEFAULT } from '../../mutation-types';
 
 const state = {
-    animeSupport: false,
     anidb: {
         enabled: false,
         username: null,
         password: null,
         useMylist: false
     },
-    autoAnimeToList: false
+    autoAnimeToList: false,
+    showlistDefaultAnime: []
 };
 
 const mutations = {
@@ -16,12 +16,20 @@ const mutations = {
         if (section === 'anime') {
             state = Object.assign(state, config);
         }
+    },
+    [UPDATE_SHOWLIST_DEFAULT](state, value) {
+        state.showlistDefaultAnime = value;
     }
 };
 
 const getters = {};
 
-const actions = {};
+const actions = {
+    updateShowlistDefault(context, showlistDefaultAnime) {
+        const { commit } = context;
+        return commit(UPDATE_SHOWLIST_DEFAULT, showlistDefaultAnime);
+    }
+};
 
 export default {
     state,

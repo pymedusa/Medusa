@@ -8,10 +8,13 @@ from builtins import object
 
 from medusa import app
 from medusa.helpers import get_title_without_year
+from medusa.helpers.trakt import create_episode_structure, create_show_structure, get_trakt_user
 from medusa.indexers.utils import get_trakt_indexer
 from medusa.logger.adapters.style import BraceAdapter
 
-from traktor import AuthException, TokenExpiredException, TraktApi, TraktException
+from trakt import sync, tv
+from trakt.errors import TraktException
+
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -50,14 +53,6 @@ class Notifier(object):
         if not get_trakt_indexer(ep_obj.series.indexer):
             return
 
-        # Create a trakt settings dict
-        trakt_settings = {'trakt_api_secret': app.TRAKT_API_SECRET,
-                          'trakt_api_key': app.TRAKT_API_KEY,
-                          'trakt_access_token': app.TRAKT_ACCESS_TOKEN,
-                          'trakt_refresh_token': app.TRAKT_REFRESH_TOKEN}
-
-        trakt_api = TraktApi(app.SSL_VERIFY, app.TRAKT_TIMEOUT, **trakt_settings)
-
         if app.USE_TRAKT:
             try:
                 # URL parameters
@@ -74,150 +69,82 @@ class Notifier(object):
 
                 data['shows'][0]['ids'][get_trakt_indexer(ep_obj.series.indexer)] = ep_obj.series.indexerid
 
-                if app.TRAKT_SYNC_WATCHLIST:
-                    if app.TRAKT_REMOVE_SERIESLIST:
-                        trakt_api.request('sync/watchlist/remove', data, method='POST')
-
                 # Add Season and Episode + Related Episodes
                 data['shows'][0]['seasons'] = [{'number': ep_obj.season, 'episodes': []}]
 
-                for relEp_Obj in [ep_obj] + ep_obj.related_episodes:
-                    data['shows'][0]['seasons'][0]['episodes'].append({'number': relEp_Obj.episode})
+                for rel_ep_obj in [ep_obj] + ep_obj.related_episodes:
+                    data['shows'][0]['seasons'][0]['episodes'].append({'number': rel_ep_obj.episode})
 
                 if app.TRAKT_SYNC_WATCHLIST:
-                    if app.TRAKT_REMOVE_WATCHLIST:
-                        trakt_api.request('sync/watchlist/remove', data, method='POST')
+                    if app.TRAKT_REMOVE_SERIESLIST:
+                        sync.remove_from_watchlist(data)
 
                 # update library
-                trakt_api.request('sync/collection', data, method='POST')
-
-            except (TokenExpiredException, TraktException, AuthException) as error:
-                log.debug('Unable to update Trakt: {0!r}', error)
+                sync.add_to_collection(data)
+            except TraktException as error:
+                log.warning('Unable to update Trakt: {error!r}', {'error': error})
 
     @staticmethod
-    def update_watchlist(show_obj=None, s=None, e=None, data_show=None, data_episode=None, update='add'):
-        """Send a request to trakt indicating that the given episode is part of our library.
+    def update_watchlist_show(show_obj, remove=False):
+        """Use Trakt sync/watchlist to updata a show."""
+        trakt_media_object = {'shows': [create_show_structure(show_obj)]}
 
-        show_obj: The Series object to add to trakt
-        s: season number
-        e: episode number
-        data_show: structured object of shows trakt type
-        data_episode: structured object of episodes trakt type
-        update: type o action add or remove
+        try:
+            if remove:
+                result = sync.remove_from_watchlist(trakt_media_object)
+            else:
+                result = sync.add_to_watchlist(trakt_media_object)
+        except TraktException as error:
+            log.warning('Unable to update Trakt: {error!r}', {'error': error})
+            return False
+
+        if result and (result.get('added') or result.get('existing')):
+            if result['added']['shows']:
+                return True
+
+        return False
+
+    @staticmethod
+    def update_watchlist_episode(show_obj, episodes, remove=False):
         """
-        # Check if TRAKT supports that indexer
-        if not get_trakt_indexer(show_obj.indexer):
-            return
+        Use Trakt sync/watchlist to updata an episode.
 
-        trakt_settings = {'trakt_api_secret': app.TRAKT_API_SECRET,
-                          'trakt_api_key': app.TRAKT_API_KEY,
-                          'trakt_access_token': app.TRAKT_ACCESS_TOKEN,
-                          'trakt_refresh_token': app.TRAKT_REFRESH_TOKEN}
+        As we want to prevent Trakt.tv api rate limiting. Try to use the array of episodes
+            as much as possible.
+        :param episodes: An episode object or array of episode objects.
+        """
+        try:
+            if remove:
+                result = sync.remove_from_watchlist({'shows': [create_episode_structure(show_obj, episodes)]})
+            else:
+                result = sync.add_to_watchlist({'shows': [create_episode_structure(show_obj, episodes)]})
+        except TraktException as error:
+            log.warning('Unable to update Trakt watchlist: {error!r}', {'error': error})
+            return False
 
-        trakt_api = TraktApi(app.SSL_VERIFY, app.TRAKT_TIMEOUT, **trakt_settings)
+        if result and (result.get('added') or result.get('existing')):
+            if result['added']['episodes']:
+                return True
 
-        if app.USE_TRAKT:
-
-            data = {}
-            try:
-                # URL parameters
-                if show_obj is not None:
-                    title = get_title_without_year(show_obj.name, show_obj.start_year)
-                    data = {
-                        'shows': [
-                            {
-                                'title': title,
-                                'year': show_obj.start_year,
-                                'ids': {},
-                            }
-                        ]
-                    }
-                    data['shows'][0]['ids'][get_trakt_indexer(show_obj.indexer)] = show_obj.indexerid
-                elif data_show is not None:
-                    data.update(data_show)
-                else:
-                    log.warning(
-                        "There's a coding problem contact developer. It's needed to be provided at"
-                        ' least one of the two: data_show or show_obj',
-                    )
-                    return False
-
-                if data_episode is not None:
-                    data['shows'][0].update(data_episode)
-
-                elif s is not None:
-                    # trakt URL parameters
-                    season = {
-                        'season': [
-                            {
-                                'number': s,
-                            }
-                        ]
-                    }
-
-                    if e is not None:
-                        # trakt URL parameters
-                        episode = {
-                            'episodes': [
-                                {
-                                    'number': e
-                                }
-                            ]
-                        }
-
-                        season['season'][0].update(episode)
-
-                    data['shows'][0].update(season)
-
-                trakt_url = 'sync/watchlist'
-                if update == 'remove':
-                    trakt_url += '/remove'
-
-                trakt_api.request(trakt_url, data, method='POST')
-
-            except (TokenExpiredException, TraktException, AuthException) as error:
-                log.debug('Unable to update Trakt watchlist: {0!r}', error)
-                return False
-
-        return True
+        return False
 
     @staticmethod
-    def trakt_show_data_generate(data):
-        """Build the JSON structure to send back to Trakt."""
-        show_list = []
-        for indexer, indexerid, title, year in data:
-            show = {'title': title, 'year': year, 'ids': {}}
-            show['ids'][get_trakt_indexer(indexer)] = indexerid
-            show_list.append(show)
+    def add_episode_to_watchlist(episode):
+        """
+        Add an episode to the trakt watchlist.
 
-        post_data = {'shows': show_list}
+        :params episode: Episode Object.
+        """
+        show_id = str(episode.series.externals.get('trakt_id', episode.series.name))
 
-        return post_data
-
-    @staticmethod
-    def trakt_episode_data_generate(data):
-        """Build the JSON structure to send back to Trakt."""
-        # Find how many unique season we have
-        unique_seasons = []
-        for season, episode in data:
-            if season not in unique_seasons:
-                unique_seasons.append(season)
-
-        # build the query
-        seasons_list = []
-        for searchedSeason in unique_seasons:
-            episodes_list = []
-            for season, episode in data:
-                if season == searchedSeason:
-                    episodes_list.append({'number': episode})
-            seasons_list.append({'number': searchedSeason, 'episodes': episodes_list})
-
-        post_data = {'seasons': seasons_list}
-
-        return post_data
+        try:
+            tv_episode = tv.TVEpisode(show_id, episode.season, episode.episode)
+            tv_episode.add_to_watchlist()
+        except TraktException as error:
+            log.warning('Unable to add episode to watchlist: {error!r}', {'error': error})
 
     @staticmethod
-    def test_notify(username, blacklist_name=None):
+    def test_notify(blacklist_name=None):
         """Send a test notification to trakt with the given authentication info and returns a boolean.
 
         api: The api string to use
@@ -226,23 +153,18 @@ class Notifier(object):
         Returns: True if the request succeeded, False otherwise
         """
         try:
-            trakt_settings = {'trakt_api_secret': app.TRAKT_API_SECRET,
-                              'trakt_api_key': app.TRAKT_API_KEY,
-                              'trakt_access_token': app.TRAKT_ACCESS_TOKEN,
-                              'trakt_refresh_token': app.TRAKT_REFRESH_TOKEN}
-
-            trakt_api = TraktApi(app.SSL_VERIFY, app.TRAKT_TIMEOUT, **trakt_settings)
-            trakt_api.validate_account()
+            trakt_user = get_trakt_user()
             if blacklist_name and blacklist_name is not None:
-                trakt_lists = trakt_api.request('users/' + username + '/lists')
+                trakt_lists = trakt_user.lists
+
                 found = False
                 for trakt_list in trakt_lists:
-                    if trakt_list['ids']['slug'] == blacklist_name:
+                    if trakt_list.slug == blacklist_name:
                         return 'Test notice sent successfully to Trakt'
                 if not found:
                     return "Trakt blacklist doesn't exists"
             else:
                 return 'Test notice sent successfully to Trakt'
-        except (TokenExpiredException, TraktException, AuthException) as error:
-            log.warning('Unable to test TRAKT: {0!r}', error)
+        except TraktException as error:
+            log.warning('Unable to test TRAKT: {error!r}', {'error': error})
             return 'Test notice failed to Trakt: {0!r}'.format(error)

@@ -163,12 +163,16 @@ class CheckVersion(object):
                 return False
 
         def showupdate_safe():
-            if not app.show_update_scheduler.action.amActive:
-                log.debug(u'We can proceed with the update. Shows are not being updated')
-                return True
-            else:
+            if app.show_update_scheduler.action.amActive:
                 log.debug(u"We can't proceed with the update. Shows are being updated")
                 return False
+
+            if app.episode_update_scheduler.action.amActive:
+                log.debug(u"We can't proceed with the update. Episodes are being updated")
+                return False
+
+            log.debug(u'We can proceed with the update. Shows or episodes are not being updated')
+            return True
 
         db_safe = db_safe(self)
         postprocessor_safe = postprocessor_safe()

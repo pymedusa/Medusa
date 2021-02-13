@@ -72,187 +72,262 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                 class="component-group-list"
               >
                 <div
-                  class="form-group"
+                  id="config-toggle-slider-content"
                 >
-                  <label
-                    class="col-sm-2 control-label"
-                    for="process_automatically"
-                  >
-                    <span>
-                      Scheduled Post-Processor
-                    </span>
-                  </label>
-                   
                   <div
-                    class="col-sm-10 content"
+                    class="form-group"
                   >
-                    <toggle-button-stub
-                      height="22"
-                      id="process_automatically"
-                      margin="3"
-                      name="process_automatically"
-                      speed="300"
-                      sync="true"
-                      value="true"
-                      width="45"
-                    />
-                     
-                    <p>
-                      Enable the scheduled post-processor to scan and process any files in your 
-                      <i>
-                        Post-Processing Dir
-                      </i>
-                      ?
-                    </p>
-                     
                     <div
-                      class="clear-left"
+                      class="row"
                     >
-                      <p>
-                        <b>
-                          Note:
-                        </b>
-                         Do not use if you use an external post-processing script
-                      </p>
+                      <label
+                        class="col-sm-2 control-label"
+                        for="process_automatically"
+                      >
+                        <span>
+                          Scheduled Post-Processor
+                        </span>
+                      </label>
+                       
+                      <div
+                        class="col-sm-10 content"
+                      >
+                        <toggle-button-stub
+                          height="22"
+                          id="process_automatically"
+                          name="process_automatically"
+                          sync=""
+                          width="45"
+                        />
+                          
+                        <p>
+                          Enable the scheduled post-processor to scan and process any files in your 
+                          <i>
+                            Post-Processing Dir
+                          </i>
+                          ?
+                        </p>
+                         
+                        <div
+                          class="clear-left"
+                        >
+                          <p>
+                            <b>
+                              Note:
+                            </b>
+                             Do not use if you use an external post-processing script
+                          </p>
+                        </div>
+                         
+                        <!---->
+                      </div>
                     </div>
                   </div>
                 </div>
                  
                 <div
-                  id="post-process-toggle-wrapper"
+                  id="config-textbox-number-content"
                 >
                   <div
                     class="form-group"
                   >
-                    <label
-                      class="col-sm-2 control-label"
-                      for="tv_download_dir"
-                    >
-                      <span>
-                        Post-Processing Dir
-                      </span>
-                    </label>
-                     
                     <div
-                      class="col-sm-10 content"
+                      class="row"
                     >
-                      <file-browser-stub
-                        id="tv_download_dir"
-                        initialdir="C:\\\\Downloads\\\\TV"
-                        localstoragekey=""
-                        name="tv_download_dir"
-                        showbrowsebutton="true"
-                        title="Select series download location"
-                      />
-                       
-                      <span
-                        class="clear-left"
+                      <label
+                        class="col-sm-2 control-label"
+                        for="autopostprocessor_frequency"
                       >
-                        The folder where your download client puts the completed TV downloads.
-                      </span>
+                        <span>
+                          Auto Post-Processing Frequency
+                        </span>
+                      </label>
                        
                       <div
-                        class="clear-left"
+                        class="col-sm-10 content"
                       >
+                        <input
+                          class="form-control input-sm input75"
+                          id="autopostprocessor_frequency"
+                          min="10"
+                          name="autopostprocessor_frequency"
+                          placeholder=""
+                          step="1"
+                          type="number"
+                        />
+                          
+                        <span>
+                          Time in minutes to check for new files to auto post-process (min 10)
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </fieldset>
+            </div>
+          </div>
+           
+          <div
+            class="row component-group"
+            style="display: none;"
+          >
+            <div
+              class="component-group-desc col-xs-12 col-md-2"
+            >
+              <h3>
+                Automated Download Handling
+              </h3>
+               
+              <p>
+                Check clients directly through api's for completed or failed downloads.
+              </p>
+               
+              <p>
+                The download handler will periodically connect to the nzb or torrent clients and check for completed and failed downloads.
+              </p>
+            </div>
+             
+            <div
+              class="col-xs-12 col-md-10"
+            >
+              <fieldset
+                class="component-group-list"
+              >
+                <!---->
+                 
+                <div
+                  id="config-textbox-number-content"
+                >
+                  <div
+                    class="form-group"
+                  >
+                    <div
+                      class="row"
+                    >
+                      <label
+                        class="col-sm-2 control-label"
+                        for="download_handler_frequency"
+                      >
+                        <span>
+                          Download handler frequency
+                        </span>
+                      </label>
+                       
+                      <div
+                        class="col-sm-10 content"
+                      >
+                        <input
+                          class="form-control input-sm input75"
+                          id="download_handler_frequency"
+                          min="5"
+                          name="download_handler_frequency"
+                          placeholder=""
+                          step="1"
+                          type="number"
+                        />
+                          
                         <p>
-                          <b>
-                            Note:
-                          </b>
-                           Please use separate downloading and completed folders in your download client if possible.
+                          Frequency to check on the download clients (default: 60)
                         </p>
                       </div>
                     </div>
                   </div>
-                   
+                </div>
+                 
+                <div
+                  id="config-textbox-number-content"
+                >
                   <div
                     class="form-group"
                   >
-                    <label
-                      class="col-sm-2 control-label"
-                      for="process_method"
-                    >
-                      <span>
-                        Processing Method
-                      </span>
-                    </label>
-                     
                     <div
-                      class="col-sm-10 content"
+                      class="row"
                     >
-                      <select
-                        class="form-control input-sm"
-                        id="naming_multi_ep"
-                        name="naming_multi_ep"
+                      <label
+                        class="col-sm-2 control-label"
+                        for="torrent_seed_ratio"
                       >
-                        <option
-                          value="copy"
-                        >
-                          Copy
-                        </option>
-                        <option
-                          value="move"
-                        >
-                          Move
-                        </option>
-                        <option
-                          value="hardlink"
-                        >
-                          Hard Link
-                        </option>
-                        <option
-                          value="symlink"
-                        >
-                          Symbolic Link
-                        </option>
-                        <option
-                          value="keeplink"
-                        >
-                          Keep Link
-                        </option>
-                      </select>
+                        <span>
+                          Global torrent seed ratio
+                        </span>
+                      </label>
                        
-                      <span>
-                        What method should be used to put files into the library?
-                      </span>
-                       
-                      <p>
-                        <b>
-                          Note:
-                        </b>
-                         If you keep seeding torrents after they finish, please avoid the 'move' processing method to prevent errors.
-                      </p>
-                       
-                      <!---->
+                      <div
+                        class="col-sm-10 content"
+                      >
+                        <input
+                          class="form-control input-sm input75"
+                          id="torrent_seed_ratio"
+                          max="100"
+                          min="0"
+                          name="torrent_seed_ratio"
+                          placeholder=""
+                          step="0.1"
+                          type="number"
+                        />
+                          
+                        <p>
+                          Torrent seed ratio used to trigger a torrent seed action
+                        </p>
+                      </div>
                     </div>
                   </div>
-                   
+                </div>
+                 
+                <div
+                  id="config-template-content"
+                >
                   <div
                     class="form-group"
                   >
-                    <label
-                      class="col-sm-2 control-label"
-                      for="autopostprocessor_frequency"
-                    >
-                      <span>
-                        Auto Post-Processing Frequency
-                      </span>
-                    </label>
-                     
                     <div
-                      class="col-sm-10 content"
+                      class="row"
                     >
-                      <input
-                        class="form-control input-sm input75"
-                        id="autopostprocessor_frequency"
-                        min="10"
-                        name="autopostprocessor_frequency"
-                        step="1"
-                        type="number"
-                      />
+                      <label
+                        class="col-sm-2 control-label"
+                        for="torrent_seed_action"
+                      >
+                        <span>
+                          Torrent seed action
+                        </span>
+                      </label>
                        
-                      <span>
-                        Time in minutes to check for new files to auto post-process (min 10)
-                      </span>
+                      <div
+                        class="col-sm-10 content"
+                      >
+                        <select
+                          class="form-control input-sm"
+                          id="torrent_seed_action"
+                          name="torrent_seed_action"
+                        >
+                          <option
+                            value=""
+                          >
+                            No action
+                          </option>
+                          <option
+                            value="remove"
+                          >
+                            Remove torrent
+                          </option>
+                          <option
+                            value="pause"
+                          >
+                            Pause torrent
+                          </option>
+                          <option
+                            value="remove_with_data"
+                          >
+                            Remove torrent with data
+                          </option>
+                        </select>
+                         
+                        <p>
+                          Setting the ratio to 0, will have it perform the action directly after postprocessing.)
+                        </p>
+                         
+                        <!---->
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -282,522 +357,778 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                 class="component-group-list"
               >
                 <div
-                  class="form-group"
+                  id="config-template-content"
                 >
-                  <label
-                    class="col-sm-2 control-label"
-                    for="postpone_if_sync_files"
-                  >
-                    <span>
-                      Postpone post-processing
-                    </span>
-                  </label>
-                   
                   <div
-                    class="col-sm-10 content"
+                    class="form-group"
                   >
-                    <toggle-button-stub
-                      height="22"
-                      id="postpone_if_sync_files"
-                      margin="3"
-                      name="postpone_if_sync_files"
-                      speed="300"
-                      sync="true"
-                      value="true"
-                      width="45"
-                    />
-                     
-                    <span>
-                      Wait to process a folder if sync files are present.
-                    </span>
-                  </div>
-                </div>
-                 
-                <div
-                  class="form-group"
-                >
-                  <label
-                    class="col-sm-2 control-label"
-                    for="sync_files"
-                  >
-                    <span>
-                      Sync File Extensions
-                    </span>
-                  </label>
-                   
-                  <div
-                    class="col-sm-10 content"
-                  >
-                    <select-list-stub
-                      csvenabled="true"
-                      id="sync_files"
-                      listitems="!sync,lftp-pget-status,part,bts,!qb,!qB"
-                      name="sync_files"
-                      unique="true"
-                    />
-                     
-                    <span>
-                      Comma separated list of extensions or filename globs Medusa ignores when post-processing
-                    </span>
-                  </div>
-                </div>
-                 
-                <div
-                  class="form-group"
-                >
-                  <label
-                    class="col-sm-2 control-label"
-                    for="postpone_if_no_subs"
-                  >
-                    <span>
-                      Postpone if no subtitle
-                    </span>
-                  </label>
-                   
-                  <div
-                    class="col-sm-10 content"
-                  >
-                    <toggle-button-stub
-                      height="22"
-                      id="postpone_if_no_subs"
-                      margin="3"
-                      name="postpone_if_no_subs"
-                      speed="300"
-                      sync="true"
-                      width="45"
-                    />
-                     
-                    <span>
-                      Wait to process a file until subtitles are present
-                    </span>
-                    <br />
-                     
-                    <span>
-                      Language names are allowed in subtitle filename (en.srt, pt-br.srt, ita.srt, etc.)
-                    </span>
-                    <br />
-                     
-                    <span>
-                      <b>
-                        Note:
-                      </b>
-                       Automatic post-processor should be disabled to avoid files with pending subtitles being processed over and over.
-                    </span>
-                    <br />
-                     
-                    <span>
-                      If you have any active show with subtitle search disabled, you must enable Automatic post-processor.
-                    </span>
-                  </div>
-                </div>
-                 
-                <div
-                  class="form-group"
-                >
-                  <label
-                    class="col-sm-2 control-label"
-                    for="rename_episodes"
-                  >
-                    <span>
-                      Rename Episodes
-                    </span>
-                  </label>
-                   
-                  <div
-                    class="col-sm-10 content"
-                  >
-                    <toggle-button-stub
-                      height="22"
-                      id="rename_episodes"
-                      margin="3"
-                      name="rename_episodes"
-                      speed="300"
-                      sync="true"
-                      value="true"
-                      width="45"
-                    />
-                     
-                    <span>
-                      Rename episode using the Episode Naming settings?
-                    </span>
-                  </div>
-                </div>
-                 
-                <div
-                  class="form-group"
-                >
-                  <label
-                    class="col-sm-2 control-label"
-                    for="create_missing_show_dirs"
-                  >
-                    <span>
-                      Create missing show directories
-                    </span>
-                  </label>
-                   
-                  <div
-                    class="col-sm-10 content"
-                  >
-                    <toggle-button-stub
-                      height="22"
-                      id="create_missing_show_dirs"
-                      margin="3"
-                      name="create_missing_show_dirs"
-                      speed="300"
-                      sync="true"
-                      width="45"
-                    />
-                     
-                    <span>
-                      Create missing show directories when they get deleted
-                    </span>
-                  </div>
-                </div>
-                 
-                <div
-                  class="form-group"
-                >
-                  <label
-                    class="col-sm-2 control-label"
-                    for="add_shows_wo_dir"
-                  >
-                    <span>
-                      Add shows without directory
-                    </span>
-                  </label>
-                   
-                  <div
-                    class="col-sm-10 content"
-                  >
-                    <toggle-button-stub
-                      height="22"
-                      id="add_shows_wo_dir"
-                      margin="3"
-                      name="add_shows_wo_dir"
-                      speed="300"
-                      sync="true"
-                      width="45"
-                    />
-                     
-                    <span>
-                      Add shows without creating a directory (not recommended)
-                    </span>
-                  </div>
-                </div>
-                 
-                <div
-                  class="form-group"
-                >
-                  <label
-                    class="col-sm-2 control-label"
-                    for="move_associated_files"
-                  >
-                    <span>
-                      Delete associated files
-                    </span>
-                  </label>
-                   
-                  <div
-                    class="col-sm-10 content"
-                  >
-                    <toggle-button-stub
-                      height="22"
-                      id="move_associated_files"
-                      margin="3"
-                      name="move_associated_files"
-                      speed="300"
-                      sync="true"
-                      width="45"
-                    />
-                     
-                    <span>
-                      Delete srt/srr/sfv/etc files while post-processing?
-                    </span>
-                  </div>
-                </div>
-                 
-                <div
-                  class="form-group"
-                >
-                  <label
-                    class="col-sm-2 control-label"
-                  >
-                    <span>
-                      Keep associated file extensions
-                    </span>
-                  </label>
-                   
-                  <div
-                    class="col-sm-10 content"
-                  >
-                    <select-list-stub
-                      csvenabled="true"
-                      id="allowed_extensions"
-                      listitems="nfo,idx,sub,srt"
-                      name="allowed_extensions"
-                      unique="true"
-                    />
-                     
-                    <span>
-                      Comma separated list of associated file extensions Medusa should keep while post-processing.
-                    </span>
-                    <br />
-                     
-                    <span>
-                      Leaving it empty means all associated files will be deleted
-                    </span>
-                  </div>
-                </div>
-                 
-                <div
-                  class="form-group"
-                >
-                  <label
-                    class="col-sm-2 control-label"
-                    for="nfo_rename"
-                  >
-                    <span>
-                      Rename .nfo file
-                    </span>
-                  </label>
-                   
-                  <div
-                    class="col-sm-10 content"
-                  >
-                    <toggle-button-stub
-                      height="22"
-                      id="nfo_rename"
-                      margin="3"
-                      name="nfo_rename"
-                      speed="300"
-                      sync="true"
-                      value="true"
-                      width="45"
-                    />
-                     
-                    <span>
-                      Rename the original .nfo file to .nfo-orig to avoid conflicts?
-                    </span>
-                  </div>
-                </div>
-                 
-                <div
-                  class="form-group"
-                >
-                  <label
-                    class="col-sm-2 control-label"
-                    for="airdate_episodes"
-                  >
-                    <span>
-                      Change File Date
-                    </span>
-                  </label>
-                   
-                  <div
-                    class="col-sm-10 content"
-                  >
-                    <toggle-button-stub
-                      height="22"
-                      id="airdate_episodes"
-                      margin="3"
-                      name="airdate_episodes"
-                      speed="300"
-                      sync="true"
-                      width="45"
-                    />
-                     
-                    <span>
-                      Set last modified filedate to the date that the episode aired?
-                    </span>
-                  </div>
-                </div>
-                 
-                <div
-                  class="form-group"
-                >
-                  <label
-                    class="col-sm-2 control-label"
-                    for="file_timestamp_timezone"
-                  >
-                    <span>
-                      Timezone for File Date:
-                    </span>
-                  </label>
-                   
-                  <div
-                    class="col-sm-10 content"
-                  >
-                    <select
-                      class="form-control input-sm"
-                      id="file_timestamp_timezone"
-                      name="file_timestamp_timezone"
+                    <div
+                      class="row"
                     >
-                      <option
-                        value="local"
+                      <label
+                        class="col-sm-2 control-label"
+                        for="tv_download_dir"
                       >
-                        Local
-                      </option>
-                      <option
-                        value="network"
+                        <span>
+                          Post-Processing Dir
+                        </span>
+                      </label>
+                       
+                      <div
+                        class="col-sm-10 content"
                       >
-                        Network
-                      </option>
-                    </select>
-                     
-                    <span>
-                      What timezone should be used to change File Date?
-                    </span>
+                        <file-browser-stub
+                          id="tv_download_dir"
+                          initialdir="C:\\\\Downloads\\\\TV"
+                          localstoragekey=""
+                          name="tv_download_dir"
+                          showbrowsebutton="true"
+                          title="Select series download location"
+                        />
+                         
+                        <span
+                          class="clear-left"
+                        >
+                          The folder where your download client puts the completed TV downloads.
+                        </span>
+                         
+                        <div
+                          class="clear-left"
+                        >
+                          <p>
+                            <b>
+                              Note:
+                            </b>
+                             Please use separate downloading and completed folders in your download client if possible.
+                          </p>
+                        </div>
+                         
+                        <span>
+                          The Post processing dir is also used when your download client is running on a different machine. It will try to map a postprocessed folder to PP dir.
+                        </span>
+                         
+                        <!---->
+                      </div>
+                    </div>
                   </div>
                 </div>
                  
                 <div
-                  class="form-group"
+                  id="config-template-content"
                 >
-                  <label
-                    class="col-sm-2 control-label"
-                    for="unpack"
-                  >
-                    <span>
-                      Unpack
-                    </span>
-                  </label>
-                   
                   <div
-                    class="col-sm-10 content"
+                    class="form-group"
                   >
-                    <toggle-button-stub
-                      height="22"
-                      id="unpack"
-                      margin="3"
-                      name="unpack"
-                      speed="300"
-                      sync="true"
-                      width="45"
-                    />
-                     
-                    <span>
-                      Unpack any TV releases in your 
-                      <i>
-                        TV Download Dir
-                      </i>
-                      ?
-                    </span>
-                    <br />
-                     
-                    <span>
-                      <b>
-                        Note:
-                      </b>
-                       Only working with RAR archive
-                    </span>
-                  </div>
-                </div>
-                 
-                <div
-                  class="form-group"
-                >
-                  <label
-                    class="col-sm-2 control-label"
-                    for="del_rar_contents"
-                  >
-                    <span>
-                      Delete RAR contents
-                    </span>
-                  </label>
-                   
-                  <div
-                    class="col-sm-10 content"
-                  >
-                    <toggle-button-stub
-                      height="22"
-                      id="del_rar_contents"
-                      margin="3"
-                      name="del_rar_contents"
-                      speed="300"
-                      sync="true"
-                      width="45"
-                    />
-                     
-                    <span>
-                      Delete content of RAR files, even if Process Method not set to move?
-                    </span>
-                  </div>
-                </div>
-                 
-                <div
-                  class="form-group"
-                >
-                  <label
-                    class="col-sm-2 control-label"
-                    for="no_delete"
-                  >
-                    <span>
-                      Don't delete empty folders
-                    </span>
-                  </label>
-                   
-                  <div
-                    class="col-sm-10 content"
-                  >
-                    <toggle-button-stub
-                      height="22"
-                      id="no_delete"
-                      margin="3"
-                      name="no_delete"
-                      speed="300"
-                      sync="true"
-                      width="45"
-                    />
-                     
-                    <span>
-                      Leave empty folders when post-processing?
-                    </span>
-                    <br />
-                     
-                    <span>
-                      <b>
-                        Note:
-                      </b>
-                       Can be overridden using manual post-processing
-                    </span>
-                  </div>
-                </div>
-                 
-                <div
-                  class="form-group"
-                >
-                  <label
-                    class="col-sm-2 control-label"
-                  >
-                    <span>
-                      Extra Scripts
-                    </span>
-                  </label>
-                   
-                  <div
-                    class="col-sm-10 content"
-                  >
-                    <select-list-stub
-                      csvenabled="true"
-                      id="extra_scripts"
-                      listitems=""
-                      name="extra_scripts"
-                      unique="true"
-                    />
-                     
-                    <span>
-                      See 
-                      <app-link-stub
-                        class="wikie"
-                        href="https://github.com/pymedusa/Medusa/wiki/Post-Processing#extra-scripts"
-                        placeholder="indexer-to-name"
+                    <div
+                      class="row"
+                    >
+                      <label
+                        class="col-sm-2 control-label"
+                        for="processing_method"
                       >
-                        <strong>
-                          Wiki
-                        </strong>
-                      </app-link-stub>
-                       for script arguments description and usage.
-                    </span>
+                        <span>
+                          Processing Method
+                        </span>
+                      </label>
+                       
+                      <div
+                        class="col-sm-10 content"
+                      >
+                        <select
+                          class="form-control input-sm"
+                          id="naming_multi_ep"
+                          name="naming_multi_ep"
+                        >
+                          <option
+                            value="copy"
+                          >
+                            Copy
+                          </option>
+                          <option
+                            value="move"
+                          >
+                            Move
+                          </option>
+                          <option
+                            value="hardlink"
+                          >
+                            Hard Link
+                          </option>
+                          <option
+                            value="symlink"
+                          >
+                            Symbolic Link
+                          </option>
+                          <option
+                            value="keeplink"
+                          >
+                            Keep Link
+                          </option>
+                        </select>
+                         
+                        <span>
+                          What method should be used to put files into the library?
+                        </span>
+                         
+                        <p>
+                          <b>
+                            Note:
+                          </b>
+                           If you keep seeding torrents after they finish, please avoid the 'move' processing method to prevent errors.
+                        </p>
+                         
+                        <!---->
+                         
+                        <!---->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                 
+                <div
+                  id="config-toggle-slider-content"
+                >
+                  <div
+                    class="form-group"
+                  >
+                    <div
+                      class="row"
+                    >
+                      <label
+                        class="col-sm-2 control-label"
+                        for="postpone_if_sync_files"
+                      >
+                        <span>
+                          Postpone post-processing
+                        </span>
+                      </label>
+                       
+                      <div
+                        class="col-sm-10 content"
+                      >
+                        <toggle-button-stub
+                          height="22"
+                          id="postpone_if_sync_files"
+                          name="postpone_if_sync_files"
+                          sync=""
+                          width="45"
+                        />
+                          
+                        <span>
+                          Wait to process a folder if sync files are present.
+                        </span>
+                         
+                        <!---->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                 
+                <div
+                  id="config-template-content"
+                >
+                  <div
+                    class="form-group"
+                  >
+                    <div
+                      class="row"
+                    >
+                      <label
+                        class="col-sm-2 control-label"
+                        for="sync_files"
+                      >
+                        <span>
+                          Sync File Extensions
+                        </span>
+                      </label>
+                       
+                      <div
+                        class="col-sm-10 content"
+                      >
+                        <select-list-stub
+                          csvenabled="true"
+                          id="sync_files"
+                          listitems="!sync,lftp-pget-status,part,bts,!qb,!qB"
+                          name="sync_files"
+                          unique="true"
+                        />
+                         
+                        <span>
+                          Comma separated list of extensions or filename globs Medusa ignores when post-processing
+                        </span>
+                         
+                        <!---->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                 
+                <div
+                  id="config-toggle-slider-content"
+                >
+                  <div
+                    class="form-group"
+                  >
+                    <div
+                      class="row"
+                    >
+                      <label
+                        class="col-sm-2 control-label"
+                        for="postpone_if_no_subs"
+                      >
+                        <span>
+                          Postpone if no subtitle
+                        </span>
+                      </label>
+                       
+                      <div
+                        class="col-sm-10 content"
+                      >
+                        <toggle-button-stub
+                          height="22"
+                          id="postpone_if_no_subs"
+                          name="postpone_if_no_subs"
+                          sync=""
+                          width="45"
+                        />
+                          
+                        <span>
+                          Wait to process a file until subtitles are present
+                        </span>
+                        <br />
+                         
+                        <span>
+                          Language names are allowed in subtitle filename (en.srt, pt-br.srt, ita.srt, etc.)
+                        </span>
+                        <br />
+                         
+                        <span>
+                          <b>
+                            Note:
+                          </b>
+                           Automatic post-processor should be disabled to avoid files with pending subtitles being processed over and over.
+                        </span>
+                        <br />
+                         
+                        <span>
+                          If you have any active show with subtitle search disabled, you must enable Automatic post-processor.
+                        </span>
+                         
+                        <!---->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                 
+                <div
+                  id="config-toggle-slider-content"
+                >
+                  <div
+                    class="form-group"
+                  >
+                    <div
+                      class="row"
+                    >
+                      <label
+                        class="col-sm-2 control-label"
+                        for="rename_episodes"
+                      >
+                        <span>
+                          Rename Episodes
+                        </span>
+                      </label>
+                       
+                      <div
+                        class="col-sm-10 content"
+                      >
+                        <toggle-button-stub
+                          height="22"
+                          id="rename_episodes"
+                          name="rename_episodes"
+                          sync=""
+                          width="45"
+                        />
+                          
+                        <span>
+                          Rename episode using the Episode Naming settings?
+                        </span>
+                         
+                        <!---->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                 
+                <div
+                  id="config-toggle-slider-content"
+                >
+                  <div
+                    class="form-group"
+                  >
+                    <div
+                      class="row"
+                    >
+                      <label
+                        class="col-sm-2 control-label"
+                        for="create_missing_show_dirs"
+                      >
+                        <span>
+                          Create missing show directories
+                        </span>
+                      </label>
+                       
+                      <div
+                        class="col-sm-10 content"
+                      >
+                        <toggle-button-stub
+                          height="22"
+                          id="create_missing_show_dirs"
+                          name="create_missing_show_dirs"
+                          sync=""
+                          width="45"
+                        />
+                          
+                        <span>
+                          Create missing show directories when they get deleted
+                        </span>
+                         
+                        <!---->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                 
+                <div
+                  id="config-toggle-slider-content"
+                >
+                  <div
+                    class="form-group"
+                  >
+                    <div
+                      class="row"
+                    >
+                      <label
+                        class="col-sm-2 control-label"
+                        for="add_shows_wo_dir"
+                      >
+                        <span>
+                          Add shows without directory
+                        </span>
+                      </label>
+                       
+                      <div
+                        class="col-sm-10 content"
+                      >
+                        <toggle-button-stub
+                          height="22"
+                          id="add_shows_wo_dir"
+                          name="add_shows_wo_dir"
+                          sync=""
+                          width="45"
+                        />
+                          
+                        <span>
+                          Add shows without creating a directory (not recommended)
+                        </span>
+                         
+                        <!---->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                 
+                <div
+                  id="config-toggle-slider-content"
+                >
+                  <div
+                    class="form-group"
+                  >
+                    <div
+                      class="row"
+                    >
+                      <label
+                        class="col-sm-2 control-label"
+                        for="move_associated_files"
+                      >
+                        <span>
+                          Delete associated files
+                        </span>
+                      </label>
+                       
+                      <div
+                        class="col-sm-10 content"
+                      >
+                        <toggle-button-stub
+                          height="22"
+                          id="move_associated_files"
+                          name="move_associated_files"
+                          sync=""
+                          width="45"
+                        />
+                          
+                        <span>
+                          Delete srt/srr/sfv/etc files while post-processing?
+                        </span>
+                         
+                        <!---->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                 
+                <div
+                  id="config-template-content"
+                >
+                  <div
+                    class="form-group"
+                  >
+                    <div
+                      class="row"
+                    >
+                      <label
+                        class="col-sm-2 control-label"
+                        for="allowed_extensions"
+                      >
+                        <span>
+                          Keep associated file extensions
+                        </span>
+                      </label>
+                       
+                      <div
+                        class="col-sm-10 content"
+                      >
+                        <select-list-stub
+                          csvenabled="true"
+                          id="allowed_extensions"
+                          listitems="nfo,idx,sub,srt"
+                          name="allowed_extensions"
+                          unique="true"
+                        />
+                         
+                        <span>
+                          Comma separated list of associated file extensions Medusa should keep while post-processing.
+                        </span>
+                        <br />
+                         
+                        <span>
+                          Leaving it empty means all associated files will be deleted
+                        </span>
+                         
+                        <!---->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                 
+                <div
+                  id="config-toggle-slider-content"
+                >
+                  <div
+                    class="form-group"
+                  >
+                    <div
+                      class="row"
+                    >
+                      <label
+                        class="col-sm-2 control-label"
+                        for="nfo_rename"
+                      >
+                        <span>
+                          Rename .nfo file
+                        </span>
+                      </label>
+                       
+                      <div
+                        class="col-sm-10 content"
+                      >
+                        <toggle-button-stub
+                          height="22"
+                          id="nfo_rename"
+                          name="nfo_rename"
+                          sync=""
+                          width="45"
+                        />
+                          
+                        <span>
+                          Rename the original .nfo file to .nfo-orig to avoid conflicts?
+                        </span>
+                         
+                        <!---->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                 
+                <div
+                  id="config-toggle-slider-content"
+                >
+                  <div
+                    class="form-group"
+                  >
+                    <div
+                      class="row"
+                    >
+                      <label
+                        class="col-sm-2 control-label"
+                        for="airdate_episodes"
+                      >
+                        <span>
+                          Change File Date
+                        </span>
+                      </label>
+                       
+                      <div
+                        class="col-sm-10 content"
+                      >
+                        <toggle-button-stub
+                          height="22"
+                          id="airdate_episodes"
+                          name="airdate_episodes"
+                          sync=""
+                          width="45"
+                        />
+                          
+                        <span>
+                          Set last modified filedate to the date that the episode aired?
+                        </span>
+                         
+                        <!---->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                 
+                <div
+                  id="config-template-content"
+                >
+                  <div
+                    class="form-group"
+                  >
+                    <div
+                      class="row"
+                    >
+                      <label
+                        class="col-sm-2 control-label"
+                        for="file_timestamp_timezone"
+                      >
+                        <span>
+                          Timezone for File Date
+                        </span>
+                      </label>
+                       
+                      <div
+                        class="col-sm-10 content"
+                      >
+                        <select
+                          class="form-control input-sm"
+                          id="file_timestamp_timezone"
+                          name="file_timestamp_timezone"
+                        >
+                          <option
+                            value="local"
+                          >
+                            Local
+                          </option>
+                          <option
+                            value="network"
+                          >
+                            Network
+                          </option>
+                        </select>
+                         
+                        <span>
+                          What timezone should be used to change File Date?
+                        </span>
+                         
+                        <!---->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                 
+                <div
+                  id="config-toggle-slider-content"
+                >
+                  <div
+                    class="form-group"
+                  >
+                    <div
+                      class="row"
+                    >
+                      <label
+                        class="col-sm-2 control-label"
+                        for="unpack"
+                      >
+                        <span>
+                          Unpack
+                        </span>
+                      </label>
+                       
+                      <div
+                        class="col-sm-10 content"
+                      >
+                        <toggle-button-stub
+                          height="22"
+                          id="unpack"
+                          name="unpack"
+                          sync=""
+                          width="45"
+                        />
+                          
+                        <span>
+                          Unpack any TV releases in your 
+                          <i>
+                            TV Download Dir
+                          </i>
+                          ?
+                        </span>
+                        <br />
+                         
+                        <span>
+                          <b>
+                            Note:
+                          </b>
+                           Only working with RAR archive
+                        </span>
+                         
+                        <!---->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                 
+                <div
+                  id="config-toggle-slider-content"
+                >
+                  <div
+                    class="form-group"
+                  >
+                    <div
+                      class="row"
+                    >
+                      <label
+                        class="col-sm-2 control-label"
+                        for="del_rar_contents"
+                      >
+                        <span>
+                          Delete RAR contents
+                        </span>
+                      </label>
+                       
+                      <div
+                        class="col-sm-10 content"
+                      >
+                        <toggle-button-stub
+                          height="22"
+                          id="del_rar_contents"
+                          name="del_rar_contents"
+                          sync=""
+                          width="45"
+                        />
+                          
+                        <span>
+                          Delete content of RAR files, even if Process Method not set to move?
+                        </span>
+                         
+                        <!---->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                 
+                <div
+                  id="config-toggle-slider-content"
+                >
+                  <div
+                    class="form-group"
+                  >
+                    <div
+                      class="row"
+                    >
+                      <label
+                        class="col-sm-2 control-label"
+                        for="no_delete"
+                      >
+                        <span>
+                          Don't delete empty folders
+                        </span>
+                      </label>
+                       
+                      <div
+                        class="col-sm-10 content"
+                      >
+                        <toggle-button-stub
+                          height="22"
+                          id="no_delete"
+                          name="no_delete"
+                          sync=""
+                          width="45"
+                        />
+                          
+                        <span>
+                          Leave empty folders when post-processing?
+                        </span>
+                        <br />
+                         
+                        <span>
+                          <b>
+                            Note:
+                          </b>
+                           Can be overridden using manual post-processing
+                        </span>
+                         
+                        <!---->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                 
+                <div
+                  id="config-template-content"
+                >
+                  <div
+                    class="form-group"
+                  >
+                    <div
+                      class="row"
+                    >
+                      <label
+                        class="col-sm-2 control-label"
+                        for="extra_scripts"
+                      >
+                        <span>
+                          Extra Scripts
+                        </span>
+                      </label>
+                       
+                      <div
+                        class="col-sm-10 content"
+                      >
+                        <select-list-stub
+                          csvenabled="true"
+                          id="extra_scripts"
+                          listitems=""
+                          name="extra_scripts"
+                          unique="true"
+                        />
+                         
+                        <span>
+                          See 
+                          <app-link-stub
+                            class="wikie"
+                            href="https://github.com/pymedusa/Medusa/wiki/Post-Processing#extra-scripts"
+                            placeholder="indexer-to-name"
+                          >
+                            <strong>
+                              Wiki
+                            </strong>
+                          </app-link-stub>
+                           for script arguments description and usage.
+                        </span>
+                         
+                        <!---->
+                      </div>
+                    </div>
                   </div>
                 </div>
               </fieldset>
@@ -879,40 +1210,54 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                 />
                  
                 <div
-                  class="form-group component-item"
+                  id="config-toggle-slider-content"
                 >
-                  <label
-                    class="col-sm-2 control-label"
-                    for="naming_strip_year"
-                  >
-                    <span>
-                      Strip Show Year
-                    </span>
-                  </label>
-                   
                   <div
-                    class="col-sm-10 content"
+                    class="form-group"
                   >
-                    <toggle-button-stub
-                      height="22"
-                      id="naming_strip_year"
-                      margin="3"
-                      name="naming_strip_year"
-                      speed="300"
-                      sync="true"
-                      width="45"
-                    />
-                     
-                    <span>
-                      Remove the TV show's year when renaming the file?
-                    </span>
-                     
-                    <p>
-                      Only applies to shows that have year inside parentheses
-                    </p>
+                    <div
+                      class="row"
+                    >
+                      <label
+                        class="col-sm-2 control-label"
+                        for="naming_strip_year"
+                      >
+                        <span>
+                          Strip Show Year
+                        </span>
+                      </label>
+                       
+                      <div
+                        class="col-sm-10 content"
+                      >
+                        <toggle-button-stub
+                          height="22"
+                          id="naming_strip_year"
+                          name="naming_strip_year"
+                          sync=""
+                          width="45"
+                        />
+                          
+                        <span>
+                          Remove the TV show's year when renaming the file?
+                        </span>
+                         
+                        <p>
+                          Only applies to shows that have year inside parentheses
+                        </p>
+                         
+                        <!---->
+                      </div>
+                    </div>
                   </div>
                 </div>
               </fieldset>
+               
+              <input
+                class="btn-medusa config_submitter"
+                type="submit"
+                value="Save Changes"
+              />
             </div>
           </div>
         </div>
@@ -942,70 +1287,80 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                 class="component-group-list"
               >
                 <div
-                  class="form-group"
+                  id="config-template-content"
                 >
-                  <label
-                    class="col-sm-2 control-label"
-                    for="metadataType"
-                  >
-                    <span>
-                      Metadata Type
-                    </span>
-                  </label>
-                   
                   <div
-                    class="col-sm-10 content"
+                    class="form-group"
                   >
-                    <select
-                      class="form-control input-sm"
-                      id="metadataType"
-                      name="metadataType"
+                    <div
+                      class="row"
                     >
-                      <option
-                        value="kodi_12plus"
+                      <label
+                        class="col-sm-2 control-label"
+                        for="metadata_type"
                       >
-                        KODI 12+
-                      </option>
-                      <option
-                        value="kodi"
+                        <span>
+                          Metadata Type
+                        </span>
+                      </label>
+                       
+                      <div
+                        class="col-sm-10 content"
                       >
-                        KODI
-                      </option>
-                      <option
-                        value="mediabrowser"
-                      >
-                        MediaBrowser
-                      </option>
-                      <option
-                        value="wdtv"
-                      >
-                        WDTV
-                      </option>
-                      <option
-                        value="tivo"
-                      >
-                        TIVO
-                      </option>
-                      <option
-                        value="mede8er"
-                      >
-                        Mede8er
-                      </option>
-                      <option
-                        value="sony_ps3"
-                      >
-                        Sony PS3
-                      </option>
-                    </select>
-                     
-                    <span
-                      class="d-block"
-                    >
-                      Toggle the metadata options that you wish to be created. 
-                      <b>
-                        Multiple targets may be used.
-                      </b>
-                    </span>
+                        <select
+                          class="form-control input-sm"
+                          id="metadataType"
+                          name="metadataType"
+                        >
+                          <option
+                            value="kodi_12plus"
+                          >
+                            KODI 12+
+                          </option>
+                          <option
+                            value="kodi"
+                          >
+                            KODI
+                          </option>
+                          <option
+                            value="mediabrowser"
+                          >
+                            MediaBrowser
+                          </option>
+                          <option
+                            value="wdtv"
+                          >
+                            WDTV
+                          </option>
+                          <option
+                            value="tivo"
+                          >
+                            TIVO
+                          </option>
+                          <option
+                            value="mede8er"
+                          >
+                            Mede8er
+                          </option>
+                          <option
+                            value="sony_ps3"
+                          >
+                            Sony PS3
+                          </option>
+                        </select>
+                         
+                        <span
+                          class="d-block"
+                        >
+                          Toggle the metadata options that you wish to be created. 
+                          <b>
+                            Multiple targets may be used.
+                          </b>
+                        </span>
+                         
+                        <!---->
+                      </div>
+                    </div>
                   </div>
                 </div>
                  
@@ -3181,12 +3536,6 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
             </span>
           </b>
         </h6>
-         
-        <input
-          class="btn-medusa pull-left config_submitter button"
-          type="submit"
-          value="Save Changes"
-        />
       </div>
     </form>
   </div>

@@ -62,16 +62,15 @@
  - Real SSL certificate validation
 
 #### Dependencies
- To run Medusa from source you will need one of these Python versions:  
- * **Python 2** – 2.7.10 and above
- * **Python 3** – 3.5.0 and above
- 
+ To run Medusa from source you will need one of these Python versions:
+ * **Python 3** – 3.6.0 and newer
+
 #### Installation - direct
  Start [here](https://github.com/pymedusa/Medusa/wiki/Installation-&-Configuration-Guides) to read the installation guides for different setups.
- 
+
 #### Installation - Docker
  There's a direct build available on [Dockerhub](https://hub.docker.com/r/pymedusa/medusa/) which is updated directly from this repo on every commit to master.
- 
+
  For alternate architectures, the [linuxserver.io](https://www.linuxserver.io) team have kindly produced docker images for X86, armhf and aarch64 platforms. This is built from an older intermediary Dockerfile.
 
 * X86 - [Dockerhub](https://hub.docker.com/r/linuxserver/medusa/), [Github](https://github.com/linuxserver/docker-medusa)
@@ -94,7 +93,7 @@ We HIGHLY recommend starting out with no database files at all to make this a fr
 
 #### Supported providers
 
-A full list can be found [here](https://github.com/pymedusa/Medusa/wiki/Medusa-Search-Providers). Jackett is supported, however it must be configured [as follows](https://github.com/pymedusa/Medusa/wiki/Using-Jackett-with-Medusa).
+A partial list can be found [here](https://github.com/pymedusa/Medusa/wiki/Medusa-Search-Providers). Jackett is supported, however it must be configured [as follows](https://github.com/pymedusa/Medusa/wiki/Using-Jackett-with-Medusa).
 
 #### Special Thanks to:
 ![RARBG](https://rarbg.com/favicon.ico) [RARBG](https://rarbg.to)
@@ -116,7 +115,7 @@ A full list can be found [here](https://github.com/pymedusa/Medusa/wiki/Medusa-S
 #### News and Changelog
 [news.md has moved to a separate repo, click here](https://github.com/pymedusa/medusa.github.io/blob/master/news/news.md)
 
-[The changelog can be found here](https://github.com/pymedusa/Medusa/blob/develop/CHANGELOG.md)  
+[The changelog can be found here](https://github.com/pymedusa/Medusa/blob/develop/CHANGELOG.md)
 [The changelog for versions prior to v0.2.7 can be found here](https://github.com/pymedusa/medusa.github.io/blob/master/news/CHANGES.md)
 
 #### External dependencies

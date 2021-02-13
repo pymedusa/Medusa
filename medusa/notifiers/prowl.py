@@ -2,7 +2,7 @@
 
 from __future__ import unicode_literals
 
-import ast
+import json
 import logging
 import socket
 from builtins import object
@@ -98,8 +98,8 @@ class Notifier(object):
             for value in show:
                 for subs in mydb.select('SELECT notify_list FROM tv_shows WHERE show_name = ?', (value,)):
                     if subs['notify_list']:
-                        if subs['notify_list'][0] == '{':               # legacy format handling
-                            entries = dict(ast.literal_eval(subs['notify_list']))
+                        entries = json.loads(subs['notify_list'])
+                        if entries:
                             for api in entries['prowlAPIs'].split(','):
                                 if api.strip():
                                     apis.append(api)

@@ -50,8 +50,6 @@ class NyaaProvider(TorrentProvider):
 
         # Search Params
         category = '1_0'
-        if ep_obj and not ep_obj.series.is_anime:
-            category = '4_0'
 
         search_params = {
             'page': 'rss',

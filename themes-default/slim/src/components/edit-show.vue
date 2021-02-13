@@ -4,7 +4,7 @@
         <backstretch v-if="showLoaded" :slug="show.id.slug" />
 
         <h1 v-if="showLoaded" class="header">
-            Edit Show - <app-link :href="`home/displayShow?indexername=${indexer}&seriesid=${id}`">{{ show.title }}</app-link>
+            Edit Show - <app-link :href="`home/displayShow?showslug=${showSlug}`">{{ show.title }}</app-link>
         </h1>
         <h1 v-else class="header">
             Edit Show<template v-if="!loadError"> (Loading...)</template>
@@ -12,7 +12,7 @@
 
         <h3 v-if="loadError">Error loading show: {{ loadError }}</h3>
 
-        <div v-if="showLoaded" id="config" :class="{ summaryFanArt: layout.fanartBackground }">
+        <div v-if="showLoaded" id="config">
             <form @submit.prevent="saveShow('all')" class="form-horizontal">
                 <vue-tabs>
                     <v-tab title="Main">
@@ -86,14 +86,15 @@
                                 </config-toggle-slider>
 
                                 <config-toggle-slider :value="show.config.anime" @input="changeFormat($event, 'anime')" label="Anime" id="anime">
-                                    <span>enable if the show is Anime and episodes are released as Show.265 rather than Show.S02E03</span>
+                                    <span>enable if the shows episodes are released using absolute numbering</span>
+                                    <p>For example as Show.265 rather than Show.S02E03</p>
                                 </config-toggle-slider>
 
                                 <config-template v-if="show.config.anime" label-for="anidbReleaseGroup" label="Release Groups">
                                     <anidb-release-group-ui
-                                        v-if="show.title"
+                                        v-if="show.name"
                                         class="max-width"
-                                        :show-name="show.title"
+                                        :show-name="show.name"
                                         :blacklist="show.config.release.blacklist"
                                         :whitelist="show.config.release.whitelist"
                                         @change="onChangeReleaseGroupsAnime"
@@ -261,16 +262,10 @@ export default {
     },
     props: {
         /**
-         * Show indexer
+         * Show Slug
          */
-        showIndexer: {
+        slug: {
             type: String
-        },
-        /**
-         * Show id
-         */
-        showId: {
-            type: Number
         }
     },
     data() {
@@ -281,6 +276,7 @@ export default {
     },
     computed: {
         ...mapState({
+            general: state => state.config.general,
             indexers: state => state.config.indexers,
             anime: state => state.config.anime,
             layout: state => state.config.layout,
@@ -301,11 +297,9 @@ export default {
                 setShowConfig({ show, config: { ...show.config, showLists: value } });
             }
         },
-        indexer() {
-            return this.showIndexer || this.$route.query.indexername;
-        },
-        id() {
-            return this.showId || Number(this.$route.query.seriesid) || undefined;
+        showSlug() {
+            const { slug } = this;
+            return slug || this.$route.query.showslug;
         },
         showLoaded() {
             return Boolean(this.show.id.slug);
@@ -371,15 +365,14 @@ export default {
             setShowConfig: 'setShowConfig'
         }),
         loadShow() {
-            const { setCurrentShow, id, indexer, getShow } = this;
-            // Let's tell the store which show we currently want as current.
-            setCurrentShow({
-                indexer,
-                id
-            });
+            const { setCurrentShow, getShow, showSlug } = this;
 
             // We need detailed info for the xem / scene exceptions, so let's get it.
-            getShow({ id, indexer, detailed: true });
+            getShow({ showSlug, detailed: true });
+
+            // Let's tell the store which show we currently want as current.
+            // Run this after getShow(), as it will trigger the initializeEpisodes() method.
+            setCurrentShow(showSlug);
         },
         async saveShow(subject) {
             const { show, showLoaded } = this;
@@ -431,9 +424,9 @@ export default {
                 data.config.release.whitelist = showConfig.release.whitelist;
             }
 
-            const { indexer, id, setShow } = this;
+            const { showSlug, setShow } = this;
             try {
-                await setShow({ indexer, id, data });
+                await setShow({ showSlug, data });
                 this.$snotify.success(
                     'You may need to "Re-scan files" or "Force Full Update".',
                     'Saved',
@@ -463,7 +456,7 @@ export default {
             this.show.language = value;
         },
         changeFormat(value, formatOption) {
-            const { anime } = this;
+            const { anime, general } = this;
             this.show.config[formatOption] = value;
             if (value) {
                 // Check each format option, disable the other options.
@@ -475,12 +468,12 @@ export default {
             if (formatOption === 'anime' && anime.autoAnimeToList) {
                 if (value) {
                     // Auto anime to list is enabled. If changing the show format to anime, add 'Anime' to show lists.
-                    this.showLists.push('anime');
+                    this.showLists = anime.showlistDefaultAnime;
                     // The filter makes sure there are unique strings.
                     this.showLists = this.showLists.filter((v, i, a) => a.indexOf(v) === i);
                 } else {
-                    // Auto anime to list is enabled. If changing the show format to anime, add 'Anime' to show lists.
-                    this.showLists = this.showLists.filter(list => list !== 'anime');
+                    // Return to default show lists.
+                    this.showLists = general.showDefaults.showLists;
                 }
             }
         }

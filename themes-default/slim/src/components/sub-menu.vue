@@ -12,7 +12,7 @@
                     <span :class="['pull-left', menuItem.icon]" /> {{ menuItem.title }}
                 </app-link>
 
-                <show-selector :show-slug="curShowSlug" follow-selection />
+                <show-selector v-if="showForRoutes" :show-slug="$route.query.showslug" follow-selection />
             </div>
         </div>
 
@@ -21,6 +21,7 @@
     </div>
 </template>
 <script>
+import { mapGetters } from 'vuex';
 import { AppLink, ShowSelector } from './helpers';
 
 export default {
@@ -30,6 +31,9 @@ export default {
         ShowSelector
     },
     computed: {
+        ...mapGetters({
+            getCurrentShow: 'getCurrentShow'
+        }),
         subMenu() {
             const { $route } = this;
             let subMenu = $route.meta.subMenu || [];
@@ -41,12 +45,11 @@ export default {
             return subMenu.reduceRight(reducer, []);
         },
         curShowSlug() {
+            return this.$route.query.slug;
+        },
+        showForRoutes() {
             const { $route } = this;
-            const { indexername, seriesid } = $route.query;
-            if (indexername && seriesid) {
-                return indexername + seriesid;
-            }
-            return '';
+            return ['show', 'editShow'].includes($route.name);
         }
     },
     methods: {
@@ -66,9 +69,9 @@ export default {
             };
 
             if (action === 'removeshow') {
-                const showName = document.querySelector('#showtitle').dataset.showname;
+                const { getCurrentShow } = this;
                 options.title = 'Remove Show';
-                options.text = `Are you sure you want to remove <span class="footerhighlight">${showName}</span> from the database?<br><br>
+                options.text = `Are you sure you want to remove <span class="footerhighlight">${getCurrentShow.title}</span> from the database?<br><br>
                                 <input type="checkbox" id="deleteFiles"> <span class="red-text">Check to delete files as well. IRREVERSIBLE</span>`;
                 options.confirm = $element => {
                     window.location.href = $element[0].href + (document.querySelector('#deleteFiles').checked ? '&full=1' : '');
