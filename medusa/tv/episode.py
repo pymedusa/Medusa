@@ -329,7 +329,7 @@ class Episode(TV):
         :rtype: Episode
         """
         try:
-            parse_result = NameParser(try_indexers=True).parse(filepath, cache_result=True)
+            parse_result = NameParser().parse(filepath, cache_result=True)
             results = []
             if parse_result.series.is_anime and parse_result.ab_episode_numbers:
                 episodes = (parse_result.series.get_episode(absolute_number=episode_number, should_cache=False)
