@@ -1,9 +1,9 @@
 <template>
-    <div class="history-detailed-wrapper">
+    <div class="history-detailed-wrapper vgt-table-styling">
 
         <vue-good-table 
             :columns="columns"
-            :rows="history"
+            :rows="filteredHistory"
             :search-options="{
                 enabled: false
             }"
@@ -22,18 +22,24 @@
                     {{props.row.actionDate ? fuzzyParseDateTime(props.formattedRow[props.column.field]) : ''}}
                 </span>
 
+                <span v-else-if="props.column.label === 'Action'" class="align-center status-name">
+                    <span v-tooltip.right="props.row.resource">{{props.row.statusName}}</span>
+                    <font-awesome-icon v-if="props.row.partOfBatch" icon="images" v-tooltip.right="'This release is part of a batch or releases'" />
+                </span>
+
                 <span v-else-if="props.column.label === 'Quality'" class="align-center">
                     <quality-pill v-if="props.row.quality !== 0" :quality="props.row.quality" />
                 </span>
 
-                <span v-else-if="props.column.label === 'Provider/Group'" class="align-center">
+                <span v-else-if="props.column.label === 'Provider'" class="align-center">
                     <!-- These should get a provider icon -->
                     <template v-if="['Snatched', 'Failed'].includes(props.row.statusName)">
-                        <img  class="addQTip" style="margin-right: 5px;"
-                                :src="`images/providers/${props.row.provider.id}.png`"
-                                :alt="props.row.provider.name" width="16" height="16"
-                                :title="props.row.provider.name"
-                                onError="this.onerror=null;this.src='images/providers/missing.png';"
+                        <img  style="margin-right: 5px;"
+                              :src="`images/providers/${props.row.provider.id}.png`"
+                              :alt="props.row.provider.name" width="16" height="16"
+                              :title="props.row.provider.name"
+                              v-tooltip.right="props.row.provider.name"
+                              onError="this.onerror=null;this.src='images/providers/missing.png';"
                         >
                     </template>
 
@@ -47,11 +53,16 @@
                             :src="`images/subtitles/${props.row.provider.id}.png`"
                             :alt="props.row.provider.name" width="16" height="16"
                             :title="props.row.provider.name"
+                            v-tooltip.right="props.row.provider.name"
                     >
 
                     <span v-else>
                         {{props.row.provider.name}}
                     </span>
+                </span>
+
+                <span v-else-if="props.column.label === 'Client Status'" class="align-center">
+                    <span v-if="props.row.clientStatus" v-tooltip.right="props.row.clientStatus.status.join(', ')">{{props.row.clientStatus.string.join(', ')}}</span>
                 </span>
 
                 <span v-else-if="props.column.label === 'Release' && props.row.statusName === 'Subtitled'" class="align-center">
@@ -73,12 +84,19 @@ import { VueGoodTable } from 'vue-good-table';
 import { humanFileSize } from '../utils/core';
 import { manageCookieMixin } from '../mixins/manage-cookie';
 import QualityPill from './helpers/quality-pill.vue';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { VTooltip } from 'v-tooltip';
+
 
 export default {
     name: 'history-detailed',
     components: {
-        VueGoodTable,
-        QualityPill
+        FontAwesomeIcon,
+        QualityPill,
+        VueGoodTable
+    },
+    directives: {
+        tooltip: VTooltip
     },
     mixins: [
         manageCookieMixin('history-detailed')
@@ -93,35 +111,26 @@ export default {
             type: 'date',
             hidden: getCookie('Date')
         }, {
-            label: 'Status',
+            label: 'Episode',
+            field: 'episodeTitle',
+            hidden: getCookie('Episode')
+        }, {
+            label: 'Action',
             field: 'statusName',
-            hidden: getCookie('Status')
+            hidden: getCookie('Action')
         }, {
             label: 'Quality',
             field: 'quality',
             type: 'number',
             hidden: getCookie('Quality')
         }, {
-            label: 'Provider/Group',
+            label: 'Provider',
             field: 'provider.id',
-            hidden: getCookie('Provider/Group')
-        }, {
-            label: 'Release',
-            field: 'resource',
-            hidden: getCookie('Release')
-        }, {
-            label: 'Season',
-            field: 'season',
-            type: 'number',
-            hidden: getCookie('Season')
-        }, {
-            label: 'Episode',
-            field: 'episode',
-            type: 'number',
-            hidden: getCookie('Episode')
+            hidden: getCookie('Provider')
         }, {
             label: 'Size',
             field: 'size',
+            tdClass: 'align-center',
             formatFn: humanFileSize,
             type: 'number',
             hidden: getCookie('Size')
@@ -130,11 +139,6 @@ export default {
             field: 'clientStatus',
             type: 'number',
             hidden: getCookie('Client Status')
-        }, {
-            label: 'Part of batch',
-            field: 'partOfBatch',
-            type: 'boolean',
-            hidden: getCookie('Part of batch')
         }];
 
         return {
@@ -148,16 +152,24 @@ export default {
         };
     },
     mounted() {
-        const { getHistory, checkLastHistory } = this;
+        const { checkLastHistory } = this;
         checkLastHistory();
     },
     computed: {
         ...mapState({
-            history: state => state.history.history
+            history: state => state.history.history,
+            layout: state => state.config.layout
         }),
         ...mapGetters({
             fuzzyParseDateTime: 'fuzzyParseDateTime'
-        })
+        }),
+        filteredHistory() {
+            const { history, layout } = this;
+            if (layout.historyLimit) {
+                return history.slice(0, layout.historyLimit);
+            }
+            return history;
+        }
     },
     methods: {
         humanFileSize,
@@ -174,14 +186,18 @@ export default {
         checkLastHistory() {
         // retrieve the last history item. Compare the record with state.history.setHistoryLast
         // and get new history data.
-        const { history, getHistory } = this;
-        const params = { last: true };
-        
+        const { getHistory, history, layout } = this;
+        const historyParams = {};
+
+        if (layout.historyLimit) {
+            historyParams.total = layout.historyLimit;
+        }
+
         if (!history || history.length === 0) {
             return getHistory();
         }
 
-        api.get(`/history`, { params })
+        api.get('/history', historyParams)
             .then(response => {
                 if (response.data && response.data.date > history[0].actionDate) {
                     getHistory();
@@ -197,5 +213,5 @@ export default {
 	}
 };
 </script>
-<style scoped>
+<style scoped src='../style/vgt-table.css'>
 </style>

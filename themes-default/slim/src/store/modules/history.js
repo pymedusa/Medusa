@@ -158,6 +158,7 @@ const actions = {
         let url = '/history';
         const showSlug = args ? args.showSlug : undefined;
         const compact = args ? args.compact : undefined;
+        const total_rows = args ? args.total : undefined;
 
         if (showSlug) {
             url = `${url}/${showSlug}`;
@@ -165,6 +166,10 @@ const actions = {
 
         if (compact) {
             params.compact = true;
+        }
+
+        if (total_rows) {
+            params.total = total_rows;
         }
 
         let lastPage = false;

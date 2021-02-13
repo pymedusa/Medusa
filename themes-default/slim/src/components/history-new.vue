@@ -28,7 +28,7 @@
             </div>
         </div> <!-- row -->
         
-        <div class="row horizontal-scroll" :class="{ fanartBackground: stateLayout.fanartBackground }">
+        <div v-if="layout" class="row horizontal-scroll" :class="{ fanartBackground: stateLayout.fanartBackground }">
             <div class="col-md-12 top-15">
                 <history-detailed v-if="layout === 'detailed'" />
                 <history-compact v-else />
@@ -41,7 +41,6 @@
 import { mapActions, mapGetters, mapState } from 'vuex';
 import { VueGoodTable } from 'vue-good-table';
 import { humanFileSize } from '../utils/core';
-import { manageCookieMixin } from '../mixins/manage-cookie';
 import QualityPill from './helpers/quality-pill.vue';
 import HistoryDetailed from './history-detailed.vue';
 import HistoryCompact from './history-compact.vue';
@@ -54,65 +53,8 @@ export default {
         VueGoodTable,
         QualityPill
     },
-    mixins: [
-        manageCookieMixin('downloadHistory')
-    ],
     data() {
-        const { getCookie } = this;
-        const columns = [{
-            label: 'Date',
-            field: 'actionDate',
-            dateInputFormat: 'yyyyMMddHHmmss', // E.g. 07-09-2017 19:16:25
-            dateOutputFormat: 'yyyy-MM-dd HH:mm:ss',
-            type: 'date',
-            hidden: getCookie('Date')
-        }, {
-            label: 'Status',
-            field: 'statusName',
-            hidden: getCookie('Status')
-        }, {
-            label: 'Quality',
-            field: 'quality',
-            type: 'number',
-            hidden: getCookie('Quality')
-        }, {
-            label: 'Provider/Group',
-            field: 'provider.id',
-            hidden: getCookie('Provider/Group')
-        }, {
-            label: 'Release',
-            field: 'resource',
-            hidden: getCookie('Release')
-        }, {
-            label: 'Season',
-            field: 'season',
-            type: 'number',
-            hidden: getCookie('Season')
-        }, {
-            label: 'Episode',
-            field: 'episode',
-            type: 'number',
-            hidden: getCookie('Episode')
-        }, {
-            label: 'Size',
-            field: 'size',
-            formatFn: humanFileSize,
-            type: 'number',
-            hidden: getCookie('Size')
-        }, {
-            label: 'Client Status',
-            field: 'clientStatus',
-            type: 'number',
-            hidden: getCookie('Client Status')
-        }, {
-            label: 'Part of batch',
-            field: 'partOfBatch',
-            type: 'boolean',
-            hidden: getCookie('Part of batch')
-        }];
-
         return {
-            columns,
             loading: false,
             loadingMessage: '',
             layoutOptions: [

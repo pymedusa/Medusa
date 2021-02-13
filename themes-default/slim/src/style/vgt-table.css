@@ -198,3 +198,8 @@
 .show-history {
     margin-bottom: 10px;
 }
+
+/* History tables */
+.status-name > svg {
+    margin-left: 5px;
+}

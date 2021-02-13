@@ -1,11 +1,62 @@
+<template>
+    <div class="history-wrapper">
+        <div class="row">
+            <div class="col-md-6 pull-right"> <!-- Controls -->
+                <div class="layout-controls pull-right">
+                    <div class="show-option">
+                        <span>Limit:</span>
+                        <select v-model="stateLayout.historyLimit" name="history_limit" id="history_limit" class="form-control form-control-inline input-sm">
+                            <option value="10">10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                            <option value="250">250</option>
+                            <option value="500">500</option>
+                            <option value="750">750</option>
+                            <option value="1000">1000</option>
+                            <option value="0">All</option>
+                        </select>
+                    </div>
+                    <div class="show-option">
+                        <span> Layout:
+                            <select v-model="layout" name="layout" class="form-control form-control-inline input-sm">
+                                <option :value="option.value" v-for="option in layoutOptions" :key="option.value">{{ option.text }}</option>
+                            </select>
+                        </span>
+                    </div>
+                </div> <!-- layout controls -->
+            </div>
+        </div> <!-- row -->
+        
+        <div v-if="layout" class="row horizontal-scroll" :class="{ fanartBackground: stateLayout.fanartBackground }">
+            <div class="col-md-12 top-15">
+                <history-detailed v-if="layout === 'detailed'" />
+                <history-compact v-else />
+            </div>
+        </div>
+    </div>
+</template>
 <script>
-import { mapActions, mapState } from 'vuex';
+
+import { mapActions, mapGetters, mapState } from 'vuex';
+import { VueGoodTable } from 'vue-good-table';
+import { humanFileSize } from '../utils/core';
+import QualityPill from './helpers/quality-pill.vue';
+import HistoryDetailed from './history-detailed.vue';
+import HistoryCompact from './history-compact.vue';
 
 export default {
-    name: 'history',
-    template: '#history-template',
+    name: 'show-history',
+    components: {
+        HistoryCompact,
+        HistoryDetailed,
+        VueGoodTable,
+        QualityPill
+    },
     data() {
         return {
+            loading: false,
+            loadingMessage: '',
             layoutOptions: [
                 { value: 'compact', text: 'Compact' },
                 { value: 'detailed', text: 'Detailed' }
@@ -15,10 +66,12 @@ export default {
     computed: {
         ...mapState({
             config: state => state.config.general,
-            // Renamed because of the computed property 'layout'.
             stateLayout: state => state.config.layout
         }),
-        historyLayout: {
+        ...mapGetters({
+            fuzzyParseDateTime: 'fuzzyParseDateTime'
+        }),
+        layout: {
             get() {
                 const { stateLayout } = this;
                 return stateLayout.history;
@@ -30,63 +83,22 @@ export default {
             }
         }
     },
-    mounted() {
-        const unwatch = this.$watch('stateLayout.history', () => {
-            unwatch();
-            const { historyLayout: layout, config } = this;
-
-            $('#historyTable:has(tbody tr)').tablesorter({
-                widgets: ['saveSort', 'zebra', 'filter'],
-                sortList: [[0, 1]],
-                textExtraction: (function() {
-                    if (layout === 'detailed') {
-                        return {
-                            // 0: Time, 1: Episode, 2: Action, 3: Provider, 4: Quality
-                            0: node => $(node).find('time').attr('datetime'),
-                            1: node => $(node).find('a').text(),
-                            4: node => $(node).attr('quality')
-                        };
-                    }
-                    // 0: Time, 1: Episode, 2: Snatched, 3: Downloaded
-                    const compactExtract = {
-                        0: node => $(node).find('time').attr('datetime'),
-                        1: node => $(node).find('a').text(),
-                        2: node => $(node).find('img').attr('title') === undefined ? '' : $(node).find('img').attr('title'),
-                        3: node => $(node).text()
-                    };
-                    if (config.subtitles.enabled) {
-                        // 4: Subtitled, 5: Quality
-                        compactExtract[4] = node => $(node).find('img').attr('title') === undefined ? '' : $(node).find('img').attr('title');
-                        compactExtract[5] = node => $(node).attr('quality');
-                    } else {
-                        // 4: Quality
-                        compactExtract[4] = node => $(node).attr('quality');
-                    }
-                    return compactExtract;
-                })(),
-                headers: (function() {
-                    if (layout === 'detailed') {
-                        return {
-                            0: { sorter: 'realISODate' }
-                        };
-                    }
-                    return {
-                        0: { sorter: 'realISODate' },
-                        2: { sorter: 'text' }
-                    };
-                })()
-            });
-        });
-
-        $('#history_limit').on('change', function() {
-            window.location.href = $('base').attr('href') + 'history/?limit=' + $(this).val();
-        });
-    },
     methods: {
+        humanFileSize,
         ...mapActions({
             setLayout: 'setLayout'
-        })
-    }
+        }),
+        close() {
+            this.$emit('close');
+            // Destroy the vue listeners, etc
+            this.$destroy();
+            // Remove the element from the DOM
+            this.$el.remove();
+        }
+    },
+    beforeCreate() {
+        this.$store.dispatch('initHistoryStore');
+	}
 };
 </script>
 <style scoped>

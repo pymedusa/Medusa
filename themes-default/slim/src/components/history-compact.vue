@@ -1,9 +1,9 @@
 <template>
-    <div class="history-wrapper-compact">
+    <div class="history-wrapper-compact vgt-table-styling">
 
         <vue-good-table 
             :columns="columns"
-            :rows="history"
+            :rows="filteredHistory"
             :search-options="{
                 enabled: false
             }"
@@ -22,41 +22,47 @@
                     {{props.row.actionDate ? fuzzyParseDateTime(props.formattedRow[props.column.field]) : ''}}
                 </span>
 
+                <span v-else-if="props.column.label === 'Snatched'" class="align-center">
+                    <div v-for="row in sortDate(props.row.rows)" :key="row.id">
+                        <template v-if="row.statusName === 'Snatched'">
+                            <img style="margin-right: 5px;"
+                                    :src="`images/providers/${row.provider.id}.png`"
+                                    :alt="row.provider.name" width="16" height="16"
+                                    v-tooltip.right="`${row.provider.name}: ${row.resource} (${row.actionDate})`"
+                                    onError="this.onerror=null;this.src='images/providers/missing.png';"
+                            >
+                            <img v-if="row.manuallySearched" src="images/manualsearch.png" width="16" height="16" style="vertical-align:middle;" v-tooltip.right="`Manual searched episode: ${row.resource} (${row.actionDate})`">
+                            <img v-if="row.properTags" src="images/info32.png" width="16" height="16" style="vertical-align:middle;" v-tooltip.right="`${row.properTags.split(/[ |]+/).join(', ')}: ${row.resource} (${row.actionDate})`">
+                                            
+                        </template>
+                        <img v-else-if="row.statusName ==='Failed'" src="images/no16.png"
+                             width="16" height="16" style="vertical-align:middle;"
+                             v-tooltip.right="`${row.provider.name} download failed: ${row.resource} (${row.actionDate})`"
+                        />
+                    </div>
+                </span>
+
+                <span v-else-if="props.column.label === 'Downloaded'" class="align-center">
+                    <div v-for="row in sortDate(props.row.rows)" :key="row.id">
+                        <template v-if="['Downloaded', 'Archived'].includes(row.statusName)">
+                        <span v-if="row.provider" style="cursor: help;" v-tooltip.right="getFileBaseName(row.resource)"><i>{{row.provider.name}}</i></span>
+                        <span v-else style="cursor: help;" v-tooltip.right="getFileBaseName(row.resource)"><i>Unknown</i></span>
+                        </template>
+                    </div>
+                </span>
+
+                <span v-else-if="props.column.label === 'Subtitled'" class="align-center">
+                    <div v-for="row in sortDate(props.row.rows)" :key="row.id">
+                        <template v-if="row.statusName === 'Subtitled'">
+                            <img :src="`images/subtitles/${row.provider.name}.png`" width="16" height="16" style="vertical-align:middle;" :alt="row.provider.name" v-tooltip.right="`${row.provider.name}: ${getFileBaseName(row.resource)}`"/>
+                            <span style="vertical-align:middle;"> / </span>
+                            <img width="16" height="11" :src="`images/subtitles/flags/${row.resource}.png`" onError="this.onerror=null;this.src='images/flags/unknown.png';" style="vertical-align: middle !important;">
+                        </template>
+                    </div>
+                </span>
+
                 <span v-else-if="props.column.label === 'Quality'" class="align-center">
                     <quality-pill v-if="props.row.quality !== 0" :quality="props.row.quality" />
-                </span>
-
-                <span v-else-if="props.column.label === 'Provider/Group'" class="align-center">
-                    <!-- These should get a provider icon -->
-                    <template v-if="['Snatched', 'Failed'].includes(props.row.statusName)">
-                        <img  class="addQTip" style="margin-right: 5px;"
-                                :src="`images/providers/${props.row.provider.id}.png`"
-                                :alt="props.row.provider.name" width="16" height="16"
-                                :title="props.row.provider.name"
-                                onError="this.onerror=null;this.src='images/providers/missing.png';"
-                        >
-                    </template>
-
-                    <!-- Downloaded history items do not get a provider stored -->
-                    <span v-if="props.row.statusName === 'Downloaded'">
-                        {{props.row.releaseGroup !== -1 ? props.row.releaseGroup : ''}}
-                    </span>
-
-                    <!-- Different path for subtitle providers -->
-                    <img v-else-if="props.row.statusName === 'Subtitled'" class="addQTip" style="margin-right: 5px;"
-                            :src="`images/subtitles/${props.row.provider.id}.png`"
-                            :alt="props.row.provider.name" width="16" height="16"
-                            :title="props.row.provider.name"
-                    >
-
-                    <span v-else>
-                        {{props.row.provider.name}}
-                    </span>
-                </span>
-
-                <span v-else-if="props.column.label === 'Release' && props.row.statusName === 'Subtitled'" class="align-center">
-                    <img v-if="props.row.resource !== 'und'" :src="`images/subtitles/flags/${props.row.resource}.png`" width="16" height="11" :alt="props.row.resource" onError="this.onerror=null;this.src='images/flags/unknown.png';">
-                    <img v-else :src="`images/subtitles/flags/${props.row.resource}.png`" class="subtitle-flag" width="16" height="11" :alt="props.row.resource" onError="this.onerror=null;this.src='images/flags/unknown.png';">
                 </span>
 
                 <span v-else>
@@ -73,16 +79,21 @@ import { VueGoodTable } from 'vue-good-table';
 import { humanFileSize } from '../utils/core';
 import { manageCookieMixin } from '../mixins/manage-cookie';
 import QualityPill from './helpers/quality-pill.vue';
-import { addQTip } from '../utils/jquery';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { VTooltip } from 'v-tooltip';
 
 export default {
     name: 'history-compact',
     components: {
-        VueGoodTable,
-        QualityPill
+        FontAwesomeIcon,
+        QualityPill,
+        VueGoodTable
+    },
+    directives: {
+        tooltip: VTooltip
     },
     mixins: [
-        manageCookieMixin('downloadHistory')
+        manageCookieMixin('historyCompact')
     ],
     data() {
         const { getCookie } = this;
@@ -95,7 +106,7 @@ export default {
             hidden: getCookie('Date')
         }, {
             label: 'Episode',
-            field: 'episode',
+            field: 'episodeTitle',
             hidden: getCookie('Status')
         }, {
             label: 'Snatched',
@@ -133,30 +144,18 @@ export default {
     },
     computed: {
         ...mapState({
-            config: state => state.config.general,
-            stateLayout: state => state.config.layout,
+            layout: state => state.config.layout,
             history: state => state.history.historyCompact
         }),
         ...mapGetters({
             fuzzyParseDateTime: 'fuzzyParseDateTime'
         }),
-        layout: {
-            get() {
-                const { stateLayout } = this;
-                return stateLayout.history;
-            },
-            set(layout) {
-                const { setLayout } = this;
-                const page = 'history';
-                setLayout({ page, layout });
+        filteredHistory() {
+            const { history, layout } = this;
+            if (layout.historyLimit) {
+                return history.slice(0, layout.historyLimit);
             }
-        },
-        selectHistory() {
-            const { layout } = this;
-            if (layout) {
-                getHistory({compact: layout});
-            }
-
+            return history;
         }
     },
     methods: {
@@ -178,14 +177,19 @@ export default {
         checkLastHistory() {
         // retrieve the last history item. Compare the record with state.history.setHistoryLast
         // and get new history data.
-        const { history, getHistory } = this;
+        const { history, getHistory, layout } = this;
         const params = { last: true };
+        const historyParams = {};
         
+        if (layout.historyLimit) {
+            historyParams.total = layout.historyLimit;
+        }
+
         if (!history || history.length === 0) {
             return getHistory({compact: true});
         }
 
-        api.get(`/history`, { params })
+        api.get('/history', { params })
             .then(response => {
                 if (response.data && response.data.date > history[0].actionDate) {
                     getHistory({compact: true});
@@ -194,6 +198,16 @@ export default {
             .catch(() => {
                 console.info(`No history record found`);
             });
+        },
+        sortDate(rows) {
+            const cloneRows = [...rows];
+            return cloneRows.sort(x => x.actionDate).reverse();
+        },
+        getFileBaseName(path) {
+            if (path) {
+                return path.split(/[\\/]/).pop();
+            }
+            return path;
         }
     },
     beforeCreate() {
@@ -201,5 +215,5 @@ export default {
 	}
 };
 </script>
-<style scoped>
+<style scoped src='../style/vgt-table.css'>
 </style>

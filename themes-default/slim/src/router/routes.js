@@ -327,7 +327,7 @@ const historyRoute = {
         subMenu: historySubMenu,
         converted: true
     },
-    component: () => import('../components/history-new.vue')
+    component: () => import('../components/history.vue')
 };
 
 /** @type {import('.').Route} */
