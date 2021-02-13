@@ -193,9 +193,9 @@ exports[`Logs.test.js renders 1`] = `
               Tornado
             </option>
             <option
-              value="TORRENTCHECKER"
+              value="downloadHandler"
             >
-              Torrent Checker
+              Download Handler
             </option>
             <option
               value="TRAKTCHECKER"

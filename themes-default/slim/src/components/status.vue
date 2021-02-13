@@ -61,6 +61,33 @@
 
         <div class="row">
             <div class="col-lg-12">
+                <h2 class="header">Postprocess Queue</h2>
+                <vue-good-table
+                    :columns="columnsPostProcessQueue"
+                    :rows="system.postProcessQueue || []"
+                    styleClass="vgt-table condensed"
+                >
+                    <template slot="table-row" slot-scope="props">
+                        <span v-if="props.column.label == 'Started'" class="align-center">
+                            <span v-if="props.row.startTime">
+                                {{fuzzyParseDateTime(props.row.startTime)}}
+                            </span>
+                            <span v-else>TBD</span>
+                        </span>
+
+                        <span v-else>
+                            {{props.formattedRow[props.column.field]}}
+                        </span>
+                    </template>
+                    <div slot="emptystate">
+                        Nothing in queue
+                    </div>
+                </vue-good-table>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12">
                 <h2 class="header">Disk Space</h2>
                 <vue-good-table
                     :columns="columnsDiskSpace"
@@ -148,10 +175,32 @@ export default {
                 type: 'date',
                 dateInputFormat: 'yyyy-MM-dd\'T\'HH:mm:ssXXX',
                 dateOutputFormat: 'yyyy-MM-dd\'T\'HH:mm:ssXXX'
-            }, {
-                label: 'Queue Type',
-                field: 'queueType'
             }],
+            columnsPostProcessQueue: [
+                {
+                    label: 'Path',
+                    field: 'config.path'
+                }, {
+                    label: 'Resource',
+                    field: 'config.resource_name'
+                }, {
+                    label: 'Info Hash',
+                    field: 'config.info_hash'
+                }, {
+                    label: 'In Progress',
+                    field: 'inProgress',
+                    type: 'boolean'
+                }, {
+                    label: 'Priority',
+                    field: 'priority'
+                }, {
+                    label: 'Started',
+                    field: 'startTime',
+                    type: 'date',
+                    dateInputFormat: 'yyyy-MM-dd\'T\'HH:mm:ssXXX',
+                    dateOutputFormat: 'yyyy-MM-dd\'T\'HH:mm:ssXXX'
+                }
+            ],
             columnsDiskSpace: [{
                 label: 'type',
                 field: 'type'

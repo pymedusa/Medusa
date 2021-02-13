@@ -48,6 +48,16 @@
             </div>
         </div>
 
+        <div v-if="schedulerStatus" class="row">
+            <div class="col-lg-12">
+                <h3>Download Handler:</h3>
+                <button class="btn-medusa" :disabled="schedulerStatus.downloadHandlerStatus" @click="forceDownloadHandler">
+                    <i class="icon-exclamation-sign" /> Force
+                </button>
+                <template>{{ schedulerStatus.downloadHandlerStatus ? 'In Progress' : 'Not in progress' }}</template>
+            </div>
+        </div>
+
         <div class="row">
             <div class="col-lg-12">
                 <h3>Scene Exceptions:</h3>
@@ -84,7 +94,7 @@
 </template>
 
 <script>
-import { mapActions, mapState } from 'vuex';
+import { mapActions, mapGetters, mapState } from 'vuex';
 import { api } from '../api';
 import { AppLink } from './helpers';
 
@@ -124,7 +134,10 @@ export default {
             general: state => state.config.general,
             system: state => state.config.system,
             search: state => state.config.search,
-            searchQueueItems: state => state.search.queueitems
+            queueItems: state => state.queue.queueitems
+        }),
+        ...mapGetters({
+            getQueueItemsByName: 'getQueueItemsByName'
         }),
         spinnerSrc() {
             const { general } = this;
@@ -133,7 +146,7 @@ export default {
             return 'images/loading32' + themeSpinner + '.gif';
         },
         schedulerStatus() {
-            const { system } = this;
+            const { getQueueItemsByName, system } = this;
             const { schedulers } = system;
 
             if (schedulers.length === 0) {
@@ -146,6 +159,14 @@ export default {
             const search = schedulers.find(scheduler => scheduler.key === 'searchQueue');
             const forcedSearch = schedulers.find(scheduler => scheduler.key === 'forcedSearchQueue');
             const subtitles = schedulers.find(scheduler => scheduler.key === 'subtitlesFinder');
+            const downloadHandler = schedulers.find(scheduler => scheduler.key === 'downloadHandler');
+
+            const downloadHanlderQueueItems = getQueueItemsByName('DOWNLOADHANDLER');
+            if (downloadHanlderQueueItems.length > 0) {
+                // Found a queueitem from the DOWNLOADHANDLER. Check last item for an isActive state.
+                const lastItem = downloadHanlderQueueItems.slice(-1);
+                downloadHandler.isActive = lastItem[0].isActive;
+            }
 
             return {
                 backlogPaused: backlog.isEnabled === 'Paused',
@@ -154,7 +175,8 @@ export default {
                 searchQueueLength: search.queueLength,
                 forcedSearchQueueLength: forcedSearch.queueLength,
                 subtitlesFinderStatus: subtitles.isActive,
-                properSearchStatus: proper.isActive
+                properSearchStatus: proper.isActive,
+                downloadHandlerStatus: downloadHandler.isActive
             };
         }
     },
@@ -225,6 +247,9 @@ export default {
         toggleBacklog() {
             const { schedulerStatus } = this;
             api.put('search/backlog', { options: { paused: !schedulerStatus.backlogPaused } }); // eslint-disable-line no-undef
+        },
+        forceDownloadHandler() {
+            api.post('system/operation', { type: 'FORCEADH' });
         }
     },
     mounted() {
@@ -237,7 +262,7 @@ export default {
         });
     },
     watch: {
-        searchQueueItems() {
+        queueItems() {
             const { getConfig } = this;
             getConfig('system');
         }

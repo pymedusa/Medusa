@@ -59,3 +59,14 @@ class History(WebRoot):
         ui.notifications.message('Removed history entries older than 30 days')
 
         return self.redirect('/history/')
+
+
+@route('/downloads(/?.*)')
+class Downloads(WebRoot):
+    def __init__(self, *args, **kwargs):
+        super(Downloads, self).__init__(*args, **kwargs)
+
+    def index(self):
+        """[Converted to VueRouter]."""
+        t = PageTemplate(rh=self, filename='index.mako')
+        return t.render()

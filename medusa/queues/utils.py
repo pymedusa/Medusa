@@ -2,6 +2,8 @@
 """Helper functions to get info about queues."""
 from __future__ import unicode_literals
 
+import datetime
+
 from medusa import app
 from medusa.helpers import get_disk_space_usage
 from medusa.queues.generic_queue import QueuePriorities
@@ -55,10 +57,51 @@ def generate_show_queue():
     # Make a shallow copy of the current queue.
     queue = []
     queue.extend(app.show_queue_scheduler.action.queue)
-    if app.show_queue_scheduler.action.currentItem is not None:
-        queue.insert(0, app.show_queue_scheduler.action.currentItem)
+    if app.show_queue_scheduler.action.current_item is not None:
+        queue.insert(0, app.show_queue_scheduler.action.current_item)
 
     return [_queued_show_to_json(item) for item in queue]
+
+
+def generate_postprocessing_queue():
+    """
+    Generate a JSON-pickable list of items in the post_processor_queue_scheduler.
+
+    :returns: list of post_processor_queue items.
+    """
+    if not app.post_processor_queue_scheduler:
+        return []
+
+    # Make a shallow copy of the current queue.
+    queue = []
+    queue.extend(app.post_processor_queue_scheduler.action.queue)
+    if app.post_processor_queue_scheduler.action.current_item is not None:
+        queue.insert(0, app.post_processor_queue_scheduler.action.current_item)
+
+    def map_fields(queue_item):
+        """Translate fields with Enums."""
+        if queue_item.get('priority') is not None:
+            if queue_item['priority'] == QueuePriorities.LOW:
+                priority = 'low'
+            elif queue_item['priority'] == QueuePriorities.NORMAL:
+                priority = 'normal'
+            elif queue_item['priority'] == QueuePriorities.HIGH:
+                priority = 'high'
+            else:
+                priority = queue_item['priority']
+            queue_item['priority'] = priority
+
+        if queue_item.get('updateTime') is not None:
+            dt = datetime.datetime.strptime(queue_item['updateTime'], '%Y-%m-%d %H:%M:%S.%f')
+            queue_item['updateTime'] = sbdatetime.convert_to_setting(dt.replace(microsecond=0)).isoformat()
+
+        if queue_item.get('startTime') is not None:
+            dt = datetime.datetime.strptime(queue_item['startTime'], '%Y-%m-%d %H:%M:%S.%f')
+            queue_item['startTime'] = sbdatetime.convert_to_setting(dt.replace(microsecond=0)).isoformat()
+
+        return queue_item
+
+    return [map_fields(item.to_json) for item in queue]
 
 
 def generate_location_disk_space():

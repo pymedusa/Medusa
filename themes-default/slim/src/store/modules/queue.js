@@ -17,10 +17,13 @@ const mutations = {
     }
 };
 
-const getters = {};
+const getters = {
+    getQueueItemsByName: state => name => state.queueitems.filter(q => name.includes(q.name)),
+    getQueueItemsByIdentifier: state => identifier => state.queueitems.filter(q => q.identifier === identifier)
+};
 
 const actions = {
-    updateSearchQueueItem(context, queueItem) {
+    updateQueueItem(context, queueItem) {
         // Update store's search queue item. (provided through websocket)
         const { commit } = context;
         return commit(ADD_QUEUE_ITEM, queueItem);

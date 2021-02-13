@@ -44,7 +44,7 @@ valid_thread_names = [
     'EPISODEUPDATER',
     'THREAD',
     'TORNADO',
-    'TORRENTCHECKER',
+    'downloadHandler',
     'TRAKTCHECKER',
 ]
 

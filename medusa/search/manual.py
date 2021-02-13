@@ -157,7 +157,7 @@ def collect_episodes_from_search_thread(series_obj):
     # Running Searches
     searchstatus = SEARCH_STATUS_SEARCHING
     if app.forced_search_queue_scheduler.action.is_forced_search_in_progress():
-        search_thread = app.forced_search_queue_scheduler.action.currentItem
+        search_thread = app.forced_search_queue_scheduler.action.current_item
 
         if search_thread.success:
             searchstatus = SEARCH_STATUS_FINISHED
