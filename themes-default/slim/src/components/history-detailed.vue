@@ -165,8 +165,8 @@ export default {
         }),
         filteredHistory() {
             const { history, layout } = this;
-            if (layout.historyLimit) {
-                return history.slice(0, layout.historyLimit);
+            if (Number(layout.historyLimit)) {
+                return history.slice(0, Number(layout.historyLimit));
             }
             return history;
         }
