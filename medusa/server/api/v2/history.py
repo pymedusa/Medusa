@@ -44,6 +44,7 @@ class HistoryHandler(BaseRequestHandler):
         arg_limit = self._get_limit(default=50)
         compact_layout = bool(self.get_argument('compact', default=False))
         return_last = bool(self.get_argument('last', default=False))
+        total_rows = self.get_argument('total', default=None)
 
         if return_last:
             # Return the last history row
@@ -59,6 +60,10 @@ class HistoryHandler(BaseRequestHandler):
 
             sql_base += ' WHERE indexer_id = ? AND showid = ?'
             params += [series_identifier.indexer.id, series_identifier.id]
+
+        if total_rows:
+            sql_base += ' LIMIT ?'
+            params += [total_rows]
 
         sql_base += ' ORDER BY date DESC'
         results = db.DBConnection().select(sql_base, params)
@@ -89,6 +94,8 @@ class HistoryHandler(BaseRequestHandler):
                 subtitle_language = None
                 show_slug = None
                 client_status = None
+                show_slug = None
+                show_title = 'Unknown Show'
 
                 if item['action'] in (SNATCHED, FAILED):
                     provider.update({
@@ -115,7 +122,13 @@ class HistoryHandler(BaseRequestHandler):
                     }
 
                 if item['indexer_id'] and item['showid']:
-                    show_slug = SeriesIdentifier.from_id(item['indexer_id'], item['showid']).slug
+                    identifier = SeriesIdentifier.from_id(item['indexer_id'], item['showid'])
+                    show_slug = identifier.slug
+                    show_title = Series.find_by_identifier(identifier).title
+
+                item['episodeTitle'] = '{0} - s{1:02d}e{2:02d}'.format(
+                    show_title, item['season'], item['episode']
+                )
 
                 yield {
                     'id': item['rowid'],
@@ -129,6 +142,7 @@ class HistoryHandler(BaseRequestHandler):
                     'properTags': item['proper_tags'],
                     'season': item['season'],
                     'episode': item['episode'],
+                    'episodeTitle': item['episodeTitle'],
                     'manuallySearched': bool(item['manually_searched']),
                     'infoHash': item['info_hash'],
                     'provider': provider,
@@ -136,6 +150,8 @@ class HistoryHandler(BaseRequestHandler):
                     'releaseGroup': release_group,
                     'fileName': file_name,
                     'subtitleLanguage': subtitle_language,
+                    'showSlug': show_slug,
+                    'showTitle': show_title,
                     'providerType': item['provider_type'],
                     'clientStatus': client_status,
                     'partOfBatch': bool(item['part_of_batch'])
@@ -185,11 +201,13 @@ class HistoryHandler(BaseRequestHandler):
 
                     return_item['actionDate'] = item['date']
                     return_item['showSlug'] = item['showslug']
-                    return_item['episode'] = '{0} - s{1:02d}e{2:02d}'.format(
+                    return_item['episodeTitle'] = '{0} - s{1:02d}e{2:02d}'.format(
                         item['showTitle'], item['season'], item['episode']
                     )
+                    return_item['quality'] = item['quality']
 
                     return_item['rows'].append({
+                        'actionDate': item['date'],
                         'id': item['rowid'],
                         'series': item['showSlug'],
                         'status': item['action'],
