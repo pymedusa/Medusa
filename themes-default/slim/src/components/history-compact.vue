@@ -7,6 +7,11 @@
             :search-options="{
                 enabled: false
             }"
+            :pagination-options="{
+                enabled: layout.show.pagination.enable,
+                perPage: paginationPerPage,
+                perPageDropdown
+            }"
             :sort-options="{
                 enabled: true,
                 initialSortBy: { field: 'actionDate', type: 'desc' }
@@ -15,6 +20,7 @@
                 enabled: true
             }"
             styleClass="vgt-table condensed"
+            @on-per-page-change="updatePaginationPerPage($event.currentPerPage)"
         >
             <template slot="table-row" slot-scope="props">
 
@@ -97,6 +103,19 @@ export default {
     ],
     data() {
         const { getCookie } = this;
+        const perPageDropdown = [25, 50, 100, 250, 500, 1000];
+        const getPaginationPerPage = () => {
+            const rows = getCookie('history-pagination-perPage');
+            if (!rows) {
+                return 50;
+            }
+
+            if (!perPageDropdown.includes(rows)) {
+                return 500;
+            }
+            return rows;
+        };
+
         const columns = [{
             label: 'Time',
             field: 'actionDate',
@@ -134,7 +153,9 @@ export default {
             layoutOptions: [
                 { value: 'compact', text: 'Compact' },
                 { value: 'detailed', text: 'Detailed' }
-            ]
+            ],
+            perPageDropdown,
+            paginationPerPage: getPaginationPerPage()
         };
     },
     mounted() {
