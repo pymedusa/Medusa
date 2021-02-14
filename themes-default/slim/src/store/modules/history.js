@@ -10,7 +10,8 @@ const state = {
     page: 0,
     episodeHistory: {},
     historyLast: null,
-    historyLastCompact: null
+    historyLastCompact: null,
+    loading: false
 };
 
 const mutations = {
@@ -24,7 +25,11 @@ const mutations = {
 
         // Update localStorage
         const storeKey = compact ? 'historyCompact' : 'history';
-        localStorage.setItem(storeKey, JSON.stringify(state[storeKey]));
+        try {
+            localStorage.setItem(storeKey, JSON.stringify(state[storeKey]));
+        } catch(error) {
+            console.log("Local Storage is full, can't store full history table");
+        }
     },
     [ADD_SHOW_HISTORY](state, { showSlug, history, compact=false }) {
         // Add history data to episodeHistory, but without passing the show slug.
@@ -88,6 +93,9 @@ const mutations = {
                 );
             }
         }
+    },
+    setLoading(state, value) {
+        state.loading = value;
     }
 };
 
@@ -176,13 +184,15 @@ const actions = {
             params.total = total_rows;
         }
 
-        state.page = 0;
+        let page = 0;
         let lastPage = false;
         let result = [];
+        
+        commit('setLoading', true);
         while (!lastPage) {
             let response = null;
-            state.page += 1;
-            params.page = state.page;
+            page += 1;
+            params.page = page;
 
             try {
                 response = await api.get(url, { params }); // eslint-disable-line no-await-in-loop
@@ -207,7 +217,8 @@ const actions = {
             commit(ADD_SHOW_HISTORY, { showSlug, history: result, compact });
         } else {
             commit(ADD_HISTORY, { history: result, compact });
-        }            
+        }
+        commit('setLoading', false);
 
     },
     /**
