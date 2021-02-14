@@ -76,7 +76,7 @@ class HistoryHandler(BaseRequestHandler):
             res = OrderedDict()
 
             for item in results:
-                if item.get('showid') and item.get('season') and item.get('episode'):
+                if item.get('showid') and item.get('season') and item.get('episode') and item.get('indexer_id'):
                     item['showslug'] = f"{indexer_id_to_name(item['indexer_id'])}{item['showid']}"
                     my_key = f"{item['showslug']}S{item['season']}E{item['episode']}"
                     res.setdefault(my_key, []).append(item)
@@ -124,7 +124,9 @@ class HistoryHandler(BaseRequestHandler):
                 if item['indexer_id'] and item['showid']:
                     identifier = SeriesIdentifier.from_id(item['indexer_id'], item['showid'])
                     show_slug = identifier.slug
-                    show_title = Series.find_by_identifier(identifier).title
+                    show = Series.find_by_identifier(identifier)
+                    if show:
+                        show_title = show.title
 
                 item['episodeTitle'] = '{0} - s{1:02d}e{2:02d}'.format(
                     show_title, item['season'], item['episode']
@@ -197,7 +199,9 @@ class HistoryHandler(BaseRequestHandler):
                     if item['indexer_id'] and item['showid']:
                         identifier = SeriesIdentifier.from_id(item['indexer_id'], item['showid'])
                         item['showSlug'] = identifier.slug
-                        item['showTitle'] = Series.find_by_identifier(identifier).title
+                        show = Series.find_by_identifier(identifier)
+                        if show:
+                            item['showTitle'] = show.title
 
                     return_item['actionDate'] = item['date']
                     return_item['showSlug'] = item['showslug']
