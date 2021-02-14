@@ -187,7 +187,7 @@ const actions = {
         let page = 0;
         let lastPage = false;
         let result = [];
-        
+
         commit('setLoading', true);
         while (!lastPage) {
             let response = null;
