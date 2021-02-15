@@ -173,8 +173,7 @@ class Manage(Home, WebRoot):
                 to_change[cur_indexer_id, cur_series_id] = all_eps
 
             self.setStatus(
-                indexername=indexer_id_to_name(int(cur_indexer_id)),
-                seriesid=cur_series_id,
+                showslug=f'{indexer_id_to_name(int(cur_indexer_id))}{cur_series_id}',
                 eps='|'.join(to_change[(cur_indexer_id, cur_series_id)]),
                 status=newStatus,
                 direct=True
