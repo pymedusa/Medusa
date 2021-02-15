@@ -1,6 +1,6 @@
 <template>
     <div class="show-history-wrapper" :class="{'component-margin': !hideHistory}">
-        <div class="row horizontal-scroll" :class="{ fanartBackground: layout.fanartBackground }">
+        <div class="row horizontal-scroll">
             <div class="col-md-12 top-15">
                 <div v-show="history.length > 0" class="button-row">
                     <button id="showhistory" type="button" class="btn-medusa top-5 bottom-5 pull-right" @click="hideHistory = !hideHistory">
@@ -243,7 +243,7 @@ export default {
 <style scoped>
 /* Make some room for the Select columns ul / dropdown. */
 .component-margin {
-    margin-bottom: 50px;
+    margin-bottom: 10px;
 }
 
 .show-history-wrapper >>> table.subtitle-table tr {

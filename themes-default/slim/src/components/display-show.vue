@@ -14,7 +14,7 @@
                      @update-overview-status="filterByOverviewStatus = $event"
         />
 
-        <div class="row" :class="{ fanartBackground: layout.fanartBackground }">
+        <div class="row">
             <div class="col-md-12 top-15 displayShow horizontal-scroll">
                 <!-- Display non-special episodes, paginate if enabled -->
                 <vue-good-table v-if="show.seasons"

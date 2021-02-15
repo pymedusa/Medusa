@@ -12,7 +12,7 @@
 
         <h3 v-if="loadError">Error loading show: {{ loadError }}</h3>
 
-        <div v-if="showLoaded" id="config" :class="{ summaryFanArt: layout.fanartBackground }">
+        <div v-if="showLoaded" id="config">
             <form @submit.prevent="saveShow('all')" class="form-horizontal">
                 <vue-tabs>
                     <v-tab title="Main">

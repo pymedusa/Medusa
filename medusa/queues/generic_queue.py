@@ -116,8 +116,9 @@ class QueueItem(threading.Thread):
         self.queue_time = datetime.utcnow()
         self.start_time = None
         self.success = None
+        self.identifier = str(uuid4())
         self._to_json = {
-            'identifier': str(uuid4()),
+            'identifier': self.identifier,
             'name': self.name,
             'priority': self.priority,
             'actionId': self.action_id,
