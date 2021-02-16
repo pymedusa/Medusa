@@ -71,7 +71,7 @@
                         </span>
                     </template>
 
-                    <div slot="emptystate">
+                    <div id="no-result" slot="emptystate">
                         No search results available
                     </div>
 
@@ -410,5 +410,13 @@ export default {
 };
 </script>
 <style scoped>
+.show-results-wrapper >>> tbody {
+    color: rgb(0, 0, 0);
+}
+
+#no-result {
+    color: rgb(255, 255, 255);
+}
+
 @import '../style/v-tooltip.css';
 </style>

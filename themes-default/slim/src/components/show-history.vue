@@ -254,6 +254,10 @@ export default {
     padding: 0;
 }
 
+.show-history-wrapper >>> tbody {
+    color: rgb(0, 0, 0);
+}
+
 .search-question,
 .loading-message {
     background-color: rgb(51, 51, 51);
