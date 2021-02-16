@@ -2,11 +2,18 @@
 """Request handler for statistics."""
 from __future__ import unicode_literals
 
+import logging
+
 from medusa import app
+from medusa.logger.adapters.style import CustomBraceAdapter
 from medusa.process_tv import PostProcessQueueItem
 from medusa.server.api.v2.base import BaseRequestHandler
 
 from tornado.escape import json_decode
+
+
+log = CustomBraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class PostProcessHandler(BaseRequestHandler):
@@ -39,16 +46,22 @@ class PostProcessHandler(BaseRequestHandler):
 
         proc_dir = data.get('proc_dir', '')
         resource = data.get('resource', '')
-        process_method = data.get('process_method', False)
-        force = data.get('force', False)
-        is_priority = data.get('is_priority', False)
-        delete_on = data.get('delete_on', False)
-        failed = data.get('failed', False)
-        proc_type = data.get('proc_type', False)
-        ignore_subs = data.get('is_priority', False)
+        process_method = data.get('process_method', app.PROCESS_METHOD)
+        force = bool(data.get('force', False))
+        is_priority = bool(data.get('is_priority', False))
+        delete_on = bool(data.get('delete_on', False))
+        failed = bool(data.get('failed', False))
+        proc_type = bool(data.get('proc_type', False))
+        ignore_subs = bool(data.get('is_priority', False))
 
         if not proc_dir:
-            return self._bad_request('Missing proc_dir')
+            if app.PROCESS_AUTOMATICALLY and app.TV_DOWNLOAD_DIR:
+                proc_dir = app.TV_DOWNLOAD_DIR
+                log.info('')
+            return self._bad_request(
+                'Missing attribute `proc_dir`. '
+                'Provide a proc_dir. Or configure Scheduled postprocessing icw. a Post processing directory.'
+            )
 
         queue_item = PostProcessQueueItem(
             path=proc_dir,
