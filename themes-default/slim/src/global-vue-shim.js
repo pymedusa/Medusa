@@ -12,6 +12,7 @@ import { faAlignJustify, faImages } from '@fortawesome/free-solid-svg-icons';
 library.add([faAlignJustify, faImages]);
 
 import {
+    App,
     AddShowOptions,
     AnidbReleaseGroupUi,
     AppFooter,
@@ -52,6 +53,7 @@ export const registerGlobalComponents = () => {
     // @TODO: These should be registered in an `App.vue` component when possible,
     //        along with some of the `main.mako` template
     components = components.concat([
+        App,
         AppFooter,
         AppHeader,
         ScrollButtons,
