@@ -4,20 +4,6 @@
             <div class="col-md-6 pull-right"> <!-- Controls -->
                 <div class="layout-controls pull-right">
                     <div class="show-option">
-                        <span>Limit:</span>
-                        <select v-model="stateLayout.historyLimit" name="history_limit" id="history_limit" class="form-control form-control-inline input-sm">
-                            <option value="10">10</option>
-                            <option value="25">25</option>
-                            <option value="50">50</option>
-                            <option value="100">100</option>
-                            <option value="250">250</option>
-                            <option value="500">500</option>
-                            <option value="750">750</option>
-                            <option value="1000">1000</option>
-                            <option value="0">All</option>
-                        </select>
-                    </div>
-                    <div class="show-option">
                         <span> Layout:
                             <select v-model="layout" name="layout" class="form-control form-control-inline input-sm">
                                 <option :value="option.value" v-for="option in layoutOptions" :key="option.value">{{ option.text }}</option>

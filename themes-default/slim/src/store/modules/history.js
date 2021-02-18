@@ -7,7 +7,8 @@ import { episodeToSlug } from '../../utils/core';
 const state = {
     history: [],
     historyCompact: [],
-    page: 0,
+    historyPage: 0,
+    detailedPage: 0,
     episodeHistory: {},
     historyLast: null,
     historyLastCompact: null,
@@ -16,17 +17,23 @@ const state = {
 
 const mutations = {
     [ADD_HISTORY](state, { history, compact }) {
+        // Only evaluate compact once.
+        const historyKey = compact ? 'historyCompact' : 'history';
+
+        // Concat both
+        const concatHistory = [...state[historyKey], ...history];
+
+        // Filter out duplicates
+        const filteredHistory = concatHistory.filter((historyObj, index, self) =>
+            index === self.findIndex(t => (t.id === historyObj.id))
+        );
+
         // Update state
-        if (compact) {
-            state.historyCompact = history;
-        } else {
-            state.history = history;
-        }
+        Vue.set(state, historyKey, filteredHistory);
 
         // Update localStorage
-        const storeKey = compact ? 'historyCompact' : 'history';
         try {
-            localStorage.setItem(storeKey, JSON.stringify(state[storeKey]));
+            localStorage.setItem(historyKey, JSON.stringify(state[historyKey]));
         } catch(error) {
             console.log("Local Storage is full, can't store full history table");
         }
@@ -96,6 +103,12 @@ const mutations = {
     },
     setLoading(state, value) {
         state.loading = value;
+    },
+    incrementHistoryPage(state) {
+        state.historyPage += 1;
+    },
+    incrementDetailedPage(state) {
+        state.detailedPage += 1;
     }
 };
 
@@ -163,7 +176,7 @@ const actions = {
      * @param {string} showSlug Slug for the show to get. If not provided, gets the first 1k shows.
      * @returns {undefined|Promise} undefined if `shows` was provided or the API response if not.
      */
-    async getHistory(context, args) {
+    getHistory(context, args) {
         const { commit, state } = context;
         const limit = 1000;
         const params = { limit };
@@ -184,42 +197,34 @@ const actions = {
             params.total = total_rows;
         }
 
-        let page = 0;
-        let lastPage = false;
-        let result = [];
+        // let page = 0;
 
         commit('setLoading', true);
-        while (!lastPage) {
-            let response = null;
-            page += 1;
-            params.page = page;
+        let response = null;
+        params.page = state.historyPage;
 
+        const getHistoryPage = async page => {
+            // Get desired page.
+            params.page = page;
             try {
                 response = await api.get(url, { params }); // eslint-disable-line no-await-in-loop
+                if (response) {
+                    if (showSlug) {
+                        commit(ADD_SHOW_HISTORY, { showSlug, history: response.data, compact });
+                    } else {
+                        commit(ADD_HISTORY, { history: response.data, compact });
+                    }
+                }
             } catch (error) {
                 if (error.response && error.response.status === 404) {
                     console.debug(`No history available${showSlug ? ' for show ' + showSlug : ''}`);
                 }
-                lastPage = true;
             }
+        };
 
-            if (response) {
-                result.push(...response.data);
-                if (response.data.length < limit) {
-                    lastPage = true;
-                }
-            } else {
-                lastPage = true;
-            }
-        }
-
-        if (showSlug) {
-            commit(ADD_SHOW_HISTORY, { showSlug, history: result, compact });
-        } else {
-            commit(ADD_HISTORY, { history: result, compact });
-        }
+        commit('incrementHistoryPage');
+        getHistoryPage(state.historyPage);
         commit('setLoading', false);
-
     },
     /**
      * Get episode history from API and commit it to the store.

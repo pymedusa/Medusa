@@ -3,14 +3,15 @@
 
         <vue-good-table 
             :columns="columns"
-            :rows="filteredHistory"
+            :rows="history"
             :search-options="{
                 enabled: false
             }"
             :pagination-options="{
                 enabled: layout.show.pagination.enable,
-                perPage: paginationPerPage,
-                perPageDropdown
+                perPage: historyLimit,
+                perPageDropdown,
+                dropdownAllowAll: false
             }"
             :sort-options="{
                 enabled: true,
@@ -21,6 +22,7 @@
             }"
             styleClass="vgt-table condensed"
             @on-per-page-change="updatePaginationPerPage($event.currentPerPage)"
+            @on-last-page="onLastPage"
         >
             <template slot="table-row" slot-scope="props">
 
@@ -110,17 +112,6 @@ export default {
     data() {
         const { getCookie } = this;
         const perPageDropdown = [25, 50, 100, 250, 500, 1000];
-        const getPaginationPerPage = () => {
-            const rows = getCookie('history-pagination-perPage');
-            if (!rows) {
-                return 50;
-            }
-
-            if (!perPageDropdown.includes(rows)) {
-                return 500;
-            }
-            return rows;
-        };
 
         const columns = [{
             label: 'Date',
@@ -168,8 +159,7 @@ export default {
                 { value: 'compact', text: 'Compact' },
                 { value: 'detailed', text: 'Detailed' }
             ],
-            perPageDropdown,
-            paginationPerPage: getPaginationPerPage(),
+            perPageDropdown
         };
     },
     mounted() {
@@ -179,24 +169,20 @@ export default {
     computed: {
         ...mapState({
             history: state => state.history.history,
-            layout: state => state.config.layout
+            layout: state => state.config.layout,
+            historyLimit: state => state.config.layout.historyLimit,
+            currentHistoryPage: state => state.history.historyPage
         }),
         ...mapGetters({
             fuzzyParseDateTime: 'fuzzyParseDateTime'
-        }),
-        filteredHistory() {
-            const { history, layout } = this;
-            if (Number(layout.historyLimit)) {
-                return history.slice(0, Number(layout.historyLimit));
-            }
-            return history;
-        }
+        })
     },
     methods: {
         humanFileSize,
         ...mapActions({
             getHistory: 'getHistory',
-            checkHistory: 'checkHistory'
+            checkHistory: 'checkHistory',
+            setStoreLayout: 'setStoreLayout'
         }),
         close() {
             this.$emit('close');
@@ -205,11 +191,20 @@ export default {
             // Remove the element from the DOM
             this.$el.remove();
         },
-        updatePaginationPerPage(rows) {
-            const { setCookie } = this;
-            this.paginationPerPage = rows;
-            setCookie('history-pagination-perPage', rows);
+        updatePaginationPerPage(pageLimit) {
+            const { setStoreLayout } = this;
+            setStoreLayout({ key: 'historyLimit', value: pageLimit });
         },
+        onLastPage(params) {
+            const { getHistory, currentHistoryPage, history, historyLimit } = this;
+            // let args = {};
+            // if (params.currentPage > params.prevPage
+            //     && params.currentPage * historyLimit > history.length) {
+            //     args.page = params.currentPage;
+            //     getHistory(args);
+            // }
+            getHistory();
+        }
     },
     beforeCreate() {
         this.$store.dispatch('initHistoryStore');
