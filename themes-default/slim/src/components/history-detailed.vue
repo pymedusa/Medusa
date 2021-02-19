@@ -2,6 +2,7 @@
     <div class="history-detailed-wrapper vgt-table-styling">
 
         <vue-good-table 
+            ref="detailed-history"
             :columns="columns"
             :rows="history"
             :search-options="{
@@ -159,7 +160,8 @@ export default {
                 { value: 'compact', text: 'Compact' },
                 { value: 'detailed', text: 'Detailed' }
             ],
-            perPageDropdown
+            perPageDropdown,
+            nextPage: null
         };
     },
     mounted() {
@@ -204,11 +206,23 @@ export default {
             //     getHistory(args);
             // }
             getHistory();
+            this.nextPage = true;        
         }
     },
     beforeCreate() {
         this.$store.dispatch('initHistoryStore');
-	}
+	},
+    watch: {
+        history(value) {
+            const { currentHistoryPage, historyLimit } = this;
+            const vgtCurrentPage = this.$refs["detailed-history"].$refs.paginationBottom.currentPage;
+            if (value.length / historyLimit > vgtCurrentPage && this.nextPage) {
+                this.$refs["detailed-history"].$refs.paginationBottom.currentPage += 1;
+                this.$refs["detailed-history"].$refs.paginationBottom.pageChanged();
+                this.nextPage = false;
+            }
+        }
+    }
 };
 </script>
 <style scoped src='../style/vgt-table.css'>
