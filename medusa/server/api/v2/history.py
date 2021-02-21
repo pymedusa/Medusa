@@ -45,6 +45,7 @@ class HistoryHandler(BaseRequestHandler):
         compact_layout = bool(self.get_argument('compact', default=False))
         return_last = bool(self.get_argument('last', default=False))
         total_rows = self.get_argument('total', default=None)
+        headers = {}
 
         if return_last:
             # Return the last history row
@@ -81,6 +82,7 @@ class HistoryHandler(BaseRequestHandler):
                     my_key = f"{item['showslug']}S{item['season']}E{item['episode']}"
                     res.setdefault(my_key, []).append(item)
             results = res
+        headers['X-Pagination-Count'] = len(results)
 
         def data_generator():
             """Read and paginate history records."""
@@ -235,9 +237,9 @@ class HistoryHandler(BaseRequestHandler):
                 yield return_item
 
         if compact_layout:
-            return self._paginate(data_generator=data_generator_compact)
+            return self._paginate(data_generator=data_generator_compact, headers=headers)
 
-        return self._paginate(data_generator=data_generator)
+        return self._paginate(data_generator=data_generator, headers=headers)
 
     def delete(self, identifier, **kwargs):
         """Delete a history record."""

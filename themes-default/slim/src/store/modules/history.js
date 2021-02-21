@@ -5,10 +5,18 @@ import { ADD_HISTORY, ADD_SHOW_HISTORY, ADD_SHOW_EPISODE_HISTORY, INITIALIZE_HIS
 import { episodeToSlug } from '../../utils/core';
 
 const state = {
-    history: [],
-    historyCompact: [],
-    historyPage: 0,
-    detailedPage: 0,
+    remote: {
+        rows: [],
+        totalRows: 0,
+        page: 1,
+        perPage: 25
+    },
+    remoteCompact: {
+        rows: [],
+        totalRows: 0,
+        page: 1,
+        perPage: 25
+    },
     episodeHistory: {},
     historyLast: null,
     historyLastCompact: null,
@@ -18,18 +26,18 @@ const state = {
 const mutations = {
     [ADD_HISTORY](state, { history, compact }) {
         // Only evaluate compact once.
-        const historyKey = compact ? 'historyCompact' : 'history';
+        const historyKey = compact ? 'remoteCompact' : 'remote';
 
-        // Concat both
-        const concatHistory = [...state[historyKey], ...history];
+        // // Concat both
+        // const concatHistory = [...state[historyKey].rows, ...history];
 
-        // Filter out duplicates
-        const filteredHistory = concatHistory.filter((historyObj, index, self) =>
-            index === self.findIndex(t => (t.id === historyObj.id))
-        );
+        // // Filter out duplicates
+        // const filteredHistory = concatHistory.filter((historyObj, index, self) =>
+        //     index === self.findIndex(t => (t.id === historyObj.id))
+        // );
 
         // Update state
-        Vue.set(state, historyKey, filteredHistory);
+        Vue.set(state[historyKey], 'rows', history);
 
         // Update localStorage
         try {
@@ -104,11 +112,8 @@ const mutations = {
     setLoading(state, value) {
         state.loading = value;
     },
-    incrementHistoryPage(state) {
-        state.historyPage += 1;
-    },
-    incrementDetailedPage(state) {
-        state.detailedPage += 1;
+    setRemoteTotal(state, {total, compact=false}) {
+        state[compact ? 'remoteCompact' : 'remote'].totalRows = total;
     }
 };
 
@@ -176,14 +181,18 @@ const actions = {
      * @param {string} showSlug Slug for the show to get. If not provided, gets the first 1k shows.
      * @returns {undefined|Promise} undefined if `shows` was provided or the API response if not.
      */
-    getHistory(context, args) {
+    async getHistory(context, args) {
         const { commit, state } = context;
-        const limit = 1000;
-        const params = { limit };
         let url = '/history';
+        const page = args ? args.page : 1;
+        const limit = args ? args.perPage : 1000;
         const showSlug = args ? args.showSlug : undefined;
         const compact = args ? args.compact : undefined;
-        const total_rows = args ? args.total : undefined;
+
+        const params = {
+            page,
+            limit
+        };
 
         if (showSlug) {
             url = `${url}/${showSlug}`;
@@ -193,37 +202,26 @@ const actions = {
             params.compact = true;
         }
 
-        if (total_rows) {
-            params.total = total_rows;
-        }
-
         // let page = 0;
 
         commit('setLoading', true);
         let response = null;
-        params.page = state.historyPage;
-
-        const getHistoryPage = async page => {
-            // Get desired page.
-            params.page = page;
-            try {
-                response = await api.get(url, { params }); // eslint-disable-line no-await-in-loop
-                if (response) {
-                    if (showSlug) {
-                        commit(ADD_SHOW_HISTORY, { showSlug, history: response.data, compact });
-                    } else {
-                        commit(ADD_HISTORY, { history: response.data, compact });
-                    }
-                }
-            } catch (error) {
-                if (error.response && error.response.status === 404) {
-                    console.debug(`No history available${showSlug ? ' for show ' + showSlug : ''}`);
+        try {
+            response = await api.get(url, { params }); // eslint-disable-line no-await-in-loop
+            if (response) {
+                commit('setRemoteTotal', { total: Number(response.headers['x-pagination-count']), compact });
+                if (showSlug) {
+                    commit(ADD_SHOW_HISTORY, { showSlug, history: response.data, compact });
+                } else {
+                    commit(ADD_HISTORY, { history: response.data, compact });
                 }
             }
-        };
+        } catch (error) {
+            if (error.response && error.response.status === 404) {
+                console.debug(`No history available${showSlug ? ' for show ' + showSlug : ''}`);
+            }
+        }
 
-        commit('incrementHistoryPage');
-        getHistoryPage(state.historyPage);
         commit('setLoading', false);
     },
     /**

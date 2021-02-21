@@ -3,27 +3,24 @@
 
         <vue-good-table 
             ref="detailed-history"
+            mode="remote"
+            @on-page-change="onPageChange"
+            @on-per-page-change="onPerPageChange"
+
             :columns="columns"
-            :rows="history"
+            :rows="remoteHistory.rows"
+            :totalRows="remoteHistory.totalRows"
             :search-options="{
                 enabled: false
             }"
             :pagination-options="{
-                enabled: layout.show.pagination.enable,
-                perPage: historyLimit,
-                perPageDropdown,
-                dropdownAllowAll: false
-            }"
-            :sort-options="{
                 enabled: true,
-                initialSortBy: { field: 'actionDate', type: 'desc' }
-            }"
-            :column-filter-options="{
-                enabled: true
+                perPage: remoteHistory.perPage,
+                perPageDropdown,
+                dropdownAllowAll: false,
+                position: 'both'
             }"
             styleClass="vgt-table condensed"
-            @on-per-page-change="updatePaginationPerPage($event.currentPerPage)"
-            @on-last-page="onLastPage"
         >
             <template slot="table-row" slot-scope="props">
 
@@ -161,23 +158,42 @@ export default {
                 { value: 'detailed', text: 'Detailed' }
             ],
             perPageDropdown,
-            nextPage: null
+            nextPage: null,
+            columnFilters: {},
+            sort: {
+                field: '', // example: 'name'
+                type: '', // 'asc' or 'desc'
+            }
         };
     },
     mounted() {
         const { checkHistory } = this;
-        checkHistory({compact: false});
+        // checkHistory({compact: false});
+        this.loadItems();
     },
     computed: {
         ...mapState({
             history: state => state.history.history,
             layout: state => state.config.layout,
             historyLimit: state => state.config.layout.historyLimit,
-            currentHistoryPage: state => state.history.historyPage
+            currentHistoryPage: state => state.history.historyPage,
+            remoteHistory: state => state.history.remote
         }),
         ...mapGetters({
             fuzzyParseDateTime: 'fuzzyParseDateTime'
-        })
+        }),
+        serverParams() {
+            return { 
+                // a map of column filters example: {name: 'john', age: '20'}
+                // columnFilters: this.columnFilters,
+                // sort: {
+                //     field: this.field, // example: 'name'
+                //     type: this.type, // 'asc' or 'desc'
+                // },
+                page: this.remoteHistory.page, // what page I want to show
+                perPage: this.remoteHistory.perPage, // how many items I'm showing per page
+            }
+        }
     },
     methods: {
         humanFileSize,
@@ -197,32 +213,63 @@ export default {
             const { setStoreLayout } = this;
             setStoreLayout({ key: 'historyLimit', value: pageLimit });
         },
-        onLastPage(params) {
-            const { getHistory, currentHistoryPage, history, historyLimit } = this;
-            // let args = {};
-            // if (params.currentPage > params.prevPage
-            //     && params.currentPage * historyLimit > history.length) {
-            //     args.page = params.currentPage;
-            //     getHistory(args);
-            // }
-            getHistory();
-            this.nextPage = true;        
-        }
+        onPageChange(params) {
+            console.log('page change called');
+            console.log(params);
+            this.remoteHistory.page = params.currentPage;
+            this.loadItems();
+        },
+        onPerPageChange(params) {
+            console.log('per page change called');
+            console.log(params);
+            this.remoteHistory.perPage = params.currentPerPage;
+            this.loadItems();
+        },
+        onSortChange(params) {
+            console.log(params);
+            this.updateParams({
+                sort: params,
+            });
+            this.loadItems();
+        },
+        onColumnFilter(params) {
+            console.log('on column filter change');
+            console.log(params);
+            this.updateParams(params);
+            this.loadItems();
+        },
+        // load items is what brings back the rows from server
+        loadItems() {
+            const { getHistory, serverParams } = this;
+            console.log(this.serverParams);
+            getHistory(serverParams);
+        },
+        // onLastPage(params) {
+        //     const { getHistory, currentHistoryPage, history, historyLimit } = this;
+        //     // let args = {};
+        //     // if (params.currentPage > params.prevPage
+        //     //     && params.currentPage * historyLimit > history.length) {
+        //     //     args.page = params.currentPage;
+        //     //     getHistory(args);
+        //     // }
+        //     getHistory();
+        //     this.nextPage = true;        
+        // }
     },
     beforeCreate() {
         this.$store.dispatch('initHistoryStore');
-	},
-    watch: {
-        history(value) {
-            const { currentHistoryPage, historyLimit } = this;
-            const vgtCurrentPage = this.$refs["detailed-history"].$refs.paginationBottom.currentPage;
-            if (value.length / historyLimit > vgtCurrentPage && this.nextPage) {
-                this.$refs["detailed-history"].$refs.paginationBottom.currentPage += 1;
-                this.$refs["detailed-history"].$refs.paginationBottom.pageChanged();
-                this.nextPage = false;
-            }
-        }
-    }
+	}
+    // watch: {
+    //     history(value) {
+    //         const { currentHistoryPage, historyLimit } = this;
+    //         const vgtCurrentPage = this.$refs["detailed-history"].$refs.paginationBottom.currentPage;
+    //         if (value.length / historyLimit > vgtCurrentPage && this.nextPage) {
+    //             this.$refs["detailed-history"].$refs.paginationBottom.currentPage += 1;
+    //             this.$refs["detailed-history"].$refs.paginationBottom.pageChanged();
+    //             this.nextPage = false;
+    //         }
+    //     }
+    // }
 };
 </script>
 <style scoped src='../style/vgt-table.css'>
