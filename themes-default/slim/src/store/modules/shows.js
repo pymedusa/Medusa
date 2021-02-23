@@ -101,22 +101,22 @@ const mutations = {
             const existingSeason = newShow.seasons.find(season => season.season === episode.season);
 
             if (existingSeason) {
-                const foundIndex = existingSeason.episodes.findIndex(element => element.slug === episode.slug);
+                const foundIndex = existingSeason.children.findIndex(element => element.slug === episode.slug);
                 if (foundIndex === -1) {
-                    existingSeason.episodes.push(episode);
+                    existingSeason.children.push(episode);
                 } else {
-                    existingSeason.episodes.splice(foundIndex, 1, episode);
+                    existingSeason.children.splice(foundIndex, 1, episode);
                 }
             } else {
                 const newSeason = {
                     season: episode.season,
-                    episodes: [],
+                    children: [],
                     html: false,
                     mode: 'span',
                     label: 1
                 };
                 newShow.seasons.push(newSeason);
-                newSeason.episodes.push(episode);
+                newSeason.children.push(episode);
             }
         });
 

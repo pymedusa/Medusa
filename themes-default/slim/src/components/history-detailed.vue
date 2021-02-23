@@ -6,6 +6,7 @@
             mode="remote"
             @on-page-change="onPageChange"
             @on-per-page-change="onPerPageChange"
+            @on-sort-change="onSortChange"
 
             :columns="columns"
             :rows="remoteHistory.rows"
@@ -121,6 +122,7 @@ export default {
         }, {
             label: 'Episode',
             field: 'episodeTitle',
+            sortable: false,
             hidden: getCookie('Episode')
         }, {
             label: 'Action',
@@ -192,6 +194,7 @@ export default {
                 // },
                 page: this.remoteHistory.page, // what page I want to show
                 perPage: this.remoteHistory.perPage, // how many items I'm showing per page
+                sort: this.remoteHistory.sort
             }
         }
     },
@@ -227,9 +230,7 @@ export default {
         },
         onSortChange(params) {
             console.log(params);
-            this.updateParams({
-                sort: params,
-            });
+            this.remoteHistory.sort = params;
             this.loadItems();
         },
         onColumnFilter(params) {

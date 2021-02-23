@@ -2326,7 +2326,7 @@ class Series(TV):
             if self.status == 'Ended' and last_episode and last_episode.airdate:
                 data['year']['end'] = last_episode.airdate.year
 
-            data['seasons'] = [{'episodes': list(v), 'season': season}
+            data['seasons'] = [{'children': list(v), 'season': season}
                                for season, v in
                                groupby([ep.to_json() for ep in all_episodes], lambda item: item['season'])]
 

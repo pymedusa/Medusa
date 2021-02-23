@@ -9,7 +9,11 @@ const state = {
         rows: [],
         totalRows: 0,
         page: 1,
-        perPage: 25
+        perPage: 25,
+        sort: {
+            field: 'date',
+            type: 'desc'
+        }
     },
     remoteCompact: {
         rows: [],
@@ -186,6 +190,7 @@ const actions = {
         let url = '/history';
         const page = args ? args.page : 1;
         const limit = args ? args.perPage : 1000;
+        let sort = args ? args.sort : { field: 'date', type: 'desc' };
         const showSlug = args ? args.showSlug : undefined;
         const compact = args ? args.compact : undefined;
 
@@ -193,6 +198,14 @@ const actions = {
             page,
             limit
         };
+
+        if (sort) {
+            if (!Array.isArray(sort)) {
+                sort = [sort];
+            }
+            params.sortfield = sort[0].field;
+            params.sortorder = sort[0].type;
+        }
 
         if (showSlug) {
             url = `${url}/${showSlug}`;

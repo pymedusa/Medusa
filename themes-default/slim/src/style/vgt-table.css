@@ -23,6 +23,7 @@
     text-align: center;
     border-collapse: collapse;
     font-weight: normal;
+    position: relative;
 }
 
 .vgt-table-styling >>> .vgt-table span.break-word {
@@ -36,6 +37,31 @@
 
 .vgt-table-styling >>> .vgt-table thead th.sorting {
     background-repeat: no-repeat;
+}
+
+.vgt-table-styling >>> .vgt-table thead th.sorting.sorting-desc {
+    background-color: rgb(85, 85, 85);
+    background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
+}
+
+.vgt-table-styling >>> .vgt-table thead th.sorting.sorting-asc {
+    background-color: rgb(85, 85, 85);
+    background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjI8Bya2wnINUMopZAQA7);
+    background-position-x: right;
+    background-position-y: bottom;
+}
+
+.vgt-table-styling >>> .vgt-table th.sortable button {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background: transparent;
+    border: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
 }
 
 .vgt-table-styling >>> .vgt-table thead th {

@@ -45,6 +45,8 @@ class HistoryHandler(BaseRequestHandler):
         compact_layout = bool(self.get_argument('compact', default=False))
         return_last = bool(self.get_argument('last', default=False))
         total_rows = self.get_argument('total', default=None)
+        sortField = self.get_argument('sortfield', default=None)
+        sortOrder = self.get_argument('sortorder', default='asc')
         headers = {}
 
         if return_last:
@@ -54,19 +56,38 @@ class HistoryHandler(BaseRequestHandler):
                 return self._not_found('History data not found')
             return self._ok(data=results[0])
 
+        where = []
+
         if series_slug is not None:
             series_identifier = SeriesIdentifier.from_slug(series_slug)
             if not series_identifier:
                 return self._bad_request('Invalid series')
 
-            sql_base += ' WHERE indexer_id = ? AND showid = ?'
+            where += ['indexer_id', 'showid']
             params += [series_identifier.indexer.id, series_identifier.id]
+
+        if where:
+            sql_base += ' AND '.join(f'{item}=?' for item in where)
+
+        sortable_fields = {
+            'actiondate': 'date',
+            'date': 'date',
+            'action': 'action',
+            'statusname': 'action',
+            'provider.id': 'provider',
+            'clientstatus': 'client_status',
+            'size': 'size',
+            'quality': 'quality'
+        }
+
+        if sortField is not None:
+            if sortable_fields.get(sortField.lower()):
+                sql_base += f' ORDER BY {sortable_fields[sortField.lower()]} {sortOrder}'
 
         if total_rows:
             sql_base += ' LIMIT ?'
             params += [total_rows]
 
-        sql_base += ' ORDER BY date DESC'
         results = db.DBConnection().select(sql_base, params)
 
         if not results:
