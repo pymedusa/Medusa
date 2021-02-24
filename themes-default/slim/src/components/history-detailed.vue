@@ -7,6 +7,7 @@
             @on-page-change="onPageChange"
             @on-per-page-change="onPerPageChange"
             @on-sort-change="onSortChange"
+            @on-column-filter="onColumnFilter"
 
             :columns="columns"
             :rows="remoteHistory.rows"
@@ -127,6 +128,9 @@ export default {
         }, {
             label: 'Action',
             field: 'statusName',
+            filterOptions: {
+                enabled: true,
+            },
             hidden: getCookie('Action')
         }, {
             label: 'Quality',
@@ -136,6 +140,9 @@ export default {
         }, {
             label: 'Provider',
             field: 'provider.id',
+            filterOptions: {
+                enabled: true,
+            },
             hidden: getCookie('Provider')
         }, {
             label: 'Size',
@@ -148,6 +155,9 @@ export default {
             label: 'Client Status',
             field: 'clientStatus',
             type: 'number',
+            filterOptions: {
+                enabled: true,
+            },
             hidden: getCookie('Client Status')
         }];
 
@@ -236,7 +246,7 @@ export default {
         onColumnFilter(params) {
             console.log('on column filter change');
             console.log(params);
-            this.updateParams(params);
+            this.remoteHistory.filter = params;
             this.loadItems();
         },
         // load items is what brings back the rows from server

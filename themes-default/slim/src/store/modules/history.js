@@ -13,7 +13,8 @@ const state = {
         sort: {
             field: 'date',
             type: 'desc'
-        }
+        },
+        filter: null
     },
     remoteCompact: {
         rows: [],

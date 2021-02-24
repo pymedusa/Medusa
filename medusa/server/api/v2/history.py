@@ -45,8 +45,8 @@ class HistoryHandler(BaseRequestHandler):
         compact_layout = bool(self.get_argument('compact', default=False))
         return_last = bool(self.get_argument('last', default=False))
         total_rows = self.get_argument('total', default=None)
-        sortField = self.get_argument('sortfield', default=None)
-        sortOrder = self.get_argument('sortorder', default='asc')
+        sort_field = self.get_argument('sortfield', default=None)
+        sort_order = self.get_argument('sortorder', default='asc')
         headers = {}
 
         if return_last:
@@ -80,9 +80,9 @@ class HistoryHandler(BaseRequestHandler):
             'quality': 'quality'
         }
 
-        if sortField is not None:
-            if sortable_fields.get(sortField.lower()):
-                sql_base += f' ORDER BY {sortable_fields[sortField.lower()]} {sortOrder}'
+        if sort_field is not None:
+            if sortable_fields.get(sort_field.lower()):
+                sql_base += f' ORDER BY {sortable_fields[sort_field.lower()]} {sort_order}'
 
         if total_rows:
             sql_base += ' LIMIT ?'
