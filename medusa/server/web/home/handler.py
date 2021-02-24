@@ -210,7 +210,9 @@ class Home(WebRoot):
     @staticmethod
     def testNZBget(host=None, username=None, password=None, use_https=False):
         try:
-            connected_status = nzbget.test_nzb(host, username, password, config.checkbox_to_value(use_https))
+            connected_status = nzbget.test_authentication(
+                host, username, password, config.checkbox_to_value(use_https)
+            )
         except Exception as error:
             logger.log('Error while testing NZBget connection: {error}'.format(error=error), logger.WARNING)
             return 'Error while testing connection. Check warning logs.'
