@@ -151,10 +151,9 @@
 
                                         <div v-if="clients.nzb.method" v-show="clients.nzb.method === 'sabnzbd'" id="sabnzbd_settings">
 
-                                            <config-textbox v-model="clients.nzb.sabnzbd.host" label="SABnzbd server URL" id="sab_host" :explanations="['username for your KODI server (blank for none)']" @change="save()">
-                                                <div class="clear-left">
-                                                    <p v-html="clientsConfig.nzb[clients.nzb.method].description" />
-                                                </div>
+                                            <config-textbox v-model="clients.nzb.sabnzbd.host" label="SABnzbd server URL" id="sab_host" validate-uri @change="save()">
+                                                <p>username for your KODI server (blank for none)</p>
+                                                <p v-html="clientsConfig.nzb[clients.nzb.method].description" />
                                             </config-textbox>
 
                                             <config-textbox v-model="clients.nzb.sabnzbd.username" label="SABnzbd username" id="sab_username" :explanations="['(blank for none)']" />
