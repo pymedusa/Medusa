@@ -121,23 +121,23 @@ input {
 .uri-error-enter-active,
 .uri-error-leave-active  {
     -moz-transition-duration: 0.3s;
-   -webkit-transition-duration: 0.3s;
-   -o-transition-duration: 0.3s;
-   transition-duration: 0.3s;
-   -moz-transition-timing-function: ease-in;
-   -webkit-transition-timing-function: ease-in;
-   -o-transition-timing-function: ease-in;
-   transition-timing-function: ease-in;
+    -webkit-transition-duration: 0.3s;
+    -o-transition-duration: 0.3s;
+    transition-duration: 0.3s;
+    -moz-transition-timing-function: ease-in;
+    -webkit-transition-timing-function: ease-in;
+    -o-transition-timing-function: ease-in;
+    transition-timing-function: ease-in;
 }
 
 .uri-error-enter-to,
 .uri-error-leave {
-   max-height: 100%;
+    max-height: 100%;
 }
 
 .uri-error-enter,
 .uri-error-leave-to {
-   max-height: 0;
+    max-height: 0;
 }
 
 .parent {
