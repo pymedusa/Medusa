@@ -175,7 +175,7 @@
                                                 <p><b>Note:</b> enable Secure control in NZBGet and set the correct Secure Port here</p>
                                             </config-toggle-slider>
 
-                                            <config-textbox v-model="clients.nzb.nzbget.host" label="NZBget host:port" id="nzbget_host">
+                                            <config-textbox v-model="clients.nzb.nzbget.host" validate-url label="NZBget host:port" id="nzbget_host">
                                                 <p v-if="clientsConfig.nzb[clients.nzb.method]" v-html="clientsConfig.nzb[clients.nzb.method].description" />
                                             </config-textbox>
 
@@ -243,11 +243,18 @@
 
                                         <div v-if="clients.torrents.method" v-show="clients.torrents.method !== 'blackhole'">
 
-                                            <config-textbox v-model="clients.torrents.host" :label="clientsConfig.torrent[clients.torrents.method].shortTitle || clientsConfig.torrent[clients.torrents.method].title + ' host:port'" id="torrent_host">
+                                            <config-textbox v-model="clients.torrents.host" 
+                                                :label="clientsConfig.torrent[clients.torrents.method].shortTitle || `${clientsConfig.torrent[clients.torrents.method].title} host:port`"
+                                                id="torrent_host" validate-uri
+                                            >
                                                 <p v-html="clientsConfig.torrent[clients.torrents.method].description" />
                                             </config-textbox>
 
-                                            <config-textbox v-show="clients.torrents.method === 'transmission'" v-model="clients.torrents.rpcUrl" :label="clientsConfig.torrent[clients.torrents.method].shortTitle || clientsConfig.torrent[clients.torrents.method].title + ' RPC URL'" id="rpcurl_title">
+                                            <config-textbox v-show="clients.torrents.method === 'transmission'" 
+                                                v-model="clients.torrents.rpcUrl"
+                                                :label="clientsConfig.torrent[clients.torrents.method].shortTitle || `${clientsConfig.torrent[clients.torrents.method].title} RPC URL`"
+                                                id="rpcurl_title" validate-uri
+                                            >
                                                 <p id="rpcurl_desc_">The path without leading and trailing slashes (e.g. transmission)</p>
                                             </config-textbox>
 
@@ -263,10 +270,15 @@
                                             </config-toggle-slider>
 
                                             <config-textbox v-show="!torrentUsernameIsDisabled"
-                                                            v-model="clients.torrents.username" :label="(clientsConfig.torrent[clients.torrents.method].shortTitle || clientsConfig.torrent[clients.torrents.method].title) + ' username'" id="torrent_username" :explanations="['(blank for none)']" />
+                                                v-model="clients.torrents.username"
+                                                :label="(clientsConfig.torrent[clients.torrents.method].shortTitle || clientsConfig.torrent[clients.torrents.method].title) + ' username'" id="torrent_username" :explanations="['(blank for none)']"
+                                            />
 
                                             <config-textbox type="password" v-show="!torrentPasswordIsDisabled"
-                                                            v-model="clients.torrents.password" :label="(clientsConfig.torrent[clients.torrents.method].shortTitle || clientsConfig.torrent[clients.torrents.method].title) + ' password'" id="torrent_password" :explanations="['(blank for none)']" />
+                                                v-model="clients.torrents.password"
+                                                :label="(clientsConfig.torrent[clients.torrents.method].shortTitle || clientsConfig.torrent[clients.torrents.method].title) + ' password'"
+                                                id="torrent_password" :explanations="['(blank for none)']"
+                                            />
 
                                             <div v-show="clientsConfig.torrent[clients.torrents.method].labelOption" id="torrent_label_option">
                                                 <config-textbox v-model="clients.torrents.label" label="Add label to torrent" id="torrent_label">
