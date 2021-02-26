@@ -182,6 +182,7 @@ class DownloadHandler(object):
             ClientStatusEnum.FAILED.value | ClientStatusEnum.POSTPROCESSED.value,
             ClientStatusEnum.SEEDED.value | ClientStatusEnum.POSTPROCESSED.value,
             ClientStatusEnum.ABORTED.value,
+            ClientStatusEnum.SEEDACTION.value
         ]
 
         client_type = 'torrent' if isinstance(client, GenericClient) else 'nzb'
