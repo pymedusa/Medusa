@@ -73,7 +73,7 @@ export default {
             if (!validateUri || !localValue) {
                 return false;
             }
-            return !localValue.match(/^[a-zA-Z]{3,5}:\/\//);
+            return !localValue.match(/^[A-Za-z]{3,5}:\/\//);
         }
     },
     watch: {

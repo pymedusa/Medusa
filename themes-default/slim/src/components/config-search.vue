@@ -243,14 +243,16 @@
 
                                         <div v-if="clients.torrents.method" v-show="clients.torrents.method !== 'blackhole'">
 
-                                            <config-textbox v-model="clients.torrents.host" 
+                                            <config-textbox
+                                                v-model="clients.torrents.host"
                                                 :label="clientsConfig.torrent[clients.torrents.method].shortTitle || `${clientsConfig.torrent[clients.torrents.method].title} host:port`"
                                                 id="torrent_host" validate-uri
                                             >
                                                 <p v-html="clientsConfig.torrent[clients.torrents.method].description" />
                                             </config-textbox>
 
-                                            <config-textbox v-show="clients.torrents.method === 'transmission'" 
+                                            <config-textbox
+                                                v-show="clients.torrents.method === 'transmission'"
                                                 v-model="clients.torrents.rpcUrl"
                                                 :label="clientsConfig.torrent[clients.torrents.method].shortTitle || `${clientsConfig.torrent[clients.torrents.method].title} RPC URL`"
                                                 id="rpcurl_title" validate-uri
@@ -264,17 +266,22 @@
                                                 </select>
                                             </config-template>
 
-                                            <config-toggle-slider v-show="clientsConfig.torrent[clients.torrents.method].verifySSLOption" v-model="clients.torrents.verifySSL" label="Verify certificate" id="torrent_verify_cert">
+                                            <config-toggle-slider
+                                                v-show="clientsConfig.torrent[clients.torrents.method].verifySSLOption" v-model="clients.torrents.verifySSL"
+                                                label="Verify certificate" id="torrent_verify_cert"
+                                            >
                                                 <p>Verify SSL certificates for HTTPS requests</p>
                                                 <p v-show="clients.torrents.method === 'deluge'">disable if you get "Deluge: Authentication Error" in your log</p>
                                             </config-toggle-slider>
 
-                                            <config-textbox v-show="!torrentUsernameIsDisabled"
+                                            <config-textbox
+                                                v-show="!torrentUsernameIsDisabled"
                                                 v-model="clients.torrents.username"
                                                 :label="(clientsConfig.torrent[clients.torrents.method].shortTitle || clientsConfig.torrent[clients.torrents.method].title) + ' username'" id="torrent_username" :explanations="['(blank for none)']"
                                             />
 
-                                            <config-textbox type="password" v-show="!torrentPasswordIsDisabled"
+                                            <config-textbox
+                                                type="password" v-show="!torrentPasswordIsDisabled"
                                                 v-model="clients.torrents.password"
                                                 :label="(clientsConfig.torrent[clients.torrents.method].shortTitle || clientsConfig.torrent[clients.torrents.method].title) + ' password'"
                                                 id="torrent_password" :explanations="['(blank for none)']"
