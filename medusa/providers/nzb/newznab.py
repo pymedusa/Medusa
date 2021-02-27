@@ -48,6 +48,8 @@ class NewznabProvider(NZBProvider):
     Tested with: newznab, nzedb, spotweb
     """
 
+    IDENTIFIER_REGEX = re.compile(r'(.*)apikey=.+')
+
     def __init__(self, name, url='', api_key='0', cat_ids=None, default=False, search_mode='eponly',
                  search_fallback=False, enable_daily=True, enable_backlog=False, enable_manualsearch=False):
         """Initialize the class."""
@@ -273,6 +275,19 @@ class NewznabProvider(NZBProvider):
         Returns int size or -1
         """
         return try_int(item.get('size', -1), -1)
+
+    @staticmethod
+    def _get_identifier(item):
+        """
+        Return the identifier for the item.
+
+        Cut the apikey from it, as this might change over time.
+            So we'd like to prevent adding duplicates to cache.
+        """
+        url = NewznabProvider.IDENTIFIER_REGEX.match(item.url)
+        if url:
+            return url.group(1)
+        return item.url
 
     def config_string(self):
         """Generate a '|' delimited string of instance attributes, for saving to config.ini."""
