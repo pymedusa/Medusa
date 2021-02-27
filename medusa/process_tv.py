@@ -393,9 +393,11 @@ class ProcessResult(object):
             if self.unwanted_files:
                 self.delete_files(path, self.unwanted_files)
 
-            if all([not app.NO_DELETE or clean_folder, self.process_method in ('move', 'copy'),
-                    os.path.normpath(path) != os.path.normpath(app.TV_DOWNLOAD_DIR)]):
-
+            if all([
+                app.TV_DOWNLOAD_DIR,
+                not app.NO_DELETE or clean_folder, self.process_method in ('move', 'copy'),
+                os.path.normpath(path) != os.path.normpath(app.TV_DOWNLOAD_DIR)
+            ]):
                 check_empty = False if self.process_method == 'copy' else True
                 if self.delete_folder(path, check_empty=check_empty):
                     self.log_and_output('Deleted folder: {path}', level=logging.DEBUG, **{'path': path})
