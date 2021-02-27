@@ -289,7 +289,7 @@ class TransmissionAPI(GenericClient):
 
     def _torrent_properties(self, info_hash):
         """Get torrent properties."""
-        log.info('Checking {client} torrent {hash} status.', {'client': self.name, 'hash': info_hash})
+        log.debug('Checking {client} torrent {hash} status.', {'client': self.name, 'hash': info_hash})
 
         return_params = {
             'ids': info_hash,
