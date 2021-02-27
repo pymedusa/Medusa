@@ -119,7 +119,7 @@ input {
 }
 
 .uri-error-enter-active,
-.uri-error-leave-active  {
+.uri-error-leave-active {
     -moz-transition-duration: 0.3s;
     -webkit-transition-duration: 0.3s;
     -o-transition-duration: 0.3s;
