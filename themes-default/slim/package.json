@@ -28,7 +28,7 @@
   "resolutions": {
     "**/jquery": "3.5.1",
     "**/date-fns": "2.17.0",
-    "jest/**/@babel/core": "7.13.1"
+    "jest/**/@babel/core": "7.13.8"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "1.2.34",
@@ -67,11 +67,11 @@
     "vuex": "3.6.2"
   },
   "devDependencies": {
-    "@babel/core": "7.13.1",
-    "@babel/eslint-parser": "7.13.4",
-    "@babel/plugin-transform-runtime": "7.13.7",
-    "@babel/preset-env": "7.13.5",
-    "@babel/runtime": "7.13.7",
+    "@babel/core": "7.13.8",
+    "@babel/eslint-parser": "7.13.8",
+    "@babel/plugin-transform-runtime": "7.13.8",
+    "@babel/preset-env": "7.13.8",
+    "@babel/runtime": "7.13.8",
     "@mapbox/stylelint-processor-arbitrary-tags": "0.3.0",
     "@sharkykh/eslint-plugin-vue-extra": "0.1.1",
     "@testing-library/jest-dom": "5.11.9",
