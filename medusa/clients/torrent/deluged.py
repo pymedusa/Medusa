@@ -533,7 +533,7 @@ class DelugeRPC(object):
         """Get torrent properties."""
         try:
             self.connect()
-            log.info('Checking DelugeD torrent {hash} status.', {'hash': info_hash})
+            log.debug('Checking DelugeD torrent {hash} status.', {'hash': info_hash})
             torrent_data = self.client.core.get_torrent_status(
                 info_hash, ('name', 'hash', 'progress', 'state', 'ratio', 'stop_ratio',
                             'is_seed', 'is_finished', 'paused', 'files', 'download_location'))

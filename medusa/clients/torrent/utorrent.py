@@ -289,7 +289,7 @@ class UTorrentAPI(GenericClient):
         18	REMAINING (integer in bytes)
 
         """
-        log.info('Checking {client} torrent {hash} status.', {'client': self.name, 'hash': info_hash})
+        log.debug('Checking {client} torrent {hash} status.', {'client': self.name, 'hash': info_hash})
 
         torrent_list = self._get_torrents()
         if not torrent_list:

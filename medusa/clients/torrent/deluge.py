@@ -486,7 +486,7 @@ class DelugeAPI(GenericClient):
             'id': 72,
         })
 
-        log.info('Checking {client} torrent {hash} status.', {'client': self.name, 'hash': info_hash})
+        log.debug('Checking {client} torrent {hash} status.', {'client': self.name, 'hash': info_hash})
         if not self._request(method='post', data=post_data) or self.response.json()['error']:
             log.warning('Error while fetching torrent {hash} status.', {'hash': info_hash})
             return

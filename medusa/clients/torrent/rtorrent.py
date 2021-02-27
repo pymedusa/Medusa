@@ -158,7 +158,7 @@ class RTorrentAPI(GenericClient):
 
     def _torrent_properties(self, info_hash):
         """Get torrent properties."""
-        log.info('Get {client} torrent hash {hash} properties.', {'client': self.name, 'hash': info_hash})
+        log.debug('Get {client} torrent hash {hash} properties.', {'client': self.name, 'hash': info_hash})
         if not self._get_auth():
             return False
 
