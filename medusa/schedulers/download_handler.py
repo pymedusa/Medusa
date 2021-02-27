@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 
 import datetime
 import logging
-import re
 from builtins import object
 from enum import Enum
 from uuid import uuid4
