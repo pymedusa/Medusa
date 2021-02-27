@@ -42,6 +42,7 @@ class IPTorrentsProvider(TorrentProvider):
         self.cookies = ''
         self.required_cookies = ('uid', 'pass')
         self.categories = '73=&60='
+        self.custom_url = None
 
         # Cache
         self.cache = tv.Cache(self)
