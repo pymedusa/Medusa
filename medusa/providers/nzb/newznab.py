@@ -174,8 +174,7 @@ class NewznabProvider(NZBProvider):
                     break
 
         # Reprocess but now use force_query = True if there are no results
-        # (backlog, daily, force) or if it's a manual search.
-        if (not results or manual_search) and not force_query:
+        if not results and not force_query:
             return self.search(search_strings, ep_obj=ep_obj, force_query=True)
 
         return results
