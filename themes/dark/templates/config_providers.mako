@@ -1299,7 +1299,10 @@ window.app = new Vue({
                             <label>
                                 <span class="component-title">&nbsp;</span>
                                 <span class="component-desc">
-                                    <p>stop transfer when ratio is reached<br>(-1 Medusa default to seed forever, or leave blank for downloader default)</p>
+                                    <p>Configure a desired seeding ratio. Used by the (automated download handler in config - postprocessing)
+                                    <br />-1 for provider specific option is disabled.
+                                    <br />0 for not using a seed ratio. Actions configured in the download handler, will not wait for finished seeding.
+                                    <br />If disabled the global option is used in config - postprocessing (automated download handling))</p>
                                 </span>
                             </label>
                         </div>

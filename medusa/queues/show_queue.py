@@ -114,7 +114,7 @@ class ShowQueue(generic_queue.GenericQueue):
         return show.series_id in [x.show.series_id if x.show else 0 for x in self.queue if x.action_id in actions]
 
     def _isBeingSomethinged(self, show, actions):
-        return self.currentItem is not None and show == self.currentItem.show and self.currentItem.action_id in actions
+        return self.current_item is not None and show == self.current_item.show and self.current_item.action_id in actions
 
     def isInUpdateQueue(self, show):
         return self._isInQueue(show, (ShowQueueActions.UPDATE,))
@@ -150,7 +150,7 @@ class ShowQueue(generic_queue.GenericQueue):
         return self._isBeingSomethinged(show, (ShowQueueActions.REMOVE,))
 
     def _getLoadingShowList(self):
-        return [x for x in self.queue + [self.currentItem] if x is not None and x.isLoading]
+        return [x for x in self.queue + [self.current_item] if x is not None and x.isLoading]
 
     def getQueueActionMessage(self, show):
         return self.get_queue_action(show)[1]
@@ -252,7 +252,7 @@ class ShowQueue(generic_queue.GenericQueue):
 
         # remove other queued actions for this show.
         for item in self.queue:
-            if item and item.show and item != self.currentItem and show.identifier == item.show.identifier:
+            if item and item.show and item != self.current_item and show.identifier == item.show.identifier:
                 self.queue.remove(item)
 
         queue_item_obj = QueueItemRemove(show=show, full=full)
@@ -287,7 +287,7 @@ class ShowQueueItem(generic_queue.QueueItem):
 
     def isInQueue(self):
         return self in app.show_queue_scheduler.action.queue + [
-            app.show_queue_scheduler.action.currentItem]  # @UndefinedVariable
+            app.show_queue_scheduler.action.current_item]  # @UndefinedVariable
 
     def _getName(self):
         return text_type(self.show.series_id)

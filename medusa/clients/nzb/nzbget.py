@@ -6,6 +6,7 @@ import datetime
 import logging
 import socket
 from base64 import standard_b64encode
+from contextlib import suppress
 from xmlrpc.client import Error, ProtocolError, ServerProxy
 
 from medusa import app
@@ -13,21 +14,22 @@ from medusa.common import Quality
 from medusa.helper.common import try_int
 from medusa.logger.adapters.style import BraceAdapter
 
-from six import text_type
+import ttl_cache
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
-def NZBConnection(url):
-    """Method to connect to NZBget client.
+def nzb_connection(url):
+    """
+    Connect to NZBget client.
 
     :param url: nzb url to connect
     :return: True if connected, else False
     """
-    nzbGetRPC = ServerProxy(url)
+    nzb_get_rpc = ServerProxy(url)
     try:
-        if nzbGetRPC.writelog('INFO', 'Medusa connected to test connection.'):
+        if nzb_get_rpc.writelog('INFO', 'Medusa connected to test connection.'):
             log.debug('Successfully connected to NZBget')
         else:
             log.warning('Successfully connected to NZBget but unable to'
@@ -54,8 +56,9 @@ def NZBConnection(url):
         return False
 
 
-def testNZB(host, username, password, use_https):
-    """Test NZBget client connection.
+def test_authentication(host, username, password, use_https):
+    """
+    Test NZBget client connection.
 
     :param host: nzb host to connect
     :param username: nzb username
@@ -65,16 +68,18 @@ def testNZB(host, username, password, use_https):
     :return  True if connected. Else False
     """
     url = 'http{}://{}:{}@{}/xmlrpc'.format(
-        's' if use_https else '',
-        username,
-        password,
-        host)
-    return NZBConnection(url)
+        's' if use_https or app.NZBGET_USE_HTTPS else '',
+        username or app.NZBGET_USERNAME,
+        password or app.NZBGET_PASSWORD,
+        host or app.NZBGET_HOST
+    )
+
+    return nzb_connection(url)
 
 
-def sendNZB(nzb, proper=False):
+def send_nzb(nzb, proper=False):
     """
-    Sends NZB to NZBGet client
+    Send NZB to NZBGet client.
 
     :param nzb: nzb object
     :param proper: True if a Proper download, False if not.
@@ -84,8 +89,7 @@ def sendNZB(nzb, proper=False):
                     ' Please configure it.')
         return False
 
-    addToTop = False
-    nzbgetprio = 0
+    nzb_get_prio = 0
     category = app.NZBGET_CATEGORY
     if nzb.series.is_anime:
         category = app.NZBGET_CATEGORY_ANIME
@@ -96,24 +100,20 @@ def sendNZB(nzb, proper=False):
         app.NZBGET_PASSWORD,
         app.NZBGET_HOST)
 
-    if not NZBConnection(url):
+    if not nzb_connection(url):
         return False
 
-    nzbGetRPC = ServerProxy(url)
+    nzb_get_rpc = ServerProxy(url)
 
     dupekey = ''
     dupescore = 0
     # if it aired recently make it high priority and generate DupeKey/Score
     for cur_ep in nzb.episodes:
         if dupekey == '':
-            if cur_ep.series.indexer == 1:
-                dupekey = 'Medusa-' + text_type(cur_ep.series.indexerid)
-            elif cur_ep.series.indexer == 2:
-                dupekey = 'Medusa-tvr' + text_type(cur_ep.series.indexerid)
-        dupekey += '-' + text_type(cur_ep.season) + '.' + text_type(cur_ep.episode)
+            dupekey = 'medusa-{slug}'.format(slug=cur_ep.series.identifier.slug)
+        dupekey += '-' + '{0}.{1}'.format(cur_ep.season, cur_ep.episode)
         if datetime.date.today() - cur_ep.airdate <= datetime.timedelta(days=7):
-            addToTop = True
-            nzbgetprio = app.NZBGET_PRIORITY
+            nzb_get_prio = app.NZBGET_PRIORITY
         else:
             category = app.NZBGET_CATEGORY_BACKLOG
             if nzb.series.is_anime:
@@ -124,88 +124,178 @@ def sendNZB(nzb, proper=False):
     if proper:
         dupescore += 10
 
-    nzbcontent64 = None
+    nzb_content_64 = None
     if nzb.result_type == 'nzbdata':
         data = nzb.extra_info[0]
-        nzbcontent64 = standard_b64encode(data).decode()
+        nzb_content_64 = standard_b64encode(data).decode()
 
     log.info('Sending NZB to NZBget')
     log.debug('URL: {}', url)
 
     try:
-        # Find out if nzbget supports priority (Version 9.0+),
-        # old versions beginning with a 0.x will use the old command
-        nzbget_version_str = nzbGetRPC.version()
+        # Version < 12 not supported.
+        nzbget_version_str = nzb_get_rpc.version()
         nzbget_version = try_int(
             nzbget_version_str[:nzbget_version_str.find('.')]
         )
-        if nzbget_version == 0:
-            if nzbcontent64:
-                nzbget_result = nzbGetRPC.append(
-                    nzb.name + '.nzb',
-                    category,
-                    addToTop,
-                    nzbcontent64
+
+        if nzbget_version == 12:
+            if nzb_content_64 is not None:
+                nzbget_result = nzb_get_rpc.append(
+                    nzb.name + '.nzb', category, nzb_get_prio, False,
+                    nzb_content_64, False, dupekey, dupescore, 'score'
                 )
             else:
-                if nzb.result_type == 'nzb':
-                    if not nzb.provider.login():
-                        return False
-
-                    # TODO: Check if this needs exception handling
-                    data = nzb.provider.session(nzb.url).content
-                    if data is None:
-                        return False
-
-                    nzbcontent64 = standard_b64encode(data).decode()
-
-                nzbget_result = nzbGetRPC.append(
-                    nzb.name + '.nzb',
-                    category,
-                    addToTop,
-                    nzbcontent64
-                )
-        elif nzbget_version == 12:
-            if nzbcontent64 is not None:
-                nzbget_result = nzbGetRPC.append(
-                    nzb.name + '.nzb', category, nzbgetprio, False,
-                    nzbcontent64, False, dupekey, dupescore, 'score'
-                )
-            else:
-                nzbget_result = nzbGetRPC.appendurl(
-                    nzb.name + '.nzb', category, nzbgetprio, False, nzb.url,
+                nzbget_result = nzb_get_rpc.appendurl(
+                    nzb.name + '.nzb', category, nzb_get_prio, False, nzb.url,
                     False, dupekey, dupescore, 'score'
                 )
+
         # v13+ has a new combined append method that accepts both (url and
         # content) also the return value has changed from boolean to integer
         # (Positive number representing NZBID of the queue item. 0 and negative
         # numbers represent error codes.)
         elif nzbget_version >= 13:
-            nzbget_result = nzbGetRPC.append(
+            nzbget_result = nzb_get_rpc.append(
                 nzb.name + '.nzb',
-                nzbcontent64 if nzbcontent64 is not None else nzb.url,
-                category, nzbgetprio, False, False, dupekey, dupescore,
+                nzb_content_64 if nzb_content_64 is not None else nzb.url,
+                category, nzb_get_prio, False, False, dupekey, dupescore,
                 'score'
-            ) > 0
+            )
         else:
-            if nzbcontent64 is not None:
-                nzbget_result = nzbGetRPC.append(
-                    nzb.name + '.nzb', category, nzbgetprio, False,
-                    nzbcontent64
+            if nzb_content_64 is not None:
+                nzbget_result = nzb_get_rpc.append(
+                    nzb.name + '.nzb', category, nzb_get_prio, False,
+                    nzb_content_64
                 )
             else:
-                nzbget_result = nzbGetRPC.appendurl(
-                    nzb.name + '.nzb', category, nzbgetprio, False, nzb.url
+                nzbget_result = nzb_get_rpc.appendurl(
+                    nzb.name + '.nzb', category, nzb_get_prio, False, nzb.url
                 )
 
         if nzbget_result:
-            log.debug('NZB sent to NZBget successfully')
-            return True
+            log.debug('NZB sent to NZBget successfully, queued with NZBID {nzbid}', {'nzbid': nzbget_result})
+            return nzbget_result
         else:
             log.warning('NZBget could not add {name}.nzb to the queue',
                         {'name': nzb.name})
-            return False
+            return nzbget_result
     except Exception:
         log.warning('Connect Error to NZBget: could not add {name}.nzb to the'
                     ' queue', {'name': nzb.name})
+        return -1
+
+
+@ttl_cache(60.0)
+def _get_nzb_queue():
+    """Return a list of all groups (nzbs) currently being donloaded or postprocessed."""
+    url = 'http{}://{}:{}@{}/xmlrpc'.format(
+        's' if app.NZBGET_USE_HTTPS else '',
+        app.NZBGET_USERNAME,
+        app.NZBGET_PASSWORD,
+        app.NZBGET_HOST
+    )
+
+    if not nzb_connection(url):
         return False
+
+    nzb_get_rpc = ServerProxy(url)
+    nzb_groups = nzb_get_rpc.listgroups()
+
+    return nzb_groups
+
+
+@ttl_cache(60.0)
+def _get_nzb_history():
+    """Return a list of all groups (nzbs) from history."""
+    url = 'http{}://{}:{}@{}/xmlrpc'.format(
+        's' if app.NZBGET_USE_HTTPS else '',
+        app.NZBGET_USERNAME,
+        app.NZBGET_PASSWORD,
+        app.NZBGET_HOST
+    )
+
+    if not nzb_connection(url):
+        return False
+
+    nzb_get_rpc = ServerProxy(url)
+    nzb_groups = nzb_get_rpc.history()
+
+    return nzb_groups
+
+
+def get_nzb_by_id(nzb_id):
+    """Look in download queue and history for a specific nzb."""
+    nzb_active = _get_nzb_queue()
+    for nzb in nzb_active or []:
+        with suppress(ValueError):
+            if nzb['NZBID'] == int(nzb_id):
+                return nzb
+
+    nzb_history = _get_nzb_history()
+    for nzb in nzb_history or []:
+        with suppress(ValueError):
+            if nzb['NZBID'] == int(nzb_id):
+                return nzb
+
+
+def nzb_completed(nzo_id):
+    """Check if an nzb has completed download."""
+    nzb = get_status(nzo_id)
+    if not nzb:
+        return False
+
+    return str(nzb) == 'Completed'
+
+
+def get_status(nzo_id):
+    """
+    Return nzb status (Paused, Downloading, Downloaded, Failed, Extracting).
+
+    :return: ClientStatus object.
+    """
+    from medusa.schedulers.download_handler import ClientStatus
+
+    nzb = get_nzb_by_id(nzo_id)
+    status = None
+    if not nzb:
+        return False
+
+    client_status = ClientStatus()
+    # Map status to a standard ClientStatus.
+    if '/' in nzb['Status']:
+        status, _ = nzb['Status'].split('/')
+    else:
+        status = nzb['Status']
+
+    # Queue status checks (Queued is not recorded as status)
+    if status == 'DOWNLOADING':
+        client_status.set_status_string('Downloading')
+
+    if status == 'PAUSED':
+        client_status.set_status_string('Paused')
+
+    if status == 'UNPACKING':
+        client_status.set_status_string('Extracting')
+
+    # History status checks.
+    if status == 'DELETED':  # Mostly because of duplicate checks.
+        client_status.set_status_string('Aborted')
+
+    if status == 'SUCCESS':
+        client_status.set_status_string('Completed')
+
+    if status == 'FAILURE':
+        client_status.set_status_string('Failed')
+
+    # Get Progress
+    if status == 'SUCCESS':
+        client_status.progress = 100
+    elif nzb.get('percentage'):
+        client_status.progress = int(nzb['percentage'])
+
+    client_status.destination = nzb.get('DestDir', '')
+
+    client_status.resource = nzb.get('NZBFilename')
+
+    return client_status

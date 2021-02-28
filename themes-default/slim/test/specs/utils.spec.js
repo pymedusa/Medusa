@@ -14,7 +14,7 @@ describe('combineQualities', () => {
 
     testCases.forEach(({ allowed, preferred, expected }, caseIndex) => {
         const testTitle = `[C${caseIndex}] combineQualities(${JSON.stringify(allowed)}, ${JSON.stringify(preferred)})`;
-        it(testTitle, () => {
+        it(testTitle + ' has the expected combined quality', () => {
             const actual = combineQualities(allowed, preferred);
             expect(actual).toEqual(expected);
         });
@@ -68,7 +68,7 @@ describe('humanFileSize returns correct values', () => {
 
     testCases.forEach(({ value, expected }, caseIndex) => {
         const testTitle = `[C${caseIndex}] humanFileSize(${String(value)})`;
-        it(testTitle, () => {
+        it(testTitle + ' has the expected size', () => {
             const actual = humanFileSize(value);
             expect(actual).toEqual(expected);
         });

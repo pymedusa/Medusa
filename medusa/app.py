@@ -72,7 +72,7 @@ class MedusaApp(object):
         self.CONFIG_FILE = None
 
         # This is the version of the config we EXPECT to find
-        self.CONFIG_VERSION = 10
+        self.CONFIG_VERSION = 11
 
         # Default encryption version (0 for None)
         self.ENCRYPTION_VERSION = 0
@@ -106,11 +106,12 @@ class MedusaApp(object):
         self.forced_search_queue_scheduler = None
         self.manual_snatch_scheduler = None
         self.proper_finder_scheduler = None
-        self.post_processor_scheduler = None
         self.subtitles_finder_scheduler = None
         self.trakt_checker_scheduler = None
-        self.torrent_checker_scheduler = None
+        self.download_handler_scheduler = None
         self.episode_update_scheduler = None
+        self.post_processor_scheduler = None
+        self.post_processor_queue_scheduler = None
 
         self.showList = []
 
@@ -263,6 +264,8 @@ class MedusaApp(object):
         self.CACHE_TRIMMING = None
         self.MAX_CACHE_AGE = None
         self.TORRENT_METHOD = None
+        self.TORRENT_SEED_RATIO = None
+        self.TORRENT_SEED_ACTION = None
         self.SAVE_MAGNET_FILE = False
         self._TORRENT_DIR = None
         self._DOWNLOAD_PROPERS = False
@@ -279,14 +282,14 @@ class MedusaApp(object):
         self._BACKLOG_FREQUENCY = None
         self._SHOWUPDATE_HOUR = None
 
-        self.DEFAULT_TORRENT_CHECKER_FREQUENCY = 60
+        self.DEFAULT_DOWNLOAD_HANDLER_FREQUENCY = 60
         self.DEFAULT_DAILYSEARCH_FREQUENCY = 40
         self.DEFAULT_BACKLOG_FREQUENCY = 21
         self.DEFAULT_UPDATE_FREQUENCY = 1
         self.DEFAULT_SHOWUPDATE_HOUR = random.randint(2, 4)
 
         self.MIN_AUTOPOSTPROCESSOR_FREQUENCY = 1
-        self.MIN_TORRENT_CHECKER_FREQUENCY = 30
+        self.MIN_DOWNLOAD_HANDLER_FREQUENCY = 5
         self.MIN_DAILYSEARCH_FREQUENCY = 10
         self.MIN_BACKLOG_FREQUENCY = 10
         self.MIN_UPDATE_FREQUENCY = 1
@@ -356,7 +359,7 @@ class MedusaApp(object):
         self.TORRENT_RPCURL = 'transmission'
         self.TORRENT_AUTH_TYPE = 'none'
         self.TORRENT_SEED_LOCATION = None
-        self._TORRENT_CHECKER_FREQUENCY = None
+        self._DOWNLOAD_HANDLER_FREQUENCY = None
 
         self.USE_KODI = False
         self.KODI_ALWAYS_ON = True
@@ -610,6 +613,8 @@ class MedusaApp(object):
         self.OPENSUBTITLES_USER = None
         self.OPENSUBTITLES_PASS = None
 
+        self._USE_DOWNLOAD_HANDLER = False
+
         self.USE_FAILED_DOWNLOADS = False
         self.DELETE_FAILED = False
 
@@ -777,14 +782,24 @@ class MedusaApp(object):
         self._init_scheduler(app_prop='USE_TRAKT', scheduler='trakt_checker_scheduler', enabled=value)
 
     @property
+    def USE_DOWNLOAD_HANDLER(self):
+        """Return REMOVE_FROM_CLIENT value."""
+        return self._USE_DOWNLOAD_HANDLER
+
+    @USE_DOWNLOAD_HANDLER.setter
+    def USE_DOWNLOAD_HANDLER(self, value):
+        """Set USE_DOWNLOAD_HANDLER value and start download_handler_scheduler thread if needed."""
+        self._init_scheduler(app_prop='USE_DOWNLOAD_HANDLER', scheduler='download_handler_scheduler', enabled=value)
+
+    @property
     def REMOVE_FROM_CLIENT(self):
         """Return REMOVE_FROM_CLIENT value."""
         return self._REMOVE_FROM_CLIENT
 
     @REMOVE_FROM_CLIENT.setter
     def REMOVE_FROM_CLIENT(self, value):
-        """Set REMOVE_FROM_CLIENT value and start torrent_checker_scheduler thread if needed."""
-        self._init_scheduler(app_prop='REMOVE_FROM_CLIENT', scheduler='torrent_checker_scheduler', enabled=value)
+        """Set REMOVE_FROM_CLIENT value and start download_handler_scheduler thread if needed."""
+        self._init_scheduler(app_prop='REMOVE_FROM_CLIENT', scheduler='download_handler_scheduler', enabled=value)
 
     @property
     def USE_SUBTITLES(self):
@@ -817,14 +832,14 @@ class MedusaApp(object):
         self.handle_prop('AUTOPOSTPROCESSOR_FREQUENCY', value)
 
     @property
-    def TORRENT_CHECKER_FREQUENCY(self):
-        """Return app.TORRENT_CHECKER_FREQUENCY."""
-        return self._TORRENT_CHECKER_FREQUENCY
+    def DOWNLOAD_HANDLER_FREQUENCY(self):
+        """Return app.DOWNLOAD_HANDLER_FREQUENCY."""
+        return self._DOWNLOAD_HANDLER_FREQUENCY
 
-    @TORRENT_CHECKER_FREQUENCY.setter
-    def TORRENT_CHECKER_FREQUENCY(self, value):
-        """Set app.TORRENT_CHECKER_FREQUENCY and reconfigure thread."""
-        self.handle_prop('TORRENT_CHECKER_FREQUENCY', value)
+    @DOWNLOAD_HANDLER_FREQUENCY.setter
+    def DOWNLOAD_HANDLER_FREQUENCY(self, value):
+        """Set app.DOWNLOAD_HANDLER_FREQUENCY and reconfigure thread."""
+        self.handle_prop('DOWNLOAD_HANDLER_FREQUENCY', value)
 
     @property
     def DAILYSEARCH_FREQUENCY(self):

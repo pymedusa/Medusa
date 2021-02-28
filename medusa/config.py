@@ -28,7 +28,7 @@ from builtins import str
 
 from contextlib2 import suppress
 
-from medusa import common, db, helpers, logger, naming
+from medusa import common, db, helpers, logger, naming, providers
 from medusa.app import app
 from medusa.helper.common import try_int
 from medusa.helpers.utils import split_and_strip
@@ -229,22 +229,22 @@ def change_AUTOPOSTPROCESSOR_FREQUENCY(freq):
         app.post_processor_scheduler.cycleTime = datetime.timedelta(minutes=app._AUTOPOSTPROCESSOR_FREQUENCY)
 
 
-def change_TORRENT_CHECKER_FREQUENCY(freq):
+def change_DOWNLOAD_HANDLER_FREQUENCY(freq):
     """
-    Change frequency of Torrent Checker thread.
+    Change frequency of Download Handler thread.
 
     :param freq: New frequency
     """
-    if app._TORRENT_CHECKER_FREQUENCY == freq:
+    if app._DOWNLOAD_HANDLER_FREQUENCY == freq:
         return
 
-    app._TORRENT_CHECKER_FREQUENCY = try_int(freq, app.DEFAULT_TORRENT_CHECKER_FREQUENCY)
+    app._DOWNLOAD_HANDLER_FREQUENCY = try_int(freq, app.DEFAULT_DOWNLOAD_HANDLER_FREQUENCY)
 
-    if app._TORRENT_CHECKER_FREQUENCY < app.MIN_TORRENT_CHECKER_FREQUENCY:
-        app._TORRENT_CHECKER_FREQUENCY = app.MIN_TORRENT_CHECKER_FREQUENCY
+    if app._DOWNLOAD_HANDLER_FREQUENCY < app.MIN_DOWNLOAD_HANDLER_FREQUENCY:
+        app._DOWNLOAD_HANDLER_FREQUENCY = app.MIN_DOWNLOAD_HANDLER_FREQUENCY
 
-    if app.torrent_checker_scheduler:
-        app.torrent_checker_scheduler.cycleTime = datetime.timedelta(minutes=app._TORRENT_CHECKER_FREQUENCY)
+    if app.download_handler_scheduler:
+        app.download_handler_scheduler.cycleTime = datetime.timedelta(minutes=app._DOWNLOAD_HANDLER_FREQUENCY)
 
 
 def change_DAILYSEARCH_FREQUENCY(freq):
@@ -442,7 +442,7 @@ def change_theme(theme_name):
 
 
 def CheckSection(CFG, sec):
-    """ Check if INI section exists, if not create it """
+    """ Check if INI section exists, if not create it."""
 
     if sec in CFG:
         return True
@@ -453,7 +453,7 @@ def CheckSection(CFG, sec):
 
 def checkbox_to_value(option, value_on=1, value_off=0):
     """
-    Turns checkbox option 'on' or 'true' to value_on (1)
+    Turns checkbox option 'on' or 'true' to value_on (1).
     any other value returns value_off (0)
     """
 
@@ -468,7 +468,7 @@ def checkbox_to_value(option, value_on=1, value_off=0):
 
 def clean_host(host, default_port=None):
     """
-    Returns host or host:port or empty string from a given url or host
+    Returns host or host:port or empty string from a given url or host.
     If no port is found and default_port is given use host:default_port
     """
 
@@ -500,7 +500,7 @@ def clean_host(host, default_port=None):
 
 def clean_hosts(hosts, default_port=None):
     """
-    Returns list of cleaned hosts by clean_host
+    Returns list of cleaned hosts by clean_host.
 
     :param hosts: list of hosts
     :param default_port: default port to use
@@ -520,10 +520,8 @@ def clean_hosts(hosts, default_port=None):
 
 def clean_url(url):
     """
-    Returns an cleaned url starting with a scheme and folder with trailing /
-    or an empty string
+    Returns an cleaned url starting with a scheme and folder with trailing or an empty string.
     """
-
     if url and url.strip():
 
         url = url.strip()
@@ -553,7 +551,6 @@ def convert_csv_string_to_list(value, delimiter=',', trim=False):
     :param trim: Optionally trim the individual list items.
     :return: The delimited value as a list.
     """
-
     if not isinstance(value, (string_types, text_type)):
         return value
 
@@ -569,7 +566,7 @@ def convert_csv_string_to_list(value, delimiter=',', trim=False):
 # Check_setting_int                                                            #
 ################################################################################
 def minimax(val, default, low, high):
-    """ Return value forced within range """
+    """Return value forced within range."""
 
     val = try_int(val, default)
 
@@ -802,12 +799,13 @@ class ConfigMigrator(object):
             7: 'Use version 2 for password encryption',
             8: 'Convert Plex setting keys',
             9: 'Added setting "enable_manualsearch" for providers (dynamic setting)',
-            10: 'Convert all csv config items to lists'
+            10: 'Convert all csv config items to lists',
+            11: 'Convert provider ratio type string to int'
         }
 
     def migrate_config(self):
         """
-        Calls each successive migration until the config is the same version as SB expects
+        Calls each successive migration until the config is the same version as the app expects
         """
 
         if self.config_version > self.expected_config_version:
@@ -823,7 +821,7 @@ class ConfigMigrator(object):
             next_version = self.config_version + 1
 
             if next_version in self.migration_names:
-                migration_name = ': ' + self.migration_names[next_version]
+                migration_name = f': {self.migration_names[next_version]}'
             else:
                 migration_name = ''
 
@@ -1249,3 +1247,15 @@ class ConfigMigrator(object):
             app.NEWZNAB_PROVIDERS = [make_id(provider.name) for provider in app.newznabProviderList if not provider.default]
         except KeyError:
             app.NEWZNAB_PROVIDERS = []
+
+    def _migrate_v11(self):
+        """Convert all ratio values for torrent providers when '' -> -1."""
+        from medusa.providers.generic_provider import GenericProvider
+
+        all_providers = providers.sorted_provider_list()
+        for provider in all_providers:
+            if provider.provider_type == GenericProvider.TORRENT:
+                if provider.ratio == '':
+                    provider.ratio = -1
+                elif isinstance(provider.ratio, str):
+                    provider.ratio = int(provider.ratio)

@@ -46,6 +46,10 @@ class TorrentProvider(GenericProvider):
         self.minseed = 0
         self.minleech = 0
 
+        # Ratio used for client actions when seed ratio reached.
+        # For example: Remove torrent when upload/download ratio (4.0) reached.
+        self.client_ratio = None
+
     def is_active(self):
         """Check if provider is enabled."""
         return bool(app.USE_TORRENTS) and self.is_enabled()
@@ -257,3 +261,16 @@ class TorrentProvider(GenericProvider):
         filename = join(self._get_storage_dir(), result_name)
 
         return urls, filename
+
+    @staticmethod
+    def _get_identifier(item):
+        """
+        If the url has a magnet link, use the info hash as identifier.
+
+        By default this is the url.
+        """
+        if item.url.startswith('magnet:'):
+            hash = re.findall(r'urn:btih:([\w]{32,40})', item.url)
+            if hash:
+                return hash[0]
+        return item.url

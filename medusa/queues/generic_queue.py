@@ -21,7 +21,7 @@ class QueuePriorities(object):
 
 class GenericQueue(object):
     def __init__(self, max_history=100):
-        self.currentItem = None
+        self.current_item = None
         self.queue = []
         self.history = []
         self.max_history = max_history
@@ -61,13 +61,13 @@ class GenericQueue(object):
         """
         with self.lock:
             # only start a new task if one isn't already going
-            if self.currentItem is None or not self.currentItem.is_alive():
+            if self.current_item is None or not self.current_item.is_alive():
 
                 # if the thread is dead then the current item should be
                 # finished
-                if self.currentItem:
-                    self.currentItem.finish()
-                    self.currentItem = None
+                if self.current_item:
+                    self.current_item.finish()
+                    self.current_item = None
 
                 # if there's something in the queue then run it in a thread
                 # and take it out of the queue
@@ -93,13 +93,13 @@ class GenericQueue(object):
                         return
 
                     # launch the queue item in a thread
-                    self.currentItem = self.queue.pop(0)
-                    self.currentItem.name = u'{queue}-{item}'.format(
+                    self.current_item = self.queue.pop(0)
+                    self.current_item.name = u'{queue}-{item}'.format(
                         queue=self.queue_name,
-                        item=self.currentItem.name,
+                        item=self.current_item.name,
                     )
-                    self.currentItem.start()
-                    fifo(self.history, self.currentItem, self.max_history)
+                    self.current_item.start()
+                    fifo(self.history, self.current_item, self.max_history)
 
         self.amActive = False
 
@@ -116,8 +116,9 @@ class QueueItem(threading.Thread):
         self.queue_time = datetime.utcnow()
         self.start_time = None
         self.success = None
+        self.identifier = str(uuid4())
         self._to_json = {
-            'identifier': str(uuid4()),
+            'identifier': self.identifier,
             'name': self.name,
             'priority': self.priority,
             'actionId': self.action_id,

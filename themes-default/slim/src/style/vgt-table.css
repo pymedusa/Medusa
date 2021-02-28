@@ -125,34 +125,6 @@
     display: inline-block;
 }
 
-.vgt-table-styling >>> .fanartBackground {
-    clear: both;
-    opacity: 0.9;
-}
-
-.vgt-table-styling >>> .fanartBackground table {
-    table-layout: auto;
-    width: 100%;
-    border-collapse: collapse;
-    border-spacing: 0;
-    text-align: center;
-    border: none;
-    empty-cells: show;
-    color: rgb(0, 0, 0) !important;
-}
-
-.vgt-table-styling >>> .fanartBackground > table th.vgt-row-header {
-    border: none !important;
-    background-color: transparent !important;
-    color: rgb(255, 255, 255) !important;
-    padding-top: 15px !important;
-    text-align: left !important;
-}
-
-.vgt-table-styling >>> .fanartBackground td.col-search {
-    text-align: center;
-}
-
 .vgt-table-styling >>> .skipped {
     background-color: rgb(190, 222, 237);
 }
@@ -193,8 +165,4 @@
 
 .vgt-table-styling >>> .global-undesired td.release span {
     color: orange;
-}
-
-.show-history {
-    margin-bottom: 10px;
 }

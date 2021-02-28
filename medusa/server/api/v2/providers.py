@@ -28,7 +28,7 @@ class ProvidersHandler(BaseRequestHandler):
     #: path param
     path_param = ('path_param', r'\w+')
     #: allowed HTTP methods
-    allowed_methods = ('GET', 'POST', 'PATCH', 'DELETE', )
+    allowed_methods = ('GET',)
 
     def get(self, identifier, path_param=None):
         """

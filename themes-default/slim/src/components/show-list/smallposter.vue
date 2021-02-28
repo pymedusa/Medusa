@@ -13,7 +13,7 @@
                         :column-filter-options="{
                             enabled: true
                         }"
-                        :class="{fanartOpacity: stateLayout.fanartBackground}"
+                        :class="{fanartOpacity: stateLayout.fanartBackgroundOpacity}"
                         @on-sort-change="saveSorting"
         >
 
