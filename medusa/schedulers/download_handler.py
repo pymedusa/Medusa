@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 
 import datetime
 import logging
-import re
 from builtins import object
 from enum import Enum
 from uuid import uuid4
@@ -56,6 +55,7 @@ class ClientStatusEnum(Enum):
     COMPLETED = 1 << 7  # 128
     POSTPROCESSED = 1 << 8  # 256
     SEEDACTION = 1 << 9  # 512
+    REMOVED = 1 << 10  # 1024
 
 
 status_strings = {
@@ -70,7 +70,8 @@ status_strings = {
     ClientStatusEnum.COMPLETED: 'Completed',
     # Reserved for the Medusa postprocessing (not that of the client!).
     ClientStatusEnum.POSTPROCESSED: 'Postprocessed',
-    ClientStatusEnum.SEEDACTION: 'SeededAction'
+    ClientStatusEnum.SEEDACTION: 'SeededAction',
+    ClientStatusEnum.REMOVED: 'Removed'
 }
 
 
@@ -91,28 +92,6 @@ class ClientStatus(ConstsBitwize):
         # Overwrite the default set status using a string.
         if status_string:
             self.set_status_string(status_string)
-
-    @staticmethod
-    def join_path(abs_path, file_name):
-        """
-        Join absolute path and file_name, with a delimiter based on the absolute path.
-
-        :param abs_path: Absolute path
-        :type abs_path: str
-        :param file_name: File Name
-        :type file_name: str
-
-        :returns: Concated string of absolute path and file name.
-        """
-        start_with_letter = re.compile(r'^\w:')
-
-        delimiter_windows = '\\'
-        delimiter_nix = '/'
-        delimiter = delimiter_nix
-        if start_with_letter.match(abs_path):
-            delimiter = delimiter_windows
-
-        return f'{abs_path}{delimiter}{file_name}'
 
 
 class DownloadHandler(object):
@@ -153,6 +132,10 @@ class DownloadHandler(object):
             query += ' AND client_status in ({include})'
             format_param['include'] = ','.join(['?'] * (len(include_status)))
 
+        # We don't want any results for client_status removed. This is a bit-set status.
+        # So we check for > 1024.
+        query += ' AND client_status < 1024'
+
         history_results = self.main_db_con.select(query.format(**format_param), params)
 
         # If a history item is part of a batch, only return the first occurrence.
@@ -177,14 +160,16 @@ class DownloadHandler(object):
 
     def _update_status(self, client):
         """Update status (in db) with current state on client."""
-        postprocessed = [
+        excluded = [
             ClientStatusEnum.COMPLETED.value | ClientStatusEnum.POSTPROCESSED.value,
             ClientStatusEnum.FAILED.value | ClientStatusEnum.POSTPROCESSED.value,
             ClientStatusEnum.SEEDED.value | ClientStatusEnum.POSTPROCESSED.value,
+            ClientStatusEnum.ABORTED.value,
+            ClientStatusEnum.SEEDACTION.value
         ]
 
         client_type = 'torrent' if isinstance(client, GenericClient) else 'nzb'
-        for history_result in self._get_history_results_from_db(client_type, exclude_status=postprocessed):
+        for history_result in self._get_history_results_from_db(client_type, exclude_status=excluded):
             status = client.get_status(history_result['info_hash'])
             if status:
                 log.debug(
@@ -200,16 +185,10 @@ class DownloadHandler(object):
 
     def _check_postprocess(self, client):
         """Check the history table for ready available downlaods, that need to be post-processed."""
-        # Combine bitwize postprocessed + completed.
-        postprocessed = [
-            ClientStatusEnum.COMPLETED.value | ClientStatusEnum.POSTPROCESSED.value,
-            ClientStatusEnum.FAILED.value | ClientStatusEnum.POSTPROCESSED.value,
-            ClientStatusEnum.SEEDED.value | ClientStatusEnum.POSTPROCESSED.value,
-        ]
         client_type = 'torrent' if isinstance(client, GenericClient) else 'nzb'
 
         for history_result in self._get_history_results_from_db(
-            client_type, exclude_status=postprocessed,
+            client_type,
             include_status=[
                 ClientStatusEnum.COMPLETED.value,
                 ClientStatusEnum.FAILED.value,
@@ -304,45 +283,48 @@ class DownloadHandler(object):
 
             self.save_status_to_history(history_result, ClientStatus(status_string='SeededAction'))
 
-    def _check_torrents(self):
-        """
-        Check torrent client for completed torrents.
-
-        Start postprocessing if app.DOWNLOAD_HANDLER is enabled.
-        """
-        if app.TORRENT_METHOD == 'blackhole':
-            return
-
-        torrent_client = torrent.get_client_class(app.TORRENT_METHOD)()
-
-        self._update_status(torrent_client)
-        self._check_postprocess(torrent_client)
-        self._check_torrent_ratio(torrent_client)
-
     def _postprocess(self, path, info_hash, resource_name, failed=False):
         """Queue a postprocess action."""
         # TODO: Add a check for if not already queued or run.
         # queue a postprocess action
         queue_item = PostProcessQueueItem(path, info_hash, resource_name=resource_name, failed=failed)
         app.post_processor_queue_scheduler.action.add_item(queue_item)
-        pass
 
-    def _check_nzbs(self):
-        """
-        Check nzb client for completed nzbs.
+    @staticmethod
+    def _test_connection(client, client_type):
+        """Need to structure, because of some subtle differences between clients."""
+        if client_type == 'torrent' or app.NZB_METHOD == 'nzbget':
+            return client.test_authentication()
+        else:
+            result = client.test_authentication()
+            if not result:
+                return False
+            return result[0]
 
-        Start postprocessing if app.DOWNLOAD_HANDLER is enabled.
-        """
-        if app.NZB_METHOD == 'blackhole':
+    def _clean(self, client):
+        """Update status in the history table for torrents/nzb's that can't be located anymore."""
+        client_type = 'torrent' if isinstance(client, GenericClient) else 'nzb'
+
+        # Make sure the client can be reached. As we don't want to change the state for downlaods
+        # because the client is temporary unavailable.
+        if not self._test_connection(client, client_type):
+            log.warning('The client cannot be reached or authentication is failing. Abandon cleanup.')
             return
 
-        if app.NZB_METHOD == 'sabnzbd':
-            client = sab
-        else:
-            client = nzbget
-
-        self._update_status(client)
-        self._check_postprocess(client)
+        for history_result in self._get_history_results_from_db(client_type):
+            if not client.get_status(history_result['info_hash']):
+                log.debug(
+                    'Cannot find {client_type} on {client} with info_hash {info_hash}'
+                    'Adding status Removed, to prevent from future processing.',
+                    {
+                        'client_type': client_type,
+                        'client': app.TORRENT_METHOD if client_type == 'torrent' else app.NZB_METHOD,
+                        'info_hash': history_result['info_hash']
+                    }
+                )
+                new_status = ClientStatus(int(history_result['client_status']))
+                new_status.add_status_string('Removed')
+                self.save_status_to_history(history_result, new_status)
 
     def run(self, force=False):
         """Start the Download Handler Thread."""
@@ -355,12 +337,19 @@ class DownloadHandler(object):
         ws.Message('QueueItemUpdate', self._to_json).push()
 
         try:
-            if app.USE_TORRENTS:
-                self._check_torrents()
+            if app.USE_TORRENTS and app.TORRENT_METHOD != 'blackhole':
+                torrent_client = torrent.get_client_class(app.TORRENT_METHOD)()
+                self._update_status(torrent_client)
+                self._check_postprocess(torrent_client)
+                self._check_torrent_ratio(torrent_client)
+                self._clean(torrent_client)
 
-            if app.USE_NZBS:
-                self._check_nzbs()
-            # client.remove_ratio_reached()
+            if app.USE_NZBS and app.NZB_METHOD != 'blackhole':
+                nzb_client = sab if app.NZB_METHOD == 'sabnzbd' else nzbget
+                self._update_status(nzb_client)
+                self._check_postprocess(nzb_client)
+                self._clean(nzb_client)
+
         except NotImplementedError:
             log.warning('Feature not currently implemented for this torrent client({torrent_client})',
                         torrent_client=app.TORRENT_METHOD)

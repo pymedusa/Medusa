@@ -28,6 +28,7 @@ from medusa.common import (
     ARCHIVED,
     DOWNLOADED,
     FAILED,
+    IGNORED,
     Quality,
     SKIPPED,
     SNATCHED,
@@ -36,6 +37,7 @@ from medusa.common import (
     UNAIRED,
     WANTED,
     cpu_presets,
+    statusStrings
 )
 from medusa.helper.exceptions import (
     AnidbAdbaConnectionException,
@@ -64,6 +66,7 @@ from medusa.search.manual import (
 )
 from medusa.search.queue import (
     BacklogQueueItem,
+    FailedQueueItem,
     SnatchQueueItem,
 )
 from medusa.server.web.core import (
@@ -207,7 +210,9 @@ class Home(WebRoot):
     @staticmethod
     def testNZBget(host=None, username=None, password=None, use_https=False):
         try:
-            connected_status = nzbget.test_nzb(host, username, password, config.checkbox_to_value(use_https))
+            connected_status = nzbget.test_authentication(
+                host, username, password, config.checkbox_to_value(use_https)
+            )
         except Exception as error:
             logger.log('Error while testing NZBget connection: {error}'.format(error=error), logger.WARNING)
             return 'Error while testing connection. Check warning logs.'
@@ -1149,6 +1154,181 @@ class Home(WebRoot):
             return self.redirect('/home/displayShow?showslug={series_obj.slug}'.format(series_obj=series_obj))
         else:
             return self.redirect('/home/')
+
+    def setStatus(self, showslug=None, eps=None, status=None, direct=False):
+        # @TODO: Merge this with the other PUT commands for /api/v2/show/{id}
+        # Still used by manage/changeEpisodeStatuses (manage_episodeStatuses.mako)
+        if not all([showslug, eps, status]):
+            error_message = 'You must specify a show and at least one episode'
+            if direct:
+                ui.notifications.error('Error', error_message)
+                return json.dumps({
+                    'result': 'error',
+                })
+            else:
+                return self._genericMessage('Error', error_message)
+
+        status = int(status)
+        if status not in statusStrings:
+            error_message = 'Invalid status'
+            if direct:
+                ui.notifications.error('Error', error_message)
+                return json.dumps({
+                    'result': 'error',
+                })
+            else:
+                return self._genericMessage('Error', error_message)
+
+        identifier = SeriesIdentifier.from_slug(showslug)
+        series_obj = Series.find_by_identifier(identifier)
+
+        if not series_obj:
+            error_message = 'Error', 'Show not in show list'
+            if direct:
+                ui.notifications.error('Error', error_message)
+                return json.dumps({
+                    'result': 'error',
+                })
+            else:
+                return self._genericMessage('Error', error_message)
+
+        segments = {}
+        trakt_data = []
+        if eps:
+
+            sql_l = []
+            for cur_ep in eps.split('|'):
+
+                if not cur_ep:
+                    logger.log('Current episode was empty when trying to set status', logger.DEBUG)
+
+                logger.log('Attempting to set status for episode {series} {episode} to {status}'.format(
+                    series=series_obj.name, episode=cur_ep, status=status), logger.DEBUG)
+
+                season_no, episode_no = cur_ep.lstrip('s').split('e')
+                if not all([season_no, episode_no]):
+                    logger.log('Something went wrong when trying to set status, season: {season}, episode: {episode}'.format
+                               (season=season_no, episode=episode_no), logger.DEBUG)
+                    continue
+
+                ep_obj = series_obj.get_episode(season_no, episode_no)
+                if not ep_obj:
+                    return self._genericMessage('Error', "Episode couldn't be retrieved")
+
+                status = int(status)
+                if status in [WANTED, FAILED]:
+                    # figure out what episodes are wanted so we can backlog them
+                    if ep_obj.season in segments:
+                        segments[ep_obj.season].append(ep_obj)
+                    else:
+                        segments[ep_obj.season] = [ep_obj]
+
+                with ep_obj.lock:
+                    if ep_obj.status == UNAIRED:
+                        logger.log('Refusing to change status of {series} {episode} because it is UNAIRED'.format(
+                            series=series_obj.name, episode=cur_ep), logger.WARNING)
+                        continue
+
+                    snatched_qualities = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
+
+                    if status == DOWNLOADED and not (
+                            ep_obj.status in snatched_qualities + [DOWNLOADED]
+                            or os.path.isfile(ep_obj.location)):
+                        logger.log('Refusing to change status of {series} {episode} to DOWNLOADED'
+                                   " because it's not SNATCHED/DOWNLOADED or the file is missing".format(
+                                       series=series_obj.name, episode=cur_ep), logger.WARNING)
+                        continue
+
+                    if status == FAILED and ep_obj.status not in snatched_qualities + [DOWNLOADED, ARCHIVED]:
+                        logger.log('Refusing to change status of {series} {episode} to FAILED'
+                                   " because it's not SNATCHED/DOWNLOADED/ARCHIVED".format(
+                                       series=series_obj.name, episode=cur_ep), logger.WARNING)
+                        continue
+
+                    if status == WANTED:
+                        if ep_obj.status in [DOWNLOADED, ARCHIVED]:
+                            logger.log('Removing release_name of {series} {episode} as episode was changed to WANTED'.format(
+                                series=series_obj.name, episode=cur_ep), logger.DEBUG)
+                            ep_obj.release_name = ''
+
+                        if ep_obj.manually_searched:
+                            logger.log("Resetting 'manually searched' flag of {series} {episode}"
+                                       ' as episode was changed to WANTED'.format(
+                                           series=series_obj.name, episode=cur_ep), logger.DEBUG)
+                            ep_obj.manually_searched = False
+
+                    # Only in failed_history we set to FAILED.
+                    if status != FAILED:
+                        ep_obj.status = status
+
+                    # mass add to database
+                    sql_l.append(ep_obj.get_sql())
+
+                    trakt_data.append(ep_obj)
+
+            if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
+                if status in [WANTED, FAILED]:
+                    upd = 'Add'
+                elif status in [IGNORED, SKIPPED, DOWNLOADED, ARCHIVED]:
+                    upd = 'Remove'
+
+                logger.log('{action} episodes, showid: indexerid {show.indexerid}, Title {show.name} to Watchlist'.format(
+                    action=upd, show=series_obj), logger.DEBUG)
+
+                if trakt_data:
+                    for ep_obj in trakt_data:
+                        notifiers.trakt_notifier.update_watchlist_episode(series_obj, ep_obj)
+
+            if sql_l:
+                main_db_con = db.DBConnection()
+                main_db_con.mass_action(sql_l)
+
+        if status == WANTED and not series_obj.paused:
+            msg = 'Backlog was automatically started for the following seasons of <b>{show}</b>:<br>'.format(show=series_obj.name)
+            msg += '<ul>'
+
+            for season, segment in iteritems(segments):
+                cur_backlog_queue_item = BacklogQueueItem(series_obj, segment)
+                app.search_queue_scheduler.action.add_item(cur_backlog_queue_item)
+
+                msg += '<li>Season {season}</li>'.format(season=season)
+                logger.log(u'Sending backlog for {show} season {season} '
+                           u'because some episodes were set to wanted'.format
+                           (show=series_obj.name, season=season))
+
+            msg += '</ul>'
+
+            if segments:
+                ui.notifications.message('Backlog started', msg)
+        elif status == WANTED and series_obj.paused:
+            logger.log(u'Some episodes were set to wanted, but {show} is paused. '
+                       u'Not adding to Backlog until show is unpaused'.format
+                       (show=series_obj.name))
+
+        if status == FAILED:
+            msg = 'Retrying Search was automatically started for the following season of <b>{show}</b>:<br>'.format(show=series_obj.name)
+            msg += '<ul>'
+
+            for season, segment in iteritems(segments):
+                cur_failed_queue_item = FailedQueueItem(series_obj, segment)
+                app.search_queue_scheduler.action.add_item(cur_failed_queue_item)
+
+                msg += '<li>Season {season}</li>'.format(season=season)
+                logger.log(u'Retrying Search for {show} season {season} '
+                           u'because some episodes were set to failed'.format
+                           (show=series_obj.name, season=season))
+
+            msg += '</ul>'
+
+            if segments:
+                ui.notifications.message('Retry Search started', msg)
+
+        if direct:
+            return json.dumps({
+                'result': 'success',
+            })
+        else:
+            return self.redirect('/home/displayShow?showslug={series_obj.slug}'.format(series_obj=series_obj))
 
     def testRename(self, showslug=None):
         if not showslug:

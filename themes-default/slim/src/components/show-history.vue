@@ -243,7 +243,7 @@ export default {
 <style scoped>
 /* Make some room for the Select columns ul / dropdown. */
 .component-margin {
-    margin-bottom: 50px;
+    margin-bottom: 10px;
 }
 
 .show-history-wrapper >>> table.subtitle-table tr {
@@ -252,6 +252,10 @@ export default {
 
 .show-history-wrapper > td {
     padding: 0;
+}
+
+.show-history-wrapper >>> tbody {
+    color: rgb(0, 0, 0);
 }
 
 .search-question,

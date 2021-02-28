@@ -179,13 +179,15 @@ def test_authentication(host=None, username=None, password=None, apikey=None):
     :return: A tuple containing the success boolean and a message
     """
     session.params.update({
-        'ma_username': username,
-        'ma_password': password,
-        'apikey': apikey,
+        'ma_username': username or app.SAB_USERNAME,
+        'ma_password': password or app.SAB_PASSWORD,
+        'apikey': apikey or app.SAB_APIKEY,
+        'mode': 'queue',
+        'output': 'json'
     })
-    url = urljoin(host, 'api')
+    url = urljoin(host or app.SAB_HOST, 'api')
 
-    data = session.get_json(url, params={'mode': 'queue'}, verify=False)
+    data = session.get_json(url, verify=False)
 
     if not data:
         log.info('Error connecting to sab, no data returned')
