@@ -56,7 +56,7 @@ def nzb_connection(url):
         return False
 
 
-def test_nzb(host, username, password, use_https):
+def test_authentication(host, username, password, use_https):
     """
     Test NZBget client connection.
 
@@ -68,10 +68,10 @@ def test_nzb(host, username, password, use_https):
     :return  True if connected. Else False
     """
     url = 'http{}://{}:{}@{}/xmlrpc'.format(
-        's' if use_https else '',
-        username,
-        password,
-        host
+        's' if use_https or app.NZBGET_USE_HTTPS else '',
+        username or app.NZBGET_USERNAME,
+        password or app.NZBGET_PASSWORD,
+        host or app.NZBGET_HOST
     )
 
     return nzb_connection(url)

@@ -261,3 +261,16 @@ class TorrentProvider(GenericProvider):
         filename = join(self._get_storage_dir(), result_name)
 
         return urls, filename
+
+    @staticmethod
+    def _get_identifier(item):
+        """
+        If the url has a magnet link, use the info hash as identifier.
+
+        By default this is the url.
+        """
+        if item.url.startswith('magnet:'):
+            hash = re.findall(r'urn:btih:([\w]{32,40})', item.url)
+            if hash:
+                return hash[0]
+        return item.url
