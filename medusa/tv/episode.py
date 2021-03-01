@@ -381,7 +381,9 @@ class Episode(TV):
         if value and self.is_location_valid(new_location):
             self.file_size = os.path.getsize(new_location)
         else:
+            self._location = ''
             self.file_size = 0
+            return
 
         if new_location == old_location:
             return

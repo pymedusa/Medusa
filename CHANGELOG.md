@@ -5,6 +5,7 @@
 #### Improvements
 
 #### Fixes
+- Don't save removed episode location as dot ([9284](https://github.com/pymedusa/Medusa/pull/9284))
 
 -----
 
