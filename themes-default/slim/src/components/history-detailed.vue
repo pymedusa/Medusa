@@ -112,7 +112,20 @@ export default {
     data() {
         const { getCookie } = this;
         const perPageDropdown = [25, 50, 100, 250, 500, 1000];
-
+        const statusNames = [
+            { value: -1, text: 'Unset' },
+            { value: 1, text: 'Unaired' },
+            { value: 5, text: 'Skipped' },
+            { value: 3, text: 'Wanted' },
+            { value: 2, text: 'Snatched' },
+            { value: 9, text: 'Snatched (Proper)' },
+            { value: 12, text: 'Snatched (Best)' },
+            { value: 4, text: 'Downloaded' },
+            { value: 6, text: 'Archived' },
+            { value: 7, text: 'Ignored' },
+            { value: 10, text: 'Subtitled' },
+            { value: 11, text: 'Failed' }
+        ];
         const columns = [{
             label: 'Date',
             field: 'actionDate',
@@ -130,6 +143,7 @@ export default {
             field: 'statusName',
             filterOptions: {
                 enabled: true,
+                filterDropdownItems: statusNames
             },
             hidden: getCookie('Action')
         }, {
@@ -204,7 +218,8 @@ export default {
                 // },
                 page: this.remoteHistory.page, // what page I want to show
                 perPage: this.remoteHistory.perPage, // how many items I'm showing per page
-                sort: this.remoteHistory.sort
+                sort: this.remoteHistory.sort,
+                filter: this.remoteHistory.filter
             }
         }
     },

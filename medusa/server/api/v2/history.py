@@ -2,6 +2,7 @@
 """Request handler for alias (scene exceptions)."""
 from __future__ import unicode_literals
 
+import json
 from os.path import basename
 
 from medusa import db
@@ -45,8 +46,9 @@ class HistoryHandler(BaseRequestHandler):
         compact_layout = bool(self.get_argument('compact', default=False))
         return_last = bool(self.get_argument('last', default=False))
         total_rows = self.get_argument('total', default=None)
-        sort_field = self.get_argument('sortfield', default=None)
-        sort_order = self.get_argument('sortorder', default='asc')
+        sort = [json.loads(item) for item in self.get_arguments('sort[]')]
+        filter = json.loads(self.get_argument('filter')) if self.get_arguments('filter') else None
+
         headers = {}
 
         if return_last:
@@ -66,10 +68,7 @@ class HistoryHandler(BaseRequestHandler):
             where += ['indexer_id', 'showid']
             params += [series_identifier.indexer.id, series_identifier.id]
 
-        if where:
-            sql_base += ' AND '.join(f'{item}=?' for item in where)
-
-        sortable_fields = {
+        field_map = {
             'actiondate': 'date',
             'date': 'date',
             'action': 'action',
@@ -80,9 +79,23 @@ class HistoryHandler(BaseRequestHandler):
             'quality': 'quality'
         }
 
-        if sort_field is not None:
-            if sortable_fields.get(sort_field.lower()):
-                sql_base += f' ORDER BY {sortable_fields[sort_field.lower()]} {sort_order}'
+        if filter is not None and filter.get('columnFilters'):
+            for filter_field, filter_value in filter['columnFilters'].items():
+                # Loop through each column filter apply the mapping, and add to sql_base.
+                filter_field = field_map.get(filter_field.lower())
+                if not filter_field:
+                    continue
+                where += [filter_field]
+                params += [filter_value]
+
+        if where:
+            sql_base += ' WHERE ' + ' AND '.join(f'{item} = ?' for item in where)
+
+        if sort is not None and len(sort) == 1:  # Only support one sort column right now.
+            field = sort[0].get('field').lower()
+            order = sort[0].get('type')
+            if field_map.get(field):
+                sql_base += f' ORDER BY {field_map[field]} {order} '
 
         if total_rows:
             sql_base += ' LIMIT ?'
@@ -90,8 +103,8 @@ class HistoryHandler(BaseRequestHandler):
 
         results = db.DBConnection().select(sql_base, params)
 
-        if not results:
-            return self._not_found('History data not found')
+        # if not results:
+        #     return self._not_found('History data not found')
 
         if compact_layout:
             from collections import OrderedDict

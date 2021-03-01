@@ -191,7 +191,8 @@ const actions = {
         let url = '/history';
         const page = args ? args.page : 1;
         const limit = args ? args.perPage : 1000;
-        let sort = args ? args.sort : { field: 'date', type: 'desc' };
+        let sort = args ? args.sort : [{ field: 'date', type: 'desc' }];
+        let filter = args ? args.filter : {};
         const showSlug = args ? args.showSlug : undefined;
         const compact = args ? args.compact : undefined;
 
@@ -204,8 +205,11 @@ const actions = {
             if (!Array.isArray(sort)) {
                 sort = [sort];
             }
-            params.sortfield = sort[0].field;
-            params.sortorder = sort[0].type;
+            params.sort = sort;
+        }
+
+        if (filter) {
+            params.filter = filter;
         }
 
         if (showSlug) {
