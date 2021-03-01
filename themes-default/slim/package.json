@@ -69,9 +69,9 @@
   "devDependencies": {
     "@babel/core": "7.13.8",
     "@babel/eslint-parser": "7.13.8",
-    "@babel/plugin-transform-runtime": "7.13.8",
-    "@babel/preset-env": "7.13.8",
-    "@babel/runtime": "7.13.8",
+    "@babel/plugin-transform-runtime": "7.13.9",
+    "@babel/preset-env": "7.13.9",
+    "@babel/runtime": "7.13.9",
     "@mapbox/stylelint-processor-arbitrary-tags": "0.3.0",
     "@sharkykh/eslint-plugin-vue-extra": "0.1.1",
     "@testing-library/jest-dom": "5.11.9",
