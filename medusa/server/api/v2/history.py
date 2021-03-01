@@ -83,7 +83,7 @@ class HistoryHandler(BaseRequestHandler):
             for filter_field, filter_value in filter['columnFilters'].items():
                 # Loop through each column filter apply the mapping, and add to sql_base.
                 filter_field = field_map.get(filter_field.lower())
-                if not filter_field:
+                if not filter_field or not filter_value:
                     continue
                 where += [filter_field]
                 params += [filter_value]
