@@ -137,7 +137,8 @@ class PostProcessQueueItem(generic_queue.QueueItem):
             )
 
             # A user might want to use advanced post-processing, but opt-out of failed download handling.
-            if process_results.failed and app.USE_FAILED_DOWNLOADS:
+            if app.USE_FAILED_DOWNLOADS \
+               and (process_results.failed or (not process_results.succeeded and self.resource_name)):
                 process_results.process_failed(path)
 
             # In case we have an info_hash or (nzbid), update the history table with the pp results.
