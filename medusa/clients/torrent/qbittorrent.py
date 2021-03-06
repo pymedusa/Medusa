@@ -64,9 +64,7 @@ class QBittorrentAPI(GenericClient):
             self.url = urljoin(self.host, 'api/v2/app/webapiVersion')
             try:
                 response = self.session.get(self.url, verify=app.TORRENT_VERIFY_CERT)
-                if not response:
-                    raise ValueError('No response from qbittorrent client')
-                if not response.text:
+                if not response or not response.text:
                     raise ValueError('Response from client is empty. [Status: {0}]'.format(response.status_code))
                 # Make sure version is using the (major, minor, release) format
                 version = tuple(map(int, response.text.split('.')))
