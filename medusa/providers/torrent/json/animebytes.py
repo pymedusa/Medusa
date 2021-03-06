@@ -78,8 +78,6 @@ class AnimeBytes(TorrentProvider):
             'sort': 'time_added',
             'way': 'desc',
             'hentai': '2',
-            'anime[tv_series]': '1',
-            'anime[tv_special]': '1',
             'releasegroup': '',
             'epcount': '',
             'epcount2': '',
