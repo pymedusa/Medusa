@@ -106,7 +106,7 @@
     "nyc": "15.1.0",
     "optimize-css-assets-webpack-plugin": "5.0.4",
     "stylelint": "13.12.0",
-    "stylelint-config-standard": "20.0.0",
+    "stylelint-config-standard": "21.0.0",
     "timekeeper": "2.2.0",
     "vue-jest": "3.0.7",
     "vue-loader": "15.9.6",
