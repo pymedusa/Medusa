@@ -544,7 +544,7 @@ class TraktChecker(object):
                 else:
                     log.warning('Unable to find the new added show.'
                                 'Pilot will be set to wanted in the next Trakt run')
-                    self.todo_wanted.append(indexer_id)
+                    self.todo_wanted.append((indexer, indexer_id, 1, 1))
         log.debug('Synced shows with Trakt watchlist')
 
     def sync_trakt_episodes(self):
@@ -646,11 +646,11 @@ class TraktChecker(object):
     def manage_new_show(self, show):
         """Set episodes to wanted for the recently added show."""
         log.debug("Checking for wanted episodes for show '{show}' in Trakt watchlist", {'show': show.name})
-        episodes = [i for i in self.todo_wanted if i[0] == show.indexerid]
+        episodes = [i for i in self.todo_wanted if i[0] == show.indexer and i[1] == show.indexerid]
 
         for episode in episodes:
             self.todo_wanted.remove(episode)
-            set_episode_to_wanted(show, episode[1], episode[2])
+            set_episode_to_wanted(show, episode[2], episode[3])
 
     def _check_list(self, show_obj=None, indexer=None, indexer_id=None, season=None, episode=None, list_type=None):
         """Check if we can find the show in the Trakt watchlist|collection list."""
