@@ -110,7 +110,6 @@ class QBittorrentAPI(GenericClient):
                 return None
 
             # Successful log in
-            # self.session.cookies = self.response.cookies
             self.auth = self.response.text
 
             return self.auth
