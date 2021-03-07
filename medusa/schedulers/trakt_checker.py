@@ -64,9 +64,9 @@ class TraktChecker(object):
     def __init__(self):
         """Initialize the class."""
         self.todo_wanted = []
-        self.show_watchlist = {}
-        self.episode_watchlist = {}
-        self.collection_list = {}
+        self.show_watchlist = []
+        self.episode_watchlist = []
+        self.collection_list = []
         self.amActive = False
 
     def run(self, force=False):
@@ -501,11 +501,9 @@ class TraktChecker(object):
 
         trakt_default_indexer = int(app.TRAKT_DEFAULT_INDEXER)
 
-        for watchlisted_show in self.show_watchlist:
-            trakt_show = watchlisted_show['show']
-
-            if trakt_show.year and trakt_show.ids['ids']['slug'].endswith(str(trakt_show['year'])):
-                show_name = '{title} ({year})'.format(title=trakt_show.title, year=trakt_show.year)
+        for trakt_show in self.show_watchlist:
+            if trakt_show.year and trakt_show.ids['ids']['slug'].endswith(str(trakt_show.year)):
+                show_name = f'{trakt_show.title} ({trakt_show.year})'
             else:
                 show_name = trakt_show.title
 
@@ -656,6 +654,17 @@ class TraktChecker(object):
 
     def _check_list(self, show_obj=None, indexer=None, indexer_id=None, season=None, episode=None, list_type=None):
         """Check if we can find the show in the Trakt watchlist|collection list."""
+
+        def match_trakt_by_id(trakt_show, medusa_show):
+            """Try to match the trakt show object to a Medusa show."""
+            trakt_supported_indexer = get_trakt_indexer(show_obj.indexer)
+            if trakt_supported_indexer and getattr(trakt_show, trakt_supported_indexer) == medusa_show.indexerid:
+                return True
+            # Try to match by imdb_id
+            if getattr(trakt_show, 'imdb') == medusa_show.imdb_id:
+                return True
+            return False
+
         if 'Collection' == list_type:
             trakt_indexer = get_trakt_indexer(indexer)
             for collected_show in self.collection_list:
@@ -671,10 +680,8 @@ class TraktChecker(object):
                 else:
                     return False
         elif 'Show' == list_type:
-            trakt_indexer = get_trakt_indexer(show_obj.indexer)
             for watchlisted_show in self.show_watchlist:
-                if getattr(watchlisted_show, trakt_indexer) == show_obj.indexerid or \
-                        getattr(watchlisted_show, get_trakt_indexer(EXTERNAL_IMDB)) == show_obj.imdb_id:
+                if match_trakt_by_id(watchlisted_show, show_obj):
                     return True
             return False
         else:
@@ -689,7 +696,8 @@ class TraktChecker(object):
     def _get_show_watchlist(self):
         """Get shows watchlist."""
         user = get_trakt_user()
-        return user.watchlist_shows
+        self.show_watchlist = user.watchlist_shows
+        return self.show_watchlist
 
     def _get_episode_watchlist(self):
         """Get episodes watchlist."""
