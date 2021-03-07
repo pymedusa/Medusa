@@ -51,10 +51,10 @@ class IPTorrentsProvider(TorrentProvider):
         :param ep_obj: Not used
         :returns: A list of search results (structure)
         """
-        if self.custom_url:                                                       
-            self.url = self.custom_url                                            
+        if self.custom_url:
+            self.url = self.custom_url
             log.debug('Using "{0}" as base URL because "Custom URL" option is set.', self.url)
-                                                                                              
+
         results = []
         if not self.login():
             return results
