@@ -28,11 +28,6 @@ class IPTorrentsProvider(TorrentProvider):
 
         # URLs
         self.url = 'https://iptorrents.eu'
-        self.urls = {
-            'base_url': self.url,
-            'login': urljoin(self.url, 'torrents'),
-            'search': urljoin(self.url, 't?%s%s&q=%s&qf=#torrents'),
-        }
 
         # Proper Strings
 
@@ -56,11 +51,21 @@ class IPTorrentsProvider(TorrentProvider):
         :param ep_obj: Not used
         :returns: A list of search results (structure)
         """
+        if self.custom_url:                                                       
+            self.url = self.custom_url                                            
+            log.debug('Using "{0}" as base URL because "Custom URL" option is set.', self.url)
+                                                                                              
         results = []
         if not self.login():
             return results
 
         freeleech = '&free=on' if self.freeleech else ''
+
+        self.urls = {
+            'base_url': self.url,
+            'login': urljoin(self.url, 'torrents'),
+            'search': urljoin(self.url, 't?%s%s&q=%s&qf=#torrents'),
+        }
 
         for mode in search_strings:
             log.debug('Search mode: {0}', mode)
