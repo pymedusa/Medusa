@@ -15,6 +15,8 @@ from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
 
+import validators
+
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
@@ -51,11 +53,14 @@ class IPTorrentsProvider(TorrentProvider):
         :param ep_obj: Not used
         :returns: A list of search results (structure)
         """
+        results = []
         if self.custom_url:
+            if not validators.url(self.custom_url):
+                log.warning('Invalid custom url: {0}', self.custom_url)
+                return results
             self.url = self.custom_url
             log.debug('Using "{0}" as base URL because "Custom URL" option is set.', self.url)
 
-        results = []
         if not self.login():
             return results
 
