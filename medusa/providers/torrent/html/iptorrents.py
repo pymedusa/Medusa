@@ -54,7 +54,7 @@ class IPTorrentsProvider(TorrentProvider):
         :returns: A list of search results (structure)
         """
         results = []
-        
+
         if self.custom_url:
             if not validators.url(self.custom_url):
                 log.warning('Invalid custom url: {0}', self.custom_url)
