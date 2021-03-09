@@ -15,6 +15,8 @@ from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
 
+import validators
+
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
@@ -28,11 +30,6 @@ class IPTorrentsProvider(TorrentProvider):
 
         # URLs
         self.url = 'https://iptorrents.eu'
-        self.urls = {
-            'base_url': self.url,
-            'login': urljoin(self.url, 'torrents'),
-            'search': urljoin(self.url, 't?%s%s&q=%s&qf=#torrents'),
-        }
 
         # Proper Strings
 
@@ -57,10 +54,23 @@ class IPTorrentsProvider(TorrentProvider):
         :returns: A list of search results (structure)
         """
         results = []
+
+        if self.custom_url:
+            if not validators.url(self.custom_url):
+                log.warning('Invalid custom url: {0}', self.custom_url)
+                return results
+            self.url = self.custom_url
+
         if not self.login():
             return results
 
         freeleech = '&free=on' if self.freeleech else ''
+
+        self.urls = {
+            'base_url': self.url,
+            'login': urljoin(self.url, 'torrents'),
+            'search': urljoin(self.url, 't?%s%s&q=%s&qf=#torrents'),
+        }
 
         for mode in search_strings:
             log.debug('Search mode: {0}', mode)
