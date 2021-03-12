@@ -27,6 +27,8 @@ log.logger.addHandler(logging.NullHandler())
 class NebulanceProvider(TorrentProvider):
     """Nebulance Torrent provider."""
 
+    IDENTIFIER_REGEX = re.compile(r'.+id=([0-9]+)&')
+
     def __init__(self):
         """Initialize the class."""
         super(NebulanceProvider, self).__init__('Nebulance')
@@ -207,6 +209,19 @@ class NebulanceProvider(TorrentProvider):
                                 ' check your config.'.format(self.name))
 
         return True
+
+    @staticmethod
+    def _get_identifier(item):
+        """
+        Return the identifier for the item.
+
+        Cut the apikey from it, as this might change over time.
+            So we'd like to prevent adding duplicates to cache.
+        """
+        url = NebulanceProvider.IDENTIFIER_REGEX.match(item.url)
+        if url:
+            return url.group(1)
+        return item.url
 
 
 provider = NebulanceProvider()
