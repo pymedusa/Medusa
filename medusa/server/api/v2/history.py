@@ -80,14 +80,16 @@ class HistoryHandler(BaseRequestHandler):
         }
 
         # Prepare an operator (> or <) and size, for the size query.
-        operator = None
+        size_operator = None
         size = None
+        provider = None
 
         if filter is not None and filter.get('columnFilters'):
-            pass
             size = filter['columnFilters'].pop('size', None)
+            provider = filter['columnFilters'].pop('provider.id')
+
             if size:
-                operator, size = size.split(' ')
+                size_operator, size = size.split(' ')
 
             for filter_field, filter_value in filter['columnFilters'].items():
                 # Loop through each column filter apply the mapping, and add to sql_base.
@@ -101,9 +103,14 @@ class HistoryHandler(BaseRequestHandler):
             sql_base += ' WHERE ' + ' AND '.join(f'{item} = ?' for item in where)
 
         # Add size query (with operator)
-        if operator and size:
-            sql_base += f' {"AND" if where else "WHERE"} size {operator} ?'
+        if size_operator and size:
+            sql_base += f' {"AND" if where else "WHERE"} size {size_operator} ?'
             params.append(int(size) * 1024 * 1024)
+
+        # Add provider with like %provider%
+        if provider:
+            sql_base += f' {"AND" if where else "WHERE"} provider LIKE ?'
+            params.append(f'%%{provider}%%')
 
         if sort is not None and len(sort) == 1:  # Only support one sort column right now.
             field = sort[0].get('field').lower()
