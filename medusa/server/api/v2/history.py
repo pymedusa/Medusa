@@ -85,7 +85,7 @@ class HistoryHandler(BaseRequestHandler):
 
         if filter is not None and filter.get('columnFilters'):
             pass
-            size = filter['columnFilters'].pop('size')
+            size = filter['columnFilters'].pop('size', None)
             if size:
                 operator, size = size.split(' ')
 
