@@ -190,7 +190,13 @@ class AnimeBytes(TorrentProvider):
                             multi_ep_end = multi_ep_match.group(2)
                         release_type = MULTI_EP
                     elif title_info.startswith('Episode'):
-                        episode = re.match('^Episode.([0-9]+)', title_info).group(1)
+                        episode_match = re.match('^Episode.([0-9]+)', title_info)
+                        if episode_match:
+                            episode = episode_match.group(1)
+                        else:
+                            log.warning('Could not get episode number from title_info: {title_info}',
+                                        {'title_info': title_info})
+
                         release_type = SINGLE_EP
 
                         season_match = re.match(r'.+[sS]eason.(\d+)$', group.get('SeriesName'))
