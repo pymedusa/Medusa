@@ -223,6 +223,27 @@ td.col-footer {
     float: right !important;
 }
 
+.vgt-table-styling >>> .footer__navigation__page-btn {
+    display: inline-block;
+    padding: 4px 10px;
+    margin-bottom: 0;
+    font-size: 12px;
+    line-height: 16px;
+    vertical-align: middle;
+    border-radius: 1px;
+}
+
+.vgt-table-styling >>> .footer__navigation__page-btn:hover {
+    text-decoration: none;
+    background-position: 0 -150px;
+    transition: background-position 0s linear;
+    background-image: none;
+}
+
+.vgt-table-styling >>> .footer__navigation__page-btn.disabled {
+    display: none;
+}
+
 .vgt-table-styling >>> .vgt-wrap__footer .footer__navigation__page-btn .chevron {
     width: 24px;
     height: 24px;
