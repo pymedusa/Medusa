@@ -99,15 +99,8 @@ class HistoryHandler(BaseRequestHandler):
 
         if where:
             sql_base += ' WHERE ' + ' AND '.join(f'{item} = ?' for item in where)
-            # Sneak in the size operator
-            # if operator and size:
-            #     sql_base += f' AND size {operator} ?'
-            #     params.append(int(size) * 1024 * 1024)
-        # else:
-        #     if operator and size:
-        #         sql_base += f' WHERE size {operator} ?'
-        #         params.append(int(size) * 1024 * 1024)
 
+        # Add size query (with operator)
         if operator and size:
             sql_base += f' {"AND" if where else "WHERE"} size {operator} ?'
             params.append(int(size) * 1024 * 1024)
@@ -123,9 +116,6 @@ class HistoryHandler(BaseRequestHandler):
             params += [total_rows]
 
         results = db.DBConnection().select(sql_base, params)
-
-        # if not results:
-        #     return self._not_found('History data not found')
 
         if compact_layout:
             from collections import OrderedDict
