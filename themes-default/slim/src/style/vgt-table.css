@@ -247,8 +247,35 @@ td.col-footer {
 }
 
 
-
 /* History tables */
 .status-name > svg {
     margin-left: 5px;
+}
+
+.multiselect--active {
+    min-width: 200px;
+}
+
+.vgt-table-styling >>> .vgt-input {
+    height: 30px;
+    line-height: 30px;
+    font-size: 0.9em;
+    width: auto;
+    background-color: #fff;
+    background-image: none;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    padding: 5px 10px;
+}
+
+.vgt-table-styling >>> .vgt-select {
+    height: 30px;
+    line-height: 30px;
+    font-size: 0.9em;
+    width: auto;
+    background-color: #fff;
+    background-image: none;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    padding: 5px 10px;
 }

@@ -4291,3 +4291,13 @@ CSS helper classes
 .d-block {
     display: block;
 }
+
+/* Style multiselect components */
+.multiselect,
+.multiselect__tags,
+.multiselect__input {
+    font-family: inherit;
+    font-size: 0.9em;
+    -ms-touch-action: manipulation;
+    touch-action: manipulation;
+}

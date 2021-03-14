@@ -23,9 +23,8 @@
                 position: 'both'
             }"
             styleClass="vgt-table condensed"
-        >
-            <template slot="table-row" slot-scope="props">
-
+        >         
+            <template #table-row="props">
                 <span v-if="props.column.label === 'Date'" class="align-center">
                     {{props.row.actionDate ? fuzzyParseDateTime(props.formattedRow[props.column.field]) : ''}}
                 </span>
@@ -82,6 +81,30 @@
                     {{props.formattedRow[props.column.field]}}
                 </span>
             </template>
+
+            <template #column-filter="{ column }">
+                <span v-if="column.field === 'quality'">
+                    <select class="form-control form-control-inline input-sm" @input="updateQualityFilter">
+                        <option value="">Filter Quality</option>
+                        <option v-for="option in consts.qualities.values" :value="option.value" :key="option.key">{{ option.name }}</option>
+                    </select>
+                </span>
+
+                <span v-else-if="column.field === 'size'">
+                    <input placeholder="ex. `< 1024` (MB)" class="'form-control input-sm" @input="updateSizeFilter" />
+                </span>
+                
+                <span v-else-if="column.field === 'clientStatus'">
+                    <multiselect
+                        :value="selectedClientStatusValue"
+                        :multiple="true"
+                        :options="consts.clientStatuses"
+                        track-by="value"
+                        label="name"
+                        @input="updateClientStatusFilter"
+                    />
+                </span>
+            </template>
         </vue-good-table>
     </div>
 </template>
@@ -94,6 +117,8 @@ import { manageCookieMixin } from '../mixins/manage-cookie';
 import QualityPill from './helpers/quality-pill.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { VTooltip } from 'v-tooltip';
+import Multiselect from 'vue-multiselect';
+import 'vue-multiselect/dist/vue-multiselect.min.css';
 
 
 export default {
@@ -101,7 +126,8 @@ export default {
     components: {
         FontAwesomeIcon,
         QualityPill,
-        VueGoodTable
+        VueGoodTable,
+        Multiselect
     },
     directives: {
         tooltip: VTooltip
@@ -150,7 +176,10 @@ export default {
             label: 'Quality',
             field: 'quality',
             type: 'number',
-            hidden: getCookie('Quality')
+            filterOptions: {
+                customFilter: true,
+            },
+            hidden: getCookie('Quality'),
         }, {
             label: 'Provider',
             field: 'provider.id',
@@ -164,13 +193,16 @@ export default {
             tdClass: 'align-center',
             formatFn: humanFileSize,
             type: 'number',
+            filterOptions: {
+                customFilter: true,
+            },
             hidden: getCookie('Size')
         }, {
             label: 'Client Status',
             field: 'clientStatus',
             type: 'number',
             filterOptions: {
-                enabled: true,
+                customFilter: true,
             },
             hidden: getCookie('Client Status')
         }];
@@ -189,7 +221,9 @@ export default {
             sort: {
                 field: '', // example: 'name'
                 type: '', // 'asc' or 'desc'
-            }
+            },
+            selectedClientStatusValue: [],
+            invalidSizeMessage: ''
         };
     },
     mounted() {
@@ -203,7 +237,8 @@ export default {
             layout: state => state.config.layout,
             historyLimit: state => state.config.layout.historyLimit,
             currentHistoryPage: state => state.history.historyPage,
-            remoteHistory: state => state.history.remote
+            remoteHistory: state => state.history.remote,
+            consts: state => state.config.consts,
         }),
         ...mapGetters({
             fuzzyParseDateTime: 'fuzzyParseDateTime'
@@ -221,6 +256,12 @@ export default {
                 sort: this.remoteHistory.sort,
                 filter: this.remoteHistory.filter
             }
+        },
+        qualityOptions() {
+            const { consts } = this;
+            return consts.qualities.values.map(quality => {
+                return ({ value: quality.value, text: quality.name })
+            });
         }
     },
     methods: {
@@ -264,6 +305,48 @@ export default {
             this.remoteHistory.filter = params;
             this.loadItems();
         },
+        updateClientStatusFilter(event) {
+            const combinedStatus = event.reduce((result, item) => {
+                return result | item.value
+            }, 0);
+            if (!this.remoteHistory.filter) {
+                this.remoteHistory.filter = { columnFilters: {} };
+            }
+            this.selectedClientStatusValue = event;
+            this.remoteHistory.filter.columnFilters.clientStatus = combinedStatus;
+            this.loadItems();
+        },
+        updateQualityFilter(quality) {
+            if (!this.remoteHistory.filter) {
+                this.remoteHistory.filter = { columnFilters: {} };
+            }
+            this.remoteHistory.filter.columnFilters.quality = quality.currentTarget.value;
+            this.loadItems();
+        },
+        /**
+         * Update the size filter.
+         * As a specific size filter is useless. I've choosen to use a > or < operator.
+         * The backend will parse these into queries.
+         */
+        updateSizeFilter(size) {
+            // Check for valid syntax, and pass along.
+            size = size.currentTarget.value;
+            if (!size) {
+                return;
+            }
+
+            const validSizeRegex = /[<>] \d{2,6}/;
+            if (size.match(validSizeRegex)) {
+                this.invalidSizeMessage = '';
+                if (!this.remoteHistory.filter) {
+                    this.remoteHistory.filter = { columnFilters: {} };
+                }
+                this.remoteHistory.filter.columnFilters.size = size;
+                this.loadItems();
+            } else {
+                this.invalidSizeMessage = 'pls use the following format: `< [size in MB]` or `> [size in MB]`';
+            }
+        },
         // load items is what brings back the rows from server
         loadItems() {
             const { getHistory, serverParams } = this;
@@ -281,6 +364,9 @@ export default {
         //     getHistory();
         //     this.nextPage = true;        
         // }
+        formatQualityValue(valuesArray) {
+            return valuesArray.map(value => value.id).join(',');
+        }
     },
     beforeCreate() {
         this.$store.dispatch('initHistoryStore');
