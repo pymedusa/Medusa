@@ -222,8 +222,7 @@ export default {
                 field: '', // example: 'name'
                 type: '', // 'asc' or 'desc'
             },
-            selectedClientStatusValue: [],
-            invalidSizeMessage: ''
+            selectedClientStatusValue: []
         };
     },
     mounted() {
@@ -343,8 +342,6 @@ export default {
                 }
                 this.remoteHistory.filter.columnFilters.size = size;
                 this.loadItems();
-            } else {
-                this.invalidSizeMessage = 'pls use the following format: `< [size in MB]` or `> [size in MB]`';
             }
         },
         // load items is what brings back the rows from server
