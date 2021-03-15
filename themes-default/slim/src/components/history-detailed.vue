@@ -22,6 +22,7 @@
                 dropdownAllowAll: false,
                 position: 'both'
             }"
+            :row-style-class="rowStyleClassFn"
             styleClass="vgt-table condensed"
         >         
             <template #table-row="props">
@@ -31,7 +32,7 @@
 
                 <span v-else-if="props.column.label === 'Action'" class="align-center status-name">
                     <span v-tooltip.right="props.row.resource">{{props.row.statusName}}</span>
-                    <font-awesome-icon v-if="props.row.partOfBatch" icon="images" v-tooltip.right="'This release is part of a batch or releases'" />
+                    <font-awesome-icon v-if="props.row.partOfBatch" icon="images" v-tooltip.right="'This release is part of a batch of releases'" />
                 </span>
 
                 <span v-else-if="props.column.label === 'Provider'" class="align-center">
@@ -209,35 +210,18 @@ export default {
 
         return {
             columns,
-            loading: false,
-            loadingMessage: '',
-            layoutOptions: [
-                { value: 'compact', text: 'Compact' },
-                { value: 'detailed', text: 'Detailed' }
-            ],
+            selectedClientStatusValue: [],
             perPageDropdown,
-            nextPage: null,
-            columnFilters: {},
-            sort: {
-                field: '', // example: 'name'
-                type: '', // 'asc' or 'desc'
-            },
-            selectedClientStatusValue: []
         };
     },
     mounted() {
-        const { checkHistory } = this;
-        // checkHistory({compact: false});
         this.loadItems();
     },
     computed: {
         ...mapState({
-            history: state => state.history.history,
             layout: state => state.config.layout,
-            historyLimit: state => state.config.layout.historyLimit,
-            currentHistoryPage: state => state.history.historyPage,
             remoteHistory: state => state.history.remote,
-            consts: state => state.config.consts,
+            consts: state => state.config.consts
         }),
         ...mapGetters({
             fuzzyParseDateTime: 'fuzzyParseDateTime'
@@ -270,6 +254,9 @@ export default {
             checkHistory: 'checkHistory',
             setStoreLayout: 'setStoreLayout'
         }),
+        rowStyleClassFn(row) {
+            return `${row.statusName.toLowerCase()} status` || 'skipped status';
+        },
         close() {
             this.$emit('close');
             // Destroy the vue listeners, etc
@@ -295,7 +282,7 @@ export default {
         },
         onSortChange(params) {
             console.log(params);
-            this.remoteHistory.sort = params;
+            this.remoteHistory.sort = params.filter(item => item.type !== 'none');
             this.loadItems();
         },
         onColumnFilter(params) {
@@ -349,36 +336,8 @@ export default {
             const { getHistory, serverParams } = this;
             console.log(this.serverParams);
             getHistory(serverParams);
-        },
-        // onLastPage(params) {
-        //     const { getHistory, currentHistoryPage, history, historyLimit } = this;
-        //     // let args = {};
-        //     // if (params.currentPage > params.prevPage
-        //     //     && params.currentPage * historyLimit > history.length) {
-        //     //     args.page = params.currentPage;
-        //     //     getHistory(args);
-        //     // }
-        //     getHistory();
-        //     this.nextPage = true;        
-        // }
-        formatQualityValue(valuesArray) {
-            return valuesArray.map(value => value.id).join(',');
         }
-    },
-    beforeCreate() {
-        this.$store.dispatch('initHistoryStore');
-	}
-    // watch: {
-    //     history(value) {
-    //         const { currentHistoryPage, historyLimit } = this;
-    //         const vgtCurrentPage = this.$refs["detailed-history"].$refs.paginationBottom.currentPage;
-    //         if (value.length / historyLimit > vgtCurrentPage && this.nextPage) {
-    //             this.$refs["detailed-history"].$refs.paginationBottom.currentPage += 1;
-    //             this.$refs["detailed-history"].$refs.paginationBottom.pageChanged();
-    //             this.nextPage = false;
-    //         }
-    //     }
-    // }
+    }
 };
 </script>
 <style scoped src='../style/vgt-table.css'>
