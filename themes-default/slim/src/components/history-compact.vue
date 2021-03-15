@@ -2,25 +2,26 @@
     <div class="history-wrapper-compact vgt-table-styling">
 
         <vue-good-table 
+            mode="remote"
+            @on-page-change="onPageChange"
+            @on-per-page-change="onPerPageChange"
+            @on-sort-change="onSortChange"
+            @on-column-filter="onColumnFilter"
+
             :columns="columns"
-            :rows="filteredHistory"
+            :rows="remoteHistory.rows"
+            :totalRows="remoteHistory.totalRows"
             :search-options="{
                 enabled: false
             }"
             :pagination-options="{
-                enabled: layout.show.pagination.enable,
-                perPage: paginationPerPage,
-                perPageDropdown
-            }"
-            :sort-options="{
                 enabled: true,
-                initialSortBy: { field: 'actionDate', type: 'desc' }
-            }"
-            :column-filter-options="{
-                enabled: true
+                perPage: remoteHistory.perPage,
+                perPageDropdown,
+                dropdownAllowAll: false,
+                position: 'both'
             }"
             styleClass="vgt-table condensed"
-            @on-per-page-change="updatePaginationPerPage($event.currentPerPage)"
         >
             <template slot="table-row" slot-scope="props">
 
@@ -104,17 +105,17 @@ export default {
     data() {
         const { getCookie } = this;
         const perPageDropdown = [25, 50, 100, 250, 500, 1000];
-        const getPaginationPerPage = () => {
-            const rows = getCookie('history-pagination-perPage');
-            if (!rows) {
-                return 50;
-            }
+        // const getPaginationPerPage = () => {
+        //     const rows = getCookie('history-pagination-perPage');
+        //     if (!rows) {
+        //         return 50;
+        //     }
 
-            if (!perPageDropdown.includes(rows)) {
-                return 500;
-            }
-            return rows;
-        };
+        //     if (!perPageDropdown.includes(rows)) {
+        //         return 500;
+        //     }
+        //     return rows;
+        // };
 
         const columns = [{
             label: 'Time',
@@ -131,10 +132,12 @@ export default {
             label: 'Snatched',
             field: 'snatched',
             type: 'number',
+            sortable: false,
             hidden: getCookie('Quality')
         }, {
             label: 'Downloaded',
             field: 'downloaded',
+            sortable: false,
             hidden: getCookie('Provider/Group')
         }, {
             label: 'Subtitled',
@@ -148,14 +151,8 @@ export default {
 
         return {
             columns,
-            loading: false,
-            loadingMessage: '',
-            layoutOptions: [
-                { value: 'compact', text: 'Compact' },
-                { value: 'detailed', text: 'Detailed' }
-            ],
+            selectedClientStatusValue: [],
             perPageDropdown,
-            paginationPerPage: getPaginationPerPage()
         };
     },
     mounted() {
@@ -166,61 +163,35 @@ export default {
     computed: {
         ...mapState({
             layout: state => state.config.layout,
-            history: state => state.history.historyCompact
+            remoteHistory: state => state.history.remoteCompact,
+            consts: state => state.config.consts
         }),
         ...mapGetters({
             fuzzyParseDateTime: 'fuzzyParseDateTime'
         }),
-        filteredHistory() {
-            const { history, layout } = this;
-            if (Number(layout.historyLimit)) {
-                return history.slice(0, Number(layout.historyLimit));
+        serverParams() {
+            return { 
+                page: this.remoteHistory.page, // what page I want to show
+                perPage: this.remoteHistory.perPage, // how many items I'm showing per page
+                sort: this.remoteHistory.sort,
+                filter: this.remoteHistory.filter,
+                compact: true
             }
-            return history;
+        },
+        qualityOptions() {
+            const { consts } = this;
+            return consts.qualities.values.map(quality => {
+                return ({ value: quality.value, text: quality.name })
+            });
         }
     },
     methods: {
         humanFileSize,
         ...mapActions({
             getHistory: 'getHistory',
-            setLayout: 'setLayout',
-            checkHistory: 'checkHistory'
+            checkHistory: 'checkHistory',
+            setStoreLayout: 'setStoreLayout'
         }),
-        close() {
-            this.$emit('close');
-            // Destroy the vue listeners, etc
-            this.$destroy();
-            // Remove the element from the DOM
-            this.$el.remove();
-        },
-        rowStyleClassFn(row) {
-            return row.statusName.toLowerCase() || 'skipped';
-        },
-        checkLastHistory() {
-        // retrieve the last history item. Compare the record with state.history.setHistoryLast
-        // and get new history data.
-        const { history, getHistory, layout } = this;
-        const params = { last: true };
-        const historyParams = {};
-        
-        if (layout.historyLimit) {
-            historyParams.total = layout.historyLimit;
-        }
-
-        if (!history || history.length === 0) {
-            return getHistory({compact: true});
-        }
-
-        api.get('/history', { params })
-            .then(response => {
-                if (response.data && response.data.date > history[0].actionDate) {
-                    getHistory({compact: true});
-                }
-            })
-            .catch(() => {
-                console.info(`No history record found`);
-            });
-        },
         sortDate(rows) {
             const cloneRows = [...rows];
             return cloneRows.sort(x => x.actionDate).reverse();
@@ -230,11 +201,66 @@ export default {
                 return path.split(/[\\/]/).pop();
             }
             return path;
-        }
-    },
-    beforeCreate() {
-        this.$store.dispatch('initHistoryStore');
-	}
+        },
+        close() {
+            this.$emit('close');
+            // Destroy the vue listeners, etc
+            this.$destroy();
+            // Remove the element from the DOM
+            this.$el.remove();
+        },
+        updatePaginationPerPage(pageLimit) {
+            const { setStoreLayout } = this;
+            setStoreLayout({ key: 'historyLimit', value: pageLimit });
+        },
+        onPageChange(params) {
+            console.log('page change called');
+            console.log(params);
+            this.remoteHistory.page = params.currentPage;
+            this.loadItems();
+        },
+        onPerPageChange(params) {
+            console.log('per page change called');
+            console.log(params);
+            this.remoteHistory.perPage = params.currentPerPage;
+            this.loadItems();
+        },
+        onSortChange(params) {
+            console.log(params);
+            this.remoteHistory.sort = params.filter(item => item.type !== 'none');
+            this.loadItems();
+        },
+        onColumnFilter(params) {
+            console.log('on column filter change');
+            console.log(params);
+            this.remoteHistory.filter = params;
+            this.loadItems();
+        },
+        updateClientStatusFilter(event) {
+            const combinedStatus = event.reduce((result, item) => {
+                return result | item.value
+            }, 0);
+            if (!this.remoteHistory.filter) {
+                this.remoteHistory.filter = { columnFilters: {} };
+            }
+            this.selectedClientStatusValue = event;
+            this.remoteHistory.filter.columnFilters.clientStatus = combinedStatus;
+            this.loadItems();
+        },
+        updateQualityFilter(quality) {
+            if (!this.remoteHistory.filter) {
+                this.remoteHistory.filter = { columnFilters: {} };
+            }
+            this.remoteHistory.filter.columnFilters.quality = quality.currentTarget.value;
+            this.loadItems();
+        },
+        // load items is what brings back the rows from server
+        loadItems() {
+            const { getHistory } = this;
+            console.log(this.serverParams);
+            getHistory(serverParams);
+        },
+    }
 };
 </script>
 <style scoped src='../style/vgt-table.css'>
