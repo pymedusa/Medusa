@@ -151,6 +151,13 @@
     display: inline-block;
 }
 
+/* When using collored rows (using the episode status name, Snatched, Downloaded, Failed, etc.)
+ * we'd like to have the text always black.
+*/
+.vgt-table-styling >>> .vgt-table tr.status td > span {
+    color: rgb(0, 0, 0);
+}
+
 .vgt-table-styling >>> .skipped {
     background-color: rgb(190, 222, 237);
 }
