@@ -1,7 +1,7 @@
 import Vue from 'vue';
 
 import { api } from '../../api';
-import { ADD_HISTORY, ADD_SHOW_HISTORY, ADD_SHOW_EPISODE_HISTORY, INITIALIZE_HISTORY_STORE } from '../mutation-types';
+import { ADD_HISTORY, ADD_SHOW_HISTORY, ADD_SHOW_EPISODE_HISTORY } from '../mutation-types';
 import { episodeToSlug } from '../../utils/core';
 
 const state = {
@@ -20,7 +20,12 @@ const state = {
         rows: [],
         totalRows: 0,
         page: 1,
-        perPage: 25
+        perPage: 25,
+        sort: {
+            field: 'date',
+            type: 'desc'
+        },
+        filter: null
     },
     episodeHistory: {},
     historyLast: null,
@@ -33,23 +38,8 @@ const mutations = {
         // Only evaluate compact once.
         const historyKey = compact ? 'remoteCompact' : 'remote';
 
-        // // Concat both
-        // const concatHistory = [...state[historyKey].rows, ...history];
-
-        // // Filter out duplicates
-        // const filteredHistory = concatHistory.filter((historyObj, index, self) =>
-        //     index === self.findIndex(t => (t.id === historyObj.id))
-        // );
-
         // Update state
         Vue.set(state[historyKey], 'rows', history);
-
-        // Update localStorage
-        try {
-            localStorage.setItem(historyKey, JSON.stringify(state[historyKey]));
-        } catch(error) {
-            console.log("Local Storage is full, can't store full history table");
-        }
     },
     [ADD_SHOW_HISTORY](state, { showSlug, history, compact=false }) {
         // Add history data to episodeHistory, but without passing the show slug.
@@ -75,44 +65,6 @@ const mutations = {
         }
 
         Vue.set(state.episodeHistory[showSlug], episodeSlug, history);
-    },
-    [INITIALIZE_HISTORY_STORE](state) {
-        // Check if the ID exists
-        // Replace the state object with the stored item
-        // Get History
-        if (localStorage.getItem('history')){
-            const history = JSON.parse(localStorage.getItem('history'));
-            if (history) {
-                Vue.set(state, 'history', history);
-            }    
-        }
-
-        if (localStorage.getItem('historyCompact')){
-            const historyCompact = JSON.parse(localStorage.getItem('historyCompact'));
-            if (historyCompact) {
-                Vue.set(state, 'historyCompact', historyCompact);
-            }    
-        }
-
-        // Get show history
-        if (localStorage.getItem('showHistory')){
-            const showHistory = JSON.parse(localStorage.getItem('showHistory'));
-            if (showHistory) {
-                this.replaceState(
-                    Object.assign(state.history, showHistory)
-                );
-            }
-        }
-
-        // Get show history
-        if (localStorage.getItem('episodeHistory')){
-            const episodeHistory = JSON.parse(localStorage.getItem('episodeHistory'));
-            if (episodeHistory) {
-                this.replaceState(
-                    Object.assign(state.episodeHistory, episodeHistory)
-                );
-            }
-        }
     },
     setLoading(state, value) {
         state.loading = value;
@@ -264,9 +216,6 @@ const actions = {
                     console.warn(`No episode history found for show ${showSlug} and episode ${episodeSlug}`);
                 });
         });
-    },
-    initHistoryStore({ commit }) {
-        commit(INITIALIZE_HISTORY_STORE);
     },
     checkHistory({ state, rootState, dispatch }) {
         // retrieve the last history item from api.
