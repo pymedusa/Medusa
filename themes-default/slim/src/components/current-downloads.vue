@@ -63,7 +63,7 @@
 
                         <span v-else-if="props.column.label === 'Release'">
                             <span>{{props.formattedRow[props.column.field]}}</span>
-                            <font-awesome-icon v-if="props.row.partOfBatch" icon="images" v-tooltip.right="'This release is part of a batch or releases'" />
+                            <font-awesome-icon v-if="props.row.partOfBatch" icon="images" v-tooltip.right="'This release is part of a batch of releases'" />
                         </span>
 
                         <span v-else-if="props.column.label === 'Client Status'">
