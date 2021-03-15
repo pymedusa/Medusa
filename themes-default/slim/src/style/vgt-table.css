@@ -294,6 +294,7 @@ td.col-footer {
     border: 1px solid #ccc;
     border-radius: 3px;
     padding: 5px 10px;
+    margin-top: 5px;
 }
 
 .vgt-table-styling >>> .vgt-select {

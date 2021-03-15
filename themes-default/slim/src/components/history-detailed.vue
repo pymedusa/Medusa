@@ -59,7 +59,6 @@
                             :title="props.row.provider.name"
                             v-tooltip.right="props.row.provider.name"
                     >
-
                     <span v-else>
                         {{props.row.provider.name}}
                     </span>
@@ -92,7 +91,7 @@
                 </span>
 
                 <span v-else-if="column.field === 'size'">
-                    <input placeholder="ex. `< 1024` (MB)" class="'form-control input-sm" @input="updateSizeFilter" />
+                    <input placeholder="ex. `< 1024` (MB)" class="'form-control input-sm vgt-input" @input="updateSizeFilter" />
                 </span>
                 
                 <span v-else-if="column.field === 'clientStatus'">
@@ -103,6 +102,7 @@
                         track-by="value"
                         label="name"
                         @input="updateClientStatusFilter"
+                        style="margin-top: 5px;"
                     />
                 </span>
             </template>
