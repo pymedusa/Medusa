@@ -81,10 +81,7 @@ export default {
             // Remove the element from the DOM
             this.$el.remove();
         }
-    },
-    beforeCreate() {
-        this.$store.dispatch('initHistoryStore');
-	}
+    }
 };
 </script>
 <style scoped>

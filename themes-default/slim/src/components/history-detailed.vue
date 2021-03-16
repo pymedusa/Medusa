@@ -216,6 +216,12 @@ export default {
     },
     mounted() {
         this.loadItems();
+
+        // Get per-page pagination from cookie
+        const perPage = this.getCookie('pagination-perpage-history');
+        if (perPage) {
+            this.remoteHistory.perPage = perPage;
+        }
     },
     computed: {
         ...mapState({
@@ -251,7 +257,6 @@ export default {
         humanFileSize,
         ...mapActions({
             getHistory: 'getHistory',
-            checkHistory: 'checkHistory',
             setStoreLayout: 'setStoreLayout'
         }),
         rowStyleClassFn(row) {
@@ -277,6 +282,8 @@ export default {
         onPerPageChange(params) {
             console.log('per page change called');
             console.log(params);
+            this.setCookie('pagination-perpage-history', params.currentPerPage);
+
             this.remoteHistory.perPage = params.currentPerPage;
             this.loadItems();
         },
@@ -333,9 +340,9 @@ export default {
         },
         // load items is what brings back the rows from server
         loadItems() {
-            const { getHistory, serverParams } = this;
+            const { getHistory } = this;
             console.log(this.serverParams);
-            getHistory(serverParams);
+            getHistory(this.serverParams);
         }
     }
 };

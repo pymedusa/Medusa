@@ -105,18 +105,6 @@ export default {
     data() {
         const { getCookie } = this;
         const perPageDropdown = [25, 50, 100, 250, 500, 1000];
-        // const getPaginationPerPage = () => {
-        //     const rows = getCookie('history-pagination-perPage');
-        //     if (!rows) {
-        //         return 50;
-        //     }
-
-        //     if (!perPageDropdown.includes(rows)) {
-        //         return 500;
-        //     }
-        //     return rows;
-        // };
-
         const columns = [{
             label: 'Time',
             field: 'actionDate',
@@ -159,6 +147,12 @@ export default {
         const { checkHistory } = this;
         // getHistory();
         checkHistory({compact: true});
+
+        // Get per-page pagination from cookie
+        const perPage = this.getCookie('pagination-perpage-history');
+        if (perPage) {
+            this.remoteHistory.perPage = perPage;
+        }
     },
     computed: {
         ...mapState({
@@ -222,6 +216,7 @@ export default {
         onPerPageChange(params) {
             console.log('per page change called');
             console.log(params);
+            this.setCookie('pagination-perpage-history', params.currentPerPage);
             this.remoteHistory.perPage = params.currentPerPage;
             this.loadItems();
         },
@@ -258,7 +253,7 @@ export default {
         loadItems() {
             const { getHistory } = this;
             console.log(this.serverParams);
-            getHistory(serverParams);
+            getHistory(this.serverParams);
         },
     }
 };
