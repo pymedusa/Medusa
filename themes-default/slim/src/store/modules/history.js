@@ -41,7 +41,7 @@ const mutations = {
         // Update state
         Vue.set(state[historyKey], 'rows', history);
     },
-    [ADD_SHOW_HISTORY](state, { showSlug, history, compact=false }) {
+    [ADD_SHOW_HISTORY](state, { showSlug, history }) {
         // Add history data to episodeHistory, but without passing the show slug.
         for (const row of history) {
             if (!Object.keys(state.episodeHistory).includes(showSlug)) {
@@ -69,7 +69,7 @@ const mutations = {
     setLoading(state, value) {
         state.loading = value;
     },
-    setRemoteTotal(state, {total, compact=false}) {
+    setRemoteTotal(state, { total, compact = false }) {
         state[compact ? 'remoteCompact' : 'remote'].totalRows = total;
     }
 };
@@ -135,16 +135,15 @@ const actions = {
      * Get detailed history from API and commit them to the store.
      *
      * @param {*} context - The store context.
-     * @param {string} showSlug Slug for the show to get. If not provided, gets the first 1k shows.
-     * @returns {undefined|Promise} undefined if `shows` was provided or the API response if not.
+     * @param {object} args - arguments.
      */
     async getHistory(context, args) {
-        const { commit, state } = context;
+        const { commit } = context;
         let url = '/history';
         const page = args ? args.page : 1;
         const limit = args ? args.perPage : 1000;
         let sort = args ? args.sort : [{ field: 'date', type: 'desc' }];
-        let filter = args ? args.filter : {};
+        const filter = args ? args.filter : {};
         const showSlug = args ? args.showSlug : undefined;
         const compact = args ? args.compact : undefined;
 
@@ -171,8 +170,6 @@ const actions = {
         if (compact) {
             params.compact = true;
         }
-
-        // let page = 0;
 
         commit('setLoading', true);
         let response = null;
@@ -218,7 +215,7 @@ const actions = {
         });
     },
     checkHistory({ state, rootState, dispatch }) {
-        // retrieve the last history item from api.
+        // Retrieve the last history item from api.
         // Compare the states last history or historyCompact row.
         // and get new history data.
         const { layout } = rootState.config;
@@ -238,20 +235,20 @@ const actions = {
         }
 
         if (!history || history.length === 0) {
-            dispatch('getHistory', {compact: compact});
+            dispatch('getHistory', { compact });
         }
 
         api.get('/history', { params })
             .then(response => {
                 if (response.data && response.data.date > history[0].actionDate) {
-                    dispatch('getHistory', {compact: compact});
+                    dispatch('getHistory', { compact });
                 }
             })
             .catch(() => {
-                console.info(`No history record found`);
+                console.info('No history record found');
             });
     },
-    updateHistory({dispatch}, queueItem) {
+    updateHistory({ dispatch }) {
         // Update store's search queue item. (provided through websocket)
         dispatch('checkHistory', {});
     }

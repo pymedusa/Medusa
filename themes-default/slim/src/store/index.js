@@ -19,10 +19,7 @@ import {
     SOCKET_ONERROR,
     SOCKET_ONMESSAGE,
     SOCKET_RECONNECT,
-    SOCKET_RECONNECT_ERROR,
-    ADD_HISTORY,
-    ADD_SHOW_HISTORY,
-    ADD_SHOW_EPISODE_HISTORY
+    SOCKET_RECONNECT_ERROR
 } from './mutation-types';
 
 Vue.use(Vuex);
@@ -72,8 +69,7 @@ const passToStoreHandler = function(eventName, event, next) {
             this.store.dispatch('updateShowQueueItem', data);
         } else if (event === 'historyUpdate') {
             this.store.dispatch('updateHistory', data);
-        }
-        else {
+        } else {
             window.displayNotification('info', event, data);
         }
     }

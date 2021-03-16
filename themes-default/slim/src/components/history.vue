@@ -13,7 +13,7 @@
                 </div> <!-- layout controls -->
             </div>
         </div> <!-- row -->
-        
+
         <div v-if="layout" class="row horizontal-scroll" :class="{ fanartBackground: stateLayout.fanartBackground }">
             <div class="col-md-12 top-15">
                 <history-detailed v-if="layout === 'detailed'" />
@@ -25,9 +25,7 @@
 <script>
 
 import { mapActions, mapGetters, mapState } from 'vuex';
-import { VueGoodTable } from 'vue-good-table';
 import { humanFileSize } from '../utils/core';
-import QualityPill from './helpers/quality-pill.vue';
 import HistoryDetailed from './history-detailed.vue';
 import HistoryCompact from './history-compact.vue';
 
@@ -35,9 +33,7 @@ export default {
     name: 'show-history',
     components: {
         HistoryCompact,
-        HistoryDetailed,
-        VueGoodTable,
-        QualityPill
+        HistoryDetailed
     },
     data() {
         return {

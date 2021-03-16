@@ -86,7 +86,7 @@ export default {
     },
     methods: {
         ...mapActions({
-            getShow: 'getShow', // Map `this.getShow()` to `this.$store.dispatch('getShow')`
+            getShow: 'getShow'
         }),
         // TODO: Move this to show-results!
         getReleaseNameClasses(name) {

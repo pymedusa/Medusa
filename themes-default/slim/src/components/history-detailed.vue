@@ -1,7 +1,7 @@
 <template>
     <div class="history-detailed-wrapper vgt-table-styling">
 
-        <vue-good-table 
+        <vue-good-table
             ref="detailed-history"
             mode="remote"
             @on-page-change="onPageChange"
@@ -24,7 +24,7 @@
             }"
             :row-style-class="rowStyleClassFn"
             styleClass="vgt-table condensed"
-        >         
+        >
             <template #table-row="props">
                 <span v-if="props.column.label === 'Date'" class="align-center">
                     {{props.row.actionDate ? fuzzyParseDateTime(props.formattedRow[props.column.field]) : ''}}
@@ -54,10 +54,10 @@
 
                     <!-- Different path for subtitle providers -->
                     <img v-else-if="props.row.statusName === 'Subtitled'" class="addQTip" style="margin-right: 5px;"
-                            :src="`images/subtitles/${props.row.provider.id}.png`"
-                            :alt="props.row.provider.name" width="16" height="16"
-                            :title="props.row.provider.name"
-                            v-tooltip.right="props.row.provider.name"
+                         :src="`images/subtitles/${props.row.provider.id}.png`"
+                         :alt="props.row.provider.name" width="16" height="16"
+                         :title="props.row.provider.name"
+                         v-tooltip.right="props.row.provider.name"
                     >
                     <span v-else>
                         {{props.row.provider.name}}
@@ -91,9 +91,9 @@
                 </span>
 
                 <span v-else-if="column.field === 'size'">
-                    <input placeholder="ex. `< 1024` (MB)" class="'form-control input-sm vgt-input" @input="updateSizeFilter" />
+                    <input placeholder="ex. `< 1024` (MB)" class="'form-control input-sm vgt-input" @input="updateSizeFilter">
                 </span>
-                
+
                 <span v-else-if="column.field === 'clientStatus'">
                     <multiselect
                         :value="selectedClientStatusValue"
@@ -120,7 +120,6 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { VTooltip } from 'v-tooltip';
 import Multiselect from 'vue-multiselect';
 import 'vue-multiselect/dist/vue-multiselect.min.css';
-
 
 export default {
     name: 'history-detailed',
@@ -178,14 +177,14 @@ export default {
             field: 'quality',
             type: 'number',
             filterOptions: {
-                customFilter: true,
+                customFilter: true
             },
-            hidden: getCookie('Quality'),
+            hidden: getCookie('Quality')
         }, {
             label: 'Provider',
             field: 'provider.id',
             filterOptions: {
-                enabled: true,
+                enabled: true
             },
             hidden: getCookie('Provider')
         }, {
@@ -195,7 +194,7 @@ export default {
             formatFn: humanFileSize,
             type: 'number',
             filterOptions: {
-                customFilter: true,
+                customFilter: true
             },
             hidden: getCookie('Size')
         }, {
@@ -203,7 +202,7 @@ export default {
             field: 'clientStatus',
             type: 'number',
             filterOptions: {
-                customFilter: true,
+                customFilter: true
             },
             hidden: getCookie('Client Status')
         }];
@@ -211,7 +210,7 @@ export default {
         return {
             columns,
             selectedClientStatusValue: [],
-            perPageDropdown,
+            perPageDropdown
         };
     },
     mounted() {
@@ -233,23 +232,17 @@ export default {
             fuzzyParseDateTime: 'fuzzyParseDateTime'
         }),
         serverParams() {
-            return { 
-                // a map of column filters example: {name: 'john', age: '20'}
-                // columnFilters: this.columnFilters,
-                // sort: {
-                //     field: this.field, // example: 'name'
-                //     type: this.type, // 'asc' or 'desc'
-                // },
-                page: this.remoteHistory.page, // what page I want to show
-                perPage: this.remoteHistory.perPage, // how many items I'm showing per page
+            return {
+                page: this.remoteHistory.page, // What page I want to show
+                perPage: this.remoteHistory.perPage, // How many items I'm showing per page
                 sort: this.remoteHistory.sort,
                 filter: this.remoteHistory.filter
-            }
+            };
         },
         qualityOptions() {
             const { consts } = this;
             return consts.qualities.values.map(quality => {
-                return ({ value: quality.value, text: quality.name })
+                return ({ value: quality.value, text: quality.name });
             });
         }
     },
@@ -300,7 +293,7 @@ export default {
         },
         updateClientStatusFilter(event) {
             const combinedStatus = event.reduce((result, item) => {
-                return result | item.value
+                return result | item.value;
             }, 0);
             if (!this.remoteHistory.filter) {
                 this.remoteHistory.filter = { columnFilters: {} };
@@ -320,6 +313,7 @@ export default {
          * Update the size filter.
          * As a specific size filter is useless. I've choosen to use a > or < operator.
          * The backend will parse these into queries.
+         * @param {string} size - Operator with size in MB.
          */
         updateSizeFilter(size) {
             // Check for valid syntax, and pass along.
@@ -338,7 +332,7 @@ export default {
                 this.loadItems();
             }
         },
-        // load items is what brings back the rows from server
+        // Load items is what brings back the rows from server
         loadItems() {
             const { getHistory } = this;
             console.log(this.serverParams);

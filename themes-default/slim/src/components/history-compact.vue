@@ -1,7 +1,7 @@
 <template>
     <div class="history-wrapper-compact vgt-table-styling">
 
-        <vue-good-table 
+        <vue-good-table
             mode="remote"
             @on-page-change="onPageChange"
             @on-per-page-change="onPerPageChange"
@@ -33,27 +33,27 @@
                     <div v-for="row in sortDate(props.row.rows)" :key="row.id">
                         <template v-if="row.statusName === 'Snatched'">
                             <img style="margin-right: 5px;"
-                                    :src="`images/providers/${row.provider.id}.png`"
-                                    :alt="row.provider.name" width="16" height="16"
-                                    v-tooltip.right="`${row.provider.name}: ${row.resource} (${row.actionDate})`"
-                                    onError="this.onerror=null;this.src='images/providers/missing.png';"
+                                 :src="`images/providers/${row.provider.id}.png`"
+                                 :alt="row.provider.name" width="16" height="16"
+                                 v-tooltip.right="`${row.provider.name}: ${row.resource} (${row.actionDate})`"
+                                 onError="this.onerror=null;this.src='images/providers/missing.png';"
                             >
                             <img v-if="row.manuallySearched" src="images/manualsearch.png" width="16" height="16" style="vertical-align:middle;" v-tooltip.right="`Manual searched episode: ${row.resource} (${row.actionDate})`">
                             <img v-if="row.properTags" src="images/info32.png" width="16" height="16" style="vertical-align:middle;" v-tooltip.right="`${row.properTags.split(/[ |]+/).join(', ')}: ${row.resource} (${row.actionDate})`">
-                                            
+
                         </template>
                         <img v-else-if="row.statusName ==='Failed'" src="images/no16.png"
                              width="16" height="16" style="vertical-align:middle;"
                              v-tooltip.right="`${row.provider.name} download failed: ${row.resource} (${row.actionDate})`"
-                        />
+                        >
                     </div>
                 </span>
 
                 <span v-else-if="props.column.label === 'Downloaded'" class="align-center">
                     <div v-for="row in sortDate(props.row.rows)" :key="row.id">
                         <template v-if="['Downloaded', 'Archived'].includes(row.statusName)">
-                        <span v-if="row.provider" style="cursor: help;" v-tooltip.right="getFileBaseName(row.resource)"><i>{{row.provider.name}}</i></span>
-                        <span v-else style="cursor: help;" v-tooltip.right="getFileBaseName(row.resource)"><i>Unknown</i></span>
+                            <span v-if="row.provider" style="cursor: help;" v-tooltip.right="getFileBaseName(row.resource)"><i>{{row.provider.name}}</i></span>
+                            <span v-else style="cursor: help;" v-tooltip.right="getFileBaseName(row.resource)"><i>Unknown</i></span>
                         </template>
                     </div>
                 </span>
@@ -61,7 +61,7 @@
                 <span v-else-if="props.column.label === 'Subtitled'" class="align-center">
                     <div v-for="row in sortDate(props.row.rows)" :key="row.id">
                         <template v-if="row.statusName === 'Subtitled'">
-                            <img :src="`images/subtitles/${row.provider.name}.png`" width="16" height="16" style="vertical-align:middle;" :alt="row.provider.name" v-tooltip.right="`${row.provider.name}: ${getFileBaseName(row.resource)}`"/>
+                            <img :src="`images/subtitles/${row.provider.name}.png`" width="16" height="16" style="vertical-align:middle;" :alt="row.provider.name" v-tooltip.right="`${row.provider.name}: ${getFileBaseName(row.resource)}`">
                             <span style="vertical-align:middle;"> / </span>
                             <img width="16" height="11" :src="`images/subtitles/flags/${row.resource}.png`" onError="this.onerror=null;this.src='images/flags/unknown.png';" style="vertical-align: middle !important;">
                         </template>
@@ -86,13 +86,11 @@ import { VueGoodTable } from 'vue-good-table';
 import { humanFileSize } from '../utils/core';
 import { manageCookieMixin } from '../mixins/manage-cookie';
 import QualityPill from './helpers/quality-pill.vue';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { VTooltip } from 'v-tooltip';
 
 export default {
     name: 'history-compact',
     components: {
-        FontAwesomeIcon,
         QualityPill,
         VueGoodTable
     },
@@ -140,13 +138,12 @@ export default {
         return {
             columns,
             selectedClientStatusValue: [],
-            perPageDropdown,
+            perPageDropdown
         };
     },
     mounted() {
         const { checkHistory } = this;
-        // getHistory();
-        checkHistory({compact: true});
+        checkHistory({ compact: true });
 
         // Get per-page pagination from cookie
         const perPage = this.getCookie('pagination-perpage-history');
@@ -164,18 +161,18 @@ export default {
             fuzzyParseDateTime: 'fuzzyParseDateTime'
         }),
         serverParams() {
-            return { 
-                page: this.remoteHistory.page, // what page I want to show
-                perPage: this.remoteHistory.perPage, // how many items I'm showing per page
+            return {
+                page: this.remoteHistory.page, // What page I want to show
+                perPage: this.remoteHistory.perPage, // How many items I'm showing per page
                 sort: this.remoteHistory.sort,
                 filter: this.remoteHistory.filter,
                 compact: true
-            }
+            };
         },
         qualityOptions() {
             const { consts } = this;
             return consts.qualities.values.map(quality => {
-                return ({ value: quality.value, text: quality.name })
+                return ({ value: quality.value, text: quality.name });
             });
         }
     },
@@ -192,7 +189,7 @@ export default {
         },
         getFileBaseName(path) {
             if (path) {
-                return path.split(/[\\/]/).pop();
+                return path.split(/[/\\]/).pop();
             }
             return path;
         },
@@ -233,7 +230,7 @@ export default {
         },
         updateClientStatusFilter(event) {
             const combinedStatus = event.reduce((result, item) => {
-                return result | item.value
+                return result | item.value;
             }, 0);
             if (!this.remoteHistory.filter) {
                 this.remoteHistory.filter = { columnFilters: {} };
@@ -249,12 +246,12 @@ export default {
             this.remoteHistory.filter.columnFilters.quality = quality.currentTarget.value;
             this.loadItems();
         },
-        // load items is what brings back the rows from server
+        // Load items is what brings back the rows from server
         loadItems() {
             const { getHistory } = this;
             console.log(this.serverParams);
             getHistory(this.serverParams);
-        },
+        }
     }
 };
 </script>
