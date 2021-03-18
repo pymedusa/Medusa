@@ -14,6 +14,11 @@
             :search-options="{
                 enabled: false
             }"
+            :sort-options="{
+                enabled: true,
+                multipleColumns: false,
+                initialSortBy: getSortFromCookie()
+            }"
             :pagination-options="{
                 enabled: true,
                 perPage: remoteHistory.perPage,
@@ -27,6 +32,10 @@
 
                 <span v-if="props.column.label === 'Date'" class="align-center">
                     {{props.row.actionDate ? fuzzyParseDateTime(props.formattedRow[props.column.field]) : ''}}
+                </span>
+
+                <span v-else-if="props.column.label === 'Episode'" class="episode-title">
+                    <app-link :href="`home/displayShow?showslug=${props.row.showSlug}`">{{ props.row.episodeTitle }}</app-link>
                 </span>
 
                 <span v-else-if="props.column.label === 'Snatched'" class="align-center">
@@ -52,14 +61,14 @@
                 <span v-else-if="props.column.label === 'Downloaded'" class="align-center">
                     <div v-for="row in sortDate(props.row.rows)" :key="row.id">
                         <template v-if="['Downloaded', 'Archived'].includes(row.statusName)">
-                            <span v-if="row.provider" style="cursor: help;" v-tooltip.right="getFileBaseName(row.resource)"><i>{{row.provider.name}}</i></span>
+                            <span v-if="row.releaseGroup" style="cursor: help;" v-tooltip.right="getFileBaseName(row.resource)"><i>{{row.releaseGroup}}</i></span>
                             <span v-else style="cursor: help;" v-tooltip.right="getFileBaseName(row.resource)"><i>Unknown</i></span>
                         </template>
                     </div>
                 </span>
 
                 <span v-else-if="props.column.label === 'Subtitled'" class="align-center">
-                    <div v-for="row in sortDate(props.row.rows)" :key="row.id">
+                    <div v-for="row in sortDate(props.row.rows)" :key="row.id" style="margin-right: 5px;">
                         <template v-if="row.statusName === 'Subtitled'">
                             <img :src="`images/subtitles/${row.provider.name}.png`" width="16" height="16" style="vertical-align:middle;" :alt="row.provider.name" v-tooltip.right="`${row.provider.name}: ${getFileBaseName(row.resource)}`">
                             <span style="vertical-align:middle;"> / </span>
@@ -113,6 +122,7 @@ export default {
         }, {
             label: 'Episode',
             field: 'episodeTitle',
+            sortable: false,
             hidden: getCookie('Status')
         }, {
             label: 'Snatched',
@@ -150,6 +160,7 @@ export default {
         if (perPage) {
             this.remoteHistory.perPage = perPage;
         }
+        this.remoteHistory.sort = getSortFromCookie();
     },
     computed: {
         ...mapState({
@@ -183,6 +194,13 @@ export default {
             checkHistory: 'checkHistory',
             setStoreLayout: 'setStoreLayout'
         }),
+        getSortFromCookie() {
+            const sort = this.getCookie('sort'); // From manage-cookie.js mixin
+            if (sort) {
+                return JSON.parse(sort);
+            }
+            return [{field: 'date', type: 'desc'}];
+        },
         sortDate(rows) {
             const cloneRows = [...rows];
             return cloneRows.sort(x => x.actionDate).reverse();
@@ -205,26 +223,20 @@ export default {
             setStoreLayout({ key: 'historyLimit', value: pageLimit });
         },
         onPageChange(params) {
-            console.log('page change called');
-            console.log(params);
             this.remoteHistory.page = params.currentPage;
             this.loadItems();
         },
         onPerPageChange(params) {
-            console.log('per page change called');
-            console.log(params);
             this.setCookie('pagination-perpage-history', params.currentPerPage);
             this.remoteHistory.perPage = params.currentPerPage;
             this.loadItems();
         },
         onSortChange(params) {
-            console.log(params);
+            this.setCookie('sort', JSON.stringify(params));
             this.remoteHistory.sort = params.filter(item => item.type !== 'none');
             this.loadItems();
         },
         onColumnFilter(params) {
-            console.log('on column filter change');
-            console.log(params);
             this.remoteHistory.filter = params;
             this.loadItems();
         },

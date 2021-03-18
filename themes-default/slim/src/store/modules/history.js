@@ -10,10 +10,10 @@ const state = {
         totalRows: 0,
         page: 1,
         perPage: 25,
-        sort: {
+        sort: [{
             field: 'date',
             type: 'desc'
-        },
+        }],
         filter: null
     },
     remoteCompact: {
@@ -21,10 +21,10 @@ const state = {
         totalRows: 0,
         page: 1,
         perPage: 25,
-        sort: {
+        sort: [{
             field: 'date',
             type: 'desc'
-        },
+        }],
         filter: null
     },
     episodeHistory: {},

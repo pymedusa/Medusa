@@ -284,6 +284,16 @@ td.col-footer {
     min-width: 200px;
 }
 
+:not(tr.status) span.episode-title a {
+    text-decoration: none;
+    color: rgb(255, 255, 255)
+}
+
+tr.status span.episode-title a {
+    text-decoration: none;
+    color: rgb(0, 0, 0);
+}
+
 .vgt-table-styling >>> .vgt-input {
     height: 30px;
     line-height: 30px;

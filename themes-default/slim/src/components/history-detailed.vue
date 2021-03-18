@@ -4,16 +4,16 @@
         <vue-good-table
             ref="detailed-history"
             mode="remote"
-            @on-page-change="onPageChange"
-            @on-per-page-change="onPerPageChange"
-            @on-sort-change="onSortChange"
-            @on-column-filter="onColumnFilter"
-
             :columns="columns"
             :rows="remoteHistory.rows"
             :totalRows="remoteHistory.totalRows"
             :search-options="{
                 enabled: false
+            }"
+            :sort-options="{
+                enabled: true,
+                multipleColumns: false,
+                initialSortBy: getSortFromCookie()
             }"
             :pagination-options="{
                 enabled: true,
@@ -24,10 +24,18 @@
             }"
             :row-style-class="rowStyleClassFn"
             styleClass="vgt-table condensed"
+            @on-page-change="onPageChange"
+            @on-per-page-change="onPerPageChange"
+            @on-sort-change="onSortChange"
+            @on-column-filter="onColumnFilter"
         >
             <template #table-row="props">
                 <span v-if="props.column.label === 'Date'" class="align-center">
                     {{props.row.actionDate ? fuzzyParseDateTime(props.formattedRow[props.column.field]) : ''}}
+                </span>
+
+                <span v-else-if="props.column.label === 'Episode'" class="episode-title">
+                    <app-link :href="`home/displayShow?showslug=${props.row.showSlug}`">{{ props.row.episodeTitle }}</app-link>
                 </span>
 
                 <span v-else-if="props.column.label === 'Action'" class="align-center status-name">
@@ -115,6 +123,7 @@ import { mapActions, mapGetters, mapState } from 'vuex';
 import { VueGoodTable } from 'vue-good-table';
 import { humanFileSize } from '../utils/core';
 import { manageCookieMixin } from '../mixins/manage-cookie';
+import AppLink from './helpers/app-link.vue';
 import QualityPill from './helpers/quality-pill.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { VTooltip } from 'v-tooltip';
@@ -124,6 +133,7 @@ import 'vue-multiselect/dist/vue-multiselect.min.css';
 export default {
     name: 'history-detailed',
     components: {
+        AppLink,
         FontAwesomeIcon,
         QualityPill,
         VueGoodTable,
@@ -214,13 +224,20 @@ export default {
         };
     },
     mounted() {
+        const { getSortFromCookie } = this;
         this.loadItems();
 
         // Get per-page pagination from cookie
         const perPage = this.getCookie('pagination-perpage-history');
+        const filter = this.getCookie('filter');
         if (perPage) {
             this.remoteHistory.perPage = perPage;
         }
+        if (filter) {
+            this.remoteHistory.filter = JSON.parse(filter);
+        }
+
+        this.remoteHistory.sort = getSortFromCookie();
     },
     computed: {
         ...mapState({
@@ -252,6 +269,13 @@ export default {
             getHistory: 'getHistory',
             setStoreLayout: 'setStoreLayout'
         }),
+        getSortFromCookie() {
+            const sort = this.getCookie('sort'); // From manage-cookie.js mixin
+            if (sort) {
+                return JSON.parse(sort);
+            }
+            return [{field: 'date', type: 'desc'}];
+        },
         rowStyleClassFn(row) {
             return `${row.statusName.toLowerCase()} status` || 'skipped status';
         },
@@ -262,10 +286,6 @@ export default {
             // Remove the element from the DOM
             this.$el.remove();
         },
-        updatePaginationPerPage(pageLimit) {
-            const { setStoreLayout } = this;
-            setStoreLayout({ key: 'historyLimit', value: pageLimit });
-        },
         onPageChange(params) {
             console.log('page change called');
             console.log(params);
@@ -274,20 +294,17 @@ export default {
         },
         onPerPageChange(params) {
             console.log('per page change called');
-            console.log(params);
             this.setCookie('pagination-perpage-history', params.currentPerPage);
-
             this.remoteHistory.perPage = params.currentPerPage;
             this.loadItems();
         },
         onSortChange(params) {
-            console.log(params);
+            this.setCookie('sort', JSON.stringify(params));
             this.remoteHistory.sort = params.filter(item => item.type !== 'none');
             this.loadItems();
         },
         onColumnFilter(params) {
-            console.log('on column filter change');
-            console.log(params);
+            this.setCookie('filter', JSON.stringify(params));
             this.remoteHistory.filter = params;
             this.loadItems();
         },

@@ -201,7 +201,8 @@
                                 }"
                                 :sort-options="{
                                     enabled: true,
-                                    initialSortBy: getSortBy('episode', 'desc')
+                                    multipleColumns: true,
+                                    initialSortBy: getSortBy('episode', 'desc') // From mixin manage-cookie.js
                                 }"
                                 :selectOptions="{
                                     enabled: true,
