@@ -164,9 +164,7 @@ class HistoryHandler(BaseRequestHandler):
 
                 if item['action'] == SUBTITLED:
                     subtitle_language = item['resource']
-
-                if item['action'] == SUBTITLED:
-                    subtitle_language = item['resource']
+                    provider['name'] = item['provider']
 
                 if item['client_status'] is not None:
                     status = ClientStatus(status=item['client_status'])
@@ -244,9 +242,7 @@ class HistoryHandler(BaseRequestHandler):
 
                     if item['action'] == SUBTITLED:
                         subtitle_language = item['resource']
-
-                    if item['action'] == SUBTITLED:
-                        subtitle_language = item['resource']
+                        provider['name'] = item['provider']
 
                     item['showSlug'] = None
                     item['showTitle'] = 'Unknown Show'
