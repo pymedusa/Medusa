@@ -91,7 +91,11 @@
             </template>
 
             <template #column-filter="{ column }">
-                <span v-if="column.field === 'quality'">
+                <span v-if="column.field === 'episodeTitle'">
+                    <input placeholder="Resource" class="'form-control input-sm vgt-input" @input="updateResource">
+                </span>
+                
+                <span v-else-if="column.field === 'quality'">
                     <select class="form-control form-control-inline input-sm" @input="updateQualityFilter">
                         <option value="">Filter Quality</option>
                         <option v-for="option in consts.qualities.values" :value="option.value" :key="option.key">{{ option.name }}</option>
@@ -173,6 +177,9 @@ export default {
             label: 'Episode',
             field: 'episodeTitle',
             sortable: false,
+            filterOptions: {
+                customFilter: true
+            },
             hidden: getCookie('Episode')
         }, {
             label: 'Action',
@@ -337,6 +344,7 @@ export default {
             // Check for valid syntax, and pass along.
             size = size.currentTarget.value;
             if (!size) {
+                this.loadItems();
                 return;
             }
 
@@ -349,6 +357,15 @@ export default {
                 this.remoteHistory.filter.columnFilters.size = size;
                 this.loadItems();
             }
+        },
+        updateResource(resource) {
+            resource = resource.currentTarget.value;
+            if (!this.remoteHistory.filter) {
+                this.remoteHistory.filter = { columnFilters: {} };
+            }
+
+            this.remoteHistory.filter.columnFilters.resource = resource;
+            this.loadItems();
         },
         // Load items is what brings back the rows from server
         loadItems() {

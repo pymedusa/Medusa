@@ -83,10 +83,12 @@ class HistoryHandler(BaseRequestHandler):
         size_operator = None
         size = None
         provider = None
+        resource = None
 
         if filter is not None and filter.get('columnFilters'):
             size = filter['columnFilters'].pop('size', None)
             provider = filter['columnFilters'].pop('provider.id', None)
+            resource = filter['columnFilters'].pop('resource', None)
 
             if size:
                 size_operator, size = size.split(' ')
@@ -111,6 +113,11 @@ class HistoryHandler(BaseRequestHandler):
         if provider:
             sql_base += f' {"AND" if where else "WHERE"} provider LIKE ?'
             params.append(f'%%{provider}%%')
+
+        # Search resource with like %resource%
+        if resource:
+            sql_base += f' {"AND" if where else "WHERE"} resource LIKE ?'
+            params.append(f'%%{resource}%%')
 
         if sort is not None and len(sort) == 1:  # Only support one sort column right now.
             field = sort[0].get('field').lower()

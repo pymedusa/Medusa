@@ -85,6 +85,12 @@
                     {{props.formattedRow[props.column.field]}}
                 </span>
             </template>
+
+            <template #column-filter="{ column }">
+                <span v-if="column.field === 'episodeTitle'">
+                    <input placeholder="Resource" class="'form-control input-sm vgt-input" @input="updateResource">
+                </span>
+            </template>
         </vue-good-table>
     </div>
 </template>
@@ -125,6 +131,10 @@ export default {
             label: 'Episode',
             field: 'episodeTitle',
             sortable: false,
+            filterOptions: {
+                enabled: true,
+                customFilter: true
+            },
             hidden: getCookie('Status')
         }, {
             label: 'Snatched',
@@ -257,6 +267,15 @@ export default {
                 this.remoteHistory.filter = { columnFilters: {} };
             }
             this.remoteHistory.filter.columnFilters.quality = quality.currentTarget.value;
+            this.loadItems();
+        },
+        updateResource(resource) {
+            resource = resource.currentTarget.value;
+            if (!this.remoteHistory.filter) {
+                this.remoteHistory.filter = { columnFilters: {} };
+            }
+
+            this.remoteHistory.filter.columnFilters.resource = resource;
             this.loadItems();
         },
         // Load items is what brings back the rows from server
