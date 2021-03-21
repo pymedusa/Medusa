@@ -29,8 +29,8 @@ from medusa.queues.utils import (
     generate_show_queue,
 )
 from medusa.sbdatetime import date_presets, time_presets
-from medusa.schedulers.utils import generate_schedulers
 from medusa.schedulers.download_handler import status_strings
+from medusa.schedulers.utils import generate_schedulers
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
     BooleanField,
