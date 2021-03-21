@@ -149,7 +149,7 @@ class HistoryHandler(BaseRequestHandler):
                 show_slug = None
                 client_status = None
                 show_slug = None
-                show_title = 'Unknown Show'
+                show_title = 'Missing Show'
 
                 if item['action'] in (SNATCHED, FAILED):
                     provider.update({
@@ -245,7 +245,7 @@ class HistoryHandler(BaseRequestHandler):
                         provider['name'] = item['provider']
 
                     item['showSlug'] = None
-                    item['showTitle'] = 'Unknown Show'
+                    item['showTitle'] = 'Missing Show'
                     if item['indexer_id'] and item['showid']:
                         identifier = SeriesIdentifier.from_id(item['indexer_id'], item['showid'])
                         item['showSlug'] = identifier.slug
