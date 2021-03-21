@@ -9,6 +9,7 @@
 
 .tooltip {
     display: block !important;
+    word-break: break-word;
     z-index: 10000;
 }
 
