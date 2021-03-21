@@ -152,11 +152,9 @@ export default {
         };
     },
     mounted() {
-        const { checkHistory } = this;
-        checkHistory({ compact: true });
-
+        const { getCookie, getSortFromCookie } = this;
         // Get per-page pagination from cookie
-        const perPage = this.getCookie('pagination-perpage-history');
+        const perPage = getCookie('pagination-perpage-history');
         if (perPage) {
             this.remoteHistory.perPage = perPage;
         }
@@ -195,7 +193,8 @@ export default {
             setStoreLayout: 'setStoreLayout'
         }),
         getSortFromCookie() {
-            const sort = this.getCookie('sort'); // From manage-cookie.js mixin
+            const { getCookie } = this;
+            const sort = getCookie('sort'); // From manage-cookie.js mixin
             if (sort) {
                 return JSON.parse(sort);
             }
