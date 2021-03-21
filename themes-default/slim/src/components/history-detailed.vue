@@ -270,12 +270,12 @@ export default {
             setStoreLayout: 'setStoreLayout'
         }),
         getSortFromCookie() {
-            const { getCookie } = this; 
+            const { getCookie } = this;
             const sort = getCookie('sort'); // From manage-cookie.js mixin
             if (sort) {
                 return JSON.parse(sort);
             }
-            return [{field: 'date', type: 'desc'}];
+            return [{ field: 'date', type: 'desc' }];
         },
         rowStyleClassFn(row) {
             return `${row.statusName.toLowerCase()} status` || 'skipped status';

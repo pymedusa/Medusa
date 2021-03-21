@@ -95,11 +95,13 @@ import { VueGoodTable } from 'vue-good-table';
 import { humanFileSize } from '../utils/core';
 import { manageCookieMixin } from '../mixins/manage-cookie';
 import QualityPill from './helpers/quality-pill.vue';
+import AppLink from './helpers/app-link.vue';
 import { VTooltip } from 'v-tooltip';
 
 export default {
     name: 'history-compact',
     components: {
+        AppLink,
         QualityPill,
         VueGoodTable
     },
@@ -198,7 +200,7 @@ export default {
             if (sort) {
                 return JSON.parse(sort);
             }
-            return [{field: 'date', type: 'desc'}];
+            return [{ field: 'date', type: 'desc' }];
         },
         sortDate(rows) {
             const cloneRows = [...rows];
