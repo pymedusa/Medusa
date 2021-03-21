@@ -97,11 +97,11 @@
                         </span>
 
                         <span v-else-if="props.column.label == 'Scene Abs. #'" class="align-center">
-                            <input type="text" :placeholder="props.formattedRow[props.column.field]" size="6" maxlength="8"
-                                   class="sceneAbsolute form-control input-scene addQTip" :data-for-absolute="props.formattedRow[props.column.field] || 0"
-                                   :id="`sceneSeasonXEpisode_${show.id[show.indexer]}${props.formattedRow[props.column.field]}`"
+                            <input type="text" :placeholder="`${props.formattedRow[props.column.field]}`" size="6" maxlength="8"
+                                   class="sceneAbsolute form-control input-scene addQTip" :data-for-absolute="props.row.absoluteNumber"
+                                   :id="`sceneAbsolute_${show.id[show.indexer]}_${props.row.absoluteNumber}`"
                                    title="Change this value if scene absolute numbering differs from the indexer absolute numbering. Generally used for anime shows."
-                                   :value="props.formattedRow[props.column.field] ? props.formattedRow[props.column.field] : ''"
+                                   :value="props.formattedRow[props.column.field]"
                                    style="padding: 0; text-align: center; max-width: 60px;">
                         </span>
 
@@ -260,11 +260,11 @@
                         </span>
 
                         <span v-else-if="props.column.label == 'Scene Abs. #'" class="align-center">
-                            <input type="text" :placeholder="props.formattedRow[props.column.field]" size="6" maxlength="8"
-                                   class="sceneAbsolute form-control input-scene addQTip" :data-for-absolute="props.formattedRow[props.column.field] || 0"
-                                   :id="`sceneSeasonXEpisode_${show.id[show.indexer]}${props.formattedRow[props.column.field]}`"
+                            <input type="text" :placeholder="`${props.formattedRow[props.column.field]}`" size="6" maxlength="8"
+                                   class="sceneAbsolute form-control input-scene addQTip" :data-for-absolute="props.row.absoluteNumber"
+                                   :id="`sceneAbsolute_${show.id[show.indexer]}_${props.row.absoluteNumber}`"
                                    title="Change this value if scene absolute numbering differs from the indexer absolute numbering. Generally used for anime shows."
-                                   :value="props.formattedRow[props.column.field] ? props.formattedRow[props.column.field] : ''"
+                                   :value="props.formattedRow[props.column.field]"
                                    style="padding: 0; text-align: center; max-width: 60px;">
                         </span>
 
@@ -496,15 +496,6 @@ export default {
                     return getSceneAbsoluteNumbering(row);
                 },
                 type: 'number',
-                /**
-                 * Vue-good-table sort overwrite function.
-                 * @param {Object} x - row1 value for column.
-                 * @param {object} y - row2 value for column.
-                 * @returns {Boolean} - if we want to display this row before the next
-                 */
-                sortFn(x, y) {
-                    return (x < y ? -1 : (x > y ? 1 : 0));
-                },
                 hidden: getCookie('Scene Abs. #')
             }, {
                 label: 'Title',
@@ -850,8 +841,7 @@ export default {
             }
 
             $.getJSON('home/setSceneNumbering', {
-                indexername: show.indexer,
-                seriesid: show.id[show.indexer],
+                showslug: show.id.slug,
                 forSeason,
                 forEpisode,
                 sceneSeason,
@@ -889,8 +879,7 @@ export default {
             }
 
             $.getJSON('home/setSceneNumbering', {
-                indexername: show.indexer,
-                seriesid: show.id[show.indexer],
+                showslug: show.id.slug,
                 forAbsolute,
                 sceneAbsolute
             }, data => {
@@ -991,12 +980,22 @@ export default {
                 return episode.scene.absoluteNumber;
             }
 
-            if (Object.keys(sceneAbsoluteNumbering).length > 0 && sceneAbsoluteNumbering[episode.absoluteNumber]) {
-                return sceneAbsoluteNumbering[episode.absoluteNumber].sceneAbsolute;
+            if (Object.keys(sceneAbsoluteNumbering).length > 0) {
+                const mapped = sceneAbsoluteNumbering.filter(x => {
+                    return x.absolute === episode.absoluteNumber;
+                });
+                if (mapped.length !== 0) {
+                    return mapped[0].sceneAbsolute;
+                }
             }
 
-            if (Object.keys(xemAbsoluteNumbering).length > 0 && xemAbsoluteNumbering[episode.absoluteNumber]) {
-                return xemAbsoluteNumbering[episode.absoluteNumber].sceneAbsolute;
+            if (Object.keys(xemAbsoluteNumbering).length > 0) {
+                const mapped = xemAbsoluteNumbering.filter(x => {
+                    return x.absolute === episode.absoluteNumber;
+                });
+                if (mapped.length !== 0) {
+                    return mapped[0].sceneAbsolute;
+                }
             }
 
             return episode.scene.absoluteNumber;

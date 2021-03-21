@@ -8,6 +8,13 @@
 
 -----
 
+## 0.5.10 (01-03-2021)
+
+#### Fixes
+- Don't save removed episode location as dot ([9284](https://github.com/pymedusa/Medusa/pull/9284))
+
+-----
+
 ## 0.5.9 (28-02-2021)
 
 #### New Features
