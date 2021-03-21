@@ -497,7 +497,7 @@ export default {
                 Allowed: 0
             };
             seasons.forEach(season => {
-                season.episodes.forEach(episode => {
+                season.children.forEach(episode => {
                     summary[getOverviewStatus(episode.status, episode.quality, show.config.qualities)] += 1;
                 });
             });

@@ -5,15 +5,41 @@ import { ADD_HISTORY, ADD_SHOW_HISTORY, ADD_SHOW_EPISODE_HISTORY } from '../muta
 import { episodeToSlug } from '../../utils/core';
 
 const state = {
-    history: [],
-    page: 0,
-    episodeHistory: {}
+    remote: {
+        rows: [],
+        totalRows: 0,
+        page: 1,
+        perPage: 25,
+        sort: [{
+            field: 'date',
+            type: 'desc'
+        }],
+        filter: null
+    },
+    remoteCompact: {
+        rows: [],
+        totalRows: 0,
+        page: 1,
+        perPage: 25,
+        sort: [{
+            field: 'date',
+            type: 'desc'
+        }],
+        filter: null
+    },
+    episodeHistory: {},
+    historyLast: null,
+    historyLastCompact: null,
+    loading: false
 };
 
 const mutations = {
-    [ADD_HISTORY](state, history) {
+    [ADD_HISTORY](state, { history, compact }) {
+        // Only evaluate compact once.
+        const historyKey = compact ? 'remoteCompact' : 'remote';
+
         // Update state
-        state.history.push(...history);
+        Vue.set(state[historyKey], 'rows', history);
     },
     [ADD_SHOW_HISTORY](state, { showSlug, history }) {
         // Add history data to episodeHistory, but without passing the show slug.
@@ -39,6 +65,12 @@ const mutations = {
         }
 
         Vue.set(state.episodeHistory[showSlug], episodeSlug, history);
+    },
+    setLoading(state, value) {
+        state.loading = value;
+    },
+    setRemoteTotal(state, { total, compact = false }) {
+        state[compact ? 'remoteCompact' : 'remote'].totalRows = total;
     }
 };
 
@@ -100,51 +132,64 @@ const actions = {
         }
     },
     /**
-     * Get history from API and commit them to the store.
+     * Get detailed history from API and commit them to the store.
      *
      * @param {*} context - The store context.
-     * @param {string} showSlug Slug for the show to get. If not provided, gets the first 1k shows.
-     * @returns {undefined|Promise} undefined if `shows` was provided or the API response if not.
+     * @param {object} args - arguments.
      */
-    async getHistory(context, showSlug) {
-        const { commit, state } = context;
-        const limit = 1000;
-        const params = { limit };
+    async getHistory(context, args) {
+        const { commit } = context;
         let url = '/history';
+        const page = args ? args.page : 1;
+        const limit = args ? args.perPage : 1000;
+        let sort = args ? args.sort : [{ field: 'date', type: 'desc' }];
+        const filter = args ? args.filter : {};
+        const showSlug = args ? args.showSlug : undefined;
+        const compact = args ? args.compact : undefined;
+
+        const params = {
+            page,
+            limit
+        };
+
+        if (sort) {
+            if (!Array.isArray(sort)) {
+                sort = [sort];
+            }
+            params.sort = sort;
+        }
+
+        if (filter) {
+            params.filter = filter;
+        }
 
         if (showSlug) {
             url = `${url}/${showSlug}`;
         }
 
-        let lastPage = false;
-        while (!lastPage) {
-            let response = null;
-            state.page += 1;
-            params.page = state.page;
+        if (compact) {
+            params.compact = true;
+        }
 
-            try {
-                response = await api.get(url, { params }); // eslint-disable-line no-await-in-loop
-            } catch (error) {
-                if (error.response && error.response.status === 404) {
-                    console.debug(`No history available${showSlug ? ' for show ' + showSlug : ''}`);
-                }
-                lastPage = true;
-            }
-
+        commit('setLoading', true);
+        let response = null;
+        try {
+            response = await api.get(url, { params }); // eslint-disable-line no-await-in-loop
             if (response) {
+                commit('setRemoteTotal', { total: Number(response.headers['x-pagination-count']), compact });
                 if (showSlug) {
-                    commit(ADD_SHOW_HISTORY, { showSlug, history: response.data });
+                    commit(ADD_SHOW_HISTORY, { showSlug, history: response.data, compact });
                 } else {
-                    commit(ADD_HISTORY, response.data);
+                    commit(ADD_HISTORY, { history: response.data, compact });
                 }
-
-                if (response.data.length < limit) {
-                    lastPage = true;
-                }
-            } else {
-                lastPage = true;
+            }
+        } catch (error) {
+            if (error.response && error.response.status === 404) {
+                console.debug(`No history available${showSlug ? ' for show ' + showSlug : ''}`);
             }
         }
+
+        commit('setLoading', false);
     },
     /**
      * Get episode history from API and commit it to the store.
@@ -168,6 +213,44 @@ const actions = {
                     console.warn(`No episode history found for show ${showSlug} and episode ${episodeSlug}`);
                 });
         });
+    },
+    checkHistory({ state, rootState, dispatch }) {
+        // Retrieve the last history item from api.
+        // Compare the states last history or historyCompact row.
+        // and get new history data.
+        const { layout } = rootState.config;
+        const params = { last: true };
+        const historyParams = {};
+
+        if (layout.historyLimit) {
+            historyParams.total = layout.historyLimit;
+        }
+
+        let history = [];
+        const compact = layout.history === 'compact';
+        if (compact) {
+            history = state.historyCompact;
+        } else {
+            history = state.history;
+        }
+
+        if (!history || history.length === 0) {
+            dispatch('getHistory', { compact });
+        }
+
+        api.get('/history', { params })
+            .then(response => {
+                if (response.data && response.data.date > history[0].actionDate) {
+                    dispatch('getHistory', { compact });
+                }
+            })
+            .catch(() => {
+                console.info('No history record found');
+            });
+    },
+    updateHistory({ dispatch }) {
+        // Update store's search queue item. (provided through websocket)
+        dispatch('checkHistory', {});
     }
 };
 

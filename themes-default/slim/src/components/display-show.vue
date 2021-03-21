@@ -23,7 +23,6 @@
                                 :groupOptions="{
                                     enabled: true,
                                     mode: 'span',
-                                    customChildObject: 'episodes'
                                 }"
                                 :pagination-options="{
                                     enabled: layout.show.pagination.enable,
@@ -71,7 +70,7 @@
 
                     <template slot="table-footer-row" slot-scope="{headerRow}">
                         <tr colspan="9999" :id="`season-${headerRow.season}-footer`" class="seasoncols border-bottom shadow">
-                            <th class="col-footer" colspan="15" align="left">Season contains {{headerRow.episodes.length}} episodes with total filesize: {{addFileSize(headerRow)}}</th>
+                            <th class="col-footer" colspan="15" align="left">Season contains {{headerRow.children.length}} episodes with total filesize: {{addFileSize(headerRow)}}</th>
                         </tr>
                         <tr class="spacer" />
                     </template>
@@ -202,7 +201,8 @@
                                 }"
                                 :sort-options="{
                                     enabled: true,
-                                    initialSortBy: getSortBy('episode', 'desc')
+                                    multipleColumns: true,
+                                    initialSortBy: getSortBy('episode', 'desc') // From mixin manage-cookie.js
                                 }"
                                 :selectOptions="{
                                     enabled: true,
@@ -233,7 +233,7 @@
 
                     <template slot="table-footer-row" slot-scope="{headerRow}">
                         <tr colspan="9999" :id="`season-${headerRow.season}-footer`" class="seasoncols border-bottom shadow">
-                            <th class="col-footer" colspan="15" align="left">Season contains {{headerRow.episodes.length}} episodes with total filesize: {{addFileSize(headerRow)}}</th>
+                            <th class="col-footer" colspan="15" align="left">Season contains {{headerRow.children.length}} episodes with total filesize: {{addFileSize(headerRow)}}</th>
                         </tr>
                         <tr class="spacer" />
                     </template>
@@ -788,7 +788,7 @@ export default {
          * @returns {string} - Human readable file size.
          */
         addFileSize(headerRow) {
-            return humanFileSize(headerRow.episodes.reduce((a, b) => a + (b.file.size || 0), 0));
+            return humanFileSize(headerRow.children.reduce((a, b) => a + (b.file.size || 0), 0));
         },
         searchSubtitle(event, episode, lang) {
             const { showSlug, getEpisodes, show, subtitleSearchComponents } = this;
@@ -923,19 +923,19 @@ export default {
          * @returns {Boolean} - true if one of the seasons episodes has a status 'unaired'.
          */
         anyEpisodeNotUnaired(season) {
-            return season.episodes.filter(ep => ep.status !== 'Unaired').length > 0;
+            return season.children.filter(ep => ep.status !== 'Unaired').length > 0;
         },
         episodesInverse(season) {
             const { invertTable } = this;
-            if (!season.episodes) {
+            if (!season.children) {
                 return [];
             }
 
             if (invertTable) {
-                return season.episodes.slice().reverse();
+                return season.children.slice().reverse();
             }
 
-            return season.episodes;
+            return season.children;
         },
         /**
          * Check if the season/episode combination exists in the scene numbering.
@@ -1082,7 +1082,7 @@ export default {
             return (episode.season !== 0 && config.subtitles.enabled && show.config.subtitlesEnabled && !['Snatched', 'Snatched (Proper)', 'Snatched (Best)', 'Downloaded'].includes(episode.status));
         },
         totalSeasonEpisodeSize(season) {
-            return season.episodes.filter(x => x.file && x.file.size > 0).reduce((a, b) => a + b.file.size, 0);
+            return season.children.filter(x => x.file && x.file.size > 0).reduce((a, b) => a + b.file.size, 0);
         },
         getSeasonExceptions(season) {
             const { show } = this;

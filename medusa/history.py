@@ -19,9 +19,10 @@
 from __future__ import unicode_literals
 
 import datetime
+from os.path import basename
 
-from medusa import db
-from medusa.common import FAILED, SNATCHED, SUBTITLED
+from medusa import db, ws
+from medusa.common import FAILED, SNATCHED, SUBTITLED, statusStrings
 from medusa.schedulers.download_handler import ClientStatusEnum as ClientStatus
 from medusa.show.history import History
 
@@ -79,6 +80,26 @@ def _log_history_item(action, ep_obj, resource=None, provider=None, proper_tags=
          ep_obj.season, ep_obj.episode, ep_obj.quality, resource, provider,
          version, proper_tags, manually_searched, info_hash, size,
          provider_type, client_status, part_of_batch])
+
+    # Update the history page in frontend.
+    ws.Message('historyUpdate', {
+        'status': action,
+        'statusName': statusStrings.get(action),
+        'actionDate': log_date,
+        'quality': ep_obj.quality,
+        'resource': basename(resource),
+        'size': size,
+        'properTags': proper_tags,
+        'season': ep_obj.season,
+        'episode': ep_obj.episode,
+        'manuallySearched': manually_searched,
+        'infoHash': info_hash,
+        'provider': provider,
+        'size': size,
+        'providerType': provider_type,
+        'clientStatus': client_status,
+        'partOfBatch': part_of_batch
+    }).push()
 
 
 def log_snatch(search_result):

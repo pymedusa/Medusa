@@ -2846,7 +2846,6 @@ fieldset[disabled] .navbar-default .btn-link:focus {
 
 .vgt-table th {
     color: rgb(255, 255, 255);
-    text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
     background-color: rgb(51, 51, 51);
 }
 
@@ -2898,6 +2897,28 @@ fieldset[disabled] .navbar-default .btn-link:focus {
 .vgt-dropdown-menu > li > span {
     padding: 4px 36px 4px 20px;
     color: #333;
+}
+
+.footer__navigation__page-btn {
+    color: rgb(51, 51, 51);
+    background-image: linear-gradient(to top, rgb(255, 255, 255), rgb(230, 230, 230));
+    background-image: -moz-linear-gradient(top, rgb(255, 255, 255), rgb(230, 230, 230));
+    border: 1px solid rgb(204, 204, 204);
+    background-color: rgb(245, 245, 245);
+    border-color: rgb(230, 230, 230) rgb(230, 230, 230) rgb(191, 191, 191);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.footer__navigation__page-btn:hover {
+    color: rgb(51, 51, 51);
+    text-decoration: none;
+    background-color: rgb(230, 230, 230);
+    background-position: 0 -15px;
+    transition: background-position 0.1s linear;
+    -webkit-transition: background-position 0.1s linear;
+    -moz-transition: background-position 0.1s linear;
+    -ms-transition: background-position 0.1s linear;
+    -o-transition: background-position 0.1s linear;
 }
 
 .form-control {
@@ -4290,4 +4311,14 @@ CSS helper classes
 /* These classes should be natively available in bootstrap 4 */
 .d-block {
     display: block;
+}
+
+/* Style multiselect components */
+.multiselect,
+.multiselect__tags,
+.multiselect__input {
+    font-family: inherit;
+    font-size: 0.9em;
+    -ms-touch-action: manipulation;
+    touch-action: manipulation;
 }

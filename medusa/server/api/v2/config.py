@@ -29,6 +29,7 @@ from medusa.queues.utils import (
     generate_show_queue,
 )
 from medusa.sbdatetime import date_presets, time_presets
+from medusa.schedulers.download_handler import status_strings
 from medusa.schedulers.utils import generate_schedulers
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
@@ -772,6 +773,10 @@ class DataGenerator(object):
                 ('UNSET', 'UNAIRED', 'SNATCHED', 'WANTED', 'DOWNLOADED', 'SKIPPED', 'ARCHIVED',
                  'IGNORED', 'SNATCHED_PROPER', 'SUBTITLED', 'FAILED', 'SNATCHED_BEST')
             )
+        ]
+
+        section_data['clientStatuses'] = [
+            {'value': k.value, 'name': v} for k, v in status_strings.items()
         ]
 
         # Save it for next time

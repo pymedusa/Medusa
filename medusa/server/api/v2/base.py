@@ -327,14 +327,14 @@ class BaseRequestHandler(RequestHandler):
         except ValueError:
             self._raise_bad_request_error('Invalid limit parameter')
 
-    def _paginate(self, data=None, data_generator=None, sort=None):
+    def _paginate(self, data=None, data_generator=None, sort=None, headers={}):
         arg_page = self._get_page()
         arg_limit = self._get_limit()
 
-        headers = {
+        headers.update({
             'X-Pagination-Page': arg_page,
             'X-Pagination-Limit': arg_limit
-        }
+        })
 
         first_page = arg_page if arg_page > 0 else 1
         previous_page = None if arg_page <= 1 else arg_page - 1

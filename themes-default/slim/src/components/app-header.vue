@@ -195,8 +195,10 @@ export default {
             const { target } = event;
             if (target.matches('#main_nav a.router-link, #main_nav a.router-link *')) {
                 const dropdown = target.closest('.dropdown');
-                dropdown.querySelector('.dropdown-toggle').setAttribute('aria-expanded', false);
-                dropdown.querySelector('.dropdown-menu').style.display = 'none';
+                if (dropdown) {
+                    dropdown.querySelector('.dropdown-toggle').setAttribute('aria-expanded', false);
+                    dropdown.querySelector('.dropdown-menu').style.display = 'none';
+                }
                 // Also collapse the main nav if it's open
                 $('#main_nav').collapse('hide');
             }
