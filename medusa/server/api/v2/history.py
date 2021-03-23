@@ -8,6 +8,7 @@ from os.path import basename
 from medusa import db
 from medusa.common import DOWNLOADED, FAILED, SNATCHED, SUBTITLED, statusStrings
 from medusa.indexers.utils import indexer_id_to_name
+from medusa.providers import get_provider_class
 from medusa.providers.generic_provider import GenericProvider
 from medusa.schedulers.download_handler import ClientStatus
 from medusa.server.api.v2.base import BaseRequestHandler
@@ -159,10 +160,21 @@ class HistoryHandler(BaseRequestHandler):
                 show_title = 'Missing Show'
 
                 if item['action'] in (SNATCHED, FAILED):
-                    provider.update({
-                        'id': GenericProvider.make_id(item['provider']),
-                        'name': item['provider']
-                    })
+                    provider_id = GenericProvider.make_id(item['provider'])
+                    provider_class = get_provider_class(provider_id)
+
+                    if provider_class:
+                        provider.update({
+                            'id': provider_class.get_id(),
+                            'name': provider_class.name,
+                            'imageName': provider_class.image_name()
+                        })
+                    else:
+                        provider.update({
+                            'id': provider_id,
+                            'name': item['provider'],
+                            'imageName': f'{provider_id}.png'
+                        })
                     release_name = item['resource']
 
                 if item['action'] == DOWNLOADED:
@@ -237,10 +249,20 @@ class HistoryHandler(BaseRequestHandler):
                     subtitle_language = None
 
                     if item['action'] in (SNATCHED, FAILED):
-                        provider.update({
-                            'id': GenericProvider.make_id(item['provider']),
-                            'name': item['provider']
-                        })
+                        provider_id = GenericProvider.make_id(item['provider'])
+                        provider_class = get_provider_class(provider_id)
+                        if provider_class:
+                            provider.update({
+                                'id': provider_class.get_id(),
+                                'name': provider_class.name,
+                                'imageName': provider_class.image_name()
+                            })
+                        else:
+                            provider.update({
+                                'id': provider_id,
+                                'name': item['provider'],
+                                'imageName': f'{provider_id}.png'
+                            })
                         release_name = item['resource']
 
                     if item['action'] == DOWNLOADED:
