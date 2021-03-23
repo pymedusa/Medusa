@@ -318,3 +318,9 @@ tr.status span.episode-title a {
     border-radius: 3px;
     padding: 5px 10px;
 }
+
+/* History compact */
+span.release-group {
+    cursor: help;
+    margin-right: 5px;
+}
