@@ -47,7 +47,7 @@
                     <!-- These should get a provider icon -->
                     <template v-if="['Snatched', 'Failed'].includes(props.row.statusName)">
                         <img  style="margin-right: 5px;"
-                              :src="`images/providers/${props.row.provider.id}.png`"
+                              :src="`images/providers/${props.row.provider.imageName}`"
                               :alt="props.row.provider.name" width="16" height="16"
                               :title="props.row.provider.name"
                               v-tooltip.right="props.row.provider.name"
@@ -62,7 +62,7 @@
 
                     <!-- Different path for subtitle providers -->
                     <img v-else-if="props.row.statusName === 'Subtitled'" class="addQTip" style="margin-right: 5px;"
-                         :src="`images/subtitles/${props.row.provider.id}.png`"
+                         :src="`images/subtitles/${props.row.provider.name}.png`"
                          :alt="props.row.provider.name" width="16" height="16"
                          :title="props.row.provider.name"
                          v-tooltip.right="props.row.provider.name"
