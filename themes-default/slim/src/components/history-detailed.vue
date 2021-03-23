@@ -96,7 +96,7 @@
                 </span>
                 
                 <span v-else-if="column.field === 'quality'">
-                    <select class="form-control form-control-inline input-sm" @input="updateQualityFilter">
+                    <select class="form-control form-control-inline input-sm vgt-select" @input="updateQualityFilter">
                         <option value="">Filter Quality</option>
                         <option v-for="option in consts.qualities.values" :value="option.value" :key="option.key">{{ option.name }}</option>
                     </select>
