@@ -94,7 +94,7 @@
                 <span v-if="column.field === 'episodeTitle'">
                     <input placeholder="Resource" class="'form-control input-sm vgt-input" @input="updateResource">
                 </span>
-                
+
                 <span v-else-if="column.field === 'quality'">
                     <select class="form-control form-control-inline input-sm vgt-select" @input="updateQualityFilter">
                         <option value="">Filter Quality</option>

@@ -173,7 +173,7 @@ export default {
         }),
         filterHistory() {
             const { history } = this;
-            if (!history.rows || !history.rows.length) {
+            if (!history.rows || !history.rows.length > 0) {
                 return [];
             }
             // Const downloading = [2];
