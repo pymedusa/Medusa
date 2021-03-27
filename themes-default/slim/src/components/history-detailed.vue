@@ -232,7 +232,6 @@ export default {
     },
     mounted() {
         const { getCookie, getSortFromCookie } = this;
-        this.loadItems();
 
         // Get per-page pagination from cookie
         const perPage = getCookie('pagination-perpage-history');
