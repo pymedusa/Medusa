@@ -298,7 +298,7 @@ tr.status span.episode-title a {
     height: 30px;
     line-height: 30px;
     font-size: 0.9em;
-    width: auto;
+    width: 100%;
     background-color: #fff;
     background-image: none;
     border: 1px solid #ccc;
@@ -311,10 +311,16 @@ tr.status span.episode-title a {
     height: 30px;
     line-height: 30px;
     font-size: 0.9em;
-    width: auto;
+    width: 100%;
     background-color: #fff;
     background-image: none;
     border: 1px solid #ccc;
     border-radius: 3px;
     padding: 5px 10px;
+}
+
+/* History compact */
+span.release-group {
+    cursor: help;
+    margin-right: 5px;
 }

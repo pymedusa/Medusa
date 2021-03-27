@@ -2,7 +2,7 @@
     <div class="current-downloads-wrapper">
         <div class="row horizontal-scroll">
             <div class="vgt-table-styling col-md-12 top-15">
-                <vue-good-table v-show="history.length > 0"
+                <vue-good-table v-show="filterHistory"
                                 :columns="columns"
                                 :rows="filterHistory"
                                 :search-options="{
@@ -166,15 +166,18 @@ export default {
         ...mapState({
             config: state => state.config.general,
             layout: state => state.config.layout,
-            history: state => state.history.history
+            history: state => state.history.remote
         }),
         ...mapGetters({
             fuzzyParseDateTime: 'fuzzyParseDateTime'
         }),
         filterHistory() {
             const { history } = this;
+            if (!history.rows || !history.rows.length > 0) {
+                return [];
+            }
             // Const downloading = [2];
-            return history
+            return history.rows
                 .filter(row => row.clientStatus && row.status === 2);
             // .filter(row => row.clientStatus.status.some(status => downloading.includes(status)))
         }

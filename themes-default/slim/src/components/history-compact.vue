@@ -42,7 +42,7 @@
                     <div v-for="row in sortDate(props.row.rows)" :key="row.id">
                         <template v-if="row.statusName === 'Snatched'">
                             <img style="margin-right: 5px;"
-                                 :src="`images/providers/${row.provider.id}.png`"
+                                 :src="`images/providers/${row.provider.imageName}`"
                                  :alt="row.provider.name" width="16" height="16"
                                  v-tooltip.right="`${row.provider.name}: ${row.resource} (${row.actionDate})`"
                                  onError="this.onerror=null;this.src='images/providers/missing.png';"
@@ -61,7 +61,7 @@
                 <span v-else-if="props.column.label === 'Downloaded'" class="align-center">
                     <div v-for="row in sortDate(props.row.rows)" :key="row.id">
                         <template v-if="['Downloaded', 'Archived'].includes(row.statusName)">
-                            <span v-if="row.releaseGroup" style="cursor: help;" v-tooltip.right="getFileBaseName(row.resource)"><i>{{row.releaseGroup}}</i></span>
+                            <span v-if="row.releaseGroup" class="release-group" v-tooltip.right="getFileBaseName(row.resource)"><i>{{row.releaseGroup}}</i></span>
                             <span v-else style="cursor: help;" v-tooltip.right="getFileBaseName(row.resource)"><i>Unknown</i></span>
                         </template>
                     </div>
@@ -83,6 +83,12 @@
 
                 <span v-else>
                     {{props.formattedRow[props.column.field]}}
+                </span>
+            </template>
+
+            <template #column-filter="{ column }">
+                <span v-if="column.field === 'episodeTitle'">
+                    <input placeholder="Resource" class="'form-control input-sm vgt-input" @input="updateResource">
                 </span>
             </template>
         </vue-good-table>
@@ -125,6 +131,10 @@ export default {
             label: 'Episode',
             field: 'episodeTitle',
             sortable: false,
+            filterOptions: {
+                enabled: true,
+                customFilter: true
+            },
             hidden: getCookie('Status')
         }, {
             label: 'Snatched',
@@ -257,6 +267,15 @@ export default {
                 this.remoteHistory.filter = { columnFilters: {} };
             }
             this.remoteHistory.filter.columnFilters.quality = quality.currentTarget.value;
+            this.loadItems();
+        },
+        updateResource(resource) {
+            resource = resource.currentTarget.value;
+            if (!this.remoteHistory.filter) {
+                this.remoteHistory.filter = { columnFilters: {} };
+            }
+
+            this.remoteHistory.filter.columnFilters.resource = resource;
             this.loadItems();
         },
         // Load items is what brings back the rows from server

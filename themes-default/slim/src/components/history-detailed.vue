@@ -47,7 +47,7 @@
                     <!-- These should get a provider icon -->
                     <template v-if="['Snatched', 'Failed'].includes(props.row.statusName)">
                         <img  style="margin-right: 5px;"
-                              :src="`images/providers/${props.row.provider.id}.png`"
+                              :src="`images/providers/${props.row.provider.imageName}`"
                               :alt="props.row.provider.name" width="16" height="16"
                               :title="props.row.provider.name"
                               v-tooltip.right="props.row.provider.name"
@@ -62,7 +62,7 @@
 
                     <!-- Different path for subtitle providers -->
                     <img v-else-if="props.row.statusName === 'Subtitled'" class="addQTip" style="margin-right: 5px;"
-                         :src="`images/subtitles/${props.row.provider.id}.png`"
+                         :src="`images/subtitles/${props.row.provider.name}.png`"
                          :alt="props.row.provider.name" width="16" height="16"
                          :title="props.row.provider.name"
                          v-tooltip.right="props.row.provider.name"
@@ -91,8 +91,12 @@
             </template>
 
             <template #column-filter="{ column }">
-                <span v-if="column.field === 'quality'">
-                    <select class="form-control form-control-inline input-sm" @input="updateQualityFilter">
+                <span v-if="column.field === 'episodeTitle'">
+                    <input placeholder="Resource" class="'form-control input-sm vgt-input" @input="updateResource">
+                </span>
+
+                <span v-else-if="column.field === 'quality'">
+                    <select class="form-control form-control-inline input-sm vgt-select" @input="updateQualityFilter">
                         <option value="">Filter Quality</option>
                         <option v-for="option in consts.qualities.values" :value="option.value" :key="option.key">{{ option.name }}</option>
                     </select>
@@ -173,6 +177,9 @@ export default {
             label: 'Episode',
             field: 'episodeTitle',
             sortable: false,
+            filterOptions: {
+                customFilter: true
+            },
             hidden: getCookie('Episode')
         }, {
             label: 'Action',
@@ -337,6 +344,7 @@ export default {
             // Check for valid syntax, and pass along.
             size = size.currentTarget.value;
             if (!size) {
+                this.loadItems();
                 return;
             }
 
@@ -349,6 +357,15 @@ export default {
                 this.remoteHistory.filter.columnFilters.size = size;
                 this.loadItems();
             }
+        },
+        updateResource(resource) {
+            resource = resource.currentTarget.value;
+            if (!this.remoteHistory.filter) {
+                this.remoteHistory.filter = { columnFilters: {} };
+            }
+
+            this.remoteHistory.filter.columnFilters.resource = resource;
+            this.loadItems();
         },
         // Load items is what brings back the rows from server
         loadItems() {

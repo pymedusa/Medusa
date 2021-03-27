@@ -140,12 +140,12 @@ const actions = {
     async getHistory(context, args) {
         const { commit } = context;
         let url = '/history';
-        const page = args ? args.page : 1;
-        const limit = args ? args.perPage : 1000;
-        let sort = args ? args.sort : [{ field: 'date', type: 'desc' }];
-        const filter = args ? args.filter : {};
-        const showSlug = args ? args.showSlug : undefined;
-        const compact = args ? args.compact : undefined;
+        const page = args?.page || 1;
+        const limit = args?.perPage || 1000;
+        let sort = args?.sort || [{ field: 'date', type: 'desc' }];
+        const filter = args?.filter || {};
+        const showSlug = args?.showSlug;
+        const compact = args?.compact;
 
         const params = {
             page,
@@ -226,21 +226,21 @@ const actions = {
             historyParams.total = layout.historyLimit;
         }
 
-        let history = [];
+        let remote = null;
         const compact = layout.history === 'compact';
         if (compact) {
-            history = state.historyCompact;
+            remote = state.remoteCompact;
         } else {
-            history = state.history;
+            remote = state.remote;
         }
 
-        if (!history || history.length === 0) {
+        if (!remote.rows || remote.rows.length === 0) {
             dispatch('getHistory', { compact });
         }
 
         api.get('/history', { params })
             .then(response => {
-                if (response.data && response.data.date > history[0].actionDate) {
+                if (response.data && response.data.date > remote.rows[0].actionDate) {
                     dispatch('getHistory', { compact });
                 }
             })
