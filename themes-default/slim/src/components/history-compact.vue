@@ -96,6 +96,7 @@
 </template>
 <script>
 
+import debounce from 'lodash/debounce';
 import { mapActions, mapGetters, mapState } from 'vuex';
 import { VueGoodTable } from 'vue-good-table';
 import { humanFileSize } from '../utils/core';
@@ -173,6 +174,9 @@ export default {
         }
         this.remoteHistory.sort = getSortFromCookie();
     },
+    created() {
+        this.loadItemsDebounced = debounce(this.loadItems, 500);
+    },
     computed: {
         ...mapState({
             layout: state => state.config.layout,
@@ -236,21 +240,21 @@ export default {
         },
         onPageChange(params) {
             this.remoteHistory.page = params.currentPage;
-            this.loadItems();
+            this.loadItemsDebounced();
         },
         onPerPageChange(params) {
             this.setCookie('pagination-perpage-history', params.currentPerPage);
             this.remoteHistory.perPage = params.currentPerPage;
-            this.loadItems();
+            this.loadItemsDebounced();
         },
         onSortChange(params) {
             this.setCookie('sort', JSON.stringify(params));
             this.remoteHistory.sort = params.filter(item => item.type !== 'none');
-            this.loadItems();
+            this.loadItemsDebounced();
         },
         onColumnFilter(params) {
             this.remoteHistory.filter = params;
-            this.loadItems();
+            this.loadItemsDebounced();
         },
         updateClientStatusFilter(event) {
             const combinedStatus = event.reduce((result, item) => {
@@ -261,14 +265,14 @@ export default {
             }
             this.selectedClientStatusValue = event;
             this.remoteHistory.filter.columnFilters.clientStatus = combinedStatus;
-            this.loadItems();
+            this.loadItemsDebounced();
         },
         updateQualityFilter(quality) {
             if (!this.remoteHistory.filter) {
                 this.remoteHistory.filter = { columnFilters: {} };
             }
             this.remoteHistory.filter.columnFilters.quality = quality.currentTarget.value;
-            this.loadItems();
+            this.loadItemsDebounced();
         },
         updateResource(resource) {
             resource = resource.currentTarget.value;
@@ -277,7 +281,7 @@ export default {
             }
 
             this.remoteHistory.filter.columnFilters.resource = resource;
-            this.loadItems();
+            this.loadItemsDebounced();
         },
         // Load items is what brings back the rows from server
         loadItems() {

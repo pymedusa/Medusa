@@ -123,6 +123,7 @@
 </template>
 <script>
 
+import debounce from 'lodash/debounce';
 import { mapActions, mapGetters, mapState } from 'vuex';
 import { VueGoodTable } from 'vue-good-table';
 import { humanFileSize } from '../utils/core';
@@ -232,18 +233,17 @@ export default {
     },
     mounted() {
         const { getCookie, getSortFromCookie } = this;
+        this.loadItems();
 
         // Get per-page pagination from cookie
         const perPage = getCookie('pagination-perpage-history');
-        const filter = getCookie('filter');
         if (perPage) {
             this.remoteHistory.perPage = perPage;
         }
-        if (filter) {
-            this.remoteHistory.filter = JSON.parse(filter);
-        }
-
         this.remoteHistory.sort = getSortFromCookie();
+    },
+    created() {
+        this.loadItemsDebounced = debounce(this.loadItems, 500);
     },
     computed: {
         ...mapState({
@@ -297,23 +297,23 @@ export default {
             console.log('page change called');
             console.log(params);
             this.remoteHistory.page = params.currentPage;
-            this.loadItems();
+            this.loadItemsDebounced();
         },
         onPerPageChange(params) {
             console.log('per page change called');
             this.setCookie('pagination-perpage-history', params.currentPerPage);
             this.remoteHistory.perPage = params.currentPerPage;
-            this.loadItems();
+            this.loadItemsDebounced();
         },
         onSortChange(params) {
             this.setCookie('sort', JSON.stringify(params));
             this.remoteHistory.sort = params.filter(item => item.type !== 'none');
-            this.loadItems();
+            this.loadItemsDebounced();
         },
         onColumnFilter(params) {
             this.setCookie('filter', JSON.stringify(params));
             this.remoteHistory.filter = params;
-            this.loadItems();
+            this.loadItemsDebounced();
         },
         updateClientStatusFilter(event) {
             const combinedStatus = event.reduce((result, item) => {
@@ -324,14 +324,14 @@ export default {
             }
             this.selectedClientStatusValue = event;
             this.remoteHistory.filter.columnFilters.clientStatus = combinedStatus;
-            this.loadItems();
+            this.loadItemsDebounced();
         },
         updateQualityFilter(quality) {
             if (!this.remoteHistory.filter) {
                 this.remoteHistory.filter = { columnFilters: {} };
             }
             this.remoteHistory.filter.columnFilters.quality = quality.currentTarget.value;
-            this.loadItems();
+            this.loadItemsDebounced();
         },
         /**
          * Update the size filter.
@@ -343,7 +343,7 @@ export default {
             // Check for valid syntax, and pass along.
             size = size.currentTarget.value;
             if (!size) {
-                this.loadItems();
+                this.loadItemsDebounced();
                 return;
             }
 
@@ -354,7 +354,7 @@ export default {
                     this.remoteHistory.filter = { columnFilters: {} };
                 }
                 this.remoteHistory.filter.columnFilters.size = size;
-                this.loadItems();
+                this.loadItemsDebounced();
             }
         },
         updateResource(resource) {
@@ -364,7 +364,7 @@ export default {
             }
 
             this.remoteHistory.filter.columnFilters.resource = resource;
-            this.loadItems();
+            this.loadItemsDebounced();
         },
         // Load items is what brings back the rows from server
         loadItems() {
