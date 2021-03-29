@@ -1,7 +1,7 @@
 import Vue from 'vue';
 
 import { api } from '../../api';
-import { ADD_HISTORY, ADD_SHOW_HISTORY, ADD_SHOW_EPISODE_HISTORY } from '../mutation-types';
+import { ADD_HISTORY, ADD_HISTORY_ROW, ADD_SHOW_HISTORY, ADD_SHOW_EPISODE_HISTORY } from '../mutation-types';
 import { episodeToSlug } from '../../utils/core';
 
 const state = {
@@ -34,6 +34,13 @@ const state = {
 };
 
 const mutations = {
+    [ADD_HISTORY_ROW](state, { history, compact }) {
+        // Only evaluate compact once.
+        const historyKey = compact ? 'remoteCompact' : 'remote';
+
+        // Update state, add one item at the top.
+        state[historyKey].rows.unshift(history);
+    },
     [ADD_HISTORY](state, { history, compact }) {
         // Only evaluate compact once.
         const historyKey = compact ? 'remoteCompact' : 'remote';
@@ -214,43 +221,14 @@ const actions = {
                 });
         });
     },
-    checkHistory({ state, rootState, dispatch }) {
-        // Retrieve the last history item from api.
-        // Compare the states last history or historyCompact row.
-        // and get new history data.
-        const { layout } = rootState.config;
-        const params = { last: true };
-        const historyParams = {};
-
-        if (layout.historyLimit) {
-            historyParams.total = layout.historyLimit;
-        }
-
-        let remote = null;
-        const compact = layout.history === 'compact';
-        if (compact) {
-            remote = state.remoteCompact;
-        } else {
-            remote = state.remote;
-        }
-
-        if (!remote.rows || remote.rows.length === 0) {
-            dispatch('getHistory', { compact });
-        }
-
-        api.get('/history', { params })
-            .then(response => {
-                if (response.data && response.data.date > remote.rows[0].actionDate) {
-                    dispatch('getHistory', { compact });
-                }
-            })
-            .catch(() => {
-                console.info('No history record found');
-            });
-    },
-    updateHistory({ dispatch }) {
+    updateHistory({ rootState, commit }, data) {
         // Update store's search queue item. (provided through websocket)
-        dispatch('checkHistory', {});
+        const compact = rootState.config.layout.history === 'compact';
+        // We can't live update the compact layout, as it requires to aggregate the data.
+        if (compact) {
+            return;
+        }
+        commit(ADD_HISTORY_ROW, { history: data });
     }
 };
 
