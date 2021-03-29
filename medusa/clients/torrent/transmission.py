@@ -133,20 +133,22 @@ class TransmissionAPI(GenericClient):
         if result.ratio:
             ratio = result.ratio
 
-        mode = 0
-        if ratio:
-            if float(ratio) == -1:
-                ratio = 0
-                mode = 2
-            elif float(ratio) >= 0:
-                ratio = float(ratio)
-                mode = 1  # Stop seeding at seedRatioLimit
-
         arguments = {
-            'ids': [result.hash],
-            'seedRatioLimit': ratio,
-            'seedRatioMode': mode,
+            'ids': [result.hash]
         }
+
+        if ratio:
+            # Use transmission global
+            if float(ratio) == -1:
+                arguments['seedRatioMode'] = 0
+            # Unlimited
+            elif float(ratio) == 0:
+                arguments['seedRatioLimit'] = 0
+                arguments['seedRatioMode'] = 2
+            # Set ratio
+            elif float(ratio) >= 0:
+                arguments['seedRatioLimit'] = float(ratio)
+                arguments['seedRatioMode'] = 1
 
         post_data = json.dumps({
             'arguments': arguments,
