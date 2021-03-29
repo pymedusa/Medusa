@@ -36,8 +36,8 @@ def create_history_item(history_row, compact=False):
     :param compact: A boolean indicating if this is used for a compact layout.
     :returns: A dict with history information.
     """
-    from medusa.providers.generic_provider import GenericProvider
     from medusa.providers import get_provider_class
+    from medusa.providers.generic_provider import GenericProvider
     from medusa.tv.series import Series, SeriesIdentifier
 
     provider = {}
