@@ -23,7 +23,7 @@ from os.path import basename
 
 from medusa import db, ws
 from medusa.common import DOWNLOADED, FAILED, SNATCHED, SUBTITLED, statusStrings
-from medusa.schedulers.download_handler import ClientStatusEnum as ClientStatus
+from medusa.schedulers.download_handler import ClientStatus, ClientStatusEnum
 from medusa.show.history import History
 
 
@@ -161,7 +161,7 @@ def _log_history_item(action, ep_obj, resource=None, provider=None, proper_tags=
                 info_hash = search_result.hash.lower()
             elif search_result.result_type == 'nzb':
                 info_hash = search_result.nzb_id
-            client_status = ClientStatus.SNATCHED.value
+            client_status = ClientStatusEnum.SNATCHED.value
 
     main_db_con = db.DBConnection()
     sql_result = main_db_con.action(
