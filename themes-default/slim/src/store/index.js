@@ -67,6 +67,8 @@ const passToStoreHandler = function(eventName, event, next) {
             this.store.dispatch('updateQueueItem', data);
         } else if (event === 'QueueItemShowAdd') {
             this.store.dispatch('updateShowQueueItem', data);
+        } else if (event === 'historyUpdate') {
+            this.store.dispatch('updateHistory', data);
         } else {
             window.displayNotification('info', event, data);
         }

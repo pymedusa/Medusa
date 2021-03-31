@@ -255,7 +255,7 @@
                                                 v-show="clients.torrents.method === 'transmission'"
                                                 v-model="clients.torrents.rpcUrl"
                                                 :label="clientsConfig.torrent[clients.torrents.method].shortTitle || `${clientsConfig.torrent[clients.torrents.method].title} RPC URL`"
-                                                id="rpcurl_title" validate-uri
+                                                id="rpcurl_title"
                                             >
                                                 <p id="rpcurl_desc_">The path without leading and trailing slashes (e.g. transmission)</p>
                                             </config-textbox>

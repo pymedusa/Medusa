@@ -133,7 +133,8 @@ class Show(object):
             indexer_id = indexer_name_to_id(indexer_id)
 
         try:
-            series_id = int(series_id)
+            if indexer_id != 10:  # 10 = EXTERNAL_IMDB
+                series_id = int(series_id)
         except ValueError:
             log.warning('Invalid series id: {series_id}', {'series_id': series_id})
 

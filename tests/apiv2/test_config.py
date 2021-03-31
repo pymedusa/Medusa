@@ -237,6 +237,7 @@ async def test_config_get_consts(http_client, create_url, auth_headers):
             'presets': [{'value': 65518, 'key': 'any', 'name': 'ANY'}],
         },
         'statuses': [{'value': 3, 'key': 'wanted', 'name': 'Wanted'}],
+        'clientStatuses': [{'name': 'Snatched', 'value': 0}],
     })
 
     url = create_url('/config/consts')

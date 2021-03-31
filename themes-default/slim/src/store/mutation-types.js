@@ -25,6 +25,7 @@ const SET_MAX_DOWNLOAD_COUNT = 'SET_MAX_DOWNLOAD_COUNT';
 const ADD_SHOW_SCENE_EXCEPTION = '📺 Add a scene exception';
 const REMOVE_SHOW_SCENE_EXCEPTION = '📺 Remove a scene exception';
 const ADD_HISTORY = '📺 History added to store';
+const ADD_HISTORY_ROW = '📺 History row added to store';
 const ADD_SHOW_HISTORY = '📺 Show specific History added to store';
 const ADD_SHOW_EPISODE_HISTORY = "📺 Show's episode specific History added to store";
 const ADD_PROVIDERS = '⛽ Provider list added to store';
@@ -52,6 +53,7 @@ export {
     ADD_CONFIG,
     UPDATE_LAYOUT_LOCAL,
     ADD_HISTORY,
+    ADD_HISTORY_ROW,
     ADD_SHOW,
     ADD_SHOW_CONFIG,
     ADD_SHOWS,

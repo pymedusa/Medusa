@@ -23,7 +23,6 @@
                                 :groupOptions="{
                                     enabled: true,
                                     mode: 'span',
-                                    customChildObject: 'episodes'
                                 }"
                                 :pagination-options="{
                                     enabled: layout.show.pagination.enable,
@@ -71,7 +70,7 @@
 
                     <template slot="table-footer-row" slot-scope="{headerRow}">
                         <tr colspan="9999" :id="`season-${headerRow.season}-footer`" class="seasoncols border-bottom shadow">
-                            <th class="col-footer" colspan="15" align="left">Season contains {{headerRow.episodes.length}} episodes with total filesize: {{addFileSize(headerRow)}}</th>
+                            <th class="col-footer" colspan="15" align="left">Season contains {{headerRow.children.length}} episodes with total filesize: {{addFileSize(headerRow)}}</th>
                         </tr>
                         <tr class="spacer" />
                     </template>
@@ -98,11 +97,11 @@
                         </span>
 
                         <span v-else-if="props.column.label == 'Scene Abs. #'" class="align-center">
-                            <input type="text" :placeholder="props.formattedRow[props.column.field]" size="6" maxlength="8"
-                                   class="sceneAbsolute form-control input-scene addQTip" :data-for-absolute="props.formattedRow[props.column.field] || 0"
-                                   :id="`sceneSeasonXEpisode_${show.id[show.indexer]}${props.formattedRow[props.column.field]}`"
+                            <input type="text" :placeholder="`${props.formattedRow[props.column.field]}`" size="6" maxlength="8"
+                                   class="sceneAbsolute form-control input-scene addQTip" :data-for-absolute="props.row.absoluteNumber"
+                                   :id="`sceneAbsolute_${show.id[show.indexer]}_${props.row.absoluteNumber}`"
                                    title="Change this value if scene absolute numbering differs from the indexer absolute numbering. Generally used for anime shows."
-                                   :value="props.formattedRow[props.column.field] ? props.formattedRow[props.column.field] : ''"
+                                   :value="props.formattedRow[props.column.field]"
                                    style="padding: 0; text-align: center; max-width: 60px;">
                         </span>
 
@@ -202,7 +201,8 @@
                                 }"
                                 :sort-options="{
                                     enabled: true,
-                                    initialSortBy: getSortBy('episode', 'desc')
+                                    multipleColumns: true,
+                                    initialSortBy: getSortBy('episode', 'desc') // From mixin manage-cookie.js
                                 }"
                                 :selectOptions="{
                                     enabled: true,
@@ -233,7 +233,7 @@
 
                     <template slot="table-footer-row" slot-scope="{headerRow}">
                         <tr colspan="9999" :id="`season-${headerRow.season}-footer`" class="seasoncols border-bottom shadow">
-                            <th class="col-footer" colspan="15" align="left">Season contains {{headerRow.episodes.length}} episodes with total filesize: {{addFileSize(headerRow)}}</th>
+                            <th class="col-footer" colspan="15" align="left">Season contains {{headerRow.children.length}} episodes with total filesize: {{addFileSize(headerRow)}}</th>
                         </tr>
                         <tr class="spacer" />
                     </template>
@@ -260,11 +260,11 @@
                         </span>
 
                         <span v-else-if="props.column.label == 'Scene Abs. #'" class="align-center">
-                            <input type="text" :placeholder="props.formattedRow[props.column.field]" size="6" maxlength="8"
-                                   class="sceneAbsolute form-control input-scene addQTip" :data-for-absolute="props.formattedRow[props.column.field] || 0"
-                                   :id="`sceneSeasonXEpisode_${show.id[show.indexer]}${props.formattedRow[props.column.field]}`"
+                            <input type="text" :placeholder="`${props.formattedRow[props.column.field]}`" size="6" maxlength="8"
+                                   class="sceneAbsolute form-control input-scene addQTip" :data-for-absolute="props.row.absoluteNumber"
+                                   :id="`sceneAbsolute_${show.id[show.indexer]}_${props.row.absoluteNumber}`"
                                    title="Change this value if scene absolute numbering differs from the indexer absolute numbering. Generally used for anime shows."
-                                   :value="props.formattedRow[props.column.field] ? props.formattedRow[props.column.field] : ''"
+                                   :value="props.formattedRow[props.column.field]"
                                    style="padding: 0; text-align: center; max-width: 60px;">
                         </span>
 
@@ -496,15 +496,6 @@ export default {
                     return getSceneAbsoluteNumbering(row);
                 },
                 type: 'number',
-                /**
-                 * Vue-good-table sort overwrite function.
-                 * @param {Object} x - row1 value for column.
-                 * @param {object} y - row2 value for column.
-                 * @returns {Boolean} - if we want to display this row before the next
-                 */
-                sortFn(x, y) {
-                    return (x < y ? -1 : (x > y ? 1 : 0));
-                },
                 hidden: getCookie('Scene Abs. #')
             }, {
                 label: 'Title',
@@ -797,7 +788,7 @@ export default {
          * @returns {string} - Human readable file size.
          */
         addFileSize(headerRow) {
-            return humanFileSize(headerRow.episodes.reduce((a, b) => a + (b.file.size || 0), 0));
+            return humanFileSize(headerRow.children.reduce((a, b) => a + (b.file.size || 0), 0));
         },
         searchSubtitle(event, episode, lang) {
             const { showSlug, getEpisodes, show, subtitleSearchComponents } = this;
@@ -850,8 +841,7 @@ export default {
             }
 
             $.getJSON('home/setSceneNumbering', {
-                indexername: show.indexer,
-                seriesid: show.id[show.indexer],
+                showslug: show.id.slug,
                 forSeason,
                 forEpisode,
                 sceneSeason,
@@ -889,8 +879,7 @@ export default {
             }
 
             $.getJSON('home/setSceneNumbering', {
-                indexername: show.indexer,
-                seriesid: show.id[show.indexer],
+                showslug: show.id.slug,
                 forAbsolute,
                 sceneAbsolute
             }, data => {
@@ -934,19 +923,19 @@ export default {
          * @returns {Boolean} - true if one of the seasons episodes has a status 'unaired'.
          */
         anyEpisodeNotUnaired(season) {
-            return season.episodes.filter(ep => ep.status !== 'Unaired').length > 0;
+            return season.children.filter(ep => ep.status !== 'Unaired').length > 0;
         },
         episodesInverse(season) {
             const { invertTable } = this;
-            if (!season.episodes) {
+            if (!season.children) {
                 return [];
             }
 
             if (invertTable) {
-                return season.episodes.slice().reverse();
+                return season.children.slice().reverse();
             }
 
-            return season.episodes;
+            return season.children;
         },
         /**
          * Check if the season/episode combination exists in the scene numbering.
@@ -991,12 +980,22 @@ export default {
                 return episode.scene.absoluteNumber;
             }
 
-            if (Object.keys(sceneAbsoluteNumbering).length > 0 && sceneAbsoluteNumbering[episode.absoluteNumber]) {
-                return sceneAbsoluteNumbering[episode.absoluteNumber].sceneAbsolute;
+            if (Object.keys(sceneAbsoluteNumbering).length > 0) {
+                const mapped = sceneAbsoluteNumbering.filter(x => {
+                    return x.absolute === episode.absoluteNumber;
+                });
+                if (mapped.length !== 0) {
+                    return mapped[0].sceneAbsolute;
+                }
             }
 
-            if (Object.keys(xemAbsoluteNumbering).length > 0 && xemAbsoluteNumbering[episode.absoluteNumber]) {
-                return xemAbsoluteNumbering[episode.absoluteNumber].sceneAbsolute;
+            if (Object.keys(xemAbsoluteNumbering).length > 0) {
+                const mapped = xemAbsoluteNumbering.filter(x => {
+                    return x.absolute === episode.absoluteNumber;
+                });
+                if (mapped.length !== 0) {
+                    return mapped[0].sceneAbsolute;
+                }
             }
 
             return episode.scene.absoluteNumber;
@@ -1083,7 +1082,7 @@ export default {
             return (episode.season !== 0 && config.subtitles.enabled && show.config.subtitlesEnabled && !['Snatched', 'Snatched (Proper)', 'Snatched (Best)', 'Downloaded'].includes(episode.status));
         },
         totalSeasonEpisodeSize(season) {
-            return season.episodes.filter(x => x.file && x.file.size > 0).reduce((a, b) => a + b.file.size, 0);
+            return season.children.filter(x => x.file && x.file.size > 0).reduce((a, b) => a + b.file.size, 0);
         },
         getSeasonExceptions(season) {
             const { show } = this;
