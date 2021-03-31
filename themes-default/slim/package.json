@@ -26,7 +26,7 @@
     ]
   },
   "resolutions": {
-    "**/jquery": "3.5.1",
+    "**/jquery": "3.6.0",
     "**/date-fns": "2.18.0",
     "jest/**/@babel/core": "7.13.10"
   },
@@ -40,7 +40,7 @@
     "date-fns": "2.18.0",
     "is-visible": "2.2.0",
     "javascript-time-ago": "2.3.4",
-    "jquery": "3.5.1",
+    "jquery": "3.6.0",
     "lodash": "4.17.21",
     "lozad": "1.16.0",
     "tablesorter": "2.31.3",
