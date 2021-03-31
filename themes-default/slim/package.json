@@ -72,7 +72,7 @@
     "@babel/plugin-transform-runtime": "7.13.10",
     "@babel/preset-env": "7.13.12",
     "@babel/runtime": "7.13.10",
-    "@mapbox/stylelint-processor-arbitrary-tags": "0.3.0",
+    "@mapbox/stylelint-processor-arbitrary-tags": "0.4.0",
     "@sharkykh/eslint-plugin-vue-extra": "0.1.1",
     "@testing-library/jest-dom": "5.11.9",
     "@vue/test-utils": "1.1.3",

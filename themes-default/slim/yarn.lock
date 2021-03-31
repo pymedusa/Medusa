@@ -1156,10 +1156,10 @@
     "@types/yargs" "^15.0.0"
     chalk "^4.0.0"
 
-"@mapbox/stylelint-processor-arbitrary-tags@0.3.0":
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/@mapbox/stylelint-processor-arbitrary-tags/-/stylelint-processor-arbitrary-tags-0.3.0.tgz#1d098ef1378fb1da38b156c3cb1e4d778e144825"
-  integrity sha512-DweuA3J3yzIOPNuldidk7qsKGdI1VjIw0yf3S7lNq+1nim8XvJ6LPvtk31CqHLnKs+hEx0j74TWVJBo6D6/5FA==
+"@mapbox/stylelint-processor-arbitrary-tags@0.4.0":
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/@mapbox/stylelint-processor-arbitrary-tags/-/stylelint-processor-arbitrary-tags-0.4.0.tgz#da45723d8ce75140d08efe3bddd284eba3a3fe53"
+  integrity sha512-HTyW4vLgCVrAvmbV4TtXVpkrg3gkRR4WMEveNOo4OBxzA5wl5xQdxe0Iow8B5FRI3ose5yFLA8jvbfU8ZayPJQ==
   dependencies:
     execall "^1.0.0"
     split-lines "^1.1.0"
