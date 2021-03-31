@@ -1348,17 +1348,6 @@ tablesorter.css
     border-left: none;
 }
 
-.displayShow >>> .vgt-table th {
-    /* color: rgb(255, 255, 255); */
-    text-align: center;
-    text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
-    background-color: rgb(51, 51, 51);
-    border-collapse: collapse;
-    font-weight: normal;
-    white-space: nowrap;
-    color: rgb(255, 255, 255);
-}
-
 .displayShow >>> .vgt-table span.break-word {
     word-wrap: break-word;
 }
@@ -1375,14 +1364,35 @@ tablesorter.css
     background-position-y: bottom;
 }
 
-.displayShow >>> .vgt-table thead th.sorting {
-    background-repeat: no-repeat;
-}
-
-.displayShow >>> .vgt-table thead th {
+.displayShow >>> .vgt-table th {
+    text-align: center;
+    text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
+    background-color: rgb(51, 51, 51);
+    white-space: nowrap;
+    color: rgb(255, 255, 255);
+    border-collapse: collapse;
+    font-weight: normal;
+    position: relative;
     background-image: none;
     padding: 4px;
     cursor: default;
+}
+
+.displayShow >>> .vgt-table thead th.sortable button {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background: transparent;
+    border: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.displayShow >>> .vgt-table thead th.sorting {
+    background-repeat: no-repeat;
 }
 
 .displayShow >>> .vgt-table input.tablesorter-filter {
@@ -1593,5 +1603,4 @@ td.col-footer {
     line-height: 1.42857143;
     white-space: nowrap;
 }
-
 </style>
