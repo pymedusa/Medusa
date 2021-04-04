@@ -44,6 +44,7 @@
             </div>
         </div>
 
+        <component :is="'ScheduleList'" v-bind="$props" />
 
     </div>
 </template>
@@ -52,12 +53,13 @@
 import { mapActions, mapState } from 'vuex';
 import { AppLink } from './helpers';
 import { ToggleButton } from 'vue-js-toggle-button';
-
+import ScheduleList from './schedule/list.vue';
 
 export default {
     name: 'schedule',
     components: {
         AppLink,
+        ScheduleList,
         ToggleButton
     },
     data() {
@@ -91,8 +93,10 @@ export default {
             const { layout } = this;
             return layout.themeName === 'dark' ? '-dark' : '';
         },
+        /**
+         * Wrapper to get access to window.location in template.
+         */
         location() {
-            debugger;
             return location;
         }
     },
@@ -164,10 +168,15 @@ export default {
                 $.tablesorter.columnSelector.attachTo($('#showListTable'), '#popover-target');
             });
         });
+
+        // Vue stuff
+        const { getSchedule } = this;
+        getSchedule();
     },
     methods: {
         ...mapActions({
-            setLayout: 'setLayout'
+            setLayout: 'setLayout',
+            getSchedule: 'getSchedule'
         })
     }
 };
