@@ -1,12 +1,64 @@
+<template>
+    <div id="schedule-template">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="key pull-left">
+                    <template v-if="scheduleLayout !== 'calendar'">
+                        <b>Key:</b>
+                        <span class="listing-key listing-overdue">Missed</span>
+                        <span class="listing-key listing-current">Today</span>
+                        <span class="listing-key listing-default">Soon</span>
+                        <span class="listing-key listing-toofar">Later</span>
+                    </template>
+                    <app-link class="btn-medusa btn-inline forceBacklog" :href="`webcal://${location.hostname}:${location.port}/calendar`">
+                    <i class="icon-calendar icon-white"></i>Subscribe</app-link>
+                </div>
+
+                <div class="pull-right">
+                    <div class="show-option">
+                        <span>Show Paused:
+                            <toggle-button :width="45" :height="22" v-model="layout.comingEps.displayPaused" sync @input="layout.comingEps.displayPaused = $event" />
+                        </span>
+                    </div>
+                    <div class="show-option">
+                        <span>Layout:
+                            <select v-model="scheduleLayout" name="layout" class="form-control form-control-inline input-sm show-layout">
+                                <option :value="option.value" v-for="option in layoutOptions" :key="option.value">{{ option.text }}</option>
+                            </select>
+                        </span>
+                    </div>
+                    <div v-if="scheduleLayout === 'list'" class="show-option">
+                        <button id="popover" type="button" class="btn-medusa btn-inline">Select Columns <b class="caret"></b></button>
+                    </div>
+                    <!-- Calendar sorting is always by date -->
+                    <div v-else-if="scheduleLayout !== 'calendar'" class="show-option">
+                        <span>Sort By:
+                            <select v-model="layout.comingEps.sort" name="sort" class="form-control form-control-inline input-sm" onchange="location = 'schedule/setScheduleSort/?sort=' + this.options[this.selectedIndex].value;">
+                                <option value="date">Date</option>
+                                <option value="network">Network</option>
+                                <option value="show">Show</option>
+                            </select>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</template>
+
 <script>
 import { mapActions, mapState } from 'vuex';
 import { AppLink } from './helpers';
+import { ToggleButton } from 'vue-js-toggle-button';
+
 
 export default {
     name: 'schedule',
-    template: '#schedule-template',
     components: {
-        AppLink
+        AppLink,
+        ToggleButton
     },
     data() {
         return {
@@ -20,17 +72,14 @@ export default {
     },
     computed: {
         ...mapState({
-            config: state => state.config.general,
+            general: state => state.config.general,
             // Renamed because of the computed property 'layout'.
-            stateLayout: state => state.config.layout
+            layout: state => state.config.layout
         }),
-        header() {
-            return this.$route.meta.header;
-        },
         scheduleLayout: {
             get() {
-                const { stateLayout } = this;
-                return stateLayout.schedule;
+                const { layout } = this;
+                return layout.schedule;
             },
             set(layout) {
                 const { setLayout } = this;
@@ -39,16 +88,20 @@ export default {
             }
         },
         themeSpinner() {
-            const { stateLayout } = this;
-            return stateLayout.themeName === 'dark' ? '-dark' : '';
+            const { layout } = this;
+            return layout.themeName === 'dark' ? '-dark' : '';
+        },
+        location() {
+            debugger;
+            return location;
         }
     },
     mounted() {
         // $store.dispatch('getShows');
 
         this.$root.$once('loaded', () => {
-            const { scheduleLayout, stateLayout, themeSpinner } = this;
-            const { comingEps } = stateLayout;
+            const { scheduleLayout, layout, themeSpinner } = this;
+            const { comingEps } = layout;
             if (scheduleLayout === 'list') {
                 const sortCodes = {
                     date: 0,
