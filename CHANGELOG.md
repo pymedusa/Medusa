@@ -5,6 +5,7 @@
 #### Improvements
 
 #### Fixes
+- Fix issue with sending torrents to Synology downloadstation ([9401](https://github.com/pymedusa/Medusa/pull/9401))
 
 -----
 
