@@ -69,6 +69,6 @@ def cloudflare(session, resp, **kwargs):
         return cf_resp
     else:
         if (CloudScraper.is_New_IUAM_Challenge(resp) or CloudScraper.is_Firewall_Blocked(resp)
-                or CloudScraper.is_New_Captcha_Challenge(resp) or CloudScraper.is_BFM_Challenge(resp)):
+                or CloudScraper.is_New_Captcha_Challenge(resp)):
             log.warning("Cloudflare captcha challenge v2 or firewall detected, it can't be bypassed.")
         return resp
