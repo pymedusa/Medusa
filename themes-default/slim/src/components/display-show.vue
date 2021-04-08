@@ -457,7 +457,6 @@ export default {
         };
         return {
             invertTable: true,
-            isMobile: false,
             subtitleSearchComponents: [],
             columns: [{
                 label: 'NFO',
