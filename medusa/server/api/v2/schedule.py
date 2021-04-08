@@ -36,18 +36,24 @@ class ScheduleHandler(BaseRequestHandler):
                 data[section].append({
                     'airdate': coming_episode['airdate'],
                     'airs': coming_episode['airs'],
-                    'ep_name': coming_episode['name'],
-                    'ep_plot': coming_episode['description'],
+                    'epName': coming_episode['name'],
+                    'epPlot': coming_episode['description'],
+                    'season': coming_episode['season'],
                     'episode': coming_episode['episode'],
+                    'episodeSlug': 's{season:02d}e{episode:02d}'.format(
+                        season=coming_episode['season'], episode=coming_episode['episode']
+                    ),
                     'indexerid': coming_episode['indexer_id'],
                     'network': coming_episode['network'],
                     'paused': coming_episode['paused'],
-                    'quality': coming_episode['quality'],
-                    'season': coming_episode['season'],
-                    'show_name': coming_episode['show_name'],
-                    'show_status': coming_episode['status'],
+                    'quality': coming_episode['qualityValue'],
+                    'showSlug': coming_episode['series_slug'],
+                    'showName': coming_episode['show_name'],
+                    'showStatus': coming_episode['status'],
                     'tvdbid': coming_episode['tvdbid'],
-                    'weekday': coming_episode['weekday']
+                    'weekday': coming_episode['weekday'],
+                    'runtime': coming_episode['runtime'],
+                    'externals': coming_episode['externals']
                 })
 
         return self._ok(data)
