@@ -1609,12 +1609,9 @@ class Series(TV):
         imdb_api = Imdb()
 
         if not self.imdb_id:
-            self.imdb_id = helpers.title_to_imdb(self.name, self.start_year, imdb_api)
-
-            if not self.imdb_id:
-                log.info(u"{id}: Not loading show info from IMDb, because we don't know its ID.",
-                         {'id': self.series_id})
-                return
+            log.info(u"{id}: Not loading show info from IMDb, because we don't know its ID.",
+                    {'id': self.series_id})
+            return
 
         # Make sure we only use the first ID
         self.imdb_id = self.imdb_id.split(',')[0]
