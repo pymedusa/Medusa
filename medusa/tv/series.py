@@ -1610,7 +1610,7 @@ class Series(TV):
 
         if not self.imdb_id:
             log.info(u"{id}: Not loading show info from IMDb, because we don't know its ID.",
-                    {'id': self.series_id})
+                     {'id': self.series_id})
             return
 
         # Make sure we only use the first ID
