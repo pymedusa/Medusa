@@ -182,5 +182,5 @@ class TvRoadProvider(TorrentProvider):
 
         return True
 
-    
+
 provider = TvRoadProvider()
