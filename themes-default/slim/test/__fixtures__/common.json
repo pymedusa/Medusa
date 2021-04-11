@@ -1285,8 +1285,6 @@
                     "minBacklogFrequency": 720,
                     "dailySearchFrequency": 10,
                     "minDailySearchFrequency": 10,
-                    "downloadHandlerFrequency": 60,
-                    "mindownloadHandlerFrequency": 30,
                     "usenetRetention": 500,
                     "trackersList": [
                         "udp://tracker.coppersurfer.tk:6969/announce",
