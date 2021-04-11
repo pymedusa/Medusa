@@ -66,7 +66,7 @@ class TvRoadProvider(TorrentProvider):
         search_params = {
             'type': 'tout',  # search for all words in string not any word
             'endroit': 'nomtorrent',  # Search in torrent name
-            'tl': 'oui', # torrents in seed
+            'tl': 'oui',  # torrents in seed
         }
 
         for mode in search_strings:
@@ -176,10 +176,11 @@ class TvRoadProvider(TorrentProvider):
             log.warning('Unable to connect to provider')
             return False
 
-        if "Désolé, Les Identifiants Saisis Sont Incorrects." in response.text:
+        if 'Désolé, Les Identifiants Saisis Sont Incorrects.' in response.text:
             log.warning('Invalid username or password. Check your settings')
             return False
 
         return True
 
+    
 provider = TvRoadProvider()
