@@ -77,7 +77,6 @@ class TvRoadProvider(TorrentProvider):
                 if mode != 'RSS':
                     log.debug('Search string: {search}',
                               {'search': search_string})
-#                    search_params['order'] = 'Seeders'
 
                 search_params['recherche'] = re.sub(r'[()]', '', search_string)
                 response = self.session.get(self.urls['search'], params=search_params)
@@ -125,7 +124,6 @@ class TvRoadProvider(TorrentProvider):
                     title = cells[labels.index('Nom')].get_text(strip=True)
                     download = cells[labels.index('DL')].find('a')['href']
                     download_url = download
-                    print(download_url)
                     if not all([title, download_url]):
                         continue
 
@@ -174,16 +172,14 @@ class TvRoadProvider(TorrentProvider):
 
         response = self.session.post(self.urls['login'], data=login_params)
 
-        if not response: # can't check response.text as POST request only return text when fail
+        if not response or response.text:
             log.warning('Unable to connect to provider')
             return False
 
-        if response.text:
-            if "Désolé, Les Identifiants Saisis Sont Incorrects." in response.text:
-                log.warning('Invalid username or password. Check your settings')
-                return False
+        if "Désolé, Les Identifiants Saisis Sont Incorrects." in response.text:
+            log.warning('Invalid username or password. Check your settings')
+            return False
 
         return True
-
 
 provider = TvRoadProvider()
