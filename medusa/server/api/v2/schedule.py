@@ -43,7 +43,8 @@ class ScheduleHandler(BaseRequestHandler):
                     'episodeSlug': 's{season:02d}e{episode:02d}'.format(
                         season=coming_episode['season'], episode=coming_episode['episode']
                     ),
-                    'indexerid': coming_episode['indexer_id'],
+                    'indexerId': coming_episode['indexer_id'],
+                    'indexer': coming_episode['indexer'],
                     'network': coming_episode['network'],
                     'paused': coming_episode['paused'],
                     'quality': coming_episode['qualityValue'],

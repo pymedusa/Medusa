@@ -1,9 +1,12 @@
 <template>
     <div class="horizontal-scroll vgt-table-styling">
-        <vue-good-table v-if="getScheduleFlattened.length > 0"
+        <vue-good-table v-if="filteredSchedule.length > 0"
                         :columns="columns"
-                        :rows="getScheduleFlattened"
+                        :rows="filteredSchedule"
                         :class="{fanartOpacity: layout.fanartBackgroundOpacity}"
+                        :column-filter-options="{
+                            enabled: true
+                        }"
                         styleClass="vgt-table condensed"
         >
             <template slot="table-row" slot-scope="props">
@@ -15,7 +18,7 @@
                     {{props.row.airdate ? fuzzyParseDateTime(props.row.airdate) : ''}}
                 </span>
 
-                <span v-if="props.column.label == 'Show'" class="align-center show-title">
+                <span v-else-if="props.column.label == 'Show'" class="align-center show-title">
                     <app-link :href="`home/displayShow?showslug=${props.row.showSlug}`">{{ props.row.showName }}</app-link>
                 </span>
 
@@ -54,7 +57,7 @@
                     </app-link>
                 </span>
 
-                <span v-else-if="props.column.label === 'Search'">
+                <span v-else-if="props.column.label === 'Search'" class="align-center">
                         <search searchType="backlog" :showSlug="props.row.showSlug" :episode="{
                                 episode: props.row.episode, season: props.row.season, slug: props.row.episodeSlug
                         }" />
@@ -89,12 +92,6 @@ export default {
     mixins: [
         manageCookieMixin('schedule'),
     ],
-    // props: {
-    //     layout: {
-    //         validator: val => val === null || typeof val === 'string',
-    //         required: true
-    //     }
-    // },
     data() {
         const { getCookie } = this;
 
@@ -148,12 +145,17 @@ export default {
     computed: {
         ...mapState({
             layout: state => state.config.layout,
-            consts: state => state.config.consts
+            consts: state => state.config.consts,
+            displayPaused: state => state.config.layout.comingEps.displayPaused
         }),
         ...mapGetters([
             'getScheduleFlattened',
             'fuzzyParseDateTime'
-        ])
+        ]),
+        filteredSchedule() {
+            const { displayPaused, getScheduleFlattened } = this;
+            return getScheduleFlattened.filter(item => !Boolean(item.paused) || displayPaused);
+        }
     }
 };
 </script>

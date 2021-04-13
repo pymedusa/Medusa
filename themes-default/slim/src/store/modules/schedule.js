@@ -23,7 +23,11 @@ const getters = {
     getScheduleFlattened: state => {
         const flattendedSchedule = [];
         for (const category of state.categories) {
-            flattendedSchedule.push(...state[category]); 
+            const episodes = state[category];
+            for (const episode of episodes) {
+                episode.category = category;
+            }
+            flattendedSchedule.push(...episodes); 
         }
         return flattendedSchedule;
     }
@@ -47,7 +51,8 @@ const actions = {
      */
     async getSchedule({ commit, state }) {
         const params = {
-            category: state.categories
+            category: state.categories,
+            paused: true
         };
         const response = await api.get(`/schedule`, { params });
         if (response.data) {

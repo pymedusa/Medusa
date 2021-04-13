@@ -84,6 +84,14 @@ const getters = {
             return undefined;
         }
         return indexers[indexerName].id;
+    },
+    /**
+     * Return the indexers showUrl.
+     * @param {number} indexerId - Indexer id.
+     * @returns {string|undefined} Indexers show url or undefined if not found.
+     */
+    getIndexer: state => indexerId => {
+        return Object.values(state.indexers).find(indexer => indexer.id === indexerId);
     }
 };
 

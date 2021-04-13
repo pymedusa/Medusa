@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="search-wrapper">
         <img v-if="searchType === 'backlog'" class="epForcedSearch" :id="`${showSlug}x${episode.season}x${episode.episode}`"
                 :name="`${showSlug}x${episode.season}x${episode.episode}`"
                 :ref="`search-${episode.slug}`" src="images/search16.png" height="16"
@@ -171,5 +171,11 @@ export default {
 .mobile-select {
     width: 110px;
     font-size: x-small;
+}
+.search-wrapper {
+    float: left;
+}
+.search-wrapper > img {
+    cursor: pointer;
 }
 </style>

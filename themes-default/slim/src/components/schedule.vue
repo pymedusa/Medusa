@@ -17,7 +17,7 @@
                 <div class="pull-right">
                     <div class="show-option">
                         <span>Show Paused:
-                            <toggle-button :width="45" :height="22" v-model="layout.comingEps.displayPaused" sync @input="layout.comingEps.displayPaused = $event" />
+                            <toggle-button :width="45" :height="22" v-model="layout.comingEps.displayPaused" sync />
                         </span>
                     </div>
                     <div class="show-option">
@@ -27,13 +27,10 @@
                             </select>
                         </span>
                     </div>
-                    <div v-if="scheduleLayout === 'list'" class="show-option">
-                        <button id="popover" type="button" class="btn-medusa btn-inline">Select Columns <b class="caret"></b></button>
-                    </div>
                     <!-- Calendar sorting is always by date -->
-                    <div v-else-if="scheduleLayout !== 'calendar'" class="show-option">
+                    <div v-if="!['calendar', 'list'].includes(scheduleLayout)" class="show-option">
                         <span>Sort By:
-                            <select v-model="layout.comingEps.sort" name="sort" class="form-control form-control-inline input-sm" onchange="location = 'schedule/setScheduleSort/?sort=' + this.options[this.selectedIndex].value;">
+                            <select v-model="layout.comingEps.sort" name="sort" class="form-control form-control-inline input-sm">
                                 <option value="date">Date</option>
                                 <option value="network">Network</option>
                                 <option value="show">Show</option>
@@ -44,7 +41,7 @@
             </div>
         </div>
 
-        <component :is="'ScheduleList'" v-bind="$props" />
+        <component :is="scheduleLayout" v-bind="$props" />
 
     </div>
 </template>
@@ -53,13 +50,15 @@
 import { mapActions, mapState } from 'vuex';
 import { AppLink } from './helpers';
 import { ToggleButton } from 'vue-js-toggle-button';
-import ScheduleList from './schedule/list.vue';
+import List from './schedule/list.vue';
+import Banner from './schedule/banner.vue';
 
 export default {
     name: 'schedule',
     components: {
         AppLink,
-        ScheduleList,
+        Banner,
+        List,
         ToggleButton
     },
     data() {
