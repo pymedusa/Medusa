@@ -52,12 +52,14 @@ import { AppLink } from './helpers';
 import { ToggleButton } from 'vue-js-toggle-button';
 import List from './schedule/list.vue';
 import Banner from './schedule/banner.vue';
+import Poster from './schedule/poster.vue';
 
 export default {
     name: 'schedule',
     components: {
         AppLink,
         Banner,
+        Poster,
         List,
         ToggleButton
     },
