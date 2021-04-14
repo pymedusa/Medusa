@@ -188,7 +188,8 @@ class AnimeBytes(TorrentProvider):
                         if multi_ep_match:
                             multi_ep_start = multi_ep_match.group(1)
                             multi_ep_end = multi_ep_match.group(2)
-                        release_type = MULTI_EP
+                            release_type = MULTI_EP
+                        release_type = OTHER
                     elif title_info.startswith('Episode'):
                         episode_match = re.match('^Episode.([0-9]+)', title_info)
                         if episode_match:

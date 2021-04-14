@@ -1,6 +1,6 @@
 # coding=utf-8
 
-"""Provider code for IPTorrents."""
+"""Provider code for TvRoad."""
 
 from __future__ import unicode_literals
 
@@ -9,40 +9,45 @@ import re
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
-from medusa.helper.common import convert_size
+from medusa.helper.common import (
+    convert_size,
+    try_int,
+)
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
-
-import validators
+from requests.utils import dict_from_cookiejar
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
-class IPTorrentsProvider(TorrentProvider):
-    """IPTorrents Torrent provider."""
+class TvRoadProvider(TorrentProvider):
+    """TvRoad Torrent provider."""
 
     def __init__(self):
         """Initialize the class."""
-        super(IPTorrentsProvider, self).__init__('IPTorrents')
+        super(TvRoadProvider, self).__init__('TvRoad')
+
+        # Credentials
+        self.username = None
+        self.password = None
 
         # URLs
-        self.url = 'https://iptorrents.me'
+        self.url = 'https://tvroad.info'
+        self.urls = {
+            'login': urljoin(self.url, 'TvRoad/Connexion'),
+            'search': urljoin(self.url, 'TvRoad/Torrents/Recherche'),
+        }
 
         # Proper Strings
+        self.proper_strings = ['PROPER', 'REPACK', 'RERIP']
 
         # Miscellaneous Options
-        self.freeleech = False
-        self.enable_cookies = True
-        self.cookies = ''
-        self.required_cookies = ('uid', 'pass')
-        self.categories = '73=&60='
-        self.custom_url = None
 
         # Cache
-        self.cache = tv.Cache(self)
+        self.cache = tv.Cache(self, min_time=30)
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
@@ -54,22 +59,14 @@ class IPTorrentsProvider(TorrentProvider):
         :returns: A list of search results (structure)
         """
         results = []
-
-        if self.custom_url:
-            if not validators.url(self.custom_url):
-                log.warning('Invalid custom url: {0}', self.custom_url)
-                return results
-            self.url = self.custom_url
-
         if not self.login():
             return results
 
-        freeleech = '&free=on' if self.freeleech else ''
-
-        self.urls = {
-            'base_url': self.url,
-            'login': urljoin(self.url, 'torrents'),
-            'search': urljoin(self.url, 't?%s%s&q=%s&qf=#torrents'),
+        # Search Params
+        search_params = {
+            'type': 'tout',  # search for all words in string not any word
+            'endroit': 'nomtorrent',  # Search in torrent name
+            'tl': 'oui',  # torrents in seed
         }
 
         for mode in search_strings:
@@ -81,18 +78,13 @@ class IPTorrentsProvider(TorrentProvider):
                     log.debug('Search string: {search}',
                               {'search': search_string})
 
-                # URL with 50 tv-show results, or max 150 if adjusted in IPTorrents profile
-                search_url = self.urls['search'] % (self.categories, freeleech, search_string)
-                search_url += ';o=seeders' if mode != 'RSS' else ''
-
-                response = self.session.get(search_url)
+                search_params['recherche'] = re.sub(r'[()]', '', search_string)
+                response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue
 
-                data = re.sub(r'(?im)<button.+?<[/]button>', '', response.text, 0)
-
-                results += self.parse(data, mode)
+                results += self.parse(response.text, mode)
 
         return results
 
@@ -105,28 +97,38 @@ class IPTorrentsProvider(TorrentProvider):
 
         :return: A list of items found
         """
+        # Units
+        units = ['O', 'KO', 'MO', 'GO', 'TO', 'PO']
+
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
-            torrent_table = html.find('table', id='torrents')
-            torrents = torrent_table('tr') if torrent_table else []
+            torrent_table = html.find(class_='sortable')
+            torrent_rows = torrent_table('tr') if torrent_table else []
 
             # Continue only if at least one release is found
-            if len(torrents) < 2 or html.find(text='No Torrents Found!'):
+            if len(torrent_rows) < 2:
                 log.debug('Data returned from provider does not contain any torrents')
                 return items
 
+            # Catégorie, Release, Date, DL, Size, C, S, L
+            labels = [label.get_text(strip=True) for label in torrent_rows[0]('th')]
+
             # Skip column headers
-            for row in torrents[1:]:
+            for row in torrent_rows[1:]:
+                cells = row('td')
+                if len(cells) < len(labels):
+                    continue
+
                 try:
-                    table_data = row('td')
-                    title = table_data[1].find('a').text
-                    download_url = self.urls['base_url'] + table_data[3].find('a')['href']
+                    title = cells[labels.index('Nom')].get_text(strip=True)
+                    download = cells[labels.index('DL')].find('a')['href']
+                    download_url = download
                     if not all([title, download_url]):
                         continue
 
-                    seeders = int(table_data[7].text)
-                    leechers = int(table_data[8].text)
+                    seeders = try_int(cells[labels.index('S')].get_text(strip=True))
+                    leechers = try_int(cells[labels.index('L')].get_text(strip=True))
 
                     # Filter unseeded torrent
                     if seeders < self.minseed:
@@ -136,11 +138,9 @@ class IPTorrentsProvider(TorrentProvider):
                                       title, seeders)
                         continue
 
-                    torrent_size = table_data[5].text
-                    size = convert_size(torrent_size) or -1
-
-                    pubdate_raw = table_data[1].find('div').get_text().split('|')[-1].strip()
-                    pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
+                    size_index = labels.index('Size') if 'Size' in labels else labels.index('Taille')
+                    torrent_size = cells[size_index].get_text()
+                    size = convert_size(torrent_size, units=units) or -1
 
                     item = {
                         'title': title,
@@ -148,7 +148,7 @@ class IPTorrentsProvider(TorrentProvider):
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': pubdate,
+                        'pubdate': None,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',
@@ -162,7 +162,25 @@ class IPTorrentsProvider(TorrentProvider):
 
     def login(self):
         """Login method used for logging in before doing search and torrent downloads."""
-        return self.cookie_login('sign in')
+        if any(dict_from_cookiejar(self.session.cookies).values()):
+            return True
+
+        login_params = {
+            'username': self.username,
+            'password': self.password,
+        }
+
+        response = self.session.post(self.urls['login'], data=login_params)
+
+        if not response or response.text:
+            log.warning('Unable to connect to provider')
+            return False
+
+        if 'Désolé, Les Identifiants Saisis Sont Incorrects.' in response.text:
+            log.warning('Invalid username or password. Check your settings')
+            return False
+
+        return True
 
 
-provider = IPTorrentsProvider()
+provider = TvRoadProvider()

@@ -3,8 +3,13 @@
 #### New Features
 
 #### Improvements
+- Vueify history page. ([9201](https://github.com/pymedusa/Medusa/pull/9201))
+- Nebulance: Prevent duplicate results for provider. ([9333](https://github.com/pymedusa/Medusa/pull/9333))
 
 #### Fixes
+- AnimeBytes: Fix exception when processing multi-ep BD specials. ([9396](https://github.com/pymedusa/Medusa/pull/9396))
+- Fix issue with sending torrents to Synology downloadstation. ([9401](https://github.com/pymedusa/Medusa/pull/9401))
+- Fix a number of issues with trakt sync. ([9319](https://github.com/pymedusa/Medusa/pull/9319))
 
 -----
 

@@ -30,7 +30,7 @@ class TorrentDayProvider(TorrentProvider):
         super(TorrentDayProvider, self).__init__('TorrentDay')
 
         # URLs
-        self.url = 'https://www.torrentday.com'
+        self.url = 'https://torrentday.it'
         self.custom_url = None
 
         # Proper Strings
