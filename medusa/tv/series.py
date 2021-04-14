@@ -631,8 +631,9 @@ class Series(TV):
     @property
     def genres(self):
         """Return genres list."""
-        return list({i for i in (self.genre or '').split('|') if i} |
-                    {i for i in self.imdb_genres.replace('Sci-Fi', 'Science-Fiction').split('|') if i})
+        return list({
+            i for i in (self.genre or '').split('|') if i}
+            | {i for i in self.imdb_genres.replace('Sci-Fi', 'Science-Fiction').split('|') if i})
 
     @property
     def airs(self):
@@ -2194,8 +2195,13 @@ class Series(TV):
             control_value_dict = {'indexer': self.indexer, 'indexer_id': self.series_id}
             new_value_dict = self.imdb_info
 
-            main_db_con = db.DBConnection()
             main_db_con.upsert('imdb_info', new_value_dict, control_value_dict)
+        else:
+            # In case we don't have an imdb id, we need to clean (or try) any old info from the db.
+            main_db_con.action(
+                'DELETE from imdb_info WHERE indexer = ? AND indexer_id = ?',
+                [self.indexer, self.series_id]
+            )
 
         self.reset_dirty()
 
@@ -2238,7 +2244,7 @@ class Series(TV):
         data = {}
         data['id'] = {}
         data['id'][self.indexer_name] = self.series_id
-        data['id']['imdb'] = text_type(self.imdb_id)
+        data['id']['imdb'] = self.imdb_id
         data['id']['slug'] = self.identifier.slug
         data['id']['trakt'] = self.externals.get('trakt_id')
         data['title'] = self.title  # Name plus (optional) year.
