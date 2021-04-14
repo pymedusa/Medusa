@@ -57,7 +57,8 @@
 
                     <!-- Downloaded history items do not get a provider stored -->
                     <span v-if="props.row.statusName === 'Downloaded'">
-                        {{props.row.releaseGroup !== -1 ? props.row.releaseGroup : ''}}
+                        <span v-if="props.row.releaseGroup && props.row.releaseGroup !== '-1'" class="release-group"><i>{{props.row.releaseGroup}}</i></span>
+                        <span v-else style="cursor: help;" v-tooltip.right="'Release group unknown'"><i>Unknown</i></span>
                     </span>
 
                     <!-- Different path for subtitle providers -->
