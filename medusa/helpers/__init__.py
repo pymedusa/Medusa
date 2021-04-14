@@ -1716,17 +1716,10 @@ def title_to_imdb(title, start_year, imdb_api=None):
     start_year = str(start_year)
     title = title.lower()
 
-    matched_by_year = []
     for candidate in titles:
-        # This check should be made more reliable
-        if candidate['title'].lower() == title:
-            if candidate['year'] == start_year:
-                return candidate['imdb_id']
-            matched_by_year.append(candidate['imdb_id'])
-
-    # Return the most relevant result (can be erroneous)
-    if matched_by_year:
-        return matched_by_year[0]
+        # Only return matches by year
+        if candidate['title'].lower() == title and candidate['year'] == start_year:
+            return candidate['imdb_id']
 
 
 def get_title_without_year(title, title_year):
