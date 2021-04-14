@@ -61,7 +61,7 @@
                 <span v-else-if="props.column.label === 'Downloaded'" class="align-center">
                     <div v-for="row in sortDate(props.row.rows)" :key="row.id">
                         <template v-if="['Downloaded', 'Archived'].includes(row.statusName)">
-                            <span v-if="row.releaseGroup" class="release-group" v-tooltip.right="getFileBaseName(row.resource)"><i>{{row.releaseGroup}}</i></span>
+                            <span v-if="row.releaseGroup && row.releaseGroup !== '-1'" class="release-group" v-tooltip.right="getFileBaseName(row.resource)"><i>{{row.releaseGroup}}</i></span>
                             <span v-else style="cursor: help;" v-tooltip.right="getFileBaseName(row.resource)"><i>Unknown</i></span>
                         </template>
                     </div>
