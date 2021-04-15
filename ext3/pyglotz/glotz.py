@@ -48,8 +48,11 @@ class Show(object):
         self.year = data.get('Series').get('year')
         self.episodes = list()
         if data.get('Episode'):
-            for ep in data.get('Episode'):
-                self.episodes.append(Episode(ep))
+            if isinstance(data.get('Episode'), list):
+                for ep in data.get('Episode'):
+                    self.episodes.append(Episode(ep))
+            else:
+                self.episodes.append(Episode(data.get('Episode')))
         self.aliases = list()
 
     def __repr__(self):
