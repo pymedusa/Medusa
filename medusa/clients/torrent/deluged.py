@@ -18,6 +18,7 @@ from medusa import app
 from medusa.clients.torrent.deluge import read_torrent_status
 from medusa.clients.torrent.generic import GenericClient
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.schedulers.download_handler import ClientStatus
 
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -28,7 +29,7 @@ class DelugeDAPI(GenericClient):
     """Deluge Daemon API class."""
 
     def __init__(self, host=None, username=None, password=None):
-        """Constructor.
+        """Deluge deamon Constructor.
 
         :param host:
         :type host: string
@@ -139,7 +140,13 @@ class DelugeDAPI(GenericClient):
         return self.drpc.set_torrent_path(result.hash, path) if path else True
 
     def _set_torrent_pause(self, result):
-        return self.drpc.pause_torrent(result.hash) if app.TORRENT_PAUSED else True
+        if app.TORRENT_PAUSED:
+            return self.pause_torrent(result.hash)
+        return True
+
+    def pause_torrent(self, info_hash):
+        """Pause torrent."""
+        return self.drpc.pause_torrent(info_hash)
 
     def test_authentication(self):
         """Test connection using authentication.
@@ -166,17 +173,106 @@ class DelugeDAPI(GenericClient):
             log.warning('Error while fetching torrents status')
             return
 
-        torrent_data = self.drpc.get_all_torrents()
+        torrent_data = self.drpc._torrent_properties()
         info_hash_to_remove = read_torrent_status(torrent_data)
         for info_hash in info_hash_to_remove:
             self.remove_torrent(info_hash)
+
+    def torrent_completed(self, info_hash):
+        """Check if the torrent has finished downloading."""
+        get_status = self.get_status(info_hash)
+        if not get_status:
+            return False
+
+        return str(get_status) == 'Completed'
+
+    def torrent_seeded(self, info_hash):
+        """Check if the torrent has finished seeding."""
+        get_status = self.get_status(info_hash)
+        if not get_status:
+            return False
+
+        return str(get_status) == 'Seeded'
+
+    def torrent_ratio(self, info_hash):
+        """Get torrent ratio."""
+        get_status = self.get_status(info_hash)
+        if not get_status:
+            return False
+
+        return get_status.ratio
+
+    def torrent_progress(self, info_hash):
+        """Get torrent download progress."""
+        get_status = self.get_status(info_hash)
+        if not get_status:
+            return False
+
+        return get_status.progress
+
+    def get_status(self, info_hash):
+        """
+        Return torrent status.
+
+        Example result:
+        ```
+            'hash': '35b814f1438054158b0bd07d305dc0edeb20b704'
+            'is_finished': False
+            'ratio': 0.0
+            'paused': False
+            'name': '[FFA] Haikyuu!!: To the Top 2nd Season - 11 [1080p][HEVC][Multiple Subtitle].mkv'
+            'stop_ratio': 2.0
+            'state': 'Downloading'
+            'progress': 23.362499237060547
+            'files': ({'index': 0, 'offset': 0, 'path': '[FFA] Haikyuu!!: To ...title].mkv', 'size': 362955692},)
+            'is_seed': False
+        ```
+        """
+        if not self.connect():
+            log.warning('Error while fetching torrents status')
+            return
+
+        torrent = self.drpc._torrent_properties(info_hash)
+        if not torrent:
+            return False
+
+        client_status = ClientStatus()
+        if torrent['state'] == 'Downloading':
+            client_status.add_status_string('Downloading')
+
+        if torrent['paused']:
+            client_status.add_status_string('Paused')
+
+        # TODO: Find out which state the torrent get's when it fails.
+        # if torrent[1] & 16:
+        #     client_status.add_status_string('Failed')
+
+        if torrent['is_finished']:
+            client_status.add_status_string('Completed')
+
+        if torrent['ratio'] >= torrent['stop_ratio']:
+            client_status.add_status_string('Seeded')
+
+        # Store ratio
+        client_status.ratio = torrent['ratio']
+
+        # Store progress
+        client_status.progress = int(torrent['progress'])
+
+        # Store destination
+        client_status.destination = torrent['download_location']
+
+        # Store resource
+        client_status.resource = torrent['name']
+
+        return client_status
 
 
 class DelugeRPC(object):
     """Deluge RPC client class."""
 
     def __init__(self, host='localhost', port=58846, username=None, password=None):
-        """Constructor.
+        """Deluge RPC Constructor.
 
         :param host:
         :type host: str
@@ -195,8 +291,16 @@ class DelugeRPC(object):
 
     def connect(self):
         """Connect to the host using synchronousdeluge API."""
-        self.client = DelugeRPCClient(self.host, self.port, self.username, self.password, decode_utf8=True)
-        self.client.connect()
+        try:
+            self.client = DelugeRPCClient(self.host, self.port, self.username, self.password, decode_utf8=True)
+            self.client.connect()
+        except Exception as error:
+            log.warning('Error while trying to connect to deluge daemon. Error: {error}', {'error': error})
+            raise
+
+    def disconnect(self):
+        """Disconnect RPC client."""
+        self.client.disconnect()
 
     def test(self):
         """Test connection.
@@ -206,29 +310,11 @@ class DelugeRPC(object):
         """
         try:
             self.connect()
+            # self._torrent_properties('e4d44da9e71a8f4411bc3fd82aad7689cfa0f07f')
         except Exception:
             return False
         else:
             return True
-
-    def remove_torrent_data(self, torrent_id):
-        """Remove torrent from client using given info_hash.
-
-        :param torrent_id:
-        :type torrent_id: str
-        :return:
-        :rtype: str or bool
-        """
-        try:
-            self.connect()
-            self.client.core.remove_torrent(torrent_id, True)
-        except Exception:
-            return False
-        else:
-            return True
-        finally:
-            if self.client:
-                self.disconnect()
 
     def move_storage(self, torrent_id, location):
         """Move torrent to new location and return torrent id/hash.
@@ -266,10 +352,7 @@ class DelugeRPC(object):
         try:
             self.connect()
             torrent_id = self.client.core.add_torrent_magnet(torrent, options)
-            if not torrent_id:
-                torrent_id = self._check_torrent(info_hash)
         except Exception:
-            raise
             return False
         else:
             return torrent_id
@@ -294,8 +377,6 @@ class DelugeRPC(object):
         try:
             self.connect()
             torrent_id = self.client.core.add_torrent_file(filename, b64encode(torrent), options)
-            if not torrent_id:
-                torrent_id = self._check_torrent(info_hash)
         except Exception:
             return False
         else:
@@ -391,6 +472,44 @@ class DelugeRPC(object):
             if self.client:
                 self.disconnect()
 
+    def remove_torrent_data(self, torrent_id):
+        """Remove torrent from client and disk using given info_hash.
+
+        :param torrent_id:
+        :type torrent_id: str
+        :return:
+        :rtype: str or bool
+        """
+        try:
+            self.connect()
+            self.client.core.remove_torrent(torrent_id, True)
+        except Exception:
+            return False
+        else:
+            return True
+        finally:
+            if self.client:
+                self.disconnect()
+
+    def remove_torrent(self, torrent_id):
+        """Remove torrent from client using given info_hash.
+
+        :param torrent_id:
+        :type torrent_id: str
+        :return:
+        :rtype: str or bool
+        """
+        try:
+            self.connect()
+            self.client.core.remove_torrent(torrent_id, False)
+        except Exception:
+            return False
+        else:
+            return True
+        finally:
+            if self.client:
+                self.disconnect()
+
     def pause_torrent(self, torrent_ids):
         """Pause torrent.
 
@@ -410,32 +529,19 @@ class DelugeRPC(object):
             if self.client:
                 self.disconnect()
 
-    def disconnect(self):
-        """Disconnect RPC client."""
-        self.client.disconnect()
-
-    def _check_torrent(self, info_hash):
-        torrent_id = self.client.core.get_torrent_status(info_hash, {})
-        if torrent_id.get('hash'):
-            log.debug('DelugeD: Torrent already exists in Deluge')
-            return info_hash
-        return False
-
-    def get_all_torrents(self):
-        """Get all torrents in client.
-
-        :return:
-        :rtype: bool
-        """
+    def _torrent_properties(self, info_hash):
+        """Get torrent properties."""
         try:
             self.connect()
-            torrents_data = self.client.core.get_torrents_status({}, ('name', 'hash', 'progress', 'state',
-                                                                      'ratio', 'stop_ratio', 'is_seed', 'is_finished',
-                                                                      'paused', 'files'))
+            log.debug('Checking DelugeD torrent {hash} status.', {'hash': info_hash})
+            torrent_data = self.client.core.get_torrent_status(
+                info_hash, ('name', 'hash', 'progress', 'state', 'ratio', 'stop_ratio',
+                            'is_seed', 'is_finished', 'paused', 'files', 'download_location'))
         except Exception:
-            return False
+            log.warning('Error while fetching torrent {hash} status.', {'hash': info_hash})
+            return
         else:
-            return torrents_data
+            return torrent_data
         finally:
             if self.client:
                 self.disconnect()

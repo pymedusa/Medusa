@@ -3,6 +3,44 @@
 #### New Features
 
 #### Improvements
+- Vueify history page. ([9201](https://github.com/pymedusa/Medusa/pull/9201))
+- Nebulance: Prevent duplicate results for provider. ([9333](https://github.com/pymedusa/Medusa/pull/9333))
+
+#### Fixes
+- AnimeBytes: Fix exception when processing multi-ep BD specials. ([9396](https://github.com/pymedusa/Medusa/pull/9396))
+- Fix issue with sending torrents to Synology downloadstation. ([9401](https://github.com/pymedusa/Medusa/pull/9401))
+- Fix a number of issues with trakt sync. ([9319](https://github.com/pymedusa/Medusa/pull/9319))
+
+-----
+
+## 0.5.10 (01-03-2021)
+
+#### Fixes
+- Don't save removed episode location as dot ([9284](https://github.com/pymedusa/Medusa/pull/9284))
+
+-----
+
+## 0.5.9 (28-02-2021)
+
+#### New Features
+- Added new postprocessing method download handler. Check ([wiki](https://github.com/pymedusa/Medusa/wiki/Post-Processing#download-handler)) for more info. ([8485](https://github.com/pymedusa/Medusa/pull/8485))
+- Add async postprocessing to manual postprocessing ([8485](https://github.com/pymedusa/Medusa/pull/8485))
+- Add postprocessing to apiv2. sabToNzb uses apiv2 when fork=medusa-apiv2. ([9212](https://github.com/pymedusa/Medusa/pull/9212))
+
+#### Fixes
+- Fix setStatus in manage/episodeStatuses page. ([9228](https://github.com/pymedusa/Medusa/pull/9228))
+- Fix error when using manage/backlogOverview page. ([9208](https://github.com/pymedusa/Medusa/pull/9208))
+
+-----
+
+## 0.5.8 (11-02-2021)
+
+#### Fixes
+- Fix guessit exception when episode initiator is int ([9198](https://github.com/pymedusa/Medusa/pull/9198))
+
+-----
+
+## 0.5.7 (11-02-2021)
 
 #### Fixes
  - Fix qbittorrent labels not always set ([9165](https://github.com/pymedusa/Medusa/pull/9165))

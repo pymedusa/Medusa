@@ -97,14 +97,12 @@ class GenericClient(object):
             return False
 
         if self.response.status_code == 401:
-            log.error('{name}: Invalid Username or Password,'
-                      ' check your config', {'name': self.name})
+            log.error('{name}: Invalid Username or Password, check your config', {'name': self.name})
             return False
 
         code_description = http_code_description(self.response.status_code)
         if code_description is not None:
-            log.info('{name}: {code}',
-                     {'name': self.name, 'code': code_description})
+            log.info('{name}: {code}', {'name': self.name, 'code': code_description})
             return False
 
         log.debug('{name}: Response to {method} request is {response}', {
@@ -332,6 +330,26 @@ class GenericClient(object):
         """
         raise NotImplementedError
 
+    def remove_torrent_data(self, info_hash):
+        """Remove torrent from client and from disk.
+
+        :param info_hash:
+        :type info_hash: string
+        :return
+        :rtype: bool
+        """
+        raise NotImplementedError
+
+    def pause_torrent(self, info_hash):
+        """Pause torrent.
+
+        :param info_hash:
+        :type info_hash: string
+        :return
+        :rtype: bool
+        """
+        raise NotImplementedError
+
     def remove_ratio_reached(self):
         """Remove all Medusa torrents that ratio was reached.
 
@@ -340,4 +358,8 @@ class GenericClient(object):
         If is a RARed torrent then we don't have a media file so we check if that hash is from an
         episode that has a `Downloaded` status
         """
+        raise NotImplementedError
+
+    def torrent_completed(self, info_hash):
+        """Check if a specific torrent has finished seeding."""
         raise NotImplementedError

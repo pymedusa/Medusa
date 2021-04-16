@@ -14,7 +14,8 @@ const state = {
         anySets: [],
         presets: []
     },
-    statuses: []
+    statuses: [],
+    clientStatuses: []
 };
 
 const mutations = {

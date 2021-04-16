@@ -9,19 +9,11 @@ import logging
 import os
 import re
 from base64 import b64encode
-from builtins import str
-from datetime import datetime, timedelta
 
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
-from medusa.helpers import (
-    get_extension,
-    is_already_processed_media,
-    is_info_hash_in_history,
-    is_info_hash_processed,
-    is_media_file,
-)
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.schedulers.download_handler import ClientStatus
 
 import requests.exceptions
 from requests.compat import urljoin
@@ -35,7 +27,7 @@ class TransmissionAPI(GenericClient):
     """Transmission API class."""
 
     def __init__(self, host=None, username=None, password=None):
-        """Constructor.
+        """Transmission constructor.
 
         :param host:
         :type host: string
@@ -60,6 +52,8 @@ class TransmissionAPI(GenericClient):
 
         post_data = json.dumps({
             'method': 'session-get',
+            'user': self.username,
+            'password': self.password
         })
 
         try:
@@ -74,7 +68,15 @@ class TransmissionAPI(GenericClient):
                         {'name': self.name, 'error': error})
             return False
 
-        self.auth = re.search(r'X-Transmission-Session-Id:\s*(\w+)', self.response.text).group(1)
+        if self.response is None:
+            return False
+
+        auth_match = re.search(r'X-Transmission-Session-Id:\s*(\w+)', self.response.text)
+
+        if not auth_match:
+            return False
+
+        self.auth = auth_match.group(1)
 
         self.session.headers.update({'x-transmission-session-id': self.auth})
 
@@ -131,20 +133,22 @@ class TransmissionAPI(GenericClient):
         if result.ratio:
             ratio = result.ratio
 
-        mode = 0
-        if ratio:
-            if float(ratio) == -1:
-                ratio = 0
-                mode = 2
-            elif float(ratio) >= 0:
-                ratio = float(ratio)
-                mode = 1  # Stop seeding at seedRatioLimit
-
         arguments = {
-            'ids': [result.hash],
-            'seedRatioLimit': ratio,
-            'seedRatioMode': mode,
+            'ids': [result.hash]
         }
+
+        if ratio:
+            # Use transmission global
+            if float(ratio) == -1:
+                arguments['seedRatioMode'] = 0
+            # Unlimited
+            elif float(ratio) == 0:
+                arguments['seedRatioLimit'] = 0
+                arguments['seedRatioMode'] = 2
+            # Set ratio
+            elif float(ratio) >= 0:
+                arguments['seedRatioLimit'] = float(ratio)
+                arguments['seedRatioMode'] = 1
 
         post_data = json.dumps({
             'arguments': arguments,
@@ -201,7 +205,23 @@ class TransmissionAPI(GenericClient):
 
         return self.check_response()
 
-    def remove_torrent(self, info_hash):
+    def _set_torrent_pause(self, result):
+        if app.TORRENT_PAUSED:
+            self.pause_torrent(result.hash)
+        return True
+
+    def pause_torrent(self, info_hash):
+        """Pause torrent."""
+        post_data = json.dumps({
+            'arguments': {'ids': [info_hash]},
+            'method': 'torrent-stop'
+        })
+
+        self._request(method='post', data=post_data)
+
+        return self.check_response()
+
+    def _remove(self, info_hash, from_disk=False):
         """Remove torrent from client using given info_hash.
 
         :param info_hash:
@@ -211,7 +231,7 @@ class TransmissionAPI(GenericClient):
         """
         arguments = {
             'ids': [info_hash],
-            'delete-local-data': 1,
+            'delete-local-data': int(from_disk),
         }
 
         post_data = json.dumps({
@@ -222,6 +242,26 @@ class TransmissionAPI(GenericClient):
         self._request(method='post', data=post_data)
 
         return self.check_response()
+
+    def remove_torrent(self, info_hash):
+        """Remove torrent from client and disk using given info_hash.
+
+        :param info_hash:
+        :type info_hash: string
+        :return
+        :rtype: bool
+        """
+        return self._remove(info_hash)
+
+    def remove_torrent_data(self, info_hash):
+        """Remove torrent from client and disk using given info_hash.
+
+        :param info_hash:
+        :type info_hash: string
+        :return
+        :rtype: bool
+        """
+        return self._remove(info_hash, from_disk=True)
 
     def move_torrent(self, info_hash):
         """Set new torrent location given info_hash.
@@ -249,145 +289,110 @@ class TransmissionAPI(GenericClient):
 
         return self.check_response()
 
-    def remove_ratio_reached(self):
-        """Remove all Medusa torrents that ratio was reached.
-
-        It loops in all hashes returned from client and check if it is in the snatch history
-        if its then it checks if we already processed media from the torrent (episode status `Downloaded`)
-        If is a RARed torrent then we don't have a media file so we check if that hash is from an
-        episode that has a `Downloaded` status
-
-        0 = Torrent is stopped
-        1 = Queued to check files
-        2 = Checking files
-        3 = Queued to download
-        4 = Downloading
-        5 = Queued to seed
-        6 = Seeding
-
-        isFinished = whether seeding finished (based on seed ratio)
-        IsStalled =  Based on Tranmission setting "Transfer is stalled when inactive for"
-        """
-        log.info('Checking Transmission torrent status.')
+    def _torrent_properties(self, info_hash):
+        """Get torrent properties."""
+        log.debug('Checking {client} torrent {hash} status.', {'client': self.name, 'hash': info_hash})
 
         return_params = {
-            'fields': ['name', 'hashString', 'percentDone', 'status',
-                       'isStalled', 'errorString', 'seedRatioLimit',
-                       'isFinished', 'uploadRatio', 'seedIdleLimit', 'files', 'activityDate']
+            'ids': info_hash,
+            'fields': ['name', 'hashString', 'percentDone', 'status', 'percentDone', 'downloadDir',
+                       'isStalled', 'errorString', 'seedRatioLimit', 'torrent-file', 'name',
+                       'isFinished', 'uploadRatio', 'seedIdleLimit', 'activityDate']
         }
 
         post_data = json.dumps({'arguments': return_params, 'method': 'torrent-get'})
 
-        if not self._request(method='post', data=post_data):
-            log.warning('Error while fetching torrents status')
+        if not self._request(method='post', data=post_data) or not self.check_response():
+            log.warning('Error while fetching torrent {hash} status.', {'hash': info_hash})
             return
 
-        try:
-            returned_data = json.loads(self.response.text)
-        except ValueError:
-            log.warning('Unexpected data received from Transmission: {resp}',
-                        {'resp': self.response.content})
+        torrent = self.response.json()['arguments']['torrents']
+        if not torrent:
+            log.debug('Could not locate torrent with {hash} status.', {'hash': info_hash})
             return
 
-        if not returned_data['result'] == 'success':
-            log.debug('Nothing in queue or error')
+        return torrent[0]
+
+    def torrent_completed(self, info_hash):
+        """Check if torrent has finished downloading."""
+        get_status = self.get_status(info_hash)
+        if not get_status:
+            return False
+
+        return str(get_status) == 'Completed'
+
+    def torrent_seeded(self, info_hash):
+        """Check if the torrent has finished seeding."""
+        get_status = self.get_status(info_hash)
+        if not get_status:
+            return False
+
+        return str(get_status) == 'Seeded'
+
+    def torrent_ratio(self, info_hash):
+        """Get torrent ratio."""
+        get_status = self.get_status(info_hash)
+        if not get_status:
+            return False
+
+        return get_status.ratio
+
+    def torrent_progress(self, info_hash):
+        """Get torrent download progress."""
+        get_status = self.get_status(info_hash)
+        if not get_status:
+            return False
+
+        return get_status.progress
+
+    def get_status(self, info_hash):
+        """
+        Return torrent status.
+
+        Status codes:
+        ```
+            0: "Stopped"
+            1: "Check waiting"
+            2: "Checking"
+            3: "Download waiting"
+            4: "Downloading"
+            5: "Seed waiting"
+            6: "Seeding"
+        ```
+        """
+        torrent = self._torrent_properties(info_hash)
+        if not torrent:
             return
 
-        found_torrents = False
-        for torrent in returned_data['arguments']['torrents']:
+        client_status = ClientStatus()
+        if torrent['status'] == 4:
+            client_status.set_status_string('Downloading')
 
-            # Check if that hash was sent by Medusa
-            if not is_info_hash_in_history(str(torrent['hashString'])):
-                continue
-            found_torrents = True
+        if torrent['status'] == 0:
+            client_status.set_status_string('Paused')
 
-            to_remove = False
-            for i in torrent['files']:
-                # Need to check only the media file or the .rar file to avoid checking all .r0* files in history
-                if not (is_media_file(i['name']) or get_extension(i['name']) == 'rar'):
-                    continue
-                # Check if media was processed
-                # OR check hash in case of RARed torrents
-                if is_already_processed_media(i['name']) or is_info_hash_processed(str(torrent['hashString'])):
-                    to_remove = True
+        # if torrent['status'] == ?:
+        #     client_status.set_status_string('Failed')
 
-            # Don't need to check status if we are not going to remove it.
-            if not to_remove:
-                log.info('Torrent not yet post-processed. Skipping: {torrent}',
-                         {'torrent': torrent['name']})
-                continue
+        if torrent['status'] == 6:
+            client_status.set_status_string('Completed')
 
-            status = 'busy'
-            error_string = torrent.get('errorString')
-            if torrent.get('isStalled') and not torrent['percentDone'] == 1:
-                status = 'stalled'
-            elif error_string and 'unregistered torrent' in error_string.lower():
-                status = 'unregistered'
-            elif torrent['status'] == 0:
-                status = 'stopped'
-                if torrent['percentDone'] == 1:
-                    # Check if torrent is stopped because of idle timeout
-                    seed_timed_out = False
-                    if torrent['activityDate'] > 0 and torrent['seedIdleLimit'] > 0:
-                        last_activity_date = datetime.fromtimestamp(torrent['activityDate'])
-                        seed_timed_out = (datetime.now() - timedelta(
-                            minutes=torrent['seedIdleLimit'])) > last_activity_date
+        if torrent['status'] == 0 and torrent['isFinished']:
+            client_status.set_status_string('Seeded')
 
-                    if torrent.get('isFinished') or seed_timed_out:
-                        status = 'completed'
-            elif torrent['status'] == 6:
-                status = 'seeding'
+        # Store ratio
+        client_status.ratio = torrent['uploadRatio'] * 1.0
 
-            if status == 'completed':
-                log.info(
-                    'Torrent completed and reached minimum'
-                    ' ratio: [{ratio:.3f}/{ratio_limit:.3f}] or'
-                    ' seed idle limit: [{seed_limit} min].'
-                    ' Removing it: [{name}]',
-                    ratio=torrent['uploadRatio'],
-                    ratio_limit=torrent['seedRatioLimit'],
-                    seed_limit=torrent['seedIdleLimit'],
-                    name=torrent['name']
-                )
-                self.remove_torrent(torrent['hashString'])
-            elif status == 'stalled':
-                log.warning('Torrent is stalled. Check it: [{name}]',
-                            name=torrent['name'])
-            elif status == 'unregistered':
-                log.warning('Torrent was unregistered from tracker.'
-                            ' Check it: [{name}]', name=torrent['name'])
-            elif status == 'seeding':
-                if float(torrent['uploadRatio']) < float(torrent['seedRatioLimit']):
-                    log.info(
-                        'Torrent did not reach minimum'
-                        ' ratio: [{ratio:.3f}/{ratio_limit:.3f}].'
-                        ' Keeping it: [{name}]',
-                        ratio=torrent['uploadRatio'],
-                        ratio_limit=torrent['seedRatioLimit'],
-                        name=torrent['name']
-                    )
-                else:
-                    log.info(
-                        'Torrent completed and reached minimum ratio but it'
-                        ' was force started again. Current'
-                        ' ratio: [{ratio:.3f}/{ratio_limit:.3f}].'
-                        ' Keeping it: [{name}]',
-                        ratio=torrent['uploadRatio'],
-                        ratio_limit=torrent['seedRatioLimit'],
-                        name=torrent['name']
-                    )
-            elif status in ('stopped', 'busy'):
-                log.info('Torrent is {status}. Keeping it: [{name}]',
-                         status=status, name=torrent['name'])
-            else:
-                log.warning(
-                    'Torrent has an unmapped status. Keeping it: [{name}].'
-                    ' Report torrent info: {info}',
-                    name=torrent['name'],
-                    info=torrent
-                )
-        if not found_torrents:
-            log.info('No torrents found that were snatched by Medusa')
+        # Store progress
+        client_status.progress = int(torrent['percentDone'] * 100)
+
+        # Store destination
+        client_status.destination = torrent['downloadDir']
+
+        # Store resource
+        client_status.resource = torrent['name']
+
+        return client_status
 
 
 api = TransmissionAPI

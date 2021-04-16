@@ -78,8 +78,6 @@ class AnimeBytes(TorrentProvider):
             'sort': 'time_added',
             'way': 'desc',
             'hentai': '2',
-            'anime[tv_series]': '1',
-            'anime[tv_special]': '1',
             'releasegroup': '',
             'epcount': '',
             'epcount2': '',
@@ -190,9 +188,16 @@ class AnimeBytes(TorrentProvider):
                         if multi_ep_match:
                             multi_ep_start = multi_ep_match.group(1)
                             multi_ep_end = multi_ep_match.group(2)
-                        release_type = MULTI_EP
+                            release_type = MULTI_EP
+                        release_type = OTHER
                     elif title_info.startswith('Episode'):
-                        episode = re.match('^Episode.([0-9]+)', title_info).group(1)
+                        episode_match = re.match('^Episode.([0-9]+)', title_info)
+                        if episode_match:
+                            episode = episode_match.group(1)
+                        else:
+                            log.warning('Could not get episode number from title_info: {title_info}',
+                                        {'title_info': title_info})
+
                         release_type = SINGLE_EP
 
                         season_match = re.match(r'.+[sS]eason.(\d+)$', group.get('SeriesName'))

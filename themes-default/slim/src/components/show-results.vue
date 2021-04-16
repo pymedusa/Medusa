@@ -1,6 +1,6 @@
 <template>
     <div class="show-results-wrapper">
-        <div class="row horizontal-scroll" :class="{ fanartBackground: layout.fanartBackground }">
+        <div class="row horizontal-scroll">
             <div class="col-md-12 top-15">
                 <div class="button-row">
                     <input class="btn-medusa manualSearchButton top-5 bottom-5" type="button"  value="Refresh Results" @click="getProviderResults">
@@ -71,7 +71,7 @@
                         </span>
                     </template>
 
-                    <div slot="emptystate">
+                    <div id="no-result" slot="emptystate">
                         No search results available
                     </div>
 
@@ -219,7 +219,7 @@ export default {
             layout: state => state.config.layout,
             search: state => state.config.search,
             providers: state => state.provider.providers,
-            queueitems: state => state.search.queueitems,
+            queueitems: state => state.queue.queueitems,
             history: state => state.history.episodeHistory
         }),
         ...mapGetters({
@@ -410,5 +410,13 @@ export default {
 };
 </script>
 <style scoped>
+.show-results-wrapper >>> tbody {
+    color: rgb(0, 0, 0);
+}
+
+#no-result {
+    color: rgb(255, 255, 255);
+}
+
 @import '../style/v-tooltip.css';
 </style>

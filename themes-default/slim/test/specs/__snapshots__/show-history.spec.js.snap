@@ -5,7 +5,7 @@ exports[`ShowHistory.test.js renders show-history component 1`] = `
   class="show-history-wrapper"
 >
   <div
-    class="row horizontal-scroll fanartBackground"
+    class="row horizontal-scroll"
   >
     <div
       class="col-md-12 top-15"

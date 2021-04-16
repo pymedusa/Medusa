@@ -967,3 +967,31 @@ class AddCustomLogs(AddShowLists):
         )
 
         self.inc_minor_version()
+
+
+class AddHistoryFDHFields(AddCustomLogs):
+    """Add columns provider_type and client_status to the history table."""
+
+    def test(self):
+        """Test if the version is at least 44.18."""
+        return self.connection.version >= (44, 18)
+
+    def execute(self):
+        utils.backup_database(self.connection.path, self.connection.version)
+
+        # provider_type flags the history record as 'torrent' or 'nzb'
+        log.info(u'Adding column provider_type to the history table')
+        if not self.hasColumn('history', 'provider_type'):
+            self.addColumn('history', 'provider_type', 'TEXT', '')
+
+        # client_status tries to keep track of the status on the nzb/torrent client.
+        log.info(u'Adding column client_status to the history table')
+        if not self.hasColumn('history', 'client_status'):
+            self.addColumn('history', 'client_status', 'INTEGER')
+
+        # part_of_batch flags single snatch results as being part of a multi-ep result.
+        log.info(u'Adding column part_of_batch to the history table')
+        if not self.hasColumn('history', 'part_of_batch'):
+            self.addColumn('history', 'part_of_batch', 'INTEGER')
+
+        self.inc_minor_version()

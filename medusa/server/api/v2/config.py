@@ -23,8 +23,13 @@ from medusa.common import IGNORED, Quality, SKIPPED, WANTED, cpu_presets
 from medusa.helpers.utils import int_default, to_camel_case
 from medusa.indexers.config import INDEXER_TVDBV2, get_indexer_config
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.queues.utils import generate_location_disk_space, generate_show_queue
+from medusa.queues.utils import (
+    generate_location_disk_space,
+    generate_postprocessing_queue,
+    generate_show_queue,
+)
 from medusa.sbdatetime import date_presets, time_presets
+from medusa.schedulers.download_handler import status_strings
 from medusa.schedulers.utils import generate_schedulers
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
@@ -245,6 +250,11 @@ class ConfigHandler(BaseRequestHandler):
         'postProcessing.naming.animeNamingType': IntegerField(app, 'NAMING_ANIME'),
         'postProcessing.naming.multiEp': IntegerField(app, 'NAMING_MULTI_EP'),
         'postProcessing.naming.stripYear': BooleanField(app, 'NAMING_STRIP_YEAR'),
+        'postProcessing.downloadHandler.enabled': BooleanField(app, 'USE_DOWNLOAD_HANDLER'),
+        'postProcessing.downloadHandler.frequency': IntegerField(app, 'DOWNLOAD_HANDLER_FREQUENCY'),
+        'postProcessing.downloadHandler.minFrequency': IntegerField(app, 'MIN_DOWNLOAD_HANDLER_FREQUENCY'),
+        'postProcessing.downloadHandler.torrentSeedRatio': FloatField(app, 'TORRENT_SEED_RATIO'),
+        'postProcessing.downloadHandler.torrentSeedAction': StringField(app, 'TORRENT_SEED_ACTION'),
 
         'search.general.randomizeProviders': BooleanField(app, 'RANDOMIZE_PROVIDERS'),
         'search.general.downloadPropers': BooleanField(app, 'DOWNLOAD_PROPERS'),
@@ -257,8 +267,6 @@ class ConfigHandler(BaseRequestHandler):
         'search.general.dailySearchFrequency': IntegerField(app, 'DAILYSEARCH_FREQUENCY'),
         'search.general.minDailySearchFrequency': IntegerField(app, 'MIN_DAILYSEARCH_FREQUENCY'),
         'search.general.removeFromClient': BooleanField(app, 'REMOVE_FROM_CLIENT'),
-        'search.general.torrentCheckerFrequency': IntegerField(app, 'TORRENT_CHECKER_FREQUENCY'),
-        'search.general.minTorrentCheckerFrequency': IntegerField(app, 'MIN_TORRENT_CHECKER_FREQUENCY'),
         'search.general.usenetRetention': IntegerField(app, 'USENET_RETENTION'),
         'search.general.trackersList': ListField(app, 'TRACKERS_LIST'),
         'search.general.allowHighPriority': BooleanField(app, 'ALLOW_HIGH_PRIORITY'),
@@ -767,6 +775,10 @@ class DataGenerator(object):
             )
         ]
 
+        section_data['clientStatuses'] = [
+            {'value': k.value, 'name': v} for k, v in status_strings.items()
+        ]
+
         # Save it for next time
         cls._generated_data_consts = section_data
 
@@ -803,9 +815,6 @@ class DataGenerator(object):
         section_data['general']['minBacklogFrequency'] = int(app.MIN_BACKLOG_FREQUENCY)
         section_data['general']['dailySearchFrequency'] = int_default(app.DAILYSEARCH_FREQUENCY, app.DEFAULT_DAILYSEARCH_FREQUENCY)
         section_data['general']['minDailySearchFrequency'] = int(app.MIN_DAILYSEARCH_FREQUENCY)
-        section_data['general']['removeFromClient'] = bool(app.REMOVE_FROM_CLIENT)
-        section_data['general']['torrentCheckerFrequency'] = int_default(app.TORRENT_CHECKER_FREQUENCY, app.DEFAULT_TORRENT_CHECKER_FREQUENCY)
-        section_data['general']['minTorrentCheckerFrequency'] = int(app.MIN_TORRENT_CHECKER_FREQUENCY)
         section_data['general']['usenetRetention'] = int_default(app.USENET_RETENTION, 500)
         section_data['general']['trackersList'] = app.TRACKERS_LIST
         section_data['general']['allowHighPriority'] = bool(app.ALLOW_HIGH_PRIORITY)
@@ -1042,6 +1051,7 @@ class DataGenerator(object):
         section_data['memoryUsage'] = helpers.memory_usage(pretty=True)
         section_data['schedulers'] = generate_schedulers()
         section_data['showQueue'] = generate_show_queue()
+        section_data['postProcessQueue'] = generate_postprocessing_queue()
         section_data['diskSpace'] = generate_location_disk_space()
 
         section_data['branch'] = app.BRANCH
@@ -1168,6 +1178,13 @@ class DataGenerator(object):
         section_data['extraScripts'] = app.EXTRA_SCRIPTS
         section_data['extraScriptsUrl'] = app.EXTRA_SCRIPTS_URL
         section_data['multiEpStrings'] = common.MULTI_EP_STRINGS
+
+        section_data['downloadHandler'] = {}
+        section_data['downloadHandler']['enabled'] = bool(app.USE_DOWNLOAD_HANDLER)
+        section_data['downloadHandler']['frequency'] = int_default(app.DOWNLOAD_HANDLER_FREQUENCY, app.DEFAULT_DOWNLOAD_HANDLER_FREQUENCY)
+        section_data['downloadHandler']['minFrequency'] = int(app.MIN_DOWNLOAD_HANDLER_FREQUENCY)
+        section_data['downloadHandler']['torrentSeedRatio'] = float(app.TORRENT_SEED_RATIO) if app.TORRENT_SEED_RATIO is not None else -1
+        section_data['downloadHandler']['torrentSeedAction'] = app.TORRENT_SEED_ACTION
 
         return section_data
 

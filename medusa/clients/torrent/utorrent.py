@@ -12,9 +12,13 @@ from collections import OrderedDict
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.schedulers.download_handler import ClientStatus
 
 from requests.compat import urljoin
 from requests.exceptions import RequestException
+
+import ttl_cache
+
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -49,7 +53,7 @@ class UTorrentAPI(GenericClient):
     """uTorrent API class."""
 
     def __init__(self, host=None, username=None, password=None):
-        """Constructor.
+        """Utorrent constructor.
 
         :param host:
         :type host: string
@@ -60,6 +64,8 @@ class UTorrentAPI(GenericClient):
         """
         super(UTorrentAPI, self).__init__('uTorrent', host, username, password)
         self.url = urljoin(self.host, 'gui/')
+        self._torrents_list = []
+        self._torrents_epoch = 0.0
 
     def _request(self, method='get', params=None, data=None, files=None, cookies=None):
         if cookies:
@@ -188,10 +194,30 @@ class UTorrentAPI(GenericClient):
         })
 
     def _set_torrent_pause(self, result):
+        return self.pause_torrent(result.hash, 'stop' if app.TORRENT_PAUSED else 'start')
+
+    def pause_torrent(self, info_hash, state='stop'):
+        """Pause torrent."""
         return self._request(params={
             #  "stop" torrent, can always be resumed!
-            'action': 'stop' if app.TORRENT_PAUSED else 'start',
-            'hash': result.hash,
+            'action': state,
+            'hash': info_hash,
+        })
+
+    def _remove(self, info_hash, from_disk=False):
+        """Remove torrent from client using given info_hash.
+
+        :param info_hash:
+        :type info_hash: string
+        :param from_disk:
+        :type from_disk:
+        :return
+        :rtype: bool
+        """
+        action = 'remove' if not from_disk else 'removedatatorrent'
+        return self._request(params={
+            'action': action,
+            'hash': info_hash,
         })
 
     def remove_torrent(self, info_hash):
@@ -202,10 +228,154 @@ class UTorrentAPI(GenericClient):
         :return
         :rtype: bool
         """
-        return self._request(params={
-            'action': 'removedatatorrent',
-            'hash': info_hash,
-        })
+        return self._remove(info_hash)
+
+    def remove_torrent_data(self, info_hash):
+        """Remove torrent from client and disk using given info_hash.
+
+        :param info_hash:
+        :type info_hash: string
+        :return
+        :rtype: bool
+        """
+        return self._remove(info_hash, from_disk=True)
+
+    @ttl_cache(60.0)
+    def _get_torrents(self):
+        """
+        Get all torrents from utorrent api.
+
+        Note! This is an expensive method. As when your looping through the history table to get a specific
+        info_hash, it will get all torrents for each info_hash. We might want to cache this one.
+        """
+        if not self.auth:
+            if not self._get_auth():
+                log.warning('{name}: Authentication Failed', {'name': self.name})
+                return False
+
+        params = {'list': 1}
+        if not self._request(params=params):
+            log.warning('Error while fetching torrents.')
+            return []
+
+        json_response = self.response.json()
+        if json_response.get('torrents'):
+            return json_response['torrents']
+        return []
+
+    def _torrent_properties(self, info_hash):
+        """Get torrent properties.
+
+        Api torrent response index.
+        array index;	field
+        0	HASH (string)
+        1	STATUS* (integer)
+        2	NAME (string)
+        3	SIZE (integer in bytes)
+        4	PERCENT PROGRESS (integer in per mils)
+        5	DOWNLOADED (integer in bytes)
+        6	UPLOADED (integer in bytes)
+        7	RATIO (integer in per mils)
+        8	UPLOAD SPEED (integer in bytes per second)
+        9	DOWNLOAD SPEED (integer in bytes per second)
+        10	ETA (integer in seconds)
+        11	LABEL (string)
+        12	PEERS CONNECTED (integer)
+        13	PEERS IN SWARM (integer)
+        14	SEEDS CONNECTED (integer)
+        15	SEEDS IN SWARM (integer)
+        16	AVAILABILITY (integer in 1/65536ths)
+        17	TORRENT QUEUE ORDER (integer)
+        18	REMAINING (integer in bytes)
+
+        """
+        log.debug('Checking {client} torrent {hash} status.', {'client': self.name, 'hash': info_hash})
+
+        torrent_list = self._get_torrents()
+        if not torrent_list:
+            log.debug('Could not get any torrent from utorrent.')
+            return
+
+        self._torrents_list = torrent_list
+
+        for torrent in self._torrents_list:
+            if torrent[0] == info_hash.upper():
+                return torrent
+
+        log.debug('Could not locate torrent with {hash} status.', {'hash': info_hash})
+
+    def torrent_completed(self, info_hash):
+        """Check if torrent has finished downloading."""
+        get_status = self.get_status(info_hash)
+        if not get_status:
+            return False
+
+        return str(get_status) == 'Completed'
+
+    def torrent_ratio(self, info_hash):
+        """Get torrent ratio."""
+        get_status = self.get_status(info_hash)
+        if not get_status:
+            return False
+
+        return get_status.ratio
+
+    def torrent_progress(self, info_hash):
+        """Get torrent download progress."""
+        get_status = self.get_status(info_hash)
+        if not get_status:
+            return False
+
+        return get_status.progress
+
+    def get_status(self, info_hash):
+        """
+        Return torrent status.
+
+        Status field returns a bitwize value.
+        1 = Started
+        2 = Checking
+        4 = Start after check
+        8 = Checked
+        16 = Error
+        32 = Paused
+        64 = Queued
+        128 = Loaded
+        """
+        torrent = self._torrent_properties(info_hash)
+        if not torrent:
+            return
+
+        client_status = ClientStatus()
+        if torrent[1] & 1:
+            client_status.set_status_string('Downloading')
+
+        if torrent[1] & 32:
+            client_status.set_status_string('Paused')
+
+        if torrent[1] & 16:
+            client_status.set_status_string('Failed')
+
+        if torrent[1] & 1 and torrent[4] == 1000:
+            client_status.set_status_string('Completed')
+
+        if torrent[1] == 152:  # Checked + Error + Loaded
+            # Probably torrent removed.
+            client_status.set_status_string('Aborted')
+
+        # Store ratio
+        client_status.ratio = torrent[7] / 1000
+
+        # Store progress
+        client_status.progress = int(torrent[4] / 10)
+
+        # Store destination
+        client_status.destination = torrent[26]
+
+        # Store resource
+        client_status.resource = torrent[2]
+
+        return client_status
 
 
 api = UTorrentAPI

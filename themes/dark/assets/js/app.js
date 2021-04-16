@@ -20,4 +20,11 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ })
 
 },
-0,[["./src/app.js","vendors","medusa-runtime","vendors~date-fns"]]]);
+/******/ __webpack_require__ => { // webpackRuntimeModules
+/******/ "use strict";
+/******/ 
+/******/ var __webpack_exec__ = (moduleId) => (__webpack_require__(__webpack_require__.s = moduleId))
+/******/ __webpack_require__.O(0, ["medusa-runtime","vendors~date-fns"], () => (__webpack_exec__("./src/app.js")));
+/******/ var __webpack_exports__ = __webpack_require__.O();
+/******/ }
+]);

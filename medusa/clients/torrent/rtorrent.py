@@ -9,6 +9,7 @@ import logging
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.schedulers.download_handler import ClientStatus
 
 from rtorrent import RTorrent
 
@@ -126,6 +127,115 @@ class RTorrentAPI(GenericClient):
                 return False, 'Error: Unable to get {name} Authentication, check your config!'.format(name=self.name)
             else:
                 return True, 'Success: Connected and Authenticated'
+
+    def pause_torrent(self, info_hash):
+        """Get torrent and pause."""
+        log.info('Pausing {client} torrent {hash} status.', {'client': self.name, 'hash': info_hash})
+        if not self._get_auth():
+            return False
+
+        torrent = self.auth.find_torrent(info_hash.upper())
+
+        if not torrent:
+            log.debug('Could not locate torrent with {hash} status.', {'hash': info_hash})
+            return
+
+        return torrent.pause()
+
+    def remove_torrent(self, info_hash):
+        """Get torrent and remove."""
+        log.info('Removing {client} torrent {hash} status.', {'client': self.name, 'hash': info_hash})
+        if not self._get_auth():
+            return False
+
+        torrent = self.auth.find_torrent(info_hash.upper())
+
+        if not torrent:
+            log.debug('Could not locate torrent with {hash} status.', {'hash': info_hash})
+            return
+
+        return torrent.erase()
+
+    def _torrent_properties(self, info_hash):
+        """Get torrent properties."""
+        log.debug('Get {client} torrent hash {hash} properties.', {'client': self.name, 'hash': info_hash})
+        if not self._get_auth():
+            return False
+
+        torrent = self.auth.find_torrent(info_hash.upper())
+
+        if not torrent:
+            log.debug('Could not locate torrent with {hash} status.', {'hash': info_hash})
+            return
+
+        return torrent
+
+    def torrent_completed(self, info_hash):
+        """Check if torrent has finished downloading."""
+        get_status = self.get_status(info_hash)
+        if not get_status:
+            return False
+
+        return str(get_status) == 'Completed'
+
+    def torrent_ratio(self, info_hash):
+        """Get torrent ratio."""
+        get_status = self.get_status(info_hash)
+        if not get_status:
+            return False
+
+        return get_status.ratio
+
+    def torrent_progress(self, info_hash):
+        """Get torrent download progress."""
+        get_status = self.get_status(info_hash)
+        if not get_status:
+            return False
+
+        return get_status.progress
+
+    def get_status(self, info_hash):
+        """
+        Return torrent status.
+
+        Status codes:
+        ```
+            complete: 'Completed download'
+            is_finished: 'Finished seeding (ratio reeched)'
+
+        ```
+        """
+        torrent = self._torrent_properties(info_hash)
+        if not torrent:
+            return
+
+        client_status = ClientStatus()
+        if torrent.started:
+            client_status.set_status_string('Downloading')
+
+        if torrent.paused:
+            client_status.set_status_string('Paused')
+
+        # # if torrent['status'] == ?:
+        # #     client_status.set_status_string('Failed')
+
+        if torrent.complete:
+            client_status.set_status_string('Completed')
+
+        # Store ratio
+        client_status.ratio = torrent.ratio
+
+        # Store progress
+        if torrent.bytes_done:
+            client_status.progress = int(torrent.completed_bytes / torrent.bytes_done * 100)
+
+        # Store destination
+        client_status.destination = torrent.directory
+
+        # Store resource
+        client_status.resource = torrent.base_filename
+
+        return client_status
 
 
 api = RTorrentAPI

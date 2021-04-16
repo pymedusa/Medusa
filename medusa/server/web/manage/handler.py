@@ -173,8 +173,7 @@ class Manage(Home, WebRoot):
                 to_change[cur_indexer_id, cur_series_id] = all_eps
 
             self.setStatus(
-                indexername=indexer_id_to_name(int(cur_indexer_id)),
-                seriesid=cur_series_id,
+                showslug=f'{indexer_id_to_name(int(cur_indexer_id))}{cur_series_id}',
                 eps='|'.join(to_change[(cur_indexer_id, cur_series_id)]),
                 status=newStatus,
                 direct=True
@@ -369,9 +368,9 @@ class Manage(Home, WebRoot):
         return t.render(releases_in_pp=app.RELEASES_IN_PP,
                         controller='manage', action='subtitleMissedPP')
 
-    def backlogShow(self, indexername, seriesid):
-        indexer_id = indexer_name_to_id(indexername)
-        series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
+    def backlogShow(self, showslug):
+        identifier = SeriesIdentifier.from_slug(showslug)
+        series_obj = Series.find_by_identifier(identifier)
 
         if series_obj:
             app.backlog_search_scheduler.action.search_backlog([series_obj])

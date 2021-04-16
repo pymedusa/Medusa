@@ -8,15 +8,18 @@ import logging
 import os
 import shutil
 import stat
+import traceback
 from builtins import object
 
-from medusa import app, db, failed_processor, helpers, notifiers, post_processor
+
+from medusa import app, db, failed_processor, helpers, notifiers, post_processor, ws
 from medusa.clients import torrent
 from medusa.common import DOWNLOADED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER
 from medusa.helper.common import is_sync_file
 from medusa.helper.exceptions import EpisodePostProcessingFailedException, FailedPostProcessingFailedException, ex
 from medusa.logger.adapters.style import CustomBraceAdapter
 from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from medusa.queues import generic_queue
 from medusa.subtitles import accept_any, accept_unknown, get_embedded_subtitles
 
 from rarfile import BadRarFile, Error, NotRarFile, RarCannotExec, RarFile
@@ -28,17 +31,149 @@ log = CustomBraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
+class PostProcessQueueItem(generic_queue.QueueItem):
+    """Post-process queue item class."""
+
+    def __init__(self, path=None, info_hash=None, resource_name=None, force=False,
+                 is_priority=False, process_method=None, delete_on=False, failed=False,
+                 proc_type='auto', ignore_subs=False):
+        """Initialize the class."""
+        generic_queue.QueueItem.__init__(self, u'Post Process')
+
+        self.success = None
+        self.started = None
+        self.path = path
+        self.info_hash = info_hash
+        self.resource_name = resource_name
+        self.force = force
+        self.is_priority = is_priority
+        self.process_method = process_method
+        self.delete_on = delete_on
+        self.failed = failed
+        self.proc_type = proc_type
+        self.ignore_subs = ignore_subs
+
+        self.to_json.update({
+            'success': self.success,
+            'config': {
+                'path': self.path,
+                'info_hash': self.info_hash,
+                'resource_name': self.resource_name,
+                'force': self.force,
+                'is_priority': self.is_priority,
+                'process_method': self.process_method,
+                'delete_on': self.delete_on,
+                'failed': self.failed,
+                'proc_type': self.proc_type,
+                'ignore_subs': self.ignore_subs,
+            }
+        })
+
+    def update_resource(self, status):
+        """
+        Update the resource in db, depending on the postprocess result.
+
+        Update the last found info_hash (in case there are duplicates).
+        """
+        main_db_con = db.DBConnection()
+        main_db_con.action(
+            'UPDATE history set client_status = ? '
+            'WHERE date = (select max(date) from history where info_hash = ?)',
+            [status.status, self.info_hash]
+        )
+        log.info('Updated history with resource path: {path} and resource: {resource} with new status {status}', {
+            'path': self.path,
+            'resource': self.resource_name,
+            'status': status
+        })
+
+    def update_history(self, process_results):
+        """Update main.history table with process results."""
+        from medusa.schedulers.download_handler import ClientStatus
+        status = ClientStatus()
+
+        # Postpone the process, and setting the client_status.
+        if not process_results.postpone_any:
+            # Resource postprocessed
+            status.add_status_string('Postprocessed')
+
+            # If succeeded store Postprocessed + Completed. (384)
+            # If failed store Postprocessed + Failed. (272)
+            if process_results.result:
+                status.add_status_string('Completed')
+                self.success = True
+            else:
+                status.add_status_string('Failed')
+                self.success = False
+            self.update_resource(status)
+        else:
+            log.info('Postponed PP for: {path} and resource: {resource} keeping existing status', {
+                'path': self.path,
+                'resource': self.resource_name
+            })
+
+    def run(self):
+        """Run postprocess queueitem thread."""
+        generic_queue.QueueItem.run(self)
+        self.started = True
+
+        try:
+            log.info('Beginning postprocessing for path {path}', {'path': self.path})
+
+            # Push an update to any open Web UIs through the WebSocket
+            ws.Message('QueueItemUpdate', self.to_json).push()
+
+            path = self.path or app.TV_DOWNLOAD_DIR
+            process_method = self.process_method or app.PROCESS_METHOD
+
+            process_results = ProcessResult(path, process_method, failed=self.failed)
+            process_results.process(
+                resource_name=self.resource_name,
+                force=self.force,
+                is_priority=self.is_priority,
+                delete_on=self.delete_on,
+                proc_type=self.proc_type,
+                ignore_subs=self.ignore_subs
+            )
+
+            # A user might want to use advanced post-processing, but opt-out of failed download handling.
+            if app.USE_FAILED_DOWNLOADS \
+               and (process_results.failed or (not process_results.succeeded and self.resource_name)):
+                process_results.process_failed(path)
+
+            # In case we have an info_hash or (nzbid), update the history table with the pp results.
+            if self.info_hash:
+                self.update_history(process_results)
+
+            log.info('Completed Postproccessing')
+
+            if process_results._output:
+                self.to_json.update({'output': process_results._output})
+
+            # Use success as a flag for a finished PP. PP it self can be succeeded or failed.
+            self.success = True
+
+            # Push an update to any open Web UIs through the WebSocket
+            ws.Message('QueueItemUpdate', self.to_json).push()
+
+        # TODO: Remove the catch all exception.
+        except Exception:
+            self.success = False
+            log.debug(traceback.format_exc())
+
+
 class PostProcessorRunner(object):
     """Post Processor Scheduler Action."""
 
     def __init__(self):
-        """Init method."""
+        """Initialize the class."""
         self.amActive = False
 
     def run(self, force=False, **kwargs):
         """Run the postprocessor."""
         path = kwargs.pop('path', app.TV_DOWNLOAD_DIR)
         process_method = kwargs.pop('process_method', app.PROCESS_METHOD)
+        failed = kwargs.pop('failed', False)
 
         if not os.path.isdir(path):
             result = "Post-processing attempted but directory doesn't exist: {path}"
@@ -58,7 +193,15 @@ class PostProcessorRunner(object):
 
         try:
             self.amActive = True
-            return ProcessResult(path, process_method).process(force=force, **kwargs)
+            process_results = ProcessResult(path, process_method, failed=failed)
+            process_results.process(force=force, **kwargs)
+
+            # Only initiate failed download handling, if enabled.
+            if process_results.failed and app.USE_FAILED_DOWNLOADS:
+                process_results.process_failed(path)
+
+            return process_results.output
+
         finally:
             self.amActive = False
 
@@ -67,17 +210,27 @@ class ProcessResult(object):
 
     IGNORED_FOLDERS = ('@eaDir', '#recycle', '.@__thumb',)
 
-    def __init__(self, path, process_method=None):
+    def __init__(self, path, process_method=None, failed=False):
+        """
+        Initialize ProcessResult object.
 
+        :param path: The root path to start postprocessing from.
+        :param process_method: Process method ('copy', 'move', 'hardlink', 'symlink', 'keeplink').
+        :param failed: Start the ProcessResult with a failed download.
+        """
         self._output = []
         self.directory = path
         self.process_method = process_method or app.PROCESS_METHOD
+        self.failed = failed
         self.resource_name = None
         self.result = True
         self.succeeded = True
-        self.missedfiles = []
+        self.missed_files = []
         self.unwanted_files = []
         self.allowed_extensions = app.ALLOWED_EXTENSIONS
+        self.process_file = False
+        # When multiple media folders/files processed. Flag postpone_any of any them was postponed.
+        self.postpone_any = False
 
     @property
     def directory(self):
@@ -89,6 +242,10 @@ class ProcessResult(object):
         directory = None
         if os.path.isdir(path):
             self.log_and_output('Processing path: {path}', **{'path': path})
+            directory = os.path.realpath(path)
+
+        elif os.path.isfile(path):
+            self.log_and_output('Processing path: {path} as a single file', **{'path': path})
             directory = os.path.realpath(path)
 
         # If the client and the application are not on the same machine,
@@ -143,7 +300,7 @@ class ProcessResult(object):
         log.log(level, message, kwargs)
         self._output.append(message.format(**kwargs))
 
-    def process(self, resource_name=None, force=False, is_priority=None, delete_on=False, failed=False,
+    def process(self, resource_name=None, force=False, is_priority=None, delete_on=False,
                 proc_type='auto', ignore_subs=False):
         """
         Scan through the files in the root directory and process whatever media files are found.
@@ -152,28 +309,28 @@ class ProcessResult(object):
         :param force: True to postprocess already postprocessed files
         :param is_priority: Boolean for whether or not is a priority download
         :param delete_on: Boolean for whether or not it should delete files
-        :param failed: Boolean for whether or not the download failed
         :param proc_type: Type of postprocessing auto or manual
         :param ignore_subs: True to ignore setting 'postpone if no subs'
         """
-        if not self.directory:
-            return self.output
-
         if resource_name:
             self.resource_name = resource_name
+            self.log_and_output('Processing resource: {resource}', level=logging.DEBUG, **{'resource': self.resource_name})
+
+        if not self.directory:
+            return self.output
 
         if app.POSTPONE_IF_NO_SUBS:
             self.log_and_output("Feature 'postpone post-processing if no subtitle available' is enabled.")
 
+        processed_items = False
         for path in self.paths:
 
-            if not self.should_process(path, failed):
+            if not self.should_process(path):
                 continue
 
             self.result = True
 
             for dir_path, filelist in self._get_files(path):
-
                 sync_files = (filename
                               for filename in filelist
                               if is_sync_file(filename))
@@ -187,12 +344,18 @@ class ProcessResult(object):
                     self.process_files(dir_path, force=force, is_priority=is_priority,
                                        ignore_subs=ignore_subs)
                     self._clean_up(dir_path, proc_type, delete=delete_on)
-
+                    # Keep track if processed anything.
+                    processed_items = True
                 else:
+                    self.postpone_processing = True
+                    self.postpone_any = True
                     self.log_and_output('Found temporary sync files in folder: {dir_path}', **{'dir_path': dir_path})
                     self.log_and_output('Skipping post-processing for folder: {dir_path}', **{'dir_path': dir_path})
 
-                    self.missedfiles.append('{0}: Sync files found'.format(dir_path))
+                    self.missed_files.append('{0}: Sync files found'.format(dir_path))
+
+        if not processed_items:
+            self.result = False
 
         if self.succeeded:
             self.log_and_output('Post-processing completed.')
@@ -201,15 +364,14 @@ class ProcessResult(object):
             if app.KODI_LIBRARY_CLEAN_PENDING and notifiers.kodi_notifier.clean_library():
                 app.KODI_LIBRARY_CLEAN_PENDING = False
 
-            if self.missedfiles:
-
+            if self.missed_files:
                 self.log_and_output('I did encounter some unprocessable items: ')
 
-                for missed_file in self.missedfiles:
+                for missed_file in self.missed_files:
                     self.log_and_output('Missed file: {missed_file}', level=logging.WARNING, **{'missed_file': missed_file})
         else:
             self.log_and_output('Problem(s) during processing, failed for the following files/folders: ', level=logging.WARNING)
-            for missed_file in self.missedfiles:
+            for missed_file in self.missed_files:
                 self.log_and_output('Missed file: {missed_file}', level=logging.WARNING, **{'missed_file': missed_file})
 
         if all([app.USE_TORRENTS, app.TORRENT_SEED_LOCATION,
@@ -239,58 +401,56 @@ class ProcessResult(object):
                 if self.delete_folder(path, check_empty=check_empty):
                     self.log_and_output('Deleted folder: {path}', level=logging.DEBUG, **{'path': path})
 
-    def should_process(self, path, failed=False):
+    def should_process(self, path):
         """
         Determine if a directory should be processed.
 
         :param path: Path we want to verify
-        :param failed: (optional) Mark the directory as failed
         :return: True if the directory is valid for processing, otherwise False
         :rtype: Boolean
         """
-        if not self._is_valid_folder(path, failed):
+        if not self._is_valid_folder(path):
             return False
 
         folder = os.path.basename(path)
         if helpers.is_hidden_folder(path) or any(f == folder for f in self.IGNORED_FOLDERS):
             self.log_and_output('Ignoring folder: {folder}', level=logging.DEBUG, **{'folder': folder})
-            self.missedfiles.append('{0}: Hidden or ignored folder'.format(path))
+            self.missed_files.append('{0}: Hidden or ignored folder'.format(path))
             return False
 
         for root, dirs, files in os.walk(path):
             for subfolder in dirs:
-                if not self._is_valid_folder(os.path.join(root, subfolder), failed):
+                if not self._is_valid_folder(os.path.join(root, subfolder)):
                     return False
             for each_file in files:
                 if helpers.is_media_file(each_file) or helpers.is_rar_file(each_file):
                     return True
             # Stop at first subdirectories if post-processing path
-            if self.directory == path:
+            if self.directory == path and not self.resource_name:
                 break
 
         self.log_and_output('No processable items found in folder: {path}', level=logging.DEBUG, **{'path': path})
         return False
 
-    def _is_valid_folder(self, path, failed):
+    def _is_valid_folder(self, path):
         """Verify folder validity based on the checks below."""
         folder = os.path.basename(path)
 
         if folder.startswith('_FAILED_'):
             self.log_and_output('The directory name indicates it failed to extract.', level=logging.DEBUG)
-            failed = True
+            self.failed = True
         elif folder.startswith('_UNDERSIZED_'):
             self.log_and_output('The directory name indicates that it was previously rejected for being undersized.', level=logging.DEBUG)
-            failed = True
+            self.failed = True
 
-        if failed:
-            self.process_failed(path)
-            self.missedfiles.append('{0}: Failed download'.format(path))
+        if self.failed:
+            self.missed_files.append('{0}: Failed download.'.format(path))
             return False
 
         # SABnzbd: _UNPACK_, NZBGet: _unpack
         if folder.startswith(('_UNPACK_', '_unpack')):
             self.log_and_output('The directory name indicates that this release is in the process of being unpacked.', level=logging.DEBUG)
-            self.missedfiles.append('{0}: Being unpacked'.format(path))
+            self.missed_files.append('{0}: Being unpacked.'.format(path))
             return False
 
         return True
@@ -298,12 +458,8 @@ class ProcessResult(object):
     def _get_files(self, path):
         """Return the path to a folder and its contents as a tuple."""
         # If resource_name is a file and not an NZB, process it directly
-        if self.resource_name and (
-            not self.resource_name.endswith('.nzb') and os.path.isfile(os.path.join(path, self.resource_name))
-        ):
-            yield path, [self.resource_name]
-        else:
-            topdown = True if self.directory == path else False
+        def walk_path(path_name):
+            topdown = True if self.directory == path_name else False
             for root, dirs, files in os.walk(path, topdown=topdown):
                 if files:
                     yield root, sorted(files)
@@ -311,8 +467,89 @@ class ProcessResult(object):
                     break
                 del dirs  # unused variable
 
+        combine_path = path
+        path_and_resource_is_folder = None
+        if self.resource_name:
+            combine_path = os.path.join(path, self.resource_name)
+            path_and_resource_is_folder = os.path.isdir(combine_path)
+
+        if path_and_resource_is_folder:
+            self.log_and_output(
+                'Combined path with resource detected, using path [{combine_path}] to process as a source folder',
+                level=logging.DEBUG,
+                **{'combine_path': combine_path})
+
+            yield from walk_path(combine_path)
+            return
+
+        if not path_and_resource_is_folder and os.path.isdir(path) and os.path.basename(path) == self.resource_name:
+            """Example:
+                path: /downloads/completed/[ReleaseGroup] Show Title (01-12) [1080p]
+                resource: [ReleaseGroup] Show Title (01-12) [1080p]
+            """
+            self.log_and_output(
+                'Same path and resource detected, using path [{name}] to process as a source folder',
+                level=logging.DEBUG,
+                **{'name': path})
+            yield from walk_path(path)
+            return
+
+        if self.resource_name and self.resource_name.endswith('.nzb'):
+            """Example:
+                path: /downloads/completed/[ReleaseGroup] Show Title (01-12) [1080p]
+                resource: [ReleaseGroup] Show Title (01-12) [1080p].nzb
+                note! resource is not a folder or file!
+            """
+            self.log_and_output(
+                'Nzb folder detected, using path [{name}] to process as a source folder',
+                level=logging.DEBUG,
+                **{'name': path})
+            yield from walk_path(path)
+            return
+
+        if path and not self.resource_name:
+            """Example:
+                path: /downloads/completed
+                resource: ""
+            """
+            self.log_and_output(
+                'No resource_name passed, using path [{name}] to process as a source folder',
+                level=logging.DEBUG,
+                **{'name': path})
+            yield from walk_path(path)
+            return
+
+        # Process as a file
+        if os.path.isfile(combine_path):
+            """Example:
+                path: /downloads/completed
+                resource: [ReleaseGroup] Show Title S01E12 [1080p].mkv
+                note! resource is a file.
+            """
+            self.log_and_output(
+                'File detected, Using Resource [{name}] to process as a single file',
+                level=logging.DEBUG,
+                **{'name': self.resource_name})
+            yield path, [self.resource_name]
+            return
+
+        # Catch all
+        self.log_and_output(
+            'Could not get a valid path or file for processing. path: [{path}], resource: [{resource}]',
+            level=logging.DEBUG,
+            **{'path': path, 'resource': self.resource_name})
+
     def prepare_files(self, path, files, force=False):
-        """Prepare files for post-processing."""
+        """
+        Prepare files for post-processing.
+
+        Separate the Rar and Video files. -> self.video_files
+            Extract the rar files. -> self.rar_content
+            Collect new video files. -> self.video_in_rar
+            List unwanted files -> self.unwanted_files
+        :param path: Path to start looking for rar/video files.
+        :param files: Array of files.
+        """
         video_files = []
         rar_files = []
         for each_file in files:
@@ -523,7 +760,7 @@ class ProcessResult(object):
 
                 if failure is not None:
                     self.log_and_output('Failed unpacking archive {archive}: {failure}', level=logging.WARNING, **{'archive': archive, 'failure': failure[0]})
-                    self.missedfiles.append('{0}: Unpacking failed: {1}'.format(archive, failure[1]))
+                    self.missed_files.append('{0}: Unpacking failed: {1}'.format(archive, failure[1]))
                     self.result = False
                     continue
 
@@ -580,6 +817,8 @@ class ProcessResult(object):
         :param is_priority: Boolean, is this a priority download
         :param ignore_subs: True to ignore setting 'postpone if no subs'
         """
+        # Keep flag for a single media process.
+        # A path can have multiple media to process.
         self.postpone_processing = False
 
         for video in video_files:
@@ -605,14 +844,14 @@ class ProcessResult(object):
                 process_fail_message = ex(error)
 
             if processor:
-                self._output.append(processor.output)
+                self._output += processor._output
 
             if self.result:
                 self.log_and_output('Processing succeeded for {file_path}', **{'file_path': file_path})
             else:
                 self.log_and_output('Processing failed for {file_path}: {process_fail_message}',
                                     level=logging.WARNING, **{'file_path': file_path, 'process_fail_message': process_fail_message})
-                self.missedfiles.append('{0}: Processing failed: {1}'.format(file_path, process_fail_message))
+                self.missed_files.append('{0}: Processing failed: {1}'.format(file_path, process_fail_message))
                 self.succeeded = False
 
     def _process_postponed(self, processor, path, video, ignore_subs):
@@ -633,6 +872,7 @@ class ProcessResult(object):
                         self.log_and_output('No subtitles associated. Postponing the post-processing of this file: {video}',
                                             level=logging.DEBUG, **{'video': video})
                         self.postpone_processing = True
+                        self.postpone_any = True
                         return False
                     else:
                         self.log_and_output('Found associated subtitles. '
@@ -647,30 +887,29 @@ class ProcessResult(object):
 
     def process_failed(self, path):
         """Process a download that did not complete correctly."""
-        if app.USE_FAILED_DOWNLOADS:
-            try:
-                processor = failed_processor.FailedProcessor(path, self.resource_name)
-                self.result = processor.process()
-                process_fail_message = ''
-            except FailedPostProcessingFailedException as error:
-                processor = None
-                self.result = False
-                process_fail_message = ex(error)
+        try:
+            processor = failed_processor.FailedProcessor(path, self.resource_name)
+            self.result = processor.process()
+            process_fail_message = ''
+        except FailedPostProcessingFailedException as error:
+            processor = None
+            self.result = False
+            process_fail_message = ex(error)
 
-            if processor:
-                self._output.append(processor.output)
+        if processor:
+            self._output.append(processor.output)
 
-            if app.DELETE_FAILED and self.result:
-                if self.delete_folder(path, check_empty=False):
-                    self.log_and_output('Deleted folder: {path}', level=logging.DEBUG, **{'path': path})
+        if app.DELETE_FAILED and self.result:
+            if self.delete_folder(path, check_empty=False):
+                self.log_and_output('Deleted folder: {path}', level=logging.DEBUG, **{'path': path})
 
-            if self.result:
-                self.log_and_output('Failed Download Processing succeeded: {resource}, {path}', **{'resource': self.resource_name, 'path': path})
-            else:
-                self.log_and_output('Failed Download Processing failed: {resource}, {path}: {process_fail_message}',
-                                    level=logging.WARNING, **{
-                                        'resource': self.resource_name, 'path': path, 'process_fail_message': process_fail_message
-                                    })
+        if self.result:
+            self.log_and_output('Failed Download Processing succeeded: {resource}, {path}', **{'resource': self.resource_name, 'path': path})
+        else:
+            self.log_and_output('Failed Download Processing failed: {resource}, {path}: {process_fail_message}',
+                                level=logging.WARNING, **{
+                                    'resource': self.resource_name, 'path': path, 'process_fail_message': process_fail_message
+                                })
 
     @staticmethod
     def subtitles_enabled(*args):
