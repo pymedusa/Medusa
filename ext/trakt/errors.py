@@ -8,12 +8,15 @@ __author__ = 'Jon Nappi'
 __all__ = ['TraktException', 'BadRequestException', 'OAuthException',
            'ForbiddenException', 'NotFoundException', 'ConflictException',
            'ProcessException', 'RateLimitException', 'TraktInternalException',
-           'TraktUnavailable']
+           'TraktUnavailable', 'MethodNotAllowedException']
 
 
 class TraktException(Exception):
     """Base Exception type for trakt module"""
     http_code = message = None
+
+    def __init__(self, response=None):
+        self.response = response
 
     def __str__(self):
         return self.message
@@ -41,6 +44,12 @@ class NotFoundException(TraktException):
     """TraktException type to be raised when a 404 return code is received"""
     http_code = 404
     message = 'Not Found - method exists, but no record found'
+
+
+class MethodNotAllowedException(TraktException):
+    """TraktException type to be raised when a 405 return code is received"""
+    http_code = 405
+    message = 'Method not Allowed'
 
 
 class ConflictException(TraktException):
