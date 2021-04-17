@@ -175,6 +175,9 @@ export default {
     mounted() {
         const { getStats } = this;
         getStats('show');
+    },
+    beforeCreate() {
+        this.$store.commit('initShowsFromStore');
     }
 };
 </script>

@@ -63,6 +63,10 @@ const mutations = {
         });
 
         Vue.set(state, 'shows', [...state.shows, ...newShows]);
+
+        // Update localStorage
+        localStorage.setItem('shows', JSON.stringify(state.shows));
+
         console.debug(`Added ${shows.length} shows to store`);
     },
     [ADD_SHOW_CONFIG](state, { show, config }) {
@@ -155,8 +159,13 @@ const mutations = {
         } else {
             Vue.set(state.queueitems, state.queueitems.length, queueItem);
         }
+    },
+    initShowsFromStore(state) {
+        // Check if the ID exists
+        if (localStorage.getItem('shows')) {
+            Vue.set(state, 'shows', JSON.parse(localStorage.getItem('shows')));
+        }
     }
-
 };
 
 const getters = {
