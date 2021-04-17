@@ -16,6 +16,8 @@ export { default as DisplayShow } from './display-show.vue';
 export { default as CurrentDownloads } from './current-downloads.vue';
 export { default as EditShow } from './edit-show.vue';
 export { default as History } from './history.vue';
+export { default as HistoryCompact } from './history-compact.vue';
+export { default as HistoryDetailed } from './history-detailed.vue';
 export { default as Home } from './home.vue';
 export { default as IRC } from './irc.vue';
 export { default as Login } from './login.vue';

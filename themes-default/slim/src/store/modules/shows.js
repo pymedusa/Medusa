@@ -63,6 +63,10 @@ const mutations = {
         });
 
         Vue.set(state, 'shows', [...state.shows, ...newShows]);
+
+        // Update localStorage
+        localStorage.setItem('shows', JSON.stringify(state.shows));
+
         console.debug(`Added ${shows.length} shows to store`);
     },
     [ADD_SHOW_CONFIG](state, { show, config }) {
@@ -101,22 +105,22 @@ const mutations = {
             const existingSeason = newShow.seasons.find(season => season.season === episode.season);
 
             if (existingSeason) {
-                const foundIndex = existingSeason.episodes.findIndex(element => element.slug === episode.slug);
+                const foundIndex = existingSeason.children.findIndex(element => element.slug === episode.slug);
                 if (foundIndex === -1) {
-                    existingSeason.episodes.push(episode);
+                    existingSeason.children.push(episode);
                 } else {
-                    existingSeason.episodes.splice(foundIndex, 1, episode);
+                    existingSeason.children.splice(foundIndex, 1, episode);
                 }
             } else {
                 const newSeason = {
                     season: episode.season,
-                    episodes: [],
+                    children: [],
                     html: false,
                     mode: 'span',
                     label: 1
                 };
                 newShow.seasons.push(newSeason);
-                newSeason.episodes.push(episode);
+                newSeason.children.push(episode);
             }
         });
 
@@ -155,8 +159,13 @@ const mutations = {
         } else {
             Vue.set(state.queueitems, state.queueitems.length, queueItem);
         }
+    },
+    initShowsFromStore(state) {
+        // Check if the ID exists
+        if (localStorage.getItem('shows')) {
+            Vue.set(state, 'shows', JSON.parse(localStorage.getItem('shows')));
+        }
     }
-
 };
 
 const getters = {
@@ -177,7 +186,7 @@ const getters = {
     },
     getEpisode: state => ({ showSlug, season, episode }) => {
         const show = state.shows.find(show => show.id.slug === showSlug);
-        return show && show.seasons && show.seasons.find(s => s.season === season) ? show.seasons.find(s => s.season === season).episodes.find(ep => ep.episode === episode) : undefined;
+        return show && show.seasons && show.seasons.find(s => s.season === season) ? show.seasons.find(s => s.season === season).children.find(ep => ep.episode === episode) : undefined;
     },
     getCurrentShow: (state, getters, rootState) => {
         return state.shows.find(show => show.id.slug === state.currentShow.showSlug) || rootState.defaults.show;

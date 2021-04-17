@@ -126,6 +126,10 @@ class DownloadStationAPI(GenericClient):
         return self._check_response()
 
     def _add_torrent_file(self, result):
+        # The API in the latest version of Download Station (3.8.16.-3566)
+        # is broken for downloading via a file, only uri's are working correct.
+        if result.url[:4].lower() in ['http', 'magn']:
+            return self._add_torrent_uri(result)
 
         torrent_path = app.TORRENT_PATH
 

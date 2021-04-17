@@ -8,7 +8,7 @@ from trakt.sync import (Scrobbler, rate, comment, add_to_collection,
                         add_to_watchlist, add_to_history, remove_from_history,
                         remove_from_collection, remove_from_watchlist, search,
                         checkin_media, delete_checkin)
-from trakt.utils import slugify, extract_ids, airs_date, unicode_safe
+from trakt.utils import slugify, extract_ids, airs_date
 from trakt.people import Person
 
 __author__ = 'Jon Nappi'
@@ -219,6 +219,7 @@ class TVShow(object):
         """Perform a search for the specified *title*.
 
         :param title: The title to search for
+        :param year: An optional year for the item you're searching for.
         """
         return search(title, search_type='show', year=year)
 
@@ -482,7 +483,7 @@ class TVShow(object):
 
     def __str__(self):
         """Return a string representation of a :class:`TVShow`"""
-        return '<TVShow> {}'.format(unicode_safe(self.title))
+        return '<TVShow> {}'.format(self.title)
 
     __repr__ = __str__
 
@@ -880,5 +881,5 @@ class TVEpisode(object):
     def __str__(self):
         return '<TVEpisode>: {} S{}E{} {}'.format(self.show, self.season,
                                                   self.number,
-                                                  unicode_safe(self.title))
+                                                  self.title)
     __repr__ = __str__

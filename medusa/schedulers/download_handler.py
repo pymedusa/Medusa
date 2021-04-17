@@ -241,7 +241,13 @@ class DownloadHandler(object):
                 continue
 
             provider_ratio = -1 if provider.ratio == '' else provider.ratio
-            desired_ratio = provider_ratio if provider_ratio > -1 else app.TORRENT_SEED_RATIO
+            try:
+                desired_ratio = provider_ratio if provider_ratio > -1 else app.TORRENT_SEED_RATIO
+            except TypeError:
+                log.warning('could not get provider ratio {ratio} for provider {provider}', {
+                    'ratio': provider_ratio, 'provider': provider_id
+                })
+                desired_ratio = app.TORRENT_SEED_RATIO
 
             if desired_ratio == -1:
                 # Not sure if this option is of use.

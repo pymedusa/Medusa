@@ -29,6 +29,7 @@ from medusa.queues.utils import (
     generate_show_queue,
 )
 from medusa.sbdatetime import date_presets, time_presets
+from medusa.schedulers.download_handler import status_strings
 from medusa.schedulers.utils import generate_schedulers
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
@@ -774,6 +775,10 @@ class DataGenerator(object):
             )
         ]
 
+        section_data['clientStatuses'] = [
+            {'value': k.value, 'name': v} for k, v in status_strings.items()
+        ]
+
         # Save it for next time
         cls._generated_data_consts = section_data
 
@@ -810,8 +815,6 @@ class DataGenerator(object):
         section_data['general']['minBacklogFrequency'] = int(app.MIN_BACKLOG_FREQUENCY)
         section_data['general']['dailySearchFrequency'] = int_default(app.DAILYSEARCH_FREQUENCY, app.DEFAULT_DAILYSEARCH_FREQUENCY)
         section_data['general']['minDailySearchFrequency'] = int(app.MIN_DAILYSEARCH_FREQUENCY)
-        section_data['general']['downloadHandlerFrequency'] = int_default(app.DOWNLOAD_HANDLER_FREQUENCY, app.DEFAULT_DOWNLOAD_HANDLER_FREQUENCY)
-        section_data['general']['mindownloadHandlerFrequency'] = int(app.MIN_DOWNLOAD_HANDLER_FREQUENCY)
         section_data['general']['usenetRetention'] = int_default(app.USENET_RETENTION, 500)
         section_data['general']['trackersList'] = app.TRACKERS_LIST
         section_data['general']['allowHighPriority'] = bool(app.ALLOW_HIGH_PRIORITY)
