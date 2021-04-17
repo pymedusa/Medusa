@@ -162,7 +162,7 @@ const mutations = {
     },
     initShowsFromStore(state) {
         // Check if the ID exists
-        if(localStorage.getItem('shows')) {
+        if (localStorage.getItem('shows')) {
             Vue.set(state, 'shows', JSON.parse(localStorage.getItem('shows')));
         }
     }

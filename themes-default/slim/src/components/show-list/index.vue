@@ -216,8 +216,16 @@ button.nav-show-list {
 
 .table-layout >>> .vgt-table th {
     text-align: center;
+    text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
+    background-color: rgb(51, 51, 51);
+    white-space: nowrap;
+    color: #fff;
     border-collapse: collapse;
     font-weight: normal;
+    position: relative;
+    background-image: none;
+    padding: 4px;
+    cursor: default;
 }
 
 .table-layout >>> .vgt-table span.break-word {
@@ -231,20 +239,6 @@ button.nav-show-list {
 
 .table-layout >>> .vgt-table thead th.sorting {
     background-repeat: no-repeat;
-}
-
-.table-layout >>> .vgt-table th {
-    text-align: center;
-    text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
-    background-color: rgb(51, 51, 51);
-    white-space: nowrap;
-    color: rgb(255, 255, 255);
-    border-collapse: collapse;
-    font-weight: normal;
-    position: relative;
-    background-image: none;
-    padding: 4px;
-    cursor: default;
 }
 
 .table-layout >>> .vgt-table thead th.sortable button {
