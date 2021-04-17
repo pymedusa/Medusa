@@ -1,15 +1,20 @@
-## Unreleased
+## 0.5.11 (17-04-2021)
 
 #### New Features
+- Added new provicer TvRoad. (credits to IamMika23) ([9424](https://github.com/pymedusa/Medusa/pull/9424))
 
 #### Improvements
 - Vueify history page. ([9201](https://github.com/pymedusa/Medusa/pull/9201))
 - Nebulance: Prevent duplicate results for provider. ([9333](https://github.com/pymedusa/Medusa/pull/9333))
+- Add Cloudflare BFM detection. ([9407](https://github.com/pymedusa/Medusa/pull/9407))
 
 #### Fixes
 - AnimeBytes: Fix exception when processing multi-ep BD specials. ([9396](https://github.com/pymedusa/Medusa/pull/9396))
 - Fix issue with sending torrents to Synology downloadstation. ([9401](https://github.com/pymedusa/Medusa/pull/9401))
 - Fix a number of issues with trakt sync. ([9319](https://github.com/pymedusa/Medusa/pull/9319))
+- Fix shows enriched with wrong IMDB show data. ([9435](https://github.com/pymedusa/Medusa/pull/9435))
+- Fix configured provider ratio getting lost after restart. ([9413](https://github.com/pymedusa/Medusa/pull/9413))
+- Fix sending torrents to Synology Download Station from version 3.8.16.-3566. (credits to BenjV). ([9401](https://github.com/pymedusa/Medusa/pull/9401))
 
 -----
 
