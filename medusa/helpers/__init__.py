@@ -1717,7 +1717,7 @@ def title_to_imdb(title, start_year, imdb_api=None):
     title = title.lower()
 
     for candidate in titles:
-        # This check should be made more reliable
+        # Only return matches by year
         if candidate['title'].lower() == title and candidate['year'] == start_year:
             return candidate['imdb_id']
 

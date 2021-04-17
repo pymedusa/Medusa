@@ -27,7 +27,7 @@
   },
   "resolutions": {
     "**/jquery": "3.6.0",
-    "**/date-fns": "2.20.3",
+    "**/date-fns": "2.21.1",
     "jest/**/@babel/core": "7.13.15"
   },
   "dependencies": {
@@ -37,7 +37,7 @@
     "axios": "0.21.1",
     "bootstrap": "3.4.1",
     "country-language": "0.1.7",
-    "date-fns": "2.20.3",
+    "date-fns": "2.21.1",
     "is-visible": "2.2.0",
     "javascript-time-ago": "2.3.4",
     "jquery": "3.6.0",
@@ -83,7 +83,7 @@
     "codecov": "3.8.1",
     "copy-webpack-plugin": "8.1.1",
     "cross-env": "7.0.3",
-    "css-loader": "5.2.1",
+    "css-loader": "5.2.2",
     "eslint": "7.24.0",
     "eslint-config-xo": "0.26.0",
     "eslint-import-resolver-webpack": "0.13.0",
@@ -110,7 +110,7 @@
     "timekeeper": "2.2.0",
     "vue-jest": "3.0.7",
     "vue-loader": "15.9.6",
-    "webpack": "5.32.0",
+    "webpack": "5.33.2",
     "webpack-cli": "4.6.0"
   },
   "stylelint": {

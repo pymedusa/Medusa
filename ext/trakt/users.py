@@ -5,7 +5,7 @@ from trakt.core import get, post, delete
 from trakt.movies import Movie
 from trakt.people import Person
 from trakt.tv import TVShow, TVSeason, TVEpisode
-from trakt.utils import slugify, extract_ids, unicode_safe
+from trakt.utils import slugify, extract_ids
 
 __author__ = 'Jon Nappi'
 __all__ = ['User', 'UserList', 'Request', 'follow', 'get_all_requests',
@@ -490,7 +490,7 @@ class User(object):
 
     def __str__(self):
         """String representation of a :class:`User`"""
-        return '<User>: {}'.format(unicode_safe(self.username))
+        return '<User>: {}'.format(self.username)
     __repr__ = __str__
 
 
