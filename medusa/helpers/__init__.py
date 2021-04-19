@@ -1711,24 +1711,15 @@ def title_to_imdb(title, start_year, imdb_api=None):
         imdb_api = Imdb()
 
     titles = imdb_api.search_for_title(title)
-    if len(titles) == 1:
-        return titles[0]['imdb_id']
 
     # ImdbPie returns the year as string
     start_year = str(start_year)
     title = title.lower()
 
-    title_matches = []
     for candidate in titles:
-        # This check should be made more reliable
-        if candidate['title'].lower() == title:
-            if candidate['year'] == start_year:
-                return candidate['imdb_id']
-            title_matches.append(candidate['imdb_id'])
-
-    # Return the most relevant result (can be erroneous)
-    if title_matches:
-        return title_matches[0]
+        # Only return matches by year
+        if candidate['title'].lower() == title and candidate['year'] == start_year:
+            return candidate['imdb_id']
 
 
 def get_title_without_year(title, title_year):

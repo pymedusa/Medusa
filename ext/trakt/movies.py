@@ -8,7 +8,7 @@ from trakt.sync import (Scrobbler, comment, rate, add_to_history,
                         remove_from_collection, search, checkin_media,
                         delete_checkin)
 from trakt.people import Person
-from trakt.utils import slugify, now, extract_ids, unicode_safe
+from trakt.utils import slugify, now, extract_ids
 
 __author__ = 'Jon Nappi'
 __all__ = ['dismiss_recommendation', 'get_recommended_movies', 'genres',
@@ -358,6 +358,7 @@ class Movie(object):
         :param sharing: Control sharing to any connected social networks.
         :param venue_id: Foursquare venue ID.
         :param venue_name: Foursquare venue name.
+        :param delete: If True, the checkin will be deleted.
         """
         if delete:
             delete_checkin()
@@ -376,5 +377,5 @@ class Movie(object):
 
     def __str__(self):
         """String representation of a :class:`Movie`"""
-        return '<Movie>: {}'.format(unicode_safe(self.title))
+        return '<Movie>: {}'.format(self.title)
     __repr__ = __str__

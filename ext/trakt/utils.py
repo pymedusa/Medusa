@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 import re
-import six
 import unicodedata
-from datetime import datetime
+from datetime import datetime, timezone
 
 __author__ = 'Jon Nappi'
-__all__ = ['slugify', 'airs_date', 'now', 'timestamp', 'extract_ids',
-           'unicode_safe']
+__all__ = ['slugify', 'airs_date', 'now', 'timestamp', 'extract_ids']
 
 
 def slugify(value):
@@ -16,8 +14,6 @@ def slugify(value):
 
     Adapted from django.utils.text.slugify
     """
-    if six.PY2 and isinstance(value, str):
-        value = unicode(value, 'utf-8')  # NOQA
     nfkd_form = unicodedata.normalize('NFKD', value)
     decoded = nfkd_form.encode('ascii', 'ignore').decode('utf-8')
     value = re.sub(r'[^\w\s-]', ' ', decoded).strip().lower()
@@ -38,11 +34,8 @@ def airs_date(airs_at):
 
 def now():
     """Get the current day in the format expected by each :class:`Calendar`"""
-    meow = datetime.now()
-    year = meow.year
-    month = meow.month if meow.month >= 10 else '0{}'.format(meow.month)
-    day = meow.day if meow.day >= 10 else '0{}'.format(meow.day)
-    return '{}-{}-{}'.format(year, month, day)
+    meow = datetime.now(tz=timezone.utc)
+    return meow.strftime("%Y-%m-%d")
 
 
 def timestamp(date_object):
@@ -57,9 +50,3 @@ def extract_ids(id_dict):
     """
     id_dict.update(id_dict.pop('ids', {}))
     return id_dict
-
-
-def unicode_safe(s):
-    if six.PY3:
-        return s
-    return s.encode('ascii', 'ignore').decode('ascii')
