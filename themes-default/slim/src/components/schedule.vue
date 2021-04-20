@@ -53,12 +53,14 @@ import { ToggleButton } from 'vue-js-toggle-button';
 import List from './schedule/list.vue';
 import Banner from './schedule/banner.vue';
 import Poster from './schedule/poster.vue';
+import Calendar from './schedule/calendar.vue';
 
 export default {
     name: 'schedule',
     components: {
         AppLink,
         Banner,
+        Calendar,
         Poster,
         List,
         ToggleButton
