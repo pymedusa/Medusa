@@ -1,7 +1,7 @@
 <template>
     <div id="schedule-template">
         <div class="row">
-            <div class="col-md-12">
+            <div class="col-md-12">                
                 <div class="key pull-left">
                     <template v-if="scheduleLayout !== 'calendar'">
                         <b>Key:</b>
@@ -12,6 +12,33 @@
                     </template>
                     <app-link class="btn-medusa btn-inline forceBacklog" :href="`webcal://${location.hostname}:${location.port}/calendar`">
                     <i class="icon-calendar icon-white"></i>Subscribe</app-link>
+                </div>
+
+                <div v-if="scheduleLayout === 'calendar'" class="filters pull-left">
+                    <label for="checkbox-missed">
+                        <span>
+                            <input id="checkbox-missed" type="checkbox" v-model="displayCategory.missed">
+                            missed
+                        </span>
+                    </label>
+                    <label for="checkbox-today">
+                        <span>
+                            <input id="checkbox-today" type="checkbox" v-model="displayCategory.today">
+                            today
+                        </span>
+                    </label>
+                    <label for="checkbox-soon">
+                        <span>
+                            <input id="checkbox-soon" type="checkbox" v-model="displayCategory.soon">
+                            soon
+                        </span>
+                    </label>
+                    <label for="checkbox-later">
+                        <span>
+                            <input id="checkbox-later" type="checkbox" v-model="displayCategory.later">
+                            later
+                        </span>
+                    </label>
                 </div>
 
                 <div class="pull-right">
@@ -72,14 +99,19 @@ export default {
                 { value: 'calendar', text: 'Calendar' },
                 { value: 'banner', text: 'Banner' },
                 { value: 'list', text: 'List' }
-            ]
+            ],
+            displayMissed: false,
+            displayToday: true,
+            displaySoon: true,
+            displayLater: false
         };
     },
     computed: {
         ...mapState({
             general: state => state.config.general,
             // Renamed because of the computed property 'layout'.
-            layout: state => state.config.layout
+            layout: state => state.config.layout,
+            displayCategory: state => state.schedule.displayCategory
         }),
         scheduleLayout: {
             get() {
@@ -104,75 +136,6 @@ export default {
         }
     },
     mounted() {
-        // $store.dispatch('getShows');
-
-        this.$root.$once('loaded', () => {
-            const { scheduleLayout, layout, themeSpinner } = this;
-            const { comingEps } = layout;
-            if (scheduleLayout === 'list') {
-                const sortCodes = {
-                    date: 0,
-                    show: 2,
-                    network: 5
-                };
-                const { sort } = comingEps;
-                const sortList = (sort in sortCodes) ? [[sortCodes[sort], 0]] : [[0, 0]];
-
-                $('#showListTable:has(tbody tr)').tablesorter({
-                    widgets: ['stickyHeaders', 'filter', 'columnSelector', 'saveSort'],
-                    sortList,
-                    textExtraction: {
-                        0: node => $(node).find('time').attr('datetime'),
-                        1: node => $(node).find('time').attr('datetime'),
-                        7: node => $(node).find('span').text().toLowerCase(),
-                        8: node => $(node).find('a[data-indexer-name]').attr('data-indexer-name')
-                    },
-                    headers: {
-                        0: { sorter: 'realISODate' },
-                        1: { sorter: 'realISODate' },
-                        2: { sorter: 'loadingNames' },
-                        4: { sorter: 'loadingNames' },
-                        7: { sorter: 'quality' },
-                        8: { sorter: 'text' },
-                        9: { sorter: false, filter: false }
-                    },
-                    widgetOptions: {
-                        filter_columnFilters: true, // eslint-disable-line camelcase
-                        filter_hideFilters: true, // eslint-disable-line camelcase
-                        filter_saveFilters: true, // eslint-disable-line camelcase
-                        columnSelector_mediaquery: false // eslint-disable-line camelcase
-                    }
-                });
-
-                $.ajaxEpSearch();
-            }
-
-            if (['banner', 'poster'].includes(scheduleLayout)) {
-                $.ajaxEpSearch({
-                    size: 16,
-                    loadingImage: `loading16${themeSpinner}.gif`
-                });
-                $('.ep_summary').hide();
-                $('.ep_summaryTrigger').on('click', function() {
-                    $(this).next('.ep_summary').slideToggle('normal', function() {
-                        $(this).prev('.ep_summaryTrigger').prop('src', function(i, src) {
-                            return $(this).next('.ep_summary').is(':visible') ? src.replace('plus', 'minus') : src.replace('minus', 'plus');
-                        });
-                    });
-                });
-            }
-
-            $('#popover').popover({
-                placement: 'bottom',
-                html: true, // Required if content has HTML
-                content: '<div id="popover-target"></div>'
-            }).on('shown.bs.popover', () => { // Bootstrap popover event triggered when the popover opens
-                // call this function to copy the column selection code into the popover
-                $.tablesorter.columnSelector.attachTo($('#showListTable'), '#popover-target');
-            });
-        });
-
-        // Vue stuff
         const { getSchedule } = this;
         getSchedule();
     },
@@ -195,5 +158,9 @@ td.tvShow a {
 td.tvShow a:hover {
     cursor: pointer;
     color: rgb(66, 139, 202);
+}
+
+.filters > input {
+    display: none;
 }
 </style>

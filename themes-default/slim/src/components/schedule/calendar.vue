@@ -2,7 +2,7 @@
     <div class="calendar-wrapper" :class="{fanartOpacity: layout.fanartBackgroundOpacity}">
         <div class="wrap-center">
             <div class="day-column" v-for="day in sortedEpisodes" :key="day.header">
-                <span class="day-header">{{day.header}}</span>
+                <span class="day-header" :title="`airs ${day.airdate}`">{{day.header}}</span>
                 <ul v-if="day.episodes.length > 0">
                     <li v-for="episode in day.episodes" :key="episode.episodeSlug" class="calendar-show">
                         <div class="poster">
@@ -58,6 +58,7 @@ export default {
             today: state => state.schedule.today,
             consts: state => state.config.consts,
             displayPaused: state => state.config.layout.comingEps.displayPaused,
+            displayCategory: state => state.schedule.displayCategory,
             sort: state => state.config.layout.comingEps.sort
         }),
         ...mapGetters([
@@ -73,59 +74,87 @@ export default {
          * and an attribute episodes with an array of coming episodes.
          */
         sortedEpisodes() {
-            const { displayPaused, soon, today } = this;
-            const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+            const { displayPaused, missed, soon, today, later, displayCategory } = this;
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
             
             /* Return an array of the days to come */
             const comingDays = (currentDay, nrComingDays) => {
+                let currentDayOfTheWeek = currentDay.getDay();
                 let returnDays = [];
                 for (let i=0; i < nrComingDays; i++) {
-                    returnDays.push(currentDay)
-                    if (currentDay > 5) {
-                        currentDay = 0;
-                    } else {
-                        currentDay += 1;
+                    if (currentDayOfTheWeek > 7) {
+                        currentDayOfTheWeek = 1;
                     }
+                    returnDays.push(currentDayOfTheWeek)
+                    currentDayOfTheWeek += 1;
                 }
                 return returnDays;
             }
-            const newArray = [];
 
-            const filteredSoon = soon.filter(item => !Boolean(item.paused) || displayPaused);
-            if (filteredSoon.length === 0) {
+            const _MS_PER_DAY = 1000 * 60 * 60 * 24;
+
+            // a and b are javascript Date objects
+            function dateDiffInDays(a, b) {
+                // Discard the time and time-zone information.
+                const utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
+                const utc2 = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate());
+
+                return Math.floor((utc2 - utc1) / _MS_PER_DAY);
+            }
+
+            const newArray = [];
+            let combinedEpisodes = [];
+
+            if (displayCategory.missed) {
+                combinedEpisodes.push(...missed);
+            }
+
+            if (displayCategory.today) {
+                combinedEpisodes.push(...today);
+            }
+
+            if (displayCategory.soon) {
+                combinedEpisodes.push(...soon);
+            }
+
+            if (displayCategory.later) {
+                combinedEpisodes.push(...later);
+            }
+
+            const filteredEpisodes = combinedEpisodes.filter(item => !Boolean(item.paused) || displayPaused);
+            if (filteredEpisodes.length === 0) {
                  return [];
             }
             
-            let currentDay = filteredSoon[0].weekday;
+            let currentDay = new Date(filteredEpisodes[0].airdate);
 
             // Group the coming episodes by day.
-            for (const episode of filteredSoon) {
+            for (const episode of filteredEpisodes) {
                 
                 // Calculate the gaps in the week, for which we don't have any scheduled shows.
-                if (currentDay !== episode.weekday) {
-                    const diffDays = episode.weekday - currentDay;
+                if (currentDay !== new Date(episode.airdate)) {
+                    const diffDays = dateDiffInDays(currentDay, new Date(episode.airdate));
                     if (diffDays > 1) {
                         for (const emptyDay of comingDays(currentDay, diffDays).slice(-1)) {
                             newArray.push({
-                                header: days[emptyDay],
+                                header: days[emptyDay -1],
                                 class: 'shows-soon',
                                 episodes: []
                             });
                         }
-                        currentDay = episode.weekday + 1;
-                        continue;
                     }
                 }
                 
-                currentDay = episode.weekday
+                currentDay = new Date(episode.airdate)
 
-                let weekDay = newArray.find(item => item.header === days[episode.weekday]);
+                let weekDay = newArray.find(item => item.airdate === episode.airdate);
                 if (!weekDay) {
                     weekDay = {
-                        header: days[episode.weekday],
+                        airdate: episode.airdate,
+                        header: days[episode.weekday -1],
                         class: 'shows-soon',
                         episodes: []
-                    }
+                    };
                     newArray.push(weekDay);
                 }
 
@@ -171,7 +200,8 @@ ul > li {
 
 .wrap-center {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     --column-width: 15rem;
     --poster-max-height: 22rem;
     --background-text-grey: rgb(210, 210, 210);
@@ -183,7 +213,9 @@ ul > li {
 
 .day-column {
     display: block;
+    width: var(--column-width);
     color: rgb(0, 0, 0);
+    margin-bottom: 2rem;
 }
 
 .calendar-show .text {
@@ -207,8 +239,12 @@ ul > li {
 } 
 
 .calendar-show .poster >>> img {
-    width: 100%;
-    height: auto;
+    width: var(--column-width);
+    max-height: var(--poster-max-height);
+}
+
+.calendar-show .text {
+    width: var(--column-width);
 }
 
 .calendar-show .text .airtime {
@@ -226,24 +262,5 @@ ul > li {
     display: block;
     font-size: 11px;
     white-space: nowrap;
-}
-
-@media (min-width: 767px) {
-    .wrap-center {
-        flex-direction: row;
-    }
-
-    .day-column {
-        width: var(--column-width);
-    }
-
-    .calendar-show .poster >>> img {
-        width: var(--column-width);
-        max-height: var(--poster-max-height);
-    }
-
-    .calendar-show .text {
-        width: var(--column-width);
-    }
 }
 </style>

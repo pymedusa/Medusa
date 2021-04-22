@@ -8,7 +8,13 @@ const state = {
     later: [],
     missed: [],
     soon: [],
-    today: []
+    today: [],
+    displayCategory: {
+        later: false,
+        missed: false,
+        soon: false,
+        today: false
+    }
 };
 
 const mutations = {
