@@ -12,8 +12,8 @@ const state = {
     displayCategory: {
         later: false,
         missed: false,
-        soon: false,
-        today: false
+        soon: true,
+        today: true
     }
 };
 

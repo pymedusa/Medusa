@@ -16,28 +16,28 @@
 
                 <div v-if="scheduleLayout === 'calendar'" class="filters pull-left">
                     <label for="checkbox-missed">
-                        <span>
+                        <div class="missed">
                             <input id="checkbox-missed" type="checkbox" v-model="displayCategory.missed">
                             missed
-                        </span>
+                        </div>
                     </label>
                     <label for="checkbox-today">
-                        <span>
+                        <div class="today">
                             <input id="checkbox-today" type="checkbox" v-model="displayCategory.today">
                             today
-                        </span>
+                        </div>
                     </label>
                     <label for="checkbox-soon">
-                        <span>
+                        <div class="soon">
                             <input id="checkbox-soon" type="checkbox" v-model="displayCategory.soon">
                             soon
-                        </span>
+                        </div>
                     </label>
                     <label for="checkbox-later">
-                        <span>
+                        <div class="later">
                             <input id="checkbox-later" type="checkbox" v-model="displayCategory.later">
                             later
-                        </span>
+                        </div>
                     </label>
                 </div>
 
@@ -160,7 +160,32 @@ td.tvShow a:hover {
     color: rgb(66, 139, 202);
 }
 
-.filters > input {
-    display: none;
+.filters {
+    color: rgb(0, 0, 0);
+    margin: 3px 5px;
+}
+
+.filters div {
+    padding: 0px 2px;
+}
+
+.filters div:active {
+    transform: translateY(2px);
+}
+
+.filters .today {
+    background-color: rgb(245, 241, 228);
+}
+
+.filters .soon {
+    background-color: rgb(221, 255, 221);
+}
+
+.filters .missed {
+    background-color: rgb(255, 221, 221);
+}
+
+.filters .later {
+    background-color: rgb(190, 222, 237);
 }
 </style>
