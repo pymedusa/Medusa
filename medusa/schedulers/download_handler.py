@@ -212,6 +212,12 @@ class DownloadHandler(object):
                     'resource': status.resource
                 }
             )
+
+            if not status.destination:
+                log.warning('Not starting postprocessing for info_hash {info_hash}, need a destination path.',
+                            {'info_hash': history_result['info_hash']})
+                continue
+
             self._postprocess(
                 status.destination, history_result['info_hash'], status.resource,
                 failed=str(status) == 'Failed'
