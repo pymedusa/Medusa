@@ -209,11 +209,17 @@ class DownloadHandler(object):
                     'status': status,
                     'client': app.TORRENT_METHOD if client_type == 'torrent' else app.NZB_METHOD,
                     'destination': status.destination,
-                    'resource': status.resource
+                    'resource': status.resource or history_result['resource']
                 }
             )
 
-            if not status.destination:
+            if not status.destination and not status.resource and history_result['resource']:
+                # We didn't get a destination, because probably it failed to start a download.
+                # For example when it already failed to get the nzb. But we have a resource name from the snatch.
+                # We'll use this, so that we can finish the postprocessing and possible failed download handling.
+                status.resource = history_result['resource']
+
+            if not status.destination and not status.resource:
                 log.warning('Not starting postprocessing for info_hash {info_hash}, need a destination path.',
                             {'info_hash': history_result['info_hash']})
                 continue

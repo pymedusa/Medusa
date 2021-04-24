@@ -87,8 +87,8 @@ class PostProcessQueueItem(generic_queue.QueueItem):
             'status': status
         })
 
-    def update_history(self, process_results):
-        """Update main.history table with process results."""
+    def update_history_processed(self, process_results):
+        """Update the history table when we have a processed path + resource."""
         from medusa.schedulers.download_handler import ClientStatus
         status = ClientStatus()
 
@@ -99,7 +99,7 @@ class PostProcessQueueItem(generic_queue.QueueItem):
 
             # If succeeded store Postprocessed + Completed. (384)
             # If failed store Postprocessed + Failed. (272)
-            if process_results.result:
+            if process_results.result and not process_results.failed:
                 status.add_status_string('Completed')
                 self.success = True
             else:
@@ -112,6 +112,30 @@ class PostProcessQueueItem(generic_queue.QueueItem):
                 'resource': self.resource_name
             })
 
+    def process_path(self):
+        """Process for when we have a valid path."""
+        process_method = self.process_method or app.PROCESS_METHOD
+
+        process_results = ProcessResult(self.path, process_method, failed=self.failed)
+        process_results.process(
+            resource_name=self.resource_name,
+            force=self.force,
+            is_priority=self.is_priority,
+            delete_on=self.delete_on,
+            proc_type=self.proc_type,
+            ignore_subs=self.ignore_subs
+        )
+
+        # A user might want to use advanced post-processing, but opt-out of failed download handling.
+        if (app.USE_FAILED_DOWNLOADS and (process_results.failed or (not process_results.succeeded and self.resource_name))):
+            process_results.process_failed(self.path)
+
+        # In case we have an info_hash or (nzbid), update the history table with the pp results.
+        if self.info_hash:
+            self.update_history_processed(process_results)
+
+        return process_results
+
     def run(self):
         """Run postprocess queueitem thread."""
         generic_queue.QueueItem.run(self)
@@ -123,31 +147,17 @@ class PostProcessQueueItem(generic_queue.QueueItem):
             # Push an update to any open Web UIs through the WebSocket
             ws.Message('QueueItemUpdate', self.to_json).push()
 
-            path = self.path
-            process_method = self.process_method or app.PROCESS_METHOD
+            if not self.path and self.resource_name:
+                # We don't have a path, but do have a resource name. If this is a failed download.
+                # Let's use the TV_DOWNLOAD_DIR as path combined with the resource_name.
+                self.path = app.TV_DOWNLOAD_DIR
 
-            process_results = ProcessResult(path, process_method, failed=self.failed)
-            process_results.process(
-                resource_name=self.resource_name,
-                force=self.force,
-                is_priority=self.is_priority,
-                delete_on=self.delete_on,
-                proc_type=self.proc_type,
-                ignore_subs=self.ignore_subs
-            )
-
-            # A user might want to use advanced post-processing, but opt-out of failed download handling.
-            if (app.USE_FAILED_DOWNLOADS and (process_results.failed or (not process_results.succeeded and self.resource_name))):
-                process_results.process_failed(path)
-
-            # In case we have an info_hash or (nzbid), update the history table with the pp results.
-            if self.info_hash:
-                self.update_history(process_results)
+            if self.path:
+                process_results = self.process_path()
+                if process_results._output:
+                    self.to_json.update({'output': process_results._output})
 
             log.info('Completed Postproccessing')
-
-            if process_results._output:
-                self.to_json.update({'output': process_results._output})
 
             # Use success as a flag for a finished PP. PP it self can be succeeded or failed.
             self.success = True
