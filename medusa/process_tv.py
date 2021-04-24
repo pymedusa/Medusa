@@ -123,23 +123,24 @@ class PostProcessQueueItem(generic_queue.QueueItem):
             # Push an update to any open Web UIs through the WebSocket
             ws.Message('QueueItemUpdate', self.to_json).push()
 
-            path = self.path or app.TV_DOWNLOAD_DIR
+            path = self.path
             process_method = self.process_method or app.PROCESS_METHOD
 
-            process_results = ProcessResult(path, process_method, failed=self.failed)
-            process_results.process(
-                resource_name=self.resource_name,
-                force=self.force,
-                is_priority=self.is_priority,
-                delete_on=self.delete_on,
-                proc_type=self.proc_type,
-                ignore_subs=self.ignore_subs
-            )
+            # If we don't have a path, no need to start a PP.
+            if path:
+                process_results = ProcessResult(path, process_method, failed=self.failed)
+                process_results.process(
+                    resource_name=self.resource_name,
+                    force=self.force,
+                    is_priority=self.is_priority,
+                    delete_on=self.delete_on,
+                    proc_type=self.proc_type,
+                    ignore_subs=self.ignore_subs
+                )
 
-            # A user might want to use advanced post-processing, but opt-out of failed download handling.
-            if app.USE_FAILED_DOWNLOADS \
-               and (process_results.failed or (not process_results.succeeded and self.resource_name)):
-                process_results.process_failed(path)
+                # A user might want to use advanced post-processing, but opt-out of failed download handling.
+                if (app.USE_FAILED_DOWNLOADS and (process_results.failed or (not process_results.succeeded and self.resource_name))):
+                    process_results.process_failed(path)
 
             # In case we have an info_hash or (nzbid), update the history table with the pp results.
             if self.info_hash:

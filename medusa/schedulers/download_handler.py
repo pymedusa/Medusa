@@ -200,12 +200,16 @@ class DownloadHandler(object):
                 continue
 
             log.debug(
-                'Found {client_type} (status {status}) on {client} with info_hash {info_hash}',
+                'Sending postprocess job for {client_type} with info_hash: {info_hash}'
+                '\nstatus: {status}\nclient: {client}'
+                '\ndestination: {destination}\nresource: {resource}',
                 {
                     'client_type': client_type,
+                    'info_hash': history_result['info_hash'],
                     'status': status,
                     'client': app.TORRENT_METHOD if client_type == 'torrent' else app.NZB_METHOD,
-                    'info_hash': history_result['info_hash']
+                    'destination': status.destination,
+                    'resource': status.resource
                 }
             )
             self._postprocess(
