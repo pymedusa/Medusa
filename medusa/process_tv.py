@@ -142,7 +142,9 @@ class PostProcessQueueItem(generic_queue.QueueItem):
         self.started = True
 
         try:
-            log.info('Beginning postprocessing for path {path}', {'path': self.path})
+            log.info('Beginning postprocessing for path {path} and resource {resource}', {
+                'path': self.path, 'resource': self.resource_name
+            })
 
             # Push an update to any open Web UIs through the WebSocket
             ws.Message('QueueItemUpdate', self.to_json).push()
