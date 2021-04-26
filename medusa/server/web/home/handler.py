@@ -222,14 +222,14 @@ class Home(WebRoot):
             return 'Unable to connect to host'
 
     @staticmethod
-    def testTorrent(torrent_method=None, host=None, username=None, password=None):
+    def testTorrent(torrent_method=None, host=None, username=None, password=None, torrent_path=None):
         # @TODO: Move this to the validation section of each PATCH/PUT method for torrents
         host = config.clean_url(host)
 
         try:
             client = torrent.get_client_class(torrent_method)
 
-            _, acces_msg = client(host, username, password).test_authentication()
+            _, acces_msg = client(host, username, password, torrent_path).test_authentication()
         except Exception as error:
             logger.log('Error while testing {torrent} connection: {error}'.format(
                 torrent=torrent_method or 'torrent', error=error), logger.WARNING)
