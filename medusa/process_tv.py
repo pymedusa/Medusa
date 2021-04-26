@@ -77,8 +77,7 @@ class PostProcessQueueItem(generic_queue.QueueItem):
         """
         main_db_con = db.DBConnection()
         main_db_con.action(
-            'UPDATE history set client_status = ? '
-            'WHERE date = (select max(date) from history where info_hash = ?)',
+            'UPDATE history set client_status = ? WHERE info_hash = ?',
             [status.status, self.info_hash]
         )
         log.info('Updated history with resource path: {path} and resource: {resource} with new status {status}', {
