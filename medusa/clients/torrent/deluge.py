@@ -106,7 +106,7 @@ def read_torrent_status(torrent_data):
 class DelugeAPI(GenericClient):
     """Deluge API class."""
 
-    def __init__(self, host=None, username=None, password=None):
+    def __init__(self, host=None, username=None, password=None, torrent_path=None):
         """Constructor.
 
         :param host:
@@ -116,7 +116,7 @@ class DelugeAPI(GenericClient):
         :param password:
         :type password: string
         """
-        super(DelugeAPI, self).__init__('Deluge', host, username, password)
+        super(DelugeAPI, self).__init__('Deluge', host, username, password, torrent_path)
         self.session.headers.update({'Content-Type': 'application/json'})
         self.url = urljoin(self.host, 'json')
 

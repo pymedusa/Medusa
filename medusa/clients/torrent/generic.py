@@ -28,7 +28,7 @@ log.logger.addHandler(logging.NullHandler())
 class GenericClient(object):
     """Base class for all torrent clients."""
 
-    def __init__(self, name, host=None, username=None, password=None):
+    def __init__(self, name, host=None, username=None, password=None, torrent_path=None):
         """Constructor.
 
         :param name:
@@ -44,6 +44,7 @@ class GenericClient(object):
         self.username = app.TORRENT_USERNAME if username is None else username
         self.password = app.TORRENT_PASSWORD if password is None else password
         self.host = app.TORRENT_HOST if host is None else host
+        self.torrent_path = app.TORRENT_PATH if torrent_path is None else torrent_path
         self.rpcurl = app.TORRENT_RPCURL
         self.url = None
         self.response = None

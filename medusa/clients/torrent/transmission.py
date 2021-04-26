@@ -26,7 +26,7 @@ log.logger.addHandler(logging.NullHandler())
 class TransmissionAPI(GenericClient):
     """Transmission API class."""
 
-    def __init__(self, host=None, username=None, password=None):
+    def __init__(self, host=None, username=None, password=None, torrent_path=None):
         """Transmission constructor.
 
         :param host:

@@ -28,7 +28,7 @@ log.logger.addHandler(logging.NullHandler())
 class DelugeDAPI(GenericClient):
     """Deluge Daemon API class."""
 
-    def __init__(self, host=None, username=None, password=None):
+    def __init__(self, host=None, username=None, password=None, torrent_path=None):
         """Deluge deamon Constructor.
 
         :param host:
@@ -38,7 +38,7 @@ class DelugeDAPI(GenericClient):
         :param password:
         :type password: string
         """
-        super(DelugeDAPI, self).__init__('DelugeD', host, username, password)
+        super(DelugeDAPI, self).__init__('DelugeD', host, username, password, torrent_path)
         self.drpc = None
 
     def _get_auth(self):

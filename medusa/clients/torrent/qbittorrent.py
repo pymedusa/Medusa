@@ -29,7 +29,7 @@ class APIUnavailableError(Exception):
 class QBittorrentAPI(GenericClient):
     """qBittorrent API class."""
 
-    def __init__(self, host=None, username=None, password=None):
+    def __init__(self, host=None, username=None, password=None, torrent_path=None):
         """Constructor.
 
         :param host:
@@ -39,7 +39,7 @@ class QBittorrentAPI(GenericClient):
         :param password:
         :type password: string
         """
-        super(QBittorrentAPI, self).__init__('qBittorrent', host, username, password)
+        super(QBittorrentAPI, self).__init__('qBittorrent', host, username, password, torrent_path)
         self.url = self.host
         # Auth for API v1.0.0 (qBittorrent v3.1.x and older)
         self.session.auth = HTTPDigestAuth(self.username, self.password)

@@ -10,7 +10,7 @@ from medusa.clients.torrent.generic import GenericClient
 class MLNetAPI(GenericClient):
     """MLDonkey API class."""
 
-    def __init__(self, host=None, username=None, password=None):
+    def __init__(self, host=None, username=None, password=None, torrent_path=None):
         """Constructor.
 
         :param host:
@@ -20,7 +20,7 @@ class MLNetAPI(GenericClient):
         :param password:
         :type password: string
         """
-        super(MLNetAPI, self).__init__('mlnet', host, username, password)
+        super(MLNetAPI, self).__init__('mlnet', host, username, password, torrent_path)
         self.url = self.host
         # self.session.auth = HTTPDigestAuth(self.username, self.password);
 

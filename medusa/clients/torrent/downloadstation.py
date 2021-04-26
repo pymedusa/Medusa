@@ -29,7 +29,7 @@ log.logger.addHandler(logging.NullHandler())
 class DownloadStationAPI(GenericClient):
     """Synology Download Station API class."""
 
-    def __init__(self, host=None, username=None, password=None):
+    def __init__(self, host=None, username=None, password=None, torrent_path=None):
         """Constructor.
 
         :param host:
@@ -39,7 +39,7 @@ class DownloadStationAPI(GenericClient):
         :param password:
         :type password: string
         """
-        super(DownloadStationAPI, self).__init__('DownloadStation', host, username, password)
+        super(DownloadStationAPI, self).__init__('DownloadStation', host, username, password, torrent_path)
 
         self.urls = {
             'login': urljoin(self.host, 'webapi/auth.cgi'),
@@ -106,8 +106,6 @@ class DownloadStationAPI(GenericClient):
 
     def _add_torrent_uri(self, result):
 
-        torrent_path = app.TORRENT_PATH
-
         data = {
             'api': 'SYNO.DownloadStation.Task',
             'version': '1',
@@ -119,8 +117,8 @@ class DownloadStationAPI(GenericClient):
         if not self._check_destination():
             return False
 
-        if torrent_path:
-            data['destination'] = torrent_path
+        if self.torrent_path:
+            data['destination'] = self.torrent_path
         log.debug('Add torrent URI with data: {0}', json.dumps(data))
         self._request(method='post', data=data)
         return self._check_response()
@@ -130,8 +128,6 @@ class DownloadStationAPI(GenericClient):
         # is broken for downloading via a file, only uri's are working correct.
         if result.url[:4].lower() in ['http', 'magn']:
             return self._add_torrent_uri(result)
-
-        torrent_path = app.TORRENT_PATH
 
         data = {
             'api': 'SYNO.DownloadStation.Task',
@@ -143,8 +139,8 @@ class DownloadStationAPI(GenericClient):
         if not self._check_destination():
             return False
 
-        if torrent_path:
-            data['destination'] = torrent_path
+        if self.torrent_path:
+            data['destination'] = self.torrent_path
 
         files = {'file': ('{name}.torrent'.format(name=result.name), result.content)}
 
@@ -154,12 +150,10 @@ class DownloadStationAPI(GenericClient):
 
     def _check_destination(self):
         """Validate and set torrent destination."""
-        torrent_path = app.TORRENT_PATH
-
         if not (self.auth or self._get_auth()):
             return False
 
-        if self.checked_destination and self.destination == torrent_path:
+        if self.checked_destination and self.destination == self.torrent_path:
             return True
 
         params = {
@@ -189,8 +183,8 @@ class DownloadStationAPI(GenericClient):
 
             if version_string.startswith('DSM 6'):
                 #  This is DSM6, lets make sure the location is relative
-                if torrent_path and os.path.isabs(torrent_path):
-                    torrent_path = re.sub(r'^/volume\d/', '', torrent_path).lstrip('/')
+                if self.torrent_path and os.path.isabs(self.torrent_path):
+                    self.torrent_path = re.sub(r'^/volume\d/', '', self.torrent_path).lstrip('/')
                 else:
                     #  Since they didn't specify the location in the settings,
                     #  lets make sure the default is relative,
@@ -213,7 +207,7 @@ class DownloadStationAPI(GenericClient):
                         jdata = self.response.json()
                         destination = jdata.get('data', {}).get('default_destination')
                         if destination and os.path.isabs(destination):
-                            torrent_path = re.sub(r'^/volume\d/', '', destination).lstrip('/')
+                            self.torrent_path = re.sub(r'^/volume\d/', '', destination).lstrip('/')
                         else:
                             log.info('Default destination could not be'
                                      ' determined for DSM6: {response}',
@@ -221,12 +215,12 @@ class DownloadStationAPI(GenericClient):
 
                             return False
 
-        if destination or torrent_path:
+        if destination or self.torrent_path:
             log.info('Destination is now {path}',
-                     {'path': torrent_path or destination})
+                     {'path': self.torrent_path or destination})
 
         self.checked_destination = True
-        self.destination = torrent_path
+        self.destination = self.torrent_path
         return True
 
 
