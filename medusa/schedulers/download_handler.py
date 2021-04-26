@@ -327,7 +327,7 @@ class DownloadHandler(object):
         """Update status in the history table for torrents/nzb's that can't be located anymore."""
         client_type = 'torrent' if isinstance(client, GenericClient) else 'nzb'
 
-        # Make sure the client can be reached. As we don't want to change the state for downlaods
+        # Make sure the client can be reached. As we don't want to change the state for downloads
         # because the client is temporary unavailable.
         if not self._test_connection(client, client_type):
             log.warning('The client cannot be reached or authentication is failing. Abandon cleanup.')
