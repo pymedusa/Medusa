@@ -1,20 +1,8 @@
 <template>
     <div id="schedule-template">
         <div class="row">
-            <div class="col-md-12">                
-                <div class="key pull-left">
-                    <template v-if="scheduleLayout !== 'calendar'">
-                        <b>Key:</b>
-                        <span class="listing-key listing-overdue">Missed</span>
-                        <span class="listing-key listing-current">Today</span>
-                        <span class="listing-key listing-default">Soon</span>
-                        <span class="listing-key listing-toofar">Later</span>
-                    </template>
-                    <app-link class="btn-medusa btn-inline forceBacklog" :href="`webcal://${location.hostname}:${location.port}/calendar`">
-                    <i class="icon-calendar icon-white"></i>Subscribe</app-link>
-                </div>
-
-                <div v-if="scheduleLayout === 'calendar'" class="filters pull-left">
+            <div class="col-md-12">
+                <div class="filters pull-left">
                     <label for="checkbox-missed">
                         <div class="missed">
                             <input id="checkbox-missed" type="checkbox" v-model="displayCategory.missed">
@@ -39,6 +27,11 @@
                             later
                         </div>
                     </label>
+                </div>
+
+                <div class="pull-left">
+                    <app-link class="btn-medusa btn-inline forceBacklog" :href="`webcal://${location.hostname}:${location.port}/calendar`">
+                    <i class="icon-calendar icon-white"></i>Subscribe</app-link>
                 </div>
 
                 <div class="pull-right">
@@ -162,11 +155,17 @@ td.tvShow a:hover {
 
 .filters {
     color: rgb(0, 0, 0);
-    margin: 3px 5px;
+    margin: -2px 5px;
+}
+
+.filters > label {
+    display: block;
+    float: left;
+
 }
 
 .filters div {
-    padding: 0px 2px;
+    padding: 5px 5px 2px 3px;
 }
 
 .filters div:active {
