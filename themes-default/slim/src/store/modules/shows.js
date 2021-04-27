@@ -188,10 +188,10 @@ const getters = {
         const show = state.shows.find(show => show.id.slug === showSlug);
         return show && show.seasons && show.seasons.find(s => s.season === season) ? show.seasons.find(s => s.season === season).children.find(ep => ep.episode === episode) : undefined;
     },
-    getCurrentShow: (state, getters, rootState) => {
+    getCurrentShow: (state, _, rootState) => {
         return state.shows.find(show => show.id.slug === state.currentShow.showSlug) || rootState.defaults.show;
     },
-    showsWithStats: (state, getters, rootState) => {
+    showsWithStats: (state, _, rootState) => {
         if (!state.shows) {
             return [];
         }
