@@ -472,7 +472,6 @@ class ProcessResult(object):
             topdown = True if self.directory == path_name else False
             for root, dirs, files in os.walk(path_name, topdown=topdown):
                 if files:
-                    self.log_and_output('Yielding following folder for processing {root}', level=logging.INFO, **{'root': root})
                     yield root, sorted(files)
                 if topdown:
                     break
