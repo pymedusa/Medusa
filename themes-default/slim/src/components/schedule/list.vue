@@ -7,7 +7,8 @@
                         :column-filter-options="{
                             enabled: true
                         }"
-                        styleClass="vgt-table condensed"
+                        styleClass="vgt-table condensed schedule"
+                        :row-style-class="rowStyleClassFn">
         >
             <template slot="table-row" slot-scope="props">
                 <span v-if="props.column.label == 'Airdate'" class="align-center">
@@ -18,7 +19,7 @@
                     {{props.row.airdate ? fuzzyParseDateTime(props.row.airdate) : ''}}
                 </span>
 
-                <span v-else-if="props.column.label == 'Show'" class="align-center show-title">
+                <span v-else-if="props.column.label == 'Show'" class="align-center tv-show">
                     <app-link :href="`home/displayShow?showslug=${props.row.showSlug}`">{{ props.row.showName }}</app-link>
                 </span>
 
@@ -134,10 +135,12 @@ export default {
             }, {
                 label: 'Indexers',
                 field: 'indexers',
+                sortable: false,
                 hidden: getCookie('Indexers')
             }, {
                 label: 'Search',
                 field: 'search',
+                sortable: false,
                 hidden: getCookie('Search')
             }]
         }
@@ -155,6 +158,11 @@ export default {
         filteredSchedule() {
             const { displayPaused, getScheduleFlattened } = this;
             return getScheduleFlattened.filter(item => !Boolean(item.paused) || displayPaused);
+        }
+    },
+    methods: {
+        rowStyleClassFn(row) {
+            return row.class;
         }
     }
 };

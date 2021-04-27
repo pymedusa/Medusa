@@ -1,8 +1,8 @@
 <template>
     <div class="calendar-wrapper" :class="{fanartOpacity: layout.fanartBackgroundOpacity}">
         <div class="wrap-center">
-            <div class="day-column" v-for="day in sortedEpisodes" :key="day.header">
-                <span class="day-header" :title="`airs ${day.airdate}`">{{day.header}}</span>
+            <div class="day-column" v-for="day in groupedSchedule" :key="day.airdate">
+                <span class="day-header" :title="day.airdate ? `airs ${day.airdate}` : 'No shows for this day'">{{day.header}}</span>
                 <ul v-if="day.episodes.length > 0">
                     <li v-for="episode in day.episodes" :key="episode.episodeSlug" class="calendar-show">
                         <div class="poster">
@@ -51,118 +51,11 @@ export default {
     computed: {
         ...mapState({
             layout: state => state.config.layout,
-            general: state => state.config.general,
-            later: state => state.schedule.later,
-            missed: state => state.schedule.missed,
-            soon: state => state.schedule.soon,
-            today: state => state.schedule.today,
-            consts: state => state.config.consts,
-            displayPaused: state => state.config.layout.comingEps.displayPaused,
-            displayCategory: state => state.schedule.displayCategory,
-            sort: state => state.config.layout.comingEps.sort
+            general: state => state.config.general
         }),
         ...mapGetters([
-            'getScheduleFlattened',
-            'fuzzyParseDateTime'
-        ]),
-        filteredSchedule() {
-            const { displayPaused, getScheduleFlattened } = this;
-            return getScheduleFlattened.filter(item => !Boolean(item.paused) || displayPaused);
-        },
-        /**
-         * Group the coming episodes into an array of objects with an attibute header (the week day) 
-         * and an attribute episodes with an array of coming episodes.
-         */
-        sortedEpisodes() {
-            const { displayPaused, missed, soon, today, later, displayCategory } = this;
-            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-            
-            /* Return an array of the days to come */
-            const comingDays = (currentDay, nrComingDays) => {
-                let currentDayOfTheWeek = currentDay.getDay();
-                let returnDays = [];
-                for (let i=0; i < nrComingDays; i++) {
-                    if (currentDayOfTheWeek > 7) {
-                        currentDayOfTheWeek = 1;
-                    }
-                    returnDays.push(currentDayOfTheWeek)
-                    currentDayOfTheWeek += 1;
-                }
-                return returnDays;
-            }
-
-            const _MS_PER_DAY = 1000 * 60 * 60 * 24;
-
-            // a and b are javascript Date objects
-            function dateDiffInDays(a, b) {
-                // Discard the time and time-zone information.
-                const utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
-                const utc2 = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate());
-
-                return Math.floor((utc2 - utc1) / _MS_PER_DAY);
-            }
-
-            const newArray = [];
-            let combinedEpisodes = [];
-
-            if (displayCategory.missed) {
-                combinedEpisodes.push(...missed);
-            }
-
-            if (displayCategory.today) {
-                combinedEpisodes.push(...today);
-            }
-
-            if (displayCategory.soon) {
-                combinedEpisodes.push(...soon);
-            }
-
-            if (displayCategory.later) {
-                combinedEpisodes.push(...later);
-            }
-
-            const filteredEpisodes = combinedEpisodes.filter(item => !Boolean(item.paused) || displayPaused);
-            if (filteredEpisodes.length === 0) {
-                 return [];
-            }
-            
-            let currentDay = new Date(filteredEpisodes[0].airdate);
-
-            // Group the coming episodes by day.
-            for (const episode of filteredEpisodes) {
-                
-                // Calculate the gaps in the week, for which we don't have any scheduled shows.
-                if (currentDay !== new Date(episode.airdate)) {
-                    const diffDays = dateDiffInDays(currentDay, new Date(episode.airdate));
-                    if (diffDays > 1) {
-                        for (const emptyDay of comingDays(currentDay, diffDays).slice(-1)) {
-                            newArray.push({
-                                header: days[emptyDay -1],
-                                class: 'shows-soon',
-                                episodes: []
-                            });
-                        }
-                    }
-                }
-                
-                currentDay = new Date(episode.airdate)
-
-                let weekDay = newArray.find(item => item.airdate === episode.airdate);
-                if (!weekDay) {
-                    weekDay = {
-                        airdate: episode.airdate,
-                        header: days[episode.weekday -1],
-                        class: 'shows-soon',
-                        episodes: []
-                    };
-                    newArray.push(weekDay);
-                }
-
-                episode.airsTime = episode.airs.split(' ').slice(-2).join(' ');
-                weekDay.episodes.push(episode);
-            }
-            return newArray;
-        }
+            'groupedSchedule'
+        ])
     }
 };
 </script>
@@ -203,7 +96,7 @@ ul > li {
     flex-direction: row;
     flex-wrap: wrap;
     --column-width: 15rem;
-    --poster-max-height: 22rem;
+    --poster-height: 22rem;
     --background-text-grey: rgb(210, 210, 210);
 }
 
@@ -240,7 +133,7 @@ ul > li {
 
 .calendar-show .poster >>> img {
     width: var(--column-width);
-    max-height: var(--poster-max-height);
+    height: var(--poster-height);
 }
 
 .calendar-show .text {
