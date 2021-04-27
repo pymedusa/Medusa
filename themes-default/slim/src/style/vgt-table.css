@@ -326,3 +326,25 @@ span.release-group {
     cursor: help;
     margin-right: 5px;
 }
+
+/* Schedule list layout */
+.vgt-table-styling >>> .schedule tr.today {
+    background-color: rgb(245, 241, 228);
+}
+
+.vgt-table-styling >>> .schedule tr.soon {
+    background-color: rgb(221, 255, 221);
+}
+
+.vgt-table-styling >>> .schedule tr.missed {
+    background-color: rgb(255, 221, 221);
+}
+
+.vgt-table-styling >>> .schedule tr.later {
+    background-color: rgb(190, 222, 237);
+}
+
+.vgt-table-styling >>> .schedule tr,
+.vgt-table-styling >>> .schedule tr a {
+    color: rgb(0, 0, 0);
+}
