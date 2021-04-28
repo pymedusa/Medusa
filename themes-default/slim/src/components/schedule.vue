@@ -174,17 +174,21 @@ td.tvShow a:hover {
 
 .filters .today {
     background-color: rgb(245, 241, 228);
+    color: rgb(130, 111, 48);
 }
 
 .filters .soon {
     background-color: rgb(221, 255, 221);
+    color: rgb(41, 87, 48);
 }
 
 .filters .missed {
     background-color: rgb(255, 221, 221);
+    color: rgb(137, 0, 0);
 }
 
 .filters .later {
     background-color: rgb(190, 222, 237);
+    color: rgb(29, 80, 104);
 }
 </style>
