@@ -338,4 +338,31 @@ button.nav-show-list {
     margin-top: -1px;
 }
 
+
+.table-layout >>> .vgt-input {
+    height: 23px;
+    line-height: 23px;
+    font-size: 0.9em;
+    width: 100%;
+    background-color: #fff;
+    background-image: none;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    padding: 0 10px;
+    margin: 0;
+}
+
+.table-layout >>> .vgt-select {
+    height: 23px;
+    line-height: 23px;
+    font-size: 0.9em;
+    width: 100%;
+    background-color: #fff;
+    background-image: none;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    padding: 0 10px;
+}
+
+
 </style>

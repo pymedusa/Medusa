@@ -191,7 +191,7 @@ const getters = {
     getCurrentShow: (state, _, rootState) => {
         return state.shows.find(show => show.id.slug === state.currentShow.showSlug) || rootState.defaults.show;
     },
-    showsWithStats: (state, _, rootState) => {
+    showsWithStats: (state, getters, rootState) => {
         if (!state.shows) {
             return [];
         }

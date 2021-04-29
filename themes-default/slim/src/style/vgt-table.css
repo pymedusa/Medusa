@@ -280,8 +280,22 @@ td.col-footer {
     margin-left: 5px;
 }
 
+.vgt-multiselect {
+    min-height: 30px;
+}
+
 .multiselect--active {
     min-width: 200px;
+}
+
+.vgt-multiselect >>> .multiselect__placeholder {
+    margin-bottom: 0;
+    padding-top: 0;
+}
+
+.vgt-multiselect >>> .multiselect__tags {
+    padding-top: 0;
+    min-height: 30px;
 }
 
 :not(tr.status) span.episode-title a,
@@ -297,28 +311,28 @@ tr span.show-title a {
 }
 
 .vgt-table-styling >>> .vgt-input {
-    height: 30px;
-    line-height: 30px;
+    height: 23px;
+    line-height: 23px;
     font-size: 0.9em;
     width: 100%;
     background-color: #fff;
     background-image: none;
     border: 1px solid #ccc;
     border-radius: 3px;
-    padding: 5px 10px;
-    margin-top: 5px;
+    padding: 0 10px;
+    margin: 0;
 }
 
 .vgt-table-styling >>> .vgt-select {
-    height: 30px;
-    line-height: 30px;
+    height: 23px;
+    line-height: 23px;
     font-size: 0.9em;
     width: 100%;
     background-color: #fff;
     background-image: none;
     border: 1px solid #ccc;
     border-radius: 3px;
-    padding: 5px 10px;
+    padding: 0 10px;
 }
 
 /* History compact */

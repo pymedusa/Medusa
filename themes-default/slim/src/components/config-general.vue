@@ -965,7 +965,7 @@ export default {
     }
 };
 </script>
-<style>
+<style scoped>
 @import '../style/modal.css';
 
 .display-inline {
