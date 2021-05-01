@@ -2,11 +2,8 @@
 
 from __future__ import unicode_literals
 
-import datetime
-
-from medusa import app, network_timezones
+from medusa import app
 from medusa.server.web.core.base import PageTemplate, WebRoot
-from medusa.show.coming_episodes import ComingEpisodes
 
 from tornroutes import route
 
@@ -22,10 +19,6 @@ class Schedule(WebRoot):
 
         [Converted to VueRouter]
         """
-        # next_week = datetime.date.today() + datetime.timedelta(days=7)
-        # next_week1 = datetime.datetime.combine(next_week, datetime.time(tzinfo=network_timezones.app_timezone))
-        # results = ComingEpisodes.get_coming_episodes(ComingEpisodes.categories, app.COMING_EPS_SORT, False)
-        # today = datetime.datetime.now().replace(tzinfo=network_timezones.app_timezone)
         return PageTemplate(rh=self, filename='index.mako').render()
 
     def toggleScheduleDisplayPaused(self):
