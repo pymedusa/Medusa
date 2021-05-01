@@ -26,6 +26,9 @@
                 dropdownAllowAll: false,
                 position: 'both'
             }"
+            :column-filter-options="{
+                enabled: true
+            }"
             styleClass="vgt-table condensed"
         >
             <template slot="table-row" slot-scope="props">

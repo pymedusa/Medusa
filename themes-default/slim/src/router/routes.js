@@ -312,8 +312,10 @@ const scheduleRoute = {
     meta: {
         title: 'Schedule',
         header: 'Schedule',
-        topMenu: 'schedule'
-    }
+        topMenu: 'schedule',
+        converted: true
+    },
+    component: () => import('../components/schedule.vue')
 };
 
 /** @type {import('.').Route} */

@@ -34,6 +34,7 @@ const ADD_SEARCH_RESULTS = '⛽ New search results added for provider';
 const ADD_QUEUE_ITEM = '🔍 Search queue item updated';
 const ADD_SHOW_QUEUE_ITEM = '📺 Show queue item added to store';
 const UPDATE_SHOWLIST_DEFAULT = '⚙️ Anime config showlist default updated';
+const ADD_SCHEDULE = '📅 Schedule information added';
 
 export {
     LOGIN_PENDING,
@@ -71,5 +72,6 @@ export {
     ADD_SEARCH_RESULTS,
     ADD_QUEUE_ITEM,
     ADD_SHOW_QUEUE_ITEM,
-    UPDATE_SHOWLIST_DEFAULT
+    UPDATE_SHOWLIST_DEFAULT,
+    ADD_SCHEDULE
 };

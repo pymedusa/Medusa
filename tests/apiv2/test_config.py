@@ -108,6 +108,7 @@ def config_main(monkeypatch, app_config):
     section_data['webInterface']['log'] = bool(app.WEB_LOG)
     section_data['webInterface']['username'] = app.WEB_USERNAME
     section_data['webInterface']['password'] = app.WEB_PASSWORD
+    section_data['webInterface']['host'] = app.WEB_HOST
     section_data['webInterface']['port'] = int_default(app.WEB_PORT, 8081)
     section_data['webInterface']['notifyOnLogin'] = bool(app.NOTIFY_ON_LOGIN)
     section_data['webInterface']['ipv6'] = bool(app.WEB_IPV6)

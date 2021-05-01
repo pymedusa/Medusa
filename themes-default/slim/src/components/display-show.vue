@@ -457,7 +457,6 @@ export default {
         };
         return {
             invertTable: true,
-            isMobile: false,
             subtitleSearchComponents: [],
             columns: [{
                 label: 'NFO',
@@ -1581,9 +1580,27 @@ td.col-footer {
     margin-right: 2px;
 }
 
+.displayShow >>> .vgt-dropdown > .button-group {
+    position: relative;
+}
+
+.displayShow >>> .dropdown-toggle {
+    position: absolute;
+    z-index: 1;
+    top: 0.1em;
+    right: 0.1em;
+    width: 1em;
+    transition: width 0.2s ease-in-out;
+}
+
+.displayShow >>> .dropdown-toggle:hover,
+.displayShow >>> .dropdown-toggle:active {
+    width: 2em;
+}
+
 .displayShow >>> .vgt-dropdown-menu {
     position: absolute;
-    z-index: 1000;
+    z-index: 1;
     float: left;
     min-width: 160px;
     padding: 5px 0;
@@ -1592,12 +1609,14 @@ td.col-footer {
     text-align: left;
     list-style: none;
     background-clip: padding-box;
-    border-radius: 4px;
+    border-radius: 3px;
+    right: 0;
+    top: 2em;
 }
 
 .displayShow >>> .vgt-dropdown-menu > li > span {
     display: block;
-    padding: 3px 20px;
+    padding: 3px 5px;
     clear: both;
     font-weight: 400;
     line-height: 1.42857143;
