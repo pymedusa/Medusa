@@ -34,8 +34,7 @@
 </template>
 <script>
 import { mapGetters, mapState } from 'vuex';
-import { AppLink, Asset, ProgressBar, QualityPill } from '../helpers';
-import BannerCard from './banner-card.vue';
+import { AppLink, Asset } from '../helpers';
 import Backstretch from '../backstretch.vue';
 
 export default {
@@ -43,10 +42,7 @@ export default {
     components: {
         AppLink,
         Asset,
-        Backstretch,
-        BannerCard,
-        ProgressBar,
-        QualityPill
+        Backstretch
     },
     computed: {
         ...mapState({
@@ -95,13 +91,10 @@ ul > li {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
+
     --column-width: 15rem;
     --poster-height: 22rem;
     --background-text-grey: rgb(210, 210, 210);
-}
-
-.wrap-center {
-    display:flex;
 }
 
 .day-column {
@@ -115,6 +108,7 @@ ul > li {
     padding: 3px 5px 10px;
     color: rgb(136, 136, 136);
     background-color: var(--background-text-grey);
+    width: var(--column-width);
 }
 
 .day-header {
@@ -129,15 +123,11 @@ ul > li {
     border-top: rgb(255, 255, 255) 1px solid;
     border-bottom: rgb(255, 255, 255) 1px solid;
     height: 3rem;
-} 
+}
 
 .calendar-show .poster >>> img {
     width: var(--column-width);
     height: var(--poster-height);
-}
-
-.calendar-show .text {
-    width: var(--column-width);
 }
 
 .calendar-show .text .airtime {

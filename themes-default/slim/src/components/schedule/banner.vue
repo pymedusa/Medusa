@@ -1,38 +1,32 @@
 <template>
-<div class="banner-wrapper">
-    <template v-if="sort === 'show'">
-        <banner-card v-for="episode in filteredSchedule.sort((a, b) => a.showName.localeCompare(b.showName))"
-                     :key="`${episode.showSlug}${episode.episodeSlug}`" :episode="episode"
-                     :class="`shows-${episode.class}`"
-        />
-    </template>
-    <!-- For the sort by date and network options -->
-    <template v-else>
-        <div  v-for="group in sortedSchedule(sort)" :key="group.header">
-            <!-- Coming shows are grouped per week day -->
-            <h2 class="day">{{group.header}}</h2>
-            <banner-card v-for="episode in group.episodes"
+    <div class="banner-wrapper">
+        <template v-if="sort === 'show'">
+            <banner-card v-for="episode in filteredSchedule.sort((a, b) => a.showName.localeCompare(b.showName))"
                          :key="`${episode.showSlug}${episode.episodeSlug}`" :episode="episode"
                          :class="`shows-${episode.class}`"
             />
-        </div>
-    </template>
+        </template>
+        <!-- For the sort by date and network options -->
+        <template v-else>
+            <div  v-for="group in sortedSchedule(sort)" :key="group.header">
+                <!-- Coming shows are grouped per week day -->
+                <h2 class="day">{{group.header}}</h2>
+                <banner-card v-for="episode in group.episodes"
+                             :key="`${episode.showSlug}${episode.episodeSlug}`" :episode="episode"
+                             :class="`shows-${episode.class}`"
+                />
+            </div>
+        </template>
     </div>
-</div>
-
 </template>
 <script>
 import { mapGetters, mapState } from 'vuex';
-import { AppLink, ProgressBar, QualityPill, Search } from '../helpers';
 import BannerCard from './banner-card.vue';
 
 export default {
     name: 'banner',
     components: {
-        AppLink,
-        BannerCard,
-        ProgressBar,
-        QualityPill
+        BannerCard
     },
     computed: {
         ...mapState({
@@ -46,7 +40,7 @@ export default {
         ]),
         filteredSchedule() {
             const { displayPaused, getScheduleFlattened } = this;
-            return getScheduleFlattened.filter(item => !Boolean(item.paused) || displayPaused);
+            return getScheduleFlattened.filter(item => !item.paused || displayPaused);
         }
     }
 };

@@ -1,15 +1,16 @@
 <template>
     <div class="search-wrapper">
         <img v-if="searchType === 'backlog'" class="epForcedSearch" :id="`${showSlug}x${episode.season}x${episode.episode}`"
-                :name="`${showSlug}x${episode.season}x${episode.episode}`"
-                :ref="`search-${episode.slug}`" src="images/search16.png" height="16"
-                :alt="retryDownload(episode) ? 'retry' : 'search'"
-                :title="retryDownload(episode) ? 'Retry Download' : 'Forced Seach'"
-                @click="queueSearch(episode)"
+             :name="`${showSlug}x${episode.season}x${episode.episode}`"
+             :ref="`search-${episode.slug}`" src="images/search16.png" height="16"
+             :alt="retryDownload(episode) ? 'retry' : 'search'"
+             :title="retryDownload(episode) ? 'Retry Download' : 'Forced Seach'"
+             @click="queueSearch(episode)"
         >
+
         <app-link v-if="searchType === 'manual'" class="epManualSearch" :id="`${showSlug}x${episode.episode}`"
-                    :name="`${showSlug}x${episode.season}x${episode.episode}`"
-                    :href="`home/snatchSelection?showslug=${showSlug}&season=${episode.season}&episode=${episode.episode}`"
+                  :name="`${showSlug}x${episode.season}x${episode.episode}`"
+                  :href="`home/snatchSelection?showslug=${showSlug}&season=${episode.season}&episode=${episode.episode}`"
         >
             <img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search">
         </app-link>
@@ -62,13 +63,17 @@
                 </div>
             </transition>
         </modal>
-
-  </div>
+    </div>
 </template>
 <script>
 import { mapState } from 'vuex';
+import AppLink from './app-link.vue';
+
 export default {
     name: 'select-list',
+    components: {
+        AppLink
+    },
     props: {
         searchType: {
             type: String,
@@ -89,8 +94,8 @@ export default {
         return {
             subtitleComponentInstance: null,
             failedSearchEpisodes: [],
-            backlogSearchEpisodes: [],
-        }
+            backlogSearchEpisodes: []
+        };
     },
     computed: {
         ...mapState({
@@ -107,7 +112,7 @@ export default {
             let data = {};
 
             data = {
-                showSlug: showSlug,
+                showSlug,
                 episodes: [episode.slug],
                 options: {}
             };
@@ -168,13 +173,16 @@ export default {
 </script>
 <style scoped>
 @import '../../style/modal.css';
+
 .mobile-select {
     width: 110px;
     font-size: x-small;
 }
+
 .search-wrapper {
     float: left;
 }
+
 .search-wrapper > img {
     cursor: pointer;
 }

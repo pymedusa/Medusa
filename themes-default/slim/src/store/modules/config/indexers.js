@@ -87,7 +87,7 @@ const getters = {
     },
     /**
      * Return the indexers showUrl.
-     * @param {number} indexerId - Indexer id.
+     * @param {object} state - State object.
      * @returns {string|undefined} Indexers show url or undefined if not found.
      */
     getIndexer: state => indexerId => {

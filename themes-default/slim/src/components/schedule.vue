@@ -31,7 +31,9 @@
 
                 <div class="pull-left">
                     <app-link class="btn-medusa btn-inline forceBacklog" :href="`webcal://${location.hostname}:${location.port}/calendar`">
-                    <i class="icon-calendar icon-white"></i>Subscribe</app-link>
+                        <i class="icon-calendar icon-white" />
+                        Subscribe
+                    </app-link>
                 </div>
 
                 <div class="pull-right">
@@ -123,6 +125,7 @@ export default {
         },
         /**
          * Wrapper to get access to window.location in template.
+         * @returns {object} - returns window.location object.
          */
         location() {
             return location;
@@ -161,7 +164,6 @@ td.tvShow a:hover {
 .filters > label {
     display: block;
     float: left;
-
 }
 
 .filters div {

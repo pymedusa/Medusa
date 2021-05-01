@@ -16,8 +16,9 @@
                                 <div class="col-lg-8">
                                     <div class="row">
                                         <div class="col-lg-12 tvshowTitle">
-                                                <app-link :href="`home/displayShow?showslug=${episode.showSlug}`">
-                                                {{episode.showName}}<span v-if="episode.paused" class="pause"> [paused]</span>
+                                            <app-link :href="`home/displayShow?showslug=${episode.showSlug}`">
+                                                {{episode.showName}}
+                                                <span v-if="episode.paused" class="pause"> [paused]</span>
                                             </app-link>
                                         </div>
                                     </div>
@@ -25,21 +26,23 @@
                                     <div class="row">
                                         <div class="col-lg-12">
                                             <span class="title">Next Episode:</span>
-                                            <span>{{episode.episodeSlug}}</span><span v-if="episode.epName"> - {{episode.epName}}</span>
+                                            <span>{{episode.episodeSlug}}</span>
+                                            <span v-if="episode.epName"> - {{episode.epName}}</span>
                                         </div>
                                     </div>
 
                                     <div class="row">
                                         <div class="col-lg-12">
-                                            <span class="title">Airs: </span><span class="airdate">{{fuzzyParseDateTime(episode.airdate)}}</span>
+                                            <span class="title">Airs: </span>
+                                            <span class="airdate">{{fuzzyParseDateTime(episode.airdate)}}</span>
                                             <span v-if="episode.network"> on {{episode.network}}</span>
                                         </div>
                                     </div>
 
                                     <div class="row">
-                                        <div class="col-lg-12">                                        
+                                        <div class="col-lg-12">
                                             <span class="title">Quality:</span>
-                                            <quality-pill :quality="episode.quality" show-title></quality-pill>
+                                            <quality-pill :quality="episode.quality" show-title />
                                         </div>
                                     </div>
 
@@ -47,29 +50,29 @@
                                         <div class="col-lg-12">
                                             <span class="title" :class="{'summary-trigger-none': !episode.epPlot}" style="vertical-align:middle;">Plot:</span>
                                             <img :class="[episode.epPlot ? 'summary-trigger': 'summary-trigger-none']"
-                                                src="images/plus.png" height="16" width="16" alt=""
-                                                title="Toggle Summary" @click="togglePlot(`${episode.showSlug}${episode.episodeSlug}`)" />
+                                                 src="images/plus.png" height="16" width="16" alt=""
+                                                 title="Toggle Summary" @click="togglePlot(`${episode.showSlug}${episode.episodeSlug}`)">
                                             <div :ref="`${episode.showSlug}${episode.episodeSlug}`" v-show="episode.epPlot" class="summary">{{episode.epPlot}}</div>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="col-lg-4">
-                                    <div class="tvshowTitleIcons">        
+                                    <div class="tvshowTitleIcons">
                                         <app-link v-if="episode.externals.imdb_id" :href="`http://www.imdb.com/title/${episode.externals.imdb_id}`" :title="`http://www.imdb.com/title/${episode.externals.imdb_id}`">
-                                            <img alt="[imdb]" height="16" width="16" src="images/imdb.png" />
+                                            <img alt="[imdb]" height="16" width="16" src="images/imdb.png">
                                         </app-link>
 
                                         <app-link :href="`${getIndexer(episode.indexer).showUrl}${episode.indexerId}`"
-                                                :title="`${getIndexer(episode.indexer).showUrl}${episode.indexerId}`">
-                                            <img :alt="`${getIndexer(episode.indexer).name}`" height="16" width="16" :src="`images/${getIndexer(episode.indexer).icon}`" />
+                                                  :title="`${getIndexer(episode.indexer).showUrl}${episode.indexerId}`">
+                                            <img :alt="`${getIndexer(episode.indexer).name}`" height="16" width="16" :src="`images/${getIndexer(episode.indexer).icon}`">
                                         </app-link>
 
                                         <search searchType="backlog" :showSlug="episode.showSlug" :episode="{
-                                                episode: episode.episode, season: episode.season, slug: episode.episodeSlug
+                                            episode: episode.episode, season: episode.season, slug: episode.episodeSlug
                                         }" />
                                         <search searchType="manual" :showSlug="episode.showSlug" :episode="{
-                                                episode: episode.episode, season: episode.season, slug: episode.episodeSlug
+                                            episode: episode.episode, season: episode.season, slug: episode.episodeSlug
                                         }" />
                                     </div>
                                 </div>
@@ -93,7 +96,7 @@
                         <div class="col-lg-8 col-sm-12">
                             <div class="row">
                                 <div class="col-lg-12 tvshowTitle">
-                                        <app-link :href="`home/displayShow?showslug=${episode.showSlug}`">
+                                    <app-link :href="`home/displayShow?showslug=${episode.showSlug}`">
                                         {{episode.showName}}<span v-if="episode.paused" class="pause"> [paused]</span>
                                     </app-link>
                                 </div>
@@ -114,9 +117,9 @@
                             </div>
 
                             <div class="row">
-                                <div class="col-lg-12">                                        
+                                <div class="col-lg-12">
                                     <span class="title">Quality:</span>
-                                    <quality-pill :quality="episode.quality" show-title></quality-pill>
+                                    <quality-pill :quality="episode.quality" show-title />
                                 </div>
                             </div>
 
@@ -124,29 +127,29 @@
                                 <div class="col-lg-12">
                                     <span class="title" :class="{'summary-trigger-none': !episode.epPlot}" style="vertical-align:middle;">Plot:</span>
                                     <img :class="[episode.epPlot ? 'summary-trigger': 'summary-trigger-none']"
-                                        src="images/plus.png" height="16" width="16" alt=""
-                                        title="Toggle Summary" @click="togglePlot(`${episode.showSlug}${episode.episodeSlug}`)" />
+                                         src="images/plus.png" height="16" width="16" alt=""
+                                         title="Toggle Summary" @click="togglePlot(`${episode.showSlug}${episode.episodeSlug}`)">
                                     <div :ref="`${episode.showSlug}${episode.episodeSlug}`" v-show="episode.epPlot" class="summary">{{episode.epPlot}}</div>
                                 </div>
                             </div>
 
                         </div>
                         <div class="col-lg-4 col-sm-12">
-                            <span class="tvshowTitleIcons">        
+                            <span class="tvshowTitleIcons">
                                 <app-link v-if="episode.externals.imdb_id" :href="`http://www.imdb.com/title/${episode.externals.imdb_id}`" :title="`http://www.imdb.com/title/${episode.externals.imdb_id}`">
-                                    <img alt="[imdb]" height="16" width="16" src="images/imdb.png" />
+                                    <img alt="[imdb]" height="16" width="16" src="images/imdb.png">
                                 </app-link>
 
                                 <app-link :href="`${getIndexer(episode.indexer).showUrl}${episode.indexerId}`"
-                                        :title="`${getIndexer(episode.indexer).showUrl}${episode.indexerId}`">
-                                    <img :alt="`${getIndexer(episode.indexer).name}`" height="16" width="16" :src="`images/${getIndexer(episode.indexer).icon}`" />
+                                          :title="`${getIndexer(episode.indexer).showUrl}${episode.indexerId}`">
+                                    <img :alt="`${getIndexer(episode.indexer).name}`" height="16" width="16" :src="`images/${getIndexer(episode.indexer).icon}`">
                                 </app-link>
 
                                 <search searchType="backlog" :showSlug="episode.showSlug" :episode="{
-                                        episode: episode.episode, season: episode.season, slug: episode.episodeSlug
+                                    episode: episode.episode, season: episode.season, slug: episode.episodeSlug
                                 }" />
                                 <search searchType="manual" :showSlug="episode.showSlug" :episode="{
-                                        episode: episode.episode, season: episode.season, slug: episode.episodeSlug
+                                    episode: episode.episode, season: episode.season, slug: episode.episodeSlug
                                 }" />
                             </span>
                         </div>
@@ -243,7 +246,8 @@ export default {
     vertical-align: middle;
 }
 
-.poster-left, .poster-right {
+.poster-left,
+.poster-right {
     float: left;
 }
 

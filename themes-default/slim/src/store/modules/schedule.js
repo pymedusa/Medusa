@@ -1,5 +1,3 @@
-import Vue from 'vue';
-
 import { api } from '../../api';
 import { ADD_SCHEDULE } from '../mutation-types';
 
@@ -19,7 +17,7 @@ const state = {
 
 const mutations = {
     [ADD_SCHEDULE](state, schedule) {
-        for (const category in schedule) {
+        for (const category in schedule) { // eslint-disable-line guard-for-in
             state[category] = schedule[category];
         }
     }
@@ -38,15 +36,19 @@ const getters = {
             for (const episode of episodes) {
                 episode.class = category;
             }
-            flattendedSchedule.push(...episodes); 
+            flattendedSchedule.push(...episodes);
         }
         return flattendedSchedule;
     },
     /**
-     * Group the coming episodes into an array of objects with an attibute header (the week day) 
+     * Group the coming episodes into an array of objects with an attibute header (the week day)
      * and an attribute episodes with an array of coming episodes.
+     * @param {object} state - local state object.
+     * @param {object} getters - local getters object.
+     * @param {object} rootState - root state object.
+     * @returns {array} - Array of grouped episodes by header.
      */
-    groupedSchedule: (state, _, rootState) => {
+    groupedSchedule: (state, getters, rootState) => {
         const { missed, soon, today, later, displayCategory } = state;
         const { displayPaused } = rootState.config.layout.comingEps;
 
@@ -55,21 +57,20 @@ const getters = {
         /* Return an array of the days to come */
         const comingDays = (currentDay, nrComingDays) => {
             let currentDayOfTheWeek = currentDay.getDay();
-            let returnDays = [];
-            for (let i=0; i < nrComingDays; i++) {
+            const returnDays = [];
+            for (let i = 0; i < nrComingDays; i++) {
                 if (currentDayOfTheWeek > 7) {
                     currentDayOfTheWeek = 1;
                 }
-                returnDays.push(currentDayOfTheWeek)
+                returnDays.push(currentDayOfTheWeek);
                 currentDayOfTheWeek += 1;
             }
-            // returnDays.pop(); // We don't need the last item.
             return returnDays;
-        }
+        };
 
         const _MS_PER_DAY = 1000 * 60 * 60 * 24;
 
-        // a and b are javascript Date objects
+        // A and b are javascript Date objects
         function dateDiffInDays(a, b) {
             // Discard the time and time-zone information.
             const utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
@@ -79,7 +80,7 @@ const getters = {
         }
 
         const newArray = [];
-        let combinedEpisodes = [];
+        const combinedEpisodes = [];
 
         if (displayCategory.missed) {
             combinedEpisodes.push(...missed);
@@ -97,22 +98,20 @@ const getters = {
             combinedEpisodes.push(...later);
         }
 
-        const filteredEpisodes = combinedEpisodes.filter(item => !Boolean(item.paused) || displayPaused);
+        const filteredEpisodes = combinedEpisodes.filter(item => !item.paused || displayPaused);
         if (filteredEpisodes.length === 0) {
-                return [];
+            return [];
         }
 
         let currentDay = new Date(filteredEpisodes[0].airdate);
 
         // Group the coming episodes by day.
         for (const episode of filteredEpisodes) {
-            
             // Calculate the gaps in the week, for which we don't have any scheduled shows.
             if (currentDay !== new Date(episode.airdate)) {
                 const diffDays = dateDiffInDays(currentDay, new Date(episode.airdate));
                 if (diffDays > 1) {
-                    // for (const emptyDay of comingDays(currentDay, diffDays).splice(1, 2)) {
-                    let dayHeader = days[comingDays(currentDay, diffDays)[1] -1];
+                    let dayHeader = days[comingDays(currentDay, diffDays)[1] - 1];
 
                     // Add the elipses if there is a wider gap then 1 day.
                     if (diffDays > 2) {
@@ -127,13 +126,13 @@ const getters = {
                 }
             }
 
-            currentDay = new Date(episode.airdate)
+            currentDay = new Date(episode.airdate);
 
             let weekDay = newArray.find(item => item.airdate === episode.airdate);
             if (!weekDay) {
                 weekDay = {
                     airdate: episode.airdate,
-                    header: days[episode.weekday -1],
+                    header: days[episode.weekday - 1],
                     class: 'soon',
                     episodes: []
                 };
@@ -146,16 +145,20 @@ const getters = {
         return newArray;
     },
     /**
-     * Group and sort the coming episodes into an array of objects with an attibute header (the week day). 
+     * Group and sort the coming episodes into an array of objects with an attibute header (the week day).
      * Group the coming episodes into groups of missed, today, soon (subgrouped per day) and later.
+     * @param {object} state - local state object.
+     * @param {object} getters - local getters object.
+     * @param {object} rootState - root state object.
+     * @returns {array} - Array of grouped episodes by header.
      */
     sortedSchedule: (state, getters, rootState) => sort => {
-        const { 
+        const {
             displayCategory,
             missed, today, soon, later
         } = state;
         const { displayPaused } = rootState.config.layout.comingEps;
-        const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         const newArray = [];
 
         if (sort === 'date') {
@@ -164,7 +167,7 @@ const getters = {
                 newArray.push({
                     header: 'missed',
                     class: 'missed',
-                    episodes: missed.filter(item => !Boolean(item.paused) || displayPaused)
+                    episodes: missed.filter(item => !item.paused || displayPaused)
                 });
             }
 
@@ -173,20 +176,20 @@ const getters = {
                 newArray.push({
                     header: 'today',
                     class: 'today',
-                    episodes: today.filter(item => !Boolean(item.paused) || displayPaused)
+                    episodes: today.filter(item => !item.paused || displayPaused)
                 });
             }
 
             if (displayCategory.soon) {
                 // Group the coming episodes by day.
-                for (const episode of soon.filter(item => !Boolean(item.paused) || displayPaused)) {
+                for (const episode of soon.filter(item => !item.paused || displayPaused)) {
                     let weekDay = newArray.find(item => item.header === days[episode.weekday]);
                     if (!weekDay) {
                         weekDay = {
                             header: days[episode.weekday],
                             class: 'soon',
                             episodes: []
-                        }
+                        };
                         newArray.push(weekDay);
                     }
                     weekDay.episodes.push(episode);
@@ -198,7 +201,7 @@ const getters = {
                 newArray.push({
                     header: 'later',
                     class: 'later',
-                    episodes: later.filter(item => !Boolean(item.paused) || displayPaused)
+                    episodes: later.filter(item => !item.paused || displayPaused)
                 });
             }
             return newArray;
@@ -206,7 +209,7 @@ const getters = {
 
         if (sort === 'network') {
             const { getScheduleFlattened } = getters;
-            const filteredSchedule = getScheduleFlattened.filter(item => !Boolean(item.paused) || displayPaused);
+            const filteredSchedule = getScheduleFlattened.filter(item => item.paused || displayPaused);
 
             for (const episode of filteredSchedule.sort((a, b) => a.network.localeCompare(b.network))) {
                 let network = newArray.find(item => item.header === episode.network);
@@ -215,7 +218,7 @@ const getters = {
                         header: episode.network,
                         class: episode.class,
                         episodes: []
-                    }
+                    };
                     newArray.push(network);
                 }
                 network.episodes.push(episode);
@@ -246,7 +249,7 @@ const actions = {
             category: state.categories,
             paused: true
         };
-        const response = await api.get(`/schedule`, { params });
+        const response = await api.get('/schedule', { params });
         if (response.data) {
             commit(ADD_SCHEDULE, response.data);
         }

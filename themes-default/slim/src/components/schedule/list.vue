@@ -1,14 +1,15 @@
 <template>
     <div class="horizontal-scroll vgt-table-styling">
-        <vue-good-table v-if="filteredSchedule.length > 0"
-                        :columns="columns"
-                        :rows="filteredSchedule"
-                        :class="{fanartOpacity: layout.fanartBackgroundOpacity}"
-                        :column-filter-options="{
-                            enabled: true
-                        }"
-                        styleClass="vgt-table condensed schedule"
-                        :row-style-class="rowStyleClassFn">
+        <vue-good-table
+            v-if="filteredSchedule.length > 0"
+            :columns="columns"
+            :rows="filteredSchedule"
+            :class="{fanartOpacity: layout.fanartBackgroundOpacity}"
+            :column-filter-options="{
+                enabled: true
+            }"
+            styleClass="vgt-table condensed schedule"
+            :row-style-class="rowStyleClassFn"
         >
             <template slot="table-row" slot-scope="props">
                 <span v-if="props.column.label == 'Airdate'" class="align-center">
@@ -28,7 +29,7 @@
                 </span>
 
                 <span v-else-if="props.column.label === 'Quality'" class="align-center">
-                    <quality-pill :quality="props.row.quality" show-title></quality-pill>
+                    <quality-pill :quality="props.row.quality" show-title />
                 </span>
 
                 <span v-else-if="props.column.label === 'Indexers'" class="align-center indexer-image">
@@ -59,12 +60,12 @@
                 </span>
 
                 <span v-else-if="props.column.label === 'Search'" class="align-center">
-                        <search searchType="backlog" :showSlug="props.row.showSlug" :episode="{
-                                episode: props.row.episode, season: props.row.season, slug: props.row.episodeSlug
-                        }" />
-                        <search searchType="manual" :showSlug="props.row.showSlug" :episode="{
-                                episode: props.row.episode, season: props.row.season, slug: props.row.episodeSlug
-                        }" />
+                    <search searchType="backlog" :showSlug="props.row.showSlug" :episode="{
+                        episode: props.row.episode, season: props.row.season, slug: props.row.episodeSlug
+                    }" />
+                    <search searchType="manual" :showSlug="props.row.showSlug" :episode="{
+                        episode: props.row.episode, season: props.row.season, slug: props.row.episodeSlug
+                    }" />
                 </span>
 
                 <span v-else class="align-center">
@@ -77,7 +78,7 @@
 </template>
 <script>
 import { mapGetters, mapState } from 'vuex';
-import { AppLink, ProgressBar, QualityPill, Search } from '../helpers';
+import { AppLink, QualityPill, Search } from '../helpers';
 import { VueGoodTable } from 'vue-good-table';
 import { manageCookieMixin } from '../../mixins/manage-cookie';
 
@@ -85,13 +86,12 @@ export default {
     name: 'list',
     components: {
         AppLink,
-        ProgressBar,
         QualityPill,
         Search,
         VueGoodTable
     },
     mixins: [
-        manageCookieMixin('schedule'),
+        manageCookieMixin('schedule')
     ],
     data() {
         const { getCookie } = this;
@@ -143,7 +143,7 @@ export default {
                 sortable: false,
                 hidden: getCookie('Search')
             }]
-        }
+        };
     },
     computed: {
         ...mapState({
@@ -157,7 +157,7 @@ export default {
         ]),
         filteredSchedule() {
             const { displayPaused, getScheduleFlattened } = this;
-            return getScheduleFlattened.filter(item => !Boolean(item.paused) || displayPaused);
+            return getScheduleFlattened.filter(item => !item.paused || displayPaused);
         }
     },
     methods: {
