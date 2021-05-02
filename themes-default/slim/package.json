@@ -105,7 +105,7 @@
     "mini-css-extract-plugin": "1.6.0",
     "nyc": "15.1.0",
     "optimize-css-assets-webpack-plugin": "5.0.4",
-    "stylelint": "13.13.0",
+    "stylelint": "13.13.1",
     "stylelint-config-standard": "22.0.0",
     "timekeeper": "2.2.0",
     "vue-jest": "3.0.7",
