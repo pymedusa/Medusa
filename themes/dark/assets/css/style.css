@@ -4340,8 +4340,8 @@ CSS helper classes
 }
 
 .day-header {
-    color: rgb(255, 255, 255);
-    text-shadow: 2px 1px 2px rgb(0 0 0 / 25%);
+    color: var(--background-text-grey-800);
+    text-shadow: 0 1px 1px rgb(0 0 0 / 25%);
     background-color: rgb(245, 245, 245);
     background-image: linear-gradient(
         rgb(255, 255, 255),
