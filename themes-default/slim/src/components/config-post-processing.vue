@@ -32,7 +32,7 @@
                             </div> <!-- end of col -->
                         </div> <!-- end of row -->
 
-                        <div v-show="config.experimental" class="row component-group">
+                        <div class="row component-group">
                             <div class="component-group-desc col-xs-12 col-md-2">
                                 <h3>Automated Download Handling</h3>
                                 <p>Check clients directly through api's for completed or failed downloads.</p>
@@ -41,7 +41,7 @@
 
                             <div class="col-xs-12 col-md-10">
                                 <fieldset class="component-group-list">
-                                    <config-toggle-slider v-model="postprocessing.downloadHandler.enabled" label="Enable download handler" id="enable_download_handler" experimental>
+                                    <config-toggle-slider v-model="postprocessing.downloadHandler.enabled" label="Enable download handler" id="enable_download_handler">
                                         <p>Enable download handler</p>
                                         <p><b>Note:</b>Do not combine with scheduled post processing or external pp scripts!</p>
                                     </config-toggle-slider>
