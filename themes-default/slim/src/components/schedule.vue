@@ -29,7 +29,7 @@
                     </label>
                 </div>
 
-                <div class="pull-left">
+                <div class="pull-left subscribe">
                     <app-link class="btn-medusa btn-inline forceBacklog" :href="`webcal://${location.hostname}:${location.port}/calendar`">
                         <i class="icon-calendar icon-white" />
                         Subscribe
@@ -145,6 +145,10 @@ export default {
 </script>
 
 <style scoped>
+.subscribe {
+    margin: 9px 5px 0 5px;
+}
+
 /* Also defined in style.css and dark.css, but i'm overwriting for light and dark, because the schedule table has coloring. */
 td.tvShow a {
     color: rgb(0, 0, 0);
@@ -158,7 +162,7 @@ td.tvShow a:hover {
 
 .filters {
     color: rgb(0, 0, 0);
-    margin: -2px 5px;
+    margin-top: 5px;
 }
 
 .filters > label {

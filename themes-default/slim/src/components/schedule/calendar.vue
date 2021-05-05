@@ -111,7 +111,6 @@ ul > li {
 .day-header {
     display: block;
     text-align: center;
-    text-shadow: -1px -1px 0 rgb(0 0 0 / 30%);
     border-collapse: collapse;
     font-weight: normal;
     padding: 4px;
