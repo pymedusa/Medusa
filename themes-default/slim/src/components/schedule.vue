@@ -5,25 +5,25 @@
                 <div class="filters pull-left">
                     <label for="checkbox-missed">
                         <div class="missed">
-                            <input id="checkbox-missed" type="checkbox" v-model="displayCategory.missed">
+                            <input id="checkbox-missed" type="checkbox" :checked="displayCategory.missed" @change="storeDisplayCategory('missed', $event.currentTarget.checked)">
                             missed
                         </div>
                     </label>
                     <label for="checkbox-today">
                         <div class="today">
-                            <input id="checkbox-today" type="checkbox" v-model="displayCategory.today">
+                            <input id="checkbox-today" type="checkbox" :checked="displayCategory.today" @change="storeDisplayCategory('today', $event.currentTarget.checked)">
                             today
                         </div>
                     </label>
                     <label for="checkbox-soon">
                         <div class="soon">
-                            <input id="checkbox-soon" type="checkbox" v-model="displayCategory.soon">
+                            <input id="checkbox-soon" type="checkbox" :checked="displayCategory.soon" @change="storeDisplayCategory('soon', $event.currentTarget.checked)">
                             soon
                         </div>
                     </label>
                     <label for="checkbox-later">
                         <div class="later">
-                            <input id="checkbox-later" type="checkbox" v-model="displayCategory.later">
+                            <input id="checkbox-later" type="checkbox" :checked="displayCategory.later" @change="storeDisplayCategory('later', $event.currentTarget.checked)">
                             later
                         </div>
                     </label>
@@ -69,13 +69,14 @@
 </template>
 
 <script>
-import { mapActions, mapState } from 'vuex';
+import { mapActions, mapMutations, mapState } from 'vuex';
 import { AppLink } from './helpers';
 import { ToggleButton } from 'vue-js-toggle-button';
 import List from './schedule/list.vue';
 import Banner from './schedule/banner.vue';
 import Poster from './schedule/poster.vue';
 import Calendar from './schedule/calendar.vue';
+import { manageCookieMixin } from '../mixins/manage-cookie';
 
 export default {
     name: 'schedule',
@@ -87,6 +88,9 @@ export default {
         List,
         ToggleButton
     },
+    mixins: [
+        manageCookieMixin('schedule')
+    ],
     data() {
         return {
             layoutOptions: [
@@ -106,7 +110,8 @@ export default {
             general: state => state.config.general,
             // Renamed because of the computed property 'layout'.
             layout: state => state.config.layout,
-            displayCategory: state => state.schedule.displayCategory
+            displayCategory: state => state.schedule.displayCategory,
+            categories: state => state.schedule.categories
         }),
         scheduleLayout: {
             get() {
@@ -134,12 +139,30 @@ export default {
     mounted() {
         const { getSchedule } = this;
         getSchedule();
+
+        // Get the enabled/disabled categories from cookies.
+        const { categories, getCookie, setDisplayCategory } = this;
+        for (const category of categories) {
+            const storedCat = getCookie(category);
+            if (storedCat !== undefined) {
+                setDisplayCategory({category, value: storedCat});
+            }
+        }
     },
     methods: {
         ...mapActions({
             setLayout: 'setLayout',
             getSchedule: 'getSchedule'
-        })
+        }),
+        ...mapMutations({
+            setDisplayCategory: 'setDisplayCategory'
+        }),
+        storeDisplayCategory(category, value) {
+            const { setDisplayCategory, setCookie } = this;
+            // Store value in cookie, and then call the action.
+            setCookie(category, value);
+            setDisplayCategory({ category, value });
+        }
     }
 };
 </script>
