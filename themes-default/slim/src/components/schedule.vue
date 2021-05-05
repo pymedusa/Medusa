@@ -145,7 +145,7 @@ export default {
         for (const category of categories) {
             const storedCat = getCookie(category);
             if (storedCat !== undefined) {
-                setDisplayCategory({category, value: storedCat});
+                setDisplayCategory({ category, value: storedCat });
             }
         }
     },
