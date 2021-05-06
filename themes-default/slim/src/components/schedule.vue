@@ -144,8 +144,13 @@ export default {
         const { categories, getCookie, setDisplayCategory } = this;
         for (const category of categories) {
             const storedCat = getCookie(category);
-            if (storedCat !== undefined) {
+            if (storedCat !== null) {
                 setDisplayCategory({ category, value: storedCat });
+            } else {
+                if (['today', 'soon'].includes(category)) {
+                    // Enable these by default
+                    setDisplayCategory({ category, value: true });
+                }
             }
         }
     },
