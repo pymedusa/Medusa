@@ -146,11 +146,6 @@ export default {
             const storedCat = getCookie(category);
             if (storedCat !== null) {
                 setDisplayCategory({ category, value: storedCat });
-            } else {
-                if (['today', 'soon'].includes(category)) {
-                    // Enable these by default
-                    setDisplayCategory({ category, value: true });
-                }
             }
         }
     },
