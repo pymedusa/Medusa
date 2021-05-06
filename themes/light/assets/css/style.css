@@ -4343,10 +4343,11 @@ CSS helper classes
     color: var(--background-text-grey-800);
     text-shadow: 0 1px 1px rgb(0 0 0 / 25%);
     background-color: rgb(245, 245, 245);
-    background-image: linear-gradient(
-        rgb(255, 255, 255),
-        rgb(230, 230, 230)
-    );
+    background-image:
+        linear-gradient(
+            rgb(255, 255, 255),
+            rgb(230, 230, 230)
+        );
 }
 
 .calendar-show .text .airtime {
