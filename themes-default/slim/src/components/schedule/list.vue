@@ -16,10 +16,6 @@
                     {{props.row.airdate ? fuzzyParseDateTime(props.row.airdate) : ''}}
                 </span>
 
-                <span v-else-if="props.column.label === 'Ends'" class="align-center">
-                    {{props.row.airdate ? fuzzyParseDateTime(props.row.airdate) : ''}}
-                </span>
-
                 <span v-else-if="props.column.label == 'Show'" class="align-center tv-show">
                     <app-link :href="`home/displayShow?showslug=${props.row.showSlug}`">{{ props.row.showName }}</app-link>
                 </span>
@@ -104,10 +100,6 @@ export default {
                 dateOutputFormat: 'yyyy-MM-dd HH:mm:ss',
                 type: 'date',
                 hidden: getCookie('Airdate')
-            }, {
-                label: 'Ends',
-                field: 'ends',
-                hidden: getCookie('Ends')
             }, {
                 label: 'Show',
                 field: 'showName',

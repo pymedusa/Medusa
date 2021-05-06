@@ -4322,3 +4322,38 @@ CSS helper classes
     -ms-touch-action: manipulation;
     touch-action: manipulation;
 }
+
+/* history.vue -> calendar layout */
+.wrap-center {
+    --background-text-grey-200: rgb(210, 210, 210);
+    --background-text-grey-400: rgb(136, 136, 136);
+    --background-text-grey-800: rgb(51, 51, 51);
+}
+
+.day-column {
+    color: rgb(0, 0, 0);
+}
+
+.calendar-show .text {
+    color: var(--background-text-grey-400);
+    background-color: var(--background-text-grey-200);
+}
+
+.day-header {
+    color: var(--background-text-grey-800);
+    text-shadow: 0 1px 1px rgb(0 0 0 / 25%);
+    background-color: rgb(245, 245, 245);
+    background-image:
+        linear-gradient(
+            rgb(255, 255, 255),
+            rgb(230, 230, 230)
+        );
+}
+
+.calendar-show .text .airtime {
+    color: rgb(0, 0, 0);
+}
+
+.calendar-show .text .episode-title {
+    color: var(--background-text-grey-800);
+}

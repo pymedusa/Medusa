@@ -20,6 +20,9 @@ const mutations = {
         for (const category in schedule) { // eslint-disable-line guard-for-in
             state[category] = schedule[category];
         }
+    },
+    setDisplayCategory(state, { category, value }) {
+        state.displayCategory[category] = value;
     }
 };
 
