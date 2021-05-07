@@ -29,6 +29,7 @@ from medusa.server.api.v2.internal import InternalHandler
 from medusa.server.api.v2.log import LogHandler
 from medusa.server.api.v2.postprocess import PostProcessHandler
 from medusa.server.api.v2.providers import ProvidersHandler
+from medusa.server.api.v2.schedule import ScheduleHandler
 from medusa.server.api.v2.search import SearchHandler
 from medusa.server.api.v2.series import SeriesHandler
 from medusa.server.api.v2.series_asset import SeriesAssetHandler
@@ -92,6 +93,9 @@ def get_apiv2_handlers(base):
 
         # /api/v2/history/tvdb1234/episode
         EpisodeHistoryHandler.create_app_handler(base),
+
+        # /api/v2/schedule
+        ScheduleHandler.create_app_handler(base),
 
         # /api/v2/history
         HistoryHandler.create_app_handler(base),

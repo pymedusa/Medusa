@@ -51,7 +51,7 @@ class PostProcessHandler(BaseRequestHandler):
         is_priority = bool(data.get('is_priority', False))
         delete_on = bool(data.get('delete_on', False))
         failed = bool(data.get('failed', False))
-        proc_type = bool(data.get('proc_type', False))
+        proc_type = data.get('proc_type', '')
         ignore_subs = bool(data.get('is_priority', False))
 
         if not proc_dir:

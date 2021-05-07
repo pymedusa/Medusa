@@ -308,6 +308,9 @@ class GenericClient(object):
         except (requests.exceptions.MissingSchema, requests.exceptions.InvalidURL):
             return False, 'Error: Invalid {name} host'.format(name=self.name)
 
+        if not self.response:
+            return False, 'Unable to connect to {name}'.format(name=self.name)
+
         if self.response.status_code == 401:
             return False, 'Error: Invalid {name} Username or Password, check your config!'.format(name=self.name)
 

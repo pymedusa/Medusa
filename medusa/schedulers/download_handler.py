@@ -200,14 +200,30 @@ class DownloadHandler(object):
                 continue
 
             log.debug(
-                'Found {client_type} (status {status}) on {client} with info_hash {info_hash}',
+                'Sending postprocess job for {client_type} with info_hash: {info_hash}'
+                '\nstatus: {status}\nclient: {client}'
+                '\ndestination: {destination}\nresource: {resource}',
                 {
                     'client_type': client_type,
+                    'info_hash': history_result['info_hash'],
                     'status': status,
                     'client': app.TORRENT_METHOD if client_type == 'torrent' else app.NZB_METHOD,
-                    'info_hash': history_result['info_hash']
+                    'destination': status.destination,
+                    'resource': status.resource or history_result['resource']
                 }
             )
+
+            if not status.destination and not status.resource and history_result['resource']:
+                # We didn't get a destination, because probably it failed to start a download.
+                # For example when it already failed to get the nzb. But we have a resource name from the snatch.
+                # We'll use this, so that we can finish the postprocessing and possible failed download handling.
+                status.resource = history_result['resource']
+
+            if not status.destination and not status.resource:
+                log.warning('Not starting postprocessing for info_hash {info_hash}, need a destination path.',
+                            {'info_hash': history_result['info_hash']})
+                continue
+
             self._postprocess(
                 status.destination, history_result['info_hash'], status.resource,
                 failed=str(status) == 'Failed'
@@ -311,7 +327,7 @@ class DownloadHandler(object):
         """Update status in the history table for torrents/nzb's that can't be located anymore."""
         client_type = 'torrent' if isinstance(client, GenericClient) else 'nzb'
 
-        # Make sure the client can be reached. As we don't want to change the state for downlaods
+        # Make sure the client can be reached. As we don't want to change the state for downloads
         # because the client is temporary unavailable.
         if not self._test_connection(client, client_type):
             log.warning('The client cannot be reached or authentication is failing. Abandon cleanup.')

@@ -100,8 +100,8 @@ indexerConfig = {
         'xem_mapped_to': INDEXER_TVDBV2,
         'icon': 'tvmaze16.png',
         'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tvmaze.json'.format(base_url=app.BASE_PYMEDUSA_URL),
-        'show_url': 'http://www.tvmaze.com/shows/',
-        'base_url': 'http://api.tvmaze.com/',
+        'show_url': 'https://www.tvmaze.com/shows/',
+        'base_url': 'https://api.tvmaze.com/',
         'mapped_to': 'tvmaze_id',  # The attribute to which other indexers can map there tvmaze id to
         'identifier': 'tvmaze',  # Also used as key for the custom scenename exceptions. (_get_custom_exceptions())
     },

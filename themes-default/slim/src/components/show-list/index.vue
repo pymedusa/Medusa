@@ -303,9 +303,27 @@ button.nav-show-list {
     float: right;
 }
 
+.table-layout >>> .vgt-dropdown > .button-group {
+    position: relative;
+}
+
+.table-layout >>> .dropdown-toggle {
+    position: absolute;
+    z-index: 1;
+    top: 0.1em;
+    right: 0.1em;
+    width: 1em;
+    transition: width 0.2s ease-in-out;
+}
+
+.table-layout >>> .dropdown-toggle:hover,
+.table-layout >>> .dropdown-toggle:active {
+    width: 2em;
+}
+
 .table-layout >>> .vgt-dropdown-menu {
     position: absolute;
-    z-index: 1000;
+    z-index: 1;
     float: left;
     min-width: 160px;
     padding: 5px 0;
@@ -314,12 +332,14 @@ button.nav-show-list {
     text-align: left;
     list-style: none;
     background-clip: padding-box;
-    border-radius: 4px;
+    border-radius: 3px;
+    right: 0;
+    top: 2em;
 }
 
 .table-layout >>> .vgt-dropdown-menu > li > span {
     display: block;
-    padding: 3px 20px;
+    padding: 3px 5px;
     clear: both;
     font-weight: 400;
     line-height: 1.42857143;
@@ -331,11 +351,27 @@ button.nav-show-list {
 }
 
 .table-layout >>> .vgt-input {
+    height: 23px;
+    line-height: 23px;
+    font-size: 0.9em;
     width: 100%;
+    background-color: #fff;
+    background-image: none;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    padding: 0 10px;
+    margin: 0;
 }
 
 .table-layout >>> .vgt-select {
-    margin-top: -1px;
+    height: 23px;
+    line-height: 23px;
+    font-size: 0.9em;
+    width: 100%;
+    background-color: #fff;
+    background-image: none;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    padding: 0 10px;
 }
-
 </style>

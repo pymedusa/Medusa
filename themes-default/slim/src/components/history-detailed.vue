@@ -22,6 +22,9 @@
                 dropdownAllowAll: false,
                 position: 'both'
             }"
+            :column-filter-options="{
+                enabled: true
+            }"
             :row-style-class="rowStyleClassFn"
             styleClass="vgt-table condensed"
             @on-page-change="onPageChange"
@@ -115,7 +118,7 @@
                         track-by="value"
                         label="name"
                         @input="updateClientStatusFilter"
-                        style="margin-top: 5px;"
+                        class="vgt-multiselect"
                     />
                 </span>
             </template>
