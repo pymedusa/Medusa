@@ -94,7 +94,6 @@ ul > li {
 
     --column-width: 15rem;
     --poster-height: 22rem;
-    --background-text-grey: rgb(210, 210, 210);
 }
 
 .day-column {
@@ -106,36 +105,21 @@ ul > li {
 
 .calendar-show .text {
     padding: 3px 5px 10px;
-    color: rgb(136, 136, 136);
-    background-color: var(--background-text-grey);
     width: var(--column-width);
 }
 
 .day-header {
     display: block;
-    color: rgb(255, 255, 255);
     text-align: center;
-    text-shadow: -1px -1px 0 rgb(0 0 0 / 30%);
-    background-color: rgb(51, 51, 51);
     border-collapse: collapse;
     font-weight: normal;
     padding: 4px;
-    border-top: rgb(255, 255, 255) 1px solid;
-    border-bottom: rgb(255, 255, 255) 1px solid;
     height: 3rem;
 }
 
 .calendar-show .poster >>> img {
     width: var(--column-width);
     height: var(--poster-height);
-}
-
-.calendar-show .text .airtime {
-    color: rgb(0, 0, 0);
-}
-
-.calendar-show .text .episode-title {
-    color: rgb(136, 136, 136);
 }
 
 .calendar-show .text .airtime,
