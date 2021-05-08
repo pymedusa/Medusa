@@ -3,10 +3,13 @@
 from __future__ import unicode_literals
 
 import logging
+from datetime import datetime
 
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.network_timezones import parse_date_time
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.show.coming_episodes import ComingEpisodes
+
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -33,9 +36,14 @@ class ScheduleHandler(BaseRequestHandler):
 
         for section, coming_episodes in grouped_coming_episodes.items():
             for coming_episode in coming_episodes:
+                airs_time = ' '.join(coming_episode['airs'].split(' ')[-2:])
+                airdate_oridinal = datetime.strptime(coming_episode['airdate'], '%Y-%m-%d').date().toordinal()
+                show_air_time = parse_date_time(airdate_oridinal, airs_time)
+
                 data[section].append({
                     'airdate': coming_episode['airdate'],
                     'airs': coming_episode['airs'],
+                    'localAirTime': show_air_time.replace(microsecond=0).isoformat(),
                     'epName': coming_episode['name'],
                     'epPlot': coming_episode['description'],
                     'season': coming_episode['season'],
