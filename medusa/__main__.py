@@ -2224,8 +2224,10 @@ class Application(object):
         for sql_show in sql_results:
             try:
                 cur_show = Series(sql_show['indexer'], sql_show['indexer_id'])
-                cur_show.prev_episode()
-                cur_show.next_episode()
+                # update previous and next episode cache
+                cur_show.prev_airdate
+                cur_show.next_airdate
+
                 app.showList.append(cur_show)
             except Exception as error:
                 exception_handler.handle(error, 'There was an error creating the show in {location}',
