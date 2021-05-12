@@ -34,7 +34,7 @@
                                     <div class="row">
                                         <div class="col-lg-12">
                                             <span class="title">Airs: </span>
-                                            <span class="airdate">{{fuzzyParseDateTime(episode.airdate)}}</span>
+                                            <span class="airdate">{{fuzzyParseDateTime(episode.localAirTime)}}</span>
                                             <span v-if="episode.network"> on {{episode.network}}</span>
                                         </div>
                                     </div>
@@ -111,7 +111,7 @@
 
                             <div class="row">
                                 <div class="col-lg-12">
-                                    <span class="title">Airs: </span><span class="airdate">{{fuzzyParseDateTime(episode.airdate)}}</span>
+                                    <span class="title">Airs: </span><span class="airdate">{{fuzzyParseDateTime(episode.localAirTime)}}</span>
                                     <span v-if="episode.network"> on {{episode.network}}</span>
                                 </div>
                             </div>
