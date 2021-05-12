@@ -127,3 +127,19 @@ class EpisodeUpdater(object):
             main_db_con.mass_action(new_releases)
 
         self.amActive = False
+
+
+def update_prev_eps():
+    """Use one query to retrieve all previous episodes and update the show's prev_episode attributes."""
+    main_db_con = DBConnection()
+    prev_airdates = main_db_con.select("""
+        SELECT tv_shows.show_id, tv_shows.indexer_id, tv_shows.indexer,
+        max(tv_episodes.airdate) as airdate, tv_episodes.season, tv_episodes.episode FROM tv_shows, tv_episodes
+        WHERE tv_shows.indexer_id = tv_episodes.showid AND tv_shows.indexer = tv_episodes.indexer
+        GROUP BY tv_shows.show_id
+        HAVING tv_episodes.airdate < ? AND tv_episodes.status <> 1
+    """, [datetime.date.today().toordinal()])
+
+    for show in prev_airdates:
+        show_obj = Show.find_by_id(app.showList, show['indexer'], show['indexer_id'])
+        show_obj._prev_aired = show[0]['airdate']
