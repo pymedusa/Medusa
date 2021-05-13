@@ -8,8 +8,13 @@
             :column-filter-options="{
                 enabled: true
             }"
+            :sort-options="{
+                enabled: true,
+                initialSortBy: getSortBy('localAirTime', 'asc')
+            }"
             styleClass="vgt-table condensed schedule"
             :row-style-class="rowStyleClassFn"
+            @on-sort-change="saveSorting"
         >
             <template slot="table-row" slot-scope="props">
                 <span v-if="props.column.label == 'Airdate'" class="align-center">
