@@ -104,7 +104,7 @@
     "jest-vue-matcher": "2.0.0",
     "mini-css-extract-plugin": "1.6.0",
     "nyc": "15.1.0",
-    "optimize-css-assets-webpack-plugin": "5.0.4",
+    "optimize-css-assets-webpack-plugin": "5.0.5",
     "stylelint": "13.13.1",
     "stylelint-config-standard": "22.0.0",
     "timekeeper": "2.2.0",
