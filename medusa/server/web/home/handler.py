@@ -1042,9 +1042,6 @@ class Home(WebRoot):
         # Remove show from 'RECENT SHOWS' in 'Shows' menu
         app.SHOWS_RECENT = [show for show in app.SHOWS_RECENT if show['showSlug'] != showslug]
 
-        # Don't redirect to the default page, so the user can confirm that the show was deleted
-        return self.redirect('/home/')
-
     def refreshShow(self, showslug=None):
         # @TODO: Replace with status=refresh from PATCH /api/v2/show/{id}
         identifier = SeriesIdentifier.from_slug(showslug)

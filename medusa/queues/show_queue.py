@@ -950,6 +950,9 @@ class QueueItemRemove(ShowQueueItem):
                 log.exception('Exception occurred while trying to delete show {show}, error: {error',
                               {'show': self.show.name, 'error': error})
 
+        # Send showRemoved to frontend, so we can remove it from localStorage.
+        ws.Message('QueueItemShowRemove', self.show.to_json(detailed=False)).push()  # Send ws update to client
+
         self.show.delete_show(full=self.full)
 
         self.finish()
