@@ -33,6 +33,7 @@ const ADD_PROVIDER_CACHE = '⛽ Provider cache results added to store';
 const ADD_SEARCH_RESULTS = '⛽ New search results added for provider';
 const ADD_QUEUE_ITEM = '🔍 Search queue item updated';
 const ADD_SHOW_QUEUE_ITEM = '📺 Show queue item added to store';
+const REMOVE_SHOW = '📺 Show removed from store';
 const UPDATE_SHOWLIST_DEFAULT = '⚙️ Anime config showlist default updated';
 const ADD_SCHEDULE = '📅 Schedule information added';
 
@@ -72,6 +73,7 @@ export {
     ADD_SEARCH_RESULTS,
     ADD_QUEUE_ITEM,
     ADD_SHOW_QUEUE_ITEM,
+    REMOVE_SHOW,
     UPDATE_SHOWLIST_DEFAULT,
     ADD_SCHEDULE
 };
