@@ -6742,10 +6742,10 @@ isurl@^1.0.0-alpha5:
     has-to-string-tag-x "^1.2.0"
     is-object "^1.0.1"
 
-javascript-time-ago@2.3.5:
-  version "2.3.5"
-  resolved "https://registry.yarnpkg.com/javascript-time-ago/-/javascript-time-ago-2.3.5.tgz#d5d3848ade117ca8daf6fddfc85597094143df47"
-  integrity sha512-e1/cNro8WnheBWc6PTN5zYqZUmtu96AmH7xjAYkBL1TN8C8lJm0PDvt4g5DlYwkMlRWyzD++xoPS3ldmV6Aj8A==
+javascript-time-ago@2.3.6:
+  version "2.3.6"
+  resolved "https://registry.yarnpkg.com/javascript-time-ago/-/javascript-time-ago-2.3.6.tgz#a78fd16b214c6b8d91e0f2cc0955648eecd92a7a"
+  integrity sha512-OZLtmx+o+LyfLLi7oKsz7taNCx2uguf1qsdN3KCYDe89L7D1OT1BcR/E0HgK5EYqvXxpPEl0oiuypFC7ugyeJA==
   dependencies:
     relative-time-format "^1.0.5"
 
