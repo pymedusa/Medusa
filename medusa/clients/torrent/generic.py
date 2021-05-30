@@ -5,21 +5,19 @@ from __future__ import unicode_literals
 
 import logging
 import re
-import time
 import traceback
 from base64 import b16encode, b32decode
 from builtins import object
-from builtins import str
 from hashlib import sha1
 
 from bencodepy import BencodeDecodeError, DEFAULT as BENCODE
 
+import certifi
+
 from medusa import app, db
-from medusa.helper.common import http_code_description
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import ClientSession
 
-import certifi
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -29,7 +27,7 @@ class GenericClient(object):
     """Base class for all torrent clients."""
 
     def __init__(self, name, host=None, username=None, password=None, torrent_path=None):
-        """Constructor.
+        """Genericclient Constructor.
 
         :param name:
         :type name: string
@@ -53,7 +51,7 @@ class GenericClient(object):
         self.session = ClientSession()
         self.session.auth = (self.username, self.password)
         self.verify = certifi.where()
-        
+
         if self._get_auth():
             return False
 
@@ -61,25 +59,27 @@ class GenericClient(object):
 
         self.response = self.session.request(method, self.url, params=params, data=data, files=files, timeout=60, verify=self.verify)
         if not self.response:
-            log.warning(f"{self.name} {method.upper()} call to {self.url} failed!")
+            log.warning('{name} {method} call to {url} failed!', {
+                'name': self.name, 'method': method.upper(), 'url': self.url
+            })
             self.message = f'Connect to {self.name} on "{self.host}" failed!'
             return False
-        if self.response.status_code  >= 400:
-            log.warning(f'{self.name}: Unable to reach torrent client. Reason: {self.response.reason}')
-            self.message = f"Failed to connect to {self.name} reason: {self.response.reason}"
+        if self.response.status_code >= 400:
+            log.warning('{name}: Unable to reach torrent client. Reason: {reason}', {
+                'name': self.name, 'reason': self.response.reason
+            })
+            self.message = f'Failed to connect to {self.name} reason: {self.response.reason}'
             return False
         log.debug('{name}: Response to {method} request is {response}', {
             'name': self.name,
             'method': method.upper(),
             'response': self.response.text[0:1024] + '...' if len(self.response.text) > 1027 else self.response.text
         })
-
         return True
 
     def _get_auth(self):
         """Return the auth_id needed for the client."""
         raise NotImplementedError
-
 
     def _add_torrent_uri(self, result):
         """Return the True/False from the client when a torrent is added via url (magnet or .torrent link).
@@ -99,9 +99,7 @@ class GenericClient(object):
 
     def _check_path(self):
         """Check if the destination path is correct."""
-        log.debug('dummy check path function')
         return True
-
 
     def _set_torrent_label(self, result):
         """Return the True/False from the client when a torrent is set with label.
@@ -202,8 +200,6 @@ class GenericClient(object):
         :return:
         :rtype: str or bool
         """
-
-
         # Sets per provider seed ratio
         result.ratio = result.provider.seed_ratio()
 
@@ -211,38 +207,41 @@ class GenericClient(object):
         try:
             if not result.hash:
                 raise Exception()
-        except:
+        # TODO: refactor this later.
+        except Exception:
             if not self._get_info_hash(result):
                 return False
 
         if result.url.startswith('magnet:'):
-            log.info(f'Adding "{result.url}" to {self.name}')
+            log.info('Adding "{url}" to {name}', {'url': result.url, 'name': self.name})
             r_code = self._add_torrent_uri(result)
         else:
-            log.info(f'Adding "{result.name}" torrent to {self.name}')
+            log.info('Adding "{result_name}" torrent to {name}', {
+                'result_name': result.name, 'name': self.name
+            })
             r_code = self._add_torrent_file(result)
 
         if not r_code:
-            log.warning(f'{self.name}: Unable to send Torrent')
+            log.warning('{name}: Unable to send Torrent', {'name': self.name})
             return False
 
         if not self._set_torrent_pause(result):
-            log.error(f'{self.name}: Unable to set the pause for Torrent')
+            log.error('{name}: Unable to set the pause for Torrent', {'name': self.name})
 
         if not self._set_torrent_label(result):
-            log.error(f'{self.name}: Unable to set the label for Torrent')
+            log.error('{name}: Unable to set the label for Torrent', {'name': self.name})
 
         if not self._set_torrent_ratio(result):
-            log.error(f'{self.name}: Unable to set the ratio for Torrent')
+            log.error('{name}: Unable to set the ratio for Torrent', {'name': self.name})
 
         if not self._set_torrent_seed_time(result):
-            log.error(f'{self.name}: Unable to set the seed time for Torrent')
+            log.error('{name}: Unable to set the seed time for Torrent', {'name': self.name})
 
         if not self._set_torrent_path(result):
-            log.error(f'{self.name}: Unable to set the path for Torrent')
+            log.error('{name}: Unable to set the path for Torrent', {'name': self.name})
 
         if result.priority != 0 and not self._set_torrent_priority(result):
-            log.error(f'{self.name}: Unable to set priority for Torrent')
+            log.error('{name}: Unable to set priority for Torrent', {'name': self.name})
 
         return r_code
 
@@ -261,7 +260,6 @@ class GenericClient(object):
             return True, 'Success: Connected and Authenticated'
         else:
             return False, f'Error: Unable to get {self.name} authentication, check your input!'
-
 
     def remove_torrent(self, info_hash):
         """Remove torrent from client using given info_hash.
@@ -299,7 +297,7 @@ class GenericClient(object):
         It loops in all hashes returned from client and check if it is in the snatch history
         if its then it checks if we already processed media from the torrent (episode status `Downloaded`)
         If is a RARed
-       torrent then we don't have a media file so we check if that hash is from an
+        torrent then we don't have a media file so we check if that hash is from an
         episode that has a `Downloaded` status
         """
         raise NotImplementedError
