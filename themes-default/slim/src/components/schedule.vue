@@ -1,13 +1,98 @@
+<template>
+    <div id="schedule-template">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="filters pull-left">
+                    <label for="checkbox-missed">
+                        <div class="missed">
+                            <input id="checkbox-missed" type="checkbox" :checked="displayCategory.missed" @change="storeDisplayCategory('missed', $event.currentTarget.checked)">
+                            missed
+                        </div>
+                    </label>
+                    <label for="checkbox-today">
+                        <div class="today">
+                            <input id="checkbox-today" type="checkbox" :checked="displayCategory.today" @change="storeDisplayCategory('today', $event.currentTarget.checked)">
+                            today
+                        </div>
+                    </label>
+                    <label for="checkbox-soon">
+                        <div class="soon">
+                            <input id="checkbox-soon" type="checkbox" :checked="displayCategory.soon" @change="storeDisplayCategory('soon', $event.currentTarget.checked)">
+                            soon
+                        </div>
+                    </label>
+                    <label for="checkbox-later">
+                        <div class="later">
+                            <input id="checkbox-later" type="checkbox" :checked="displayCategory.later" @change="storeDisplayCategory('later', $event.currentTarget.checked)">
+                            later
+                        </div>
+                    </label>
+                </div>
+
+                <div class="pull-left subscribe">
+                    <app-link class="btn-medusa btn-inline forceBacklog" :href="`webcal://${location.hostname}:${location.port}/calendar`">
+                        <i class="icon-calendar icon-white" />
+                        Subscribe
+                    </app-link>
+                </div>
+
+                <div class="pull-right">
+                    <div class="show-option">
+                        <span>Show Paused:
+                            <toggle-button :width="45" :height="22" v-model="layout.comingEps.displayPaused" sync />
+                        </span>
+                    </div>
+                    <div class="show-option">
+                        <span>Layout:
+                            <select v-model="scheduleLayout" name="layout" class="form-control form-control-inline input-sm show-layout">
+                                <option :value="option.value" v-for="option in layoutOptions" :key="option.value">{{ option.text }}</option>
+                            </select>
+                        </span>
+                    </div>
+                    <!-- Calendar sorting is always by date -->
+                    <div v-if="!['calendar', 'list'].includes(scheduleLayout)" class="show-option">
+                        <span>Sort By:
+                            <select v-model="layout.comingEps.sort" name="sort" class="form-control form-control-inline input-sm">
+                                <option value="date">Date</option>
+                                <option value="network">Network</option>
+                                <option value="show">Show</option>
+                            </select>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <component :is="scheduleLayout" v-bind="$props" />
+        <backstretch :slug="general.randomShowSlug" />
+    </div>
+</template>
+
 <script>
-import { mapActions, mapState } from 'vuex';
+import { mapActions, mapMutations, mapState } from 'vuex';
 import { AppLink } from './helpers';
+import { ToggleButton } from 'vue-js-toggle-button';
+import List from './schedule/list.vue';
+import Banner from './schedule/banner.vue';
+import Poster from './schedule/poster.vue';
+import Calendar from './schedule/calendar.vue';
+import { manageCookieMixin } from '../mixins/manage-cookie';
+import Backstretch from './backstretch.vue';
 
 export default {
     name: 'schedule',
-    template: '#schedule-template',
     components: {
-        AppLink
+        AppLink,
+        Backstretch,
+        Banner,
+        Calendar,
+        Poster,
+        List,
+        ToggleButton
     },
+    mixins: [
+        manageCookieMixin('schedule')
+    ],
     data() {
         return {
             layoutOptions: [
@@ -15,22 +100,25 @@ export default {
                 { value: 'calendar', text: 'Calendar' },
                 { value: 'banner', text: 'Banner' },
                 { value: 'list', text: 'List' }
-            ]
+            ],
+            displayMissed: false,
+            displayToday: true,
+            displaySoon: true,
+            displayLater: false
         };
     },
     computed: {
         ...mapState({
-            config: state => state.config.general,
+            general: state => state.config.general,
             // Renamed because of the computed property 'layout'.
-            stateLayout: state => state.config.layout
+            layout: state => state.config.layout,
+            displayCategory: state => state.schedule.displayCategory,
+            categories: state => state.schedule.categories
         }),
-        header() {
-            return this.$route.meta.header;
-        },
         scheduleLayout: {
             get() {
-                const { stateLayout } = this;
-                return stateLayout.schedule;
+                const { layout } = this;
+                return layout.schedule;
             },
             set(layout) {
                 const { setLayout } = this;
@@ -39,88 +127,53 @@ export default {
             }
         },
         themeSpinner() {
-            const { stateLayout } = this;
-            return stateLayout.themeName === 'dark' ? '-dark' : '';
+            const { layout } = this;
+            return layout.themeName === 'dark' ? '-dark' : '';
+        },
+        /**
+         * Wrapper to get access to window.location in template.
+         * @returns {object} - returns window.location object.
+         */
+        location() {
+            return location;
         }
     },
     mounted() {
-        // $store.dispatch('getShows');
+        const { getSchedule } = this;
+        getSchedule();
 
-        this.$root.$once('loaded', () => {
-            const { scheduleLayout, stateLayout, themeSpinner } = this;
-            const { comingEps } = stateLayout;
-            if (scheduleLayout === 'list') {
-                const sortCodes = {
-                    date: 0,
-                    show: 2,
-                    network: 5
-                };
-                const { sort } = comingEps;
-                const sortList = (sort in sortCodes) ? [[sortCodes[sort], 0]] : [[0, 0]];
-
-                $('#showListTable:has(tbody tr)').tablesorter({
-                    widgets: ['stickyHeaders', 'filter', 'columnSelector', 'saveSort'],
-                    sortList,
-                    textExtraction: {
-                        0: node => $(node).find('time').attr('datetime'),
-                        1: node => $(node).find('time').attr('datetime'),
-                        7: node => $(node).find('span').text().toLowerCase(),
-                        8: node => $(node).find('a[data-indexer-name]').attr('data-indexer-name')
-                    },
-                    headers: {
-                        0: { sorter: 'realISODate' },
-                        1: { sorter: 'realISODate' },
-                        2: { sorter: 'loadingNames' },
-                        4: { sorter: 'loadingNames' },
-                        7: { sorter: 'quality' },
-                        8: { sorter: 'text' },
-                        9: { sorter: false, filter: false }
-                    },
-                    widgetOptions: {
-                        filter_columnFilters: true, // eslint-disable-line camelcase
-                        filter_hideFilters: true, // eslint-disable-line camelcase
-                        filter_saveFilters: true, // eslint-disable-line camelcase
-                        columnSelector_mediaquery: false // eslint-disable-line camelcase
-                    }
-                });
-
-                $.ajaxEpSearch();
+        // Get the enabled/disabled categories from cookies.
+        const { categories, getCookie, setDisplayCategory } = this;
+        for (const category of categories) {
+            const storedCat = getCookie(category);
+            if (storedCat !== null) {
+                setDisplayCategory({ category, value: storedCat });
             }
-
-            if (['banner', 'poster'].includes(scheduleLayout)) {
-                $.ajaxEpSearch({
-                    size: 16,
-                    loadingImage: `loading16${themeSpinner}.gif`
-                });
-                $('.ep_summary').hide();
-                $('.ep_summaryTrigger').on('click', function() {
-                    $(this).next('.ep_summary').slideToggle('normal', function() {
-                        $(this).prev('.ep_summaryTrigger').prop('src', function(i, src) {
-                            return $(this).next('.ep_summary').is(':visible') ? src.replace('plus', 'minus') : src.replace('minus', 'plus');
-                        });
-                    });
-                });
-            }
-
-            $('#popover').popover({
-                placement: 'bottom',
-                html: true, // Required if content has HTML
-                content: '<div id="popover-target"></div>'
-            }).on('shown.bs.popover', () => { // Bootstrap popover event triggered when the popover opens
-                // call this function to copy the column selection code into the popover
-                $.tablesorter.columnSelector.attachTo($('#showListTable'), '#popover-target');
-            });
-        });
+        }
     },
     methods: {
         ...mapActions({
-            setLayout: 'setLayout'
-        })
+            setLayout: 'setLayout',
+            getSchedule: 'getSchedule'
+        }),
+        ...mapMutations({
+            setDisplayCategory: 'setDisplayCategory'
+        }),
+        storeDisplayCategory(category, value) {
+            const { setDisplayCategory, setCookie } = this;
+            // Store value in cookie, and then call the action.
+            setCookie(category, value);
+            setDisplayCategory({ category, value });
+        }
     }
 };
 </script>
 
 <style scoped>
+.subscribe {
+    margin: 9px 5px 0 5px;
+}
+
 /* Also defined in style.css and dark.css, but i'm overwriting for light and dark, because the schedule table has coloring. */
 td.tvShow a {
     color: rgb(0, 0, 0);
@@ -130,5 +183,43 @@ td.tvShow a {
 td.tvShow a:hover {
     cursor: pointer;
     color: rgb(66, 139, 202);
+}
+
+.filters {
+    color: rgb(0, 0, 0);
+    margin-top: 5px;
+}
+
+.filters > label {
+    display: block;
+    float: left;
+}
+
+.filters div {
+    padding: 5px 5px 2px 3px;
+}
+
+.filters div:active {
+    transform: translateY(2px);
+}
+
+.filters .today {
+    background-color: rgb(245, 241, 228);
+    color: rgb(130, 111, 48);
+}
+
+.filters .soon {
+    background-color: rgb(221, 255, 221);
+    color: rgb(41, 87, 48);
+}
+
+.filters .missed {
+    background-color: rgb(255, 221, 221);
+    color: rgb(137, 0, 0);
+}
+
+.filters .later {
+    background-color: rgb(190, 222, 237);
+    color: rgb(29, 80, 104);
 }
 </style>

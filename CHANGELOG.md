@@ -5,6 +5,21 @@
 #### Improvements
 
 #### Fixes
+- Add support for new synology download station api. Credits to Benjv. ([9555](https://github.com/pymedusa/Medusa/pull/9555))
+
+-----
+
+## 0.5.12 (07-05-2021)
+
+#### New Features
+- Remove experimental feature flag for Download handler / advanced failed download handling
+- Remove experimental feature flag for Append (year) to each show title
+
+#### Improvements
+- Vueify schedule page. ([9403](https://github.com/pymedusa/Medusa/pull/9403))
+
+#### Fixes
+- Fix download hander failed ([9476](https://github.com/pymedusa/Medusa/pull/9476))
 
 -----
 

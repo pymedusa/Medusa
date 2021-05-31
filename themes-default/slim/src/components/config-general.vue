@@ -57,7 +57,7 @@
                                         <root-dirs />
                                     </config-template>
 
-                                    <config-toggle-slider experimental v-model="general.addTitleWithYear" label="Append (year) to each show title" id="add_title_year">
+                                    <config-toggle-slider v-model="general.addTitleWithYear" label="Append (year) to each show title" id="add_title_year">
                                         <p>Make sure that each show title is added with (year) appended to it</p>
                                         <p>The show title with year is only used for show folder creation as representation in the UI.</p>
                                     </config-toggle-slider>
@@ -965,7 +965,7 @@ export default {
     }
 };
 </script>
-<style>
+<style scoped>
 @import '../style/modal.css';
 
 .display-inline {

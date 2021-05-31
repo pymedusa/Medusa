@@ -1,20 +1,21 @@
 <template>
     <div class="horizontal-scroll">
-        <vue-good-table v-if="shows.length > 0"
-                        :columns="columns"
-                        :rows="shows"
-                        :search-options="{
-                            enabled: false
-                        }"
-                        :sort-options="{
-                            enabled: true,
-                            initialSortBy: getSortBy()
-                        }"
-                        :column-filter-options="{
-                            enabled: true
-                        }"
-                        :class="{fanartOpacity: stateLayout.fanartBackgroundOpacity}"
-                        @on-sort-change="saveSorting"
+        <vue-good-table
+            v-if="shows.length > 0"
+            :columns="columns"
+            :rows="shows"
+            :search-options="{
+                enabled: false
+            }"
+            :sort-options="{
+                enabled: true,
+                initialSortBy: getSortBy()
+            }"
+            :column-filter-options="{
+                enabled: true
+            }"
+            :class="{fanartOpacity: stateLayout.fanartBackgroundOpacity}"
+            @on-sort-change="saveSorting"
         >
 
             <template slot="table-actions-header">

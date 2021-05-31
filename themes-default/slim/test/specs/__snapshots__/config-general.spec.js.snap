@@ -234,7 +234,6 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                 </config-template-stub>
                  
                 <config-toggle-slider-stub
-                  experimental="true"
                   explanations=""
                   id="add_title_year"
                   label="Append (year) to each show title"
