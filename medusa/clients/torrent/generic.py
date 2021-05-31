@@ -204,13 +204,8 @@ class GenericClient(object):
         result.ratio = result.provider.seed_ratio()
 
         # check for the hash and add it if not there
-        try:
-            if not result.hash:
-                raise Exception()
-        # TODO: refactor this later.
-        except Exception:
-            if not self._get_info_hash(result):
-                return False
+        if not result.hash and not self._get_info_hash(result):
+            return False
 
         if result.url.startswith('magnet:'):
             log.info('Adding "{url}" to {name}', {'url': result.url, 'name': self.name})
