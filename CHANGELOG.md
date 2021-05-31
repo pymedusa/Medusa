@@ -5,6 +5,7 @@
 #### Improvements
 
 #### Fixes
+- Add support for new synology download station api. Credits to Benjv. ([9555](https://github.com/pymedusa/Medusa/pull/9555))
 
 -----
 
