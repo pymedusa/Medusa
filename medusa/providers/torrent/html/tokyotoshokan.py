@@ -129,7 +129,7 @@ class TokyoToshokanProvider(TorrentProvider):
                         continue
 
                     desc_bottom = bot.find('td', class_='desc-bot').get_text(strip=True)
-                    size = convert_size(desc_bottom.split('|')[1].strip('Size: ')) or -1
+                    size = convert_size(desc_bottom.split('|')[1].strip('Size: '), sep='') or -1
 
                     item = {
                         'title': title,

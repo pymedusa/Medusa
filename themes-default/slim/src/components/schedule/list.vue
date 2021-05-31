@@ -8,12 +8,17 @@
             :column-filter-options="{
                 enabled: true
             }"
+            :sort-options="{
+                enabled: true,
+                initialSortBy: getSortBy('localAirTime', 'asc')
+            }"
             styleClass="vgt-table condensed schedule"
             :row-style-class="rowStyleClassFn"
+            @on-sort-change="saveSorting"
         >
             <template slot="table-row" slot-scope="props">
                 <span v-if="props.column.label == 'Airdate'" class="align-center">
-                    {{props.row.airdate ? fuzzyParseDateTime(props.row.airdate) : ''}}
+                    {{props.row.localAirTime ? fuzzyParseDateTime(props.row.localAirTime) : ''}}
                 </span>
 
                 <span v-else-if="props.column.label == 'Show'" class="align-center tv-show">
@@ -95,8 +100,8 @@ export default {
         return {
             columns: [{
                 label: 'Airdate',
-                field: 'airdate',
-                dateInputFormat: 'yyyy-MM-dd', // E.g. 07-09-2017 19:16:25
+                field: 'localAirTime',
+                dateInputFormat: 'yyyy-MM-dd\'T\'HH:mm:ssXXX', // E.g. 07-09-2017 19:16:25
                 dateOutputFormat: 'yyyy-MM-dd HH:mm:ss',
                 type: 'date',
                 hidden: getCookie('Airdate')

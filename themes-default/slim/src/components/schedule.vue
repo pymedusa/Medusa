@@ -64,7 +64,7 @@
         </div>
 
         <component :is="scheduleLayout" v-bind="$props" />
-
+        <backstretch :slug="general.randomShowSlug" />
     </div>
 </template>
 
@@ -77,11 +77,13 @@ import Banner from './schedule/banner.vue';
 import Poster from './schedule/poster.vue';
 import Calendar from './schedule/calendar.vue';
 import { manageCookieMixin } from '../mixins/manage-cookie';
+import Backstretch from './backstretch.vue';
 
 export default {
     name: 'schedule',
     components: {
         AppLink,
+        Backstretch,
         Banner,
         Calendar,
         Poster,

@@ -1,1 +1,275 @@
-const startAjaxEpisodeSubtitles=function(){let e,t;const s=[".epSubtitlesSearch",".epSubtitlesSearchPP",".epRedownloadSubtitle",".epSearch",".epRetry",".epManualSearch"],i=$("#manualSubtitleSearchModal"),{subtitlesMulti:l}=MEDUSA.config.general,a="images/loading32"+MEDUSA.config.layout.themeSpinner+".gif";function n(){$.each(s,((e,t)=>{$(t).css({"pointer-events":"none"})}))}function o(){$.each(s,((e,t)=>{$(t).css({"pointer-events":"auto"})}))}function c(e,t,s,i,l,a){!0===a&&e.find("img").remove(),e.append($("<img/>").prop({src:t,alt:s,title:i,width:16,height:l}))}i.on("hidden.bs.modal",(()=>{o()})),$.ajaxEpSubtitlesSearch=function(){function s(){n(),c(t,a,"loading","loading",16,!0);let e=t.prop("href");return e=e.replace("searchEpisodeSubtitles","manual_search_subtitles"),$.getJSON(e,(e=>{const s=$("#subtitle_results tr").length;if(s>1)for(let e=s-1;e>0;e--)$("#subtitle_results tr").eq(e).remove();$("h4#manualSubtitleSearchModalTitle.modal-title").text(e.release),"success"===e.result&&$.each(e.subtitles,((e,t)=>{const s='<img src="images/subtitles/'+t.provider+'.png" width="16" height="16" style="vertical-align:middle;"/>',l='<img src="images/subtitles/flags/'+t.lang+'.png" width="16" height="11"/>';let a="";for(let e=0;e<t.missing_guess.length;e++){let s=t.missing_guess[e];a&&(a+=", "),s=s.charAt(0).toUpperCase()+s.slice(1),a+=s.replace(/(_[a-z])/g,(e=>e.toUpperCase().replace("_"," ")))}let n=t.score;const o=t.filename.slice(0,99);t.sub_score>=t.max_score&&(a="");let c="",r="";t.hearing_impaired&&(c="hearing impaired ",r='<img src="images/hearing_impaired.png" width="16" height="16"/> ');let u="";t.sub_score>=t.min_score&&(u=' <img src="images/save.png" width="16" height="16"/>');const d='<a href="#" id="pickSub" title="Download '+c+"subtitle: "+t.filename+'" subtitleID="subtitleid-'+t.id+'">'+r+o+u+"</a>";n>10?n=10:n<0&&(n=0);const g='<tr style="font-size: 95%;"><td style="white-space:nowrap;">'+s+" "+t.provider+"</td><td>"+l+'</td><td title="'+t.sub_score+"/"+t.min_score+'"> '+n+'</td><td class="tvShow"> '+d+"</td><td>"+a+"</td></tr>";$("#subtitle_results").append(g),$(".modal-content").resizable({alsoResize:".modal-body"}),$(".modal-dialog").draggable({cancel:".text"}),i.modal("show")})),c(t,"images/closed_captioning.png","Search subtitles","Search subtitles",16,!0),o()})),!1}$(".epSubtitlesSearch").on("click",(function(s){s.preventDefault(),t=$(this),e=t.parent().siblings(".col-subtitles"),$("#askmanualSubtitleSearchModal").modal("show")})),$(".epSubtitlesSearchPP").on("click",(function(i){i.preventDefault(),t=$(this),e=t.parent().siblings(".col-search"),s()})),$(document).on("click","#pickSub",(function(s){s.preventDefault();const n=$(this);c(n,a,"loading","loading",16,!0);let o=n.attr("subtitleID");o=o.replace("subtitleid-","");let r=t.prop("href");r=r.replace("searchEpisodeSubtitles","manual_search_subtitles"),r+="&picked_id="+encodeURIComponent(o),$.getJSON(r,(s=>{if(!1===i.is(":visible")&&i.modal("show"),"success"===s.result){const i=s.subtitles;if(c(n,"images/yes16.png","subtitle saved","subtitle saved",16,!0),$("table#releasesPP").length>0)t.parent().parent().remove();else if(!0===l){let t=!1;const s=i;e.children().children().each((function(){-1!==$(this).attr("alt").indexOf(s)&&(t=!0)})),!1===t&&c(e,"images/subtitles/flags/"+i+".png",i,i,11,!1)}else c(e,"images/subtitles/flags/unknown.png",i,i,11,!1)}else c(n,"images/no16.png","subtitle not saved","subtitle not saved",16,!0)}))})),$("#askmanualSubtitleSearchModal .btn-medusa").on("click",(function(){"manual"===$(this).text().toLowerCase()?s():function(){n(),c(t,a,"loading","loading",16,!0);const s=t.prop("href");$.getJSON(s,(s=>{if("success"===s.result.toLowerCase()){const t=s.subtitles.split(",");e.empty(),$.each(t,((s,i)=>{""!==i&&(s!==t.length-1?c(e,"",i,i,11,!0):c(e,"images/subtitles/flags/"+i+".png",i,i,11,!0))}))}c(t,"images/closed_captioning.png","Search subtitles","Search subtitles",16,!0),o()}))}()}))},$.fn.ajaxEpMergeSubtitles=function(){$(".epMergeSubtitles").on("click",(function(){const e=$(this);return c(e,a,"loading","loading",16,!0),$.getJSON($(this).attr("href"),(()=>{e.remove()})),!1}))},$.ajaxEpRedownloadSubtitle=function(){$(".epRedownloadSubtitle").on("click",(function(e){e.preventDefault(),t=$(this),$("#confirmSubtitleReDownloadModal").modal("show")})),$("#confirmSubtitleReDownloadModal .btn-medusa.btn-success").on("click",(()=>{!function(){n();const e=t.prop("href"),s="Re-downloading subtitle",i="Re-downloaded subtitle failed",l="Re-downloaded subtitle succeeded";c(t,a,s,s,16,!0),$.getJSON(e,(e=>{"success"===e.result.toLowerCase()&&e.new_subtitles.length>0?c(t,"images/save.png",l,l,16,!0):c(t,"images/no16.png",i,i,16,!0)})),o()}()}))}};
+const startAjaxEpisodeSubtitles = function() { // eslint-disable-line no-unused-vars
+    let subtitlesTd;
+    let selectedEpisode;
+    const searchTypesList = ['.epSubtitlesSearch', '.epSubtitlesSearchPP', '.epRedownloadSubtitle', '.epSearch', '.epRetry', '.epManualSearch'];
+    const subtitlesResultModal = $('#manualSubtitleSearchModal');
+    const { subtitlesMulti } = MEDUSA.config.general;
+    const loadingSpinner = 'images/loading32' + MEDUSA.config.layout.themeSpinner + '.gif';
+
+    function disableAllSearches() {
+        // Disables all other searches while manual searching for subtitles
+        $.each(searchTypesList, (index, searchTypes) => {
+            $(searchTypes).css({
+                'pointer-events': 'none'
+            });
+        });
+    }
+
+    function enableAllSearches() {
+        // Enabled all other searches while manual searching for subtitles
+        $.each(searchTypesList, (index, searchTypes) => {
+            $(searchTypes).css({
+                'pointer-events': 'auto'
+            });
+        });
+    }
+
+    function changeImage(imageTR, srcData, altData, titleData, heightData, emptyLink) { // eslint-disable-line max-params
+        if (emptyLink === true) {
+            imageTR.find('img').remove();
+        }
+        imageTR.append($('<img/>').prop({
+            src: srcData,
+            alt: altData,
+            title: titleData,
+            width: 16,
+            height: heightData
+        }));
+    }
+
+    subtitlesResultModal.on('hidden.bs.modal', () => {
+        // If user close manual subtitle search modal, enable again all searches
+        enableAllSearches();
+    });
+
+    $.ajaxEpSubtitlesSearch = function() {
+        $('.epSubtitlesSearch').on('click', function(e) {
+            // This is for the page 'displayShow.mako'
+            e.preventDefault();
+            selectedEpisode = $(this);
+            subtitlesTd = selectedEpisode.parent().siblings('.col-subtitles');
+            // Ask user if he want to manual search subs or automatic search
+            $('#askmanualSubtitleSearchModal').modal('show');
+        });
+
+        $('.epSubtitlesSearchPP').on('click', function(e) {
+            // This is for the page 'manage_subtitleMissedPP.mako'
+            e.preventDefault();
+            selectedEpisode = $(this);
+            subtitlesTd = selectedEpisode.parent().siblings('.col-search');
+            searchSubtitles();
+        });
+
+        // @TODO: move this to a more specific selector
+        $(document).on('click', '#pickSub', function(e) {
+            e.preventDefault();
+            const subtitlePicked = $(this);
+            changeImage(subtitlePicked, loadingSpinner, 'loading', 'loading', 16, true);
+            let subtitleID = subtitlePicked.attr('subtitleID');
+            // Remove 'subtitleid-' so we know the actual ID
+            subtitleID = subtitleID.replace('subtitleid-', '');
+            let url = selectedEpisode.prop('href');
+            url = url.replace('searchEpisodeSubtitles', 'manual_search_subtitles');
+            // Append the ID param that 'manual_search_subtitles' expect when picking subtitles
+            url += '&picked_id=' + encodeURIComponent(subtitleID);
+            $.getJSON(url, data => {
+                // If user click to close the window before subtitle download finishes, show again the modal
+                if ((subtitlesResultModal.is(':visible')) === false) {
+                    subtitlesResultModal.modal('show');
+                }
+                if (data.result === 'success') {
+                    const language = data.subtitles;
+                    changeImage(subtitlePicked, 'images/yes16.png', 'subtitle saved', 'subtitle saved', 16, true);
+                    if ($('table#releasesPP').length > 0) {
+                        // Removes the release as we downloaded the subtitle
+                        // Only applied to manage_subtitleMissedPP.mako
+                        selectedEpisode.parent().parent().remove();
+                    } else {
+                        // Update the subtitles column with new informations
+                        if (subtitlesMulti === true) { // eslint-disable-line no-lonely-if
+                            let hasLang = false;
+                            const lang = language;
+                            subtitlesTd.children().children().each(function() {
+                                // Check if user already have this subtitle language
+                                if ($(this).attr('alt').indexOf(lang) !== -1) {
+                                    hasLang = true;
+                                }
+                            });
+                            // Only add language flag if user doesn't have this subtitle language
+                            if (hasLang === false) {
+                                changeImage(subtitlesTd, 'images/subtitles/flags/' + language + '.png', language, language, 11, false);
+                            }
+                        } else {
+                            changeImage(subtitlesTd, 'images/subtitles/flags/unknown.png', language, language, 11, false);
+                        }
+                    }
+                } else {
+                    changeImage(subtitlePicked, 'images/no16.png', 'subtitle not saved', 'subtitle not saved', 16, true);
+                }
+            });
+        });
+
+        $('#askmanualSubtitleSearchModal .btn-medusa').on('click', function() {
+            if ($(this).text().toLowerCase() === 'manual') {
+                // Call manual search
+                searchSubtitles();
+            } else {
+                // Call auto search
+                forcedSearch();
+            }
+        });
+
+        function searchSubtitles() {
+            disableAllSearches();
+            changeImage(selectedEpisode, loadingSpinner, 'loading', 'loading', 16, true);
+            let url = selectedEpisode.prop('href');
+            // If manual search, replace handler
+            url = url.replace('searchEpisodeSubtitles', 'manual_search_subtitles');
+            $.getJSON(url, data => {
+                // Delete existing rows in the modal
+                const existingRows = $('#subtitle_results tr').length;
+                if (existingRows > 1) {
+                    for (let x = existingRows - 1; x > 0; x--) {
+                        $('#subtitle_results tr').eq(x).remove();
+                    }
+                }
+                // Add the release to the modal title
+                $('h4#manualSubtitleSearchModalTitle.modal-title').text(data.release);
+                if (data.result === 'success') {
+                    $.each(data.subtitles, (index, subtitle) => {
+                        // For each subtitle found create the row string and append to the modal
+                        const provider = '<img src="images/subtitles/' + subtitle.provider + '.png" width="16" height="16" style="vertical-align:middle;"/>';
+                        const flag = '<img src="images/subtitles/flags/' + subtitle.lang + '.png" width="16" height="11"/>';
+                        let missingGuess = '';
+                        for (let i = 0; i < subtitle.missing_guess.length; i++) {
+                            let value = subtitle.missing_guess[i];
+                            if (missingGuess) {
+                                missingGuess += ', ';
+                            }
+                            value = value.charAt(0).toUpperCase() + value.slice(1);
+                            missingGuess += value.replace(/(_[a-z])/g, $1 => {
+                                return $1.toUpperCase().replace('_', ' ');
+                            });
+                        }
+                        let subtitleScore = subtitle.score;
+                        const subtitleName = subtitle.filename.slice(0, 99);
+                        // If hash match, don't show missingGuess
+                        if (subtitle.sub_score >= subtitle.max_score) {
+                            missingGuess = '';
+                        }
+                        // If hearing impaired, add an icon next to subtitle filename
+                        let hearingImpairedTitle = '';
+                        let hearingImpairedImage = '';
+                        if (subtitle.hearing_impaired) {
+                            hearingImpairedTitle = 'hearing impaired ';
+                            hearingImpairedImage = '<img src="images/hearing_impaired.png" width="16" height="16"/> ';
+                        }
+                        // If perfect match, add a checkmark next to subtitle filename
+                        let checkmark = '';
+                        if (subtitle.sub_score >= subtitle.min_score) {
+                            checkmark = ' <img src="images/save.png" width="16" height="16"/>';
+                        }
+                        const subtitleLink = '<a href="#" id="pickSub" title="Download ' + hearingImpairedTitle + 'subtitle: ' + subtitle.filename + '" subtitleID="subtitleid-' + subtitle.id + '">' + hearingImpairedImage + subtitleName + checkmark + '</a>';
+                        // Make subtitle score always between 0 and 10
+                        if (subtitleScore > 10) {
+                            subtitleScore = 10;
+                        } else if (subtitleScore < 0) {
+                            subtitleScore = 0;
+                        }
+                        const row = '<tr style="font-size: 95%;">' +
+                                  '<td style="white-space:nowrap;">' + provider + ' ' + subtitle.provider + '</td>' +
+                                  '<td>' + flag + '</td>' +
+                                  '<td title="' + subtitle.sub_score + '/' + subtitle.min_score + '"> ' + subtitleScore + '</td>' +
+                                  '<td class="tvShow"> ' + subtitleLink + '</td>' +
+                                  '<td>' + missingGuess + '</td>' +
+                                  '</tr>';
+                        $('#subtitle_results').append(row);
+                        // Allow the modal to be resizable
+                        $('.modal-content').resizable({
+                            alsoResize: '.modal-body'
+                        });
+                        // Allow the modal to be draggable
+                        $('.modal-dialog').draggable({
+                            cancel: '.text'
+                        });
+                        // After all rows are added, show the modal with results found
+                        subtitlesResultModal.modal('show');
+                    });
+                }
+                // Add back the CC icon as we are not searching anymore
+                changeImage(selectedEpisode, 'images/closed_captioning.png', 'Search subtitles', 'Search subtitles', 16, true);
+                enableAllSearches();
+            });
+            return false;
+        }
+
+        function forcedSearch() {
+            disableAllSearches();
+            changeImage(selectedEpisode, loadingSpinner, 'loading', 'loading', 16, true);
+            const url = selectedEpisode.prop('href');
+            $.getJSON(url, data => {
+                if (data.result.toLowerCase() === 'success') {
+                    // Clear and update the subtitles column with new informations
+                    const subtitles = data.subtitles.split(',');
+                    subtitlesTd.empty();
+                    $.each(subtitles, (index, language) => {
+                        if (language !== '') {
+                            if (index !== subtitles.length - 1) { // eslint-disable-line no-negated-condition
+                                changeImage(subtitlesTd, '', language, language, 11, true);
+                            } else {
+                                changeImage(subtitlesTd, 'images/subtitles/flags/' + language + '.png', language, language, 11, true);
+                            }
+                        }
+                    });
+                }
+                // Add back the CC icon as we are not searching anymore
+                changeImage(selectedEpisode, 'images/closed_captioning.png', 'Search subtitles', 'Search subtitles', 16, true);
+                enableAllSearches();
+            });
+            return false;
+        }
+    };
+
+    $.fn.ajaxEpMergeSubtitles = function() {
+        $('.epMergeSubtitles').on('click', function() {
+            const subtitlesMergeLink = $(this);
+            changeImage(subtitlesMergeLink, loadingSpinner, 'loading', 'loading', 16, true);
+            $.getJSON($(this).attr('href'), () => {
+                // Don't allow other merges
+                subtitlesMergeLink.remove();
+            });
+            // Don't follow the link
+            return false;
+        });
+    };
+
+    $.ajaxEpRedownloadSubtitle = function() {
+        $('.epRedownloadSubtitle').on('click', function(e) {
+            e.preventDefault();
+            selectedEpisode = $(this);
+            $('#confirmSubtitleReDownloadModal').modal('show');
+        });
+
+        $('#confirmSubtitleReDownloadModal .btn-medusa.btn-success').on('click', () => {
+            redownloadSubtitles();
+        });
+
+        function redownloadSubtitles() {
+            disableAllSearches();
+            const url = selectedEpisode.prop('href');
+            const downloading = 'Re-downloading subtitle';
+            const failed = 'Re-downloaded subtitle failed';
+            const downloaded = 'Re-downloaded subtitle succeeded';
+            changeImage(selectedEpisode, loadingSpinner, downloading, downloading, 16, true);
+            $.getJSON(url, data => {
+                if (data.result.toLowerCase() === 'success' && data.new_subtitles.length > 0) {
+                    changeImage(selectedEpisode, 'images/save.png', downloaded, downloaded, 16, true);
+                } else {
+                    changeImage(selectedEpisode, 'images/no16.png', failed, failed, 16, true);
+                }
+            });
+            enableAllSearches();
+            return false;
+        }
+    };
+};

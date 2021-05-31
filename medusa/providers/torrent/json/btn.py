@@ -278,8 +278,8 @@ class BTNProvider(TorrentProvider):
                 log.warning('Provider is currently unavailable. Error: {code} {text}',
                             {'code': code, 'text': message})
             else:
-                log.error('JSON-RPC protocol error while accessing provider. Error: {msg!r}',
-                          {'msg': error.args})
+                log.warning('JSON-RPC protocol error while accessing provider. Error: {msg!r}',
+                            {'msg': error.args})
 
         except (socket.error, ValueError) as error:
             log.warning('Error while accessing provider. Error: {msg!r}', {'msg': error})
