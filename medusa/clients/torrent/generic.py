@@ -57,7 +57,10 @@ class GenericClient(object):
 
     def _request(self, method='get', params=None, data=None, files=None, cookies=None):
 
-        self.response = self.session.request(method, self.url, params=params, data=data, files=files, timeout=60, verify=self.verify)
+        self.response = self.session.request(
+            method, self.url, params=params, data=data, files=files, timeout=60, cookies=cookies,
+            verify=self.verify if app.TORRENT_VERIFY_CERT else False
+        )
         if not self.response:
             log.warning('{name} {method} call to {url} failed!', {
                 'name': self.name, 'method': method.upper(), 'url': self.url
@@ -163,7 +166,6 @@ class GenericClient(object):
 
     @staticmethod
     def _get_info_hash(result):
-        result.hash = None
         if result.url.startswith('magnet:'):
             result.hash = re.findall(r'urn:btih:([\w]{32,40})', result.url)[0]
             if len(result.hash) == 32:
