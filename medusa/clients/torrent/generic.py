@@ -52,9 +52,6 @@ class GenericClient(object):
         self.session.auth = (self.username, self.password)
         self.verify = certifi.where()
 
-        if self._get_auth():
-            return False
-
     def _request(self, method='get', params=None, data=None, files=None, cookies=None):
 
         self.response = self.session.request(

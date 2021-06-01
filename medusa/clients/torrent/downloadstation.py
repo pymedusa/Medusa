@@ -61,6 +61,8 @@ class DownloadStationAPI(GenericClient):
         self.url = self.host
         app.TORRENT_PATH = re.sub(r'^/volume\d*/', '', app.TORRENT_PATH)
 
+        self._get_auth()
+
     def _check_path(self):
         """Validate the destination."""
         if not self.torrent_path:
