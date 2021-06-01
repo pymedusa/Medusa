@@ -45,6 +45,7 @@ class QBittorrentAPI(GenericClient):
         self.session.auth = HTTPDigestAuth(self.username, self.password)
 
         self.api = None
+        self._get_auth()
 
     def _get_auth(self):
         """Authenticate with the client using the most recent API version available for use."""
