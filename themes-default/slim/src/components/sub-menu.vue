@@ -21,7 +21,8 @@
     </div>
 </template>
 <script>
-import { mapGetters } from 'vuex';
+import { apiRoute } from '../api';
+import { mapActions, mapGetters } from 'vuex';
 import { AppLink, ShowSelector } from './helpers';
 
 export default {
@@ -53,6 +54,9 @@ export default {
         }
     },
     methods: {
+        ...mapActions({
+            removeShow: 'removeShow'
+        }),
         clickEventCond(menuItem) {
             return menuItem.confirm ? 'click' : null;
         },
@@ -69,12 +73,24 @@ export default {
             };
 
             if (action === 'removeshow') {
-                const { getCurrentShow } = this;
+                const { getCurrentShow, removeShow, $router } = this;
                 options.title = 'Remove Show';
                 options.text = `Are you sure you want to remove <span class="footerhighlight">${getCurrentShow.title}</span> from the database?<br><br>
                                 <input type="checkbox" id="deleteFiles"> <span class="red-text">Check to delete files as well. IRREVERSIBLE</span>`;
-                options.confirm = $element => {
-                    window.location.href = $element[0].href + (document.querySelector('#deleteFiles').checked ? '&full=1' : '');
+                options.confirm = async () => {
+                    // Already remove show from frontend store + localStorage
+                    removeShow(getCurrentShow);
+
+                    const params = { showslug: getCurrentShow.id.slug };
+                    if (document.querySelector('#deleteFiles').checked) {
+                        params.full = 1;
+                    }
+
+                    // Start removal of show in backend
+                    await apiRoute.get('home/deleteShow', { params });
+
+                    // Navigate back to /home
+                    $router.push({ name: 'home', query: undefined });
                 };
             } else if (action === 'clearhistory') {
                 options.title = 'Clear History';

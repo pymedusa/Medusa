@@ -8,7 +8,8 @@ import {
     ADD_SHOWS,
     ADD_SHOW_EPISODE,
     ADD_SHOW_SCENE_EXCEPTION,
-    REMOVE_SHOW_SCENE_EXCEPTION
+    REMOVE_SHOW_SCENE_EXCEPTION,
+    REMOVE_SHOW
 } from '../mutation-types';
 
 /**
@@ -159,6 +160,11 @@ const mutations = {
         } else {
             Vue.set(state.queueitems, state.queueitems.length, queueItem);
         }
+    },
+    [REMOVE_SHOW](state, removedShow) {
+        state.shows = state.shows.filter(existingShow => removedShow.id.slug !== existingShow.id.slug);
+        // Update localStorage
+        localStorage.setItem('shows', JSON.stringify(state.shows));
     },
     initShowsFromStore(state) {
         // Check if the ID exists
@@ -458,6 +464,10 @@ const actions = {
         // Update store's search queue item. (provided through websocket)
         const { commit } = context;
         return commit(ADD_SHOW_QUEUE_ITEM, queueItem);
+    },
+    removeShow({ commit }, show) {
+        // Remove the show from store and localStorage (provided through websocket)
+        return commit(REMOVE_SHOW, show);
     }
 };
 
