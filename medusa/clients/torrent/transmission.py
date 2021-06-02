@@ -41,6 +41,8 @@ class TransmissionAPI(GenericClient):
         self.rpcurl = self.rpcurl.strip('/')
         self.url = urljoin(self.host, self.rpcurl + '/rpc')
 
+        self._get_auth()
+
     def check_response(self):
         """Check if response is a valid json and its a success one."""
         try:
@@ -70,6 +72,9 @@ class TransmissionAPI(GenericClient):
 
         if self.response is None:
             return False
+
+        if self.response.status_code == 200:
+            return self.response
 
         auth_match = re.search(r'X-Transmission-Session-Id:\s*(\w+)', self.response.text)
 

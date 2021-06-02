@@ -67,6 +67,8 @@ class UTorrentAPI(GenericClient):
         self._torrents_list = []
         self._torrents_epoch = 0.0
 
+        self._get_auth()
+
     def _request(self, method='get', params=None, data=None, files=None, cookies=None):
         if cookies:
             log.debug('{name}: Received unused argument: cookies={value!r}',

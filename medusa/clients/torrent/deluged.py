@@ -41,6 +41,8 @@ class DelugeDAPI(GenericClient):
         super(DelugeDAPI, self).__init__('DelugeD', host, username, password, torrent_path)
         self.drpc = None
 
+        self._get_auth()
+
     def _get_auth(self):
         return True if self.connect() else None
 
