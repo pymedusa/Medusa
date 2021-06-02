@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import os
-import time
 
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
@@ -378,14 +377,6 @@ class QBittorrentAPI(GenericClient):
 
     def get_status(self, info_hash):
         """Return torrent status."""
-        # Set up the auth. We need it in the following methods.
-        if time.time() > self.last_time + 1800 or not self.auth:
-            self.last_time = time.time()
-            self._get_auth()
-
-        if not self.auth:
-            return
-
         torrent = self._torrent_properties(info_hash)
         if not torrent:
             return
