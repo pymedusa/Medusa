@@ -77,14 +77,14 @@ export default {
                 options.title = 'Remove Show';
                 options.text = `Are you sure you want to remove <span class="footerhighlight">${getCurrentShow.title}</span> from the database?<br><br>
                                 <input type="checkbox" id="deleteFiles"> <span class="red-text">Check to delete files as well. IRREVERSIBLE</span>`;
-                options.confirm = async $element => {
+                options.confirm = async () => {
                     // Already remove show from frontend store + localStorage
                     removeShow(getCurrentShow);
 
                     const params = { showslug: getCurrentShow.id.slug };
                     if (document.querySelector('#deleteFiles').checked) {
                         params.full = 1;
-                    };
+                    }
 
                     // Start removal of show in backend
                     await apiRoute.get('home/deleteShow', { params });
