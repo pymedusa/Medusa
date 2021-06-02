@@ -162,8 +162,7 @@ const mutations = {
         }
     },
     [REMOVE_SHOW](state, removedShow) {
-        // state.shows = state.shows.filter(existingShow => removedShow.id.slug !== existingShow.id.slug);
-        Vue.set(state, 'shows', state.shows.filter(existingShow => removedShow.id.slug !== existingShow.id.slug));
+        state.shows = state.shows.filter(existingShow => removedShow.id.slug !== existingShow.id.slug);
         // Update localStorage
         localStorage.setItem('shows', JSON.stringify(state.shows));
     },
