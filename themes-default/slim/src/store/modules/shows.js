@@ -423,7 +423,7 @@ const actions = {
             return Promise.all(pageRequests)
                 .then(() => {
                     // Update (namespaced) localStorage
-                    const namespace =  rootState.config.system.webRoot ? `${rootState.config.system.webRoot}_` : '';
+                    const namespace = rootState.config.system.webRoot ? `${rootState.config.system.webRoot}_` : '';
                     localStorage.setItem(`${namespace}shows`, JSON.stringify(state.shows));
                 });
         }
@@ -469,10 +469,8 @@ const actions = {
         commit(REMOVE_SHOW, show);
 
         // Update (namespaced) localStorage
-        const namespace =  rootState.config.system.webRoot ? `${rootState.config.system.webRoot}_` : '';
+        const namespace = rootState.config.system.webRoot ? `${rootState.config.system.webRoot}_` : '';
         localStorage.setItem(`${namespace}shows`, JSON.stringify(state.shows));
-
-        debugger;
     }
 };
 
