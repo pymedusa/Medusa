@@ -64,10 +64,6 @@ const mutations = {
         });
 
         Vue.set(state, 'shows', [...state.shows, ...newShows]);
-
-        // Update localStorage
-        localStorage.setItem('shows', JSON.stringify(state.shows));
-
         console.debug(`Added ${shows.length} shows to store`);
     },
     [ADD_SHOW_CONFIG](state, { show, config }) {
@@ -163,8 +159,6 @@ const mutations = {
     },
     [REMOVE_SHOW](state, removedShow) {
         state.shows = state.shows.filter(existingShow => removedShow.id.slug !== existingShow.id.slug);
-        // Update localStorage
-        localStorage.setItem('shows', JSON.stringify(state.shows));
     },
     initShowsFromStore(state) {
         // Check if the ID exists
@@ -382,7 +376,7 @@ const actions = {
      * @returns {undefined|Promise} undefined if `shows` was provided or the API response if not.
      */
     getShows(context, shows) {
-        const { commit, dispatch } = context;
+        const { commit, dispatch, state, rootState } = context;
 
         // If no shows are provided get the first 1000
         if (!shows) {
@@ -426,7 +420,12 @@ const actions = {
                 })
             );
 
-            return Promise.all(pageRequests);
+            return Promise.all(pageRequests)
+                .then(() => {
+                    // Update (namespaced) localStorage
+                    const namespace =  rootState.config.system.webRoot ? `${rootState.config.system.webRoot}_` : '';
+                    localStorage.setItem(`${namespace}shows`, JSON.stringify(state.shows));
+                });
         }
 
         return shows.forEach(show => dispatch('getShow', show));
@@ -465,9 +464,15 @@ const actions = {
         const { commit } = context;
         return commit(ADD_SHOW_QUEUE_ITEM, queueItem);
     },
-    removeShow({ commit }, show) {
+    removeShow({ commit, rootState, state }, show) {
         // Remove the show from store and localStorage (provided through websocket)
-        return commit(REMOVE_SHOW, show);
+        commit(REMOVE_SHOW, show);
+
+        // Update (namespaced) localStorage
+        const namespace =  rootState.config.system.webRoot ? `${rootState.config.system.webRoot}_` : '';
+        localStorage.setItem(`${namespace}shows`, JSON.stringify(state.shows));
+
+        debugger;
     }
 };
 
