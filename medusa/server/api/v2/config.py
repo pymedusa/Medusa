@@ -23,6 +23,7 @@ from medusa.common import IGNORED, Quality, SKIPPED, WANTED, cpu_presets
 from medusa.helpers.utils import int_default, to_camel_case
 from medusa.indexers.config import INDEXER_TVDBV2, get_indexer_config
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.network_timezones import app_timezone
 from medusa.queues.utils import (
     generate_location_disk_space,
     generate_postprocessing_queue,
@@ -1070,6 +1071,7 @@ class DataGenerator(object):
         section_data['pid'] = app.PID
         section_data['locale'] = '.'.join([text_type(loc or 'Unknown') for loc in app.LOCALE])
         section_data['localUser'] = app.OS_USER or 'Unknown'
+        section_data['timezone'] = app_timezone._dst_abbr
         section_data['programDir'] = app.PROG_DIR
         section_data['dataDir'] = app.DATA_DIR
         section_data['configFile'] = app.CONFIG_FILE

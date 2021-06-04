@@ -47,6 +47,7 @@ const state = {
         minor: null
     },
     locale: null,
+    timezone: null,
     localUser: null,
     programDir: null,
     dataDir: null,
