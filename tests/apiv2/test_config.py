@@ -2,17 +2,20 @@
 """Test /config route."""
 from __future__ import unicode_literals
 
+import datetime
 import json
-import platform
 import pkgutil
+import platform
 import sys
 
 from medusa import app, classes, common, db, helpers, logger, metadata
-from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.common import cpu_presets
 from medusa.helpers.utils import int_default
+from medusa.indexers.config import INDEXER_TVDBV2
+from medusa.network_timezones import app_timezone
 from medusa.sbdatetime import date_presets, time_presets
 from medusa.schedulers.utils import all_schedulers
+
 from tests.apiv2.conftest import TEST_API_KEY
 
 import pytest
@@ -336,6 +339,7 @@ def config_system(monkeypatch):
     section_data['pid'] = app.PID
     section_data['locale'] = '.'.join([text_type(loc or 'Unknown') for loc in app.LOCALE])
     section_data['localUser'] = app.OS_USER or 'Unknown'
+    section_data['timezone'] = app_timezone.tzname(datetime.datetime.now())
     section_data['programDir'] = app.PROG_DIR
     section_data['dataDir'] = app.DATA_DIR
     section_data['configFile'] = app.CONFIG_FILE
