@@ -2,6 +2,7 @@
 """Request handler for configuration."""
 from __future__ import unicode_literals
 
+import datetime
 import inspect
 import logging
 import pkgutil
@@ -1071,7 +1072,7 @@ class DataGenerator(object):
         section_data['pid'] = app.PID
         section_data['locale'] = '.'.join([text_type(loc or 'Unknown') for loc in app.LOCALE])
         section_data['localUser'] = app.OS_USER or 'Unknown'
-        section_data['timezone'] = app_timezone._dst_abbr
+        section_data['timezone'] = app_timezone.tzname(datetime.datetime.now())
         section_data['programDir'] = app.PROG_DIR
         section_data['dataDir'] = app.DATA_DIR
         section_data['configFile'] = app.CONFIG_FILE
