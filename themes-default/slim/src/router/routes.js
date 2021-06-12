@@ -193,8 +193,10 @@ const configRoutes = [
             title: 'Config - Providers',
             header: 'Search Providers',
             topMenu: 'config',
-            subMenu: configSubMenu
-        }
+            subMenu: configSubMenu,
+            converted: true
+        },
+        component: () => import('../components/config-providers.vue')
     },
     {
         path: '/config/search',

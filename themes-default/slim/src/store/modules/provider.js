@@ -4,14 +4,19 @@ import { api } from '../../api';
 import { ADD_PROVIDERS, ADD_PROVIDER_CACHE, ADD_SEARCH_RESULTS } from '../mutation-types';
 
 const state = {
-    providers: {}
+    providers: []
 };
 
 const mutations = {
     [ADD_PROVIDERS](state, providers) {
-        for (const provider of providers) {
-            Vue.set(state.providers, provider.id, { ...state.providers[provider.id], ...provider });
-        }
+        providers.forEach((provider, index) => {
+            const existingProvider = state.providers.find(p => p.id === provider.id);
+            if (existingProvider) {
+                Vue.set(state.providers, state.providers.indexOf(existingProvider), provider);
+            } else {
+                state.providers.push(provider);
+            }            
+        });
     },
     [ADD_PROVIDER_CACHE](state, { providerId, cache }) {
         // Check if this provider has already been added.

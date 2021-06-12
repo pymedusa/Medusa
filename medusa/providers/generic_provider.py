@@ -891,9 +891,11 @@ class GenericProvider(object):
     def to_json(self):
         """Return a json representation for a provider."""
         from medusa.providers.torrent.torrent_provider import TorrentProvider
-        return {
+        # Generic options
+        data = {
             'name': self.name,
             'id': self.get_id(),
+            'imageName': self.image_name(),
             'config': {
                 'enabled': self.enabled,
                 'search': {
@@ -926,10 +928,62 @@ class GenericProvider(object):
             'headers': self.headers,
             'supportsAbsoluteNumbering': self.supports_absolute_numbering,
             'supportsBacklog': self.supports_backlog,
-            'url': self.url,
+            'url': self.custom_url or self.url if hasattr(self, 'custom_url') else self.url,
             'urls': self.urls,
             'cookies': {
                 'enabled': self.enable_cookies,
                 'required': self.cookies
             }
         }
+
+        # Custom options (torrent client specific)
+        if hasattr(self, 'username'):
+            data['config']['username'] = self.username
+
+        if hasattr(self, 'password'):
+            data['config']['password'] = self.password
+
+        if hasattr(self, 'api_key'):
+            data['config']['apikey'] = self.api_key
+
+        if hasattr(self, 'custom_url'):
+            data['config']['customUrl'] = self.custom_url
+
+        if hasattr(self, 'minseed'):
+            data['config']['minseed'] = self.minseed
+
+        if hasattr(self, 'minleech'):
+            data['config']['minleech'] = self.minleech
+
+        if hasattr(self, 'ratio'):
+            data['config']['ratio'] = self.ratio
+
+        if hasattr(self, 'client_ratio'):
+            data['config']['clientRatio'] = self.client_ratio
+
+        if hasattr(self, 'passkey'):
+            data['config']['passkey'] = self.passkey
+
+        if hasattr(self, 'hash'):
+            data['config']['hash'] = self.hash
+
+        if hasattr(self, 'digest'):
+            data['config']['digest'] = self.digest
+
+        if hasattr(self, 'pin'):
+            data['config']['pin'] = self.pin
+
+        if hasattr(self, 'confirmed'):
+            data['config']['confirmed'] = self.confirmed
+
+        if hasattr(self, 'ranked'):
+            data['config']['ranked'] = self.ranked
+
+        if hasattr(self, 'cookies'):
+            data['config']['cookies'] = self.cookies
+
+        return data
+
+    def save_from_json(self, data):
+        """Save the provider from the apiv2 provided data."""
+        pass

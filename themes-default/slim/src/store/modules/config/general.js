@@ -12,6 +12,7 @@ const state = {
     subtitles: {
         enabled: null
     },
+    brokenProviders: [],
     logs: {
         debug: null,
         dbDebug: null,
