@@ -33,10 +33,13 @@ class ConfigProviders(Config):
         super(ConfigProviders, self).__init__(*args, **kwargs)
 
     def index(self):
-        """Render the Provider configuration page."""
-        t = PageTemplate(rh=self, filename='config_providers.mako')
+        """
+        Render the providers configuration page.
 
-        return t.render(controller='config', action='providers')
+        [Converted to VueRouter]
+        """
+        t = PageTemplate(rh=self, filename='index.mako')
+        return t.render()
 
     @staticmethod
     def canAddTorrentRssProvider(name, url, cookies, title_tag):

@@ -104,6 +104,7 @@ class ConfigHandler(BaseRequestHandler):
         'defaultPage': StringField(app, 'DEFAULT_PAGE'),
         'trashRemoveShow': BooleanField(app, 'TRASH_REMOVE_SHOW'),
         'trashRotateLogs': BooleanField(app, 'TRASH_ROTATE_LOGS'),
+        'brokenProviders': ListField(app, 'BROKEN_PROVIDERS'),
 
         'indexerDefaultLanguage': StringField(app, 'INDEXER_DEFAULT_LANGUAGE'),
         'showUpdateHour': IntegerField(app, 'SHOWUPDATE_HOUR'),
@@ -612,6 +613,7 @@ class DataGenerator(object):
         section_data['subtitles']['enabled'] = bool(app.USE_SUBTITLES)
         section_data['recentShows'] = app.SHOWS_RECENT
         section_data['addTitleWithYear'] = bool(app.ADD_TITLE_WITH_YEAR)
+        section_data['brokenProviders'] = [provider for provider in app.BROKEN_PROVIDERS if provider]
 
         # Pick a random series to show as background.
         # TODO: Recreate this in Vue when the webapp has a reliable list of shows to choose from.
