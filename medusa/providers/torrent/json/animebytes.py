@@ -230,7 +230,7 @@ class AnimeBytes(TorrentProvider):
 
                 if release_type == SINGLE_EP:
                     # Create the single episode release_name (use the shows default title)
-                    if is_season_exception(group.get('SeriesName')):
+                    if is_season_exception(group.get('SeriesName')) or not season:
                         # If this is a season exception, we can't parse the release name like:
                         #  Show.Title.Season.3.Exception.S01E01...
                         # As that will confuse the parser, as it already has a season available.
@@ -243,7 +243,7 @@ class AnimeBytes(TorrentProvider):
                     else:
                         title = '{title}.{season}.{episode}.{tags}' \
                                 '{release_group}'.format(title=group.get('SeriesName'),
-                                                         season='S{0:02d}'.format(int(season)) if season else 'S01',
+                                                         season='S{0:02d}'.format(int(season)),
                                                          episode='E{0:02d}'.format(int(episode)),
                                                          tags=tags,
                                                          release_group=release_group)
