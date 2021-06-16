@@ -5,9 +5,17 @@
 #### Improvements
 
 #### Fixes
+
+-----
+
+## 0.5.13 (16-06-2021)
+
+#### Fixes
 - Add support for new synology download station api. Credits to Benjv. ([9555](https://github.com/pymedusa/Medusa/pull/9555))
 - Fix shows not being removed from UI. ([9563](https://github.com/pymedusa/Medusa/pull/9563))
 - Fix provider torrentday. Needs additional cookie cf_clearance. ([9628](https://github.com/pymedusa/Medusa/pull/9628))
+- Fix provider animebytes. Fixed issue with parsing releases with absolute episode numbering. ([9620](https://github.com/pymedusa/Medusa/pull/9620))
+- Fix transmission authentication. ([9598](https://github.com/pymedusa/Medusa/pull/9598))
 
 -----
 
