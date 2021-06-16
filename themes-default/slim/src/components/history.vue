@@ -20,6 +20,7 @@
                 <history-compact v-else />
             </div>
         </div>
+        <backstretch :slug="config.randomShowSlug" />
     </div>
 </template>
 <script>
@@ -28,10 +29,12 @@ import { mapActions, mapGetters, mapState } from 'vuex';
 import { humanFileSize } from '../utils/core';
 import HistoryDetailed from './history-detailed.vue';
 import HistoryCompact from './history-compact.vue';
+import Backstretch from './backstretch.vue';
 
 export default {
     name: 'show-history',
     components: {
+        Backstretch,
         HistoryCompact,
         HistoryDetailed
     },

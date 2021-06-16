@@ -146,20 +146,21 @@ def get_network_timezone(network, _network_dict):
 
 
 # parse date and time string into local time
-def parse_date_time(d, t, network):
+def parse_date_time(d, t, network=None):
     """
     Parse date and time string into local time.
 
     :param d: date string
     :param t: time string
-    :param network: network to use as base
+    :param network: network to use as base.
+        If no network is provided, asume the local timezone.
     :return: datetime object containing local time
     """
     if not network_dict:
         load_network_dict()
 
     parsed_time = time_regex.search(t)
-    network_tz = get_network_timezone(network, network_dict)
+    network_tz = get_network_timezone(network, network_dict) if network else app_timezone
 
     hr = 0
     m = 0

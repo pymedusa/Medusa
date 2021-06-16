@@ -32,6 +32,7 @@ class RTorrentAPI(GenericClient):
         :type password: string
         """
         super(RTorrentAPI, self).__init__('rTorrent', host, username, password)
+        self._get_auth()
 
     def _get_auth(self):
         if self.auth is not None:
@@ -131,9 +132,6 @@ class RTorrentAPI(GenericClient):
     def pause_torrent(self, info_hash):
         """Get torrent and pause."""
         log.info('Pausing {client} torrent {hash} status.', {'client': self.name, 'hash': info_hash})
-        if not self._get_auth():
-            return False
-
         torrent = self.auth.find_torrent(info_hash.upper())
 
         if not torrent:
@@ -145,9 +143,6 @@ class RTorrentAPI(GenericClient):
     def remove_torrent(self, info_hash):
         """Get torrent and remove."""
         log.info('Removing {client} torrent {hash} status.', {'client': self.name, 'hash': info_hash})
-        if not self._get_auth():
-            return False
-
         torrent = self.auth.find_torrent(info_hash.upper())
 
         if not torrent:
@@ -159,9 +154,6 @@ class RTorrentAPI(GenericClient):
     def _torrent_properties(self, info_hash):
         """Get torrent properties."""
         log.debug('Get {client} torrent hash {hash} properties.', {'client': self.name, 'hash': info_hash})
-        if not self._get_auth():
-            return False
-
         torrent = self.auth.find_torrent(info_hash.upper())
 
         if not torrent:

@@ -4,7 +4,7 @@ zipp < 2.0.0 ; python_version == "2.*"
 configparser < 5.0.0 ; python_version == "2.*"
 # pyparsing 3.0.0 dropped support for Python 2
 pyparsing < 3.0.0 ; python_version == "2.*"
-flake8==3.9.1
+flake8==3.9.2
 pycodestyle==2.7.0
 flake8-docstrings==1.6.0
 flake8-import-order==0.18.1
@@ -12,7 +12,7 @@ flake8-quotes==3.2.0
 pep8-naming==0.11.1
 pytest<5.0.0 ; python_version < "3.5"
 pytest>=5.0.0 ; python_version >= "3.5"
-pytest-cov==2.11.1
+pytest-cov==2.12.1
 pytest-flake8==1.0.7
 pytest-tornado==0.8.1
 PyYAML==5.4.1

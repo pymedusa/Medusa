@@ -8,7 +8,8 @@ import {
     ADD_SHOWS,
     ADD_SHOW_EPISODE,
     ADD_SHOW_SCENE_EXCEPTION,
-    REMOVE_SHOW_SCENE_EXCEPTION
+    REMOVE_SHOW_SCENE_EXCEPTION,
+    REMOVE_SHOW
 } from '../mutation-types';
 
 /**
@@ -63,10 +64,6 @@ const mutations = {
         });
 
         Vue.set(state, 'shows', [...state.shows, ...newShows]);
-
-        // Update localStorage
-        localStorage.setItem('shows', JSON.stringify(state.shows));
-
         console.debug(`Added ${shows.length} shows to store`);
     },
     [ADD_SHOW_CONFIG](state, { show, config }) {
@@ -159,6 +156,9 @@ const mutations = {
         } else {
             Vue.set(state.queueitems, state.queueitems.length, queueItem);
         }
+    },
+    [REMOVE_SHOW](state, removedShow) {
+        state.shows = state.shows.filter(existingShow => removedShow.id.slug !== existingShow.id.slug);
     },
     initShowsFromStore(state) {
         // Check if the ID exists
@@ -376,7 +376,7 @@ const actions = {
      * @returns {undefined|Promise} undefined if `shows` was provided or the API response if not.
      */
     getShows(context, shows) {
-        const { commit, dispatch } = context;
+        const { commit, dispatch, state, rootState } = context;
 
         // If no shows are provided get the first 1000
         if (!shows) {
@@ -420,7 +420,12 @@ const actions = {
                 })
             );
 
-            return Promise.all(pageRequests);
+            return Promise.all(pageRequests)
+                .then(() => {
+                    // Update (namespaced) localStorage
+                    const namespace = rootState.config.system.webRoot ? `${rootState.config.system.webRoot}_` : '';
+                    localStorage.setItem(`${namespace}shows`, JSON.stringify(state.shows));
+                });
         }
 
         return shows.forEach(show => dispatch('getShow', show));
@@ -458,6 +463,14 @@ const actions = {
         // Update store's search queue item. (provided through websocket)
         const { commit } = context;
         return commit(ADD_SHOW_QUEUE_ITEM, queueItem);
+    },
+    removeShow({ commit, rootState, state }, show) {
+        // Remove the show from store and localStorage (provided through websocket)
+        commit(REMOVE_SHOW, show);
+
+        // Update (namespaced) localStorage
+        const namespace = rootState.config.system.webRoot ? `${rootState.config.system.webRoot}_` : '';
+        localStorage.setItem(`${namespace}shows`, JSON.stringify(state.shows));
     }
 };
 

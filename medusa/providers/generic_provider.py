@@ -791,8 +791,8 @@ class GenericProvider(object):
             return {'result': False,
                     'message': 'No Cookies added from ui for provider: {0}'.format(self.name)}
 
-        cookie_validator = re.compile(r'^([\w%]+=[\w%]+)(;[\w%]+=[\w%]+)*$')
-        if not cookie_validator.match(self.cookies):
+        cookie_validator = re.compile(r'([\w%]+=[\w%]+)')
+        if not cookie_validator.findall(self.cookies):
             ui.notifications.message(
                 'Failed to validate cookie for provider {provider}'.format(provider=self.name),
                 'Cookie is not correctly formatted: {0}'.format(self.cookies))

@@ -118,6 +118,18 @@ exports[`Config.test.js renders 1`] = `
      
     <tr>
       <td>
+        <i
+          class="icon16-config-locale"
+        />
+         Timezone:
+      </td>
+      <td>
+        
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
          
       </td>
       <td>

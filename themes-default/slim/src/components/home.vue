@@ -146,7 +146,6 @@ export default {
             setLayoutShow: 'setLayoutShow',
             setStoreLayout: 'setStoreLayout',
             setLayoutLocal: 'setLayoutLocal',
-            getShows: 'getShows',
             getStats: 'getStats'
         }),
         async changePosterSortBy() {
