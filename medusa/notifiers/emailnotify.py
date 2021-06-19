@@ -69,7 +69,9 @@ class Notifier(object):
         """
         Send a notification that an episode was snatched.
 
-        ep_name: The name of the episode that was snatched
+        :param title: Notification title.
+        :param message: Notification message.
+        :param ep_obj: Episode object. Used for the show's series and indexer id.
         """
         if app.USE_EMAIL and app.EMAIL_NOTIFY_ONSNATCH:
             parsed = self._parse_name(message)
@@ -118,8 +120,8 @@ class Notifier(object):
         """
         Send a notification that an episode was downloaded.
 
-        ep_name: The name of the episode that was downloaded
-        title: The title of the notification (optional)
+        :param ep_obj: The episode object.
+        :param title: The title of the notification (optional)
         """
         if app.USE_EMAIL and app.EMAIL_NOTIFY_ONDOWNLOAD:
             title = notifyStrings[NOTIFY_DOWNLOAD]
@@ -171,8 +173,8 @@ class Notifier(object):
         """
         Send a notification that a subtitle was downloaded.
 
-        ep_name: The name of the episode that was downloaded
-        lang: Subtitle language wanted
+        :param ep_obj: Episode object.
+        :param lang: Subtitle language wanted
         """
         if app.USE_EMAIL and app.EMAIL_NOTIFY_ONSUBTITLEDOWNLOAD:
             title = notifyStrings[NOTIFY_SUBTITLE_DOWNLOAD]
@@ -224,7 +226,7 @@ class Notifier(object):
         """
         Send a notification that Medusa was updated.
 
-        new_version: The commit Medusa was updated to
+        :param new_version: The commit Medusa was updated to
         """
         if app.USE_EMAIL:
             title = notifyStrings[NOTIFY_GIT_UPDATE]
@@ -265,7 +267,7 @@ class Notifier(object):
         """
         Send a notification that Medusa was logged into remotely.
 
-        ipaddress: The ip Medusa was logged into from
+        :param ipaddress: The ip Medusa was logged into from
         """
         if app.USE_EMAIL:
             title = notifyStrings[NOTIFY_LOGIN]
@@ -302,7 +304,13 @@ class Notifier(object):
                     log.warning('Login notification error: {0}', self.last_err)
 
     @staticmethod
-    def _generate_recipients(show):
+    def _generate_recipients(show_obj):
+        """
+        Generate a list of email recipients for a specific show.
+
+        Search the tv_shows table for entries in the notify_list field.
+        :param show_obj: Show object.
+        """
         addrs = []
         main_db_con = db.DBConnection()
 
@@ -314,12 +322,12 @@ class Notifier(object):
             )
 
         # Grab the per-show-notification recipients
-        if show:
+        if show_obj:
             sql_results = main_db_con.select(
                 'SELECT notify_list '
                 'FROM tv_shows '
                 'WHERE indexer_id = ? AND indexer = ? ',
-                [show.series_id, show.indexer]
+                [show_obj.series_id, show_obj.indexer]
             )
             for row in sql_results:
                 if not row['notify_list']:

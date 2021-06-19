@@ -30,7 +30,7 @@ class Notifier(object):
     def test_notify(self, prowl_api, prowl_priority):
         return self._send_prowl(prowl_api, prowl_priority, event='Test', message='Testing Prowl settings from Medusa', force=True)
 
-    def notify_snatch(self, title, message, ep_obj=None):
+    def notify_snatch(self, title, message, ep_obj):
         if app.PROWL_NOTIFY_ONSNATCH:
             recipients = self._generate_recipients(ep_obj.series)
             if not recipients:
@@ -82,7 +82,13 @@ class Notifier(object):
                              event=title, message=update_text.format(ipaddress))
 
     @staticmethod
-    def _generate_recipients(show=None):
+    def _generate_recipients(show_obj=None):
+        """
+        Generate a list of prowl recipients (api keys) for a specific show.
+
+        Search the tv_shows table for entries in the notify_list field.
+        :param show_obj: Show object.
+        """
         apis = []
         mydb = db.DBConnection()
 
@@ -93,12 +99,12 @@ class Notifier(object):
                     apis.append(api)
 
         # Grab the per-show-notification recipients
-        if show is not None:
+        if show_obj is not None:
             recipients = mydb.select(
                 'SELECT notify_list '
                 'FROM tv_shows '
                 'WHERE indexer_id = ? AND indexer = ? ',
-                [show.series_id, show.indexer]
+                [show_obj.series_id, show_obj.indexer]
             )
 
             for subs in recipients:
