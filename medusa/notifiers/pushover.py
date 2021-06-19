@@ -131,7 +131,7 @@ class Notifier(object):
             log.error('Pushover notification failed. HTTP response code: {0}', conn_resp.status)
             return False
 
-    def notify_snatch(self, title, message):
+    def notify_snatch(self, title, message, **kwargs):
         """
         Send a notification that an episode was snatched.
 

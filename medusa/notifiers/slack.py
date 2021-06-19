@@ -19,7 +19,7 @@ log.logger.addHandler(logging.NullHandler())
 class Notifier(object):
     """Slack notifier class."""
 
-    def notify_snatch(self, title, message):
+    def notify_snatch(self, title, message, **kwargs):
         """
         Send a notification to a Slack channel when an episode is snatched.
 

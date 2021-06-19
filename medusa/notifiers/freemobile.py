@@ -79,7 +79,7 @@ class Notifier(object):
         log.info(message)
         return True, message
 
-    def notify_snatch(self, title, message):
+    def notify_snatch(self, title, message, **kwargs):
         if app.FREEMOBILE_NOTIFY_ONSNATCH:
             self._notifyFreeMobile(title, message)
 

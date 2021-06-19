@@ -85,7 +85,7 @@ class Notifier(object):
             log.info(message)
         return success, message
 
-    def notify_snatch(self, title, message):
+    def notify_snatch(self, title, message, **kwargs):
         """
         Sends a Telegram notification when an episode is snatched
 

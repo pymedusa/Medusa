@@ -127,7 +127,7 @@ def notify_snatch(ep_obj, result):
 
     for n in notifiers:
         try:
-            n.notify_snatch(title, message)
+            n.notify_snatch(title, message, ep_obj=ep_obj)
         except (RequestException, socket.gaierror, socket.timeout) as error:
             log.debug(u'Unable to send snatch notification. Error: {0!r}', error)
 

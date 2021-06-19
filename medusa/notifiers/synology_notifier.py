@@ -16,7 +16,7 @@ log.logger.addHandler(logging.NullHandler())
 
 
 class Notifier(object):
-    def notify_snatch(self, title, message):
+    def notify_snatch(self, title, message, **kwargs):
         if app.SYNOLOGYNOTIFIER_NOTIFY_ONSNATCH:
             self._send_synologyNotifier(title, message)
 

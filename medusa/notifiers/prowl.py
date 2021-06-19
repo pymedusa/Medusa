@@ -30,10 +30,9 @@ class Notifier(object):
     def test_notify(self, prowl_api, prowl_priority):
         return self._send_prowl(prowl_api, prowl_priority, event='Test', message='Testing Prowl settings from Medusa', force=True)
 
-    def notify_snatch(self, title, message):
+    def notify_snatch(self, title, message, ep_obj=None):
         if app.PROWL_NOTIFY_ONSNATCH:
-            show = self._parse_episode(message)
-            recipients = self._generate_recipients(show)
+            recipients = self._generate_recipients(ep_obj.series)
             if not recipients:
                 log.debug('Skipping prowl notify because there are no configured recipients')
             else:
@@ -95,14 +94,20 @@ class Notifier(object):
 
         # Grab the per-show-notification recipients
         if show is not None:
-            for value in show:
-                for subs in mydb.select('SELECT notify_list FROM tv_shows WHERE show_name = ?', (value,)):
-                    if subs['notify_list']:
-                        entries = json.loads(subs['notify_list'])
-                        if entries:
-                            for api in entries['prowlAPIs'].split(','):
-                                if api.strip():
-                                    apis.append(api)
+            recipients = mydb.select(
+                'SELECT notify_list '
+                'FROM tv_shows '
+                'WHERE indexer_id = ? AND indexer = ? ',
+                [show.series_id, show.indexer]
+            )
+
+            for subs in recipients:
+                if subs['notify_list']:
+                    entries = json.loads(subs['notify_list'])
+                    if entries:
+                        for api in entries['prowlAPIs'].split(','):
+                            if api.strip():
+                                apis.append(api)
 
         apis = set(apis)
         return apis

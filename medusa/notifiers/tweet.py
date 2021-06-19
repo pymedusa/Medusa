@@ -30,7 +30,7 @@ class Notifier(object):
     ACCESS_TOKEN_URL = 'https://api.twitter.com/oauth/access_token'
     AUTHORIZATION_URL = 'https://api.twitter.com/oauth/authorize'
 
-    def notify_snatch(self, title, message):
+    def notify_snatch(self, title, message, **kwargs):
         """
         Send a notification that an episode was snatched.
 

@@ -425,7 +425,7 @@ class Notifier(object):
     # Public functions which will call the JSON or Legacy HTTP API methods
     ##############################################################################
 
-    def notify_snatch(self, title, message):
+    def notify_snatch(self, title, message, **kwargs):
         """Send the snatch message."""
         if app.KODI_NOTIFY_ONSNATCH:
             self._notify_kodi(title, message)

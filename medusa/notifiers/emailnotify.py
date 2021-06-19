@@ -65,7 +65,7 @@ class Notifier(object):
         msg['Date'] = formatdate(localtime=True)
         return self._sendmail(host, port, smtp_from, use_tls, user, pwd, [to], msg, True)
 
-    def notify_snatch(self, title, message):
+    def notify_snatch(self, title, message, ep_obj):
         """
         Send a notification that an episode was snatched.
 
@@ -73,7 +73,7 @@ class Notifier(object):
         """
         if app.USE_EMAIL and app.EMAIL_NOTIFY_ONSNATCH:
             parsed = self._parse_name(message)
-            to = self._generate_recipients(parsed['show'])
+            to = self._generate_recipients(ep_obj.series)
             if not to:
                 log.debug('Skipping email notify because there are no configured recipients')
             else:
@@ -83,12 +83,12 @@ class Notifier(object):
                         '<body style="font-family:Helvetica, Arial, sans-serif;">'
                         '<h3>Medusa Notification - Snatched</h3><br>'
                         '<p>Show: <b>{show}</b></p><br>'
-                        '<p>Episode: <b>{ep_id}{episode}</b></p><br><br>'
+                        '<p>Episode: <b>{ep_id} - {episode}</b></p><br><br>'
                         '<footer style="margin-top: 2.5em; padding: .7em 0; '
                         'color: #777; border-top: #BBB solid 1px;">'
                         'Powered by Medusa.</footer></body>'.format(
-                            show=parsed['show'],
-                            ep_id=(parsed['ep_id'] + ' - ') if 'ep_id' in parsed else '',
+                            show=ep_obj.series.title,
+                            ep_id=ep_obj.slug,
                             episode=parsed['episode']
                         ),
                         'html'))
@@ -126,7 +126,7 @@ class Notifier(object):
             ep_name = ep_obj.pretty_name_with_quality()
 
             parsed = self._parse_name(ep_name)
-            to = self._generate_recipients(parsed['show'])
+            to = self._generate_recipients(ep_obj.series)
             if not to:
                 log.debug('Skipping email notify because there are no configured recipients')
             else:
@@ -136,12 +136,12 @@ class Notifier(object):
                         '<body style="font-family:Helvetica, Arial, sans-serif;">'
                         '<h3>Medusa Notification - Downloaded</h3><br>'
                         '<p>Show: <b>{show}</b></p><br>'
-                        '<p>Episode: <b>{ep_id}{episode}</b></p><br><br>'
+                        '<p>Episode: <b>{ep_id} - {episode}</b></p><br><br>'
                         '<footer style="margin-top: 2.5em; padding: .7em 0; '
                         'color: #777; border-top: #BBB solid 1px;">'
                         'Powered by Medusa.</footer></body>'.format(
-                            show=parsed['show'],
-                            ep_id=(parsed['ep_id'] + ' - ') if 'ep_id' in parsed else '',
+                            show=ep_obj.series.title,
+                            ep_id=ep_obj.slug,
                             episode=parsed['episode']
                         ),
                         'html'))
@@ -179,7 +179,7 @@ class Notifier(object):
             ep_name = ep_obj.pretty_name()
 
             parsed = self._parse_name(ep_name)
-            to = self._generate_recipients(parsed['show'])
+            to = self._generate_recipients(ep_obj.series)
             if not to:
                 log.debug('Skipping email notify because there are no configured recipients')
             else:
@@ -189,13 +189,13 @@ class Notifier(object):
                         '<body style="font-family:Helvetica, Arial, sans-serif;">'
                         '<h3>Medusa Notification - Subtitle Downloaded</h3><br>'
                         '<p>Show: <b>{show}</b></p><br>'
-                        '<p>Episode: <b>{ep_id}{episode}</b></p><br>'
+                        '<p>Episode: <b>{ep_id} - {episode}</b></p><br>'
                         '<p>Language: <b>{lang}</b></p><br><br>'
                         '<footer style="margin-top: 2.5em; padding: .7em 0; '
                         'color: #777; border-top: #BBB solid 1px;">'
                         'Powered by Medusa.</footer></body>'.format(
-                            show=parsed['show'],
-                            ep_id=(parsed['ep_id'] + ' - ') if 'ep_id' in parsed else '',
+                            show=ep_obj.series.title,
+                            ep_id=ep_obj.slug,
                             episode=parsed['episode'],
                             lang=lang
                         ),
@@ -318,8 +318,8 @@ class Notifier(object):
             sql_results = main_db_con.select(
                 'SELECT notify_list '
                 'FROM tv_shows '
-                'WHERE show_name = ?',
-                [show]
+                'WHERE indexer_id = ? AND indexer = ? ',
+                [show.series_id, show.indexer]
             )
             for row in sql_results:
                 if not row['notify_list']:
