@@ -5,6 +5,7 @@
 #### Improvements
 
 #### Fixes
+- Fix email notifications for per show notifications with special chars ([9652](https://github.com/pymedusa/Medusa/pull/96520))
 
 -----
 
