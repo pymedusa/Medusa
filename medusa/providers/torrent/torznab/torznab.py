@@ -21,6 +21,7 @@ from medusa.indexers.config import (
 )
 from medusa.indexers.utils import mappings
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.providers.generic_provider import GenericProvider
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
@@ -40,6 +41,8 @@ class TorznabProvider(TorrentProvider):
     def __init__(self, name, url=None, api_key=None, cat_ids=None, cap_tv_search=None):
         """Initialize the class."""
         super(TorznabProvider, self).__init__(name)
+
+        self.provider_sub_type = GenericProvider.TORZNAB
 
         self.url = url or ''
         self.api_key = api_key or ''

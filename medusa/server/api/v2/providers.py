@@ -64,7 +64,7 @@ class ProvidersHandler(BaseRequestHandler):
         arg_limit = self._get_limit(default=50)
 
         def data_generator():
-            """Read log lines based on the specified criteria."""
+            """Create provider results."""
             start = arg_limit * (arg_page - 1) + 1
 
             for item in provider_results[start - 1:start - 1 + arg_limit]:

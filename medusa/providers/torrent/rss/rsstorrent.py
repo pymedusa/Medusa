@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 import io
 import logging
+from medusa.providers.generic_provider import GenericProvider
 import os
 import re
 
@@ -30,6 +31,7 @@ class TorrentRssProvider(TorrentProvider):
                  enable_daily=False, enable_backlog=False, enable_manualsearch=False):
         """Initialize the class."""
         super(TorrentRssProvider, self).__init__(name)
+        self.provider_sub_type = GenericProvider.TORRENTRSS
 
         # Credentials
 

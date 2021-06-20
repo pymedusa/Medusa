@@ -63,6 +63,9 @@ class GenericProvider(object):
 
     NZB = 'nzb'
     TORRENT = 'torrent'
+    NEWZNAB = 'newznab'
+    TORZNAB = 'torznab'
+    TORRENTRSS = 'torrentrss'
 
     def __init__(self, name):
         """Initialize the class."""
@@ -76,7 +79,8 @@ class GenericProvider(object):
         self.enabled = False
         self.headers = {'User-Agent': USER_AGENT}
         self.proper_strings = ['PROPER|REPACK|REAL|RERIP']
-        self.provider_type = None
+        self.provider_type = None  # generic type. For ex: nzb or torrent
+        self.provider_sub_type = None  # specific type. For ex: neznab or torznab
         self.public = False
         self.search_fallback = False
         self.search_mode = None
@@ -922,6 +926,7 @@ class GenericProvider(object):
             },
             'animeOnly': self.anime_only,
             'type': self.provider_type,
+            'subType': self.provider_sub_type,
             'public': self.public,
             'btCacheUrls': self.bt_cache_urls if isinstance(self, TorrentProvider) else [],
             'properStrings': self.proper_strings,
@@ -979,8 +984,24 @@ class GenericProvider(object):
         if hasattr(self, 'ranked'):
             data['config']['ranked'] = self.ranked
 
+        if hasattr(self, 'sorting'):
+            data['config']['sorting'] = self.sorting
+
         if hasattr(self, 'cookies'):
             data['config']['cookies'] = self.cookies
+
+        # Custom options (newznab specific)
+        if hasattr(self, 'default'):
+            data['default'] = self.default
+
+        if hasattr(self, 'cat_ids'):
+            data['config']['catIds'] = self.cat_ids
+
+        if hasattr(self, 'params'):
+            data['config']['params'] = self.params
+
+        if hasattr(self, 'needs_auth'):
+            data['needsAuth'] = self.needs_auth
 
         return data
 

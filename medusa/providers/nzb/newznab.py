@@ -28,6 +28,7 @@ from medusa.indexers.config import (
 )
 from medusa.indexers.utils import mappings
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.providers.generic_provider import GenericProvider
 from medusa.providers.nzb.nzb_provider import NZBProvider
 
 from requests.compat import urljoin
@@ -54,6 +55,8 @@ class NewznabProvider(NZBProvider):
                  search_fallback=False, enable_daily=True, enable_backlog=False, enable_manualsearch=False):
         """Initialize the class."""
         super(NewznabProvider, self).__init__(name)
+
+        self.provider_sub_type = GenericProvider.NEWZNAB
 
         self.url = url
         self.api_key = api_key
