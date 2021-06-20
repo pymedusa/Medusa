@@ -5,6 +5,8 @@ export { default as ConfigTemplate } from './config-template.vue';
 export { default as ConfigTextbox } from './config-textbox.vue';
 export { default as ConfigTextboxNumber } from './config-textbox-number.vue';
 export { default as ConfigToggleSlider } from './config-toggle-slider.vue';
+export { default as ConfigProviderNewznab } from './config-provider-newznab.vue';
+export { default as ConfigProviderTorrent } from './config-provider-torrent.vue';
 export { default as CustomLogs } from './custom-logs.vue';
 export { default as FileBrowser } from './file-browser.vue';
 export { default as LanguageSelect } from './language-select.vue';

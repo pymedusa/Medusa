@@ -64,6 +64,16 @@
                             </select>
                         </config-template>
 
+                        <template v-if="currentProvider">
+                            <config-provider-newznab v-if="currentProvider.subType === 'newznab'" 
+                                :provider="currentProvider"
+                            />
+                            <config-provider-torrent v-if="currentProvider.type === 'torrent'" 
+                                :provider="currentProvider"
+                            />
+                        </template>
+
+
                     </div>
                 </div><!-- row component-group //-->
 
@@ -117,7 +127,7 @@
                         <p>Add and setup or remove Jackett providers.</p>
                     </div>
                     <div class="col-xs-12 col-md-10">
-                        <!--  -->
+                        
                     </div>
                 </div><!-- row component-group //-->
 
@@ -135,7 +145,7 @@
 </template>
 
 <script>
-import { api, apiRoute } from '../api.js';
+import { api } from '../api.js';
 import { mapActions, mapState } from 'vuex';
 import { VueTabs, VTab } from 'vue-nav-tabs/dist/vue-tabs.js';
 import Draggable from 'vuedraggable';
@@ -145,6 +155,8 @@ import {
     ConfigTextbox,
     ConfigTextboxNumber,
     ConfigToggleSlider,
+    ConfigProviderNewznab,
+    ConfigProviderTorrent,
     FileBrowser,
     SelectList
 } from './helpers';
@@ -154,6 +166,8 @@ export default {
     components: {
         AppLink,
         Draggable,
+        ConfigProviderNewznab,
+        ConfigProviderTorrent,
         ConfigTemplate,
         ConfigTextbox,
         ConfigTextboxNumber,
@@ -208,6 +222,10 @@ export default {
                 }
             }
             return data;
+        },
+        currentProvider() {
+            const { providers, selectedProvider } = this;
+            return providers.find(prov => prov.id === selectedProvider)
         }
     },
     methods: {
