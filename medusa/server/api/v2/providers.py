@@ -10,10 +10,11 @@ from dateutil import parser
 
 from medusa import app, providers
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.providers import get_provider_class
+from medusa.providers.torrent.torrent_provider import TorrentProvider
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
 )
-from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from tornado.escape import json_decode
 
@@ -100,6 +101,23 @@ class ProvidersHandler(BaseRequestHandler):
             return self._not_found('Provider cache results not found')
 
         return self._paginate(data_generator=data_generator)
+
+    def patch(self, identifier, **kwargs):
+        """Patch provider config."""
+        data = json_decode(self.request.body)
+        if not identifier:
+            return self._bad_request('You should provide the provider you want to patch')
+
+        provider = get_provider_class(identifier)
+        if not provider:
+            return self._bad_request('Could not locate provider by id')
+
+        self._set_common_settings(provider, data)
+        if isinstance(provider, TorrentProvider):
+            self._set_torrent_settings(provider, data)
+
+        app.instance.save_config()
+        return self._ok()
 
     def post(self, **kwargs):
         """Save an ordered list of providers."""
@@ -211,7 +229,7 @@ class ProvidersHandler(BaseRequestHandler):
         if hasattr(provider, 'search_delay'):
             try:
                 search_delay = float(config['search']['delay']['duration'])
-                provider.search_delay = (int(search_delay * 60), 30)[search_delay < 0.5]
+                provider.search_delay = (search_delay, 30)[search_delay < 30]
             except (AttributeError, KeyError, ValueError):
                 provider.search_delay = 480  # these exceptions are actually catching unselected checkboxes
 

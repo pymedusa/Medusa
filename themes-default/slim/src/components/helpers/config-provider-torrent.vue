@@ -2,18 +2,11 @@
     <div id="provider-options-torrent">
         <!-- Newznab section -->
         <div class="providerDiv" :id="`${provider.id}Div`">
-            <!-- if cur_newznab_provider.default and cur_newznab_provider.needs_auth: -->
-            <!-- <template v-if="provider.default && provider.needsAuth">
-                <config-template :label-for="`${provider.id}_url`" label="URL">
-                    <input type="text" :id="`${provider.id}_url`" :value="`${provider.url}`" class="form-control input-sm input350" disabled />
-                </config-template>
-                <config-textbox v-model="provider.config.apikey" type="password" label="API key" :id="`${provider.id}_url`" input-class="newznab_api_key"/>
-            </template> -->
             <config-textbox v-if="'customUrl' in provider.config" v-model="provider.config.customUrl" label="Custom Url" :id="`${provider.id}_custom_url`">
                 <p>The URL should include the protocol (and port if applicable).  Examples:  http://192.168.1.4/ or http://localhost:3000/</p>
             </config-textbox>
 
-            <config-textbox v-if="'apikey' in provider.config" v-model="provider.config.apikey" type="password" label="API key" :id="`${provider.id}_api_key`"/>
+            <config-textbox v-if="'apikey' in provider.config && provider.config.subType !== 'torznab'" v-model="provider.config.apikey" type="password" label="API key" :id="`${provider.id}_api_key`"/>
 
             <config-textbox v-if="'digest' in provider.config" v-model="provider.config.digest" type="password" label="Digest" :id="`${provider.id}_digest`"/>
 
@@ -109,14 +102,22 @@
             <config-textbox-number
                 v-if="provider.config.search.delay.enabled" :value="provider.config.search.delay.duration / 60.0"
                 label="Search delay (hours)" :id="`${provider.id}_search_delay_duration`" :min="0.5" :step="0.5"
+                @input="provider.config.search.delay.duration = $event * 60"
             >
                 <p>Amount of hours to wait for downloading a result compared to the first result for a specific episode.</p>
             </config-textbox-number>        
         </div>
+        <input type="submit"
+            class="btn-medusa config_submitter"
+            value="Save Changes"
+            :disabled="saving"
+            @click="save"
+        >
     </div>
 </template>
 
 <script>
+import { api } from '../../api';
 import { 
     ConfigTextbox,
     ConfigTextboxNumber,
@@ -138,14 +139,34 @@ export default {
             required: true
         }
     },
-    // computed: {
-    //     curProvider: {
-    //         get() {
-    //             return this.provider;
-    //         },
-    //         set()
-    //     }
-    // }
+    data() {
+        return {
+            saving: false
+        }
+    },
+    methods: {
+        async save() {
+            const { provider } = this;
+            // Disable the save button until we're done.
+            this.saving = true;
+
+            try {
+                await api.patch(`providers/${provider.id}`, provider.config);
+                this.$snotify.success(
+                    `Saved provider ${provider.name}`,
+                    'Saved',
+                    { timeout: 5000 }
+                );
+            } catch (error) {
+                this.$snotify.error(
+                    `Error while trying to save provider ${provider.name}`,
+                    'Error'
+                );
+            } finally {
+                this.saving = false;
+            }
+        }
+    }
 }
 </script>
 

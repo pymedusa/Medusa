@@ -65,7 +65,7 @@
                         </config-template>
 
                         <template v-if="currentProvider">
-                            <config-provider-newznab v-if="currentProvider.subType === 'newznab'" 
+                            <config-provider-nzb v-if="currentProvider.type === 'nzb'" 
                                 :provider="currentProvider"
                             />
                             <config-provider-torrent v-if="currentProvider.type === 'torrent'" 
@@ -76,12 +76,6 @@
 
                     </div>
                 </div><!-- row component-group //-->
-
-                <input type="submit"
-                        class="btn-medusa config_submitter"
-                        value="Save Changes"
-                        :disabled="saving"
-                >
             </v-tab>
 
             <v-tab key="custom_newznab_providers" title="Configure Custom Newznab Providers">
@@ -155,7 +149,7 @@ import {
     ConfigTextbox,
     ConfigTextboxNumber,
     ConfigToggleSlider,
-    ConfigProviderNewznab,
+    ConfigProviderNzb,
     ConfigProviderTorrent,
     FileBrowser,
     SelectList
@@ -166,7 +160,7 @@ export default {
     components: {
         AppLink,
         Draggable,
-        ConfigProviderNewznab,
+        ConfigProviderNzb,
         ConfigProviderTorrent,
         ConfigTemplate,
         ConfigTextbox,

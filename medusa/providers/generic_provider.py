@@ -907,10 +907,10 @@ class GenericProvider(object):
                         'enabled': self.enable_backlog
                     },
                     'manual': {
-                        'enabled': self.enable_backlog
+                        'enabled': self.enable_manualsearch
                     },
                     'daily': {
-                        'enabled': self.enable_backlog,
+                        'enabled': self.enable_daily,
                         'maxRecentItems': self.max_recent_items,
                         'stopAt': self.stop_at
                     },

@@ -1,13 +1,18 @@
 <template>
-    <div id="provider-options-newznab">
+    <div id="provider-options-nzb">
         <!-- Newznab section -->
         <div class="providerDiv" :id="`${provider.id}Div`">
+            <config-textbox v-if="'username' in provider.config && provider.subType !== 'newznab'" v-model="provider.config.username" label="Username" :id="`${provider.id}_username`" />
+
             <!-- if cur_newznab_provider.default and cur_newznab_provider.needs_auth: -->
             <template v-if="provider.default && provider.needsAuth">
                 <config-template :label-for="`${provider.id}_url`" label="URL">
                     <input type="text" :id="`${provider.id}_url`" :value="`${provider.url}`" class="form-control input-sm input350" disabled />
                 </config-template>
-                <config-textbox v-model="provider.config.apikey" type="password" label="API key" :id="`${provider.id}_url`" input-class="newznab_api_key"/>
+                <config-textbox v-if="'apikey' in provider.config" v-model="provider.config.apikey" type="password" label="API key" :id="`${provider.id}_url`" input-class="newznab_api_key"/>
+            </template>
+            <template v-else-if="provider.subType !== 'newznab'">
+                <config-textbox v-if="'apikey' in provider.config" v-model="provider.config.apikey" type="password" label="API key" :id="`${provider.id}_url`" input-class="newznab_api_key"/>
             </template>
 
             <config-toggle-slider v-model="provider.config.search.daily.enabled" label="Enable daily searches" :name="`${provider.id}_enable_daily`" :id="`${provider.id}_enable_daily`">
@@ -46,14 +51,22 @@
             <config-textbox-number
                 v-if="provider.config.search.delay.enabled" :value="provider.config.search.delay.duration / 60.0"
                 label="Search delay (hours)" :id="`${provider.id}_search_delay_duration`" :min="0.5" :step="0.5"
+                @input="provider.config.search.delay.duration = $event * 60"
             >
                 <p>Amount of hours to wait for downloading a result compared to the first result for a specific episode.</p>
             </config-textbox-number>
         </div>
+        <input type="submit"
+            class="btn-medusa config_submitter"
+            value="Save Changes"
+            :disabled="saving"
+            @click="save"
+        >
     </div>
 </template>
 
 <script>
+import { api } from '../../api';
 import { 
     ConfigTextbox,
     ConfigTextboxNumber,
@@ -62,7 +75,7 @@ import {
 } from ".";
 
 export default {
-    name: 'config-provider-newznab',
+    name: 'config-provider-nzb',
     components: {
         ConfigTextbox,
         ConfigTextboxNumber,
@@ -75,14 +88,34 @@ export default {
             required: true
         }
     },
-    // computed: {
-    //     curProvider: {
-    //         get() {
-    //             return this.provider;
-    //         },
-    //         set()
-    //     }
-    // }
+    data() {
+        return {
+            saving: false
+        }
+    },
+    methods: {
+        async save() {
+            const { provider } = this;
+            // Disable the save button until we're done.
+            this.saving = true;
+
+            try {
+                await api.patch(`providers/${provider.id}`, provider.config);
+                this.$snotify.success(
+                    `Saved provider ${provider.name}`,
+                    'Saved',
+                    { timeout: 5000 }
+                );
+            } catch (error) {
+                this.$snotify.error(
+                    `Error while trying to save provider ${provider.name}`,
+                    'Error'
+                );
+            } finally {
+                this.saving = false;
+            }
+        }
+    }
 }
 </script>
 
