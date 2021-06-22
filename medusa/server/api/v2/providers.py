@@ -11,7 +11,9 @@ from dateutil import parser
 from medusa import app, providers
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers import get_provider_class
+from medusa.providers.nzb.newznab import NewznabProvider
 from medusa.providers.torrent.torrent_provider import TorrentProvider
+from medusa.providers.torrent.torznab.torznab import TorznabProvider
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
 )
@@ -56,51 +58,52 @@ class ProvidersHandler(BaseRequestHandler):
         if not provider:
             return self._not_found('Provider not found')
 
-        if not path_param == 'results':
-            return self._ok(provider.to_json())
+        # Return provider results
+        if path_param == 'results':
+            provider_results = provider.cache.get_results(show_slug=show_slug, season=season, episode=episode)
 
-        provider_results = provider.cache.get_results(show_slug=show_slug, season=season, episode=episode)
+            arg_page = self._get_page()
+            arg_limit = self._get_limit(default=50)
 
-        arg_page = self._get_page()
-        arg_limit = self._get_limit(default=50)
+            def data_generator():
+                """Create provider results."""
+                start = arg_limit * (arg_page - 1) + 1
 
-        def data_generator():
-            """Create provider results."""
-            start = arg_limit * (arg_page - 1) + 1
-
-            for item in provider_results[start - 1:start - 1 + arg_limit]:
-                episodes = [int(ep) for ep in item['episodes'].strip('|').split('|') if ep != '']
-                yield {
-                    'identifier': item['identifier'],
-                    'release': item['name'],
-                    'season': item['season'],
-                    'episodes': episodes,
-                    # For now if episodes is 0 or (multiepisode) mark as season pack.
-                    'seasonPack': len(episodes) == 0 or len(episodes) > 1,
-                    'indexer': item['indexer'],
-                    'seriesId': item['indexerid'],
-                    'showSlug': show_slug,
-                    'url': item['url'],
-                    'time': datetime.fromtimestamp(item['time']),
-                    'quality': item['quality'],
-                    'releaseGroup': item['release_group'],
-                    'dateAdded': datetime.fromtimestamp(item['date_added']),
-                    'version': item['version'],
-                    'seeders': item['seeders'],
-                    'size': item['size'],
-                    'leechers': item['leechers'],
-                    'pubdate': parser.parse(item['pubdate']).replace(microsecond=0) if item['pubdate'] else None,
-                    'provider': {
-                        'id': provider.get_id(),
-                        'name': provider.name,
-                        'imageName': provider.image_name()
+                for item in provider_results[start - 1:start - 1 + arg_limit]:
+                    episodes = [int(ep) for ep in item['episodes'].strip('|').split('|') if ep != '']
+                    yield {
+                        'identifier': item['identifier'],
+                        'release': item['name'],
+                        'season': item['season'],
+                        'episodes': episodes,
+                        # For now if episodes is 0 or (multiepisode) mark as season pack.
+                        'seasonPack': len(episodes) == 0 or len(episodes) > 1,
+                        'indexer': item['indexer'],
+                        'seriesId': item['indexerid'],
+                        'showSlug': show_slug,
+                        'url': item['url'],
+                        'time': datetime.fromtimestamp(item['time']),
+                        'quality': item['quality'],
+                        'releaseGroup': item['release_group'],
+                        'dateAdded': datetime.fromtimestamp(item['date_added']),
+                        'version': item['version'],
+                        'seeders': item['seeders'],
+                        'size': item['size'],
+                        'leechers': item['leechers'],
+                        'pubdate': parser.parse(item['pubdate']).replace(microsecond=0) if item['pubdate'] else None,
+                        'provider': {
+                            'id': provider.get_id(),
+                            'name': provider.name,
+                            'imageName': provider.image_name()
+                        }
                     }
-                }
 
-        if not len(provider_results):
-            return self._not_found('Provider cache results not found')
+            if not len(provider_results):
+                return self._not_found('Provider cache results not found')
 
-        return self._paginate(data_generator=data_generator)
+            return self._paginate(data_generator=data_generator)
+
+        return self._ok(provider.to_json())
 
     def patch(self, identifier, **kwargs):
         """Patch provider config."""
@@ -119,20 +122,54 @@ class ProvidersHandler(BaseRequestHandler):
         app.instance.save_config()
         return self._ok()
 
-    def post(self, **kwargs):
-        """Save an ordered list of providers."""
-        data = json_decode(self.request.body)
-        sorted_providers = data.get('providers')
-        if sorted_providers is None:
-            return self._bad_request('You should provide an array of providers')
+    def post(self, identifier, path_param=None):
+        """
+        Add a new provider or run an operation on a specific provider type.
 
-        # for sorted_provider in sorted_providers:
-        #     provider = providers.get_provider_class(sorted_provider.get('id'))
-        #     if not provider:
-        #         log.warning('Could not locate a provider class for {provider_id}', {'provider_id': provider.get('id')})
-        #         continue
-        self._save_provider_order(sorted_providers)
-        return self._created(data={'providers': providers})
+        Without the identifier an arary of provider objects is expected to save the provider order list.
+        With a subType param, operations can be executed, like the newznab/getCategories. Which will return
+            a list of available newznab categories.
+        :param identifier: Provider subType. For example: torznab, newznab, torrentrss.
+        """
+        if not identifier:
+            data = json_decode(self.request.body)
+            sorted_providers = data.get('providers')
+            if sorted_providers is None:
+                return self._bad_request('You should provide an array of providers')
+
+            self._save_provider_order(sorted_providers)
+            return self._created(data={'providers': providers})
+
+        if identifier:
+            data = json_decode(self.request.body)
+            if identifier in ('newznab', 'torznab'):
+                return self._get_newznab_categories(identifier, data)
+
+        return self._bad_request('Could not locate provider by id')
+
+    def _get_newznab_categories(self, sub_type, data):
+        """
+        Retrieve a list of possible categories with category ids.
+
+        Using the default url/api?cat
+        http://yournewznaburl.com/api?t=caps&apikey=yourapikey
+        """
+        if not data.get('name'):
+            return self._bad_request('No provider name provided')
+
+        if not data.get('url'):
+            return self._bad_request('No provider url provided')
+
+        if not data.get('apikey'):
+            return self._bad_request('No provider api key provided')
+
+        if sub_type == 'newznab':
+            provider = NewznabProvider(data.get('name'), data.get('url'), data.get('apikey'))
+        elif sub_type == 'torznab':
+            provider = TorznabProvider(data.get('name'), data.get('url'), data.get('apikey'))
+
+        capabilities = provider.get_capabilities()
+        return self._created(data={'result': capabilities._asdict()})
 
     def _save_provider_order(self, sorted_providers):
         """Save the provider order."""

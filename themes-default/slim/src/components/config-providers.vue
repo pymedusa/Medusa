@@ -85,7 +85,7 @@
                         <p>Add and setup or remove custom Newznab providers.</p>
                     </div>
                     <div class="col-xs-12 col-md-10">
-                        <!--  -->
+                        <config-custom-newznab />
                     </div>
                 </div><!-- row component-group //-->
 
@@ -145,6 +145,7 @@ import { VueTabs, VTab } from 'vue-nav-tabs/dist/vue-tabs.js';
 import Draggable from 'vuedraggable';
 import {
     AppLink,
+    ConfigCustomNewznab,
     ConfigTemplate,
     ConfigTextbox,
     ConfigTextboxNumber,
@@ -160,6 +161,7 @@ export default {
     components: {
         AppLink,
         Draggable,
+        ConfigCustomNewznab,
         ConfigProviderNzb,
         ConfigProviderTorrent,
         ConfigTemplate,
