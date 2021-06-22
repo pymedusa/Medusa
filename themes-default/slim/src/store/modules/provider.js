@@ -1,13 +1,23 @@
 import Vue from 'vue';
 
 import { api } from '../../api';
-import { ADD_PROVIDERS, ADD_PROVIDER_CACHE, ADD_SEARCH_RESULTS } from '../mutation-types';
+import {
+    ADD_PROVIDER,
+    ADD_PROVIDERS,
+    ADD_PROVIDER_CACHE,
+    ADD_SEARCH_RESULTS
+} from '../mutation-types';
 
 const state = {
     providers: []
 };
 
 const mutations = {
+    [ADD_PROVIDER](state, provider) {
+        if (!state.providers.find(p => p.id === provider.id)) {
+            state.providers.push(provider);
+        }
+    },
     [ADD_PROVIDERS](state, providers) {
         providers.forEach((provider, index) => {
             const existingProvider = state.providers.find(p => p.id === provider.id);

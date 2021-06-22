@@ -28,6 +28,7 @@ const ADD_HISTORY = '📺 History added to store';
 const ADD_HISTORY_ROW = '📺 History row added to store';
 const ADD_SHOW_HISTORY = '📺 Show specific History added to store';
 const ADD_SHOW_EPISODE_HISTORY = "📺 Show's episode specific History added to store";
+const ADD_PROVIDER = '⛽ Provider added to store';
 const ADD_PROVIDERS = '⛽ Provider list added to store';
 const ADD_PROVIDER_CACHE = '⛽ Provider cache results added to store';
 const ADD_SEARCH_RESULTS = '⛽ New search results added for provider';
@@ -68,6 +69,7 @@ export {
     REMOVE_SHOW_SCENE_EXCEPTION,
     ADD_SHOW_HISTORY,
     ADD_SHOW_EPISODE_HISTORY,
+    ADD_PROVIDER,
     ADD_PROVIDERS,
     ADD_PROVIDER_CACHE,
     ADD_SEARCH_RESULTS,

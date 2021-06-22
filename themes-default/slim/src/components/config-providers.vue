@@ -38,12 +38,7 @@
                     </div>
                 </div>
 
-                <input type="submit"
-                        class="btn-medusa config_submitter"
-                        value="Save Changes"
-                        :disabled="saving"
-                        @click="save()"
-                >
+                <button class="btn-medusa config_submitter" :disabled="saving" @click="save()">Save Changes</button>
             </v-tab>
 
             <v-tab key="provider_options" title="Provider Options &amp; Feel">
@@ -76,6 +71,7 @@
 
                     </div>
                 </div><!-- row component-group //-->
+                <button class="btn-medusa config_submitter" :disabled="saving" @click="save()">Save Changes</button>
             </v-tab>
 
             <v-tab key="custom_newznab_providers" title="Configure Custom Newznab Providers">
@@ -89,11 +85,7 @@
                     </div>
                 </div><!-- row component-group //-->
 
-                <input type="submit"
-                        class="btn-medusa config_submitter"
-                        value="Save Changes"
-                        :disabled="saving"
-                >
+                <button class="btn-medusa config_submitter" :disabled="saving" @click="save()">Save Changes</button>
             </v-tab>
 
             <v-tab key="custom_torrent_providers" title="Configure Custom Torrent Providers">
@@ -107,11 +99,7 @@
                     </div>
                 </div><!-- row component-group //-->
 
-                <input type="submit"
-                        class="btn-medusa config_submitter"
-                        value="Save Changes"
-                        :disabled="saving"
-                >
+                <button class="btn-medusa config_submitter" :disabled="saving" @click="save()">Save Changes</button>
             </v-tab>
 
             <v-tab key="custom_jacket_providers" title="Configure Custom Jacket Providers">

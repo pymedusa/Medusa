@@ -143,7 +143,14 @@ class ProvidersHandler(BaseRequestHandler):
         if identifier:
             data = json_decode(self.request.body)
             if identifier in ('newznab', 'torznab'):
-                return self._get_newznab_categories(identifier, data)
+                if not path_param:
+                    # No path_param passed. Asume we're trying to add a provider.
+                    if identifier == 'newznab':
+                        return self._add_newznab_provider(data)
+
+                if path_param == 'operation':
+                    if data.get('type') == 'GETCATEGORIES':
+                        return self._get_newznab_categories(identifier, data)
 
         return self._bad_request('Could not locate provider by id')
 
@@ -170,6 +177,25 @@ class ProvidersHandler(BaseRequestHandler):
 
         capabilities = provider.get_capabilities()
         return self._created(data={'result': capabilities._asdict()})
+
+    def _add_newznab_provider(self, data):
+        if not data.get('name'):
+            return self._bad_request('No provider name provided')
+
+        if not data.get('url'):
+            return self._bad_request('No provider url provided')
+
+        if not data.get('apikey'):
+            return self._bad_request('No provider api key provided')
+
+        new_provider = NewznabProvider(data.get('name'), data.get('url'), api_key=data.get('apikey'))
+        if new_provider.get_id() in [x.get_id() for x in app.newznabProviderList]:
+            return self._conflict(f'Provider id {new_provider.get_id()} already exists')
+
+        app.newznabProviderList.append(new_provider)
+        NewznabProvider.save_newznab_providers()
+        app.instance.save_config()
+        return self._created(data={'result': new_provider.to_json()})
 
     def _save_provider_order(self, sorted_providers):
         """Save the provider order."""
@@ -219,7 +245,7 @@ class ProvidersHandler(BaseRequestHandler):
             try:
                 provider.username = config['username']
             except (AttributeError, KeyError):
-                provider.username = None  # these exceptions are actually catching unselected checkboxes
+                provider.username = None
 
         if hasattr(provider, 'api_key'):
             try:
@@ -231,44 +257,51 @@ class ProvidersHandler(BaseRequestHandler):
             try:
                 provider.search_mode = config['search']['mode']
             except (AttributeError, KeyError):
-                provider.search_mode = 'eponly'  # these exceptions are actually catching unselected checkboxes
+                provider.search_mode = 'eponly'
 
         if hasattr(provider, 'search_fallback'):
             try:
                 provider.search_fallback = config['search']['fallback']
             except (AttributeError, KeyError):
-                provider.search_fallback = 0  # these exceptions are actually catching unselected checkboxes
+                provider.search_fallback = 0
 
         if hasattr(provider, 'enable_daily'):
             try:
                 provider.enable_daily = config['search']['daily']['enabled']
             except (AttributeError, KeyError):
-                provider.enable_daily = 0  # these exceptions are actually catching unselected checkboxes
+                provider.enable_daily = 0
 
         if hasattr(provider, 'enable_backlog'):
             try:
                 provider.enable_backlog = config['search']['backlog']['enabled']
             except (AttributeError, KeyError):
-                provider.enable_backlog = 0  # these exceptions are actually catching unselected checkboxes
+                provider.enable_backlog = 0
 
         if hasattr(provider, 'enable_manualsearch'):
             try:
                 provider.enable_manualsearch = config['search']['manual']['enabled']
             except (AttributeError, KeyError):
-                provider.enable_manualsearch = 0  # these exceptions are actually catching unselected checkboxes
+                provider.enable_manualsearch = 0
 
         if hasattr(provider, 'enable_search_delay'):
             try:
                 provider.enable_search_delay = config['search']['delay']['enabled']
             except (AttributeError, KeyError):
-                provider.enable_search_delay = 0  # these exceptions are actually catching unselected checkboxes
+                provider.enable_search_delay = 0
 
         if hasattr(provider, 'search_delay'):
             try:
                 search_delay = float(config['search']['delay']['duration'])
                 provider.search_delay = (search_delay, 30)[search_delay < 30]
             except (AttributeError, KeyError, ValueError):
-                provider.search_delay = 480  # these exceptions are actually catching unselected checkboxes
+                provider.search_delay = 480
+
+        # Newznab specific
+        if hasattr(provider, 'cat_ids'):
+            try:
+                provider.cat_ids = config['catIds']
+            except (AttributeError, KeyError):
+                provider.cat_ids = []
 
     @staticmethod
     def _set_torrent_settings(provider, config):
@@ -277,87 +310,87 @@ class ProvidersHandler(BaseRequestHandler):
             try:
                 provider.custom_url = config['customUrl']
             except (AttributeError, KeyError):
-                provider.custom_url = None  # these exceptions are actually catching unselected checkboxes
+                provider.custom_url = None
 
         if hasattr(provider, 'minseed'):
             try:
                 provider.minseed = config['minseed']
             except (AttributeError, KeyError, ValueError):
-                provider.minseed = 1  # these exceptions are actually catching unselected checkboxes
+                provider.minseed = 1
 
         if hasattr(provider, 'minleech'):
             try:
                 provider.minleech = config['minleech']
             except (AttributeError, KeyError, ValueError):
-                provider.minleech = 0  # these exceptions are actually catching unselected checkboxes
+                provider.minleech = 0
 
         if hasattr(provider, 'ratio'):
             try:
                 ratio = config['ratio']
                 provider.ratio = (ratio, -1)[ratio < 0]
             except (AttributeError, KeyError, ValueError):
-                provider.ratio = ''  # these exceptions are actually catching unselected checkboxes
+                provider.ratio = ''
 
         if hasattr(provider, 'digest'):
             try:
                 provider.digest = config['digest']
             except (AttributeError, KeyError):
-                provider.digest = None  # these exceptions are actually catching unselected checkboxes
+                provider.digest = None
 
         if hasattr(provider, 'hash'):
             try:
                 provider.hash = config['hash']
             except (AttributeError, KeyError):
-                provider.hash = None  # these exceptions are actually catching unselected checkboxes
+                provider.hash = None
 
         if hasattr(provider, 'passkey'):
             try:
                 provider.passkey = config['passkey']
             except (AttributeError, KeyError):
-                provider.passkey = None  # these exceptions are actually catching unselected checkboxes
+                provider.passkey = None
 
         if hasattr(provider, 'pin'):
             try:
                 provider.pin = config['pin']
             except (AttributeError, KeyError):
-                provider.pin = None  # these exceptions are actually catching unselected checkboxes
+                provider.pin = None
 
         if hasattr(provider, 'confirmed'):
             try:
                 provider.confirmed = config['confirmed']
             except (AttributeError, KeyError):
-                provider.confirmed = 0  # these exceptions are actually catching unselected checkboxes
+                provider.confirmed = 0
 
         if hasattr(provider, 'ranked'):
             try:
                 provider.ranked = config['ranked']
             except (AttributeError, KeyError):
-                provider.ranked = 0  # these exceptions are actually catching unselected checkboxes
+                provider.ranked = 0
 
         if hasattr(provider, 'sorting'):
             try:
                 provider.sorting = config['sorting']
             except (AttributeError, KeyError):
-                provider.sorting = 'seeders'  # these exceptions are actually catching unselected checkboxes
+                provider.sorting = 'seeders'
 
         if hasattr(provider, 'freeleech'):
             try:
                 provider.freeleech = config['freeleech']
             except (AttributeError, KeyError):
-                provider.freeleech = 0  # these exceptions are actually catching unselected checkboxes
+                provider.freeleech = 0
 
         # if hasattr(provider, 'cat'):
         #     try:
         #         provider.cat = int(str(kwargs['{id}_cat'.format(id=provider.get_id())]).strip())
         #     except (AttributeError, KeyError):
-        #         provider.cat = 0  # these exceptions are actually catching unselected checkboxes
+        #         provider.cat = 0
 
         # if hasattr(provider, 'subtitle'):
         #     try:
         #         provider.subtitle = config.checkbox_to_value(
         #             kwargs['{id}_subtitle'.format(id=provider.get_id())])
         #     except (AttributeError, KeyError):
-        #         provider.subtitle = 0  # these exceptions are actually catching unselected checkboxes
+        #         provider.subtitle = 0
 
         if provider.enable_cookies:
             try:
