@@ -12,6 +12,7 @@ from medusa import app, providers
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers import get_provider_class
 from medusa.providers.nzb.newznab import NewznabProvider
+from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 from medusa.providers.torrent.torznab.torznab import TorznabProvider
 from medusa.server.api.v2.base import (
@@ -142,17 +143,49 @@ class ProvidersHandler(BaseRequestHandler):
 
         if identifier:
             data = json_decode(self.request.body)
-            if identifier in ('newznab', 'torznab'):
+            if identifier in ('newznab', 'torznab', 'torrentrss'):
                 if not path_param:
                     # No path_param passed. Asume we're trying to add a provider.
                     if identifier == 'newznab':
                         return self._add_newznab_provider(data)
+                    if identifier == 'torrentrss':
+                        return self._add_torrentrss_provider(data)
 
                 if path_param == 'operation':
                     if data.get('type') == 'GETCATEGORIES':
                         return self._get_newznab_categories(identifier, data)
 
         return self._bad_request('Could not locate provider by id')
+
+    def delete(self, identifier, path_param=None):
+        """
+        Delete a provider.
+
+        You cannot delete "default" providers. The provider needs to be able to be part of
+        a certain subType. For example: 'newznab', 'torznab' or 'torrentrss'.
+
+        :param identifier: The provider subtype.
+        :param path_param: Provider id.
+        """
+        if identifier not in ('newznab', 'torznab', 'torrentrss'):
+            return self._bad_request('You should provide an identifier. For example: newznab, torznab or torrentrss.')
+
+        if not path_param:
+            return self._bad_request('Missing provider id')
+
+        if identifier == 'newznab':
+            remove_provider = [prov for prov in app.newznabProviderList if prov.get_id() == path_param and not prov.default]
+            if not remove_provider:
+                return self._not_found('Provider id not found')
+
+            # delete it from the list
+            app.newznabProviderList.remove(remove_provider[0])
+
+            if path_param in app.PROVIDER_ORDER:
+                app.PROVIDER_ORDER.remove(path_param)
+            app.instance.save_config()
+
+            return self._no_content()
 
     def _get_newznab_categories(self, sub_type, data):
         """
@@ -194,6 +227,21 @@ class ProvidersHandler(BaseRequestHandler):
 
         app.newznabProviderList.append(new_provider)
         NewznabProvider.save_newznab_providers()
+        app.instance.save_config()
+        return self._created(data={'result': new_provider.to_json()})
+
+    def _add_torrentrss_provider(self, data):
+        if not data.get('name'):
+            return self._bad_request('No provider name provided')
+
+        if not data.get('url'):
+            return self._bad_request('No provider url provided')
+
+        new_provider = TorrentRssProvider(data.get('name'), data.get('url'), data.get('cookies', ''), data.get('titleTag', 'title'))
+        app.torrentRssProviderList.append(new_provider)
+        # Update the torrentrss provider list
+        app.TORRENTRSS_PROVIDERS = [provider.name for provider in app.torrentRssProviderList]
+
         app.instance.save_config()
         return self._created(data={'result': new_provider.to_json()})
 
@@ -328,8 +376,8 @@ class ProvidersHandler(BaseRequestHandler):
             try:
                 ratio = config['ratio']
                 provider.ratio = (ratio, -1)[ratio < 0]
-            except (AttributeError, KeyError, ValueError):
-                provider.ratio = ''
+            except (AttributeError, KeyError, ValueError, TypeError):
+                provider.ratio = -1
 
         if hasattr(provider, 'digest'):
             try:
@@ -399,3 +447,9 @@ class ProvidersHandler(BaseRequestHandler):
                 # I don't want to configure a default value here, as it can also
                 # be configured intially as a custom rss torrent provider
                 pass
+
+        if hasattr(provider, 'title_tag'):
+            try:
+                provider.title_tag = config['titleTag']
+            except (AttributeError, KeyError):
+                provider.title_tag = 'title'

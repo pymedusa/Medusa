@@ -1003,6 +1003,10 @@ class GenericProvider(object):
         if hasattr(self, 'needs_auth'):
             data['needsAuth'] = self.needs_auth
 
+        # Custom options (torrentrss)
+        if hasattr(self, 'title_tag'):
+            data['config']['titleTag'] = self.title_tag
+
         return data
 
     def save_from_json(self, data):

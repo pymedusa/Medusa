@@ -81,7 +81,7 @@
                         <p>Add and setup or remove custom Newznab providers.</p>
                     </div>
                     <div class="col-xs-12 col-md-10">
-                        <config-custom-newznab />
+                        <config-custom-newznab @save="save()" />
                     </div>
                 </div><!-- row component-group //-->
 
@@ -95,7 +95,7 @@
                         <p>Add and setup or remove custom RSS providers.</p>
                     </div>
                     <div class="col-xs-12 col-md-10">
-                        <!--  -->
+                        <config-custom-torrentrss @save="save()" />
                     </div>
                 </div><!-- row component-group //-->
 
@@ -134,6 +134,7 @@ import Draggable from 'vuedraggable';
 import {
     AppLink,
     ConfigCustomNewznab,
+    ConfigCustomTorrentrss,
     ConfigTemplate,
     ConfigTextbox,
     ConfigTextboxNumber,
@@ -150,6 +151,7 @@ export default {
         AppLink,
         Draggable,
         ConfigCustomNewznab,
+        ConfigCustomTorrentrss,
         ConfigProviderNzb,
         ConfigProviderTorrent,
         ConfigTemplate,

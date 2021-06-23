@@ -5,7 +5,8 @@ import {
     ADD_PROVIDER,
     ADD_PROVIDERS,
     ADD_PROVIDER_CACHE,
-    ADD_SEARCH_RESULTS
+    ADD_SEARCH_RESULTS,
+    REMOVE_PROVIDER
 } from '../mutation-types';
 
 const state = {
@@ -27,6 +28,9 @@ const mutations = {
                 state.providers.push(provider);
             }            
         });
+    },
+    [REMOVE_PROVIDER](state, provider) {
+        state.providers = state.providers.filter(prov => prov.id !== provider.id);
     },
     [ADD_PROVIDER_CACHE](state, { providerId, cache }) {
         // Check if this provider has already been added.

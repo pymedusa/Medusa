@@ -6,6 +6,7 @@ export { default as ConfigTextbox } from './config-textbox.vue';
 export { default as ConfigTextboxNumber } from './config-textbox-number.vue';
 export { default as ConfigToggleSlider } from './config-toggle-slider.vue';
 export { default as ConfigCustomNewznab } from './config-custom-newznab.vue';
+export { default as ConfigCustomTorrentrss } from './config-custom-torrentrss.vue';
 export { default as ConfigProviderNzb } from './config-provider-nzb.vue';
 export { default as ConfigProviderTorrent } from './config-provider-torrent.vue';
 export { default as CustomLogs } from './custom-logs.vue';

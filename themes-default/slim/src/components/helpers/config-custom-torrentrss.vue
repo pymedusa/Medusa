@@ -1,9 +1,9 @@
 <template>
-    <div id="custom-newznab">
-        <config-template label-for="select_newznab_provider" label="Select Provider">
+    <div id="custom-torrentrss">
+        <config-template label-for="select_torrentrss_provider" label="Select Provider">
             <select id="select-provider" class="form-control input-sm" v-model="selectedProvider">
                 <option value="#add">--- add new provider ---</option>
-                <option :value="option.value" v-for="option in newznabProviderOptions" :key="option.value">
+                <option :value="option.value" v-for="option in torrentrssProviderOptions" :key="option.value">
                     {{ option.text }}
                 </option>
             </select>
@@ -12,25 +12,11 @@
         <!-- Edit Provider -->
         <div v-if="currentProvider && selectedProvider !== '#add'" class="edit-provider">
             <config-textbox disabled v-model="currentProvider.name" label="Provider name" id="edit_provider_name" />
-            <config-textbox disabled v-model="currentProvider.url" label="Site Url" id="edit_provider_url" />
-            <config-textbox type="password" v-model="currentProvider.config.apikey" label="Api key" id="edit_provider_api" />
+            <config-textbox disabled v-model="currentProvider.url" label="Rss Url" id="edit_provider_url" />
+            <config-textbox v-model="currentProvider.config.cookies" label="Cookies (optional)" id="edit_provider_cookies" />
+            <config-textbox v-model="currentProvider.config.titleTag" label="Search element" id="edit_provider_search_element" />
         
-            <config-template label="Categories" label-for="catids">
-                <multiselect
-                    :value="providerCatIds"
-                    :multiple="true"
-                    :options="availableCategories"
-                    label="id"
-                    track-by="id"
-                    @input="currentProvider.config.catIds = $event.map(cat => cat.id)"
-                >
-                    <template slot="option" slot-scope="props">
-                        <span><strong>{{props.option.id}}</strong> ({{props.option.name}})</span>
-                    </template>
-                </multiselect>
-            </config-template>
-
-            <button :disabled="currentProvider.default" class="btn-medusa btn-danger newznab_delete" id="newznab_delete" @click="removeProvider">Delete</button>
+            <button class="btn-medusa btn-danger torrentrss_delete" id="torrentrss_delete" @click="removeProvider">Delete</button>
             <button class="btn-medusa config_submitter_refresh" @click="$emit('save')">Save Changes</button>
         </div>
 
@@ -44,7 +30,8 @@
                 </template>
             </config-textbox>
             <config-textbox v-model="url" label="Site Url" id="add_provider_url" />
-            <config-textbox type="password" v-model="apikey" label="Api key" id="add_provider_api" />
+            <config-textbox v-model="cookies" label="Cookies" id="add_provider_cookies" />
+            <config-textbox v-model="searchElement" label="Search element" id="add_provider_search_element" />
         
             <button :disabled="!providerIdAvailable" class="btn-medusa config_submitter" @click="addProvider">Add Provider</button>
         </div>
@@ -64,7 +51,7 @@ import {
 import Multiselect from 'vue-multiselect';
 
 export default {
-    name: 'config-custom-newznab',
+    name: 'config-custom-torrentrss',
     components: {
         ConfigTextbox,
         ConfigTextboxNumber,
@@ -78,8 +65,8 @@ export default {
             selectedProvider: '#add',
             name: '',
             url: '',
-            apikey: '',
-            availableCategories: []
+            cookies: '',
+            searchElement: ''
         }
     },
     methods: {
@@ -104,33 +91,10 @@ export default {
                 this.saving = false;
             }
         },
-        async getCategories() {
-            const { currentProvider } = this;
-            if (!currentProvider.name || !currentProvider.url || !currentProvider.config.apikey ) {
-                return;
-            }
-
-            try {
-                const response = await api.post(`providers/newznab/operation`, {
-                    type: 'GETCATEGORIES',
-                    apikey: currentProvider.config.apikey,
-                    name: currentProvider.name,
-                    url: currentProvider.url
-                });
-                if (response.data.result.success) {
-                    this.availableCategories = response.data.result.categories;
-                }
-            } catch (error) {
-                this.$snotify.error(
-                    `Error while trying to get cats for provider ${currentProvider.name}`,
-                    'Error'
-                );
-            }
-        },
         async addProvider() {
-            const { name, apikey, url } = this;
+            const { name, url, cookies, searchElement } = this;
             try {
-                const response = await api.post(`providers/newznab`, { apikey, name, url });
+                const response = await api.post(`providers/torrentrss`, { name, url, cookies, titleTag: searchElement });
                 this.$store.commit(ADD_PROVIDER, response.data.result);
                 this.$snotify.success(
                     `Saved provider ${name}`,
@@ -142,7 +106,7 @@ export default {
                 this.url = '';
             } catch (error) {
                 this.$snotify.error(
-                    `Error while trying to get cats for provider ${currentProvider.name}`,
+                    `Error while trying to add provider ${name}`,
                     'Error'
                 );
             }
@@ -150,7 +114,7 @@ export default {
         async removeProvider() {
             const { currentProvider } = this;
             try {
-                const response = await api.delete(`providers/newznab/${currentProvider.id}`);
+                const response = await api.delete(`providers/torrentrss/${currentProvider.id}`);
                 this.$store.commit(REMOVE_PROVIDER, currentProvider);
                 this.$snotify.success(
                     `Removed provider ${currentProvider.name}`,
@@ -173,9 +137,9 @@ export default {
         ...mapState({
             providers: state => state.provider.providers
         }),
-        newznabProviderOptions() {
+        torrentrssProviderOptions() {
             const { providers } = this;
-            return providers.filter(prov => prov.subType === 'newznab').map(prov => {
+            return providers.filter(prov => prov.subType === 'torrentrss').map(prov => {
                 return ({value: prov.id, text: prov.name});
             })
         },
@@ -183,19 +147,6 @@ export default {
             const { providers, selectedProvider } = this;
             if (!selectedProvider) return null;
             return providers.find(prov => prov.id === selectedProvider);
-        },
-        providerCatIds() {
-            const { currentProvider } = this;
-            if (!currentProvider || currentProvider.config.catIds.length === 0) {
-                return []
-            }
-
-            // Check if we have a list of objects.
-            if (currentProvider.config.catIds.every(x => typeof(x) === 'string' )) {
-                return currentProvider.config.catIds.map(cat => ({ id: cat, name: null }))
-            }
-
-            return currentProvider.config.catIds;
         },
         providerIdAvailable() {
             const { providers, name } = this;
