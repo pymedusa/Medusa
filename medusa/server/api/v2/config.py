@@ -181,6 +181,8 @@ class ConfigHandler(BaseRequestHandler):
         'namingForceFolders': BooleanField(app, 'NAMING_FORCE_FOLDERS'),
         'subtitles.enabled': BooleanField(app, 'USE_SUBTITLES'),
         'recentShows': ListField(app, 'SHOWS_RECENT'),
+        'providers.prowlarr.url': StringField(app, 'PROWLARR_URL'),
+        'providers.prowlarr.apikey': StringField(app, 'PROWLARR_APIKEY'),
 
         # Sections
         'clients.torrents.authType': StringField(app, 'TORRENT_AUTH_TYPE'),
@@ -721,6 +723,11 @@ class DataGenerator(object):
         section_data['backlogOverview'] = {}
         section_data['backlogOverview']['status'] = app.BACKLOG_STATUS
         section_data['backlogOverview']['period'] = app.BACKLOG_PERIOD
+
+        section_data['providers'] = {}
+        section_data['providers']['prowlarr'] = {}
+        section_data['providers']['prowlarr']['url'] = app.PROWLARR_URL
+        section_data['providers']['prowlarr']['apikey'] = app.PROWLARR_APIKEY
 
         return section_data
 

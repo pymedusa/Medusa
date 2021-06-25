@@ -687,6 +687,9 @@ class Application(object):
             app.CREATE_MISSING_SHOW_DIRS = bool(check_setting_int(app.CFG, 'General', 'create_missing_show_dirs', 0))
             app.ADD_SHOWS_WO_DIR = bool(check_setting_int(app.CFG, 'General', 'add_shows_wo_dir', 0))
 
+            app.PROWLARR_URL = check_setting_str(app.CFG, 'Prowlarr', 'url', '', censor_log='normal')
+            app.PROWLARR_APIKEY = check_setting_str(app.CFG, 'Prowlarr', 'apikey', '', censor_log='high')
+
             app.NZBS = bool(check_setting_int(app.CFG, 'NZBs', 'nzbs', 0))
             app.NZBS_UID = check_setting_str(app.CFG, 'NZBs', 'nzbs_uid', '', censor_log='normal')
             app.NZBS_HASH = check_setting_str(app.CFG, 'NZBs', 'nzbs_hash', '', censor_log='low')
@@ -1077,6 +1080,9 @@ class Application(object):
 
             app.TORZNAB_PROVIDERS = check_setting_list(app.CFG, 'Torznab', 'torznab_providers')
             app.torznab_providers_list = TorznabProvider.get_providers_list(app.TORZNAB_PROVIDERS)
+
+            app.PROWLARR_PROVIDERS = check_setting_list(app.CFG, 'Prowlarr', 'providers')
+            # TODO implement ProwlarrProvider.get_providers_list(app.PROWLARR_PROVIDERS)
 
             all_providers = providers.sorted_provider_list()
 
@@ -1697,7 +1703,7 @@ class Application(object):
                 'all': [
                     'name', 'url', 'cat_ids', 'api_key', 'username', 'search_mode', 'search_fallback',
                     'enable_daily', 'enable_backlog', 'enable_manualsearch', 'enable_search_delay',
-                    'search_delay',
+                    'search_delay', 'prowlarr_id',
                 ],
                 'encrypted': [
                     'password',
@@ -1986,6 +1992,11 @@ class Application(object):
 
         new_config['Torznab'] = {}
         new_config['Torznab']['torznab_providers'] = app.TORZNAB_PROVIDERS
+
+        new_config['Prowlarr'] = {}
+        new_config['Prowlarr']['providers'] = app.PROWLARR_PROVIDERS
+        new_config['Prowlarr']['url'] = app.PROWLARR_URL
+        new_config['Prowlarr']['apikey'] = app.PROWLARR_APIKEY
 
         new_config['GUI'] = {}
         new_config['GUI']['theme_name'] = app.THEME_NAME

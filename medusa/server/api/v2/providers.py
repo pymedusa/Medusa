@@ -12,6 +12,7 @@ from medusa import app, providers
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers import get_provider_class
 from medusa.providers.nzb.newznab import NewznabProvider
+from medusa.providers.prowlarr import ProwlarrManager
 from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 from medusa.providers.torrent.torznab.torznab import TorznabProvider
@@ -150,10 +151,28 @@ class ProvidersHandler(BaseRequestHandler):
                         return self._add_newznab_provider(data)
                     if identifier == 'torrentrss':
                         return self._add_torrentrss_provider(data)
+                    if identifier == 'torznab':
+                        return self._add_torznab_provider(data)
 
                 if path_param == 'operation':
                     if data.get('type') == 'GETCATEGORIES':
-                        return self._get_newznab_categories(identifier, data)
+                        return self._get_categories(identifier, data)
+
+            if identifier == 'prowlarr':
+                if path_param == 'operation':
+                    if data.get('type') == 'TEST':
+                        # Test prowlarr connectivity
+                        prowlarr = ProwlarrManager(data.get('url'), data.get('apikey'))
+                        if prowlarr.test_connectivity():
+                            return self._ok('Connection successfull')
+                        else:
+                            return self._not_found('Çould not connect to prowlarr')
+                    if data.get('type') == 'GETINDEXERS':
+                        prowlarr = ProwlarrManager(data.get('url'), data.get('apikey'))
+                        indexers = prowlarr.get_indexers()
+                        if indexers:
+                            return self._ok(indexers)
+                        return self._internal_server_error()
 
         return self._bad_request('Could not locate provider by id')
 
@@ -187,7 +206,35 @@ class ProvidersHandler(BaseRequestHandler):
 
             return self._no_content()
 
-    def _get_newznab_categories(self, sub_type, data):
+        if identifier == 'torrentrss':
+            remove_provider = [prov for prov in app.torrentRssProviderList if prov.get_id() == path_param]
+            if not remove_provider:
+                return self._not_found('Provider id not found')
+
+            # delete it from the list
+            app.torrentRssProviderList.remove(remove_provider[0])
+
+            if path_param in app.PROVIDER_ORDER:
+                app.PROVIDER_ORDER.remove(path_param)
+            app.instance.save_config()
+
+            return self._no_content()
+
+        if identifier == 'torznab':
+            remove_provider = [prov for prov in app.torznab_providers_list if prov.get_id() == path_param]
+            if not remove_provider:
+                return self._not_found('Provider id not found')
+
+            # delete it from the list
+            app.torznab_providers_list.remove(remove_provider[0])
+
+            if path_param in app.PROVIDER_ORDER:
+                app.PROVIDER_ORDER.remove(path_param)
+            app.instance.save_config()
+
+            return self._no_content()
+
+    def _get_categories(self, sub_type, data):
         """
         Retrieve a list of possible categories with category ids.
 
@@ -227,6 +274,25 @@ class ProvidersHandler(BaseRequestHandler):
 
         app.newznabProviderList.append(new_provider)
         NewznabProvider.save_newznab_providers()
+        app.instance.save_config()
+        return self._created(data={'result': new_provider.to_json()})
+
+    def _add_torznab_provider(self, data):
+        if not data.get('name'):
+            return self._bad_request('No provider name provided')
+
+        if not data.get('url'):
+            return self._bad_request('No provider url provided')
+
+        if not data.get('apikey'):
+            return self._bad_request('No provider api key provided')
+
+        new_provider = TorznabProvider(data.get('name'), data.get('url'), api_key=data.get('apikey'))
+        if new_provider.get_id() in [x.get_id() for x in app.torznab_providers_list]:
+            return self._conflict(f'Provider id {new_provider.get_id()} already exists')
+
+        app.torznab_providers_list.append(new_provider)
+        app.TORZNAB_PROVIDERS = [provider.name for provider in app.torznab_providers_list]
         app.instance.save_config()
         return self._created(data={'result': new_provider.to_json()})
 
