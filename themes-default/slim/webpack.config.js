@@ -217,8 +217,8 @@ const webpackConfig = (env, mode) => ({
                     // Translates CSS into CommonJS
                     'css-loader',
                     // Compiles Sass to CSS
-                    'sass-loader',
-                ],
+                    'sass-loader'
+                ]
             },
             {
                 test: /\.(woff2?|ttf|eot|svg)$/,
