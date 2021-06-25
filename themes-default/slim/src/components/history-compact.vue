@@ -295,5 +295,10 @@ export default {
     }
 };
 </script>
-<style scoped src='../style/vgt-table.css'>
+<style scoped>
+/* History compact */
+span.release-group {
+    cursor: help;
+    margin-right: 5px;
+}
 </style>

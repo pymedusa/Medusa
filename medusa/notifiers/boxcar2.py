@@ -56,7 +56,7 @@ class Notifier(object):
         log.debug('Boxcar2 notification successful.')
         return True
 
-    def notify_snatch(self, title, message):
+    def notify_snatch(self, title, message, **kwargs):
         """Send the snatch message."""
         if app.BOXCAR2_NOTIFY_ONSNATCH:
             self._notify_boxcar2(title, message)

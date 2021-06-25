@@ -65,15 +65,17 @@ class Notifier(object):
         msg['Date'] = formatdate(localtime=True)
         return self._sendmail(host, port, smtp_from, use_tls, user, pwd, [to], msg, True)
 
-    def notify_snatch(self, title, message):
+    def notify_snatch(self, title, message, ep_obj):
         """
         Send a notification that an episode was snatched.
 
-        ep_name: The name of the episode that was snatched
+        :param title: Notification title.
+        :param message: Notification message.
+        :param ep_obj: Episode object. Used for the show's series and indexer id.
         """
         if app.USE_EMAIL and app.EMAIL_NOTIFY_ONSNATCH:
             parsed = self._parse_name(message)
-            to = self._generate_recipients(parsed['show'])
+            to = self._generate_recipients(ep_obj.series)
             if not to:
                 log.debug('Skipping email notify because there are no configured recipients')
             else:
@@ -83,12 +85,12 @@ class Notifier(object):
                         '<body style="font-family:Helvetica, Arial, sans-serif;">'
                         '<h3>Medusa Notification - Snatched</h3><br>'
                         '<p>Show: <b>{show}</b></p><br>'
-                        '<p>Episode: <b>{ep_id}{episode}</b></p><br><br>'
+                        '<p>Episode: <b>{ep_id} - {episode}</b></p><br><br>'
                         '<footer style="margin-top: 2.5em; padding: .7em 0; '
                         'color: #777; border-top: #BBB solid 1px;">'
                         'Powered by Medusa.</footer></body>'.format(
-                            show=parsed['show'],
-                            ep_id=(parsed['ep_id'] + ' - ') if 'ep_id' in parsed else '',
+                            show=ep_obj.series.title,
+                            ep_id=ep_obj.slug,
                             episode=parsed['episode']
                         ),
                         'html'))
@@ -118,15 +120,15 @@ class Notifier(object):
         """
         Send a notification that an episode was downloaded.
 
-        ep_name: The name of the episode that was downloaded
-        title: The title of the notification (optional)
+        :param ep_obj: The episode object.
+        :param title: The title of the notification (optional)
         """
         if app.USE_EMAIL and app.EMAIL_NOTIFY_ONDOWNLOAD:
             title = notifyStrings[NOTIFY_DOWNLOAD]
             ep_name = ep_obj.pretty_name_with_quality()
 
             parsed = self._parse_name(ep_name)
-            to = self._generate_recipients(parsed['show'])
+            to = self._generate_recipients(ep_obj.series)
             if not to:
                 log.debug('Skipping email notify because there are no configured recipients')
             else:
@@ -136,12 +138,12 @@ class Notifier(object):
                         '<body style="font-family:Helvetica, Arial, sans-serif;">'
                         '<h3>Medusa Notification - Downloaded</h3><br>'
                         '<p>Show: <b>{show}</b></p><br>'
-                        '<p>Episode: <b>{ep_id}{episode}</b></p><br><br>'
+                        '<p>Episode: <b>{ep_id} - {episode}</b></p><br><br>'
                         '<footer style="margin-top: 2.5em; padding: .7em 0; '
                         'color: #777; border-top: #BBB solid 1px;">'
                         'Powered by Medusa.</footer></body>'.format(
-                            show=parsed['show'],
-                            ep_id=(parsed['ep_id'] + ' - ') if 'ep_id' in parsed else '',
+                            show=ep_obj.series.title,
+                            ep_id=ep_obj.slug,
                             episode=parsed['episode']
                         ),
                         'html'))
@@ -171,15 +173,15 @@ class Notifier(object):
         """
         Send a notification that a subtitle was downloaded.
 
-        ep_name: The name of the episode that was downloaded
-        lang: Subtitle language wanted
+        :param ep_obj: Episode object.
+        :param lang: Subtitle language wanted
         """
         if app.USE_EMAIL and app.EMAIL_NOTIFY_ONSUBTITLEDOWNLOAD:
             title = notifyStrings[NOTIFY_SUBTITLE_DOWNLOAD]
             ep_name = ep_obj.pretty_name()
 
             parsed = self._parse_name(ep_name)
-            to = self._generate_recipients(parsed['show'])
+            to = self._generate_recipients(ep_obj.series)
             if not to:
                 log.debug('Skipping email notify because there are no configured recipients')
             else:
@@ -189,13 +191,13 @@ class Notifier(object):
                         '<body style="font-family:Helvetica, Arial, sans-serif;">'
                         '<h3>Medusa Notification - Subtitle Downloaded</h3><br>'
                         '<p>Show: <b>{show}</b></p><br>'
-                        '<p>Episode: <b>{ep_id}{episode}</b></p><br>'
+                        '<p>Episode: <b>{ep_id} - {episode}</b></p><br>'
                         '<p>Language: <b>{lang}</b></p><br><br>'
                         '<footer style="margin-top: 2.5em; padding: .7em 0; '
                         'color: #777; border-top: #BBB solid 1px;">'
                         'Powered by Medusa.</footer></body>'.format(
-                            show=parsed['show'],
-                            ep_id=(parsed['ep_id'] + ' - ') if 'ep_id' in parsed else '',
+                            show=ep_obj.series.title,
+                            ep_id=ep_obj.slug,
                             episode=parsed['episode'],
                             lang=lang
                         ),
@@ -224,7 +226,7 @@ class Notifier(object):
         """
         Send a notification that Medusa was updated.
 
-        new_version: The commit Medusa was updated to
+        :param new_version: The commit Medusa was updated to
         """
         if app.USE_EMAIL:
             title = notifyStrings[NOTIFY_GIT_UPDATE]
@@ -265,7 +267,7 @@ class Notifier(object):
         """
         Send a notification that Medusa was logged into remotely.
 
-        ipaddress: The ip Medusa was logged into from
+        :param ipaddress: The ip Medusa was logged into from
         """
         if app.USE_EMAIL:
             title = notifyStrings[NOTIFY_LOGIN]
@@ -302,7 +304,13 @@ class Notifier(object):
                     log.warning('Login notification error: {0}', self.last_err)
 
     @staticmethod
-    def _generate_recipients(show):
+    def _generate_recipients(show_obj):
+        """
+        Generate a list of email recipients for a specific show.
+
+        Search the tv_shows table for entries in the notify_list field.
+        :param show_obj: Show object.
+        """
         addrs = []
         main_db_con = db.DBConnection()
 
@@ -314,12 +322,12 @@ class Notifier(object):
             )
 
         # Grab the per-show-notification recipients
-        if show:
+        if show_obj:
             sql_results = main_db_con.select(
                 'SELECT notify_list '
                 'FROM tv_shows '
-                'WHERE show_name = ?',
-                [show]
+                'WHERE indexer_id = ? AND indexer = ? ',
+                [show_obj.series_id, show_obj.indexer]
             )
             for row in sql_results:
                 if not row['notify_list']:

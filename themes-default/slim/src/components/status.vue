@@ -246,5 +246,5 @@ export default {
 };
 </script>
 
-<style scoped src="../style/vgt-table.css">
+<style scoped>
 </style>
