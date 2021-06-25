@@ -1,9 +1,9 @@
 <template>
-    <div id="custom-torrentrss">
-        <config-template label-for="select_torrentrss_provider" label="Select Provider">
+    <div id="custom-torznab">
+        <config-template label-for="select_torznab_provider" label="Select Provider">
             <select id="select-provider" class="form-control input-sm" v-model="selectedProvider">
                 <option value="#add">--- add new provider ---</option>
-                <option :value="option.value" v-for="option in torrentrssProviderOptions" :key="option.value">
+                <option :value="option.value" v-for="option in torznabProviderOptions" :key="option.value">
                     {{ option.text }}
                 </option>
             </select>
@@ -12,11 +12,25 @@
         <!-- Edit Provider -->
         <div v-if="currentProvider && selectedProvider !== '#add'" class="edit-provider">
             <config-textbox disabled v-model="currentProvider.name" label="Provider name" id="edit_provider_name" />
-            <config-textbox disabled v-model="currentProvider.url" label="Rss Url" id="edit_provider_url" />
-            <config-textbox v-model="currentProvider.config.cookies" label="Cookies (optional)" id="edit_provider_cookies" />
-            <config-textbox v-model="currentProvider.config.titleTag" label="Search element" id="edit_provider_search_element" />
+            <config-textbox disabled v-model="currentProvider.url" label="Site Url" id="edit_provider_url" />
+            <config-textbox type="password" v-model="currentProvider.config.apikey" label="Api key" id="edit_provider_api" />
         
-            <button class="btn-medusa btn-danger torrentrss_delete" id="torrentrss_delete" @click="removeProvider">Delete</button>
+            <config-template label="Categories" label-for="catids">
+                <multiselect
+                    :value="providerCatIds"
+                    :multiple="true"
+                    :options="availableCategories"
+                    label="id"
+                    track-by="id"
+                    @input="currentProvider.config.catIds = $event.map(cat => cat.id)"
+                >
+                    <template slot="option" slot-scope="props">
+                        <span><strong>{{props.option.id}}</strong> ({{props.option.name}})</span>
+                    </template>
+                </multiselect>
+            </config-template>
+
+            <button :disabled="currentProvider.default" class="btn-medusa btn-danger torznab_delete" id="torznab_delete" @click="removeProvider">Delete</button>
             <button class="btn-medusa config_submitter_refresh" @click="$emit('save')">Save Changes</button>
         </div>
 
@@ -30,8 +44,7 @@
                 </template>
             </config-textbox>
             <config-textbox v-model="url" label="Site Url" id="add_provider_url" />
-            <config-textbox v-model="cookies" label="Cookies" id="add_provider_cookies" />
-            <config-textbox v-model="searchElement" label="Search element" id="add_provider_search_element" />
+            <config-textbox type="password" v-model="apikey" label="Api key" id="add_provider_api" />
         
             <button :disabled="!providerIdAvailable" class="btn-medusa config_submitter" @click="addProvider">Add Provider</button>
         </div>
@@ -51,7 +64,7 @@ import {
 import Multiselect from 'vue-multiselect';
 
 export default {
-    name: 'config-custom-torrentrss',
+    name: 'config-custom-torznab',
     components: {
         ConfigTextbox,
         ConfigTextboxNumber,
@@ -65,8 +78,8 @@ export default {
             selectedProvider: '#add',
             name: '',
             url: '',
-            cookies: '',
-            searchElement: ''
+            apikey: '',
+            availableCategories: []
         }
     },
     methods: {
@@ -91,10 +104,33 @@ export default {
                 this.saving = false;
             }
         },
-        async addProvider() {
-            const { name, url, cookies, searchElement } = this;
+        async getCategories() {
+            const { currentProvider } = this;
+            if (!currentProvider.name || !currentProvider.url || !currentProvider.config.apikey ) {
+                return;
+            }
+
             try {
-                const response = await api.post(`providers/torrentrss`, { name, url, cookies, titleTag: searchElement });
+                const response = await api.post(`providers/torznab/operation`, {
+                    type: 'GETCATEGORIES',
+                    apikey: currentProvider.config.apikey,
+                    name: currentProvider.name,
+                    url: currentProvider.url
+                });
+                if (response.data.result.success) {
+                    this.availableCategories = response.data.result.categories;
+                }
+            } catch (error) {
+                this.$snotify.error(
+                    `Error while trying to get cats for provider ${currentProvider.name}`,
+                    'Error'
+                );
+            }
+        },
+        async addProvider() {
+            const { name, apikey, url } = this;
+            try {
+                const response = await api.post(`providers/torznab`, { apikey, name, url });
                 this.$store.commit(ADD_PROVIDER, response.data.result);
                 this.$snotify.success(
                     `Saved provider ${name}`,
@@ -106,7 +142,7 @@ export default {
                 this.url = '';
             } catch (error) {
                 this.$snotify.error(
-                    `Error while trying to add provider ${name}`,
+                    `Error while trying to get cats for provider ${name}`,
                     'Error'
                 );
             }
@@ -114,7 +150,7 @@ export default {
         async removeProvider() {
             const { currentProvider } = this;
             try {
-                const response = await api.delete(`providers/torrentrss/${currentProvider.id}`);
+                const response = await api.delete(`providers/torznab/${currentProvider.id}`);
                 this.$store.commit(REMOVE_PROVIDER, currentProvider);
                 this.$snotify.success(
                     `Removed provider ${currentProvider.name}`,
@@ -137,9 +173,9 @@ export default {
         ...mapState({
             providers: state => state.provider.providers
         }),
-        torrentrssProviderOptions() {
+        torznabProviderOptions() {
             const { providers } = this;
-            return providers.filter(prov => prov.subType === 'torrentrss').map(prov => {
+            return providers.filter(prov => prov.subType === 'torznab').map(prov => {
                 return ({value: prov.id, text: prov.name});
             })
         },
@@ -148,6 +184,19 @@ export default {
             if (!selectedProvider) return null;
             return providers.find(prov => prov.id === selectedProvider);
         },
+        providerCatIds() {
+            const { currentProvider } = this;
+            if (!currentProvider || currentProvider.config.catIds.length === 0) {
+                return []
+            }
+
+            // Check if we have a list of objects.
+            if (currentProvider.config.catIds.every(x => typeof(x) === 'string' )) {
+                return currentProvider.config.catIds.map(cat => ({ id: cat, name: null }))
+            }
+
+            return currentProvider.config.catIds;
+        },
         providerIdAvailable() {
             const { providers, name } = this;
             const compareId = provider => {
@@ -155,6 +204,13 @@ export default {
                 return providerId === provider.id;
             }
             return providers.filter(compareId).length === 0;
+        }
+    },
+    watch: {
+        currentProvider(newProvider, oldProvider) {
+            if (newProvider && newProvider != oldProvider) {
+                this.getCategories();
+            }
         }
     }
 }

@@ -107,7 +107,13 @@ const state = {
         period: null
     },
     // Remove themeName when we get fully rid of MEDUSA.config.
-    themeName: null
+    themeName: null,
+    providers: {
+        prowlarr: {
+            url: null,
+            apikey: null
+        }
+    }
 };
 
 const mutations = {

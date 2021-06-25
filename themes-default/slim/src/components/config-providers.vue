@@ -109,7 +109,25 @@
                         <p>Add and setup or remove Jackett providers.</p>
                     </div>
                     <div class="col-xs-12 col-md-10">
-                        
+                        <config-custom-torznab @save="save()" />                        
+                    </div>
+                </div><!-- row component-group //-->
+
+                <input type="submit"
+                        class="btn-medusa config_submitter"
+                        value="Save Changes"
+                        :disabled="saving"
+                >
+            </v-tab>
+
+            <v-tab key="custom_prowlarr_providers" title="Configure Custom Prowlarr Providers">
+                <div class="row component-group">
+                    <div class="component-group-desc col-xs-12 col-md-2">
+                        <h3>Configure Prowlarr</h3>
+                        <p>Add or Remove Prowlarr providers</p>
+                    </div>
+                    <div class="col-xs-12 col-md-10">
+                        <config-custom-prowlarr @save="save()" />                        
                     </div>
                 </div><!-- row component-group //-->
 
@@ -134,7 +152,9 @@ import Draggable from 'vuedraggable';
 import {
     AppLink,
     ConfigCustomNewznab,
+    ConfigCustomProwlarr,
     ConfigCustomTorrentrss,
+    ConfigCustomTorznab,
     ConfigTemplate,
     ConfigTextbox,
     ConfigTextboxNumber,
@@ -151,7 +171,9 @@ export default {
         AppLink,
         Draggable,
         ConfigCustomNewznab,
+        ConfigCustomProwlarr,
         ConfigCustomTorrentrss,
+        ConfigCustomTorznab,
         ConfigProviderNzb,
         ConfigProviderTorrent,
         ConfigTemplate,
