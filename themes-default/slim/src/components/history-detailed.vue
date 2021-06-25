@@ -406,7 +406,7 @@ export default {
 :not(tr.status) span.episode-title a,
 :not(tr.status) span.show-title a {
     text-decoration: none;
-    color: rgb(255, 255, 255)
+    color: rgb(255, 255, 255);
 }
 
 tr.status span.episode-title a,
