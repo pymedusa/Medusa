@@ -16,5 +16,5 @@ export default {
 /* Global style definitions should go here. */
 @use '../style/vgt-table.scss';
 @use '../style/v-tooltip.scss';
-@use '../style/modal.css';
+@use '../style/modal.scss';
 </style>
