@@ -410,8 +410,6 @@ export default {
 };
 </script>
 <style scoped>
-@import '../style/v-tooltip.css';
-
 .show-results-wrapper >>> tbody {
     color: rgb(0, 0, 0);
 }

@@ -1,5 +1,6 @@
 <template>
     <div class="horizontal-scroll vgt-table-styling">
+        <span class="test">hoi</span>
         <vue-good-table
             v-if="filteredSchedule.length > 0"
             :columns="columns"
@@ -165,5 +166,5 @@ export default {
 };
 </script>
 
-<style scoped src="../../style/vgt-table.css">
+<style scoped>
 </style>

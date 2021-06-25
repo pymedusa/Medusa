@@ -966,8 +966,6 @@ export default {
 };
 </script>
 <style scoped>
-@import '../style/modal.css';
-
 .display-inline {
     display: inline;
 }
@@ -1149,5 +1147,4 @@ export default {
 .tooltip-arrow {
     display: none;
 }
-
 </style>

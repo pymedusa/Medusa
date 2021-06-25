@@ -172,8 +172,6 @@ export default {
 };
 </script>
 <style scoped>
-@import '../../style/modal.css';
-
 .mobile-select {
     width: 110px;
     font-size: x-small;
