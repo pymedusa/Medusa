@@ -38,7 +38,7 @@ INDEXERS_PARAM = {INDEXER_TVDBV2: 'tvdbid', INDEXER_TVMAZE: 'tvmazeid', INDEXER_
 class TorznabProvider(TorrentProvider):
     """Generic provider for built in and custom providers who expose a Torznab compatible api."""
 
-    def __init__(self, name, url=None, api_key=None, cat_ids=None, cap_tv_search=None):
+    def __init__(self, name, url=None, api_key=None, cat_ids=None, cap_tv_search=None, manager=None):
         """Initialize the class."""
         super(TorznabProvider, self).__init__(name)
 
@@ -59,6 +59,9 @@ class TorznabProvider(TorrentProvider):
 
         # Proper Strings
         self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
+
+        # Specify the manager if externally managed.
+        self.manager = manager
 
         self.cache = tv.Cache(self)
 

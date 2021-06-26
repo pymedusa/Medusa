@@ -1703,7 +1703,7 @@ class Application(object):
                 'all': [
                     'name', 'url', 'cat_ids', 'api_key', 'username', 'search_mode', 'search_fallback',
                     'enable_daily', 'enable_backlog', 'enable_manualsearch', 'enable_search_delay',
-                    'search_delay', 'prowlarr_id',
+                    'search_delay', 'manager',
                 ],
                 'encrypted': [
                     'password',

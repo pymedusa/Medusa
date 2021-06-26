@@ -151,7 +151,7 @@ export default {
             const { currentProvider } = this;
             try {
                 const response = await api.delete(`providers/newznab/${currentProvider.id}`);
-                this.$store.commit(REMOVE_PROVIDER, currentProvider);
+                this.$store.commit(REMOVE_PROVIDER, currentProvider.id);
                 this.$snotify.success(
                     `Removed provider ${currentProvider.name}`,
                     'Removed',

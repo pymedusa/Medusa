@@ -29,8 +29,8 @@ const mutations = {
             }            
         });
     },
-    [REMOVE_PROVIDER](state, provider) {
-        state.providers = state.providers.filter(prov => prov.id !== provider.id);
+    [REMOVE_PROVIDER](state, providerId) {
+        state.providers = state.providers.filter(prov => prov.id !== providerId);
     },
     [ADD_PROVIDER_CACHE](state, { providerId, cache }) {
         // Check if this provider has already been added.

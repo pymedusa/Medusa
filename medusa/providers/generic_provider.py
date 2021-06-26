@@ -66,6 +66,7 @@ class GenericProvider(object):
     NEWZNAB = 'newznab'
     TORZNAB = 'torznab'
     TORRENTRSS = 'torrentrss'
+    PROWLARR = 'prowlarr'
 
     def __init__(self, name):
         """Initialize the class."""
@@ -1006,6 +1007,10 @@ class GenericProvider(object):
         # Custom options (torrentrss)
         if hasattr(self, 'title_tag'):
             data['config']['titleTag'] = self.title_tag
+
+        # Custom options (prowlarr):
+        if hasattr(self, 'manager'):
+            data['manager'] = self.manager
 
         return data
 

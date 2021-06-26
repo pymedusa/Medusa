@@ -11,6 +11,7 @@ from dateutil import parser
 from medusa import app, providers
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers import get_provider_class
+from medusa.providers.generic_provider import GenericProvider
 from medusa.providers.nzb.newznab import NewznabProvider
 from medusa.providers.prowlarr import ProwlarrManager
 from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
@@ -19,6 +20,8 @@ from medusa.providers.torrent.torznab.torznab import TorznabProvider
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
 )
+
+from requests.compat import urljoin
 
 from tornado.escape import json_decode
 
@@ -144,7 +147,7 @@ class ProvidersHandler(BaseRequestHandler):
 
         if identifier:
             data = json_decode(self.request.body)
-            if identifier in ('newznab', 'torznab', 'torrentrss'):
+            if identifier in ('newznab', 'torznab', 'torrentrss', 'prowlarr'):
                 if not path_param:
                     # No path_param passed. Asume we're trying to add a provider.
                     if identifier == 'newznab':
@@ -153,6 +156,8 @@ class ProvidersHandler(BaseRequestHandler):
                         return self._add_torrentrss_provider(data)
                     if identifier == 'torznab':
                         return self._add_torznab_provider(data)
+                    if identifier == 'prowlarr':
+                        return self._add_prowlarr_provider(data)
 
                 if path_param == 'operation':
                     if data.get('type') == 'GETCATEGORIES':
@@ -293,6 +298,47 @@ class ProvidersHandler(BaseRequestHandler):
 
         app.torznab_providers_list.append(new_provider)
         app.TORZNAB_PROVIDERS = [provider.name for provider in app.torznab_providers_list]
+        app.instance.save_config()
+        return self._created(data={'result': new_provider.to_json()})
+
+    def _add_prowlarr_provider(self, data):
+        if not data.get('subType'):
+            return self._bad_request("Missing subtype ('newznab' or 'torznab')")
+
+        if data.get('subType') not in ('newznab', 'torznab'):
+            return self._bad_request('Subtype needs to be newznab or torznab')
+
+        if not data.get('id'):
+            return self._bad_request('No provider id provided')
+
+        if not data.get('name'):
+            return self._bad_request('No provider name provided')
+
+        if not app.PROWLARR_URL or not app.PROWLARR_APIKEY:
+            return self._bad_request('Missing prowlarr url and/or api. Cannot build the url.')
+
+        provider_url = f"{urljoin(app.PROWLARR_URL, str(data.get('id')))}/api"
+
+        provider_class = None
+        if data.get('subType') == 'torznab':
+            provider_class = TorznabProvider
+        else:
+            provider_class = NewznabProvider
+
+        new_provider = provider_class(
+            data.get('name'), provider_url, api_key=app.PROWLARR_APIKEY, manager=GenericProvider.PROWLARR
+        )
+
+        if new_provider.get_id() in [x.get_id() for x in providers.sorted_provider_list()]:
+            return self._conflict(f'Provider id {new_provider.get_id()} already exists')
+
+        if data.get('subType') == 'torznab':
+            app.torznab_providers_list.append(new_provider)
+            app.TORZNAB_PROVIDERS = [provider.name for provider in app.torznab_providers_list]
+        else:
+            app.newznabProviderList.append(new_provider)
+            NewznabProvider.save_newznab_providers()
+
         app.instance.save_config()
         return self._created(data={'result': new_provider.to_json()})
 

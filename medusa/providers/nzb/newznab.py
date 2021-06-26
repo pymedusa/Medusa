@@ -52,7 +52,8 @@ class NewznabProvider(NZBProvider):
     IDENTIFIER_REGEX = re.compile(r'(.*)apikey=.+')
 
     def __init__(self, name, url='', api_key='0', cat_ids=None, default=False, search_mode='eponly',
-                 search_fallback=False, enable_daily=True, enable_backlog=False, enable_manualsearch=False):
+                 search_fallback=False, enable_daily=True, enable_backlog=False,
+                 enable_manualsearch=False, manager=None):
         """Initialize the class."""
         super(NewznabProvider, self).__init__(name)
 
@@ -86,6 +87,9 @@ class NewznabProvider(NZBProvider):
             'S{season:0>2}',  # example: 'Series.Name S03'
             'Season {season}',  # example: 'Series.Name Season 3'
         )
+
+        # Specify the manager if externally managed.
+        self.manager = manager
 
         self.cache = tv.Cache(self)
 

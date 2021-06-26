@@ -11,11 +11,11 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-lg-12">
+            <div class="col-lg-12 vgt-table-styling">
                 <h3>Available prowlarr providers</h3>
                 <vue-good-table
                     :columns="columns"
-                    :rows="providersAvailable"
+                    :rows="prowlarrProviders"
                     :search-options="{
                         enabled: false
                     }"
@@ -24,7 +24,18 @@
                         initialSortBy: { field: 'name', type: 'asc' }
                     }"
                     styleClass="vgt-table condensed"
-                />
+                >
+                <template #table-row="props">
+                    <span v-if="props.column.label === 'Added'" class="align-center">
+                        <img v-if="props.row.localProvider" src="/images/yes16.png">
+                    </span>
+
+                    <span v-else-if="props.column.label === 'Action'" class="align-center">
+                        <button v-if="!props.row.localProvider" class="btn-medusa config_submitter" @click="addProvider(props.row)">Add Provider</button>
+                        <button v-else class="btn-medusa btn-danger" @click="removeProvider(props.row)">Remove Provider</button>
+                    </span>
+                </template>
+                </vue-good-table>
             </div>
         </div>
     </div>
@@ -34,43 +45,36 @@
 import { api } from '../../api';
 import { mapActions, mapState } from 'vuex';
 import { ADD_PROVIDER, REMOVE_PROVIDER } from '../../store/mutation-types';
-import { 
-    ConfigTextbox,
-    ConfigTextboxNumber,
-    ConfigTemplate,
-    ConfigToggleSlider
-} from ".";
-import Multiselect from 'vue-multiselect';
+import { ConfigTextbox } from ".";
 import { VueGoodTable } from 'vue-good-table';
 
 export default {
     name: 'config-custom-prowlarr',
     components: {
         ConfigTextbox,
-        ConfigTextboxNumber,
-        ConfigTemplate,
-        ConfigToggleSlider,
-        Multiselect,
         VueGoodTable
     },
     data() {
         return {
             saving: false,
-            name: '',
             url: '',
             apikey: '',
             testResult: null,
-            providersAdded: [],
             providersAvailable: [],
             columns: [{
-                label: 'added',
-                field: 'addedToMedusa'
+                label: 'Added',
+                field: 'addedProvider',
+                sortable: false
             }, {
                 label: 'name',
                 field: 'name'
             }, {
                 label: 'protocol',
                 field: 'protocol'
+            }, {
+                label: 'Action',
+                field: 'action',
+                sortable: false
             }]
         }
     },
@@ -113,63 +117,36 @@ export default {
                 this.saving = false;
             }
         },
-        async getCategories() {
-            const { currentProvider } = this;
-            if (!currentProvider.name || !currentProvider.url || !currentProvider.config.apikey ) {
-                return;
-            }
-
+        async addProvider(provider) {
+            const subType = provider.protocol === 'torrent' ? 'torznab' : 'newznab';
             try {
-                const response = await api.post(`providers/torznab/operation`, {
-                    type: 'GETCATEGORIES',
-                    apikey: currentProvider.config.apikey,
-                    name: currentProvider.name,
-                    url: currentProvider.url
-                });
-                if (response.data.result.success) {
-                    this.availableCategories = response.data.result.categories;
-                }
-            } catch (error) {
-                this.$snotify.error(
-                    `Error while trying to get cats for provider ${currentProvider.name}`,
-                    'Error'
-                );
-            }
-        },
-        async addProvider() {
-            const { name, apikey, url } = this;
-            try {
-                const response = await api.post(`providers/torznab`, { apikey, name, url });
+                const response = await api.post(`providers/prowlarr`, { subType, id: provider.id, name: provider.name });
                 this.$store.commit(ADD_PROVIDER, response.data.result);
                 this.$snotify.success(
-                    `Saved provider ${name}`,
+                    `Saved provider ${provider.name}`,
                     'Saved',
                     { timeout: 5000 }
                 );
-                this.apikey = '';
-                this.name = '';
-                this.url = '';
             } catch (error) {
                 this.$snotify.error(
-                    `Error while trying to get cats for provider ${name}`,
+                    `Error while trying to get cats for provider ${provider.name}`,
                     'Error'
                 );
             }
         },
-        async removeProvider() {
-            const { currentProvider } = this;
+        async removeProvider(provider) {
+            const subType = provider.protocol === 'torrent' ? 'torznab' : 'newznab';
             try {
-                const response = await api.delete(`providers/torznab/${currentProvider.id}`);
-                this.$store.commit(REMOVE_PROVIDER, currentProvider);
+                const response = await api.delete(`providers/${subType}/${provider.localId}`);
+                this.$store.commit(REMOVE_PROVIDER, provider.localId);
                 this.$snotify.success(
-                    `Removed provider ${currentProvider.name}`,
+                    `Removed provider ${provider.name}`,
                     'Removed',
                     { timeout: 5000 }
                 );
-                this.selectedProvider = '#add'
             } catch (error) {
                 this.$snotify.error(
-                    `Error while trying to remove provider ${currentProvider.name}`,
+                    `Error while trying to remove provider ${provider.name}`,
                     'Error'
                 );
             }
@@ -236,29 +213,15 @@ export default {
             prowlarr: state => state.config.general.providers.prowlarr,
             providers: state => state.provider.providers
         }),
-        torznabProviderOptions() {
-            const { providers } = this;
-            return providers.filter(prov => prov.subType === 'torznab').map(prov => {
-                return ({value: prov.id, text: prov.name});
+        prowlarrProviders() {
+            const { createId, providers, providersAvailable } = this;
+            const managedProviders = providers.filter(prov => prov.manager === 'prowlarr');
+            return providersAvailable.map(prov => {
+                prov.localProvider = Boolean(managedProviders.find(internalProvider => internalProvider.id === createId(prov.name)));
+                prov.localId = createId(prov.name);
+                return prov;
             })
-        },
-        currentProvider() {
-            const { providers, selectedProvider } = this;
-            if (!selectedProvider) return null;
-            return providers.find(prov => prov.id === selectedProvider);
-        },
-        providerCatIds() {
-            const { currentProvider } = this;
-            if (!currentProvider || currentProvider.config.catIds.length === 0) {
-                return []
-            }
 
-            // Check if we have a list of objects.
-            if (currentProvider.config.catIds.every(x => typeof(x) === 'string' )) {
-                return currentProvider.config.catIds.map(cat => ({ id: cat, name: null }))
-            }
-
-            return currentProvider.config.catIds;
         },
         providerIdAvailable() {
             const { providers, name } = this;
