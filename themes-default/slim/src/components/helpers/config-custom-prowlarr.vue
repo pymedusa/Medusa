@@ -7,12 +7,14 @@
 
                 <button class="btn-medusa config_submitter" @click="saveConfig">Save</button>
                 <button class="btn-medusa config_submitter" @click="testConnectivity">Test</button>
+                <button class="btn-medusa config_submitter" @click="getAvailableProviders">Get Providers</button>
+
                 <span v-show="testResult" class="testresult">{{testResult}}</span>
             </div>
         </div>
         <div class="row">
             <div class="col-lg-12 vgt-table-styling">
-                <h3>Available prowlarr providers</h3>
+                <h3>Available providers</h3>
                 <vue-good-table
                     :columns="columns"
                     :rows="prowlarrProviders"
@@ -60,7 +62,7 @@ export default {
             url: '',
             apikey: '',
             testResult: null,
-            providersAvailable: [],
+            availableProviders: [],
             columns: [{
                 label: 'Added',
                 field: 'addedProvider',
@@ -96,27 +98,6 @@ export default {
         ...mapActions({
             setConfig: 'setConfig'
         }),
-        async save() {
-            const { provider } = this;
-            // Disable the save button until we're done.
-            this.saving = true;
-
-            try {
-                await api.patch(`providers/${provider.id}`, provider.config);
-                this.$snotify.success(
-                    `Saved provider ${provider.name}`,
-                    'Saved',
-                    { timeout: 5000 }
-                );
-            } catch (error) {
-                this.$snotify.error(
-                    `Error while trying to save provider ${provider.name}`,
-                    'Error'
-                );
-            } finally {
-                this.saving = false;
-            }
-        },
         async addProvider(provider) {
             const subType = provider.protocol === 'torrent' ? 'torznab' : 'newznab';
             try {
@@ -198,7 +179,7 @@ export default {
                     const response = await api.post('providers/prowlarr/operation', {
                         type: 'GETINDEXERS', url: prowlarr.url, apikey: prowlarr.apikey
                     });
-                    this.providersAvailable = response.data;
+                    this.availableProviders = response.data;
                 } catch (error) {
                     this.$snotify.warning(
                         'Could not retrieve available providers',
@@ -214,68 +195,20 @@ export default {
             providers: state => state.provider.providers
         }),
         prowlarrProviders() {
-            const { createId, providers, providersAvailable } = this;
+            const { createId, providers, availableProviders } = this;
             const managedProviders = providers.filter(prov => prov.manager === 'prowlarr');
-            return providersAvailable.map(prov => {
-                prov.localProvider = Boolean(managedProviders.find(internalProvider => internalProvider.id === createId(prov.name)));
+            return availableProviders.map(prov => {
+                prov.localProvider = Boolean(managedProviders.find(internalProvider => internalProvider.idManager === prov.name));
                 prov.localId = createId(prov.name);
                 return prov;
             })
 
-        },
-        providerIdAvailable() {
-            const { providers, name } = this;
-            const compareId = provider => {
-                const providerId = name.replace(/[^\d\w_]/gi, '_').toLowerCase().trim();
-                return providerId === provider.id;
-            }
-            return providers.filter(compareId).length === 0;
-        }
-    },
-    watch: {
-        currentProvider(newProvider, oldProvider) {
-            if (newProvider && newProvider != oldProvider) {
-                this.getCategories();
-            }
         }
     }
 }
 </script>
 
 <style scoped>
-
-.warning-enter-active,
-.warning-leave-active {
-    -moz-transition-duration: 0.3s;
-    -webkit-transition-duration: 0.3s;
-    -o-transition-duration: 0.3s;
-    transition-duration: 0.3s;
-    -moz-transition-timing-function: ease-in;
-    -webkit-transition-timing-function: ease-in;
-    -o-transition-timing-function: ease-in;
-    transition-timing-function: ease-in;
-}
-
-.warning-enter-to,
-.warning-leave {
-    max-height: 100%;
-}
-
-.warning-enter,
-.warning-leave-to {
-    max-height: 0;
-}
-
-.warning {
-    display: block;
-    overflow: hidden;
-    width: 100%;
-    position: absolute;
-    left: 0;
-    background-color: #e23636;
-    padding: 0 2px 0 2px;
-}
-
 .testresult {
     display: inline-block;
     border-style: solid;

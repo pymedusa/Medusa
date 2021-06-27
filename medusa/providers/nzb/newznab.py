@@ -49,7 +49,7 @@ class NewznabProvider(NZBProvider):
     Tested with: newznab, nzedb, spotweb
     """
 
-    IDENTIFIER_REGEX = re.compile(r'(.*)apikey=.+')
+    IDENTIFIER_REGEX = re.compile(r'apikey=[^=&]+')
 
     def __init__(self, name, url='', api_key='0', cat_ids=None, default=False, search_mode='eponly',
                  search_fallback=False, enable_daily=True, enable_backlog=False,
@@ -90,6 +90,7 @@ class NewznabProvider(NZBProvider):
 
         # Specify the manager if externally managed.
         self.manager = manager
+        self.id_manager = self.name
 
         self.cache = tv.Cache(self)
 
@@ -291,9 +292,9 @@ class NewznabProvider(NZBProvider):
         Cut the apikey from it, as this might change over time.
             So we'd like to prevent adding duplicates to cache.
         """
-        url = NewznabProvider.IDENTIFIER_REGEX.match(item.url)
+        url = NewznabProvider.IDENTIFIER_REGEX.sub('', item.url)
         if url:
-            return url.group(1)
+            return url
         return item.url
 
     def config_string(self):
@@ -374,6 +375,10 @@ class NewznabProvider(NZBProvider):
         """
         if os.path.isfile(os.path.join(app.THEME_DATA_ROOT, 'assets/img/providers/', self.get_id() + '.png')):
             return self.get_id() + '.png'
+
+        if self.manager == 'prowlarr':
+            return 'prowlarr.png'
+
         return 'newznab.png'
 
     def _match_indexer(self):

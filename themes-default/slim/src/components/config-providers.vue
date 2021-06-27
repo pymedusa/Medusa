@@ -102,11 +102,16 @@
                 <button class="btn-medusa config_submitter" :disabled="saving" @click="save()">Save Changes</button>
             </v-tab>
 
-            <v-tab key="custom_jacket_providers" title="Configure Custom Jacket Providers">
+            <v-tab key="custom_torznab_providers" title="Configure Custom Torznab Providers">
                 <div class="row component-group">
                     <div class="component-group-desc col-xs-12 col-md-2">
-                        <h3>Configure Jackett Providers</h3>
-                        <p>Add and setup or remove Jackett providers.</p>
+                        <h3>Configure Torznab Providers</h3>
+                        <p>Add and setup or remove Torznab providers.</p>
+                        
+                        <p>
+                            <img src="images/providers/jackett.png">
+                            When using Jackett. You can add it's jackett url's here. Jackett makes use of the Torznab protocol.
+                        </p>
                     </div>
                     <div class="col-xs-12 col-md-10">
                         <config-custom-torznab @save="save()" />                        
@@ -123,6 +128,7 @@
             <v-tab key="custom_prowlarr_providers" title="Configure Custom Prowlarr Providers">
                 <div class="row component-group">
                     <div class="component-group-desc col-xs-12 col-md-2">
+                        <img src="images/providers/prowlarr.png">
                         <h3>Configure Prowlarr</h3>
                         <p>Add or Remove Prowlarr providers</p>
                     </div>

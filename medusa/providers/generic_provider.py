@@ -1012,6 +1012,9 @@ class GenericProvider(object):
         if hasattr(self, 'manager'):
             data['manager'] = self.manager
 
+        if hasattr(self, 'id_manager'):
+            data['idManager'] = self.id_manager
+
         return data
 
     def save_from_json(self, data):

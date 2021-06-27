@@ -32,6 +32,10 @@
 
             <button :disabled="currentProvider.default" class="btn-medusa btn-danger torznab_delete" id="torznab_delete" @click="removeProvider">Delete</button>
             <button class="btn-medusa config_submitter_refresh" @click="$emit('save')">Save Changes</button>
+            <p class="manager-note" v-if="currentProvider.manager === 'prowlarr'">
+                <img src="images/providers/prowlarr.png" style="width: 16px"> 
+                Note! This is a provider configured through the 'Configure Custom Prowlarr Providers' tab.
+            </p>
         </div>
 
         <!-- Add Provider -->
@@ -248,5 +252,17 @@ export default {
     left: 0;
     background-color: #e23636;
     padding: 0 2px 0 2px;
+    z-index: 1;
+}
+
+.manager-note {
+    margin: 2px;
+    padding: 10px;
+    border: 1px solid #ccc;
+}
+
+.manager-note > img {
+    width: 16px;
+    padding-bottom: 4px;
 }
 </style>

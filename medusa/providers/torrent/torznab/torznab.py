@@ -62,6 +62,7 @@ class TorznabProvider(TorrentProvider):
 
         # Specify the manager if externally managed.
         self.manager = manager
+        self.id_manager = self.name
 
         self.cache = tv.Cache(self)
 
@@ -252,6 +253,10 @@ class TorznabProvider(TorrentProvider):
         """
         if os.path.isfile(os.path.join(app.THEME_DATA_ROOT, 'assets/img/providers/', self.get_id() + '.png')):
             return self.get_id() + '.png'
+
+        if self.manager == 'prowlarr':
+            return 'prowlarr.png'
+
         return 'jackett.png'
 
     def _match_indexer(self):

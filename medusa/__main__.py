@@ -1132,6 +1132,8 @@ class Application(object):
                     load_provider_setting(app.CFG, provider, 'string', 'url', '', censor_log='low')
                     load_provider_setting(app.CFG, provider, 'list', 'cat_ids', '', split_value=',')
                     load_provider_setting(app.CFG, provider, 'list', 'cap_tv_search', '', split_value=',')
+                    load_provider_setting(app.CFG, provider, 'string', 'manager', '', censor_log='low')
+                    load_provider_setting(app.CFG, provider, 'string', 'id_manager', '', censor_log='low')
 
                 if isinstance(provider, NewznabProvider):
                     # non configurable
@@ -1140,6 +1142,8 @@ class Application(object):
                         load_provider_setting(app.CFG, provider, 'bool', 'needs_auth', 1)
                     # configurable
                     load_provider_setting(app.CFG, provider, 'list', 'cat_ids', '', split_value=',')
+                    load_provider_setting(app.CFG, provider, 'string', 'manager', '', censor_log='low')
+                    load_provider_setting(app.CFG, provider, 'string', 'id_manager', '', censor_log='low')
 
             if not os.path.isfile(app.CONFIG_FILE):
                 logger.debug(u'Unable to find {config!r}, all settings will be default!', config=app.CONFIG_FILE)
@@ -1703,7 +1707,7 @@ class Application(object):
                 'all': [
                     'name', 'url', 'cat_ids', 'api_key', 'username', 'search_mode', 'search_fallback',
                     'enable_daily', 'enable_backlog', 'enable_manualsearch', 'enable_search_delay',
-                    'search_delay', 'manager',
+                    'search_delay', 'manager', 'id_manager'
                 ],
                 'encrypted': [
                     'password',

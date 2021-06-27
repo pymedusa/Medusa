@@ -161,7 +161,6 @@ export default {
 </script>
 
 <style scoped>
-
 .warning-enter-active,
 .warning-leave-active {
     -moz-transition-duration: 0.3s;

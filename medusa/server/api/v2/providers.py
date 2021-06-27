@@ -5,6 +5,7 @@ from collections import OrderedDict
 
 import logging
 from datetime import datetime
+import re
 
 from dateutil import parser
 
@@ -274,8 +275,7 @@ class ProvidersHandler(BaseRequestHandler):
             return self._bad_request('No provider api key provided')
 
         new_provider = NewznabProvider(data.get('name'), data.get('url'), api_key=data.get('apikey'))
-        if new_provider.get_id() in [x.get_id() for x in app.newznabProviderList]:
-            return self._conflict(f'Provider id {new_provider.get_id()} already exists')
+        new_provider = self.provider_name_auto_numbered(new_provider)
 
         app.newznabProviderList.append(new_provider)
         NewznabProvider.save_newznab_providers()
@@ -293,8 +293,7 @@ class ProvidersHandler(BaseRequestHandler):
             return self._bad_request('No provider api key provided')
 
         new_provider = TorznabProvider(data.get('name'), data.get('url'), api_key=data.get('apikey'))
-        if new_provider.get_id() in [x.get_id() for x in app.torznab_providers_list]:
-            return self._conflict(f'Provider id {new_provider.get_id()} already exists')
+        new_provider = self.provider_name_auto_numbered(new_provider)
 
         app.torznab_providers_list.append(new_provider)
         app.TORZNAB_PROVIDERS = [provider.name for provider in app.torznab_providers_list]
@@ -328,9 +327,7 @@ class ProvidersHandler(BaseRequestHandler):
         new_provider = provider_class(
             data.get('name'), provider_url, api_key=app.PROWLARR_APIKEY, manager=GenericProvider.PROWLARR
         )
-
-        if new_provider.get_id() in [x.get_id() for x in providers.sorted_provider_list()]:
-            return self._conflict(f'Provider id {new_provider.get_id()} already exists')
+        new_provider = self.provider_name_auto_numbered(new_provider)
 
         if data.get('subType') == 'torznab':
             app.torznab_providers_list.append(new_provider)
@@ -350,6 +347,8 @@ class ProvidersHandler(BaseRequestHandler):
             return self._bad_request('No provider url provided')
 
         new_provider = TorrentRssProvider(data.get('name'), data.get('url'), data.get('cookies', ''), data.get('titleTag', 'title'))
+        new_provider = self.provider_name_auto_numbered(new_provider)
+
         app.torrentRssProviderList.append(new_provider)
         # Update the torrentrss provider list
         app.TORRENTRSS_PROVIDERS = [provider.name for provider in app.torrentRssProviderList]
@@ -539,19 +538,6 @@ class ProvidersHandler(BaseRequestHandler):
             except (AttributeError, KeyError):
                 provider.freeleech = 0
 
-        # if hasattr(provider, 'cat'):
-        #     try:
-        #         provider.cat = int(str(kwargs['{id}_cat'.format(id=provider.get_id())]).strip())
-        #     except (AttributeError, KeyError):
-        #         provider.cat = 0
-
-        # if hasattr(provider, 'subtitle'):
-        #     try:
-        #         provider.subtitle = config.checkbox_to_value(
-        #             kwargs['{id}_subtitle'.format(id=provider.get_id())])
-        #     except (AttributeError, KeyError):
-        #         provider.subtitle = 0
-
         if provider.enable_cookies:
             try:
                 provider.cookies = config['cookies']
@@ -565,3 +551,29 @@ class ProvidersHandler(BaseRequestHandler):
                 provider.title_tag = config['titleTag']
             except (AttributeError, KeyError):
                 provider.title_tag = 'title'
+
+    @staticmethod
+    def provider_name_auto_numbered(new_provider):
+        """
+        Check if the provider_id (created from the provider name) is already used.
+
+        If so create a name with autonumbering added to it.
+
+        For example. provider_id is used. Create provider_id_1. If provider_id_1 is also used.
+        Create provider_id_2.
+
+        :param new_provider: Provider object.
+        :return: Unique provider id.
+        """
+        unique_number = 1
+
+        while new_provider.get_id() in [x.get_id() for x in providers.sorted_provider_list()]:
+            provider_ends_with_number = re.match(r'(.+_)(\d+)$', new_provider.name)
+            if not provider_ends_with_number:
+                new_provider.name = f'{new_provider.name}_{unique_number}'
+            else:
+                # The id is already numbered, let's bumb the number.
+                unique_number += 1
+                new_provider.name = f'{provider_ends_with_number.group(1)}{unique_number}'
+
+        return new_provider
