@@ -256,7 +256,7 @@ export default {
 }
 
 .manager-note {
-    margin: 2px;
+    margin: 5px 0;
     padding: 10px;
     border: 1px solid #ccc;
 }
