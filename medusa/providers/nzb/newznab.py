@@ -49,7 +49,7 @@ class NewznabProvider(NZBProvider):
     Tested with: newznab, nzedb, spotweb
     """
 
-    IDENTIFIER_REGEX = re.compile(r'apikey=[^=&]+')
+    IDENTIFIER_REGEX = re.compile(r'apikey=[^&]+')
 
     def __init__(self, name, url='', api_key='0', cat_ids=None, default=False, search_mode='eponly',
                  search_fallback=False, enable_daily=True, enable_backlog=False,
