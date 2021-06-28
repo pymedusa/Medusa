@@ -760,8 +760,8 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
             else:
                 searched_episode_list = [episode_obj.episode for episode_obj in episodes] + [MULTI_EP_RESULT]
             for searched_episode in searched_episode_list:
-                if (searched_episode in search_results and
-                        cur_provider.cache.update_cache_manual_search(search_results[searched_episode])):
+                if (searched_episode in search_results
+                        and cur_provider.cache.update_cache_manual_search(search_results[searched_episode])):
                     # If we have at least a result from one provider, it's good enough to be marked as result
                     manual_search_results.append(True)
             # Continue because we don't want to pick best results as we are running a manual search by user
