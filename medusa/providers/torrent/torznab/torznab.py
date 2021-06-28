@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 import logging
 import os
+import re
 from collections import namedtuple
 
 from medusa import (
@@ -38,7 +39,11 @@ INDEXERS_PARAM = {INDEXER_TVDBV2: 'tvdbid', INDEXER_TVMAZE: 'tvmazeid', INDEXER_
 class TorznabProvider(TorrentProvider):
     """Generic provider for built in and custom providers who expose a Torznab compatible api."""
 
-    def __init__(self, name, url=None, api_key=None, cat_ids=None, cap_tv_search=None, manager=None):
+    IDENTIFIER_REGEX = re.compile(r'apikey=[^&]+')
+
+    def __init__(self, name, url=None, api_key=None, cat_ids=None, cap_tv_search=None,
+                 search_mode='eponly', search_fallback=False, enable_daily=True,
+                 enable_backlog=False, enable_manualsearch=False, manager=None):
         """Initialize the class."""
         super(TorznabProvider, self).__init__(name)
 
@@ -48,6 +53,12 @@ class TorznabProvider(TorrentProvider):
         self.api_key = api_key or ''
         self.cat_ids = cat_ids or ['5010', '5030', '5040', '7000']
         self.cap_tv_search = cap_tv_search or []
+
+        self.search_mode = search_mode
+        self.search_fallback = search_fallback
+        self.enable_daily = enable_daily
+        self.enable_backlog = enable_backlog
+        self.enable_manualsearch = enable_manualsearch
 
         # For now apply the additional season search string for all torznab providers.
         # If we want to limited this per provider, I suggest using a dict, with provider: [list of season templates]
@@ -243,7 +254,10 @@ class TorznabProvider(TorrentProvider):
 
         By default this is the url. Providers can overwrite this, when needed.
         """
-        return '{name}_{size}'.format(name=item.name, size=item.size)
+        url = TorznabProvider.IDENTIFIER_REGEX.sub('', item.link)
+        if url:
+            return url
+        return item.link
 
     def image_name(self):
         """
