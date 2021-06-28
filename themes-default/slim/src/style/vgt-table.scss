@@ -120,6 +120,30 @@
             color: black;
             text-decoration: none;
         }
+        
+        .skipped {
+            background-color: rgb(190, 222, 237);
+        }
+    
+        .snatched {
+            background-color: rgb(235, 193, 234);
+        }
+    
+        .downloaded {
+            background-color: rgb(255, 218, 138);
+        }
+    
+        .failed {
+            background-color: rgb(255, 153, 153);
+        }
+    
+        .subtitled {
+            background-color: rgb(190, 222, 237);
+        }
+
+        .archived {
+            background-color: rgb(245, 241, 228);
+        }
     }    
 
     .tablesorter-header-inner {
@@ -182,26 +206,6 @@
     .button-row {
         width: 100%;
         display: inline-block;
-    }
-
-    .skipped {
-        background-color: rgb(190, 222, 237);
-    }
-
-    .snatched {
-        background-color: rgb(235, 193, 234);
-    }
-
-    .downloaded {
-        background-color: rgb(255, 218, 138);
-    }
-
-    .failed {
-        background-color: rgb(255, 153, 153);
-    }
-
-    .subtitled {
-        background-color: rgb(190, 222, 237);
     }
 
     .global-ignored td.release span {
