@@ -50,6 +50,7 @@ def config_main(monkeypatch, app_config):
     section_data['subtitles']['enabled'] = bool(app.USE_SUBTITLES)
     section_data['recentShows'] = app.SHOWS_RECENT
     section_data['addTitleWithYear'] = bool(app.ADD_TITLE_WITH_YEAR)
+    section_data['brokenProviders'] = [provider for provider in app.BROKEN_PROVIDERS if provider]
 
     # Pick a random series to show as background.
     # TODO: Recreate this in Vue when the webapp has a reliable list of shows to choose from.
@@ -155,6 +156,12 @@ def config_main(monkeypatch, app_config):
     section_data['backlogOverview'] = {}
     section_data['backlogOverview']['status'] = app.BACKLOG_STATUS
     section_data['backlogOverview']['period'] = app.BACKLOG_PERIOD
+
+    section_data['providers'] = {}
+    section_data['providers']['prowlarr'] = {}
+    section_data['providers']['prowlarr']['url'] = app.PROWLARR_URL
+    section_data['providers']['prowlarr']['apikey'] = app.PROWLARR_APIKEY
+
     return section_data
 
 
