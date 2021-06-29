@@ -1016,7 +1016,3 @@ class GenericProvider(object):
             data['idManager'] = self.id_manager
 
         return data
-
-    def save_from_json(self, data):
-        """Save the provider from the apiv2 provided data."""
-        pass

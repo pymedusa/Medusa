@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import os
-import re
 from collections import namedtuple
 
 from medusa import (

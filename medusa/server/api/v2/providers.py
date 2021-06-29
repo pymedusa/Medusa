@@ -1,11 +1,11 @@
 # coding=utf-8
 """Request handler for series and episodes."""
 from __future__ import unicode_literals
-from collections import OrderedDict
 
 import logging
-from datetime import datetime
 import re
+from collections import OrderedDict
+from datetime import datetime
 
 from dateutil import parser
 

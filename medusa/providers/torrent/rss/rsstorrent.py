@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import io
 import logging
-from medusa.providers.generic_provider import GenericProvider
 import os
 import re
 
@@ -18,6 +17,7 @@ from medusa import (
     tv,
 )
 from medusa.helper.exceptions import ex
+from medusa.providers.generic_provider import GenericProvider
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 log = logging.getLogger(__name__)
