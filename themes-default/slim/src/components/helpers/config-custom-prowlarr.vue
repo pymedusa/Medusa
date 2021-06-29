@@ -27,16 +27,16 @@
                     }"
                     styleClass="vgt-table condensed"
                 >
-                <template #table-row="props">
-                    <span v-if="props.column.label === 'Added'" class="align-center">
-                        <img v-if="props.row.localProvider" src="/images/yes16.png">
-                    </span>
+                    <template #table-row="props">
+                        <span v-if="props.column.label === 'Added'" class="align-center">
+                            <img v-if="props.row.localProvider" src="/images/yes16.png">
+                        </span>
 
-                    <span v-else-if="props.column.label === 'Action'" class="align-center">
-                        <button v-if="!props.row.localProvider" class="btn-medusa config_submitter" @click="addProvider(props.row)">Add Provider</button>
-                        <button v-else class="btn-medusa btn-danger" @click="removeProvider(props.row)">Remove Provider</button>
-                    </span>
-                </template>
+                        <span v-else-if="props.column.label === 'Action'" class="align-center">
+                            <button v-if="!props.row.localProvider" class="btn-medusa config_submitter" @click="addProvider(props.row)">Add Provider</button>
+                            <button v-else class="btn-medusa btn-danger" @click="removeProvider(props.row)">Remove Provider</button>
+                        </span>
+                    </template>
                 </vue-good-table>
             </div>
         </div>
@@ -45,9 +45,9 @@
 
 <script>
 import { api } from '../../api';
-import { mapActions, mapState } from 'vuex';
+import { mapActions, mapGetters, mapState } from 'vuex';
 import { ADD_PROVIDER, REMOVE_PROVIDER } from '../../store/mutation-types';
-import { ConfigTextbox } from ".";
+import { ConfigTextbox } from '.';
 import { VueGoodTable } from 'vue-good-table';
 
 export default {
@@ -78,30 +78,31 @@ export default {
                 field: 'action',
                 sortable: false
             }]
-        }
+        };
     },
     mounted() {
         const { getAvailableProviders } = this;
         // If we already have an url and apikey, try to get the list with prowlarr (available) providers.
-        
+
         this.unwatchProp = this.$watch('prowlarr', prowlarr => {
             if (prowlarr.url && prowlarr.apikey) {
                 this.unwatchProp();
                 getAvailableProviders();
             }
         }, {
-            immediate: true, // run immediately
-            deep: true // detects changes inside objects. not needed here, but maybe in other cases
+            immediate: true,
+            deep: true
         });
     },
-    methods: {        
+    methods: {
         ...mapActions({
             setConfig: 'setConfig'
         }),
+        ...mapGetters(['providerNameToId']),
         async addProvider(provider) {
             const subType = provider.protocol === 'torrent' ? 'torznab' : 'newznab';
             try {
-                const response = await api.post(`providers/prowlarr`, { subType, id: provider.id, name: provider.name });
+                const response = await api.post('providers/prowlarr', { subType, id: provider.id, name: provider.name });
                 this.$store.commit(ADD_PROVIDER, response.data.result);
                 this.$snotify.success(
                     `Saved provider ${provider.name}`,
@@ -118,7 +119,7 @@ export default {
         async removeProvider(provider) {
             const subType = provider.protocol === 'torrent' ? 'torznab' : 'newznab';
             try {
-                const response = await api.delete(`providers/${subType}/${provider.localId}`);
+                await api.delete(`providers/${subType}/${provider.localId}`);
                 this.$store.commit(REMOVE_PROVIDER, provider.localId);
                 this.$snotify.success(
                     `Removed provider ${provider.name}`,
@@ -132,18 +133,15 @@ export default {
                 );
             }
         },
-        createId(providerName) {
-            return providerName.replace(/[^\d\w_]/gi, '_').toLowerCase().trim();
-        },
         async testConnectivity() {
             const { prowlarr } = this;
             try {
-                const response = await api.post('providers/prowlarr/operation', {
+                await api.post('providers/prowlarr/operation', {
                     type: 'TEST', url: prowlarr.url, apikey: prowlarr.apikey
                 });
                 this.testResult = 'connected';
             } catch (error) {
-                this.testResult = 'could not connect'
+                this.testResult = 'could not connect';
                 this.$snotify.error(
                     'Error while trying to connect to prowlarr',
                     'Error'
@@ -156,10 +154,10 @@ export default {
                 providers: {
                     prowlarr
                 }
-            }
+            };
 
             try {
-                await setConfig({section: 'main', config});
+                await setConfig({ section: 'main', config });
                 this.$snotify.success(
                     'Saved general config',
                     'Saved',
@@ -173,7 +171,7 @@ export default {
             }
         },
         async getAvailableProviders() {
-            const { prowlarr } = this; 
+            const { prowlarr } = this;
             if (prowlarr.url && prowlarr.apikey) {
                 try {
                     const response = await api.post('providers/prowlarr/operation', {
@@ -195,17 +193,16 @@ export default {
             providers: state => state.provider.providers
         }),
         prowlarrProviders() {
-            const { createId, providers, availableProviders } = this;
+            const { providerNameToId, providers, availableProviders } = this;
             const managedProviders = providers.filter(prov => prov.manager === 'prowlarr');
             return availableProviders.map(prov => {
                 prov.localProvider = Boolean(managedProviders.find(internalProvider => internalProvider.idManager === prov.name));
-                prov.localId = createId(prov.name);
+                prov.localId = providerNameToId(prov.name);
                 return prov;
-            })
-
+            });
         }
     }
-}
+};
 </script>
 
 <style scoped>

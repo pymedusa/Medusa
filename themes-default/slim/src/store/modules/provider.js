@@ -20,13 +20,13 @@ const mutations = {
         }
     },
     [ADD_PROVIDERS](state, providers) {
-        providers.forEach((provider, index) => {
+        providers.forEach(provider => {
             const existingProvider = state.providers.find(p => p.id === provider.id);
             if (existingProvider) {
                 Vue.set(state.providers, state.providers.indexOf(existingProvider), provider);
             } else {
                 state.providers.push(provider);
-            }            
+            }
         });
     },
     [REMOVE_PROVIDER](state, providerId) {
@@ -93,7 +93,9 @@ const mutations = {
     }
 };
 
-const getters = {};
+const getters = {
+    providerNameToId: _ => providerName => providerName.replace(/[^\d\w_]/gi, '_').toLowerCase().trim() // eslint-disable-line unicorn/better-regex
+};
 
 /**
  * An object representing request parameters for getting a show from the API.

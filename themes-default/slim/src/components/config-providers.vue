@@ -9,7 +9,7 @@
                         <h3>Provider Priorities</h3>
                         <p>Check off and drag the providers into the order you want them to be used.</p>
                         <p>At least one provider is required but two are recommended.</p>
-                        
+
                         <blockquote v-if="!clients.nzb.enabled || !clients.torrents.enabled" style="margin: 20px 0;">NZB/Torrent providers can be toggled in <b>
                             <app-link href="config/search">Search Settings</app-link></b>
                         </blockquote>
@@ -23,16 +23,16 @@
                         <!-- List with draggable providers -->
                         <draggable id="provider_order_list" tag="ul" v-model="providerPriorities" class="list-group" handle=".ui-state-default">
                             <li v-for="currentProvider in providerPriorities" :key="currentProvider.id" class="ui-state-default" :class="[currentProvider.type === 'torrent' ? 'torrent-provider' : 'nzb-provider']" :id="currentProvider.id">
-                                <input type="checkbox" :id="`enable_${currentProvider.name}`" class="provider_enabler" v-model="currentProvider.config.enabled" :disabled="general.brokenProviders.includes(currentProvider.id)" />
-                                <app-link :href="currentProvider.url" class="imgLink" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;"><img :src="`images/providers/${currentProvider.imageName}`" :alt="currentProvider.name" :title="currentProvider.name" width="16" height="16" style="vertical-align:middle;"/></app-link>
-                                <span style="vertical-align:middle;">{{currentProvider.name}}</span>
+                                <input type="checkbox" :id="`enable_${currentProvider.name}`" class="provider_enabler" v-model="currentProvider.config.enabled" :disabled="general.brokenProviders.includes(currentProvider.id)">
+                                <app-link :href="currentProvider.url" class="imgLink" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;"><img :src="`images/providers/${currentProvider.imageName}`" :alt="currentProvider.name" :title="currentProvider.name" width="16" height="16" style="vertical-align:middle;"></app-link>
+                                <span style="vertical-align:middle;">{{currentProvider.name}}</span> <!-- // eslint-disable-line vue/html-self-closing -->
                                 <span v-if="!currentProvider.config.search.backlog.enabled" class="red-text">*</span>
                                 <span v-if="general.brokenProviders.includes(currentProvider.id)" class="red-text">!</span>
-                                <span class="ui-icon ui-icon-arrowthick-2-n-s pull-right" style="vertical-align:middle;" title="Re-order provider"></span>
-                                <span class="ui-icon pull-right" :class="[currentProvider.public ? 'ui-icon-unlocked' : 'ui-icon-locked']" style="vertical-align:middle;" title="Public or Private"></span>
-                                <span :class="[currentProvider.config.search.manual.enabled ? 'ui-icon enable-manual-search-icon pull-right' : '']" style="vertical-align:middle;" title="Enabled for 'Manual Search' feature"></span>
-                                <span :class="[currentProvider.config.search.backlog.enabled ? 'ui-icon enable-backlog-search-icon pull-right' : '']" style="vertical-align:middle;" title="Enabled for Backlog Searches"></span>
-                                <span :class="[currentProvider.config.search.backlog.enabled ? 'ui-icon enable-daily-search-icon pull-right' : '']" style="vertical-align:middle;" title="Enabled for Daily Searches"></span>
+                                <span class="ui-icon ui-icon-arrowthick-2-n-s pull-right" style="vertical-align:middle;" title="Re-order provider" />
+                                <span class="ui-icon pull-right" :class="[currentProvider.public ? 'ui-icon-unlocked' : 'ui-icon-locked']" style="vertical-align:middle;" title="Public or Private" />
+                                <span :class="[currentProvider.config.search.manual.enabled ? 'ui-icon enable-manual-search-icon pull-right' : '']" style="vertical-align:middle;" title="Enabled for 'Manual Search' feature" />
+                                <span :class="[currentProvider.config.search.backlog.enabled ? 'ui-icon enable-backlog-search-icon pull-right' : '']" style="vertical-align:middle;" title="Enabled for Backlog Searches" />
+                                <span :class="[currentProvider.config.search.backlog.enabled ? 'ui-icon enable-daily-search-icon pull-right' : '']" style="vertical-align:middle;" title="Enabled for Daily Searches" />
                             </li>
                         </draggable>
                     </div>
@@ -60,14 +60,13 @@
                         </config-template>
 
                         <template v-if="currentProvider">
-                            <config-provider-nzb v-if="currentProvider.type === 'nzb'" 
-                                :provider="currentProvider"
+                            <config-provider-nzb v-if="currentProvider.type === 'nzb'"
+                                                 :provider="currentProvider"
                             />
-                            <config-provider-torrent v-if="currentProvider.type === 'torrent'" 
-                                :provider="currentProvider"
+                            <config-provider-torrent v-if="currentProvider.type === 'torrent'"
+                                                     :provider="currentProvider"
                             />
                         </template>
-
 
                     </div>
                 </div><!-- row component-group //-->
@@ -107,21 +106,21 @@
                     <div class="component-group-desc col-xs-12 col-md-2">
                         <h3>Configure Torznab Providers</h3>
                         <p>Add and setup or remove Torznab providers.</p>
-                        
+
                         <p>
                             <img src="images/providers/jackett.png">
                             When using Jackett. You can add it's jackett url's here. Jackett makes use of the Torznab protocol.
                         </p>
                     </div>
                     <div class="col-xs-12 col-md-10">
-                        <config-custom-torznab @save="save()" />                        
+                        <config-custom-torznab @save="save()" />
                     </div>
                 </div><!-- row component-group //-->
 
                 <input type="submit"
-                        class="btn-medusa config_submitter"
-                        value="Save Changes"
-                        :disabled="saving"
+                       class="btn-medusa config_submitter"
+                       value="Save Changes"
+                       :disabled="saving"
                 >
             </v-tab>
 
@@ -133,20 +132,17 @@
                         <p>Add or Remove Prowlarr providers</p>
                     </div>
                     <div class="col-xs-12 col-md-10">
-                        <config-custom-prowlarr @save="save()" />                        
+                        <config-custom-prowlarr @save="save()" />
                     </div>
                 </div><!-- row component-group //-->
 
                 <input type="submit"
-                        class="btn-medusa config_submitter"
-                        value="Save Changes"
-                        :disabled="saving"
+                       class="btn-medusa config_submitter"
+                       value="Save Changes"
+                       :disabled="saving"
                 >
             </v-tab>
-
-
         </vue-tabs>
-
     </div>
 </template>
 
@@ -162,13 +158,8 @@ import {
     ConfigCustomTorrentrss,
     ConfigCustomTorznab,
     ConfigTemplate,
-    ConfigTextbox,
-    ConfigTextboxNumber,
-    ConfigToggleSlider,
     ConfigProviderNzb,
-    ConfigProviderTorrent,
-    FileBrowser,
-    SelectList
+    ConfigProviderTorrent
 } from './helpers';
 
 export default {
@@ -183,11 +174,6 @@ export default {
         ConfigProviderNzb,
         ConfigProviderTorrent,
         ConfigTemplate,
-        ConfigTextbox,
-        ConfigTextboxNumber,
-        ConfigToggleSlider,
-        FileBrowser,
-        SelectList,
         VueTabs,
         VTab
     },
@@ -195,7 +181,7 @@ export default {
         return {
             saving: false,
             selectedProvider: ''
-        }
+        };
     },
     mounted() {
         const { getProviders } = this;
@@ -221,7 +207,7 @@ export default {
         },
         enabledProviders() {
             const { clients, providers } = this;
-            let data = [];
+            const data = [];
             for (const provider of providers) {
                 if (!provider.config.enabled) {
                     continue;
@@ -239,7 +225,7 @@ export default {
         },
         currentProvider() {
             const { providers, selectedProvider } = this;
-            return providers.find(prov => prov.id === selectedProvider)
+            return providers.find(prov => prov.id === selectedProvider);
         }
     },
     methods: {

@@ -14,7 +14,7 @@
             <config-textbox disabled v-model="currentProvider.name" label="Provider name" id="edit_provider_name" />
             <config-textbox disabled v-model="currentProvider.url" label="Site Url" id="edit_provider_url" />
             <config-textbox type="password" v-model="currentProvider.config.apikey" label="Api key" id="edit_provider_api" />
-        
+
             <config-template label="Categories" label-for="catids">
                 <multiselect
                     :value="providerCatIds"
@@ -33,7 +33,7 @@
             <button :disabled="currentProvider.default" class="btn-medusa btn-danger torznab_delete" id="torznab_delete" @click="removeProvider">Delete</button>
             <button class="btn-medusa config_submitter_refresh" @click="$emit('save')">Save Changes</button>
             <p class="manager-note" v-if="currentProvider.manager === 'prowlarr'">
-                <img src="images/providers/prowlarr.png" style="width: 16px"> 
+                <img src="images/providers/prowlarr.png" style="width: 16px">
                 Note! This is a provider configured through the 'Configure Custom Prowlarr Providers' tab.
             </p>
         </div>
@@ -49,7 +49,7 @@
             </config-textbox>
             <config-textbox v-model="url" label="Site Url" id="add_provider_url" />
             <config-textbox type="password" v-model="apikey" label="Api key" id="add_provider_api" />
-        
+
             <button :disabled="!providerIdAvailable" class="btn-medusa config_submitter" @click="addProvider">Add Provider</button>
         </div>
     </div>
@@ -57,23 +57,19 @@
 
 <script>
 import { api } from '../../api';
-import { mapState } from 'vuex';
+import { mapGetters, mapState } from 'vuex';
 import { ADD_PROVIDER, REMOVE_PROVIDER } from '../../store/mutation-types';
-import { 
+import {
     ConfigTextbox,
-    ConfigTextboxNumber,
-    ConfigTemplate,
-    ConfigToggleSlider
-} from ".";
+    ConfigTemplate
+} from '.';
 import Multiselect from 'vue-multiselect';
 
 export default {
     name: 'config-custom-torznab',
     components: {
         ConfigTextbox,
-        ConfigTextboxNumber,
         ConfigTemplate,
-        ConfigToggleSlider,
         Multiselect
     },
     data() {
@@ -84,7 +80,7 @@ export default {
             url: '',
             apikey: '',
             availableCategories: []
-        }
+        };
     },
     methods: {
         async save() {
@@ -110,12 +106,12 @@ export default {
         },
         async getCategories() {
             const { currentProvider } = this;
-            if (!currentProvider.name || !currentProvider.url || !currentProvider.config.apikey ) {
+            if (!currentProvider.name || !currentProvider.url || !currentProvider.config.apikey) {
                 return;
             }
 
             try {
-                const response = await api.post(`providers/torznab/operation`, {
+                const response = await api.post('providers/torznab/operation', {
                     type: 'GETCATEGORIES',
                     apikey: currentProvider.config.apikey,
                     name: currentProvider.name,
@@ -134,7 +130,7 @@ export default {
         async addProvider() {
             const { name, apikey, url } = this;
             try {
-                const response = await api.post(`providers/torznab`, { apikey, name, url });
+                const response = await api.post('providers/torznab', { apikey, name, url });
                 this.$store.commit(ADD_PROVIDER, response.data.result);
                 this.$snotify.success(
                     `Saved provider ${name}`,
@@ -154,74 +150,69 @@ export default {
         async removeProvider() {
             const { currentProvider } = this;
             try {
-                const response = await api.delete(`providers/torznab/${currentProvider.id}`);
+                await api.delete(`providers/torznab/${currentProvider.id}`);
                 this.$store.commit(REMOVE_PROVIDER, currentProvider.id);
                 this.$snotify.success(
                     `Removed provider ${currentProvider.name}`,
                     'Removed',
                     { timeout: 5000 }
                 );
-                this.selectedProvider = '#add'
+                this.selectedProvider = '#add';
             } catch (error) {
                 this.$snotify.error(
                     `Error while trying to remove provider ${currentProvider.name}`,
                     'Error'
                 );
             }
-        },
-        createId(providerName) {
-            return providerName.replace(/[^\d\w_]/gi, '_').toLowerCase().trim();
         }
     },
     computed: {
         ...mapState({
             providers: state => state.provider.providers
         }),
+        ...mapGetters(['providerNameToId']),
         torznabProviderOptions() {
             const { providers } = this;
             return providers.filter(prov => prov.subType === 'torznab').map(prov => {
-                return ({value: prov.id, text: prov.name});
-            })
+                return ({ value: prov.id, text: prov.name });
+            });
         },
         currentProvider() {
             const { providers, selectedProvider } = this;
-            if (!selectedProvider) return null;
+            if (!selectedProvider) {
+                return null;
+            }
             return providers.find(prov => prov.id === selectedProvider);
         },
         providerCatIds() {
             const { currentProvider } = this;
             if (!currentProvider || currentProvider.config.catIds.length === 0) {
-                return []
+                return [];
             }
 
             // Check if we have a list of objects.
-            if (currentProvider.config.catIds.every(x => typeof(x) === 'string' )) {
-                return currentProvider.config.catIds.map(cat => ({ id: cat, name: null }))
+            if (currentProvider.config.catIds.every(x => typeof x === 'string')) {
+                return currentProvider.config.catIds.map(cat => ({ id: cat, name: null }));
             }
 
             return currentProvider.config.catIds;
         },
         providerIdAvailable() {
-            const { providers, name } = this;
-            const compareId = provider => {
-                const providerId = name.replace(/[^\d\w_]/gi, '_').toLowerCase().trim();
-                return providerId === provider.id;
-            }
-            return providers.filter(compareId).length === 0;
+            const { providerNameToId, providers, name } = this;
+            return providers.filter(provider => providerNameToId(name) === provider.id).length === 0;
         }
     },
     watch: {
         currentProvider(newProvider, oldProvider) {
-            if (newProvider && newProvider != oldProvider) {
+            if (newProvider && newProvider !== oldProvider) {
                 this.getCategories();
             }
         }
     }
-}
+};
 </script>
 
 <style scoped>
-
 .warning-enter-active,
 .warning-leave-active {
     -moz-transition-duration: 0.3s;

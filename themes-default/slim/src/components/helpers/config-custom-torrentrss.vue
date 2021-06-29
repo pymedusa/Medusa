@@ -15,7 +15,7 @@
             <config-textbox disabled v-model="currentProvider.url" label="Rss Url" id="edit_provider_url" />
             <config-textbox v-model="currentProvider.config.cookies" label="Cookies (optional)" id="edit_provider_cookies" />
             <config-textbox v-model="currentProvider.config.titleTag" label="Search element" id="edit_provider_search_element" />
-        
+
             <button class="btn-medusa btn-danger torrentrss_delete" id="torrentrss_delete" @click="removeProvider">Delete</button>
             <button class="btn-medusa config_submitter_refresh" @click="$emit('save')">Save Changes</button>
         </div>
@@ -32,7 +32,7 @@
             <config-textbox v-model="url" label="Site Url" id="add_provider_url" />
             <config-textbox v-model="cookies" label="Cookies" id="add_provider_cookies" />
             <config-textbox v-model="searchElement" label="Search element" id="add_provider_search_element" />
-        
+
             <button :disabled="!providerIdAvailable" class="btn-medusa config_submitter" @click="addProvider">Add Provider</button>
         </div>
     </div>
@@ -40,24 +40,18 @@
 
 <script>
 import { api } from '../../api';
-import { mapState } from 'vuex';
+import { mapGetters, mapState } from 'vuex';
 import { ADD_PROVIDER, REMOVE_PROVIDER } from '../../store/mutation-types';
-import { 
+import {
     ConfigTextbox,
-    ConfigTextboxNumber,
-    ConfigTemplate,
-    ConfigToggleSlider
-} from ".";
-import Multiselect from 'vue-multiselect';
+    ConfigTemplate
+} from '.';
 
 export default {
     name: 'config-custom-torrentrss',
     components: {
         ConfigTextbox,
-        ConfigTextboxNumber,
-        ConfigTemplate,
-        ConfigToggleSlider,
-        Multiselect
+        ConfigTemplate
     },
     data() {
         return {
@@ -67,7 +61,7 @@ export default {
             url: '',
             cookies: '',
             searchElement: ''
-        }
+        };
     },
     methods: {
         async save() {
@@ -94,7 +88,7 @@ export default {
         async addProvider() {
             const { name, url, cookies, searchElement } = this;
             try {
-                const response = await api.post(`providers/torrentrss`, { name, url, cookies, titleTag: searchElement });
+                const response = await api.post('providers/torrentrss', { name, url, cookies, titleTag: searchElement });
                 this.$store.commit(ADD_PROVIDER, response.data.result);
                 this.$snotify.success(
                     `Saved provider ${name}`,
@@ -114,50 +108,46 @@ export default {
         async removeProvider() {
             const { currentProvider } = this;
             try {
-                const response = await api.delete(`providers/torrentrss/${currentProvider.id}`);
+                await api.delete(`providers/torrentrss/${currentProvider.id}`);
                 this.$store.commit(REMOVE_PROVIDER, currentProvider.id);
                 this.$snotify.success(
                     `Removed provider ${currentProvider.name}`,
                     'Removed',
                     { timeout: 5000 }
                 );
-                this.selectedProvider = '#add'
+                this.selectedProvider = '#add';
             } catch (error) {
                 this.$snotify.error(
                     `Error while trying to remove provider ${currentProvider.name}`,
                     'Error'
                 );
             }
-        },
-        createId(providerName) {
-            return providerName.replace(/[^\d\w_]/gi, '_').toLowerCase().trim();
         }
     },
     computed: {
         ...mapState({
             providers: state => state.provider.providers
         }),
+        ...mapGetters(['providerNameToId']),
         torrentrssProviderOptions() {
             const { providers } = this;
             return providers.filter(prov => prov.subType === 'torrentrss').map(prov => {
-                return ({value: prov.id, text: prov.name});
-            })
+                return ({ value: prov.id, text: prov.name });
+            });
         },
         currentProvider() {
             const { providers, selectedProvider } = this;
-            if (!selectedProvider) return null;
+            if (!selectedProvider) {
+                return null;
+            }
             return providers.find(prov => prov.id === selectedProvider);
         },
         providerIdAvailable() {
-            const { providers, name } = this;
-            const compareId = provider => {
-                const providerId = name.replace(/[^\d\w_]/gi, '_').toLowerCase().trim();
-                return providerId === provider.id;
-            }
-            return providers.filter(compareId).length === 0;
+            const { providerNameToId, providers, name } = this;
+            return providers.filter(provider => providerNameToId(name) === provider.id).length === 0;
         }
     }
-}
+};
 </script>
 
 <style scoped>

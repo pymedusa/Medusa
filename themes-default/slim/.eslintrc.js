@@ -87,7 +87,13 @@ module.exports = {
             'error',
             'kebab-case',
         ],
-        'vue/html-self-closing': 'error',
+        'vue/html-self-closing': ['error', {
+            html: {
+                void: 'never',
+                normal: 'always',
+                component: 'always',
+            },
+        }],
         'vue/html-closing-bracket-spacing': [
             'error',
             {
