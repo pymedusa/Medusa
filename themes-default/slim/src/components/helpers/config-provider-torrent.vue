@@ -1,7 +1,7 @@
 <template>
     <div id="provider-options-torrent">
         <!-- Newznab section -->
-        <div class="providerDiv" :id="`${editProvider.id}Div`">
+        <div v-if="Object.keys(editProvider).length > 0" class="providerDiv" :id="`${editProvider.id}Div`">
             <config-textbox v-if="'customUrl' in editProvider.config" v-model="editProvider.config.customUrl" label="Custom Url" :id="`${editProvider.id}_custom_url`">
                 <p>The URL should include the protocol (and port if applicable).  Examples:  http://192.168.1.4/ or http://localhost:3000/</p>
             </config-textbox>
@@ -146,7 +146,8 @@ export default {
     },
     data() {
         return {
-            saving: false
+            saving: false,
+            editProvider: {}
         };
     },
     mounted() {
