@@ -28,6 +28,7 @@ from medusa.indexers.config import (
 )
 from medusa.indexers.utils import mappings
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.providers.generic_provider import GenericProvider
 from medusa.providers.nzb.nzb_provider import NZBProvider
 
 from requests.compat import urljoin
@@ -48,12 +49,15 @@ class NewznabProvider(NZBProvider):
     Tested with: newznab, nzedb, spotweb
     """
 
-    IDENTIFIER_REGEX = re.compile(r'(.*)apikey=.+')
+    IDENTIFIER_REGEX = re.compile(r'apikey=[^&]+')
 
     def __init__(self, name, url='', api_key='0', cat_ids=None, default=False, search_mode='eponly',
-                 search_fallback=False, enable_daily=True, enable_backlog=False, enable_manualsearch=False):
+                 search_fallback=False, enable_daily=True, enable_backlog=False,
+                 enable_manualsearch=False, manager=None):
         """Initialize the class."""
         super(NewznabProvider, self).__init__(name)
+
+        self.provider_sub_type = GenericProvider.NEWZNAB
 
         self.url = url
         self.api_key = api_key
@@ -83,6 +87,10 @@ class NewznabProvider(NZBProvider):
             'S{season:0>2}',  # example: 'Series.Name S03'
             'Season {season}',  # example: 'Series.Name Season 3'
         )
+
+        # Specify the manager if externally managed.
+        self.manager = manager
+        self.id_manager = self.name
 
         self.cache = tv.Cache(self)
 
@@ -284,9 +292,9 @@ class NewznabProvider(NZBProvider):
         Cut the apikey from it, as this might change over time.
             So we'd like to prevent adding duplicates to cache.
         """
-        url = NewznabProvider.IDENTIFIER_REGEX.match(item.url)
+        url = NewznabProvider.IDENTIFIER_REGEX.sub('', item.url)
         if url:
-            return url.group(1)
+            return url
         return item.url
 
     def config_string(self):
@@ -367,6 +375,10 @@ class NewznabProvider(NZBProvider):
         """
         if os.path.isfile(os.path.join(app.THEME_DATA_ROOT, 'assets/img/providers/', self.get_id() + '.png')):
             return self.get_id() + '.png'
+
+        if self.manager == 'prowlarr':
+            return 'prowlarr.png'
+
         return 'newznab.png'
 
     def _match_indexer(self):

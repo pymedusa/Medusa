@@ -11,6 +11,7 @@
                         <transition name="uri-error">
                             <div v-if="uriError" class="uri-error">Make sure to start your URI with http://, https://, scgi://, etc..</div>
                         </transition>
+                        <slot name="warning" />
                     </div>
                     <p v-for="(explanation, index) in explanations" :key="index">{{ explanation }}</p>
                     <slot />

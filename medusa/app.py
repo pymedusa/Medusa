@@ -666,6 +666,11 @@ class MedusaApp(object):
 
         self.NEWZNAB_PROVIDERS = []
 
+        # Prowlarr section.
+        self.PROWLARR_URL = ''
+        self.PROWLARR_APIKEY = ''
+        self.PROWLARR_PROVIDERS = []
+
         self.TORRENTRSS_PROVIDERS = []
 
         self.TORZNAB_PROVIDERS = []

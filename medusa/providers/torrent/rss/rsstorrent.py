@@ -17,6 +17,7 @@ from medusa import (
     tv,
 )
 from medusa.helper.exceptions import ex
+from medusa.providers.generic_provider import GenericProvider
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 log = logging.getLogger(__name__)
@@ -30,6 +31,7 @@ class TorrentRssProvider(TorrentProvider):
                  enable_daily=False, enable_backlog=False, enable_manualsearch=False):
         """Initialize the class."""
         super(TorrentRssProvider, self).__init__(name)
+        self.provider_sub_type = GenericProvider.TORRENTRSS
 
         # Credentials
 
