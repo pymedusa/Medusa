@@ -1,11 +1,13 @@
 ## Unreleased
 
 #### New Features
+- Added support for Prowlarr ([9653](https://github.com/pymedusa/Medusa/pull/9653))
 
 #### Improvements
+- Vueified config/providers ([9653](https://github.com/pymedusa/Medusa/pull/9653))
 
 #### Fixes
-- Fix email notifications for per show notifications with special chars ([9652](https://github.com/pymedusa/Medusa/pull/96520))
+- Fix email notifications for per show notifications with special chars ([9652](https://github.com/pymedusa/Medusa/pull/9652))
 
 -----
 
