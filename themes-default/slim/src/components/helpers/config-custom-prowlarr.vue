@@ -98,7 +98,6 @@ export default {
         ...mapActions({
             setConfig: 'setConfig'
         }),
-        ...mapGetters(['providerNameToId']),
         async addProvider(provider) {
             const subType = provider.protocol === 'torrent' ? 'torznab' : 'newznab';
             try {
@@ -118,9 +117,11 @@ export default {
         },
         async removeProvider(provider) {
             const subType = provider.protocol === 'torrent' ? 'torznab' : 'newznab';
+            const useProviderId = provider.localProvider ? provider.localProvider.id : provider.localId;
+
             try {
-                await api.delete(`providers/${subType}/${provider.localId}`);
-                this.$store.commit(REMOVE_PROVIDER, provider.localId);
+                await api.delete(`providers/${subType}/${useProviderId}`);
+                this.$store.commit(REMOVE_PROVIDER, useProviderId);
                 this.$snotify.success(
                     `Removed provider ${provider.name}`,
                     'Removed',
@@ -192,11 +193,12 @@ export default {
             prowlarr: state => state.config.general.providers.prowlarr,
             providers: state => state.provider.providers
         }),
+        ...mapGetters(['providerNameToId']),
         prowlarrProviders() {
             const { providerNameToId, providers, availableProviders } = this;
             const managedProviders = providers.filter(prov => prov.manager === 'prowlarr');
             return availableProviders.map(prov => {
-                prov.localProvider = Boolean(managedProviders.find(internalProvider => internalProvider.idManager === prov.name));
+                prov.localProvider = managedProviders.find(internalProvider => internalProvider.idManager === prov.name);
                 prov.localId = providerNameToId(prov.name);
                 return prov;
             });
