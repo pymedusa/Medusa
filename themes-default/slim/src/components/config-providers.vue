@@ -62,9 +62,11 @@
                         <template v-if="currentProvider">
                             <config-provider-nzb v-if="currentProvider.type === 'nzb'"
                                                  :provider="currentProvider"
+                                                 :key="currentProvider.id"
                             />
                             <config-provider-torrent v-if="currentProvider.type === 'torrent'"
                                                      :provider="currentProvider"
+                                                     :key="currentProvider.id"
                             />
                         </template>
 
