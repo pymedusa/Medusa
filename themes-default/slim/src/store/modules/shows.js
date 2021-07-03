@@ -56,14 +56,17 @@ const mutations = {
         console.debug(`Merged ${newShow.title || newShow.indexer + String(newShow.id)}`, newShow);
     },
     [ADD_SHOWS](state, shows) {
-        // Quick check on duplicate shows.
-        const newShows = shows.filter(newShow => {
-            return !state.shows.find(
-                ({ id, indexer }) => Number(newShow.id[newShow.indexer]) === Number(id[indexer]) && newShow.indexer === indexer
-            );
-        });
-
-        Vue.set(state, 'shows', [...state.shows, ...newShows]);
+        // If the show is already available, we only want to merge values
+        const mergedShows = [];
+        for (const newShow of shows) {
+            const existing = state.shows.find(stateShow => stateShow.id.slug === newShow.id.slug);
+            if (existing) {
+                mergedShows.push({ ...existing, ...newShow });
+            } else {
+                mergedShows.push(newShow);
+            }
+        }
+        state.shows = mergedShows;
         console.debug(`Added ${shows.length} shows to store`);
     },
     [ADD_SHOW_CONFIG](state, { show, config }) {
@@ -379,7 +382,12 @@ const actions = {
         const { commit, dispatch, state, rootState } = context;
 
         // If no shows are provided get the first 1000
-        if (!shows) {
+        if (shows) {
+            // Return a specific show list. (not used afaik).
+            return shows.forEach(show => dispatch('getShow', show));
+        }
+
+        return new Promise((resolve, _) => {
             // Loading new shows, commit show loading information to state.
             commit('setLoadingTotal', 0);
             commit('setLoadingCurrent', 0);
@@ -393,6 +401,7 @@ const actions = {
             };
 
             const pageRequests = [];
+            const newShows = [];
 
             // Get first page
             pageRequests.push(api.get('/series', { params })
@@ -400,35 +409,48 @@ const actions = {
                     commit('setLoadingTotal', Number(response.headers['x-pagination-count']));
                     const totalPages = Number(response.headers['x-pagination-total']);
 
-                    commit(ADD_SHOWS, response.data);
+                    newShows.push(...response.data);
 
                     commit('updateLoadingCurrent', response.data.length);
-                    // Optionally get additional pages
 
+                    // Optionally get additional pages
                     for (let page = 2; page <= totalPages; page++) {
-                        const newPage = { page };
-                        newPage.limit = params.limit;
-                        pageRequests.push(api.get('/series', { params: newPage })
-                            .then(response => {
-                                commit(ADD_SHOWS, response.data);
-                                commit('updateLoadingCurrent', response.data.length);
-                            }));
+                        pageRequests.push(new Promise((resolve, reject) => {
+                            const newPage = { page };
+                            newPage.limit = params.limit;
+                            return api.get('/series', { params: newPage })
+                                .then(response => {
+                                    newShows.push(...response.data);
+                                    commit('updateLoadingCurrent', response.data.length);
+                                    resolve();
+                                })
+                                .catch(error => {
+                                    reject(error);
+                                });
+                        }));
                     }
                 })
                 .catch(() => {
                     console.log('Could not retrieve a list of shows');
                 })
+                .finally(() => {
+                    Promise.all(pageRequests)
+                        .then(() => {
+                            // Commit all the found shows to store.
+                            commit(ADD_SHOWS, newShows);
+
+                            // Update (namespaced) localStorage
+                            const namespace = rootState.config.system.webRoot ? `${rootState.config.system.webRoot}_` : '';
+                            try {
+                                localStorage.setItem(`${namespace}shows`, JSON.stringify(state.shows));
+                            } catch (error) {
+                                console.warn(error);
+                            }
+                            resolve();
+                        });
+                })
             );
-
-            return Promise.all(pageRequests)
-                .then(() => {
-                    // Update (namespaced) localStorage
-                    const namespace = rootState.config.system.webRoot ? `${rootState.config.system.webRoot}_` : '';
-                    localStorage.setItem(`${namespace}shows`, JSON.stringify(state.shows));
-                });
-        }
-
-        return shows.forEach(show => dispatch('getShow', show));
+        });
     },
     setShow(_, { showSlug, data }) {
         // Update show, updated show will arrive over a WebSocket message
