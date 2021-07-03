@@ -387,7 +387,7 @@ const actions = {
             return shows.forEach(show => dispatch('getShow', show));
         }
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, _) => {
             // Loading new shows, commit show loading information to state.
             commit('setLoadingTotal', 0);
             commit('setLoadingCurrent', 0);
@@ -401,7 +401,7 @@ const actions = {
             };
 
             const pageRequests = [];
-            let newShows = [];
+            const newShows = [];
 
             // Get first page
             pageRequests.push(api.get('/series', { params })
@@ -409,19 +409,17 @@ const actions = {
                     commit('setLoadingTotal', Number(response.headers['x-pagination-count']));
                     const totalPages = Number(response.headers['x-pagination-total']);
 
-                    // commit(ADD_SHOWS, response.data);
                     newShows.push(...response.data);
 
                     commit('updateLoadingCurrent', response.data.length);
-                    // Optionally get additional pages
 
+                    // Optionally get additional pages
                     for (let page = 2; page <= totalPages; page++) {
                         pageRequests.push(new Promise((resolve, reject) => {
                             const newPage = { page };
                             newPage.limit = params.limit;
                             return api.get('/series', { params: newPage })
                                 .then(response => {
-                                    // commit(ADD_SHOWS, response.data);
                                     newShows.push(...response.data);
                                     commit('updateLoadingCurrent', response.data.length);
                                     resolve();
@@ -429,27 +427,27 @@ const actions = {
                                 .catch(error => {
                                     reject(error);
                                 });
-                            }));
+                        }));
                     }
                 })
                 .catch(() => {
                     console.log('Could not retrieve a list of shows');
                 })
-                .finally(()=> {
+                .finally(() => {
                     Promise.all(pageRequests)
-                    .then(() => {
-                        // Commit all the found shows to store.
-                        commit(ADD_SHOWS, newShows);
+                        .then(() => {
+                            // Commit all the found shows to store.
+                            commit(ADD_SHOWS, newShows);
 
-                        // Update (namespaced) localStorage
-                        const namespace = rootState.config.system.webRoot ? `${rootState.config.system.webRoot}_` : '';
-                        try {
-                            localStorage.setItem(`${namespace}shows`, JSON.stringify(state.shows));
-                        } catch (error) {
-                            console.warn(error);
-                        }
-                        resolve();
-                    });
+                            // Update (namespaced) localStorage
+                            const namespace = rootState.config.system.webRoot ? `${rootState.config.system.webRoot}_` : '';
+                            try {
+                                localStorage.setItem(`${namespace}shows`, JSON.stringify(state.shows));
+                            } catch (error) {
+                                console.warn(error);
+                            }
+                            resolve();
+                        });
                 })
             );
         });
