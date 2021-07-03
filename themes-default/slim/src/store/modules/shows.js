@@ -59,7 +59,7 @@ const mutations = {
         // If the show is already available, we only want to merge values
         const mergedShows = [];
         for (const newShow of shows) {
-            const existing = state.shows.find(stateShow => stateShow.slug === newShow.slug);
+            const existing = state.shows.find(stateShow => stateShow.id.slug === newShow.id.slug);
             if (existing) {
                 mergedShows.push({ ...existing, ...newShow });
             } else {
