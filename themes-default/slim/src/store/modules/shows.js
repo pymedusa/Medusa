@@ -382,10 +382,13 @@ const actions = {
         const { commit, dispatch, state, rootState } = context;
 
         // If no shows are provided get the first 1000
-        if (!shows) {
-            return new Promise((resolve, reject) => {
+        if (shows) {
+            // Return a specific show list. (not used afaik).
+            return shows.forEach(show => dispatch('getShow', show));
+        }
 
-                            // Loading new shows, commit show loading information to state.
+        return new Promise((resolve, reject) => {
+            // Loading new shows, commit show loading information to state.
             commit('setLoadingTotal', 0);
             commit('setLoadingCurrent', 0);
             commit('setLoadingDisplay', true);
@@ -449,13 +452,7 @@ const actions = {
                     });
                 })
             );
-
-            })
-
-        } else {
-            // Return a specific show list. (not used afaik).
-            return shows.forEach(show => dispatch('getShow', show));
-        }
+        });
     },
     setShow(_, { showSlug, data }) {
         // Update show, updated show will arrive over a WebSocket message
