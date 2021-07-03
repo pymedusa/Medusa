@@ -390,7 +390,7 @@ const actions = {
             commit('setLoadingCurrent', 0);
             commit('setLoadingDisplay', true);
 
-            const limit = 100;
+            const limit = 1000;
             const page = 1;
             const params = {
                 limit,
