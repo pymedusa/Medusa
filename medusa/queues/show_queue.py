@@ -459,6 +459,12 @@ class QueueItemAdd(ShowQueueItem):
             message_step('add scene numbering')
             series.add_scene_numbering()
 
+            message_step('refresh episodes from disk')
+            try:
+                app.show_queue_scheduler.action.refreshShow(series)
+            except CantRefreshShowException as error:
+                log.warning('Unable to rescan episodes from disk: {0!r}'.format(error))
+
         except SaveSeriesException as error:
             log.warning('Unable to add series: {0!r}'.format(error))
             self.success = False
