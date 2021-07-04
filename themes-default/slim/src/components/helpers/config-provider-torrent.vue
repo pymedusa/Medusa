@@ -16,7 +16,7 @@
 
             <config-textbox v-if="'password' in editProvider.config" v-model="editProvider.config.password" autocomplete="no" type="password" label="Password" :id="`${editProvider.id}_password`" />
 
-            <config-textbox v-if="editProvider.config.cookies.enabled || editProvider.subType === 'torrentrss'" 
+            <config-textbox v-if="editProvider.config.cookies.enabled || editProvider.subType === 'torrentrss'"
                             v-model="editProvider.config.cookies.values" label="Cookies" :id="`${editProvider.id}_cookies`">
                 <template v-if="editProvider.config.cookies.required">
                     <p>eg. {{editProvider.config.cookies.required.map(cookie => cookie + '=xx;').join('').slice(0, -1)}}</p>
