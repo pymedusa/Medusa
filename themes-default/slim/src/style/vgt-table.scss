@@ -163,7 +163,8 @@
         width: 1em;
         transition: width 0.2s ease-in-out;
 
-        :hover {
+        &:hover,
+        &:active {
             width: 2em;
         }
     }
@@ -195,6 +196,11 @@
     }
 
     .align-center {
+        display: flex;
+        justify-content: center;
+    }
+
+    .span-center > span {
         display: flex;
         justify-content: center;
     }
