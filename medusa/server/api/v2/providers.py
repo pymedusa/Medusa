@@ -540,7 +540,7 @@ class ProvidersHandler(BaseRequestHandler):
 
         if provider.enable_cookies:
             try:
-                provider.cookies = config['cookies']
+                provider.cookies = config['cookies']['values']
             except (AttributeError, KeyError):
                 # I don't want to configure a default value here, as it can also
                 # be configured intially as a custom rss torrent provider

@@ -923,6 +923,10 @@ class GenericProvider(object):
                         'enabled': self.enable_search_delay,
                         'duration': self.search_delay
                     }
+                },
+                'cookies': {
+                    'enabled': self.enable_cookies,
+                    'values': self.cookies
                 }
             },
             'animeOnly': self.anime_only,
@@ -935,11 +939,7 @@ class GenericProvider(object):
             'supportsAbsoluteNumbering': self.supports_absolute_numbering,
             'supportsBacklog': self.supports_backlog,
             'url': self.custom_url or self.url if hasattr(self, 'custom_url') else self.url,
-            'urls': self.urls,
-            'cookies': {
-                'enabled': self.enable_cookies,
-                'required': self.cookies
-            }
+            'urls': self.urls
         }
 
         # Custom options (torrent client specific)
@@ -988,8 +988,8 @@ class GenericProvider(object):
         if hasattr(self, 'sorting'):
             data['config']['sorting'] = self.sorting
 
-        if hasattr(self, 'cookies'):
-            data['config']['cookies'] = self.cookies
+        if hasattr(self, 'required_cookies'):
+            data['config']['cookies']['required'] = self.required_cookies
 
         # Custom options (newznab specific)
         if hasattr(self, 'default'):
