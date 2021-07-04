@@ -667,9 +667,6 @@ body {
 
 .dropdown-toggle {
     color: rgb(255, 255, 255);
-    background-color: rgb(41, 41, 41);
-    border: 1px solid rgba(0, 0, 0, 0.15);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.176);
 }
 
 .vgt-dropdown-menu {
