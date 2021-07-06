@@ -5,9 +5,13 @@
 
 #### Improvements
 - Vueified config/providers ([9653](https://github.com/pymedusa/Medusa/pull/9653))
+- Added feature to test provider results ([9698](https://github.com/pymedusa/Medusa/pull/9698))
 
 #### Fixes
 - Fix email notifications for per show notifications with special chars ([9652](https://github.com/pymedusa/Medusa/pull/9652))
+- Fix adding an existing show did not run refresh from disk after ([9694](https://github.com/pymedusa/Medusa/pull/9694))
+- Fix filter displayShow episodes by overview status ([9691](https://github.com/pymedusa/Medusa/pull/9691))
+- Fix main page not reflecting correct 'next episode date' ([9689](https://github.com/pymedusa/Medusa/pull/9689))
 
 -----
 
