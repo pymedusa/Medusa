@@ -112,7 +112,7 @@
             </config-textbox-number>
         </div>
         <button class="btn-medusa config_submitter" :disabled="saving" @click="save" style="float: left">Save Changes</button>
-        <test-provider :providerId="editProvider.id" />
+        <test-provider :provider-id="editProvider.id" :provider-name="editProvider.name" />
     </div>
 </template>
 

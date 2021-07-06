@@ -371,7 +371,7 @@ class ProvidersHandler(BaseRequestHandler):
 
         result = provider.search(dict(RSS=['']))
         if result and len(result):
-            return self._created(f'{provider_id} returned {len(result)} results')
+            return self._created(f'{provider.name} returned {len(result)} results')
 
         return self._not_found('No results found')
 
