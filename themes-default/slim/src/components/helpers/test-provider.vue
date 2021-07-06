@@ -16,9 +16,8 @@ export default {
         StateSwitch
     },
     props: {
-        providerId: {
-            type: String
-        }
+        providerId: String,
+        providerName: String
     },
     data() {
         return {
@@ -33,7 +32,7 @@ export default {
     },
     methods: {
         async test() {
-            const { providerId } = this;
+            const { providerId, providerName } = this;
             this.testResult = '';
             this.loading = true;
             try {
@@ -50,7 +49,7 @@ export default {
             } catch (error) {
                 this.testResult = error;
                 this.$snotify.error(
-                    `Error while trying to test provider ${providerId} for results`,
+                    `Error while trying to test provider ${providerName} for results`,
                     'Error'
                 );
             } finally {
