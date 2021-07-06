@@ -17,7 +17,7 @@ export default {
     },
     props: {
         providerId: String,
-        providerName: String,
+        providerName: String
     },
     data() {
         return {
