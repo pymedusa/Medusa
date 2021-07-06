@@ -24,7 +24,7 @@ export default {
         return {
             testResult: '',
             loading: false
-        }
+        };
     },
     computed: {
         ...mapState({
@@ -40,12 +40,12 @@ export default {
                 const response = await api.post('providers/internal/operation', {
                     type: 'TESTPROVIDER', providerId
                 })
-                .catch(err => {
-                    if (err.response.status === 404) {
-                        throw new Error(err.response.data.error);
-                    }
-                    throw err;
-                })
+                    .catch(error => {
+                        if (error.response.status === 404) {
+                            throw new Error(error.response.data.error);
+                        }
+                        throw error;
+                    });
                 this.testResult = response.data;
             } catch (error) {
                 this.testResult = error;
