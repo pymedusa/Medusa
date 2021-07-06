@@ -37,6 +37,7 @@ exports[`ConfigTextbox.test.js renders 1`] = `
           >
             <!---->
           </transition-stub>
+           
         </div>
          
         <p>

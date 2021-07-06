@@ -21,7 +21,7 @@
                     {{props.row.localAirTime ? fuzzyParseDateTime(props.row.localAirTime) : ''}}
                 </span>
 
-                <span v-else-if="props.column.label == 'Show'" class="align-center tv-show">
+                <span v-else-if="props.column.label == 'Show'" class="tv-show">
                     <app-link :href="`home/displayShow?showslug=${props.row.showSlug}`">{{ props.row.showName }}</app-link>
                 </span>
 
@@ -69,7 +69,7 @@
                     }" />
                 </span>
 
-                <span v-else class="align-center">
+                <span v-else>
                     {{props.formattedRow[props.column.field]}}
                 </span>
             </template>
@@ -120,6 +120,7 @@ export default {
             }, {
                 label: 'Network',
                 field: 'network',
+                tdClass: 'span-center',
                 hidden: getCookie('Network')
             }, {
                 label: 'Runtime',
@@ -165,5 +166,5 @@ export default {
 };
 </script>
 
-<style scoped src="../../style/vgt-table.css">
+<style scoped>
 </style>

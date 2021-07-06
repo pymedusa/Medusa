@@ -104,6 +104,7 @@ class ConfigHandler(BaseRequestHandler):
         'defaultPage': StringField(app, 'DEFAULT_PAGE'),
         'trashRemoveShow': BooleanField(app, 'TRASH_REMOVE_SHOW'),
         'trashRotateLogs': BooleanField(app, 'TRASH_ROTATE_LOGS'),
+        'brokenProviders': ListField(app, 'BROKEN_PROVIDERS'),
 
         'indexerDefaultLanguage': StringField(app, 'INDEXER_DEFAULT_LANGUAGE'),
         'showUpdateHour': IntegerField(app, 'SHOWUPDATE_HOUR'),
@@ -180,6 +181,8 @@ class ConfigHandler(BaseRequestHandler):
         'namingForceFolders': BooleanField(app, 'NAMING_FORCE_FOLDERS'),
         'subtitles.enabled': BooleanField(app, 'USE_SUBTITLES'),
         'recentShows': ListField(app, 'SHOWS_RECENT'),
+        'providers.prowlarr.url': StringField(app, 'PROWLARR_URL'),
+        'providers.prowlarr.apikey': StringField(app, 'PROWLARR_APIKEY'),
 
         # Sections
         'clients.torrents.authType': StringField(app, 'TORRENT_AUTH_TYPE'),
@@ -612,6 +615,7 @@ class DataGenerator(object):
         section_data['subtitles']['enabled'] = bool(app.USE_SUBTITLES)
         section_data['recentShows'] = app.SHOWS_RECENT
         section_data['addTitleWithYear'] = bool(app.ADD_TITLE_WITH_YEAR)
+        section_data['brokenProviders'] = [provider for provider in app.BROKEN_PROVIDERS if provider]
 
         # Pick a random series to show as background.
         # TODO: Recreate this in Vue when the webapp has a reliable list of shows to choose from.
@@ -719,6 +723,11 @@ class DataGenerator(object):
         section_data['backlogOverview'] = {}
         section_data['backlogOverview']['status'] = app.BACKLOG_STATUS
         section_data['backlogOverview']['period'] = app.BACKLOG_PERIOD
+
+        section_data['providers'] = {}
+        section_data['providers']['prowlarr'] = {}
+        section_data['providers']['prowlarr']['url'] = app.PROWLARR_URL
+        section_data['providers']['prowlarr']['apikey'] = app.PROWLARR_APIKEY
 
         return section_data
 

@@ -38,7 +38,7 @@
                 </span>
 
                 <span v-else-if="props.column.label === 'Episode'" class="episode-title">
-                    <app-link :href="`home/displayShow?showslug=${props.row.showSlug}`">{{ props.row.episodeTitle }}</app-link>
+                    <app-link :href="`home/displayShow?showslug=${props.row.showSlug}`" style="color: white;">{{ props.row.episodeTitle }}</app-link>
                 </span>
 
                 <span v-else-if="props.column.label === 'Snatched'" class="align-center">
@@ -295,5 +295,10 @@ export default {
     }
 };
 </script>
-<style scoped src='../style/vgt-table.css'>
+<style scoped>
+/* History compact */
+span.release-group {
+    cursor: help;
+    margin-right: 5px;
+}
 </style>

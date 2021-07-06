@@ -12,6 +12,9 @@ export default {
 };
 </script>
 
-<style>
+<style lang="scss">
 /* Global style definitions should go here. */
+@use '../style/vgt-table.scss';
+@use '../style/v-tooltip.scss';
+@use '../style/modal.scss';
 </style>

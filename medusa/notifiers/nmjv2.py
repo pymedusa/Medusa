@@ -22,7 +22,7 @@ log.logger.addHandler(logging.NullHandler())
 
 
 class Notifier(object):
-    def notify_snatch(self, title, message):
+    def notify_snatch(self, title, message, **kwargs):
         return False
         # Not implemented: Start the scanner when snatched does not make any sense
 
