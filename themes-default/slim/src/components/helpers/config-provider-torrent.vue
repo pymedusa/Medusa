@@ -111,12 +111,8 @@
                 <p>Amount of hours to wait for downloading a result compared to the first result for a specific episode.</p>
             </config-textbox-number>
         </div>
-        <input type="submit"
-               class="btn-medusa config_submitter"
-               value="Save Changes"
-               :disabled="saving"
-               @click="save"
-        >
+        <button class="btn-medusa config_submitter" :disabled="saving" @click="save" style="float: left">Save Changes</button>
+        <test-provider :providerId="editProvider.id" />
     </div>
 </template>
 
@@ -129,6 +125,7 @@ import {
     ConfigTemplate,
     ConfigToggleSlider
 } from '.';
+import TestProvider from './test-provider.vue';
 
 export default {
     name: 'config-provider-torrent',
@@ -137,7 +134,8 @@ export default {
         ConfigTextbox,
         ConfigTextboxNumber,
         ConfigTemplate,
-        ConfigToggleSlider
+        ConfigToggleSlider,
+        TestProvider
     },
     props: {
         provider: {
