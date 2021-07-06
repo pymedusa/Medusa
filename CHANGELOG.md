@@ -5,6 +5,7 @@
 
 #### Improvements
 - Vueified config/providers ([9653](https://github.com/pymedusa/Medusa/pull/9653))
+- Added support for Prowlarr (an alternative to jackett) ([9653](https://github.com/pymedusa/Medusa/pull/9653))
 - Added feature to test provider results ([9698](https://github.com/pymedusa/Medusa/pull/9698))
 
 #### Fixes
