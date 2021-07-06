@@ -161,24 +161,29 @@ class ProvidersHandler(BaseRequestHandler):
                         return self._add_prowlarr_provider(data)
 
                 if path_param == 'operation':
-                    if data.get('type') == 'GETCATEGORIES':
-                        return self._get_categories(identifier, data)
+                    if identifier == 'prowlarr':
+                        if data.get('type') == 'TEST':
+                            # Test prowlarr connectivity
+                            prowlarr = ProwlarrManager(data.get('url'), data.get('apikey'))
+                            if prowlarr.test_connectivity():
+                                return self._ok('Connection successfull')
+                            else:
+                                return self._not_found('Çould not connect to prowlarr')
+                        if data.get('type') == 'GETINDEXERS':
+                            prowlarr = ProwlarrManager(data.get('url'), data.get('apikey'))
+                            indexers = prowlarr.get_indexers()
+                            if indexers:
+                                return self._ok(indexers)
+                            return self._internal_server_error()
 
-            if identifier == 'prowlarr':
+                    if identifier in ('newznab', 'torznab'):
+                        if data.get('type') == 'GETCATEGORIES':
+                            return self._get_categories(identifier, data)
+
+            if identifier == 'internal':
                 if path_param == 'operation':
-                    if data.get('type') == 'TEST':
-                        # Test prowlarr connectivity
-                        prowlarr = ProwlarrManager(data.get('url'), data.get('apikey'))
-                        if prowlarr.test_connectivity():
-                            return self._ok('Connection successfull')
-                        else:
-                            return self._not_found('Çould not connect to prowlarr')
-                    if data.get('type') == 'GETINDEXERS':
-                        prowlarr = ProwlarrManager(data.get('url'), data.get('apikey'))
-                        indexers = prowlarr.get_indexers()
-                        if indexers:
-                            return self._ok(indexers)
-                        return self._internal_server_error()
+                    if data.get('type') == 'TESTPROVIDER':
+                        return self._test_provider(data)
 
         return self._bad_request('Could not locate provider by id')
 
@@ -355,6 +360,20 @@ class ProvidersHandler(BaseRequestHandler):
 
         app.instance.save_config()
         return self._created(data={'result': new_provider.to_json()})
+
+    def _test_provider(self, data):
+        """Test provider on returning results."""
+        provider_id = data.get('providerId')
+        provider = providers.get_provider_class(provider_id)
+
+        if not provider:
+            return self._not_found(f'Could not locate provider by id {provider_id}')
+
+        result = provider.search(dict(RSS=['']))
+        if result and len(result):
+            return self._created(f'{provider_id} returned {len(result)} results')
+
+        return self._not_found('No results found')
 
     def _save_provider_order(self, sorted_providers):
         """Save the provider order."""
