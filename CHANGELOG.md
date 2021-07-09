@@ -6,6 +6,8 @@
 
 #### Fixes
 - Fix prowl notifications ([9720](https://github.com/pymedusa/Medusa/pull/9720))
+- Fix provider ABNormal ([9721](https://github.com/pymedusa/Medusa/pull/9721))
+- Fix saving provider password ([9721](https://github.com/pymedusa/Medusa/pull/9721))
 
 -----
 
