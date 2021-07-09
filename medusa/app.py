@@ -102,6 +102,8 @@ class MedusaApp(object):
         self.show_update_scheduler = None
         self.version_check_scheduler = None
         self.generic_queue_scheduler = None
+        self.recommended_show_update_queue = None
+        self.recommended_show_update_scheduler = None
         self.show_queue_scheduler = None
         self.search_queue_scheduler = None
         self.forced_search_queue_scheduler = None

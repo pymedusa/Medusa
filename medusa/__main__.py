@@ -79,8 +79,8 @@ from medusa.config import (
 )
 from medusa.databases import cache_db, failed_db, main_db
 from medusa.failed_history import trim_history
+from medusa.generic_update_queue import GenericQueueScheduler, RecommendedShowQueueItem, RecommendedShowUpdateScheduler, UpdateQueueActions
 from medusa.indexers.config import INDEXER_TVDBV2, INDEXER_TVMAZE
-from medusa.generic_update_queue import UpdateQueue
 from medusa.init.filesystem import is_valid_encoding
 from medusa.providers.generic_provider import GenericProvider
 from medusa.providers.nzb.newznab import NewznabProvider
@@ -429,6 +429,22 @@ class Application(object):
 
         # # Check for metadata indexer updates for shows (Disabled until we use api)
         # app.show_update_scheduler.forceRun()
+
+        # FIXME: This is just to start the recommeded show update scheduler early
+        if app.CACHE_RECOMMENDED_TRAKT:
+            app.generic_queue_scheduler.action.add_item(
+                RecommendedShowQueueItem(update_action=UpdateQueueActions.UPDATE_RECOMMENDED_LIST_TRAKT)
+            )
+
+        if app.CACHE_RECOMMENDED_IMDB:
+            app.generic_queue_scheduler.action.add_item(
+                RecommendedShowQueueItem(update_action=UpdateQueueActions.UPDATE_RECOMMENDED_LIST_IMDB)
+            )
+
+        if app.CACHE_RECOMMENDED_ANIDB:
+            app.generic_queue_scheduler.action.add_item(
+                RecommendedShowQueueItem(update_action=UpdateQueueActions.UPDATE_RECOMMENDED_LIST_ANIDB)
+            )
 
         # Launch browser
         if app.LAUNCH_BROWSER and not (self.no_launch or self.run_as_daemon):
@@ -1225,14 +1241,22 @@ class Application(object):
                                                            cycleTime=datetime.timedelta(seconds=3),
                                                            threadName='SHOWQUEUE')
 
-            app.generic_update_scheduler = scheduler.Scheduler(UpdateQueue(),
-                                                               cycleTime=datetime.timedelta(seconds=3),
-                                                               threadName='UPDATEQUEUE')
+            app.generic_queue_scheduler = scheduler.Scheduler(
+                GenericQueueScheduler(),
+                cycleTime=datetime.timedelta(seconds=3),
+                threadName='GENERICQUEUESCHEDULER'
+            )
+
+            app.recommended_show_update_scheduler = scheduler.Scheduler(
+                RecommendedShowUpdateScheduler(),
+                threadName='RECOMMENDEDSHOWUPDATESCHEDULER',
+                start_time=datetime.time(hour=app.SHOWUPDATE_HOUR + 1,
+                                         minute=random.randint(0, 59)))
 
             app.show_update_scheduler = scheduler.Scheduler(show_updater.ShowUpdater(),
-                                                            threadName='SHOWUPDATER')#,
-                                                            # start_time=datetime.time(hour=app.SHOWUPDATE_HOUR,
-                                                            #                          minute=random.randint(0, 59)))
+                                                            threadName='SHOWUPDATER',
+                                                            start_time=datetime.time(hour=app.SHOWUPDATE_HOUR,
+                                                                                     minute=random.randint(0, 59)))
 
             app.episode_update_scheduler = scheduler.Scheduler(episode_updater.EpisodeUpdater(),
                                                                cycleTime=datetime.timedelta(minutes=15),
@@ -1383,8 +1407,12 @@ class Application(object):
             app.backlog_search_scheduler.start()
 
             # start the generic queue checker
-            app.generic_update_scheduler.enable = True
-            app.generic_update_scheduler.start()
+            app.generic_queue_scheduler.enable = True
+            app.generic_queue_scheduler.start()
+
+            # start the recommended show update scheduler
+            app.recommended_show_update_scheduler.enable = True
+            app.recommended_show_update_scheduler.start()
 
             # start the show updater
             app.show_update_scheduler.enable = True

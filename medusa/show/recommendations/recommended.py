@@ -31,7 +31,7 @@ from medusa.cache import recommended_series_cache
 from medusa.helpers.externals import load_externals_from_db, save_externals_to_db, show_in_library
 from medusa.imdb import Imdb
 from medusa.indexers.utils import indexer_id_to_name, indexer_name_mapping
-from medusa.indexers.indexer_config import EXTERNAL_ANIDB, EXTERNAL_IMDB, EXTERNAL_TRAKT, INDEXER_TVDBV2
+from medusa.indexers.config import EXTERNAL_ANIDB, EXTERNAL_IMDB, EXTERNAL_TRAKT, INDEXER_TVDBV2
 from medusa.indexers.utils import reverse_mappings
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
@@ -127,7 +127,7 @@ class RecommendedShow(BasePopular):
             self.mapped_indexer = int(show_attr.get('mapped_indexer'))
             self.mapped_indexer_name = indexer_id_to_name(show_attr.get('mapped_indexer'))
 
-        if show_attr.get('apped_series_id'):
+        if show_attr.get('mapped_series_id'):
             try:
                 self.mapped_series_id = int(show_attr.get('mapped_series_id'))
             except ValueError:
@@ -235,9 +235,9 @@ class RecommendedShow(BasePopular):
                  int(self.is_anime), self.image_href, self.image_src, self.subcat]
             )
         else:
-            query = '''UPDATE recommended SET title = ?, rating = ?, votes = ?, 
+            query = """UPDATE recommended SET title = ?, rating = ?, votes = ?,
                     is_anime = ?, image_href = ?, image_src = ?, subcat = ? {mapped_indexer_and_id}
-                    WHERE recommended_id = ?'''
+                    WHERE recommended_id = ?"""
             params_set = [self.title, self.rating, self.votes, int(self.is_anime), self.image_href, self.image_src, self.subcat]
             params_where = [existing_show[0]['recommended_id']]
 

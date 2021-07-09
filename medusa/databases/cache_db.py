@@ -239,7 +239,7 @@ class AddRecommendedTable(RemoveSceneExceptionsTable):
 
     def execute(self):
         self.connection.action(
-            '''CREATE TABLE "recommended" (
+            """CREATE TABLE "recommended" (
                 `recommended_id`	INTEGER PRIMARY KEY AUTOINCREMENT,
                 `source`	INTEGER NOT NULL,
                 `series_id`	INTEGER NOT NULL,
@@ -252,4 +252,6 @@ class AddRecommendedTable(RemoveSceneExceptionsTable):
                 `image_href`	TEXT,
                 `image_src`	TEXT,
                 `subcat` TEXT
-            )'''
+            )"""
+        )
+        self.inc_major_version()

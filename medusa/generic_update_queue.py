@@ -17,22 +17,18 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 
-import datetime
-from enum import Enum
 import logging
+from enum import Enum
 
-from medusa import (
-    app,
-    generic_queue,
-)
-
+from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
-
-from requests import RequestException
-
+from medusa.queues import generic_queue
 from medusa.show.recommendations.anidb import AnidbPopular
 from medusa.show.recommendations.imdb import ImdbPopular
 from medusa.show.recommendations.trakt import TraktPopular
+
+from requests import RequestException
+
 from simpleanidb import REQUEST_HOT
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -48,14 +44,48 @@ class UpdateQueueActions(Enum):
     UPDATE_RECOMMENDED_LIST_ALL = 1000
 
 
-class UpdateQueue(generic_queue.GenericQueue):
-
+class GenericQueueScheduler(generic_queue.GenericQueue):
     def __init__(self):
         generic_queue.GenericQueue.__init__(self)
-        self.queue_name = 'UPDATEQUEUE'
+        self.queue_name = 'GENERICQUEUESCHEDULER'
 
     def is_action_in_queue(self, action_id):
         return action_id in self.queue
+
+
+class RecommendedShowUpdateScheduler(object):
+    """Recommended show update scheduler."""
+
+    def __init__(self):
+        """Initialize the class."""
+        self.amActive = False
+
+    def run(self):
+        """Schedule recommendedShowQueueItems if needed."""
+        self.amActive = True
+        try:
+            if not app.CACHE_RECOMMENDED_SHOWS:
+                return
+
+            if app.CACHE_RECOMMENDED_TRAKT:
+                app.generic_queue_scheduler.action.add_item(
+                    RecommendedShowQueueItem(update_action=UpdateQueueActions.UPDATE_RECOMMENDED_LIST_TRAKT)
+                )
+
+            if app.CACHE_RECOMMENDED_IMDB:
+                app.generic_queue_scheduler.action.add_item(
+                    RecommendedShowQueueItem(update_action=UpdateQueueActions.UPDATE_RECOMMENDED_LIST_IMDB)
+                )
+
+            if app.CACHE_RECOMMENDED_ANIDB:
+                app.generic_queue_scheduler.action.add_item(
+                    RecommendedShowQueueItem(update_action=UpdateQueueActions.UPDATE_RECOMMENDED_LIST_ANIDB)
+                )
+
+        except Exception as error:
+            log.exception('Recommended show queue item Exception, error: {error}', {'error': error})
+
+        self.amActive = True
 
 
 class RecommendedShowQueueItem(generic_queue.QueueItem):
@@ -77,49 +107,49 @@ class RecommendedShowQueueItem(generic_queue.QueueItem):
             # Update recommended shows from trakt, imdb and anidb
             # recommended shows are dogpilled into cache/recommended.dbm
 
-                log.info(u'Started caching recommended shows')
+            log.info(u'Started caching recommended shows')
 
-                if self.recommended_list in (
-                    UpdateQueueActions.UPDATE_RECOMMENDED_LIST_TRAKT, UpdateQueueActions.UPDATE_RECOMMENDED_LIST_ALL
+            if self.recommended_list in (
+                UpdateQueueActions.UPDATE_RECOMMENDED_LIST_TRAKT, UpdateQueueActions.UPDATE_RECOMMENDED_LIST_ALL
+            ):
+                # Cache trakt shows
+                for trakt_list in (
+                    'trending',
+                    # 'popular',
+                    # 'anticipated',
+                    # 'collected',
+                    # 'watched',
+                    # 'played',
+                    # 'recommendations',
+                    # 'newshow',
+                    # 'newseason'
                 ):
-                    # Cache trakt shows
-                    for page_url in (
-                        'shows/trending',
-                        'shows/popular',
-                        'shows/anticipated',
-                        'shows/collected',
-                        'shows/watched',
-                        'shows/played',
-                        'recommendations/shows',
-                        'calendars/all/shows/new/%s/30' % datetime.date.today().strftime('%Y-%m-%d'),
-                        'calendars/all/shows/premieres/%s/30' % datetime.date.today().strftime('%Y-%m-%d')
-                    ):
-                        try:
-                            TraktPopular().fetch_popular_shows(page_url=page_url)
-                        except Exception as error:
-                            log.info(u'Could not get trakt recommended shows for {page_url} because of error: {error}',
-                                     {'page_url': page_url, 'error': error})
-                            log.debug(u'Not bothering getting the other trakt lists')
-
-                if self.recommended_list in (
-                    UpdateQueueActions.UPDATE_RECOMMENDED_LIST_IMDB, UpdateQueueActions.UPDATE_RECOMMENDED_LIST_ALL
-                ):
-                    # Cache imdb shows
                     try:
-                        ImdbPopular().fetch_popular_shows()
-                    except (RequestException, Exception) as error:
-                        log.info(u'Could not get imdb recommended shows because of error: {error}', {'error': error})
-
-                if self.recommended_list in (
-                    UpdateQueueActions.UPDATE_RECOMMENDED_LIST_ANIDB, UpdateQueueActions.UPDATE_RECOMMENDED_LIST_ALL
-                ):
-                    # Cache anidb shows
-                    try:
-                        AnidbPopular().fetch_popular_shows(REQUEST_HOT)
+                        TraktPopular().fetch_popular_shows(trakt_list=trakt_list)
                     except Exception as error:
-                        log.info(u'Could not get anidb recommended shows because of error: {error}', {'error': error})
+                        log.info(u'Could not get trakt recommended shows for {trakt_list} because of error: {error}',
+                                 {'trakt_list': trakt_list, 'error': error})
+                        log.debug(u'Not bothering getting the other trakt lists')
 
-                log.info(u'Finished caching recommended shows')
+            if self.recommended_list in (
+                UpdateQueueActions.UPDATE_RECOMMENDED_LIST_IMDB, UpdateQueueActions.UPDATE_RECOMMENDED_LIST_ALL
+            ):
+                # Cache imdb shows
+                try:
+                    ImdbPopular().fetch_popular_shows()
+                except (RequestException, Exception) as error:
+                    log.info(u'Could not get imdb recommended shows because of error: {error}', {'error': error})
+
+            if self.recommended_list in (
+                UpdateQueueActions.UPDATE_RECOMMENDED_LIST_ANIDB, UpdateQueueActions.UPDATE_RECOMMENDED_LIST_ALL
+            ):
+                # Cache anidb shows
+                try:
+                    AnidbPopular().fetch_popular_shows(REQUEST_HOT)
+                except Exception as error:
+                    log.info(u'Could not get anidb recommended shows because of error: {error}', {'error': error})
+
+            log.info(u'Finished caching recommended shows')
 
         except Exception as error:
             self.success = False

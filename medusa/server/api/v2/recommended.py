@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 import logging
 
 from medusa import app
-from medusa.indexers.indexer_config import EXTERNAL_IMDB, EXTERNAL_ANIDB, EXTERNAL_TRAKT
+from medusa.indexers.config import EXTERNAL_ANIDB, EXTERNAL_IMDB, EXTERNAL_TRAKT
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import (
     BaseRequestHandler

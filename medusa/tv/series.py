@@ -292,7 +292,6 @@ class Series(TV):
         """Create a series object from its identifier."""
         return Series(identifier.indexer.id, identifier.id)
 
-            series.update_mapped_id_cache()
     @property
     def title(self):
         """Get show's title.

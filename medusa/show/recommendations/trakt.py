@@ -12,7 +12,7 @@ from medusa.helper.common import try_int
 from medusa.helper.exceptions import MultipleShowObjectsException
 from medusa.helpers.trakt import get_trakt_show_collection, get_trakt_user
 from medusa.indexers.api import indexerApi
-from medusa.indexers.config import INDEXER_TVDBV2, EXTERNAL_TRAKT
+from medusa.indexers.config import EXTERNAL_TRAKT, INDEXER_TVDBV2, TRAKT_INDEXERS
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.recommendations import ExpiringList
 from medusa.show.recommendations.recommended import (
@@ -59,16 +59,14 @@ class TraktPopular(BasePopular):
         """Create the RecommendedShow object from the returned showobj."""
         rec_show = RecommendedShow(
             self,
-            show.tvdb,
+            show.trakt,
             show.title,
-            INDEXER_TVDBV2,  # indexer
-            show.tvdb,
             **{'rating': show.ratings['rating'],
                 'votes': try_int(show.ratings['votes'], '0'),
                 'image_href': 'http://www.trakt.tv/shows/{0}'.format(show.ids['ids']['slug']),
                 # Adds like: {'tmdb': 62126, 'tvdb': 304219, 'trakt': 79382, 'imdb': 'tt3322314',
                 # 'tvrage': None, 'slug': 'marvel-s-luke-cage'}
-                'ids': {externals_mapping[k]: v for k, v in iteritems(series['show']['ids']) if externals_mapping.get(k)},
+                'ids': {k: v for k, v in iteritems(show.ids['ids']) if TRAKT_INDEXERS.get(k)},
                 'subcat': subcat
                }
         )
@@ -114,7 +112,7 @@ class TraktPopular(BasePopular):
         :return: A list of RecommendedShow objects, an empty list of none returned
         :throw: ``Exception`` if an Exception is thrown not handled by the libtrats exceptions
         """
-        trending_shows = []
+        recommended_shows = []
         removed_from_medusa = []
 
         try:
@@ -149,10 +147,10 @@ class TraktPopular(BasePopular):
                             in (s.tvdb for s in not_liked_show if s.media_type == 'shows')):
                         continue
 
-                    recommended_show = self._create_recommended_show(
+                    recommended_shows = self._create_recommended_show(
                         storage_key=show.trakt,
                         show=show
-                    ))
+                    )
 
                 except MultipleShowObjectsException:
                     continue
@@ -165,7 +163,7 @@ class TraktPopular(BasePopular):
             log.exception('Could not connect to Trakt service: {0}', error)
             raise
 
-        return blacklist, trending_shows, removed_from_medusa
+        return blacklist, recommended_shows, removed_from_medusa
 
     def check_cache_for_poster(self, tvdb_id):
         """Verify if we already have a poster downloaded for this show."""

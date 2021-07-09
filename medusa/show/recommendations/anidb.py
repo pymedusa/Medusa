@@ -60,7 +60,7 @@ class AnidbPopular(BasePopular):  # pylint: disable=too-few-public-methods
         rec_show = RecommendedShow(
             self,
             series.aid,
-            series.title,
+            str(series.title),
             **{'rating': series.rating_permanent,
                 'votes': series.count_permanent,
                 'image_href': self.base_url.format(aid=series.aid),

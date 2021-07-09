@@ -23,6 +23,10 @@ window.app = new Vue({
     computed: Object.assign(mapState({
         config: state => state.config.general // Used by `inc_addShowOptions.mako`
     }))
+    },
+    mounted() {
+        $('.recommended-show-url').each(obj, index => {})
+    }
 });
 </script>
 </%block>
