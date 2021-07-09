@@ -42,30 +42,26 @@ class Notifier(object):
                                      message=message)
 
     def notify_download(self, ep_obj):
-        ep_name = ep_obj.pretty_name_with_quality()
         if app.PROWL_NOTIFY_ONDOWNLOAD:
-            show = self._parse_episode(ep_name)
-            recipients = self._generate_recipients(show)
+            recipients = self._generate_recipients(ep_obj.series)
             if not recipients:
                 log.debug('Skipping prowl notify because there are no configured recipients')
             else:
                 for api in recipients:
                     self._send_prowl(prowl_api=api, prowl_priority=None,
                                      event=common.notifyStrings[common.NOTIFY_DOWNLOAD],
-                                     message=ep_name)
+                                     message=ep_obj.pretty_name_with_quality())
 
     def notify_subtitle_download(self, ep_obj, lang):
-        ep_name = ep_obj.pretty_name()
         if app.PROWL_NOTIFY_ONSUBTITLEDOWNLOAD:
-            show = self._parse_episode(ep_name)
-            recipients = self._generate_recipients(show)
+            recipients = self._generate_recipients(ep_obj.series)
             if not recipients:
                 log.debug('Skipping prowl notify because there are no configured recipients')
             else:
                 for api in recipients:
                     self._send_prowl(prowl_api=api, prowl_priority=None,
                                      event=common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD],
-                                     message=ep_name + ' [' + lang + ']')
+                                     message=f'{ep_obj.pretty_name()} [{lang}]')
 
     def notify_git_update(self, new_version='??'):
         if app.USE_PROWL:
