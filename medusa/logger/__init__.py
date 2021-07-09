@@ -19,7 +19,6 @@
 
 from __future__ import unicode_literals
 
-import collections
 import datetime
 import io
 import logging
@@ -48,6 +47,7 @@ from medusa import app
 from medusa.init.logconfig import standard_logger
 
 from six import itervalues, string_types, text_type, viewitems
+from six.moves import collections_abc
 from six.moves.urllib.parse import quote
 
 import subliminal
@@ -80,7 +80,7 @@ def rebuild_censored_list():
         if not value:
             continue
 
-        if isinstance(value, collections.Iterable) and not isinstance(
+        if isinstance(value, collections_abc.Iterable) and not isinstance(
                 value, (string_types, bytes, bytearray)):
             for item in value:
                 if item and item != '0':
@@ -148,7 +148,7 @@ def read_loglines(log_file=None, modification_time=None, start_index=0, max_line
     :param formatter: function to format the logline
     :type formatter: function
     :return:
-    :rtype: collections.Iterable of LogLine
+    :rtype: collections_abc.Iterable of LogLine
     """
     log_file = log_file or instance.log_file
     log_files = [log_file] + ['{file}.{index}'.format(file=log_file, index=i) for i in range(1, int(app.LOG_NR))]

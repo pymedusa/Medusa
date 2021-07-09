@@ -17,13 +17,13 @@ get_size () {
 # Determine if and how to build the Webpack bundle.
 build_cmd=""
 build_mode=""
-# $TRAVIS_BRANCH is either a PR's target branch, or the current branch if it's a push build.
+# ${GITHUB_BASE_REF##*/} is a PR's target branch.
 # Do not build on other branches because it will cause conflicts on pull requests,
-#   where push builds build for development and PR builds build for production.
-if [[ $TRAVIS_BRANCH == "master" ]]; then
+# where push builds build for development and PR builds build for production.
+if [[ ${GITHUB_BASE_REF##*/} == "master" ]]; then
     build_cmd="yarn build"
     build_mode="production"
-elif [[ $TRAVIS_BRANCH == "develop" ]]; then
+elif [[ ${GITHUB_BASE_REF##*/} == "develop" ]]; then
     build_cmd="yarn dev"
     build_mode="development"
 fi
@@ -34,6 +34,12 @@ size_before=$(get_size $path_to_built_themes)
 # Build themes.
 [[ -n $build_cmd ]] && run_verbose "$build_cmd"
 run_verbose "yarn gulp sync"
+
+# Normalize line endings in changed files
+changed_files=$(git status --porcelain -- $path_to_built_themes | sed s/^...//)
+for file in $changed_files; do
+    sed -i 's/\r$//g' ../../$file;
+done
 
 # Keep track of the new themes size.
 size_after=$(get_size $path_to_built_themes)

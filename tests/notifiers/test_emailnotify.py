@@ -173,7 +173,7 @@ def test__parse_name(p):
             'sameuser@pymedusa.com',
         }
     },
-    {  # p1 - show-specific, legacy
+    {  # p1 - show-specific, no emails legacy
         'show': 'Show Name',
         'EMAIL_LIST': [
             'admin@pymedusa.com',
@@ -181,13 +181,12 @@ def test__parse_name(p):
         ],
         'mocks': [
             ('medusa.db.DBConnection.select', [{
-                'notify_list': 'sameuser@pymedusa.com,user1@pymedusa.com'
+                'notify_list': None
             }])
         ],
         'expected': {
             'admin@pymedusa.com',
-            'sameuser@pymedusa.com',
-            'user1@pymedusa.com'
+            'sameuser@pymedusa.com'
         }
     },
     {  # p2 - show-specific, no emails
@@ -198,7 +197,7 @@ def test__parse_name(p):
         ],
         'mocks': [
             ('medusa.db.DBConnection.select', [{
-                'notify_list': ''
+                'notify_list': '{}'
             }])
         ],
         'expected': {
@@ -214,7 +213,7 @@ def test__parse_name(p):
         ],
         'mocks': [
             ('medusa.db.DBConnection.select', [{
-                'notify_list': text_type({'emails': 'sameuser@pymedusa.com,user1@pymedusa.com'})
+                'notify_list': '{"emails": "sameuser@pymedusa.com,user1@pymedusa.com"}'
             }])
         ],
         'expected': {
@@ -224,9 +223,13 @@ def test__parse_name(p):
         }
     }
 ])
-def test__generate_recipients(p, app_config, monkeypatch_function_return):
+def test__generate_recipients(p, app_config, monkeypatch_function_return, create_tvshow):
     # Given
     show = p['show']
+    show_obj = None
+    if show:
+        show_obj = create_tvshow(indexerid=12, name=show)
+
     expected = p['expected']
 
     app_config('EMAIL_LIST', p['EMAIL_LIST'])
@@ -234,7 +237,7 @@ def test__generate_recipients(p, app_config, monkeypatch_function_return):
         monkeypatch_function_return(p['mocks'])
 
     # When
-    actual = Notifier._generate_recipients(show)
+    actual = Notifier._generate_recipients(show_obj)
 
     # Then
     assert actual == expected

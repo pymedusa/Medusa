@@ -1,6 +1,5 @@
-from __future__ import absolute_import, division, print_function
-
 import socket
+import typing
 
 from tornado.http1connection import HTTP1Connection
 from tornado.httputil import HTTPMessageDelegate
@@ -11,8 +10,10 @@ from tornado.testing import AsyncTestCase, bind_unused_port, gen_test
 
 
 class HTTP1ConnectionTest(AsyncTestCase):
+    code = None  # type: typing.Optional[int]
+
     def setUp(self):
-        super(HTTP1ConnectionTest, self).setUp()
+        super().setUp()
         self.asyncSetUp()
 
     @gen_test
@@ -28,8 +29,7 @@ class HTTP1ConnectionTest(AsyncTestCase):
         add_accept_handler(listener, accept_callback)
         self.client_stream = IOStream(socket.socket())
         self.addCleanup(self.client_stream.close)
-        yield [self.client_stream.connect(('127.0.0.1', port)),
-               event.wait()]
+        yield [self.client_stream.connect(("127.0.0.1", port)), event.wait()]
         self.io_loop.remove_handler(listener)
         listener.close()
 
@@ -58,4 +58,4 @@ class HTTP1ConnectionTest(AsyncTestCase):
         yield conn.read_response(Delegate())
         yield event.wait()
         self.assertEqual(self.code, 200)
-        self.assertEqual(b''.join(body), b'hello')
+        self.assertEqual(b"".join(body), b"hello")

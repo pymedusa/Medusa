@@ -2,19 +2,20 @@
 
 exports[`SubMenu.test.js renders function-based sub menu 1`] = `
 <div
+  class="row"
   id="sub-menu-wrapper"
 >
   <div
-    class="row shadow"
+    class="col-md-12 shadow"
     id="sub-menu-container"
   >
     <div
-      class="submenu-default hidden-print col-md-12"
+      class="submenu-default hidden-print"
       id="sub-menu"
     >
       <app-link-stub
         class="btn-medusa top-5 bottom-5"
-        href="home/displayShow?indexername=tvdb&seriesid=80379"
+        href="home/displayShow?showslug=tvdb80379"
         placeholder="indexer-to-name"
       >
         <span
@@ -36,14 +37,15 @@ exports[`SubMenu.test.js renders function-based sub menu 1`] = `
 
 exports[`SubMenu.test.js renders simple sub menu 1`] = `
 <div
+  class="row"
   id="sub-menu-wrapper"
 >
   <div
-    class="row shadow"
+    class="col-md-12 shadow"
     id="sub-menu-container"
   >
     <div
-      class="submenu-default hidden-print col-md-12"
+      class="submenu-default hidden-print"
       id="sub-menu"
     >
       <app-link-stub

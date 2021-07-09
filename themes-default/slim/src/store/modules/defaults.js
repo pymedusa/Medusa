@@ -37,6 +37,8 @@ const state = {
         genres: [],
         id: {
             tvdb: null,
+            trakt: null,
+            imdb: null,
             slug: null
         },
         indexer: null,
@@ -82,7 +84,6 @@ const state = {
         showQueueStatus: [],
         xemNumbering: [],
         sceneAbsoluteNumbering: [],
-        allSceneExceptions: [],
         xemAbsoluteNumbering: [],
         sceneNumbering: [],
 
@@ -92,8 +93,14 @@ const state = {
 
         // Seasons array is added to the show object under this query,
         // but we currently check to see if this property is defined before fetching the show with `?episodes=true`.
-        // seasons: [],
+        seasons: [],
         episodeCount: null
+    },
+    provider: {
+        id: null,
+        name: null,
+        config: {},
+        cache: []
     }
 };
 

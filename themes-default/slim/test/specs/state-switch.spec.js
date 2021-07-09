@@ -1,3 +1,4 @@
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "stateTestCase"] }] */
 import { createLocalVue } from '@vue/test-utils';
 import { StateSwitch } from '../../src/components';
 import { generatePropTest } from '../helpers/generators';

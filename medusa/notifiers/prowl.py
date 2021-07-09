@@ -2,7 +2,7 @@
 
 from __future__ import unicode_literals
 
-import ast
+import json
 import logging
 import socket
 from builtins import object
@@ -30,10 +30,9 @@ class Notifier(object):
     def test_notify(self, prowl_api, prowl_priority):
         return self._send_prowl(prowl_api, prowl_priority, event='Test', message='Testing Prowl settings from Medusa', force=True)
 
-    def notify_snatch(self, title, message):
+    def notify_snatch(self, title, message, ep_obj):
         if app.PROWL_NOTIFY_ONSNATCH:
-            show = self._parse_episode(message)
-            recipients = self._generate_recipients(show)
+            recipients = self._generate_recipients(ep_obj.series)
             if not recipients:
                 log.debug('Skipping prowl notify because there are no configured recipients')
             else:
@@ -83,7 +82,13 @@ class Notifier(object):
                              event=title, message=update_text.format(ipaddress))
 
     @staticmethod
-    def _generate_recipients(show=None):
+    def _generate_recipients(show_obj=None):
+        """
+        Generate a list of prowl recipients (api keys) for a specific show.
+
+        Search the tv_shows table for entries in the notify_list field.
+        :param show_obj: Show object.
+        """
         apis = []
         mydb = db.DBConnection()
 
@@ -94,15 +99,21 @@ class Notifier(object):
                     apis.append(api)
 
         # Grab the per-show-notification recipients
-        if show is not None:
-            for value in show:
-                for subs in mydb.select('SELECT notify_list FROM tv_shows WHERE show_name = ?', (value,)):
-                    if subs['notify_list']:
-                        if subs['notify_list'][0] == '{':               # legacy format handling
-                            entries = dict(ast.literal_eval(subs['notify_list']))
-                            for api in entries['prowlAPIs'].split(','):
-                                if api.strip():
-                                    apis.append(api)
+        if show_obj is not None:
+            recipients = mydb.select(
+                'SELECT notify_list '
+                'FROM tv_shows '
+                'WHERE indexer_id = ? AND indexer = ? ',
+                [show_obj.series_id, show_obj.indexer]
+            )
+
+            for subs in recipients:
+                if subs['notify_list']:
+                    entries = json.loads(subs['notify_list'])
+                    if entries:
+                        for api in entries['prowlAPIs'].split(','):
+                            if api.strip():
+                                apis.append(api)
 
         apis = set(apis)
         return apis

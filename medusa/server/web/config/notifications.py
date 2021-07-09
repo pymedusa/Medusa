@@ -24,11 +24,12 @@ class ConfigNotifications(Config):
 
     def index(self):
         """
-        Render the notification configuration page
-        """
-        t = PageTemplate(rh=self, filename='config_notifications.mako')
+        Render the Notifications configuration page.
 
-        return t.render(controller='config', action='notifications')
+        [Converted to VueRouter]
+        """
+        t = PageTemplate(rh=self, filename='index.mako')
+        return t.render()
 
     def saveNotifications(self, use_kodi=None, kodi_always_on=None, kodi_notify_onsnatch=None,
                           kodi_notify_ondownload=None,

@@ -10,7 +10,7 @@ import warnings
 from medusa import common, db, subtitles
 from medusa.databases import utils
 from medusa.helper.common import dateTimeFormat
-from medusa.indexers.indexer_config import STATUS_MAP
+from medusa.indexers.config import STATUS_MAP
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import NameParser
 
@@ -156,8 +156,9 @@ class MainSanityCheck(db.DBSanityCheck):
                                    [common.UNAIRED, cur_unaired['episode_id']])
 
     def fix_indexer_show_statues(self):
-        for old_status, new_status in iteritems(STATUS_MAP):
-            self.connection.action('UPDATE tv_shows SET status = ? WHERE LOWER(status) = ?', [new_status, old_status])
+        for new_status, mappings in iteritems(STATUS_MAP):
+            for old_status in mappings:
+                self.connection.action('UPDATE tv_shows SET status = ? WHERE LOWER(status) = ?', [new_status, old_status])
 
     def fix_episode_statuses(self):
         sql_results = self.connection.select('SELECT episode_id, showid FROM tv_episodes WHERE status IS NULL')
@@ -881,7 +882,7 @@ class AddTvshowStartSearchOffset(AddEpisodeWatchedField):
         self.inc_minor_version()
 
 
-class AddReleaseIgnoreRequireExludeOptions(AddTvshowStartSearchOffset):
+class AddReleaseIgnoreRequireExcludeOptions(AddTvshowStartSearchOffset):
     """Add release ignore and require exclude option flags."""
 
     def test(self):
@@ -896,5 +897,101 @@ class AddReleaseIgnoreRequireExludeOptions(AddTvshowStartSearchOffset):
             self.addColumn('tv_shows', 'rls_require_exclude', 'NUMERIC', 0)
         if not self.hasColumn('tv_shows', 'rls_ignore_exclude'):
             self.addColumn('tv_shows', 'rls_ignore_exclude', 'NUMERIC', 0)
+
+        self.inc_minor_version()
+
+
+class MoveSceneExceptions(AddReleaseIgnoreRequireExcludeOptions):
+    """Create a new table scene_exceptions in main.db, as part of the process to move it from cache to main."""
+
+    def test(self):
+        """
+        Test if the version is at least 44.15
+        """
+        return self.connection.version >= (44, 15)
+
+    def execute(self):
+        utils.backup_database(self.connection.path, self.connection.version)
+
+        log.info('Creating a new table scene_exceptions in the main.db database.')
+
+        self.connection.action(
+            'CREATE TABLE scene_exceptions '
+            '(exception_id INTEGER PRIMARY KEY, indexer INTEGER, series_id INTEGER, title TEXT, '
+            'season NUMERIC DEFAULT -1, custom NUMERIC DEFAULT 0);'
+        )
+
+        self.inc_minor_version()
+
+
+class AddShowLists(MoveSceneExceptions):
+    """Add show_lists field to tv_shows."""
+
+    def test(self):
+        """Test if the version is at least 44.16."""
+        return self.connection.version >= (44, 16)
+
+    def execute(self):
+        utils.backup_database(self.connection.path, self.connection.version)
+
+        log.info(u'Addin show_lists field to tv_shows.')
+        if not self.hasColumn('tv_shows', 'show_lists'):
+            self.addColumn('tv_shows', 'show_lists', 'text', 'series')
+
+            # Shows that are not flagged as anime, put in the anime list
+            self.connection.action("update tv_shows set show_lists = 'series' where anime = 0")
+
+            # Shows that are flagged as anime, put in the anime list
+            self.connection.action("update tv_shows set show_lists = 'anime' where anime = 1")
+
+        self.inc_minor_version()
+
+
+class AddCustomLogs(AddShowLists):
+    """Create a new table custom_logs in main.db."""
+
+    def test(self):
+        """Test if the version is at least 44.17."""
+        return self.connection.version >= (44, 17)
+
+    def execute(self):
+        utils.backup_database(self.connection.path, self.connection.version)
+
+        log.info('Creating a new table custom_logs in the main.db database.')
+
+        self.connection.action(
+            'CREATE TABLE custom_logs '
+            '(log_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
+            'identifier TEXT NOT NULL, '
+            'level INTEGER NOT NULL DEFAULT 0);'
+        )
+
+        self.inc_minor_version()
+
+
+class AddHistoryFDHFields(AddCustomLogs):
+    """Add columns provider_type and client_status to the history table."""
+
+    def test(self):
+        """Test if the version is at least 44.18."""
+        return self.connection.version >= (44, 18)
+
+    def execute(self):
+        utils.backup_database(self.connection.path, self.connection.version)
+
+        # provider_type flags the history record as 'torrent' or 'nzb'
+        log.info(u'Adding column provider_type to the history table')
+        if not self.hasColumn('history', 'provider_type'):
+            self.addColumn('history', 'provider_type', 'TEXT', '')
+
+        # client_status tries to keep track of the status on the nzb/torrent client.
+        log.info(u'Adding column client_status to the history table')
+        if not self.hasColumn('history', 'client_status'):
+            self.addColumn('history', 'client_status', 'INTEGER')
+
+        # part_of_batch flags single snatch results as being part of a multi-ep result.
+        log.info(u'Adding column part_of_batch to the history table')
+        if not self.hasColumn('history', 'part_of_batch'):
+            self.addColumn('history', 'part_of_batch', 'INTEGER')
 
         self.inc_minor_version()

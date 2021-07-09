@@ -2,6 +2,8 @@
   "extends": [
     "config:base"
   ],
+  "prHourlyLimit": 2,
+  "rebaseWhen": "conflicted",
   "baseBranches": [
     "develop"
   ],
@@ -20,6 +22,10 @@
         "allowedVersions": "<4"
       },
       {
+        "packageNames": ["jquery"],
+        "allowedVersions": ">=3.5.1"
+      },
+      {
         "packageNames": [
           "vue",
           "vue-template-compiler",
@@ -36,8 +42,12 @@
     "labels": ["Update dep (Py)"],
     "packageRules": [
       {
-        "packageNames": ["tornado"],
-        "allowedVersions": "<6"
+        "packageNames": ["PyGithub"],
+        "allowedVersions": "<=1.45"
+      },
+      {
+        "packageNames": ["rarfile"],
+        "allowedVersions": "<=3.1"
       }
     ]
   }

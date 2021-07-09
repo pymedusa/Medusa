@@ -24,6 +24,7 @@ REL_HAS_SIBLING = ':~'
 REL_HAS_CLOSE_SIBLING = ':+'
 
 NS_XHTML = 'http://www.w3.org/1999/xhtml'
+NS_XML = 'http://www.w3.org/XML/1998/namespace'
 
 DIR_FLAGS = ct.SEL_DIR_LTR | ct.SEL_DIR_RTL
 RANGES = ct.SEL_IN_RANGE | ct.SEL_OUT_OF_RANGE
@@ -42,6 +43,7 @@ RE_DATE = re.compile(r'^(?P<year>[0-9]{4,})-(?P<month>[0-9]{2})-(?P<day>[0-9]{2}
 RE_DATETIME = re.compile(
     r'^(?P<year>[0-9]{4,})-(?P<month>[0-9]{2})-(?P<day>[0-9]{2})T(?P<hour>[0-9]{2}):(?P<minutes>[0-9]{2})$'
 )
+RE_WILD_STRIP = re.compile(r'(?:(?:-\*-)(?:\*(?:-|$))*|-\*$)')
 
 MONTHS_30 = (4, 6, 9, 11)  # April, June, September, and November
 FEB = 2
@@ -52,34 +54,9 @@ FEB_LEAP_MONTH = 29
 DAYS_IN_WEEK = 7
 
 
-def assert_valid_input(tag):
-    """Check if valid input tag."""
-
-    # Fail on unexpected types.
-    if not util.is_tag(tag):
-        raise TypeError("Expected a BeautifulSoup 'Tag', but instead recieved type {}".format(type(tag)))
-
-
-def get_comments(el, limit=0):
-    """Get comments."""
-
-    assert_valid_input(el)
-
-    if limit < 1:
-        limit = None
-
-    for child in el.descendants:
-        if util.is_comment(child):
-            yield child
-            if limit is not None:
-                limit -= 1
-                if limit < 1:
-                    break
-
-
-class FakeNthParent(object):
+class _FakeParent(object):
     """
-    Fake parent for `nth` selector.
+    Fake parent class.
 
     When we have a fragment with no `BeautifulSoup` document object,
     we can't evaluate `nth` selectors properly.  Create a temporary
@@ -91,75 +68,467 @@ class FakeNthParent(object):
 
         self.contents = [element]
 
+    def __len__(self):
+        """Length."""
 
-class CSSMatch(object):
+        return len(self.contents)
+
+
+class _DocumentNav(object):
+    """Navigate a Beautiful Soup document."""
+
+    @classmethod
+    def assert_valid_input(cls, tag):
+        """Check if valid input tag or document."""
+
+        # Fail on unexpected types.
+        if not cls.is_tag(tag):
+            raise TypeError("Expected a BeautifulSoup 'Tag', but instead recieved type {}".format(type(tag)))
+
+    @staticmethod
+    def is_doc(obj):
+        """Is `BeautifulSoup` object."""
+
+        import bs4
+        return isinstance(obj, bs4.BeautifulSoup)
+
+    @staticmethod
+    def is_tag(obj):
+        """Is tag."""
+
+        import bs4
+        return isinstance(obj, bs4.Tag)
+
+    @staticmethod
+    def is_comment(obj):
+        """Is comment."""
+
+        import bs4
+        return isinstance(obj, bs4.Comment)
+
+    @staticmethod
+    def is_declaration(obj):  # pragma: no cover
+        """Is declaration."""
+
+        import bs4
+        return isinstance(obj, bs4.Declaration)
+
+    @staticmethod
+    def is_cdata(obj):
+        """Is CDATA."""
+
+        import bs4
+        return isinstance(obj, bs4.CData)
+
+    @staticmethod
+    def is_processing_instruction(obj):  # pragma: no cover
+        """Is processing instruction."""
+
+        import bs4
+        return isinstance(obj, bs4.ProcessingInstruction)
+
+    @staticmethod
+    def is_navigable_string(obj):
+        """Is navigable string."""
+
+        import bs4
+        return isinstance(obj, bs4.NavigableString)
+
+    @staticmethod
+    def is_special_string(obj):
+        """Is special string."""
+
+        import bs4
+        return isinstance(obj, (bs4.Comment, bs4.Declaration, bs4.CData, bs4.ProcessingInstruction, bs4.Doctype))
+
+    @classmethod
+    def is_content_string(cls, obj):
+        """Check if node is content string."""
+
+        return cls.is_navigable_string(obj) and not cls.is_special_string(obj)
+
+    @staticmethod
+    def create_fake_parent(el):
+        """Create fake parent for a given element."""
+
+        return _FakeParent(el)
+
+    @staticmethod
+    def is_xml_tree(el):
+        """Check if element (or document) is from a XML tree."""
+
+        return el._is_xml
+
+    def is_iframe(self, el):
+        """Check if element is an `iframe`."""
+
+        return ((el.name if self.is_xml_tree(el) else util.lower(el.name)) == 'iframe') and self.is_html_tag(el)
+
+    def is_root(self, el):
+        """
+        Return whether element is a root element.
+
+        We check that the element is the root of the tree (which we have already pre-calculated),
+        and we check if it is the root element under an `iframe`.
+        """
+
+        root = self.root and self.root is el
+        if not root:
+            parent = self.get_parent(el)
+            root = parent is not None and self.is_html and self.is_iframe(parent)
+        return root
+
+    def get_contents(self, el, no_iframe=False):
+        """Get contents or contents in reverse."""
+        if not no_iframe or not self.is_iframe(el):
+            for content in el.contents:
+                yield content
+
+    def get_children(self, el, start=None, reverse=False, tags=True, no_iframe=False):
+        """Get children."""
+
+        if not no_iframe or not self.is_iframe(el):
+            last = len(el.contents) - 1
+            if start is None:
+                index = last if reverse else 0
+            else:
+                index = start
+            end = -1 if reverse else last + 1
+            incr = -1 if reverse else 1
+
+            if 0 <= index <= last:
+                while index != end:
+                    node = el.contents[index]
+                    index += incr
+                    if not tags or self.is_tag(node):
+                        yield node
+
+    def get_descendants(self, el, tags=True, no_iframe=False):
+        """Get descendants."""
+
+        if not no_iframe or not self.is_iframe(el):
+            next_good = None
+            for child in el.descendants:
+
+                if next_good is not None:
+                    if child is not next_good:
+                        continue
+                    next_good = None
+
+                is_tag = self.is_tag(child)
+
+                if no_iframe and is_tag and self.is_iframe(child):
+                    if child.next_sibling is not None:
+                        next_good = child.next_sibling
+                    else:
+                        last_child = child
+                        while self.is_tag(last_child) and last_child.contents:
+                            last_child = last_child.contents[-1]
+                        next_good = last_child.next_element
+                    yield child
+                    if next_good is None:
+                        break
+                    # Coverage isn't seeing this even though it's executed
+                    continue  # pragma: no cover
+
+                if not tags or is_tag:
+                    yield child
+
+    def get_parent(self, el, no_iframe=False):
+        """Get parent."""
+
+        parent = el.parent
+        if no_iframe and parent is not None and self.is_iframe(parent):
+            parent = None
+        return parent
+
+    @staticmethod
+    def get_tag_name(el):
+        """Get tag."""
+
+        return el.name
+
+    @staticmethod
+    def get_prefix_name(el):
+        """Get prefix."""
+
+        return el.prefix
+
+    @staticmethod
+    def get_uri(el):
+        """Get namespace `URI`."""
+
+        return el.namespace
+
+    @classmethod
+    def get_next(cls, el, tags=True):
+        """Get next sibling tag."""
+
+        sibling = el.next_sibling
+        while tags and not cls.is_tag(sibling) and sibling is not None:
+            sibling = sibling.next_sibling
+        return sibling
+
+    @classmethod
+    def get_previous(cls, el, tags=True):
+        """Get previous sibling tag."""
+
+        sibling = el.previous_sibling
+        while tags and not cls.is_tag(sibling) and sibling is not None:
+            sibling = sibling.previous_sibling
+        return sibling
+
+    @staticmethod
+    def has_html_ns(el):
+        """
+        Check if element has an HTML namespace.
+
+        This is a bit different than whether a element is treated as having an HTML namespace,
+        like we do in the case of `is_html_tag`.
+        """
+
+        ns = getattr(el, 'namespace') if el else None
+        return ns and ns == NS_XHTML
+
+    @staticmethod
+    def split_namespace(el, attr_name):
+        """Return namespace and attribute name without the prefix."""
+
+        return getattr(attr_name, 'namespace', None), getattr(attr_name, 'name', None)
+
+    @staticmethod
+    def get_attribute_by_name(el, name, default=None):
+        """Get attribute by name."""
+
+        value = default
+        if el._is_xml:
+            try:
+                value = el.attrs[name]
+            except KeyError:
+                pass
+        else:
+            for k, v in el.attrs.items():
+                if util.lower(k) == name:
+                    value = v
+                    break
+        return value
+
+    @staticmethod
+    def iter_attributes(el):
+        """Iterate attributes."""
+
+        for k, v in el.attrs.items():
+            yield k, v
+
+    @classmethod
+    def get_classes(cls, el):
+        """Get classes."""
+
+        classes = cls.get_attribute_by_name(el, 'class', [])
+        if isinstance(classes, util.ustr):
+            classes = RE_NOT_WS.findall(classes)
+        return classes
+
+    def get_text(self, el, no_iframe=False):
+        """Get text."""
+
+        return ''.join(
+            [node for node in self.get_descendants(el, tags=False, no_iframe=no_iframe) if self.is_content_string(node)]
+        )
+
+
+class Inputs(object):
+    """Class for parsing and validating input items."""
+
+    @staticmethod
+    def validate_day(year, month, day):
+        """Validate day."""
+
+        max_days = LONG_MONTH
+        if month == FEB:
+            max_days = FEB_LEAP_MONTH if ((year % 4 == 0) and (year % 100 != 0)) or (year % 400 == 0) else FEB_MONTH
+        elif month in MONTHS_30:
+            max_days = SHORT_MONTH
+        return 1 <= day <= max_days
+
+    @staticmethod
+    def validate_week(year, week):
+        """Validate week."""
+
+        max_week = datetime.strptime("{}-{}-{}".format(12, 31, year), "%m-%d-%Y").isocalendar()[1]
+        if max_week == 1:
+            max_week = 53
+        return 1 <= week <= max_week
+
+    @staticmethod
+    def validate_month(month):
+        """Validate month."""
+
+        return 1 <= month <= 12
+
+    @staticmethod
+    def validate_year(year):
+        """Validate year."""
+
+        return 1 <= year
+
+    @staticmethod
+    def validate_hour(hour):
+        """Validate hour."""
+
+        return 0 <= hour <= 23
+
+    @staticmethod
+    def validate_minutes(minutes):
+        """Validate minutes."""
+
+        return 0 <= minutes <= 59
+
+    @classmethod
+    def parse_value(cls, itype, value):
+        """Parse the input value."""
+
+        parsed = None
+        if itype == "date":
+            m = RE_DATE.match(value)
+            if m:
+                year = int(m.group('year'), 10)
+                month = int(m.group('month'), 10)
+                day = int(m.group('day'), 10)
+                if cls.validate_year(year) and cls.validate_month(month) and cls.validate_day(year, month, day):
+                    parsed = (year, month, day)
+        elif itype == "month":
+            m = RE_MONTH.match(value)
+            if m:
+                year = int(m.group('year'), 10)
+                month = int(m.group('month'), 10)
+                if cls.validate_year(year) and cls.validate_month(month):
+                    parsed = (year, month)
+        elif itype == "week":
+            m = RE_WEEK.match(value)
+            if m:
+                year = int(m.group('year'), 10)
+                week = int(m.group('week'), 10)
+                if cls.validate_year(year) and cls.validate_week(year, week):
+                    parsed = (year, week)
+        elif itype == "time":
+            m = RE_TIME.match(value)
+            if m:
+                hour = int(m.group('hour'), 10)
+                minutes = int(m.group('minutes'), 10)
+                if cls.validate_hour(hour) and cls.validate_minutes(minutes):
+                    parsed = (hour, minutes)
+        elif itype == "datetime-local":
+            m = RE_DATETIME.match(value)
+            if m:
+                year = int(m.group('year'), 10)
+                month = int(m.group('month'), 10)
+                day = int(m.group('day'), 10)
+                hour = int(m.group('hour'), 10)
+                minutes = int(m.group('minutes'), 10)
+                if (
+                    cls.validate_year(year) and cls.validate_month(month) and cls.validate_day(year, month, day) and
+                    cls.validate_hour(hour) and cls.validate_minutes(minutes)
+                ):
+                    parsed = (year, month, day, hour, minutes)
+        elif itype in ("number", "range"):
+            m = RE_NUM.match(value)
+            if m:
+                parsed = float(m.group('value'))
+        return parsed
+
+
+class _Match(object):
     """Perform CSS matching."""
 
     def __init__(self, selectors, scope, namespaces, flags):
         """Initialize."""
 
-        assert_valid_input(scope)
+        self.assert_valid_input(scope)
         self.tag = scope
-        self.cached_meta_lang = None
+        self.cached_meta_lang = []
         self.cached_default_forms = []
         self.cached_indeterminate_forms = []
         self.selectors = selectors
-        self.namespaces = namespaces
+        self.namespaces = {} if namespaces is None else namespaces
         self.flags = flags
+        self.iframe_restrict = False
+
+        # Find the root element for the whole tree
         doc = scope
-        while doc.parent:
-            doc = doc.parent
+        parent = self.get_parent(doc)
+        while parent:
+            doc = parent
+            parent = self.get_parent(doc)
         root = None
-        if not util.is_doc(doc):
+        if not self.is_doc(doc):
             root = doc
         else:
-            for child in doc.children:
-                if util.is_tag(child):
-                    root = child
-                    break
+            for child in self.get_children(doc):
+                root = child
+                break
+
         self.root = root
         self.scope = scope if scope is not doc else root
-        self.html_namespace = self.is_html_ns(root)
-        self.is_xml = doc._is_xml and not self.html_namespace
+        self.has_html_namespace = self.has_html_ns(root)
 
-    def is_html_ns(self, el):
-        """Check if in HTML namespace."""
-
-        ns = getattr(el, 'namespace') if el else None
-        return ns and ns == NS_XHTML
-
-    def get_namespace(self, el):
-        """Get the namespace for the element."""
-
-        namespace = ''
-        ns = el.namespace
-        if ns:
-            namespace = ns
-        return namespace
+        # A document can be both XML and HTML (XHTML)
+        self.is_xml = self.is_xml_tree(doc)
+        self.is_html = not self.is_xml or self.has_html_namespace
 
     def supports_namespaces(self):
         """Check if namespaces are supported in the HTML type."""
 
-        return self.is_xml or self.html_namespace
+        return self.is_xml or self.has_html_namespace
 
-    def get_bidi(self, el):
+    def get_tag_ns(self, el):
+        """Get tag namespace."""
+
+        if self.supports_namespaces():
+            namespace = ''
+            ns = self.get_uri(el)
+            if ns:
+                namespace = ns
+        else:
+            namespace = NS_XHTML
+        return namespace
+
+    def is_html_tag(self, el):
+        """Check if tag is in HTML namespace."""
+
+        return self.get_tag_ns(el) == NS_XHTML
+
+    def get_tag(self, el):
+        """Get tag."""
+
+        name = self.get_tag_name(el)
+        return util.lower(name) if name is not None and not self.is_xml else name
+
+    def get_prefix(self, el):
+        """Get prefix."""
+
+        prefix = self.get_prefix_name(el)
+        return util.lower(prefix) if prefix is not None and not self.is_xml else prefix
+
+    def find_bidi(self, el):
         """Get directionality from element text."""
 
-        for node in el.children:
+        for node in self.get_children(el, tags=False):
 
             # Analyze child text nodes
-            if util.is_tag(node):
+            if self.is_tag(node):
 
                 # Avoid analyzing certain elements specified in the specification.
-                direction = DIR_MAP.get(util.lower(node.attrs.get('dir', '')), None)
+                direction = DIR_MAP.get(util.lower(self.get_attribute_by_name(node, 'dir', '')), None)
                 if (
-                    util.lower(node.name) in ('bdi', 'script', 'style', 'textarea') or
+                    self.get_tag(node) in ('bdi', 'script', 'style', 'textarea', 'iframe') or
+                    not self.is_html_tag(node) or
                     direction is not None
                 ):
                     continue  # pragma: no cover
 
                 # Check directionality of this node's text
-                value = self.get_bidi(node)
+                value = self.find_bidi(node)
                 if value is not None:
                     return value
 
@@ -167,7 +536,7 @@ class CSSMatch(object):
                 continue  # pragma: no cover
 
             # Skip `doctype` comments, etc.
-            if util.is_special_string(node):
+            if self.is_special_string(node):
                 continue
 
             # Analyze text nodes for directionality.
@@ -177,8 +546,59 @@ class CSSMatch(object):
                     return ct.SEL_DIR_LTR if bidi == 'L' else ct.SEL_DIR_RTL
         return None
 
-    def get_attribute(self, el, attr, prefix):
-        """Get attribute from element if it exists."""
+    def extended_language_filter(self, lang_range, lang_tag):
+        """Filter the language tags."""
+
+        match = True
+        lang_range = RE_WILD_STRIP.sub('-', lang_range).lower()
+        ranges = lang_range.split('-')
+        subtags = lang_tag.lower().split('-')
+        length = len(ranges)
+        rindex = 0
+        sindex = 0
+        r = ranges[rindex]
+        s = subtags[sindex]
+
+        # Primary tag needs to match
+        if r != '*' and r != s:
+            match = False
+
+        rindex += 1
+        sindex += 1
+
+        # Match until we run out of ranges
+        while match and rindex < length:
+            r = ranges[rindex]
+            try:
+                s = subtags[sindex]
+            except IndexError:
+                # Ran out of subtags,
+                # but we still have ranges
+                match = False
+                continue
+
+            # Empty range
+            if not r:
+                match = False
+                continue
+
+            # Matched range
+            elif s == r:
+                rindex += 1
+
+            # Implicit wildcard cannot match
+            # singletons
+            elif len(s) == 1:
+                match = False
+                continue
+
+            # Implicitly matched, so grab next subtag
+            sindex += 1
+
+        return match
+
+    def match_attribute_name(self, el, attr, prefix):
+        """Match attribute name and return value if it exists."""
 
         value = None
         if self.supports_namespaces():
@@ -191,11 +611,10 @@ class CSSMatch(object):
             else:
                 ns = None
 
-            for k, v in el.attrs.items():
+            for k, v in self.iter_attributes(el):
 
                 # Get attribute parts
-                namespace = getattr(k, 'namespace', None)
-                name = getattr(k, 'name', None)
+                namespace, name = self.split_namespace(el, k)
 
                 # Can't match a prefix attribute as we haven't specified one to match
                 # Try to match it normally as a whole `p:a` as selector may be trying `p\:a`.
@@ -212,137 +631,25 @@ class CSSMatch(object):
                 if namespace is None or ns != namespace and prefix != '*':
                     continue
 
-                if self.is_xml:
-                    # The attribute doesn't match.
-                    if attr != name:
-                        continue
-                else:
-                    # The attribute doesn't match.
-                    if util.lower(attr) != util.lower(name):
-                        continue
+                # The attribute doesn't match.
+                if (util.lower(attr) != util.lower(name)) if not self.is_xml else (attr != name):
+                    continue
+
                 value = v
                 break
         else:
-            for k, v in el.attrs.items():
+            for k, v in self.iter_attributes(el):
                 if util.lower(attr) != util.lower(k):
                     continue
                 value = v
                 break
         return value
 
-    def get_classes(self, el):
-        """Get classes."""
-
-        classes = el.attrs.get('class', [])
-        if isinstance(classes, util.ustr):
-            classes = RE_NOT_WS.findall(classes)
-        return classes
-
-    def get_attribute_by_name(self, el, name, default=None):
-        """Get attribute by name."""
-
-        value = default
-        for k, v in el.attrs.items():
-            if (k if self.is_xml else util.lower(k)) == name:
-                value = v
-                break
-        return value
-
-    def validate_day(self, year, month, day):
-        """Validate day."""
-
-        max_days = LONG_MONTH
-        if month == FEB:
-            max_days = FEB_LEAP_MONTH if ((year % 4 == 0) and (year % 100 != 0)) or (year % 400 == 0) else FEB_MONTH
-        elif month in MONTHS_30:
-            max_days = SHORT_MONTH
-        return 1 <= day <= max_days
-
-    def validate_week(self, year, week):
-        """Validate week."""
-
-        max_week = datetime.strptime("{}-{}-{}".format(12, 31, year), "%m-%d-%Y").isocalendar()[1]
-        if max_week == 1:
-            max_week = 53
-        return 1 <= week <= max_week
-
-    def validate_month(self, month):
-        """Validate month."""
-
-        return 1 <= month <= 12
-
-    def validate_year(self, year):
-        """Validate year."""
-
-        return 1 <= year
-
-    def validate_hour(self, hour):
-        """Validate hour."""
-
-        return 0 <= hour <= 23
-
-    def validate_minutes(self, minutes):
-        """Validate minutes."""
-
-        return 0 <= minutes <= 59
-
-    def parse_input_value(self, itype, value):
-        """Parse the input value."""
-
-        parsed = None
-        if itype == "date":
-            m = RE_DATE.match(value)
-            if m:
-                year = int(m.group('year'), 10)
-                month = int(m.group('month'), 10)
-                day = int(m.group('day'), 10)
-                if self.validate_year(year) and self.validate_month(month) and self.validate_day(year, month, day):
-                    parsed = (year, month, day)
-        elif itype == "month":
-            m = RE_MONTH.match(value)
-            if m:
-                year = int(m.group('year'), 10)
-                month = int(m.group('month'), 10)
-                if self.validate_year(year) and self.validate_month(month):
-                    parsed = (year, month)
-        elif itype == "week":
-            m = RE_WEEK.match(value)
-            if m:
-                year = int(m.group('year'), 10)
-                week = int(m.group('week'), 10)
-                if self.validate_year(year) and self.validate_week(year, week):
-                    parsed = (year, week)
-        elif itype == "time":
-            m = RE_TIME.match(value)
-            if m:
-                hour = int(m.group('hour'), 10)
-                minutes = int(m.group('minutes'), 10)
-                if self.validate_hour(hour) and self.validate_minutes(minutes):
-                    parsed = (hour, minutes)
-        elif itype == "datetime-local":
-            m = RE_DATETIME.match(value)
-            if m:
-                year = int(m.group('year'), 10)
-                month = int(m.group('month'), 10)
-                day = int(m.group('day'), 10)
-                hour = int(m.group('hour'), 10)
-                minutes = int(m.group('minutes'), 10)
-                if (
-                    self.validate_year(year) and self.validate_month(month) and self.validate_day(year, month, day) and
-                    self.validate_hour(hour) and self.validate_minutes(minutes)
-                ):
-                    parsed = (year, month, day, hour, minutes)
-        elif itype in ("number", "range"):
-            m = RE_NUM.match(value)
-            if m:
-                parsed = float(m.group('value'))
-        return parsed
-
     def match_namespace(self, el, tag):
         """Match the namespace of the element."""
 
         match = True
-        namespace = self.get_namespace(el)
+        namespace = self.get_tag_ns(el)
         default_namespace = self.namespaces.get('')
         tag_ns = '' if tag.prefix is None else self.namespaces.get(tag.prefix, None)
         # We must match the default namespace if one is not provided
@@ -365,8 +672,8 @@ class CSSMatch(object):
         match = True
         if attributes:
             for a in attributes:
-                value = self.get_attribute(el, a.attribute, a.prefix)
-                pattern = a.xml_type_pattern if not self.html_namespace and a.xml_type_pattern else a.pattern
+                value = self.match_attribute_name(el, a.attribute, a.prefix)
+                pattern = a.xml_type_pattern if self.is_xml and a.xml_type_pattern else a.pattern
                 if isinstance(value, list):
                     value = ' '.join(value)
                 if value is None:
@@ -382,19 +689,19 @@ class CSSMatch(object):
     def match_tagname(self, el, tag):
         """Match tag name."""
 
+        name = (util.lower(tag.name) if not self.is_xml and tag.name is not None else tag.name)
         return not (
-            tag.name and
-            tag.name not in ((util.lower(el.name) if not self.is_xml else el.name), '*')
+            name is not None and
+            name not in (self.get_tag(el), '*')
         )
 
     def match_tag(self, el, tag):
         """Match the tag."""
 
-        has_ns = self.supports_namespaces()
         match = True
         if tag is not None:
             # Verify namespace
-            if has_ns and not self.match_namespace(el, tag):
+            if not self.match_namespace(el, tag):
                 match = False
             if not self.match_tagname(el, tag):
                 match = False
@@ -405,27 +712,22 @@ class CSSMatch(object):
 
         found = False
         if relation[0].rel_type == REL_PARENT:
-            parent = el.parent
+            parent = self.get_parent(el, no_iframe=self.iframe_restrict)
             while not found and parent:
                 found = self.match_selectors(parent, relation)
-                parent = parent.parent
+                parent = self.get_parent(parent, no_iframe=self.iframe_restrict)
         elif relation[0].rel_type == REL_CLOSE_PARENT:
-            parent = el.parent
+            parent = self.get_parent(el, no_iframe=self.iframe_restrict)
             if parent:
                 found = self.match_selectors(parent, relation)
         elif relation[0].rel_type == REL_SIBLING:
-            sibling = el.previous_sibling
+            sibling = self.get_previous(el)
             while not found and sibling:
-                if not util.is_tag(sibling):
-                    sibling = sibling.previous_sibling
-                    continue
                 found = self.match_selectors(sibling, relation)
-                sibling = sibling.previous_sibling
+                sibling = self.get_previous(sibling)
         elif relation[0].rel_type == REL_CLOSE_SIBLING:
-            sibling = el.previous_sibling
-            while sibling and not util.is_tag(sibling):
-                sibling = sibling.previous_sibling
-            if sibling and util.is_tag(sibling):
+            sibling = self.get_previous(el)
+            if sibling and self.is_tag(sibling):
                 found = self.match_selectors(sibling, relation)
         return found
 
@@ -433,9 +735,8 @@ class CSSMatch(object):
         """Match future child."""
 
         match = False
-        for child in (parent.descendants if recursive else parent.children):
-            if not util.is_tag(child):
-                continue
+        children = self.get_descendants if recursive else self.get_children
+        for child in children(parent, no_iframe=self.iframe_restrict):
             match = self.match_selectors(child, relation)
             if match:
                 break
@@ -450,18 +751,13 @@ class CSSMatch(object):
         elif relation[0].rel_type == REL_HAS_CLOSE_PARENT:
             found = self.match_future_child(el, relation)
         elif relation[0].rel_type == REL_HAS_SIBLING:
-            sibling = el.next_sibling
+            sibling = self.get_next(el)
             while not found and sibling:
-                if not util.is_tag(sibling):
-                    sibling = sibling.next_sibling
-                    continue
                 found = self.match_selectors(sibling, relation)
-                sibling = sibling.next_sibling
+                sibling = self.get_next(sibling)
         elif relation[0].rel_type == REL_HAS_CLOSE_SIBLING:
-            sibling = el.next_sibling
-            while sibling and not util.is_tag(sibling):
-                sibling = sibling.next_sibling
-            if sibling and util.is_tag(sibling):
+            sibling = self.get_next(el)
+            if sibling and self.is_tag(sibling):
                 found = self.match_selectors(sibling, relation)
         return found
 
@@ -482,7 +778,7 @@ class CSSMatch(object):
 
         found = True
         for i in ids:
-            if i != el.attrs.get('id', ''):
+            if i != self.get_attribute_by_name(el, 'id', ''):
                 found = False
                 break
         return found
@@ -501,7 +797,28 @@ class CSSMatch(object):
     def match_root(self, el):
         """Match element as root."""
 
-        return self.root and self.root is el
+        is_root = self.is_root(el)
+        if is_root:
+            sibling = self.get_previous(el, tags=False)
+            while is_root and sibling is not None:
+                if (
+                    self.is_tag(sibling) or (self.is_content_string(sibling) and sibling.strip()) or
+                    self.is_cdata(sibling)
+                ):
+                    is_root = False
+                else:
+                    sibling = self.get_previous(sibling, tags=False)
+        if is_root:
+            sibling = self.get_next(el, tags=False)
+            while is_root and sibling is not None:
+                if (
+                    self.is_tag(sibling) or (self.is_content_string(sibling) and sibling.strip()) or
+                    self.is_cdata(sibling)
+                ):
+                    is_root = False
+                else:
+                    sibling = self.get_next(sibling, tags=False)
+        return is_root
 
     def match_scope(self, el):
         """Match element as scope."""
@@ -512,8 +829,8 @@ class CSSMatch(object):
         """Match tag type for `nth` matches."""
 
         return(
-            (child.name == (util.lower(el.name) if not self.is_xml else el.name)) and
-            (not self.supports_namespaces() or self.get_namespace(child) == self.get_namespace(el))
+            (self.get_tag(child) == self.get_tag(el)) and
+            (self.get_tag_ns(child) == self.get_tag_ns(el))
         )
 
     def match_nth(self, el, nth):
@@ -525,11 +842,12 @@ class CSSMatch(object):
             matched = False
             if n.selectors and not self.match_selectors(el, n.selectors):
                 break
-            parent = el.parent
+            parent = self.get_parent(el)
             if parent is None:
-                parent = FakeNthParent(el)
+                parent = self.create_fake_parent(el)
             last = n.last
-            last_index = len(parent.contents) - 1
+            last_index = len(parent) - 1
+            index = last_index if last else 0
             relative_index = 0
             a = n.a
             b = n.b
@@ -537,7 +855,6 @@ class CSSMatch(object):
             count = 0
             count_incr = 1
             factor = -1 if last else 1
-            index = len(parent.contents) - 1 if last else 0
             idx = last_idx = a * count + b if var else a
 
             # We can only adjust bounds within a variable index
@@ -585,10 +902,9 @@ class CSSMatch(object):
             while 1 <= idx <= last_index + 1:
                 child = None
                 # Evaluate while our child index is still in range.
-                while 0 <= index <= last_index:
-                    child = parent.contents[index]
+                for child in self.get_children(parent, start=index, reverse=factor < 0, tags=False):
                     index += factor
-                    if not util.is_tag(child):
+                    if not self.is_tag(child):
                         continue
                     # Handle `of S` in `nth-child`
                     if n.selectors and not self.match_selectors(child, n.selectors):
@@ -622,14 +938,11 @@ class CSSMatch(object):
         """Check if element is empty (if requested)."""
 
         is_empty = True
-        for child in el.children:
-            if util.is_tag(child):
+        for child in self.get_children(el, tags=False):
+            if self.is_tag(child):
                 is_empty = False
                 break
-            elif (
-                (util.is_navigable_string(child) and not util.is_special_string(child)) and
-                RE_NOT_EMPTY.search(child)
-            ):
+            elif self.is_content_string(child) and RE_NOT_EMPTY.search(child):
                 is_empty = False
                 break
         return is_empty
@@ -646,12 +959,18 @@ class CSSMatch(object):
     def match_contains(self, el, contains):
         """Match element if it contains text."""
 
-        types = (util.get_navigable_string_type(el),)
         match = True
-        for c in contains:
-            if c not in el.get_text(types=types):
+        content = None
+        for contain_list in contains:
+            if content is None:
+                content = self.get_text(el, no_iframe=self.is_html)
+            found = False
+            for text in contain_list.text:
+                if text in content:
+                    found = True
+                    break
+            if not found:
                 match = False
-                break
         return match
 
     def match_default(self, el):
@@ -661,12 +980,12 @@ class CSSMatch(object):
 
         # Find this input's form
         form = None
-        parent = el.parent
+        parent = self.get_parent(el, no_iframe=True)
         while parent and form is None:
-            if util.lower(parent.name) == 'form':
+            if self.get_tag(parent) == 'form' and self.is_html_tag(parent):
                 form = parent
             else:
-                parent = parent.parent
+                parent = self.get_parent(parent, no_iframe=True)
 
         # Look in form cache to see if we've already located its default button
         found_form = False
@@ -679,44 +998,38 @@ class CSSMatch(object):
 
         # We didn't have the form cached, so look for its default button
         if not found_form:
-            child_found = False
-            for child in form.descendants:
-                if not util.is_tag(child):
-                    continue
-                name = util.lower(child.name)
+            for child in self.get_descendants(form, no_iframe=True):
+                name = self.get_tag(child)
                 # Can't do nested forms (haven't figured out why we never hit this)
                 if name == 'form':  # pragma: no cover
                     break
                 if name in ('input', 'button'):
-                    for k, v in child.attrs.items():
-                        if util.lower(k) == 'type' and util.lower(v) == 'submit':
-                            child_found = True
-                            self.cached_default_forms.append([form, child])
-                            if el is child:
-                                match = True
-                            break
-                if child_found:
-                    break
+                    v = self.get_attribute_by_name(child, 'type', '')
+                    if v and util.lower(v) == 'submit':
+                        self.cached_default_forms.append([form, child])
+                        if el is child:
+                            match = True
+                        break
         return match
 
     def match_indeterminate(self, el):
         """Match default."""
 
         match = False
-        name = el.attrs.get('name')
+        name = self.get_attribute_by_name(el, 'name')
 
         def get_parent_form(el):
             """Find this input's form."""
             form = None
-            parent = el.parent
+            parent = self.get_parent(el, no_iframe=True)
             while form is None:
-                if util.lower(parent.name) == 'form':
+                if self.get_tag(parent) == 'form' and self.is_html_tag(parent):
                     form = parent
                     break
-                elif parent.parent:
-                    parent = parent.parent
-                else:
-                    form = parent
+                last_parent = parent
+                parent = self.get_parent(parent, no_iframe=True)
+                if parent is None:
+                    form = last_parent
                     break
             return form
 
@@ -734,15 +1047,15 @@ class CSSMatch(object):
         # We didn't have the form cached, so validate that the radio button is indeterminate
         if not found_form:
             checked = False
-            for child in form.descendants:
-                if not util.is_tag(child) or child is el:
+            for child in self.get_descendants(form, no_iframe=True):
+                if child is el:
                     continue
-                tag_name = util.lower(child.name)
+                tag_name = self.get_tag(child)
                 if tag_name == 'input':
                     is_radio = False
                     check = False
                     has_name = False
-                    for k, v in child.attrs.items():
+                    for k, v in self.iter_attributes(child):
                         if util.lower(k) == 'type' and util.lower(v) == 'radio':
                             is_radio = True
                         elif util.lower(k) == 'name' and v == name:
@@ -765,38 +1078,49 @@ class CSSMatch(object):
 
         match = False
         has_ns = self.supports_namespaces()
+        root = self.root
+        has_html_namespace = self.has_html_namespace
 
         # Walk parents looking for `lang` (HTML) or `xml:lang` XML property.
         parent = el
         found_lang = None
-        while parent and parent.parent and not found_lang:
-            ns = self.is_html_ns(parent)
-            for k, v in parent.attrs.items():
+        last = None
+        while not found_lang:
+            has_html_ns = self.has_html_ns(parent)
+            for k, v in self.iter_attributes(parent):
+                attr_ns, attr = self.split_namespace(parent, k)
                 if (
-                    (self.is_xml and k == 'xml:lang') or
+                    ((not has_ns or has_html_ns) and (util.lower(k) if not self.is_xml else k) == 'lang') or
                     (
-                        not self.is_xml and (
-                            ((not has_ns or ns) and util.lower(k) == 'lang') or
-                            (has_ns and not ns and util.lower(k) == 'xml:lang')
-                        )
+                        has_ns and not has_html_ns and attr_ns == NS_XML and
+                        (util.lower(attr) if not self.is_xml and attr is not None else attr) == 'lang'
                     )
                 ):
                     found_lang = v
                     break
-            parent = parent.parent
+            last = parent
+            parent = self.get_parent(parent, no_iframe=self.is_html)
+
+            if parent is None:
+                root = last
+                has_html_namespace = self.has_html_ns(root)
+                parent = last
+                break
 
         # Use cached meta language.
-        if not found_lang and self.cached_meta_lang is not None:
-            found_lang = self.cached_meta_lang
+        if not found_lang and self.cached_meta_lang:
+            for cache in self.cached_meta_lang:
+                if root is cache[0]:
+                    found_lang = cache[1]
 
         # If we couldn't find a language, and the document is HTML, look to meta to determine language.
-        if found_lang is None and not self.is_xml:
+        if found_lang is None and (not self.is_xml or (has_html_namespace and root.name == 'html')):
             # Find head
             found = False
             for tag in ('html', 'head'):
                 found = False
-                for child in parent.children:
-                    if util.is_tag(child) and util.lower(child.name) == tag:
+                for child in self.get_children(parent, no_iframe=self.is_html):
+                    if self.get_tag(child) == tag and self.is_html_tag(child):
                         found = True
                         parent = child
                         break
@@ -806,29 +1130,29 @@ class CSSMatch(object):
             # Search meta tags
             if found:
                 for child in parent:
-                    if util.is_tag(child) and util.lower(child.name) == 'meta':
+                    if self.is_tag(child) and self.get_tag(child) == 'meta' and self.is_html_tag(parent):
                         c_lang = False
                         content = None
-                        for k, v in child.attrs.items():
+                        for k, v in self.iter_attributes(child):
                             if util.lower(k) == 'http-equiv' and util.lower(v) == 'content-language':
                                 c_lang = True
                             if util.lower(k) == 'content':
                                 content = v
                             if c_lang and content:
                                 found_lang = content
-                                self.cached_meta_lang = found_lang
+                                self.cached_meta_lang.append((root, found_lang))
                                 break
                     if found_lang:
                         break
                 if not found_lang:
-                    self.cached_meta_lang = False
+                    self.cached_meta_lang.append((root, False))
 
         # If we determined a language, compare.
         if found_lang:
             for patterns in langs:
                 match = False
                 for pattern in patterns:
-                    if pattern.match(found_lang):
+                    if self.extended_language_filter(pattern, found_lang):
                         match = True
                 if not match:
                     break
@@ -842,20 +1166,24 @@ class CSSMatch(object):
         if directionality & ct.SEL_DIR_LTR and directionality & ct.SEL_DIR_RTL:
             return False
 
+        if el is None or not self.is_html_tag(el):
+            return False
+
         # Element has defined direction of left to right or right to left
-        direction = DIR_MAP.get(util.lower(el.attrs.get('dir', '')), None)
+        direction = DIR_MAP.get(util.lower(self.get_attribute_by_name(el, 'dir', '')), None)
         if direction not in (None, 0):
             return direction == directionality
 
         # Element is the document element (the root) and no direction assigned, assume left to right.
-        is_root = self.match_root(el)
+        is_root = self.is_root(el)
         if is_root and direction is None:
             return ct.SEL_DIR_LTR == directionality
 
         # If `input[type=telephone]` and no direction is assigned, assume left to right.
-        is_input = util.lower(el.name) == 'input'
-        is_textarea = util.lower(el.name) == 'textarea'
-        is_bdi = util.lower(el.name) == 'bdi'
+        name = self.get_tag(el)
+        is_input = name == 'input'
+        is_textarea = name == 'textarea'
+        is_bdi = name == 'bdi'
         itype = util.lower(self.get_attribute_by_name(el, 'type', '')) if is_input else ''
         if is_input and itype == 'tel' and direction is None:
             return ct.SEL_DIR_LTR == directionality
@@ -864,8 +1192,8 @@ class CSSMatch(object):
         if ((is_input and itype in ('text', 'search', 'tel', 'url', 'email')) or is_textarea) and direction == 0:
             if is_textarea:
                 value = []
-                for node in el.contents:
-                    if util.is_navigable_string(node) and not util.is_special_string(node):
+                for node in self.get_contents(el, no_iframe=True):
+                    if self.is_content_string(node):
                         value.append(node)
                 value = ''.join(value)
             else:
@@ -880,19 +1208,19 @@ class CSSMatch(object):
                 return ct.SEL_DIR_LTR == directionality
             elif is_root:
                 return ct.SEL_DIR_LTR == directionality
-            return self.match_dir(el.parent, directionality)
+            return self.match_dir(self.get_parent(el, no_iframe=True), directionality)
 
         # Auto handling for `bdi` and other non text inputs.
         if (is_bdi and direction is None) or direction == 0:
-            direction = self.get_bidi(el)
+            direction = self.find_bidi(el)
             if direction is not None:
                 return direction == directionality
             elif is_root:
                 return ct.SEL_DIR_LTR == directionality
-            return self.match_dir(el.parent, directionality)
+            return self.match_dir(self.get_parent(el, no_iframe=True), directionality)
 
         # Match parents direction
-        return self.match_dir(el.parent, directionality)
+        return self.match_dir(self.get_parent(el, no_iframe=True), directionality)
 
     def match_range(self, el, condition):
         """
@@ -906,13 +1234,13 @@ class CSSMatch(object):
 
         out_of_range = False
 
-        itype = self.get_attribute_by_name(el, 'type').lower()
+        itype = util.lower(self.get_attribute_by_name(el, 'type'))
         mn = self.get_attribute_by_name(el, 'min', None)
         if mn is not None:
-            mn = self.parse_input_value(itype, mn)
+            mn = Inputs.parse_value(itype, mn)
         mx = self.get_attribute_by_name(el, 'max', None)
         if mx is not None:
-            mx = self.parse_input_value(itype, mx)
+            mx = Inputs.parse_value(itype, mx)
 
         # There is no valid min or max, so we cannot evaluate a range
         if mn is None and mx is None:
@@ -920,7 +1248,7 @@ class CSSMatch(object):
 
         value = self.get_attribute_by_name(el, 'value', None)
         if value is not None:
-            value = self.parse_input_value(itype, value)
+            value = Inputs.parse_value(itype, value)
         if value is not None:
             if itype in ("date", "datetime-local", "month", "week", "number", "range"):
                 if mn is not None and value < mn:
@@ -954,12 +1282,27 @@ class CSSMatch(object):
         if it doesn't, there is nothing we can do.
         """
 
+        name = self.get_tag(el)
         return (
-            self.is_xml or
-            el.name.find('-') == -1 or
-            el.name.find(':') != -1 or
-            el.prefix is not None
+            name.find('-') == -1 or
+            name.find(':') != -1 or
+            self.get_prefix(el) is not None
         )
+
+    def match_placeholder_shown(self, el):
+        """
+        Match placeholder shown according to HTML spec.
+
+        - text area should be checked if they have content. A single newline does not count as content.
+
+        """
+
+        match = False
+        content = self.get_text(el)
+        if content in ('', '\n'):
+            match = True
+
+        return match
 
     def match_selectors(self, el, selectors):
         """Check if element matches one of the selectors."""
@@ -967,11 +1310,19 @@ class CSSMatch(object):
         match = False
         is_not = selectors.is_not
         is_html = selectors.is_html
-        if not (is_html and self.is_xml):
+
+        # Internal selector lists that use the HTML flag, will automatically get the `html` namespace.
+        if is_html:
+            namespaces = self.namespaces
+            iframe_restrict = self.iframe_restrict
+            self.namespaces = {'html': NS_XHTML}
+            self.iframe_restrict = True
+
+        if not is_html or self.is_html:
             for selector in selectors:
                 match = is_not
                 # We have a un-matchable situation (like `:focus` as you can focus an element in this environment)
-                if isinstance(selector, ct.NullSelector):
+                if isinstance(selector, ct.SelectorNull):
                     continue
                 # Verify tag matches
                 if not self.match_tag(el, selector.tag):
@@ -984,6 +1335,9 @@ class CSSMatch(object):
                     continue
                 # Verify element is scope
                 if selector.flags & ct.SEL_SCOPE and not self.match_scope(el):
+                    continue
+                # Verify element has placeholder shown
+                if selector.flags & ct.SEL_PLACEHOLDER_SHOWN and not self.match_placeholder_shown(el):
                     continue
                 # Verify `nth` matches
                 if not self.match_nth(el, selector.nth):
@@ -1027,6 +1381,11 @@ class CSSMatch(object):
                 match = not is_not
                 break
 
+        # Restore actual namespaces being used for external selector lists
+        if is_html:
+            self.namespaces = namespaces
+            self.iframe_restrict = iframe_restrict
+
         return match
 
     def select(self, limit=0):
@@ -1035,8 +1394,8 @@ class CSSMatch(object):
         if limit < 1:
             limit = None
 
-        for child in self.tag.descendants:
-            if util.is_tag(child) and self.match(child):
+        for child in self.get_descendants(self.tag):
+            if self.match(child):
                 yield child
                 if limit is not None:
                     limit -= 1
@@ -1052,32 +1411,61 @@ class CSSMatch(object):
             if self.match(current):
                 closest = current
             else:
-                current = current.parent
+                current = self.get_parent(current)
         return closest
 
     def filter(self):  # noqa A001
         """Filter tag's children."""
 
-        return [node for node in self.tag if not util.is_navigable_string(node) and self.match(node)]
+        return [tag for tag in self.get_contents(self.tag) if not self.is_navigable_string(tag) and self.match(tag)]
 
     def match(self, el):
         """Match."""
 
-        return not util.is_doc(el) and util.is_tag(el) and self.match_selectors(el, self.selectors)
+        return not self.is_doc(el) and self.is_tag(el) and self.match_selectors(el, self.selectors)
+
+
+class CSSMatch(_DocumentNav, _Match):
+    """The Beautiful Soup CSS match class."""
+
+
+class CommentsMatch(_DocumentNav):
+    """Comments matcher."""
+
+    def __init__(self, el):
+        """Initialize."""
+
+        self.assert_valid_input(el)
+        self.tag = el
+
+    def get_comments(self, limit=0):
+        """Get comments."""
+
+        if limit < 1:
+            limit = None
+
+        for child in self.get_descendants(self.tag, tags=False):
+            if self.is_comment(child):
+                yield child
+                if limit is not None:
+                    limit -= 1
+                    if limit < 1:
+                        break
 
 
 class SoupSieve(ct.Immutable):
     """Compiled Soup Sieve selector matching object."""
 
-    __slots__ = ("pattern", "selectors", "namespaces", "flags", "_hash")
+    __slots__ = ("pattern", "selectors", "namespaces", "custom", "flags", "_hash")
 
-    def __init__(self, pattern, selectors, namespaces, flags):
+    def __init__(self, pattern, selectors, namespaces, custom, flags):
         """Initialize."""
 
         super(SoupSieve, self).__init__(
             pattern=pattern,
             selectors=selectors,
             namespaces=namespaces,
+            custom=custom,
             flags=flags
         )
 
@@ -1103,20 +1491,22 @@ class SoupSieve(ct.Immutable):
         so for those, we use a new `CSSMatch` for each item in the iterable.
         """
 
-        if util.is_tag(iterable):
+        if CSSMatch.is_tag(iterable):
             return CSSMatch(self.selectors, iterable, self.namespaces, self.flags).filter()
         else:
-            return [node for node in iterable if not util.is_navigable_string(node) and self.match(node)]
+            return [node for node in iterable if not CSSMatch.is_navigable_string(node) and self.match(node)]
 
+    @util.deprecated("'comments' is not related to CSS selectors and will be removed in the future.")
     def comments(self, tag, limit=0):
         """Get comments only."""
 
-        return list(self.icomments(tag, limit))
+        return [comment for comment in CommentsMatch(tag).get_comments(limit)]
 
+    @util.deprecated("'icomments' is not related to CSS selectors and will be removed in the future.")
     def icomments(self, tag, limit=0):
         """Iterate comments only."""
 
-        for comment in get_comments(tag, limit):
+        for comment in CommentsMatch(tag).get_comments(limit):
             yield comment
 
     def select_one(self, tag):
@@ -1139,7 +1529,12 @@ class SoupSieve(ct.Immutable):
     def __repr__(self):  # pragma: no cover
         """Representation."""
 
-        return "SoupSieve(pattern={!r}, namespaces={!r}, flags={!r})".format(self.pattern, self.namespaces, self.flags)
+        return "SoupSieve(pattern={!r}, namespaces={!r}, custom={!r}, flags={!r})".format(
+            self.pattern,
+            self.namespaces,
+            self.custom,
+            self.flags
+        )
 
     __str__ = __repr__
 

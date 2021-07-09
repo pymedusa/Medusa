@@ -12,9 +12,6 @@
         { "season": 4, "episodeCount": 6 },
         { "season": 5, "episodeCount": 3 }
     ],
-    "allSceneExceptions": [
-        { "season": "-1", "exceptions": [] }
-    ],
     "classification": "",
     "countryCodes": ["gb"],
     "id": {

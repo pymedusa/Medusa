@@ -22,9 +22,7 @@ describe('PlotInfo.test.js', () => {
             localVue,
             store,
             propsData: {
-                showSlug: '',
-                season: '',
-                episode: ''
+                description: 'This is an example for an episodes plot info'
             }
         });
 

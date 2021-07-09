@@ -12,7 +12,7 @@
 # MEDUSA_USER=<user you want medusa to run under>
 # MEDUSA_GROUP=<group you want medusa to run under>
 # MEDUSA_DIR=<path to start.py>
-# PATH_TO_PYTHON_2=/usr/bin/python2
+# PATH_TO_PYTHON_3=/usr/bin/python3
 # MEDUSA_DATADIR=<directory that contains main.db file>
 # MEDUSA_CONFDIR=<directory that contains Medusa's config.ini file>
 #
@@ -42,7 +42,7 @@ start() {
         --group "${MEDUSA_GROUP}" \
         --background \
         --pidfile "$(get_pidfile)" \
-        --exec "${PATH_TO_PYTHON_2}" \
+        --exec "${PATH_TO_PYTHON_3}" \
         -- \
         "${MEDUSA_DIR}/start.py" \
         -d \

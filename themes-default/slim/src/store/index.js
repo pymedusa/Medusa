@@ -3,19 +3,19 @@ import Vuex, { Store } from 'vuex';
 import VueNativeSock from 'vue-native-websocket';
 import {
     auth,
-    clients,
     config,
-    consts,
     defaults,
-    metadata,
+    history,
     notifications,
     notifiers,
+    provider,
     recommended,
+    schedule,
     search,
     shows,
     socket,
     stats,
-    system
+    queue
 } from './modules';
 import {
     SOCKET_ONOPEN,
@@ -31,19 +31,19 @@ Vue.use(Vuex);
 const store = new Store({
     modules: {
         auth,
-        clients,
         config,
-        consts,
         defaults,
-        metadata,
+        history,
         notifications,
+        provider,
         notifiers,
         recommended,
+        schedule,
         search,
         shows,
         socket,
         stats,
-        system
+        queue
     },
     state: {},
     mutations: {},
@@ -67,8 +67,18 @@ const passToStoreHandler = function(eventName, event, next) {
         } else if (event === 'configUpdated') {
             const { section, config } = data;
             this.store.dispatch('updateConfig', { section, config });
-        } else if (event === 'showUpdated') {
+        } else if (event === 'showUpdated' || event === 'showAdded') {
             this.store.dispatch('updateShow', data);
+        } else if (event === 'addManualSearchResult') {
+            this.store.dispatch('addManualSearchResult', data);
+        } else if (event === 'QueueItemUpdate') {
+            this.store.dispatch('updateQueueItem', data);
+        } else if (event === 'QueueItemShowAdd') {
+            this.store.dispatch('updateShowQueueItem', data);
+        } else if (event === 'QueueItemShowRemove') {
+            this.store.dispatch('removeShow', data);
+        } else if (event === 'historyUpdate') {
+            this.store.dispatch('updateHistory', data);
         } else {
             window.displayNotification('info', event, data);
         }

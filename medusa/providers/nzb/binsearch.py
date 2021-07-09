@@ -288,5 +288,14 @@ class BinSearchProvider(NZBProvider):
         """
         return item.get('size', -1)
 
+    @staticmethod
+    def _get_identifier(item):
+        """
+        Return the identifier for the item.
+
+        By default this is the url. Providers can overwrite this, when needed.
+        """
+        return '{name}_{size}'.format(name=item.name, size=item.size)
+
 
 provider = BinSearchProvider()

@@ -49,7 +49,7 @@ def generator(_provider):
             if 'certificate verify failed' in text_type(error):
                 print('Cannot verify certificate for %s' % _provider.name)
             else:
-                print('SSLError on %s: %s' % (_provider.name, ex(error.message)))
+                print('SSLError on %s: %s' % (_provider.name, ex(error)))
                 raise
         except requests.exceptions.Timeout:
             print('Provider timed out')

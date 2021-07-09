@@ -6,11 +6,13 @@ from __future__ import unicode_literals
 
 import logging
 import re
+from datetime import datetime, timedelta, timezone
 
 from medusa import tv
 from medusa.helper.common import convert_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
+from medusa.scene_exceptions import get_season_from_name
 
 from requests.compat import urljoin
 
@@ -46,7 +48,7 @@ class AnimeBytes(TorrentProvider):
         self.proper_strings = []
 
         # Miscellaneous Options
-        self.freeleech = False
+        self.freeleech = True
         self.anime_only = True
 
         # Cache
@@ -76,8 +78,6 @@ class AnimeBytes(TorrentProvider):
             'sort': 'time_added',
             'way': 'desc',
             'hentai': '2',
-            'anime[tv_series]': '1',
-            'anime[tv_special]': '1',
             'releasegroup': '',
             'epcount': '',
             'epcount2': '',
@@ -108,11 +108,15 @@ class AnimeBytes(TorrentProvider):
                     log.debug('No data returned from provider')
                     continue
 
-                results += self.parse(jdata, mode)
+                if jdata['Matches'] == 0:
+                    log.debug('0 results returned from provider for this search')
+                    continue
+
+                results += self.parse(jdata, mode, show=ep_obj.series if ep_obj else None)
 
         return results
 
-    def parse(self, data, mode):
+    def parse(self, data, mode, show=None):
         """
         Parse search results for items.
 
@@ -121,6 +125,13 @@ class AnimeBytes(TorrentProvider):
 
         :return: A list of items found
         """
+        def is_season_exception(series_name):
+            """Try to detect by series name, if this is a season exception."""
+            if not show:
+                return
+
+            return get_season_from_name(show, series_name)
+
         items = []
 
         group_rows = data.get('Groups')
@@ -164,17 +175,34 @@ class AnimeBytes(TorrentProvider):
                 release_type = OTHER
                 season = None
                 episode = None
+                multi_ep_start = None
+                multi_ep_end = None
                 title = None
 
-                # Attempt and get an season or episode number
+                # Attempt and get a season or episode number
                 title_info = row.get('EditionData').get('EditionTitle')
+
                 if title_info != '':
                     if title_info.startswith('Episodes'):
-                        episode = re.match(r'Episodes 1-(\d+)', title_info).group(1)
-                        release_type = MULTI_EP
+                        multi_ep_match = re.match(r'Episodes (\d+)-(\d+)', title_info)
+                        if multi_ep_match:
+                            multi_ep_start = multi_ep_match.group(1)
+                            multi_ep_end = multi_ep_match.group(2)
+                            release_type = MULTI_EP
+                        release_type = OTHER
                     elif title_info.startswith('Episode'):
-                        episode = re.match('^Episode.([0-9]+)', title_info).group(1)
+                        episode_match = re.match('^Episode.([0-9]+)', title_info)
+                        if episode_match:
+                            episode = episode_match.group(1)
+                        else:
+                            log.warning('Could not get episode number from title_info: {title_info}',
+                                        {'title_info': title_info})
+
                         release_type = SINGLE_EP
+
+                        season_match = re.match(r'.+[sS]eason.(\d+)$', group.get('SeriesName'))
+                        if season_match:
+                            season = season_match.group(1)
                     elif title_info.startswith('Season'):
                         if re.match(r'Season.[0-9]+-[0-9]+.\([0-9-]+\)', title_info):
                             # We can read the season AND the episodes, but we can only process multiep.
@@ -186,10 +214,14 @@ class AnimeBytes(TorrentProvider):
                         else:
                             season = re.match('Season.([0-9]+)', title_info).group(1)
                             release_type = SEASON_PACK
-                elif group.get('EpCount') > 0:
-                    # This is a season pack, but, let's use it as a multi ep for now
+                elif group.get('GroupName') != 'TV Special':
+                    # This is a season pack.
                     # 13 episodes -> SXXEXX-EXX
-                    episode = group.get('EpCount')
+                    episode = int(group.get('EpCount'))
+                    multi_ep_start = 1
+                    multi_ep_end = episode if episode > 0 else None
+                    # Because we sometime get names without a season number, like season scene exceptions.
+                    # This is the most reliable way of creating a multi-episode release name.
                     release_type = MULTI_EP
 
                 # These are probably specials which we just can't handle anyways
@@ -197,30 +229,55 @@ class AnimeBytes(TorrentProvider):
                     continue
 
                 if release_type == SINGLE_EP:
-                    # Create the single episode release_name
-                    # Single.Episode.TV.Show.SXXEXX[Episode.Part].[Episode.Title].TAGS.[LANGUAGE].720p.FORMAT.x264-GROUP
-                    title = '{title}.{season}{episode}.{tags}' \
-                            '{release_group}'.format(title=group.get('SeriesName'),
-                                                     season='S{0}'.format(season) if season else 'S01',
-                                                     episode='E{0}'.format(episode),
-                                                     tags=tags,
-                                                     release_group=release_group)
+                    # Create the single episode release_name (use the shows default title)
+                    if is_season_exception(group.get('SeriesName')) or not season:
+                        # If this is a season exception, we can't parse the release name like:
+                        #  Show.Title.Season.3.Exception.S01E01...
+                        # As that will confuse the parser, as it already has a season available.
+                        # We have to omit the season, to have it search for a season exception.
+                        title = '{title}.{episode}.{tags}' \
+                                '{release_group}'.format(title=group.get('SeriesName'),
+                                                         episode='E{0:02d}'.format(int(episode)),
+                                                         tags=tags,
+                                                         release_group=release_group)
+                    else:
+                        title = '{title}.{season}.{episode}.{tags}' \
+                                '{release_group}'.format(title=group.get('SeriesName'),
+                                                         season='S{0:02d}'.format(int(season)),
+                                                         episode='E{0:02d}'.format(int(episode)),
+                                                         tags=tags,
+                                                         release_group=release_group)
                 if release_type == MULTI_EP:
                     # Create the multi-episode release_name
                     # Multiple.Episode.TV.Show.SXXEXX-EXX[Episode.Part].[Episode.Title].TAGS.[LANGUAGE].720p.FORMAT.x264-GROUP
-                    title = '{title}.{season}{multi_episode}.{tags}' \
-                            '{release_group}'.format(title=group.get('SeriesName'),
-                                                     season='S{0}'.format(season) if season else 'S01',
-                                                     multi_episode='E01-E{0}'.format(episode),
-                                                     tags=tags,
-                                                     release_group=release_group)
+                    if is_season_exception(group.get('SeriesName')):
+                        # If this is a season exception, we can't parse the release name like:
+                        #  Show.Title.Season.3.Exception.S01E01-E13...
+                        # As that will confuse the parser, as it already has a season available.
+                        # We have to omit the season, to have it search for a season exception.
+                        # Example: Show.Title.Season.3.Exception.E01-E13...
+                        title = '{title}.{multi_episode_start}-{multi_episode_end}.{tags}' \
+                                '{release_group}'.format(title=group.get('SeriesName'),
+                                                         multi_episode_start='E{0:02d}'.format(int(multi_ep_start)),
+                                                         multi_episode_end='E{0:02d}'.format(int(multi_ep_end)) if multi_ep_end else 'Unknown',
+                                                         tags=tags,
+                                                         release_group=release_group)
+                    else:
+                        title = '{title}.{season}{multi_episode_start}-{multi_episode_end}.{tags}' \
+                                '{release_group}'.format(title=group.get('SeriesName'),
+                                                         season='S{0:02d}'.format(season) if season else 'S01',
+                                                         multi_episode_start='E{0:02d}'.format(int(multi_ep_start)),
+                                                         multi_episode_end='E{0:02d}'.format(int(multi_ep_end)) if multi_ep_end else 'Unknown',
+                                                         tags=tags,
+                                                         release_group=release_group)
                 if release_type == SEASON_PACK:
                     # Create the season pack release_name
+                    # if `Season` is already in the SeriesName, we ommit adding it another time.
                     title = '{title}.{season}.{tags}' \
-                            '{release_group}'.format(title=group.get('SeriesName'),
-                                                     season='S{0}'.format(season) if season else 'S01',
-                                                     tags=tags,
-                                                     release_group=release_group)
+                        '{release_group}'.format(title=group.get('SeriesName'),
+                                                 season='S{0:02d}'.format(int(season)) if season else 'S01',
+                                                 tags=tags,
+                                                 release_group=release_group)
 
                 if release_type == MULTI_SEASON:
                     # Create the multi season pack release_name
@@ -234,6 +291,11 @@ class AnimeBytes(TorrentProvider):
                 seeders = row.get('Seeders')
                 leechers = row.get('Leechers')
                 pubdate = self.parse_pubdate(row.get('UploadTime'))
+
+                # This is a workaround for an animebytes caching issue where newly created torrents are cached with
+                # zero seeders and leechers
+                if seeders == 0 and leechers == 0 and datetime.now(timezone.utc) - pubdate < timedelta(hours=1):
+                    seeders = 1
 
                 # Filter unseeded torrent
                 if seeders < self.minseed:

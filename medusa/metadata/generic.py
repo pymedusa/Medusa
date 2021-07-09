@@ -14,9 +14,9 @@ from medusa import app, exception_handler, helpers
 from medusa.helper.common import replace_extension
 from medusa.helper.exceptions import ex
 from medusa.helper.metadata import get_image
-from medusa.indexers.indexer_config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE
-from medusa.indexers.indexer_exceptions import (IndexerEpisodeNotFound, IndexerException,
-                                                IndexerSeasonNotFound, IndexerShowNotFound)
+from medusa.indexers.config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE
+from medusa.indexers.exceptions import (IndexerEpisodeNotFound, IndexerException,
+                                        IndexerSeasonNotFound, IndexerShowNotFound)
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.exceptions import RequestException
@@ -783,19 +783,29 @@ class GenericMetadata(object):
 
         if image_type == u'thumbnail' and episode:
             image_url = self._get_episode_thumb_url(indexer_show_obj, episode)
+
         elif image_type == u'poster_thumb':
             if getattr(indexer_show_obj, u'poster', None):
-                image_url = re.sub(u'posters', u'_cache/posters', indexer_show_obj[u'poster'])
+                if show_obj.indexer == INDEXER_TVDBV2:
+                    image_url = indexer_show_obj[u'poster'].replace('.jpg', '_t.jpg')
+                else:
+                    image_url = re.sub(u'posters', u'_cache/posters', indexer_show_obj[u'poster'])
+
             if not image_url:
                 # Try and get images from TMDB
                 image_url = self._retrieve_show_images_from_tmdb(show_obj, image_type)
+
         elif image_type == u'banner_thumb':
             if getattr(indexer_show_obj, u'banner', None):
-                image_url = re.sub(u'graphical', u'_cache/graphical', indexer_show_obj[u'banner'])
+                if show_obj.indexer == INDEXER_TVDBV2:
+                    image_url = indexer_show_obj[u'banner'].replace('.jpg', '_t.jpg')
+                else:
+                    image_url = re.sub(u'graphical', u'_cache/graphical', indexer_show_obj[u'banner'])
         else:
             if getattr(indexer_show_obj, image_type, None):
                 image_url = indexer_show_obj[image_type]
-            if not image_url and show_obj.indexer != 4:
+
+            if not image_url and show_obj.indexer != INDEXER_TMDB:
                 # Try and get images from TMDB
                 image_url = self._retrieve_show_images_from_tmdb(show_obj, image_type)
 

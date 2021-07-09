@@ -18,8 +18,8 @@ import pytest
         'indexer_incorrect_absolute_ep_season': 1,
         'indexer_incorrect_absolute_ep_episodes': 8,
         'mocks': [
-            ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(70668, 2, 1)]),
-            ('medusa.scene_numbering.get_indexer_absolute_numbering', 78),
+            ('medusa.scene_exceptions.get_season_from_name', 2),
+            ('medusa.scene_numbering.get_indexer_abs_numbering', 78),
             ('medusa.helpers.get_all_episodes_from_absolute_number', (4, [8]))
         ],
         'series_info':{
@@ -37,8 +37,8 @@ import pytest
         'indexer_incorrect_absolute_ep_season': 1,
         'indexer_incorrect_absolute_ep_episodes': 8,
         'mocks': [
-            ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(70668, 2, 1)]),
-            ('medusa.scene_numbering.get_indexer_absolute_numbering', 78),
+            ('medusa.scene_exceptions.get_season_from_name', 2),
+            ('medusa.scene_numbering.get_indexer_abs_numbering', 78),
             ('medusa.helpers.get_all_episodes_from_absolute_number', (4, [8]))
         ],
         'series_info': {
@@ -56,8 +56,8 @@ import pytest
         'indexer_incorrect_absolute_ep_season': 1,
         'indexer_incorrect_absolute_ep_episodes': 8,
         'mocks': [
-            ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(None, None, None)]),
-            ('medusa.scene_numbering.get_indexer_absolute_numbering', 8),
+            ('medusa.scene_exceptions.get_season_from_name', None),
+            ('medusa.scene_numbering.get_indexer_abs_numbering', 8),
             ('medusa.helpers.get_all_episodes_from_absolute_number', (1, [8]))
         ],
         'series_info': {
@@ -72,8 +72,8 @@ import pytest
         'indexer_id': 1,
         'indexer': 262954,
         'mocks': [
-            ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(None, None, None)]),
-            ('medusa.scene_numbering.get_indexer_absolute_numbering', 26),
+            ('medusa.scene_exceptions.get_season_from_name', None),
+            ('medusa.scene_numbering.get_indexer_abs_numbering', 26),
             ('medusa.helpers.get_all_episodes_from_absolute_number', (1, [26]))
         ],
         'series_info': {
@@ -88,8 +88,8 @@ import pytest
         'indexer_id': 1,
         'indexer': 262954,
         'mocks': [
-            ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(262954, 3, 1)]),
-            ('medusa.scene_numbering.get_indexer_absolute_numbering', 52),
+            ('medusa.scene_exceptions.get_season_from_name', 3),
+            ('medusa.scene_numbering.get_indexer_abs_numbering', 52),
             ('medusa.helpers.get_all_episodes_from_absolute_number', (2, [26]))
         ],
         'series_info': {
@@ -104,8 +104,8 @@ import pytest
         'indexer_id': 1,
         'indexer': 262954,
         'mocks': [
-            ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(262954, 4, 1)]),
-            ('medusa.scene_numbering.get_indexer_absolute_numbering', 100),
+            ('medusa.scene_exceptions.get_season_from_name', 4),
+            ('medusa.scene_numbering.get_indexer_abs_numbering', 100),
             ('medusa.helpers.get_all_episodes_from_absolute_number', (3, [26]))
         ],
         'series_info': {
@@ -120,9 +120,9 @@ import pytest
         'indexer_id': 1,
         'indexer': 300835,
         'mocks': [
-            ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(None, None, None)]),
+            ('medusa.scene_exceptions.get_season_from_name', None),
             ('medusa.scene_numbering.get_indexer_numbering', (2, 13)),
-            ('medusa.helpers.get_absolute_number_from_season_and_episode', 26),
+            ('medusa.scene_numbering.get_indexer_abs_numbering', 26),
         ],
         'series_info': {
             'name': u"Ajin",
@@ -136,9 +136,9 @@ import pytest
         'indexer_id': 1,
         'indexer': 300835,
         'mocks': [
-            ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(None, None, None)]),
+            ('medusa.scene_exceptions.get_season_from_name', None),
             ('medusa.scene_numbering.get_indexer_numbering', (2, 13)),
-            ('medusa.helpers.get_absolute_number_from_season_and_episode', 26),
+            ('medusa.scene_numbering.get_indexer_abs_numbering', 26),
         ],
         'series_info': {
             'name': u"Ajin",
@@ -152,8 +152,8 @@ import pytest
         'indexer_id': 1,
         'indexer': 295068,
         'mocks': [
-            ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(None, None, None)]),
-            ('medusa.scene_numbering.get_indexer_absolute_numbering', 2),
+            ('medusa.scene_exceptions.get_season_from_name', None),
+            ('medusa.scene_numbering.get_indexer_abs_numbering', 2),
             ('medusa.helpers.get_all_episodes_from_absolute_number', (1, [2]))
         ],
         'series_info': {
@@ -168,13 +168,28 @@ import pytest
         'indexer_id': 1,
         'indexer': 262954,
         'mocks': [
-            ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(262954, 2, 1)]),
-            ('medusa.scene_numbering.get_indexer_absolute_numbering', 38),
+            ('medusa.scene_exceptions.get_season_from_name', 2),
+            ('medusa.scene_numbering.get_indexer_abs_numbering', 38),
             ('medusa.helpers.get_all_episodes_from_absolute_number', (2, [12])),
         ],
         'series_info': {
             'name': u"JoJo's Bizarre Adventure",
             'is_scene': True
+        },
+        'expected': ([12], [2], [38]),
+    },
+    {
+        'name': u"[HorribleSubs] JoJo's Bizarre Adventure - Stardust Crusaders - 12 [1080p].mkv",
+        'indexer_id': 1,
+        'indexer': 262954,
+        'mocks': [
+            ('medusa.scene_exceptions.get_season_from_name', 2),
+            ('medusa.scene_numbering.get_indexer_abs_numbering', 38),
+            ('medusa.helpers.get_all_episodes_from_absolute_number', (2, [12])),
+        ],
+        'series_info': {
+            'name': u"JoJo's Bizarre Adventure",
+            'is_scene': False
         },
         'expected': ([12], [2], [38]),
     },
@@ -185,9 +200,9 @@ import pytest
         'indexer_id': 1,
         'indexer': 262954,
         'mocks': [
-            ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(262954, 2, 1)]),
+            ('medusa.scene_exceptions.get_season_from_name', 2),
             ('medusa.scene_numbering.get_indexer_numbering', (2, 12)),
-            ('medusa.helpers.get_absolute_number_from_season_and_episode', 38),
+            ('medusa.scene_numbering.get_indexer_abs_numbering', 38),
         ],
         'series_info': {
             'name': u"JoJo's Bizarre Adventure",
@@ -201,9 +216,9 @@ import pytest
         'indexer_id': 1,
         'indexer': 81797,
         'mocks': [
-            ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(None, None, None)]),
+            ('medusa.scene_exceptions.get_season_from_name', None),
             ('medusa.scene_numbering.get_indexer_numbering', (3, 13)),
-            ('medusa.helpers.get_absolute_number_from_season_and_episode', 43),
+            ('medusa.scene_numbering.get_indexer_abs_numbering', 43),
         ],
         'series_info': {
             'name': u"One Piece",

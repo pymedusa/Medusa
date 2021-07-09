@@ -51,6 +51,9 @@ class RESTClientObject(object):
             else:
                 r = self.session.request(method, url, params=query_params, headers=headers)
 
+            if r is None:
+                raise RequestException('Missing response')
+
             r.raise_for_status()
 
         except RequestException as error:

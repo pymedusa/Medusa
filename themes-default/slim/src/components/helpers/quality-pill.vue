@@ -4,13 +4,19 @@
 
 <script>
 import { mapGetters, mapState } from 'vuex';
+import { combineQualities } from '../../utils/core';
 
 export default {
     name: 'quality-pill',
     props: {
+        allowed: {
+            type: Array
+        },
+        preferred: {
+            type: Array
+        },
         quality: {
             type: Number,
-            required: true,
             validator: value => (value >>> 0) >= 0 // Unsigned int
         },
         showTitle: {
@@ -21,13 +27,13 @@ export default {
             type: Object,
             default: () => ({}),
             validator: value => {
-                return Object.keys(value).every(key => ['class', 'title', 'text'].includes(key));
+                return Object.keys(value).every(key => ['class', 'title', 'text', 'style'].includes(key));
             }
         }
     },
     computed: {
         ...mapState({
-            qualityValues: state => state.consts.qualities.values
+            qualityValues: state => state.config.consts.qualities.values
         }),
         ...mapGetters([
             'getQuality',
@@ -36,7 +42,15 @@ export default {
             'splitQuality'
         ]),
         qualities() {
-            const { quality, splitQuality } = this;
+            const { allowed, preferred, quality, splitQuality } = this;
+
+            // Used for Vueified pages as they have the arrays already split
+            if (allowed && preferred) {
+                return {
+                    allowed,
+                    preferred
+                };
+            }
             return splitQuality(quality);
         },
         title() {
@@ -70,7 +84,12 @@ export default {
             return title;
         },
         pill() {
-            let { quality } = this;
+            let { quality, allowed, preferred } = this;
+
+            // Combine allowed & preferred qualities
+            if (allowed && preferred) {
+                quality = combineQualities(allowed, preferred);
+            }
 
             // If allowed and preferred qualities are the same, show pill as allowed quality
             const sumAllowed = (quality & 0xFFFF) >>> 0; // Unsigned int
@@ -173,9 +192,9 @@ export default {
          * Assumption: Each array contains unique items only.
          * Source: https://stackoverflow.com/a/48211214/7597273
          *
-         * @param {(number[]|string[])} set1 - Array to be compared against `set2`.
-         * @param {(number[]|string[])} set2 - Array to compare `set1` against.
-         * @returns {boolean} - Whether or not `set1` is a subset of `set2`
+         * @param {(Number[]|String[])} set1 - Array to be compared against `set2`.
+         * @param {(Number[]|String[])} set2 - Array to compare `set1` against.
+         * @returns {Boolean} - Whether or not `set1` is a subset of `set2`
          */
         isSubsetOf(set1, set2) {
             return set1.every(value => set2.includes(value));

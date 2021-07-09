@@ -43,7 +43,7 @@ class PretomeProvider(TorrentProvider):
         }
 
         # Proper Strings
-        self.proper_strings = ['PROPER', 'REPACK', 'REAL']
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
 
         # Cache
         self.cache = tv.Cache(self)
@@ -132,13 +132,16 @@ class PretomeProvider(TorrentProvider):
                     torrent_size = self._norm_size(cells[7].get_text(strip=True))
                     size = convert_size(torrent_size) or -1
 
+                    pubdate_raw = cells[5].get_text()
+                    pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
+
                     item = {
                         'title': title,
                         'link': download_url,
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',

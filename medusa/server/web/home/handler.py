@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 import json
 import os
 import time
-from datetime import date, datetime
+from datetime import date
 from textwrap import dedent
 
 from medusa import (
@@ -37,12 +37,7 @@ from medusa.common import (
     UNAIRED,
     WANTED,
     cpu_presets,
-    statusStrings,
-)
-from medusa.failed_history import prepare_failed_name
-from medusa.helper.common import (
-    enabled_providers,
-    pretty_file_size,
+    statusStrings
 )
 from medusa.helper.exceptions import (
     AnidbAdbaConnectionException,
@@ -52,31 +47,21 @@ from medusa.helper.exceptions import (
     ex,
 )
 from medusa.helpers.anidb import get_release_groups_for_anime
-from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.utils import indexer_id_to_name, indexer_name_to_id
-from medusa.providers.generic_provider import GenericProvider
-from medusa.sbdatetime import sbdatetime
+from medusa.indexers.api import indexerApi
+from medusa.indexers.utils import indexer_name_to_id
 from medusa.scene_exceptions import (
-    get_all_scene_exceptions,
-    get_scene_exceptions,
+    get_all_scene_exceptions
 )
 from medusa.scene_numbering import (
     get_scene_absolute_numbering,
-    get_scene_absolute_numbering_for_show,
     get_scene_numbering,
-    get_scene_numbering_for_show,
-    get_xem_absolute_numbering_for_show,
     get_xem_numbering_for_show,
     set_scene_numbering,
     xem_refresh,
 )
 from medusa.search import SearchType
 from medusa.search.manual import (
-    SEARCH_STATUS_FINISHED,
-    SEARCH_STATUS_QUEUED,
-    SEARCH_STATUS_SEARCHING,
     collect_episodes_from_search_thread,
-    get_provider_cache_results,
     update_finished_search_queue_item,
 )
 from medusa.search.queue import (
@@ -88,10 +73,8 @@ from medusa.server.web.core import (
     PageTemplate,
     WebRoot,
 )
-from medusa.show.history import History
 from medusa.show.show import Show
-from medusa.system.restart import Restart
-from medusa.system.shutdown import Shutdown
+from medusa.tv.cache import Cache
 from medusa.tv.series import Series, SeriesIdentifier
 from medusa.updater.version_checker import CheckVersion
 
@@ -105,12 +88,8 @@ from six.moves import map
 
 from tornroutes import route
 
-from traktor import (
-    MissingTokenException,
-    TokenExpiredException,
-    TraktApi,
-    TraktException,
-)
+import trakt
+from trakt.errors import TraktException
 
 
 @route('/home(/?.*)')
@@ -123,41 +102,13 @@ class Home(WebRoot):
         return t.render(message=message, subject=subject, title='')
 
     def index(self):
-        t = PageTemplate(rh=self, filename='home.mako')
-        selected_root = int(app.SELECTED_ROOT)
-        shows_dir = None
-        if selected_root is not None and app.ROOT_DIRS:
-            backend_pieces = app.ROOT_DIRS
-            backend_dirs = backend_pieces[1:]
-            try:
-                shows_dir = backend_dirs[selected_root] if selected_root != -1 else None
-            except IndexError:
-                # If user have a root selected in /home and remove the root folder a IndexError is raised
-                shows_dir = None
-                app.SELECTED_ROOT = -1
+        """
+        Render the home page.
 
-        series = []
-        if app.ANIME_SPLIT_HOME:
-            anime = []
-            for show in app.showList:
-                if shows_dir and not show._location.startswith(shows_dir):
-                    continue
-                if show.is_anime:
-                    anime.append(show)
-                else:
-                    series.append(show)
-
-            show_lists = [[order, {'Series': series, 'Anime': anime}[order]] for order in app.SHOW_LIST_ORDER]
-        else:
-            for show in app.showList:
-                if shows_dir and not show._location.startswith(shows_dir):
-                    continue
-                series.append(show)
-            show_lists = [['Series', series]]
-
-        stats = self.show_statistics()
-        return t.render(show_lists=show_lists, show_stat=stats[0],
-                        max_download_count=stats[1], controller='home', action='index')
+        [Converted to VueRouter]
+        """
+        t = PageTemplate(rh=self, filename='index.mako')
+        return t.render()
 
     @staticmethod
     def show_statistics():
@@ -259,7 +210,9 @@ class Home(WebRoot):
     @staticmethod
     def testNZBget(host=None, username=None, password=None, use_https=False):
         try:
-            connected_status = nzbget.testNZB(host, username, password, config.checkbox_to_value(use_https))
+            connected_status = nzbget.test_authentication(
+                host, username, password, config.checkbox_to_value(use_https)
+            )
         except Exception as error:
             logger.log('Error while testing NZBget connection: {error}'.format(error=error), logger.WARNING)
             return 'Error while testing connection. Check warning logs.'
@@ -299,6 +252,14 @@ class Home(WebRoot):
             return 'Telegram notification succeeded. Check your Telegram clients to make sure it worked'
         else:
             return 'Error sending Telegram notification: {msg}'.format(msg=message)
+
+    @staticmethod
+    def testDiscord(discord_webhook=None, discord_tts=False):
+        result, message = notifiers.discord_notifier.test_notify(discord_webhook, config.checkbox_to_value(discord_tts))
+        if result:
+            return 'Discord notification succeeded. Check your Discord channels to make sure it worked'
+        else:
+            return 'Error sending Discord notification: {msg}'.format(msg=message)
 
     @staticmethod
     def testslack(slack_webhook=None):
@@ -484,38 +445,59 @@ class Home(WebRoot):
             })
 
     @staticmethod
-    def getTraktToken(trakt_pin=None):
-        trakt_settings = {'trakt_api_key': app.TRAKT_API_KEY,
-                          'trakt_api_secret': app.TRAKT_API_SECRET}
-        trakt_api = TraktApi(app.SSL_VERIFY, app.TRAKT_TIMEOUT, **trakt_settings)
-        response = None
+    def requestTraktDeviceCodeOauth():
+        """Start Trakt OAuth device auth. Send request."""
+        logger.log('Start a new Oauth device authentication request. Request is valid for 60 minutes.', logger.INFO)
         try:
-            (access_token, refresh_token) = trakt_api.get_token(app.TRAKT_REFRESH_TOKEN, trakt_pin=trakt_pin)
-            if access_token and refresh_token:
-                app.TRAKT_ACCESS_TOKEN = access_token
-                app.TRAKT_REFRESH_TOKEN = refresh_token
-                response = trakt_api.validate_account()
-        except MissingTokenException:
-            ui.notifications.error('You need to get a PIN and authorize Medusa app')
-            return 'You need to get a PIN and authorize Medusa app'
-        except TokenExpiredException:
-            # Clear existing tokens
-            app.TRAKT_ACCESS_TOKEN = ''
-            app.TRAKT_REFRESH_TOKEN = ''
-            ui.notifications.error('TOKEN expired. Reload page, get a new PIN and authorize Medusa app')
-            return 'TOKEN expired. Reload page, get a new PIN and authorize Medusa app'
-        except TraktException:
-            ui.notifications.error("Connection error. Click 'Authorize Medusa' button again")
-            return "Connection error. Click 'Authorize Medusa' button again"
-        if response:
-            ui.notifications.message('Trakt Authorized')
-            return 'Trakt Authorized'
-        ui.notifications.error('Connection error. Reload the page to get new token!')
-        return 'Trakt Not Authorized!'
+            app.TRAKT_DEVICE_CODE = trakt.get_device_code(app.TRAKT_API_KEY, app.TRAKT_API_SECRET)
+        except TraktException as error:
+            logger.log('Unable to get trakt device code. Error: {error!r}'.format(error=error), logger.WARNING)
+            return json.dumps({'result': False})
+
+        return json.dumps(app.TRAKT_DEVICE_CODE)
 
     @staticmethod
-    def testTrakt(username=None, blacklist_name=None):
-        return notifiers.trakt_notifier.test_notify(username, blacklist_name)
+    def checkTrakTokenOauth():
+        """Check if the Trakt device OAuth request has been authenticated."""
+        logger.log('Start Trakt token request', logger.INFO)
+
+        if not app.TRAKT_DEVICE_CODE.get('requested'):
+            logger.log('You need to request a token before checking authentication', logger.WARNING)
+            return json.dumps({'result': 'need to request first', 'error': True})
+
+        if (app.TRAKT_DEVICE_CODE.get('requested') + app.TRAKT_DEVICE_CODE.get('requested')) < time.time():
+            logger.log('Trakt token Request expired', logger.INFO)
+            return json.dumps({'result': 'request expired', 'error': True})
+
+        if not app.TRAKT_DEVICE_CODE.get('device_code'):
+            logger.log('You need to request a token before checking authentication. Missing device code.', logger.WARNING)
+            return json.dumps({'result': 'need to request first', 'error': True})
+
+        try:
+            response = trakt.get_device_token(
+                app.TRAKT_DEVICE_CODE.get('device_code'), app.TRAKT_API_KEY, app.TRAKT_API_SECRET, store=True
+            )
+        except TraktException as error:
+            logger.log('Unable to get trakt device token. Error: {error!r}'.format(error=error), logger.WARNING)
+            return json.dumps({'result': 'Trakt error while retrieving device token', 'error': True})
+
+        if response.ok:
+            response_json = response.json()
+            app.TRAKT_ACCESS_TOKEN, app.TRAKT_REFRESH_TOKEN = \
+                response_json.get('access_token'), response_json.get('refresh_token')
+            return json.dumps({'result': 'succesfully updated trakt access and refresh token', 'error': False})
+        else:
+            if response.status_code == 400:
+                return json.dumps({'result': 'device code has not been activated yet', 'error': True})
+            if response.status_code == 409:
+                return json.dumps({'result': 'already activated this code', 'error': False})
+
+        logger.log(u'Something went wrong', logger.DEBUG)
+        return json.dumps({'result': 'Something went wrong'})
+
+    @staticmethod
+    def testTrakt(blacklist_name=None):
+        return notifiers.trakt_notifier.test_notify(blacklist_name)
 
     @staticmethod
     def forceTraktSync():
@@ -547,23 +529,25 @@ class Home(WebRoot):
 
     @staticmethod
     def saveShowNotifyList(show=None, emails=None, prowlAPIs=None):
-        entries = {'emails': '', 'prowlAPIs': ''}
-
         series_identifier = SeriesIdentifier.from_slug(show)
         series_obj = Series.find_by_identifier(series_identifier)
 
-        if series_obj:
-            if series_obj.notify_list:
-                entries = series_obj.notify_list
+        # Create a new dict, to force the "dirty" flag on the Series object.
+        entries = {'emails': '', 'prowlAPIs': ''}
+
+        if not series_obj:
+            return 'show missing'
+
+        if series_obj.notify_list:
+            entries.update(series_obj.notify_list)
 
         if emails is not None:
             entries['emails'] = emails
-            series_obj.notify_list = entries
 
         if prowlAPIs is not None:
             entries['prowlAPIs'] = prowlAPIs
-            series_obj.notify_list = entries
 
+        series_obj.notify_list = entries
         series_obj.save_to_db()
 
         return 'OK'
@@ -609,40 +593,36 @@ class Home(WebRoot):
             return 'Error sending Pushbullet notification'
 
     def status(self):
-        tv_dir_free = helpers.get_disk_space_usage(app.TV_DOWNLOAD_DIR)
-        root_dir = {}
-        if app.ROOT_DIRS:
-            backend_pieces = app.ROOT_DIRS
-            backend_dirs = backend_pieces[1:]
-        else:
-            backend_dirs = []
+        """
+        Render the status page.
 
-        if backend_dirs:
-            for subject in backend_dirs:
-                root_dir[subject] = helpers.get_disk_space_usage(subject)
+        [Converted to VueRouter]
+        """
+        return PageTemplate(rh=self, filename='index.mako').render()
 
-        t = PageTemplate(rh=self, filename='status.mako')
-        return t.render(title='Status', header='Status',
-                        tvdirFree=tv_dir_free, rootDir=root_dir,
-                        controller='home', action='status')
+    def restart(self):
+        """
+        Render the restart page.
 
-    def shutdown(self, pid=None):
-        if not Shutdown.stop(pid):
-            return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
+        [Converted to VueRouter]
+        """
+        return PageTemplate(rh=self, filename='index.mako').render()
 
-        title = 'Shutting down'
-        message = 'Medusa is shutting down...'
+    def shutdown(self):
+        """
+        Render the shutdown page.
 
-        return self._genericMessage(title, message)
+        [Converted to VueRouter]
+        """
+        return PageTemplate(rh=self, filename='index.mako').render()
 
-    def restart(self, pid=None):
-        if not Restart.restart(pid):
-            return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
+    def update(self):
+        """
+        Render the update page.
 
-        t = PageTemplate(rh=self, filename='restart.mako')
-
-        return t.render(title='Home', header='Restarting Medusa',
-                        controller='home', action='restart')
+        [Converted to VueRouter]
+        """
+        return PageTemplate(rh=self, filename='index.mako').render()
 
     def updateCheck(self, pid=None):
         if text_type(pid) != text_type(app.PID):
@@ -653,33 +633,6 @@ class Home(WebRoot):
 
         return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
 
-    def update(self, pid=None, branch=None):
-        if text_type(pid) != text_type(app.PID):
-            return self.redirect('/home/')
-
-        checkversion = CheckVersion()
-        backup = checkversion.updater and checkversion._runbackup()  # pylint: disable=protected-access
-
-        if backup is True:
-            if branch:
-                checkversion.updater.branch = branch
-
-            # @FIXME: Pre-render the restart page. This is a workaround to stop errors on updates.
-            t = PageTemplate(rh=self, filename='restart.mako')
-            restart_rendered = t.render(title='Home', header='Restarting Medusa',
-                                        controller='home', action='restart')
-
-            if checkversion.updater.need_update() and checkversion.updater.update():
-                # do a hard restart
-                app.events.put(app.events.SystemEvent.RESTART)
-
-                return restart_rendered
-            else:
-                return self._genericMessage('Update Failed',
-                                            "Update wasn't successful, not restarting. Check your log for more information.")
-        else:
-            return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
-
     def branchCheckout(self, branch):
         if app.BRANCH != branch:
             app.BRANCH = branch
@@ -689,12 +642,12 @@ class Home(WebRoot):
             ui.notifications.message('Already on branch: ', branch)
             return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
 
-    def branchForceUpdate(self):
+    @staticmethod
+    def branchForceUpdate():
         return {
             'currentBranch': app.BRANCH,
             'resetBranches': app.GIT_RESET_BRANCHES,
-            'branches': [branch for branch in app.version_check_scheduler.action.list_remote_branches()
-                         if branch not in app.GIT_RESET_BRANCHES]
+            'branches': [branch for branch in app.version_check_scheduler.action.list_remote_branches()]
         }
 
     @staticmethod
@@ -727,15 +680,16 @@ class Home(WebRoot):
                 'message': 'General exception',
             })
 
-    def getSeasonSceneExceptions(self, indexername, seriesid):
+    def getSeasonSceneExceptions(self, showslug=None):
         """Get show name scene exceptions per season
 
         :param indexer: The shows indexer
         :param indexer_id: The shows indexer_id
         :return: A json with the scene exceptions per season.
         """
-        indexer_id = indexer_name_to_id(indexername)
-        series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
+        identifier = SeriesIdentifier.from_slug(showslug)
+        series_obj = Series.find_by_identifier(identifier)
+
         return json.dumps({
             'seasonExceptions': {season: list(exception_name) for season, exception_name
                                  in iteritems(get_all_scene_exceptions(series_obj))},
@@ -744,89 +698,41 @@ class Home(WebRoot):
                              in iteritems(get_xem_numbering_for_show(series_obj, refresh_data=False))}
         })
 
-    def displayShow(self, indexername=None, seriesid=None, ):
-        # @TODO: add more comprehensive show validation
+    def displayShow(self, showslug):
+        """
+        Render the home page.
+
+        [Converted to VueRouter]
+        """
         try:
-            indexer_id = indexer_name_to_id(indexername)
-            series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
+            identifier = SeriesIdentifier.from_slug(showslug)
+            series_obj = Series.find_by_identifier(identifier)
         except (ValueError, TypeError):
-            return self._genericMessage('Error', 'Invalid series ID: {seriesid}'.format(seriesid=seriesid))
+            return self._genericMessage('Error', 'Invalid series: {show_slug}'.format(show_slug=showslug))
 
         if series_obj is None:
             return self._genericMessage('Error', 'Show not in show list')
 
-        min_season = 0 if app.DISPLAY_SHOW_SPECIALS else 1
-
-        main_db_con = db.DBConnection()
-        sql_results = main_db_con.select(
-            'SELECT * '
-            'FROM tv_episodes '
-            'WHERE indexer = ? AND showid = ? AND season >= ? '
-            'ORDER BY season DESC, episode DESC',
-            [series_obj.indexer, series_obj.series_id, min_season]
-        )
-
-        t = PageTemplate(rh=self, filename='displayShow.mako')
-
-        ep_cats = {}
-
-        for cur_result in sql_results:
-            cur_ep_cat = series_obj.get_overview(cur_result['status'], cur_result['quality'], manually_searched=cur_result['manually_searched'])
-            if cur_ep_cat:
-                ep_cats['s{season}e{episode}'.format(season=cur_result['season'], episode=cur_result['episode'])] = cur_ep_cat
-
-        series_obj.exceptions = get_scene_exceptions(series_obj)
-
-        indexer_id = int(series_obj.indexer)
-        series_id = int(series_obj.series_id)
-
-        # Delete any previous occurrances
-        indexer_name = indexer_id_to_name(indexer_id)
-        for index, recentShow in enumerate(app.SHOWS_RECENT):
-            if recentShow['indexerName'] == indexer_name and recentShow['showId'] == series_id:
-                del app.SHOWS_RECENT[index]
-
-        # Only track 5 most recent shows
-        del app.SHOWS_RECENT[4:]
-
-        # Insert most recent show
-        app.SHOWS_RECENT.insert(0, {
-            'indexerName': indexer_name,
-            'showId': series_id,
-            'name': series_obj.name,
-        })
+        t = PageTemplate(rh=self, filename='index.mako')
 
         return t.render(
-            show=series_obj, sql_results=sql_results, ep_cats=ep_cats,
-            scene_numbering=get_scene_numbering_for_show(series_obj),
-            xem_numbering=get_xem_numbering_for_show(series_obj, refresh_data=False),
-            scene_absolute_numbering=get_scene_absolute_numbering_for_show(series_obj),
-            xem_absolute_numbering=get_xem_absolute_numbering_for_show(series_obj),
             controller='home', action='displayShow',
         )
 
-    def pickManualSearch(self, provider=None, rowid=None):
+    def pickManualSearch(self, provider=None, identifier=None):
         """
         Tries to Perform the snatch for a manualSelected episode, episodes or season pack.
 
         @param provider: The provider id, passed as usenet_crawler and not the provider name (Usenet-Crawler)
-        @param rowid: The provider's cache table's rowid. (currently the implicit sqlites rowid is used, needs to be replaced in future)
+        @param identifier: The provider's cache table's identifier (unique).
 
         @return: A json with a {'success': true} or false.
         """
-
         # Try to retrieve the cached result from the providers cache table.
-        # @TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
+        provider_obj = providers.get_provider_class(provider)
 
         try:
-            main_db_con = db.DBConnection('cache.db')
-            cached_result = main_db_con.action(
-                'SELECT * '
-                "FROM '{provider}' "
-                'WHERE rowid = ?'.format(provider=provider),
-                [rowid],
-                fetchone=True
-            )
+            cached_result = Cache(provider_obj).load_from_row(identifier)
         except Exception as msg:
             error_message = "Couldn't read cached results. Error: {error}".format(error=msg)
             logger.log(error_message)
@@ -850,23 +756,7 @@ class Home(WebRoot):
             return self._genericMessage('Error', 'Could not find a show with id {0} in the list of shows, '
                                                  'did you remove the show?'.format(cached_result['indexerid']))
 
-        # Create a list of episode object(s)
-        # Multi-episode: |1|2|
-        # Single-episode: |1|
-        # Season pack: || so we need to get all episodes from season and create all ep objects
-        ep_objs = []
-        result_episodes = cached_result['episodes'].strip('|')
-        if result_episodes:
-            for episode in result_episodes.split('|'):
-                ep_objs.append(series_obj.get_episode(int(cached_result['season']), int(episode)))
-        else:
-            ep_objs.extend(series_obj.get_all_episodes([int(cached_result['season'])]))
-
-        search_result = providers.get_provider_class(provider).get_result(ep_objs)
-
-        # Map the db fields to result attributes
-        search_result.update_from_db(series_obj, ep_objs, cached_result)
-
+        search_result = provider_obj.get_result(series=series_obj, cache=cached_result)
         search_result.search_type = SearchType.MANUAL_SEARCH
 
         # Create the queue item
@@ -889,212 +779,27 @@ class Home(WebRoot):
             'result': 'failure',
         })
 
-    def manualSearchCheckCache(self, indexername, seriesid, season=None, episode=None, manual_search_type='episode', **last_prov_updates):
-        """ Periodic check if the searchthread is still running for t   he selected show/season/ep
-        and if there are new results in the cache.db
+    def snatchSelection(self, showslug, **query_args):
         """
+        Render the home page.
 
-        refresh_results = 'refresh'
-
-        indexer_id = indexer_name_to_id(indexername)
-        series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
-
-        try:
-            int(episode)
-            int(season)
-        except ValueError:
-            return {'result': 'error'}
-
-        # To prevent it from keeping searching when no providers have been enabled
-        if not enabled_providers('manualsearch'):
-            return {'result': SEARCH_STATUS_FINISHED}
-
-        main_db_con = db.DBConnection('cache.db')
-
-        episodes_in_search = collect_episodes_from_search_thread(series_obj)
-
-        # Check if the requested ep is in a search thread
-        searched_item = [ep for ep in episodes_in_search
-                         if all([ep.get('indexer_id') == series_obj.identifier.indexer.id,
-                                 ep.get('series_id') == series_obj.identifier.id,
-                                 text_type(ep.get('season')) == season,
-                                 text_type(ep.get('episode')) == episode])]
-
-        # # No last_prov_updates available, let's assume we need to refresh until we get some
-        # if not last_prov_updates:
-        #     return {'result': REFRESH_RESULTS}
-
-        sql_episode = '' if manual_search_type == 'season' else episode
-
-        for provider, last_update in iteritems(last_prov_updates):
-            table_exists = main_db_con.select(
-                'SELECT name '
-                'FROM sqlite_master '
-                "WHERE type='table' AND name=?",
-                [provider]
-            )
-            if not table_exists:
-                continue
-            # Check if the cache table has a result for this show + season + ep wich has a later timestamp, then last_update
-            # FIXME: This will need to be adjusted when indexer field is added to the providers.
-            needs_update = main_db_con.select(
-                'SELECT * '
-                "FROM '{provider}' "
-                'WHERE episodes LIKE ? AND season = ? AND indexer = ? AND indexerid = ?  AND time > ?'.format(provider=provider),
-                ['%|{episodes}|%'.format(episodes=sql_episode), season, series_obj.indexer, series_obj.series_id, int(last_update)]
-            )
-
-            if needs_update:
-                return {'result': refresh_results}
-
-        # If the item is queued multiple times (don't know if this is possible),
-        # but then check if as soon as a search has finished
-        # Move on and show results
-        # Return a list of queues the episode has been found in
-        search_status = [item.get('searchstatus') for item in searched_item]
-        if not searched_item or all([last_prov_updates,
-                                     SEARCH_STATUS_QUEUED not in search_status,
-                                     SEARCH_STATUS_SEARCHING not in search_status,
-                                     SEARCH_STATUS_FINISHED in search_status]):
-            # If the ep not anymore in the QUEUED or SEARCHING Thread, and it has the status finished,
-            # return it as finished
-            return {'result': SEARCH_STATUS_FINISHED}
-
-        # Force a refresh when the last_prov_updates is empty due to the tables not existing yet.
-        # This can be removed if we make sure the provider cache tables always exist prior to the
-        # start of the first search
-        if not last_prov_updates and SEARCH_STATUS_FINISHED in search_status:
-            return {'result': refresh_results}
-
-        return {'result': searched_item[0]['searchstatus']}
-
-    def snatchSelection(self, indexername, seriesid, season=None, episode=None, manual_search_type='episode',
-                        perform_search=0, down_cur_quality=0, show_all_results=0):
-        """ The view with results for the manual selected show/episode """
-
+        [Converted to VueRouter]
+        """
         # @TODO: add more comprehensive show validation
         try:
-            indexer_id = indexer_name_to_id(indexername)
-            series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
+            identifier = SeriesIdentifier.from_slug(showslug)
+            series_obj = Series.find_by_identifier(identifier)
         except (ValueError, TypeError):
-            return self._genericMessage('Error', 'Invalid show ID: {series}'.format(series=seriesid))
+            return self._genericMessage('Error', 'Invalid show: {series}'.format(series=showslug))
 
         if series_obj is None:
             return self._genericMessage('Error', 'Show not in show list')
 
-        # Retrieve cache results from providers
-        search_show = {'series': series_obj, 'season': season, 'episode': episode, 'manual_search_type': manual_search_type}
-
-        provider_results = get_provider_cache_results(series_obj, perform_search=perform_search,
-                                                      show_all_results=show_all_results, **search_show)
-
-        t = PageTemplate(rh=self, filename='snatchSelection.mako')
-
-        series_obj.exceptions = get_scene_exceptions(series_obj)
-
-        indexer_id = int(series_obj.indexer)
-        series_id = int(series_obj.series_id)
-
-        # Delete any previous occurrances
-        indexer_name = indexer_id_to_name(indexer_id)
-        for index, recentShow in enumerate(app.SHOWS_RECENT):
-            if recentShow['indexerName'] == indexer_name and recentShow['showId'] == series_id:
-                del app.SHOWS_RECENT[index]
-
-        # Only track 5 most recent shows
-        del app.SHOWS_RECENT[4:]
-
-        # Insert most recent show
-        app.SHOWS_RECENT.insert(0, {
-            'indexerName': indexer_name,
-            'showId': series_id,
-            'name': series_obj.name,
-        })
-
-        episode_history = []
-        try:
-            main_db_con = db.DBConnection()
-            episode_status_result = main_db_con.select(
-                'SELECT date, action, quality, provider, resource, size '
-                'FROM history '
-                'WHERE indexer_id = ? '
-                'AND showid = ? '
-                'AND season = ? '
-                'AND episode = ? '
-                'AND action in (?, ?, ?, ?, ?) '
-                'ORDER BY date DESC',
-                [indexer_id, series_id, season, episode,
-                 DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED]
-            )
-            episode_history = episode_status_result
-            for i in episode_history:
-                i['status'] = i['action']
-                i['action_date'] = sbdatetime.sbfdatetime(datetime.strptime(text_type(i['date']), History.date_format), show_seconds=True)
-                i['resource_file'] = os.path.basename(i['resource'])
-                i['pretty_size'] = pretty_file_size(i['size']) if i['size'] > -1 else 'N/A'
-                i['status_name'] = statusStrings[i['status']]
-                provider = None
-                if i['status'] == DOWNLOADED:
-                    i['status_color_style'] = 'downloaded'
-                elif i['status'] in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
-                    i['status_color_style'] = 'snatched'
-                    provider = providers.get_provider_class(GenericProvider.make_id(i['provider']))
-                elif i['status'] == FAILED:
-                    i['status_color_style'] = 'failed'
-                    provider = providers.get_provider_class(GenericProvider.make_id(i['provider']))
-                if provider is not None:
-                    i['provider_name'] = provider.name
-                    i['provider_img_link'] = 'images/providers/' + provider.image_name()
-                else:
-                    i['provider_name'] = i['provider'] if i['provider'] != '-1' else 'Unknown'
-                    i['provider_img_link'] = ''
-
-            # Compare manual search results with history and set status
-            for provider_result in provider_results['found_items']:
-                failed_statuses = [FAILED, ]
-                snatched_statuses = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
-                if any([item for item in episode_history
-                        if all([prepare_failed_name(provider_result['name']) in item['resource'],
-                                item['provider'] in (provider_result['provider'], provider_result['release_group'],),
-                                item['status'] in failed_statuses])
-                        ]):
-                    provider_result['status_highlight'] = 'failed'
-                elif any([item for item in episode_history
-                          if all([provider_result['name'] in item['resource'],
-                                  item['provider'] in provider_result['provider'],
-                                  item['status'] in snatched_statuses,
-                                  item['size'] == provider_result['size']])
-                          ]):
-                    provider_result['status_highlight'] = 'snatched'
-                else:
-                    provider_result['status_highlight'] = ''
-
-        # TODO: Remove the catchall, make sure we only catch expected exceptions!
-        except Exception as msg:
-            logger.log("Couldn't read latest episode status. Error: {error}".format(error=msg))
+        t = PageTemplate(rh=self, filename='index.mako')
 
         return t.render(
-            show=series_obj,
-            provider_results=provider_results, episode_history=episode_history,
-            season=season, episode=episode, manual_search_type=manual_search_type,
             controller='home', action='snatchSelection'
         )
-
-    @staticmethod
-    def sceneExceptions(indexername, seriesid):
-        # @TODO: Replace with plot from GET /api/v2/show/{id}
-        indexer_id = indexer_name_to_id(indexername)
-        series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
-        exceptions_list = get_all_scene_exceptions(series_obj)
-        if not exceptions_list:
-            return 'No scene exceptions'
-
-        out = []
-        for season, names in iter(sorted(iteritems(exceptions_list))):
-            if season == -1:
-                season = '*'
-            out.append('S{season}: {names}'.format(season=season, names=', '.join(names)))
-        return '<br>'.join(out)
 
     @staticmethod
     def check_show_for_language(series_obj, language):
@@ -1152,8 +857,6 @@ class Home(WebRoot):
                 indexer=indexername, show=seriesid), logger.WARNING)
             errors += 1
             return errors
-
-        series_obj.exceptions = get_scene_exceptions(series_obj)
 
         season_folders = config.checkbox_to_value(season_folders)
         dvd_order = config.checkbox_to_value(dvd_order)
@@ -1248,10 +951,9 @@ class Home(WebRoot):
         if do_update_scene_numbering or do_erase_parsed_cache:
             try:
                 xem_refresh(series_obj)
-                time.sleep(cpu_presets[app.CPU_PRESET])
             except CantUpdateShowException as error:
                 errors += 1
-                logger.log("Unable to force an update on scene numbering for show '{show}': {error!r}".format
+                logger.log("Unable to update scene numbering for show '{show}': {error!r}".format
                            (show=series_obj.name, error=error), logger.WARNING)
 
             # Must erase cached DB results when toggling scene numbering
@@ -1307,10 +1009,10 @@ class Home(WebRoot):
             logger.log(u'Unable to delete cached results for show: {show}'.format
                        (show=series_obj.name), logger.DEBUG)
 
-    def togglePause(self, indexername=None, seriesid=None):
+    def togglePause(self, showslug=None):
         # @TODO: Replace with PUT to update the state var /api/v2/show/{id}
-        indexer_name_to_id(indexername)
-        error, series_obj = Show.pause(indexer_name_to_id(indexername), seriesid)
+        identifier = SeriesIdentifier.from_slug(showslug)
+        error, series_obj = Show.pause(identifier.indexer.slug, identifier.id)
 
         if error is not None:
             return self._genericMessage('Error', error)
@@ -1318,12 +1020,13 @@ class Home(WebRoot):
         ui.notifications.message('{show} has been {state}'.format
                                  (show=series_obj.name, state='paused' if series_obj.paused else 'resumed'))
 
-        return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
+        return self.redirect('/home/displayShow?showslug={series_obj.slug}'.format(series_obj=series_obj))
 
-    def deleteShow(self, indexername=None, seriesid=None, full=0):
+    def deleteShow(self, showslug=None, full=0):
         # @TODO: Replace with DELETE to delete the show resource /api/v2/show/{id}
-        if seriesid and indexername:
-            error, series_obj = Show.delete(indexer_name_to_id(indexername), seriesid, full)
+        if showslug:
+            identifier = SeriesIdentifier.from_slug(showslug)
+            error, series_obj = Show.delete(identifier.indexer.slug, identifier.id, full)
 
             if error is not None:
                 return self._genericMessage('Error', error)
@@ -1337,14 +1040,12 @@ class Home(WebRoot):
             time.sleep(cpu_presets[app.CPU_PRESET])
 
         # Remove show from 'RECENT SHOWS' in 'Shows' menu
-        app.SHOWS_RECENT = [show for show in app.SHOWS_RECENT if show['indexerName'] != series_obj.indexer_name and show['showId'] != series_obj.series_id]
+        app.SHOWS_RECENT = [show for show in app.SHOWS_RECENT if show['showSlug'] != showslug]
 
-        # Don't redirect to the default page, so the user can confirm that the show was deleted
-        return self.redirect('/home/')
-
-    def refreshShow(self, indexername=None, seriesid=None):
+    def refreshShow(self, showslug=None):
         # @TODO: Replace with status=refresh from PATCH /api/v2/show/{id}
-        error, series_obj = Show.refresh(indexer_name_to_id(indexername), seriesid)
+        identifier = SeriesIdentifier.from_slug(showslug)
+        error, series_obj = Show.refresh(identifier.indexer.slug, identifier.id)
 
         # This is a show validation error
         if error is not None and series_obj is None:
@@ -1356,15 +1057,15 @@ class Home(WebRoot):
 
         time.sleep(cpu_presets[app.CPU_PRESET])
 
-        return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
+        return self.redirect('/home/displayShow?showslug={series_obj.slug}'.format(series_obj=series_obj))
 
-    def updateShow(self, indexername=None, seriesid=None):
+    def updateShow(self, showslug=None):
         # @TODO: Replace with status=update or status=updating from PATCH /api/v2/show/{id}
-        if seriesid is None:
+        if showslug is None:
             return self._genericMessage('Error', 'Invalid show ID')
 
-        indexer_id = indexer_name_to_id(indexername)
-        series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
+        identifier = SeriesIdentifier.from_slug(showslug)
+        series_obj = Series.find_by_identifier(identifier)
 
         if series_obj is None:
             return self._genericMessage('Error', 'Unable to find the specified show')
@@ -1378,14 +1079,14 @@ class Home(WebRoot):
         # just give it some time
         time.sleep(cpu_presets[app.CPU_PRESET])
 
-        return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
+        return self.redirect('/home/displayShow?showslug={series_obj.slug}'.format(series_obj=series_obj))
 
-    def subtitleShow(self, indexername=None, seriesid=None):
-        if seriesid is None:
+    def subtitleShow(self, showslug=None):
+        if showslug is None:
             return self._genericMessage('Error', 'Invalid show ID')
 
-        indexer_id = indexer_name_to_id(indexername)
-        series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
+        identifier = SeriesIdentifier.from_slug(showslug)
+        series_obj = Series.find_by_identifier(identifier)
 
         if series_obj is None:
             return self._genericMessage('Error', 'Unable to find the specified show')
@@ -1395,13 +1096,14 @@ class Home(WebRoot):
 
         time.sleep(cpu_presets[app.CPU_PRESET])
 
-        return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
+        return self.redirect('/home/displayShow?showslug={series_obj.slug}'.format(series_obj=series_obj))
 
-    def updateKODI(self, indexername=None, seriesid=None):
+    def updateKODI(self, showslug=None):
         series_name = series_obj = None
-        if seriesid:
-            indexer = indexer_name_to_id(indexername)
-            series_obj = Show.find_by_id(app.showList, indexer, seriesid)
+        if showslug:
+            identifier = SeriesIdentifier.from_slug(showslug)
+            series_obj = Series.find_by_identifier(identifier)
+
             if series_obj is None:
                 return self._genericMessage('Error', 'Unable to find the specified show')
 
@@ -1418,7 +1120,7 @@ class Home(WebRoot):
             ui.notifications.error('Unable to contact one or more KODI host(s): {host}'.format(host=host))
 
         if series_obj:
-            return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
+            return self.redirect('/home/displayShow?showslug={series_obj.slug}'.format(series_obj=series_obj))
         else:
             return self.redirect('/home/')
 
@@ -1430,11 +1132,12 @@ class Home(WebRoot):
             ui.notifications.error('Unable to contact Plex Media Server host: {host}'.format(host=', '.join(app.PLEX_SERVER_HOST)))
         return self.redirect('/home/')
 
-    def updateEMBY(self, indexername=None, seriesid=None):
+    def updateEMBY(self, showslug=None):
         series_obj = None
-        if seriesid:
-            indexer = indexer_name_to_id(indexername)
-            series_obj = Show.find_by_id(app.showList, indexer, seriesid)
+        if showslug:
+            identifier = SeriesIdentifier.from_slug(showslug)
+            series_obj = Series.find_by_identifier(identifier)
+
             if series_obj is None:
                 return self._genericMessage('Error', 'Unable to find the specified show')
 
@@ -1445,13 +1148,14 @@ class Home(WebRoot):
             ui.notifications.error('Unable to contact Emby host: {host}'.format(host=app.EMBY_HOST))
 
         if series_obj:
-            return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
+            return self.redirect('/home/displayShow?showslug={series_obj.slug}'.format(series_obj=series_obj))
         else:
             return self.redirect('/home/')
 
-    def setStatus(self, indexername=None, seriesid=None, eps=None, status=None, direct=False):
+    def setStatus(self, showslug=None, eps=None, status=None, direct=False):
         # @TODO: Merge this with the other PUT commands for /api/v2/show/{id}
-        if not all([indexername, seriesid, eps, status]):
+        # Still used by manage/changeEpisodeStatuses (manage_episodeStatuses.mako)
+        if not all([showslug, eps, status]):
             error_message = 'You must specify a show and at least one episode'
             if direct:
                 ui.notifications.error('Error', error_message)
@@ -1472,7 +1176,8 @@ class Home(WebRoot):
             else:
                 return self._genericMessage('Error', error_message)
 
-        series_obj = Show.find_by_id(app.showList, indexer_name_to_id(indexername), seriesid)
+        identifier = SeriesIdentifier.from_slug(showslug)
+        series_obj = Series.find_by_identifier(identifier)
 
         if not series_obj:
             error_message = 'Error', 'Show not in show list'
@@ -1524,8 +1229,8 @@ class Home(WebRoot):
                     snatched_qualities = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
 
                     if status == DOWNLOADED and not (
-                            ep_obj.status in snatched_qualities + [DOWNLOADED] or
-                            os.path.isfile(ep_obj.location)):
+                            ep_obj.status in snatched_qualities + [DOWNLOADED]
+                            or os.path.isfile(ep_obj.location)):
                         logger.log('Refusing to change status of {series} {episode} to DOWNLOADED'
                                    " because it's not SNATCHED/DOWNLOADED or the file is missing".format(
                                        series=series_obj.name, episode=cur_ep), logger.WARNING)
@@ -1556,9 +1261,7 @@ class Home(WebRoot):
                     # mass add to database
                     sql_l.append(ep_obj.get_sql())
 
-                    trakt_data.append((ep_obj.season, ep_obj.episode))
-
-            data = notifiers.trakt_notifier.trakt_episode_data_generate(trakt_data)
+                    trakt_data.append(ep_obj)
 
             if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
                 if status in [WANTED, FAILED]:
@@ -1569,8 +1272,9 @@ class Home(WebRoot):
                 logger.log('{action} episodes, showid: indexerid {show.indexerid}, Title {show.name} to Watchlist'.format(
                     action=upd, show=series_obj), logger.DEBUG)
 
-                if data:
-                    notifiers.trakt_notifier.update_watchlist(series_obj, data_episode=data, update=upd.lower())
+                if trakt_data:
+                    for ep_obj in trakt_data:
+                        notifiers.trakt_notifier.update_watchlist_episode(series_obj, ep_obj)
 
             if sql_l:
                 main_db_con = db.DBConnection()
@@ -1621,13 +1325,14 @@ class Home(WebRoot):
                 'result': 'success',
             })
         else:
-            return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
+            return self.redirect('/home/displayShow?showslug={series_obj.slug}'.format(series_obj=series_obj))
 
-    def testRename(self, indexername=None, seriesid=None):
-        if not indexername or not seriesid:
+    def testRename(self, showslug=None):
+        if not showslug:
             return self._genericMessage('Error', 'You must specify a show')
 
-        series_obj = Show.find_by_id(app.showList, indexer_name_to_id(indexername), seriesid)
+        identifier = SeriesIdentifier.from_slug(showslug)
+        series_obj = Series.find_by_identifier(identifier)
 
         if series_obj is None:
             return self._genericMessage('Error', 'Show not in show list')
@@ -1656,12 +1361,12 @@ class Home(WebRoot):
         return t.render(ep_obj_list=ep_obj_rename_list, show=series_obj,
                         controller='home', action='previewRename')
 
-    def doRename(self, indexername=None, seriesid=None, eps=None):
-        if not all([indexername, seriesid, eps]):
+    def doRename(self, showslug=None, eps=None):
+        if not all([showslug, eps]):
             error_message = 'You must specify a show and at least one episode'
             return self._genericMessage('Error', error_message)
 
-        series_obj = Show.find_by_id(app.showList, indexer_name_to_id(indexername), seriesid)
+        series_obj = Series.find_by_identifier(SeriesIdentifier.from_slug(showslug))
 
         if series_obj is None:
             error_message = 'Error', 'Show not in show list'
@@ -1673,7 +1378,7 @@ class Home(WebRoot):
             return self._genericMessage('Error', "Can't rename episodes when the show dir is missing.")
 
         if eps is None:
-            return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
+            return self.redirect('/home/displayShow?showslug={series_obj.slug}'.format(series_obj=series_obj))
 
         main_db_con = db.DBConnection()
         for cur_ep in eps.split('|'):
@@ -1685,7 +1390,7 @@ class Home(WebRoot):
                 'SELECT location '
                 'FROM tv_episodes '
                 'WHERE indexer = ? AND showid = ? AND season = ? AND episode = ? AND 5=5',
-                [indexer_name_to_id(indexername), seriesid, season_no, episode_no])
+                [series_obj.indexer, series_obj.series_id, season_no, episode_no])
             if not ep_result:
                 logger.log(u'Unable to find an episode for {episode}, skipping'.format
                            (episode=cur_ep), logger.WARNING)
@@ -1707,12 +1412,12 @@ class Home(WebRoot):
 
             root_ep_obj.rename()
 
-        return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
+        return self.redirect('/home/displayShow?showslug={series_obj.slug}'.format(series_obj=series_obj))
 
-    def searchEpisode(self, indexername=None, seriesid=None, season=None, episode=None):
+    def searchEpisode(self, showslug=None, season=None, episode=None):
         """Search for a single episode using a Backlog Search using providers that are backlog enabled."""
-        # retrieve the episode object and fail if we can't get one
-        series_obj = Show.find_by_id(app.showList, indexer_name_to_id(indexername), seriesid)
+        # retrieve the episode object and fail if we can't get one0
+        series_obj = Series.find_by_identifier(SeriesIdentifier.from_slug(showslug))
         ep_obj = series_obj.get_episode(season, episode)
         if not ep_obj:
             return json.dumps({
@@ -1740,22 +1445,28 @@ class Home(WebRoot):
                 'result': 'failure',
             })
 
-    # ## Returns the current ep_queue_item status for the current viewed show.
-    # Possible status: Downloaded, Snatched, etc...
-    # Returns {'show': 279530, 'episodes' : ['episode' : 6, 'season' : 1, 'searchstatus' : 'queued', 'status' : 'running', 'quality': '4013']
-    def getManualSearchStatus(self, indexername=None, seriesid=None):
-        indexer_id = indexer_name_to_id(indexername)
-        series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
+    def getManualSearchStatus(self, showslug=None):
+        """
+        Returns the current ep_queue_item status for the current viewed show.
+        Possible status: Downloaded, Snatched, etc...
+        Returns {'show': 279530, 'episodes' : ['episode' : 6, 'season' : 1, 'searchstatus' : 'queued', 'status' : 'running', 'quality': '4013']
+        :param indexername: Name of indexer. For ex. 'tvdb', 'tmdb', 'tvmaze'
+        :param seriesid: Id of series as identified by the indexer
+        :return:
+        """
+        series_obj = None
+        if showslug:
+            identifier = SeriesIdentifier.from_slug(showslug)
+            series_obj = Series.find_by_identifier(identifier)
         episodes = collect_episodes_from_search_thread(series_obj)
 
         return json.dumps({
             'episodes': episodes,
         })
 
-    def searchEpisodeSubtitles(self, indexername=None, seriesid=None, season=None, episode=None, lang=None):
+    def searchEpisodeSubtitles(self, showslug=None, season=None, episode=None, lang=None):
         # retrieve the episode object and fail if we can't get one
-        indexer_id = indexer_name_to_id(indexername)
-        series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
+        series_obj = Series.find_by_identifier(SeriesIdentifier.from_slug(showslug))
         ep_obj = series_obj.get_episode(season, episode)
         if not ep_obj:
             return json.dumps({
@@ -1767,60 +1478,75 @@ class Home(WebRoot):
                 logger.log('Manual re-downloading subtitles for {show} with language {lang}'.format
                            (show=ep_obj.series.name, lang=lang))
             new_subtitles = ep_obj.download_subtitles(lang=lang)
-        except Exception:
+        except Exception as error:
             return json.dumps({
                 'result': 'failure',
+                'description': 'Error while downloading subtitles: {error}'.format(error=error)
             })
 
         if new_subtitles:
             new_languages = [subtitles.name_from_code(code) for code in new_subtitles]
-            status = 'New subtitles downloaded: {languages}'.format(languages=', '.join(new_languages))
+            description = 'New subtitles downloaded: {languages}'.format(languages=', '.join(new_languages))
             result = 'success'
         else:
             new_languages = []
-            status = 'No subtitles downloaded'
+            description = 'No subtitles downloaded'
             result = 'failure'
 
-        ui.notifications.message(ep_obj.series.name, status)
+        ui.notifications.message(ep_obj.series.name, description)
         return json.dumps({
             'result': result,
-            'subtitles': ','.join(ep_obj.subtitles),
-            'new_subtitles': ','.join(new_languages),
+            'subtitles': ep_obj.subtitles,
+            'languages': new_languages,
+            'description': description
         })
 
-    def manual_search_subtitles(self, indexername=None, seriesid=None, season=None, episode=None, release_id=None, picked_id=None):
+    def manualSearchSubtitles(self, showslug=None, season=None, episode=None, release_id=None, picked_id=None):
         mode = 'downloading' if picked_id else 'searching'
+        description = ''
+
         logger.log('Starting to manual {mode} subtitles'.format(mode=mode))
         try:
             if release_id:
                 # Release ID is sent when using postpone
                 release = app.RELEASES_IN_PP[int(release_id)]
-                seriesid = release['seriesid']
-                indexername = release['indexername']
+                indexer_name = release['indexername']
+                series_id = release['seriesid']
                 season = release['season']
                 episode = release['episode']
                 filepath = release['release']
+                identifier = SeriesIdentifier.from_id(indexer_name_to_id(indexer_name), series_id)
             else:
                 filepath = None
+                identifier = SeriesIdentifier.from_slug(showslug)
 
-            series_obj = Show.find_by_id(app.showList, indexer_name_to_id(indexername), seriesid)
+            series_obj = Series.find_by_identifier(identifier)
             ep_obj = series_obj.get_episode(season, episode)
             video_path = filepath or ep_obj.location
             release_name = ep_obj.release_name or os.path.basename(video_path)
         except IndexError:
             ui.notifications.message('Outdated list', 'Please refresh page and try again')
             logger.log('Outdated list. Please refresh page and try again', logger.WARNING)
-            return json.dumps({'result': 'failure'})
+            return json.dumps({
+                'result': 'failure',
+                'description': 'Outdated list. Please refresh page and try again'
+            })
         except (ValueError, TypeError) as e:
             ui.notifications.message('Error', 'Please check logs')
             logger.log('Error while manual {mode} subtitles. Error: {error_msg}'.format
                        (mode=mode, error_msg=e), logger.ERROR)
-            return json.dumps({'result': 'failure'})
+            return json.dumps({
+                'result': 'failure',
+                'description': 'Error while manual {mode} subtitles. Error: {error_msg}'.format(mode=mode, error_msg=e)
+            })
 
         if not os.path.isfile(video_path):
             ui.notifications.message(ep_obj.series.name, "Video file no longer exists. Can't search for subtitles")
             logger.log('Video file no longer exists: {video_file}'.format(video_file=video_path), logger.DEBUG)
-            return json.dumps({'result': 'failure'})
+            return json.dumps({
+                'result': 'failure',
+                'description': 'Video file no longer exists: {video_file}'.format(video_file=video_path)
+            })
 
         if mode == 'searching':
             logger.log('Manual searching subtitles for: {0}'.format(release_name))
@@ -1829,7 +1555,11 @@ class Home(WebRoot):
                 ui.notifications.message(ep_obj.series.name, 'Found {} subtitles'.format(len(found_subtitles)))
             else:
                 ui.notifications.message(ep_obj.series.name, 'No subtitle found')
-            result = 'success' if found_subtitles else 'failure'
+            if found_subtitles:
+                result = 'success'
+            else:
+                result = 'failure'
+                description = 'No subtitles found'
             subtitles_result = found_subtitles
         else:
             logger.log('Manual downloading subtitles for: {0}'.format(release_name))
@@ -1840,16 +1570,22 @@ class Home(WebRoot):
                                          'Subtitle downloaded: {0}'.format(','.join(new_manual_subtitle)))
             else:
                 ui.notifications.message(ep_obj.series.name, 'Failed to download subtitle for {0}'.format(release_name))
-            result = 'success' if new_manual_subtitle else 'failure'
+            if new_manual_subtitle:
+                result = 'success'
+            else:
+                result = 'failure'
+                description = 'Failed to download subtitle for {0}'.format(release_name)
+
             subtitles_result = new_manual_subtitle
 
         return json.dumps({
             'result': result,
             'release': release_name,
-            'subtitles': subtitles_result
+            'subtitles': subtitles_result,
+            'description': description
         })
 
-    def setSceneNumbering(self, indexername=None, seriesid=None, forSeason=None, forEpisode=None, forAbsolute=None, sceneSeason=None,
+    def setSceneNumbering(self, showslug=None, forSeason=None, forEpisode=None, forAbsolute=None, sceneSeason=None,
                           sceneEpisode=None, sceneAbsolute=None):
 
         # sanitize:
@@ -1860,8 +1596,14 @@ class Home(WebRoot):
         sceneEpisode = None if sceneEpisode in ['null', ''] else sceneEpisode
         sceneAbsolute = None if sceneAbsolute in ['null', ''] else sceneAbsolute
 
-        indexer_id = indexer_name_to_id(indexername)
-        series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
+        identifier = SeriesIdentifier.from_slug(showslug)
+        series_obj = Series.find_by_identifier(identifier)
+
+        if not series_obj:
+            return json.dumps({
+                'success': False,
+                'errorMessage': 'Could not find show {show_slug} to set scene numbering'.format(show_slug=series_obj.slug),
+            })
 
         # Check if this is an anime, because we can't set the Scene numbering for anime shows
         if series_obj.is_anime and forAbsolute is None:
@@ -1905,13 +1647,13 @@ class Home(WebRoot):
             })
         elif series_obj.is_anime:
             logger.log(u'Set absolute scene numbering for {show} from {absolute} to {scene_absolute}'.format
-                       (show=seriesid, absolute=forAbsolute, scene_absolute=sceneAbsolute), logger.DEBUG)
+                       (show=series_obj.slug, absolute=forAbsolute, scene_absolute=sceneAbsolute), logger.DEBUG)
 
             forAbsolute = int(forAbsolute)
             if sceneAbsolute is not None:
                 sceneAbsolute = int(sceneAbsolute)
 
-            set_scene_numbering(series_obj, absolute_number=forAbsolute, sceneAbsolute=sceneAbsolute)
+            set_scene_numbering(series_obj, absolute_number=forAbsolute, scene_absolute=sceneAbsolute)
         else:
             logger.log(u'setEpisodeSceneNumbering for {show} from {season}x{episode} to {scene_season}x{scene_episode}'.format
                        (show=series_obj.indexerid, season=forSeason, episode=forEpisode,
@@ -1926,51 +1668,17 @@ class Home(WebRoot):
 
             set_scene_numbering(
                 series_obj, season=forSeason, episode=forEpisode,
-                sceneSeason=sceneSeason, sceneEpisode=sceneEpisode
+                scene_season=sceneSeason, scene_episode=sceneEpisode
             )
 
         if series_obj.is_anime:
             sn = get_scene_absolute_numbering(series_obj, forAbsolute)
-            if sn:
-                result['sceneAbsolute'] = sn
-            else:
-                result['sceneAbsolute'] = None
+            result['sceneAbsolute'] = sn
         else:
-            sn = get_scene_numbering(series_obj, forSeason, forEpisode)
-            if sn:
-                (result['sceneSeason'], result['sceneEpisode']) = sn
-            else:
-                (result['sceneSeason'], result['sceneEpisode']) = (None, None)
+            sn = get_scene_numbering(series_obj, forEpisode, forSeason)
+            (result['sceneSeason'], result['sceneEpisode']) = sn
 
         return json.dumps(result)
-
-    def retryEpisode(self, indexername, seriesid, season, episode, down_cur_quality=0):
-        # retrieve the episode object and fail if we can't get one
-        indexer_id = indexer_name_to_id(indexername)
-        series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
-
-        ep_obj = series_obj.get_episode(season, episode)
-        if not ep_obj:
-            return json.dumps({
-                'result': 'failure',
-            })
-
-        # make a queue item for it and put it on the queue
-        ep_queue_item = FailedQueueItem(ep_obj.series, [ep_obj], bool(int(down_cur_quality)))  # pylint: disable=no-member
-        app.forced_search_queue_scheduler.action.add_item(ep_queue_item)
-
-        if not ep_queue_item.started and ep_queue_item.success is None:
-            return json.dumps(
-                {'result': 'success',
-                 })  # Search has not been started yet!
-        if ep_queue_item.started and ep_queue_item.success is None:
-            return json.dumps({
-                'result': 'success',
-            })
-        else:
-            return json.dumps({
-                'result': 'failure',
-            })
 
     @staticmethod
     def fetch_releasegroups(series_name):

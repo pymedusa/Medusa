@@ -1,0 +1,3656 @@
+{ "providers": {
+    "nyaa": {
+        "name": "Nyaa",
+        "id": "nyaa",
+        "config": {
+            "enabled": true,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": true,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER|REPACK|REAL|RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": true,
+        "supportsBacklog": true,
+        "url": "https://nyaa.si",
+        "urls": {},
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        },
+        "cache": []
+    },
+    "binsearch": {
+        "name": "BinSearch",
+        "id": "binsearch",
+        "config": {
+            "enabled": true,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "nzb",
+        "public": true,
+        "btCacheUrls": [],
+        "properStrings": [
+            "PROPER",
+            "REPACK",
+            "REAL",
+            "RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://www.binsearch.info",
+        "urls": {
+            "search": "https://www.binsearch.info/index.php",
+            "rss": "https://www.binsearch.info/browse.php"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        },
+        "cache": [
+            {
+                "identifier": "Black.Mirror.S04E06.Black.Museum.REPACK.1080p.NF.WEB-DL.DD5.1.H.264-QO.Q_-1",
+                "release": "Black.Mirror.S04E06.Black.Museum.REPACK.1080p.NF.WEB-DL.DD5.1.H.264-QO.Q",
+                "season": 4,
+                "episodes": [
+                    6
+                ],
+                "seasonPack": false,
+                "indexer": 1,
+                "seriesId": 253463,
+                "showSlug": "tvdb253463",
+                "url": "https://www.binsearch.info/fcgi/nzb.fcgi?adv_age=&xminsize=20&max=250&q=Black+Mirror+S04E06&server=1|000000",
+                "time": "2020-06-29T16:43:22",
+                "quality": 128,
+                "releaseGroup": "QO.Q",
+                "dateAdded": "2020-06-29T16:43:22",
+                "version": -1,
+                "seeders": -1,
+                "size": -1,
+                "leechers": -1,
+                "pubdate": "2018-01-04T16:43:21+01:00",
+                "provider": {
+                    "id": "binsearch",
+                    "name": "BinSearch",
+                    "imageName": "binsearch.png"
+                }
+            },
+            {
+                "identifier": "black.mirror.s04e06.720p.webrip.x264-strife_1492501135",
+                "release": "black.mirror.s04e06.720p.webrip.x264-strife",
+                "season": 4,
+                "episodes": [
+                    6
+                ],
+                "seasonPack": false,
+                "indexer": 1,
+                "seriesId": 253463,
+                "showSlug": "tvdb253463",
+                "url": "https://www.binsearch.info/fcgi/nzb.fcgi?adv_age=&xminsize=20&max=250&q=Black+Mirror+S04E06&server=1|000000",
+                "time": "2020-06-29T16:43:22",
+                "quality": 64,
+                "releaseGroup": "strife",
+                "dateAdded": "2020-06-29T16:43:22",
+                "version": -1,
+                "seeders": -1,
+                "size": 1492501135,
+                "leechers": -1,
+                "pubdate": "2017-12-30T16:43:21+01:00",
+                "provider": {
+                    "id": "binsearch",
+                    "name": "BinSearch",
+                    "imageName": "binsearch.png"
+                }
+            },
+            {
+                "identifier": "Black.Mirror.-.S04E06.-.Black.Museum.-.Deutsch.by.Mittendrinn_966524928",
+                "release": "Black.Mirror.-.S04E06.-.Black.Museum.-.Deutsch.by.Mittendrinn",
+                "season": 4,
+                "episodes": [
+                    6
+                ],
+                "seasonPack": false,
+                "indexer": 1,
+                "seriesId": 253463,
+                "showSlug": "tvdb253463",
+                "url": "https://www.binsearch.info/fcgi/nzb.fcgi?adv_age=&xminsize=20&max=250&q=Black+Mirror+S04E06&server=1|000000",
+                "time": "2020-06-29T16:43:22",
+                "quality": 1,
+                "releaseGroup": null,
+                "dateAdded": "2020-06-29T16:43:22",
+                "version": -1,
+                "seeders": -1,
+                "size": 966524928,
+                "leechers": -1,
+                "pubdate": "2017-12-30T16:43:21+01:00",
+                "provider": {
+                    "id": "binsearch",
+                    "name": "BinSearch",
+                    "imageName": "binsearch.png"
+                }
+            }
+        ]
+    },
+    "nzbgeek": {
+        "name": "nzbgeek",
+        "id": "nzbgeek",
+        "config": {
+            "enabled": true,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}",
+                    "Season {season}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "nzb",
+        "public": true,
+        "btCacheUrls": [],
+        "properStrings": [
+            "PROPER|REPACK|REAL|RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)",
+            "Referer": "https://api.nzbgeek.info/"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://api.nzbgeek.info/",
+        "urls": {},
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        },
+        "cache": [
+            {
+                "identifier": "https://api.nzbgeek.info/api?t=get&id=000000&apikey=000000",
+                "release": "black.mirror.s04e06.final.multi.1080p.webrip.x264-brink-Obfuscated",
+                "season": 4,
+                "episodes": [
+                    6
+                ],
+                "seasonPack": false,
+                "indexer": 1,
+                "seriesId": 253463,
+                "showSlug": "tvdb253463",
+                "url": "https://api.nzbgeek.info/api?t=get&id=000000&apikey=000000",
+                "time": "2020-06-29T16:43:31",
+                "quality": 128,
+                "releaseGroup": "brink",
+                "dateAdded": "2020-06-29T16:43:31",
+                "version": -1,
+                "seeders": -1,
+                "size": 3288687000,
+                "leechers": -1,
+                "pubdate": "2018-01-28T11:41:26+00:00",
+                "provider": {
+                    "id": "nzbgeek",
+                    "name": "nzbgeek",
+                    "imageName": "newznab.png"
+                }
+            },
+            {
+                "identifier": "https://api.nzbgeek.info/api?t=get&id=000000&apikey=000000",
+                "release": "Black.Mirror.S04E06.REPACK.1080p.WEBRip.x264-SERIOUSLY-Scrambled",
+                "season": 4,
+                "episodes": [
+                    6
+                ],
+                "seasonPack": false,
+                "indexer": 1,
+                "seriesId": 253463,
+                "showSlug": "tvdb253463",
+                "url": "https://api.nzbgeek.info/api?t=get&id=000000&apikey=000000",
+                "time": "2020-06-29T16:43:31",
+                "quality": 128,
+                "releaseGroup": "SERIOUSLY",
+                "dateAdded": "2020-06-29T16:43:31",
+                "version": -1,
+                "seeders": -1,
+                "size": 1707500000,
+                "leechers": -1,
+                "pubdate": "2018-01-11T11:56:46+00:00",
+                "provider": {
+                    "id": "nzbgeek",
+                    "name": "nzbgeek",
+                    "imageName": "newznab.png"
+                }
+            },
+            {
+                "identifier": "https://api.nzbgeek.info/api?t=get&id=000000&apikey=000000",
+                "release": "black.mirror.s04e06.internal.1080p.web.x264.1-strife-Obfuscated",
+                "season": 4,
+                "episodes": [
+                    6
+                ],
+                "seasonPack": false,
+                "indexer": 1,
+                "seriesId": 253463,
+                "showSlug": "tvdb253463",
+                "url": "https://api.nzbgeek.info/api?t=get&id=000000&apikey=000000",
+                "time": "2020-06-29T16:43:31",
+                "quality": 128,
+                "releaseGroup": "1-strife",
+                "dateAdded": "2020-06-29T16:43:31",
+                "version": -1,
+                "seeders": -1,
+                "size": 1418053000,
+                "leechers": -1,
+                "pubdate": "2018-01-07T00:25:23+00:00",
+                "provider": {
+                    "id": "nzbgeek",
+                    "name": "nzbgeek",
+                    "imageName": "newznab.png"
+                }
+            },
+            {
+                "identifier": "https://api.nzbgeek.info/api?t=get&id=000000&apikey=000000",
+                "release": "Black.Mirror.S04E06.INTERNAL.1080p.WEB.x264-STRiFE-Obfuscated",
+                "season": 4,
+                "episodes": [
+                    6
+                ],
+                "seasonPack": false,
+                "indexer": 1,
+                "seriesId": 253463,
+                "showSlug": "tvdb253463",
+                "url": "https://api.nzbgeek.info/api?t=get&id=000000&apikey=000000",
+                "time": "2020-06-29T16:43:31",
+                "quality": 128,
+                "releaseGroup": "STRiFE",
+                "dateAdded": "2020-06-29T16:43:31",
+                "version": -1,
+                "seeders": -1,
+                "size": 1418053000,
+                "leechers": -1,
+                "pubdate": "2017-12-30T07:25:51+00:00",
+                "provider": {
+                    "id": "nzbgeek",
+                    "name": "nzbgeek",
+                    "imageName": "newznab.png"
+                }
+            },
+            {
+                "identifier": "https://api.nzbgeek.info/api?t=get&id=000000&apikey=000000",
+                "release": "Black.Mirror.S04E06.1080p.WEBRip.x264-SERIOUSLY-Obfuscated",
+                "season": 4,
+                "episodes": [
+                    6
+                ],
+                "seasonPack": false,
+                "indexer": 1,
+                "seriesId": 253463,
+                "showSlug": "tvdb253463",
+                "url": "https://api.nzbgeek.info/api?t=get&id=000000&apikey=000000",
+                "time": "2020-06-29T16:43:31",
+                "quality": 128,
+                "releaseGroup": "SERIOUSLY",
+                "dateAdded": "2020-06-29T16:43:31",
+                "version": -1,
+                "seeders": -1,
+                "size": 1713377000,
+                "leechers": -1,
+                "pubdate": "2017-12-30T07:17:22+00:00",
+                "provider": {
+                    "id": "nzbgeek",
+                    "name": "nzbgeek",
+                    "imageName": "newznab.png"
+                }
+            },
+            {
+                "identifier": "https://api.nzbgeek.info/api?t=get&id=000000&apikey=000000",
+                "release": "Black.Mirror.S04E06.Black.Museum.720p.NF.WEBRip.DD5.1.x264.1-QOQ-Obfuscated",
+                "season": 4,
+                "episodes": [
+                    6
+                ],
+                "seasonPack": false,
+                "indexer": 1,
+                "seriesId": 253463,
+                "showSlug": "tvdb253463",
+                "url": "https://api.nzbgeek.info/api?t=get&id=000000&apikey=000000",
+                "time": "2020-06-29T16:43:31",
+                "quality": 64,
+                "releaseGroup": "1-QOQ",
+                "dateAdded": "2020-06-29T16:43:31",
+                "version": -1,
+                "seeders": -1,
+                "size": 3809023000,
+                "leechers": -1,
+                "pubdate": "2018-08-19T23:15:36+00:00",
+                "provider": {
+                    "id": "nzbgeek",
+                    "name": "nzbgeek",
+                    "imageName": "newznab.png"
+                }
+            },
+            {
+                "identifier": "https://api.nzbgeek.info/api?t=get&id=000000&apikey=000000",
+                "release": "Black.Mirror.S04E06.Black.Museum.720p.10bit.WEBRip.2CH.x265.HEVC-PSA-Obfuscated",
+                "season": 4,
+                "episodes": [
+                    6
+                ],
+                "seasonPack": false,
+                "indexer": 1,
+                "seriesId": 253463,
+                "showSlug": "tvdb253463",
+                "url": "https://api.nzbgeek.info/api?t=get&id=000000&apikey=000000",
+                "time": "2020-06-29T16:43:31",
+                "quality": 64,
+                "releaseGroup": "PSA",
+                "dateAdded": "2020-06-29T16:43:31",
+                "version": -1,
+                "seeders": -1,
+                "size": 382404000,
+                "leechers": -1,
+                "pubdate": "2018-02-01T03:58:12+00:00",
+                "provider": {
+                    "id": "nzbgeek",
+                    "name": "nzbgeek",
+                    "imageName": "newznab.png"
+                }
+            },
+            {
+                "identifier": "https://api.nzbgeek.info/api?t=get&id=000000&apikey=000000",
+                "release": "black.mirror.s04e06.720p.webrip.x264-strife",
+                "season": 4,
+                "episodes": [
+                    6
+                ],
+                "seasonPack": false,
+                "indexer": 1,
+                "seriesId": 253463,
+                "showSlug": "tvdb253463",
+                "url": "https://api.nzbgeek.info/api?t=get&id=000000&apikey=000000",
+                "time": "2020-06-29T16:43:31",
+                "quality": 64,
+                "releaseGroup": "strife",
+                "dateAdded": "2020-06-29T16:43:31",
+                "version": -1,
+                "seeders": -1,
+                "size": 1486722000,
+                "leechers": -1,
+                "pubdate": "2017-12-30T08:34:59+00:00",
+                "provider": {
+                    "id": "nzbgeek",
+                    "name": "nzbgeek",
+                    "imageName": "newznab.png"
+                }
+            },
+            {
+                "identifier": "https://api.nzbgeek.info/api?t=get&id=000000&apikey=000000",
+                "release": "Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE-Obfuscated",
+                "season": 4,
+                "episodes": [
+                    6
+                ],
+                "seasonPack": false,
+                "indexer": 1,
+                "seriesId": 253463,
+                "showSlug": "tvdb253463",
+                "url": "https://api.nzbgeek.info/api?t=get&id=000000&apikey=000000",
+                "time": "2020-06-29T16:43:31",
+                "quality": 64,
+                "releaseGroup": "STRiFE",
+                "dateAdded": "2020-06-29T16:43:31",
+                "version": -1,
+                "seeders": -1,
+                "size": 1440549000,
+                "leechers": -1,
+                "pubdate": "2017-12-30T07:19:53+00:00",
+                "provider": {
+                    "id": "nzbgeek",
+                    "name": "nzbgeek",
+                    "imageName": "newznab.png"
+                }
+            },
+            {
+                "identifier": "https://api.nzbgeek.info/api?t=get&id=000000&apikey=000000",
+                "release": "Black.Mirror.S04E06.REPACK.1080p.HEVC.x265-MeGusta-Obfuscated",
+                "season": 4,
+                "episodes": [
+                    6
+                ],
+                "seasonPack": false,
+                "indexer": 1,
+                "seriesId": 253463,
+                "showSlug": "tvdb253463",
+                "url": "https://api.nzbgeek.info/api?t=get&id=000000&apikey=000000",
+                "time": "2020-06-29T16:43:31",
+                "quality": 32,
+                "releaseGroup": "MeGusta",
+                "dateAdded": "2020-06-29T16:43:31",
+                "version": -1,
+                "seeders": -1,
+                "size": 817631000,
+                "leechers": -1,
+                "pubdate": "2018-02-01T03:54:12+00:00",
+                "provider": {
+                    "id": "nzbgeek",
+                    "name": "nzbgeek",
+                    "imageName": "newznab.png"
+                }
+            },
+            {
+                "identifier": "https://api.nzbgeek.info/api?t=get&id=000000&apikey=000000",
+                "release": "Black.Mirror.S04E06.WEBRip.HebSubs.XviD-AFG-Rakuv",
+                "season": 4,
+                "episodes": [
+                    6
+                ],
+                "seasonPack": false,
+                "indexer": 1,
+                "seriesId": 253463,
+                "showSlug": "tvdb253463",
+                "url": "https://api.nzbgeek.info/api?t=get&id=000000&apikey=000000",
+                "time": "2020-06-29T16:43:31",
+                "quality": 2,
+                "releaseGroup": "AFG",
+                "dateAdded": "2020-06-29T16:43:31",
+                "version": -1,
+                "seeders": -1,
+                "size": 718336000,
+                "leechers": -1,
+                "pubdate": "2018-05-10T18:35:30+00:00",
+                "provider": {
+                    "id": "nzbgeek",
+                    "name": "nzbgeek",
+                    "imageName": "newznab.png"
+                }
+            },
+            {
+                "identifier": "https://api.nzbgeek.info/api?t=get&id=000000&apikey=000000",
+                "release": "Black.Mirror.S04E06.WEBRip.HebSubs.XviD-AFG",
+                "season": 4,
+                "episodes": [
+                    6
+                ],
+                "seasonPack": false,
+                "indexer": 1,
+                "seriesId": 253463,
+                "showSlug": "tvdb253463",
+                "url": "https://api.nzbgeek.info/api?t=get&id=000000&apikey=000000",
+                "time": "2020-06-29T16:43:31",
+                "quality": 2,
+                "releaseGroup": "AFG",
+                "dateAdded": "2020-06-29T16:43:31",
+                "version": -1,
+                "seeders": -1,
+                "size": 718336000,
+                "leechers": -1,
+                "pubdate": "2018-05-08T20:21:58+00:00",
+                "provider": {
+                    "id": "nzbgeek",
+                    "name": "nzbgeek",
+                    "imageName": "newznab.png"
+                }
+            },
+            {
+                "identifier": "https://api.nzbgeek.info/api?t=get&id=000000&apikey=000000",
+                "release": "Black.Mirror-S04E06-Black.Museum-Deutsch.by.Mittendrinn-Obfuscated",
+                "season": 4,
+                "episodes": [
+                    6
+                ],
+                "seasonPack": false,
+                "indexer": 1,
+                "seriesId": 253463,
+                "showSlug": "tvdb253463",
+                "url": "https://api.nzbgeek.info/api?t=get&id=000000&apikey=000000",
+                "time": "2020-06-29T16:43:31",
+                "quality": 1,
+                "releaseGroup": null,
+                "dateAdded": "2020-06-29T16:43:31",
+                "version": -1,
+                "seeders": -1,
+                "size": 997118000,
+                "leechers": -1,
+                "pubdate": "2017-12-29T23:01:47+00:00",
+                "provider": {
+                    "id": "nzbgeek",
+                    "name": "nzbgeek",
+                    "imageName": "newznab.png"
+                }
+            },
+            {
+                "identifier": "https://api.nzbgeek.info/api?t=get&id=000000&apikey=000000",
+                "release": "Black.Mirror.-.S04E06.-.Black.Museum.-.Deutsch.by.Mittendrinn",
+                "season": 4,
+                "episodes": [
+                    6
+                ],
+                "seasonPack": false,
+                "indexer": 1,
+                "seriesId": 253463,
+                "showSlug": "tvdb253463",
+                "url": "https://api.nzbgeek.info/api?t=get&id=000000&apikey=000000",
+                "time": "2020-06-29T16:43:31",
+                "quality": 1,
+                "releaseGroup": null,
+                "dateAdded": "2020-06-29T16:43:31",
+                "version": -1,
+                "seeders": -1,
+                "size": 958409000,
+                "leechers": -1,
+                "pubdate": "2017-12-29T22:41:58+00:00",
+                "provider": {
+                    "id": "nzbgeek",
+                    "name": "nzbgeek",
+                    "imageName": "newznab.png"
+                }
+            }
+        ]
+    },
+    "nzbgeek": {
+        "name": "NZBGeek",
+        "id": "nzbgeek",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}",
+                    "Season {season}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "nzb",
+        "public": false,
+        "btCacheUrls": [],
+        "properStrings": [
+            "PROPER|REPACK|REAL|RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://api.nzbgeek.info/",
+        "urls": {},
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "iptorrents": {
+        "name": "IPTorrents",
+        "id": "iptorrents",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": false
+                },
+                "manual": {
+                    "enabled": false
+                },
+                "daily": {
+                    "enabled": false,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER|REPACK|REAL|RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://iptorrents.eu",
+        "urls": {
+            "base_url": "https://iptorrents.eu",
+            "login": "https://iptorrents.eu/torrents",
+            "search": "https://iptorrents.eu/t?%s%s&q=%s&qf=#torrents"
+        },
+        "cookies": {
+            "enabled": true,
+            "required": ""
+        }
+    },
+    "pretome": {
+        "name": "Pretome",
+        "id": "pretome",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": false
+                },
+                "manual": {
+                    "enabled": false
+                },
+                "daily": {
+                    "enabled": false,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER",
+            "REPACK",
+            "REAL",
+            "RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://pretome.info",
+        "urls": {
+            "login": "https://pretome.info/takelogin.php",
+            "search": "https://pretome.info/browse.php"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "limetorrents": {
+        "name": "LimeTorrents",
+        "id": "limetorrents",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": true,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER",
+            "REPACK",
+            "REAL"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://www.limetorrents.info",
+        "urls": {
+            "update": "https://www.limetorrents.info/post/updatestats.php",
+            "search": "https://www.limetorrents.info/search/tv/{query}/",
+            "rss": "https://www.limetorrents.info/browse-torrents/TV-shows/"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "rarbg": {
+        "name": "Rarbg",
+        "id": "rarbg",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": true,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "{{PROPER|REPACK|REAL|RERIP}}"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://rarbg.com",
+        "urls": {
+            "api": "http://torrentapi.org/pubapi_v2.php"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "tokyotoshokan": {
+        "name": "TokyoToshokan",
+        "id": "tokyotoshokan",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": true,
+        "type": "torrent",
+        "public": true,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER|REPACK|REAL|RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": true,
+        "supportsBacklog": true,
+        "url": "http://tokyotosho.info/",
+        "urls": {
+            "search": "http://tokyotosho.info/search.php",
+            "rss": "http://tokyotosho.info/rss.php"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "abnormal": {
+        "name": "ABNormal",
+        "id": "abnormal",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://abnormal.ws",
+        "urls": {
+            "login": "https://abnormal.ws/login.php",
+            "search": "https://abnormal.ws/torrents.php"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "alpharatio": {
+        "name": "AlphaRatio",
+        "id": "alpharatio",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER",
+            "REPACK"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://alpharatio.cc",
+        "urls": {
+            "login": "https://alpharatio.cc/login.php",
+            "search": "https://alpharatio.cc/torrents.php"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "anidex": {
+        "name": "AniDex",
+        "id": "anidex",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": true,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER|REPACK|REAL|RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": true,
+        "supportsBacklog": true,
+        "url": "https://anidex.info",
+        "urls": {
+            "search": "https://anidex.info"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "animetorrents": {
+        "name": "AnimeTorrents",
+        "id": "animetorrents",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": true,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": true,
+        "supportsBacklog": true,
+        "url": "http://animetorrents.me",
+        "urls": {
+            "login": "http://animetorrents.me/login.php",
+            "search_ajax": "http://animetorrents.me/ajax/torrents_data.php"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "archetorrent": {
+        "name": "ArcheTorrent",
+        "id": "archetorrent",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER",
+            "REPACK",
+            "REAL",
+            "RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://www.archetorrent.com/",
+        "urls": {
+            "login": "https://www.archetorrent.com/account-login.php",
+            "search": "https://www.archetorrent.com/torrents-search.php",
+            "download": "https://www.archetorrent.com/download.php?id={0}"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "avistaz": {
+        "name": "AvistaZ",
+        "id": "avistaz",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER",
+            "REPACK",
+            "REAL",
+            "RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://avistaz.to",
+        "urls": {
+            "login": "https://avistaz.to/auth/login",
+            "search": "https://avistaz.to/torrents"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "beyond_hd": {
+        "name": "Beyond-HD",
+        "id": "beyond_hd",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER",
+            "REPACK",
+            "REAL",
+            "RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://beyond-hd.me",
+        "urls": {
+            "login": "https://beyond-hd.me/login",
+            "search": "https://beyond-hd.me/torrents"
+        },
+        "cookies": {
+            "enabled": true,
+            "required": ""
+        }
+    },
+    "bithdtv": {
+        "name": "BITHDTV",
+        "id": "bithdtv",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER",
+            "REPACK",
+            "REAL"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://www.bit-hdtv.com/",
+        "urls": {
+            "search": "https://www.bit-hdtv.com/torrents.php"
+        },
+        "cookies": {
+            "enabled": true,
+            "required": ""
+        }
+    },
+    "bj_share": {
+        "name": "BJ-Share",
+        "id": "bj_share",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER",
+            "REPACK",
+            "REAL",
+            "RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": true,
+        "supportsBacklog": true,
+        "url": "https://bj-share.info",
+        "urls": {
+            "search": "https://bj-share.info/torrents.php"
+        },
+        "cookies": {
+            "enabled": true,
+            "required": ""
+        }
+    },
+    "btdb": {
+        "name": "BTDB",
+        "id": "btdb",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": true,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER|REPACK|REAL|RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://btdb.eu",
+        "urls": {
+            "daily": "https://btdb.eu/recent"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "cinemaz": {
+        "name": "CinemaZ",
+        "id": "cinemaz",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER",
+            "REPACK",
+            "REAL",
+            "RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://cinemaz.to",
+        "urls": {
+            "login": "https://cinemaz.to/auth/login",
+            "search": "https://cinemaz.to/torrents"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "elitetracker": {
+        "name": "EliteTracker",
+        "id": "elitetracker",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER",
+            "REPACK",
+            "REAL",
+            "RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://elite-tracker.net",
+        "urls": {
+            "login": "https://elite-tracker.net/takelogin.php",
+            "search": "https://elite-tracker.net/browse.php"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "gimmepeers": {
+        "name": "GimmePeers",
+        "id": "gimmepeers",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER",
+            "REPACK",
+            "REAL",
+            "RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://www.gimmepeers.com",
+        "urls": {
+            "login": "https://www.gimmepeers.com/takelogin.php",
+            "search": "https://www.gimmepeers.com/browse.php"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "hdspace": {
+        "name": "HDSpace",
+        "id": "hdspace",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER|REPACK|REAL|RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://hd-space.org",
+        "urls": {
+            "login": "https://hd-space.org/index.php?page=login",
+            "search": "https://hd-space.org/index.php"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "hdtorrents": {
+        "name": "HDTorrents",
+        "id": "hdtorrents",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER",
+            "REPACK",
+            "REAL",
+            "RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://hd-torrents.org/",
+        "urls": {
+            "login": "https://hd-torrents.org/login.php",
+            "search": "https://hd-torrents.org/torrents.php"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "hebits": {
+        "name": "HeBits",
+        "id": "hebits",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER",
+            "REPACK",
+            "REAL",
+            "RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://hebits.net",
+        "urls": {
+            "login": "https://hebits.net/takeloginAjax.php",
+            "search": "https://hebits.net/browse.php"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "morethantv": {
+        "name": "MoreThanTV",
+        "id": "morethantv",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER",
+            "REPACK"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://www.morethan.tv/",
+        "urls": {
+            "login": "https://www.morethan.tv/login.php",
+            "search": "https://www.morethan.tv/torrents.php"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "nebulance": {
+        "name": "Nebulance",
+        "id": "nebulance",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER|REPACK|REAL|RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://nebulance.io/",
+        "urls": {
+            "login": "https://nebulance.io/login.php",
+            "search": "https://nebulance.io/torrents.php"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "nordicbits": {
+        "name": "NordicBits",
+        "id": "nordicbits",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER",
+            "REPACK",
+            "REAL",
+            "RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://nordicb.org",
+        "urls": {
+            "login": "https://nordicb.org/takelogin.php",
+            "search": "https://nordicb.org/browse.php"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "privatehd": {
+        "name": "PrivateHD",
+        "id": "privatehd",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER",
+            "REPACK",
+            "REAL",
+            "RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://privatehd.to",
+        "urls": {
+            "login": "https://privatehd.to/auth/login",
+            "search": "https://privatehd.to/torrents"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "scenetime": {
+        "name": "SceneTime",
+        "id": "scenetime",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            ""
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://www.scenetime.com",
+        "urls": {
+            "login": "https://www.scenetime.com/login.php",
+            "search": "https://www.scenetime.com/browse.php",
+            "download": "https://www.scenetime.com/download.php/{0}/{1}"
+        },
+        "cookies": {
+            "enabled": true,
+            "required": ""
+        }
+    },
+    "sdbits": {
+        "name": "SDBits",
+        "id": "sdbits",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "http://sdbits.org",
+        "urls": {
+            "login": "http://sdbits.org/takeloginn3.php",
+            "search": "http://sdbits.org/browse.php"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "shanaproject": {
+        "name": "ShanaProject",
+        "id": "shanaproject",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": true,
+        "type": "torrent",
+        "public": true,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER|REPACK|REAL|RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": true,
+        "supportsBacklog": true,
+        "url": "https://www.shanaproject.com/",
+        "urls": {
+            "search": "https://www.shanaproject.com/search/{page}/"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "speedcd": {
+        "name": "Speedcd",
+        "id": "speedcd",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER",
+            "REPACK",
+            "REAL",
+            "RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://speed.cd",
+        "urls": {
+            "search": "https://speed.cd/browse.php"
+        },
+        "cookies": {
+            "enabled": true,
+            "required": ""
+        }
+    },
+    "thepiratebay": {
+        "name": "ThePirateBay",
+        "id": "thepiratebay",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": true,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER|REPACK|REAL|RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://thepiratebay.org",
+        "urls": {},
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "torrentbytes": {
+        "name": "TorrentBytes",
+        "id": "torrentbytes",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER",
+            "REPACK",
+            "REAL",
+            "RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://www.torrentbytes.net",
+        "urls": {
+            "login": "https://www.torrentbytes.net/takelogin.php",
+            "search": "https://www.torrentbytes.net/browse.php"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "torrenting": {
+        "name": "Torrenting",
+        "id": "torrenting",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER",
+            "REPACK",
+            "REAL",
+            "RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://www.torrenting.com/",
+        "urls": {
+            "login": "https://www.torrenting.com/login.php",
+            "search": "https://www.torrenting.com/browse.php"
+        },
+        "cookies": {
+            "enabled": true,
+            "required": ""
+        }
+    },
+    "tvchaosuk": {
+        "name": "TvChaosUK",
+        "id": "tvchaosuk",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            ""
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://www.tvchaosuk.com",
+        "urls": {
+            "login": "https://www.tvchaosuk.com/takelogin.php",
+            "index": "https://www.tvchaosuk.com/index.php",
+            "search": "https://www.tvchaosuk.com/browse.php",
+            "query": "https://www.tvchaosuk.com/scripts/autocomplete/query.php"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "yggtorrent": {
+        "name": "Yggtorrent",
+        "id": "yggtorrent",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}",
+                    "Saison {season}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER",
+            "REPACK",
+            "REAL",
+            "RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://www.yggtorrent.to",
+        "urls": {
+            "auth": "https://www.yggtorrent.to/user/ajax_usermenu",
+            "login": "https://www.yggtorrent.to/user/login",
+            "search": "https://www.yggtorrent.to/engine/search",
+            "download": "https://www.yggtorrent.to/engine/download_torrent?id={0}"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "zooqle": {
+        "name": "Zooqle",
+        "id": "zooqle",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": true,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER",
+            "REPACK",
+            "REAL"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://zooqle.com",
+        "urls": {
+            "search": "https://zooqle.com/search"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "animebytes": {
+        "name": "AnimeBytes",
+        "id": "animebytes",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": true,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://animebytes.tv",
+        "urls": {
+            "search": "https://animebytes.tv/scrape.php"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "bitcannon": {
+        "name": "BitCannon",
+        "id": "bitcannon",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER|REPACK|REAL|RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "http://localhost:3000/",
+        "urls": {},
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "btn": {
+        "name": "BTN",
+        "id": "btn",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER|REPACK|REAL|RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": true,
+        "supportsBacklog": true,
+        "url": "https://broadcasthe.net",
+        "urls": {
+            "base_url": "https://api.broadcasthe.net"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "danishbits": {
+        "name": "Danishbits",
+        "id": "danishbits",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER",
+            "REPACK",
+            "REAL",
+            "RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://danishbits.org",
+        "urls": {
+            "search": "https://danishbits.org/couchpotato.php"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "eztv": {
+        "name": "Eztv",
+        "id": "eztv",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": true,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER|REPACK|REAL|RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://eztv.io",
+        "urls": {
+            "api": "https://eztv.io/api/get-torrents"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "hdbits": {
+        "name": "HDBits",
+        "id": "hdbits",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER",
+            "REPACK"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://hdbits.org",
+        "urls": {
+            "search": "https://hdbits.org/api/torrents",
+            "download": "https://hdbits.org/download.php?{0}"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "ncore": {
+        "name": "nCore",
+        "id": "ncore",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER",
+            "REPACK",
+            "REAL",
+            "RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://ncore.cc",
+        "urls": {
+            "login": "https://ncore.cc/login.php",
+            "search": "https://ncore.cc/torrents.php"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "norbits": {
+        "name": "Norbits",
+        "id": "norbits",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER|REPACK|REAL|RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://norbits.net",
+        "urls": {
+            "search": "https://norbits.net/api2.php?action=torrents",
+            "download": "https://norbits.net/download.php"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "torrentday": {
+        "name": "TorrentDay",
+        "id": "torrentday",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER|REPACK|REAL|RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://www.torrentday.com",
+        "urls": {},
+        "cookies": {
+            "enabled": true,
+            "required": ""
+        }
+    },
+    "torrentleech": {
+        "name": "TorrentLeech",
+        "id": "torrentleech",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER",
+            "REPACK",
+            "REAL",
+            "RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://www.torrentleech.org",
+        "urls": {
+            "login": "https://www.torrentleech.org/user/account/login",
+            "search": "https://www.torrentleech.org/torrents/browse/list/",
+            "download": "https://www.torrentleech.org/download/{id}/{file}",
+            "details": "https://www.torrentleech.org/torrent/{id}"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "xthor": {
+        "name": "Xthor",
+        "id": "xthor",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER|REPACK|REAL|RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://xthor.tk",
+        "urls": {
+            "search": "https://api.xthor.tk"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "shazbat_tv": {
+        "name": "Shazbat.tv",
+        "id": "shazbat_tv",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": false
+                },
+                "manual": {
+                    "enabled": false
+                },
+                "daily": {
+                    "enabled": false,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": false,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER|REPACK|REAL|RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": false,
+        "url": "http://www.shazbat.tv",
+        "urls": {
+            "login": "http://www.shazbat.tv/login",
+            "rss_recent": "http://www.shazbat.tv/rss/recent"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "torrentz2": {
+        "name": "Torrentz2",
+        "id": "torrentz2",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "torrent",
+        "public": true,
+        "btCacheUrls": [
+            "https://asnet.pw/download/{info_hash}/",
+            "https://p2pdl.com/download/{info_hash}",
+            "https://itorrents.org/torrent/{info_hash}.torrent",
+            "https://watercache.nanobytes.org/get/{info_hash}",
+            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
+        ],
+        "properStrings": [
+            "PROPER|REPACK|REAL|RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://torrentz2.eu/",
+        "urls": {
+            "base": "https://torrentz2.eu/",
+            "verified": "https://torrentz2.eu/feed_verified",
+            "feed": "https://torrentz2.eu/feed"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "anizb": {
+        "name": "Anizb",
+        "id": "anizb",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": "*",
+                "seasonTemplates": [
+                    "S{season:0>2}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": true,
+        "type": "nzb",
+        "public": true,
+        "btCacheUrls": [],
+        "properStrings": [
+            "PROPER|REPACK|REAL|RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": true,
+        "supportsBacklog": true,
+        "url": "https://anizb.org/",
+        "urls": {
+            "search": "https://anizb.org/api"
+        },
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "omgwtfnzbs": {
+        "name": "Omgwtfnzbs",
+        "id": "omgwtfnzbs",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}",
+                    "Season {season}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "nzb",
+        "public": false,
+        "btCacheUrls": [],
+        "properStrings": [
+            "PROPER|REPACK|REAL|RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://api.omgwtfnzbs.me/",
+        "urls": {},
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "nzb_cat": {
+        "name": "NZB.Cat",
+        "id": "nzb_cat",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}",
+                    "Season {season}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "nzb",
+        "public": false,
+        "btCacheUrls": [],
+        "properStrings": [
+            "PROPER|REPACK|REAL|RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://nzb.cat/",
+        "urls": {},
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    },
+    "dognzb": {
+        "name": "DOGnzb",
+        "id": "dognzb",
+        "config": {
+            "enabled": false,
+            "search": {
+                "backlog": {
+                    "enabled": true
+                },
+                "manual": {
+                    "enabled": true
+                },
+                "daily": {
+                    "enabled": true,
+                    "maxRecentItems": 5,
+                    "stopAt": 3
+                },
+                "fallback": false,
+                "mode": "eponly",
+                "separator": " ",
+                "seasonTemplates": [
+                    "S{season:0>2}",
+                    "Season {season}"
+                ],
+                "delay": {
+                    "enabled": false,
+                    "duration": 480
+                }
+            }
+        },
+        "animeOnly": false,
+        "type": "nzb",
+        "public": false,
+        "btCacheUrls": [],
+        "properStrings": [
+            "PROPER|REPACK|REAL|RERIP"
+        ],
+        "headers": {
+            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
+        },
+        "supportsAbsoluteNumbering": false,
+        "supportsBacklog": true,
+        "url": "https://api.dognzb.cr/",
+        "urls": {},
+        "cookies": {
+            "enabled": false,
+            "required": ""
+        }
+    }
+}}

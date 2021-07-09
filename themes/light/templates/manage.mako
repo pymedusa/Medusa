@@ -283,7 +283,7 @@ window.app = new Vue({
                         <th width="1%">Update<br><input type="checkbox" class="bulkCheck" id="updateCheck" /></th>
                         <th width="1%">Rescan<br><input type="checkbox" class="bulkCheck" id="refreshCheck" /></th>
                         <th width="1%">Rename<br><input type="checkbox" class="bulkCheck" id="renameCheck" /></th>
-                        <th width="1%" v-if="config.subtitles.enabled">Search Subtitle<br><input type="checkbox" class="bulkCheck" id="subtitleCheck" /></th>
+                        <th width="1%" v-if="config.general.subtitles.enabled">Search Subtitle<br><input type="checkbox" class="bulkCheck" id="subtitleCheck" /></th>
                         <!-- <th>Force Metadata Regen <input type="checkbox" class="bulkCheck" id="metadataCheck" /></th>//-->
                         <th width="1%">Delete<br><input type="checkbox" class="bulkCheck" id="deleteCheck" /></th>
                         <th width="1%">Remove<br><input type="checkbox" class="bulkCheck" id="removeCheck" /></th>
@@ -293,7 +293,7 @@ window.app = new Vue({
                 <tfoot>
                     <tr>
                         <td rowspan="1" colspan="2" class="align-center alt"><input class="btn-medusa pull-left submitMassEdit" type="button" value="Edit Selected" /></td>
-                        <td rowspan="1" :colspan="config.subtitles.enabled ? 17 : 16" class="align-right alt"><input class="btn-medusa pull-right submitMassUpdate" type="button" value="Submit" /></td>
+                        <td rowspan="1" :colspan="config.general.subtitles.enabled ? 17 : 16" class="align-right alt"><input class="btn-medusa pull-right submitMassUpdate" type="button" value="Submit" /></td>
                     </tr>
                 </tfoot>
                 <tbody>
@@ -323,7 +323,7 @@ window.app = new Vue({
                 %>
                 <tr>
                     <td class="triggerhighlight" align="center" title="Edit"><input type="checkbox" class="editCheck" data-indexer-name="${cur_show.indexer_name}" data-series-id="${cur_show.series_id}" id="edit-${cur_show.series_id}" /></td>
-                    <td class="tvShow triggerhighlight"><app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.indexerid}">${cur_show.name}</app-link></td>
+                    <td class="tvShow triggerhighlight"><app-link href="home/displayShow?showslug=${cur_show.indexer_name}${cur_show.indexerid}">${cur_show.name}</app-link></td>
                     <td class="triggerhighlight" align="center"><quality-pill :quality="${cur_show.quality}" show-title></quality-pill></td>
                     <td class="triggerhighlight" align="center" title="Sports"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.is_sports) == 1]}" width="16" height="16" /></td>
                     <td class="triggerhighlight" align="center" title="Scene"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.is_scene) == 1]}" width="16" height="16" /></td>
@@ -337,7 +337,7 @@ window.app = new Vue({
                     <td class="triggerhighlight" align="center" title="Update">${curUpdate}</td>
                     <td class="triggerhighlight" align="center" title="Refresh">${curRefresh}</td>
                     <td class="triggerhighlight" align="center" title="Rename">${curRename}</td>
-                    <td v-if="config.subtitles.enabled" class="triggerhighlight" align="center" title="Search Subtitle">${curSubtitle}</td>
+                    <td v-if="config.general.subtitles.enabled" class="triggerhighlight" align="center" title="Search Subtitle">${curSubtitle}</td>
                     <td class="triggerhighlight" align="center" title="Delete">${curDelete}</td>
                     <td class="triggerhighlight" align="center" title="Remove">${curRemove}</td>
                     <td class="triggerhighlight" align="center" title="Update image">${curImage}</td>

@@ -1,7 +1,7 @@
 <template>
-    <div v-if="subMenu.length > 0" id="sub-menu-wrapper">
-        <div id="sub-menu-container" class="row shadow">
-            <div id="sub-menu" class="submenu-default hidden-print col-md-12">
+    <div v-if="subMenu.length > 0" id="sub-menu-wrapper" class="row">
+        <div id="sub-menu-container" class="col-md-12 shadow">
+            <div id="sub-menu" class="submenu-default hidden-print">
                 <app-link
                     v-for="menuItem in subMenu"
                     :key="`sub-menu-${menuItem.title}`"
@@ -12,7 +12,7 @@
                     <span :class="['pull-left', menuItem.icon]" /> {{ menuItem.title }}
                 </app-link>
 
-                <show-selector v-if="showSelectorVisible" :show-slug="curShowSlug" follow-selection />
+                <show-selector v-if="showForRoutes" :show-slug="$route.query.showslug" follow-selection />
             </div>
         </div>
 
@@ -21,6 +21,8 @@
     </div>
 </template>
 <script>
+import { apiRoute } from '../api';
+import { mapActions, mapGetters } from 'vuex';
 import { AppLink, ShowSelector } from './helpers';
 
 export default {
@@ -30,6 +32,9 @@ export default {
         ShowSelector
     },
     computed: {
+        ...mapGetters({
+            getCurrentShow: 'getCurrentShow'
+        }),
         subMenu() {
             const { $route } = this;
             let subMenu = $route.meta.subMenu || [];
@@ -40,20 +45,18 @@ export default {
             const reducer = (arr, item) => (item.requires === undefined || item.requires) ? arr.concat(item) : arr;
             return subMenu.reduceRight(reducer, []);
         },
-        showSelectorVisible() {
-            const { $route } = this;
-            return $route.name === 'show';
-        },
         curShowSlug() {
-            const { $route, showSelectorVisible } = this;
-            const { indexername, seriesid } = $route.query;
-            if (showSelectorVisible && indexername && seriesid) {
-                return indexername + seriesid;
-            }
-            return '';
+            return this.$route.query.slug;
+        },
+        showForRoutes() {
+            const { $route } = this;
+            return ['show', 'editShow'].includes($route.name);
         }
     },
     methods: {
+        ...mapActions({
+            removeShow: 'removeShow'
+        }),
         clickEventCond(menuItem) {
             return menuItem.confirm ? 'click' : null;
         },
@@ -70,12 +73,24 @@ export default {
             };
 
             if (action === 'removeshow') {
-                const showName = document.querySelector('#showtitle').dataset.showname;
+                const { getCurrentShow, removeShow, $router } = this;
                 options.title = 'Remove Show';
-                options.text = `Are you sure you want to remove <span class="footerhighlight">${showName}</span> from the database?<br><br>
+                options.text = `Are you sure you want to remove <span class="footerhighlight">${getCurrentShow.title}</span> from the database?<br><br>
                                 <input type="checkbox" id="deleteFiles"> <span class="red-text">Check to delete files as well. IRREVERSIBLE</span>`;
-                options.confirm = $element => {
-                    window.location.href = $element[0].href + (document.querySelector('#deleteFiles').checked ? '&full=1' : '');
+                options.confirm = async () => {
+                    // Already remove show from frontend store + localStorage
+                    removeShow(getCurrentShow);
+
+                    const params = { showslug: getCurrentShow.id.slug };
+                    if (document.querySelector('#deleteFiles').checked) {
+                        params.full = 1;
+                    }
+
+                    // Start removal of show in backend
+                    await apiRoute.get('home/deleteShow', { params });
+
+                    // Navigate back to /home
+                    $router.push({ name: 'home', query: undefined });
                 };
             } else if (action === 'clearhistory') {
                 options.title = 'Clear History';
@@ -126,6 +141,12 @@ export default {
     #sub-menu-container {
         position: relative;
         margin-top: -24px;
+    }
+}
+
+@media (max-width: 767px) {
+    #sub-menu-wrapper {
+        display: flex;
     }
 }
 </style>

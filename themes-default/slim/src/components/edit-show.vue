@@ -4,7 +4,7 @@
         <backstretch v-if="showLoaded" :slug="show.id.slug" />
 
         <h1 v-if="showLoaded" class="header">
-            Edit Show - <app-link :href="`home/displayShow?indexername=${indexer}&seriesid=${id}`">{{ show.title }}</app-link>
+            Edit Show - <app-link :href="`home/displayShow?showslug=${showSlug}`">{{ show.title }}</app-link>
         </h1>
         <h1 v-else class="header">
             Edit Show<template v-if="!loadError"> (Loading...)</template>
@@ -12,16 +12,10 @@
 
         <h3 v-if="loadError">Error loading show: {{ loadError }}</h3>
 
-        <div v-if="showLoaded" id="config" :class="{ summaryFanArt: config.fanartBackground }">
+        <div v-if="showLoaded" id="config">
             <form @submit.prevent="saveShow('all')" class="form-horizontal">
-                <div id="config-components">
-                    <ul>
-                        <li><app-link href="#core-component-group1">Main</app-link></li>
-                        <li><app-link href="#core-component-group2">Format</app-link></li>
-                        <li><app-link href="#core-component-group3">Advanced</app-link></li>
-                    </ul>
-
-                    <div id="core-component-group1">
+                <vue-tabs>
+                    <v-tab title="Main">
                         <div class="component-group">
                             <h3>Main Settings</h3>
                             <fieldset class="component-group-list">
@@ -29,6 +23,7 @@
                                     <file-browser
                                         name="location"
                                         title="Select Show Location"
+                                        :key="show.id.slug"
                                         :initial-dir="show.config.location"
                                         @update="show.config.location = $event"
                                     />
@@ -78,34 +73,35 @@
                                 </config-toggle-slider>
                             </fieldset>
                         </div>
-                    </div>
+                    </v-tab>
 
-                    <div id="core-component-group2">
+                    <v-tab title="Format">
                         <div class="component-group">
                             <h3>Format Settings</h3>
                             <fieldset class="component-group-list">
 
-                                <config-toggle-slider v-model="show.config.airByDate" label="Air by date" id="air_by_date">
+                                <config-toggle-slider :value="show.config.airByDate" @input="changeFormat($event, 'airByDate')" label="Air by date" id="airByDate">
                                     <span>check if the show is released as Show.03.02.2010 rather than Show.S02E03</span>
                                     <p style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</p>
                                 </config-toggle-slider>
 
-                                <config-toggle-slider v-model="show.config.anime" label="Anime" id="anime">
-                                    <span>enable if the show is Anime and episodes are released as Show.265 rather than Show.S02E03</span>
+                                <config-toggle-slider :value="show.config.anime" @input="changeFormat($event, 'anime')" label="Anime" id="anime">
+                                    <span>enable if the shows episodes are released using absolute numbering</span>
+                                    <p>For example as Show.265 rather than Show.S02E03</p>
                                 </config-toggle-slider>
 
                                 <config-template v-if="show.config.anime" label-for="anidbReleaseGroup" label="Release Groups">
                                     <anidb-release-group-ui
-                                        v-if="show.title"
+                                        v-if="show.name"
                                         class="max-width"
-                                        :show-name="show.title"
+                                        :show-name="show.name"
                                         :blacklist="show.config.release.blacklist"
                                         :whitelist="show.config.release.whitelist"
                                         @change="onChangeReleaseGroupsAnime"
                                     />
                                 </config-template>
 
-                                <config-toggle-slider v-model="show.config.sports" label="Sports" id="sports">
+                                <config-toggle-slider :value="show.config.sports" @input="changeFormat($event, 'sports')" label="Sports" id="sports">
                                     <span>enable if the show is a sporting or MMA event released as Show.03.02.2010 rather than Show.S02E03</span>
                                     <p style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</p>
                                 </config-toggle-slider>
@@ -122,11 +118,20 @@
                                     <span>use the DVD order instead of the air order</span>
                                     <div class="clear-left"><p>A "Force Full Update" is necessary, and if you have existing episodes you need to sort them manually.</p></div>
                                 </config-toggle-slider>
+
+                                <config-template label-for="show_lists" label="Display in show lists">
+                                    <multiselect
+                                        v-model="showLists"
+                                        :multiple="true"
+                                        :options="layout.show.showListOrder.map(list => list.toLowerCase())"
+                                    />
+                                </config-template>
+
                             </fieldset>
                         </div>
-                    </div>
+                    </v-tab>
 
-                    <div id="core-component-group3">
+                    <v-tab title="Advanced">
                         <div class="component-group">
                             <h3>Advanced Settings</h3>
                             <fieldset class="component-group-list">
@@ -167,12 +172,8 @@
                                     <p>Currently the effective list is: {{ effectiveRequired }}</p>
                                 </config-toggle-slider>
 
-                                <config-template label-for="SceneName" label="Scene Exception">
-                                    <select-list
-                                        :list-items="show.config.aliases"
-                                        @change="onChangeAliases"
-                                    />
-                                    <p>This will affect episode search on NZB and torrent providers. This list appends to the original show name.</p>
+                                <config-template label-for="scene_exceptions" label="Scene Exception">
+                                    <config-scene-exceptions v-bind="{ show, exceptions: show.config.aliases }" />
                                 </config-template>
 
                                 <config-textbox-number
@@ -190,8 +191,8 @@
 
                             </fieldset>
                         </div>
-                    </div>
-                </div>
+                    </v-tab>
+                </vue-tabs>
 
                 <br>
                 <input
@@ -210,11 +211,12 @@
 import { mapActions, mapGetters, mapState } from 'vuex';
 
 import { arrayUnique, arrayExclude, combineQualities } from '../utils/core';
-
+import { VueTabs, VTab } from 'vue-nav-tabs/dist/vue-tabs.js';
 import AnidbReleaseGroupUi from './anidb-release-group-ui.vue';
 import Backstretch from './backstretch.vue';
 import {
     AppLink,
+    ConfigSceneExceptions,
     ConfigTemplate,
     ConfigTextboxNumber,
     ConfigToggleSlider,
@@ -224,19 +226,26 @@ import {
     SelectList
 } from './helpers';
 
+import Multiselect from 'vue-multiselect';
+import 'vue-multiselect/dist/vue-multiselect.min.css';
+
 export default {
     name: 'edit-show',
     components: {
         AnidbReleaseGroupUi,
         AppLink,
         Backstretch,
+        ConfigSceneExceptions,
         ConfigTemplate,
         ConfigTextboxNumber,
         ConfigToggleSlider,
         FileBrowser,
         LanguageSelect,
+        Multiselect,
         QualityChooser,
-        SelectList
+        SelectList,
+        VueTabs,
+        VTab
     },
     metaInfo() {
         if (!this.show || !this.show.title) {
@@ -253,16 +262,10 @@ export default {
     },
     props: {
         /**
-         * Show indexer
+         * Show Slug
          */
-        showIndexer: {
+        slug: {
             type: String
-        },
-        /**
-         * Show id
-         */
-        showId: {
-            type: Number
         }
     },
     data() {
@@ -273,18 +276,30 @@ export default {
     },
     computed: {
         ...mapState({
-            config: state => state.config,
-            episodeStatuses: state => state.consts.statuses
+            general: state => state.config.general,
+            indexers: state => state.config.indexers,
+            anime: state => state.config.anime,
+            layout: state => state.config.layout,
+            episodeStatuses: state => state.config.consts.statuses,
+            search: state => state.config.search
         }),
         ...mapGetters({
             show: 'getCurrentShow',
             getStatus: 'getStatus'
         }),
-        indexer() {
-            return this.showIndexer || this.$route.query.indexername;
+        showLists: {
+            get() {
+                const { show } = this;
+                return show.config.showLists.map(list => list.toLowerCase());
+            },
+            set(value) {
+                const { show, setShowConfig } = this;
+                setShowConfig({ show, config: { ...show.config, showLists: value } });
+            }
         },
-        id() {
-            return this.showId || Number(this.$route.query.seriesid) || undefined;
+        showSlug() {
+            const { slug } = this;
+            return slug || this.$route.query.showslug;
         },
         showLoaded() {
             return Boolean(this.show.id.slug);
@@ -297,8 +312,8 @@ export default {
             return ['wanted', 'skipped', 'ignored'].map(key => this.getStatus({ key }));
         },
         availableLanguages() {
-            if (this.config.indexers.config.main.validLanguages) {
-                return this.config.indexers.config.main.validLanguages.join(',');
+            if (this.indexers.main.validLanguages) {
+                return this.indexers.main.validLanguages.join(',');
             }
 
             return '';
@@ -311,10 +326,12 @@ export default {
             return this.saving === false ? 'Save Changes' : 'Saving...';
         },
         globalIgnored() {
-            return this.$store.state.search.filters.ignored.map(x => x.toLowerCase());
+            const { search } = this;
+            return search.filters.ignored.map(x => x.toLowerCase());
         },
         globalRequired() {
-            return this.$store.state.search.filters.required.map(x => x.toLowerCase());
+            const { search } = this;
+            return search.filters.required.map(x => x.toLowerCase());
         },
         effectiveIgnored() {
             const { globalIgnored } = this;
@@ -340,31 +357,22 @@ export default {
     created() {
         this.loadShow();
     },
-    updated() {
-        $('#config-components').tabs();
-    },
     methods: {
-        ...mapActions([
-            'getShow',
-            'setShow'
-        ]),
-        async loadShow(params) {
-            const { $store, id, indexer, getShow } = params || this;
+        ...mapActions({
+            getShow: 'getShow',
+            setShow: 'setShow',
+            setCurrentShow: 'setCurrentShow',
+            setShowConfig: 'setShowConfig'
+        }),
+        loadShow() {
+            const { setCurrentShow, getShow, showSlug } = this;
+
+            // We need detailed info for the xem / scene exceptions, so let's get it.
+            getShow({ showSlug, detailed: true });
 
             // Let's tell the store which show we currently want as current.
-            $store.commit('currentShow', { indexer, id });
-
-            try {
-                this.loadError = null;
-                await getShow({ indexer, id, detailed: false });
-            } catch (error) {
-                const { data } = error.response;
-                if (data && data.error) {
-                    this.loadError = data.error;
-                } else {
-                    this.loadError = String(error);
-                }
-            }
+            // Run this after getShow(), as it will trigger the initializeEpisodes() method.
+            setCurrentShow(showSlug);
         },
         async saveShow(subject) {
             const { show, showLoaded } = this;
@@ -405,7 +413,8 @@ export default {
                         preferred: showConfig.qualities.preferred,
                         allowed: showConfig.qualities.allowed
                     },
-                    airdateOffset: showConfig.airdateOffset
+                    airdateOffset: showConfig.airdateOffset,
+                    showLists: showConfig.showLists
                 },
                 language: show.language
             };
@@ -415,9 +424,9 @@ export default {
                 data.config.release.whitelist = showConfig.release.whitelist;
             }
 
-            const { indexer, id, setShow } = this;
+            const { showSlug, setShow } = this;
             try {
-                await setShow({ indexer, id, data });
+                await setShow({ showSlug, data });
                 this.$snotify.success(
                     'You may need to "Re-scan files" or "Force Full Update".',
                     'Saved',
@@ -439,15 +448,34 @@ export default {
         onChangeRequiredWords(items) {
             this.show.config.release.requiredWords = items.map(item => item.value);
         },
-        onChangeAliases(items) {
-            this.show.config.aliases = items.map(item => item.value);
-        },
         onChangeReleaseGroupsAnime(groupNames) {
             this.show.config.release.whitelist = groupNames.whitelist;
             this.show.config.release.blacklist = groupNames.blacklist;
         },
         updateLanguage(value) {
             this.show.language = value;
+        },
+        changeFormat(value, formatOption) {
+            const { anime, general } = this;
+            this.show.config[formatOption] = value;
+            if (value) {
+                // Check each format option, disable the other options.
+                ['anime', 'sports', 'airByDate'].filter(item => item !== formatOption).forEach(option => {
+                    this.show.config[option] = false;
+                });
+            }
+
+            if (formatOption === 'anime' && anime.autoAnimeToList) {
+                if (value) {
+                    // Auto anime to list is enabled. If changing the show format to anime, add 'Anime' to show lists.
+                    this.showLists = anime.showlistDefaultAnime;
+                    // The filter makes sure there are unique strings.
+                    this.showLists = this.showLists.filter((v, i, a) => a.indexOf(v) === i);
+                } else {
+                    // Return to default show lists.
+                    this.showLists = general.showDefaults.showLists;
+                }
+            }
         }
     }
 };

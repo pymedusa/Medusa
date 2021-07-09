@@ -9,7 +9,7 @@ from os.path import join
 
 from medusa import app
 from medusa.cache import recommended_series_cache
-from medusa.indexers.indexer_config import EXTERNAL_ANIDB
+from medusa.indexers.config import (INDEXER_TVDBV2, EXTERNAL_ANIDB)
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.recommendations.recommended import (
     BasePopular,

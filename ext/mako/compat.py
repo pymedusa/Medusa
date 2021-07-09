@@ -1,5 +1,5 @@
 # mako/compat.py
-# Copyright 2006-2019 the Mako authors and contributors <see AUTHORS file>
+# Copyright 2006-2020 the Mako authors and contributors <see AUTHORS file>
 #
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -99,11 +99,20 @@ else:
 
 
 if py3k:
-    from importlib import machinery
+    from importlib import machinery, util
 
-    def load_module(module_id, path):
-        return machinery.SourceFileLoader(module_id, path).load_module()
-
+    if hasattr(util, 'module_from_spec'):
+        # Python 3.5+
+        def load_module(module_id, path):
+            spec = util.spec_from_file_location(module_id, path)
+            module = util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
+    else:
+        def load_module(module_id, path):
+            module = machinery.SourceFileLoader(module_id, path).load_module()
+            del sys.modules[module_id]
+            return module
 
 else:
     import imp
@@ -111,7 +120,9 @@ else:
     def load_module(module_id, path):
         fp = open(path, "rb")
         try:
-            return imp.load_source(module_id, path, fp)
+            module = imp.load_source(module_id, path, fp)
+            del sys.modules[module_id]
+            return module
         finally:
             fp.close()
 

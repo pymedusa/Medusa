@@ -1,7 +1,6 @@
 """bencode.py - encoder + decode exceptions."""
+from bencodepy.exceptions import BencodeDecodeError
 
-
-class BencodeDecodeError(Exception):
-    """Bencode decode error."""
-
-    pass
+__all__ = (
+    'BencodeDecodeError',
+)

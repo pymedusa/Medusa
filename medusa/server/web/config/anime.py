@@ -4,14 +4,6 @@
 
 from __future__ import unicode_literals
 
-import os
-
-from medusa import (
-    app,
-    config,
-    logger,
-    ui,
-)
 from medusa.server.web.config.handler import Config
 from medusa.server.web.core import PageTemplate
 
@@ -20,44 +12,16 @@ from tornroutes import route
 
 @route('/config/anime(/?.*)')
 class ConfigAnime(Config):
-    """
-    Handler for Anime configuration
-    """
+    """Handler for Anime configuration."""
+
     def __init__(self, *args, **kwargs):
         super(ConfigAnime, self).__init__(*args, **kwargs)
 
     def index(self):
         """
-        Render the Anime configuration page
+        Render the anime configuration page.
+
+        [Converted to VueRouter]
         """
-
-        t = PageTemplate(rh=self, filename='config_anime.mako')
-
-        return t.render(controller='config', action='anime')
-
-    def saveAnime(self, use_anidb=None, anidb_username=None, anidb_password=None, anidb_use_mylist=None,
-                  split_home=None, split_home_in_tabs=None):
-        """
-        Save anime related settings
-        """
-
-        results = []
-
-        app.USE_ANIDB = config.checkbox_to_value(use_anidb)
-        app.ANIDB_USERNAME = anidb_username
-        app.ANIDB_PASSWORD = anidb_password
-        app.ANIDB_USE_MYLIST = config.checkbox_to_value(anidb_use_mylist)
-        app.ANIME_SPLIT_HOME = config.checkbox_to_value(split_home)
-        app.ANIME_SPLIT_HOME_IN_TABS = config.checkbox_to_value(split_home_in_tabs)
-
-        app.instance.save_config()
-
-        if results:
-            for x in results:
-                logger.log(x, logger.ERROR)
-            ui.notifications.error('Error(s) Saving Configuration',
-                                   '<br>\n'.join(results))
-        else:
-            ui.notifications.message('Configuration Saved', os.path.join(app.CONFIG_FILE))
-
-        return self.redirect('/config/anime/')
+        t = PageTemplate(rh=self, filename='index.mako')
+        return t.render()

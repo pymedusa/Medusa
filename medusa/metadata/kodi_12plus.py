@@ -12,10 +12,10 @@ from babelfish import Country
 from medusa import helpers
 from medusa.app import TVDB_API_KEY
 from medusa.helper.common import dateFormat, episode_num
-from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
-from medusa.indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
-from medusa.indexers.tvdbv2.tvdbv2_api import API_BASE_TVDB
+from medusa.indexers.api import indexerApi
+from medusa.indexers.config import INDEXER_TVDBV2
+from medusa.indexers.exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
+from medusa.indexers.tvdbv2.api import API_BASE_TVDB
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.metadata import generic
 
@@ -150,6 +150,11 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
             indexer_id = etree.SubElement(tv_node, 'id')
             indexer_id.text = text_type(my_show['id'])
 
+            uniqueid = etree.SubElement(tv_node, 'uniqueid')
+            uniqueid.set('type', series_obj.indexer_name)
+            uniqueid.set('default', 'true')
+            uniqueid.text = text_type(my_show['id'])
+
         if getattr(my_show, 'genre', None) and isinstance(my_show['genre'], string_types):
             for genre in self._split_info(my_show['genre']):
                 cur_genre = etree.SubElement(tv_node, 'genre')
@@ -271,6 +276,8 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
             episodenum.text = text_type(ep_to_write.episode)
 
             uniqueid = etree.SubElement(episode, 'uniqueid')
+            uniqueid.set('type', ep_obj.indexer_name)
+            uniqueid.set('default', 'true')
             uniqueid.text = text_type(ep_to_write.indexerid)
 
             if ep_to_write.airdate != datetime.date.fromordinal(1):

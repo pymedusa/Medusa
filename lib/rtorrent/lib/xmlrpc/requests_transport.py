@@ -144,7 +144,7 @@ class RequestsTransport(xmlrpc_client.Transport):
             response.raise_for_status()
         except RequestException as error:
             raise xmlrpc_client.ProtocolError(url,
-                                              error.message,
+                                              response.status_code,
                                               traceback.format_exc(),
                                               response.headers)
 

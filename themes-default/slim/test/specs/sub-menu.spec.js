@@ -23,7 +23,6 @@ describe('SubMenu.test.js', () => {
     it('renders simple sub menu', () => {
         const router = new VueRouter({
             base: routerBase,
-            mode: 'history',
             routes: [{
                 path: '/',
                 name: '',
@@ -47,17 +46,16 @@ describe('SubMenu.test.js', () => {
     it('renders function-based sub menu', () => {
         const router = new VueRouter({
             base: routerBase,
-            mode: 'history',
             routes: [{
                 path: '/',
                 name: '',
                 meta: {
                     subMenu: vm => {
-                        const { recentShows } = vm.$store.state.config;
+                        const { recentShows } = vm.$store.state.config.general;
                         return recentShows.map((show, index) => {
                             return {
                                 title: show.name,
-                                path: `home/displayShow?indexername=${show.indexerName}&seriesid=${show.showId}`,
+                                path: `home/displayShow?showslug=${show.showSlug}`,
                                 requires: index % 2,
                                 icon: 'menu-icon-addshow'
                             };

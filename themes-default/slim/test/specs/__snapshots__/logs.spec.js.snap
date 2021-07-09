@@ -178,6 +178,11 @@ exports[`Logs.test.js renders 1`] = `
               Show Updater
             </option>
             <option
+              value="EPISODEUPDATER"
+            >
+              Episode Updater
+            </option>
+            <option
               value="Thread"
             >
               Thread
@@ -188,9 +193,9 @@ exports[`Logs.test.js renders 1`] = `
               Tornado
             </option>
             <option
-              value="TORRENTCHECKER"
+              value="downloadHandler"
             >
-              Torrent Checker
+              Download Handler
             </option>
             <option
               value="TRAKTCHECKER"
@@ -301,6 +306,8 @@ RuntimeError: generator didn't yield
     </div>
   </pre>
    
-  <backstretch-stub />
+  <backstretch-stub
+    slug="tvdb294002"
+  />
 </div>
 `;

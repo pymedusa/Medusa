@@ -3,8 +3,16 @@ import Vue from 'vue';
 import AsyncComputed from 'vue-async-computed';
 import VueMeta from 'vue-meta';
 import Snotify from 'vue-snotify';
+import VueCookies from 'vue-cookies';
+import VModal from 'vue-js-modal';
+import { VTooltip } from 'v-tooltip';
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { faAlignJustify, faImages } from '@fortawesome/free-solid-svg-icons';
+
+library.add([faAlignJustify, faImages]);
 
 import {
+    App,
     AddShowOptions,
     AnidbReleaseGroupUi,
     AppFooter,
@@ -17,20 +25,17 @@ import {
     ConfigTextboxNumber,
     ConfigToggleSlider,
     FileBrowser,
-    Home,
     LanguageSelect,
-    ManualPostProcess,
+    LoadProgressBar,
     PlotInfo,
     QualityChooser,
     QualityPill,
     RootDirs,
+    Schedule,
     ScrollButtons,
     SelectList,
-    Show,
     ShowSelector,
-    SnatchSelection,
     StateSwitch,
-    Status,
     SubMenu
 } from './components';
 import store from './store';
@@ -47,6 +52,7 @@ export const registerGlobalComponents = () => {
     // @TODO: These should be registered in an `App.vue` component when possible,
     //        along with some of the `main.mako` template
     components = components.concat([
+        App,
         AppFooter,
         AppHeader,
         ScrollButtons,
@@ -70,6 +76,7 @@ export const registerGlobalComponents = () => {
         ConfigToggleSlider,
         FileBrowser,
         LanguageSelect,
+        LoadProgressBar,
         PlotInfo,
         QualityChooser,
         QualityPill, // @FIXME: (sharkykh) Used in a hack/workaround in `static/js/ajax-episode-search.js`
@@ -82,11 +89,7 @@ export const registerGlobalComponents = () => {
     // Add components for pages that use `pageComponent`
     // @TODO: These need to be converted to Vue SFCs
     components = components.concat([
-        Home,
-        ManualPostProcess,
-        Show,
-        SnatchSelection,
-        Status
+        Schedule
     ]);
 
     // Register the components globally
@@ -105,6 +108,12 @@ export const registerPlugins = () => {
     Vue.use(AsyncComputed);
     Vue.use(VueMeta);
     Vue.use(Snotify);
+    Vue.use(VueCookies);
+    Vue.use(VModal, { dynamicDefault: { height: 'auto' } });
+    Vue.use(VTooltip);
+
+    // Set default cookie expire time
+    Vue.$cookies.config('10y');
 };
 
 /**
@@ -121,7 +130,8 @@ export default () => {
             if (this.$root === this) {
                 return {
                     globalLoading: true,
-                    pageComponent: false
+                    pageComponent: false,
+                    showsLoading: false
                 };
             }
             return {};
@@ -136,9 +146,9 @@ export default () => {
                     store.dispatch('getConfig'),
                     store.dispatch('getStats')
                 ]).then(([_, config]) => {
-                    this.$emit('loaded');
-                    // Legacy - send config.main to jQuery (received by index.js)
-                    const event = new CustomEvent('medusa-config-loaded', { detail: config.main });
+                    this.$root.$emit('loaded');
+                    // Legacy - send config.general to jQuery (received by index.js)
+                    const event = new CustomEvent('medusa-config-loaded', { detail: { general: config.main, layout: config.layout } });
                     window.dispatchEvent(event);
                 }).catch(error => {
                     console.debug(error);
@@ -146,7 +156,7 @@ export default () => {
                 });
             }
 
-            this.$once('loaded', () => {
+            this.$root.$once('loaded', () => {
                 this.$root.globalLoading = false;
             });
         },

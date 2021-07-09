@@ -24,7 +24,7 @@ describe('RootDirs.test.js', () => {
             store
         });
 
-        const rawRootDirs = state.config.rootDirs;
+        const rawRootDirs = state.config.general.rootDirs;
         const defaultIndex = rawRootDirs[0];
         const rawPaths = rawRootDirs.slice(1);
         const { vm } = wrapper;

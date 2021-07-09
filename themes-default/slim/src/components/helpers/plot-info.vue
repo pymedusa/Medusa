@@ -1,69 +1,25 @@
 <template>
-    <img src="images/info32.png" width="16" height="16" :class="plotInfoClass" alt="">
+    <img v-if="description !== ''" src="images/info32.png" width="16" height="16" :class="plotInfoClass" alt=""
+         v-tooltip.right="{content: description}">
 </template>
 <script>
-import { api } from '../../api';
+import { VTooltip } from 'v-tooltip';
 
 export default {
     name: 'plot-info',
+    directives: {
+        tooltip: VTooltip
+    },
     props: {
-        hasPlot: Boolean,
-        showSlug: {
-            type: String,
-            required: true
-        },
-        season: {
-            type: String,
-            required: true
-        },
-        episode: {
+        description: {
             type: String,
             required: true
         }
     },
     computed: {
         plotInfoClass() {
-            return this.hasPlot ? 'plotInfo' : 'plotInfoNone';
+            return this.description === '' ? 'plotInfoNone' : 'plotInfo';
         }
-    },
-    mounted() {
-        const { $el, hasPlot, showSlug, season, episode } = this;
-        if (!hasPlot) {
-            return false;
-        }
-        $($el).qtip({
-            content: {
-                text(event, qt) {
-                    api.get('series/' + showSlug + '/episodes/s' + season + 'e' + episode + '/description').then(response => {
-                        // Set the tooltip content upon successful retrieval
-                        qt.set('content.text', response.data);
-                    }).catch(error => {
-                        // Upon failure... set the tooltip content to the status and error value
-                        const { response } = error;
-                        const { status, statusText } = response;
-                        qt.set('content.text', 'Error while loading plot: ' + status + ': ' + statusText);
-                    });
-                    return 'Loading...';
-                }
-            },
-            show: {
-                solo: true
-            },
-            position: {
-                my: 'left center',
-                adjust: {
-                    y: -10,
-                    x: 2
-                }
-            },
-            style: {
-                tip: {
-                    corner: true,
-                    method: 'polygon'
-                },
-                classes: 'qtip-rounded qtip-shadow ui-tooltip-sb'
-            }
-        });
     }
 };
 </script>

@@ -91,7 +91,7 @@ class Show(object):
             DeprecationWarning,
         )
 
-        from medusa.indexers.indexer_config import EXTERNAL_IMDB, EXTERNAL_TRAKT
+        from medusa.indexers.config import EXTERNAL_IMDB, EXTERNAL_TRAKT
         if indexer_id is None or shows is None or len(shows) == 0:
             return None
 
@@ -133,7 +133,8 @@ class Show(object):
             indexer_id = indexer_name_to_id(indexer_id)
 
         try:
-            series_id = int(series_id)
+            if indexer_id != 10:  # 10 = EXTERNAL_IMDB
+                series_id = int(series_id)
         except ValueError:
             log.warning('Invalid series id: {series_id}', {'series_id': series_id})
 

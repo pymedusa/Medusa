@@ -31,10 +31,10 @@
                         </ul>
                         <div style="clear:both;" />
                     </li>
-                    <li id="NAVschedule" :class="{ active: topMenu === 'schedule' }">
+                    <li id="NAVschedule" class="navbar-split" :class="{ active: topMenu === 'schedule' }">
                         <app-link href="schedule/">Schedule</app-link>
                     </li>
-                    <li id="NAVhistory" :class="{ active: topMenu === 'history' }">
+                    <li id="NAVhistory" class="navbar-split" :class="{ active: topMenu === 'history' }">
                         <app-link href="history/">History</app-link>
                     </li>
                     <li id="NAVmanage" class="navbar-split dropdown" :class="{ active: topMenu === 'manage' }">
@@ -68,7 +68,7 @@
                             <li><app-link href="config/search/"><i class="menu-icon-manage-searches" />&nbsp;Search Settings</app-link></li>
                             <li><app-link href="config/providers/"><i class="menu-icon-provider" />&nbsp;Search Providers</app-link></li>
                             <li><app-link href="config/subtitles/"><i class="menu-icon-backlog" />&nbsp;Subtitles Settings</app-link></li>
-                            <li><app-link href="config/postProcessing/"><i class="menu-icon-postprocess" />&nbsp;Post Processing</app-link></li>
+                            <li><app-link href="config/postProcessing/"><i class="menu-icon-postprocess" />&nbsp;Post-Processing</app-link></li>
                             <li><app-link href="config/notifications/"><i class="menu-icon-notification" />&nbsp;Notifications</app-link></li>
                             <li><app-link href="config/anime/"><i class="menu-icon-anime" />&nbsp;Anime</app-link></li>
                         </ul>
@@ -80,18 +80,17 @@
                             <b class="caret" />
                         </app-link>
                         <ul class="dropdown-menu">
-                            <li><app-link href="news/"><i class="menu-icon-news" />&nbsp;News <span v-if="config.news.unread > 0" class="badge">{{ config.news.unread }}</span></app-link></li>
+                            <li><app-link href="news/"><i class="menu-icon-news" />&nbsp;News <span v-if="system.news.unread > 0" class="badge">{{ system.news.unread }}</span></app-link></li>
                             <li><app-link href="IRC/"><i class="menu-icon-irc" />&nbsp;IRC</app-link></li>
                             <li><app-link href="changes/"><i class="menu-icon-changelog" />&nbsp;Changelog</app-link></li>
-                            <li><app-link :href="config.donationsUrl"><i class="menu-icon-support" />&nbsp;Support Medusa</app-link></li>
                             <li role="separator" class="divider" />
                             <li v-if="config.logs.numErrors > 0"><app-link href="errorlogs/"><i class="menu-icon-error" />&nbsp;View Errors <span class="badge btn-danger">{{config.logs.numErrors}}</span></app-link></li>
                             <li v-if="config.logs.numWarnings > 0"><app-link :href="`errorlogs/?level=${warningLevel}`"><i class="menu-icon-viewlog-errors" />&nbsp;View Warnings <span class="badge btn-warning">{{config.logs.numWarnings}}</span></app-link></li>
                             <li><app-link href="errorlogs/viewlog/"><i class="menu-icon-viewlog" />&nbsp;View Log</app-link></li>
                             <li role="separator" class="divider" />
-                            <li><app-link :href="`home/updateCheck?pid=${config.pid}`"><i class="menu-icon-update" />&nbsp;Check For Updates</app-link></li>
-                            <li><app-link :href="`home/restart/?pid=${config.pid}`" @click.native.prevent="confirmDialog($event, 'restart')"><i class="menu-icon-restart" />&nbsp;Restart</app-link></li>
-                            <li><app-link :href="`home/shutdown/?pid=${config.pid}`" @click.native.prevent="confirmDialog($event, 'shutdown')"><i class="menu-icon-shutdown" />&nbsp;Shutdown</app-link></li>
+                            <li><app-link :href="'home/update'" @click.native.prevent="checkForupdates($event)"><i class="menu-icon-update" />&nbsp;Check For Updates</app-link></li>
+                            <li><app-link :href="'home/restart'"><i class="menu-icon-restart" />&nbsp;Restart</app-link></li>
+                            <li><app-link :href="'home/shutdown'" @click.prevent="$router.push({ name: 'shutdown' });"><i class="menu-icon-shutdown" />&nbsp;Shutdown</app-link></li>
                             <li v-if="username"><app-link href="logout" @click.native.prevent="confirmDialog($event, 'logout')"><i class="menu-icon-shutdown" />&nbsp;Logout</app-link></li>
                             <li role="separator" class="divider" />
                             <li><app-link href="home/status/"><i class="menu-icon-info" />&nbsp;Server Status</app-link></li>
@@ -104,6 +103,7 @@
     </nav>
 </template>
 <script>
+import { api } from '../api';
 import { mapState } from 'vuex';
 import { AppLink } from './helpers';
 
@@ -113,30 +113,48 @@ export default {
         AppLink
     },
     computed: {
-        ...mapState([
-            'config',
-            'notifiers'
-        ]),
         ...mapState({
+            config: state => state.config.general,
+            clients: state => state.config.clients,
+            notifiers: state => state.config.notifiers,
+            postprocessing: state => state.config.postprocessing,
+            search: state => state.config.search,
+            system: state => state.config.system,
             isAuthenticated: state => state.auth.isAuthenticated,
             username: state => state.auth.user.username,
-            warningLevel: state => state.config.logs.loggingLevels.warning
+            warningLevel: state => state.config.general.logs.loggingLevels.warning
         }),
+        /**
+         * Moved into a computed, so it's easier to mock in Jest.
+         * @returns {Object} - Route name and query.
+         */
+        currentShowRoute() {
+            const { $route } = this;
+            return {
+                name: $route.name,
+                query: $route.query
+            };
+        },
         recentShows() {
-            const { config } = this;
+            const { config, currentShowRoute } = this;
             const { recentShows } = config;
-            return recentShows.map(show => {
-                const { name, indexerName, showId } = show;
-                const link = `home/displayShow?indexername=${indexerName}&seriesid=${showId}`;
-                return { name, link };
-            });
+
+            const hideActiveShow = show => !(currentShowRoute.name === 'show' && show.showSlug === currentShowRoute.query.showslug);
+
+            return recentShows.filter(hideActiveShow)
+                .map(show => {
+                    const link = `home/displayShow?showslug=${show.showSlug}`;
+                    return { name: show.name, link };
+                });
         },
         topMenu() {
             return this.$route.meta.topMenu;
         },
         toolsBadgeCount() {
             const { config } = this;
-            const { news, logs } = config;
+            const { system } = this;
+            const { logs } = config;
+            const { news } = system;
             return logs.numErrors + logs.numWarnings + news.unread;
         },
         toolsBadgeClass() {
@@ -151,8 +169,9 @@ export default {
             return '';
         },
         linkVisible() {
-            const { config, notifiers } = this;
-            const { torrents, failedDownloads, subtitles, postProcessing } = config;
+            const { clients, config, notifiers, postprocessing, search } = this;
+            const { subtitles } = config;
+            const { general } = search;
             const { kodi, plex, emby } = notifiers;
 
             return {
@@ -161,10 +180,10 @@ export default {
                 /* @TODO: Originally there was a check to make sure the API key
                    was configured for Emby: ` app.EMBY_APIKEY != '' ` */
                 emby: emby.enabled && emby.host,
-                manageTorrents: torrents.enabled && torrents.method !== 'blackhole',
-                failedDownloads: failedDownloads.enabled,
+                manageTorrents: clients.torrents.enabled && clients.torrents.method !== 'blackhole',
+                failedDownloads: general.failedDownloads.enabled,
                 subtitleMissed: subtitles.enabled,
-                subtitleMissedPP: postProcessing.postponeIfNoSubs
+                subtitleMissedPP: postprocessing.postponeIfNoSubs
             };
         }
     },
@@ -176,8 +195,10 @@ export default {
             const { target } = event;
             if (target.matches('#main_nav a.router-link, #main_nav a.router-link *')) {
                 const dropdown = target.closest('.dropdown');
-                dropdown.querySelector('.dropdown-toggle').setAttribute('aria-expanded', false);
-                dropdown.querySelector('.dropdown-menu').style.display = 'none';
+                if (dropdown) {
+                    dropdown.querySelector('.dropdown-toggle').setAttribute('aria-expanded', false);
+                    dropdown.querySelector('.dropdown-menu').style.display = 'none';
+                }
                 // Also collapse the main nav if it's open
                 $('#main_nav').collapse('hide');
             }
@@ -233,18 +254,16 @@ export default {
                 cancelButton: 'Cancel',
                 dialogClass: 'modal-dialog',
                 post: false,
-                button: $(event.currentTarget),
+                button: $(event.currentTarget || event.target),
+
                 confirm($element) {
                     window.location.href = $element[0].href;
                 }
             };
 
-            if (action === 'restart') {
-                options.title = 'Restart';
-                options.text = 'Are you sure you want to restart Medusa?';
-            } else if (action === 'shutdown') {
-                options.title = 'Shutdown';
-                options.text = 'Are you sure you want to shutdown Medusa?';
+            if (action === 'newversion') {
+                options.title = 'New version';
+                options.text = 'New version available, update now?';
             } else if (action === 'logout') {
                 options.title = 'Logout';
                 options.text = 'Are you sure you want to logout from Medusa?';
@@ -253,6 +272,20 @@ export default {
             }
 
             $.confirm(options, event);
+        },
+        async checkForupdates(event) {
+            const { confirmDialog } = this;
+            try {
+                this.$snotify.info(
+                    'Checking for a new version...'
+                );
+                await api.post('system/operation', { type: 'CHECKFORUPDATE' });
+                confirmDialog(event, 'newversion');
+            } catch (error) {
+                this.$snotify.info(
+                    'You are already on the latest version'
+                );
+            }
         }
     }
 };

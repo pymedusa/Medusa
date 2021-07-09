@@ -4,22 +4,25 @@
             <select v-if="shows.length === 0" :class="selectClass" disabled>
                 <option>Loading...</option>
             </select>
-            <select v-else v-model="selectedShowSlug" :class="selectClass" @change="$emit('change', selectedShowSlug)">
-                <option v-if="placeholder" :value="placeholder" disabled :selected="!selectedShowSlug" hidden>{{placeholder}}</option>
-                <template v-if="whichList === -1">
-                    <optgroup v-for="curShowList in showLists" :key="curShowList.type" :label="curShowList.type">
-                        <option v-for="show in curShowList.shows" :key="show.id.slug" :value="show.id.slug">{{show.title}}</option>
+            <select v-else v-model="selectedShowSlug" :class="selectClass" @change="changeRoute($event.target.value);">
+                <!-- placeHolder -->
+                <option v-if="placeHolder" :value="placeHolder" disabled :selected="!selectedShowSlug" hidden>{{placeHolder}}</option>
+                <!-- If there are multiple show lists -->
+                <template v-if="sortedLists && sortedLists.length > 1">
+                    <optgroup v-for="list in sortedLists" :key="list.listTitle" :label="list.listTitle">
+                        <option v-for="show in list.shows" :key="show.id.slug" :value="show.id.slug">{{show.title}}</option>
                     </optgroup>
                 </template>
+                <!-- If there is one list -->
                 <template v-else>
-                    <option v-for="show in showLists[whichList].shows" :key="show.id.slug" :value="show.id.slug">{{show.title}}</option>
+                    <option v-for="show in sortedLists[0].shows" :key="show.id.slug" :value="show.id.slug">{{show.title}}</option>
                 </template>
             </select>
         </div> <!-- end of select-show-group -->
     </div> <!-- end of container -->
 </template>
 <script>
-import { mapState } from 'vuex';
+import { mapActions, mapGetters, mapState } from 'vuex';
 
 export default {
     name: 'show-selector',
@@ -29,93 +32,86 @@ export default {
             type: Boolean,
             default: false
         },
-        placeholder: String,
+        placeHolder: String,
         selectClass: {
             type: String,
             default: 'select-show form-control input-sm-custom'
         }
     },
     data() {
-        const selectedShowSlug = this.showSlug || this.placeholder;
         return {
-            selectedShowSlug,
-            lock: false
+            $_selectedShow: '' // eslint-disable-line camelcase
         };
     },
     computed: {
-        ...mapState(['config']),
-        ...mapState({ shows: state => state.shows.shows }),
-        showLists() {
-            const { config, shows } = this;
-            const { animeSplitHome, sortArticle } = config;
-            const lists = [
-                { type: 'Shows', shows: [] },
-                { type: 'Anime', shows: [] }
-            ];
+        ...mapState({
+            layout: state => state.config.layout,
+            shows: state => state.shows.shows
+        }),
+        ...mapGetters({
+            showsInLists: 'showsInLists'
+        }),
+        selectedShowSlug: {
+            get() {
+                const { placeHolder, showSlug, $_selectedShow } = this; // eslint-disable-line camelcase
+                return $_selectedShow || showSlug || placeHolder; // eslint-disable-line camelcase
+            },
+            set(newSlug) {
+                this.$_selectedShow = newSlug; // eslint-disable-line camelcase
+            }
+        },
+        sortedLists() {
+            const { layout, showsInLists } = this;
+            const { sortArticle } = layout;
 
-            // We're still loading
-            if (shows.length === 0) {
+            const sortedShows = [...showsInLists];
+
+            const sortKey = title => (sortArticle ? title : title.replace(/^((?:the|a|an)\s)/i, '')).toLowerCase();
+            const sortFn = (showA, showB) => {
+                const titleA = sortKey(showA.title);
+                const titleB = sortKey(showB.title);
+                if (titleA < titleB) {
+                    return -1;
+                }
+                if (titleA > titleB) {
+                    return 1;
+                }
+                return 0;
+            };
+
+            sortedShows.forEach(list => {
+                list.shows.sort(sortFn);
+            });
+
+            return sortedShows;
+        }
+    },
+    methods: {
+        ...mapActions({
+            setCurrentShow: 'setCurrentShow'
+        }),
+        async changeRoute(newShowSlug) {
+            const { followSelection, shows, selectedShowSlug, setCurrentShow } = this;
+            this.$emit('change', newShowSlug);
+
+            if (!followSelection) {
                 return;
             }
 
-            shows.forEach(show => {
-                const type = Number(animeSplitHome && show.config.anime);
-                lists[type].shows.push(show);
-            });
+            const selectedShow = shows.find(show => show.id.slug === newShowSlug);
+            if (!selectedShow || selectedShowSlug === newShowSlug) {
+                return;
+            }
 
-            const sortKey = title => (sortArticle ? title : title.replace(/^((?:The|A|An)\s)/i, '')).toLowerCase();
-            lists.forEach(list => {
-                list.shows.sort((showA, showB) => {
-                    const titleA = sortKey(showA.title);
-                    const titleB = sortKey(showB.title);
-                    if (titleA < titleB) {
-                        return -1;
-                    }
-                    if (titleA > titleB) {
-                        return 1;
-                    }
-                    return 0;
-                });
-            });
-            return lists;
-        },
-        whichList() {
-            const { showLists } = this;
-            const shows = showLists[0].shows.length !== 0;
-            const anime = showLists[1].shows.length !== 0;
-            if (shows && anime) {
-                return -1;
-            }
-            if (anime) {
-                return 1;
-            }
-            return 0;
+            await setCurrentShow(newShowSlug);
+
+            // To make it complete, make sure to switch route.
+            this.$router.push({ query: { showslug: newShowSlug } });
         }
     },
     watch: {
         showSlug(newSlug) {
-            this.lock = true;
             this.selectedShowSlug = newSlug;
-        },
-        selectedShowSlug(newSlug) {
-            if (this.lock) {
-                this.lock = false;
-                return;
-            }
-
-            if (!this.followSelection) {
-                return;
-            }
-
-            const { shows } = this;
-            const selectedShow = shows.find(show => show.id.slug === newSlug);
-            if (!selectedShow) {
-                return;
-            }
-            const indexerName = selectedShow.indexer;
-            const showId = selectedShow.id[indexerName];
-            const base = document.querySelector('base').getAttribute('href');
-            window.location.href = `${base}home/displayShow?indexername=${indexerName}&seriesid=${showId}`;
         }
     }
 };

@@ -38,4 +38,6 @@ class SeriesAssetHandler(BaseRequestHandler):
         if not media:
             return self._not_found('{kind} not found'.format(kind=asset_type.capitalize()))
 
+        self.set_header('Cache-Control', 'max-age=86400')
+
         return self._ok(stream=media, content_type=asset.media_type)

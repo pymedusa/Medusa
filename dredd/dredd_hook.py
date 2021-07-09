@@ -16,11 +16,6 @@ except ImportError:
     # Python 2
     from __builtin__ import print as real_print
 
-try:
-    from collections.abc import Mapping
-except ImportError:
-    from collections import Mapping
-
 current_dir = os.path.abspath(os.path.dirname(__file__))
 root_dir = os.path.abspath(os.path.join(current_dir, '..'))
 sys.path.insert(1, os.path.join(root_dir, 'ext'))
@@ -31,6 +26,7 @@ from configparser import ConfigParser
 import dredd_hooks as hooks
 
 from six import string_types
+from six.moves.collections_abc import Mapping
 from six.moves.urllib.parse import parse_qs, urlencode, urlparse
 
 import yaml

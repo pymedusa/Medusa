@@ -31,6 +31,9 @@ class TvDBMap:
 
     def _get_x_for_y(self, xValue, x, y):
         # print("searching "+x+" with the value "+str(xValue)+" and want to give back "+y)
+        if not self.xmlMap:
+            return 0
+
         x_value = str(xValue)
         for anime in self.xmlMap.findall("anime"):
             try:

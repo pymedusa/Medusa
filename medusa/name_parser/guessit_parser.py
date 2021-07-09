@@ -3,15 +3,18 @@
 """Guessit Name Parser."""
 from __future__ import unicode_literals
 
+import logging
 import re
 from datetime import timedelta
 from time import time
 
-from guessit.rules.common.date import valid_year
-
 from medusa import app
+from medusa.logger.adapters.style import BraceAdapter
+from medusa.name_parser.cache import BaseCache
 from medusa.name_parser.rules import default_api
 
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 EXPECTED_TITLES_EXPIRATION_TIME = timedelta(days=1).total_seconds()
 
@@ -70,14 +73,19 @@ def guessit(name, options=None):
     :rtype: dict
     """
     start_time = time()
-    final_options = dict(options) if options else dict()
+    final_options = dict(options) if options else dict(show_type='normal')
     final_options.update(dict(type='episode', implicit=True,
                               episode_prefer_number=final_options.get('show_type') == 'anime',
                               expected_title=get_expected_titles(app.showList),
                               expected_group=expected_groups,
                               allowed_languages=allowed_languages,
                               allowed_countries=allowed_countries))
-    result = default_api.guessit(name, options=final_options)
+
+    result = guessit_cache.get_or_invalidate(name, final_options)
+    if not result:
+        result = default_api.guessit(name, options=final_options)
+        guessit_cache.add(name, result)
+
     result['parsing_time'] = time() - start_time
     return result
 
@@ -86,7 +94,7 @@ def get_expected_titles(show_list):
     """Return expected titles to be used by guessit.
 
     It iterates over user's show list and only returns a regex for titles that contains numbers
-    (since they can confuse guessit).
+    or dashes (since they can confuse guessit).
 
     :param show_list:
     :type show_list: list of medusa.tv.Series
@@ -95,23 +103,46 @@ def get_expected_titles(show_list):
     """
     expected_titles = []
     for show in show_list:
-        names = {show.name}.union(show.exceptions)
-        for name in names:
-            if name.isdigit():
+        exceptions = {show.name}.union({alias.title for alias in show.aliases})
+        for exception in exceptions:
+            if exception.isdigit():
                 # do not add numbers to expected titles.
                 continue
 
-            match = series_re.match(name)
+            match = series_re.match(exception)
             if not match:
                 continue
 
-            series, year, _ = match.groups()
-            if year and not valid_year(int(year)):
-                series = name
-
-            if not any([char.isdigit() for char in series]):
+            if not any(char.isdigit() or char == '-' for char in exception):
                 continue
 
-            expected_titles.append(series)
+            expected_titles.append(exception)
 
     return expected_titles
+
+
+class GuessItCache(BaseCache):
+    """GuessIt cache."""
+
+    def __init__(self):
+        """Initialize the cache with a maximum size."""
+        super().__init__(25000)
+        self.invalidation_object = None
+
+    def get_or_invalidate(self, name, obj):
+        """Return an item from the cache if the obj matches the previous invalidation object. Clears the cache and returns None if not."""
+        if not self.invalidation_object:
+            self.invalidation_object = obj
+
+        if self.invalidation_object == obj:
+            log.debug('Using guessit cache item for {name}', {'name': name})
+            return self.get(name)
+
+        log.debug('GuessIt cache was cleared due to invalidation object change: previous={previous} new={new}',
+                  {'previous': self.invalidation_object, 'new': obj})
+        self.invalidation_object = obj
+        self.clear()
+        return None
+
+
+guessit_cache = GuessItCache()

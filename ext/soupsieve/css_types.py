@@ -4,13 +4,15 @@ from . import util
 
 __all__ = (
     'Selector',
-    'NullSelector',
+    'SelectorNull',
     'SelectorTag',
     'SelectorAttribute',
+    'SelectorContains',
     'SelectorNth',
     'SelectorLang',
     'SelectorList',
-    'Namespaces'
+    'Namespaces',
+    'CustomSelectors'
 )
 
 
@@ -24,6 +26,7 @@ SEL_DIR_RTL = 0x40
 SEL_IN_RANGE = 0x80
 SEL_OUT_OF_RANGE = 0x100
 SEL_DEFINED = 0x200
+SEL_PLACEHOLDER_SHOWN = 0x400
 
 
 class Immutable(object):
@@ -146,6 +149,25 @@ class Namespaces(ImmutableDict):
         super(Namespaces, self).__init__(*args, **kwargs)
 
 
+class CustomSelectors(ImmutableDict):
+    """Custom selectors."""
+
+    def __init__(self, *args, **kwargs):
+        """Initialize."""
+
+        # If there are arguments, check the first index.
+        # `super` should fail if the user gave multiple arguments,
+        # so don't bother checking that.
+        arg = args[0] if args else kwargs
+        is_dict = isinstance(arg, dict)
+        if is_dict and not all([isinstance(k, util.string) and isinstance(v, util.string) for k, v in arg.items()]):
+            raise TypeError('CustomSelectors keys and values must be Unicode strings')
+        elif not is_dict and not all([isinstance(k, util.string) and isinstance(v, util.string) for k, v in arg]):
+            raise TypeError('CustomSelectors keys and values must be Unicode strings')
+
+        super(CustomSelectors, self).__init__(*args, **kwargs)
+
+
 class Selector(Immutable):
     """Selector."""
 
@@ -175,13 +197,13 @@ class Selector(Immutable):
         )
 
 
-class NullSelector(Immutable):
+class SelectorNull(Immutable):
     """Null Selector."""
 
     def __init__(self):
         """Initialize."""
 
-        super(NullSelector, self).__init__()
+        super(SelectorNull, self).__init__()
 
 
 class SelectorTag(Immutable):
@@ -211,6 +233,19 @@ class SelectorAttribute(Immutable):
             prefix=prefix,
             pattern=pattern,
             xml_type_pattern=xml_type_pattern
+        )
+
+
+class SelectorContains(Immutable):
+    """Selector contains rule."""
+
+    __slots__ = ("text", "_hash")
+
+    def __init__(self, text):
+        """Initialize."""
+
+        super(SelectorContains, self).__init__(
+            text=text
         )
 
 
@@ -301,9 +336,10 @@ def pickle_register(obj):
 
 
 pickle_register(Selector)
-pickle_register(NullSelector)
+pickle_register(SelectorNull)
 pickle_register(SelectorTag)
 pickle_register(SelectorAttribute)
+pickle_register(SelectorContains)
 pickle_register(SelectorNth)
 pickle_register(SelectorLang)
 pickle_register(SelectorList)

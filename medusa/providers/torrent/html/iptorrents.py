@@ -15,6 +15,8 @@ from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
 
+import validators
+
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
@@ -27,12 +29,7 @@ class IPTorrentsProvider(TorrentProvider):
         super(IPTorrentsProvider, self).__init__('IPTorrents')
 
         # URLs
-        self.url = 'https://iptorrents.eu'
-        self.urls = {
-            'base_url': self.url,
-            'login': urljoin(self.url, 'torrents'),
-            'search': urljoin(self.url, 't?%s%s&q=%s&qf=#torrents'),
-        }
+        self.url = 'https://iptorrents.me'
 
         # Proper Strings
 
@@ -42,6 +39,7 @@ class IPTorrentsProvider(TorrentProvider):
         self.cookies = ''
         self.required_cookies = ('uid', 'pass')
         self.categories = '73=&60='
+        self.custom_url = None
 
         # Cache
         self.cache = tv.Cache(self)
@@ -56,10 +54,23 @@ class IPTorrentsProvider(TorrentProvider):
         :returns: A list of search results (structure)
         """
         results = []
+
+        if self.custom_url:
+            if not validators.url(self.custom_url):
+                log.warning('Invalid custom url: {0}', self.custom_url)
+                return results
+            self.url = self.custom_url
+
         if not self.login():
             return results
 
         freeleech = '&free=on' if self.freeleech else ''
+
+        self.urls = {
+            'base_url': self.url,
+            'login': urljoin(self.url, 'torrents'),
+            'search': urljoin(self.url, 't?%s%s&q=%s&qf=#torrents'),
+        }
 
         for mode in search_strings:
             log.debug('Search mode: {0}', mode)
@@ -108,13 +119,14 @@ class IPTorrentsProvider(TorrentProvider):
             # Skip column headers
             for row in torrents[1:]:
                 try:
-                    title = row('td')[1].find('a').text
-                    download_url = self.urls['base_url'] + row('td')[3].find('a')['href']
+                    table_data = row('td')
+                    title = table_data[1].find('a').text
+                    download_url = self.urls['base_url'] + table_data[3].find('a')['href']
                     if not all([title, download_url]):
                         continue
 
-                    seeders = int(row.find('td', attrs={'class': 'ac t_seeders'}).text)
-                    leechers = int(row.find('td', attrs={'class': 'ac t_leechers'}).text)
+                    seeders = int(table_data[7].text)
+                    leechers = int(table_data[8].text)
 
                     # Filter unseeded torrent
                     if seeders < self.minseed:
@@ -124,10 +136,10 @@ class IPTorrentsProvider(TorrentProvider):
                                       title, seeders)
                         continue
 
-                    torrent_size = row('td')[5].text
+                    torrent_size = table_data[5].text
                     size = convert_size(torrent_size) or -1
 
-                    pubdate_raw = row('td')[1].find('div').get_text().split('|')[-1].strip()
+                    pubdate_raw = table_data[1].find('div').get_text().split('|')[-1].strip()
                     pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
 
                     item = {

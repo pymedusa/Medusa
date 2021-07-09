@@ -8,10 +8,11 @@ import logging
 import os
 import re
 from base64 import b16encode, b32decode
+from contextlib import suppress
 from os.path import join
 from random import shuffle
 
-from bencode import BencodeDecodeError, bdecode
+from bencodepy import BencodeDecodeError, DEFAULT as BENCODE
 
 from feedparser.util import FeedParserDict
 
@@ -33,14 +34,32 @@ class TorrentProvider(GenericProvider):
         """Initialize the class."""
         super(TorrentProvider, self).__init__(name)
 
+        self.bt_cache_urls = [
+            'https://asnet.pw/download/{info_hash}/',
+            'https://p2pdl.com/download/{info_hash}',
+            'https://itorrents.org/torrent/{info_hash}.torrent',
+            'https://watercache.nanobytes.org/get/{info_hash}',
+            'https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true',
+        ]
         self.ratio = None
         self.provider_type = GenericProvider.TORRENT
         self.minseed = 0
         self.minleech = 0
 
+        # Ratio used for client actions when seed ratio reached.
+        # For example: Remove torrent when upload/download ratio (4.0) reached.
+        self.client_ratio = None
+
     def is_active(self):
         """Check if provider is enabled."""
         return bool(app.USE_TORRENTS) and self.is_enabled()
+
+    def get_result(self, series, item=None, cache=None):
+        """Get result."""
+        search_result = TorrentSearchResult(provider=self, series=series,
+                                            item=item, cache=cache)
+
+        return search_result
 
     @property
     def _custom_trackers(self):
@@ -49,10 +68,6 @@ class TorrentProvider(GenericProvider):
             return ''
 
         return '&tr=' + '&tr='.join(x.strip() for x in app.TRACKERS_LIST if x.strip())
-
-    def _get_result(self, episodes):
-        """Return a provider result object."""
-        return TorrentSearchResult(episodes, provider=self)
 
     def _get_size(self, item):
         """Get result size."""
@@ -107,25 +122,66 @@ class TorrentProvider(GenericProvider):
 
         return title, download_url
 
-    def _verify_download(self, file_name=None):
+    def _verify_download(self, file_path):
         """Validate torrent file."""
-        if not file_name or not os.path.isfile(file_name):
+        if not file_path or not os.path.isfile(file_path):
             return False
 
         try:
-            with open(file_name, 'rb') as f:
-                # `bencode.bdecode` is monkeypatched in `medusa.init`
-                meta_info = bdecode(f.read(), allow_extra_data=True)
+            with open(file_path, 'rb') as f:
+                # `bencodepy` is monkeypatched in `medusa.init`
+                meta_info = BENCODE.decode(f.read(), allow_extra_data=True)
             return 'info' in meta_info and meta_info['info']
         except BencodeDecodeError as error:
             log.debug('Failed to validate torrent file: {name}. Error: {error}',
-                      {'name': file_name, 'error': error})
+                      {'name': file_path, 'error': error})
 
-        remove_file_failed(file_name)
+        remove_file_failed(file_path)
         log.debug('{result} is not a valid torrent file',
-                  {'result': file_name})
+                  {'result': file_path})
 
         return False
+
+    def _verify_magnet(self, file_path):
+        """
+        Validate Magnet file.
+
+        Check if the Magnet file exists and has a valid info_hash.
+        :param file_path: Absolute path to the Magnet file.
+        :returns: True or False
+        """
+        if not file_path or not os.path.isfile(file_path):
+            return False
+
+        magnet_uri = None
+        with open(file_path, 'r', encoding='utf-8') as fp:
+            magnet_uri = fp.read()
+
+        if self._get_info_from_magnet(magnet_uri):
+            return True
+        return False
+
+    @staticmethod
+    def _get_torrent_name_from_magnet(magnet_uri):
+        """Try to extract a torrent name from a Magnet URI."""
+        torrent_name = 'NO_DOWNLOAD_NAME'
+        with suppress(Exception):
+            torrent_name = re.findall('dn=([^&]+)', magnet_uri)[0]
+
+        return torrent_name
+
+    @staticmethod
+    def _get_info_from_magnet(magnet_uri):
+        """Try to extract an info_hash from a Magnet URI."""
+        info_hash = re.findall(r'urn:btih:([\w]{32,40})', magnet_uri)
+        if not info_hash:
+            return False
+
+        info_hash = info_hash[0]
+        if len(info_hash) == 32:
+            info_hash = b16encode(b32decode(info_hash))
+
+        return info_hash.upper()
 
     def seed_ratio(self):
         """Return seed ratio of provider."""
@@ -165,7 +221,7 @@ class TorrentProvider(GenericProvider):
         return url
 
     def _make_url(self, result):
-        """Return url if result is a magnet link."""
+        """Return url if result is a Magnet URI."""
         urls = []
         filename = ''
 
@@ -174,21 +230,18 @@ class TorrentProvider(GenericProvider):
 
         if result.url.startswith('magnet:'):
             try:
-                info_hash = re.findall(r'urn:btih:([\w]{32,40})', result.url)[0].upper()
-
-                try:
-                    torrent_name = re.findall('dn=([^&]+)', result.url)[0]
-                except Exception:
-                    torrent_name = 'NO_DOWNLOAD_NAME'
-
-                if len(info_hash) == 32:
-                    info_hash = b16encode(b32decode(info_hash)).upper()
+                torrent_name = self._get_torrent_name_from_magnet(result.url)
+                info_hash = self._get_info_from_magnet(result.url)
 
                 if not info_hash:
                     log.error('Unable to extract torrent hash from magnet: {0}', result.url)
                     return urls, filename
 
-                urls = [x.format(info_hash=info_hash, torrent_name=torrent_name) for x in self.bt_cache_urls]
+                urls = [
+                    cache_url.format(info_hash=info_hash,
+                                     torrent_name=torrent_name)
+                    for cache_url in self.bt_cache_urls
+                ]
                 shuffle(urls)
             except Exception:
                 log.error('Unable to extract torrent hash or name from magnet: {0}', result.url)
@@ -205,6 +258,19 @@ class TorrentProvider(GenericProvider):
             urls = [result.url]
 
         result_name = sanitize_filename(result.name)
-        filename = join(self._get_storage_dir(), result_name + '.' + self.provider_type)
+        filename = join(self._get_storage_dir(), result_name)
 
         return urls, filename
+
+    @staticmethod
+    def _get_identifier(item):
+        """
+        If the url has a magnet link, use the info hash as identifier.
+
+        By default this is the url.
+        """
+        if item.url.startswith('magnet:'):
+            hash = re.findall(r'urn:btih:([\w]{32,40})', item.url)
+            if hash:
+                return hash[0]
+        return item.url

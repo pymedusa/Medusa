@@ -1,0 +1,31 @@
+name: API tests
+
+on: [pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.7]
+        node-version: [14.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install Python dependencies
+      run: |
+        pip install dredd_hooks
+        pip install 'PyYAML>=5.1'
+        pip install 'six>=1.13.0'
+    - name: Install Node.js dependencies
+      run: yarn install --ignore-scripts
+    - name: Test with Dredd
+      run: yarn test-api

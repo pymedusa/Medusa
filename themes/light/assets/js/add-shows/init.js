@@ -1,7 +1,7 @@
 MEDUSA.addShows.init = function() {
     $('#tabs').tabs({
         collapsible: true,
-        selected: (MEDUSA.config.sortArticle ? -1 : 0)
+        selected: (MEDUSA.config.layout.sortArticle ? -1 : 0)
     });
 
     const imgLazyLoad = new LazyLoad({
@@ -60,7 +60,7 @@ MEDUSA.addShows.init = function() {
             getSortData: {
                 name(itemElem) {
                     const name = $(itemElem).attr('data-name') || '';
-                    return (MEDUSA.config.sortArticle ? name : name.replace(/^((?:The|A|An)\s)/i, '')).toLowerCase();
+                    return (MEDUSA.config.layout.sortArticle ? name : name.replace(/^((?:the|a|an)\s)/i, '')).toLowerCase();
                 },
                 rating: '[data-rating] parseInt',
                 votes: '[data-votes] parseInt'
@@ -72,7 +72,7 @@ MEDUSA.addShows.init = function() {
     };
 
     $.fn.loadRemoteShows = function(path, loadingTxt, errorTxt) {
-        $(this).html('<img id="searchingAnim" src="images/loading32' + MEDUSA.config.themeSpinner + '.gif" height="32" width="32" />&nbsp;' + loadingTxt);
+        $(this).html('<img id="searchingAnime" src="images/loading32' + MEDUSA.config.layout.themeSpinner + '.gif" height="32" width="32" />&nbsp;' + loadingTxt);
         $(this).load(path + ' #container', function(response, status) {
             if (status === 'error') {
                 $(this).empty().html(errorTxt);
@@ -129,7 +129,7 @@ MEDUSA.addShows.init = function() {
 
             const configureShowOptions = $('#configure_show_options').prop('checked');
 
-            $.get('addShows/addShowByID?indexername=' + $(this).attr('data-indexer') + '&seriesid=' + $(this).attr('data-indexer-id'), {
+            $.get('addShows/addShowByID?showslug=' + $(this).attr('data-indexer') + $(this).attr('data-indexer-id'), {
                 root_dir: $('#rootDirs option:selected').val(), // eslint-disable-line camelcase
                 configure_show_options: configureShowOptions, // eslint-disable-line camelcase
                 show_name: $(this).attr('data-show-name'), // eslint-disable-line camelcase

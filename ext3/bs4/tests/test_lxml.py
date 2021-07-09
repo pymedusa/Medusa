@@ -36,7 +36,7 @@ class LXMLTreeBuilderSmokeTest(SoupTest, HTMLTreeBuilderSmokeTest):
 
     @property
     def default_builder(self):
-        return LXMLTreeBuilder()
+        return LXMLTreeBuilder
 
     def test_out_of_range_entity(self):
         self.assertSoupEquals(
@@ -71,6 +71,21 @@ class LXMLTreeBuilderSmokeTest(SoupTest, HTMLTreeBuilderSmokeTest):
         self.assertEqual("<b/>", str(soup.b))
         self.assertTrue("BeautifulStoneSoup class is deprecated" in str(w[0].message))
 
+    def test_tracking_line_numbers(self):
+        # The lxml TreeBuilder cannot keep track of line numbers from
+        # the original markup. Even if you ask for line numbers, we
+        # don't have 'em.
+        #
+        # This means that if you have a tag like <sourceline> or
+        # <sourcepos>, attribute access will find it rather than
+        # giving you a numeric answer.
+        soup = self.soup(
+            "\n   <p>\n\n<sourceline>\n<b>text</b></sourceline><sourcepos></p>",
+            store_line_numbers=True
+        )
+        self.assertEqual("sourceline", soup.p.sourceline.name)
+        self.assertEqual("sourcepos", soup.p.sourcepos.name)
+        
 @skipIf(
     not LXML_PRESENT,
     "lxml seems not to be present, not testing its XML tree builder.")
@@ -79,7 +94,7 @@ class LXMLXMLTreeBuilderSmokeTest(SoupTest, XMLTreeBuilderSmokeTest):
 
     @property
     def default_builder(self):
-        return LXMLTreeBuilderForXML()
+        return LXMLTreeBuilderForXML
 
     def test_namespace_indexing(self):
         # We should not track un-prefixed namespaces as we can only hold one

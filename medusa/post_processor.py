@@ -23,6 +23,7 @@ import os
 import re
 import stat
 import subprocess
+import sys
 from builtins import object
 from builtins import str
 from collections import OrderedDict
@@ -208,7 +209,7 @@ class PostProcessor(object):
         files = self._search_files(file_path, subfolders=subfolders)
 
         # file path to the video file that is being processed (without extension)
-        processed_file_name = os.path.splitext(os.path.basename(file_path))[0].lower()
+        processed_file_name = os.path.splitext(os.path.basename(file_path))[0].lower() + '.'
 
         processed_names = (processed_file_name,)
         processed_names += tuple((_f for _f in (self._rar_basename(file_path, files),) if _f))
@@ -220,12 +221,12 @@ class PostProcessor(object):
             if found_file == file_path:
                 continue
 
-            # Exclude .rar files
-            if re.search(r'(^.+\.(rar|r\d+)$)', found_file):
-                continue
-
             # Exclude non-subtitle files with the 'only subtitles' option
             if subtitles_only and not is_subtitle(found_file):
+                continue
+
+            # Exclude .rar files
+            if re.search(r'(^.+\.(rar|r\d+)$)', found_file):
                 continue
 
             file_name = os.path.basename(found_file).lower()
@@ -331,7 +332,7 @@ class PostProcessor(object):
                            u'Error: {message}'.format(name=rar, message=error), logger.WARNING)
                 continue
             if videofile in content:
-                return os.path.splitext(os.path.basename(rar))[0].lower()
+                return os.path.splitext(os.path.basename(rar))[0].lower() + '.'
 
     def _delete(self, files, associated_files=False):
         """
@@ -434,12 +435,16 @@ class PostProcessor(object):
             self.log(u'Must provide an action for the combined file operation', logger.ERROR)
             return
 
-        file_list = [file_path]
+        other_files = []
         if associated_files:
-            file_list += self.list_associated_files(file_path, refine=True)
-        elif subtitles:
-            file_list += self.list_associated_files(file_path, subtitles_only=True, refine=True)
+            other_files += self.list_associated_files(file_path, refine=True)
+        if subtitles:
+            other_files += self.list_associated_files(file_path, subfolders=True, subtitles_only=True, refine=True)
+            # Remove possible duplicates
+            if associated_files:
+                other_files = list(set(other_files))
 
+        file_list = [file_path] + other_files
         if not file_list:
             self.log(u'There were no files associated with {0}, not moving anything'.format
                      (file_path), logger.DEBUG)
@@ -507,6 +512,17 @@ class PostProcessor(object):
                          (cur_file_path, new_file_path, e), logger.ERROR)
                 raise EpisodePostProcessingFailedException('Unable to move and link the files to their new home')
 
+        def keeplink(cur_file_path, new_file_path):
+            self.log(u'Symbolic linking file from {0} to {1}'.format
+                     (cur_file_path, new_file_path), logger.DEBUG)
+            try:
+                helpers.symlink(cur_file_path, new_file_path)
+                helpers.chmod_as_parent(new_file_path)
+            except (IOError, OSError) as e:
+                self.log(u'Unable to link file {0} to {1}: {2!r}'.format
+                         (cur_file_path, new_file_path, e), logger.ERROR)
+                raise EpisodePostProcessingFailedException('Unable to move and link the files to their new home')
+
         def reflink(cur_file_path, new_file_path):
             self.log(u'Reflink file from {0} to {1}'.format(cur_file_path, new_basename), logger.DEBUG)
             try:
@@ -517,11 +533,11 @@ class PostProcessor(object):
                          (cur_file_path, new_file_path, e), logger.ERROR)
                 raise EpisodePostProcessingFailedException('Unable to copy the files to their new home')
 
-        action = {'copy': copy, 'move': move, 'hardlink': hardlink, 'symlink': symlink, 'reflink': reflink}.get(self.process_method)
+        action = {'copy': copy, 'move': move, 'hardlink': hardlink, 'symlink': symlink, 'reflink': reflink, 'keeplink': keeplink}.get(self.process_method)
         # Subtitle action should be move in case of hardlink|symlink|reflink as downloaded subtitle is not part of torrent
         subtitle_action = {'copy': copy, 'move': move, 'hardlink': move, 'symlink': move, 'reflink': move}.get(self.process_method)
-        self._combined_file_operation(file_path, new_path, new_basename, associated_files,
-                                      action=action, subtitle_action=subtitle_action, subtitles=subtitles)
+        self._combined_file_operation(file_path, new_path, new_basename, associated_files=associated_files,
+                                      action=action, subtitles=subtitles, subtitle_action=subtitle_action)
 
     @staticmethod
     def _build_anidb_episode(connection, file_path):
@@ -681,6 +697,17 @@ class PostProcessor(object):
         except (InvalidNameException, InvalidShowException) as error:
             self.log(u'{0}'.format(error), logger.DEBUG)
             return to_return
+
+        # if parsed result should be an anime, but doesn't have
+        # absolute numbering, parse again explicitly as anime
+        if parse_result.series and all([parse_result.series.is_anime,
+                                        not parse_result.is_anime]):
+            try:
+                parse_result.series.erase_cached_parse()
+                parse_result = NameParser(parse_method='anime').parse(name)
+            except (InvalidNameException, InvalidShowException) as error:
+                self.log(u'{0}'.format(error), logger.DEBUG)
+                return to_return
 
         if parse_result.series and all([parse_result.series.air_by_date or parse_result.series.is_sports,
                                         parse_result.is_air_by_date]):
@@ -954,13 +981,19 @@ class PostProcessor(object):
         episode = str(ep_obj.episode)
         airdate = str(ep_obj.airdate)
 
-        for cur_script_name in app.EXTRA_SCRIPTS:
+        for script_path in app.EXTRA_SCRIPTS:
 
-            # generate a safe command line string to execute the script and provide all the parameters
-            script_cmd = [piece for piece in cur_script_name.split(' ') if piece.strip()]
-            self.log(u'Running extra script: {0}'.format(cur_script_name), logger.INFO)
+            if not os.path.isfile(script_path):
+                self.log(u'Extra script {0} is not a file.'.format(script_path), logger.WARNING)
+                continue
 
-            script_cmd += [ep_location, file_path, indexer_id, season, episode, airdate]
+            if not script_path.endswith('.py'):
+                self.log(u'Extra script {0} is not a Python file.'.format(script_path), logger.WARNING)
+                continue
+
+            self.log(u'Running extra script: {0}'.format(script_path), logger.INFO)
+            script_cmd = [sys.executable, script_path, ep_location, file_path, indexer_id, season, episode, airdate]
+
             # use subprocess to run the command and capture output
             self.log(u'Executing command: {0}'.format(script_cmd))
             try:
@@ -1089,7 +1122,7 @@ class PostProcessor(object):
 
                 # If the file season (ep_obj.season) is bigger than
                 # the indexer season (max_season[0]['max']), skip the file
-                if int(ep_obj.season) > int(max_season[0]['max']):
+                if max_season[0]['max'] and int(ep_obj.season) > int(max_season[0]['max']):
                     self.log(u'File has season {0}, while the indexer is on season {1}. '
                              u'The file may be incorrectly labeled or fake, aborting.'.format
                              (ep_obj.season, max_season[0]['max']))
@@ -1105,7 +1138,8 @@ class PostProcessor(object):
 
         # try to find out if we have enough space to perform the copy or move action.
         if not helpers.is_file_locked(self.file_path, False):
-            if not verify_freespace(self.file_path, ep_obj.series._location, [ep_obj] + ep_obj.related_episodes):
+            if not verify_freespace(self.file_path, os.path.dirname(ep_obj.series._location),
+                                    [ep_obj] + ep_obj.related_episodes):
                 self.log(u'Not enough space to continue post-processing, exiting', logger.WARNING)
                 return False
         else:
@@ -1161,16 +1195,12 @@ class PostProcessor(object):
 
                 cur_ep.status = DOWNLOADED
                 cur_ep.quality = new_ep_quality
-
                 cur_ep.subtitles = u''
-
                 cur_ep.subtitles_searchcount = 0
-
                 cur_ep.subtitles_lastsearch = u'0001-01-01 00:00:00'
-
                 cur_ep.is_proper = self.is_proper
-
                 cur_ep.version = new_ep_version
+                cur_ep.manually_searched = self.manually_searched
 
                 if self.release_group:
                     cur_ep.release_group = self.release_group
@@ -1218,13 +1248,13 @@ class PostProcessor(object):
 
         try:
             # do the action to the episode and associated files to the show dir
-            if self.process_method in ['copy', 'hardlink', 'move', 'symlink', 'reflink']:
+            if self.process_method in ['copy', 'hardlink', 'move', 'symlink', 'reflink', 'keeplink']:
                 if not self.process_method == 'hardlink':
                     if helpers.is_file_locked(self.file_path, False):
                         raise EpisodePostProcessingFailedException('File is locked for reading')
 
-                self.post_process_action(self.file_path, dest_path, new_base_name,
-                                         app.MOVE_ASSOCIATED_FILES, app.USE_SUBTITLES and ep_obj.series.subtitles)
+                self.post_process_action(self.file_path, dest_path, new_base_name, bool(app.MOVE_ASSOCIATED_FILES),
+                                         app.USE_SUBTITLES and bool(ep_obj.series.subtitles))
             else:
                 logger.log(u"'{0}' is an unknown file processing method. "
                            u"Please correct your app's usage of the API.".format(self.process_method), logger.WARNING)
@@ -1234,13 +1264,25 @@ class PostProcessor(object):
                      (self.file_path, dest_path, error), logger.ERROR)
             raise EpisodePostProcessingFailedException('Unable to move the files to their new home')
 
+        sql_l = []
         # download subtitles
-        if app.USE_SUBTITLES and ep_obj.series.subtitles:
-            for cur_ep in [ep_obj] + ep_obj.related_episodes:
-                with cur_ep.lock:
-                    cur_ep.location = os.path.join(dest_path, new_file_name)
+        for cur_ep in [ep_obj] + ep_obj.related_episodes:
+            with cur_ep.lock:
+                cur_ep.location = os.path.join(dest_path, new_file_name)
+
+                if app.USE_SUBTITLES and ep_obj.series.subtitles:
                     cur_ep.refresh_subtitles()
                     cur_ep.download_subtitles()
+
+                cur_ep.airdate_modify_stamp()
+
+                # generate nfo/tbn
+                try:
+                    cur_ep.create_meta_files()
+                except Exception:
+                    logger.log(u'Could not create/update meta files. Continuing with post-processing...')
+
+                sql_l.append(cur_ep.get_sql())
 
         # now that processing has finished, we can put the info in the DB.
         # If we do it earlier, then when processing fails, it won't try again.
@@ -1248,28 +1290,9 @@ class PostProcessor(object):
             main_db_con = db.DBConnection()
             main_db_con.mass_action(sql_l)
 
-        # put the new location in the database
-        sql_l = []
-        for cur_ep in [ep_obj] + ep_obj.related_episodes:
-            with cur_ep.lock:
-                cur_ep.location = os.path.join(dest_path, new_file_name)
-                sql_l.append(cur_ep.get_sql())
-
-        if sql_l:
-            main_db_con = db.DBConnection()
-            main_db_con.mass_action(sql_l)
-
-        cur_ep.airdate_modify_stamp()
-
-        # generate nfo/tbn
-        try:
-            ep_obj.create_meta_files()
-        except Exception:
-            logger.log(u'Could not create/update meta files. Continuing with post-processing...')
-
         # log it to history episode and related episodes (multi-episode for example)
         for cur_ep in [ep_obj] + ep_obj.related_episodes:
-            history.log_download(cur_ep, self.file_path, new_ep_quality, self.release_group, new_ep_version)
+            history.log_download(cur_ep, self.file_path, self.release_group)
 
         # send notifications
         notifiers.notify_download(ep_obj)
@@ -1291,7 +1314,7 @@ class PostProcessor(object):
         self._run_extra_scripts(ep_obj)
 
         if not self.nzb_name and all([app.USE_TORRENTS, app.TORRENT_SEED_LOCATION,
-                                      self.process_method in ('hardlink', 'symlink', 'reflink')]):
+                                      self.process_method in ('hardlink', 'symlink', 'reflink', 'keeplink', 'copy')]):
             # Store self.info_hash and self.release_name so later we can remove from client if setting is enabled
             if self.info_hash:
                 existing_release_names = app.RECENTLY_POSTPROCESSED.get(self.info_hash, [])

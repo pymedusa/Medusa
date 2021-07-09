@@ -30,7 +30,7 @@ from medusa import (
 from medusa.cache import recommended_series_cache
 from medusa.helpers.externals import load_externals_from_db, save_externals_to_db, show_in_library
 from medusa.imdb import Imdb
-from medusa.indexers.utils import indexer_id_to_name
+from medusa.indexers.utils import indexer_id_to_name, indexer_name_mapping
 from medusa.indexers.indexer_config import EXTERNAL_ANIDB, EXTERNAL_IMDB, EXTERNAL_TRAKT, INDEXER_TVDBV2
 from medusa.indexers.utils import reverse_mappings
 from medusa.logger.adapters.style import BraceAdapter
@@ -38,7 +38,7 @@ from medusa.session.core import MedusaSession
 
 from simpleanidb import Anidb
 
-from six import PY2, text_type, viewitems
+from six import PY2, ensure_text, text_type, viewitems
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -150,11 +150,20 @@ class RecommendedShow(BasePopular):
         self.subcat = show_attr.get('subcat')
 
         self.show_in_list = show_in_library(self.source, self.series_id)
-        # if self.mapped_series_id:
-        #     # Check if the show is currently already in the db by the tvdb id
-        #     self.show_in_list = bool([show.indexerid for show in app.showList
-        #                              if show.series_id == self.ids['tvdb_id'] and
-        #                              show.indexer == INDEXER_TVDBV2])
+        # Check if the show is currently already in the db
+#        indexers = {mapped_indexer: mapped_series_id}
+#        indexers.update({indexer_name_mapping[indexer_name]: indexers_series_id
+#                         for indexer_name, indexers_series_id
+#                         in self.ids.items() if indexer_name in indexer_name_mapping})
+
+#        self.show_in_list = False
+#        for show in app.showList:
+#            if show.indexer in indexers and show.series_id == indexers[show.indexer]:
+#                self.show_in_list = True
+#                self.mapped_indexer = show.indexer
+#                self.mapped_indexer_name = show.identifier.indexer.slug
+#                self.series_id = show.series_id
+
         self.session = session
 
     def cache_image(self, image_url, default=None):
@@ -376,3 +385,29 @@ def create_key_from_series(namespace, fn, **kw):
             return show_key.encode('utf-8')
         return show_key
     return generate_key
+
+
+def get_all_recommended_series_from_cache(indexers):
+    """
+    Retrieve all recommended show objects from the dogpile cache for a specific indexer or a number of indexers.
+
+    For example: `get_all_recommended_series_from_cache(['imdb', 'anidb'])` will return all recommended show objects, for the
+    indexers imdb and anidb.
+
+    :param indexers: indexer or list of indexers. Indexers need to be passed as a string. For example: 'imdb', 'anidb' or 'trakt'.
+    :return: List of recommended show objects.
+    """
+    indexers = ensure_list(indexers)
+    all_series = []
+    for indexer in indexers:
+        index = recommended_series_cache.get(ensure_text(indexer))
+        if not index:
+            continue
+
+        for index_item in index:
+            key = '{indexer}_{series_id}'.format(indexer=indexer, series_id=index_item)
+            series = recommended_series_cache.get(key)
+            if series:
+                all_series.append(series)
+
+    return all_series

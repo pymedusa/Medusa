@@ -1,7 +1,7 @@
 <template>
     <div class="anidb-release-group-ui-wrapper top-10 max-width">
         <template v-if="fetchingGroups">
-            <state-switch state="loading" :theme="config.themeName" />
+            <state-switch state="loading" :theme="layout.themeName" />
             <span>Fetching release groups...</span>
         </template>
         <div v-else class="row">
@@ -174,9 +174,9 @@ export default {
         }
     },
     computed: {
-        ...mapState([
-            'config'
-        ]),
+        ...mapState({
+            layout: state => state.config.layout
+        }),
         itemsWhitelist() {
             return this.allReleaseGroups.filter(x => x.memberOf === 'whitelist');
         },

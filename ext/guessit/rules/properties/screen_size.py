@@ -24,8 +24,8 @@ def screen_size(config):
     :return: Created Rebulk object
     :rtype: Rebulk
     """
-    interlaced = frozenset({res for res in config['interlaced']})
-    progressive = frozenset({res for res in config['progressive']})
+    interlaced = frozenset(config['interlaced'])
+    progressive = frozenset(config['progressive'])
     frame_rates = [re.escape(rate) for rate in config['frame_rates']]
     min_ar = config['min_ar']
     max_ar = config['max_ar']
@@ -69,7 +69,7 @@ class PostProcessScreenSize(Rule):
     consequence = AppendMatch
 
     def __init__(self, standard_heights, min_ar, max_ar):
-        super(PostProcessScreenSize, self).__init__()
+        super().__init__()
         self.standard_heights = standard_heights
         self.min_ar = min_ar
         self.max_ar = max_ar

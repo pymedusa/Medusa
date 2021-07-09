@@ -65,12 +65,11 @@ from builtins import str
 from configobj import ConfigObj
 
 from medusa import (
-    app, cache, db, event_queue, exception_handler, helpers,
+    cache, db, exception_handler, helpers,
     logger as app_logger, metadata, name_cache, naming,
-    network_timezones, process_tv, providers, scheduler,
-    show_queue, show_updater, subtitles, trakt_checker
+    network_timezones, process_tv, providers, subtitles
 )
-from medusa.clients.torrent import torrent_checker
+from medusa.app import app
 from medusa.common import SD, SKIPPED, WANTED
 from medusa.config import (
     CheckSection, ConfigMigrator, check_setting_bool,
@@ -79,23 +78,30 @@ from medusa.config import (
     load_provider_setting, save_provider_setting
 )
 from medusa.databases import cache_db, failed_db, main_db
-from medusa.event_queue import Events
+from medusa.failed_history import trim_history
+from medusa.indexers.config import INDEXER_TVDBV2, INDEXER_TVMAZE
 from medusa.generic_update_queue import UpdateQueue
-from medusa.indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVMAZE
 from medusa.init.filesystem import is_valid_encoding
 from medusa.providers.generic_provider import GenericProvider
 from medusa.providers.nzb.newznab import NewznabProvider
 from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
 from medusa.providers.torrent.torznab.torznab import TorznabProvider
+from medusa.queues import show_queue
+from medusa.queues.event_queue import Events
+from medusa.schedulers import (
+    download_handler, episode_updater, scheduler, show_updater, trakt_checker
+)
 from medusa.search.backlog import BacklogSearchScheduler, BacklogSearcher
 from medusa.search.daily import DailySearcher
 from medusa.search.proper import ProperFinder
-from medusa.search.queue import ForcedSearchQueue, SearchQueue, SnatchQueue
+from medusa.search.queue import ForcedSearchQueue, PostProcessQueue, SearchQueue, SnatchQueue
 from medusa.server.core import AppWebServer
 from medusa.system.shutdown import Shutdown
 from medusa.themes import read_themes
 from medusa.tv import Series
 from medusa.updater.version_checker import CheckVersion
+
+import trakt
 
 
 logger = logging.getLogger(__name__)
@@ -179,6 +185,21 @@ class Application(object):
                     logger.warning('Error while trying to move the images for series {series}. '
                                    'Try to refresh the show, or move the images manually if you know '
                                    'what you are doing. Error: {error}', series=series_obj.name, error=error)
+
+    @staticmethod
+    def initialize_custom_logging():
+        """Load custom logging and insert into table if needed."""
+        from medusa.app import CUSTOMIZABLE_LOGS
+        main_db_con = db.DBConnection()
+        for identifier in CUSTOMIZABLE_LOGS:
+            sql_result = main_db_con.select('SELECT * FROM custom_logs WHERE identifier = ?', [identifier])
+
+            if not len(sql_result):
+                main_db_con.action('INSERT INTO custom_logs (identifier) VALUES (?)', [identifier])
+
+        # Get custom_logs from db.
+        for log in main_db_con.select('SELECT * FROM custom_logs'):
+            app._CUSTOM_LOGS[log['identifier']] = log['level']
 
     def start(self, args):
         """Start Application."""
@@ -319,19 +340,29 @@ class Application(object):
 
         app.CFG = ConfigObj(app.CONFIG_FILE, encoding='UTF-8', default_encoding='UTF-8')
 
-        # Initialize the config and our threads
-        self.initialize(console_logging=self.console_logging)
-
         if self.run_as_daemon:
             self.daemonize()
 
         # Get PID
         app.PID = os.getpid()
 
+        # Initialize the config and our threads
+        self.initialize(console_logging=self.console_logging)
+
         # Build from the DB to start with
         self.load_shows_from_db()
 
         logger.info('Starting Medusa [{branch}] using {config!r}', branch=app.BRANCH, config=app.CONFIG_FILE)
+
+        # Python 2 EOL warning
+        if sys.version_info < (3,):
+            logger.warning(
+                'As of now Medusa will not run on Python 2.x any longer.\n'
+                'Release 0.4.6 is the last release that runs on Python 2.x\n'
+                'You can read more about the python 2.x sunset date here: {python_sunset_url}\n'
+                'Please upgrade your Python version to 3.6 or higher as soon as possible!',
+                python_sunset_url='https://tinyurl.com/y4zwbawq'
+            )
 
         if not is_valid_encoding(app.SYS_ENCODING):
             logger.warning(
@@ -342,6 +373,7 @@ class Application(object):
 
         self.clear_cache()
         self.migrate_images()
+        self.initialize_custom_logging()
 
         if self.forced_port:
             logger.info('Forcing web server to port {port}', port=self.forced_port)
@@ -390,9 +422,10 @@ class Application(object):
         # Pre-populate network timezones, it isn't thread safe
         network_timezones.update_network_dict()
 
-        # # why???
-        # if app.USE_FAILED_DOWNLOADS:
-        #     failed_history.trim_history()
+        # The failed_history table keeps track of recent failed downloads.
+        # There is no need for 'old' records.
+        if app.USE_FAILED_DOWNLOADS:
+            trim_history()
 
         # # Check for metadata indexer updates for shows (Disabled until we use api)
         # app.show_update_scheduler.forceRun()
@@ -433,6 +466,9 @@ class Application(object):
             app.DEVELOPER = bool(check_setting_int(app.CFG, 'General', 'developer', 0))
             app.PYTHON_VERSION = check_setting_list(app.CFG, 'General', 'python_version', [], transform=int)
 
+            # Experimental flag
+            app.EXPERIMENTAL = bool(check_setting_int(app.CFG, 'General', 'experimental', 0))
+
             # debugging
             app.DEBUG = bool(check_setting_int(app.CFG, 'General', 'debug', 0))
             app.DBDEBUG = bool(check_setting_int(app.CFG, 'General', 'dbdebug', 0))
@@ -454,9 +490,7 @@ class Application(object):
 
             # git reset on update
             app.GIT_RESET = bool(check_setting_int(app.CFG, 'General', 'git_reset', 1))
-            app.GIT_RESET_BRANCHES = check_setting_list(app.CFG, 'General', 'git_reset_branches', app.GIT_RESET_BRANCHES)
-            if not app.GIT_RESET_BRANCHES:
-                app.GIT_RESET_BRANCHES = []
+            app.GIT_RESET_BRANCHES = check_setting_list(app.CFG, 'General', 'git_reset_branches', [])
 
             # current git branch
             app.BRANCH = check_setting_str(app.CFG, 'General', 'branch', '')
@@ -532,10 +566,8 @@ class Application(object):
             app.WEB_USERNAME = check_setting_str(app.CFG, 'General', 'web_username', '', censor_log='normal')
             app.WEB_PASSWORD = check_setting_str(app.CFG, 'General', 'web_password', '', censor_log='low')
             app.WEB_COOKIE_SECRET = check_setting_str(app.CFG, 'General', 'web_cookie_secret', helpers.generate_cookie_secret(), censor_log='low')
-            if not app.WEB_COOKIE_SECRET:
-                app.WEB_COOKIE_SECRET = helpers.generate_cookie_secret()
-
             app.WEB_USE_GZIP = bool(check_setting_int(app.CFG, 'General', 'web_use_gzip', 1))
+
             app.SUBLIMINAL_LOG = bool(check_setting_int(app.CFG, 'General', 'subliminal_log', 0))
             app.PRIVACY_LEVEL = check_setting_str(app.CFG, 'General', 'privacy_level', 'normal')
             app.SSL_VERIFY = bool(check_setting_int(app.CFG, 'General', 'ssl_verify', 1))
@@ -549,7 +581,10 @@ class Application(object):
             app.CPU_PRESET = check_setting_str(app.CFG, 'General', 'cpu_preset', 'NORMAL')
             app.ANON_REDIRECT = check_setting_str(app.CFG, 'General', 'anon_redirect', 'http://dereferer.org/?')
             app.PROXY_SETTING = check_setting_str(app.CFG, 'General', 'proxy_setting', '')
+            app.PROXY_PROVIDERS = bool(check_setting_int(app.CFG, 'General', 'proxy_providers', 1))
             app.PROXY_INDEXERS = bool(check_setting_int(app.CFG, 'General', 'proxy_indexers', 1))
+            app.PROXY_CLIENTS = bool(check_setting_int(app.CFG, 'General', 'proxy_clients', 1))
+            app.PROXY_OTHERS = bool(check_setting_int(app.CFG, 'General', 'proxy_others', 1))
 
             # attempt to help prevent users from breaking links by using a bad url
             if not app.ANON_REDIRECT.endswith('?'):
@@ -577,6 +612,7 @@ class Application(object):
             app.INDEXER_TIMEOUT = check_setting_int(app.CFG, 'General', 'indexer_timeout', 20)
             app.ANIME_DEFAULT = bool(check_setting_int(app.CFG, 'General', 'anime_default', 0))
             app.SCENE_DEFAULT = bool(check_setting_int(app.CFG, 'General', 'scene_default', 0))
+            app.SHOWLISTS_DEFAULT = check_setting_list(app.CFG, 'General', 'showlist_default', ['series'])
             app.PROVIDER_ORDER = check_setting_list(app.CFG, 'General', 'provider_order')
             app.NAMING_PATTERN = check_setting_str(app.CFG, 'General', 'naming_pattern', 'Season %0S/%SN - S%0SE%0E - %EN')
             app.NAMING_ABD_PATTERN = check_setting_str(app.CFG, 'General', 'naming_abd_pattern', '%SN - %A.D - %EN')
@@ -589,6 +625,7 @@ class Application(object):
             app.NAMING_MULTI_EP = check_setting_int(app.CFG, 'General', 'naming_multi_ep', 1)
             app.NAMING_ANIME_MULTI_EP = check_setting_int(app.CFG, 'General', 'naming_anime_multi_ep', 1)
             app.NAMING_STRIP_YEAR = bool(check_setting_int(app.CFG, 'General', 'naming_strip_year', 0))
+            app.ADD_TITLE_WITH_YEAR = bool(check_setting_int(app.CFG, 'General', 'add_title_with_year', 0))
             app.USE_NZBS = bool(check_setting_int(app.CFG, 'General', 'use_nzbs', 0))
             app.USE_TORRENTS = bool(check_setting_int(app.CFG, 'General', 'use_torrents', 1))
 
@@ -596,7 +633,7 @@ class Application(object):
             app.TORRENT_METHOD = check_setting_str(app.CFG, 'General', 'torrent_method', 'blackhole',
                                                    valid_values=('blackhole', 'utorrent', 'transmission', 'deluge',
                                                                  'deluged', 'downloadstation', 'rtorrent', 'qbittorrent', 'mlnet'))
-
+            app.SAVE_MAGNET_FILE = bool(check_setting_int(app.CFG, 'General', 'save_magnet_file', 1))
             app.DOWNLOAD_PROPERS = bool(check_setting_int(app.CFG, 'General', 'download_propers', 1))
             app.PROPERS_SEARCH_DAYS = max(2, min(8, check_setting_int(app.CFG, 'General', 'propers_search_days', 2)))
             app.REMOVE_FROM_CLIENT = bool(check_setting_int(app.CFG, 'General', 'remove_from_client', 0))
@@ -612,9 +649,9 @@ class Application(object):
             app.AUTOPOSTPROCESSOR_FREQUENCY = max(app.MIN_AUTOPOSTPROCESSOR_FREQUENCY,
                                                   check_setting_int(app.CFG, 'General', 'autopostprocessor_frequency', 10))
 
-            app.TORRENT_CHECKER_FREQUENCY = max(app.MIN_TORRENT_CHECKER_FREQUENCY,
-                                                check_setting_int(app.CFG, 'General', 'torrent_checker_frequency',
-                                                                  app.DEFAULT_TORRENT_CHECKER_FREQUENCY))
+            app.DOWNLOAD_HANDLER_FREQUENCY = max(app.MIN_DOWNLOAD_HANDLER_FREQUENCY,
+                                                 check_setting_int(app.CFG, 'General', 'download_handler_frequency',
+                                                                   app.DEFAULT_DOWNLOAD_HANDLER_FREQUENCY))
             app.DAILYSEARCH_FREQUENCY = max(app.MIN_DAILYSEARCH_FREQUENCY,
                                             check_setting_int(app.CFG, 'General', 'dailysearch_frequency', app.DEFAULT_DAILYSEARCH_FREQUENCY))
             app.MIN_BACKLOG_FREQUENCY = Application.get_backlog_cycle_time()
@@ -650,6 +687,9 @@ class Application(object):
             app.NFO_RENAME = bool(check_setting_int(app.CFG, 'General', 'nfo_rename', 1))
             app.CREATE_MISSING_SHOW_DIRS = bool(check_setting_int(app.CFG, 'General', 'create_missing_show_dirs', 0))
             app.ADD_SHOWS_WO_DIR = bool(check_setting_int(app.CFG, 'General', 'add_shows_wo_dir', 0))
+
+            app.PROWLARR_URL = check_setting_str(app.CFG, 'Prowlarr', 'url', '', censor_log='normal')
+            app.PROWLARR_APIKEY = check_setting_str(app.CFG, 'Prowlarr', 'apikey', '', censor_log='high')
 
             app.NZBS = bool(check_setting_int(app.CFG, 'NZBs', 'nzbs', 0))
             app.NZBS_UID = check_setting_str(app.CFG, 'NZBs', 'nzbs_uid', '', censor_log='normal')
@@ -745,6 +785,16 @@ class Application(object):
             app.TELEGRAM_NOTIFY_ONSUBTITLEDOWNLOAD = bool(check_setting_int(app.CFG, 'Telegram', 'telegram_notify_onsubtitledownload', 0))
             app.TELEGRAM_ID = check_setting_str(app.CFG, 'Telegram', 'telegram_id', '', censor_log='normal')
             app.TELEGRAM_APIKEY = check_setting_str(app.CFG, 'Telegram', 'telegram_apikey', '', censor_log='low')
+
+            app.USE_DISCORD = bool(check_setting_int(app.CFG, 'Discord', 'use_discord', 0))
+            app.DISCORD_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'Discord', 'discord_notify_onsnatch', 0))
+            app.DISCORD_NOTIFY_ONDOWNLOAD = bool(
+                check_setting_int(app.CFG, 'Discord', 'discord_notify_ondownload', 0))
+            app.DISCORD_NOTIFY_ONSUBTITLEDOWNLOAD = bool(
+                check_setting_int(app.CFG, 'Discord', 'discord_notify_onsubtitledownload', 0))
+            app.DISCORD_WEBHOOK = check_setting_str(app.CFG, 'Discord', 'discord_webhook', '', censor_log='normal')
+            app.DISCORD_TTS = check_setting_bool(app.CFG, 'Discord', 'discord_tts', 0)
+            app.DISCORD_NAME = check_setting_str(app.CFG, 'Discord', 'discord_name', '', censor_log='normal')
 
             app.USE_PROWL = bool(check_setting_int(app.CFG, 'Prowl', 'use_prowl', 0))
             app.PROWL_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'Prowl', 'prowl_notify_onsnatch', 0))
@@ -899,14 +949,18 @@ class Application(object):
             app.ADDIC7ED_USER = check_setting_str(app.CFG, 'Subtitles', 'addic7ed_username', '', censor_log='normal')
             app.ADDIC7ED_PASS = check_setting_str(app.CFG, 'Subtitles', 'addic7ed_password', '', censor_log='low')
 
-            app.ITASA_USER = check_setting_str(app.CFG, 'Subtitles', 'itasa_username', '', censor_log='normal')
-            app.ITASA_PASS = check_setting_str(app.CFG, 'Subtitles', 'itasa_password', '', censor_log='low')
-
             app.LEGENDASTV_USER = check_setting_str(app.CFG, 'Subtitles', 'legendastv_username', '', censor_log='normal')
             app.LEGENDASTV_PASS = check_setting_str(app.CFG, 'Subtitles', 'legendastv_password', '', censor_log='low')
 
             app.OPENSUBTITLES_USER = check_setting_str(app.CFG, 'Subtitles', 'opensubtitles_username', '', censor_log='normal')
             app.OPENSUBTITLES_PASS = check_setting_str(app.CFG, 'Subtitles', 'opensubtitles_password', '', censor_log='low')
+
+            app.USE_DOWNLOAD_HANDLER = bool(check_setting_int(app.CFG, 'DownloadHandler', 'use_download_handling', 0))
+            app.TORRENT_SEED_RATIO = float(check_setting_float(app.CFG, 'DownloadHandler', 'torrent_seed_ratio', 1.0))
+            app.TORRENT_SEED_ACTION = check_setting_str(
+                app.CFG, 'DownloadHandler', 'torrent_seed_action', '',
+                valid_values=('remove', 'pause', 'remove_with_data', '')
+            )
 
             app.USE_FAILED_DOWNLOADS = bool(check_setting_int(app.CFG, 'FailedDownloads', 'use_failed_downloads', 0))
             app.DELETE_FAILED = bool(check_setting_int(app.CFG, 'FailedDownloads', 'delete_failed', 0))
@@ -930,13 +984,14 @@ class Application(object):
 
             app.USE_LISTVIEW = bool(check_setting_int(app.CFG, 'General', 'use_listview', 0))
 
-            app.ANIMESUPPORT = False
             app.USE_ANIDB = bool(check_setting_int(app.CFG, 'ANIDB', 'use_anidb', 0))
             app.ANIDB_USERNAME = check_setting_str(app.CFG, 'ANIDB', 'anidb_username', '', censor_log='normal')
             app.ANIDB_PASSWORD = check_setting_str(app.CFG, 'ANIDB', 'anidb_password', '', censor_log='low')
             app.ANIDB_USE_MYLIST = bool(check_setting_int(app.CFG, 'ANIDB', 'anidb_use_mylist', 0))
             app.ANIME_SPLIT_HOME = bool(check_setting_int(app.CFG, 'ANIME', 'anime_split_home', 0))
             app.ANIME_SPLIT_HOME_IN_TABS = bool(check_setting_int(app.CFG, 'ANIME', 'anime_split_home_in_tabs', 0))
+            app.AUTO_ANIME_TO_LIST = bool(check_setting_int(app.CFG, 'ANIME', 'auto_anime_to_list', 0))
+            app.SHOWLISTS_DEFAULT_ANIME = check_setting_list(app.CFG, 'ANIME', 'showlist_default_anime', [])
 
             app.METADATA_KODI = check_setting_list(app.CFG, 'General', 'metadata_kodi', ['0'] * 10, transform=int)
             app.METADATA_KODI_12PLUS = check_setting_list(app.CFG, 'General', 'metadata_kodi_12plus', ['0'] * 10, transform=int)
@@ -962,7 +1017,6 @@ class Application(object):
             app.TIMEZONE_DISPLAY = check_setting_str(app.CFG, 'GUI', 'timezone_display', 'local')
             app.POSTER_SORTBY = check_setting_str(app.CFG, 'GUI', 'poster_sortby', 'name')
             app.POSTER_SORTDIR = check_setting_int(app.CFG, 'GUI', 'poster_sortdir', 1)
-            app.DISPLAY_ALL_SEASONS = bool(check_setting_int(app.CFG, 'General', 'display_all_seasons', 1))
             app.RECENTLY_DELETED = set()
             app.RELEASES_IN_PP = []
             app.GIT_REMOTE_BRANCHES = []
@@ -972,10 +1026,15 @@ class Application(object):
             app.BACKLOG_STATUS = check_setting_str(app.CFG, 'General', 'backlog_status', 'all')
             app.LAYOUT_WIDE = check_setting_bool(app.CFG, 'GUI', 'layout_wide', 0)
             app.SHOW_LIST_ORDER = check_setting_list(app.CFG, 'GUI', 'show_list_order', app.SHOW_LIST_ORDER)
+            app.SHOW_USE_PAGINATION = check_setting_bool(app.CFG, 'GUI', 'show_use_pagination', app.SHOW_USE_PAGINATION)
 
             app.FALLBACK_PLEX_ENABLE = check_setting_int(app.CFG, 'General', 'fallback_plex_enable', 1)
             app.FALLBACK_PLEX_NOTIFICATIONS = check_setting_int(app.CFG, 'General', 'fallback_plex_notifications', 1)
             app.FALLBACK_PLEX_TIMEOUT = check_setting_int(app.CFG, 'General', 'fallback_plex_timeout', 3)
+
+            # Initialize trakt config path.
+            trakt.core.CONFIG_PATH = os.path.join(app.CACHE_DIR, '.pytrakt.json')
+            trakt.core.load_config()
 
             # reconfigure the logger
             app_logger.reconfigure()
@@ -1008,7 +1067,7 @@ class Application(object):
 
             if app.VERSION_NOTIFY:
                 updater = CheckVersion().updater
-                if updater:
+                if updater and updater.current_version:
                     app.APP_VERSION = updater.current_version
 
             # initialize the static NZB and TORRENT providers
@@ -1022,6 +1081,9 @@ class Application(object):
 
             app.TORZNAB_PROVIDERS = check_setting_list(app.CFG, 'Torznab', 'torznab_providers')
             app.torznab_providers_list = TorznabProvider.get_providers_list(app.TORZNAB_PROVIDERS)
+
+            app.PROWLARR_PROVIDERS = check_setting_list(app.CFG, 'Prowlarr', 'providers')
+            # TODO implement ProwlarrProvider.get_providers_list(app.PROWLARR_PROVIDERS)
 
             all_providers = providers.sorted_provider_list()
 
@@ -1050,7 +1112,7 @@ class Application(object):
                     load_provider_setting(app.CFG, provider, 'string', 'pin', '', censor_log='low')
                     load_provider_setting(app.CFG, provider, 'string', 'sorting', 'seeders')
                     load_provider_setting(app.CFG, provider, 'string', 'options', '')
-                    load_provider_setting(app.CFG, provider, 'string', 'ratio', '')
+                    load_provider_setting(app.CFG, provider, 'float', 'ratio', -1)
                     load_provider_setting(app.CFG, provider, 'bool', 'confirmed', 1)
                     load_provider_setting(app.CFG, provider, 'bool', 'ranked', 1)
                     load_provider_setting(app.CFG, provider, 'bool', 'engrelease', 0)
@@ -1071,6 +1133,8 @@ class Application(object):
                     load_provider_setting(app.CFG, provider, 'string', 'url', '', censor_log='low')
                     load_provider_setting(app.CFG, provider, 'list', 'cat_ids', '', split_value=',')
                     load_provider_setting(app.CFG, provider, 'list', 'cap_tv_search', '', split_value=',')
+                    load_provider_setting(app.CFG, provider, 'string', 'manager', '', censor_log='low')
+                    load_provider_setting(app.CFG, provider, 'string', 'id_manager', '', censor_log='low')
 
                 if isinstance(provider, NewznabProvider):
                     # non configurable
@@ -1079,6 +1143,8 @@ class Application(object):
                         load_provider_setting(app.CFG, provider, 'bool', 'needs_auth', 1)
                     # configurable
                     load_provider_setting(app.CFG, provider, 'list', 'cat_ids', '', split_value=',')
+                    load_provider_setting(app.CFG, provider, 'string', 'manager', '', censor_log='low')
+                    load_provider_setting(app.CFG, provider, 'string', 'id_manager', '', censor_log='low')
 
             if not os.path.isfile(app.CONFIG_FILE):
                 logger.debug(u'Unable to find {config!r}, all settings will be default!', config=app.CONFIG_FILE)
@@ -1164,10 +1230,14 @@ class Application(object):
                                                                threadName='UPDATEQUEUE')
 
             app.show_update_scheduler = scheduler.Scheduler(show_updater.ShowUpdater(),
-                                                            cycleTime=datetime.timedelta(hours=1),
                                                             threadName='SHOWUPDATER')#,
                                                             # start_time=datetime.time(hour=app.SHOWUPDATE_HOUR,
                                                             #                          minute=random.randint(0, 59)))
+
+            app.episode_update_scheduler = scheduler.Scheduler(episode_updater.EpisodeUpdater(),
+                                                               cycleTime=datetime.timedelta(minutes=15),
+                                                               threadName='EPISODEUPDATER',
+                                                               silent=False)
 
             # snatcher used for manual search, manual picked results
             app.manual_snatch_scheduler = scheduler.Scheduler(SnatchQueue(),
@@ -1182,58 +1252,53 @@ class Application(object):
                                                                     cycleTime=datetime.timedelta(seconds=3),
                                                                     threadName='FORCEDSEARCHQUEUE')
 
-            # TODO: update_interval should take last daily/backlog times into account!
-            update_interval = datetime.timedelta(minutes=app.DAILYSEARCH_FREQUENCY)
-            app.daily_search_scheduler = scheduler.Scheduler(DailySearcher(),
-                                                             cycleTime=update_interval,
-                                                             threadName='DAILYSEARCHER',
-                                                             run_delay=update_interval)
+            # Post Processor queue scheduler
+            app.post_processor_queue_scheduler = scheduler.Scheduler(PostProcessQueue(),
+                                                                     cycleTime=datetime.timedelta(seconds=3),
+                                                                     threadName='POSTPROCESSORQUEUE')
 
-            update_interval = datetime.timedelta(minutes=app.BACKLOG_FREQUENCY)
-            app.backlog_search_scheduler = BacklogSearchScheduler(BacklogSearcher(),
-                                                                  cycleTime=update_interval,
-                                                                  threadName='BACKLOG',
-                                                                  run_delay=update_interval)
-
-            if app.CHECK_PROPERS_INTERVAL in app.PROPERS_SEARCH_INTERVAL:
-                update_interval = datetime.timedelta(minutes=app.PROPERS_SEARCH_INTERVAL[app.CHECK_PROPERS_INTERVAL])
-                run_at = None
-            else:
-                update_interval = datetime.timedelta(hours=1)
-                run_at = datetime.time(hour=1)  # 1 AM
-
-            app.proper_finder_scheduler = scheduler.Scheduler(ProperFinder(),
-                                                              cycleTime=update_interval,
-                                                              threadName='FINDPROPERS',
-                                                              start_time=run_at,
-                                                              run_delay=update_interval)
-
-            # processors
+            # Schedule the periodic post processing
             update_interval = datetime.timedelta(minutes=app.AUTOPOSTPROCESSOR_FREQUENCY)
             app.post_processor_scheduler = scheduler.Scheduler(process_tv.PostProcessorRunner(),
                                                                cycleTime=update_interval,
                                                                threadName='POSTPROCESSOR',
-                                                               silent=not app.PROCESS_AUTOMATICALLY,
-                                                               run_delay=update_interval)
-            update_interval = datetime.timedelta(minutes=5)
+                                                               silent=not app.PROCESS_AUTOMATICALLY)
+
+            # TODO: update_interval should take last daily/backlog times into account!
+            update_interval = datetime.timedelta(minutes=app.DAILYSEARCH_FREQUENCY)
+            app.daily_search_scheduler = scheduler.Scheduler(DailySearcher(),
+                                                             cycleTime=update_interval,
+                                                             threadName='DAILYSEARCHER')
+
+            update_interval = datetime.timedelta(minutes=app.BACKLOG_FREQUENCY)
+            app.backlog_search_scheduler = BacklogSearchScheduler(BacklogSearcher(),
+                                                                  cycleTime=update_interval,
+                                                                  threadName='BACKLOG')
+
+            if app.CHECK_PROPERS_INTERVAL in app.PROPERS_SEARCH_INTERVAL:
+                update_interval = datetime.timedelta(minutes=app.PROPERS_SEARCH_INTERVAL[app.CHECK_PROPERS_INTERVAL])
+            else:
+                update_interval = datetime.timedelta(hours=4)
+
+            app.proper_finder_scheduler = scheduler.Scheduler(ProperFinder(),
+                                                              cycleTime=update_interval,
+                                                              threadName='FINDPROPERS')
+
             app.trakt_checker_scheduler = scheduler.Scheduler(trakt_checker.TraktChecker(),
                                                               cycleTime=datetime.timedelta(hours=1),
                                                               threadName='TRAKTCHECKER',
-                                                              run_delay=update_interval,
                                                               silent=not app.USE_TRAKT)
 
             update_interval = datetime.timedelta(hours=app.SUBTITLES_FINDER_FREQUENCY)
             app.subtitles_finder_scheduler = scheduler.Scheduler(subtitles.SubtitlesFinder(),
                                                                  cycleTime=update_interval,
                                                                  threadName='FINDSUBTITLES',
-                                                                 run_delay=update_interval,
                                                                  silent=not app.USE_SUBTITLES)
 
-            update_interval = datetime.timedelta(minutes=app.TORRENT_CHECKER_FREQUENCY)
-            app.torrent_checker_scheduler = scheduler.Scheduler(torrent_checker.TorrentChecker(),
-                                                                cycleTime=update_interval,
-                                                                threadName='TORRENTCHECKER',
-                                                                run_delay=update_interval)
+            update_interval = datetime.timedelta(minutes=app.DOWNLOAD_HANDLER_FREQUENCY)
+            app.download_handler_scheduler = scheduler.Scheduler(download_handler.DownloadHandler(),
+                                                                 cycleTime=update_interval,
+                                                                 threadName='DOWNLOADHANDLER')
 
             app.__INITIALIZED__ = True
             return True
@@ -1325,6 +1390,10 @@ class Application(object):
             app.show_update_scheduler.enable = True
             app.show_update_scheduler.start()
 
+            # start the episode updater
+            app.episode_update_scheduler.enable = True
+            app.episode_update_scheduler.start()
+
             # start the version checker
             app.version_check_scheduler.enable = True
             app.version_check_scheduler.start()
@@ -1354,6 +1423,9 @@ class Application(object):
                 app.proper_finder_scheduler.silent = True
             app.proper_finder_scheduler.start()
 
+            app.post_processor_queue_scheduler.enable = True
+            app.post_processor_queue_scheduler.start()
+
             # start the post processor
             if app.PROCESS_AUTOMATICALLY:
                 app.post_processor_scheduler.silent = False
@@ -1381,10 +1453,16 @@ class Application(object):
                 app.trakt_checker_scheduler.silent = True
             app.trakt_checker_scheduler.start()
 
-            if app.USE_TORRENTS and app.REMOVE_FROM_CLIENT and app.TORRENT_METHOD != 'blackhole':
-                app.torrent_checker_scheduler.enable = True
-            app.torrent_checker_scheduler.silent = False
-            app.torrent_checker_scheduler.start()
+            # Removed check for app.REMOVE_FROM_CLIENT for now.
+            if (app.USE_DOWNLOAD_HANDLER
+                    and ((app.USE_TORRENTS and app.TORRENT_METHOD != 'blackhole')
+                         or (app.USE_NZBS and app.NZB_METHOD != 'blackhole'))):
+                app.download_handler_scheduler.enable = True
+                app.download_handler_scheduler.silent = False
+            else:
+                app.download_handler_scheduler.enable = False
+                app.download_handler_scheduler.silent = True
+            app.download_handler_scheduler.start()
 
             app.started = True
 
@@ -1401,17 +1479,19 @@ class Application(object):
                 app.daily_search_scheduler,
                 app.backlog_search_scheduler,
                 app.show_update_scheduler,
+                app.episode_update_scheduler,
                 app.version_check_scheduler,
                 app.generic_update_scheduler,
                 app.show_queue_scheduler,
                 app.search_queue_scheduler,
                 app.forced_search_queue_scheduler,
                 app.manual_snatch_scheduler,
-                app.post_processor_scheduler,
                 app.trakt_checker_scheduler,
                 app.proper_finder_scheduler,
                 app.subtitles_finder_scheduler,
-                app.torrent_checker_scheduler,
+                app.download_handler_scheduler,
+                app.post_processor_scheduler,
+                app.post_processor_queue_scheduler,
                 app.events
             ]
 
@@ -1506,11 +1586,12 @@ class Application(object):
         new_config['General']['use_torrents'] = int(app.USE_TORRENTS)
         new_config['General']['nzb_method'] = app.NZB_METHOD
         new_config['General']['torrent_method'] = app.TORRENT_METHOD
+        new_config['General']['save_magnet_file'] = int(app.SAVE_MAGNET_FILE)
         new_config['General']['usenet_retention'] = int(app.USENET_RETENTION)
         new_config['General']['cache_trimming'] = int(app.CACHE_TRIMMING)
         new_config['General']['max_cache_age'] = int(app.MAX_CACHE_AGE)
         new_config['General']['autopostprocessor_frequency'] = int(app.AUTOPOSTPROCESSOR_FREQUENCY)
-        new_config['General']['torrent_checker_frequency'] = int(app.TORRENT_CHECKER_FREQUENCY)
+        new_config['General']['download_handler_frequency'] = int(app.DOWNLOAD_HANDLER_FREQUENCY)
         new_config['General']['dailysearch_frequency'] = int(app.DAILYSEARCH_FREQUENCY)
         new_config['General']['backlog_frequency'] = int(app.BACKLOG_FREQUENCY)
         new_config['General']['update_frequency'] = int(app.UPDATE_FREQUENCY)
@@ -1534,11 +1615,13 @@ class Application(object):
         new_config['General']['tvdb_dvd_order_ep_ignore'] = int(app.TVDB_DVD_ORDER_EP_IGNORE)
         new_config['General']['anime_default'] = int(app.ANIME_DEFAULT)
         new_config['General']['scene_default'] = int(app.SCENE_DEFAULT)
+        new_config['General']['showlist_default'] = list(app.SHOWLISTS_DEFAULT)
         new_config['General']['provider_order'] = app.PROVIDER_ORDER
         new_config['General']['version_notify'] = int(app.VERSION_NOTIFY)
         new_config['General']['auto_update'] = int(app.AUTO_UPDATE)
         new_config['General']['notify_on_update'] = int(app.NOTIFY_ON_UPDATE)
         new_config['General']['naming_strip_year'] = int(app.NAMING_STRIP_YEAR)
+        new_config['General']['add_title_with_year'] = int(app.ADD_TITLE_WITH_YEAR)
         new_config['General']['naming_pattern'] = app.NAMING_PATTERN
         new_config['General']['naming_custom_abd'] = int(app.NAMING_CUSTOM_ABD)
         new_config['General']['naming_abd_pattern'] = app.NAMING_ABD_PATTERN
@@ -1556,7 +1639,10 @@ class Application(object):
         new_config['General']['trash_rotate_logs'] = int(app.TRASH_ROTATE_LOGS)
         new_config['General']['sort_article'] = int(app.SORT_ARTICLE)
         new_config['General']['proxy_setting'] = app.PROXY_SETTING
+        new_config['General']['proxy_providers'] = int(app.PROXY_PROVIDERS)
         new_config['General']['proxy_indexers'] = int(app.PROXY_INDEXERS)
+        new_config['General']['proxy_clients'] = int(app.PROXY_CLIENTS)
+        new_config['General']['proxy_others'] = int(app.PROXY_OTHERS)
 
         new_config['General']['use_listview'] = int(app.USE_LISTVIEW)
         new_config['General']['metadata_kodi'] = app.METADATA_KODI
@@ -1603,12 +1689,12 @@ class Application(object):
         new_config['General']['no_restart'] = int(app.NO_RESTART)
         new_config['General']['developer'] = int(app.DEVELOPER)
         new_config['General']['python_version'] = app.PYTHON_VERSION
-        new_config['General']['display_all_seasons'] = int(app.DISPLAY_ALL_SEASONS)
         new_config['General']['news_last_read'] = app.NEWS_LAST_READ
         new_config['General']['broken_providers'] = helpers.get_broken_providers() or app.BROKEN_PROVIDERS
         new_config['General']['selected_root'] = int(app.SELECTED_ROOT)
         new_config['General']['backlog_period'] = app.BACKLOG_PERIOD
         new_config['General']['backlog_status'] = app.BACKLOG_STATUS
+        new_config['General']['experimental'] = int(app.EXPERIMENTAL)
 
         new_config['General']['fallback_plex_enable'] = app.FALLBACK_PLEX_ENABLE
         new_config['General']['fallback_plex_notifications'] = app.FALLBACK_PLEX_NOTIFICATIONS
@@ -1631,7 +1717,7 @@ class Application(object):
                 'all': [
                     'name', 'url', 'cat_ids', 'api_key', 'username', 'search_mode', 'search_fallback',
                     'enable_daily', 'enable_backlog', 'enable_manualsearch', 'enable_search_delay',
-                    'search_delay',
+                    'search_delay', 'manager', 'id_manager'
                 ],
                 'encrypted': [
                     'password',
@@ -1764,6 +1850,15 @@ class Application(object):
         new_config['Telegram']['telegram_notify_onsubtitledownload'] = int(app.TELEGRAM_NOTIFY_ONSUBTITLEDOWNLOAD)
         new_config['Telegram']['telegram_id'] = app.TELEGRAM_ID
         new_config['Telegram']['telegram_apikey'] = app.TELEGRAM_APIKEY
+
+        new_config['Discord'] = {}
+        new_config['Discord']['use_discord'] = int(app.USE_DISCORD)
+        new_config['Discord']['discord_notify_onsnatch'] = int(app.DISCORD_NOTIFY_ONSNATCH)
+        new_config['Discord']['discord_notify_ondownload'] = int(app.DISCORD_NOTIFY_ONDOWNLOAD)
+        new_config['Discord']['discord_notify_onsubtitledownload'] = int(app.DISCORD_NOTIFY_ONSUBTITLEDOWNLOAD)
+        new_config['Discord']['discord_webhook'] = app.DISCORD_WEBHOOK
+        new_config['Discord']['discord_tts'] = int(app.DISCORD_TTS)
+        new_config['Discord']['discord_name'] = app.DISCORD_NAME
 
         new_config['Prowl'] = {}
         new_config['Prowl']['use_prowl'] = int(app.USE_PROWL)
@@ -1912,6 +2007,11 @@ class Application(object):
         new_config['Torznab'] = {}
         new_config['Torznab']['torznab_providers'] = app.TORZNAB_PROVIDERS
 
+        new_config['Prowlarr'] = {}
+        new_config['Prowlarr']['providers'] = app.PROWLARR_PROVIDERS
+        new_config['Prowlarr']['url'] = app.PROWLARR_URL
+        new_config['Prowlarr']['apikey'] = app.PROWLARR_APIKEY
+
         new_config['GUI'] = {}
         new_config['GUI']['theme_name'] = app.THEME_NAME
         new_config['GUI']['fanart_background'] = app.FANART_BACKGROUND
@@ -1933,6 +2033,7 @@ class Application(object):
         new_config['GUI']['poster_sortdir'] = app.POSTER_SORTDIR
         new_config['GUI']['layout_wide'] = app.LAYOUT_WIDE
         new_config['GUI']['show_list_order'] = app.SHOW_LIST_ORDER
+        new_config['GUI']['show_use_pagination'] = app.SHOW_USE_PAGINATION
 
         new_config['Subtitles'] = {}
         new_config['Subtitles']['use_subtitles'] = int(app.USE_SUBTITLES)
@@ -1956,14 +2057,16 @@ class Application(object):
         new_config['Subtitles']['addic7ed_username'] = app.ADDIC7ED_USER
         new_config['Subtitles']['addic7ed_password'] = helpers.encrypt(app.ADDIC7ED_PASS, app.ENCRYPTION_VERSION)
 
-        new_config['Subtitles']['itasa_username'] = app.ITASA_USER
-        new_config['Subtitles']['itasa_password'] = helpers.encrypt(app.ITASA_PASS, app.ENCRYPTION_VERSION)
-
         new_config['Subtitles']['legendastv_username'] = app.LEGENDASTV_USER
         new_config['Subtitles']['legendastv_password'] = helpers.encrypt(app.LEGENDASTV_PASS, app.ENCRYPTION_VERSION)
 
         new_config['Subtitles']['opensubtitles_username'] = app.OPENSUBTITLES_USER
         new_config['Subtitles']['opensubtitles_password'] = helpers.encrypt(app.OPENSUBTITLES_PASS, app.ENCRYPTION_VERSION)
+
+        new_config['DownloadHandler'] = {}
+        new_config['DownloadHandler']['use_download_handling'] = int(app.USE_DOWNLOAD_HANDLER)
+        new_config['DownloadHandler']['torrent_seed_ratio'] = float(app.TORRENT_SEED_RATIO)
+        new_config['DownloadHandler']['torrent_seed_action'] = app.TORRENT_SEED_ACTION
 
         new_config['FailedDownloads'] = {}
         new_config['FailedDownloads']['use_failed_downloads'] = int(app.USE_FAILED_DOWNLOADS)
@@ -1978,6 +2081,8 @@ class Application(object):
         new_config['ANIME'] = {}
         new_config['ANIME']['anime_split_home'] = int(app.ANIME_SPLIT_HOME)
         new_config['ANIME']['anime_split_home_in_tabs'] = int(app.ANIME_SPLIT_HOME_IN_TABS)
+        new_config['ANIME']['auto_anime_to_list'] = int(app.AUTO_ANIME_TO_LIST)
+        new_config['ANIME']['showlist_default_anime'] = list(app.SHOWLISTS_DEFAULT_ANIME)
 
         new_config.write()
 
@@ -2144,7 +2249,10 @@ class Application(object):
         for sql_show in sql_results:
             try:
                 cur_show = Series(sql_show['indexer'], sql_show['indexer_id'])
-                cur_show.next_episode()
+                # update previous and next episode cache
+                cur_show.prev_airdate
+                cur_show.next_airdate
+
                 app.showList.append(cur_show)
             except Exception as error:
                 exception_handler.handle(error, 'There was an error creating the show in {location}',
@@ -2194,7 +2302,7 @@ class Application(object):
             if self.run_as_daemon and self.create_pid:
                 self.remove_pid_file(self.pid_file)
         finally:
-            if event == event_queue.Events.SystemEvent.RESTART:
+            if event == Events.SystemEvent.RESTART:
                 self.restart()
 
             # Make sure the logger has stopped, just in case

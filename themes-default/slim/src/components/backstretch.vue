@@ -17,8 +17,8 @@ export default {
     },
     computed: {
         ...mapState({
-            enabled: state => state.config.fanartBackground,
-            opacity: state => state.config.fanartBackgroundOpacity
+            enabled: state => state.config.layout.fanartBackground,
+            opacity: state => state.config.layout.fanartBackgroundOpacity
         }),
         offset() {
             let offset = '90px';
@@ -34,12 +34,13 @@ export default {
     async mounted() {
         try {
             await waitFor(() => this.enabled !== null);
-        } catch (_) {}
+        } catch (error) {
+            console.error(error);
+        }
 
         if (!this.enabled) {
             return;
         }
-
         const { opacity, slug, offset } = this;
         if (slug) {
             const imgUrl = `${webRoot}/api/v2/series/${slug}/asset/fanart?api_key=${apiKey}`;

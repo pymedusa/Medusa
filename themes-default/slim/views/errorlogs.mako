@@ -13,7 +13,7 @@ window.app = new Vue({
     el: '#vue-wrap',
     // @TODO: Replace with Object spread (`...mapState`)
     computed: Object.assign(mapState({
-        loggingLevels: state => state.config.logs.loggingLevels
+        loggingLevels: state => state.config.general.logs.loggingLevels
     }), {
         header() {
             const { loggingLevels, $route } = this;

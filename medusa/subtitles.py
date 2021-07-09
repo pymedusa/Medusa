@@ -25,9 +25,11 @@ import logging
 import operator
 import os
 import subprocess
+import sys
 import time
 from builtins import object
 from builtins import str
+from uuid import uuid4
 
 from babelfish import Country, Language, LanguageConvertError, LanguageReverseError, language_converters
 
@@ -35,14 +37,13 @@ from dogpile.cache.api import NO_VALUE
 
 import knowit
 
-from medusa import app, db, helpers, history
+from medusa import app, db, helpers, history, ws
 from medusa.cache import cache, memory_cache
 from medusa.common import DOWNLOADED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, cpu_presets
 from medusa.helper.common import dateTimeFormat, episode_num, remove_extension, subtitle_extensions
 from medusa.helper.exceptions import ex
 from medusa.helpers import is_media_file, is_rar_file
 from medusa.show.show import Show
-from medusa.subtitle_providers.utils import hash_itasa
 
 from six import binary_type, iteritems, string_types, text_type
 
@@ -63,12 +64,14 @@ episode_refiners = ('metadata', 'release', 'tvepisode', 'tvdb', 'omdb')
 
 PROVIDER_URLS = {
     'addic7ed': 'http://www.addic7ed.com',
-    'itasa': 'http://www.italiansubs.net',
+    'argenteam': 'https://argenteam.net',
     'legendastv': 'http://www.legendas.tv',
     'napiprojekt': 'http://www.napiprojekt.pl',
     'opensubtitles': 'http://www.opensubtitles.org',
+    'opensubtitlesvip': 'http://www.opensubtitles.org',
     'podnapisi': 'https://www.podnapisi.net',
     'shooter': 'http://www.shooter.cn',
+    'subtitulamos': 'https://www.subtitulamos.tv',
     'thesubdb': 'http://www.thesubdb.com',
     'tvsubtitles': 'http://www.tvsubtitles.net',
     'wizdom': 'http://wizdom.xyz'
@@ -518,12 +521,12 @@ def get_provider_pool():
     logger.debug(u'Creating a new ProviderPool instance')
     provider_configs = {'addic7ed': {'username': app.ADDIC7ED_USER,
                                      'password': app.ADDIC7ED_PASS},
-                        'itasa': {'username': app.ITASA_USER,
-                                  'password': app.ITASA_PASS},
                         'legendastv': {'username': app.LEGENDASTV_USER,
                                        'password': app.LEGENDASTV_PASS},
                         'opensubtitles': {'username': app.OPENSUBTITLES_USER,
-                                          'password': app.OPENSUBTITLES_PASS}}
+                                          'password': app.OPENSUBTITLES_PASS},
+                        'opensubtitlesvip': {'username': app.OPENSUBTITLES_USER,
+                                             'password': app.OPENSUBTITLES_PASS}}
     return ProviderPool(providers=enabled_service_list(), provider_configs=provider_configs)
 
 
@@ -730,12 +733,6 @@ def get_video(tv_episode, video_path, subtitles_dir=None, subtitles=True, embedd
         logger.warning(u'Unable to scan video: %s. Error: %r', video_path, error)
     else:
 
-        # Add hash of our custom provider Itasa
-        video.size = os.path.getsize(video_path)
-        if video.size > 10485760:
-            video.hashes['itasa'] = hash_itasa(video_path)
-
-        # external subtitles
         if subtitles:
             video.subtitle_languages |= set(search_external_subtitles(video_path, directory=subtitles_dir).values())
 
@@ -745,7 +742,7 @@ def get_video(tv_episode, video_path, subtitles_dir=None, subtitles=True, embedd
         refine(video, episode_refiners=episode_refiners, embedded_subtitles=embedded_subtitles,
                release_name=release_name, tv_episode=tv_episode)
 
-        video.alternative_series = list(tv_episode.series.aliases)
+        video.alternative_series = [alias.title for alias in tv_episode.series.aliases]
 
         payload['video'] = video
         memory_cache.set(key, payload)
@@ -830,6 +827,13 @@ class SubtitlesFinder(object):
     def __init__(self):
         """Initialize class with the default constructor."""
         self.amActive = False
+
+        self._to_json = {
+            'identifier': str(uuid4()),
+            'name': 'BACKLOG',
+            'queueTime': str(datetime.datetime.utcnow()),
+            'isActive': self.amActive
+        }
 
     @staticmethod
     def subtitles_download_in_pp():
@@ -944,6 +948,9 @@ class SubtitlesFinder(object):
             return
 
         self.amActive = True
+
+        # Push an update to any open Web UIs through the WebSocket
+        ws.Message('QueueItemUpdate', self._to_json).push()
 
         def dhm(td):
             """Create the string for subtitles delay."""
@@ -1068,6 +1075,9 @@ class SubtitlesFinder(object):
         logger.info('Finished checking for missed subtitles')
         self.amActive = False
 
+        # Push an update to any open Web UIs through the WebSocket
+        ws.Message('QueueItemUpdate', self._to_json).push()
+
 
 def run_subs_pre_scripts(video_path):
     """Execute the subtitles pre-scripts for the given video path.
@@ -1113,11 +1123,18 @@ def run_subs_scripts(video_path, scripts, *args):
     :param args: the arguments to be passed to the script
     :type args: list of str
     """
-    for script_name in scripts:
-        script_cmd = [piece for piece in script_name.split(' ') if piece.strip()]
-        script_cmd.extend(str(arg) for arg in args)
+    for script_path in scripts:
 
-        logger.info(u'Running subtitle %s-script: %s', 'extra' if len(args) > 1 else 'pre', script_name)
+        if not os.path.isfile(script_path):
+            logger.warning(u'Subtitle script {0} is not a file.'.format(script_path))
+            continue
+
+        if not script_path.endswith('.py'):
+            logger.warning(u'Subtitle script {0} is not a Python file.'.format(script_path))
+            continue
+
+        logger.info(u'Running subtitle %s-script: %s', 'extra' if len(args) > 1 else 'pre', script_path)
+        script_cmd = [sys.executable, script_path] + [str(arg) for arg in args]
 
         # use subprocess to run the command and capture output
         logger.info(u'Executing command: %s', script_cmd)

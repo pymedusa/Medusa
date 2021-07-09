@@ -17,7 +17,7 @@ from medusa import (
 )
 from medusa.common import cpu_presets
 from medusa.helper.common import convert_size, episode_num
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
@@ -69,9 +69,6 @@ class BTNProvider(TorrentProvider):
         self.urls = {
             'base_url': 'https://api.broadcasthe.net',
         }
-
-        # Proper Strings
-        self.proper_strings = []
 
         # Miscellaneous Options
         self.supports_absolute_numbering = True
@@ -281,8 +278,8 @@ class BTNProvider(TorrentProvider):
                 log.warning('Provider is currently unavailable. Error: {code} {text}',
                             {'code': code, 'text': message})
             else:
-                log.error('JSON-RPC protocol error while accessing provider. Error: {msg!r}',
-                          {'msg': error.args})
+                log.warning('JSON-RPC protocol error while accessing provider. Error: {msg!r}',
+                            {'msg': error.args})
 
         except (socket.error, ValueError) as error:
             log.warning('Error while accessing provider. Error: {msg!r}', {'msg': error})

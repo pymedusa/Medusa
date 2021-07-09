@@ -5,6 +5,7 @@
     from medusa import sbdatetime
     from medusa import network_timezones
     from medusa.helper.common import pretty_file_size
+    from random import choice
     import re
 %>
 <%block name="metas">
@@ -12,8 +13,12 @@
 </%block>
 <%block name="scripts">
 <script type="text/x-template" id="home-template">
+    <!-- # pick a random series to show as background
+    random_show = choice(app.showList) if app.showList else None -->
+
 <div>
-    <backstretch :slug="config.randomShowSlug"></backstretch>
+    <input type="hidden" id="background-series-slug" value="${getattr(random_show, 'slug', '')}" />
+    <vue-snotify></vue-snotify>
 
     <div class="row" v-if="layout === 'poster'">
         <div class="col-lg-9 col-md-12 col-sm-12 col-xs-12 pull-right">
@@ -81,26 +86,34 @@
     <div class="row">
         <div class="col-md-12">
             <!-- Split in tabs -->
-            <div id="showTabs" v-if="config.animeSplitHome && config.animeSplitHomeInTabs">
+            <div id="showTabs" v-show="stateLayout.animeSplitHome && stateLayout.animeSplitHomeInTabs">
                 <!-- Nav tabs -->
                 <ul>
-                % for cur_show_list in show_lists:
-                    <li><app-link href="#${cur_show_list[0].lower()}TabContent" id="${cur_show_list[0].lower()}Tab">${cur_show_list[0]}</app-link></li>
-                % endfor
+                    <li v-for="(shows, listTitle) in showLists" :key="listTitle">
+                        <%text>
+                        <app-link :href="`#${listTitle}TabContent`" :id="`${listTitle}Tab`">{{ listTitle }}</app-link>
+                        </%text>
+                    </li>
                 </ul>
                 <!-- Tab panes -->
                 <div id="showTabPanes">
-                    ## Checking with Mako as well, so we don't import the home page layout multiple times.
-                    % if app.ANIME_SPLIT_HOME and app.ANIME_SPLIT_HOME_IN_TABS:
-                    <%include file="/partials/home/${app.HOME_LAYOUT}.mako"/>
+                    % if not app.HOME_LAYOUT in ['banner', 'simple']:
+                        <%include file="/partials/home/${app.HOME_LAYOUT}.mako"/>
                     % endif
+                    <template v-if="['banner', 'simple'].includes(layout)">
+                        <div v-for="showList in showLists" :key="showList.listTitle" :id="`${showList.listTitle}TabContent`">
+                            <show-list v-bind="{ listTitle, layout, shows, header: true, sortArticle: config.sortArticle }"></show-list>
+                        </div> <!-- #...TabContent -->
+                    </template>
                 </div><!-- #showTabPanes -->
             </div> <!-- #showTabs -->
-            <template v-else>
-                ## Checking with Mako as well, so we don't import the home page layout multiple times.
-                % if not (app.ANIME_SPLIT_HOME and app.ANIME_SPLIT_HOME_IN_TABS):
-                <%include file="/partials/home/${app.HOME_LAYOUT}.mako"/>
+            <template v-show="!stateLayout.animeSplitHome || !stateLayout.animeSplitHomeInTabs">
+                % if not app.HOME_LAYOUT in ['banner', 'simple']:
+                    <%include file="/partials/home/${app.HOME_LAYOUT}.mako"/>
                 % endif
+                <template v-if="['banner', 'simple'].includes(layout)">
+                    <show-list v-for="showList in showLists" :key="showList.listTitle" v-bind="{ showList.listTitle, layout, showList.shows, header: showLists.length > 1, sortArticle: config.sortArticle }"></show-list>
+                </template>
             </template>
         </div>
     </div>
