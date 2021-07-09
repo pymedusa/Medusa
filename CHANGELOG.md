@@ -5,6 +5,7 @@
 #### Improvements
 
 #### Fixes
+- Fix prowl notifications ([9720](https://github.com/pymedusa/Medusa/pull/9720))
 
 -----
 
