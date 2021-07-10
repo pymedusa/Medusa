@@ -103,10 +103,10 @@
                         </div>
                         <div class="row" v-if="!show.showInLibrary">
                             <div class="col-md-12" name="addshowoptions">
-                                <select :ref="String(show.source) + '-' + String(show.seriesId)" name="addshow" class="rec-show-select">
+                                <select :ref="`${show.source}-${show.seriesId}`" name="addshow" class="rec-show-select">
                                     <option v-for="option in externalIndexers(show)" :value="option.value" :key="option.value">{{option.text}}</option>
                                 </select>
-                                <button :disabled="show.trakt.blacklisted" class="btn-medusa btn-xs rec-show-button" @click="addShowById(show, String(show.source) + '-' + String(show.seriesId))">
+                                <button :disabled="show.trakt.blacklisted" class="btn-medusa btn-xs rec-show-button" @click="addShowById(show, `${show.source}-${show.seriesId}`)">
                                     Add
                                 </button>
                             </div>
@@ -321,7 +321,6 @@ export default {
     },
     methods: {
         ...mapActions({
-            addShow: 'addShow',
             getRecommendedShows: 'getRecommendedShows'
         }),
         containerClass(show) {
@@ -339,37 +338,37 @@ export default {
             imgLazyLoad.update();
             // imgLazyLoad.handleScroll();
         },
-        addShowById(show, indexer) {
+        async addShowById(show, indexer) {
             console.log('adding show by id');
-            const { addShow, enableShowOptions, selectedShowOptions } = this;
+            const { enableShowOptions, selectedShowOptions } = this;
             const { mappedIndexerName, mappedSeriesId } = show;
             const selectedIndexer = this.$refs[indexer][0].selectedOptions[0].value;
-            debugger;
+
             let showId = { [mappedIndexerName]: mappedSeriesId };
             if (Object.keys(show.externals).length !== 0 && show.externals[selectedIndexer + '_id']) {
                 showId = { [selectedIndexer]: show.externals[selectedIndexer + '_id'] };
             }
 
-            let options = { id: showId };
-
+            const options = {};
+            
             if (enableShowOptions) {
-                options = Object.assign({}, options, { options: selectedShowOptions });
+                options.options = selectedShowOptions;
             }
 
-            addShow(options).then(() => {
+            try {
+                await api.post('series', { id: showId, options });
                 this.$snotify.success(
-                    'Added new show to library',
+                    'Adding new show to library',
                     'Saved',
                     { timeout: 20000 }
                 );
-                show.showInLibrary = true;
-                debugger;
-            }).catch(() => {
+                show.showInLibrary = true;            
+            } catch (error) {
                 this.$snotify.error(
                     'Error while trying to add new show',
                     'Error'
-                );
-            });
+                );                
+            }
         },
         updateOptions(options) {
             // Update seleted options from add-show-options.vue @change event.
