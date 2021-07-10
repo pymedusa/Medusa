@@ -53,7 +53,7 @@
                     <div v-for="show in filteredShowsByList" :key="show.seriesId" :class="containerClass(show)" :data-name="show.title" :data-rating="show.rating" :data-votes="show.votes" :data-anime="show.isAnime">
                         <div class="recommended-image">
                             <app-link :href="show.imageHref">
-                                <img alt="" class="recommended-image" src="images/poster.png" :data-original="show.imageSrc" height="273px" width="186px">
+                                <asset :default-src="show.imageSrc" lazy type="posterThumb" cls="show-image" :link="false" height="273px" :img-width="186" />
                             </app-link>
                         </div>
 
@@ -124,6 +124,7 @@ import { apiRoute } from '../api.js';
 import { mapState, mapActions } from 'vuex';
 import AddShowOptions from './add-show-options.vue';
 import {
+    Asset,
     AppLink,
     ConfigTemplate,
     ConfigToggleSlider
@@ -133,6 +134,7 @@ import isotope from 'vueisotope';
 export default {
     name: 'recommended',
     components: {
+        Asset,
         AddShowOptions,
         AppLink,
         ConfigTemplate,
@@ -437,5 +439,10 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
+.recommended-image >>> .show-image {
+    height: 100%;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
 </style>

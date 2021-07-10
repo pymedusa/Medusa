@@ -45,7 +45,7 @@ class AnidbPopular(BasePopular):  # pylint: disable=too-few-public-methods
         self.base_url = AnidbPopular.BASE_URL
 
     @recommended_series_cache.cache_on_arguments(namespace='anidb', function_key_generator=create_key_from_series)
-    def _create_recommended_show(self, storage_key, series):
+    def _create_recommended_show(self, series):
         """Create the RecommendedShow object from the returned showobj."""
         try:
             tvdb_id = cached_aid_to_tvdb(series.aid)
@@ -90,8 +90,7 @@ class AnidbPopular(BasePopular):  # pylint: disable=too-few-public-methods
 
         for show in series:
             try:
-                recommended_show = self._create_recommended_show(storage_key=show.aid,
-                                                                 series=show)
+                recommended_show = self._create_recommended_show(series=show)
                 if recommended_show:
                     recommended_show.save_to_db()
                     result.append(recommended_show)

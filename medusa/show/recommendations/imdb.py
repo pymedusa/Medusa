@@ -42,7 +42,7 @@ class ImdbPopular(BasePopular):
         self.source = EXTERNAL_IMDB
 
     @recommended_series_cache.cache_on_arguments(namespace='imdb', function_key_generator=create_key_from_series)
-    def _create_recommended_show(self, storage_key, series):
+    def _create_recommended_show(self, series):
         """Create the RecommendedShow object from the returned showobj."""
         tvdb_id = helpers.get_tvdb_from_id(series.get('imdb_tt'), 'IMDB')
 
@@ -103,8 +103,7 @@ class ImdbPopular(BasePopular):
 
             if all([series['year'], series['name'], series['imdb_tt']]):
                 try:
-                    recommended_show = self._create_recommended_show(storage_key=series['imdb_tt'],
-                                                                     series=series)
+                    recommended_show = self._create_recommended_show(series=series)
                     if recommended_show:
                         recommended_show.save_to_db()
                         result.append(recommended_show)

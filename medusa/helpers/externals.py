@@ -167,7 +167,7 @@ def save_externals_to_db(indexer, series_id, externals):
     sql_l = []
 
     for external in externals:
-        if external in reverse_mappings and externals[external]:
+        if external in reverse_mappings and externals[external] and reverse_mappings[external] != indexer:
             sql_l.append(['INSERT OR IGNORE '
                           'INTO indexer_mapping (indexer_id, indexer, mindexer_id, mindexer) '
                           'VALUES (?,?,?,?)',

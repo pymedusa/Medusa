@@ -28,6 +28,7 @@ from medusa import (
     helpers,
 )
 from medusa.cache import recommended_series_cache
+from medusa.helpers import ensure_list
 from medusa.helpers.externals import load_externals_from_db, save_externals_to_db, show_in_library
 from medusa.imdb import Imdb
 from medusa.indexers.utils import indexer_id_to_name, indexer_name_mapping

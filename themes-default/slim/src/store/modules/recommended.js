@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import { api } from '../../api';
-import { ADD_RECOMMENDED_SHOW } from '../mutation-types';
+import { ADD_RECOMMENDED_SHOW, SET_RECOMMENDED_SHOWS } from '../mutation-types';
 
 const state = {
     shows: [],
@@ -32,6 +32,9 @@ const mutations = {
         // Update state
         Vue.set(state.shows, state.shows.indexOf(existingShow), newShow);
         console.debug(`Merged ${newShow.title || newShow.source + String(newShow.seriesId)}`, newShow);
+    },
+    [SET_RECOMMENDED_SHOWS](state, shows) {
+        state.shows = shows;
     }
 };
 
@@ -51,14 +54,12 @@ const actions = {
         params = {};
 
         identifier = identifier ? identifier : '';
-        return api.get('/recommended/' + identifier, { params }).then(res => {
+        return api.get(`/recommended/${identifier}`, { params }).then(res => {
             const { data } = res;
             state.trakt.removedFromMedusa = data.trakt.removedFromMedusa;
             state.trakt.blacklistEnabled = data.trakt.blacklistEnabled;
             if (data.shows && data.shows.length > 0) {
-                return data.shows.forEach(show => {
-                    commit(ADD_RECOMMENDED_SHOW, show);
-                });
+                commit(SET_RECOMMENDED_SHOWS, data.shows);
             }
             return [];
         });

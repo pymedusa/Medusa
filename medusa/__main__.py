@@ -1048,6 +1048,11 @@ class Application(object):
             app.FALLBACK_PLEX_NOTIFICATIONS = check_setting_int(app.CFG, 'General', 'fallback_plex_notifications', 1)
             app.FALLBACK_PLEX_TIMEOUT = check_setting_int(app.CFG, 'General', 'fallback_plex_timeout', 3)
 
+            app.CACHE_RECOMMENDED_SHOWS = check_setting_int(app.CFG, 'Recommended', 'cache_shows', 1)
+            app.CACHE_RECOMMENDED_TRAKT = check_setting_int(app.CFG, 'Recommended', 'cache_trakt', 1)
+            app.CACHE_RECOMMENDED_IMDB = check_setting_int(app.CFG, 'Recommended', 'cache_imdb', 1)
+            app.CACHE_RECOMMENDED_ANIDB = check_setting_int(app.CFG, 'Recommended', 'cache_anidb', 1)
+
             # Initialize trakt config path.
             trakt.core.CONFIG_PATH = os.path.join(app.CACHE_DIR, '.pytrakt.json')
             trakt.core.load_config()
@@ -1727,6 +1732,12 @@ class Application(object):
         new_config['General']['fallback_plex_enable'] = app.FALLBACK_PLEX_ENABLE
         new_config['General']['fallback_plex_notifications'] = app.FALLBACK_PLEX_NOTIFICATIONS
         new_config['General']['fallback_plex_timeout'] = app.FALLBACK_PLEX_TIMEOUT
+
+        new_config['Recommended'] = {}
+        new_config['Recommended']['cache_shows'] = app.CACHE_RECOMMENDED_SHOWS
+        new_config['Recommended']['cache_trakt'] = app.CACHE_RECOMMENDED_TRAKT
+        new_config['Recommended']['cache_imdb'] = app.CACHE_RECOMMENDED_IMDB
+        new_config['Recommended']['cache_anidb'] = app.CACHE_RECOMMENDED_ANIDB
 
         new_config['Blackhole'] = {}
         new_config['Blackhole']['nzb_dir'] = app.NZB_DIR

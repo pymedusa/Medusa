@@ -184,6 +184,11 @@ class ConfigHandler(BaseRequestHandler):
         'providers.prowlarr.url': StringField(app, 'PROWLARR_URL'),
         'providers.prowlarr.apikey': StringField(app, 'PROWLARR_APIKEY'),
 
+        'recommended.cacheShows': BooleanField(app, 'CACHE_RECOMMENDED_SHOWS'),
+        'recommended.cacheTrakt': BooleanField(app, 'CACHE_RECOMMENDED_TRAKT'),
+        'recommended.cacheImdb': BooleanField(app, 'CACHE_RECOMMENDED_IMDB'),
+        'recommended.cacheAnidb': BooleanField(app, 'CACHE_RECOMMENDED_ANIDB'),
+
         # Sections
         'clients.torrents.authType': StringField(app, 'TORRENT_AUTH_TYPE'),
         'clients.torrents.dir': StringField(app, 'TORRENT_DIR'),
@@ -659,6 +664,12 @@ class DataGenerator(object):
         section_data['plexFallBack']['enable'] = bool(app.FALLBACK_PLEX_ENABLE)
         section_data['plexFallBack']['notifications'] = bool(app.FALLBACK_PLEX_NOTIFICATIONS)
         section_data['plexFallBack']['timeout'] = int(app.FALLBACK_PLEX_TIMEOUT)
+
+        section_data['recommended'] = {}
+        section_data['recommended']['cacheShows'] = bool(app.CACHE_RECOMMENDED_SHOWS)
+        section_data['recommended']['cacheTrakt'] = bool(app.CACHE_RECOMMENDED_TRAKT)
+        section_data['recommended']['cacheImdb'] = bool(app.CACHE_RECOMMENDED_IMDB)
+        section_data['recommended']['cacheAnidb'] = bool(app.CACHE_RECOMMENDED_ANIDB)
 
         section_data['versionNotify'] = bool(app.VERSION_NOTIFY)
         section_data['autoUpdate'] = bool(app.AUTO_UPDATE)

@@ -1126,7 +1126,6 @@ div.recommended-image {
     white-space: nowrap;
     font-size: 12px;
     overflow: hidden;
-    margin: 2px;
     text-decoration: none;
     color: rgb(255, 255, 255);
 }

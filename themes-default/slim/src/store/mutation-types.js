@@ -21,6 +21,7 @@ const ADD_SHOWS = '📺 Multiple Shows added to store in bulk';
 const ADD_SHOW_EPISODE = '📺 Shows season with episodes added to store';
 const ADD_STATS = 'ℹ️ Statistics added to store';
 const ADD_RECOMMENDED_SHOW = '📺 Recommended Show added to store';
+const SET_RECOMMENDED_SHOWS = '📺 Recommended Shows added to store';
 const SET_STATS = 'SET_STATS';
 const SET_MAX_DOWNLOAD_COUNT = 'SET_MAX_DOWNLOAD_COUNT';
 const ADD_SHOW_SCENE_EXCEPTION = '📺 Add a scene exception';
@@ -63,6 +64,7 @@ export {
     ADD_STATS,
     ADD_SHOW_CONFIG,
     ADD_RECOMMENDED_SHOW,
+    SET_RECOMMENDED_SHOWS,
     ADD_SHOWS,
     ADD_SHOW_EPISODE,
     ADD_REMOTE_BRANCHES,

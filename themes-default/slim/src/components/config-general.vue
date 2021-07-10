@@ -69,6 +69,26 @@
 
                         <div class="row component-group">
                             <div class="component-group-desc col-xs-12 col-md-2">
+                                <h3 style="word-break: break-word">Recommended shows</h3>
+                                <p>Options for controlling the caching of recommended shows.</p>
+                            </div>
+                            <div class="col-xs-12 col-md-10">
+                                <fieldset class="component-group-list">
+                                    <config-toggle-slider v-model="general.recommended.cacheShows" label="Cache recommended shows" id="cache_rec_shows">
+                                        <p>Enabling recommended shows, will cache recommended shows on a daily interval.</p>
+                                    </config-toggle-slider>
+                                    <template v-if="general.recommended.cacheShows">
+                                        <config-toggle-slider v-model="general.recommended.cacheTrakt" label="Cache Trakt lists" id="cache_rec_trakt" />
+                                        <config-toggle-slider v-model="general.recommended.cacheImdb" label="Cache Imdb lists" id="cache_rec_imdb" />
+                                        <config-toggle-slider v-model="general.recommended.cacheAnidb" label="Cache Anidb lists" id="cache_rec_anidb" />
+                                    </template>
+                                </fieldset>
+                            </div>
+
+                        </div>
+
+                        <div class="row component-group">
+                            <div class="component-group-desc col-xs-12 col-md-2">
                                 <h3>Indexer</h3>
                                 <p>Options for controlling the show indexers.</p>
                             </div>

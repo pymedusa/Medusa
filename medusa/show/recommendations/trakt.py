@@ -15,6 +15,7 @@ from medusa.indexers.api import indexerApi
 from medusa.indexers.config import EXTERNAL_TRAKT, INDEXER_TVDBV2, TRAKT_INDEXERS
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.recommendations import ExpiringList
+from medusa.show.recommendations import recommended
 from medusa.show.recommendations.recommended import (
     BasePopular,
     RecommendedShow,
@@ -55,7 +56,7 @@ class TraktPopular(BasePopular):
         self.tvdb_api_v2 = indexerApi(INDEXER_TVDBV2).indexer()
 
     @recommended_series_cache.cache_on_arguments(namespace='trakt', function_key_generator=create_key_from_series)
-    def _create_recommended_show(self, storage_key, show, subcat=None):
+    def _create_recommended_show(self, show, subcat=None):
         """Create the RecommendedShow object from the returned showobj."""
         rec_show = RecommendedShow(
             self,
@@ -66,7 +67,7 @@ class TraktPopular(BasePopular):
                 'image_href': 'http://www.trakt.tv/shows/{0}'.format(show.ids['ids']['slug']),
                 # Adds like: {'tmdb': 62126, 'tvdb': 304219, 'trakt': 79382, 'imdb': 'tt3322314',
                 # 'tvrage': None, 'slug': 'marvel-s-luke-cage'}
-                'ids': {k: v for k, v in iteritems(show.ids['ids']) if TRAKT_INDEXERS.get(k)},
+                'ids': {f'{k}_id': v for k, v in iteritems(show.ids['ids']) if TRAKT_INDEXERS.get(k)},
                 'subcat': subcat
                }
         )
@@ -147,10 +148,10 @@ class TraktPopular(BasePopular):
                             in (s.tvdb for s in not_liked_show if s.media_type == 'shows')):
                         continue
 
-                    recommended_shows = self._create_recommended_show(
-                        storage_key=show.trakt,
-                        show=show
-                    )
+                    recommended_show = self._create_recommended_show(show)
+                    if recommended_show:
+                        recommended_show.save_to_db()
+                        recommended_shows.append(recommended_show)
 
                 except MultipleShowObjectsException:
                     continue

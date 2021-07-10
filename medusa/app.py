@@ -709,6 +709,12 @@ class MedusaApp(object):
         self.FALLBACK_PLEX_API_URL = 'https://tvdb2.plex.tv'
         self.TVDB_API_KEY = 'd99c8e7dac2307355af4ab88720a6c32'
 
+        # Recommended Shows settings
+        self.CACHE_RECOMMENDED_SHOWS = True
+        self.CACHE_RECOMMENDED_TRAKT = True
+        self.CACHE_RECOMMENDED_IMDB = True
+        self.CACHE_RECOMMENDED_ANIDB = True
+
     def _init_scheduler(self, app_prop=None, scheduler=None, enabled=None):
         from medusa.logger.adapters.style import BraceAdapter
         log = BraceAdapter(logging.getLogger(__name__))
@@ -998,12 +1004,6 @@ class MedusaApp(object):
     def SUBTITLES_FINDER_FREQUENCY(self, value):
         """Change SUBTITLES_FINDER_FREQUENCY."""
         self.handle_prop('SUBTITLES_FINDER_FREQUENCY', value)
-
-        # show updater recommeded show caching
-        self.CACHE_RECOMMENDED_SHOWS = True
-        self.CACHE_RECOMMENDED_TRAKT = True
-        self.CACHE_RECOMMENDED_IMDB = False
-        self.CACHE_RECOMMENDED_ANIDB = True
 
 
 app = MedusaApp()

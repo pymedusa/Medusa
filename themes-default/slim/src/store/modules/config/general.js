@@ -53,6 +53,12 @@ const state = {
         notifications: null,
         timeout: null
     },
+    recommended: {
+        cacheShows: null,
+        cacheTrakt: null,
+        cacheImdb: null,
+        cacheAnidb: null
+    },
     versionNotify: null,
     autoUpdate: null,
     updateFrequency: null,

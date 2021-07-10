@@ -9,12 +9,17 @@
 </template>
 
 <script>
+import { keys } from 'lodash';
 import lozad from 'lozad';
 
 export default {
     name: 'lazy-image',
     props: {
-        height: {
+        lazyWidth: {
+            type: Number,
+            default: null
+        },
+        lazyHeight: {
             type: Number,
             default: null
         },
@@ -33,10 +38,6 @@ export default {
         lazyCls: {
             type: String,
             default: ''
-        },
-        width: {
-            type: Number,
-            default: null
         }
     },
     data() {
@@ -57,9 +58,10 @@ export default {
         },
         style() {
             const style = {};
+            const { lazyWidth } = this;
 
-            if (this.width) {
-                style.width = `${this.width}px`;
+            if (this.lazyWidth) {
+                style.width = `${this.lazyWidth}px`;
             }
 
             // If the image is still loading and an
@@ -75,7 +77,6 @@ export default {
                 // to the aspect ratio.
                 style.paddingTop = `${this.aspectRatio}%`;
             }
-
             return style;
         }
     },
