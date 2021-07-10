@@ -341,10 +341,9 @@ export default {
         async addShowById(show, indexer) {
             console.log('adding show by id');
             const { enableShowOptions, selectedShowOptions } = this;
-            const { mappedIndexerName, mappedSeriesId } = show;
             const selectedIndexer = this.$refs[indexer][0].selectedOptions[0].value;
 
-            let showId = { [mappedIndexerName]: mappedSeriesId };
+            let showId = null;
             if (Object.keys(show.externals).length !== 0 && show.externals[selectedIndexer + '_id']) {
                 showId = { [selectedIndexer]: show.externals[selectedIndexer + '_id'] };
             }
