@@ -2,13 +2,21 @@
     <div id="recommended-shows">
         <div id="recommended-shows-lists" class="row">
             <div class="col-md-12">
-                <config-template label-for="recommended-lists" label="Select a list">
-                    <select id="recommended-lists" name="recommended-lists" v-model="selectedList" class="form-control">
-                        <option v-for="option in options" :value="option.value" :key="option.value">
+                <config-template label-for="recommended-source" label="Select a Source">
+                    <select id="recommended-source" name="recommended-source" v-model="selectedSource" class="form-control">
+                        <option v-for="option in sourceOptions" :value="option.value" :key="option.value">
                             {{ option.text }}
                         </option>
                     </select>
                 </config-template>
+                <config-template label-for="recommended-list" label="Select a list">
+                    <select id="recommended-list" name="recommended-list" v-model="selectedList" class="form-control">
+                        <option v-for="option in listOptions" :value="option.value" :key="option.value">
+                            {{ option.text }}
+                        </option>
+                    </select>
+                </config-template>
+
             </div>
         </div>
 
@@ -199,13 +207,14 @@ export default {
                     preferred: []
                 }
             },
-            options: [
+            sourceOptions: [
                 { text: 'Anidb', value: externals.ANIDB },
                 { text: 'IMDB', value: externals.IMDB },
                 { text: 'Trakt', value: externals.TRAKT },
                 { text: 'all', value: -1 }
             ],
-            selectedList: 11,
+            selectedSource: 11,
+            selectedList: '',
 
             // Isotope stuff
             selected: null,
@@ -295,12 +304,14 @@ export default {
         ...mapState({
             config: state => state.config,
             recommendedShows: state => state.recommended.shows,
-            traktConfig: state => state.recommended.trakt
+            traktConfig: state => state.recommended.trakt,
+            recommendedLists: state => state.config.indexers.main.recommendedLists
         }),
         filteredShowsByList() {
-            const { imgLazyLoad, recommendedShows, selectedList } = this;
+            const { imgLazyLoad, recommendedShows, selectedSource, selectedList } = this;
+            let filteredList = null;
 
-            if (selectedList === -1) {
+            if (selectedSource === -1) {
                 return recommendedShows;
             }
 
@@ -309,7 +320,14 @@ export default {
                 imgLazyLoad.update();
                 // imgLazyLoad.handleScroll();
             });
-            return recommendedShows.filter(show => show.source === selectedList);
+
+            filteredList = recommendedShows.filter(show => show.source === selectedSource);
+
+            if (selectedList) {
+                filteredList = recommendedShows.filter(show => show.subcat === selectedList);
+            }
+
+            return filteredList;
         },
         imgLazyLoad() {
             console.log('imgLazyLoad object constructud!');
@@ -317,6 +335,11 @@ export default {
                 // Example of options object -> see options section
                 threshold: 500
             });
+        },
+        listOptions() {
+            const { recommendedLists, selectedSource } = this;
+            const sourceLists = recommendedLists[selectedSource] || [];
+            return sourceLists.map(list => ({text: list, value: list}))
         }
     },
     methods: {
