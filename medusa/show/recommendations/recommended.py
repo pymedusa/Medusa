@@ -20,26 +20,21 @@ from __future__ import unicode_literals
 import logging
 import os
 import posixpath
+from datetime import datetime
 from os.path import join
 
-from medusa import (
-    db,
-    app,
-    helpers,
-)
+from medusa import app, db, helpers
 from medusa.cache import recommended_series_cache
 from medusa.helpers import ensure_list
 from medusa.helpers.externals import load_externals_from_db, save_externals_to_db, show_in_library
 from medusa.imdb import Imdb
-from medusa.indexers.utils import indexer_id_to_name, indexer_name_mapping
-from medusa.indexers.config import EXTERNAL_ANIDB, EXTERNAL_IMDB, EXTERNAL_TRAKT, INDEXER_TVDBV2
-from medusa.indexers.utils import reverse_mappings
+from medusa.indexers.config import EXTERNAL_ANIDB, EXTERNAL_IMDB, EXTERNAL_TRAKT
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
 
 from simpleanidb import Anidb
 
-from six import PY2, ensure_text, text_type, viewitems
+from six import PY2, ensure_text, text_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -109,7 +104,7 @@ class RecommendedShow(BasePopular):
                               which facilitated the recommended shows list.
         :param series_id: as provided by the list provider
         :param title: of the show as displayed in the recommended show page
-        :param indexer: used to map the show to
+        :param mapped_indexer: used to map the show to
         :param indexer_id: a mapped indexer_id for indexer
         :param rating: of the show in percent
         :param votes: number of votes
@@ -124,6 +119,7 @@ class RecommendedShow(BasePopular):
 
         self.series_id = series_id
         self.title = title
+
         if show_attr.get('mapped_indexer'):
             self.mapped_indexer = int(show_attr.get('mapped_indexer'))
             self.mapped_indexer_name = indexer_id_to_name(show_attr.get('mapped_indexer'))
@@ -151,20 +147,6 @@ class RecommendedShow(BasePopular):
         self.subcat = show_attr.get('subcat')
 
         self.show_in_list = show_in_library(self.source, self.series_id)
-        # Check if the show is currently already in the db
-#        indexers = {mapped_indexer: mapped_series_id}
-#        indexers.update({indexer_name_mapping[indexer_name]: indexers_series_id
-#                         for indexer_name, indexers_series_id
-#                         in self.ids.items() if indexer_name in indexer_name_mapping})
-
-#        self.show_in_list = False
-#        for show in app.showList:
-#            if show.indexer in indexers and show.series_id == indexers[show.indexer]:
-#                self.show_in_list = True
-#                self.mapped_indexer = show.indexer
-#                self.mapped_indexer_name = show.identifier.indexer.slug
-#                self.series_id = show.series_id
-
         self.session = session
 
     def cache_image(self, image_url, default=None):
@@ -230,14 +212,14 @@ class RecommendedShow(BasePopular):
                 '    (source, series_id, mapped_indexer, '
                 '     mapped_series_id, title, rating, '
                 '     votes, is_anime, image_href, '
-                '     image_src, subcat) '
-                'VALUES (?,?,?,?,?,?,?,?,?,?,?)',
+                '     image_src, subcat, added) '
+                'VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
                 [self.source, self.series_id, self.mapped_indexer, self.mapped_series_id, self.title, self.rating, self.votes,
-                 int(self.is_anime), self.image_href, self.image_src, self.subcat]
+                 int(self.is_anime), self.image_href, self.image_src, self.subcat, datetime.now()]
             )
         else:
             query = """UPDATE recommended SET title = ?, rating = ?, votes = ?,
-                    is_anime = ?, image_href = ?, image_src = ?, subcat = ? {mapped_indexer_and_id}
+                    is_anime = ?, image_href = ?, image_src = ?, subcat = ?
                     WHERE recommended_id = ?"""
             params_set = [self.title, self.rating, self.votes, int(self.is_anime), self.image_href, self.image_src, self.subcat]
             params_where = [existing_show[0]['recommended_id']]

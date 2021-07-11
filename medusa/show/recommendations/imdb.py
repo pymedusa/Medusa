@@ -57,7 +57,8 @@ class ImdbPopular(BasePopular):
                 'rating': series.get('rating'),
                 'votes': series.get('votes'),
                 'image_href': series.get('imdb_url'),
-                'ids': {'tvdb_id': int(tvdb_id)}
+                'ids': {'tvdb_id': int(tvdb_id)},
+                'subcat': 'popular'
             }
         )
 
@@ -103,7 +104,7 @@ class ImdbPopular(BasePopular):
 
             if all([series['year'], series['name'], series['imdb_tt']]):
                 try:
-                    recommended_show = self._create_recommended_show(series=series)
+                    recommended_show = self._create_recommended_show(series)
                     if recommended_show:
                         recommended_show.save_to_db()
                         result.append(recommended_show)

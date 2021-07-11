@@ -68,7 +68,8 @@ class AnidbPopular(BasePopular):  # pylint: disable=too-few-public-methods
                     'tvdb_id': tvdb_id,
                     'anidb_id': series.aid
                 },
-               'is_anime': True
+               'is_anime': True,
+               'subcat': 'hot'
             }
         )
 

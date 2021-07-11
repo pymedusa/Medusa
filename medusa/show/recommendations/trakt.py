@@ -148,7 +148,7 @@ class TraktPopular(BasePopular):
                             in (s.tvdb for s in not_liked_show if s.media_type == 'shows')):
                         continue
 
-                    recommended_show = self._create_recommended_show(show)
+                    recommended_show = self._create_recommended_show(show, subcat=trakt_list)
                     if recommended_show:
                         recommended_show.save_to_db()
                         recommended_shows.append(recommended_show)
