@@ -21,6 +21,7 @@ import logging
 from enum import Enum
 
 from medusa import app
+from medusa.indexers.config import EXTERNAL_TRAKT, RECOMMENDED_LISTS
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.queues import generic_queue
 from medusa.show.recommendations.anidb import AnidbPopular
@@ -113,17 +114,7 @@ class RecommendedShowQueueItem(generic_queue.QueueItem):
                 UpdateQueueActions.UPDATE_RECOMMENDED_LIST_TRAKT, UpdateQueueActions.UPDATE_RECOMMENDED_LIST_ALL
             ):
                 # Cache trakt shows
-                for trakt_list in (
-                    'trending',
-                    # 'popular',
-                    # 'anticipated',
-                    # 'collected',
-                    # 'watched',
-                    # 'played',
-                    # 'recommendations',
-                    # 'newshow',
-                    # 'newseason'
-                ):
+                for trakt_list in RECOMMENDED_LISTS[EXTERNAL_TRAKT]:
                     try:
                         TraktPopular().fetch_popular_shows(trakt_list=trakt_list)
                     except Exception as error:
