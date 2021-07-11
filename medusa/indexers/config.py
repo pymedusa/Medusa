@@ -38,6 +38,15 @@ EXTERNAL_TRAKT = 12
 EXTERNAL_MAPPINGS = {EXTERNAL_IMDB: 'imdb_id', EXTERNAL_ANIDB: 'anidb_id',
                      INDEXER_TVRAGE: 'tvrage_id', EXTERNAL_TRAKT: 'trakt_id'}
 
+RECOMMENDED_LISTS = {
+    EXTERNAL_TRAKT: [
+        'trending', 'popular', 'anticipated', 'collected',
+        'watched', 'played', 'recommendations', 'newshow', 'newseason'
+    ],
+    EXTERNAL_IMDB: ['popular'],
+    EXTERNAL_ANIDB: ['hot']
+}
+
 # trakt indexer name vs Medusa indexer
 TRAKT_INDEXERS = {'tvdb': INDEXER_TVDBV2, 'tmdb': INDEXER_TMDB, 'imdb': EXTERNAL_IMDB, 'trakt': EXTERNAL_TRAKT}
 
@@ -156,7 +165,8 @@ def get_indexer_config():
         'langabbvToId': init_config['langabbv_to_id'],
         'externalMappings': {str(k): v for k, v in iteritems(EXTERNAL_MAPPINGS)},
         'traktIndexers': TRAKT_INDEXERS,
-        'statusMap': STATUS_MAP
+        'statusMap': STATUS_MAP,
+        'recommendedLists': RECOMMENDED_LISTS
     }
 
     return {'indexers': indexers, 'main': main}
