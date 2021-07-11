@@ -1,0 +1,16 @@
+#!/bin/sh
+
+PUID=${PUID:-911}
+PGID=${PGID:-911}
+
+addgroup -g "$PGID" abc
+adduser -u "$PUID" --ingroup abc --disabled-password abc
+
+echo "
+User uid:    $(id -u abc)
+User gid:    $(id -g abc)
+-------------------------------------
+"
+chown -R abc:abc /app
+chown -R abc:abc /config
+exec su abc -s /bin/sh -c "python start.py --nolaunch --datadir /config"
