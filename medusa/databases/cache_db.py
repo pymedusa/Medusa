@@ -251,7 +251,8 @@ class AddRecommendedTable(RemoveSceneExceptionsTable):
                 `is_anime`	INTEGER DEFAULT 0,
                 `image_href`	TEXT,
                 `image_src`	TEXT,
-                `subcat` TEXT
+                `subcat` TEXT,
+                `added` DATETIME
             )"""
         )
         self.inc_major_version()
