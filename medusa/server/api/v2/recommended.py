@@ -10,7 +10,7 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import (
     BaseRequestHandler
 )
-from medusa.show.recommendations.recommended import get_recommended_shows
+from medusa.show.recommendations.recommended import get_categories, get_recommended_shows
 from medusa.show.recommendations.trakt import TraktPopular
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -46,6 +46,8 @@ class RecommendedHandler(BaseRequestHandler):
             data['trakt']['removedFromMedusa'] = TraktPopular().get_removed_from_medusa()
         except Exception:
             log.warning('Could not get the `removed from medusa` list')
+
         data['trakt']['blacklistEnabled'] = app.TRAKT_BLACKLIST_NAME != ''
+        data['categories'] = get_categories()
 
         return self._ok(data)

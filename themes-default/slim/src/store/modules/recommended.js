@@ -7,7 +7,8 @@ const state = {
     trakt: {
         removedFromMedusa: [],
         blacklistEnabled: false
-    }
+    },
+    categories: {}
 };
 
 const mutations = {
@@ -33,8 +34,11 @@ const mutations = {
         Vue.set(state.shows, state.shows.indexOf(existingShow), newShow);
         console.debug(`Merged ${newShow.title || newShow.source + String(newShow.seriesId)}`, newShow);
     },
-    [SET_RECOMMENDED_SHOWS](state, shows) {
-        state.shows = shows;
+    [SET_RECOMMENDED_SHOWS](state, data) {
+        state.trakt.removedFromMedusa = data.trakt.removedFromMedusa;
+        state.trakt.blacklistEnabled = data.trakt.blacklistEnabled;
+        state.categories = data.categories;
+        state.shows = data.shows;
     }
 };
 
@@ -54,15 +58,10 @@ const actions = {
         params = {};
 
         identifier = identifier ? identifier : '';
-        return api.get(`/recommended/${identifier}`, { params }).then(res => {
-            const { data } = res;
-            state.trakt.removedFromMedusa = data.trakt.removedFromMedusa;
-            state.trakt.blacklistEnabled = data.trakt.blacklistEnabled;
-            if (data.shows && data.shows.length > 0) {
-                commit(SET_RECOMMENDED_SHOWS, data.shows);
-            }
-            return [];
-        });
+        return api.get(`/recommended/${identifier}`, { params })
+            .then(response => {
+                commit(SET_RECOMMENDED_SHOWS, response.data);
+            });
     }
 };
 

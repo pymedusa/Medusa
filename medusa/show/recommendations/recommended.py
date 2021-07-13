@@ -20,10 +20,12 @@ from __future__ import unicode_literals
 import logging
 import os
 import posixpath
+from collections import defaultdict
 from datetime import datetime
 from os.path import join
 
 from medusa import app, db, helpers
+from medusa import cache
 from medusa.cache import recommended_series_cache
 from medusa.helpers import ensure_list
 from medusa.helpers.externals import load_externals_from_db, save_externals_to_db, show_in_library
@@ -326,6 +328,16 @@ def get_recommended_shows(source=None, series_id=None):
             pass
     return recommended_shows
 
+
+def get_categories():
+    """Compile a structure with the sources and their available sub-categories."""
+    cache_db_con = db.DBConnection('cache.db')
+    results = cache_db_con.select('select source, subcat from recommended group by source, subcat')
+    categories = defaultdict(list)
+    for result in results:
+        categories[result['source']].append(result['subcat'])
+
+    return categories
 
 @LazyApi.load_anidb_api
 @recommended_series_cache.cache_on_arguments()

@@ -57,13 +57,7 @@
                     <trakt-authentication v-if="showTraktAuthDialog" auth-only />
                 </div>
 
-                <div v-if="false" class="recommended_show" style="width:100%; margin-top:20px">
-                    <p class="red-text">Fetching of Recommender Data failed.</p>
-                    <strong>Exception:</strong>
-                    <p>###Exception here###??</p>
-                </div>
-
-                <isotope ref="filteredShows" :list="filteredShowsByList" id="isotope-container" class="isoDefault" :options="option" @layout="isotopeLayout($event)">
+                <isotope ref="filteredShows" v-if="filteredShowsByList.length" :list="filteredShowsByList" id="isotope-container" class="isoDefault" :options="option" @layout="isotopeLayout">
                     <div v-for="show in filteredShowsByList" :key="show.seriesId" :class="containerClass(show)" :data-name="show.title" :data-rating="show.rating" :data-votes="show.votes" :data-anime="show.isAnime">
                         <div class="recommended-image">
                             <app-link :href="show.imageHref">
@@ -255,9 +249,7 @@ export default {
         const { getRecommendedShows, imgLazyLoad } = this;
         getRecommendedShows().then(() => {
             this.$nextTick(() => {
-                // This is needed for now.
-                imgLazyLoad.update();
-                // imgLazyLoad.handleScroll();
+                this.isotopeLayout();
             });
         });
     },
@@ -277,7 +269,7 @@ export default {
             trakt: state => state.config.notifiers.trakt,
             recommendedShows: state => state.recommended.shows,
             traktConfig: state => state.recommended.trakt,
-            recommendedLists: state => state.config.indexers.main.recommendedLists
+            recommendedLists: state => state.recommended.categories
         }),
         filteredShowsByList() {
             const { imgLazyLoad, recommendedShows, selectedSource, selectedList } = this;
@@ -287,17 +279,17 @@ export default {
                 return recommendedShows;
             }
 
+            filteredList = recommendedShows.filter(show => show.source === selectedSource);
+
+            if (selectedList) {
+                filteredList = filteredList.filter(show => show.subcat === selectedList);
+            }
+
             this.$nextTick(() => {
                 // This is needed for now.
                 imgLazyLoad.update();
                 // imgLazyLoad.handleScroll();
             });
-
-            filteredList = recommendedShows.filter(show => show.source === selectedSource);
-
-            if (selectedList) {
-                filteredList = recommendedShows.filter(show => show.subcat === selectedList);
-            }
 
             return filteredList;
         },
@@ -448,6 +440,9 @@ export default {
         setSelectedList(selectedSource) {
             const { recommendedLists, selectedList } = this;
             const listOptions = recommendedLists[selectedSource];
+            if (!listOptions) {
+                return;
+            }
             if (selectedList == '' || !listOptions.includes(selectedList)) {
                 this.selectedList = listOptions[0];
             }

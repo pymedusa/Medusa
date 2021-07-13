@@ -44,6 +44,10 @@ class TraktPopular(BasePopular):
     TITLE = 'Trakt Popular'
     CACHE_SUBFOLDER = __name__.split('.')[-1] if '.' in __name__ else __name__
     BASE_URL = 'http://www.trakt.tv/shows/{0}'
+    CATEGORIES = [
+        'trending', 'popular', 'anticipated', 'collected',
+        'watched', 'played', 'recommendations', 'newshow', 'newseason'
+    ]
 
     def __init__(self):
         """Initialize the trakt recommended list object."""
