@@ -19,6 +19,7 @@ from __future__ import unicode_literals
 
 import logging
 from enum import Enum
+from medusa.show.recommendations.myanimelist import MyAnimeListPopular
 
 from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
@@ -138,6 +139,11 @@ class RecommendedShowQueueItem(generic_queue.QueueItem):
                     AnidbPopular().fetch_popular_shows(REQUEST_HOT)
                 except Exception as error:
                     log.info(u'Could not get anidb recommended shows because of error: {error}', {'error': error})
+
+            year = '2021'
+            season = 'summer'
+
+            MyAnimeListPopular().fetch_popular_shows(year, season)
 
             log.info(u'Finished caching recommended shows')
 

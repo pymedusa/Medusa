@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 import logging
 
 from medusa import app
-from medusa.indexers.config import EXTERNAL_ANIDB, EXTERNAL_IMDB, EXTERNAL_TRAKT
+from medusa.indexers.config import EXTERNAL_ANIDB, EXTERNAL_IMDB, EXTERNAL_MYANIMELIST, EXTERNAL_TRAKT
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import (
     BaseRequestHandler
@@ -31,12 +31,17 @@ class RecommendedHandler(BaseRequestHandler):
     def get(self, identifier, path_param=None):
         """Query available recommended show lists."""
 
-        if identifier and identifier not in ('anidb', 'trakt', 'imdb'):
+        if identifier and identifier not in ('anidb', 'trakt', 'imdb', 'myanimelist'):
             return self._bad_request("Invalid recommended list identifier '{0}'".format(identifier))
 
         data = {'shows': [], 'trakt': {'removedFromMedusa': []}}
 
-        recommended_mappings = {'imdb': EXTERNAL_IMDB, 'anidb': EXTERNAL_ANIDB, 'trakt': EXTERNAL_TRAKT}
+        recommended_mappings = {
+            'imdb': EXTERNAL_IMDB,
+            'anidb': EXTERNAL_ANIDB,
+            'trakt': EXTERNAL_TRAKT,
+            'myanimelist': EXTERNAL_MYANIMELIST
+        }
         shows = get_recommended_shows(source=recommended_mappings.get(identifier))
 
         if shows:
