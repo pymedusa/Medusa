@@ -120,7 +120,7 @@
                                 <select :ref="`${show.source}-${show.seriesId}`" name="addshow" class="rec-show-select">
                                     <option v-for="option in externalIndexers(show)" :value="option.value" :key="option.value">{{option.text}}</option>
                                 </select>
-                                <button :disabled="show.trakt.blacklisted" class="btn-medusa btn-xs rec-show-button" @click="addShowById(show, `${show.source}-${show.seriesId}`)">
+                                <button :disabled="show.trakt.blacklisted" class="btn-medusa btn-xs rec-show-button" @click="addShow(show, `${show.source}-${show.seriesId}`)">
                                     Add
                                 </button>
                             </div>
@@ -333,15 +333,32 @@ export default {
             imgLazyLoad.update();
             // imgLazyLoad.handleScroll();
         },
-        async addShowById(show, indexer) {
-            console.log('adding show by id');
-            const { enableShowOptions, selectedShowOptions } = this;
-            const selectedIndexer = this.$refs[indexer][0].selectedOptions[0].value;
-
-            let showId = null;
-            if (Object.keys(show.externals).length !== 0 && show.externals[selectedIndexer + '_id']) {
-                showId = { [selectedIndexer]: show.externals[selectedIndexer + '_id'] };
+        addShow(show, indexer) {
+            const selectedOption = this.$refs[indexer][0].selectedOptions[0].value;
+            if (selectedOption === 'search') {
+                // Route to the add-new-show.vue component, with the show's title.
+                this.$router.push({
+                    name: 'addNewShow',
+                    params: {
+                        providedInfo: {
+                            showName: show.title
+                        }
+                    }
+                });
+                return;
             }
+                        
+            let showId = null;
+            if (Object.keys(show.externals).length !== 0 && show.externals[selectedOption + '_id']) {
+                showId = { [selectedOption]: show.externals[selectedOption + '_id'] };
+            }
+            this.addShowById(showId);
+        },
+        /**
+         * Add by show id.
+         */
+        async addShowById(showId) {
+            const { enableShowOptions, selectedShowOptions } = this;
 
             const options = {};
             
@@ -411,6 +428,9 @@ export default {
             }
 
             const options = [];
+            // Add through the add-new-show.vue component
+            options.push({ text: 'search show', value: 'search'});
+
             for (const external in externals) {
                 if (['tvdb_id', 'tmdb_id', 'tvmaze_id'].includes(external)) {
                     const externalName = external.split('_')[0];

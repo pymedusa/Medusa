@@ -53,10 +53,6 @@ class AnidbPopular(BasePopular):  # pylint: disable=too-few-public-methods
             log.warning("Couldn't map AniDB id {0} to a TVDB id", series.aids)
             return None
 
-        # If the anime can't be mapped to a tvdb_id, return none, and move on to the next.
-        if not tvdb_id:
-            return tvdb_id
-
         rec_show = RecommendedShow(
             self,
             series.aid,

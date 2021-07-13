@@ -255,6 +255,7 @@ const addShowRoutes = [
             topMenu: 'home',
             converted: true
         },
+        props: route => ({ ...route.params }),
         component: () => import('../components/new-show.vue')
     },
     {
