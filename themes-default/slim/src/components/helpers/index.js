@@ -28,3 +28,4 @@ export { default as ShowSelector } from './show-selector.vue';
 export { default as SortedSelectList } from './sorted-select-list.vue';
 export { default as StateSwitch } from './state-switch.vue';
 export { default as TestProvider } from './test-provider.vue';
+export { default as TraktAuthentication } from './trakt-authentication.vue';

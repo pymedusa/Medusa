@@ -8,8 +8,9 @@ import VModal from 'vue-js-modal';
 import { VTooltip } from 'v-tooltip';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { faAlignJustify, faImages } from '@fortawesome/free-solid-svg-icons';
+import { faTimesCircle } from '@fortawesome/free-regular-svg-icons';
 
-library.add([faAlignJustify, faImages]);
+library.add([faAlignJustify, faImages, faTimesCircle]);
 
 import {
     App,

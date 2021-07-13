@@ -50,6 +50,12 @@
 
         <div id="recommended-shows" class="row">
             <div id="popularShows" class="col-md-12">
+                <div v-if="selectedSource === externals.TRAKT && traktWarning" class="trakt-auth-container">
+                    <font-awesome-icon :icon="['far', 'times-circle']" class="close-container" @click="traktWarning = false" />
+                    <span v-if="traktWarning" class="trakt-warning">{{traktWarningMessage}}</span>
+                    <button v-if="!showTraktAuthDialog" class="btn-medusa" id="config-trakt" @click="showTraktAuthDialog = true">Config Trakt</button>
+                    <trakt-authentication v-if="showTraktAuthDialog" auth-only />
+                </div>
 
                 <div v-if="false" class="recommended_show" style="width:100%; margin-top:20px">
                     <p class="red-text">Fetching of Recommender Data failed.</p>
@@ -135,9 +141,12 @@ import {
     Asset,
     AppLink,
     ConfigTemplate,
-    ConfigToggleSlider
+    ConfigToggleSlider,
+    TraktAuthentication
 } from './helpers';
 import isotope from 'vueisotope';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+
 
 export default {
     name: 'recommended',
@@ -147,6 +156,8 @@ export default {
         AppLink,
         ConfigTemplate,
         ConfigToggleSlider,
+        FontAwesomeIcon,
+        TraktAuthentication,
         isotope
     },
     metaInfo() {
@@ -179,7 +190,6 @@ export default {
             { text: 'Ascending', value: 'asc'},
             { text: 'Descending', value: 'desc'},
         ];
-        const filterShows = '';
         return {
             externals,
             sortOptions,
@@ -187,7 +197,7 @@ export default {
             sortOptionsValue: 'original',
             sortDirectionOptionsValue: 'desc',
             filterOption: null,
-            filterShows,
+            filterShows: '',
             configLoaded: false,
             rootDirs: [],
             enableShowOptions: false,
@@ -236,6 +246,9 @@ export default {
                 layoutMode: 'fitRows',
                 sortAscending: false
             },
+            showTraktAuthDialog: false,
+            traktWarning: false,
+            traktWarningMessage: ''
         };
     },
     created() {
@@ -249,60 +262,19 @@ export default {
         });
     },
     mounted() {
-        /*
-        * Blacklist a show by series id.
-        * Used by trakt.
-        * @TODO: convert to vue method
-        */
-        $.initBlackListShowById = function() {
-            $(document.body).on('click', 'button[data-blacklist-show]', function(e) {
-                e.preventDefault();
-
-                if ($(this).is(':disabled')) {
-                    return false;
-                }
-
-                $(this).html('Blacklisted').prop('disabled', true);
-                $(this).parent().find('button[data-add-show]').prop('disabled', true);
-
-                $.get('addShows/addShowToBlacklist?seriesid=' + $(this).attr('data-indexer-id'));
-                return false;
-            });
-        };
-
-        $.updateBlackWhiteList = function(showName) {
-            $('#white').children().remove();
-            $('#black').children().remove();
-            $('#pool').children().remove();
-
-            if ($('#anime').prop('checked') && showName) {
-                $('#blackwhitelist').show();
-                if (showName) {
-                    $.getJSON('home/fetch_releasegroups', {
-                        series_name: showName // eslint-disable-line camelcase
-                    }, data => {
-                        if (data.result === 'success') {
-                            $.each(data.groups, (i, group) => {
-                                const option = $('<option>');
-                                option.prop('value', group.name);
-                                option.html(group.name + ' | ' + group.rating + ' | ' + group.range);
-                                option.appendTo('#pool');
-                            });
-                        }
-                    });
-                }
-            } else {
-                $('#blackwhitelist').hide();
-            }
-        };
-
         this.$once('loaded', () => {
             this.configLoaded = true;
         });
+
+        this.$watch('recommendedLists', () =>{
+            this.setSelectedList(this.selectedSource);
+        });
+
     },
     computed: {
         ...mapState({
             config: state => state.config,
+            trakt: state => state.config.notifiers.trakt,
             recommendedShows: state => state.recommended.shows,
             traktConfig: state => state.recommended.trakt,
             recommendedLists: state => state.config.indexers.main.recommendedLists
@@ -421,11 +393,8 @@ export default {
             this.option.sortBy = mapped[sortOptionsValue];
             this.$refs.filteredShows.arrange(isotopeOptions);
         },
-        filter: key => {
-            const { option: isotopeOptions } = this;
-            if (this.filterOption === key) {
-                key = null;
-            }
+        filter(key) {
+            // const { option: isotopeOptions } = this;
             // this.$refs.filteredShows.arrange(isotopeOptions);
             this.$refs.filteredShows.filter(key);
             this.filterOption = key;
@@ -455,6 +424,35 @@ export default {
             debugger;
             show.trakt.blacklisted = true;
             apiRoute(`addShows/addShowToBlacklist?seriesid=${show.externals.tvdb_id}`);
+        },
+        setSelectedList(selectedSource) {
+            const { recommendedLists, selectedList } = this;
+            const listOptions = recommendedLists[selectedSource];
+            if (selectedList == '' || !listOptions.includes(selectedList)) {
+                this.selectedList = listOptions[0];
+            }
+        }
+    },
+    watch: {
+        selectedSource(newValue) {
+            this.setSelectedList(newValue);
+            if (newValue === this.externals.TRAKT) {
+                const { trakt } = this;
+                if (!trakt.enabled) {
+                    this.traktWarning = true;
+                    this.traktWarningMessage = 'You havent enabled trakt yet.';
+                    return;
+                }
+                apiRoute('home/testTrakt')
+                    .then(result => {
+                        if (result.data !== 'Test notice sent successfully to Trakt') {
+                            // Ask user if he wants to setup trakt authentication.
+                            this.traktWarning = true;
+                            this.traktWarningMessage = 'We could not authenticate to trakt. Do you want to set this up now?';
+                        }
+                    });
+
+            }
         }
     }
 };
@@ -465,5 +463,24 @@ export default {
     height: 100%;
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
+}
+
+.trakt-auth-container {
+    padding: 10px;
+    border: 1px solid rgb(255 255 255);
+    box-shadow: 5px 5px dimgrey;
+}
+
+.trakt-auth-container > .close-container {
+    position: absolute;
+    top: -24px;
+    right: 15px;
+    color: red;
+}
+
+span.trakt-warning {
+    margin: 0px 0 14px 0;
+    display: block;
+    color: red;
 }
 </style>
