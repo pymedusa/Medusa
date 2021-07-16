@@ -446,6 +446,12 @@ class Application(object):
                 RecommendedShowQueueItem(update_action=UpdateQueueActions.UPDATE_RECOMMENDED_LIST_ANIDB)
             )
 
+        if app.CACHE_RECOMMENDED_MYANIMELIST:
+            app.generic_queue_scheduler.action.add_item(
+                RecommendedShowQueueItem(update_action=UpdateQueueActions.UPDATE_RECOMMENDED_LIST_MYANIMELIST)
+            )
+
+
         # Launch browser
         if app.LAUNCH_BROWSER and not (self.no_launch or self.run_as_daemon):
             Application.launch_browser('https' if app.ENABLE_HTTPS else 'http', self.start_port, app.WEB_ROOT)
@@ -1052,6 +1058,7 @@ class Application(object):
             app.CACHE_RECOMMENDED_TRAKT = check_setting_int(app.CFG, 'Recommended', 'cache_trakt', 1)
             app.CACHE_RECOMMENDED_IMDB = check_setting_int(app.CFG, 'Recommended', 'cache_imdb', 1)
             app.CACHE_RECOMMENDED_ANIDB = check_setting_int(app.CFG, 'Recommended', 'cache_anidb', 1)
+            app.CACHE_RECOMMENDED_MYANIMELIST = check_setting_int(app.CFG, 'Recommended', 'cache_myanimelist', 1)
 
             # Initialize trakt config path.
             trakt.core.CONFIG_PATH = os.path.join(app.CACHE_DIR, '.pytrakt.json')
@@ -1738,6 +1745,7 @@ class Application(object):
         new_config['Recommended']['cache_trakt'] = app.CACHE_RECOMMENDED_TRAKT
         new_config['Recommended']['cache_imdb'] = app.CACHE_RECOMMENDED_IMDB
         new_config['Recommended']['cache_anidb'] = app.CACHE_RECOMMENDED_ANIDB
+        new_config['Recommended']['cache_myanimelist'] = app.CACHE_RECOMMENDED_MYANIMELIST
 
         new_config['Blackhole'] = {}
         new_config['Blackhole']['nzb_dir'] = app.NZB_DIR

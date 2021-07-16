@@ -50,6 +50,7 @@ class RecommendedHandler(BaseRequestHandler):
         try:
             data['trakt']['removedFromMedusa'] = TraktPopular().get_removed_from_medusa()
         except Exception:
+            data['trakt']['removedFromMedusa'] = []
             log.warning('Could not get the `removed from medusa` list')
 
         data['trakt']['blacklistEnabled'] = app.TRAKT_BLACKLIST_NAME != ''

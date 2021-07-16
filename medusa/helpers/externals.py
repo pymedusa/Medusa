@@ -220,11 +220,11 @@ def show_in_library(indexer=None, indexer_id=None):
     :param indexer_id: Optional pass indexer id, else use the current shows indexer.
     :type indexer_id: int
 
-    :return: True if found in library
+    :return: The show object from library if found.
     """
     externals = load_externals_from_db(indexer, indexer_id)
     if externals:
         for show in app.showList:
             for indexer, series_id in viewitems(externals):
                 if reverse_mappings[indexer] == show.indexer and series_id == show.series_id:
-                    return True
+                    return show

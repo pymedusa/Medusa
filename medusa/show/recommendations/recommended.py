@@ -106,8 +106,6 @@ class RecommendedShow(BasePopular):
                               which facilitated the recommended shows list.
         :param series_id: as provided by the list provider
         :param title: of the show as displayed in the recommended show page
-        :param mapped_indexer: used to map the show to
-        :param indexer_id: a mapped indexer_id for indexer
         :param rating: of the show in percent
         :param votes: number of votes
         :param image_href: the href when clicked on the show image (poster)
@@ -122,15 +120,8 @@ class RecommendedShow(BasePopular):
         self.series_id = series_id
         self.title = title
 
-        if show_attr.get('mapped_indexer'):
-            self.mapped_indexer = int(show_attr.get('mapped_indexer'))
-            self.mapped_indexer_name = indexer_id_to_name(show_attr.get('mapped_indexer'))
-
-        if show_attr.get('mapped_series_id'):
-            try:
-                self.mapped_series_id = int(show_attr.get('mapped_series_id'))
-            except ValueError:
-                raise MissingTvdbMapping('Could not parse the indexer_id [{0}]'.format(self.mapped_series_id))
+        # The slug to the show in the library if already added.
+        self.library_slug = None
 
         self.rating = float(show_attr.get('rating') or 0)
 
@@ -148,7 +139,11 @@ class RecommendedShow(BasePopular):
         self.is_anime = show_attr.get('is_anime', False)
         self.subcat = show_attr.get('subcat')
 
-        self.show_in_list = show_in_library(self.source, self.series_id)
+        self.show_in_list = None
+        show_obj = show_in_library(self.source, self.series_id)
+        if show_obj:
+            self.show_in_list = show_obj.identifier.slug
+
         self.session = session
 
     def cache_image(self, image_url, default=None):

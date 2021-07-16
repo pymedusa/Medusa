@@ -57,7 +57,8 @@ const state = {
         cacheShows: null,
         cacheTrakt: null,
         cacheImdb: null,
-        cacheAnidb: null
+        cacheAnidb: null,
+        cacheMyanimelist: null,
     },
     versionNotify: null,
     autoUpdate: null,

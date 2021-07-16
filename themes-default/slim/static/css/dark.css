@@ -290,11 +290,8 @@ home_recommendedShows.mako
 ========================================================================== */
 
 .recommended-container {
-    margin: 12px;
-    width: 188px;
     background-color: rgb(51, 51, 51);
     border: 1px solid rgb(17, 17, 17);
-    border-radius: 6px;
 }
 
 /* =======================================================================

@@ -73,9 +73,9 @@
 
                         <div class="row">
 
-                            <div name="left" class="col-md-6 col-xs-12">
+                            <div name="left" class="col-md-7 col-xs-12">
                                 <div class="show-rating">
-                                    <p>{{show.rating}} <img src="images/heart.png">
+                                    <p>{{show.rating.toFixed(1)}} <img src="images/heart.png">
                                         <template v-if="show.isAnime" id="linkAnime">
                                             <app-link class="recommended-show-url" :href="`https://anidb.net/a${show.externals.aid}`">
                                                 <img src="images/anidb_inline_refl.png" class="recommended-show-link-inline" alt="">
@@ -90,17 +90,13 @@
                                 </div>
 
                                 <div class="show-votes">
-                                    <i>{{show.votes}} votes</i>
+                                    <i>x {{show.votes}}</i>
                                 </div>
 
                             </div>
 
-                            <div name="right" class="col-md-6 col-xs-12">
+                            <div name="right" class="col-md-5 col-xs-12">
                                 <div class="recommendedShowTitleIcons">
-                                    <button v-if="show.showInLibrary" class="btn-medusa btn-xs">
-                                        <app-link :href="`home/displayShow?indexername=${show.mappedIndexerName}&seriesid=${show.mappedSeriesId}`">In List</app-link>
-                                    </button>
-
                                     <button v-if="traktConfig.removedFromMedusa.includes(show.mappedSeriesId)" class="btn-medusa btn-xs">
                                         <app-link :href="`home/displayShow?indexername=${show.mappedIndexerName}&seriesid=${show.mappedSeriesId}`">Watched</app-link>
                                     </button>
@@ -109,14 +105,21 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row" v-if="!show.showInLibrary">
-                            <div class="col-md-12" name="addshowoptions">
-                                <select :ref="`${show.source}-${show.seriesId}`" name="addshow" class="rec-show-select">
-                                    <option v-for="option in externalIndexers(show)" :value="option.value" :key="option.value">{{option.text}}</option>
-                                </select>
-                                <button :disabled="show.trakt.blacklisted" class="btn-medusa btn-xs rec-show-button" @click="addShow(show, `${show.source}-${show.seriesId}`)">
-                                    Add
-                                </button>
+                        <div class="row">
+                            <div class="col-md-12 addshowoptions">
+                                <template v-if="show.showInLibrary">
+                                    <button v-if="show.showInLibrary" class="btn-medusa btn-xs">
+                                        <app-link :href="`home/displayShow?showslug=${show.showInLibrary}`">Open in library</app-link>
+                                    </button>
+                                </template>
+                                <template v-else>
+                                    <select :ref="`${show.source}-${show.seriesId}`" name="addshow" class="rec-show-select">
+                                        <option v-for="option in addShowOptions(show)" :value="option.value" :key="option.value">{{option.text}}</option>
+                                    </select>
+                                    <button :disabled="show.trakt.blacklisted" class="btn-medusa btn-xs rec-show-button" @click="addShow(show, `${show.source}-${show.seriesId}`)">
+                                        Search/Add
+                                    </button>
+                                </template>
                             </div>
                         </div>
                     </div>
@@ -219,7 +222,7 @@ export default {
                 { text: 'MyAnimeList', value: externals.MYANIMELIST },
                 { text: 'all', value: -1 }
             ],
-            selectedSource: 11,
+            selectedSource: 10,
             selectedList: '',
 
             // Isotope stuff
@@ -415,7 +418,7 @@ export default {
             this.option.sortAscending = sortDirectionOptionsValue === 'asc';
             this.$refs.filteredShows.arrange(isotopeOptions);
         },
-        externalIndexers(show) {
+        addShowOptions(show) {
             const { externals } = show;
             if (show.isAnime) {
                 return [{ text: 'Tvdb', value: 'tvdb_id' }];

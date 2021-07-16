@@ -43,6 +43,7 @@ class UpdateQueueActions(Enum):
     UPDATE_RECOMMENDED_LIST_TRAKT = 10
     UPDATE_RECOMMENDED_LIST_IMDB = 20
     UPDATE_RECOMMENDED_LIST_ANIDB = 30
+    UPDATE_RECOMMENDED_LIST_MYANIMELIST = 40
     UPDATE_RECOMMENDED_LIST_ALL = 1000
 
 
@@ -141,14 +142,20 @@ class RecommendedShowQueueItem(generic_queue.QueueItem):
                 except Exception as error:
                     log.info(u'Could not get anidb recommended shows because of error: {error}', {'error': error})
 
-            season_dates = (
-                date.today() - timedelta(days=90),  # Previous season
-                date.today(),  # Current season
-                date.today() + timedelta(days=90)  # Next season
-            )
-
-            for season_date in season_dates:
-                MyAnimeListPopular().fetch_popular_shows(season_date.year, get_season(season_date))
+            if self.recommended_list in (
+                UpdateQueueActions.UPDATE_RECOMMENDED_LIST_MYANIMELIST, UpdateQueueActions.UPDATE_RECOMMENDED_LIST_ALL
+            ):
+                season_dates = (
+                    date.today() - timedelta(days=90),  # Previous season
+                    date.today(),  # Current season
+                    date.today() + timedelta(days=90)  # Next season
+                )
+                # Cache myanimelist shows
+                try:
+                    for season_date in season_dates:
+                        MyAnimeListPopular().fetch_popular_shows(season_date.year, get_season(season_date))
+                except Exception as error:
+                    log.info(u'Could not get anidb recommended shows because of error: {error}', {'error': error})
 
             log.info(u'Finished caching recommended shows')
 

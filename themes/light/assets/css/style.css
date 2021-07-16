@@ -934,6 +934,16 @@ div.buttontext p {
 home_newShow.mako
 ========================================================================== */
 
+.addshowoptions {
+    margin-bottom: 2px;
+}
+
+.addshowoptions button {
+    margin-left: 4px;
+    float: right;
+    margin: 0px 4px 2px 2px;
+}
+
 #addShowForm,
 #recommendedShowsForm {
     max-width: 800px;
@@ -945,16 +955,16 @@ home_newShow.mako
 
 .show-rating, .show-votes {
     margin-left: 4px;
-    margin-right: 4px;
+    float: left;
+}
+
+.show-votes > i {
+    font-size: 11px !important;
 }
 
 select.rec-show-select {
     font-size: 12px;
-    margin: 2px 2px 2px 6px;
-}
-
-button.rec-show-button {
-    margin: 0px 2px 2px 2px;
+    margin: 2px 2px 2px 4px;
 }
 
 #addShowForm > div {
@@ -1090,6 +1100,7 @@ home_recommendedShows.mako
 
 .recommended-container p {
     padding-top: 2px;
+    margin: 0;
 }
 
 .recommended-container p img {
@@ -1133,7 +1144,7 @@ div.recommended-image {
 .recommended-container {
     left: -4px;
     position: relative;
-    margin: 12px;
+    margin: 5px;
     width: 188px;
     background-color: rgb(223, 218, 207);
     border: 1px solid rgb(17, 17, 17);

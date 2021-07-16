@@ -188,6 +188,7 @@ class ConfigHandler(BaseRequestHandler):
         'recommended.cacheTrakt': BooleanField(app, 'CACHE_RECOMMENDED_TRAKT'),
         'recommended.cacheImdb': BooleanField(app, 'CACHE_RECOMMENDED_IMDB'),
         'recommended.cacheAnidb': BooleanField(app, 'CACHE_RECOMMENDED_ANIDB'),
+        'recommended.cacheMyanimelist': BooleanField(app, 'CACHE_RECOMMENDED_MYANIMELIST'),
 
         # Sections
         'clients.torrents.authType': StringField(app, 'TORRENT_AUTH_TYPE'),
@@ -670,6 +671,7 @@ class DataGenerator(object):
         section_data['recommended']['cacheTrakt'] = bool(app.CACHE_RECOMMENDED_TRAKT)
         section_data['recommended']['cacheImdb'] = bool(app.CACHE_RECOMMENDED_IMDB)
         section_data['recommended']['cacheAnidb'] = bool(app.CACHE_RECOMMENDED_ANIDB)
+        section_data['recommended']['cacheMyanimelist'] = bool(app.CACHE_RECOMMENDED_MYANIMELIST)
 
         section_data['versionNotify'] = bool(app.VERSION_NOTIFY)
         section_data['autoUpdate'] = bool(app.AUTO_UPDATE)

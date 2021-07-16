@@ -81,6 +81,7 @@
                                         <config-toggle-slider v-model="general.recommended.cacheTrakt" label="Cache Trakt lists" id="cache_rec_trakt" />
                                         <config-toggle-slider v-model="general.recommended.cacheImdb" label="Cache Imdb lists" id="cache_rec_imdb" />
                                         <config-toggle-slider v-model="general.recommended.cacheAnidb" label="Cache Anidb lists" id="cache_rec_anidb" />
+                                        <config-toggle-slider v-model="general.recommended.cacheMyanimelist" label="Cache MyAnimeList lists" id="cache_rec_myanimelist" />
                                     </template>
                                 </fieldset>
                             </div>
