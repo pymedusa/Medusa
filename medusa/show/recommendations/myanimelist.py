@@ -51,14 +51,15 @@ class MyAnimeListPopular(BasePopular):  # pylint: disable=too-few-public-methods
             self,
             show['mal_id'],
             show['title'],
-            **{'rating': show['score'],
+            **{
+                'rating': show['score'],
                 'votes': show['scored_by'],
                 'image_href': show['images']['jpg']['image_url'],
                 'ids': {
                     'myanimelist_id': show['mal_id']
                 },
-               'is_anime': True,
-               'subcat': f"{show['year']}_{show['season']}"
+                'is_anime': True,
+                'subcat': f"{show['year']}_{show['season']}"
             }
         )
 
@@ -76,7 +77,7 @@ class MyAnimeListPopular(BasePopular):  # pylint: disable=too-few-public-methods
         try:
             response = self.session.get(f'https://api.jikan.moe/v4/seasons/{year}/{season}')
             shows = response.json()['data']
-        except RequestException as error:
+        except Exception as error:
             log.warning('Unable to get MyAnimelist shows: {0!r}', error)
             return []
 

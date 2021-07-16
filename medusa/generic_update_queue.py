@@ -18,14 +18,15 @@
 from __future__ import unicode_literals
 
 import logging
+from datetime import date, datetime, timedelta
 from enum import Enum
-from medusa.show.recommendations.myanimelist import MyAnimeListPopular
 
 from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.queues import generic_queue
 from medusa.show.recommendations.anidb import AnidbPopular
 from medusa.show.recommendations.imdb import ImdbPopular
+from medusa.show.recommendations.myanimelist import MyAnimeListPopular
 from medusa.show.recommendations.trakt import TraktPopular
 
 from requests import RequestException
@@ -140,10 +141,14 @@ class RecommendedShowQueueItem(generic_queue.QueueItem):
                 except Exception as error:
                     log.info(u'Could not get anidb recommended shows because of error: {error}', {'error': error})
 
-            year = '2021'
-            season = 'summer'
+            season_dates = (
+                date.today() - timedelta(days=90),  # Previous season
+                date.today(),  # Current season
+                date.today() + timedelta(days=90)  # Next season
+            )
 
-            MyAnimeListPopular().fetch_popular_shows(year, season)
+            for season_date in season_dates:
+                MyAnimeListPopular().fetch_popular_shows(season_date.year, get_season(season_date))
 
             log.info(u'Finished caching recommended shows')
 
@@ -154,3 +159,27 @@ class RecommendedShowQueueItem(generic_queue.QueueItem):
         self.success = bool(self.success)
 
         self.finish()
+
+
+Y = 2000  # dummy leap year to allow input X-02-29 (leap day)
+seasons = [
+    ('winter', (date(Y, 1, 1), date(Y, 3, 20))),
+    ('spring', (date(Y, 3, 21), date(Y, 6, 20))),
+    ('summer', (date(Y, 6, 21), date(Y, 9, 22))),
+    ('fall', (date(Y, 9, 23), date(Y, 12, 20))),
+    ('winter', (date(Y, 12, 21), date(Y, 12, 31)))
+]
+
+
+def get_season(now):
+    """
+    Calculate a season from a datetime.
+
+    :param now: A datetime or date object.
+    :return: Season as a string.
+    """
+    if isinstance(now, datetime):
+        now = now.date()
+    now = now.replace(year=Y)
+    return next(season for season, (start, end) in seasons
+                if start <= now <= end)
