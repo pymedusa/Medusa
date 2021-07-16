@@ -124,6 +124,12 @@
                         </div>
                     </div>
                 </isotope>
+                <div class="align-center" v-if="showsLoaded && filteredShowsByList.length === 0">
+                    <button class="btn-medusa btn-xs rec-show-button" @click="searchRecommendedShows">
+                        Search for new recommended shows from {{sourceToString[selectedSource]}}
+                    </button>
+                </div>
+
             </div> <!-- End of col -->
         </div> <!-- End of row -->
     </div>
@@ -171,11 +177,21 @@ export default {
         };
     },
     data() {
+        const IMDB = 10;
+        const ANIDB = 11;
+        const TRAKT = 12;
+        const MYANIMELIST = 13;
         const externals = {
-            IMDB: 10,
-            ANIDB: 11,
-            TRAKT: 12,
-            MYANIMELIST: 13
+            IMDB,
+            ANIDB,
+            TRAKT,
+            MYANIMELIST
+        };
+        const sourceToString = {
+            [externals.IMDB]: 'imdb',
+            [externals.ANIDB]: 'anidb',
+            [externals.TRAKT]: 'trakt',
+            [externals.MYANIMELIST]: 'myanimelist'
         };
         const sortOptions = [
             { text: 'Name', value: 'name' },
@@ -190,6 +206,7 @@ export default {
         ];
         return {
             externals,
+            sourceToString,
             sortOptions,
             sortDirectionOptions,
             sortOptionsValue: 'original',
@@ -247,18 +264,19 @@ export default {
             },
             showTraktAuthDialog: false,
             traktWarning: false,
-            traktWarningMessage: ''
+            traktWarningMessage: '',
+            showsLoaded: false
         };
     },
-    created() {
-        const { getRecommendedShows, imgLazyLoad } = this;
+    mounted() {
+        const { getRecommendedShows } = this;
         getRecommendedShows().then(() => {
+            this.showsLoaded = true;
             this.$nextTick(() => {
                 this.isotopeLayout();
             });
         });
-    },
-    mounted() {
+
         this.$once('loaded', () => {
             this.configLoaded = true;
         });
@@ -450,6 +468,15 @@ export default {
             }
             if (selectedList == '' || !listOptions.includes(selectedList)) {
                 this.selectedList = listOptions[0];
+            }
+        },
+        async searchRecommendedShows() {
+            const { sourceToString, selectedSource } = this;
+            const source = sourceToString[selectedSource];
+            try {
+                await api.post(`recommended/${source}`);
+            } catch (error) {
+                console.error(error);
             }
         }
     },

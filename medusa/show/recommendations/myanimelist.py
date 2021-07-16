@@ -46,7 +46,6 @@ class MyAnimeListPopular(BasePopular):  # pylint: disable=too-few-public-methods
     @recommended_series_cache.cache_on_arguments(namespace='myanimelist', function_key_generator=create_key_from_series)
     def _create_recommended_show(self, show):
         """Create the RecommendedShow object from the returned showobj."""
-
         rec_show = RecommendedShow(
             self,
             show['mal_id'],
@@ -54,7 +53,7 @@ class MyAnimeListPopular(BasePopular):  # pylint: disable=too-few-public-methods
             **{
                 'rating': show['score'],
                 'votes': show['scored_by'],
-                'image_href': show['images']['jpg']['image_url'],
+                'image_href': show['url'],
                 'ids': {
                     'myanimelist_id': show['mal_id']
                 },

@@ -430,28 +430,6 @@ class Application(object):
         # # Check for metadata indexer updates for shows (Disabled until we use api)
         # app.show_update_scheduler.forceRun()
 
-        # FIXME: This is just to start the recommeded show update scheduler early
-        if app.CACHE_RECOMMENDED_TRAKT:
-            app.generic_queue_scheduler.action.add_item(
-                RecommendedShowQueueItem(update_action=UpdateQueueActions.UPDATE_RECOMMENDED_LIST_TRAKT)
-            )
-
-        if app.CACHE_RECOMMENDED_IMDB:
-            app.generic_queue_scheduler.action.add_item(
-                RecommendedShowQueueItem(update_action=UpdateQueueActions.UPDATE_RECOMMENDED_LIST_IMDB)
-            )
-
-        if app.CACHE_RECOMMENDED_ANIDB:
-            app.generic_queue_scheduler.action.add_item(
-                RecommendedShowQueueItem(update_action=UpdateQueueActions.UPDATE_RECOMMENDED_LIST_ANIDB)
-            )
-
-        if app.CACHE_RECOMMENDED_MYANIMELIST:
-            app.generic_queue_scheduler.action.add_item(
-                RecommendedShowQueueItem(update_action=UpdateQueueActions.UPDATE_RECOMMENDED_LIST_MYANIMELIST)
-            )
-
-
         # Launch browser
         if app.LAUNCH_BROWSER and not (self.no_launch or self.run_as_daemon):
             Application.launch_browser('https' if app.ENABLE_HTTPS else 'http', self.start_port, app.WEB_ROOT)
