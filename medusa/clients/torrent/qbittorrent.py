@@ -402,7 +402,7 @@ class QBittorrentAPI(GenericClient):
         client_status.ratio = torrent['ratio'] * 1.0
 
         # Store progress
-        client_status.progress = int(torrent['downloaded'] / torrent['size'] * 100)
+        client_status.progress = int(torrent['downloaded'] / torrent['size'] * 100) if torrent['size'] else 0
 
         # Store destination
         client_status.destination = torrent['save_path']
