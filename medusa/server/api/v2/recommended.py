@@ -5,7 +5,8 @@ from __future__ import unicode_literals
 import logging
 
 from medusa import app
-from medusa.generic_update_queue import RecommendedShowQueueItem, UpdateQueueActions
+from medusa.generic_update_queue import GenericQueueActions
+from medusa.helper.exceptions import CantUpdateRecommendedShowsException
 from medusa.indexers.config import EXTERNAL_ANIDB, EXTERNAL_IMDB, EXTERNAL_MYANIMELIST, EXTERNAL_TRAKT
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import (
@@ -64,17 +65,27 @@ class RecommendedHandler(BaseRequestHandler):
         if identifier and identifier not in ('anidb', 'trakt', 'imdb', 'myanimelist'):
             return self._bad_request("Invalid recommended list identifier '{0}'".format(identifier))
 
-        if identifier == 'trakt':
-            queue_item = RecommendedShowQueueItem(update_action=UpdateQueueActions.UPDATE_RECOMMENDED_LIST_TRAKT)
+        try:
+            if identifier == 'trakt':
+                app.generic_queue_scheduler.action.add_recommended_show_update(
+                    GenericQueueActions.UPDATE_RECOMMENDED_LIST_TRAKT
+                )
 
-        if identifier == 'imdb':
-            queue_item = RecommendedShowQueueItem(update_action=UpdateQueueActions.UPDATE_RECOMMENDED_LIST_IMDB)
+            if identifier == 'imdb':
+                app.generic_queue_scheduler.action.add_recommended_show_update(
+                    GenericQueueActions.UPDATE_RECOMMENDED_LIST_IMDB
+                )
 
-        if identifier == 'anidb':
-            queue_item = RecommendedShowQueueItem(update_action=UpdateQueueActions.UPDATE_RECOMMENDED_LIST_ANIDB)
+            if identifier == 'anidb':
+                app.generic_queue_scheduler.action.add_recommended_show_update(
+                    GenericQueueActions.UPDATE_RECOMMENDED_LIST_ANIDB
+                )
 
-        if identifier == 'myanimelist':
-            queue_item = RecommendedShowQueueItem(update_action=UpdateQueueActions.UPDATE_RECOMMENDED_LIST_MYANIMELIST)
+            if identifier == 'myanimelist':
+                app.generic_queue_scheduler.action.add_recommended_show_update(
+                    GenericQueueActions.UPDATE_RECOMMENDED_LIST_MYANIMELIST
+                )
+        except CantUpdateRecommendedShowsException as error:
+            return self._conflict(str(error))
 
-        app.generic_queue_scheduler.action.add_item(queue_item)
         return self._accepted(f'Started fetching new recommended shows from source {identifier}')

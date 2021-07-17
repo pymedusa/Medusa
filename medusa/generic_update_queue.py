@@ -22,6 +22,7 @@ from datetime import date, datetime, timedelta
 from enum import Enum
 
 from medusa import app
+from medusa.helper.exceptions import CantUpdateRecommendedShowsException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.queues import generic_queue
 from medusa.show.recommendations.anidb import AnidbPopular
@@ -37,23 +38,54 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
-class UpdateQueueActions(Enum):
-    """Enum with update actions."""
+class GenericQueueActions(object):
+    """Generic queue action id's."""
 
-    UPDATE_RECOMMENDED_LIST_TRAKT = 10
-    UPDATE_RECOMMENDED_LIST_IMDB = 20
-    UPDATE_RECOMMENDED_LIST_ANIDB = 30
-    UPDATE_RECOMMENDED_LIST_MYANIMELIST = 40
-    UPDATE_RECOMMENDED_LIST_ALL = 1000
+    UPDATE_RECOMMENDED_LIST_TRAKT = 1
+    UPDATE_RECOMMENDED_LIST_IMDB = 2
+    UPDATE_RECOMMENDED_LIST_ANIDB = 3
+    UPDATE_RECOMMENDED_LIST_MYANIMELIST = 4
+    UPDATE_RECOMMENDED_LIST_ALL = 10
+
+    names = {
+        UPDATE_RECOMMENDED_LIST_TRAKT: 'Update recommended Trakt',
+        UPDATE_RECOMMENDED_LIST_IMDB: 'Update recommended Imdb',
+        UPDATE_RECOMMENDED_LIST_ANIDB: 'Update recommended Anidb',
+        UPDATE_RECOMMENDED_LIST_MYANIMELIST: 'Update recommended MyAnimeList',
+        UPDATE_RECOMMENDED_LIST_ALL: 'Update all recommended lists',
+    }
 
 
 class GenericQueueScheduler(generic_queue.GenericQueue):
+    """General purpose queue scheduler."""
+
     def __init__(self):
         generic_queue.GenericQueue.__init__(self)
         self.queue_name = 'GENERICQUEUESCHEDULER'
 
     def is_action_in_queue(self, action_id):
-        return action_id in self.queue
+        """Check if the queue_item has already been queued."""
+        return len([queue_item for queue_item in self.queue if queue_item.action_id == action_id]) > 0
+
+    def is_action_active(self, action_id):
+        """Check if the queue_item is already running."""
+        return self.current_item is not None and self.current_item.action_id == action_id
+
+    def add_recommended_show_update(self, action):
+        """Queue a new recommended show update."""
+        if self.is_action_active(action):
+            raise CantUpdateRecommendedShowsException(
+                f'{GenericQueueActions.names[action]} is already running'
+            )
+
+        if self.is_action_in_queue(action):
+            raise CantUpdateRecommendedShowsException(
+                f'{GenericQueueActions.names[action]} is already queued'
+            )
+
+        queue_item = RecommendedShowQueueItem(update_action=action)
+        self.add_item(queue_item)
+        return queue_item
 
 
 class RecommendedShowUpdateScheduler(object):
@@ -71,18 +103,23 @@ class RecommendedShowUpdateScheduler(object):
                 return
 
             if app.CACHE_RECOMMENDED_TRAKT:
-                app.generic_queue_scheduler.action.add_item(
-                    RecommendedShowQueueItem(update_action=UpdateQueueActions.UPDATE_RECOMMENDED_LIST_TRAKT)
+                app.generic_queue_scheduler.action.add_recommended_show_update(
+                    GenericQueueActions.UPDATE_RECOMMENDED_LIST_TRAKT
                 )
 
             if app.CACHE_RECOMMENDED_IMDB:
-                app.generic_queue_scheduler.action.add_item(
-                    RecommendedShowQueueItem(update_action=UpdateQueueActions.UPDATE_RECOMMENDED_LIST_IMDB)
+                app.generic_queue_scheduler.action.add_recommended_show_update(
+                    GenericQueueActions.UPDATE_RECOMMENDED_LIST_IMDB
                 )
 
             if app.CACHE_RECOMMENDED_ANIDB:
-                app.generic_queue_scheduler.action.add_item(
-                    RecommendedShowQueueItem(update_action=UpdateQueueActions.UPDATE_RECOMMENDED_LIST_ANIDB)
+                app.generic_queue_scheduler.action.add_recommended_show_update(
+                    GenericQueueActions.UPDATE_RECOMMENDED_LIST_ANIDB
+                )
+
+            if app.CACHE_RECOMMENDED_MYANIMELIST:
+                app.generic_queue_scheduler.action.add_recommended_show_update(
+                    GenericQueueActions.UPDATE_RECOMMENDED_LIST_MYANIMELIST
                 )
 
         except Exception as error:
@@ -113,7 +150,7 @@ class RecommendedShowQueueItem(generic_queue.QueueItem):
             log.info(u'Started caching recommended shows')
 
             if self.recommended_list in (
-                UpdateQueueActions.UPDATE_RECOMMENDED_LIST_TRAKT, UpdateQueueActions.UPDATE_RECOMMENDED_LIST_ALL
+                GenericQueueActions.UPDATE_RECOMMENDED_LIST_TRAKT, GenericQueueActions.UPDATE_RECOMMENDED_LIST_ALL
             ):
                 # Cache trakt shows
                 for trakt_list in TraktPopular.CATEGORIES:
@@ -125,7 +162,7 @@ class RecommendedShowQueueItem(generic_queue.QueueItem):
                         log.debug(u'Not bothering getting the other trakt lists')
 
             if self.recommended_list in (
-                UpdateQueueActions.UPDATE_RECOMMENDED_LIST_IMDB, UpdateQueueActions.UPDATE_RECOMMENDED_LIST_ALL
+                GenericQueueActions.UPDATE_RECOMMENDED_LIST_IMDB, GenericQueueActions.UPDATE_RECOMMENDED_LIST_ALL
             ):
                 # Cache imdb shows
                 try:
@@ -134,7 +171,7 @@ class RecommendedShowQueueItem(generic_queue.QueueItem):
                     log.info(u'Could not get imdb recommended shows because of error: {error}', {'error': error})
 
             if self.recommended_list in (
-                UpdateQueueActions.UPDATE_RECOMMENDED_LIST_ANIDB, UpdateQueueActions.UPDATE_RECOMMENDED_LIST_ALL
+                GenericQueueActions.UPDATE_RECOMMENDED_LIST_ANIDB, GenericQueueActions.UPDATE_RECOMMENDED_LIST_ALL
             ):
                 # Cache anidb shows
                 try:
@@ -143,7 +180,7 @@ class RecommendedShowQueueItem(generic_queue.QueueItem):
                     log.info(u'Could not get anidb recommended shows because of error: {error}', {'error': error})
 
             if self.recommended_list in (
-                UpdateQueueActions.UPDATE_RECOMMENDED_LIST_MYANIMELIST, UpdateQueueActions.UPDATE_RECOMMENDED_LIST_ALL
+                GenericQueueActions.UPDATE_RECOMMENDED_LIST_MYANIMELIST, GenericQueueActions.UPDATE_RECOMMENDED_LIST_ALL
             ):
                 season_dates = (
                     date.today() - timedelta(days=90),  # Previous season

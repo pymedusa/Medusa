@@ -1,5 +1,6 @@
 <template>
     <div id="recommended-shows">
+        <vue-snotify />
         <div id="recommended-shows-lists" class="row">
             <div class="col-md-12">
                 <config-template label-for="recommended-source" label="Select a Source">
@@ -124,7 +125,7 @@
                         </div>
                     </div>
                 </isotope>
-                <div class="align-center" v-if="showsLoaded && filteredShowsByList.length === 0">
+                <div class="align-center" v-if="showsLoaded && filteredShowsByList.length === 0 && selectedSource !== -1">
                     <button class="btn-medusa btn-xs rec-show-button" @click="searchRecommendedShows">
                         Search for new recommended shows from {{sourceToString[selectedSource]}}
                     </button>
@@ -474,9 +475,14 @@ export default {
             const { sourceToString, selectedSource } = this;
             const source = sourceToString[selectedSource];
             try {
-                await api.post(`recommended/${source}`);
+                const response = await api.post(`recommended/${source}`);
             } catch (error) {
-                console.error(error);
+                if (error.response.status == 409) {
+                    this.$snotify.error(
+                        error.response.data.error,
+                        'Error'
+                    );
+                }
             }
         }
     },
