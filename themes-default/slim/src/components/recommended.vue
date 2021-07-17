@@ -476,6 +476,11 @@ export default {
             const source = sourceToString[selectedSource];
             try {
                 const response = await api.post(`recommended/${source}`);
+                this.$snotify.success(
+                    'Started search for new recommended shows',
+                    `Searching ${source}`
+                );
+
             } catch (error) {
                 if (error.response.status == 409) {
                     this.$snotify.error(
