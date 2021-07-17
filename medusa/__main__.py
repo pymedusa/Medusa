@@ -1037,6 +1037,9 @@ class Application(object):
             app.CACHE_RECOMMENDED_IMDB = check_setting_int(app.CFG, 'Recommended', 'cache_imdb', 1)
             app.CACHE_RECOMMENDED_ANIDB = check_setting_int(app.CFG, 'Recommended', 'cache_anidb', 1)
             app.CACHE_RECOMMENDED_MYANIMELIST = check_setting_int(app.CFG, 'Recommended', 'cache_myanimelist', 1)
+            app.RECOMMENDED_SHOW_UPDATE_HOUR = max(
+                0, min(23, check_setting_int(app.CFG, 'Recommended', 'recommended_show_update_hour', app.DEFAULT_RECOMMENDED_SHOW_UPDATE_HOUR))
+            )
 
             # Initialize trakt config path.
             trakt.core.CONFIG_PATH = os.path.join(app.CACHE_DIR, '.pytrakt.json')
@@ -1240,7 +1243,7 @@ class Application(object):
             app.recommended_show_update_scheduler = scheduler.Scheduler(
                 RecommendedShowUpdateScheduler(),
                 threadName='RECOMMENDEDSHOWUPDATESCHEDULER',
-                start_time=datetime.time(hour=app.SHOWUPDATE_HOUR + 1,
+                start_time=datetime.time(hour=app.RECOMMENDED_SHOW_UPDATE_HOUR,
                                          minute=random.randint(0, 59)))
 
             app.show_update_scheduler = scheduler.Scheduler(show_updater.ShowUpdater(),
@@ -1724,6 +1727,7 @@ class Application(object):
         new_config['Recommended']['cache_imdb'] = app.CACHE_RECOMMENDED_IMDB
         new_config['Recommended']['cache_anidb'] = app.CACHE_RECOMMENDED_ANIDB
         new_config['Recommended']['cache_myanimelist'] = app.CACHE_RECOMMENDED_MYANIMELIST
+        new_config['Recommended']['recommended_show_update_hour'] = int(app.RECOMMENDED_SHOW_UPDATE_HOUR)
 
         new_config['Blackhole'] = {}
         new_config['Blackhole']['nzb_dir'] = app.NZB_DIR

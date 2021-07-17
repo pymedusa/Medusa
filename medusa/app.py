@@ -284,12 +284,14 @@ class MedusaApp(object):
         self._UPDATE_FREQUENCY = None
         self._BACKLOG_FREQUENCY = None
         self._SHOWUPDATE_HOUR = None
+        self._RECOMMENDED_SHOW_UPDATE_HOUR = None
 
         self.DEFAULT_DOWNLOAD_HANDLER_FREQUENCY = 60
         self.DEFAULT_DAILYSEARCH_FREQUENCY = 40
         self.DEFAULT_BACKLOG_FREQUENCY = 21
         self.DEFAULT_UPDATE_FREQUENCY = 1
         self.DEFAULT_SHOWUPDATE_HOUR = random.randint(2, 4)
+        self.DEFAULT_RECOMMENDED_SHOW_UPDATE_HOUR = random.randint(0, 2)
 
         self.MIN_AUTOPOSTPROCESSOR_FREQUENCY = 1
         self.MIN_DOWNLOAD_HANDLER_FREQUENCY = 5
@@ -995,6 +997,16 @@ class MedusaApp(object):
     def SHOWUPDATE_HOUR(self, value):
         """Change SHOWUPDATE_HOUR."""
         self.handle_prop('SHOWUPDATE_HOUR', value)
+
+    @property
+    def RECOMMENDED_SHOW_UPDATE_HOUR(self):
+        """Return app.SHOWUPDATE_HOUR."""
+        return self._RECOMMENDED_SHOW_UPDATE_HOUR
+
+    @RECOMMENDED_SHOW_UPDATE_HOUR.setter
+    def RECOMMENDED_SHOW_UPDATE_HOUR(self, value):
+        """Change RECOMMENDED_SHOW_UPDATE_HOUR."""
+        self.handle_prop('RECOMMENDED_SHOW_UPDATE_HOUR', value)
 
     @property
     def SUBTITLES_FINDER_FREQUENCY(self):

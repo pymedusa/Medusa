@@ -108,6 +108,7 @@ class ConfigHandler(BaseRequestHandler):
 
         'indexerDefaultLanguage': StringField(app, 'INDEXER_DEFAULT_LANGUAGE'),
         'showUpdateHour': IntegerField(app, 'SHOWUPDATE_HOUR'),
+        'recommendedShowUpdateHour': IntegerField(app, 'RECOMMENDED_SHOW_UPDATE_HOUR'),
         'indexerTimeout': IntegerField(app, 'INDEXER_TIMEOUT'),
         'indexerDefault': IntegerField(app, 'INDEXER_DEFAULT'),
         'plexFallBack.enable': BooleanField(app, 'FALLBACK_PLEX_ENABLE'),
@@ -658,6 +659,9 @@ class DataGenerator(object):
 
         section_data['indexerDefaultLanguage'] = app.INDEXER_DEFAULT_LANGUAGE
         section_data['showUpdateHour'] = int_default(app.SHOWUPDATE_HOUR, app.DEFAULT_SHOWUPDATE_HOUR)
+        section_data['recommendedShowUpdateHour'] = int_default(
+            app.RECOMMENDED_SHOW_UPDATE_HOUR, app.DEFAULT_RECOMMENDED_SHOW_UPDATE_HOUR
+        )
         section_data['indexerTimeout'] = int_default(app.INDEXER_TIMEOUT, 20)
         section_data['indexerDefault'] = app.INDEXER_DEFAULT
 
