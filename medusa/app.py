@@ -717,6 +717,10 @@ class MedusaApp(object):
         self.CACHE_RECOMMENDED_IMDB = True
         self.CACHE_RECOMMENDED_ANIDB = True
         self.CACHE_RECOMMENDED_MYANIMELIST = True
+        self.CACHE_RECOMMENDED_TRAKT_LISTS = [
+            'trending', 'popular', 'anticipated', 'collected',
+            'watched', 'played', 'recommendations', 'newshow', 'newseason'
+        ]
 
     def _init_scheduler(self, app_prop=None, scheduler=None, enabled=None):
         from medusa.logger.adapters.style import BraceAdapter

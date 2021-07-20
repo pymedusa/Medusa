@@ -6,7 +6,8 @@ const state = {
     shows: [],
     trakt: {
         removedFromMedusa: [],
-        blacklistEnabled: false
+        blacklistEnabled: false,
+        availableLists: []
     },
     categories: {}
 };
@@ -37,6 +38,7 @@ const mutations = {
     [SET_RECOMMENDED_SHOWS](state, data) {
         state.trakt.removedFromMedusa = data.trakt.removedFromMedusa;
         state.trakt.blacklistEnabled = data.trakt.blacklistEnabled;
+        state.trakt.availableLists = data.trakt.availableLists;
         state.categories = data.categories;
         state.shows = data.shows;
     }

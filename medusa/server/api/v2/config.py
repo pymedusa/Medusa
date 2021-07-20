@@ -45,6 +45,7 @@ from medusa.server.api.v2.base import (
     iter_nested_items,
     set_nested_value,
 )
+from medusa.show.recommendations.trakt import TraktPopular
 
 from six import iteritems, itervalues, text_type
 from six.moves import map
@@ -185,11 +186,12 @@ class ConfigHandler(BaseRequestHandler):
         'providers.prowlarr.url': StringField(app, 'PROWLARR_URL'),
         'providers.prowlarr.apikey': StringField(app, 'PROWLARR_APIKEY'),
 
-        'recommended.cacheShows': BooleanField(app, 'CACHE_RECOMMENDED_SHOWS'),
-        'recommended.cacheTrakt': BooleanField(app, 'CACHE_RECOMMENDED_TRAKT'),
-        'recommended.cacheImdb': BooleanField(app, 'CACHE_RECOMMENDED_IMDB'),
-        'recommended.cacheAnidb': BooleanField(app, 'CACHE_RECOMMENDED_ANIDB'),
-        'recommended.cacheMyanimelist': BooleanField(app, 'CACHE_RECOMMENDED_MYANIMELIST'),
+        'recommended.cache.shows': BooleanField(app, 'CACHE_RECOMMENDED_SHOWS'),
+        'recommended.cache.trakt': BooleanField(app, 'CACHE_RECOMMENDED_TRAKT'),
+        'recommended.cache.imdb': BooleanField(app, 'CACHE_RECOMMENDED_IMDB'),
+        'recommended.cache.anidb': BooleanField(app, 'CACHE_RECOMMENDED_ANIDB'),
+        'recommended.cache.myanimelist': BooleanField(app, 'CACHE_RECOMMENDED_MYANIMELIST'),
+        'recommended.trakt.selectedLists': ListField(app, 'CACHE_RECOMMENDED_TRAKT_LISTS'),
 
         # Sections
         'clients.torrents.authType': StringField(app, 'TORRENT_AUTH_TYPE'),
@@ -670,12 +672,14 @@ class DataGenerator(object):
         section_data['plexFallBack']['notifications'] = bool(app.FALLBACK_PLEX_NOTIFICATIONS)
         section_data['plexFallBack']['timeout'] = int(app.FALLBACK_PLEX_TIMEOUT)
 
-        section_data['recommended'] = {}
-        section_data['recommended']['cacheShows'] = bool(app.CACHE_RECOMMENDED_SHOWS)
-        section_data['recommended']['cacheTrakt'] = bool(app.CACHE_RECOMMENDED_TRAKT)
-        section_data['recommended']['cacheImdb'] = bool(app.CACHE_RECOMMENDED_IMDB)
-        section_data['recommended']['cacheAnidb'] = bool(app.CACHE_RECOMMENDED_ANIDB)
-        section_data['recommended']['cacheMyanimelist'] = bool(app.CACHE_RECOMMENDED_MYANIMELIST)
+        section_data['recommended'] = {'cache': {}, 'trakt': {}}
+        section_data['recommended']['cache']['shows'] = bool(app.CACHE_RECOMMENDED_SHOWS)
+        section_data['recommended']['cache']['trakt'] = bool(app.CACHE_RECOMMENDED_TRAKT)
+        section_data['recommended']['cache']['imdb'] = bool(app.CACHE_RECOMMENDED_IMDB)
+        section_data['recommended']['cache']['anidb'] = bool(app.CACHE_RECOMMENDED_ANIDB)
+        section_data['recommended']['cache']['myanimelist'] = bool(app.CACHE_RECOMMENDED_MYANIMELIST)
+        section_data['recommended']['trakt']['selectedLists'] = app.CACHE_RECOMMENDED_TRAKT_LISTS
+        section_data['recommended']['trakt']['availableLists'] = TraktPopular.CATEGORIES
 
         section_data['versionNotify'] = bool(app.VERSION_NOTIFY)
         section_data['autoUpdate'] = bool(app.AUTO_UPDATE)

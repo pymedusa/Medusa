@@ -293,7 +293,8 @@ export default {
             trakt: state => state.config.notifiers.trakt,
             recommendedShows: state => state.recommended.shows,
             traktConfig: state => state.recommended.trakt,
-            recommendedLists: state => state.recommended.categories
+            recommendedLists: state => state.recommended.categories,
+            queueitems: state => state.queue.queueitems
         }),
         filteredShowsByList() {
             const { imgLazyLoad, recommendedShows, selectedSource, selectedList } = this;
@@ -510,6 +511,12 @@ export default {
                         }
                     });
 
+            }
+        },
+        queueitems(queueItems) {
+            // Check for a new recommended show queue item and refresh results.
+            if (queueItems.filter(item => item.name.includes('UPDATE-RECOMMENDED'))) {
+                this.getRecommendedShows();
             }
         }
     }

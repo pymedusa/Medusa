@@ -74,14 +74,19 @@
                             </div>
                             <div class="col-xs-12 col-md-10">
                                 <fieldset class="component-group-list">
-                                    <config-toggle-slider v-model="general.recommended.cacheShows" label="Cache recommended shows" id="cache_rec_shows">
+                                    <config-toggle-slider v-model="general.recommended.cache.shows" label="Cache recommended shows" id="cache_rec_shows">
                                         <p>Enabling recommended shows, will cache recommended shows on a daily interval.</p>
                                     </config-toggle-slider>
-                                    <template v-if="general.recommended.cacheShows">
-                                        <config-toggle-slider v-model="general.recommended.cacheTrakt" label="Cache Trakt lists" id="cache_rec_trakt" />
-                                        <config-toggle-slider v-model="general.recommended.cacheImdb" label="Cache Imdb lists" id="cache_rec_imdb" />
-                                        <config-toggle-slider v-model="general.recommended.cacheAnidb" label="Cache Anidb lists" id="cache_rec_anidb" />
-                                        <config-toggle-slider v-model="general.recommended.cacheMyanimelist" label="Cache MyAnimeList lists" id="cache_rec_myanimelist" />
+                                    <template v-if="general.recommended.cache.shows">
+                                        <config-toggle-slider v-model="general.recommended.cache.trakt" label="Cache Trakt lists" id="cache_rec_trakt" />
+                                        <config-template label-for="trakt_selected_lists" label="Trakt enabled lists">
+                                            <select-trakt-lists v-if="general.recommended.cache.trakt" />
+                                        </config-template>
+
+                                        <config-toggle-slider v-model="general.recommended.cache.imdb" label="Cache Imdb lists" id="cache_rec_imdb" />
+                                        <config-toggle-slider v-model="general.recommended.cache.anidb" label="Cache Anidb lists" id="cache_rec_anidb" />
+                                        <config-toggle-slider v-model="general.recommended.cache.myanimelist" label="Cache MyAnimeList lists" id="cache_rec_myanimelist" />
+                                        
                                     </template>
                                 </fieldset>
                             </div>
@@ -641,6 +646,7 @@ import {
     ConfigToggleSlider,
     CustomLogs,
     LanguageSelect,
+    SelectTraktLists,
     SortedSelectList,
     StateSwitch
 } from './helpers';
@@ -665,6 +671,7 @@ export default {
         Multiselect,
         SortedSelectList,
         VPopover,
+        SelectTraktLists,
         StateSwitch,
         ToggleButton,
         RootDirs
@@ -877,6 +884,7 @@ export default {
                 randomShowSlug,
                 recentShows,
                 themeName,
+                recommended,
                 ...filteredConfig } = general;
 
             const { local, ...filteredLayout } = layout;
@@ -894,7 +902,13 @@ export default {
                         size: general.logs.size,
                         subliminalLog: general.logs.subliminalLog,
                         privacyLevel: general.logs.privacyLevel
-                    } }
+                    } },
+                    ...{ recommended: {
+                        cache: general.recommended.cache,
+                        trakt: {
+                            selectedLists: general.recommended.trakt.selectedLists
+                        }
+                    }}
                 }
             };
 

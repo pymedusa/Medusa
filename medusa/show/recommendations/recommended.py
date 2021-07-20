@@ -25,7 +25,6 @@ from datetime import datetime
 from os.path import join
 
 from medusa import app, db, helpers
-from medusa import cache
 from medusa.cache import recommended_series_cache
 from medusa.helpers import ensure_list
 from medusa.helpers.externals import load_externals_from_db, save_externals_to_db, show_in_library
@@ -85,7 +84,7 @@ class MissingTvdbMapping(Exception):
 
 class BasePopular(object):
     def __init__(self, recommender=None, source=None, cache_subfoler=None):
-        """Base class for the recommended show classes (AnidbPopular, TraktPopular, etc)."""
+        """Recommended show base class (AnidbPopular, TraktPopular, etc)."""
         self.session = MedusaSession()
         self.recommender = recommender
         self.source = source

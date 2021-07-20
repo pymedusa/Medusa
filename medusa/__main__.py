@@ -1040,6 +1040,7 @@ class Application(object):
             app.RECOMMENDED_SHOW_UPDATE_HOUR = max(
                 0, min(23, check_setting_int(app.CFG, 'Recommended', 'recommended_show_update_hour', app.DEFAULT_RECOMMENDED_SHOW_UPDATE_HOUR))
             )
+            app.CACHE_RECOMMENDED_TRAKT_LISTS = check_setting_list(app.CFG, 'Recommended', 'trakt_lists', app.CACHE_RECOMMENDED_TRAKT_LISTS)
 
             # Initialize trakt config path.
             trakt.core.CONFIG_PATH = os.path.join(app.CACHE_DIR, '.pytrakt.json')
@@ -1728,6 +1729,7 @@ class Application(object):
         new_config['Recommended']['cache_anidb'] = app.CACHE_RECOMMENDED_ANIDB
         new_config['Recommended']['cache_myanimelist'] = app.CACHE_RECOMMENDED_MYANIMELIST
         new_config['Recommended']['recommended_show_update_hour'] = int(app.RECOMMENDED_SHOW_UPDATE_HOUR)
+        new_config['Recommended']['trakt_lists'] = app.CACHE_RECOMMENDED_TRAKT_LISTS
 
         new_config['Blackhole'] = {}
         new_config['Blackhole']['nzb_dir'] = app.NZB_DIR

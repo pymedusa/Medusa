@@ -19,9 +19,8 @@ from __future__ import unicode_literals
 
 import logging
 from datetime import date, datetime, timedelta
-from enum import Enum
 
-from medusa import app
+from medusa import app, ws
 from medusa.helper.exceptions import CantUpdateRecommendedShowsException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.queues import generic_queue
@@ -133,7 +132,8 @@ class RecommendedShowQueueItem(generic_queue.QueueItem):
 
     def __init__(self, update_action):
         """Initialize the class."""
-        generic_queue.QueueItem.__init__(self, name=str(update_action).split('.')[-1], action_id=update_action)
+        update_action_name = GenericQueueActions.names.get(update_action)
+        generic_queue.QueueItem.__init__(self, name=update_action_name.split('.')[-1], action_id=update_action)
         self.recommended_list = update_action
         self.started = False
         self.success = False
@@ -142,6 +142,9 @@ class RecommendedShowQueueItem(generic_queue.QueueItem):
         """Run recommended show update thread."""
         generic_queue.QueueItem.run(self)
         self.started = True
+
+        # Push an update to any open Web UIs through the WebSocket
+        ws.Message('QueueItemUpdate', self.to_json).push()
 
         try:
             # Update recommended shows from trakt, imdb and anidb
@@ -152,10 +155,10 @@ class RecommendedShowQueueItem(generic_queue.QueueItem):
             if self.recommended_list in (
                 GenericQueueActions.UPDATE_RECOMMENDED_LIST_TRAKT, GenericQueueActions.UPDATE_RECOMMENDED_LIST_ALL
             ):
-                # Cache trakt shows
-                for trakt_list in TraktPopular.CATEGORIES:
+                # Only cache the trakt lists that have been enabled.
+                for trakt_list in app.CACHE_RECOMMENDED_TRAKT_LISTS:
                     try:
-                        TraktPopular().fetch_popular_shows(trakt_list=trakt_list)
+                        TraktPopular().fetch_popular_shows(trakt_list)
                     except Exception as error:
                         log.info(u'Could not get trakt recommended shows for {trakt_list} because of error: {error}',
                                  {'trakt_list': trakt_list, 'error': error})
@@ -195,12 +198,15 @@ class RecommendedShowQueueItem(generic_queue.QueueItem):
                     log.info(u'Could not get anidb recommended shows because of error: {error}', {'error': error})
 
             log.info(u'Finished caching recommended shows')
+            self.success = True
 
         except Exception as error:
             self.success = False
             log.exception('DailySearchQueueItem Exception, error: {error}', {'error': error})
 
         self.success = bool(self.success)
+        # Push an update to any open Web UIs through the WebSocket
+        ws.Message('QueueItemUpdate', self.to_json).push()
 
         self.finish()
 
