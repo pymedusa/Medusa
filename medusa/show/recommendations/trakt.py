@@ -109,6 +109,17 @@ class TraktPopular(BasePopular):
 
         return rec_show
 
+    def get_removed_from_medusa(self):
+        """
+        Return an array of shows (tvdb id's) that are still located in the trakt `watched` and `show collection` collections.
+
+        But that are not in medusa's library.
+        Library is compared based on the tvdb id's.
+        """
+        library_shows = sync.get_watched('shows', extended='noseasons') + sync.get_collection('shows', extended='full')
+        medusa_shows = [show.externals.get('tvdb_id', show.series_id) for show in app.showList if show.series_id]
+        return [lshow.tvdb for lshow in library_shows if lshow.tvdb not in medusa_shows]
+
     def fetch_popular_shows(self, trakt_list=None):
         """Get a list of popular shows from different Trakt lists based on a provided trakt_list.
 
@@ -118,13 +129,11 @@ class TraktPopular(BasePopular):
         :throw: ``Exception`` if an Exception is thrown not handled by the libtrats exceptions
         """
         recommended_shows = []
-        removed_from_medusa = []
 
         try:
             not_liked_show = ''
-            library_shows = sync.get_watched('shows', extended='noseasons') + sync.get_collection('shows', extended='full')
-            medusa_shows = [show.indexerid for show in app.showList if show.indexerid]
-            removed_from_medusa = [lshow.tvdb for lshow in library_shows if lshow.tvdb not in medusa_shows]
+
+            removed_from_medusa = self.get_removed_from_medusa()
 
             if app.TRAKT_BLACKLIST_NAME:
                 trakt_user = get_trakt_user()
