@@ -337,9 +337,15 @@ export default {
         }),
         containerClass(show) {
             let classes = 'recommended-container default-poster show-row';
-            // const { removedFromMedusa } = this.traktConfig;
+            const { traktConfig } = this;
+            const { removedFromMedusa } = traktConfig;
+            
             if (show.showInLibrary) {
                 classes += ' show-in-list';
+            }
+
+            if (removedFromMedusa.includes(show.externals['tvdb_id'])) {
+                classes += ' removed-from-medusa';
             }
             return classes;
         },
@@ -348,7 +354,6 @@ export default {
 
             console.log('isotope Layout loaded');
             imgLazyLoad.update();
-            // imgLazyLoad.handleScroll();
         },
         addShow(show, indexer) {
             const selectedOption = this.$refs[indexer][0].selectedOptions[0].value;
