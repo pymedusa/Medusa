@@ -146,14 +146,24 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
             mpaa = etree.SubElement(tv_node, 'mpaa')
             mpaa.text = my_show['contentrating']
 
-        if getattr(my_show, 'id', None):
-            indexer_id = etree.SubElement(tv_node, 'id')
-            indexer_id.text = text_type(my_show['id'])
+        # Add main indexer
+        uniqueid = etree.SubElement(tv_node, 'uniqueid')
+        uniqueid.set('default', 'true')
+        uniqueid.set('type', series_obj.identifier.indexer.slug)
+        uniqueid.text = str(series_obj.identifier.id)
+
+        for indexer_slug in ('tvdb', 'tmdb', 'imdb', 'tvmaze', 'anidb'):
+            if indexer_slug == series_obj.identifier.indexer.slug:
+                continue
+
+            external_id = series_obj.externals.get(f'{indexer_slug}_id')
+            if not external_id:
+                continue
 
             uniqueid = etree.SubElement(tv_node, 'uniqueid')
-            uniqueid.set('type', series_obj.indexer_name)
-            uniqueid.set('default', 'true')
-            uniqueid.text = text_type(my_show['id'])
+            uniqueid.set('default', 'false')
+            uniqueid.set('type', indexer_slug)
+            uniqueid.text = str(external_id)
 
         if getattr(my_show, 'genre', None) and isinstance(my_show['genre'], string_types):
             for genre in self._split_info(my_show['genre']):
