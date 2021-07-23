@@ -1,6 +1,6 @@
 <template>
     <div id="status-template" class="vgt-table-styling">
-        <backstretch :slug="general.randomShowSlug" />
+        <backstretch :slug="general.randomShowSlug" :key="general.randomShowSlug" />
         <div class="row">
             <div class="col-lg-12">
                 <h2 class="header">Scheduler</h2>

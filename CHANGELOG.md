@@ -6,6 +6,18 @@
 
 #### Fixes
 
+----
+
+## 0.5.15 (23-07-2021)
+
+#### Improvements
+- Improved Kodi12+ metadata creation. Use 'uniqueid' tag to specify indexer. ([9745](https://github.com/pymedusa/Medusa/pull/9745))
+
+#### Fixes
+- Fix prowl notifications ([9720](https://github.com/pymedusa/Medusa/pull/9720))
+- Fix provider ABNormal ([9721](https://github.com/pymedusa/Medusa/pull/9721))
+- Fix saving provider password ([9721](https://github.com/pymedusa/Medusa/pull/9721))
+
 -----
 
 ## 0.5.14 (06-07-2021)

@@ -425,6 +425,12 @@ class ProvidersHandler(BaseRequestHandler):
             except (AttributeError, KeyError):
                 provider.username = None
 
+        if hasattr(provider, 'password'):
+            try:
+                provider.password = config['password']
+            except (AttributeError, KeyError):
+                provider.password = None
+
         if hasattr(provider, 'api_key'):
             try:
                 provider.api_key = config['apikey']
