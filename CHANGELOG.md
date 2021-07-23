@@ -3,6 +3,7 @@
 #### New Features
 
 #### Improvements
+- Improved Kodi12+ metadata creation. Use 'uniqueid' tag to specify indexer. ([9745](https://github.com/pymedusa/Medusa/pull/9745))
 
 #### Fixes
 - Fix prowl notifications ([9720](https://github.com/pymedusa/Medusa/pull/9720))
