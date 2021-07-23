@@ -94,7 +94,7 @@ class RecommendedShowUpdateScheduler(object):
         """Initialize the class."""
         self.amActive = False
 
-    def run(self):
+    def run(self, force=False):
         """Schedule recommendedShowQueueItems if needed."""
         self.amActive = True
         try:
