@@ -3,6 +3,14 @@
 #### New Features
 
 #### Improvements
+
+#### Fixes
+
+----
+
+## 0.5.15 (23-07-2021)
+
+#### Improvements
 - Improved Kodi12+ metadata creation. Use 'uniqueid' tag to specify indexer. ([9745](https://github.com/pymedusa/Medusa/pull/9745))
 
 #### Fixes
