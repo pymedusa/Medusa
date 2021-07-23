@@ -10,9 +10,9 @@ import re
 from medusa import helpers
 from medusa.cache import recommended_series_cache
 from medusa.imdb import Imdb
-from medusa.indexers.config import INDEXER_TVDBV2, EXTERNAL_IMDB
+from medusa.indexers.api import indexerApi
+from medusa.indexers.config import EXTERNAL_IMDB, INDEXER_TMDB
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.session.core import MedusaSession
 from medusa.show.recommendations.recommended import (
     BasePopular,
     RecommendedShow,
@@ -44,10 +44,11 @@ class ImdbPopular(BasePopular):
     @recommended_series_cache.cache_on_arguments(namespace='imdb', function_key_generator=create_key_from_series)
     def _create_recommended_show(self, series):
         """Create the RecommendedShow object from the returned showobj."""
-        tvdb_id = helpers.get_tvdb_from_id(series.get('imdb_tt'), 'IMDB')
+        externals = {'imdb_id': series.get('imdb_tt')}
 
-        if not tvdb_id:
-            return None
+        # Get tmdb id using a call to tmdb api.
+        t = indexerApi(INDEXER_TMDB).indexer(**indexerApi(INDEXER_TMDB).api_params.copy())
+        externals.update(t.get_id_by_external(**externals))
 
         rec_show = RecommendedShow(
             self,
@@ -57,7 +58,7 @@ class ImdbPopular(BasePopular):
                 'rating': series.get('rating'),
                 'votes': series.get('votes'),
                 'image_href': series.get('imdb_url'),
-                'ids': {'tvdb_id': int(tvdb_id)},
+                'ids': externals,
                 'subcat': 'popular'
             }
         )
