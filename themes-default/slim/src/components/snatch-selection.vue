@@ -1,7 +1,7 @@
 <template>
     <div id="snatch-selection-template">
         <vue-snotify />
-        <backstretch v-if="show.id.slug" :slug="show.id.slug" />
+        <backstretch v-if="show.id.slug" :slug="show.id.slug" :key="show.id.slug" />
 
         <show-header type="snatch-selection"
                      ref="show-header"

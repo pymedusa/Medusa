@@ -20,7 +20,7 @@
                 <history-compact v-else />
             </div>
         </div>
-        <backstretch :slug="config.randomShowSlug" />
+        <backstretch :slug="config.randomShowSlug" :key="config.randomShowSlug" />
     </div>
 </template>
 <script>

@@ -1,7 +1,7 @@
 <template>
     <div id="config-content">
         <!-- Remove v-if when backstretch is reactive to prop changes -->
-        <backstretch v-if="showLoaded" :slug="show.id.slug" />
+        <backstretch v-if="showLoaded" :slug="show.id.slug" :key="show.id.slug" />
 
         <h1 v-if="showLoaded" class="header">
             Edit Show - <app-link :href="`home/displayShow?showslug=${showSlug}`">{{ show.title }}</app-link>
