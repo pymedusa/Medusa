@@ -29,7 +29,7 @@
                 </ul>
             </div>
         </div>
-        <backstretch :slug="general.randomShowSlug" :key="general.randomShowSlug" />
+        <backstretch :slug="general.randomShowSlug" />
     </div>
 </template>
 <script>
