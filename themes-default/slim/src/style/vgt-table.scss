@@ -109,6 +109,9 @@
             height: 25px;
         }
     
+        tr:hover {
+            background-color: hsl(0deg 3% 51% / 92%) !important;
+        }
         /* When using collored rows (using the episode status name, Snatched, Downloaded, Failed, etc.)
         * we'd like to have the text always black.
         */
