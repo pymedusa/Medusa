@@ -1441,6 +1441,10 @@ tablesorter.css
     height: 25px;
 }
 
+.displayShow >>> .vgt-table tr:hover {
+    opacity: 0.9;
+}
+
 .displayShow >>> .unaired {
     background-color: rgb(245, 241, 228);
 }
