@@ -29,7 +29,6 @@ log.logger.addHandler(logging.NullHandler())
 
 class AnidbPopular(BasePopular):  # pylint: disable=too-few-public-methods
 
-    BASE_URL = 'https://anidb.net/perl-bin/animedb.pl?show=anime&aid={aid}'
     TITLE = 'Anidb Popular'
     CACHE_SUBFOLDER = __name__.split('.')[-1] if '.' in __name__ else __name__
 
@@ -42,7 +41,7 @@ class AnidbPopular(BasePopular):  # pylint: disable=too-few-public-methods
         self.cache_subfolder = AnidbPopular.CACHE_SUBFOLDER
         self.recommender = AnidbPopular.TITLE
         self.source = EXTERNAL_ANIDB
-        self.base_url = AnidbPopular.BASE_URL
+        self.base_url = 'https://anidb.net/perl-bin/animedb.pl?show=anime&aid={aid}'
 
     @recommended_series_cache.cache_on_arguments(namespace='anidb', function_key_generator=create_key_from_series)
     def _create_recommended_show(self, series):

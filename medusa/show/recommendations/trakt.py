@@ -43,7 +43,6 @@ class TraktPopular(BasePopular):
 
     TITLE = 'Trakt Popular'
     CACHE_SUBFOLDER = __name__.split('.')[-1] if '.' in __name__ else __name__
-    BASE_URL = 'http://www.trakt.tv/shows/{0}'
     CATEGORIES = [
         'trending', 'popular', 'anticipated', 'collected',
         'watched', 'played', 'recommendations', 'newshow', 'newseason'
@@ -56,7 +55,6 @@ class TraktPopular(BasePopular):
         self.source = EXTERNAL_TRAKT
         self.recommender = TraktPopular.TITLE
         self.default_img_src = 'trakt-default.png'
-        self.base_url = TraktPopular.BASE_URL
         self.tvdb_api_v2 = indexerApi(INDEXER_TVDBV2).indexer()
 
     @recommended_series_cache.cache_on_arguments(namespace='trakt', function_key_generator=create_key_from_series)
@@ -72,7 +70,8 @@ class TraktPopular(BasePopular):
                 # Adds like: {'tmdb': 62126, 'tvdb': 304219, 'trakt': 79382, 'imdb': 'tt3322314',
                 # 'tvrage': None, 'slug': 'marvel-s-luke-cage'}
                 'ids': {f'{k}_id': v for k, v in iteritems(show.ids['ids']) if TRAKT_INDEXERS.get(k)},
-                'subcat': subcat
+                'subcat': subcat,
+                'genres': [genre.lower() for genre in show.genres]
                }
         )
 

@@ -31,7 +31,6 @@ class ImdbPopular(BasePopular):
 
     TITLE = 'IMDB Popular'
     CACHE_SUBFOLDER = __name__.split('.')[-1] if '.' in __name__ else __name__
-    BASE_URL = 'https://anidb.net/perl-bin/animedb.pl?show=anime&aid={aid}'
 
     def __init__(self):
         """Initialize class."""
@@ -59,7 +58,8 @@ class ImdbPopular(BasePopular):
                 'votes': series.get('votes'),
                 'image_href': series.get('imdb_url'),
                 'ids': externals,
-                'subcat': 'popular'
+                'subcat': 'popular',
+                'genres': [genre.lower() for genre in series.get('genres')]
             }
         )
 
@@ -70,7 +70,6 @@ class ImdbPopular(BasePopular):
 
     def fetch_popular_shows(self):
         """Get popular show information from IMDB."""
-
         imdb_result = self.imdb_api.get_popular_shows()
         result = []
         for imdb_show in imdb_result['ranks']:
@@ -97,6 +96,7 @@ class ImdbPopular(BasePopular):
                         series['votes'] = show_details['ratings'].get('ratingCount', 0)
                         series['outline'] = show_details['plot'].get('outline', {}).get('text')
                         series['rating'] = show_details['ratings'].get('rating', 0)
+                        series['genres'] = show_details['genres'].get('genres')
                     except Exception as error:
                         log.warning('Could not parse show {imdb_id} with error: {error!r}',
                                     {'imdb_id': imdb_id, 'error': error})

@@ -137,6 +137,7 @@ class RecommendedShow(BasePopular):
         self.ids = show_attr.get('ids', {})
         self.is_anime = show_attr.get('is_anime', False)
         self.subcat = show_attr.get('subcat')
+        self.genres = show_attr.get('genres', [])
 
         self.show_in_list = None
         show_obj = show_in_library(self.source, self.series_id)
@@ -370,7 +371,9 @@ def cached_get_imdb_series_details(imdb_id):
 
     Use dogpile cache to return a cached id if available.
     """
-    return LazyApi.imdb_api.get_title(imdb_id)
+    title_detailed = LazyApi.imdb_api.get_title(imdb_id)
+    title_detailed['genres'] = LazyApi.imdb_api.get_title_genres(imdb_id)
+    return title_detailed
 
 
 def create_key_from_series(namespace, fn, **kw):

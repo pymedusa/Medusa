@@ -49,7 +49,7 @@ class MyAnimeListPopular(BasePopular):  # pylint: disable=too-few-public-methods
         rec_show = RecommendedShow(
             self,
             show['mal_id'],
-            show['title'],
+            show.get('title_english', show['title']),
             **{
                 'rating': show['score'],
                 'votes': show['scored_by'],
@@ -58,7 +58,8 @@ class MyAnimeListPopular(BasePopular):  # pylint: disable=too-few-public-methods
                     'myanimelist_id': show['mal_id']
                 },
                 'is_anime': True,
-                'subcat': f"{show['year']}_{show['season']}"
+                'subcat': f"{show['year']}_{show['season']}",
+                'genres': [genre['name'].lower() for genre in show['genres']]
             }
         )
 
