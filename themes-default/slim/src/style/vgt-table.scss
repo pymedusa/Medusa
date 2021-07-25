@@ -12,45 +12,45 @@
             padding: 4px;
             vertical-align: middle;
         }
-    
+
         /* remove extra border from left edge */
         th:first-child,
         td:first-child {
             border-left: none;
         }
-    
+
         th {
             text-align: center;
             border-collapse: collapse;
             font-weight: normal;
             position: relative;
         }
-    
+
         span.break-word {
             word-wrap: break-word;
         }
-    
+
         thead th.sorting.sorting-asc {
             background-position-x: right;
             background-position-y: bottom;
         }
-    
+
         thead th.sorting {
             background-repeat: no-repeat;
         }
-    
+
         thead th.sorting.sorting-desc {
             background-color: rgb(85, 85, 85);
             background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
         }
-    
+
         thead th.sorting.sorting-asc {
             background-color: rgb(85, 85, 85);
             background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjI8Bya2wnINUMopZAQA7);
             background-position-x: right;
             background-position-y: bottom;
         }
-    
+
         th.sortable button {
             -webkit-appearance: none;
             -moz-appearance: none;
@@ -63,12 +63,12 @@
             width: 100%;
             height: 100%;
         }
-    
+
         thead th {
             padding: 4px;
             cursor: default;
         }
-    
+
         input.tablesorter-filter {
             width: 98%;
             height: auto;
@@ -76,12 +76,12 @@
             -moz-box-sizing: border-box;
             box-sizing: border-box;
         }
-    
+
         tr.tablesorter-filter-row,
         tr.tablesorter-filter-row td {
             text-align: center;
         }
-    
+
         /* optional disabled input styling */
         input.tablesorter-filter-row .disabled {
             display: none;
@@ -91,24 +91,28 @@
             text-align: center;
             border-collapse: collapse;
         }
-    
+
         tfoot a {
             text-decoration: none;
         }
-    
+
         th.vgt-row-header {
             text-align: left;
         }
-    
+
         .season-header {
             display: inline;
             margin-left: 5px;
         }
-    
+
         tr.spacer {
             height: 25px;
         }
-    
+
+        tr:hover {
+            opacity: 0.9;
+        }
+
         /* When using collored rows (using the episode status name, Snatched, Downloaded, Failed, etc.)
         * we'd like to have the text always black.
         */

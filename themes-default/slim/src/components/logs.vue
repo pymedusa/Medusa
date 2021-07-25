@@ -60,7 +60,7 @@
             --></div><!--
         --></pre>
 
-        <backstretch :slug="config.randomShowSlug" :key="config.randomShowSlug" />
+        <backstretch :slug="config.randomShowSlug" />
     </div>
 </template>
 
