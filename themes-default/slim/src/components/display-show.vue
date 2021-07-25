@@ -1442,7 +1442,7 @@ tablesorter.css
 }
 
 .displayShow >>> .vgt-table tr:hover {
-    background-color: hsl(0deg 3% 51% / 92%) !important;
+    opacity: 0.9;
 }
 
 .displayShow >>> .unaired {
