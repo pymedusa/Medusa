@@ -138,7 +138,7 @@
 
 <script>
 import LazyLoad from 'vanilla-lazyload';
-import { apiRoute } from '../api.js';
+import { api, apiRoute } from '../api.js';
 import { mapState, mapActions } from 'vuex';
 import AddShowOptions from './add-show-options.vue';
 import {
@@ -148,9 +148,8 @@ import {
     ConfigToggleSlider,
     TraktAuthentication
 } from './helpers';
-import isotope from 'vueisotope';
+import Isotope from 'vueisotope';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-
 
 export default {
     name: 'recommended',
@@ -162,7 +161,7 @@ export default {
         ConfigToggleSlider,
         FontAwesomeIcon,
         TraktAuthentication,
-        isotope
+        Isotope
     },
     metaInfo() {
         if (!this.show || !this.show.title) {
@@ -199,11 +198,11 @@ export default {
             { text: 'Original', value: 'original' },
             { text: 'Votes', value: 'votes' },
             { text: '% Rating', value: 'rating' },
-            { text: '% Rating > Votes', value: 'rating_votes' },
+            { text: '% Rating > Votes', value: 'rating_votes' }
         ];
         const sortDirectionOptions = [
-            { text: 'Ascending', value: 'asc'},
-            { text: 'Descending', value: 'desc'},
+            { text: 'Ascending', value: 'asc' },
+            { text: 'Descending', value: 'desc' }
         ];
         return {
             externals,
@@ -282,10 +281,9 @@ export default {
             this.configLoaded = true;
         });
 
-        this.$watch('recommendedLists', () =>{
+        this.$watch('recommendedLists', () => {
             this.setSelectedList(this.selectedSource);
         });
-
     },
     computed: {
         ...mapState({
@@ -313,9 +311,7 @@ export default {
             this.$nextTick(() => {
                 // This is needed for now.
                 imgLazyLoad.update();
-                // imgLazyLoad.handleScroll();
             });
-
             return filteredList;
         },
         imgLazyLoad() {
@@ -328,7 +324,7 @@ export default {
         listOptions() {
             const { recommendedLists, selectedSource } = this;
             const sourceLists = recommendedLists[selectedSource] || [];
-            return sourceLists.map(list => ({text: list, value: list}))
+            return sourceLists.map(list => ({ text: list, value: list }));
         }
     },
     methods: {
@@ -339,12 +335,12 @@ export default {
             let classes = 'recommended-container default-poster show-row';
             const { traktConfig } = this;
             const { removedFromMedusa } = traktConfig;
-            
+
             if (show.showInLibrary) {
                 classes += ' show-in-list';
             }
 
-            if (removedFromMedusa.includes(show.externals['tvdb_id'])) {
+            if (removedFromMedusa.includes(show.externals.tvdb_id)) {
                 classes += ' removed-from-medusa';
             }
             return classes;
@@ -369,21 +365,25 @@ export default {
                 });
                 return;
             }
-                        
+
             let showId = null;
             if (Object.keys(show.externals).length !== 0 && show.externals[selectedOption + '_id']) {
                 showId = { [selectedOption]: show.externals[selectedOption + '_id'] };
             }
-            this.addShowById(showId);
+
+            if (this.addShowById(showId)) {
+                show.showInLibrary = true;
+            }
         },
         /**
          * Add by show id.
+         * @param {number} showId - Show id.
          */
         async addShowById(showId) {
             const { enableShowOptions, selectedShowOptions } = this;
 
             const options = {};
-            
+
             if (enableShowOptions) {
                 options.options = selectedShowOptions;
             }
@@ -395,13 +395,14 @@ export default {
                     'Saved',
                     { timeout: 20000 }
                 );
-                show.showInLibrary = true;            
+                return true;
             } catch (error) {
                 this.$snotify.error(
                     'Error while trying to add new show',
                     'Error'
-                );                
+                );
             }
+            return false;
         },
         updateOptions(options) {
             // Update seleted options from add-show-options.vue @change event.
@@ -433,8 +434,6 @@ export default {
             this.$refs.filteredShows.arrange(isotopeOptions);
         },
         filter(key) {
-            // const { option: isotopeOptions } = this;
-            // this.$refs.filteredShows.arrange(isotopeOptions);
             this.$refs.filteredShows.filter(key);
             this.filterOption = key;
         },
@@ -451,7 +450,7 @@ export default {
 
             const options = [];
             // Add through the add-new-show.vue component
-            options.push({ text: 'search show', value: 'search'});
+            options.push({ text: 'search show', value: 'search' });
 
             for (const external in externals) {
                 if (['tvdb_id', 'tmdb_id', 'tvmaze_id'].includes(external)) {
@@ -463,7 +462,6 @@ export default {
             return options;
         },
         blacklistTrakt(show) {
-            debugger;
             show.trakt.blacklisted = true;
             apiRoute(`addShows/addShowToBlacklist?seriesid=${show.externals.tvdb_id}`);
         },
@@ -473,7 +471,7 @@ export default {
             if (!listOptions) {
                 return;
             }
-            if (selectedList == '' || !listOptions.includes(selectedList)) {
+            if (selectedList === '' || !listOptions.includes(selectedList)) {
                 this.selectedList = listOptions[0];
             }
         },
@@ -481,14 +479,13 @@ export default {
             const { sourceToString, selectedSource } = this;
             const source = sourceToString[selectedSource];
             try {
-                const response = await api.post(`recommended/${source}`);
+                await api.post(`recommended/${source}`);
                 this.$snotify.success(
                     'Started search for new recommended shows',
                     `Searching ${source}`
                 );
-
             } catch (error) {
-                if (error.response.status == 409) {
+                if (error.response.status === 409) {
                     this.$snotify.error(
                         error.response.data.error,
                         'Error'
@@ -515,7 +512,6 @@ export default {
                             this.traktWarningMessage = 'We could not authenticate to trakt. Do you want to set this up now?';
                         }
                     });
-
             }
         },
         queueitems(queueItems) {

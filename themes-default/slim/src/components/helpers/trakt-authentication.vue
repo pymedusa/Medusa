@@ -21,20 +21,22 @@
                     </select>
                 </config-template>
 
-                <config-toggle-slider v-model="trakt.sync" label="Sync libraries" id="trakt_sync" :explanations="
-                                            ['Sync your Medusa show library with your Trakt collection.',
-                                            'Note: Don\'t enable this setting if you use the Trakt addon for Kodi or any other script that syncs your library.',
-                                            'Kodi detects that the episode was deleted and removes from collection which causes Medusa to re-add it. This causes a loop between Medusa and Kodi adding and deleting the episode.']"
-                                        @change="save()" />
+                <config-toggle-slider v-model="trakt.sync" label="Sync libraries" id="trakt_sync" @change="save()">
+                    <p>Sync your Medusa show library with your Trakt collection.</p>
+                    <p>Note: Don't enable this setting if you use the Trakt addon for Kodi or any other script that syncs your library.</p>
+                    <p>Kodi detects that the episode was deleted and removes from collection which causes Medusa to re-add it. This causes a loop between Medusa and Kodi adding and deleting the episode.</p>
+                </config-toggle-slider>
+
                 <div v-show="trakt.sync" id="content-use-trakt-client">
                     <config-toggle-slider v-model="trakt.removeWatchlist" label="Remove Episodes From Collection" id="trakt_remove_watchlist" :explanations="['Remove an Episode from your Trakt Collection if it is not in your Medusa Library.',                                                                                                                                                                                                    'Note:Don\'t enable this setting if you use the Trakt addon for Kodi or any other script that syncs your library.']" @change="save()" />
                 </div>
 
-                <config-toggle-slider v-model="trakt.syncWatchlist" label="Sync watchlist" id="trakt_sync_watchlist" :explanations="
-                                            ['Sync your Medusa library with your Trakt Watchlist (either Show and Episode).',
-                                            'Episode will be added on watch list when wanted or snatched and will be removed when downloaded',
-                                            'Note: By design, Trakt automatically removes episodes and/or shows from watchlist as soon you have watched them.']"
-                                        @change="save()" />
+                <config-toggle-slider v-model="trakt.syncWatchlist" label="Sync watchlist" id="trakt_sync_watchlist" @change="save()">
+                    <p>Sync your Medusa library with your Trakt Watchlist (either Show and Episode).</p>
+                    <p>Episode will be added on watch list when wanted or snatched and will be removed when downloaded</p>
+                    <p>Note: By design, Trakt automatically removes episodes and/or shows from watchlist as soon you have watched them.</p>
+                </config-toggle-slider>
+
                 <div v-show="trakt.syncWatchlist" id="content-use-trakt-client">
                     <config-template label-for="trakt_default_indexer" label="Watchlist add method">
                         <select id="trakt_method_add" name="trakt_method_add" v-model="trakt.methodAdd" class="form-control">
@@ -45,14 +47,25 @@
                         <p>method in which to download episodes for new shows.</p>
                     </config-template>
 
-                    <config-toggle-slider v-model="trakt.removeWatchlist" label="Remove episode" id="trakt_remove_watchlist" :explanations="['remove an episode from your watchlist after it\'s downloaded.']" @change="save()" />
-                    <config-toggle-slider v-model="trakt.removeSerieslist" label="Remove series" id="trakt_remove_serieslist" :explanations="['remove the whole series from your watchlist after any download.']" @change="save()" />
-                    <config-toggle-slider v-model="trakt.removeShowFromApplication" label="Remove watched show" id="trakt_remove_show_from_application" :explanations="['remove the show from Medusa if it\'s ended and completely watched']" @change="save()" />
-                    <config-toggle-slider v-model="trakt.startPaused" label="Start paused" id="trakt_start_paused" :explanations="['shows grabbed from your trakt watchlist start paused.']" @change="save()" />
+                    <config-toggle-slider v-model="trakt.removeWatchlist" label="Remove episode" id="trakt_remove_watchlist" @change="save()">
+                        <p>remove an episode from your watchlist after it's downloaded.</p>
+                    </config-toggle-slider>
 
+                    <config-toggle-slider v-model="trakt.removeSerieslist" label="Remove series" id="trakt_remove_serieslist" @change="save()">
+                        <p>remove the whole series from your watchlist after any download.</p>
+                    </config-toggle-slider>
+
+                    <config-toggle-slider v-model="trakt.removeShowFromApplication" label="Remove watched show" id="trakt_remove_show_from_application" @change="save()">
+                        <p>remove the show from Medusa if it\'s ended and completely watched</p>
+                    </config-toggle-slider>
+
+                    <config-toggle-slider v-model="trakt.startPaused" label="Start paused" id="trakt_start_paused" @change="save()">
+                        <p>shows grabbed from your trakt watchlist start paused.</p>
+                    </config-toggle-slider>
                 </div>
+
                 <config-textbox v-model="trakt.blacklistName" :class="traktBlacklistClass" label="Trakt blackList name" id="trakt_blacklist_name" @change="save()">
-                    Name(slug) of List on Trakt for blacklisting show on 'Add Trending Show' & 'Add Recommended Shows' pages
+                    <p>Name(slug) of List on Trakt for blacklisting show on 'Add Trending Show' & 'Add Recommended Shows' pages</p>
                 </config-textbox>
 
             </template>
@@ -67,8 +80,22 @@
     </div>
 </template>
 <script>
-import { mapState } from "vuex";
+import { mapState } from 'vuex';
+import {
+    ConfigToggleSlider,
+    ConfigTemplate,
+    ConfigTextboxNumber,
+    ConfigTextbox
+} from '.';
+import { apiRoute } from '../../api';
+
 export default {
+    components: {
+        ConfigToggleSlider,
+        ConfigTemplate,
+        ConfigTextboxNumber,
+        ConfigTextbox
+    },
     props: {
         authOnly: Boolean
     },
@@ -86,7 +113,7 @@ export default {
             saving: false,
             testTraktResult: 'Click below to test.',
             traktBlacklistClass: ''
-        }
+        };
     },
     computed: {
         ...mapState({
@@ -140,10 +167,9 @@ export default {
             }, 5000);
         },
         testTrakt() {
-            // const trakt = {};
             const { trakt } = this;
             const { blacklistName } = trakt;
-            
+
             if (/\s/g.test(blacklistName)) {
                 this.testTraktResult = 'Check blacklist name; the value needs to be a trakt slug';
                 this.traktBlacklistClass = 'warning';
@@ -163,8 +189,7 @@ export default {
             $.getJSON('home/forceTraktSync', data => {
                 this.testTraktResult = data.result;
             });
-        },
-
+        }
     }
 };
 </script>

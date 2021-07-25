@@ -9,7 +9,6 @@
 </template>
 
 <script>
-import { keys } from 'lodash';
 import lozad from 'lozad';
 
 export default {
@@ -60,8 +59,8 @@ export default {
             const style = {};
             const { lazyWidth } = this;
 
-            if (this.lazyWidth) {
-                style.width = `${this.lazyWidth}px`;
+            if (lazyWidth) {
+                style.width = `${lazyWidth}px`;
             }
 
             // If the image is still loading and an

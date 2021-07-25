@@ -55,7 +55,7 @@ const actions = {
      * @Param {String} params - Filter params, for getting a specific recommended list type.
      * @returns {(undefined|Promise)} undefined if `shows` was provided or the API response if not.
      */
-    getRecommendedShows({commit}, identifier, params) {
+    getRecommendedShows({ commit }, identifier, params) {
         params = {};
 
         identifier = identifier ? identifier : '';

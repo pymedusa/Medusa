@@ -78,6 +78,7 @@ export default {
         },
         /**
          * Not used for now as derefer.org is down and there are no suitable replacements.
+         * @returns {string} - de-refer service'd url.
          */
         anonymisedHref() {
             const { anonRedirect } = this.general;

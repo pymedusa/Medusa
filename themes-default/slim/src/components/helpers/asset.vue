@@ -81,7 +81,7 @@ export default {
             if (imgStyle) {
                 tempStyle = imgStyle;
             }
-            
+
             if (imgWidth) {
                 tempStyle += `;width=${imgWidth}px`;
             }

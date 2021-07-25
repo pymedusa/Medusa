@@ -86,11 +86,9 @@
                                         <config-toggle-slider v-model="general.recommended.cache.imdb" label="Cache Imdb lists" id="cache_rec_imdb" />
                                         <config-toggle-slider v-model="general.recommended.cache.anidb" label="Cache Anidb lists" id="cache_rec_anidb" />
                                         <config-toggle-slider v-model="general.recommended.cache.myanimelist" label="Cache MyAnimeList lists" id="cache_rec_myanimelist" />
-                                        
                                     </template>
                                 </fieldset>
                             </div>
-
                         </div>
 
                         <div class="row component-group">
@@ -908,7 +906,7 @@ export default {
                         trakt: {
                             selectedLists: general.recommended.trakt.selectedLists
                         }
-                    }}
+                    } }
                 }
             };
 

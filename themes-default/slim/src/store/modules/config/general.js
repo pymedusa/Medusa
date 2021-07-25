@@ -59,7 +59,7 @@ const state = {
             trakt: null,
             imdb: null,
             anidb: null,
-            myanimelist: null    
+            myanimelist: null
         },
         trakt: {
             selectedLists: [],

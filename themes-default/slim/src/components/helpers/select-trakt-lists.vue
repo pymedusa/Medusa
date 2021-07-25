@@ -14,7 +14,6 @@
 
 import { mapActions, mapState } from 'vuex';
 
-
 export default {
     name: 'select-trakt-list',
     computed: {
@@ -27,13 +26,13 @@ export default {
     methods: {
         ...mapActions(['setTraktSelectedLists']),
         saveLists(event, currentList) {
-            const { availableLists, selectedLists, setTraktSelectedLists } = this;
+            const { selectedLists, setTraktSelectedLists } = this;
             const isChecked = event.currentTarget.checked;
             // Add to list
             if (isChecked && !selectedLists.includes(currentList)) {
                 selectedLists.push(currentList);
             }
-            
+
             // Remove from list
             const newList = selectedLists.filter(list => list !== currentList || (currentList && isChecked));
             setTraktSelectedLists(newList);
