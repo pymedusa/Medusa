@@ -545,7 +545,7 @@ export default {
 }
 
 span.trakt-warning {
-    margin: 0px 0 14px 0;
+    margin: 0 0 14px 0;
     display: block;
     color: red;
 }
