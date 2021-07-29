@@ -74,7 +74,7 @@ class AuthHandler(BaseRequestHandler):
                 'exp': time_now + int(exp),
                 'username': app.WEB_USERNAME,
                 'apiKey': app.API_KEY
-            }, app.ENCRYPTION_SECRET, algorithm='HS256').decode('utf-8')
+            }, app.ENCRYPTION_SECRET, algorithm='HS256')
         })
 
     def _failed_login(self, error=None):
