@@ -4,14 +4,14 @@
         <div id="recommended-shows-lists" class="row">
             <div class="col-md-12">
                 <config-template label-for="recommended-source" label="Select a Source">
-                    <select id="recommended-source" name="recommended-source" v-model="selectedSource" class="form-control">
+                    <select :disabled="!showsLoaded" id="recommended-source" name="recommended-source" v-model="selectedSource" class="form-control">
                         <option v-for="option in sourceOptions" :value="option.value" :key="option.value">
                             {{ option.text }}
                         </option>
                     </select>
                 </config-template>
                 <config-template label-for="recommended-list" label="Select a list">
-                    <select id="recommended-list" name="recommended-list" v-model="selectedList" class="form-control">
+                    <select :enabled="!showsLoaded" id="recommended-list" name="recommended-list" v-model="selectedList" class="form-control">
                         <option v-for="option in listOptions" :value="option.value" :key="option.value">
                             {{ option.text }}
                         </option>
