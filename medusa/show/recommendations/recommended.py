@@ -328,7 +328,7 @@ def get_recommended_shows(source=None, series_id=None):
                         'subcat': show['subcat'],
                         'mapped_indexer': show['mapped_indexer'],
                         'mapped_series_id': show['mapped_series_id'],
-                        'genres': show['genres'].split(',')
+                        'genres': [genre for genre in show['genres'].split(',') if genre]
                     }
                 )
             )

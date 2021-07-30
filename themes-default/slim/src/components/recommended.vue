@@ -68,14 +68,14 @@
                                 <asset :default-src="show.imageSrc" lazy type="posterThumb" cls="show-image" :link="false" height="273px" :img-width="186" />
                             </app-link>
                         </div>
-                        <div class="tag-container">
+                        <div v-if="show.genres.length > 0" class="tag-container">
                             <ul class="genre-tags">
                                 <li v-for="genre in show.genres">{{genre}}</li>
                             </ul>
                         </div>
 
                         <div class="check-overlay" />
-                        <div class="tag-container">
+                        <div v-if="show.genres.length > 0" class="tag-container">
                             <ul class="genre-tags">
                                 <li v-for="genre in show.genres">{{genre}}</li>
                             </ul>
