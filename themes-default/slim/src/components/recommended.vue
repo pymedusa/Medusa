@@ -14,7 +14,7 @@
                     </select>
                 </config-template>
                 <config-template label-for="recommended-list" label="Select a list">
-                    <select :enabled="!showsLoaded" id="recommended-list" name="recommended-list" v-model="selectedList" class="form-control">
+                    <select :disabled="!showsLoaded" id="recommended-list" name="recommended-list" v-model="selectedList" class="form-control">
                         <option v-for="option in listOptions" :value="option.value" :key="option.value">
                             {{ option.text }}
                         </option>
@@ -583,7 +583,6 @@ span.trakt-warning {
 .recommended-image:hover {
     opacity: 0.9;
 }
-
 
 .check-overlay:hover + .tag-container,
 .recommended-image:hover + .tag-container {
