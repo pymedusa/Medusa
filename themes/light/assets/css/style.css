@@ -1119,7 +1119,7 @@ div.recommended-image {
     filter: grayscale(100%);
 }
 
-.show-in-list div#check-overlay {
+.show-in-list .check-overlay {
     opacity: 0.8;
     background-image: url("../images/green-check.png");
     background-repeat: no-repeat;

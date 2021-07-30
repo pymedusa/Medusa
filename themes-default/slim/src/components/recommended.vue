@@ -4,17 +4,17 @@
         <div id="recommended-shows-lists" class="row">
             <div class="col-md-12">
                 <config-template label-for="recommended-source" label="Select a Source">
-                    <select disabled="disabled" v-if="!showsLoaded" class="form-control">
+                    <select disabled="disabled" v-if="!showsLoaded" class="form-control max-width">
                         <option value="">Loading shows, please wait</option>
                     </select>
-                    <select v-else :disabled="!showsLoaded" id="recommended-source" name="recommended-source" v-model="selectedSource" class="form-control">
+                    <select v-else :disabled="!showsLoaded" id="recommended-source" name="recommended-source" v-model="selectedSource" class="form-control max-width">
                         <option v-show="showsLoaded" v-for="option in sourceOptions" :value="option.value" :key="option.value">
                             {{ option.text }}
                         </option>
                     </select>
                 </config-template>
                 <config-template label-for="recommended-list" label="Select a list">
-                    <select :disabled="!showsLoaded" id="recommended-list" name="recommended-list" v-model="selectedList" class="form-control">
+                    <select :disabled="!showsLoaded" id="recommended-list" name="recommended-list" v-model="selectedList" class="form-control max-width">
                         <option v-for="option in listOptions" :value="option.value" :key="option.value">
                             {{ option.text }}
                         </option>
@@ -607,5 +607,9 @@ ul.genre-tags > li {
     text-shadow: 0 1px rgb(0 0 0 / 80%);
     float: right;
     list-style: none;
+}
+
+select.max-width {
+    max-width: 430px;
 }
 </style>
