@@ -29,7 +29,7 @@ from medusa.cache import recommended_series_cache
 from medusa.helpers import ensure_list
 from medusa.helpers.externals import load_externals_from_db, save_externals_to_db, show_in_library
 from medusa.imdb import Imdb
-from medusa.indexers.config import EXTERNAL_ANIDB, EXTERNAL_IMDB, EXTERNAL_MYANIMELIST, EXTERNAL_TRAKT
+from medusa.indexers.config import EXTERNAL_ANIDB, EXTERNAL_ANILIST, EXTERNAL_IMDB, EXTERNAL_MYANIMELIST, EXTERNAL_TRAKT
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
 
@@ -209,16 +209,19 @@ class RecommendedShow(BasePopular):
                 '    (source, series_id, mapped_indexer, '
                 '     mapped_series_id, title, rating, '
                 '     votes, is_anime, image_href, '
-                '     image_src, subcat, added) '
-                'VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
+                '     image_src, subcat, added, genres) '
+                'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
                 [self.source, self.series_id, self.mapped_indexer, self.mapped_series_id, self.title, self.rating, self.votes,
-                 int(self.is_anime), self.image_href, self.image_src, self.subcat, datetime.now()]
+                 int(self.is_anime), self.image_href, self.image_src, self.subcat, datetime.now(), ','.join(self.genres)]
             )
         else:
             query = """UPDATE recommended SET title = ?, rating = ?, votes = ?,
-                    is_anime = ?, image_href = ?, image_src = ?, subcat = ?
+                    is_anime = ?, image_href = ?, image_src = ?, subcat = ?, genres = ?
                     WHERE recommended_id = ?"""
-            params_set = [self.title, self.rating, self.votes, int(self.is_anime), self.image_href, self.image_src, self.subcat]
+            params_set = [
+                self.title, self.rating, self.votes, int(self.is_anime),
+                self.image_href, self.image_src, self.subcat, ','.join(self.genres)
+            ]
             params_where = [existing_show[0]['recommended_id']]
 
             if self.mapped_indexer and self.mapped_series_id:
@@ -292,15 +295,16 @@ def get_recommended_shows(source=None, series_id=None):
     from medusa.show.recommendations.imdb import ImdbPopular
     from medusa.show.recommendations.trakt import TraktPopular
     from medusa.show.recommendations.myanimelist import MyAnimeListPopular
+    from medusa.show.recommendations.anilist import AniListPopular
 
     mapped_source = {
         EXTERNAL_TRAKT: TraktPopular,
         EXTERNAL_ANIDB: AnidbPopular,
         EXTERNAL_IMDB: ImdbPopular,
-        EXTERNAL_MYANIMELIST: MyAnimeListPopular
+        EXTERNAL_MYANIMELIST: MyAnimeListPopular,
+        EXTERNAL_ANILIST: AniListPopular
     }
     for show in shows:
-
         # Get the external id's
         externals = load_externals_from_db(show['source'], show['series_id'])
 

@@ -49,11 +49,11 @@ class MyAnimeListPopular(BasePopular):  # pylint: disable=too-few-public-methods
         rec_show = RecommendedShow(
             self,
             show['mal_id'],
-            show.get('title_english', show['title']),
+            show['title_english'] or show['title'],
             **{
                 'rating': show['score'],
                 'votes': show['scored_by'],
-                'image_href': show['url'],
+                'image_href': f"https://myanimelist.net/anime/{show['mal_id']}",
                 'ids': {
                     'myanimelist_id': show['mal_id']
                 },

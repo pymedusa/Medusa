@@ -19,6 +19,7 @@ from __future__ import unicode_literals
 
 import logging
 from datetime import date, datetime, timedelta
+from medusa.show.recommendations.anilist import AniListPopular
 
 from medusa import app, ws
 from medusa.helper.exceptions import CantUpdateRecommendedShowsException
@@ -44,6 +45,7 @@ class GenericQueueActions(object):
     UPDATE_RECOMMENDED_LIST_IMDB = 2
     UPDATE_RECOMMENDED_LIST_ANIDB = 3
     UPDATE_RECOMMENDED_LIST_MYANIMELIST = 4
+    UPDATE_RECOMMENDED_LIST_ANILIST = 5
     UPDATE_RECOMMENDED_LIST_ALL = 10
 
     names = {
@@ -51,6 +53,7 @@ class GenericQueueActions(object):
         UPDATE_RECOMMENDED_LIST_IMDB: 'Update recommended Imdb',
         UPDATE_RECOMMENDED_LIST_ANIDB: 'Update recommended Anidb',
         UPDATE_RECOMMENDED_LIST_MYANIMELIST: 'Update recommended MyAnimeList',
+        UPDATE_RECOMMENDED_LIST_ANILIST: 'Update recommended AniList',
         UPDATE_RECOMMENDED_LIST_ALL: 'Update all recommended lists',
     }
 
@@ -119,6 +122,11 @@ class RecommendedShowUpdateScheduler(object):
             if app.CACHE_RECOMMENDED_MYANIMELIST:
                 app.generic_queue_scheduler.action.add_recommended_show_update(
                     GenericQueueActions.UPDATE_RECOMMENDED_LIST_MYANIMELIST
+                )
+
+            if app.CACHE_RECOMMENDED_ANILIST:
+                app.generic_queue_scheduler.action.add_recommended_show_update(
+                    GenericQueueActions.UPDATE_RECOMMENDED_LIST_ANILIST
                 )
 
         except Exception as error:
@@ -194,6 +202,21 @@ class RecommendedShowQueueItem(generic_queue.QueueItem):
                 try:
                     for season_date in season_dates:
                         MyAnimeListPopular().fetch_popular_shows(season_date.year, get_season(season_date))
+                except Exception as error:
+                    log.info(u'Could not get anidb recommended shows because of error: {error}', {'error': error})
+
+            if self.recommended_list in (
+                GenericQueueActions.UPDATE_RECOMMENDED_LIST_ANILIST, GenericQueueActions.UPDATE_RECOMMENDED_LIST_ALL
+            ):
+                season_dates = (
+                    date.today() - timedelta(days=90),  # Previous season
+                    date.today(),  # Current season
+                    date.today() + timedelta(days=90)  # Next season
+                )
+                # Cache myanimelist shows
+                try:
+                    for season_date in season_dates:
+                        AniListPopular().fetch_popular_shows(season_date.year, get_season(season_date))
                 except Exception as error:
                     log.info(u'Could not get anidb recommended shows because of error: {error}', {'error': error})
 

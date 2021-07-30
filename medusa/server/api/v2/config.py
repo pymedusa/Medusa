@@ -191,6 +191,7 @@ class ConfigHandler(BaseRequestHandler):
         'recommended.cache.imdb': BooleanField(app, 'CACHE_RECOMMENDED_IMDB'),
         'recommended.cache.anidb': BooleanField(app, 'CACHE_RECOMMENDED_ANIDB'),
         'recommended.cache.myanimelist': BooleanField(app, 'CACHE_RECOMMENDED_MYANIMELIST'),
+        'recommended.cache.anilist': BooleanField(app, 'CACHE_RECOMMENDED_ANILIST'),
         'recommended.trakt.selectedLists': ListField(app, 'CACHE_RECOMMENDED_TRAKT_LISTS'),
 
         # Sections
@@ -678,6 +679,7 @@ class DataGenerator(object):
         section_data['recommended']['cache']['imdb'] = bool(app.CACHE_RECOMMENDED_IMDB)
         section_data['recommended']['cache']['anidb'] = bool(app.CACHE_RECOMMENDED_ANIDB)
         section_data['recommended']['cache']['myanimelist'] = bool(app.CACHE_RECOMMENDED_MYANIMELIST)
+        section_data['recommended']['cache']['anilist'] = bool(app.CACHE_RECOMMENDED_ANILIST)
         section_data['recommended']['trakt']['selectedLists'] = app.CACHE_RECOMMENDED_TRAKT_LISTS
         section_data['recommended']['trakt']['availableLists'] = TraktPopular.CATEGORIES
 

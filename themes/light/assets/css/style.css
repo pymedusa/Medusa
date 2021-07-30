@@ -939,9 +939,8 @@ home_newShow.mako
 }
 
 .addshowoptions button {
-    margin-left: 4px;
     float: right;
-    margin: 0px 4px 2px 2px;
+    margin: 0 4px 2px 2px;
 }
 
 #addShowForm,
@@ -953,7 +952,8 @@ home_newShow.mako
     font-size: 13px;
 }
 
-.show-rating, .show-votes {
+.show-rating,
+.show-votes {
     margin-left: 4px;
     float: left;
 }
@@ -4342,6 +4342,7 @@ CSS helper classes
 .row-no-padding {
     margin-left: 0;
     margin-right: 0;
+
     [class*="col-"] {
         padding-left: 0 !important;
         padding-right: 0 !important;
