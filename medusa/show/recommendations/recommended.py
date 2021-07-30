@@ -259,6 +259,7 @@ class RecommendedShow(BasePopular):
             'blacklisted': False
         },
         data['subcat'] = self.subcat
+        data['genres'] = self.genres
 
         return data
 
@@ -326,7 +327,8 @@ def get_recommended_shows(source=None, series_id=None):
                         'ids': externals,
                         'subcat': show['subcat'],
                         'mapped_indexer': show['mapped_indexer'],
-                        'mapped_series_id': show['mapped_series_id']
+                        'mapped_series_id': show['mapped_series_id'],
+                        'genres': show['genres'].split(',')
                     }
                 )
             )

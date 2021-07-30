@@ -68,15 +68,25 @@
                                 <asset :default-src="show.imageSrc" lazy type="posterThumb" cls="show-image" :link="false" height="273px" :img-width="186" />
                             </app-link>
                         </div>
+                        <div class="tag-container">
+                            <ul class="genre-tags">
+                                <li v-for="genre in show.genres">{{genre}}</li>
+                            </ul>
+                        </div>
 
-                        <div id="check-overlay" />
+                        <div class="check-overlay" />
+                        <div class="tag-container">
+                            <ul class="genre-tags">
+                                <li v-for="genre in show.genres">{{genre}}</li>
+                            </ul>
+                        </div>
+
 
                         <div class="show-title">
                             {{show.title}}
                         </div>
 
                         <div class="row">
-
                             <div name="left" class="col-md-7 col-xs-12">
                                 <div class="show-rating">
                                     <p>{{show.rating.toFixed(1)}} <img src="images/heart.png">
@@ -555,5 +565,48 @@ span.trakt-warning {
     margin: 0 0 14px 0;
     display: block;
     color: red;
+}
+
+.tag-container {
+    opacity: 0;
+    position: absolute;
+    top: 3px;
+    right: 0;
+    -webkit-transition: opacity 0.2s ease-in-out;
+    -moz-transition: opacity 0.2s ease-in-out;
+    -ms-transition: opacity 0.2s ease-in-out;
+    -o-transition: opacity 0.2s ease-in-out;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.check-overlay:hover,
+.recommended-image:hover {
+    opacity: 0.9;
+}
+
+
+.check-overlay:hover + .tag-container,
+.recommended-image:hover + .tag-container {
+    display: block;
+    /* transition: opacity 1s ease-in-out; */
+    opacity: 0.9;
+}
+
+ul.genre-tags {
+    margin-right: 2px;
+}
+
+ul.genre-tags > li {
+    margin-right: 1px;
+    margin-bottom: 2px;
+    padding: 2px 4px;
+    background: rgb(21, 82, 143);
+    border-radius: 1px;
+    border: 1px solid rgb(17, 17, 17);
+    color: rgb(255, 255, 255);
+    font: 14px/18px "Open Sans", "Helvetica Neue", Helvetica, Arial, Geneva, sans-serif;
+    text-shadow: 0 1px rgb(0 0 0 / 80%);
+    float: right;
+    list-style: none;
 }
 </style>
