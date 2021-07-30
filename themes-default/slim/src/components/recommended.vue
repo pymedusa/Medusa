@@ -4,8 +4,11 @@
         <div id="recommended-shows-lists" class="row">
             <div class="col-md-12">
                 <config-template label-for="recommended-source" label="Select a Source">
-                    <select :disabled="!showsLoaded" id="recommended-source" name="recommended-source" v-model="selectedSource" class="form-control">
-                        <option v-for="option in sourceOptions" :value="option.value" :key="option.value">
+                    <select disabled="disabled" v-if="!showsLoaded" class="form-control">
+                        <option value="">Loading shows, please wait</option>
+                    </select>
+                    <select v-else :disabled="!showsLoaded" id="recommended-source" name="recommended-source" v-model="selectedSource" class="form-control">
+                        <option v-show="showsLoaded" v-for="option in sourceOptions" :value="option.value" :key="option.value">
                             {{ option.text }}
                         </option>
                     </select>
