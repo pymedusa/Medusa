@@ -75,12 +75,12 @@
 
             <button class="btn-medusa" id="testTrakt" @click="testTrakt">Test Trakt</button>
             <button v-if="!authOnly" class="btn-medusa" id="forceSync" @click="traktForceSync">Force Sync</button>
-            <button v-if="!authOnly" class="btn-medusa config_submitter" :disabled="saving">Save Changes</button>
+            <button class="btn-medusa config_submitter" @click="save" :disabled="saving">Save Changes</button>
         </div>
     </div>
 </template>
 <script>
-import { mapState } from 'vuex';
+import { mapActions, mapState } from 'vuex';
 import {
     ConfigToggleSlider,
     ConfigTemplate,
@@ -131,6 +131,7 @@ export default {
         }
     },
     methods: {
+        ...mapActions(['setConfig']),
         async TraktRequestDeviceCode() {
             this.traktUserCode = '';
             this.traktRequestAuthenticated = false;
@@ -189,6 +190,34 @@ export default {
             $.getJSON('home/forceTraktSync', data => {
                 this.testTraktResult = data.result;
             });
+        },
+        async save() {
+            const { trakt, setConfig } = this;
+
+            // Disable the save button until we're done.
+            this.saving = true;
+            const section = 'main';
+            const config = {
+                notifiers: {
+                    trakt
+                }
+            };
+
+            try {
+                await setConfig({ section, config });
+                this.$snotify.success(
+                    'Saved Trakt config',
+                    'Saved',
+                    { timeout: 5000 }
+                );
+            } catch (error) {
+                this.$snotify.error(
+                    'Error while trying to save Trakt config',
+                    'Error'
+                );
+            } finally {
+                this.saving = false;
+            }
         }
     }
 };
