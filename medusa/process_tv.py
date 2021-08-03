@@ -281,12 +281,18 @@ class ProcessResult(object):
         """Return the paths we are going to try to process."""
         if self.directory:
             yield self.directory
+            self.log_and_output('paths:: self.resource_name is: {resource}',
+                                level=logging.INFO, **{'resource': self.resource_name})
             if self.resource_name:
                 return
+            self.log_and_output('paths:: Start walking directory {directory}',
+                                level=logging.INFO, **{'directory': self.directory})
             for root, dirs, files in os.walk(self.directory):
                 del files  # unused variable
                 for folder in dirs:
                     path = os.path.join(root, folder)
+                    self.log_and_output('paths:: Returning path {path}',
+                                        level=logging.INFO, **{'path': path})
                     yield path
                 break
 
@@ -334,6 +340,8 @@ class ProcessResult(object):
 
         processed_items = False
         for path in self.paths:
+            self.log_and_output('Moving into path: {path} and resource: {resource}',
+                                level=logging.INFO, **{'path': path, 'resource': self.resource_name})
 
             if not self.should_process(path):
                 continue
