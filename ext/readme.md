@@ -1,7 +1,7 @@
 ## ext
 Folder | Package | Version / Commit | Used By | Notes / Modules
 :----: | :-----: | :--------------: | :------ | :--------------
-ext | **`adba`** | pymedusa/[ad9a011](https://github.com/pymedusa/adba/tree/ad9a011b26e24b276baed5435981fee21a93c254) | **`medusa`** | -
+ext | **`adba`** | pymedusa/[37b0c74](https://github.com/pymedusa/adba/tree/37b0c74e76b40b3dbde29e71da75a1808eb121de) | **`medusa`** | -
 ext | `appdirs` | [1.4.3](https://pypi.org/project/appdirs/1.4.3/) | `simpleanidb`, `subliminal` (cli only) | File: `appdirs.py`
 ext | `attrs` | [18.2.0](https://pypi.org/project/attrs/18.2.0/) | `imdbpie` | Module: `attr`
 ext | **`babelfish`** | [f403000](https://github.com/Diaoul/babelfish/tree/f403000dd63092cfaaae80be9f309fd85c7f20c9) | **`medusa`**, `guessit`, `knowit`, `subliminal` | -
@@ -60,7 +60,7 @@ ext | **`tornado`** | [6.1](https://pypi.org/project/tornado/6.1/) | **`medusa`*
 ext | **`tornroutes`** | [0.5.1](https://pypi.org/project/tornroutes/0.5.1/) | **`medusa`** | -
 ext | **`trakt`** | [3.1.0](https://pypi.org/project/trakt/3.1.0/) | **`medusa`** | -
 ext | `trans` | [2.1.0](https://pypi.org/project/trans/2.1.0/) | `imdbpie` | File: `trans.py`
-ext | `ttl-cache` | [1.6](https://pypi.org/project/ttl-cache/1.6/) | **`medusa`** | File: `ttl_cache.py`
+ext | `ttl-cache` | [1.6](https://pypi.org/project/ttl-cache/1.6/) | **`medusa`**, `adba` | File: `ttl_cache.py`
 ext | **`tvdbapiv2`** | pymedusa/[d6d0e9d](https://github.com/pymedusa/tvdbv2/tree/d6d0e9d98071c2d646beb997b336edbb0e98dfb7) | **`medusa`** | -
 ext | **`urllib3`** | [1.24.1](https://pypi.org/project/urllib3/1.24.1/) | `requests` | -
 ext | **`validators`** | [0.18.2](https://pypi.org/project/validators/0.18.2/) | **`medusa`** | -
