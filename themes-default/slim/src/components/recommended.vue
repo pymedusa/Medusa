@@ -193,20 +193,17 @@ export default {
         const IMDB = 10;
         const ANIDB = 11;
         const TRAKT = 12;
-        const MYANIMELIST = 13;
-        const ANILIST = 14;
+        const ANILIST = 13;
         const externals = {
             IMDB,
             ANIDB,
             TRAKT,
-            MYANIMELIST,
             ANILIST
         };
         const sourceToString = {
             [externals.IMDB]: 'imdb',
             [externals.ANIDB]: 'anidb',
             [externals.TRAKT]: 'trakt',
-            [externals.MYANIMELIST]: 'myanimelist',
             [externals.ANILIST]: 'anilist'
         };
         const sortOptions = [
@@ -252,7 +249,6 @@ export default {
                 { text: 'Anidb', value: externals.ANIDB },
                 { text: 'IMDB', value: externals.IMDB },
                 { text: 'Trakt', value: externals.TRAKT },
-                { text: 'MyAnimeList', value: externals.MYANIMELIST },
                 { text: 'AniList', value: externals.ANILIST },
                 { text: 'all', value: -1 }
             ],

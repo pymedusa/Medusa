@@ -90,7 +90,6 @@
                     <li><span @click="searchRecommendedShows('trakt')">Trakt</span></li>
                     <li><span @click="searchRecommendedShows('imdb')">Imdb</span></li>
                     <li><span @click="searchRecommendedShows('anidb')">Anidb</span></li>
-                    <li><span @click="searchRecommendedShows('myanimelist')">MyAnimeList</span></li>
                     <li><span @click="searchRecommendedShows('anilist')">AniList</span></li>
                 </ul>
             </div>

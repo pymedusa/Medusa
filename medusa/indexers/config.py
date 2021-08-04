@@ -34,15 +34,14 @@ INDEXER_TMDB = 4
 EXTERNAL_IMDB = 10
 EXTERNAL_ANIDB = 11
 EXTERNAL_TRAKT = 12
-EXTERNAL_MYANIMELIST = 13
-EXTERNAL_ANILIST = 14
+EXTERNAL_ANILIST = 13
 
 EXTERNAL_MAPPINGS = {
     EXTERNAL_IMDB: 'imdb_id',
     EXTERNAL_ANIDB: 'anidb_id',
     INDEXER_TVRAGE: 'tvrage_id',
     EXTERNAL_TRAKT: 'trakt_id',
-    EXTERNAL_MYANIMELIST: 'myanimelist_id'
+    EXTERNAL_ANILIST: 'anilist_id'
 }
 
 # trakt indexer name vs Medusa indexer

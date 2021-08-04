@@ -19,15 +19,14 @@ from __future__ import unicode_literals
 
 import logging
 from datetime import date, datetime, timedelta
-from medusa.show.recommendations.anilist import AniListPopular
 
 from medusa import app, ws
 from medusa.helper.exceptions import CantUpdateRecommendedShowsException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.queues import generic_queue
 from medusa.show.recommendations.anidb import AnidbPopular
+from medusa.show.recommendations.anilist import AniListPopular
 from medusa.show.recommendations.imdb import ImdbPopular
-from medusa.show.recommendations.myanimelist import MyAnimeListPopular
 from medusa.show.recommendations.trakt import TraktPopular
 
 from requests import RequestException
@@ -44,15 +43,13 @@ class GenericQueueActions(object):
     UPDATE_RECOMMENDED_LIST_TRAKT = 1
     UPDATE_RECOMMENDED_LIST_IMDB = 2
     UPDATE_RECOMMENDED_LIST_ANIDB = 3
-    UPDATE_RECOMMENDED_LIST_MYANIMELIST = 4
-    UPDATE_RECOMMENDED_LIST_ANILIST = 5
+    UPDATE_RECOMMENDED_LIST_ANILIST = 4
     UPDATE_RECOMMENDED_LIST_ALL = 10
 
     names = {
         UPDATE_RECOMMENDED_LIST_TRAKT: 'Update recommended Trakt',
         UPDATE_RECOMMENDED_LIST_IMDB: 'Update recommended Imdb',
         UPDATE_RECOMMENDED_LIST_ANIDB: 'Update recommended Anidb',
-        UPDATE_RECOMMENDED_LIST_MYANIMELIST: 'Update recommended MyAnimeList',
         UPDATE_RECOMMENDED_LIST_ANILIST: 'Update recommended AniList',
         UPDATE_RECOMMENDED_LIST_ALL: 'Update all recommended lists',
     }
@@ -117,11 +114,6 @@ class RecommendedShowUpdateScheduler(object):
             if app.CACHE_RECOMMENDED_ANIDB:
                 app.generic_queue_scheduler.action.add_recommended_show_update(
                     GenericQueueActions.UPDATE_RECOMMENDED_LIST_ANIDB
-                )
-
-            if app.CACHE_RECOMMENDED_MYANIMELIST:
-                app.generic_queue_scheduler.action.add_recommended_show_update(
-                    GenericQueueActions.UPDATE_RECOMMENDED_LIST_MYANIMELIST
                 )
 
             if app.CACHE_RECOMMENDED_ANILIST:
@@ -191,21 +183,6 @@ class RecommendedShowQueueItem(generic_queue.QueueItem):
                     log.info(u'Could not get anidb recommended shows because of error: {error}', {'error': error})
 
             if self.recommended_list in (
-                GenericQueueActions.UPDATE_RECOMMENDED_LIST_MYANIMELIST, GenericQueueActions.UPDATE_RECOMMENDED_LIST_ALL
-            ):
-                season_dates = (
-                    date.today() - timedelta(days=90),  # Previous season
-                    date.today(),  # Current season
-                    date.today() + timedelta(days=90)  # Next season
-                )
-                # Cache myanimelist shows
-                try:
-                    for season_date in season_dates:
-                        MyAnimeListPopular().fetch_popular_shows(season_date.year, get_season(season_date))
-                except Exception as error:
-                    log.info(u'Could not get anidb recommended shows because of error: {error}', {'error': error})
-
-            if self.recommended_list in (
                 GenericQueueActions.UPDATE_RECOMMENDED_LIST_ANILIST, GenericQueueActions.UPDATE_RECOMMENDED_LIST_ALL
             ):
                 season_dates = (
@@ -213,7 +190,7 @@ class RecommendedShowQueueItem(generic_queue.QueueItem):
                     date.today(),  # Current season
                     date.today() + timedelta(days=90)  # Next season
                 )
-                # Cache myanimelist shows
+                # Cache anilist shows
                 try:
                     for season_date in season_dates:
                         AniListPopular().fetch_popular_shows(season_date.year, get_season(season_date))

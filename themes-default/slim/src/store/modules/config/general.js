@@ -59,7 +59,6 @@ const state = {
             trakt: null,
             imdb: null,
             anidb: null,
-            myanimelist: null,
             anilist: null
         },
         trakt: {

@@ -1036,7 +1036,6 @@ class Application(object):
             app.CACHE_RECOMMENDED_TRAKT = check_setting_int(app.CFG, 'Recommended', 'cache_trakt', 1)
             app.CACHE_RECOMMENDED_IMDB = check_setting_int(app.CFG, 'Recommended', 'cache_imdb', 1)
             app.CACHE_RECOMMENDED_ANIDB = check_setting_int(app.CFG, 'Recommended', 'cache_anidb', 1)
-            app.CACHE_RECOMMENDED_MYANIMELIST = check_setting_int(app.CFG, 'Recommended', 'cache_myanimelist', 1)
             app.CACHE_RECOMMENDED_ANILIST = check_setting_int(app.CFG, 'Recommended', 'cache_anilist', 1)
             app.RECOMMENDED_SHOW_UPDATE_HOUR = max(
                 0, min(23, check_setting_int(app.CFG, 'Recommended', 'recommended_show_update_hour', app.DEFAULT_RECOMMENDED_SHOW_UPDATE_HOUR))
@@ -1728,7 +1727,6 @@ class Application(object):
         new_config['Recommended']['cache_trakt'] = app.CACHE_RECOMMENDED_TRAKT
         new_config['Recommended']['cache_imdb'] = app.CACHE_RECOMMENDED_IMDB
         new_config['Recommended']['cache_anidb'] = app.CACHE_RECOMMENDED_ANIDB
-        new_config['Recommended']['cache_myanimelist'] = app.CACHE_RECOMMENDED_MYANIMELIST
         new_config['Recommended']['cache_anilist'] = app.CACHE_RECOMMENDED_ANILIST
         new_config['Recommended']['recommended_show_update_hour'] = int(app.RECOMMENDED_SHOW_UPDATE_HOUR)
         new_config['Recommended']['trakt_lists'] = app.CACHE_RECOMMENDED_TRAKT_LISTS

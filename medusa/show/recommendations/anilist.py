@@ -87,7 +87,7 @@ class AniListPopular(BasePopular):  # pylint: disable=too-few-public-methods
             response = self.session.post(self.base_url, json={'query': query, 'variables': variables})
             results = response.json()['data']
         except Exception as error:
-            log.warning('Unable to get MyAnimelist shows: {0!r}', error)
+            log.warning('Unable to get Anilist shows: {0!r}', error)
             return []
 
         if not results.get('Page') or not results['Page'].get('media'):

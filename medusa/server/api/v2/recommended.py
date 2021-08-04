@@ -7,7 +7,7 @@ import logging
 from medusa import app
 from medusa.generic_update_queue import GenericQueueActions
 from medusa.helper.exceptions import CantUpdateRecommendedShowsException
-from medusa.indexers.config import EXTERNAL_ANIDB, EXTERNAL_ANILIST, EXTERNAL_IMDB, EXTERNAL_MYANIMELIST, EXTERNAL_TRAKT
+from medusa.indexers.config import EXTERNAL_ANIDB, EXTERNAL_ANILIST, EXTERNAL_IMDB, EXTERNAL_TRAKT
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import (
     BaseRequestHandler
@@ -34,7 +34,6 @@ class RecommendedHandler(BaseRequestHandler):
         'imdb': EXTERNAL_IMDB,
         'anidb': EXTERNAL_ANIDB,
         'trakt': EXTERNAL_TRAKT,
-        'myanimelist': EXTERNAL_MYANIMELIST,
         'anilist': EXTERNAL_ANILIST
     }
 
@@ -80,11 +79,6 @@ class RecommendedHandler(BaseRequestHandler):
             if identifier == 'anidb':
                 app.generic_queue_scheduler.action.add_recommended_show_update(
                     GenericQueueActions.UPDATE_RECOMMENDED_LIST_ANIDB
-                )
-
-            if identifier == 'myanimelist':
-                app.generic_queue_scheduler.action.add_recommended_show_update(
-                    GenericQueueActions.UPDATE_RECOMMENDED_LIST_MYANIMELIST
                 )
 
             if identifier == 'anilist':

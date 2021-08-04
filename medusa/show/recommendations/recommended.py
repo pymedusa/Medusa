@@ -29,7 +29,7 @@ from medusa.cache import recommended_series_cache
 from medusa.helpers import ensure_list
 from medusa.helpers.externals import load_externals_from_db, save_externals_to_db, show_in_library
 from medusa.imdb import Imdb
-from medusa.indexers.config import EXTERNAL_ANIDB, EXTERNAL_ANILIST, EXTERNAL_IMDB, EXTERNAL_MYANIMELIST, EXTERNAL_TRAKT
+from medusa.indexers.config import EXTERNAL_ANIDB, EXTERNAL_ANILIST, EXTERNAL_IMDB, EXTERNAL_TRAKT
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
 
@@ -295,14 +295,12 @@ def get_recommended_shows(source=None, series_id=None):
     from medusa.show.recommendations.anidb import AnidbPopular
     from medusa.show.recommendations.imdb import ImdbPopular
     from medusa.show.recommendations.trakt import TraktPopular
-    from medusa.show.recommendations.myanimelist import MyAnimeListPopular
     from medusa.show.recommendations.anilist import AniListPopular
 
     mapped_source = {
         EXTERNAL_TRAKT: TraktPopular,
         EXTERNAL_ANIDB: AnidbPopular,
         EXTERNAL_IMDB: ImdbPopular,
-        EXTERNAL_MYANIMELIST: MyAnimeListPopular,
         EXTERNAL_ANILIST: AniListPopular
     }
     for show in shows:
