@@ -43,6 +43,7 @@ class MedusaApp(object):
         self.APPLICATION_DB = 'main.db'
         self.FAILED_DB = 'failed.db'
         self.CACHE_DB = 'cache.db'
+        self.RECOMMENDED_DB = 'recommended.db'
         self.LOG_FILENAME = 'application.log'
         self.CONFIG_INI = 'config.ini'
         self.GIT_ORG = 'pymedusa'

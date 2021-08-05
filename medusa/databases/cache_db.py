@@ -229,32 +229,3 @@ class RemoveSceneExceptionsTable(AddProviderTablesIdentifier):
     def execute(self):
         self.connection.action('DROP TABLE IF EXISTS scene_exceptions;')
         self.inc_major_version()
-
-
-class AddRecommendedTable(RemoveSceneExceptionsTable):
-    """Add table to cache the recommended shows."""
-
-    def test(self):
-        return self.hasTable('recommended')
-
-    def execute(self):
-        self.connection.action(
-            """CREATE TABLE "recommended" (
-                `recommended_id`	INTEGER PRIMARY KEY AUTOINCREMENT,
-                `source`	INTEGER NOT NULL,
-                `series_id`	INTEGER NOT NULL,
-                `mapped_indexer`	INTEGER,
-                `mapped_series_id`	INTEGER,
-                `title`	TEXT NOT NULL,
-                `rating`	NUMERIC,
-                `votes`	INTEGER,
-                `is_anime`	INTEGER DEFAULT 0,
-                `image_href`	TEXT,
-                `image_src`	TEXT,
-                `subcat` TEXT,
-                `added` DATETIME,
-                `genres` TEXT,
-                `plot` TEXT
-            )"""
-        )
-        self.inc_major_version()

@@ -77,7 +77,7 @@ from medusa.config import (
     check_setting_list, check_setting_str,
     load_provider_setting, save_provider_setting
 )
-from medusa.databases import cache_db, failed_db, main_db
+from medusa.databases import cache_db, failed_db, main_db, recommended_db
 from medusa.failed_history import trim_history
 from medusa.generic_update_queue import GenericQueueScheduler, RecommendedShowUpdateScheduler
 from medusa.indexers.config import INDEXER_TVDBV2, INDEXER_TVMAZE
@@ -1190,9 +1190,17 @@ class Application(object):
             cache_db_con = db.DBConnection('cache.db')
             db.upgradeDatabase(cache_db_con, cache_db.InitialSchema)
 
+            # initialize the recommended shows database
+            recommended_db_con = db.DBConnection('recommended.db')
+            db.upgradeDatabase(recommended_db_con, recommended_db.InitialSchema)
+
             # Performs a vacuum on cache.db
             logger.debug(u'Performing a vacuum on the CACHE database')
             cache_db_con.action('VACUUM')
+
+            # Performs a vacuum on recommended.db
+            logger.debug(u'Performing a vacuum on the RECOMMENDED database')
+            recommended_db_con.action('VACUUM')
 
             # initialize the failed downloads database
             failed_db_con = db.DBConnection('failed.db')
@@ -2298,7 +2306,7 @@ class Application(object):
         :return:
         """
         try:
-            files_list = [app.APPLICATION_DB, app.CONFIG_INI, app.FAILED_DB, app.CACHE_DB]
+            files_list = [app.APPLICATION_DB, app.CONFIG_INI, app.FAILED_DB, app.CACHE_DB, app.RECOMMENDED_DB]
 
             for filename in files_list:
                 src_file = os.path.join(src_dir, filename)

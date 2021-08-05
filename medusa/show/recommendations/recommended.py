@@ -199,14 +199,16 @@ class RecommendedShow(BasePopular):
 
     def save_to_db(self):
         """Insert or update the recommended show to db."""
-        cache_db_con = db.DBConnection('cache.db')
+        recommended_db_con = db.DBConnection('recommended.db')
         # Add to db
 
-        existing_show = cache_db_con.select('SELECT recommended_id from RECOMMENDED WHERE source = ? AND series_id = ?',
-                                            [self.source, self.series_id])
+        existing_show = recommended_db_con.select(
+            'SELECT recommended_show_id from shows WHERE source = ? AND series_id = ?',
+            [self.source, self.series_id]
+        )
         if not existing_show:
-            cache_db_con.action(
-                'INSERT INTO recommended '
+            recommended_db_con.action(
+                'INSERT INTO shows '
                 '    (source, series_id, mapped_indexer, '
                 '     mapped_series_id, title, rating, '
                 '     votes, is_anime, image_href, '
@@ -216,14 +218,14 @@ class RecommendedShow(BasePopular):
                  int(self.is_anime), self.image_href, self.image_src, self.subcat, datetime.now(), ','.join(self.genres), self.plot]
             )
         else:
-            query = """UPDATE recommended SET title = ?, rating = ?, votes = ?,
+            query = """UPDATE shows SET title = ?, rating = ?, votes = ?,
                     is_anime = ?, image_href = ?, image_src = ?, subcat = ?, genres = ?, plot = ?
-                    WHERE recommended_id = ?"""
+                    WHERE recommended__show_id = ?"""
             params_set = [
                 self.title, self.rating, self.votes, int(self.is_anime),
                 self.image_href, self.image_src, self.subcat, ','.join(self.genres), self.plot
             ]
-            params_where = [existing_show[0]['recommended_id']]
+            params_where = [existing_show[0]['recommended_show_id']]
 
             if self.mapped_indexer and self.mapped_series_id:
                 query = query.format(mapped_indexer_and_id=', mapped_indexer = ?, mapped_series_id = ?')
@@ -231,7 +233,7 @@ class RecommendedShow(BasePopular):
             else:
                 query = query.format(mapped_indexer_and_id='')
 
-            cache_db_con.action(query, params_set + params_where)
+            recommended_db_con.action(query, params_set + params_where)
         # If there are any external id's, save them to main/indexer_mappings
         if self.ids:
             save_externals_to_db(self.source, self.series_id, self.ids)
@@ -275,8 +277,8 @@ def get_recommended_shows(source=None, series_id=None):
     :returns: A list of Rcommended objects.
     """
 
-    cache_db_con = db.DBConnection('cache.db')
-    query = 'SELECT * from recommended {where}'
+    recommended_db_con = db.DBConnection('recommended.db')
+    query = 'SELECT * FROM shows {where}'
     where = []
     params = []
 
@@ -289,7 +291,7 @@ def get_recommended_shows(source=None, series_id=None):
         where.append('series_id = ?')
         params.append(series_id)
 
-    shows = cache_db_con.select(
+    shows = recommended_db_con.select(
         query.format(where='' if not where else ' WHERE ' + ' AND '.join(where)), params
     )
 
@@ -340,8 +342,8 @@ def get_recommended_shows(source=None, series_id=None):
 
 def get_categories():
     """Compile a structure with the sources and their available sub-categories."""
-    cache_db_con = db.DBConnection('cache.db')
-    results = cache_db_con.select('select source, subcat from recommended group by source, subcat')
+    recommended_db_con = db.DBConnection('recommended.db')
+    results = recommended_db_con.select('SELECT source, subcat FROM shows GROUP BY source, subcat')
     categories = defaultdict(list)
     for result in results:
         categories[result['source']].append(result['subcat'])
