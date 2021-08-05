@@ -667,6 +667,8 @@ div.xem {
     max-width: 100%;
     overflow: hidden;
     border: 1px solid rgb(136, 136, 136);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
 }
 
 .background-image img {

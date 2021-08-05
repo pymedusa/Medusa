@@ -59,7 +59,8 @@ class AniListPopular(BasePopular):  # pylint: disable=too-few-public-methods
                 },
                 'is_anime': True,
                 'subcat': f"{show['startDate']['year']}_{show['season'].lower()}",
-                'genres': [genre.lower() for genre in show['genres']]
+                'genres': [genre.lower() for genre in show['genres']],
+                'plot': show['description']
             }
         )
 

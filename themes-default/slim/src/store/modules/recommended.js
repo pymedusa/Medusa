@@ -2,6 +2,12 @@ import Vue from 'vue';
 import { api } from '../../api';
 import { ADD_RECOMMENDED_SHOW, SET_RECOMMENDED_SHOWS } from '../mutation-types';
 
+
+const IMDB = 10;
+const ANIDB = 11;
+const TRAKT = 12;
+const ANILIST = 13;
+
 const state = {
     shows: [],
     trakt: {
@@ -9,7 +15,13 @@ const state = {
         blacklistEnabled: false,
         availableLists: []
     },
-    categories: {}
+    categories: {},
+    externals: {
+        IMDB,
+        ANIDB,
+        TRAKT,
+        ANILIST    
+    }
 };
 
 const mutations = {

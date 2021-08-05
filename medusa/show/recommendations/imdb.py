@@ -59,7 +59,8 @@ class ImdbPopular(BasePopular):
                 'image_href': series.get('imdb_url'),
                 'ids': externals,
                 'subcat': 'popular',
-                'genres': [genre.lower() for genre in series.get('genres')]
+                'genres': [genre.lower() for genre in series.get('genres')],
+                'plot': series.get('outline')
             }
         )
 

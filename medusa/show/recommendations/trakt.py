@@ -71,7 +71,8 @@ class TraktPopular(BasePopular):
                 # 'tvrage': None, 'slug': 'marvel-s-luke-cage'}
                 'ids': {f'{k}_id': v for k, v in iteritems(show.ids['ids']) if TRAKT_INDEXERS.get(k)},
                 'subcat': subcat,
-                'genres': [genre.lower() for genre in show.genres]
+                'genres': [genre.lower() for genre in show.genres],
+                'plot': show.overview
                }
         )
 

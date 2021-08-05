@@ -253,7 +253,8 @@ class AddRecommendedTable(RemoveSceneExceptionsTable):
                 `image_src`	TEXT,
                 `subcat` TEXT,
                 `added` DATETIME,
-                `genres` TEXT
+                `genres` TEXT,
+                `plot` TEXT
             )"""
         )
         self.inc_major_version()

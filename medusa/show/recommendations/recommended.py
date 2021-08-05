@@ -138,6 +138,7 @@ class RecommendedShow(BasePopular):
         self.is_anime = show_attr.get('is_anime', False)
         self.subcat = show_attr.get('subcat')
         self.genres = show_attr.get('genres', [])
+        self.plot = show_attr.get('plot', '')
 
         self.show_in_list = None
         show_obj = show_in_library(self.source, self.series_id)
@@ -209,18 +210,18 @@ class RecommendedShow(BasePopular):
                 '    (source, series_id, mapped_indexer, '
                 '     mapped_series_id, title, rating, '
                 '     votes, is_anime, image_href, '
-                '     image_src, subcat, added, genres) '
-                'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
+                '     image_src, subcat, added, genres, plot) '
+                'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
                 [self.source, self.series_id, self.mapped_indexer, self.mapped_series_id, self.title, self.rating, self.votes,
-                 int(self.is_anime), self.image_href, self.image_src, self.subcat, datetime.now(), ','.join(self.genres)]
+                 int(self.is_anime), self.image_href, self.image_src, self.subcat, datetime.now(), ','.join(self.genres), self.plot]
             )
         else:
             query = """UPDATE recommended SET title = ?, rating = ?, votes = ?,
-                    is_anime = ?, image_href = ?, image_src = ?, subcat = ?, genres = ?
+                    is_anime = ?, image_href = ?, image_src = ?, subcat = ?, genres = ?, plot = ?
                     WHERE recommended_id = ?"""
             params_set = [
                 self.title, self.rating, self.votes, int(self.is_anime),
-                self.image_href, self.image_src, self.subcat, ','.join(self.genres)
+                self.image_href, self.image_src, self.subcat, ','.join(self.genres), self.plot
             ]
             params_where = [existing_show[0]['recommended_id']]
 
@@ -260,6 +261,7 @@ class RecommendedShow(BasePopular):
         },
         data['subcat'] = self.subcat
         data['genres'] = self.genres
+        data['plot'] = self.plot
 
         return data
 
@@ -326,7 +328,8 @@ def get_recommended_shows(source=None, series_id=None):
                         'subcat': show['subcat'],
                         'mapped_indexer': show['mapped_indexer'],
                         'mapped_series_id': show['mapped_series_id'],
-                        'genres': [genre for genre in show['genres'].split(',') if genre]
+                        'genres': [genre for genre in show['genres'].split(',') if genre],
+                        'plot': show['plot']
                     }
                 )
             )

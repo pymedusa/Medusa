@@ -63,81 +63,10 @@
 
                 <isotope ref="filteredShows" v-if="filteredShowsByList.length" :list="filteredShowsByList" id="isotope-container" class="isoDefault" :options="option" @layout="isotopeLayout">
                     <div v-for="show in filteredShowsByList" :key="show.seriesId" :class="containerClass(show)" :data-name="show.title" :data-rating="show.rating" :data-votes="show.votes" :data-anime="show.isAnime">
-                        <div class="recommended-image">
-                            <app-link :href="show.imageHref">
-                                <asset :default-src="show.imageSrc" lazy type="posterThumb" cls="show-image" :link="false" height="273px" :img-width="186" />
-                            </app-link>
-                        </div>
-                        <div v-if="show.genres.length > 0" class="tag-container">
-                            <ul class="genre-tags">
-                                <li v-for="genre in show.genres">{{genre}}</li>
-                            </ul>
-                        </div>
-
-                        <div class="check-overlay" />
-                        <div v-if="show.genres.length > 0" class="tag-container">
-                            <ul class="genre-tags">
-                                <li v-for="genre in show.genres">{{genre}}</li>
-                            </ul>
-                        </div>
-
-
-                        <div class="show-title">
-                            {{show.title}}
-                        </div>
-
-                        <div class="row">
-                            <div name="left" class="col-md-7 col-xs-12">
-                                <div class="show-rating">
-                                    <p>{{show.rating.toFixed(1)}} <img src="images/heart.png">
-                                        <template v-if="show.isAnime" id="linkAnime">
-                                            <app-link class="recommended-show-url" :href="`https://anidb.net/a${show.externals.aid}`">
-                                                <img src="images/anidb_inline_refl.png" class="recommended-show-link-inline" alt="">
-                                            </app-link>
-                                        </template>
-                                        <template v-if="show.recommender === 'Trakt Popular'" id="linkAnime">
-                                            <a class="recommended-show-url" :href="`https://trakt.tv/shows/${show.seriesId}`">
-                                                <img src="images/trakt.png" class="recommended-show-link-inline" alt="">
-                                            </a>
-                                        </template>
-                                    </p>
-                                </div>
-
-                                <div class="show-votes">
-                                    <i>x {{show.votes}}</i>
-                                </div>
-
-                            </div>
-
-                            <div name="right" class="col-md-5 col-xs-12">
-                                <div class="recommendedShowTitleIcons">
-                                    <button v-if="traktConfig.removedFromMedusa.includes(show.mappedSeriesId)" class="btn-medusa btn-xs">
-                                        <app-link :href="`home/displayShow?indexername=${show.mappedIndexerName}&seriesid=${show.mappedSeriesId}`">Watched</app-link>
-                                    </button>
-                                    <!-- if trakt_b and not (cur_show.show_in_list or cur_show.mapped_series_id in removed_from_medusa): -->
-                                    <button :disabled="show.trakt.blacklisted" v-if="show.source === externals.TRAKT" :data-indexer-id="show.mappedSeriesId" class="btn-medusa btn-xs" @click="blacklistTrakt(show)">Blacklist</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-12 addshowoptions">
-                                <template v-if="show.showInLibrary">
-                                    <button v-if="show.showInLibrary" class="btn-medusa btn-xs">
-                                        <app-link :href="`home/displayShow?showslug=${show.showInLibrary}`">Open in library</app-link>
-                                    </button>
-                                </template>
-                                <template v-else>
-                                    <select :ref="`${show.source}-${show.seriesId}`" name="addshow" class="rec-show-select">
-                                        <option v-for="option in addShowOptions(show)" :value="option.value" :key="option.value">{{option.text}}</option>
-                                    </select>
-                                    <button :disabled="show.trakt.blacklisted" class="btn-medusa btn-xs rec-show-button" @click="addShow(show, `${show.source}-${show.seriesId}`)">
-                                        Search/Add
-                                    </button>
-                                </template>
-                            </div>
-                        </div>
+                        <recommended-poster :show="show" />
                     </div>
                 </isotope>
+
                 <div class="align-center" v-if="showsLoaded && filteredShowsByList.length === 0 && selectedSource !== -1">
                     <button class="btn-medusa btn-xs rec-show-button" @click="searchRecommendedShows">
                         Search for new recommended shows from {{sourceToString[selectedSource]}}
@@ -155,24 +84,22 @@ import { api, apiRoute } from '../api.js';
 import { mapState, mapActions } from 'vuex';
 import AddShowOptions from './add-show-options.vue';
 import {
-    Asset,
-    AppLink,
     ConfigTemplate,
     ConfigToggleSlider,
     TraktAuthentication
 } from './helpers';
+import RecommendedPoster from './recommended-poster.vue';
 import Isotope from 'vueisotope';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 export default {
     name: 'recommended',
     components: {
-        Asset,
         AddShowOptions,
-        AppLink,
         ConfigTemplate,
         ConfigToggleSlider,
         FontAwesomeIcon,
+        RecommendedPoster,
         TraktAuthentication,
         Isotope
     },
@@ -364,59 +291,6 @@ export default {
             console.log('isotope Layout loaded');
             imgLazyLoad.update();
         },
-        addShow(show, indexer) {
-            const selectedOption = this.$refs[indexer][0].selectedOptions[0].value;
-            if (selectedOption === 'search') {
-                // Route to the add-new-show.vue component, with the show's title.
-                this.$router.push({
-                    name: 'addNewShow',
-                    params: {
-                        providedInfo: {
-                            showName: show.title
-                        }
-                    }
-                });
-                return;
-            }
-
-            let showId = null;
-            if (Object.keys(show.externals).length !== 0 && show.externals[selectedOption + '_id']) {
-                showId = { [selectedOption]: show.externals[selectedOption + '_id'] };
-            }
-
-            if (this.addShowById(showId)) {
-                show.showInLibrary = true;
-            }
-        },
-        /**
-         * Add by show id.
-         * @param {number} showId - Show id.
-         */
-        async addShowById(showId) {
-            const { enableShowOptions, selectedShowOptions } = this;
-
-            const options = {};
-
-            if (enableShowOptions) {
-                options.options = selectedShowOptions;
-            }
-
-            try {
-                await api.post('series', { id: showId, options });
-                this.$snotify.success(
-                    'Adding new show to library',
-                    'Saved',
-                    { timeout: 20000 }
-                );
-                return true;
-            } catch (error) {
-                this.$snotify.error(
-                    'Error while trying to add new show',
-                    'Error'
-                );
-            }
-            return false;
-        },
         updateOptions(options) {
             // Update seleted options from add-show-options.vue @change event.
             const { anime, scene, seasonFolders, status, subtitles, statusAfter, release, quality } = options;
@@ -454,29 +328,6 @@ export default {
             const { option: isotopeOptions, sortDirectionOptionsValue } = this;
             this.option.sortAscending = sortDirectionOptionsValue === 'asc';
             this.$refs.filteredShows.arrange(isotopeOptions);
-        },
-        addShowOptions(show) {
-            const { externals } = show;
-            if (show.isAnime) {
-                return [{ text: 'Tvdb', value: 'tvdb_id' }];
-            }
-
-            const options = [];
-            // Add through the add-new-show.vue component
-            options.push({ text: 'search show', value: 'search' });
-
-            for (const external in externals) {
-                if (['tvdb_id', 'tmdb_id', 'tvmaze_id'].includes(external)) {
-                    const externalName = external.split('_')[0];
-                    options.push({ text: externalName, value: externalName });
-                }
-            }
-
-            return options;
-        },
-        blacklistTrakt(show) {
-            show.trakt.blacklisted = true;
-            apiRoute(`addShows/addShowToBlacklist?seriesid=${show.externals.tvdb_id}`);
         },
         setSelectedList(selectedSource) {
             const { recommendedLists, selectedList } = this;
@@ -538,12 +389,6 @@ export default {
 </script>
 
 <style scoped>
-.recommended-image >>> .show-image {
-    height: 100%;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
-}
-
 .trakt-auth-container {
     padding: 10px;
     border: 1px solid rgb(255 255 255);
@@ -563,49 +408,4 @@ span.trakt-warning {
     color: red;
 }
 
-.tag-container {
-    opacity: 0;
-    position: absolute;
-    top: 3px;
-    right: 0;
-    -webkit-transition: opacity 0.2s ease-in-out;
-    -moz-transition: opacity 0.2s ease-in-out;
-    -ms-transition: opacity 0.2s ease-in-out;
-    -o-transition: opacity 0.2s ease-in-out;
-    transition: opacity 0.2s ease-in-out;
-}
-
-.check-overlay:hover,
-.recommended-image:hover {
-    opacity: 0.9;
-}
-
-.check-overlay:hover + .tag-container,
-.recommended-image:hover + .tag-container {
-    display: block;
-    /* transition: opacity 1s ease-in-out; */
-    opacity: 0.9;
-}
-
-ul.genre-tags {
-    margin-right: 2px;
-}
-
-ul.genre-tags > li {
-    margin-right: 1px;
-    margin-bottom: 2px;
-    padding: 2px 4px;
-    background: rgb(21, 82, 143);
-    border-radius: 1px;
-    border: 1px solid rgb(17, 17, 17);
-    color: rgb(255, 255, 255);
-    font: 14px/18px "Open Sans", "Helvetica Neue", Helvetica, Arial, Geneva, sans-serif;
-    text-shadow: 0 1px rgb(0 0 0 / 80%);
-    float: right;
-    list-style: none;
-}
-
-select.max-width {
-    max-width: 430px;
-}
 </style>
