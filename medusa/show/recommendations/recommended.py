@@ -220,7 +220,7 @@ class RecommendedShow(BasePopular):
         else:
             query = """UPDATE shows SET title = ?, rating = ?, votes = ?,
                     is_anime = ?, image_href = ?, image_src = ?, subcat = ?, genres = ?, plot = ?
-                    WHERE recommended__show_id = ?"""
+                    WHERE recommended_show_id = ?"""
             params_set = [
                 self.title, self.rating, self.votes, int(self.is_anime),
                 self.image_href, self.image_src, self.subcat, ','.join(self.genres), self.plot
