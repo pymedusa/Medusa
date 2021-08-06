@@ -9,6 +9,7 @@ from base64 import b64encode
 
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
+from medusa.helper.exceptions import DownloadClientConnectionException
 from medusa.helpers import (
     get_extension,
     is_already_processed_media,
@@ -215,7 +216,6 @@ class DelugeAPI(GenericClient):
                           {'name': self.name})
                 return None
 
-        self._torrent_properties('e4d44da9e71a8f4411bc3fd82aad7689cfa0f07f')
         return self.auth
 
     def _add_torrent_uri(self, result):
@@ -489,9 +489,13 @@ class DelugeAPI(GenericClient):
         })
 
         log.debug('Checking {client} torrent {hash} status.', {'client': self.name, 'hash': info_hash})
-        if not self._request(method='post', data=post_data) or self.response.json()['error']:
-            log.warning('Error while fetching torrent {hash} status.', {'hash': info_hash})
-            return
+
+        try:
+            if not self._request(method='post', data=post_data) or self.response.json()['error']:
+                log.warning('Error while fetching torrent {hash} status.', {'hash': info_hash})
+                return
+        except RequestException as error:
+            raise DownloadClientConnectionException(f'Error while fetching torrent info_hash {info_hash}. Error: {error}')
 
         return self.response.json()['result']
 

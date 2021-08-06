@@ -22,6 +22,7 @@ import datetime
 import logging
 from builtins import object
 from enum import Enum
+from medusa.helper.exceptions import DownloadClientConnectionException
 from uuid import uuid4
 
 from medusa import app, db, ws
@@ -170,18 +171,26 @@ class DownloadHandler(object):
 
         client_type = 'torrent' if isinstance(client, GenericClient) else 'nzb'
         for history_result in self._get_history_results_from_db(client_type, exclude_status=excluded):
-            status = client.get_status(history_result['info_hash'])
-            if status:
-                log.debug(
-                    'Found {client_type} on {client} with info_hash {info_hash}',
-                    {
-                        'client_type': client_type,
-                        'client': app.TORRENT_METHOD if client_type == 'torrent' else app.NZB_METHOD,
-                        'info_hash': history_result['info_hash']
-                    }
-                )
-                if history_result['client_status'] != status.status:
-                    self.save_status_to_history(history_result, status)
+            try:
+                status = client.get_status(history_result['info_hash'])
+            except DownloadClientConnectionException as error:
+                log.warning('The client cannot be reached or authentication is failing.'
+                            '\nError: {error}', {'error': error})
+                continue
+
+            if not status:
+                continue
+
+            log.debug(
+                'Found {client_type} on {client} with info_hash {info_hash}',
+                {
+                    'client_type': client_type,
+                    'client': app.TORRENT_METHOD if client_type == 'torrent' else app.NZB_METHOD,
+                    'info_hash': history_result['info_hash']
+                }
+            )
+            if history_result['client_status'] != status.status:
+                self.save_status_to_history(history_result, status)
 
     def _check_postprocess(self, client):
         """Check the history table for ready available downlaods, that need to be post-processed."""
@@ -195,7 +204,13 @@ class DownloadHandler(object):
                 ClientStatusEnum.SEEDED.value,
             ],
         ):
-            status = client.get_status(history_result['info_hash'])
+            try:
+                status = client.get_status(history_result['info_hash'])
+            except DownloadClientConnectionException as error:
+                log.warning('The client cannot be reached or authentication is failing.'
+                            '\nAbandon check postprocess. error: {error}', {'error': error})
+                continue
+
             if not status:
                 continue
 
@@ -269,7 +284,13 @@ class DownloadHandler(object):
                 # Not sure if this option is of use.
                 continue
 
-            status = client.get_status(history_result['info_hash'])
+            try:
+                status = client.get_status(history_result['info_hash'])
+            except DownloadClientConnectionException as error:
+                log.warning('The client cannot be reached or authentication is failing.'
+                            '\nAbandon check torrent ratio. error: {error}', {'error': error})
+                continue
+
             if not status:
                 continue
 
@@ -315,13 +336,13 @@ class DownloadHandler(object):
     @staticmethod
     def _test_connection(client, client_type):
         """Need to structure, because of some subtle differences between clients."""
-        if client_type == 'torrent' or app.NZB_METHOD == 'nzbget':
+        if client_type == 'torrent':
             return client.test_authentication()
-        else:
-            result = client.test_authentication()
-            if not result:
-                return False
-            return result[0]
+
+        result = client.test_authentication()
+        if not result:
+            return False
+        return result[0]
 
     def _clean(self, client):
         """Update status in the history table for torrents/nzb's that can't be located anymore."""
@@ -334,19 +355,23 @@ class DownloadHandler(object):
             return
 
         for history_result in self._get_history_results_from_db(client_type):
-            if not client.get_status(history_result['info_hash']):
-                log.debug(
-                    'Cannot find {client_type} on {client} with info_hash {info_hash}'
-                    'Adding status Removed, to prevent from future processing.',
-                    {
-                        'client_type': client_type,
-                        'client': app.TORRENT_METHOD if client_type == 'torrent' else app.NZB_METHOD,
-                        'info_hash': history_result['info_hash']
-                    }
-                )
-                new_status = ClientStatus(int(history_result['client_status']))
-                new_status.add_status_string('Removed')
-                self.save_status_to_history(history_result, new_status)
+            try:
+                if not client.get_status(history_result['info_hash']):
+                    log.debug(
+                        'Cannot find {client_type} on {client} with info_hash {info_hash}'
+                        'Adding status Removed, to prevent from future processing.',
+                        {
+                            'client_type': client_type,
+                            'client': app.TORRENT_METHOD if client_type == 'torrent' else app.NZB_METHOD,
+                            'info_hash': history_result['info_hash']
+                        }
+                    )
+                    new_status = ClientStatus(int(history_result['client_status']))
+                    new_status.add_status_string('Removed')
+                    self.save_status_to_history(history_result, new_status)
+            except DownloadClientConnectionException as error:
+                log.warning('The client cannot be reached or authentication is failing.'
+                            '\nAbandon cleanup. error: {error}', {'error': error})
 
     def run(self, force=False):
         """Start the Download Handler Thread."""
@@ -365,22 +390,30 @@ class DownloadHandler(object):
                 self._check_postprocess(torrent_client)
                 self._check_torrent_ratio(torrent_client)
                 self._clean(torrent_client)
+        except NotImplementedError:
+            log.warning('Feature not currently implemented for this torrent client({torrent_client})',
+                        torrent_client=app.TORRENT_METHOD)
+        except (RequestException, DownloadClientConnectionException) as error:
+            log.warning('Unable to connect to {torrent_client}. Error: {error}',
+                        torrent_client=app.TORRENT_METHOD, error=error)
+        except Exception as error:
+            log.exception('Exception while checking torrent status. with error: {error}', {'error': error})
 
+        try:
             if app.USE_NZBS and app.NZB_METHOD != 'blackhole':
                 nzb_client = sab if app.NZB_METHOD == 'sabnzbd' else nzbget
                 self._update_status(nzb_client)
                 self._check_postprocess(nzb_client)
                 self._clean(nzb_client)
-
         except NotImplementedError:
             log.warning('Feature not currently implemented for this torrent client({torrent_client})',
                         torrent_client=app.TORRENT_METHOD)
-        except RequestException as error:
+        except (RequestException, DownloadClientConnectionException) as error:
             log.warning('Unable to connect to {torrent_client}. Error: {error}',
                         torrent_client=app.TORRENT_METHOD, error=error)
         except Exception as error:
             log.exception('Exception while checking torrent status. with error: {error}', {'error': error})
-        finally:
-            self.amActive = False
-            # Push an update to any open Web UIs through the WebSocket
-            ws.Message('QueueItemUpdate', self._to_json).push()
+
+        self.amActive = False
+        # Push an update to any open Web UIs through the WebSocket
+        ws.Message('QueueItemUpdate', self._to_json).push()
