@@ -35,7 +35,7 @@ from medusa.session.core import MedusaSession
 
 from simpleanidb import Anidb
 
-from six import PY2, ensure_text, text_type
+from six import PY2, ensure_text
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -83,6 +83,8 @@ class MissingTvdbMapping(Exception):
 
 
 class BasePopular(object):
+    """BasePopular class."""
+
     def __init__(self, recommender=None, source=None, cache_subfoler=None):
         """Recommended show base class (AnidbPopular, TraktPopular, etc)."""
         self.session = MedusaSession()
@@ -239,10 +241,7 @@ class RecommendedShow(BasePopular):
             save_externals_to_db(self.source, self.series_id, self.ids)
 
     def to_json(self):
-        """
-        Return JSON representation.
-        """
-
+        """Return JSON representation."""
         data = {}
         data['source'] = self.source
         data['cacheSubfolder'] = self.cache_subfolder
@@ -276,7 +275,6 @@ def get_recommended_shows(source=None, series_id=None):
     :param source: The Indexer or External source ID
     :returns: A list of Rcommended objects.
     """
-
     recommended_db_con = db.DBConnection('recommended.db')
     query = 'SELECT * FROM shows {where}'
     where = []
@@ -307,36 +305,34 @@ def get_recommended_shows(source=None, series_id=None):
         EXTERNAL_IMDB: ImdbPopular,
         EXTERNAL_ANILIST: AniListPopular
     }
+
     for show in shows:
         # Get the external id's
         externals = load_externals_from_db(show['source'], show['series_id'])
 
-        try:
-            recommended_shows.append(
-                RecommendedShow(
-                    BasePopular(
-                        recommender=mapped_source.get(show['source']).TITLE,
-                        source=show['source'],
-                        cache_subfoler=mapped_source.get(show['source']).CACHE_SUBFOLDER
-                    ),
-                    show['series_id'],
-                    show['title'],
-                    **{
-                        'rating': show['rating'],
-                        'votes': show['votes'],
-                        'image_href': show['image_href'],
-                        'image_src': show['image_src'],
-                        'ids': externals,
-                        'subcat': show['subcat'],
-                        'mapped_indexer': show['mapped_indexer'],
-                        'mapped_series_id': show['mapped_series_id'],
-                        'genres': [genre for genre in show['genres'].split(',') if genre],
-                        'plot': show['plot']
-                    }
-                )
+        recommended_shows.append(
+            RecommendedShow(
+                BasePopular(
+                    recommender=mapped_source.get(show['source']).TITLE,
+                    source=show['source'],
+                    cache_subfoler=mapped_source.get(show['source']).CACHE_SUBFOLDER
+                ),
+                show['series_id'],
+                show['title'],
+                **{
+                    'rating': show['rating'],
+                    'votes': show['votes'],
+                    'image_href': show['image_href'],
+                    'image_src': show['image_src'],
+                    'ids': externals,
+                    'subcat': show['subcat'],
+                    'mapped_indexer': show['mapped_indexer'],
+                    'mapped_series_id': show['mapped_series_id'],
+                    'genres': [genre for genre in show['genres'].split(',') if genre],
+                    'plot': show['plot']
+                }
             )
-        except Exception as error:
-            pass
+        )
     return recommended_shows
 
 
@@ -349,6 +345,7 @@ def get_categories():
         categories[result['source']].append(result['subcat'])
 
     return categories
+
 
 @LazyApi.load_anidb_api
 @recommended_series_cache.cache_on_arguments()

@@ -15,14 +15,11 @@ from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.web.core import PageTemplate
 from medusa.server.web.home.handler import Home
-from medusa.show.recommendations.anidb import AnidbPopular
 from medusa.show.recommendations.imdb import ImdbPopular
 from medusa.show.recommendations.trakt import TraktPopular
 from medusa.tv.series import Series, SeriesIdentifier
 
 from requests import RequestException
-
-from simpleanidb import REQUEST_HOT
 
 from six import text_type
 

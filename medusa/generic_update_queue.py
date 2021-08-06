@@ -1,5 +1,4 @@
 # coding=utf-8
-# Author: Nic Wolfe <nic@wolfeden.ca>
 #
 # This file is part of Medusa.
 #
@@ -15,6 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+"""Generic update queue module."""
 from __future__ import unicode_literals
 
 import logging

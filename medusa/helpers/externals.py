@@ -215,6 +215,7 @@ def load_externals_from_db(indexer=None, indexer_id=None):
 def show_in_library(indexer=None, indexer_id=None):
     """
     Use the load_externals_from_db method and compare it with the app.showList (library) for existing shows.
+
     :param indexer: Optional pass indexer id, else use the current shows indexer.
     :type indexer: int
     :param indexer_id: Optional pass indexer id, else use the current shows indexer.

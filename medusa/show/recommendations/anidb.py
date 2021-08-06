@@ -4,12 +4,11 @@ from __future__ import unicode_literals
 
 import logging
 import traceback
-
 from os.path import join
 
 from medusa import app
 from medusa.cache import recommended_series_cache
-from medusa.indexers.config import (INDEXER_TVDBV2, EXTERNAL_ANIDB)
+from medusa.indexers.config import EXTERNAL_ANIDB
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.recommendations.recommended import (
     BasePopular,
@@ -63,9 +62,8 @@ class AnidbPopular(BasePopular):  # pylint: disable=too-few-public-methods
                     'tvdb_id': tvdb_id,
                     'anidb_id': series.aid
                 },
-               'is_anime': True,
-               'subcat': 'hot'
-            }
+                'is_anime': True,
+                'subcat': 'hot'}
         )
 
         # Check cache or get and save image

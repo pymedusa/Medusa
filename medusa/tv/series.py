@@ -1998,7 +1998,7 @@ class Series(TV):
                 )
 
                 if recommended_show:
-                    query = '''UPDATE recommended SET mapped_indexer = ?, mapped_series_id = ? WHERE recommended_id = ?'''
+                    query = 'UPDATE recommended SET mapped_indexer = ?, mapped_series_id = ? WHERE recommended_id = ?'
                     params = [self.indexer, self.series_id, recommended_show[0]['recommended_id']]
                     cache_db_con.action(query, params)
                     return True

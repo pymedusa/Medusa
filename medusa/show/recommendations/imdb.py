@@ -1,5 +1,5 @@
 # coding=utf-8
-
+"""Anidb recommended show class."""
 from __future__ import unicode_literals
 
 import logging
@@ -7,7 +7,6 @@ import os
 import posixpath
 import re
 
-from medusa import helpers
 from medusa.cache import recommended_series_cache
 from medusa.imdb import Imdb
 from medusa.indexers.api import indexerApi

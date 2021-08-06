@@ -342,6 +342,7 @@ def change_SHOWUPDATE_HOUR(freq):
     if app.show_update_scheduler:
         app.show_update_scheduler.start_time = datetime.time(hour=app._SHOWUPDATE_HOUR)
 
+
 def change_RECOMMENDED_SHOW_UPDATE_HOUR(freq):
     """
     Change frequency of show updater thread.
@@ -360,6 +361,7 @@ def change_RECOMMENDED_SHOW_UPDATE_HOUR(freq):
 
     if app.show_update_scheduler:
         app.show_update_scheduler.start_time = datetime.time(hour=app._RECOMMENDED_SHOW_UPDATE_HOUR)
+
 
 def change_SUBTITLES_FINDER_FREQUENCY(subtitles_finder_frequency):
     """

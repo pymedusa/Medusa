@@ -1,24 +1,19 @@
 # coding=utf-8
-
+"""Anilist recommended show class."""
 from __future__ import unicode_literals
 
 import logging
 import traceback
 
-from os.path import join
-
-from medusa import app
 from medusa.cache import recommended_series_cache
-from medusa.indexers.config import EXTERNAL_ANIDB, EXTERNAL_ANILIST
+from medusa.indexers.config import EXTERNAL_ANILIST
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.session.core import MedusaSession
 from medusa.show.recommendations.recommended import (
     BasePopular,
     RecommendedShow,
-    cached_aid_to_tvdb,
-    create_key_from_series,
+    create_key_from_series
 )
-from medusa.session.core import MedusaSession
-from requests import RequestException
 
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -26,13 +21,14 @@ log.logger.addHandler(logging.NullHandler())
 
 
 class AniListPopular(BasePopular):  # pylint: disable=too-few-public-methods
+    """Anilist popular class."""
 
     BASE_URL = 'https://graphql.anilist.co'
     TITLE = 'AniList'
     CACHE_SUBFOLDER = __name__.split('.')[-1] if '.' in __name__ else __name__
 
     def __init__(self):
-        """Class retrieves a specified recommended show list from Trakt.
+        """Class retrieves a specified recommended show list from Anilist.
 
         List of returned shows is mapped to a RecommendedShow object
         """
@@ -74,7 +70,7 @@ class AniListPopular(BasePopular):  # pylint: disable=too-few-public-methods
         """Get popular show information from IMDB."""
         result = []
 
-        query = "query($page:Int = 1 $id:Int $type:MediaType $isAdult:Boolean = false $search:String $format:[MediaFormat]$status:MediaStatus $countryOfOrigin:CountryCode $source:MediaSource $season:MediaSeason $seasonYear:Int $year:String $onList:Boolean $yearLesser:FuzzyDateInt $yearGreater:FuzzyDateInt $episodeLesser:Int $episodeGreater:Int $durationLesser:Int $durationGreater:Int $chapterLesser:Int $chapterGreater:Int $volumeLesser:Int $volumeGreater:Int $licensedBy:[String]$genres:[String]$excludedGenres:[String]$tags:[String]$excludedTags:[String]$minimumTagRank:Int $sort:[MediaSort]=[POPULARITY_DESC,SCORE_DESC]){Page(page:$page,perPage:20){pageInfo{total perPage currentPage lastPage hasNextPage}media(id:$id type:$type season:$season format_in:$format status:$status countryOfOrigin:$countryOfOrigin source:$source search:$search onList:$onList seasonYear:$seasonYear startDate_like:$year startDate_lesser:$yearLesser startDate_greater:$yearGreater episodes_lesser:$episodeLesser episodes_greater:$episodeGreater duration_lesser:$durationLesser duration_greater:$durationGreater chapters_lesser:$chapterLesser chapters_greater:$chapterGreater volumes_lesser:$volumeLesser volumes_greater:$volumeGreater licensedBy_in:$licensedBy genre_in:$genres genre_not_in:$excludedGenres tag_in:$tags tag_not_in:$excludedTags minimumTagRank:$minimumTagRank sort:$sort isAdult:$isAdult){id title{userPreferred}coverImage{extraLarge large color}startDate{year month day}endDate{year month day}bannerImage season description type format status(version:2)episodes duration chapters volumes genres isAdult averageScore popularity nextAiringEpisode{airingAt timeUntilAiring episode}mediaListEntry{id status}studios(isMain:true){edges{isMain node{id name}}}}}}"
+        query = 'query($page:Int = 1 $id:Int $type:MediaType $isAdult:Boolean = false $search:String $format:[MediaFormat]$status:MediaStatus $countryOfOrigin:CountryCode $source:MediaSource $season:MediaSeason $seasonYear:Int $year:String $onList:Boolean $yearLesser:FuzzyDateInt $yearGreater:FuzzyDateInt $episodeLesser:Int $episodeGreater:Int $durationLesser:Int $durationGreater:Int $chapterLesser:Int $chapterGreater:Int $volumeLesser:Int $volumeGreater:Int $licensedBy:[String]$genres:[String]$excludedGenres:[String]$tags:[String]$excludedTags:[String]$minimumTagRank:Int $sort:[MediaSort]=[POPULARITY_DESC,SCORE_DESC]){Page(page:$page,perPage:20){pageInfo{total perPage currentPage lastPage hasNextPage}media(id:$id type:$type season:$season format_in:$format status:$status countryOfOrigin:$countryOfOrigin source:$source search:$search onList:$onList seasonYear:$seasonYear startDate_like:$year startDate_lesser:$yearLesser startDate_greater:$yearGreater episodes_lesser:$episodeLesser episodes_greater:$episodeGreater duration_lesser:$durationLesser duration_greater:$durationGreater chapters_lesser:$chapterLesser chapters_greater:$chapterGreater volumes_lesser:$volumeLesser volumes_greater:$volumeGreater licensedBy_in:$licensedBy genre_in:$genres genre_not_in:$excludedGenres tag_in:$tags tag_not_in:$excludedTags minimumTagRank:$minimumTagRank sort:$sort isAdult:$isAdult){id title{userPreferred}coverImage{extraLarge large color}startDate{year month day}endDate{year month day}bannerImage season description type format status(version:2)episodes duration chapters volumes genres isAdult averageScore popularity nextAiringEpisode{airingAt timeUntilAiring episode}mediaListEntry{id status}studios(isMain:true){edges{isMain node{id name}}}}}}'
         variables = {
             'page': 1,
             'type': 'ANIME',

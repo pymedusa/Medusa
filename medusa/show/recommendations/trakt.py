@@ -15,15 +15,15 @@ from medusa.indexers.api import indexerApi
 from medusa.indexers.config import EXTERNAL_TRAKT, INDEXER_TVDBV2, TRAKT_INDEXERS
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.recommendations import ExpiringList
-from medusa.show.recommendations import recommended
 from medusa.show.recommendations.recommended import (
     BasePopular,
     RecommendedShow,
     create_key_from_series,
 )
 
+from six import iteritems
+
 from trakt import sync
-from six import iteritems, text_type
 
 from tvdbapiv2.exceptions import ApiException
 
