@@ -82,7 +82,7 @@
             <div class="col-lg-12">
                 <h3>Force refresh recommended list:</h3>
                 <span>
-                    Note! Syncing shows with a recommended list may take a while. 
+                    Note! Syncing shows with a recommended list may take a while.
                     The action will be queued. For example staring a sync with Trakt and directly after Imdb.
                     You will won't see results for Imdb after the sync of Trakt has fully completed.
                 </span>
