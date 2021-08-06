@@ -598,10 +598,6 @@ class ProcessResult(object):
 
     def process_files(self, path, force=False, is_priority=None, ignore_subs=False):
         """Post-process and delete the files in a given path."""
-        # TODO: Replace this with something that works for multiple video files
-        if self.resource_name and len(self.video_files) > 1:
-            self.resource_name = None
-
         if self.video_in_rar:
             video_files = set(self.video_files + self.video_in_rar)
 
