@@ -72,7 +72,7 @@
                     <select :ref="`${show.source}-${show.seriesId}`" v-model="selectedAddShowOption" name="addshow" class="rec-show-select">
                         <option v-for="option in addShowOptions(show)" :value="option.value" :key="option.value">{{option.text}}</option>
                     </select>
-                    <button :disabled="show.trakt.blacklisted" class="btn-medusa btn-xs rec-show-button" @click="addShow(show, `${show.source}-${show.seriesId}`)">
+                    <button :disabled="show.trakt.blacklisted" class="btn-medusa btn-xs rec-show-button" @click="addShow(show)">
                         Search/Add
                     </button>
                 </template>
@@ -83,12 +83,11 @@
 
 <script>
 import { mapState } from 'vuex';
-import { apiRoute } from '../api';
+import { api, apiRoute } from '../api';
 import {
     Asset,
     AppLink
 } from './helpers';
-
 
 export default {
     name: 'recommended-poster',
@@ -106,7 +105,7 @@ export default {
         return {
             displayPlot: false,
             selectedAddShowOption: 'search'
-        }
+        };
     },
     computed: {
         ...mapState({
@@ -115,7 +114,7 @@ export default {
         })
     },
     methods: {
-        addShow(show, indexer) {
+        addShow(show) {
             const { selectedAddShowOption } = this;
             if (selectedAddShowOption === 'search') {
                 // Route to the add-new-show.vue component, with the show's title.
@@ -192,7 +191,7 @@ export default {
             return options;
         }
     }
-}
+};
 </script>
 
 <style scoped>
@@ -214,7 +213,6 @@ export default {
 
 .recommended-image:hover .tag-container {
     display: block;
-    /* transition: opacity 1s ease-in-out; */
     opacity: 0.9;
 }
 
@@ -248,7 +246,7 @@ select.max-width {
     bottom: 0;
     overflow-y: auto;
     background-color: rgb(51, 51, 51);
-    scrollbar-color:  rgb(65, 0, 181) darkgrey;
+    scrollbar-color: rgb(65, 0, 181) darkgrey;
     scrollbar-width: thin;
 }
 
@@ -260,17 +258,17 @@ select.max-width {
 }
 
 .plot-overlay::-webkit-scrollbar {
-  width: 6px; /* width of the entire scrollbar */
+    width: 6px; /* width of the entire scrollbar */
 }
 
 .plot-overlay::-webkit-scrollbar-track {
-  background: darkgrey; /* color of the tracking area */
+    background: darkgrey; /* color of the tracking area */
 }
 
 .plot-overlay::-webkit-scrollbar-thumb {
-  background-color: rgb(65, 0, 181); /* color of the scroll thumb */
-  border-radius: 1px; /* roundness of the scroll thumb */
-  border: 0px solid rgb(5, 36, 249); /* creates padding around scroll thumb */
+    background-color: rgb(65, 0, 181); /* color of the scroll thumb */
+    border-radius: 1px; /* roundness of the scroll thumb */
+    border: 0 solid rgb(5, 36, 249); /* creates padding around scroll thumb */
 }
 
 .recommended-image {
@@ -290,15 +288,14 @@ select.max-width {
 
 .toggle-plot {
     position: absolute;
-    right: 0px;
+    right: 0;
+    top: 0;
     z-index: 9999;
-    top: 0px;
     text-decoration: underline;
     cursor: pointer;
     background-color: rgb(51, 51, 51);
     padding: 0 2px;
 }
-
 
 .plot-enter-active,
 .plot-leave-active {
@@ -321,15 +318,4 @@ select.max-width {
 .plot-leave-to {
     bottom: -100%;
 }
-
-/* .plot {
-    display: block;
-    overflow: hidden;
-    width: 100%;
-    position: absolute;
-    left: 0;
-    background-color: #e23636;
-    padding: 0 2px 0 2px;
-    z-index: 1;
-} */
 </style>
