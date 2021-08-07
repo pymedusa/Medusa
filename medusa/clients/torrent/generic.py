@@ -15,8 +15,11 @@ from bencodepy import BencodeDecodeError, DEFAULT as BENCODE
 import certifi
 
 from medusa import app, db
+from medusa.helper.common import http_code_description
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import ClientSession
+
+import requests
 
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -54,27 +57,43 @@ class GenericClient(object):
 
     def _request(self, method='get', params=None, data=None, files=None, cookies=None):
 
-        self.response = self.session.request(
-            method, self.url, params=params, data=data, files=files, timeout=60, cookies=cookies,
-            verify=self.verify if app.TORRENT_VERIFY_CERT else False
-        )
-        if not self.response:
-            log.warning('{name} {method} call to {url} failed!', {
-                'name': self.name, 'method': method.upper(), 'url': self.url
-            })
-            self.message = f'Connect to {self.name} on "{self.host}" failed!'
+        try:
+            self.response = self.session.request(
+                method, self.url, params=params, data=data, files=files, timeout=60, cookies=cookies,
+                verify=self.verify if app.TORRENT_VERIFY_CERT else False
+            )
+        except (requests.exceptions.MissingSchema, requests.exceptions.InvalidURL) as error:
+            log.warning('{name}: Invalid Host: {error}', {'name': self.name, 'error': error})
             return False
-        if self.response.status_code >= 400:
-            log.warning('{name}: Unable to reach torrent client. Reason: {reason}', {
-                'name': self.name, 'reason': self.response.reason
-            })
-            self.message = f'Failed to connect to {self.name} reason: {self.response.reason}'
+        except requests.exceptions.RequestException as error:
+            log.warning('{name}: Error occurred during request: {error}',
+                        {'name': self.name, 'error': error})
+            # We want to raise connection errors for the download_handler. As we need to know
+            # explicitely if there was a connection error when untracking tracked torrents/nzb.
+            raise
+        except Exception as error:
+            log.error('{name}: Unknown exception raised when sending torrent to'
+                      ' {name}: {error}', {'name': self.name, 'error': error})
             return False
+
+        if self.response.status_code == 401:
+            log.error('{name}: Invalid Username or Password,'
+                      ' check your config', {'name': self.name})
+            return False
+
+        code_description = http_code_description(self.response.status_code)
+
+        if code_description is not None:
+            log.info('{name}: {code}',
+                     {'name': self.name, 'code': code_description})
+            return False
+
         log.debug('{name}: Response to {method} request is {response}', {
             'name': self.name,
             'method': method.upper(),
             'response': self.response.text[0:1024] + '...' if len(self.response.text) > 1027 else self.response.text
         })
+
         return True
 
     def _get_auth(self):

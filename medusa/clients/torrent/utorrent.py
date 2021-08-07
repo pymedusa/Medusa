@@ -11,6 +11,7 @@ from collections import OrderedDict
 
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
+from medusa.helper.exceptions import DownloadClientConnectionException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.schedulers.download_handler import ClientStatus
 
@@ -255,11 +256,13 @@ class UTorrentAPI(GenericClient):
         info_hash, it will get all torrents for each info_hash. We might want to cache this one.
         """
         params = {'list': 1}
-        if not self._request(params=params):
-            log.warning('Error while fetching torrents.')
-            return []
 
-        json_response = self.response.json()
+        try:
+            self._request(params=params)
+            json_response = self.response.json()
+        except RequestException as error:
+            raise DownloadClientConnectionException(f'Error while fetching torrent. Error: {error}')
+
         if json_response.get('torrents'):
             return json_response['torrents']
         return []

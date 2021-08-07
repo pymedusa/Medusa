@@ -221,7 +221,7 @@ class IndexerSession(MedusaSafeSession):
         super(IndexerSession, self).__init__(**kwargs)
 
 
-class ClientSession(MedusaSafeSession):
+class ClientSession(MedusaSession):
     """Requests session for clients."""
 
     def __init__(self, **kwargs):
