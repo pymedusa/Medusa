@@ -4,15 +4,14 @@ from __future__ import unicode_literals
 
 import logging
 import traceback
-from builtins import object
 from os.path import join
 
 from medusa import app
 from medusa.cache import recommended_series_cache
-from medusa.indexers.config import INDEXER_TVDBV2
+from medusa.indexers.config import EXTERNAL_ANIDB
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.session.core import MedusaSession
 from medusa.show.recommendations.recommended import (
+    BasePopular,
     MissingTvdbMapping,
     RecommendedShow,
     cached_aid_to_tvdb,
@@ -27,20 +26,24 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
-class AnidbPopular(object):  # pylint: disable=too-few-public-methods
+class AnidbPopular(BasePopular):  # pylint: disable=too-few-public-methods
+
+    TITLE = 'Anidb Popular'
+    CACHE_SUBFOLDER = __name__.split('.')[-1] if '.' in __name__ else __name__
+
     def __init__(self):
         """Class retrieves a specified recommended show list from Trakt.
 
         List of returned shows is mapped to a RecommendedShow object
         """
-        self.cache_subfolder = __name__.split('.')[-1] if '.' in __name__ else __name__
-        self.session = MedusaSession()
-        self.recommender = 'Anidb Popular'
+        super(AnidbPopular, self).__init__()
+        self.cache_subfolder = AnidbPopular.CACHE_SUBFOLDER
+        self.recommender = AnidbPopular.TITLE
+        self.source = EXTERNAL_ANIDB
         self.base_url = 'https://anidb.net/perl-bin/animedb.pl?show=anime&aid={aid}'
-        self.default_img_src = 'poster.png'
 
     @recommended_series_cache.cache_on_arguments(namespace='anidb', function_key_generator=create_key_from_series)
-    def _create_recommended_show(self, storage_key, series):
+    def _create_recommended_show(self, series):
         """Create the RecommendedShow object from the returned showobj."""
         try:
             tvdb_id = cached_aid_to_tvdb(series.aid)
@@ -48,31 +51,24 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
             log.warning("Couldn't map AniDB id {0} to a TVDB id", series.aids)
             return None
 
-        # If the anime can't be mapped to a tvdb_id, return none, and move on to the next.
-        if not tvdb_id:
-            return tvdb_id
-
         rec_show = RecommendedShow(
             self,
             series.aid,
-            series.title,
-            INDEXER_TVDBV2,
-            tvdb_id,
+            str(series.title),
             **{'rating': series.rating_permanent,
                 'votes': series.count_permanent,
                 'image_href': self.base_url.format(aid=series.aid),
-                'ids': {'tvdb': tvdb_id,
-                        'aid': series.aid
-                        }
-               }
+                'ids': {
+                    'tvdb_id': tvdb_id,
+                    'anidb_id': series.aid
+                },
+                'is_anime': True,
+                'subcat': 'hot'}
         )
 
         # Check cache or get and save image
         use_default = self.default_img_src if not series.picture.url else None
         rec_show.cache_image(series.picture.url, default=use_default)
-
-        # By default pre-configure the show option anime = True
-        rec_show.is_anime = True
 
         return rec_show
 
@@ -88,9 +84,9 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
 
         for show in series:
             try:
-                recommended_show = self._create_recommended_show(storage_key=show.aid,
-                                                                 series=show)
+                recommended_show = self._create_recommended_show(series=show)
                 if recommended_show:
+                    recommended_show.save_to_db()
                     result.append(recommended_show)
             except MissingTvdbMapping:
                 log.info('Could not parse AniDB show {0}, missing tvdb mapping', show.title)

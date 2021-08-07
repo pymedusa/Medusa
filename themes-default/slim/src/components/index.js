@@ -27,6 +27,8 @@ export { default as manageSearches } from './manage-searches.vue';
 export { default as ManualPostProcess } from './manual-post-process.vue';
 export { default as NewShow } from './new-show.vue';
 export { default as NewShowsExisting } from './new-shows-existing.vue';
+export { default as Recommended } from './recommended.vue';
+export { default as RecommendedPoster } from './recommended-poster.vue';
 export { default as Restart } from './restart.vue';
 export { default as RootDirs } from './root-dirs.vue';
 export { default as Schedule } from './schedule.vue';

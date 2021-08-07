@@ -76,6 +76,10 @@ export default {
             }
             return this.computedHref.startsWith('#');
         },
+        /**
+         * Not used for now as derefer.org is down and there are no suitable replacements.
+         * @returns {string} - de-refer service'd url.
+         */
         anonymisedHref() {
             const { anonRedirect } = this.general;
             const href = this.computedHref;
@@ -98,7 +102,7 @@ export default {
             return route;
         },
         linkProperties() {
-            const { to, isIRC, isAbsolute, isExternal, isHashPath, anonymisedHref, matchingVueRoute } = this;
+            const { to, isIRC, isAbsolute, isExternal, isHashPath, matchingVueRoute } = this;
             const base = this.computedBase;
             const href = this.computedHref;
 
@@ -146,18 +150,12 @@ export default {
                         }
                         return location.href.replace(location.hash, '') + href;
                     }
-                    if (isIRC) {
-                        return href;
-                    }
-                    if (isAbsolute) {
-                        if (isExternal) {
-                            return anonymisedHref;
-                        }
+                    if (isIRC || isAbsolute) {
                         return href;
                     }
                     return new URL(href, base).href;
                 })(),
-                rel: isAbsolute && isExternal ? 'noreferrer' : undefined
+                rel: isAbsolute && isExternal ? 'noreferrer noopener' : undefined
             };
         }
     }

@@ -77,8 +77,9 @@ from medusa.config import (
     check_setting_list, check_setting_str,
     load_provider_setting, save_provider_setting
 )
-from medusa.databases import cache_db, failed_db, main_db
+from medusa.databases import cache_db, failed_db, main_db, recommended_db
 from medusa.failed_history import trim_history
+from medusa.generic_update_queue import GenericQueueScheduler, RecommendedShowUpdateScheduler
 from medusa.indexers.config import INDEXER_TVDBV2, INDEXER_TVMAZE
 from medusa.init.filesystem import is_valid_encoding
 from medusa.providers.generic_provider import GenericProvider
@@ -1031,6 +1032,16 @@ class Application(object):
             app.FALLBACK_PLEX_NOTIFICATIONS = check_setting_int(app.CFG, 'General', 'fallback_plex_notifications', 1)
             app.FALLBACK_PLEX_TIMEOUT = check_setting_int(app.CFG, 'General', 'fallback_plex_timeout', 3)
 
+            app.CACHE_RECOMMENDED_SHOWS = check_setting_int(app.CFG, 'Recommended', 'cache_shows', 1)
+            app.CACHE_RECOMMENDED_TRAKT = check_setting_int(app.CFG, 'Recommended', 'cache_trakt', 1)
+            app.CACHE_RECOMMENDED_IMDB = check_setting_int(app.CFG, 'Recommended', 'cache_imdb', 1)
+            app.CACHE_RECOMMENDED_ANIDB = check_setting_int(app.CFG, 'Recommended', 'cache_anidb', 1)
+            app.CACHE_RECOMMENDED_ANILIST = check_setting_int(app.CFG, 'Recommended', 'cache_anilist', 1)
+            app.RECOMMENDED_SHOW_UPDATE_HOUR = max(
+                0, min(23, check_setting_int(app.CFG, 'Recommended', 'recommended_show_update_hour', app.DEFAULT_RECOMMENDED_SHOW_UPDATE_HOUR))
+            )
+            app.CACHE_RECOMMENDED_TRAKT_LISTS = check_setting_list(app.CFG, 'Recommended', 'trakt_lists', app.CACHE_RECOMMENDED_TRAKT_LISTS)
+
             # Initialize trakt config path.
             trakt.core.CONFIG_PATH = os.path.join(app.CACHE_DIR, '.pytrakt.json')
             trakt.core.load_config()
@@ -1179,9 +1190,17 @@ class Application(object):
             cache_db_con = db.DBConnection('cache.db')
             db.upgradeDatabase(cache_db_con, cache_db.InitialSchema)
 
+            # initialize the recommended shows database
+            recommended_db_con = db.DBConnection('recommended.db')
+            db.upgradeDatabase(recommended_db_con, recommended_db.InitialSchema)
+
             # Performs a vacuum on cache.db
             logger.debug(u'Performing a vacuum on the CACHE database')
             cache_db_con.action('VACUUM')
+
+            # Performs a vacuum on recommended.db
+            logger.debug(u'Performing a vacuum on the RECOMMENDED database')
+            recommended_db_con.action('VACUUM')
 
             # initialize the failed downloads database
             failed_db_con = db.DBConnection('failed.db')
@@ -1223,6 +1242,18 @@ class Application(object):
             app.show_queue_scheduler = scheduler.Scheduler(show_queue.ShowQueue(),
                                                            cycleTime=datetime.timedelta(seconds=3),
                                                            threadName='SHOWQUEUE')
+
+            app.generic_queue_scheduler = scheduler.Scheduler(
+                GenericQueueScheduler(),
+                cycleTime=datetime.timedelta(seconds=3),
+                threadName='GENERICQUEUESCHEDULER'
+            )
+
+            app.recommended_show_update_scheduler = scheduler.Scheduler(
+                RecommendedShowUpdateScheduler(),
+                threadName='RECOMMENDEDSHOWUPDATESCHEDULER',
+                start_time=datetime.time(hour=app.RECOMMENDED_SHOW_UPDATE_HOUR,
+                                         minute=random.randint(0, 59)))
 
             app.show_update_scheduler = scheduler.Scheduler(show_updater.ShowUpdater(),
                                                             threadName='SHOWUPDATER',
@@ -1377,6 +1408,14 @@ class Application(object):
             app.backlog_search_scheduler.enable = True
             app.backlog_search_scheduler.start()
 
+            # start the generic queue checker
+            app.generic_queue_scheduler.enable = True
+            app.generic_queue_scheduler.start()
+
+            # start the recommended show update scheduler
+            app.recommended_show_update_scheduler.enable = True
+            app.recommended_show_update_scheduler.start()
+
             # start the show updater
             app.show_update_scheduler.enable = True
             app.show_update_scheduler.start()
@@ -1472,6 +1511,7 @@ class Application(object):
                 app.show_update_scheduler,
                 app.episode_update_scheduler,
                 app.version_check_scheduler,
+                app.generic_update_scheduler,
                 app.show_queue_scheduler,
                 app.search_queue_scheduler,
                 app.forced_search_queue_scheduler,
@@ -1689,6 +1729,15 @@ class Application(object):
         new_config['General']['fallback_plex_enable'] = app.FALLBACK_PLEX_ENABLE
         new_config['General']['fallback_plex_notifications'] = app.FALLBACK_PLEX_NOTIFICATIONS
         new_config['General']['fallback_plex_timeout'] = app.FALLBACK_PLEX_TIMEOUT
+
+        new_config['Recommended'] = {}
+        new_config['Recommended']['cache_shows'] = app.CACHE_RECOMMENDED_SHOWS
+        new_config['Recommended']['cache_trakt'] = app.CACHE_RECOMMENDED_TRAKT
+        new_config['Recommended']['cache_imdb'] = app.CACHE_RECOMMENDED_IMDB
+        new_config['Recommended']['cache_anidb'] = app.CACHE_RECOMMENDED_ANIDB
+        new_config['Recommended']['cache_anilist'] = app.CACHE_RECOMMENDED_ANILIST
+        new_config['Recommended']['recommended_show_update_hour'] = int(app.RECOMMENDED_SHOW_UPDATE_HOUR)
+        new_config['Recommended']['trakt_lists'] = app.CACHE_RECOMMENDED_TRAKT_LISTS
 
         new_config['Blackhole'] = {}
         new_config['Blackhole']['nzb_dir'] = app.NZB_DIR
@@ -2257,7 +2306,7 @@ class Application(object):
         :return:
         """
         try:
-            files_list = [app.APPLICATION_DB, app.CONFIG_INI, app.FAILED_DB, app.CACHE_DB]
+            files_list = [app.APPLICATION_DB, app.CONFIG_INI, app.FAILED_DB, app.CACHE_DB, app.RECOMMENDED_DB]
 
             for filename in files_list:
                 src_file = os.path.join(src_dir, filename)

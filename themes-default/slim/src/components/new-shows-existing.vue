@@ -129,9 +129,6 @@ export default {
     },
     data() {
         return {
-            // @FIXME: Python conversions (fix when config is loaded before routes)
-            // indexers: ${json.dumps(indexers)},
-
             isLoading: false,
             requestTimeout: 3 * 60 * 1000,
             errorMessage: '',
@@ -163,7 +160,6 @@ export default {
     },
     computed: {
         ...mapState({
-            config: state => state.config.general, // Used by `inc_addShowOptions.mako`
             indexers: state => state.config.indexers,
             indexerDefault: state => state.config.general.indexerDefault,
             queueitems: state => state.shows.queueitems

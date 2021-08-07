@@ -9,7 +9,7 @@ from medusa import app, db
 from medusa.indexers.api import indexerApi
 from medusa.indexers.config import indexerConfig
 from medusa.indexers.exceptions import IndexerException, IndexerShowAlreadyInLibrary, IndexerUnavailable
-from medusa.indexers.utils import mappings
+from medusa.indexers.utils import mappings, reverse_mappings
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.exceptions import RequestException
@@ -121,6 +121,7 @@ def check_existing_shows(indexed_show, indexer):
     mappings = {indexer: indexerConfig[indexer]['mapped_to'] for indexer in indexerConfig}
     other_indexers = [mapped_indexer for mapped_indexer in mappings if mapped_indexer != indexer]
 
+    # This will query other indexer api's.
     new_show_externals = get_externals(indexer=indexer, indexed_show=indexed_show)
 
     # Iterate through all shows in library, and see if one of our externals matches it's indexer_id
@@ -161,6 +162,26 @@ def check_existing_shows(indexed_show, indexer):
                                                           indexerApi(indexer).name))
 
 
+def save_externals_to_db(indexer, series_id, externals):
+    """Save the indexers external id's to the db."""
+    sql_l = []
+
+    for external in externals:
+        if external in reverse_mappings and externals[external] and reverse_mappings[external] != indexer:
+            sql_l.append(['INSERT OR IGNORE '
+                          'INTO indexer_mapping (indexer_id, indexer, mindexer_id, mindexer) '
+                          'VALUES (?,?,?,?)',
+                          [series_id,
+                           indexer,
+                           externals[external],
+                           int(reverse_mappings[external])
+                           ]])
+
+    if sql_l:
+        main_db_con = db.DBConnection()
+        main_db_con.mass_action(sql_l)
+
+
 def load_externals_from_db(indexer=None, indexer_id=None):
     """Load and recreate the indexers external id's.
 
@@ -189,3 +210,22 @@ def load_externals_from_db(indexer=None, indexer_id=None):
             log.error(u'Indexer not supported in current mappings: {id!r}', {'id': error})
 
     return externals
+
+
+def show_in_library(indexer=None, indexer_id=None):
+    """
+    Use the load_externals_from_db method and compare it with the app.showList (library) for existing shows.
+
+    :param indexer: Optional pass indexer id, else use the current shows indexer.
+    :type indexer: int
+    :param indexer_id: Optional pass indexer id, else use the current shows indexer.
+    :type indexer_id: int
+
+    :return: The show object from library if found.
+    """
+    externals = load_externals_from_db(indexer, indexer_id)
+    if externals:
+        for show in app.showList:
+            for indexer, series_id in viewitems(externals):
+                if reverse_mappings[indexer] == show.indexer and series_id == show.series_id:
+                    return show

@@ -116,7 +116,8 @@ class CheckVersion(object):
             os.path.join(app.DATA_DIR, app.APPLICATION_DB),
             app.CONFIG_FILE,
             os.path.join(app.DATA_DIR, app.FAILED_DB),
-            os.path.join(app.DATA_DIR, app.CACHE_DB)
+            os.path.join(app.DATA_DIR, app.CACHE_DB),
+            os.path.join(app.DATA_DIR, app.RECOMMENDED_DB)
         ]
         target = os.path.join(backupDir, app.BACKUP_FILENAME.format(timestamp=time.strftime('%Y%m%d%H%M%S')))
 

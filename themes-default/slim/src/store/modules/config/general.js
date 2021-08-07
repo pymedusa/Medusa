@@ -53,6 +53,19 @@ const state = {
         notifications: null,
         timeout: null
     },
+    recommended: {
+        cache: {
+            shows: null,
+            trakt: null,
+            imdb: null,
+            anidb: null,
+            anilist: null
+        },
+        trakt: {
+            selectedLists: [],
+            availableLists: []
+        }
+    },
     versionNotify: null,
     autoUpdate: null,
     updateFrequency: null,
@@ -130,6 +143,9 @@ const mutations = {
 
         state.recentShows.unshift(show); // Add the new show object to the start of the array.
         state.recentShows = state.recentShows.slice(0, 5); // Cut the array of at 5 items.
+    },
+    updateTraktSelectedLists(state, selectedLists) {
+        state.recommended.trakt.selectedLists = selectedLists;
     }
 };
 
@@ -203,6 +219,12 @@ const actions = {
                 return commit(ADD_CONFIG, {
                     section: 'main', config: { logs: { custom: reducedLogs } }
                 });
+            });
+    },
+    setTraktSelectedLists({ commit }, selectedLists) {
+        return api.patch('config/main', { recommended: { trakt: { selectedLists } } })
+            .then(() => {
+                return commit('updateTraktSelectedLists', selectedLists);
             });
     }
 };

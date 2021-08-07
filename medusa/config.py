@@ -343,6 +343,26 @@ def change_SHOWUPDATE_HOUR(freq):
         app.show_update_scheduler.start_time = datetime.time(hour=app._SHOWUPDATE_HOUR)
 
 
+def change_RECOMMENDED_SHOW_UPDATE_HOUR(freq):
+    """
+    Change frequency of show updater thread.
+
+    :param freq: New frequency
+    """
+    if app._RECOMMENDED_SHOW_UPDATE_HOUR == freq:
+        return
+
+    app._RECOMMENDED_SHOW_UPDATE_HOUR = try_int(freq, app.DEFAULT_RECOMMENDED_SHOW_UPDATE_HOUR)
+
+    if app._RECOMMENDED_SHOW_UPDATE_HOUR > 23:
+        app._RECOMMENDED_SHOW_UPDATE_HOUR = 0
+    elif app._RECOMMENDED_SHOW_UPDATE_HOUR < 0:
+        app._RECOMMENDED_SHOW_UPDATE_HOUR = 0
+
+    if app.show_update_scheduler:
+        app.show_update_scheduler.start_time = datetime.time(hour=app._RECOMMENDED_SHOW_UPDATE_HOUR)
+
+
 def change_SUBTITLES_FINDER_FREQUENCY(subtitles_finder_frequency):
     """
     Change frequency of subtitle thread.

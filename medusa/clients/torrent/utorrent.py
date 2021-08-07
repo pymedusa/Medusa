@@ -90,6 +90,10 @@ class UTorrentAPI(GenericClient):
             log.warning('Unable to authenticate with uTorrent client: {0!r}', error)
             return None
 
+        if self.response is None:
+            log.warning('Unable to connect to uTorrent client')
+            return None
+
         if not self.response.status_code == 404:
             self.auth = re.findall('<div.*?>(.*?)</', self.response.text)[0]
             return self.auth

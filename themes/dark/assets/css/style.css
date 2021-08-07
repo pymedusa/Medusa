@@ -667,6 +667,8 @@ div.xem {
     max-width: 100%;
     overflow: hidden;
     border: 1px solid rgb(136, 136, 136);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
 }
 
 .background-image img {
@@ -934,6 +936,15 @@ div.buttontext p {
 home_newShow.mako
 ========================================================================== */
 
+.addshowoptions {
+    margin-bottom: 2px;
+}
+
+.addshowoptions button {
+    float: right;
+    margin: 0 4px 2px 2px;
+}
+
 #addShowForm,
 #recommendedShowsForm {
     max-width: 800px;
@@ -941,6 +952,21 @@ home_newShow.mako
     margin-right: auto;
     padding: 10px 0;
     font-size: 13px;
+}
+
+.show-rating,
+.show-votes {
+    margin-left: 4px;
+    float: left;
+}
+
+.show-votes > i {
+    font-size: 11px !important;
+}
+
+select.rec-show-select {
+    font-size: 12px;
+    margin: 2px 2px 2px 4px;
 }
 
 #addShowForm > div {
@@ -1076,6 +1102,7 @@ home_recommendedShows.mako
 
 .recommended-container p {
     padding-top: 2px;
+    margin: 0;
 }
 
 .recommended-container p img {
@@ -1094,7 +1121,7 @@ div.recommended-image {
     filter: grayscale(100%);
 }
 
-.show-in-list div#check-overlay {
+.show-in-list .check-overlay {
     opacity: 0.8;
     background-image: url("../images/green-check.png");
     background-repeat: no-repeat;
@@ -1112,7 +1139,6 @@ div.recommended-image {
     white-space: nowrap;
     font-size: 12px;
     overflow: hidden;
-    margin: 0;
     text-decoration: none;
     color: rgb(255, 255, 255);
 }
@@ -1120,7 +1146,7 @@ div.recommended-image {
 .recommended-container {
     left: -4px;
     position: relative;
-    margin: 12px;
+    margin: 5px;
     width: 188px;
     background-color: rgb(223, 218, 207);
     border: 1px solid rgb(17, 17, 17);
@@ -1135,13 +1161,14 @@ div.recommended-image {
     border-bottom: 1px solid rgb(17, 17, 17);
 }
 
-.recommended-container .anidb-url {
+.recommended-container .recommended-show-url {
     float: right;
     padding-right: 4px;
 }
 
-.anidb-inline {
+.recommended-show-link-inline {
     height: 16px;
+    padding-bottom: 1px;
 }
 
 .recommended-container .default-poster {
@@ -4311,6 +4338,17 @@ CSS helper classes
 /* These classes should be natively available in bootstrap 4 */
 .d-block {
     display: block;
+}
+
+/** Bootstrap fix to get rows without padding **/
+.row-no-padding {
+    margin-left: 0;
+    margin-right: 0;
+
+    [class*="col-"] {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
 }
 
 /* Style multiselect components */
