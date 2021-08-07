@@ -68,7 +68,7 @@ class Notifier(object):
 # Public functions
 ##############################################################################
 
-    def notify_snatch(self, title, message):
+    def notify_snatch(self, title, message, **kwargs):
         if app.PLEX_NOTIFY_ONSNATCH:
             self._notify_pht(title, message)
 

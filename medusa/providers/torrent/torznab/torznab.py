@@ -21,6 +21,7 @@ from medusa.indexers.config import (
 )
 from medusa.indexers.utils import mappings
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.providers.generic_provider import GenericProvider
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
@@ -37,14 +38,23 @@ INDEXERS_PARAM = {INDEXER_TVDBV2: 'tvdbid', INDEXER_TVMAZE: 'tvmazeid', INDEXER_
 class TorznabProvider(TorrentProvider):
     """Generic provider for built in and custom providers who expose a Torznab compatible api."""
 
-    def __init__(self, name, url=None, api_key=None, cat_ids=None, cap_tv_search=None):
+    def __init__(self, name, url=None, api_key=None, cat_ids=None, cap_tv_search=None,
+                 search_mode='eponly', search_fallback=False, enable_daily=True,
+                 enable_backlog=False, enable_manualsearch=False, manager=None):
         """Initialize the class."""
         super(TorznabProvider, self).__init__(name)
+
+        self.provider_sub_type = GenericProvider.TORZNAB
 
         self.url = url or ''
         self.api_key = api_key or ''
         self.cat_ids = cat_ids or ['5010', '5030', '5040', '7000']
         self.cap_tv_search = cap_tv_search or []
+        self.search_mode = search_mode
+        self.search_fallback = search_fallback
+        self.enable_daily = enable_daily
+        self.enable_backlog = enable_backlog
+        self.enable_manualsearch = enable_manualsearch
 
         # For now apply the additional season search string for all torznab providers.
         # If we want to limited this per provider, I suggest using a dict, with provider: [list of season templates]
@@ -56,6 +66,10 @@ class TorznabProvider(TorrentProvider):
 
         # Proper Strings
         self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
+
+        # Specify the manager if externally managed.
+        self.manager = manager
+        self.id_manager = self.name
 
         self.cache = tv.Cache(self)
 
@@ -246,6 +260,10 @@ class TorznabProvider(TorrentProvider):
         """
         if os.path.isfile(os.path.join(app.THEME_DATA_ROOT, 'assets/img/providers/', self.get_id() + '.png')):
             return self.get_id() + '.png'
+
+        if self.manager == 'prowlarr':
+            return 'prowlarr.png'
+
         return 'jackett.png'
 
     def _match_indexer(self):

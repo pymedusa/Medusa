@@ -606,7 +606,7 @@ class Series(TV):
         return self._next_aired
 
     @property
-    @ttl_cache(43200.0)
+    @ttl_cache(21600.0)
     def prev_airdate(self):
         """Return last aired episode airdate."""
         return (
@@ -615,7 +615,7 @@ class Series(TV):
         )
 
     @property
-    @ttl_cache(43200.0)
+    @ttl_cache(21600.0)
     def next_airdate(self):
         """Return next aired episode airdate."""
         return (
@@ -1835,11 +1835,12 @@ class Series(TV):
             [self.indexer, self.series_id, today])
 
         if sql_results is None or len(sql_results) == 0:
-            log.debug(u'{id}: Could not find a next episode', {'id': self.series_id})
+            log.debug(u'{id}: ({name}) Could not find a next episode', {'name': self.name, 'id': self.series_id})
         else:
             log.debug(
-                u'{id}: Found episode {ep}', {
+                u'{id}: ({name}) Found episode {ep}', {
                     'id': self.series_id,
+                    'name': self.name,
                     'ep': episode_num(sql_results[0]['season'], sql_results[0]['episode']),
                 }
             )

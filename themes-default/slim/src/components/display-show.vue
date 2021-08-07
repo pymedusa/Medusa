@@ -1,7 +1,7 @@
 <template>
     <div class="display-show-template" :class="theme">
         <vue-snotify />
-        <backstretch v-if="show.id.slug" :slug="show.id.slug" />
+        <backstretch v-if="show.id.slug" :slug="show.id.slug" :key="show.id.slug" />
         <input type="hidden" id="series-id" value="">
         <input type="hidden" id="indexer-name" value="">
         <input type="hidden" id="series-slug" value="">
@@ -19,7 +19,7 @@
                 <!-- Display non-special episodes, paginate if enabled -->
                 <vue-good-table v-if="show.seasons"
                                 :columns="columns"
-                                :rows="orderSeasons"
+                                :rows="orderedSeasons"
                                 :groupOptions="{
                                     enabled: true,
                                     mode: 'span',
@@ -457,7 +457,6 @@ export default {
         };
         return {
             invertTable: true,
-            isMobile: false,
             subtitleSearchComponents: [],
             columns: [{
                 label: 'NFO',
@@ -571,7 +570,7 @@ export default {
             const { themeName } = layout;
             return themeName || 'light';
         },
-        orderSeasons() {
+        orderedSeasons() {
             const { filterByOverviewStatus, invertTable, show } = this;
 
             if (!show.seasons) {
@@ -584,14 +583,14 @@ export default {
             if (filterByOverviewStatus && filterByOverviewStatus.filter(status => status.checked).length < filterByOverviewStatus.length) {
                 const filteredSortedSeasons = [];
                 for (const season of sortedSeasons) {
-                    const { episodes, ...res } = season;
-                    const filteredEpisodes = episodes.filter(episode => {
+                    const { children, ...res } = season;
+                    const filteredEpisodes = children.filter(episode => {
                         const episodeOverviewStatus = this.getOverviewStatus(episode.status, episode.quality, show.config.qualities);
                         const filteredStatus = filterByOverviewStatus.find(overviewStatus => overviewStatus.name === episodeOverviewStatus);
                         return !filteredStatus || filteredStatus.checked;
                     });
                     filteredSortedSeasons.push(Object.assign({
-                        episodes: filteredEpisodes
+                        children: filteredEpisodes
                     }, res));
                 }
                 sortedSeasons = filteredSortedSeasons;
@@ -1256,8 +1255,6 @@ export default {
 </script>
 
 <style scoped>
-@import '../style/modal.css';
-
 .defaultTable.displayShow {
     clear: both;
 }
@@ -1444,6 +1441,10 @@ tablesorter.css
     height: 25px;
 }
 
+.displayShow >>> .vgt-table tr:hover {
+    opacity: 0.9;
+}
+
 .displayShow >>> .unaired {
     background-color: rgb(245, 241, 228);
 }
@@ -1581,9 +1582,27 @@ td.col-footer {
     margin-right: 2px;
 }
 
+.displayShow >>> .vgt-dropdown > .button-group {
+    position: relative;
+}
+
+.displayShow >>> .dropdown-toggle {
+    position: absolute;
+    z-index: 1;
+    top: 0.1em;
+    right: 0.1em;
+    width: 1em;
+    transition: width 0.2s ease-in-out;
+}
+
+.displayShow >>> .dropdown-toggle:hover,
+.displayShow >>> .dropdown-toggle:active {
+    width: 2em;
+}
+
 .displayShow >>> .vgt-dropdown-menu {
     position: absolute;
-    z-index: 1000;
+    z-index: 1;
     float: left;
     min-width: 160px;
     padding: 5px 0;
@@ -1592,12 +1611,14 @@ td.col-footer {
     text-align: left;
     list-style: none;
     background-clip: padding-box;
-    border-radius: 4px;
+    border-radius: 3px;
+    right: 0;
+    top: 2em;
 }
 
 .displayShow >>> .vgt-dropdown-menu > li > span {
     display: block;
-    padding: 3px 20px;
+    padding: 3px 5px;
     clear: both;
     font-weight: 400;
     line-height: 1.42857143;

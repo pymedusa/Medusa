@@ -2,6 +2,7 @@
 """Request handler for configuration."""
 from __future__ import unicode_literals
 
+import datetime
 import inspect
 import logging
 import pkgutil
@@ -23,6 +24,7 @@ from medusa.common import IGNORED, Quality, SKIPPED, WANTED, cpu_presets
 from medusa.helpers.utils import int_default, to_camel_case
 from medusa.indexers.config import INDEXER_TVDBV2, get_indexer_config
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.network_timezones import app_timezone
 from medusa.queues.utils import (
     generate_location_disk_space,
     generate_postprocessing_queue,
@@ -102,6 +104,7 @@ class ConfigHandler(BaseRequestHandler):
         'defaultPage': StringField(app, 'DEFAULT_PAGE'),
         'trashRemoveShow': BooleanField(app, 'TRASH_REMOVE_SHOW'),
         'trashRotateLogs': BooleanField(app, 'TRASH_ROTATE_LOGS'),
+        'brokenProviders': ListField(app, 'BROKEN_PROVIDERS'),
 
         'indexerDefaultLanguage': StringField(app, 'INDEXER_DEFAULT_LANGUAGE'),
         'showUpdateHour': IntegerField(app, 'SHOWUPDATE_HOUR'),
@@ -123,6 +126,7 @@ class ConfigHandler(BaseRequestHandler):
         'webInterface.username': StringField(app, 'WEB_USERNAME'),
         'webInterface.password': StringField(app, 'WEB_PASSWORD'),
         'webInterface.port': IntegerField(app, 'WEB_PORT'),
+        'webInterface.host': StringField(app, 'WEB_HOST'),
         'webInterface.notifyOnLogin': BooleanField(app, 'NOTIFY_ON_LOGIN'),
         'webInterface.ipv6': BooleanField(app, 'WEB_IPV6'),
         'webInterface.httpsEnable': BooleanField(app, 'ENABLE_HTTPS'),
@@ -177,6 +181,8 @@ class ConfigHandler(BaseRequestHandler):
         'namingForceFolders': BooleanField(app, 'NAMING_FORCE_FOLDERS'),
         'subtitles.enabled': BooleanField(app, 'USE_SUBTITLES'),
         'recentShows': ListField(app, 'SHOWS_RECENT'),
+        'providers.prowlarr.url': StringField(app, 'PROWLARR_URL'),
+        'providers.prowlarr.apikey': StringField(app, 'PROWLARR_APIKEY'),
 
         # Sections
         'clients.torrents.authType': StringField(app, 'TORRENT_AUTH_TYPE'),
@@ -609,6 +615,7 @@ class DataGenerator(object):
         section_data['subtitles']['enabled'] = bool(app.USE_SUBTITLES)
         section_data['recentShows'] = app.SHOWS_RECENT
         section_data['addTitleWithYear'] = bool(app.ADD_TITLE_WITH_YEAR)
+        section_data['brokenProviders'] = [provider for provider in app.BROKEN_PROVIDERS if provider]
 
         # Pick a random series to show as background.
         # TODO: Recreate this in Vue when the webapp has a reliable list of shows to choose from.
@@ -671,6 +678,7 @@ class DataGenerator(object):
         section_data['webInterface']['username'] = app.WEB_USERNAME
         section_data['webInterface']['password'] = app.WEB_PASSWORD
         section_data['webInterface']['port'] = int_default(app.WEB_PORT, 8081)
+        section_data['webInterface']['host'] = app.WEB_HOST
         section_data['webInterface']['notifyOnLogin'] = bool(app.NOTIFY_ON_LOGIN)
         section_data['webInterface']['ipv6'] = bool(app.WEB_IPV6)
         section_data['webInterface']['httpsEnable'] = bool(app.ENABLE_HTTPS)
@@ -715,6 +723,11 @@ class DataGenerator(object):
         section_data['backlogOverview'] = {}
         section_data['backlogOverview']['status'] = app.BACKLOG_STATUS
         section_data['backlogOverview']['period'] = app.BACKLOG_PERIOD
+
+        section_data['providers'] = {}
+        section_data['providers']['prowlarr'] = {}
+        section_data['providers']['prowlarr']['url'] = app.PROWLARR_URL
+        section_data['providers']['prowlarr']['apikey'] = app.PROWLARR_APIKEY
 
         return section_data
 
@@ -1068,6 +1081,7 @@ class DataGenerator(object):
         section_data['pid'] = app.PID
         section_data['locale'] = '.'.join([text_type(loc or 'Unknown') for loc in app.LOCALE])
         section_data['localUser'] = app.OS_USER or 'Unknown'
+        section_data['timezone'] = app_timezone.tzname(datetime.datetime.now())
         section_data['programDir'] = app.PROG_DIR
         section_data['dataDir'] = app.DATA_DIR
         section_data['configFile'] = app.CONFIG_FILE

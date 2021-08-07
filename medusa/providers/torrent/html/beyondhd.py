@@ -121,7 +121,7 @@ class BeyondHDProvider(TorrentProvider):
                 cells = result('td')
 
                 try:
-                    if len(cells) < 2:
+                    if len(cells) < 3:
                         continue
 
                     link = cells[1].find('a')

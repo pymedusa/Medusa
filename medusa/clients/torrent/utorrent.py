@@ -67,6 +67,8 @@ class UTorrentAPI(GenericClient):
         self._torrents_list = []
         self._torrents_epoch = 0.0
 
+        self._get_auth()
+
     def _request(self, method='get', params=None, data=None, files=None, cookies=None):
         if cookies:
             log.debug('{name}: Received unused argument: cookies={value!r}',
@@ -248,11 +250,6 @@ class UTorrentAPI(GenericClient):
         Note! This is an expensive method. As when your looping through the history table to get a specific
         info_hash, it will get all torrents for each info_hash. We might want to cache this one.
         """
-        if not self.auth:
-            if not self._get_auth():
-                log.warning('{name}: Authentication Failed', {'name': self.name})
-                return False
-
         params = {'list': 1}
         if not self._request(params=params):
             log.warning('Error while fetching torrents.')

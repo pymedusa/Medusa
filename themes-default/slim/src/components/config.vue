@@ -25,6 +25,7 @@
             <tr><td><i class="icon16-config-ssl" /> SSL Version:</td><td>{{system.sslVersion}}</td></tr>
             <tr><td><i class="icon16-config-os" /> OS:</td><td>{{system.os}}</td></tr>
             <tr><td><i class="icon16-config-locale" /> Locale:</td><td>{{system.locale}}</td></tr>
+            <tr><td><i class="icon16-config-locale" /> Timezone:</td><td>{{system.timezone}}</td></tr>
             <tr><td>&nbsp;</td><td>&nbsp;</td></tr>
             <tr class="infoTableSeperator"><td>&nbsp;</td><td>&nbsp;</td></tr>
             <tr><td><i class="icon16-config-user" /> User:</td><td>{{system.localUser}}</td></tr>

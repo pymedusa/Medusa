@@ -6,6 +6,61 @@
 
 #### Fixes
 
+----
+
+## 0.5.15 (23-07-2021)
+
+#### Improvements
+- Improved Kodi12+ metadata creation. Use 'uniqueid' tag to specify indexer. ([9745](https://github.com/pymedusa/Medusa/pull/9745))
+
+#### Fixes
+- Fix prowl notifications ([9720](https://github.com/pymedusa/Medusa/pull/9720))
+- Fix provider ABNormal ([9721](https://github.com/pymedusa/Medusa/pull/9721))
+- Fix saving provider password ([9721](https://github.com/pymedusa/Medusa/pull/9721))
+
+-----
+
+## 0.5.14 (06-07-2021)
+
+#### New Features
+- Added support for Prowlarr ([9653](https://github.com/pymedusa/Medusa/pull/9653))
+
+#### Improvements
+- Vueified config/providers ([9653](https://github.com/pymedusa/Medusa/pull/9653))
+- Added support for Prowlarr (an alternative to Jackett) ([9653](https://github.com/pymedusa/Medusa/pull/9653))
+- Added feature to test provider results ([9698](https://github.com/pymedusa/Medusa/pull/9698))
+
+#### Fixes
+- Fix email notifications for per show notifications with special chars ([9652](https://github.com/pymedusa/Medusa/pull/9652))
+- Fix adding an existing show did not run refresh from disk after ([9694](https://github.com/pymedusa/Medusa/pull/9694))
+- Fix filter displayShow episodes by overview status ([9691](https://github.com/pymedusa/Medusa/pull/9691))
+- Fix main page not reflecting correct 'next episode date' ([9689](https://github.com/pymedusa/Medusa/pull/9689))
+
+-----
+
+## 0.5.13 (16-06-2021)
+
+#### Fixes
+- Add support for new synology download station api. Credits to Benjv. ([9555](https://github.com/pymedusa/Medusa/pull/9555))
+- Fix shows not being removed from UI. ([9563](https://github.com/pymedusa/Medusa/pull/9563))
+- Fix provider torrentday. Needs additional cookie cf_clearance. ([9628](https://github.com/pymedusa/Medusa/pull/9628))
+- Fix provider animebytes. Fixed issue with parsing releases with absolute episode numbering. ([9620](https://github.com/pymedusa/Medusa/pull/9620))
+- Fix transmission authentication. ([9598](https://github.com/pymedusa/Medusa/pull/9598))
+
+-----
+
+## 0.5.12 (07-05-2021)
+
+#### New Features
+- Remove experimental feature flag for Download handler / advanced failed download handling
+- Remove experimental feature flag for Append (year) to each show title
+
+#### Improvements
+- Vueify schedule page. ([9403](https://github.com/pymedusa/Medusa/pull/9403))
+
+#### Fixes
+- Fix download hander failed ([9476](https://github.com/pymedusa/Medusa/pull/9476))
+
 -----
 
 ## 0.5.11 (17-04-2021)

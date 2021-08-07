@@ -120,6 +120,8 @@ class DelugeAPI(GenericClient):
         self.session.headers.update({'Content-Type': 'application/json'})
         self.url = urljoin(self.host, 'json')
 
+        self._get_auth()
+
     def _get_auth(self):
         post_data = json.dumps({
             'method': 'auth.login',

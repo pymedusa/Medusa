@@ -22,6 +22,9 @@
                 dropdownAllowAll: false,
                 position: 'both'
             }"
+            :column-filter-options="{
+                enabled: true
+            }"
             :row-style-class="rowStyleClassFn"
             styleClass="vgt-table condensed"
             @on-page-change="onPageChange"
@@ -115,7 +118,7 @@
                         track-by="value"
                         label="name"
                         @input="updateClientStatusFilter"
-                        style="margin-top: 5px;"
+                        class="vgt-multiselect"
                     />
                 </span>
             </template>
@@ -376,5 +379,39 @@ export default {
     }
 };
 </script>
-<style scoped src='../style/vgt-table.css'>
+<style scoped>
+/* History tables */
+.status-name > svg {
+    margin-left: 5px;
+}
+
+.vgt-multiselect {
+    min-height: 30px;
+}
+
+.multiselect--active {
+    min-width: 200px;
+}
+
+.vgt-multiselect >>> .multiselect__placeholder {
+    margin-bottom: 0;
+    padding-top: 0;
+}
+
+.vgt-multiselect >>> .multiselect__tags {
+    padding-top: 0;
+    min-height: 30px;
+}
+
+:not(tr.status) span.episode-title a,
+:not(tr.status) span.show-title a {
+    text-decoration: none;
+    color: rgb(255, 255, 255);
+}
+
+tr.status span.episode-title a,
+tr span.show-title a {
+    text-decoration: none;
+    color: rgb(0, 0, 0);
+}
 </style>

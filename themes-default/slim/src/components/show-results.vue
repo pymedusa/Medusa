@@ -417,6 +417,4 @@ export default {
 #no-result {
     color: rgb(255, 255, 255);
 }
-
-@import '../style/v-tooltip.css';
 </style>

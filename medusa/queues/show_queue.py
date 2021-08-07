@@ -407,8 +407,6 @@ class QueueItemAdd(ShowQueueItem):
                 log.warning('Unable to load series from indexer: {0!r}'.format(error))
                 raise SaveSeriesException('Unable to load series from indexer: {0!r}'.format(error))
 
-            message_step('check if show is already added')
-
             try:
                 message_step('configure show options')
                 series.configure(self)
@@ -458,6 +456,15 @@ class QueueItemAdd(ShowQueueItem):
 
             message_step('add scene numbering')
             series.add_scene_numbering()
+
+            if self.show_dir:
+                # If a show dir was passed, this was added as an existing show.
+                # For new shows we should have any files on disk.
+                message_step('refresh episodes from disk')
+                try:
+                    app.show_queue_scheduler.action.refreshShow(series)
+                except CantRefreshShowException as error:
+                    log.warning('Unable to rescan episodes from disk: {0!r}'.format(error))
 
         except SaveSeriesException as error:
             log.warning('Unable to add series: {0!r}'.format(error))
@@ -949,6 +956,9 @@ class QueueItemRemove(ShowQueueItem):
             except Exception as error:
                 log.exception('Exception occurred while trying to delete show {show}, error: {error',
                               {'show': self.show.name, 'error': error})
+
+        # Send showRemoved to frontend, so we can remove it from localStorage.
+        ws.Message('QueueItemShowRemove', self.show.to_json(detailed=False)).push()  # Send ws update to client
 
         self.show.delete_show(full=self.full)
 

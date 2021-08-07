@@ -63,6 +63,10 @@ class GenericProvider(object):
 
     NZB = 'nzb'
     TORRENT = 'torrent'
+    NEWZNAB = 'newznab'
+    TORZNAB = 'torznab'
+    TORRENTRSS = 'torrentrss'
+    PROWLARR = 'prowlarr'
 
     def __init__(self, name):
         """Initialize the class."""
@@ -76,7 +80,8 @@ class GenericProvider(object):
         self.enabled = False
         self.headers = {'User-Agent': USER_AGENT}
         self.proper_strings = ['PROPER|REPACK|REAL|RERIP']
-        self.provider_type = None
+        self.provider_type = None  # generic type. For ex: nzb or torrent
+        self.provider_sub_type = None  # specific type. For ex: neznab or torznab
         self.public = False
         self.search_fallback = False
         self.search_mode = None
@@ -791,8 +796,8 @@ class GenericProvider(object):
             return {'result': False,
                     'message': 'No Cookies added from ui for provider: {0}'.format(self.name)}
 
-        cookie_validator = re.compile(r'^([\w%]+=[\w%]+)(;[\w%]+=[\w%]+)*$')
-        if not cookie_validator.match(self.cookies):
+        cookie_validator = re.compile(r'([\w%]+=[\w%]+)')
+        if not cookie_validator.findall(self.cookies):
             ui.notifications.message(
                 'Failed to validate cookie for provider {provider}'.format(provider=self.name),
                 'Cookie is not correctly formatted: {0}'.format(self.cookies))
@@ -891,9 +896,11 @@ class GenericProvider(object):
     def to_json(self):
         """Return a json representation for a provider."""
         from medusa.providers.torrent.torrent_provider import TorrentProvider
-        return {
+        # Generic options
+        data = {
             'name': self.name,
             'id': self.get_id(),
+            'imageName': self.image_name(),
             'config': {
                 'enabled': self.enabled,
                 'search': {
@@ -901,10 +908,10 @@ class GenericProvider(object):
                         'enabled': self.enable_backlog
                     },
                     'manual': {
-                        'enabled': self.enable_backlog
+                        'enabled': self.enable_manualsearch
                     },
                     'daily': {
-                        'enabled': self.enable_backlog,
+                        'enabled': self.enable_daily,
                         'maxRecentItems': self.max_recent_items,
                         'stopAt': self.stop_at
                     },
@@ -916,20 +923,96 @@ class GenericProvider(object):
                         'enabled': self.enable_search_delay,
                         'duration': self.search_delay
                     }
+                },
+                'cookies': {
+                    'enabled': self.enable_cookies,
+                    'values': self.cookies
                 }
             },
             'animeOnly': self.anime_only,
             'type': self.provider_type,
+            'subType': self.provider_sub_type,
             'public': self.public,
             'btCacheUrls': self.bt_cache_urls if isinstance(self, TorrentProvider) else [],
             'properStrings': self.proper_strings,
             'headers': self.headers,
             'supportsAbsoluteNumbering': self.supports_absolute_numbering,
             'supportsBacklog': self.supports_backlog,
-            'url': self.url,
-            'urls': self.urls,
-            'cookies': {
-                'enabled': self.enable_cookies,
-                'required': self.cookies
-            }
+            'url': self.custom_url or self.url if hasattr(self, 'custom_url') else self.url,
+            'urls': self.urls
         }
+
+        # Custom options (torrent client specific)
+        if hasattr(self, 'username'):
+            data['config']['username'] = self.username
+
+        if hasattr(self, 'password'):
+            data['config']['password'] = self.password
+
+        if hasattr(self, 'api_key'):
+            data['config']['apikey'] = self.api_key
+
+        if hasattr(self, 'custom_url'):
+            data['config']['customUrl'] = self.custom_url
+
+        if hasattr(self, 'minseed'):
+            data['config']['minseed'] = self.minseed
+
+        if hasattr(self, 'minleech'):
+            data['config']['minleech'] = self.minleech
+
+        if hasattr(self, 'ratio'):
+            data['config']['ratio'] = self.ratio
+
+        if hasattr(self, 'client_ratio'):
+            data['config']['clientRatio'] = self.client_ratio
+
+        if hasattr(self, 'passkey'):
+            data['config']['passkey'] = self.passkey
+
+        if hasattr(self, 'hash'):
+            data['config']['hash'] = self.hash
+
+        if hasattr(self, 'digest'):
+            data['config']['digest'] = self.digest
+
+        if hasattr(self, 'pin'):
+            data['config']['pin'] = self.pin
+
+        if hasattr(self, 'confirmed'):
+            data['config']['confirmed'] = self.confirmed
+
+        if hasattr(self, 'ranked'):
+            data['config']['ranked'] = self.ranked
+
+        if hasattr(self, 'sorting'):
+            data['config']['sorting'] = self.sorting
+
+        if hasattr(self, 'required_cookies'):
+            data['config']['cookies']['required'] = self.required_cookies
+
+        # Custom options (newznab specific)
+        if hasattr(self, 'default'):
+            data['default'] = self.default
+
+        if hasattr(self, 'cat_ids'):
+            data['config']['catIds'] = self.cat_ids
+
+        if hasattr(self, 'params'):
+            data['config']['params'] = self.params
+
+        if hasattr(self, 'needs_auth'):
+            data['needsAuth'] = self.needs_auth
+
+        # Custom options (torrentrss)
+        if hasattr(self, 'title_tag'):
+            data['config']['titleTag'] = self.title_tag
+
+        # Custom options (prowlarr):
+        if hasattr(self, 'manager'):
+            data['manager'] = self.manager
+
+        if hasattr(self, 'id_manager'):
+            data['idManager'] = self.id_manager
+
+        return data

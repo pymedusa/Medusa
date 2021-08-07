@@ -1,0 +1,359 @@
+/** Use this as table styling for all table layouts */
+.vgt-table-styling {
+    .vgt-table {
+        width: 100%;
+        margin-right: auto;
+        margin-left: auto;
+        text-align: left;
+        border-spacing: 0;
+    
+        th,
+        td {
+            padding: 4px;
+            vertical-align: middle;
+        }
+
+        /* remove extra border from left edge */
+        th:first-child,
+        td:first-child {
+            border-left: none;
+        }
+
+        th {
+            text-align: center;
+            border-collapse: collapse;
+            font-weight: normal;
+            position: relative;
+        }
+
+        span.break-word {
+            word-wrap: break-word;
+        }
+
+        thead th.sorting.sorting-asc {
+            background-position-x: right;
+            background-position-y: bottom;
+        }
+
+        thead th.sorting {
+            background-repeat: no-repeat;
+        }
+
+        thead th.sorting.sorting-desc {
+            background-color: rgb(85, 85, 85);
+            background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
+        }
+
+        thead th.sorting.sorting-asc {
+            background-color: rgb(85, 85, 85);
+            background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjI8Bya2wnINUMopZAQA7);
+            background-position-x: right;
+            background-position-y: bottom;
+        }
+
+        th.sortable button {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background: transparent;
+            border: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        thead th {
+            padding: 4px;
+            cursor: default;
+        }
+
+        input.tablesorter-filter {
+            width: 98%;
+            height: auto;
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+
+        tr.tablesorter-filter-row,
+        tr.tablesorter-filter-row td {
+            text-align: center;
+        }
+
+        /* optional disabled input styling */
+        input.tablesorter-filter-row .disabled {
+            display: none;
+        }
+
+        tfoot tr {
+            text-align: center;
+            border-collapse: collapse;
+        }
+
+        tfoot a {
+            text-decoration: none;
+        }
+
+        th.vgt-row-header {
+            text-align: left;
+        }
+
+        .season-header {
+            display: inline;
+            margin-left: 5px;
+        }
+
+        tr.spacer {
+            height: 25px;
+        }
+
+        tr:hover {
+            opacity: 0.9;
+        }
+
+        /* When using collored rows (using the episode status name, Snatched, Downloaded, Failed, etc.)
+        * we'd like to have the text always black.
+        */
+        tr.status td > span {
+            color: rgb(0, 0, 0);
+        }
+
+        span.episode-title > a {
+            color: black;
+            text-decoration: none;
+        }
+
+        .skipped {
+            background-color: rgb(190, 222, 237);
+        }
+    
+        .snatched {
+            background-color: rgb(235, 193, 234);
+        }
+    
+        .downloaded {
+            background-color: rgb(255, 218, 138);
+        }
+    
+        .failed {
+            background-color: rgb(255, 153, 153);
+        }
+    
+        .subtitled {
+            background-color: rgb(190, 222, 237);
+        }
+
+        .archived {
+            background-color: rgb(245, 241, 228);
+        }
+    }    
+
+    .tablesorter-header-inner {
+        padding: 0 2px;
+        text-align: center;
+    }
+
+    .vgt-dropdown > .button-group {
+        position: relative;
+    }
+
+    .dropdown-toggle {
+        position: absolute;
+        z-index: 1;
+        top: 0.1em;
+        right: 0.1em;
+        width: 1em;
+        transition: width 0.2s ease-in-out;
+
+        &:hover,
+        &:active {
+            width: 2em;
+        }
+    }
+
+    .vgt-dropdown-menu {
+        position: absolute;
+        z-index: 1;
+        float: left;
+        min-width: 160px;
+        padding: 5px 0;
+        margin: 2px 0 0;
+        font-size: 14px;
+        text-align: left;
+        list-style: none;
+        background-clip: padding-box;
+        border-radius: 3px;
+        right: 0;
+        top: 2em;
+
+        > li > span {
+            display: block;
+            padding: 3px 5px;
+            clear: both;
+            font-weight: 400;
+            line-height: 1.42857143;
+            white-space: nowrap;
+        }
+    
+    }
+
+    .align-center {
+        display: flex;
+        justify-content: center;
+    }
+
+    .span-center > span {
+        display: flex;
+        justify-content: center;
+    }
+
+    .indexer-image :not(:last-child) {
+        margin-right: 5px;
+    }
+
+    .button-row {
+        width: 100%;
+        display: inline-block;
+    }
+
+    .global-ignored td.release span {
+        color: red;
+    }
+
+    .show-ignored td.release span {
+        color: red;
+        font-style: italic;
+    }
+
+    .global-required td.release span {
+        color: green;
+    }
+
+    .show-required td.release span {
+        color: green;
+        font-style: italic;
+    }
+
+    .global-undesired td.release span {
+        color: orange;
+    }
+
+    td.col-footer {
+        text-align: left !important;
+    }
+
+    .vgt-wrap__footer {
+        color: rgb(255, 255, 255);
+        padding: 1em;
+        background-color: rgb(51, 51, 51);
+        margin-bottom: 1em;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .footer__row-count,
+    .footer__navigation__page-info {
+        display: inline;
+    }
+
+    .footer__row-count__label {
+        margin-right: 1em;
+    }
+
+    .vgt-wrap__footer .footer__navigation {
+        font-size: 14px;
+    }
+
+    .vgt-pull-right {
+        float: right !important;
+    }
+
+    .footer__navigation__page-btn {
+        display: inline-block;
+        padding: 4px 10px;
+        margin-bottom: 0;
+        font-size: 12px;
+        line-height: 16px;
+        vertical-align: middle;
+        border-radius: 1px;
+    }
+
+    .footer__navigation__page-btn:hover {
+        text-decoration: none;
+        background-position: 0 -150px;
+        transition: background-position 0s linear;
+        background-image: none;
+    }
+
+    .footer__navigation__page-btn.disabled {
+        display: none;
+    }
+
+    .vgt-wrap__footer .footer__navigation__page-btn .chevron {
+        width: 24px;
+        height: 24px;
+        border-radius: 15%;
+        position: relative;
+        margin: 0 8px;
+    }
+
+    .vgt-wrap__footer .footer__navigation__info,
+    .vgt-wrap__footer .footer__navigation__page-info {
+        display: inline-flex;
+        color: #909399;
+        margin: 0 16px;
+        margin-top: 0;
+        margin-right: 16px;
+        margin-bottom: 0;
+        margin-left: 16px;
+    }
+
+    .vgt-input {
+        height: 23px;
+        line-height: 23px;
+        font-size: 0.9em;
+        width: 100%;
+        background-color: #fff;
+        background-image: none;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        padding: 0 10px;
+        margin: 0;
+    }
+    
+    .vgt-select {
+        height: 23px;
+        line-height: 23px;
+        font-size: 0.9em;
+        width: 100%;
+        background-color: #fff;
+        background-image: none;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        padding: 0 10px;
+    }
+
+    /* Schedule list layout */
+    .schedule tr.today {
+        background-color: rgb(245, 241, 228);
+    }
+
+    .schedule tr.soon {
+        background-color: rgb(221, 255, 221);
+    }
+
+    .schedule tr.missed {
+        background-color: rgb(255, 221, 221);
+    }
+
+    .schedule tr.later {
+        background-color: rgb(190, 222, 237);
+    }
+
+    .schedule tr,
+    .schedule tr a {
+        color: rgb(0, 0, 0);
+    }
+}

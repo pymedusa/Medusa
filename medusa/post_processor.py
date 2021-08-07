@@ -1138,7 +1138,8 @@ class PostProcessor(object):
 
         # try to find out if we have enough space to perform the copy or move action.
         if not helpers.is_file_locked(self.file_path, False):
-            if not verify_freespace(self.file_path, ep_obj.series._location, [ep_obj] + ep_obj.related_episodes):
+            if not verify_freespace(self.file_path, os.path.dirname(ep_obj.series._location),
+                                    [ep_obj] + ep_obj.related_episodes):
                 self.log(u'Not enough space to continue post-processing, exiting', logger.WARNING)
                 return False
         else:

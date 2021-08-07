@@ -71,7 +71,7 @@ const getters = {
         const timeAgo = new TimeAgo('en-US');
         const { dateStyle, fuzzyDating, timeStyle } = state;
 
-        if (!airDate) {
+        if (!airDate || !dateStyle) {
             return '';
         }
 

@@ -30,10 +30,9 @@ class Notifier(object):
     def test_notify(self, prowl_api, prowl_priority):
         return self._send_prowl(prowl_api, prowl_priority, event='Test', message='Testing Prowl settings from Medusa', force=True)
 
-    def notify_snatch(self, title, message):
+    def notify_snatch(self, title, message, ep_obj):
         if app.PROWL_NOTIFY_ONSNATCH:
-            show = self._parse_episode(message)
-            recipients = self._generate_recipients(show)
+            recipients = self._generate_recipients(ep_obj.series)
             if not recipients:
                 log.debug('Skipping prowl notify because there are no configured recipients')
             else:
@@ -43,30 +42,26 @@ class Notifier(object):
                                      message=message)
 
     def notify_download(self, ep_obj):
-        ep_name = ep_obj.pretty_name_with_quality()
         if app.PROWL_NOTIFY_ONDOWNLOAD:
-            show = self._parse_episode(ep_name)
-            recipients = self._generate_recipients(show)
+            recipients = self._generate_recipients(ep_obj.series)
             if not recipients:
                 log.debug('Skipping prowl notify because there are no configured recipients')
             else:
                 for api in recipients:
                     self._send_prowl(prowl_api=api, prowl_priority=None,
                                      event=common.notifyStrings[common.NOTIFY_DOWNLOAD],
-                                     message=ep_name)
+                                     message=ep_obj.pretty_name_with_quality())
 
     def notify_subtitle_download(self, ep_obj, lang):
-        ep_name = ep_obj.pretty_name()
         if app.PROWL_NOTIFY_ONSUBTITLEDOWNLOAD:
-            show = self._parse_episode(ep_name)
-            recipients = self._generate_recipients(show)
+            recipients = self._generate_recipients(ep_obj.series)
             if not recipients:
                 log.debug('Skipping prowl notify because there are no configured recipients')
             else:
                 for api in recipients:
                     self._send_prowl(prowl_api=api, prowl_priority=None,
                                      event=common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD],
-                                     message=ep_name + ' [' + lang + ']')
+                                     message=f'{ep_obj.pretty_name()} [{lang}]')
 
     def notify_git_update(self, new_version='??'):
         if app.USE_PROWL:
@@ -83,7 +78,13 @@ class Notifier(object):
                              event=title, message=update_text.format(ipaddress))
 
     @staticmethod
-    def _generate_recipients(show=None):
+    def _generate_recipients(show_obj=None):
+        """
+        Generate a list of prowl recipients (api keys) for a specific show.
+
+        Search the tv_shows table for entries in the notify_list field.
+        :param show_obj: Show object.
+        """
         apis = []
         mydb = db.DBConnection()
 
@@ -94,15 +95,21 @@ class Notifier(object):
                     apis.append(api)
 
         # Grab the per-show-notification recipients
-        if show is not None:
-            for value in show:
-                for subs in mydb.select('SELECT notify_list FROM tv_shows WHERE show_name = ?', (value,)):
-                    if subs['notify_list']:
-                        entries = json.loads(subs['notify_list'])
-                        if entries:
-                            for api in entries['prowlAPIs'].split(','):
-                                if api.strip():
-                                    apis.append(api)
+        if show_obj is not None:
+            recipients = mydb.select(
+                'SELECT notify_list '
+                'FROM tv_shows '
+                'WHERE indexer_id = ? AND indexer = ? ',
+                [show_obj.series_id, show_obj.indexer]
+            )
+
+            for subs in recipients:
+                if subs['notify_list']:
+                    entries = json.loads(subs['notify_list'])
+                    if entries:
+                        for api in entries['prowlAPIs'].split(','):
+                            if api.strip():
+                                apis.append(api)
 
         apis = set(apis)
         return apis

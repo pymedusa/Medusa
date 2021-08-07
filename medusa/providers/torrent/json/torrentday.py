@@ -39,7 +39,7 @@ class TorrentDayProvider(TorrentProvider):
         self.freeleech = False
         self.enable_cookies = True
         self.cookies = ''
-        self.required_cookies = ('uid', 'pass')
+        self.required_cookies = ('uid', 'pass', 'cf_clearance')
 
         # TV/480p - 24
         # TV/Bluray - 32
