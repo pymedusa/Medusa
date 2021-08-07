@@ -51,25 +51,25 @@ describe('AppLink.test.js', () => {
         expect(wrapper.attributes().rel).toEqual('noreferrer noopener');
     });
 
-    // it('renders anonymised external link', () => {
-    //     const wrapper = mount(AppLink, {
-    //         localVue,
-    //         store,
-    //         propsData: {
-    //             href: 'https://google.com'
-    //         },
-    //         computed: {
-    //             general() {
-    //                 return { anonRedirect: 'https://anon-redirect.tld/?url=' };
-    //             }
-    //         }
-    //     });
+    xit('renders anonymised external link', () => {
+        const wrapper = mount(AppLink, {
+            localVue,
+            store,
+            propsData: {
+                href: 'https://google.com'
+            },
+            computed: {
+                general() {
+                    return { anonRedirect: 'https://anon-redirect.tld/?url=' };
+                }
+            }
+        });
 
-    //     expect(wrapper.element).toMatchSnapshot();
-    //     expect(wrapper.attributes().href).toEqual('https://anon-redirect.tld/?url=https://google.com');
-    //     expect(wrapper.attributes().target).toEqual('_blank');
-    //     expect(wrapper.attributes().rel).toEqual('noreferrer');
-    // });
+        expect(wrapper.element).toMatchSnapshot();
+        expect(wrapper.attributes().href).toEqual('https://anon-redirect.tld/?url=https://google.com');
+        expect(wrapper.attributes().target).toEqual('_blank');
+        expect(wrapper.attributes().rel).toEqual('noreferrer');
+    });
 
     it('renders internal link', () => {
         const wrapper = mount(AppLink, {
