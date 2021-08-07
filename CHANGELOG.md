@@ -1,6 +1,13 @@
 ## Unreleased
 
 #### New Features
+- Implemented recommended shows v2. ([5782](https://github.com/pymedusa/Medusa/pull/5782))
+  - Added recommended list from anilist.co
+  - Recommended lists are cached nightly
+  - Configure which lists to cache
+  - Improvements to the recommended list UI
+  - Added plot and genre information when available from the recommended list
+  - Add shows from recommended lists through one click to the show search, or by id (if a tvdbid, tmdbid or tvmazeid is available)
 
 #### Improvements
 
