@@ -12,6 +12,7 @@ from xmlrpc.client import Error, ProtocolError, ServerProxy
 from medusa import app
 from medusa.common import Quality
 from medusa.helper.common import try_int
+from medusa.helper.exceptions import DownloadClientConnectionException
 from medusa.logger.adapters.style import BraceAdapter
 
 import ttl_cache
@@ -56,7 +57,7 @@ def nzb_connection(url):
         return False
 
 
-def test_authentication(host, username, password, use_https):
+def test_authentication(host=None, username=None, password=None, use_https=False):
     """
     Test NZBget client connection.
 
@@ -197,10 +198,13 @@ def _get_nzb_queue():
     )
 
     if not nzb_connection(url):
-        return False
+        raise DownloadClientConnectionException('Error while fetching nzbget queue')
 
     nzb_get_rpc = ServerProxy(url)
-    nzb_groups = nzb_get_rpc.listgroups()
+    try:
+        nzb_groups = nzb_get_rpc.listgroups()
+    except ConnectionRefusedError as error:
+        raise DownloadClientConnectionException(f'Error while fetching nzbget history. Error: {error}')
 
     return nzb_groups
 
@@ -216,10 +220,13 @@ def _get_nzb_history():
     )
 
     if not nzb_connection(url):
-        return False
+        raise DownloadClientConnectionException('Error while fetching nzbget history')
 
     nzb_get_rpc = ServerProxy(url)
-    nzb_groups = nzb_get_rpc.history()
+    try:
+        nzb_groups = nzb_get_rpc.history()
+    except ConnectionRefusedError as error:
+        raise DownloadClientConnectionException(f'Error while fetching nzbget history. Error: {error}')
 
     return nzb_groups
 

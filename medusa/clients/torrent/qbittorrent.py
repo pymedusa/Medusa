@@ -9,11 +9,13 @@ import os
 
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
+from medusa.helper.exceptions import DownloadClientConnectionException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.schedulers.download_handler import ClientStatus
 
 from requests.auth import HTTPDigestAuth
 from requests.compat import urljoin
+from requests.exceptions import RequestException
 
 import ttl_cache
 
@@ -293,6 +295,9 @@ class QBittorrentAPI(GenericClient):
     def _get_torrents(self, filter=None, category=None, sort=None):
         """Get all torrents from qbittorrent api."""
         params = {}
+        if not self.api:
+            raise DownloadClientConnectionException('Error while fetching torrent. Not authenticated.')
+
         if self.api >= (2, 0, 0):
             self.url = urljoin(self.host, 'api/v2/torrents/info')
             if filter:
@@ -304,9 +309,12 @@ class QBittorrentAPI(GenericClient):
         else:
             self.url = urljoin(self.host, 'json/torrents')
 
-        if not self._request(method='get', params=params, cookies=self.session.cookies):
-            log.warning('Error while fetching torrents.')
-            return []
+        try:
+            if not self._request(method='get', params=params, cookies=self.session.cookies):
+                log.warning('Error while fetching torrents.')
+                return []
+        except RequestException as error:
+            raise DownloadClientConnectionException(f'Error while fetching torrent. Error: {error}')
 
         return self.response.json()
 
