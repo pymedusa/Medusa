@@ -68,7 +68,9 @@ class GenericClient(object):
         except requests.exceptions.RequestException as error:
             log.warning('{name}: Error occurred during request: {error}',
                         {'name': self.name, 'error': error})
-            raise # We want to raise connection errors for the download_handler.
+            # We want to raise connection errors for the download_handler. As we need to know
+            # explicitely if there was a connection error when untracking tracked torrents/nzb.
+            raise
         except Exception as error:
             log.error('{name}: Unknown exception raised when sending torrent to'
                       ' {name}: {error}', {'name': self.name, 'error': error})

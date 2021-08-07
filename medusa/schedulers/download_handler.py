@@ -22,7 +22,6 @@ import datetime
 import logging
 from builtins import object
 from enum import Enum
-from medusa.helper.exceptions import DownloadClientConnectionException
 from uuid import uuid4
 
 from medusa import app, db, ws
@@ -30,6 +29,7 @@ from medusa.clients import torrent
 from medusa.clients.nzb import nzbget, sab
 from medusa.clients.torrent.generic import GenericClient
 from medusa.helper.common import ConstsBitwize
+from medusa.helper.exceptions import DownloadClientConnectionException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.process_tv import PostProcessQueueItem
 

@@ -7,8 +7,6 @@ from __future__ import unicode_literals
 import logging
 import os
 
-from requests.exceptions import RequestException
-
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
 from medusa.helper.exceptions import DownloadClientConnectionException
@@ -17,6 +15,7 @@ from medusa.schedulers.download_handler import ClientStatus
 
 from requests.auth import HTTPDigestAuth
 from requests.compat import urljoin
+from requests.exceptions import RequestException
 
 import ttl_cache
 

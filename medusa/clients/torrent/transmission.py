@@ -12,9 +12,9 @@ from base64 import b64encode
 
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
+from medusa.helper.exceptions import DownloadClientConnectionException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.schedulers.download_handler import ClientStatus
-from medusa.helper.exceptions import DownloadClientConnectionException
 
 import requests.exceptions
 from requests.compat import urljoin
