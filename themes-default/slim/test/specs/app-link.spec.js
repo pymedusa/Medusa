@@ -51,7 +51,7 @@ describe('AppLink.test.js', () => {
         expect(wrapper.attributes().rel).toEqual('noreferrer noopener');
     });
 
-    xit('renders anonymised external link', () => {
+    it.skip('renders anonymised external link', () => {
         const wrapper = mount(AppLink, {
             localVue,
             store,
