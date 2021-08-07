@@ -71,6 +71,39 @@
                     "notifications": true,
                     "timeout": 3
                 },
+                "recommended": {
+                    "cache": {
+                        "shows": true,
+                        "trakt": true,
+                        "imdb": true,
+                        "anidb": true,
+                        "anilist": true
+                    },
+                    "trakt": {
+                        "selectedLists": [
+                            "trending",
+                            "popular",
+                            "anticipated",
+                            "collected",
+                            "watched",
+                            "played",
+                            "recommendations",
+                            "newshow",
+                            "newseason"
+                        ],
+                        "availableLists": [
+                            "trending",
+                            "popular",
+                            "anticipated",
+                            "collected",
+                            "watched",
+                            "played",
+                            "recommendations",
+                            "newshow",
+                            "newseason"
+                        ]
+                    }
+                },
                 "versionNotify": true,
                 "autoUpdate": false,
                 "updateFrequency": 1,

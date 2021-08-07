@@ -262,6 +262,78 @@ exports[`ConfigGeneral.test.js renders 1`] = `
             <div
               class="component-group-desc col-xs-12 col-md-2"
             >
+              <h3
+                style="word-break: break-word;"
+              >
+                Recommended shows
+              </h3>
+               
+              <p>
+                Options for controlling the caching of recommended shows.
+              </p>
+            </div>
+             
+            <div
+              class="col-xs-12 col-md-10"
+            >
+              <fieldset
+                class="component-group-list"
+              >
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="cache_rec_shows"
+                  label="Cache recommended shows"
+                  value="true"
+                >
+                  <p>
+                    Enabling recommended shows, will cache recommended shows on a daily interval.
+                  </p>
+                </config-toggle-slider-stub>
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="cache_rec_trakt"
+                  label="Cache Trakt lists"
+                  value="true"
+                />
+                 
+                <config-template-stub
+                  label="Trakt enabled lists"
+                  labelfor="trakt_selected_lists"
+                >
+                  <select-trakt-lists-stub />
+                </config-template-stub>
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="cache_rec_imdb"
+                  label="Cache Imdb lists"
+                  value="true"
+                />
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="cache_rec_anidb"
+                  label="Cache Anidb lists"
+                  value="true"
+                />
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="cache_rec_anilist"
+                  label="Cache AniList lists"
+                  value="true"
+                />
+              </fieldset>
+            </div>
+          </div>
+           
+          <div
+            class="row component-group"
+          >
+            <div
+              class="component-group-desc col-xs-12 col-md-2"
+            >
               <h3>
                 Indexer
               </h3>
