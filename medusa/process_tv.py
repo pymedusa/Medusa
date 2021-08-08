@@ -116,7 +116,7 @@ class PostProcessQueueItem(generic_queue.QueueItem):
         """Process for when we have a valid path."""
         process_method = self.process_method or app.PROCESS_METHOD
 
-        process_results = ProcessResult(self.path, process_method, failed=self.failed)
+        process_results = ProcessResult(self.path, process_method, failed=self.failed, episodes=self.episodes)
         process_results.process(
             resource_name=self.resource_name,
             force=self.force,
