@@ -221,7 +221,7 @@ class ProcessResult(object):
 
     IGNORED_FOLDERS = ('@eaDir', '#recycle', '.@__thumb',)
 
-    def __init__(self, path, process_method=None, failed=False):
+    def __init__(self, path, process_method=None, failed=False, episodes=[]):
         """
         Initialize ProcessResult object.
 
@@ -242,6 +242,7 @@ class ProcessResult(object):
         self.process_file = False
         # When multiple media folders/files processed. Flag postpone_any of any them was postponed.
         self.postpone_any = False
+        self.episodes = episodes
 
     @property
     def directory(self):
