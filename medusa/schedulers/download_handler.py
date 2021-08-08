@@ -32,6 +32,7 @@ from medusa.helper.common import ConstsBitwize
 from medusa.helper.exceptions import DownloadClientConnectionException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.process_tv import PostProcessQueueItem
+from medusa.show.show import Show
 
 from requests import RequestException
 
@@ -328,9 +329,6 @@ class DownloadHandler(object):
 
     def _postprocess(self, path, info_hash, resource_name, failed=False):
         """Queue a postprocess action."""
-        # TODO: Add a check for if not already queued or run.
-        # queue a postprocess action
-
         # Use the info hash get a segment of episodes.
         history_items = self.main_db_con.select(
             'SELECT * FROM history WHERE info_hash = ?',
@@ -340,10 +338,9 @@ class DownloadHandler(object):
         episodes = []
         for history_item in history_items:
             # Search for show in library
-            from medusa.show.show import Show
             show = Show.find_by_id(app.showList, history_item['indexer_id'], history_item['showid'])
             if not show:
-                # Show is -no longer- available in library.
+                # Show is "no longer" available in library.
                 continue
             episodes.append(show.get_episode(history_item['season'], history_item['episode']))
 

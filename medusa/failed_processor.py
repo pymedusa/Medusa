@@ -83,6 +83,7 @@ class FailedProcessor(object):
             segment = self._process_release_name()
 
         if segment:
+            # This will only work with single episodes or season packs.
             cur_failed_queue_item = FailedQueueItem(segment[0].series, segment)
             app.forced_search_queue_scheduler.action.add_item(cur_failed_queue_item)
 
