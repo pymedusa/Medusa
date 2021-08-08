@@ -895,7 +895,7 @@ class ProcessResult(object):
     def process_failed(self, path):
         """Process a download that did not complete correctly."""
         try:
-            processor = failed_processor.FailedProcessor(path, self.resource_name)
+            processor = failed_processor.FailedProcessor(path, self.resource_name, self.episodes)
             self.result = processor.process()
             process_fail_message = ''
         except FailedPostProcessingFailedException as error:
