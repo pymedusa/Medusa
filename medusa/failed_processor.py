@@ -77,6 +77,7 @@ class FailedProcessor(object):
         segment = []
         if self.episodes:
             # If we have episodes, we dont need the release name to know we want to fail these episodes.
+            self.log(logger.INFO, u'Episodes where found for this failed processor, using those in stead of a release name')
             segment = self.episodes
         else:
             segment = self._process_release_name()
