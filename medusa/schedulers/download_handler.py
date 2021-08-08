@@ -330,7 +330,24 @@ class DownloadHandler(object):
         """Queue a postprocess action."""
         # TODO: Add a check for if not already queued or run.
         # queue a postprocess action
-        queue_item = PostProcessQueueItem(path, info_hash, resource_name=resource_name, failed=failed)
+
+        # Use the info hash get a segment of episodes.
+        history_items = self.main_db_con.select(
+            'SELECT * FROM history WHERE info_hash = ?',
+            [info_hash]
+        )
+
+        episodes = []
+        for history_item in history_items:
+            # Search for show in library
+            from medusa.show.show import Show
+            show = Show.find_by_id(app.showList, history_item['indexer_id'], history_item['showid'])
+            if not show:
+                # Show is -no longer- available in library.
+                continue
+            episodes.push(show.get_episode(history_item['season'], history_item['episode']))
+
+        queue_item = PostProcessQueueItem(path, info_hash, resource_name=resource_name, failed=failed, episodes=episodes)
         app.post_processor_queue_scheduler.action.add_item(queue_item)
 
     @staticmethod

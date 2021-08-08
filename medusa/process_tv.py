@@ -36,7 +36,7 @@ class PostProcessQueueItem(generic_queue.QueueItem):
 
     def __init__(self, path=None, info_hash=None, resource_name=None, force=False,
                  is_priority=False, process_method=None, delete_on=False, failed=False,
-                 proc_type='auto', ignore_subs=False):
+                 proc_type='auto', ignore_subs=False, episodes=[]):
         """Initialize the class."""
         generic_queue.QueueItem.__init__(self, u'Post Process')
 
@@ -52,6 +52,7 @@ class PostProcessQueueItem(generic_queue.QueueItem):
         self.failed = failed
         self.proc_type = proc_type
         self.ignore_subs = ignore_subs
+        self.episodes = episodes
 
         self.to_json.update({
             'success': self.success,
