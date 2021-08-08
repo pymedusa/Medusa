@@ -19,24 +19,24 @@ log.logger.addHandler(logging.NullHandler())
 class FailedProcessor(object):
     """Take appropriate action when a download fails to complete."""
 
-    def __init__(self, dirName, nzbName, episodes=[]):
+    def __init__(self, dir_name, resource, episodes=[]):
         """Initialize the class.
 
-        :param dirName: Full path to the folder of the failed download
-        :param nzbName: Full name of the nzb file that failed
+        :param dir_name: Full path to the folder of the failed download
+        :param resource: Full name of the file/subfolder that failed
         :param episodes: Optionally passed array of episode objects. When we know for which episodes
             whe're trying to process the resource as failed, we don't need to parse the release name.
             We can just straight away call the FailedQueueItem.
         """
-        self.dir_name = dirName
-        self.nzb_name = nzbName
+        self.dir_name = dir_name
+        self.resource = resource
         self.episodes = episodes
 
         self._output = []
 
     def _process_release_name(self):
         """Parse the release name for a show title and episode(s)."""
-        release_name = naming.determine_release_name(self.dir_name, self.nzb_name)
+        release_name = naming.determine_release_name(self.dir_name, self.resource)
         if not release_name:
             self.log(logger.WARNING, u'Warning: unable to find a valid release name.')
             raise FailedPostProcessingFailedException()
@@ -72,7 +72,7 @@ class FailedProcessor(object):
 
         :return: True
         """
-        self.log(logger.INFO, u'Failed download detected: ({nzb}, {dir})'.format(nzb=self.nzb_name, dir=self.dir_name))
+        self.log(logger.INFO, u'Failed download detected: ({nzb}, {dir})'.format(nzb=self.resource, dir=self.dir_name))
 
         segment = []
         if self.episodes:

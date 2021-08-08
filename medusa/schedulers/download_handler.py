@@ -345,7 +345,7 @@ class DownloadHandler(object):
             if not show:
                 # Show is -no longer- available in library.
                 continue
-            episodes.push(show.get_episode(history_item['season'], history_item['episode']))
+            episodes.append(show.get_episode(history_item['season'], history_item['episode']))
 
         queue_item = PostProcessQueueItem(path, info_hash, resource_name=resource_name, failed=failed, episodes=episodes)
         app.post_processor_queue_scheduler.action.add_item(queue_item)
