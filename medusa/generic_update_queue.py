@@ -29,8 +29,6 @@ from medusa.show.recommendations.anilist import AniListPopular
 from medusa.show.recommendations.imdb import ImdbPopular
 from medusa.show.recommendations.trakt import TraktPopular
 
-from requests import RequestException
-
 from simpleanidb import REQUEST_HOT
 
 log = BraceAdapter(logging.getLogger(__name__))
