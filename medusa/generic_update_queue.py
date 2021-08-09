@@ -168,7 +168,7 @@ class RecommendedShowQueueItem(generic_queue.QueueItem):
         # Cache imdb shows
         try:
             ImdbPopular().fetch_popular_shows()
-        except (RequestException, Exception) as error:
+        except Exception as error:
             log.info(u'Could not get imdb recommended shows because of error: {error}', {'error': error})
 
     def _get_anidb_shows(self):
