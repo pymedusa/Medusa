@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Request handler for series and episodes."""
+"""Request handler for recommended shows."""
 from __future__ import unicode_literals
 
 import logging
@@ -20,7 +20,7 @@ log.logger.addHandler(logging.NullHandler())
 
 
 class RecommendedHandler(BaseRequestHandler):
-    """Series request handler."""
+    """Request handler for recommended shows."""
 
     #: resource name
     name = 'recommended'
@@ -49,13 +49,14 @@ class RecommendedHandler(BaseRequestHandler):
         if shows:
             data['shows'] = [show.to_json() for show in shows]
 
-        try:
-            data['trakt']['removedFromMedusa'] = TraktPopular().get_removed_from_medusa()
-        except Exception:
-            data['trakt']['removedFromMedusa'] = []
-            log.warning('Could not get the `removed from medusa` list')
+        data['trakt']['removedFromMedusa'] = []
+        if app.USE_TRAKT:
+            try:
+                data['trakt']['removedFromMedusa'] = TraktPopular().get_removed_from_medusa()
+            except Exception:
+                log.warning('Could not get the `removed from medusa` list')
+            data['trakt']['blacklistEnabled'] = app.TRAKT_BLACKLIST_NAME != ''
 
-        data['trakt']['blacklistEnabled'] = app.TRAKT_BLACKLIST_NAME != ''
         data['categories'] = get_categories()
 
         return self._ok(data)
