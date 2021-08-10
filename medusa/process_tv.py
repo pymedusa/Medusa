@@ -228,6 +228,9 @@ class ProcessResult(object):
         :param path: The root path to start postprocessing from.
         :param process_method: Process method ('copy', 'move', 'hardlink', 'symlink', 'keeplink').
         :param failed: Start the ProcessResult with a failed download.
+        :param episodes: Array of episode objects.
+            Used to specify the episodes to `Retry` in case of a failed download.
+            Currently only used by the Download Handler.
         """
         self._output = []
         self.directory = path

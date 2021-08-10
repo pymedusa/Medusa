@@ -38,18 +38,18 @@ class FailedProcessor(object):
         """Parse the release name for a show title and episode(s)."""
         release_name = naming.determine_release_name(self.dir_name, self.resource)
         if not release_name:
-            self.log(logger.WARNING, u'Warning: unable to find a valid release name.')
+            self.log(logger.WARNING, 'Warning: unable to find a valid release name.')
             raise FailedPostProcessingFailedException()
 
         try:
             parse_result = NameParser().parse(release_name)
         except (InvalidNameException, InvalidShowException):
-            self.log(logger.WARNING, u'Not enough information to parse release name into a valid show. '
-                     u'Consider adding scene exceptions or improve naming for: {release}'.format
+            self.log(logger.WARNING, 'Not enough information to parse release name into a valid show. '
+                     'Consider adding scene exceptions or improve naming for: {release}'.format
                      (release=release_name))
             raise FailedPostProcessingFailedException()
 
-        self.log(logger.DEBUG, u'Parsed info: {result}'.format(result=parse_result))
+        self.log(logger.DEBUG, 'Parsed info: {result}'.format(result=parse_result))
 
         segment = []
         if not parse_result.episode_numbers:
@@ -57,12 +57,12 @@ class FailedProcessor(object):
             self.log(logger.DEBUG, 'Detected as season pack: {release}'.format(release=release_name))
             segment.extend(parse_result.series.get_all_episodes(parse_result.season_number))
         else:
-            self.log(logger.DEBUG, u'Detected as single/multi episode: {release}'.format(release=release_name))
+            self.log(logger.DEBUG, 'Detected as single/multi episode: {release}'.format(release=release_name))
             for episode in parse_result.episode_numbers:
                 segment.append(parse_result.series.get_episode(parse_result.season_number, episode))
 
         if segment:
-            self.log(logger.DEBUG, u'Adding this release to failed queue: {release}'.format(release=release_name))
+            self.log(logger.DEBUG, 'Adding this release to failed queue: {release}'.format(release=release_name))
 
         return segment
 
@@ -72,12 +72,12 @@ class FailedProcessor(object):
 
         :return: True
         """
-        self.log(logger.INFO, u'Failed download detected: ({nzb}, {dir})'.format(nzb=self.resource, dir=self.dir_name))
+        self.log(logger.INFO, 'Failed download detected: (resource: {nzb}, dir: {dir})'.format(nzb=self.resource, dir=self.dir_name))
 
         segment = []
         if self.episodes:
             # If we have episodes, we dont need the release name to know we want to fail these episodes.
-            self.log(logger.INFO, u'Episodes where found for this failed processor, using those in stead of a release name')
+            self.log(logger.INFO, 'Episodes where found for this failed processor, using those instead of a release name')
             segment = self.episodes
         else:
             segment = self._process_release_name()
