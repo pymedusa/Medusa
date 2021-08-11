@@ -65,7 +65,18 @@
             <div class="col-md-12 addshowoptions">
                 <template v-if="show.showInLibrary">
                     <button v-if="show.showInLibrary" class="btn-medusa btn-xs">
-                        <app-link :href="`home/displayShow?showslug=${show.showInLibrary}`">Open in library</app-link>
+                        <div v-if="addingShow.started && addingShow.progress !== 100" class="add-show-progress" style="">
+                            <span>Adding Show...</span>
+                            <div class="steps">
+                                <ul>
+                                    <li v-for="step in addingShow.steps" :key="step">
+                                        <span>{{step}}</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="bar" :style="`width: ${addingShow.progress}%`" />
+                        </div>
+                        <app-link v-else :href="`home/displayShow?showslug=${show.showInLibrary}`">Open in library</app-link>
                     </button>
                 </template>
                 <template v-else>
@@ -104,13 +115,20 @@ export default {
     data() {
         return {
             displayPlot: false,
-            selectedAddShowOption: 'search'
+            selectedAddShowOption: 'search',
+            addingShow: {
+                identifier: null,
+                progress: 0,
+                started: false,
+                steps: []
+            }
         };
     },
     computed: {
         ...mapState({
             traktConfig: state => state.recommended.trakt,
-            externals: state => state.recommended.externals
+            externals: state => state.recommended.externals,
+            queueitems: state => state.shows.queueitems
         })
     },
     methods: {
@@ -135,7 +153,7 @@ export default {
             }
 
             if (this.addShowById(showId)) {
-                show.showInLibrary = true;
+                show.showInLibrary = `${selectedAddShowOption}${show.externals[selectedAddShowOption + '_id']}`;
             }
         },
         /**
@@ -152,10 +170,15 @@ export default {
             }
 
             try {
-                await api.post('series', { id: showId, options });
+                const response = await api.post('series', { id: showId, options });
+                if (response && response.data && response.data.identifier) {
+                    this.addingShow.identifier = response.data.identifier;
+                    this.addingShow.started = true;
+                }
+
                 this.$snotify.success(
                     'Adding new show to library',
-                    'Saved',
+                    'In progress',
                     { timeout: 20000 }
                 );
                 return true;
@@ -189,6 +212,22 @@ export default {
             }
 
             return options;
+        }
+    },
+    watch: {
+        queueitems(queueItem) {
+            const { addingShow } = this;
+            if (!addingShow.started || !addingShow.identifier) {
+                return;
+            }
+            const foundItem = queueItem.find(item => item.identifier === addingShow.identifier);
+            if (foundItem) {
+                this.addingShow.steps = foundItem.step;
+                this.addingShow.progress = 100 / 6 * this.addingShow.steps.length;
+                if (foundItem.success) {
+                    this.addingShow.progress = 100;
+                }
+            }
         }
     }
 };
@@ -317,5 +356,44 @@ select.max-width {
 .plot-enter,
 .plot-leave-to {
     bottom: -100%;
+}
+
+.add-show-progress {
+    width: 95px;
+    height: 21px;
+    position: relative;
+}
+
+.add-show-progress > .bar {
+    background-color: darkgrey;
+    height: 100%;
+    width: 0;
+    position: absolute;
+    top: 0;
+    opacity: 0.4;
+}
+
+.add-show-progress > .steps {
+    display: none;
+    position: absolute;
+    background-color: rgb(95, 95, 95);
+    font-size: 14px;
+    border: 1px solid rgb(125, 125, 125);
+    z-index: 1;
+    width: auto;
+    white-space: nowrap;
+}
+
+.add-show-progress:hover > .steps {
+    display: block;
+}
+
+.add-show-progress > .steps ul {
+    padding: 2px 5px;
+}
+
+.add-show-progress > .steps li {
+    list-style-type: none;
+    text-align: left;
 }
 </style>
