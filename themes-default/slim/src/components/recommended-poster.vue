@@ -290,7 +290,7 @@ select.max-width {
     position: absolute;
     right: 0;
     top: 0;
-    z-index: 9999;
+    z-index: 1;
     text-decoration: underline;
     cursor: pointer;
     background-color: rgb(51, 51, 51);
