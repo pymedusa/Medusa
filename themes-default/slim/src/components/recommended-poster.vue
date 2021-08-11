@@ -223,13 +223,13 @@ export default {
             const foundItem = queueItem.find(item => item.identifier === addingShow.identifier);
             if (foundItem) {
                 this.addingShow.steps = foundItem.step;
-                this.addingShow.progress = 100 / 6 * this.addingShow.steps.length
+                this.addingShow.progress = 100 / 6 * this.addingShow.steps.length;
                 if (foundItem.success) {
                     this.addingShow.progress = 100;
                 }
             }
         }
-    }    
+    }
 };
 </script>
 
