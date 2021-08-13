@@ -135,7 +135,7 @@ const getters = {
             if (!weekDay) {
                 weekDay = {
                     airdate: episode.airdate,
-                    header: days[episode.weekday - 1],
+                    header: days[episode.weekday],
                     class: 'soon',
                     episodes: []
                 };
@@ -161,7 +161,7 @@ const getters = {
             missed, today, soon, later
         } = state;
         const { displayPaused } = rootState.config.layout.comingEps;
-        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
         const newArray = [];
 
         if (sort === 'date') {
