@@ -140,6 +140,8 @@ class HistoryHandler(BaseRequestHandler):
                 if item.get('showid') and item.get('season') and item.get('episode') and item.get('indexer_id'):
                     item['showslug'] = f"{indexer_id_to_name(item['indexer_id'])}{item['showid']}"
                     my_key = f"{item['showslug']}S{item['season']}E{item['episode']}"
+                    if item.get('quality'):
+                        my_key += f"Q{item['quality']}"
                     res.setdefault(my_key, []).append(item)
             results = res
         headers['X-Pagination-Count'] = len(results)
