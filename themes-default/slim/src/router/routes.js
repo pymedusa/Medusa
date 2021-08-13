@@ -356,7 +356,8 @@ const manageRoutes = [
             title: 'Mass Update',
             header: 'Mass Update',
             topMenu: 'manage'
-        }
+        },
+        component: () => import('../components/manage-mass-update.vue')
     },
     {
         path: '/manage/backlogOverview',

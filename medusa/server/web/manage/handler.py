@@ -52,8 +52,12 @@ class Manage(Home, WebRoot):
         super(Manage, self).__init__(*args, **kwargs)
 
     def index(self):
-        t = PageTemplate(rh=self, filename='manage.mako')
-        return t.render(controller='manage', action='index')
+        """
+        Route to the manage-mass-update.vue component.
+        [Converted to VueRouter]
+        """
+        t = PageTemplate(rh=self, filename='index.mako')
+        return t.render()
 
     @staticmethod
     def showEpisodeStatuses(indexername, seriesid, whichStatus):
