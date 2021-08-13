@@ -1,6 +1,12 @@
 ## Unreleased
 
 #### New Features
+#### Improvements
+#### Fixes
+
+## 0.5.16 (13-08-2021)
+
+#### New Features
 - Implemented recommended shows v2. ([5782](https://github.com/pymedusa/Medusa/pull/5782))
   - Added recommended list from anilist.co
   - Recommended lists are cached nightly
@@ -17,6 +23,8 @@
 - Fixed postprocessing of archives with multiple video files caused a pp of the complete download dir. ([9775](https://github.com/pymedusa/Medusa/pull/9775))
 - Fixed download handler wrongly untrack downloads when connection errors occurred. ([9774](https://github.com/pymedusa/Medusa/pull/9774))
 - Removed anonomized redirect service (derefer.org is down) in favor of "noreferrer noopener" headers ([5782](https://github.com/pymedusa/Medusa/pull/5782))
+- Fixed schedule page not showing day of week for shows airing on sunday (banner/poster layouts) ([9791](https://github.com/pymedusa/Medusa/pull/9791))
+- Group history compact layout results by quality ([9788](https://github.com/pymedusa/Medusa/pull/9788))
 
 ----
 
