@@ -1,4 +1,4 @@
-## Unreleased
+## 0.5.16 (13-08-2021)
 
 #### New Features
 - Implemented recommended shows v2. ([5782](https://github.com/pymedusa/Medusa/pull/5782))
