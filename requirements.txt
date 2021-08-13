@@ -1,4 +1,4 @@
-adba @ https://codeload.github.com/pymedusa/adba/tar.gz/ad9a011b26e24b276baed5435981fee21a93c254
+adba @ https://codeload.github.com/pymedusa/adba/tar.gz/37b0c74e76b40b3dbde29e71da75a1808eb121de
 babelfish @ https://codeload.github.com/Diaoul/babelfish/tar.gz/f403000dd63092cfaaae80be9f309fd85c7f20c9
 beautifulsoup4==4.9.3
 bencode.py==4.0.0

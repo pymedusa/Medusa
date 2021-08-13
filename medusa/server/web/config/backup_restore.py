@@ -33,7 +33,8 @@ class ConfigBackupRestore(Config):
         if backupDir:
             source = [os.path.join(app.DATA_DIR, app.APPLICATION_DB), app.CONFIG_FILE,
                       os.path.join(app.DATA_DIR, app.FAILED_DB),
-                      os.path.join(app.DATA_DIR, app.CACHE_DB)]
+                      os.path.join(app.DATA_DIR, app.CACHE_DB),
+                      os.path.join(app.DATA_DIR, app.RECOMMENDED_DB)]
             target = os.path.join(backupDir, 'medusa-{date}.zip'.format(date=time.strftime('%Y%m%d%H%M%S')))
 
             for (path, dirs, files) in os.walk(app.CACHE_DIR, topdown=True):

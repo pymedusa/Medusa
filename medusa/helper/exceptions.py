@@ -134,3 +134,11 @@ class AnidbAdbaConnectionException(Exception):
 
     More info on the api: https://wiki.anidb.net/w/API.
     """
+
+
+class CantUpdateRecommendedShowsException(Exception):
+    """The recommended show update could not be started."""
+
+
+class DownloadClientConnectionException(Exception):
+    """Connection exception raised while trying to communicate with the client api."""

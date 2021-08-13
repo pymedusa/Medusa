@@ -56,7 +56,7 @@
                         </template>
                         <img v-else-if="row.statusName ==='Failed'" src="images/no16.png"
                              width="16" height="16" style="vertical-align:middle;"
-                             v-tooltip.right="`${row.provider.name} download failed: ${row.resource} (${row.actionDate})`"
+                             v-tooltip.right="`${row.provider.name} download failed: ${row.resource} (${fuzzyParseDateTime(row.actionDate)})`"
                         >
                     </div>
                 </span>

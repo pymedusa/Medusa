@@ -8,20 +8,11 @@ exports[`AppLink.test.js renders "false-link" anchor 1`] = `
 />
 `;
 
-exports[`AppLink.test.js renders anonymised external link 1`] = `
-<a
-  class=""
-  href="https://anon-redirect.tld/?url=https://google.com"
-  rel="noreferrer"
-  target="_blank"
-/>
-`;
-
 exports[`AppLink.test.js renders external link 1`] = `
 <a
   class=""
   href="https://google.com"
-  rel="noreferrer"
+  rel="noreferrer noopener"
   target="_blank"
 />
 `;

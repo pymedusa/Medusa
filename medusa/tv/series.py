@@ -68,6 +68,7 @@ from medusa.helpers.utils import dict_to_array, safe_get, to_camel_case
 from medusa.imdb import Imdb
 from medusa.indexers.api import indexerApi
 from medusa.indexers.config import (
+    EXTERNAL_MAPPINGS,
     INDEXER_TVRAGE,
     STATUS_MAP,
     indexerConfig
@@ -1738,7 +1739,8 @@ class Series(TV):
 
         self.subtitles = options['subtitles'] if options.get('subtitles') is not None else app.SUBTITLES_DEFAULT
 
-        if options.get('quality'):
+        if options.get('quality') and (options['quality']['allowed'] or options['quality']['preferred']):
+            # We need to pass at a minimum a allowed or preferred quality. Else use the Quality default.
             self.qualities_allowed = options['quality']['allowed']
             self.qualities_preferred = options['quality']['preferred']
         else:
@@ -1975,6 +1977,32 @@ class Series(TV):
                 'for show {title} you might want to consider enabling the scene option'
                 .format(title=self.name)
             )
+
+    def update_mapped_id_cache(self):
+        """Search the show in the recommended show cache. And update the mapped_indexer and mapped_series_id fields."""
+        if self.externals:
+            cache_db_con = db.DBConnection('cache.db')
+            query = 'SELECT recommended_id from recommended {where}'
+
+            rev_external_mappings = {v: k for k, v in viewitems(EXTERNAL_MAPPINGS)}
+            # Adding just in case the recommended show provider is also an indexer. Like for example maybe IMDB
+            rev_external_mappings.update({self.indexer_name + '_id': self.indexer})
+
+            for indexer, series_id in viewitems(self.externals):
+                if not rev_external_mappings.get(indexer):
+                    continue
+                where = ['source = ? AND series_id = ?']
+                params = [reverse_mappings[indexer], series_id]
+
+                recommended_show = cache_db_con.select(
+                    query.format(where=' WHERE ' + ' AND '.join(where)), params
+                )
+
+                if recommended_show:
+                    query = 'UPDATE recommended SET mapped_indexer = ?, mapped_series_id = ? WHERE recommended_id = ?'
+                    params = [self.indexer, self.series_id, recommended_show[0]['recommended_id']]
+                    cache_db_con.action(query, params)
+                    return True
 
     def refresh_dir(self):
         """Refresh show using its location.

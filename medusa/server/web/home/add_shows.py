@@ -15,14 +15,11 @@ from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.web.core import PageTemplate
 from medusa.server.web.home.handler import Home
-from medusa.show.recommendations.anidb import AnidbPopular
 from medusa.show.recommendations.imdb import ImdbPopular
 from medusa.show.recommendations.trakt import TraktPopular
 from medusa.tv.series import Series, SeriesIdentifier
 
 from requests import RequestException
-
-from simpleanidb import REQUEST_HOT
 
 from six import text_type
 
@@ -159,23 +156,23 @@ class HomeAddShows(Home):
                         enable_anime_options=True, blacklist=[], whitelist=[],
                         controller='addShows', action='recommendedShows', realpage='popularShows')
 
-    def popularAnime(self, list_type=REQUEST_HOT):
+    def popularAnime(self):
         """
-        Fetches list recommeded shows from anidb.info.
+        Render template for route /home/addShows/recommended.
+
+        [Converted to VueRouter]
         """
-        t = PageTemplate(rh=self, filename='addShows_recommended.mako')
-        recommended_shows = None
-        error = None
+        t = PageTemplate(rh=self, filename='index.mako')
+        return t.render(controller='addShows', action='recommendedShows')
 
-        try:
-            recommended_shows = AnidbPopular().fetch_popular_shows(list_type)
-        except Exception as e:
-            error = e
+    def recommended(self):
+        """
+        Render template for route /home/addShows/recommended.
 
-        return t.render(title='Popular Anime Shows', header='Popular Anime Shows',
-                        recommended_shows=recommended_shows, exception=error, groups=[],
-                        enable_anime_options=True, blacklist=[], whitelist=[],
-                        controller='addShows', action='recommendedShows', realpage='popularAnime')
+        [Converted to VueRouter]
+        """
+        t = PageTemplate(rh=self, filename='index.mako')
+        return t.render(controller='addShows', action='recommendedShows')
 
     def addShowToBlacklist(self, seriesid):
         # URL parameters

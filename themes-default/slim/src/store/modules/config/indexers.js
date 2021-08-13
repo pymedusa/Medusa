@@ -6,7 +6,8 @@ const state = {
         statusMap: {},
         traktIndexers: {},
         validLanguages: [],
-        langabbvToId: {}
+        langabbvToId: {},
+        recommendedLists: {}
     },
     indexers: {
         tvdb: {

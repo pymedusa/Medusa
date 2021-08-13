@@ -17,9 +17,11 @@ from deluge_client import DelugeRPCClient
 from medusa import app
 from medusa.clients.torrent.deluge import read_torrent_status
 from medusa.clients.torrent.generic import GenericClient
+from medusa.helper.exceptions import DownloadClientConnectionException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.schedulers.download_handler import ClientStatus
 
+from requests.exceptions import RequestException
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -231,8 +233,7 @@ class DelugeDAPI(GenericClient):
         ```
         """
         if not self.connect():
-            log.warning('Error while fetching torrents status')
-            return
+            raise DownloadClientConnectionException(f'Error while fetching torrent info_hash {info_hash}')
 
         torrent = self.drpc._torrent_properties(info_hash)
         if not torrent:
@@ -312,7 +313,6 @@ class DelugeRPC(object):
         """
         try:
             self.connect()
-            # self._torrent_properties('e4d44da9e71a8f4411bc3fd82aad7689cfa0f07f')
         except Exception:
             return False
         else:
@@ -539,6 +539,8 @@ class DelugeRPC(object):
             torrent_data = self.client.core.get_torrent_status(
                 info_hash, ('name', 'hash', 'progress', 'state', 'ratio', 'stop_ratio',
                             'is_seed', 'is_finished', 'paused', 'files', 'download_location'))
+        except RequestException as error:
+            raise DownloadClientConnectionException(f'Error while fetching torrent info_hash {info_hash}. Error: {error}')
         except Exception:
             log.warning('Error while fetching torrent {hash} status.', {'hash': info_hash})
             return

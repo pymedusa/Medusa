@@ -43,6 +43,7 @@ class MedusaApp(object):
         self.APPLICATION_DB = 'main.db'
         self.FAILED_DB = 'failed.db'
         self.CACHE_DB = 'cache.db'
+        self.RECOMMENDED_DB = 'recommended.db'
         self.LOG_FILENAME = 'application.log'
         self.CONFIG_INI = 'config.ini'
         self.GIT_ORG = 'pymedusa'
@@ -101,6 +102,9 @@ class MedusaApp(object):
         self.backlog_search_scheduler = None
         self.show_update_scheduler = None
         self.version_check_scheduler = None
+        self.generic_queue_scheduler = None
+        self.recommended_show_update_queue = None
+        self.recommended_show_update_scheduler = None
         self.show_queue_scheduler = None
         self.search_queue_scheduler = None
         self.forced_search_queue_scheduler = None
@@ -281,12 +285,14 @@ class MedusaApp(object):
         self._UPDATE_FREQUENCY = None
         self._BACKLOG_FREQUENCY = None
         self._SHOWUPDATE_HOUR = None
+        self._RECOMMENDED_SHOW_UPDATE_HOUR = None
 
         self.DEFAULT_DOWNLOAD_HANDLER_FREQUENCY = 60
         self.DEFAULT_DAILYSEARCH_FREQUENCY = 40
         self.DEFAULT_BACKLOG_FREQUENCY = 21
         self.DEFAULT_UPDATE_FREQUENCY = 1
         self.DEFAULT_SHOWUPDATE_HOUR = random.randint(2, 4)
+        self.DEFAULT_RECOMMENDED_SHOW_UPDATE_HOUR = random.randint(0, 2)
 
         self.MIN_AUTOPOSTPROCESSOR_FREQUENCY = 1
         self.MIN_DOWNLOAD_HANDLER_FREQUENCY = 5
@@ -706,6 +712,17 @@ class MedusaApp(object):
         self.FALLBACK_PLEX_API_URL = 'https://tvdb2.plex.tv'
         self.TVDB_API_KEY = 'd99c8e7dac2307355af4ab88720a6c32'
 
+        # Recommended Shows settings
+        self.CACHE_RECOMMENDED_SHOWS = True
+        self.CACHE_RECOMMENDED_TRAKT = True
+        self.CACHE_RECOMMENDED_IMDB = True
+        self.CACHE_RECOMMENDED_ANIDB = True
+        self.CACHE_RECOMMENDED_ANILIST = True
+        self.CACHE_RECOMMENDED_TRAKT_LISTS = [
+            'trending', 'popular', 'anticipated', 'collected',
+            'watched', 'played', 'recommendations', 'newshow', 'newseason'
+        ]
+
     def _init_scheduler(self, app_prop=None, scheduler=None, enabled=None):
         from medusa.logger.adapters.style import BraceAdapter
         log = BraceAdapter(logging.getLogger(__name__))
@@ -985,6 +1002,16 @@ class MedusaApp(object):
     def SHOWUPDATE_HOUR(self, value):
         """Change SHOWUPDATE_HOUR."""
         self.handle_prop('SHOWUPDATE_HOUR', value)
+
+    @property
+    def RECOMMENDED_SHOW_UPDATE_HOUR(self):
+        """Return app.SHOWUPDATE_HOUR."""
+        return self._RECOMMENDED_SHOW_UPDATE_HOUR
+
+    @RECOMMENDED_SHOW_UPDATE_HOUR.setter
+    def RECOMMENDED_SHOW_UPDATE_HOUR(self, value):
+        """Change RECOMMENDED_SHOW_UPDATE_HOUR."""
+        self.handle_prop('RECOMMENDED_SHOW_UPDATE_HOUR', value)
 
     @property
     def SUBTITLES_FINDER_FREQUENCY(self):

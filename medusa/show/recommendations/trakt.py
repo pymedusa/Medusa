@@ -5,7 +5,6 @@ from __future__ import unicode_literals
 
 import logging
 import os
-from builtins import object
 
 from medusa import app
 from medusa.cache import recommended_series_cache
@@ -13,15 +12,19 @@ from medusa.helper.common import try_int
 from medusa.helper.exceptions import MultipleShowObjectsException
 from medusa.helpers.trakt import get_trakt_show_collection, get_trakt_user
 from medusa.indexers.api import indexerApi
-from medusa.indexers.config import INDEXER_TVDBV2
+from medusa.indexers.config import EXTERNAL_TRAKT, INDEXER_TVDBV2, TRAKT_INDEXERS
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.recommendations import ExpiringList
 from medusa.show.recommendations.recommended import (
+    BasePopular,
     RecommendedShow,
     create_key_from_series,
 )
 
+from six import iteritems
+
 from trakt import sync
+from trakt.errors import ForbiddenException
 
 from tvdbapiv2.exceptions import ApiException
 
@@ -33,34 +36,44 @@ log.logger.addHandler(logging.NullHandler())
 missing_posters = ExpiringList(cache_timeout=3600 * 24 * 3)  # Cache 3 days
 
 
-class TraktPopular(object):
+class TraktPopular(BasePopular):
     """This class retrieves a speficed recommended show list from Trakt.
 
     The list of returned shows is mapped to a RecommendedShow object
     """
 
+    TITLE = 'Trakt Popular'
+    CACHE_SUBFOLDER = __name__.split('.')[-1] if '.' in __name__ else __name__
+    CATEGORIES = [
+        'trending', 'popular', 'anticipated', 'collected',
+        'watched', 'played', 'recommendations', 'newshow', 'newseason'
+    ]
+
     def __init__(self):
         """Initialize the trakt recommended list object."""
-        self.cache_subfolder = __name__.split('.')[-1] if '.' in __name__ else __name__
-        self.recommender = 'Trakt Popular'
+        super(TraktPopular, self).__init__()
+        self.cache_subfolder = TraktPopular.CACHE_SUBFOLDER
+        self.source = EXTERNAL_TRAKT
+        self.recommender = TraktPopular.TITLE
         self.default_img_src = 'trakt-default.png'
         self.tvdb_api_v2 = indexerApi(INDEXER_TVDBV2).indexer()
 
     @recommended_series_cache.cache_on_arguments(namespace='trakt', function_key_generator=create_key_from_series)
-    def _create_recommended_show(self, storage_key, show):
+    def _create_recommended_show(self, show, subcat=None):
         """Create the RecommendedShow object from the returned showobj."""
         rec_show = RecommendedShow(
             self,
-            show.tvdb,
+            show.trakt,
             show.title,
-            INDEXER_TVDBV2,  # indexer
-            show.tvdb,
             **{'rating': show.ratings['rating'],
                 'votes': try_int(show.ratings['votes'], '0'),
                 'image_href': 'http://www.trakt.tv/shows/{0}'.format(show.ids['ids']['slug']),
                 # Adds like: {'tmdb': 62126, 'tvdb': 304219, 'trakt': 79382, 'imdb': 'tt3322314',
                 # 'tvrage': None, 'slug': 'marvel-s-luke-cage'}
-                'ids': show.ids['ids']
+                'ids': {f'{k}_id': v for k, v in iteritems(show.ids['ids']) if TRAKT_INDEXERS.get(k)},
+                'subcat': subcat,
+                'genres': [genre.lower() for genre in show.genres],
+                'plot': show.overview
                }
         )
 
@@ -97,6 +110,17 @@ class TraktPopular(object):
 
         return rec_show
 
+    def get_removed_from_medusa(self):
+        """
+        Return an array of shows (tvdb id's) that are still located in the trakt `watched` and `show collection` collections.
+
+        But that are not in medusa's library.
+        Library is compared based on the tvdb id's.
+        """
+        library_shows = sync.get_watched('shows', extended='noseasons') + sync.get_collection('shows', extended='full')
+        medusa_shows = [show.externals.get('tvdb_id', show.series_id) for show in app.showList if show.series_id]
+        return [lshow.tvdb for lshow in library_shows if lshow.tvdb not in medusa_shows]
+
     def fetch_popular_shows(self, trakt_list=None):
         """Get a list of popular shows from different Trakt lists based on a provided trakt_list.
 
@@ -105,14 +129,12 @@ class TraktPopular(object):
         :return: A list of RecommendedShow objects, an empty list of none returned
         :throw: ``Exception`` if an Exception is thrown not handled by the libtrats exceptions
         """
-        trending_shows = []
-        removed_from_medusa = []
+        recommended_shows = []
 
         try:
             not_liked_show = ''
-            library_shows = sync.get_watched('shows', extended='noseasons') + sync.get_collection('shows', extended='full')
-            medusa_shows = [show.indexerid for show in app.showList if show.indexerid]
-            removed_from_medusa = [lshow.tvdb for lshow in library_shows if lshow.tvdb not in medusa_shows]
+
+            removed_from_medusa = self.get_removed_from_medusa()
 
             if app.TRAKT_BLACKLIST_NAME:
                 trakt_user = get_trakt_user()
@@ -140,22 +162,27 @@ class TraktPopular(object):
                             in (s.tvdb for s in not_liked_show if s.media_type == 'shows')):
                         continue
 
-                    trending_shows.append(self._create_recommended_show(
-                        storage_key=show.trakt,
-                        show=show
-                    ))
+                    recommended_show = self._create_recommended_show(show, subcat=trakt_list)
+                    if recommended_show:
+                        recommended_show.save_to_db()
+                        recommended_shows.append(recommended_show)
 
                 except MultipleShowObjectsException:
                     continue
 
-            # Update the dogpile index. This will allow us to retrieve all stored dogpile shows from the dbm.
+            # # Update the dogpile index. This will allow us to retrieve all stored dogpile shows from the dbm.
+            # update_recommended_series_cache_index('trakt', [binary_type(s.series_id) for s in trending_shows])
             blacklist = app.TRAKT_BLACKLIST_NAME not in ''
-
+        except ForbiddenException as error:
+            log.warning(
+                'Trying to connect to trakt.tv but it seems you are not authenticated. error: {error}',
+                {'error': error}
+            )
+            raise
         except Exception as error:
             log.exception('Could not connect to Trakt service: {0}', error)
-            raise
 
-        return blacklist, trending_shows, removed_from_medusa
+        return blacklist, recommended_shows, removed_from_medusa
 
     def check_cache_for_poster(self, tvdb_id):
         """Verify if we already have a poster downloaded for this show."""

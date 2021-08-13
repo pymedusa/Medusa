@@ -78,6 +78,23 @@
             </div>
         </div>
 
+        <div class="row">
+            <div class="col-lg-12">
+                <h3>Force refresh recommended list:</h3>
+                <span>
+                    Note! Syncing shows with a recommended list may take a while.
+                    The action will be queued. For example staring a sync with Trakt and directly after Imdb.
+                    You will won't see results for Imdb after the sync of Trakt has fully completed.
+                </span>
+                <ul class="simpleList recommended-list">
+                    <li><span @click="searchRecommendedShows('trakt')">Trakt</span></li>
+                    <li><span @click="searchRecommendedShows('imdb')">Imdb</span></li>
+                    <li><span @click="searchRecommendedShows('anidb')">Anidb</span></li>
+                    <li><span @click="searchRecommendedShows('anilist')">AniList</span></li>
+                </ul>
+            </div>
+        </div>
+
         <div v-if="schedulerStatus" class="row">
             <div class="col-lg-12">
                 <h3>Search Queue:</h3>
@@ -250,7 +267,24 @@ export default {
         },
         forceDownloadHandler() {
             api.post('system/operation', { type: 'FORCEADH' });
+        },
+        async searchRecommendedShows(source) {
+            try {
+                await api.post(`recommended/${source}`);
+                this.$snotify.success(
+                    'Started search for new recommended shows',
+                    `Searching ${source}`
+                );
+            } catch (error) {
+                if (error.response.status === 409) {
+                    this.$snotify.error(
+                        error.response.data.error,
+                        'Error'
+                    );
+                }
+            }
         }
+
     },
     mounted() {
         // Initially load the exception types last updates on page load.
@@ -270,4 +304,14 @@ export default {
 };
 </script>
 <style scoped>
+.recommended-list span {
+    cursor: pointer;
+    color: #337ab7;
+    text-decoration: none;
+}
+
+.recommended-list span:focus,
+.recommended-list span:hover {
+    text-decoration: underline;
+}
 </style>

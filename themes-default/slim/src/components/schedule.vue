@@ -64,7 +64,7 @@
         </div>
 
         <component :is="scheduleLayout" v-bind="$props" />
-        <backstretch :slug="general.randomShowSlug" :key="general.randomShowSlug" />
+        <backstretch :slug="general.randomShowSlug" />
     </div>
 </template>
 

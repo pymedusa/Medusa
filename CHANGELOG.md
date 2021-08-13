@@ -1,3 +1,27 @@
+## 0.5.16 (13-08-2021)
+
+#### New Features
+- Implemented recommended shows v2. ([5782](https://github.com/pymedusa/Medusa/pull/5782))
+  - Added recommended list from anilist.co
+  - Recommended lists are cached nightly
+  - Configure which lists to cache
+  - Improvements to the recommended list UI
+  - Added plot and genre information when available from the recommended list
+  - Add shows from recommended lists through one click to the show search, or by id (if a tvdbid, tmdbid or tvmazeid is available)
+
+#### Improvements
+- adba lib: Reduced startup time for libraries with many anime shows. ([5782](https://github.com/pymedusa/Medusa/pull/5782))
+  - anime-list.xml was read for each anime show on startup
+
+#### Fixes
+- Fixed postprocessing of archives with multiple video files caused a pp of the complete download dir. ([9775](https://github.com/pymedusa/Medusa/pull/9775))
+- Fixed download handler wrongly untrack downloads when connection errors occurred. ([9774](https://github.com/pymedusa/Medusa/pull/9774))
+- Removed anonomized redirect service (derefer.org is down) in favor of "noreferrer noopener" headers ([5782](https://github.com/pymedusa/Medusa/pull/5782))
+- Fixed schedule page not showing day of week for shows airing on sunday (banner/poster layouts) ([9791](https://github.com/pymedusa/Medusa/pull/9791))
+- Group history compact layout results by quality ([9788](https://github.com/pymedusa/Medusa/pull/9788))
+
+----
+
 ## 0.5.15 (23-07-2021)
 
 #### Improvements

@@ -36,7 +36,7 @@ class PostProcessQueueItem(generic_queue.QueueItem):
 
     def __init__(self, path=None, info_hash=None, resource_name=None, force=False,
                  is_priority=False, process_method=None, delete_on=False, failed=False,
-                 proc_type='auto', ignore_subs=False):
+                 proc_type='auto', ignore_subs=False, episodes=[]):
         """Initialize the class."""
         generic_queue.QueueItem.__init__(self, u'Post Process')
 
@@ -52,6 +52,7 @@ class PostProcessQueueItem(generic_queue.QueueItem):
         self.failed = failed
         self.proc_type = proc_type
         self.ignore_subs = ignore_subs
+        self.episodes = episodes
 
         self.to_json.update({
             'success': self.success,
@@ -115,7 +116,7 @@ class PostProcessQueueItem(generic_queue.QueueItem):
         """Process for when we have a valid path."""
         process_method = self.process_method or app.PROCESS_METHOD
 
-        process_results = ProcessResult(self.path, process_method, failed=self.failed)
+        process_results = ProcessResult(self.path, process_method, failed=self.failed, episodes=self.episodes)
         process_results.process(
             resource_name=self.resource_name,
             force=self.force,
@@ -220,13 +221,16 @@ class ProcessResult(object):
 
     IGNORED_FOLDERS = ('@eaDir', '#recycle', '.@__thumb',)
 
-    def __init__(self, path, process_method=None, failed=False):
+    def __init__(self, path, process_method=None, failed=False, episodes=[]):
         """
         Initialize ProcessResult object.
 
         :param path: The root path to start postprocessing from.
         :param process_method: Process method ('copy', 'move', 'hardlink', 'symlink', 'keeplink').
         :param failed: Start the ProcessResult with a failed download.
+        :param episodes: Array of episode objects.
+            Used to specify the episodes to `Retry` in case of a failed download.
+            Currently only used by the Download Handler.
         """
         self._output = []
         self.directory = path
@@ -241,6 +245,7 @@ class ProcessResult(object):
         self.process_file = False
         # When multiple media folders/files processed. Flag postpone_any of any them was postponed.
         self.postpone_any = False
+        self.episodes = episodes
 
     @property
     def directory(self):
@@ -598,10 +603,6 @@ class ProcessResult(object):
 
     def process_files(self, path, force=False, is_priority=None, ignore_subs=False):
         """Post-process and delete the files in a given path."""
-        # TODO: Replace this with something that works for multiple video files
-        if self.resource_name and len(self.video_files) > 1:
-            self.resource_name = None
-
         if self.video_in_rar:
             video_files = set(self.video_files + self.video_in_rar)
 
@@ -898,7 +899,7 @@ class ProcessResult(object):
     def process_failed(self, path):
         """Process a download that did not complete correctly."""
         try:
-            processor = failed_processor.FailedProcessor(path, self.resource_name)
+            processor = failed_processor.FailedProcessor(path, self.resource_name, self.episodes)
             self.result = processor.process()
             process_fail_message = ''
         except FailedPostProcessingFailedException as error:
