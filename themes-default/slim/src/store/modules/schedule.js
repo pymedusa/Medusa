@@ -212,7 +212,7 @@ const getters = {
 
         if (sort === 'network') {
             const { getScheduleFlattened } = getters;
-            const filteredSchedule = getScheduleFlattened.filter(item => item.paused || displayPaused);
+            const filteredSchedule = getScheduleFlattened.filter(item => !item.paused || displayPaused);
 
             for (const episode of filteredSchedule.sort((a, b) => a.network.localeCompare(b.network))) {
                 let network = newArray.find(item => item.header === episode.network);
