@@ -168,7 +168,8 @@ class ComingEpisodes(object):
             result['qualityValue'] = result['quality']
             result['quality'] = get_quality_string(result['quality'])
             result['airs'] = sbdatetime.sbftime(result['localtime'], t_preset=timeFormat).lstrip('0').replace(' 0', ' ')
-            result['weekday'] = 1 + date.fromordinal(result['airdate']).weekday()
+            # Monday - Sunday (0 - 6)
+            result['weekday'] = date.fromordinal(result['airdate']).weekday()
             result['tvdbid'] = result['indexer_id']
             result['airdate'] = sbdatetime.sbfdate(result['localtime'], d_preset=dateFormat)
             result['localtime'] = result['localtime'].toordinal()
