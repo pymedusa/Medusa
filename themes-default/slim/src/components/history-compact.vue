@@ -47,16 +47,16 @@
                             <img style="margin-right: 5px;"
                                  :src="`images/providers/${row.provider.imageName}`"
                                  :alt="row.provider.name" width="16" height="16"
-                                 v-tooltip.right="`${row.provider.name}: ${row.resource} (${row.actionDate ? fuzzyParseDateTime(convertDateFormat(row.actionDate)) : ''})`"
+                                 v-tooltip.right="`${row.provider.name}: ${row.resource} (${fuzzyParseDateTime(convertDateFormat(row.actionDate))})`"
                                  onError="this.onerror=null;this.src='images/providers/missing.png';"
                             >
-                            <img v-if="row.manuallySearched" src="images/manualsearch.png" width="16" height="16" style="vertical-align:middle;" v-tooltip.right="`Manual searched episode: ${row.resource} (${row.actionDate ? fuzzyParseDateTime(convertDateFormat(row.actionDate)) : ''})`">
-                            <img v-if="row.properTags" src="images/info32.png" width="16" height="16" style="vertical-align:middle;" v-tooltip.right="`${row.properTags.split(/[ |]+/).join(', ')}: ${row.resource} (${row.actionDate ? fuzzyParseDateTime(convertDateFormat(row.actionDate)) : ''})`">
+                            <img v-if="row.manuallySearched" src="images/manualsearch.png" width="16" height="16" style="vertical-align:middle;" v-tooltip.right="`Manual searched episode: ${row.resource} (${fuzzyParseDateTime(convertDateFormat(row.actionDate))})`">
+                            <img v-if="row.properTags" src="images/info32.png" width="16" height="16" style="vertical-align:middle;" v-tooltip.right="`${row.properTags.split(/[ |]+/).join(', ')}: ${row.resource} (${fuzzyParseDateTime(convertDateFormat(row.actionDate))})`">
 
                         </template>
                         <img v-else-if="row.statusName ==='Failed'" src="images/no16.png"
                              width="16" height="16" style="vertical-align:middle;"
-                             v-tooltip.right="`${row.provider.name} download failed: ${row.resource} (${row.actionDate ? fuzzyParseDateTime(convertDateFormat(row.actionDate)) : ''})`"
+                             v-tooltip.right="`${row.provider.name} download failed: ${row.resource} (${fuzzyParseDateTime(convertDateFormat(row.actionDate))})`"
                         >
                     </div>
                 </span>
