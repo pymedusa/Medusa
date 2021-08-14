@@ -385,7 +385,10 @@ def cached_get_imdb_series_details(imdb_id):
 
     Use dogpile cache to return a cached id if available.
     """
-    return LazyApi.imdb_api.get_title(imdb_id)
+    details = LazyApi.imdb_api.get_title(imdb_id)
+    if not details:
+        raise Exception(f'Could not get imdb details from {imdb_id}')
+    return details
 
 
 @LazyApi.load_imdb_api
@@ -396,7 +399,10 @@ def cached_get_imdb_series_genres(imdb_id):
 
     Use dogpile cache to return a cached id if available.
     """
-    return LazyApi.imdb_api.get_title_genres(imdb_id)
+    genres = LazyApi.imdb_api.get_title_genres(imdb_id)
+    if not genres:
+        raise Exception(f'Could not get imdb genres from {imdb_id}')
+    return genres
 
 
 def create_key_from_series(namespace, fn, **kw):
