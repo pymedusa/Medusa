@@ -13,8 +13,6 @@ from medusa.helper.exceptions import AnidbAdbaConnectionException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.recommendations.recommended import create_key
 
-import six
-
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
