@@ -258,9 +258,9 @@ class GenericClient(object):
 
             if result.priority != 0 and not self._set_torrent_priority(result):
                 log.error('{name}: Unable to set priority for Torrent', {'name': self.name})
-        except DownloadClientConnectionException:
-            log.warning('{name}: Failed Sending Torrent. Caused by a connection error',
-                        {'name': self.name})
+        except DownloadClientConnectionException as error:
+            log.warning('{name}: Failed Sending Torrent. Error: {error}',
+                        {'name': self.name, 'error': error})
         except Exception as msg:
             log.error('{name}: Failed Sending Torrent',
                       {'name': self.name})
