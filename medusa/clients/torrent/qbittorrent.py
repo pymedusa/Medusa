@@ -97,7 +97,7 @@ class QBittorrentAPI(GenericClient):
             self.response = self.session.post(self.url, data=data, verify=app.TORRENT_VERIFY_CERT)
         except Exception as error:
             log.warning('{name}: Exception while trying to authenticate: {error}',
-                        {'name': self.name, 'error': error}, exc_info=1)
+                        {'name': self.name, 'error': error})
             return None
 
         if not self.response:
@@ -137,7 +137,7 @@ class QBittorrentAPI(GenericClient):
             self.response = self.session.post(self.url, data=data, verify=app.TORRENT_VERIFY_CERT)
         except Exception as error:
             log.warning('{name}: Exception while trying to authenticate: {error}',
-                        {'name': self.name, 'error': error}, exc_info=1)
+                        {'name': self.name, 'error': error})
             return None
 
         # API v1.0.0 (qBittorrent v3.1.x and older)
@@ -146,7 +146,7 @@ class QBittorrentAPI(GenericClient):
                 self.response = self.session.get(self.host, verify=app.TORRENT_VERIFY_CERT)
             except Exception as error:
                 log.warning('{name}: Exception while trying to authenticate: {error}',
-                            {'name': self.name, 'error': error}, exc_info=1)
+                            {'name': self.name, 'error': error})
                 return None
 
         self.session.cookies = self.response.cookies
