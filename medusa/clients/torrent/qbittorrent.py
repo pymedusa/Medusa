@@ -156,7 +156,7 @@ class QBittorrentAPI(GenericClient):
 
     def _add_torrent_uri(self, result):
         if not self.api:
-            return False
+            raise DownloadClientConnectionException('Failed to authenticate')
 
         command = 'api/v2/torrents/add' if self.api >= (2, 0, 0) else 'command/download'
         self.url = urljoin(self.host, command)
@@ -176,7 +176,7 @@ class QBittorrentAPI(GenericClient):
 
     def _add_torrent_file(self, result):
         if not self.api:
-            return False
+            raise DownloadClientConnectionException('Failed to authenticate')
 
         command = 'api/v2/torrents/add' if self.api >= (2, 0, 0) else 'command/upload'
         self.url = urljoin(self.host, command)
@@ -226,7 +226,7 @@ class QBittorrentAPI(GenericClient):
 
     def _set_torrent_priority(self, result):
         if not self.api:
-            return False
+            raise DownloadClientConnectionException('Failed to authenticate')
 
         command = 'api/v2/torrents' if self.api >= (2, 0, 0) else 'command'
         method = 'increase' if result.priority == 1 else 'decrease'
@@ -249,7 +249,7 @@ class QBittorrentAPI(GenericClient):
     def pause_torrent(self, info_hash, state='pause'):
         """Pause torrent."""
         if not self.api:
-            return False
+            raise DownloadClientConnectionException('Failed to authenticate')
 
         command = 'api/v2/torrents' if self.api >= (2, 0, 0) else 'command'
         hashes_key = 'hashes' if self.api >= (1, 18, 0) else 'hash'
@@ -275,7 +275,7 @@ class QBittorrentAPI(GenericClient):
 
         data['deleteFiles'] = from_disk
         if not self.api:
-            return False
+            raise DownloadClientConnectionException('Failed to authenticate')
 
         if self.api >= (2, 0, 0):
             self.url = urljoin(self.host, 'api/v2/torrents/delete')
