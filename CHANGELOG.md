@@ -1,8 +1,12 @@
 ## Unreleased
 
 #### New Features
+
 #### Improvements
+
 #### Fixes
+- Fix history page (compact layout) fails to load. ([9794](https://github.com/pymedusa/Medusa/pull/9794))
+- Prevent recommended shows (imdb) to cache empty responses to the api. ([9797](https://github.com/pymedusa/Medusa/pull/9797))
 
 ## 0.5.16 (13-08-2021)
 

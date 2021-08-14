@@ -16,6 +16,7 @@ from medusa.show.recommendations.recommended import (
     BasePopular,
     RecommendedShow,
     cached_get_imdb_series_details,
+    cached_get_imdb_series_genres,
     create_key_from_series,
 )
 
@@ -77,44 +78,53 @@ class ImdbPopular(BasePopular):
             show_details = None
             imdb_id = series['imdb_tt'] = imdb_show['id'].strip('/').split('/')[-1]
 
-            if imdb_id:
-                try:
-                    show_details = cached_get_imdb_series_details(imdb_id)
-                except RequestException as error:
-                    log.warning('Could not get show details for {imdb_id} with error: {error!r}',
-                                {'imdb_id': imdb_id, 'error': error})
+            if not imdb_id:
+                continue
 
-                if show_details:
-                    try:
-                        series['year'] = imdb_show.get('year')
-                        series['name'] = imdb_show['title']
-                        series['image_url_large'] = imdb_show['image']['url']
-                        series['image_path'] = posixpath.join('images', 'imdb_popular',
-                                                              os.path.basename(series['image_url_large']))
-                        series['image_url'] = '{0}{1}'.format(imdb_show['image']['url'].split('V1')[0], '_SY600_AL_.jpg')
-                        series['imdb_url'] = 'http://www.imdb.com{imdb_id}'.format(imdb_id=imdb_show['id'])
-                        series['votes'] = show_details['ratings'].get('ratingCount', 0)
-                        series['outline'] = show_details['plot'].get('outline', {}).get('text')
-                        series['rating'] = show_details['ratings'].get('rating', 0)
-                        series['genres'] = show_details['genres'].get('genres')
-                    except Exception as error:
-                        log.warning('Could not parse show {imdb_id} with error: {error!r}',
-                                    {'imdb_id': imdb_id, 'error': error})
-                else:
-                    continue
+            series['year'] = imdb_show.get('year')
+            series['name'] = imdb_show['title']
+            series['image_url_large'] = imdb_show['image']['url']
+            series['image_path'] = posixpath.join(
+                'images', 'imdb_popular', os.path.basename(series['image_url_large'])
+            )
+            series['image_url'] = '{0}{1}'.format(imdb_show['image']['url'].split('V1')[0], '_SY600_AL_.jpg')
+            series['imdb_url'] = 'http://www.imdb.com{imdb_id}'.format(imdb_id=imdb_show['id'])
 
-            if all([series['year'], series['name'], series['imdb_tt']]):
-                try:
-                    recommended_show = self._create_recommended_show(series)
-                    if recommended_show:
-                        recommended_show.save_to_db()
-                        result.append(recommended_show)
-                except RequestException:
-                    log.warning(
-                        u'Could not connect to indexers to check if you already have'
-                        u' this show in your library: {show} ({year})',
-                        {'show': series['name'], 'year': series['name']}
-                    )
+            show_details = {}
+            show_genres = {}
+            try:
+                show_details = cached_get_imdb_series_details(imdb_id)
+                show_genres = cached_get_imdb_series_genres(imdb_id)
+            except Exception as error:
+                log.warning('Could not get show details for {imdb_id} with error: {error}',
+                            {'imdb_id': imdb_id, 'error': error})
+
+            if not show_details:
+                continue
+
+            # Get details.
+            try:
+                series['votes'] = show_details.get('ratings', {}).get('ratingCount', 0)
+                series['outline'] = show_details.get('plot', {}).get('outline', {}).get('text')
+                series['rating'] = show_details.get('ratings', {}).get('rating', 0)
+            except Exception as error:
+                log.warning('Could not parse show {imdb_id} with error: {error!r}',
+                            {'imdb_id': imdb_id, 'error': error})
+
+            series['genres'] = show_genres.get('genres', [])
+
+        if all([series['year'], series['name'], series['imdb_tt']]):
+            try:
+                recommended_show = self._create_recommended_show(series)
+                if recommended_show:
+                    recommended_show.save_to_db()
+                    result.append(recommended_show)
+            except RequestException:
+                log.warning(
+                    u'Could not connect to indexers to check if you already have'
+                    u' this show in your library: {show} ({year})',
+                    {'show': series['name'], 'year': series['name']}
+                )
 
         return result
 
