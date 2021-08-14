@@ -296,9 +296,11 @@ export default {
         },
         /**
          * Re-format date.
+         * @param {number} date - Date formatted as a number.
+         * @returns {string} - Formatted date as a string.
          */
         convertDateFormat(date) {
-            const dateObj = parse(date, 'yyyyMMddHHmmss', new Date()); // example: 20210813162256
+            const dateObj = parse(date, 'yyyyMMddHHmmss', new Date()); // Example: 20210813162256
             return formatDate(dateObj, 'yyyy-MM-dd HH:mm:ss');
         }
     }
