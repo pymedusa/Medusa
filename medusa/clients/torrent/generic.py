@@ -219,6 +219,7 @@ class GenericClient(object):
         :return:
         :rtype: str or bool
         """
+        r_code = False
         # Sets per provider seed ratio
         result.ratio = result.provider.seed_ratio()
 
