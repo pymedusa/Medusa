@@ -266,7 +266,6 @@ class GenericClient(object):
             log.debug('{name}: Exception raised when sending torrent {result}.'
                       ' Error: {error}',
                       {'name': self.name, 'result': result, 'error': msg})
-            return r_code
 
         return r_code
 
