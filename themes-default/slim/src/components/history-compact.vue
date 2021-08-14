@@ -47,16 +47,16 @@
                             <img style="margin-right: 5px;"
                                  :src="`images/providers/${row.provider.imageName}`"
                                  :alt="row.provider.name" width="16" height="16"
-                                 v-tooltip.right="`${row.provider.name}: ${row.resource} (${row.actionDate ? fuzzyParseDateTime(row.actionDate) : ''})`"
+                                 v-tooltip.right="`${row.provider.name}: ${row.resource} (${row.actionDate ? fuzzyParseDateTime(convertDateFormat(row.actionDate)) : ''})`"
                                  onError="this.onerror=null;this.src='images/providers/missing.png';"
                             >
-                            <img v-if="row.manuallySearched" src="images/manualsearch.png" width="16" height="16" style="vertical-align:middle;" v-tooltip.right="`Manual searched episode: ${row.resource} (${row.actionDate ? fuzzyParseDateTime(row.actionDate) : ''})`">
-                            <img v-if="row.properTags" src="images/info32.png" width="16" height="16" style="vertical-align:middle;" v-tooltip.right="`${row.properTags.split(/[ |]+/).join(', ')}: ${row.resource} (${row.actionDate ? fuzzyParseDateTime(row.actionDate) : ''})`">
+                            <img v-if="row.manuallySearched" src="images/manualsearch.png" width="16" height="16" style="vertical-align:middle;" v-tooltip.right="`Manual searched episode: ${row.resource} (${row.actionDate ? fuzzyParseDateTime(convertDateFormat(row.actionDate)) : ''})`">
+                            <img v-if="row.properTags" src="images/info32.png" width="16" height="16" style="vertical-align:middle;" v-tooltip.right="`${row.properTags.split(/[ |]+/).join(', ')}: ${row.resource} (${row.actionDate ? fuzzyParseDateTime(convertDateFormat(row.actionDate)) : ''})`">
 
                         </template>
                         <img v-else-if="row.statusName ==='Failed'" src="images/no16.png"
                              width="16" height="16" style="vertical-align:middle;"
-                             v-tooltip.right="`${row.provider.name} download failed: ${row.resource} (${row.actionDate ? fuzzyParseDateTime(row.actionDate) : ''})`"
+                             v-tooltip.right="`${row.provider.name} download failed: ${row.resource} (${row.actionDate ? fuzzyParseDateTime(convertDateFormat(row.actionDate)) : ''})`"
                         >
                     </div>
                 </span>
@@ -107,6 +107,8 @@ import { manageCookieMixin } from '../mixins/manage-cookie';
 import QualityPill from './helpers/quality-pill.vue';
 import AppLink from './helpers/app-link.vue';
 import { VTooltip } from 'v-tooltip';
+import parse from 'date-fns/parse';
+import formatDate from 'date-fns/format';
 
 export default {
     name: 'history-compact',
@@ -291,6 +293,13 @@ export default {
             const { getHistory } = this;
             console.log(this.serverParams);
             getHistory(this.serverParams);
+        },
+        /**
+         * Re-format date.
+         */
+        convertDateFormat(date) {
+            const dateObj = parse(date, 'yyyyMMddHHmmss', new Date()); // example: 20210813162256
+            return formatDate(dateObj, 'yyyy-MM-dd HH:mm:ss');
         }
     }
 };

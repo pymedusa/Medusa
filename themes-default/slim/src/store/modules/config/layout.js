@@ -2,7 +2,6 @@ import { ADD_CONFIG, UPDATE_LAYOUT_LOCAL } from '../../mutation-types';
 import { api } from '../../../api';
 import formatDate from 'date-fns/format';
 import parseISO from 'date-fns/parseISO';
-import parse from 'date-fns/parse';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
 
@@ -86,13 +85,7 @@ const getters = {
 
         // Only the history page should show seconds.
         const formatTimeStyle = showSeconds ? timeStyle : timeStyle.replace(':%S', '');
-        let fdate = null;
-        if (typeof airDate === 'number') {
-            fdate = parse(airDate, 'yyyyMMddHHmmss', new Date()); // example: 20210813162256
-        } else {
-            fdate = parseISO(airDate);
-        }
-
+        const fdate = parseISO(airDate);
         return formatDate(fdate, convertDateFormat(`${dateStyle} ${formatTimeStyle}`));
     },
     getShowFilterByName: state => {
