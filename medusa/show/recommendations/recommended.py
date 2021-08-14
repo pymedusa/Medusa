@@ -347,8 +347,16 @@ def get_categories():
     return categories
 
 
+def create_key(namespace, fn, **kw):
+    """Create key out of namespace + firs arg."""
+    def generate_key(*args, **kw):
+        show_key = f'{namespace}|{args[0]}'
+        return show_key
+    return generate_key
+
+
 @LazyApi.load_anidb_api
-@recommended_series_cache.cache_on_arguments()
+@recommended_series_cache.cache_on_arguments(namespace='tvdb_to_anidb', function_key_generator=create_key)
 def cached_tvdb_to_aid(tvdb_id):
     """
     Try to match an anidb id with a tvdb id.
@@ -359,7 +367,7 @@ def cached_tvdb_to_aid(tvdb_id):
 
 
 @LazyApi.load_anidb_api
-@recommended_series_cache.cache_on_arguments()
+@recommended_series_cache.cache_on_arguments(namespace='anidb_to_tvdb', function_key_generator=create_key)
 def cached_aid_to_tvdb(aid):
     """
     Try to match a tvdb id with an anidb id.
@@ -370,16 +378,25 @@ def cached_aid_to_tvdb(aid):
 
 
 @LazyApi.load_imdb_api
-@recommended_series_cache.cache_on_arguments()
+@recommended_series_cache.cache_on_arguments(namespace='series_details', function_key_generator=create_key)
 def cached_get_imdb_series_details(imdb_id):
     """
     Request the series details from the imdbpie api.
 
     Use dogpile cache to return a cached id if available.
     """
-    title_detailed = LazyApi.imdb_api.get_title(imdb_id)
-    title_detailed['genres'] = LazyApi.imdb_api.get_title_genres(imdb_id)
-    return title_detailed
+    return LazyApi.imdb_api.get_title(imdb_id)
+
+
+@LazyApi.load_imdb_api
+@recommended_series_cache.cache_on_arguments(namespace='series_genres', function_key_generator=create_key)
+def cached_get_imdb_series_genres(imdb_id):
+    """
+    Request the series genres from the imdbpie api.
+
+    Use dogpile cache to return a cached id if available.
+    """
+    return LazyApi.imdb_api.get_title_genres(imdb_id)
 
 
 def create_key_from_series(namespace, fn, **kw):

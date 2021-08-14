@@ -16,6 +16,7 @@ from medusa.show.recommendations.recommended import (
     BasePopular,
     RecommendedShow,
     cached_get_imdb_series_details,
+    cached_get_imdb_series_genres,
     create_key_from_series,
 )
 
@@ -89,6 +90,7 @@ class ImdbPopular(BasePopular):
 
                 try:
                     show_details = cached_get_imdb_series_details(imdb_id)
+                    show_genres = cached_get_imdb_series_genres(imdb_id)
                 except RequestException as error:
                     log.warning('Could not get show details for {imdb_id} with error: {error!r}',
                                 {'imdb_id': imdb_id, 'error': error})
@@ -101,10 +103,12 @@ class ImdbPopular(BasePopular):
                     series['votes'] = show_details.get('ratings', {}).get('ratingCount', 0)
                     series['outline'] = show_details.get('plot', {}).get('outline', {}).get('text')
                     series['rating'] = show_details.get('ratings', {}).get('rating', 0)
-                    series['genres'] = show_details.get('genres', {}).get('genres', [])
                 except Exception as error:
                     log.warning('Could not parse show {imdb_id} with error: {error!r}',
                                 {'imdb_id': imdb_id, 'error': error})
+
+                if show_genres:
+                    series['genres'] = show_genres.get('genres', [])
 
             if all([series['year'], series['name'], series['imdb_tt']]):
                 try:
