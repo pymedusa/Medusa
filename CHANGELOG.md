@@ -1,4 +1,4 @@
-## 0.5.17 (15-08-2021)
+## 0.5.17 (16-08-2021)
 
 #### Fixes
 - Fix history page (compact layout) fails to load. ([9794](https://github.com/pymedusa/Medusa/pull/9794))
