@@ -161,7 +161,7 @@ class DelugeDAPI(GenericClient):
         if self.connect(True) and self.drpc.test():
             return True, 'Success: Connected and Authenticated'
         else:
-            return False, 'Error: Unable to Authenticate!  Please check your config!'
+            return False, 'Error: Unable to Authenticate! Please check your config!'
 
     def remove_ratio_reached(self):
         """Remove all Medusa torrents that ratio was reached.
