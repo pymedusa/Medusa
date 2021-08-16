@@ -133,11 +133,11 @@ class RTorrentAPI(GenericClient):
         try:
             self.auth = None
             self._get_auth()
-        except Exception:  # pylint: disable=broad-except
-            return False, 'Error: Unable to connect to {name}'.format(name=self.name)
+        except Exception:
+            return False, f'Error: Unable to connect to {self.name}'
         else:
             if self.auth is None:
-                return False, 'Error: Unable to get {name} Authentication, check your config!'.format(name=self.name)
+                return False, f'Error: Unable to get {self.name} Authentication, check your config!'
             else:
                 return True, 'Success: Connected and Authenticated'
 

@@ -198,7 +198,7 @@ class Home(WebRoot):
             return 'Error while testing connection. Check warning logs.'
 
         if connection:
-            authed, auth_msg = sab.test_authentication(host, username, password, apikey)  # @UnusedVariable
+            authed, auth_msg = sab.test_authentication(host, username, password, apikey)
             if authed:
                 return 'Success. Connected and authenticated'
             else:
@@ -210,7 +210,7 @@ class Home(WebRoot):
     @staticmethod
     def testNZBget(host=None, username=None, password=None, use_https=False):
         try:
-            connected_status = nzbget.test_authentication(
+            connected_status, error_msg = nzbget.test_authentication(
                 host, username, password, config.checkbox_to_value(use_https)
             )
         except Exception as error:
@@ -219,7 +219,7 @@ class Home(WebRoot):
         if connected_status:
             return 'Success. Connected and authenticated'
         else:
-            return 'Unable to connect to host'
+            return 'Unable to connect to host. Error: {msg}'.format(msg=error_msg)
 
     @staticmethod
     def testTorrent(torrent_method=None, host=None, username=None, password=None):
