@@ -3,6 +3,7 @@
 #### Fixes
 - Fix history page (compact layout) fails to load. ([9794](https://github.com/pymedusa/Medusa/pull/9794))
 - Prevent recommended shows (imdb) to cache empty responses to the api. ([9797](https://github.com/pymedusa/Medusa/pull/9797))
+- Fix download handler throwing errors connecting to NZBget. ([9801](https://github.com/pymedusa/Medusa/pull/9801))
 
 ## 0.5.16 (13-08-2021)
 
