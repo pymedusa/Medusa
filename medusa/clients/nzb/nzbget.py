@@ -44,7 +44,7 @@ def nzb_connection(url):
             msg = 'NZBget username or password is incorrect.'
             log.warning(msg)
         else:
-            msg = 'Protocol Error: {err_msg}', {'err_msg': error.errmsg}
+            msg = f'Protocol Error: {error.errmsg}'
             log.error(msg)
 
         return False, msg
@@ -52,7 +52,7 @@ def nzb_connection(url):
     except Error as error:
         msg = ('Please check your NZBget host and port (if it is running).'
                ' NZBget is not responding to this combination.'
-               ' Error: {err_msg}', {'err_msg': error.errmsg})
+               f' Error: {error}')
         log.warning(msg)
 
         return False, msg
@@ -60,7 +60,7 @@ def nzb_connection(url):
     except socket.error as error:
         msg = ('Please check your NZBget host and port (if it is running).'
                ' NZBget is not responding to this combination.'
-               ' Socket Error: {err_msg}', {'err_msg': error})
+               f' Socket Error: {error}')
         log.warning(msg)
 
         return False, msg
