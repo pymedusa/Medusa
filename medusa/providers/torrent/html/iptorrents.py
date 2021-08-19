@@ -121,7 +121,7 @@ class IPTorrentsProvider(TorrentProvider):
                 try:
                     table_data = row('td')
                     title = table_data[1].find('a').text
-                    download_url = self.urls['base_url'] + table_data[3].find('a')['href']
+                    download_url = self.urls['base_url'] + "t/" + table_data[3].find('a')['href']
                     if not all([title, download_url]):
                         continue
 
