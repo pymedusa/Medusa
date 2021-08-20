@@ -326,7 +326,7 @@ class NameParser(object):
         elif result.series.is_anime or result.is_anime:
             new_episode_numbers, new_season_numbers, new_absolute_numbers = self._parse_anime(result)
 
-        elif result.season_number:
+        elif result.season_number is not None:
             new_episode_numbers, new_season_numbers, new_absolute_numbers = self._parse_series(result)
 
         else:
