@@ -106,7 +106,7 @@
 
             <config-textbox-number
                 v-if="editProvider.config.search.delay.enabled" :value="editProvider.config.search.delay.duration / 60.0"
-                label="Search delay (hours)" :id="`${editProvider.id}_search_delay_duration`" :min="0.5" :step="0.5"
+                label="Search delay (hours)" :id="`${editProvider.id}_search_delay_duration`" :step="0.5"
                 @input="editProvider.config.search.delay.duration = $event * 60"
             >
                 <p>Amount of hours to wait for downloading a result compared to the first result for a specific episode.</p>
