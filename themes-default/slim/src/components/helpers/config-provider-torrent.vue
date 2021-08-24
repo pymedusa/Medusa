@@ -100,12 +100,13 @@
 
             <config-toggle-slider v-model="editProvider.config.search.delay.enabled" label="Enable search delay" :name="`${editProvider.id}_enable_search_delay`" :id="`${editProvider.id}_enable_search_delay`">
                 <p>Enable to delay downloads for this provider for an x amount of hours. The provider will start snatching results for a specific episode after a delay has expired, compared to when it first got a result for the specific episode.</p>
-                <p>Searches for PROPER releases are exempted from the delay.</p>
+                <p>A negative value will have the daily search accepts results before the episode scheduled air date/time.</p>
+                <p>Proper and Backlog searches are exempted from the delay.</p>
             </config-toggle-slider>
 
             <config-textbox-number
                 v-if="editProvider.config.search.delay.enabled" :value="editProvider.config.search.delay.duration / 60.0"
-                label="Search delay (hours)" :id="`${editProvider.id}_search_delay_duration`" :min="0.5" :step="0.5"
+                label="Search delay (hours)" :id="`${editProvider.id}_search_delay_duration`" :step="0.5"
                 @input="editProvider.config.search.delay.duration = $event * 60"
             >
                 <p>Amount of hours to wait for downloading a result compared to the first result for a specific episode.</p>
