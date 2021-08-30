@@ -731,7 +731,7 @@ export default {
                 patchData[episode.slug] = { quality: Number.parseInt(quality, 10) };
             });
 
-            api.patch('series/' + show.id.slug + '/episodes', patchData) // eslint-disable-line no-undef
+            api.patch(`series/${show.id.slug}/episodes`, patchData) // eslint-disable-line no-undef
                 .then(_ => {
                     console.info(`patched show ${show.id.slug} with quality ${quality}`);
                     [...new Set(episodes.map(episode => episode.season))].forEach(season => {

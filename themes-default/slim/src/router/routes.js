@@ -354,8 +354,8 @@ const manageRoutes = [
         name: 'manage',
         meta: {
             title: 'Mass Update',
-            header: 'Mass Update',
-            topMenu: 'manage'
+            topMenu: 'manage',
+            converted: true
         },
         component: () => import('../components/manage-mass-update.vue')
     },

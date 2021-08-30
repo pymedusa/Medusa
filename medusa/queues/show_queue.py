@@ -282,7 +282,7 @@ class ShowQueueItem(generic_queue.QueueItem):
 
         # Update the generic_queue.py to_json.
         self.to_json.update({
-            'show': self.show
+            'show': self.show.to_json()
         })
 
     def isInQueue(self):
@@ -373,7 +373,7 @@ class QueueItemAdd(ShowQueueItem):
         # Small helper, to reduce code for messaging
         def message_step(new_step):
             step.append(new_step)
-            ws.Message('QueueItemShowAdd', dict(
+            ws.Message('QueueItemShow', dict(
                 step=step, **self.to_json
             )).push()
 
@@ -508,6 +508,7 @@ class QueueItemRefresh(ShowQueueItem):
             '{id}: Performing refresh on {show}',
             {'id': self.show.series_id, 'show': self.show.name}
         )
+        ws.Message('QueueItemShow', self.to_json).push()
 
         try:
             self.show.refresh_dir()
@@ -518,6 +519,7 @@ class QueueItemRefresh(ShowQueueItem):
 
             # Load XEM data to DB for show
             scene_numbering.xem_refresh(self.show, force=True)
+            self.success = True
         except IndexerException as error:
             log.warning(
                 '{id}: Unable to contact {indexer}. Aborting: {error_msg}',
@@ -531,6 +533,7 @@ class QueueItemRefresh(ShowQueueItem):
             )
 
         self.finish()
+        ws.Message('QueueItemShow', self.to_json).push()
 
 
 class QueueItemRename(ShowQueueItem):
@@ -540,6 +543,7 @@ class QueueItemRename(ShowQueueItem):
     def run(self):
 
         ShowQueueItem.run(self)
+        ws.Message('QueueItemShow', self.to_json).push()
 
         log.info(
             'Performing rename on {series_name}',
@@ -578,6 +582,7 @@ class QueueItemRename(ShowQueueItem):
             cur_ep_obj.rename()
 
         self.finish()
+        ws.Message('QueueItemShow', self.to_json).push()
 
 
 class QueueItemSubtitle(ShowQueueItem):
@@ -587,6 +592,7 @@ class QueueItemSubtitle(ShowQueueItem):
     def run(self):
 
         ShowQueueItem.run(self)
+        ws.Message('QueueItemShow', self.to_json).push()
 
         log.info(
             '{id}: Downloading subtitles for {show}',
@@ -595,6 +601,7 @@ class QueueItemSubtitle(ShowQueueItem):
 
         self.show.download_subtitles()
         self.finish()
+        ws.Message('QueueItemShow', self.to_json).push()
 
 
 class QueueItemUpdate(ShowQueueItem):
@@ -609,6 +616,7 @@ class QueueItemUpdate(ShowQueueItem):
     def run(self):
 
         ShowQueueItem.run(self)
+        ws.Message('QueueItemShow', self.to_json).push()
 
         log.debug(
             '{id}: Beginning update of {show}',
@@ -766,6 +774,7 @@ class QueueItemUpdate(ShowQueueItem):
         # Refresh show needs to be forced since current execution locks the queue
         app.show_queue_scheduler.action.refreshShow(self.show, True)
         self.finish()
+        ws.Message('QueueItemShow', self.to_json).push()
 
 
 class QueueItemSeasonUpdate(ShowQueueItem):
@@ -782,6 +791,7 @@ class QueueItemSeasonUpdate(ShowQueueItem):
     def run(self):
 
         ShowQueueItem.run(self)
+        ws.Message('QueueItemShow', self.to_json).push()
 
         log.info(
             '{id}: Beginning update of {show}{season}',
@@ -922,6 +932,7 @@ class QueueItemSeasonUpdate(ShowQueueItem):
         )
 
         self.finish()
+        ws.Message('QueueItemShow', self.to_json).push()
 
 
 class QueueItemRemove(ShowQueueItem):
@@ -933,8 +944,8 @@ class QueueItemRemove(ShowQueueItem):
         self.full = full
 
     def run(self):
-
         ShowQueueItem.run(self)
+        ws.Message('QueueItemShow', self.to_json).push()
 
         log.info(
             '{id}: Removing {show}',
@@ -957,9 +968,8 @@ class QueueItemRemove(ShowQueueItem):
                 log.exception('Exception occurred while trying to delete show {show}, error: {error',
                               {'show': self.show.name, 'error': error})
 
-        # Send showRemoved to frontend, so we can remove it from localStorage.
-        ws.Message('QueueItemShowRemove', self.show.to_json(detailed=False)).push()  # Send ws update to client
-
         self.show.delete_show(full=self.full)
 
         self.finish()
+        # Send showRemoved to frontend, so we can remove it from localStorage.
+        ws.Message('QueueItemShow', self.show.to_json(detailed=False)).push()

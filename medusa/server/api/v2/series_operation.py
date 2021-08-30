@@ -4,7 +4,9 @@ from __future__ import unicode_literals
 
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.server.api.v2.series import SeriesHandler
+from medusa.show.show import Show
 from medusa.tv.series import Series, SeriesIdentifier
+
 
 from tornado.escape import json_decode
 

@@ -706,7 +706,10 @@ class Manage(Home, WebRoot):
         return self.redirect('/manage/')
 
     def massUpdate(self, toUpdate=None, toRefresh=None, toRename=None, toDelete=None, toRemove=None, toMetadata=None,
-                   toSubtitle=None, toImageUpdate=None):
+                   toSubtitle=None, toImageUpdate=None, *args, **kwargs):
+
+        for arg in kwargs:
+            pass
         to_update = toUpdate.split('|') if toUpdate else []
         to_refresh = toRefresh.split('|') if toRefresh else []
         to_rename = toRename.split('|') if toRename else []
