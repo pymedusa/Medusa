@@ -357,7 +357,8 @@ const manageRoutes = [
             topMenu: 'manage',
             converted: true
         },
-        component: () => import('../components/manage-mass-update.vue')
+        component: () => import('../components/manage-mass-update.vue'),
+        props: true
     },
     {
         path: '/manage/backlogOverview',
@@ -402,8 +403,11 @@ const manageRoutes = [
         name: 'manageMassEdit',
         meta: {
             title: 'Mass Edit',
-            topMenu: 'manage'
-        }
+            topMenu: 'manage',
+            converted: true
+        },
+        component: () => import('../components/manage-mass-edit.vue'),
+        props: true
     },
     {
         path: '/manage/subtitleMissed',

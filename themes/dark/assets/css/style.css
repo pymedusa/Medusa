@@ -2550,6 +2550,15 @@ a.whitelink {
     padding-bottom: 2px;
 }
 
+/* The back image (svg) */
+.back-arrow {
+    fill: black;
+}
+
+.manage-update .title a {
+    color: black;
+}
+
 /* =======================================================================
 Global
 ========================================================================== */

@@ -281,9 +281,9 @@ export default {
                 return;
             }
 
-            // [Mass Edit] If changing to/from `keep`, restore the original value
-            if ([preset, oldPreset].some(val => val === 'keep')) {
-                preset = this.initialQuality;
+            // [Mass Edit] If changing to `keep`, restore the original value
+            if (preset === 'keep') {
+                preset = 0;
             // If preset is custom, set to last preset (provided it's not null)
             } else if ((preset === 0 || !this.isQualityPreset(preset)) && oldPreset !== null) {
                 preset = oldPreset;
