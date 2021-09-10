@@ -204,7 +204,6 @@ export default {
             set(providers) {
                 const { save } = this;
                 this.provider.providers = providers;
-                save();
             }
         },
         enabledProviders() {
@@ -255,7 +254,17 @@ export default {
                 );
             } finally {
                 this.saving = false;
+                this.reOrderProviders();
             }
+        },
+        /**
+         * Re-order providers. Make sure enabled providers are on top.
+         */
+        reOrderProviders() {
+            this.providerPriorities = [
+                ...this.providerPriorities.filter(provider => provider.config.enabled),
+                ...this.providerPriorities.filter(provider => !provider.config.enabled)
+            ];
         }
     }
 };
