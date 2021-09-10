@@ -75,6 +75,10 @@
                         {{ item.lastRefresh }}
                     </li>
                 </ul>
+                <app-link v-if="!sceneRefresh.inProgress" href="internal/deleteSceneExceptions" class="clean-cache" @click.native.prevent="cleanScenExceptionCache">Clean scene exception cache</app-link>
+                <transition name="fade">
+                    <state-switch v-if="sceneExceptionsDeleted" state="yes" />
+                </transition>
             </div>
         </div>
 
@@ -114,11 +118,13 @@
 import { mapActions, mapGetters, mapState } from 'vuex';
 import { api } from '../api';
 import { AppLink } from './helpers';
+import StateSwitch from './helpers/state-switch.vue';
 
 export default {
     name: 'manage-searches',
     components: {
-        AppLink
+        AppLink,
+        StateSwitch
     },
     data() {
         return {
@@ -142,7 +148,8 @@ export default {
                 inProgress: true,
                 showSpinner: false,
                 message: ''
-            }
+            },
+            sceneExceptionsDeleted: false
         };
     },
     computed: {
@@ -283,8 +290,27 @@ export default {
                     );
                 }
             }
+        },
+        cleanScenExceptionCache() {
+            const vm = this;
+            $.confirm({
+                title: 'Clear scene exception cache',
+                text: 'Do you really want to clear the scene exception cache? Custom exception will be left untouched.',
+                confirmButton: 'Yes',
+                cancelButton: 'Cancel',
+                dialogClass: 'modal-dialog',
+                post: false,
+                confirm() {
+                    api.post('internal/deleteSceneExceptions')
+                        .then(() => {
+                            vm.sceneExceptionsDeleted = true;
+                            setTimeout(() => {
+                                vm.sceneExceptionsDeleted = false;
+                            }, 3000);
+                        });
+                }
+            });
         }
-
     },
     mounted() {
         // Initially load the exception types last updates on page load.
@@ -313,5 +339,11 @@ export default {
 .recommended-list span:focus,
 .recommended-list span:hover {
     text-decoration: underline;
+}
+.fade-enter-active, .fade-leave-active {
+  transition: opacity .5s;
+}
+.fade-enter, .fade-leave-to {
+  opacity: 0;
 }
 </style>
