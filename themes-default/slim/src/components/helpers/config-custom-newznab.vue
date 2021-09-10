@@ -22,11 +22,16 @@
                     :options="availableCategories"
                     label="id"
                     track-by="id"
+                    :taggable="true"
+                    tag-placeholder="Add this as new cat id" placeholder="Search or add a cat id"
+                    @tag="addTag"
                     @input="currentProvider.config.catIds = $event.map(cat => cat.id)"
                 >
                     <template slot="option" slot-scope="props">
-                        <span><strong>{{props.option.id}}</strong> ({{props.option.name}})</span>
+                        <span v-if="props.option.isTag"><strong>{{props.option.label}}</strong></span>
+                        <span v-else><strong>{{props.option.id}}</strong> ({{props.option.name}})</span>
                     </template>
+
                 </multiselect>
             </config-template>
 
@@ -165,6 +170,14 @@ export default {
                     'Error'
                 );
             }
+        },
+        /**
+         * Allow ability to add custom cat id's.
+         * @param {string} newTag
+         */
+        addTag (newTag) {
+            const tag = { id: newTag, name: newTag };
+            this.availableCategories.push(tag)
         }
     },
     computed: {
