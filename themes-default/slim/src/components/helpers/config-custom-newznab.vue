@@ -176,6 +176,9 @@ export default {
          * @param {string} newTag
          */
         addTag (newTag) {
+            if (!Number(newTag)) {
+                return;
+            }
             const tag = { id: newTag, name: newTag };
             this.availableCategories.push(tag)
         }
