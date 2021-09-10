@@ -165,12 +165,17 @@ class AnimeBytes(TorrentProvider):
                         # Discard if we wanted free leech
                         continue
 
-                    tags = '{torrent_source}.{torrent_container}.{torrent_codec}.{torrent_res}.' \
-                        '{torrent_audio}'.format(torrent_source=properties[0],
-                                                 torrent_container=properties[1],
-                                                 torrent_codec=properties[2],
-                                                 torrent_res=properties[3],
-                                                 torrent_audio=properties[4])
+                    try:
+                        tags = '{torrent_source}.{torrent_container}.{torrent_codec}.{torrent_res}.' \
+                            '{torrent_audio}'.format(torrent_source=properties[0],
+                                                     torrent_container=properties[1],
+                                                     torrent_codec=properties[2],
+                                                     torrent_res=properties[3],
+                                                     torrent_audio=properties[4])
+                    except Exception as error:
+                        log.warning('Could not get the desired amount of tags from {properties}. Error: {error}',
+                                    {'properties': properties_string, 'error': error})
+                        continue
 
                     last_field = re.match(r'(.*)\((.*)\)', properties[-1])
 
