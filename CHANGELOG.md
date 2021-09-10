@@ -3,6 +3,7 @@
 #### New Features
 
 #### Improvements
+- Adds the options to manage/searches page to clean automatic added scene exceptions from cache. ([9859](https://github.com/pymedusa/Medusa/pull/9859))
 
 #### Fixes
 
