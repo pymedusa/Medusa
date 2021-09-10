@@ -176,7 +176,7 @@ export default {
          * @param {string} newTag
          */
         addTag (newTag) {
-            if (!Number(newTag)) {
+            if (!Number(newTag) || Number(newTag) < 1) {
                 return;
             }
             const tag = { id: newTag, name: newTag };
