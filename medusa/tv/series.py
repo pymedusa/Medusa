@@ -1739,7 +1739,8 @@ class Series(TV):
 
         self.subtitles = options['subtitles'] if options.get('subtitles') is not None else app.SUBTITLES_DEFAULT
 
-        if options.get('quality'):
+        if options.get('quality') and (options['quality']['allowed'] or options['quality']['preferred']):
+            # We need to pass at a minimum a allowed or preferred quality. Else use the Quality default.
             self.qualities_allowed = options['quality']['allowed']
             self.qualities_preferred = options['quality']['preferred']
         else:

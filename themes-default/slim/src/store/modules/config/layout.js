@@ -85,7 +85,6 @@ const getters = {
 
         // Only the history page should show seconds.
         const formatTimeStyle = showSeconds ? timeStyle : timeStyle.replace(':%S', '');
-
         const fdate = parseISO(airDate);
         return formatDate(fdate, convertDateFormat(`${dateStyle} ${formatTimeStyle}`));
     },

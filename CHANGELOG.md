@@ -1,6 +1,26 @@
 ## Unreleased
 
 #### New Features
+
+#### Improvements
+- Adds the options to manage/searches page to clean automatic added scene exceptions from cache. ([9859](https://github.com/pymedusa/Medusa/pull/9859))
+- Add ability to add custom newznab/torznab category id's through UI. ([9857](https://github.com/pymedusa/Medusa/pull/9857))
+
+#### Fixes
+- Fix prowlarr provider id's being obfuscated in logs because of a bad log level. ([9857](https://github.com/pymedusa/Medusa/pull/9857))
+
+-----
+
+## 0.5.17 (16-08-2021)
+
+#### Fixes
+- Fix history page (compact layout) fails to load. ([9794](https://github.com/pymedusa/Medusa/pull/9794))
+- Prevent recommended shows (imdb) to cache empty responses to the api. ([9797](https://github.com/pymedusa/Medusa/pull/9797))
+- Fix download handler throwing errors connecting to NZBget. ([9801](https://github.com/pymedusa/Medusa/pull/9801))
+
+## 0.5.16 (13-08-2021)
+
+#### New Features
 - Implemented recommended shows v2. ([5782](https://github.com/pymedusa/Medusa/pull/5782))
   - Added recommended list from anilist.co
   - Recommended lists are cached nightly
@@ -17,6 +37,8 @@
 - Fixed postprocessing of archives with multiple video files caused a pp of the complete download dir. ([9775](https://github.com/pymedusa/Medusa/pull/9775))
 - Fixed download handler wrongly untrack downloads when connection errors occurred. ([9774](https://github.com/pymedusa/Medusa/pull/9774))
 - Removed anonomized redirect service (derefer.org is down) in favor of "noreferrer noopener" headers ([5782](https://github.com/pymedusa/Medusa/pull/5782))
+- Fixed schedule page not showing day of week for shows airing on sunday (banner/poster layouts) ([9791](https://github.com/pymedusa/Medusa/pull/9791))
+- Group history compact layout results by quality ([9788](https://github.com/pymedusa/Medusa/pull/9788))
 
 ----
 
