@@ -75,6 +75,16 @@ class InternalHandler(BaseRequestHandler):
 
         return resource_function()
 
+    # deleteSceneExceptions
+    def resource_delete_scene_exceptions(self):
+        """Delete all automatically added scene exceptions.
+
+        Custom added scene exceptions will be left alone, as these can already be removed manually.
+        """
+        main_db_con = db.DBConnection()
+        main_db_con.action('DELETE FROM scene_exceptions WHERE custom = 0;')
+        return self._ok()
+
     # existingSeries
     def resource_existing_series(self):
         """Generate existing series folders data for adding existing shows."""
