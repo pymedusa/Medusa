@@ -340,10 +340,14 @@ export default {
 .recommended-list span:hover {
     text-decoration: underline;
 }
-.fade-enter-active, .fade-leave-active {
-  transition: opacity .5s;
+
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.5s;
 }
-.fade-enter, .fade-leave-to {
-  opacity: 0;
+
+.fade-enter,
+.fade-leave-to {
+    opacity: 0;
 }
 </style>
