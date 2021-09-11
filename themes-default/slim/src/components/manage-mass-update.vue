@@ -36,6 +36,12 @@
             @on-sort-change="saveSorting"
             @on-selected-rows-change="selectedShows = $event.selectedRows"
         >
+            <template slot="column-filter" slot-scope="props">
+                <span v-if="props.column.filterOptions.customFilter">
+                    <input type="checkbox" :data-action="props.column.action" @click="actionCheckAllRows"/>
+                </span>
+            </template>
+
             <template #table-row="props">
                 <span v-if="props.column.label === 'Show name'" class="title">
                     <app-link :href="`home/displayShow?showslug=${props.row.id.slug}`"><span>{{props.row.title}}</span></app-link>
@@ -78,27 +84,27 @@
                 </span>
 
                 <span v-else-if="props.column.label === 'Update'" class="align-center">
-                    <input :disabled="inQueueOrStarted('update', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateCheck" data-action="update" @input="updateActions($event, props.row.id.slug)"/>
+                    <input :disabled="inQueueOrStarted('update', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateCheck" :data-action="props.column.action" :data-show="props.row.id.slug" @input="updateActions($event, props.row.id.slug)"/>
                 </span>
 
                 <span v-else-if="props.column.label === 'Refresh'" class="align-center">
-                    <input :disabled="inQueueOrStarted('refresh', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateRefresh" data-action="refresh" @input="updateActions($event, props.row.id.slug)"/>
+                    <input :disabled="inQueueOrStarted('refresh', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateRefresh" :data-action="props.column.action" @input="updateActions($event, props.row.id.slug)"/>
                 </span>
 
                 <span v-else-if="props.column.label === 'Rename'" class="align-center">
-                    <input :disabled="inQueueOrStarted('rename', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateRename" data-action="rename" @input="updateActions($event, props.row.id.slug)"/>
+                    <input :disabled="inQueueOrStarted('rename', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateRename" :data-action="props.column.action" @input="updateActions($event, props.row.id.slug)"/>
                 </span>
 
                 <span v-else-if="props.column.label === 'Search subtitle'" class="align-center">
-                    <input :disabled="inQueueOrStarted('subtitle', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateSubtitle" data-action="subtitle" @input="updateActions($event, props.row.id.slug)"/>
+                    <input :disabled="inQueueOrStarted('subtitle', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateSubtitle" :data-action="props.column.action" @input="updateActions($event, props.row.id.slug)"/>
                 </span>
 
                 <span v-else-if="props.column.label === 'Delete'" class="align-center">
-                    <input :disabled="inQueueOrStarted('delete', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateDelete" data-action="delete" @input="updateActions($event, props.row.id.slug)"/>
+                    <input :disabled="inQueueOrStarted('delete', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateDelete" :data-action="props.column.action" :data-show="props.row.id.slug" @input="updateActions($event, props.row.id.slug)"/>
                 </span>
 
                 <span v-else-if="props.column.label === 'Remove'" class="align-center">
-                    <input :disabled="inQueueOrStarted('remove', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateRemove" data-action="remove" @input="updateActions($event, props.row.id.slug)"/>
+                    <input :disabled="inQueueOrStarted('remove', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateRemove" :data-action="props.column.action" @input="updateActions($event, props.row.id.slug)"/>
                 </span>
 
                 <span v-else-if="props.column.label === 'Update image'" class="align-center">
@@ -246,38 +252,72 @@ export default {
                 hidden: getCookie('Subtitle')
             }, {
                 label: 'Default Ep Status',
-                field: 'config.defaultEpisodeStatus'
+                field: 'config.defaultEpisodeStatus',
+                filterOptions: {
+                     enabled: false
+                }
             }, {
                 label: 'Status',
-                field: 'status'
+                field: 'status',
+                filterOptions: {
+                     enabled: false
+                }
             }, {
                 label: 'Update',
                 field: 'update',
-                sortable: false
+                filterOptions: {
+                     customFilter: true
+                },
+                sortable: false,
+                action: 'update'
             }, {
                 label: 'Refresh',
                 field: 'rescan',
-                sortable: false
+                sortable: false,
+                filterOptions: {
+                     customFilter: true
+                },
+                action: 'refresh'
             }, {
                 label: 'Rename',
                 field: 'rename',
-                sortable: false
+                sortable: false,
+                filterOptions: {
+                     customFilter: true
+                },
+                action: 'rename'
             }, {
                 label: 'Search subtitle',
                 field: 'searchsubtitle',
-                sortable: false
+                sortable: false,
+                filterOptions: {
+                     customFilter: true
+                },
+                action: 'subtitle'
             }, {
                 label: 'Delete',
                 field: 'delete',
-                sortable: false
+                sortable: false,
+                filterOptions: {
+                     customFilter: true
+                },
+                action: 'delete'
             }, {
                 label: 'Remove',
                 field: 'remove',
-                sortable: false
+                sortable: false,
+                filterOptions: {
+                     customFilter: true
+                },
+                action: 'remove'
             }, {
                 label: 'Update image',
                 field: 'updateimage',
-                sortable: false
+                sortable: false,
+                filterOptions: {
+                     customFilter: true
+                },
+                action: 'image'
             }],
             massUpdateActions: {
                 update: [],
@@ -353,6 +393,33 @@ export default {
             }
             for (const action of ['update', 'refresh', 'rename', 'subtitle', 'delete', 'remove', 'image']) {
                 document.querySelectorAll(`[data-action="${action}"]`).forEach(el => el.checked = false);
+            }
+        },
+        actionCheckAllRows(event) {
+            const checked = event.currentTarget.checked;
+            const action = event.currentTarget.dataset.action;
+            this.massUpdateActions = {
+                update: [],
+                refresh: [],
+                rename: [],
+                subtitle: [],
+                delete: [],
+                remove: [],
+                image: []
+            }
+            document.querySelectorAll(`[data-action="${action}"]`)
+                .forEach(el => {
+                    if (el.dataset.show) {
+                        el.checked = checked;
+                        // If checked add this showslug to the massUpdateActions.
+                        if (checked && !this.massUpdateActions[action].includes(el.dataset.show)) {
+                            this.massUpdateActions[action].push(el.dataset.show);
+                        }                        
+                    }
+                });
+
+            if (!checked) {
+                this.massUpdateActions[action] = [];
             }
         },
         async triggerActions() {
