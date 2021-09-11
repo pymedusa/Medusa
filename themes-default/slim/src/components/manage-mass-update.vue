@@ -84,31 +84,45 @@
                 </span>
 
                 <span v-else-if="props.column.label === 'Update'" class="align-center">
-                    <input :disabled="inQueueOrStarted('update', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateCheck" :data-action="props.column.action" :data-show="props.row.id.slug" @input="updateActions($event, props.row.id.slug)"/>
+                    <input :disabled="inQueueOrStarted('update', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateCheck"
+                           :data-action="props.column.action" :data-show="props.row.id.slug" @input="updateActions($event, props.row.id.slug)"
+                    />
                 </span>
 
                 <span v-else-if="props.column.label === 'Refresh'" class="align-center">
-                    <input :disabled="inQueueOrStarted('refresh', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateRefresh" :data-action="props.column.action" @input="updateActions($event, props.row.id.slug)"/>
+                    <input :disabled="inQueueOrStarted('refresh', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateRefresh"
+                           :data-action="props.column.action" :data-show="props.row.id.slug" @input="updateActions($event, props.row.id.slug)"
+                    />
                 </span>
 
                 <span v-else-if="props.column.label === 'Rename'" class="align-center">
-                    <input :disabled="inQueueOrStarted('rename', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateRename" :data-action="props.column.action" @input="updateActions($event, props.row.id.slug)"/>
+                    <input :disabled="inQueueOrStarted('rename', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateRename"
+                           :data-action="props.column.action" :data-show="props.row.id.slug" @input="updateActions($event, props.row.id.slug)"
+                    />
                 </span>
 
                 <span v-else-if="props.column.label === 'Search subtitle'" class="align-center">
-                    <input :disabled="inQueueOrStarted('subtitle', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateSubtitle" :data-action="props.column.action" @input="updateActions($event, props.row.id.slug)"/>
+                    <input :disabled="inQueueOrStarted('subtitle', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateSubtitle"
+                           :data-action="props.column.action" :data-show="props.row.id.slug" @input="updateActions($event, props.row.id.slug)"
+                    />
                 </span>
 
                 <span v-else-if="props.column.label === 'Delete'" class="align-center">
-                    <input :disabled="inQueueOrStarted('delete', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateDelete" :data-action="props.column.action" :data-show="props.row.id.slug" @input="updateActions($event, props.row.id.slug)"/>
+                    <input :disabled="inQueueOrStarted('delete', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateDelete"
+                           :data-action="props.column.action" :data-show="props.row.id.slug" @input="updateActions($event, props.row.id.slug)"
+                    />
                 </span>
 
                 <span v-else-if="props.column.label === 'Remove'" class="align-center">
-                    <input :disabled="inQueueOrStarted('remove', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateRemove" :data-action="props.column.action" @input="updateActions($event, props.row.id.slug)"/>
+                    <input :disabled="inQueueOrStarted('remove', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateRemove"
+                           :data-action="props.column.action" :data-show="props.row.id.slug" @input="updateActions($event, props.row.id.slug)"
+                    />
                 </span>
 
                 <span v-else-if="props.column.label === 'Update image'" class="align-center">
-                    <input type="checkbox" class="bulkCheck" id="updateImage" data-action="image" @input="updateActions($event, props.row.id.slug)"/>
+                    <input type="checkbox" class="bulkCheck" id="updateImage" :data-action="props.column.action"
+                           :data-show="props.row.id.slug" @input="updateActions($event, props.row.id.slug)"
+                    />
                 </span>
 
                 <span v-else>
