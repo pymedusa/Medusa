@@ -172,15 +172,15 @@ export default {
             }
         },
         /**
-         * Allow ability to add custom cat id's.
-         * @param {string} newTag
+         * Add custom cat id's.
+         * @param {string} newTag category id.
          */
-        addTag (newTag) {
+        addTag(newTag) {
             if (!Number(newTag) || Number(newTag) < 1) {
                 return;
             }
             const tag = { id: newTag, name: newTag };
-            this.availableCategories.push(tag)
+            this.availableCategories.push(tag);
         }
     },
     computed: {

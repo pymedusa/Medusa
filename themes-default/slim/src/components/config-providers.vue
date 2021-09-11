@@ -202,7 +202,6 @@ export default {
                 return provider.providers;
             },
             set(providers) {
-                const { save } = this;
                 this.provider.providers = providers;
             }
         },
