@@ -4,8 +4,10 @@
 
 #### Improvements
 - Adds the options to manage/searches page to clean automatic added scene exceptions from cache. ([9859](https://github.com/pymedusa/Medusa/pull/9859))
+- Add ability to add custom newznab/torznab category id's through UI. ([9857](https://github.com/pymedusa/Medusa/pull/9857))
 
 #### Fixes
+- Fix prowlarr provider id's being obfuscated in logs because of a bad log level. ([9857](https://github.com/pymedusa/Medusa/pull/9857))
 
 -----
 
