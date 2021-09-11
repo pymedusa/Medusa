@@ -83,6 +83,14 @@ class Manage(Home, WebRoot):
 
         return json.dumps(result)
 
+    def changeIndexer(self):
+        """
+        Render manage/changeIndexer page.
+
+        [Converted to VueRouter]
+        """
+        return PageTemplate(rh=self, filename='index.mako').render()
+
     def episodeStatuses(self, whichStatus=None):
         if whichStatus:
             status_list = [int(whichStatus)]

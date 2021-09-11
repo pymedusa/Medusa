@@ -2276,6 +2276,7 @@ class Series(TV):
         data['id']['imdb'] = self.imdb_id
         data['id']['slug'] = self.identifier.slug
         data['id']['trakt'] = self.externals.get('trakt_id')
+        data['externals'] = {k.split('_')[0]: v for k, v in self.externals.items()}
         data['title'] = self.title  # Name plus (optional) year.
         data['name'] = self.name
         data['indexer'] = self.indexer_name  # e.g. tvdb

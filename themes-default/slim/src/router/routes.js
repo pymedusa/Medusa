@@ -359,6 +359,17 @@ const manageRoutes = [
         }
     },
     {
+        path: '/manage/changeIndexer',
+        name: 'manageChangeIndexer',
+        meta: {
+            title: 'Change show indexer',
+            header: 'Change show indexer',
+            topMenu: 'manage',
+            converted: true
+        },
+        component: () => import('../components/manage/change-indexer.vue')
+    },
+    {
         path: '/manage/backlogOverview',
         name: 'manageBacklogOverview',
         meta: {
