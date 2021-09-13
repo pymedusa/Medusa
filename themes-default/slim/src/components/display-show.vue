@@ -77,10 +77,10 @@
 
                     <template slot="table-row" slot-scope="props">
                         <span v-if="props.column.field == 'content.hasNfo'">
-                            <img :src="'images/' + (props.row.content.hasNfo ? 'nfo.gif' : 'nfo-no.gif')" :alt="(props.row.content.hasNfo ? 'Y' : 'N')" width="23" height="11">
+                            <img :src="`images/${props.row.content.hasNfo ? 'nfo.gif' : 'nfo-no.gif'}`" :alt="(props.row.content.hasNfo ? 'Y' : 'N')" width="23" height="11">
                         </span>
                         <span v-else-if="props.column.field == 'content.hasTbn'">
-                            <img :src="'images/' + (props.row.content.hasTbn ? 'tbn.gif' : 'tbn-no.gif')" :alt="(props.row.content.hasTbn ? 'Y' : 'N')" width="23" height="11">
+                            <img :src="`images/${props.row.content.hasTbn ? 'tbn.gif' : 'tbn-no.gif'}`" :alt="(props.row.content.hasTbn ? 'Y' : 'N')" width="23" height="11">
                         </span>
 
                         <span v-else-if="props.column.label == 'Episode'">
@@ -240,10 +240,10 @@
 
                     <template slot="table-row" slot-scope="props">
                         <span v-if="props.column.field == 'content.hasNfo'">
-                            <img :src="'images/' + (props.row.content.hasNfo ? 'nfo.gif' : 'nfo-no.gif')" :alt="(props.row.content.hasNfo ? 'Y' : 'N')" width="23" height="11">
+                            <img :src="`images/${props.row.content.hasNfo ? 'nfo.gif' : 'nfo-no.gif'}`" :alt="(props.row.content.hasNfo ? 'Y' : 'N')" width="23" height="11">
                         </span>
                         <span v-else-if="props.column.field == 'content.hasTbn'">
-                            <img :src="'images/' + (props.row.content.hasTbn ? 'tbn.gif' : 'tbn-no.gif')" :alt="(props.row.content.hasTbn ? 'Y' : 'N')" width="23" height="11">
+                            <img :src="`images/${props.row.content.hasTbn ? 'tbn.gif' : 'tbn-no.gif'}`" :alt="(props.row.content.hasTbn ? 'Y' : 'N')" width="23" height="11">
                         </span>
 
                         <span v-else-if="props.column.label == 'Episode'">
