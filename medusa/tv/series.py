@@ -131,6 +131,10 @@ class SaveSeriesException(Exception):
     """Generic exception used for adding a new series."""
 
 
+class ChangeIndexerException(Exception):
+    """Generic exception used for changing a shows indexer."""
+
+
 class SeriesIdentifier(Identifier):
     """Series identifier with indexer and indexer id."""
 

@@ -50,7 +50,7 @@ from medusa.indexers.utils import indexer_id_to_slug
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_cache import build_name_cache
 from medusa.queues import generic_queue
-from medusa.tv.series import SaveSeriesException, Series, SeriesIdentifier
+from medusa.tv.series import ChangeIndexerException, SaveSeriesException, Series, SeriesIdentifier
 
 from requests import RequestException
 
@@ -75,6 +75,7 @@ class ShowQueueActions(object):
     SUBTITLE = 6
     REMOVE = 7
     SEASON_UPDATE = 8
+    CHANGE = 9
 
     names = {
         REFRESH: 'Refresh',
@@ -84,6 +85,7 @@ class ShowQueueActions(object):
         SUBTITLE: 'Subtitle',
         REMOVE: 'Remove Show',
         SEASON_UPDATE: 'Season Update',
+        CHANGE: 'Change Indexer'
     }
 
 
@@ -95,7 +97,9 @@ class ShowQueue(generic_queue.GenericQueue):
         ShowQueueActions.SEASON_UPDATE: 'The information on this page is in the process of being updated.',
         ShowQueueActions.REFRESH: 'The episodes below are currently being refreshed from disk',
         ShowQueueActions.SUBTITLE: 'Currently downloading subtitles for this show',
+        ShowQueueActions.CHANGE: "This show is in the process of changing it's indexer",
     }
+
     queue_mappings = {
         ShowQueueActions.REFRESH: 'This show is queued to be refreshed.',
         ShowQueueActions.UPDATE: 'This show is queued and awaiting an update.',
@@ -237,6 +241,12 @@ class ShowQueue(generic_queue.GenericQueue):
 
         return queue_item_obj
 
+    def changeIndexer(self, oldSlug, newSlug):
+        queue_item_obj = QueueItemChangeIndexer(oldSlug, newSlug)
+        self.add_item(queue_item_obj)
+
+        return queue_item_obj
+
     def removeShow(self, show, full=False):
         if show is None:
             raise CantRemoveShowException('Failed removing show: Show does not exist')
@@ -300,12 +310,269 @@ class ShowQueueItem(generic_queue.QueueItem):
     isLoading = property(_isLoading)
 
 
+class QueueItemChangeIndexer(ShowQueueItem):
+    """Queue Item for changing a shows indexer to another."""
+
+    def __init__(self, oldSlug, newSlug):
+        """
+        Initialize QueueItemChangeIndexer with an old slug and new slug.
+
+        Old slug will be used as the currently added show. Which is used to get all show options.
+        New slug is the to be created show.
+        """
+        self.oldSlug = oldSlug
+        self.newSlug = newSlug
+        self.show_dir = None
+
+        # self.indexer = indexer
+        # self.indexer_id = indexer_id
+        # self.show_dir = ensure_text(show_dir) if show_dir else None
+        # self.default_status = options.get('default_status')
+        # self.quality = options.get('quality')
+        # self.season_folders = options.get('season_folders')
+        # self.lang = options.get('lang')
+        # self.subtitles = options.get('subtitles')
+        # self.anime = options.get('anime')
+        # self.scene = options.get('scene')
+        # self.paused = options.get('paused')
+        # self.blacklist = options.get('blacklist')
+        # self.whitelist = options.get('whitelist')
+        # self.default_status_after = options.get('default_status_after')
+        # self.root_dir = options.get('root_dir')
+        # self.show_lists = options.get('show_lists')
+        self.options = {}
+        self.oldShow = None
+
+        # this will initialize self.show to None
+        ShowQueueItem.__init__(self, ShowQueueActions.CHANGE, self.oldShow)
+
+        # Process add show in priority
+        self.priority = generic_queue.QueuePriorities.HIGH
+
+    def _getName(self):
+        """
+        Returns the show name if there is a show object created, if not returns
+        the dir that the show is being added to.
+        """
+        if self.show is None:
+            return self.show_dir
+        return self.show.name
+
+    show_name = property(_getName)
+
+    def _isLoading(self):
+        """
+        Returns True if we've gotten far enough to have a show object, or False
+        if we still only know the folder name.
+        """
+        if self.show is None:
+            return True
+        return False
+
+    isLoading = property(_isLoading)
+
+    def _store_options(self):
+        self.options = {
+            'default_status': self.oldShow.default_ep_status,
+            'quality': {'preferred': self.oldShow.qualities_preferred, 'allowed': self.oldShow.qualities_allowed},
+            'season_folders': self.oldShow.season_folders,
+            'lang': self.oldShow.lang,
+            'subtitles': self.oldShow.subtitles,
+            'anime': self.oldShow.anime,
+            'scene': self.oldShow.scene,
+            'paused': self.oldShow.paused,
+            'blacklist': self.oldShow.release_groups.blacklist if self.oldShow.release_groups else None,
+            'whitelist': self.oldShow.release_groups.whitelist if self.oldShow.release_groups else None,
+            'default_status_after': None,
+            'root_dir': None,
+            'show_lists': self.oldShow.show_lists
+        }
+
+        self.show_dir = self.oldShow._location
+
+    def run(self):
+
+        ShowQueueItem.run(self)
+
+        def get_show_from_slug(slug):
+            identifier = SeriesIdentifier.from_slug(slug)
+            if not identifier:
+                raise ChangeIndexerException(f'Could not create identifier with slug {slug}')
+
+            show = Series.find_by_identifier(identifier)
+            return show
+
+        # Create reference to old show, before starting the remove it.
+        self.oldShow = get_show_from_slug(self.oldSlug)
+
+        # Store needed options.
+        self._store_options()
+
+        # Start of removing the old show
+        log.info(
+            '{id}: Removing {show}',
+            {'id': self.oldShow.series_id, 'show': self.oldShow.name}
+        )
+
+        # Need to first remove the episodes from the Trakt collection, because we need the list of
+        # Episodes from the db to know which eps to remove.
+        if app.USE_TRAKT:
+            try:
+                app.trakt_checker_scheduler.action.remove_show_trakt_library(self.oldShow)
+            except TraktException as error:
+                log.warning(
+                    '{id}: Unable to delete show {show} from Trakt.'
+                    ' Please remove manually otherwise it will be added again.'
+                    ' Error: {error_msg}',
+                    {'id': self.oldShow.series_id, 'show': self.oldShow.name, 'error_msg': error}
+                )
+            except Exception as error:
+                log.exception('Exception occurred while trying to delete show {show}, error: {error',
+                              {'show': self.oldShow.name, 'error': error})
+
+        # Send showRemoved to frontend, so we can remove it from localStorage.
+        ws.Message('QueueItemShowRemove', self.oldShow.to_json(detailed=False)).push()  # Send ws update to client
+
+        self.oldShow.delete_show(full=self.full)
+
+        # Double check to see if the show really has been removed, else bail.
+        if get_show_from_slug(self.oldSlug):
+            raise ChangeIndexerException(f'Could not create identifier with slug {self.oldSlug}')
+
+        # Start adding the new show
+        log.info(
+            'Starting to add show by {0}',
+            ('show_dir: {0}'.format(self.show_dir)
+             if self.show_dir else
+             'New slug: {0}'.format(self.newSlug))
+        )
+
+        series = Series.from_identifier(SeriesIdentifier.from_slug(self.newSlug))
+
+        step = []
+
+        # Small helper, to reduce code for messaging
+        def message_step(new_step):
+            step.append(new_step)
+            ws.Message('QueueItemShowAdd', dict(
+                step=step, **self.to_json
+            )).push()
+
+        try:
+            try:
+                # Push an update to any open Web UIs through the WebSocket
+                message_step('load show from {indexer}'.format(indexer=indexerApi(series.indexer).name))
+
+                api = series.identifier.get_indexer_api(self.options)
+
+                if getattr(api[series.indexer], 'seriesname', None) is None:
+                    log.error(
+                        'Show in {path} has no name on {indexer}, probably searched with the wrong language.',
+                        {'path': self.show_dir, 'indexer': indexerApi(series.indexer).name}
+                    )
+
+                    ui.notifications.error(
+                        'Unable to add show',
+                        'Show in {path} has no name on {indexer}, probably the wrong language.'
+                        ' Delete .nfo and manually add the correct language.'.format(
+                            path=self.show_dir, indexer=indexerApi(series.indexer).name)
+                    )
+                    self._finish_early()
+                    raise SaveSeriesException('Indexer is missing a showname in this language: {0!r}')
+
+                series.load_from_indexer(tvapi=api)
+
+                message_step('load info from imdb')
+                series.load_imdb_info()
+            except IndexerException as error:
+                log.warning('Unable to load series from indexer: {0!r}'.format(error))
+                raise SaveSeriesException('Unable to load series from indexer: {0!r}'.format(error))
+
+            try:
+                message_step('configure show options')
+                series.configure(self)
+            except KeyError as error:
+                log.error(
+                    'Unable to add show {series_name} due to an error with one of the provided options: {error}',
+                    {'series_name': series.name, 'error': error}
+                )
+                ui.notifications.error(
+                    'Unable to add show {series_name} due to an error with one of the provided options: {error}'.format(
+                        series_name=series.name, error=error
+                    )
+                )
+                raise SaveSeriesException(
+                    'Unable to add show {series_name} due to an error with one of the provided options: {error}'.format(
+                        series_name=series.name, error=error
+                    ))
+
+            except Exception as error:
+                log.error('Error trying to configure show: {0}', error)
+                log.debug(traceback.format_exc())
+                raise
+
+            app.showList.append(series)
+            series.save_to_db()
+
+            try:
+                message_step('load episodes from {indexer}'.format(indexer=indexerApi(series.indexer).name))
+                series.load_episodes_from_indexer(tvapi=api)
+                # If we provide a default_status_after through the apiv2 series route options object.
+                # set it after we've added the episodes.
+                series.default_ep_status = self.options['default_status_after'] or app.STATUS_DEFAULT_AFTER
+
+            except IndexerException as error:
+                log.warning('Unable to load series episodes from indexer: {0!r}'.format(error))
+                raise SaveSeriesException(
+                    'Unable to load series episodes from indexer: {0!r}'.format(error)
+                )
+
+            message_step('create metadata in show folder')
+            series.write_metadata()
+            series.update_metadata()
+            series.populate_cache()
+            build_name_cache(series)  # update internal name cache
+            series.flush_episodes()
+            series.sync_trakt()
+
+            message_step('add scene numbering')
+            series.add_scene_numbering()
+
+            if self.show_dir:
+                # If a show dir was passed, this was added as an existing show.
+                # For new shows we should have any files on disk.
+                message_step('refresh episodes from disk')
+                try:
+                    app.show_queue_scheduler.action.refreshShow(series)
+                except CantRefreshShowException as error:
+                    log.warning('Unable to rescan episodes from disk: {0!r}'.format(error))
+
+        except SaveSeriesException as error:
+            log.warning('Unable to add series: {0!r}'.format(error))
+            self.success = False
+            self._finish_early()
+            log.debug(traceback.format_exc())
+
+        default_status = self.options['default_status'] or app.STATUS_DEFAULT
+        if statusStrings[default_status] == 'Wanted':
+            message_step('trigger backlog search')
+            app.backlog_search_scheduler.action.search_backlog([series])
+
+        self.success = True
+
+        ws.Message('showAdded', series.to_json(detailed=False)).push()  # Send ws update to client
+        message_step('finished')
+        self.finish()
+
+    def _finish_early(self):
+        if self.show is not None:
+            app.show_queue_scheduler.action.removeShow(self.show)
+
+        self.finish()
+
+
 class QueueItemAdd(ShowQueueItem):
     def __init__(self, indexer, indexer_id, show_dir, **options):
-
-        # show_dir, default_status, quality, season_folders, lang, subtitles, anime,
-        #          scene, paused, blacklist, whitelist, default_status_after, root_dir, show_lists):
-
         self.indexer = indexer
         self.indexer_id = indexer_id
         self.show_dir = ensure_text(show_dir) if show_dir else None
