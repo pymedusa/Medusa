@@ -351,28 +351,6 @@ class QueueItemChangeIndexer(ShowQueueItem):
         # Process add show in priority
         self.priority = generic_queue.QueuePriorities.HIGH
 
-    def _getName(self):
-        """
-        Returns the show name if there is a show object created, if not returns
-        the dir that the show is being added to.
-        """
-        if self.show is None:
-            return self.show_dir
-        return self.show.name
-
-    show_name = property(_getName)
-
-    def _isLoading(self):
-        """
-        Returns True if we've gotten far enough to have a show object, or False
-        if we still only know the folder name.
-        """
-        if self.show is None:
-            return True
-        return False
-
-    isLoading = property(_isLoading)
-
     def _store_options(self):
         self.options = {
             'default_status': None,
@@ -393,6 +371,14 @@ class QueueItemChangeIndexer(ShowQueueItem):
         self.show_dir = self.old_show._location
 
     def run(self):
+        step = []
+
+        # Small helper, to reduce code for messaging
+        def message_step(new_step):
+            step.append(new_step)
+            ws.Message('QueueItemShowAdd', dict(
+                step=step, **self.to_json
+            )).push()
 
         ShowQueueItem.run(self)
 
@@ -404,63 +390,55 @@ class QueueItemChangeIndexer(ShowQueueItem):
             show = Series.find_by_identifier(identifier)
             return show
 
-        # Create reference to old show, before starting the remove it.
-        self.old_show = get_show_from_slug(self.old_slug)
-
-        # Store needed options.
-        self._store_options()
-
-        # Start of removing the old show
-        log.info(
-            '{id}: Removing {show}',
-            {'id': self.old_show.series_id, 'show': self.old_show.name}
-        )
-
-        # Need to first remove the episodes from the Trakt collection, because we need the list of
-        # Episodes from the db to know which eps to remove.
-        if app.USE_TRAKT:
-            try:
-                app.trakt_checker_scheduler.action.remove_show_trakt_library(self.old_show)
-            except TraktException as error:
-                log.warning(
-                    '{id}: Unable to delete show {show} from Trakt.'
-                    ' Please remove manually otherwise it will be added again.'
-                    ' Error: {error_msg}',
-                    {'id': self.old_show.series_id, 'show': self.old_show.name, 'error_msg': error}
-                )
-            except Exception as error:
-                log.exception('Exception occurred while trying to delete show {show}, error: {error',
-                              {'show': self.old_show.name, 'error': error})
-
-        # Send showRemoved to frontend, so we can remove it from localStorage.
-        ws.Message('QueueItemShowRemove', self.old_show.to_json(detailed=False)).push()  # Send ws update to client
-
-        self.old_show.delete_show(full=False)
-
-        # Double check to see if the show really has been removed, else bail.
-        if get_show_from_slug(self.old_slug):
-            raise ChangeIndexerException(f'Could not create identifier with slug {self.old_slug}')
-
-        # Start adding the new show
-        log.info(
-            'Starting to add show by {0}',
-            ('show_dir: {0}'.format(self.show_dir)
-             if self.show_dir else
-             'New slug: {0}'.format(self.new_slug))
-        )
-
-        self.new_show = Series.from_identifier(SeriesIdentifier.from_slug(self.new_slug))
-
-        step = []
-
-        # Small helper, to reduce code for messaging
-        def message_step(new_step):
-            step.append(new_step)
-            ws.Message('QueueItemShowAdd', dict(
-                step=step, **self.to_json
-            )).push()
-
         try:
+            # Create reference to old show, before starting the remove it.
+            self.old_show = get_show_from_slug(self.old_slug)
+
+            # Store needed options.
+            self._store_options()
+
+            # Start of removing the old show
+            log.info(
+                '{id}: Removing {show}',
+                {'id': self.old_show.series_id, 'show': self.old_show.name}
+            )
+            message_step(f'Removing old show {self.old_show.name}')
+
+            # Need to first remove the episodes from the Trakt collection, because we need the list of
+            # Episodes from the db to know which eps to remove.
+            if app.USE_TRAKT:
+                message_step('Removing episodes from trakt collection')
+                try:
+                    app.trakt_checker_scheduler.action.remove_show_trakt_library(self.old_show)
+                except TraktException as error:
+                    log.warning(
+                        '{id}: Unable to delete show {show} from Trakt.'
+                        ' Please remove manually otherwise it will be added again.'
+                        ' Error: {error_msg}',
+                        {'id': self.old_show.series_id, 'show': self.old_show.name, 'error_msg': error}
+                    )
+                except Exception as error:
+                    log.exception('Exception occurred while trying to delete show {show}, error: {error',
+                                  {'show': self.old_show.name, 'error': error})
+
+            self.old_show.delete_show(full=False)
+            # Send showRemoved to frontend, so we can remove it from localStorage.
+            ws.Message('QueueItemShowRemove', self.old_show.to_json(detailed=False)).push()  # Send ws update to client
+
+            # Double check to see if the show really has been removed, else bail.
+            if get_show_from_slug(self.old_slug):
+                raise ChangeIndexerException(f'Could not create identifier with slug {self.old_slug}')
+
+            # Start adding the new show
+            log.info(
+                'Starting to add show by {0}',
+                ('show_dir: {0}'.format(self.show_dir)
+                 if self.show_dir else
+                 'New slug: {0}'.format(self.new_slug))
+            )
+
+            self.new_show = Series.from_identifier(SeriesIdentifier.from_slug(self.new_slug))
+
             try:
                 # Push an update to any open Web UIs through the WebSocket
                 message_step('load show from {indexer}'.format(indexer=indexerApi(self.new_show.indexer).name))
@@ -549,7 +527,7 @@ class QueueItemChangeIndexer(ShowQueueItem):
                 except CantRefreshShowException as error:
                     log.warning('Unable to rescan episodes from disk: {0!r}'.format(error))
 
-        except SaveSeriesException as error:
+        except (ChangeIndexerException, SaveSeriesException) as error:
             log.warning('Unable to add series: {0!r}'.format(error))
             self.success = False
             self._finish_early()
@@ -567,9 +545,8 @@ class QueueItemChangeIndexer(ShowQueueItem):
         self.finish()
 
     def _finish_early(self):
-        if self.show is not None:
+        if self.new_show is not None:
             app.show_queue_scheduler.action.removeShow(self.new_show)
-
         self.finish()
 
 

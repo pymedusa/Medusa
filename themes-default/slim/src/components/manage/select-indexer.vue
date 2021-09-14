@@ -33,6 +33,7 @@ export default {
             let options = [];
             options = Object.keys(externals)
                 .filter(key => allowedIndexers.includes(key))
+                .filter(key => key !== show.indexer)
                 .map(key => ({text: key, value: externals[key]}));
             
             options.push({ text: '--search--', value: '--search--' });

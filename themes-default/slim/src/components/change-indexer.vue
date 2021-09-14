@@ -3,6 +3,7 @@
         <div class="row">
             <div class="col-lg-12">
                 <span>{{checkedShows.length}} Shows selected</span>
+                <button class="btn-medusa" :disabled="started" @click="start">Start</button>
                 <div id="filter-indexers">
                     <label for="tvdb">tvdb<input type="checkbox" v-model="filter.tvdb" name="tvdb" id="tvdb"></label>
                     <label for="tvmaze">tvmaze<input type="checkbox" v-model="filter.tvmaze" name="tvmaze" id="tvmaze"></label>
@@ -16,6 +17,7 @@
                 <th>Show</th>
                 <th>current indexer</th>
                 <th>new indexer</th>
+                <th>status</th>
             </thead>
             <tbody>
                 <change-indexer-row
@@ -44,7 +46,8 @@ export default {
                 tvdb: true,
                 tvmaze: true,
                 tmdb: true
-            }
+            },
+            started: false
         }
     },
     mounted() {
@@ -84,6 +87,39 @@ export default {
         showSelected({show, indexer, showId}) {
             const { filteredShows } = this;
             Vue.set(filteredShows.find(s => s === show), 'selected', { indexer, showId });
+        },
+        /**
+         * Start changing the shows indexer.
+         */
+        async start() {
+            const { allShows } = this;
+            for (const show of allShows.filter(show => show.checked && show.selected)) {
+                // Loop through the shows and start a ChangeIndexerQueueItem for each.
+                // Store the queueItem identifier, to keep track.
+                const oldSlug = show.id.slug;
+                const newSlug = `${show.selected.indexer}${show.selected.showId}`;
+                if (oldSlug === newSlug) {
+                    this.$snotify.warning(
+                        'Old shows indexer and new shows indexer are the same, skipping',
+                        'Error'
+                    );
+                    continue;
+                }
+                
+                try {
+                    this.started = true;
+                    const { data } = await api.post('changeindexer', {
+                        oldSlug, newSlug
+                    });
+                    Vue.set(allShows.find(s => s === show), 'changeStatus', {
+                        identifier: data.identifier,
+                        steps: []
+                    });
+                } catch (error) {
+                    debugger;
+                }
+
+            }
         }
     },
 }
