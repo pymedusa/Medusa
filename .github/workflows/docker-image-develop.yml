@@ -1,9 +1,7 @@
-name: Docker Image CI
+name: Docker Image CI Develop
 
 on:
   push:
-    branches: [ develop ]
-  pull_request:
     branches: [ develop ]
 
 jobs:
@@ -23,4 +21,4 @@ jobs:
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag pymedusa/medusa:develop
     - name: Docker push
-      run: docker push pymedusa/medusa
+      run: docker push pymedusa/medusa:develop
