@@ -1,9 +1,7 @@
-name: Docker Image CI
+name: Docker Image CI Develop
 
 on:
   push:
-    branches: [ develop ]
-  pull_request:
     branches: [ develop ]
 
 jobs:
