@@ -1,7 +1,7 @@
 ## Unreleased
 
 #### New Features
-- Testing GH action for pushing docker build. 1
+- Testing GH action for pushing docker build. 2
 
 #### Improvements
 - Adds the options to manage/searches page to clean automatic added scene exceptions from cache. ([9859](https://github.com/pymedusa/Medusa/pull/9859))
