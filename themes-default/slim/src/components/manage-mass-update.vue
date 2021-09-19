@@ -56,31 +56,38 @@
                 </span>
 
                 <span v-else-if="props.column.label === 'Sports'" class="align-center">
-                    <state-switch :theme="layout.themeName" :state="props.row.config.sports" />
+                    <state-switch :theme="layout.themeName" :state="props.row.config.sports"
+                                  @click="toggleConfigOption(props.row, 'sports')" />
                 </span>
 
                 <span v-else-if="props.column.label === 'Scene'" class="align-center">
-                    <state-switch :theme="layout.themeName" :state="props.row.config.scene" />
+                    <state-switch :theme="layout.themeName" :state="props.row.config.scene"
+                                  @click="toggleConfigOption(props.row, 'scene')" />
                 </span>
 
                 <span v-else-if="props.column.label === 'Anime'" class="align-center">
-                    <state-switch :theme="layout.themeName" :state="props.row.config.anime" />
+                    <state-switch :theme="layout.themeName" :state="props.row.config.anime"
+                                  @click="toggleConfigOption(props.row, 'anime')" />
                 </span>
 
                 <span v-else-if="props.column.label === 'Season folders'" class="align-center">
-                    <state-switch :theme="layout.themeName" :state="props.row.config.seasonFolders" />
+                    <state-switch :theme="layout.themeName" :state="props.row.config.seasonFolders"
+                                  @click="toggleConfigOption(props.row, 'seasonFolders')" />
                 </span>
 
                 <span v-else-if="props.column.label === 'DVD order'" class="align-center">
-                    <state-switch :theme="layout.themeName" :state="props.row.config.dvdOrder" />
+                    <state-switch :theme="layout.themeName" :state="props.row.config.dvdOrder"
+                                  @click="toggleConfigOption(props.row, 'dvdOrder')" />
                 </span>
 
                 <span v-else-if="props.column.label === 'Paused'" class="align-center">
-                    <state-switch :theme="layout.themeName" :state="props.row.config.paused" />
+                    <state-switch :theme="layout.themeName" :state="props.row.config.paused"
+                                  @click="toggleConfigOption(props.row, 'paused')" />
                 </span>
 
                 <span v-else-if="props.column.label === 'Subtitle'" class="align-center">
-                    <state-switch :theme="layout.themeName" :state="props.row.config.subtitlesEnabled" />
+                    <state-switch :theme="layout.themeName" :state="props.row.config.subtitlesEnabled"
+                                  @click="toggleConfigOption(props.row, 'subtitlesEnabled')" />
                 </span>
 
                 <span v-else-if="props.column.label === 'Update'" class="align-center">
@@ -269,13 +276,15 @@ export default {
                 field: 'config.defaultEpisodeStatus',
                 filterOptions: {
                      enabled: false
-                }
+                },
+                hidden: getCookie('Default Ep Status')
             }, {
                 label: 'Status',
                 field: 'status',
                 filterOptions: {
                      enabled: false
-                }
+                },
+                hidden: getCookie('Status')
             }, {
                 label: 'Update',
                 field: 'update',
@@ -283,7 +292,8 @@ export default {
                      customFilter: true
                 },
                 sortable: false,
-                action: 'update'
+                action: 'update',
+                hidden: getCookie('Update')
             }, {
                 label: 'Refresh',
                 field: 'rescan',
@@ -291,7 +301,8 @@ export default {
                 filterOptions: {
                      customFilter: true
                 },
-                action: 'refresh'
+                action: 'refresh',
+                hidden: getCookie('Refresh')
             }, {
                 label: 'Rename',
                 field: 'rename',
@@ -299,7 +310,8 @@ export default {
                 filterOptions: {
                      customFilter: true
                 },
-                action: 'rename'
+                action: 'rename',
+                hidden: getCookie('Rename')
             }, {
                 label: 'Search subtitle',
                 field: 'searchsubtitle',
@@ -307,7 +319,8 @@ export default {
                 filterOptions: {
                      customFilter: true
                 },
-                action: 'subtitle'
+                action: 'subtitle',
+                hidden: getCookie('Search subtitle')
             }, {
                 label: 'Delete',
                 field: 'delete',
@@ -315,7 +328,8 @@ export default {
                 filterOptions: {
                      customFilter: true
                 },
-                action: 'delete'
+                action: 'delete',
+                hidden: getCookie('Delete')
             }, {
                 label: 'Remove',
                 field: 'remove',
@@ -323,7 +337,8 @@ export default {
                 filterOptions: {
                      customFilter: true
                 },
-                action: 'remove'
+                action: 'remove',
+                hidden: getCookie('Remove')
             }, {
                 label: 'Update image',
                 field: 'updateimage',
@@ -331,7 +346,8 @@ export default {
                 filterOptions: {
                      customFilter: true
                 },
-                action: 'image'
+                action: 'image',
+                hidden: getCookie('Update image')
             }],
             massUpdateActions: {
                 update: [],
@@ -474,15 +490,28 @@ export default {
             }
 
             return Boolean(showInQueue || filteredShowQueueItems.length);
+        },
+        async toggleConfigOption(show, option) {
+            const { config } = show;
+            show.config[option] = !show.config[option];
+            const data = {
+                config: { [option]: config[option] }
+            };
+
+            try {
+                api.patch(`series/${show.id.slug}`, data);    
+                this.$snotify.success(
+                    `${data.config[option] ? 'enabled' : 'disabled'} show option ${option}`,
+                    'Saved',
+                    { timeout: 5000 }
+                );
+            } catch (error) {
+                this.$snotify.error(
+                    `Error while trying to save "${show.title}": ${error.message || 'Unknown'}`,
+                    'Error'
+                );                
+            }
         }
-        // async getShowQueue() {
-        //     try {
-        //         const { data } = await api.get('config/system/showQueue');
-        //         this.showQueue = data;
-        //     } catch (error) {
-        //         this.$snotify.warning('error', 'Error trying to get showqueue');                
-        //     }
-        // }
     }
 };
 </script>
