@@ -3,15 +3,21 @@
 from __future__ import unicode_literals
 
 import logging
+from medusa.helpers.utils import to_camel_case
+from medusa.sbdatetime import sbdatetime
+from medusa.common import Overview
 import os
+import datetime
 import re
 
-from medusa import app, classes, db
-from medusa.helper.common import sanitize_filename, try_int
+
+from medusa import app, classes, db, network_timezones
+from medusa.helper.common import episode_num, sanitize_filename, try_int
 from medusa.indexers.api import indexerApi
 from medusa.indexers.exceptions import IndexerException, IndexerUnavailable
 from medusa.indexers.utils import reverse_mappings
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.network_timezones import app_timezone
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.tv.series import Series, SeriesIdentifier
 
@@ -310,3 +316,99 @@ class InternalHandler(BaseRequestHandler):
                     break
 
         return self._ok(data={'pathInfo': path_info})
+
+    def resource_get_episode_backlog(self):
+        """Collect backlog search information for each show."""
+        status = self.get_argument('status' '').strip()
+        period = self.get_argument('period', '').strip()
+
+        available_backlog_status = {
+            'all': [Overview.QUAL, Overview.WANTED],
+            'quality': [Overview.QUAL],
+            'wanted': [Overview.WANTED]
+        }
+
+        available_backlog_periods = {
+            'all': None,
+            'one_day': datetime.timedelta(days=1),
+            'three_days': datetime.timedelta(days=3),
+            'one_week': datetime.timedelta(days=7),
+            'one_month': datetime.timedelta(days=30),
+        }
+
+        if status not in available_backlog_status:
+            return self._bad_request("allowed status values are: 'all', 'quality' and 'wanted'")
+
+        if period not in available_backlog_periods:
+            return self._bad_request("allowed period values are: 'all', 'one_day', 'three_days', 'one_week' and 'one_month'")
+
+        backlog_status = available_backlog_status.get(status)
+        backlog_period = available_backlog_periods.get(period)
+
+        main_db_con = db.DBConnection()
+        results = []
+
+        for cur_show in app.showList:
+            if cur_show.paused:
+                continue
+
+            ep_counts = {
+                'wanted': 0,
+                'allowed': 0,
+            }
+            ep_cats = {}
+
+            sql_results = main_db_con.select(
+                """
+                SELECT e.status, e.quality, e.season,
+                e.episode, e.name, e.airdate, e.manually_searched
+                FROM tv_episodes as e
+                WHERE e.season IS NOT NULL AND
+                        e.indexer = ? AND e.showid = ?
+                ORDER BY e.season DESC, e.episode DESC
+                """,
+                [cur_show.indexer, cur_show.series_id]
+            )
+
+            filtered_episodes = []
+            for cur_result in sql_results:
+                cur_ep_cat = cur_show.get_overview(
+                    cur_result['status'], cur_result['quality'], backlog_mode=True,
+                    manually_searched=cur_result['manually_searched']
+                )
+                if cur_ep_cat:
+                    if cur_ep_cat in backlog_status and cur_result['airdate'] != 1:
+                        air_date = datetime.datetime.fromordinal(cur_result['airdate'])
+                        if air_date.year >= 1970 or cur_show.network:
+                            air_date = sbdatetime.convert_to_setting(
+                                network_timezones.parse_date_time(
+                                    cur_result['airdate'], cur_show.airs, cur_show.network
+                                )
+                            )
+                            if backlog_period and air_date < datetime.datetime.now(app_timezone) - backlog_period:
+                                continue
+                        else:
+                            air_date = None
+                        episode_string = u'{ep}'.format(ep=(episode_num(cur_result['season'],
+                                                                        cur_result['episode'])
+                                                            or episode_num(cur_result['season'],
+                                                                           cur_result['episode'],
+                                                                           numbering='absolute')))
+                        cur_ep_cat_string = Overview.overviewStrings[cur_ep_cat]
+                        ep_cats[episode_string] = cur_ep_cat
+                        ep_counts[cur_ep_cat_string] += 1
+                        cur_result['airdate'] = air_date
+                        cur_result['manuallySearched'] = cur_result['manually_searched']
+                        del cur_result['manually_searched']
+                        cur_result['episodeString'] = episode_string
+                        filtered_episodes.append(cur_result)
+
+            if filtered_episodes:
+                results.append({
+                    'slug': cur_show.identifier.slug,
+                    'episodeCount': ep_counts,
+                    'category': ep_cats,
+                    'episodes': filtered_episodes
+                })
+
+        return self._ok(data=results)
