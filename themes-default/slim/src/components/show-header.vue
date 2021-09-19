@@ -87,7 +87,7 @@
                                     <span v-if="show.year.start">({{ show.year.start }}) - {{ show.runtime }} minutes - </span>
                                 </template>
                                 <template v-else>
-                                    <img v-for="country in show.countryCodes" :key="'flag-' + country" src="images/blank.png" :class="['country-flag', 'flag-' + country]" width="16" height="11" style="margin-left: 3px; vertical-align:middle;">
+                                    <img v-for="country in show.countryCodes" :key="`flag-${country}`" src="images/blank.png" :class="['country-flag', `flag-${country}`]" width="16" height="11" style="margin-left: 3px; vertical-align:middle;">
                                     <span v-if="show.imdbInfo.year">
                                         ({{ show.imdbInfo.year }}) -
                                     </span>
