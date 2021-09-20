@@ -366,8 +366,10 @@ const manageRoutes = [
         meta: {
             title: 'Backlog Overview',
             header: 'Backlog Overview',
-            topMenu: 'manage'
-        }
+            topMenu: 'manage',
+            converted: true
+        },
+        component: () => import('../components/manage-backlog.vue')
     },
     {
         path: '/manage/episodeStatuses',

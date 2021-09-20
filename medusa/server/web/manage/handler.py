@@ -382,86 +382,89 @@ class Manage(Home, WebRoot):
         return self.redirect('/manage/backlogOverview/')
 
     def backlogOverview(self):
-        t = PageTemplate(rh=self, filename='manage_backlogOverview.mako')
+        """
+        [Converted to VueRouter]
+        """
+        return PageTemplate(rh=self, filename='index.mako').render()
 
-        show_counts = {}
-        show_cats = {}
-        show_sql_results = {}
+        # show_counts = {}
+        # show_cats = {}
+        # show_sql_results = {}
 
-        backlog_periods = {
-            'all': None,
-            'one_day': datetime.timedelta(days=1),
-            'three_days': datetime.timedelta(days=3),
-            'one_week': datetime.timedelta(days=7),
-            'one_month': datetime.timedelta(days=30),
-        }
-        backlog_period = backlog_periods.get(app.BACKLOG_PERIOD)
+        # backlog_periods = {
+        #     'all': None,
+        #     'one_day': datetime.timedelta(days=1),
+        #     'three_days': datetime.timedelta(days=3),
+        #     'one_week': datetime.timedelta(days=7),
+        #     'one_month': datetime.timedelta(days=30),
+        # }
+        # backlog_period = backlog_periods.get(app.BACKLOG_PERIOD)
 
-        backlog_status = {
-            'all': [Overview.QUAL, Overview.WANTED],
-            'quality': [Overview.QUAL],
-            'wanted': [Overview.WANTED]
-        }
-        selected_backlog_status = backlog_status.get(app.BACKLOG_STATUS)
+        # backlog_status = {
+        #     'all': [Overview.QUAL, Overview.WANTED],
+        #     'quality': [Overview.QUAL],
+        #     'wanted': [Overview.WANTED]
+        # }
+        # selected_backlog_status = backlog_status.get(app.BACKLOG_STATUS)
 
-        main_db_con = db.DBConnection()
-        for cur_show in app.showList:
+        # main_db_con = db.DBConnection()
+        # for cur_show in app.showList:
 
-            if cur_show.paused:
-                continue
+        #     if cur_show.paused:
+        #         continue
 
-            ep_counts = {
-                Overview.WANTED: 0,
-                Overview.QUAL: 0,
-            }
-            ep_cats = {}
+        #     ep_counts = {
+        #         Overview.WANTED: 0,
+        #         Overview.QUAL: 0,
+        #     }
+        #     ep_cats = {}
 
-            sql_results = main_db_con.select(
-                """
-                SELECT e.status, e.quality, e.season,
-                e.episode, e.name, e.airdate, e.manually_searched
-                FROM tv_episodes as e
-                WHERE e.season IS NOT NULL AND
-                      e.indexer = ? AND e.showid = ?
-                ORDER BY e.season DESC, e.episode DESC
-                """,
-                [cur_show.indexer, cur_show.series_id]
-            )
-            filtered_episodes = []
-            for cur_result in sql_results:
-                cur_ep_cat = cur_show.get_overview(cur_result['status'], cur_result['quality'], backlog_mode=True,
-                                                   manually_searched=cur_result['manually_searched'])
-                if cur_ep_cat:
-                    if cur_ep_cat in selected_backlog_status and cur_result['airdate'] != 1:
-                        air_date = datetime.datetime.fromordinal(cur_result['airdate'])
-                        if air_date.year >= 1970 or cur_show.network:
-                            air_date = sbdatetime.sbdatetime.convert_to_setting(
-                                network_timezones.parse_date_time(cur_result['airdate'],
-                                                                  cur_show.airs,
-                                                                  cur_show.network))
-                            if backlog_period and air_date < datetime.datetime.now(app_timezone) - backlog_period:
-                                continue
-                        else:
-                            air_date = None
-                        episode_string = u'{ep}'.format(ep=(episode_num(cur_result['season'],
-                                                                        cur_result['episode']) or
-                                                            episode_num(cur_result['season'],
-                                                                        cur_result['episode'],
-                                                                        numbering='absolute')))
-                        ep_cats[episode_string] = cur_ep_cat
-                        ep_counts[cur_ep_cat] += 1
-                        cur_result['airdate'] = air_date
-                        cur_result['episode_string'] = episode_string
-                        filtered_episodes.append(cur_result)
+        #     sql_results = main_db_con.select(
+        #         """
+        #         SELECT e.status, e.quality, e.season,
+        #         e.episode, e.name, e.airdate, e.manually_searched
+        #         FROM tv_episodes as e
+        #         WHERE e.season IS NOT NULL AND
+        #               e.indexer = ? AND e.showid = ?
+        #         ORDER BY e.season DESC, e.episode DESC
+        #         """,
+        #         [cur_show.indexer, cur_show.series_id]
+        #     )
+        #     filtered_episodes = []
+        #     for cur_result in sql_results:
+        #         cur_ep_cat = cur_show.get_overview(cur_result['status'], cur_result['quality'], backlog_mode=True,
+        #                                            manually_searched=cur_result['manually_searched'])
+        #         if cur_ep_cat:
+        #             if cur_ep_cat in selected_backlog_status and cur_result['airdate'] != 1:
+        #                 air_date = datetime.datetime.fromordinal(cur_result['airdate'])
+        #                 if air_date.year >= 1970 or cur_show.network:
+        #                     air_date = sbdatetime.sbdatetime.convert_to_setting(
+        #                         network_timezones.parse_date_time(cur_result['airdate'],
+        #                                                           cur_show.airs,
+        #                                                           cur_show.network))
+        #                     if backlog_period and air_date < datetime.datetime.now(app_timezone) - backlog_period:
+        #                         continue
+        #                 else:
+        #                     air_date = None
+        #                 episode_string = u'{ep}'.format(ep=(episode_num(cur_result['season'],
+        #                                                                 cur_result['episode']) or
+        #                                                     episode_num(cur_result['season'],
+        #                                                                 cur_result['episode'],
+        #                                                                 numbering='absolute')))
+        #                 ep_cats[episode_string] = cur_ep_cat
+        #                 ep_counts[cur_ep_cat] += 1
+        #                 cur_result['airdate'] = air_date
+        #                 cur_result['episode_string'] = episode_string
+        #                 filtered_episodes.append(cur_result)
 
-            show_counts[(cur_show.indexer, cur_show.series_id)] = ep_counts
-            show_cats[(cur_show.indexer, cur_show.series_id)] = ep_cats
-            show_sql_results[(cur_show.indexer, cur_show.series_id)] = filtered_episodes
+        #     show_counts[(cur_show.indexer, cur_show.series_id)] = ep_counts
+        #     show_cats[(cur_show.indexer, cur_show.series_id)] = ep_cats
+        #     show_sql_results[(cur_show.indexer, cur_show.series_id)] = filtered_episodes
 
-        return t.render(
-            showCounts=show_counts, showCats=show_cats,
-            showSQLResults=show_sql_results, controller='manage',
-            action='backlogOverview')
+        # return t.render(
+        #     showCounts=show_counts, showCats=show_cats,
+        #     showSQLResults=show_sql_results, controller='manage',
+        #     action='backlogOverview')
 
     def massEdit(self, toEdit=None):
         t = PageTemplate(rh=self, filename='manage_massEdit.mako')

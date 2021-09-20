@@ -152,9 +152,9 @@
                                                 <tr v-if="combineQualities(show.config.qualities.allowed) > 0">
                                                     <td class="showLegend">Allowed Qualities:</td>
                                                     <td>
-                                                        <template v-for="(curQuality, index) in show.config.qualities.allowed"><!--
-                                                            -->{{ index > 0 ? ', ' : '' }}<!--
-                                                            --><quality-pill :quality="curQuality" :key="`allowed-${curQuality}`" />
+                                                        <template v-for="(curQuality, index) in show.config.qualities.allowed">
+                                                            {{ index > 0 ? ', ' : '' }}
+                                                            <quality-pill :quality="curQuality" :key="`allowed-${curQuality}`" />
                                                         </template>
                                                     </td>
                                                 </tr>
@@ -162,9 +162,9 @@
                                                 <tr v-if="combineQualities(show.config.qualities.preferred) > 0">
                                                     <td class="showLegend">Preferred Qualities:</td>
                                                     <td>
-                                                        <template v-for="(curQuality, index) in show.config.qualities.preferred"><!--
-                                                            -->{{ index > 0 ? ', ' : '' }}<!--
-                                                            --><quality-pill :quality="curQuality" :key="`preferred-${curQuality}`" />
+                                                        <template v-for="(curQuality, index) in show.config.qualities.preferred">
+                                                            {{ index > 0 ? ', ' : '' }}
+                                                            <quality-pill :quality="curQuality" :key="`preferred-${curQuality}`" />
                                                         </template>
                                                     </td>
                                                 </tr>

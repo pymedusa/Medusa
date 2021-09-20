@@ -5,13 +5,14 @@ from __future__ import unicode_literals
 import logging
 from medusa.helpers.utils import to_camel_case
 from medusa.sbdatetime import sbdatetime
-from medusa.common import Overview
+from medusa.common import Overview, Quality
 import os
 import datetime
 import re
 
 
 from medusa import app, classes, db, network_timezones
+from medusa.common import statusStrings
 from medusa.helper.common import episode_num, sanitize_filename, try_int
 from medusa.indexers.api import indexerApi
 from medusa.indexers.exceptions import IndexerException, IndexerUnavailable
@@ -364,7 +365,7 @@ class InternalHandler(BaseRequestHandler):
                 e.episode, e.name, e.airdate, e.manually_searched
                 FROM tv_episodes as e
                 WHERE e.season IS NOT NULL AND
-                        e.indexer = ? AND e.showid = ?
+                      e.indexer = ? AND e.showid = ?
                 ORDER BY e.season DESC, e.episode DESC
                 """,
                 [cur_show.indexer, cur_show.series_id]
@@ -395,17 +396,22 @@ class InternalHandler(BaseRequestHandler):
                                                                            cur_result['episode'],
                                                                            numbering='absolute')))
                         cur_ep_cat_string = Overview.overviewStrings[cur_ep_cat]
-                        ep_cats[episode_string] = cur_ep_cat
+                        ep_cats[episode_string] = cur_ep_cat_string
                         ep_counts[cur_ep_cat_string] += 1
-                        cur_result['airdate'] = air_date
+                        cur_result['airdate'] = air_date.isoformat('T')
                         cur_result['manuallySearched'] = cur_result['manually_searched']
                         del cur_result['manually_searched']
-                        cur_result['episodeString'] = episode_string
+                        cur_result['statusString'] = statusStrings[cur_result['status']]
+                        cur_result['qualityString'] = Quality.qualityStrings[cur_result['quality']]
+
+                        cur_result['slug'] = episode_string
                         filtered_episodes.append(cur_result)
 
             if filtered_episodes:
                 results.append({
                     'slug': cur_show.identifier.slug,
+                    'name': cur_show.name,
+                    'quality': cur_show.quality,
                     'episodeCount': ep_counts,
                     'category': ep_cats,
                     'episodes': filtered_episodes
