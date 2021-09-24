@@ -18,6 +18,21 @@ inc_top.mako
 
 .icon-white {
     background-image: url("../images/glyphicons-halflings-white.png");
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    display: inline-block;
+    vertical-align: -2px;
+}
+
+.icon-white-search {
+    background-position-x: -48px;
+    background-position-y: 0px;
+}
+
+.icon-play-configure {
+    background-position-x: -360px;
+    background-position-y: -145px;
 }
 
 .ui-autocomplete-loading {

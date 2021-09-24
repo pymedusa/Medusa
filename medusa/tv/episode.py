@@ -428,6 +428,9 @@ class Episode(TV):
 
         @TODO: Move this out of episode.py. As this is not something we'd want to do on every episode.
             We should use trakt's /sync route instead.
+
+            This method is currently not used, as it puts a to great load on the trakt api. It's here
+            for future reference. It was once included within the episode setStatus api.
         """
         if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
 
@@ -447,7 +450,7 @@ class Episode(TV):
                           'show_id': self.series.series_id, 'show_name': self.series.name
                       })
 
-            notifiers.trakt_notifier.update_watchlist_episode(self.series, self)
+            notifiers.trakt_notifier.update_watchlist_episode(self.series, self, upd == 'Remove')
 
     @property
     def status_name(self):
