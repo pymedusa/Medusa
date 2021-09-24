@@ -99,7 +99,7 @@
                             <span v-if="episode.quality !== 0">
                                 {{episode.statusString}} <quality-pill :quality="episode.quality" />
                             </span>
-                            <span>
+                            <span v-else>
                                 {{episode.statusString}}
                             </span>
                         </td>
@@ -110,12 +110,12 @@
                             <span v-if="episode.airdate">
                                 <time :datetime="episode.airdate" class="date">{{fuzzyParseDateTime(episode.airdate)}}</time>
                             </span>
-                            <span>
+                            <span v-else>
                                 Never
                             </span>
                         </td>
                         <td class="col-search">
-                            <div class="align-center">
+                            <div class="align-center-evenly">
                                 <search searchType="backlog" :showSlug="show.slug" :episode="{
                                     episode: episode.episode, season: episode.season, slug: episode.slug
                                 }" />
