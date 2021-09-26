@@ -388,8 +388,10 @@ const manageRoutes = [
         meta: {
             title: 'Failed Downloads',
             header: 'Failed Downloads',
-            topMenu: 'manage'
-        }
+            topMenu: 'manage',
+            converted: true
+        },
+        component: () => import('../components/manage-failed-downloads.vue')
     },
     {
         path: '/manage/manageSearches',

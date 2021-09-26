@@ -340,6 +340,8 @@ class Manage(Home, WebRoot):
 
     def backlogOverview(self):
         """
+        Serve the backlogOverview page.
+
         [Converted to VueRouter]
         """
         return PageTemplate(rh=self, filename='index.mako').render()
@@ -764,7 +766,14 @@ class Manage(Home, WebRoot):
 
         return self.redirect(webui_url)
 
-    def failedDownloads(self, limit=100, toRemove=None):
+    def failedDownloads(self):
+        """
+        Serve the backlogOverview page.
+
+        [Converted to VueRouter]
+        """
+        return PageTemplate(rh=self, filename='index.mako').render()
+
         failed_db_con = db.DBConnection('failed.db')
 
         if int(limit):

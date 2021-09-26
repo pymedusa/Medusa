@@ -3,6 +3,7 @@
 from __future__ import unicode_literals
 
 import logging
+from medusa.providers.generic_provider import GenericProvider
 
 from tornado.escape import json_decode
 from medusa.tv.episode import Episode, EpisodeNumber, RelativeNumber
@@ -14,7 +15,7 @@ import datetime
 import re
 
 
-from medusa import app, classes, db, network_timezones
+from medusa import app, classes, db, network_timezones, providers
 from medusa.common import statusStrings
 from medusa.helper.common import episode_num, sanitize_filename, try_int
 from medusa.indexers.api import indexerApi
@@ -423,6 +424,7 @@ class InternalHandler(BaseRequestHandler):
         return self._ok(data=results)
 
     def resource_get_episode_status(self):
+        """Return a list of episodes with a specific status."""
         status = self.get_argument('status' '').strip()
 
         status_list = [int(status)]
@@ -529,3 +531,57 @@ class InternalHandler(BaseRequestHandler):
             main_db_con.mass_action(ep_sql_l)
 
         return self._ok(data={'count': len(ep_sql_l)})
+
+    def resource_get_failed(self):
+        """Get data from the failed.db/failed table."""
+        limit = self.get_argument('limit' '').strip()
+
+        failed_db_con = db.DBConnection('failed.db')
+        if int(limit):
+            sql_results = failed_db_con.select(
+                'SELECT ROWID AS id, release, size, provider '
+                'FROM failed '
+                'LIMIT ?',
+                [limit]
+            )
+        else:
+            sql_results = failed_db_con.select(
+                'SELECT ROWID AS id, release, size, provider '
+                'FROM failed'
+            )
+
+        results = []
+        for result in sql_results:
+            provider = providers.get_provider_class(GenericProvider.make_id(result['provider']))
+            results.append({
+                'id': result['id'],
+                'release': result['release'],
+                'size': result['size'],
+                'provider': {
+                    'id': provider.get_id(),
+                    'name': provider.name,
+                    'imageName': provider.image_name()
+                }
+            })
+
+        return self._ok(data=results)
+
+    def resource_remove_failed(self):
+        """
+        Remove rows from the failed.db/failed table.
+
+        Pass an array of ROWID's.
+        :example: {remove: [1, 2, 3, 4, 10]}
+        """
+        data = json_decode(self.request.body)
+        remove = data.get('remove', [])
+        if not remove:
+            return self._bad_request('Nothing to remove')
+
+        failed_db_con = db.DBConnection('failed.db')
+        failed_db_con.action(
+            'delete from failed WHERE ROWID in ({remove})'.format(remove=','.join(['?'] * len(remove))),
+            remove
+        )
+
+        return self._ok()

@@ -509,7 +509,7 @@ export default {
                 this.$snotify.error(
                     `Error while trying to save "${show.title}": ${error.message || 'Unknown'}`,
                     'Error'
-                );                
+                );
             }
         }
     }
