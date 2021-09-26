@@ -1955,6 +1955,36 @@ class Series(TV):
                 log.info('updating trakt watchlist')
                 notifiers.trakt_notifier.update_watchlist_show(self)
 
+    def sync_trakt_episodes(self, status, episodes):
+        """
+        If Trakt enabled and trakt sync watchlist enabled, add/remove the episode from the watchlist.
+
+        :param status: The value of the status that the episodes have changed to.
+        :type status: int
+        :param episodes: list of episode objects.
+        :type episodes: list
+        """
+        if not app.USE_TRAKT or not app.TRAKT_SYNC_WATCHLIST:
+            return
+
+        upd = None
+        if status in [WANTED, FAILED]:
+            upd = 'Add'
+
+        elif status in [IGNORED, SKIPPED, DOWNLOADED, ARCHIVED]:
+            upd = 'Remove'
+
+        if not upd:
+            return
+
+        log.debug('{action} episodes [{episodes}], showid: indexerid {show_id},'
+                  'Title {show_name} to Watchlist', {
+                      'action': upd, 'episodes': ', '.join([ep.slug for ep in episodes]),
+                      'show_id': self.series_id, 'show_name': self.name
+                  })
+
+        notifiers.trakt_notifier.update_watchlist_episode(self, episodes, upd == 'Remove')
+
     def add_scene_numbering(self):
         """
         Add XEM data to DB for show.

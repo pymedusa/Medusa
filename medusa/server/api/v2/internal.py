@@ -3,9 +3,12 @@
 from __future__ import unicode_literals
 
 import logging
+
+from tornado.escape import json_decode
+from medusa.tv.episode import Episode, EpisodeNumber, RelativeNumber
 from medusa.helpers.utils import to_camel_case
 from medusa.sbdatetime import sbdatetime
-from medusa.common import Overview, Quality
+from medusa.common import SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, Overview, Quality
 import os
 import datetime
 import re
@@ -418,3 +421,111 @@ class InternalHandler(BaseRequestHandler):
                 })
 
         return self._ok(data=results)
+
+    def resource_get_episode_status(self):
+        status = self.get_argument('status' '').strip()
+
+        status_list = [int(status)]
+
+        if status_list:
+            if status_list[0] == SNATCHED:
+                status_list = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
+        else:
+            status_list = []
+
+        main_db_con = db.DBConnection()
+        status_results = main_db_con.select(
+            'SELECT show_name, tv_shows.indexer, tv_shows.show_id, tv_shows.indexer_id AS indexer_id, '
+            'tv_episodes.season AS season, tv_episodes.episode AS episode, tv_episodes.name as name '
+            'FROM tv_episodes, tv_shows '
+            'WHERE season != 0 '
+            'AND tv_episodes.showid = tv_shows.indexer_id '
+            'AND tv_episodes.indexer = tv_shows.indexer '
+            'AND tv_episodes.status IN ({statuses}) '.format(statuses=','.join(['?'] * len(status_list))),
+            status_list
+        )
+
+        episode_status = {}
+        for cur_status_result in status_results:
+            cur_indexer = int(cur_status_result['indexer'])
+            cur_series_id = int(cur_status_result['indexer_id'])
+            show_slug = SeriesIdentifier.from_id(cur_indexer, cur_series_id).slug
+
+            if show_slug not in episode_status:
+                episode_status[show_slug] = {
+                    'selected': True,
+                    'slug': show_slug,
+                    'name': cur_status_result['show_name'],
+                    'episodes': [],
+                    'showEpisodes': False
+                }
+
+            episode_status[show_slug]['episodes'].append({
+                'episode': cur_status_result['episode'],
+                'season': cur_status_result['season'],
+                'selected': True,
+                'slug': str(RelativeNumber(cur_status_result['season'], cur_status_result['episode'])),
+                'name': cur_status_result['name']
+            })
+
+        return self._ok(data={'episodeStatus': episode_status})
+
+    def resource_update_episode_status(self):
+        """
+        Mass update episodes statuses for multiple shows at once.
+
+        example: Pass the following structure:
+            status: 3,
+            shows: [
+                {
+                    'slug': 'tvdb1234',
+                    'episodes': ['s01e01', 's02e03', 's10e10']
+                },
+            ]
+        """
+        data = json_decode(self.request.body)
+        status = data.get('status')
+        shows = data.get('shows', [])
+
+        if status not in statusStrings:
+            return self._bad_request('You need to provide a valid status code')
+
+        ep_sql_l = []
+        for show in shows:
+            # Loop through the shows. Each show should have an array of episode slugs
+            series_identifier = SeriesIdentifier.from_slug(show.get('slug'))
+            if not series_identifier:
+                log.warning('Could not create a show identifier with slug {slug}', {'slug': show.get('slug')})
+                continue
+
+            series = Series.find_by_identifier(series_identifier)
+            if not series:
+                log.warning('Could not match to a show in the library with slug {slug}', {'slug': show.get('slug')})
+                continue
+
+            episodes = []
+            for episode_slug in show.get('episodes', []):
+                episode_number = EpisodeNumber.from_slug(episode_slug)
+                if not episode_number:
+                    log.warning('Bad episode number from slug {slug}', {'slug': episode_slug})
+                    continue
+
+                episode = Episode.find_by_series_and_episode(series, episode_number)
+                if not episode:
+                    log.warning('Episode not found with slug {slug}', {'slug': episode_slug})
+
+                ep_sql = episode.mass_update_episode_status(status)
+                if ep_sql:
+                    ep_sql_l.append(ep_sql)
+
+                    # Keep an array of episodes for the trakt sync
+                    episodes.append(episode)
+
+            if episodes:
+                series.sync_trakt_episodes(status, episodes)
+
+        if ep_sql_l:
+            main_db_con = db.DBConnection()
+            main_db_con.mass_action(ep_sql_l)
+
+        return self._ok(data={'count': len(ep_sql_l)})

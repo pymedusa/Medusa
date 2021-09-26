@@ -377,8 +377,10 @@ const manageRoutes = [
         meta: {
             title: 'Episode Overview',
             header: 'Episode Overview',
-            topMenu: 'manage'
-        }
+            topMenu: 'manage',
+            converted: true
+        },
+        component: () => import('../components/manage-episode-status.vue')
     },
     {
         path: '/manage/failedDownloads',

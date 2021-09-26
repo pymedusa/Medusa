@@ -87,56 +87,13 @@ class Manage(Home, WebRoot):
 
         return json.dumps(result)
 
-    def episodeStatuses(self, whichStatus=None):
-        if whichStatus:
-            status_list = [int(whichStatus)]
-            if status_list[0] == SNATCHED:
-                status_list = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
-        else:
-            status_list = []
+    def episodeStatuses(self):
+        """
+        Serve manageEpisodeStatus page.
 
-        t = PageTemplate(rh=self, filename='manage_episodeStatuses.mako')
-
-        # if we have no status then this is as far as we need to go
-        if not status_list:
-            return t.render(
-                show_names=None, whichStatus=whichStatus,
-                ep_counts=None, sorted_show_ids=None,
-                controller='manage', action='episodeStatuses')
-
-        main_db_con = db.DBConnection()
-        status_results = main_db_con.select(
-            'SELECT show_name, tv_shows.indexer, tv_shows.show_id, tv_shows.indexer_id AS indexer_id '
-            'FROM tv_episodes, tv_shows '
-            'WHERE season != 0 '
-            'AND tv_episodes.showid = tv_shows.indexer_id '
-            'AND tv_episodes.indexer = tv_shows.indexer '
-            'AND tv_episodes.status IN ({statuses}) '
-            'ORDER BY show_name'.format(statuses=','.join(['?'] * len(status_list))),
-            status_list
-        )
-
-        ep_counts = {}
-        show_names = {}
-        sorted_show_ids = []
-
-        for cur_status_result in status_results:
-            cur_indexer = int(cur_status_result['indexer'])
-            cur_series_id = int(cur_status_result['indexer_id'])
-            if (cur_indexer, cur_series_id) not in ep_counts:
-                ep_counts[(cur_indexer, cur_series_id)] = 1
-            else:
-                ep_counts[(cur_indexer, cur_series_id)] += 1
-
-            show_names[(cur_indexer, cur_series_id)] = cur_status_result['show_name']
-            if (cur_indexer, cur_series_id) not in sorted_show_ids:
-                sorted_show_ids.append((cur_indexer, cur_series_id))
-
-        return t.render(
-            title='Episode Overview', header='Episode Overview',
-            whichStatus=whichStatus,
-            show_names=show_names, ep_counts=ep_counts, sorted_show_ids=sorted_show_ids,
-            controller='manage', action='episodeStatuses')
+        [Converted to VueRouter].
+        """
+        return PageTemplate(rh=self, filename='index.mako').render()
 
     def changeEpisodeStatuses(self, oldStatus, newStatus, *args, **kwargs):
         status_list = [int(oldStatus)]

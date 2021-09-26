@@ -122,9 +122,7 @@ class SeriesMassEdit(BaseRequestHandler):
         season_folders=None, paused=None, air_by_date=None, sports=None, dvd_order=None, subtitles=None,
         anime=None, scene=None, default_ep_status=None
     ):
-        """
-        A variation of the original `editShow`, where `directCall` is always true.
-        """
+        """A variation of the original `editShow`, where `directCall` is always true."""
         allowed_qualities = allowed_qualities or []
         preferred_qualities = preferred_qualities or []
 

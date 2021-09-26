@@ -422,36 +422,6 @@ class Episode(TV):
     def status(self, value):
         self._status = value
 
-    def _sync_trakt(self, status):
-        """
-        If Trakt enabled and trakt sync watchlist enabled, add/remove the episode from the watchlist.
-
-        @TODO: Move this out of episode.py. As this is not something we'd want to do on every episode.
-            We should use trakt's /sync route instead.
-
-            This method is currently not used, as it puts a to great load on the trakt api. It's here
-            for future reference. It was once included within the episode setStatus api.
-        """
-        if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
-
-            upd = None
-            if status in [WANTED, FAILED]:
-                upd = 'Add'
-
-            elif status in [IGNORED, SKIPPED, DOWNLOADED, ARCHIVED]:
-                upd = 'Remove'
-
-            if not upd:
-                return
-
-            log.debug('{action} episode {episode}, showid: indexerid {show_id},'
-                      'Title {show_name} to Watchlist', {
-                          'action': upd, 'episode': self.episode,
-                          'show_id': self.series.series_id, 'show_name': self.series.name
-                      })
-
-            notifiers.trakt_notifier.update_watchlist_episode(self.series, self, upd == 'Remove')
-
     @property
     def status_name(self):
         """Return the status name."""
@@ -2144,3 +2114,53 @@ class Episode(TV):
                     'filepath': filepath,
                 }
             )
+
+    def mass_update_episode_status(self, new_status):
+        """
+        Change the status of an episode, with a number of additional actions depending old -> new status.
+
+        :param new_status: New status value.
+        :type new_status: int
+
+        :returns: The episodes update sql to be used in a mass action.
+        """
+        with self.lock:
+            if self.status == UNAIRED:
+                log.warning('Refusing to change status of {series} {episode} because it is UNAIRED',
+                            {'series': self.series.name, 'episode': self.slug})
+                return
+
+            snatched_qualities = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
+
+            if new_status == DOWNLOADED and not (
+                    self.status in snatched_qualities + [DOWNLOADED]
+                    or os.path.isfile(self.location)):
+                log.warning('Refusing to change status of {series} {episode} to DOWNLOADED'
+                            " because it's not SNATCHED/DOWNLOADED or the file is missing",
+                            {'series': self.series.name, 'episode': self.slug})
+                return
+
+            if new_status == FAILED and self.status not in snatched_qualities + [DOWNLOADED, ARCHIVED]:
+                log.warning('Refusing to change status of {series} {episode} to FAILED'
+                            " because it's not SNATCHED/DOWNLOADED/ARCHIVED",
+                            {'series': self.series.name, 'episode': self.slug})
+                return
+
+            if new_status == WANTED:
+                if self.status in [DOWNLOADED, ARCHIVED]:
+                    log.debug('Removing release_name of {series} {episode} as episode was changed to WANTED',
+                              {'series': self.series.name, 'episode': self.slug})
+                    self.release_name = ''
+
+                if self.manually_searched:
+                    log.debug("Resetting 'manually searched' flag of {series} {episode}"
+                              ' as episode was changed to WANTED',
+                              {'series': self.series.name, 'episode': self.slug})
+                    self.manually_searched = False
+
+            # Only in failed_history we set to FAILED.
+            if new_status != FAILED:
+                self.status = new_status
+
+            # Make sure to run the collected sql through a mass action.
+            return self.get_sql()

@@ -38,7 +38,7 @@
         >
             <template slot="column-filter" slot-scope="props">
                 <span v-if="props.column.filterOptions.customFilter">
-                    <input type="checkbox" :data-action="props.column.action" @click="actionCheckAllRows"/>
+                    <input type="checkbox" :data-action="props.column.action" @click="actionCheckAllRows">
                 </span>
             </template>
 
@@ -93,43 +93,43 @@
                 <span v-else-if="props.column.label === 'Update'" class="align-center">
                     <input :disabled="inQueueOrStarted('update', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateCheck"
                            :data-action="props.column.action" :data-show="props.row.id.slug" @input="updateActions($event, props.row.id.slug)"
-                    />
+                    >
                 </span>
 
                 <span v-else-if="props.column.label === 'Refresh'" class="align-center">
                     <input :disabled="inQueueOrStarted('refresh', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateRefresh"
                            :data-action="props.column.action" :data-show="props.row.id.slug" @input="updateActions($event, props.row.id.slug)"
-                    />
+                    >
                 </span>
 
                 <span v-else-if="props.column.label === 'Rename'" class="align-center">
                     <input :disabled="inQueueOrStarted('rename', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateRename"
                            :data-action="props.column.action" :data-show="props.row.id.slug" @input="updateActions($event, props.row.id.slug)"
-                    />
+                    >
                 </span>
 
                 <span v-else-if="props.column.label === 'Search subtitle'" class="align-center">
                     <input :disabled="inQueueOrStarted('subtitle', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateSubtitle"
                            :data-action="props.column.action" :data-show="props.row.id.slug" @input="updateActions($event, props.row.id.slug)"
-                    />
+                    >
                 </span>
 
                 <span v-else-if="props.column.label === 'Delete'" class="align-center">
                     <input :disabled="inQueueOrStarted('delete', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateDelete"
                            :data-action="props.column.action" :data-show="props.row.id.slug" @input="updateActions($event, props.row.id.slug)"
-                    />
+                    >
                 </span>
 
                 <span v-else-if="props.column.label === 'Remove'" class="align-center">
                     <input :disabled="inQueueOrStarted('remove', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateRemove"
                            :data-action="props.column.action" :data-show="props.row.id.slug" @input="updateActions($event, props.row.id.slug)"
-                    />
+                    >
                 </span>
 
                 <span v-else-if="props.column.label === 'Update image'" class="align-center">
                     <input type="checkbox" class="bulkCheck" id="updateImage" :data-action="props.column.action"
                            :data-show="props.row.id.slug" @input="updateActions($event, props.row.id.slug)"
-                    />
+                    >
                 </span>
 
                 <span v-else>
@@ -275,21 +275,21 @@ export default {
                 label: 'Default Ep Status',
                 field: 'config.defaultEpisodeStatus',
                 filterOptions: {
-                     enabled: false
+                    enabled: false
                 },
                 hidden: getCookie('Default Ep Status')
             }, {
                 label: 'Status',
                 field: 'status',
                 filterOptions: {
-                     enabled: false
+                    enabled: false
                 },
                 hidden: getCookie('Status')
             }, {
                 label: 'Update',
                 field: 'update',
                 filterOptions: {
-                     customFilter: true
+                    customFilter: true
                 },
                 sortable: false,
                 action: 'update',
@@ -299,7 +299,7 @@ export default {
                 field: 'rescan',
                 sortable: false,
                 filterOptions: {
-                     customFilter: true
+                    customFilter: true
                 },
                 action: 'refresh',
                 hidden: getCookie('Refresh')
@@ -308,7 +308,7 @@ export default {
                 field: 'rename',
                 sortable: false,
                 filterOptions: {
-                     customFilter: true
+                    customFilter: true
                 },
                 action: 'rename',
                 hidden: getCookie('Rename')
@@ -317,7 +317,7 @@ export default {
                 field: 'searchsubtitle',
                 sortable: false,
                 filterOptions: {
-                     customFilter: true
+                    customFilter: true
                 },
                 action: 'subtitle',
                 hidden: getCookie('Search subtitle')
@@ -326,7 +326,7 @@ export default {
                 field: 'delete',
                 sortable: false,
                 filterOptions: {
-                     customFilter: true
+                    customFilter: true
                 },
                 action: 'delete',
                 hidden: getCookie('Delete')
@@ -335,7 +335,7 @@ export default {
                 field: 'remove',
                 sortable: false,
                 filterOptions: {
-                     customFilter: true
+                    customFilter: true
                 },
                 action: 'remove',
                 hidden: getCookie('Remove')
@@ -344,7 +344,7 @@ export default {
                 field: 'updateimage',
                 sortable: false,
                 filterOptions: {
-                     customFilter: true
+                    customFilter: true
                 },
                 action: 'image',
                 hidden: getCookie('Update image')
@@ -373,7 +373,7 @@ export default {
         }),
         filteredShows() {
             const { shows, errors } = this;
-            if (!Object.keys(errors).length) {
+            if (Object.keys(errors).length === 0) {
                 return shows;
             }
             return shows.map(show => {
@@ -384,14 +384,11 @@ export default {
             })
         }
     },
-    mounted() {
-        // this.getShowQueue();
-    },
     methods: {
         ...mapActions({
-            getShowQueue: 'getShowQueue' 
+            getShowQueue: 'getShowQueue'
         }),
-         combinedQualities(quality) {
+        combinedQualities(quality) {
             const { allowed, preferred } = quality;
             return combineQualities(allowed, preferred);
         },
@@ -401,12 +398,12 @@ export default {
          * @param {string} showSlug Show slug.
          */
         updateActions(event, showSlug) {
-            const action = event.currentTarget.dataset.action;
-            const checked = event.currentTarget.checked;
+            const { action } = event.currentTarget.dataset;
+            const { checked } = event.currentTarget;
             if (checked && !this.massUpdateActions[action].includes(showSlug)) {
                 this.massUpdateActions[action].push(showSlug);
             }
-            
+
             if (!checked) {
                 this.massUpdateActions[action] = this.massUpdateActions[action].filter(show => show !== showSlug);
             }
@@ -420,14 +417,14 @@ export default {
                 delete: [],
                 remove: [],
                 image: []
-            }
+            };
             for (const action of ['update', 'refresh', 'rename', 'subtitle', 'delete', 'remove', 'image']) {
                 document.querySelectorAll(`[data-action="${action}"]`).forEach(el => el.checked = false);
             }
         },
         actionCheckAllRows(event) {
-            const checked = event.currentTarget.checked;
-            const action = event.currentTarget.dataset.action;
+            const { checked } = event.currentTarget;
+            const { action } = event.currentTarget.dataset;
             this.massUpdateActions = {
                 update: [],
                 refresh: [],
@@ -436,7 +433,7 @@ export default {
                 delete: [],
                 remove: [],
                 image: []
-            }
+            };
             document.querySelectorAll(`[data-action="${action}"]`)
                 .forEach(el => {
                     if (el.dataset.show) {
@@ -444,7 +441,7 @@ export default {
                         // If checked add this showslug to the massUpdateActions.
                         if (checked && !this.massUpdateActions[action].includes(el.dataset.show)) {
                             this.massUpdateActions[action].push(el.dataset.show);
-                        }                        
+                        }
                     }
                 });
 
@@ -454,10 +451,10 @@ export default {
         },
         async triggerActions() {
             const { massUpdateActions } = this;
-            
+
             try {
                 const { data } = await api.post('massupdate', massUpdateActions);
-                if (Object.keys(data.shows).length) {
+                if (Object.keys(data.shows).length > 0) {
                     this.errors = data.shows;
                 }
                 // Get new queue.
@@ -469,6 +466,9 @@ export default {
         },
         /**
          * Create an object to track the queue/started status for the different actions.
+         * @param {string} queueType queue type
+         * @param {string} showSlug show slug
+         * @returns {boolean} True if the show is in a queue or started
          */
         inQueueOrStarted(queueType, showSlug) {
             const { showQueue, showQueueItems } = this;
@@ -479,13 +479,13 @@ export default {
                 ['subtitle', 'SUBTITLE'],
                 ['delete', 'REMOVE-SHOW'],
                 ['remove', 'REMOVE-SHOW']
-            ])
+            ]);
 
             const showInQueue = showQueue?.find(queue => queue.queueType.toLowerCase() === queueType && queue.showSlug === showSlug);
             const filteredShowQueueItems = showQueueItems?.filter(
                 queue => queue.name === queueItemNames.get(queueType) && queue.show.id.slug === showSlug
             )
-            if (filteredShowQueueItems.filter(queue => !queue.inProgress).length) {
+            if (filteredShowQueueItems.filter(queue => !queue.inProgress).length > 0) {
                 return false;
             }
 
@@ -499,7 +499,7 @@ export default {
             };
 
             try {
-                api.patch(`series/${show.id.slug}`, data);    
+                await api.patch(`series/${show.id.slug}`, data);
                 this.$snotify.success(
                     `${data.config[option] ? 'enabled' : 'disabled'} show option ${option}`,
                     'Saved',
