@@ -45,23 +45,6 @@ export default {
     mounted() {
         const { languages } = this;
         this.wantedLanguages = languages.map(code => ({ text: code.name, id: code.id }));
-
-        // this.unwatchProp = this.$watch('subtitleCodeFilter', subtitleCodeFilter => {
-        //     if (subtitleCodeFilter.length > 0) {
-        //         this.unwatchProp();
-        //         $(this.$refs.languages).tokenInput(subtitleCodeFilter, {
-        //             method: 'POST',
-        //             hintText: 'Write to search a language and select it',
-        //             preventDuplicates: true,
-        //             prePopulate: this.wantedLanguages,
-        //             resultsFormatter: item => `<li><img src='images/subtitles/flags/${item.id}.png' onError='this.onerror=null;this.src="images/flags/unknown.png";' style='vertical-align: middle !important;' /> ${item.name}</li>`,
-        //             tokenFormatter: item => `<li><img src='images/subtitles/flags/${item.id}.png' onError='this.onerror=null;this.src="images/flags/unknown.png";' style='vertical-align: middle !important;' /> ${item.name}</li>`
-        //         });
-        //     }
-        // });
-
-        // $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' });
-        // $('#service_order_list').sortable({ update: serviceOrderUpdated }).disableSelection();
     },
     computed: {
         ...mapState({
