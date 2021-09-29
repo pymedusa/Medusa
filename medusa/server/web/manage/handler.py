@@ -179,55 +179,12 @@ class Manage(Home, WebRoot):
         return json.dumps(result)
 
     def subtitleMissed(self, whichSubs=None):
-        t = PageTemplate(rh=self, filename='manage_subtitleMissed.mako')
+        """
+        Serve manageEpisodeStatus page.
 
-        if not whichSubs:
-            return t.render(whichSubs=whichSubs,
-                            show_names=None, ep_counts=None, sorted_show_ids=None,
-                            controller='manage', action='subtitleMissed')
-
-        main_db_con = db.DBConnection()
-        status_results = main_db_con.select(
-            'SELECT show_name, tv_shows.show_id, tv_shows.indexer, '
-            'tv_shows.indexer_id as indexer_id, tv_episodes.subtitles subtitles '
-            'FROM tv_episodes, tv_shows '
-            'WHERE tv_shows.subtitles = 1 '
-            'AND tv_episodes.status = ? '
-            'AND tv_episodes.season != 0 '
-            "AND tv_episodes.location != '' "
-            'AND tv_episodes.showid = tv_shows.indexer_id '
-            'AND tv_episodes.indexer = tv_shows.indexer '
-            'ORDER BY show_name',
-            [DOWNLOADED]
-        )
-
-        ep_counts = {}
-        show_names = {}
-        sorted_show_ids = []
-        for cur_status_result in status_results:
-            if whichSubs == 'all':
-                if not frozenset(subtitles.wanted_languages()).difference(cur_status_result['subtitles'].split(',')):
-                    continue
-            elif whichSubs in cur_status_result['subtitles']:
-                continue
-
-            # FIXME: This will cause multi-indexer results where series_id overlaps for different indexers.
-            # Fix by using tv_shows.show_id in stead.
-
-            cur_indexer_id = int(cur_status_result['indexer'])
-            cur_series_id = int(cur_status_result['indexer_id'])
-            if (cur_indexer_id, cur_series_id) not in ep_counts:
-                ep_counts[(cur_indexer_id, cur_series_id)] = 1
-            else:
-                ep_counts[(cur_indexer_id, cur_series_id)] += 1
-
-            show_names[(cur_indexer_id, cur_series_id)] = cur_status_result['show_name']
-            if (cur_indexer_id, cur_series_id) not in sorted_show_ids:
-                sorted_show_ids.append((cur_indexer_id, cur_series_id))
-
-        return t.render(whichSubs=whichSubs, show_names=show_names, ep_counts=ep_counts, sorted_show_ids=sorted_show_ids,
-                        title='Missing Subtitles', header='Missing Subtitles',
-                        controller='manage', action='subtitleMissed')
+        [Converted to VueRouter].
+        """
+        return PageTemplate(rh=self, filename='index.mako').render()
 
     def downloadSubtitleMissed(self, *args, **kwargs):
         to_download = {}

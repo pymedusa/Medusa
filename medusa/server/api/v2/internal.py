@@ -9,7 +9,7 @@ from tornado.escape import json_decode
 from medusa.tv.episode import Episode, EpisodeNumber, RelativeNumber
 from medusa.helpers.utils import to_camel_case
 from medusa.sbdatetime import sbdatetime
-from medusa.common import SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, Overview, Quality
+from medusa.common import DOWNLOADED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, Overview, Quality
 import os
 import datetime
 import re
@@ -24,6 +24,7 @@ from medusa.indexers.utils import reverse_mappings
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.network_timezones import app_timezone
 from medusa.server.api.v2.base import BaseRequestHandler
+from medusa.subtitles import subtitle_code_filter, wanted_languages
 from medusa.tv.series import Series, SeriesIdentifier
 
 from six import ensure_text, iteritems, itervalues
@@ -588,36 +589,40 @@ class InternalHandler(BaseRequestHandler):
 
     def resource_get_subtitle_missed(self):
         """Return a list of episodes which are missing a specific subtitle language."""
-        status = self.get_argument('status' '').strip()
-
-        status_list = [int(status)]
-
-        if status_list:
-            if status_list[0] == SNATCHED:
-                status_list = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
-        else:
-            status_list = []
+        language = self.get_argument('language' '').strip()
 
         main_db_con = db.DBConnection()
-        status_results = main_db_con.select(
-            'SELECT show_name, tv_shows.indexer, tv_shows.show_id, tv_shows.indexer_id AS indexer_id, '
-            'tv_episodes.season AS season, tv_episodes.episode AS episode, tv_episodes.name as name '
+        results = main_db_con.select(
+            'SELECT show_name, tv_shows.show_id, tv_shows.indexer, '
+            'tv_shows.indexer_id AS indexer_id, tv_episodes.subtitles subtitles, '
+            'tv_episodes.episode AS episode, tv_episodes.season AS season, '
+            'tv_episodes.name AS name '
             'FROM tv_episodes, tv_shows '
-            'WHERE season != 0 '
+            'WHERE tv_shows.subtitles = 1 '
+            'AND tv_episodes.status = ? '
+            'AND tv_episodes.season != 0 '
+            "AND tv_episodes.location != '' "
             'AND tv_episodes.showid = tv_shows.indexer_id '
             'AND tv_episodes.indexer = tv_shows.indexer '
-            'AND tv_episodes.status IN ({statuses}) '.format(statuses=','.join(['?'] * len(status_list))),
-            status_list
+            'ORDER BY show_name',
+            [DOWNLOADED]
         )
 
-        episode_status = {}
-        for cur_status_result in status_results:
+        subtitle_status = {}
+        for cur_status_result in results:
             cur_indexer = int(cur_status_result['indexer'])
             cur_series_id = int(cur_status_result['indexer_id'])
             show_slug = SeriesIdentifier.from_id(cur_indexer, cur_series_id).slug
+            subtitles = cur_status_result['subtitles'].split(',')
 
-            if show_slug not in episode_status:
-                episode_status[show_slug] = {
+            if language == 'all':
+                if not frozenset(wanted_languages()).difference(subtitles):
+                    continue
+            elif language in subtitles:
+                continue
+
+            if show_slug not in subtitle_status:
+                subtitle_status[show_slug] = {
                     'selected': True,
                     'slug': show_slug,
                     'name': cur_status_result['show_name'],
@@ -625,12 +630,59 @@ class InternalHandler(BaseRequestHandler):
                     'showEpisodes': False
                 }
 
-            episode_status[show_slug]['episodes'].append({
+            subtitle_status[show_slug]['episodes'].append({
                 'episode': cur_status_result['episode'],
                 'season': cur_status_result['season'],
                 'selected': True,
                 'slug': str(RelativeNumber(cur_status_result['season'], cur_status_result['episode'])),
-                'name': cur_status_result['name']
+                'name': cur_status_result['name'],
+                'subtitles': subtitles
             })
 
-        return self._ok(data={'episodeStatus': episode_status})
+        return self._ok(data=subtitle_status)
+
+    def resource_search_missing_subtitles(self):
+        """
+        Search missing subtitles for multiple episodes at once.
+
+        example: Pass the following structure:
+            language: 'all', // Or a three letter language code.
+            shows: [
+                {
+                    'slug': 'tvdb1234',
+                    'episodes': ['s01e01', 's02e03', 's10e10']
+                },
+            ]
+        """
+        data = json_decode(self.request.body)
+        language = data.get('language', 'all')
+        shows = data.get('shows', [])
+
+        if language != 'all' and language not in subtitle_code_filter():
+            return self._bad_request('You need to provide a valid subtitle code')
+
+        for show in shows:
+            # Loop through the shows. Each show should have an array of episode slugs
+            series_identifier = SeriesIdentifier.from_slug(show.get('slug'))
+            if not series_identifier:
+                log.warning('Could not create a show identifier with slug {slug}', {'slug': show.get('slug')})
+                continue
+
+            series = Series.find_by_identifier(series_identifier)
+            if not series:
+                log.warning('Could not match to a show in the library with slug {slug}', {'slug': show.get('slug')})
+                continue
+
+            for episode_slug in show.get('episodes', []):
+                episode_number = EpisodeNumber.from_slug(episode_slug)
+                if not episode_number:
+                    log.warning('Bad episode number from slug {slug}', {'slug': episode_slug})
+                    continue
+
+                episode = Episode.find_by_series_and_episode(series, episode_number)
+                if not episode:
+                    log.warning('Episode not found with slug {slug}', {'slug': episode_slug})
+
+                episode.download_subtitles(lang=language if language != 'all' else None)
+
+        return self._ok()
