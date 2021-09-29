@@ -267,7 +267,7 @@
                                     <div id="show-status" class="col-lg-3 col-md-4 col-sm-4 col-xs-12 pull-xs-left">
                                         <table class="pull-xs-left pull-md-right pull-sm-right pull-lg-right">
                                             <tr v-if="show.language"><td class="showLegend">Info Language:</td><td><img :src="'images/subtitles/flags/' + getCountryISO2ToISO3(show.language) + '.png'" width="16" height="11" :alt="show.language" :title="show.language" onError="this.onerror=null;this.src='images/flags/unknown.png';"></td></tr>
-                                            <tr v-if="config.subtitles.enabled"><td class="showLegend">Subtitles: </td><td><state-switch :theme="layout.themeName" :state="show.config.subtitlesEnabled" @click="toggleConfigOption('subtitlesEnabled');" /></td></tr>
+                                            <tr v-if="subtitles.enabled"><td class="showLegend">Subtitles: </td><td><state-switch :theme="layout.themeName" :state="show.config.subtitlesEnabled" @click="toggleConfigOption('subtitlesEnabled');" /></td></tr>
                                             <tr><td class="showLegend">Season Folders: </td><td><state-switch :theme="layout.themeName" :state="show.config.seasonFolders || config.namingForceFolders" /></td></tr>
                                             <tr><td class="showLegend">Paused: </td><td><state-switch :theme="layout.themeName" :state="show.config.paused" @click="toggleConfigOption('paused')" /></td></tr>
                                             <tr><td class="showLegend">Air-by-Date: </td><td><state-switch :theme="layout.themeName" :state="show.config.airByDate" @click="toggleConfigOption('airByDate')" /></td></tr>
@@ -430,7 +430,7 @@ export default {
     },
     computed: {
         ...mapState({
-            config: state => state.config.general,
+            subtitles: state => state.config.subtitles,
             layout: state => state.config.layout,
             shows: state => state.shows.shows,
             indexers: state => state.config.indexers,

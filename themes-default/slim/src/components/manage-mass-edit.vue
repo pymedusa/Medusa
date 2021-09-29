@@ -164,25 +164,25 @@ export default {
                 subtitles: null,
                 rootDirs: []
             }
-        }
+        };
     },
     mounted() {
-            const { shows } = this;
-            // Helper to check if all the values in an array are equal to each other.
-            const allEqual = arr => arr.every(val => val === arr[0]);
+        const { shows } = this;
+        // Helper to check if all the values in an array are equal to each other.
+        const allEqual = arr => arr.every(val => val === arr[0]);
 
-            this.config.qualities.allowed = allEqual(shows.map(show => combineQualities(show.config.qualities.allowed, show.config.qualities.preferred))) ? shows[0].config.qualities.allowed : [];
-            this.config.qualities.preferred = allEqual(shows.map(show => combineQualities(show.config.qualities.allowed, show.config.qualities.preferred))) ? shows[0].config.qualities.preferred : [];
-            this.config.seasonFolders = allEqual(shows.map(show => show.config.seasonFolders)) ? shows[0].config.seasonFolders : null;
-            this.config.paused = allEqual(shows.map(show => show.config.paused)) ? shows[0].config.paused : null;
-            this.config.defaultEpisodeStatus = allEqual(shows.map(show => show.config.defaultEpisodeStatus)) ? shows[0].config.defaultEpisodeStatus : null;
-            this.config.scene = allEqual(shows.map(show => show.config.scene)) ? shows[0].config.scene : null;
-            this.config.anime = allEqual(shows.map(show => show.config.anime)) ? shows[0].config.anime : null;
-            this.config.sports = allEqual(shows.map(show => show.config.sports)) ? shows[0].config.sports : null;
-            this.config.airByDate = allEqual(shows.map(show => show.config.airByDate)) ? shows[0].config.airByDate : null;
-            this.config.dvdOrder = allEqual(shows.map(show => show.config.dvdOrder)) ? shows[0].config.dvdOrder : null;
-            this.config.subtitles = allEqual(shows.map(show => show.config.subtitlesEnabled)) ? shows[0].config.subtitlesEnabled : null;
-            this.config.rootDirs = this.setRootDirs.map(rd => ({ old: rd, new: rd }));
+        this.config.qualities.allowed = allEqual(shows.map(show => combineQualities(show.config.qualities.allowed, show.config.qualities.preferred))) ? shows[0].config.qualities.allowed : [];
+        this.config.qualities.preferred = allEqual(shows.map(show => combineQualities(show.config.qualities.allowed, show.config.qualities.preferred))) ? shows[0].config.qualities.preferred : [];
+        this.config.seasonFolders = allEqual(shows.map(show => show.config.seasonFolders)) ? shows[0].config.seasonFolders : null;
+        this.config.paused = allEqual(shows.map(show => show.config.paused)) ? shows[0].config.paused : null;
+        this.config.defaultEpisodeStatus = allEqual(shows.map(show => show.config.defaultEpisodeStatus)) ? shows[0].config.defaultEpisodeStatus : null;
+        this.config.scene = allEqual(shows.map(show => show.config.scene)) ? shows[0].config.scene : null;
+        this.config.anime = allEqual(shows.map(show => show.config.anime)) ? shows[0].config.anime : null;
+        this.config.sports = allEqual(shows.map(show => show.config.sports)) ? shows[0].config.sports : null;
+        this.config.airByDate = allEqual(shows.map(show => show.config.airByDate)) ? shows[0].config.airByDate : null;
+        this.config.dvdOrder = allEqual(shows.map(show => show.config.dvdOrder)) ? shows[0].config.dvdOrder : null;
+        this.config.subtitles = allEqual(shows.map(show => show.config.subtitlesEnabled)) ? shows[0].config.subtitlesEnabled : null;
+        this.config.rootDirs = this.setRootDirs.map(rd => ({ old: rd, new: rd }));
     },
     computed: {
         ...mapState({
@@ -238,7 +238,7 @@ export default {
             }
         }
     }
-}
+};
 </script>
 
 <style scoped>

@@ -215,7 +215,7 @@ export default {
             configLoaded: state => state.config.general.wikiUrl !== null,
             layout: state => state.config.layout,
             namingForceFolders: state => state.config.general.namingForceFolders,
-            subtitlesEnabled: state => state.config.general.subtitles.enabled,
+            subtitlesEnabled: state => state.config.subtitles.enabled,
             episodeStatuses: state => state.config.consts.statuses,
             anime: state => state.config.anime
         }),
