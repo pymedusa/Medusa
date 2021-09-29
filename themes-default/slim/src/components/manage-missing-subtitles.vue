@@ -1,8 +1,8 @@
 <template>
-    <div id="episode-status">
+    <div id="missing-subtitles">
         <span>Manage episodes missing subtitle language</span>
-        <div id="select-status">
-            <select :disabled="manageLanguage" name="whichStatus" v-model="selectedLanguage" class="form-control form-control-inline input-sm">
+        <div id="select-missing-language">
+            <select :disabled="manageLanguage" v-model="selectedLanguage" class="form-control form-control-inline input-sm">
                 <option v-for="language in availableLanguages" :value="language.value" :key="language.value">{{language.text}} {{language.value === 'all' ? '' : `(${language.value})`}}</option>
             </select>
 
@@ -169,5 +169,9 @@ svg.back-arrow:focus {
 
 .flag > img {
     margin-right: 5px;
+}
+
+#select-missing-language {
+    display: inline;
 }
 </style>
