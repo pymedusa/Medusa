@@ -1022,6 +1022,43 @@ class MedusaApp(object):
         """Change SUBTITLES_FINDER_FREQUENCY."""
         self.handle_prop('SUBTITLES_FINDER_FREQUENCY', value)
 
+    @property
+    def SUBTITLE_SERVICES(self):
+        """Return a list of subtitle services."""
+        from medusa.subtitles import sorted_service_list
+        return sorted_service_list()
+
+    @SUBTITLE_SERVICES.setter
+    def SUBTITLE_SERVICES(self, value):
+        """
+        Save subtitle services.
+
+        The order of available subtitle services and the enabled/disabled providers
+            are fleshed out when saving this app property.
+        """
+        self.SUBTITLES_SERVICES_LIST = [prov['name'] for prov in value]
+        self.SUBTITLES_SERVICES_ENABLED = [int(prov['enabled']) for prov in value]
+
+    # @property
+    # def SUBTITLES_LANGUAGES(self):
+    #     """Return a list of subtitle languages."""
+    #     return self._SUBTITLES_LANGUAGES
+
+    # @SUBTITLES_LANGUAGES.setter
+    # def SUBTITLES_LANGUAGES(self, value):
+    #     """
+    #     Save subtitle languages.
+
+    #     The api returns a list with language codes.
+    #     We check the codes against the subtitle code filter.
+    #     """
+    #     from medusa.subtitles import subtitle_code_filter
+    #     self._SUBTITLES_LANGUAGES = [
+    #         code.strip() for code in value
+    #         if code.strip() in subtitle_code_filter()
+    #     ] if value else []
+    #     pass
+
 
 app = MedusaApp()
 for app_key, app_value in app.__dict__.items():

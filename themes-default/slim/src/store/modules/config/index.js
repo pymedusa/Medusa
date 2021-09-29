@@ -8,6 +8,7 @@ import metadata from './metadata';
 import notifiers from './notifiers';
 import postprocessing from './postprocessing';
 import search from './search';
+import subtitles from './subtitles';
 import system from './system';
 
 const modules = {
@@ -21,6 +22,7 @@ const modules = {
     notifiers,
     postprocessing,
     search,
+    subtitles,
     system
 };
 

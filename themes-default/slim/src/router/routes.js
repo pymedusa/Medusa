@@ -217,8 +217,10 @@ const configRoutes = [
             title: 'Config - Subtitles',
             header: 'Subtitles',
             topMenu: 'config',
-            subMenu: configSubMenu
-        }
+            subMenu: configSubMenu,
+            converted: true
+        },
+        component: () => import('../components/config-subtitles.vue')
     }
 ];
 
@@ -257,31 +259,6 @@ const addShowRoutes = [
         },
         props: route => ({ ...route.params }),
         component: () => import('../components/new-show.vue')
-    },
-    {
-        path: '/addShows/trendingShows',
-        name: 'addTrendingShows',
-        meta: {
-            topMenu: 'home'
-        }
-    },
-    {
-        path: '/addShows/popularShows',
-        name: 'addPopularShows',
-        meta: {
-            title: 'Popular Shows',
-            header: 'Popular Shows',
-            topMenu: 'home'
-        }
-    },
-    {
-        path: '/addShows/popularAnime',
-        name: 'addPopularAnime',
-        meta: {
-            title: 'Popular Anime Shows',
-            header: 'Popular Anime Shows',
-            topMenu: 'home'
-        }
     }
 ];
 
@@ -421,8 +398,10 @@ const manageRoutes = [
         meta: {
             title: 'Missing Subtitles',
             header: 'Missing Subtitles',
-            topMenu: 'manage'
-        }
+            topMenu: 'manage',
+            converted: true
+        },
+        component: () => import('../components/manage-missing-subtitles.vue')
     },
     {
         path: '/manage/subtitleMissedPP',

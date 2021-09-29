@@ -17,4 +17,5 @@ export default {
 @use '../style/vgt-table.scss';
 @use '../style/v-tooltip.scss';
 @use '../style/modal.scss';
+@use '../style/vue-tags.scss';
 </style>

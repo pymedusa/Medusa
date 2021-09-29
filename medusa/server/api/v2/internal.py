@@ -585,3 +585,52 @@ class InternalHandler(BaseRequestHandler):
         )
 
         return self._ok()
+
+    def resource_get_subtitle_missed(self):
+        """Return a list of episodes which are missing a specific subtitle language."""
+        status = self.get_argument('status' '').strip()
+
+        status_list = [int(status)]
+
+        if status_list:
+            if status_list[0] == SNATCHED:
+                status_list = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
+        else:
+            status_list = []
+
+        main_db_con = db.DBConnection()
+        status_results = main_db_con.select(
+            'SELECT show_name, tv_shows.indexer, tv_shows.show_id, tv_shows.indexer_id AS indexer_id, '
+            'tv_episodes.season AS season, tv_episodes.episode AS episode, tv_episodes.name as name '
+            'FROM tv_episodes, tv_shows '
+            'WHERE season != 0 '
+            'AND tv_episodes.showid = tv_shows.indexer_id '
+            'AND tv_episodes.indexer = tv_shows.indexer '
+            'AND tv_episodes.status IN ({statuses}) '.format(statuses=','.join(['?'] * len(status_list))),
+            status_list
+        )
+
+        episode_status = {}
+        for cur_status_result in status_results:
+            cur_indexer = int(cur_status_result['indexer'])
+            cur_series_id = int(cur_status_result['indexer_id'])
+            show_slug = SeriesIdentifier.from_id(cur_indexer, cur_series_id).slug
+
+            if show_slug not in episode_status:
+                episode_status[show_slug] = {
+                    'selected': True,
+                    'slug': show_slug,
+                    'name': cur_status_result['show_name'],
+                    'episodes': [],
+                    'showEpisodes': False
+                }
+
+            episode_status[show_slug]['episodes'].append({
+                'episode': cur_status_result['episode'],
+                'season': cur_status_result['season'],
+                'selected': True,
+                'slug': str(RelativeNumber(cur_status_result['season'], cur_status_result['episode'])),
+                'name': cur_status_result['name']
+            })
+
+        return self._ok(data={'episodeStatus': episode_status})

@@ -1,6 +1,7 @@
 export { default as AppLink } from './app-link.vue';
 export { default as Asset } from './asset.vue';
 export { default as ConfigSceneExceptions } from './config-scene-exceptions.vue';
+export { default as ConfigSubtitleLanguages } from './config-subtitle-languages.vue';
 export { default as ConfigTemplate } from './config-template.vue';
 export { default as ConfigTextbox } from './config-textbox.vue';
 export { default as ConfigTextboxNumber } from './config-textbox-number.vue';
