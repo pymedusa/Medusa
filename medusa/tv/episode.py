@@ -1123,6 +1123,7 @@ class Episode(TV):
         data['file'] = {}
         data['file']['location'] = self.location
         data['file']['name'] = os.path.basename(self.location)
+        data['file']['properPath'] = self.proper_path()
         if self.file_size:
             data['file']['size'] = self.file_size
 
@@ -1136,7 +1137,7 @@ class Episode(TV):
             data['statistics']['subtitleSearch']['last'] = self.subtitles_lastsearch
             data['statistics']['subtitleSearch']['count'] = self.subtitles_searchcount
             data['wantedQualities'] = self.wanted_quality
-            data['wantedQualities'] = [ep.identifier for ep in self.related_episodes]
+            data['related'] = self.related_episodes
 
         return data
 

@@ -224,7 +224,7 @@
                             {{ props.row.season > 0 ? 'Season ' + props.row.season : 'Specials' }}
                             <!-- Only show the search manual season search, when any of the episodes in it is not unaired -->
                             <app-link v-if="anyEpisodeNotUnaired(props.row)" class="epManualSearch" :href="`home/snatchSelection?showslug=${show.id.slug}&amp;season=${props.row.season}&amp;episode=1&amp;manual_search_type=season`">
-                                <img v-if="config" data-ep-manual-search src="images/manualsearch-white.png" width="16" height="16" alt="search" title="Manual Search">
+                                <img data-ep-manual-search src="images/manualsearch-white.png" width="16" height="16" alt="search" title="Manual Search">
                             </app-link>
                             <div class="season-scene-exception" :data-season="props.row.season > 0 ? props.row.season : 'Specials'" />
                             <img v-bind="getSeasonExceptions(props.row.season)">

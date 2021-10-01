@@ -54,9 +54,10 @@ const homeRoutes = [
         path: '/home/testRename',
         name: 'testRename',
         meta: {
+            topMenu: 'home',
+            subMenu: showSubMenu,
             title: 'Preview Rename',
             header: 'Preview Rename',
-            topMenu: 'home',
             converted: true
         },
         component: () => import('../components/test-rename.vue')

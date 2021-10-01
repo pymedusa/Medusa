@@ -46,7 +46,7 @@ class SeriesOperationHandler(BaseRequestHandler):
             return self._not_found('Series not found')
 
         data = json_decode(self.request.body)
-        if not data or not all([data.get('type')]) or len(data) != 1:
+        if not data or not all([data.get('type')]):
             return self._bad_request('Invalid request body')
 
         if data['type'] == 'ARCHIVE_EPISODES':
@@ -74,9 +74,11 @@ class SeriesOperationHandler(BaseRequestHandler):
 
             if ep_obj_rename_list:
                 ep_obj_rename_list.reverse()
-            return self._ok(data=[ep_obj.to_json() for ep_obj in ep_obj_rename_list])
+            return self._ok(data=[
+                {**ep_obj.to_json(detailed=True), **{'selected': False}} for ep_obj in ep_obj_rename_list
+            ])
 
-        if data['type'] == 'PERFORM_RENAME':
+        if data['type'] == 'RENAME_EPISODES':
             episodes = data.get('episodes', [])
             if not episodes:
                 return self._bad_request('You must provide at least one episode')

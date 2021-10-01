@@ -1,5 +1,5 @@
 <template>
-    <div id="test-rename">
+    <div id="test-rename" v-if="showConfigLoaded">
         <!-- if app.PROCESS_METHOD == 'symlink': -->
         <div v-if="postprocessing.processMethod == 'symlink'" class="text-center">
             <div class="alert alert-danger upgrade-notification hidden-print" role="alert">
@@ -18,86 +18,70 @@
             <template v-else-if="show.config.sports && postprocessing.naming.enableCustomNamingSports">{{postprocessing.naming.patternSportse}}</template>
             <template v-else>{{postprocessing.naming.pattern}}</template>
         </blockquote>
-        <!-- < cur_season = -1 >
-        < odd = False > -->
-        <h2>All Seasons</h2>
-        <div class="row">
-            <div class="col-md-2">
-                <table id="SelectAllTable" class="defaultTable" cellspacing="1" border="0" cellpadding="0">
-                    <thead>
-                        <tr class="seasoncols" id="selectall">
-                            <th class="col-checkbox"><input type="checkbox" class="seriesCheck" id="SelectAll"></th>
-                            <th align="left" valign="top" class="nowrap">Select All</th>
-                        </tr>
-                    </thead>
-                </table>
-            </div>
-            <div class="col-md-10">
-                <input type="submit" value="Rename Selected" class="btn-medusa btn-success"> <app-link :href="`home/displayShow?showslug=${showSlug}`" class="btn-medusa btn-danger">Cancel Rename</app-link>
-            </div>
+        <div>
+            <button type="button" class="btn-medusa btn-xs selectAllShows" @click="check(true)">Select all</button>
+            <button type="button" class="btn-medusa btn-xs unselectAllShows" @click="check(false)">Clear all</button>
         </div>
-        <table id="testRenameTable" :class="{ summaryFanArt: layout.fanartBackground }" class="defaultTable" cellspacing="1" border="0" cellpadding="0">
-         <!-- for cur_ep_obj in ep_obj_list:
-        <
-            curLoc = cur_ep_obj.location[len(cur_ep_obj.series.location)+1:]
-            curExt = curLoc.split('.')[-1]
-            newLoc = cur_ep_obj.proper_path() + '.' + curExt
-        >
-         if int(cur_ep_obj.season) != cur_season: -->
+        <table v-for="season in seasonedList" :key="season.season" id="testRenameTable" :class="{ summaryFanArt: layout.fanartBackground }" class="defaultTable" cellspacing="1" border="0" cellpadding="0">
             <thead>
-                <tr class="seasonheader" id="season-${cur_ep_obj.season}">
+                <tr class="seasonheader" :id="`season-${season.season}`">
                     <td colspan="4">
-                        <br>
-                        <h2>${'Specials' if int(cur_ep_obj.season) == 0 else 'Season '+str(cur_ep_obj.season)}</h2>
+                        <span class="season-header">{{season.season === 0 ? 'Specials' : `Season ${season.season}`}}</span>
                     </td>
                 </tr>
-                <tr class="seasoncols" id="season-${cur_ep_obj.season}-cols">
-                    <th class="col-checkbox"><input type="checkbox" class="seasonCheck" id="${cur_ep_obj.season}"></th>
+                <tr class="seasoncols" :id="`season-${season.season}-cols`">
+                    <th class="col-checkbox">
+                        <input :disabled="season.episodes.filter(episode => namingChanged(episode).result).length === 0" type="checkbox" class="seasonCheck" @click="check($event.currentTarget.checked, season.season)" :id="`season-${season.season}-cols`">
+                    </th>
                     <th class="nowrap">Episode</th>
                     <th class="col-name">Old Location</th>
                     <th class="col-name">New Location</th>
                 </tr>
             </thead>
             <tbody>
-        <!-- <
-        odd = not odd
-        epStr = 's{season}e{episode}'.format(season=cur_ep_obj.season, episode=cur_ep_obj.episode)
-        epList = sorted([cur_ep_obj.episode] + [x.episode for x in cur_ep_obj.related_episodes])
-        if len(epList) > 1:
-            epList = [min(epList), max(epList)]
-        > -->
-                <tr class="season-${cur_season} ${'good' if curLoc == newLoc else 'wanted'} seasonstyle">
+                <tr v-for="episode in season.episodes" :key="episode.slug" :class="[`season-${season.season}`, namingChanged(episode).result ? 'wanted' : 'good']" class="seasonstyle">
                     <td class="col-checkbox">
-                     <!-- if curLoc != newLoc: -->
-                        <input type="checkbox" class="epCheck" id="{epStr}" name="{epStr}" />
-                     <!-- endif -->
+                        <input :disabled="!namingChanged(episode).result" v-model="episode.selected" type="checkbox" class="epCheck" :id="episode.slug" :name="episode.slug">
                     </td>
-                    <td align="center" valign="top" class="nowrap">{"-".join(map(str, epList))}</td>
-                    <td width="50%" class="col-name">{curLoc}</td>
-                    <td width="50%" class="col-name">{newLoc}</td>
+                    <td align="center" valign="top" class="nowrap">{{ formatRelated(episode)}}</td>
+                    <td width="50%" class="col-name">{{namingChanged(episode).currentLocation}}</td>
+                    <td width="50%" class="col-name">{{namingChanged(episode).newLocation}}</td>
                 </tr>
             </tbody>
-         <!-- endfor -->
-        </table><br>
-        <input type="submit" value="Rename Selected" class="btn-medusa btn-success"> <app-link :href="`home/displayShow?showslug=${showSlug}`" class="btn-medusa btn-danger">Cancel Rename</app-link>
+        </table>
+        <button class="btn-medusa btn-success" @click="renameSelected">Rename Selected</button>
+        <app-link :href="`home/displayShow?showslug=${showSlug}`" class="btn-medusa btn-danger">Cancel Rename</app-link>
     </div>
 </template>
 
 <script>
 import { mapActions, mapGetters, mapState } from 'vuex';
+import { api } from '../api';
+import { AppLink } from './helpers';
+import Backstretch from './backstretch.vue';
 
 export default {
     name: 'test-rename',
+    components: {
+        AppLink,
+        Backstretch
+    },
     props: {
         slug: String
     },
     data() {
-        return {};
+        return {
+            episodeRenameList: []
+        };
     },
     created() {
         // We need detailed info for the xem / scene exceptions, so let's get it.
         const { showSlug } = this;
         this.getShow({ showSlug });
+        this.setCurrentShow(showSlug);
+    },
+    mounted() {
+        this.loadTestRename();
     },
     computed: {
         ...mapState({
@@ -105,21 +89,124 @@ export default {
             seedLocation: state => state.clients.torrents.seedLocation,
             layout: state => state.config.layout
         }),
+        showConfigLoaded() {
+            return this.show.id.slug !== null;
+        },
         ...mapGetters({
             show: 'getCurrentShow'
         }),
         showSlug() {
             const { slug } = this;
             return slug || this.$route.query.showslug;
+        },
+        /**
+         * Create a structure with episodes grouped by season.
+         * @returns {array} of season objects (with episodes).
+         */
+        seasonedList() {
+            const { episodeRenameList } = this;
+            const data = [];
+            for (const episode of episodeRenameList) {
+                const findSeason = data.find(season => season.season === episode.season);
+                if (findSeason) {
+                    findSeason.episodes.push(episode);
+                } else {
+                    // Create a season object
+                    data.push({ season: episode.season, episodes: [episode] });
+                }
+            }
+            return data;
         }
     },
     methods: {
         ...mapActions({
-            getShow: 'getShow'
-        })
+            getShow: 'getShow',
+            setCurrentShow: 'setCurrentShow'
+        }),
+        async loadTestRename() {
+            const { showSlug } = this;
+            try {
+                const url = `series/${showSlug}/operation`;
+                const { data } = await api.post(url, { type: 'TEST_RENAME' });
+                this.episodeRenameList = data;
+            } catch (error) {
+                this.$snotify.error(
+                    `Error while trying to get the test rename list for ${showSlug}`,
+                    'Error'
+                );
+            }
+        },
+        /**
+         * Check if according to the new naming rule, the naming has changed for this episode.
+         * @param {object} episode object.
+         * @returns {boolean} True if the expected naming has changed for the episode's location.
+         */
+        namingChanged(episode) {
+            const { show } = this;
+
+            const currentLocation = episode.file.location.slice(show.config.location.length + 1);
+            const currentLocationExt = currentLocation.split('.')[currentLocation.split('.').length - 1];
+            return {
+                result: !currentLocation || currentLocation !== `${episode.file.properPath}.${currentLocationExt}`,
+                currentLocation,
+                newLocation: `${episode.file.properPath}.${currentLocationExt}`
+            };
+        },
+        async renameSelected() {
+            const { episodeRenameList, showSlug } = this;
+            const episodes = episodeRenameList.filter(ep => ep.selected).map(ep => ep.slug);
+            try {
+                const url = `series/${showSlug}/operation`;
+                await api.post(url, { type: 'RENAME_EPISODES', episodes });
+            } catch (error) {
+                this.$snotify.error(
+                    'Error while trying to perform the rename task',
+                    'Error'
+                );
+            }
+        },
+        formatRelated(episode) {
+            const relatedEpisodes = [episode, ...episode.related];
+            if (relatedEpisodes.length === 1) {
+                return relatedEpisodes[0].episode;
+            }
+            const first = relatedEpisodes[0];
+            const last = relatedEpisodes[relatedEpisodes.length - 1];
+            return `${first.episode}-${last.episode}`;
+        },
+        check(value, season = null) {
+            const { episodeRenameList, namingChanged } = this;
+            for (const episode of episodeRenameList) {
+                if (!namingChanged(episode).result) {
+                    continue;
+                }
+                if (season === null) {
+                    episode.selected = value;
+                } else if (episode.season === season) {
+                    episode.selected = value;
+                }
+            }
+        }
     }
 };
 </script>
 
-<style
+<style scoped>
+.defaultTable {
+    margin: 1em 0;
+}
+
+.defaultTable tr.seasonheader > td {
+    padding: 0;
+}
+
+.season-header {
+    font-family: inherit;
+    font-weight: 500;
+    line-height: 1.1;
+    background-color: rgb(51, 51, 51);
+    display: block;
+    padding: 5px 5px;
+    font-size: 1em;
+}
 </style>
