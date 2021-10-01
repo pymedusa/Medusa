@@ -56,8 +56,10 @@ const homeRoutes = [
         meta: {
             title: 'Preview Rename',
             header: 'Preview Rename',
-            topMenu: 'home'
-        }
+            topMenu: 'home',
+            converted: true
+        },
+        component: () => import('../components/test-rename.vue')
     },
     {
         path: '/home/postprocess',
@@ -402,15 +404,6 @@ const manageRoutes = [
             converted: true
         },
         component: () => import('../components/manage-missing-subtitles.vue')
-    },
-    {
-        path: '/manage/subtitleMissedPP',
-        name: 'manageSubtitleMissedPP',
-        meta: {
-            title: 'Missing Subtitles in Post-Process folder',
-            header: 'Missing Subtitles in Post-Process folder',
-            topMenu: 'manage'
-        }
     }
 ];
 
