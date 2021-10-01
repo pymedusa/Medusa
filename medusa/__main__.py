@@ -1108,7 +1108,7 @@ class Application(object):
                 load_provider_setting(app.CFG, provider, 'bool', 'enable_backlog', provider.supports_backlog)
                 load_provider_setting(app.CFG, provider, 'bool', 'enable_manualsearch', 1)
                 load_provider_setting(app.CFG, provider, 'bool', 'enable_search_delay', 0)
-                load_provider_setting(app.CFG, provider, 'int', 'search_delay', 480)
+                load_provider_setting(app.CFG, provider, 'float', 'search_delay', 480)
 
                 if provider.provider_type == GenericProvider.TORRENT:
                     load_provider_setting(app.CFG, provider, 'string', 'custom_url', '', censor_log='low')
