@@ -698,27 +698,15 @@ class Home(WebRoot):
                              in iteritems(get_xem_numbering_for_show(series_obj, refresh_data=False))}
         })
 
-    def displayShow(self, showslug):
+    def displayShow(self):
         """
         Render the home page.
 
         [Converted to VueRouter]
         """
-        try:
-            identifier = SeriesIdentifier.from_slug(showslug)
-            series_obj = Series.find_by_identifier(identifier)
-        except (ValueError, TypeError):
-            return self._genericMessage('Error', 'Invalid series: {show_slug}'.format(show_slug=showslug))
+        return PageTemplate(rh=self, filename='index.mako').render()
 
-        if series_obj is None:
-            return self._genericMessage('Error', 'Show not in show list')
-
-        t = PageTemplate(rh=self, filename='index.mako')
-
-        return t.render(
-            controller='home', action='displayShow',
-        )
-
+    # TODO: Move to apiv2
     def pickManualSearch(self, provider=None, identifier=None):
         """
         Tries to Perform the snatch for a manualSelected episode, episodes or season pack.
@@ -785,193 +773,7 @@ class Home(WebRoot):
 
         [Converted to VueRouter]
         """
-        # @TODO: add more comprehensive show validation
-        try:
-            identifier = SeriesIdentifier.from_slug(showslug)
-            series_obj = Series.find_by_identifier(identifier)
-        except (ValueError, TypeError):
-            return self._genericMessage('Error', 'Invalid show: {series}'.format(series=showslug))
-
-        if series_obj is None:
-            return self._genericMessage('Error', 'Show not in show list')
-
-        t = PageTemplate(rh=self, filename='index.mako')
-
-        return t.render(
-            controller='home', action='snatchSelection'
-        )
-
-    @staticmethod
-    def check_show_for_language(series_obj, language):
-        """
-        Request the show in a specific language from the indexer.
-
-        :param series_obj: (Series) Show object
-        :param language: Language two-letter country code. For ex: 'en'
-        :returns: True if show is found in language else False
-        """
-
-        # Get the Indexer used by the show
-        show_indexer = indexerApi(series_obj.indexer)
-
-        # Add the language to the show indexer's parameters
-        params = show_indexer.api_params.copy()
-        params.update({
-            'language': language,
-            'episodes': False,
-        })
-
-        # Create an indexer with the updated parameters
-        indexer = show_indexer.indexer(**params)
-
-        if language in indexer.config['valid_languages']:
-            return True
-
-    def massEditShow(
-        self, indexername=None, seriesid=None, location=None, allowed_qualities=None, preferred_qualities=None,
-        season_folders=None, paused=None, air_by_date=None, sports=None, dvd_order=None, subtitles=None,
-        anime=None, scene=None, defaultEpStatus=None
-    ):
-        """
-        A variation of the original `editShow`, where `directCall` is always true.
-
-        This route as been added specifically for the usage in the massEditSubmit route.
-        It's called when trying to mass edit show configurations.
-        This route should be removed after vueifying manage_massEdit.mako.
-        """
-        allowed_qualities = allowed_qualities or []
-        preferred_qualities = preferred_qualities or []
-
-        errors = 0
-
-        if not indexername or not seriesid:
-            logger.log('No show was selected (indexer: {indexer}, show: {show})'.format(
-                indexer=indexername, show=seriesid), logger.WARNING)
-            errors += 1
-            return errors
-
-        series_obj = Show.find_by_id(app.showList, indexer_name_to_id(indexername), seriesid)
-
-        if not series_obj:
-            logger.log('Unable to find the specified show: {indexer}{show}'.format(
-                indexer=indexername, show=seriesid), logger.WARNING)
-            errors += 1
-            return errors
-
-        season_folders = config.checkbox_to_value(season_folders)
-        dvd_order = config.checkbox_to_value(dvd_order)
-        paused = config.checkbox_to_value(paused)
-        air_by_date = config.checkbox_to_value(air_by_date)
-        scene = config.checkbox_to_value(scene)
-        sports = config.checkbox_to_value(sports)
-        anime = config.checkbox_to_value(anime)
-        subtitles = config.checkbox_to_value(subtitles)
-
-        do_update_scene_numbering = not (scene == series_obj.scene and anime == series_obj.anime)
-
-        if not isinstance(allowed_qualities, list):
-            allowed_qualities = [allowed_qualities]
-
-        if not isinstance(preferred_qualities, list):
-            preferred_qualities = [preferred_qualities]
-
-        with series_obj.lock:
-            new_quality = Quality.combine_qualities([int(q) for q in allowed_qualities],
-                                                    [int(q) for q in preferred_qualities])
-            series_obj.quality = new_quality
-
-            # reversed for now
-            if bool(series_obj.season_folders) != bool(season_folders):
-                series_obj.season_folders = season_folders
-                try:
-                    app.show_queue_scheduler.action.refreshShow(series_obj)
-                except CantRefreshShowException as error:
-                    errors += 1
-                    logger.log("Unable to refresh show '{show}': {error!r}".format
-                               (show=series_obj.name, error=error), logger.WARNING)
-
-            # Check if we should erase parsed cached results for that show
-            do_erase_parsed_cache = False
-            for item in [('scene', scene), ('anime', anime), ('sports', sports),
-                         ('air_by_date', air_by_date), ('dvd_order', dvd_order)]:
-                if getattr(series_obj, item[0]) != item[1]:
-                    do_erase_parsed_cache = True
-                    # Break if at least one setting was changed
-                    break
-
-            series_obj.paused = paused
-            series_obj.scene = scene
-            series_obj.anime = anime
-            series_obj.sports = sports
-            series_obj.subtitles = subtitles
-            series_obj.air_by_date = air_by_date
-            series_obj.default_ep_status = int(defaultEpStatus)
-            series_obj.dvd_order = dvd_order
-
-            # if we change location clear the db of episodes, change it, write to db, and rescan
-            old_location = os.path.normpath(series_obj._location)
-            new_location = os.path.normpath(location)
-            if old_location != new_location:
-                changed_location = True
-                logger.log('Changing show location to: {new}'.format(new=new_location), logger.INFO)
-                if not os.path.isdir(new_location):
-                    if app.CREATE_MISSING_SHOW_DIRS:
-                        logger.log("Show directory doesn't exist, creating it", logger.INFO)
-                        try:
-                            os.mkdir(new_location)
-                        except OSError as error:
-                            errors += 1
-                            changed_location = False
-                            logger.log("Unable to create the show directory '{location}'. Error: {msg}".format
-                                       (location=new_location, msg=error), logger.WARNING)
-                        else:
-                            logger.log('New show directory created', logger.INFO)
-                            helpers.chmod_as_parent(new_location)
-                    else:
-                        changed_location = False
-                        logger.log("New location '{location}' does not exist. "
-                                   "Enable setting 'Create missing show dirs'".format
-                                   (location=location), logger.WARNING)
-
-                # Save new location to DB only if we changed it
-                if changed_location:
-                    series_obj.location = new_location
-
-                if changed_location and os.path.isdir(new_location):
-                    try:
-                        app.show_queue_scheduler.action.refreshShow(series_obj)
-                    except CantRefreshShowException as error:
-                        errors += 1
-                        logger.log("Unable to refresh show '{show}'. Error: {error!r}".format
-                                   (show=series_obj.name, error=error), logger.WARNING)
-
-            # Save all settings changed while in series_obj.lock
-            series_obj.save_to_db()
-
-        if do_update_scene_numbering or do_erase_parsed_cache:
-            try:
-                xem_refresh(series_obj)
-            except CantUpdateShowException as error:
-                errors += 1
-                logger.log("Unable to update scene numbering for show '{show}': {error!r}".format
-                           (show=series_obj.name, error=error), logger.WARNING)
-
-            # Must erase cached DB results when toggling scene numbering
-            self.erase_cache(series_obj)
-
-            # Erase parsed cached names as we are changing scene numbering
-            series_obj.flush_episodes()
-            series_obj.erase_cached_parse()
-
-            # Need to refresh show as we updated scene numbering or changed show format
-            try:
-                app.show_queue_scheduler.action.refreshShow(series_obj)
-            except CantRefreshShowException as error:
-                errors += 1
-                logger.log("Unable to refresh show '{show}'. Please manually trigger a full show refresh. "
-                           'Error: {error!r}'.format(show=series_obj.name, error=error), logger.WARNING)
-
-        return errors
+        return PageTemplate(rh=self, filename='index.mako').render()
 
     def editShow(self, **query_args):
         """
@@ -981,34 +783,7 @@ class Home(WebRoot):
         """
         return PageTemplate(rh=self, filename='index.mako').render()
 
-    @staticmethod
-    def erase_cache(series_obj):
-        try:
-            main_db_con = db.DBConnection('cache.db')
-            for cur_provider in providers.sorted_provider_list():
-                # Let's check if this provider table already exists
-                table_exists = main_db_con.select(
-                    'SELECT name '
-                    'FROM sqlite_master '
-                    "WHERE type='table' AND name=?",
-                    [cur_provider.get_id()]
-                )
-                if not table_exists:
-                    continue
-                try:
-                    main_db_con.action(
-                        "DELETE FROM '{provider}' "
-                        'WHERE indexerid = ?'.format(provider=cur_provider.get_id()),
-                        [series_obj.series_id]
-                    )
-                except Exception:
-                    logger.log(u'Unable to delete cached results for provider {provider} for show: {show}'.format
-                               (provider=cur_provider, show=series_obj.name), logger.DEBUG)
-
-        except Exception:
-            logger.log(u'Unable to delete cached results for show: {show}'.format
-                       (show=series_obj.name), logger.DEBUG)
-
+    # TODO: Move to apiv2
     def togglePause(self, showslug=None):
         # @TODO: Replace with PUT to update the state var /api/v2/show/{id}
         identifier = SeriesIdentifier.from_slug(showslug)
@@ -1022,6 +797,7 @@ class Home(WebRoot):
 
         return self.redirect('/home/displayShow?showslug={series_obj.slug}'.format(series_obj=series_obj))
 
+    # TODO: Move to apiv2
     def deleteShow(self, showslug=None, full=0):
         # @TODO: Replace with DELETE to delete the show resource /api/v2/show/{id}
         if showslug:
@@ -1042,6 +818,7 @@ class Home(WebRoot):
         # Remove show from 'RECENT SHOWS' in 'Shows' menu
         app.SHOWS_RECENT = [show for show in app.SHOWS_RECENT if show['showSlug'] != showslug]
 
+    # TODO: Move to apiv2
     def refreshShow(self, showslug=None):
         # @TODO: Replace with status=refresh from PATCH /api/v2/show/{id}
         identifier = SeriesIdentifier.from_slug(showslug)
@@ -1059,6 +836,7 @@ class Home(WebRoot):
 
         return self.redirect('/home/displayShow?showslug={series_obj.slug}'.format(series_obj=series_obj))
 
+    # TODO: Move to apiv2
     def updateShow(self, showslug=None):
         # @TODO: Replace with status=update or status=updating from PATCH /api/v2/show/{id}
         if showslug is None:
@@ -1081,6 +859,7 @@ class Home(WebRoot):
 
         return self.redirect('/home/displayShow?showslug={series_obj.slug}'.format(series_obj=series_obj))
 
+    # TODO: Move to apiv2
     def subtitleShow(self, showslug=None):
         if showslug is None:
             return self._genericMessage('Error', 'Invalid show ID')
@@ -1098,6 +877,7 @@ class Home(WebRoot):
 
         return self.redirect('/home/displayShow?showslug={series_obj.slug}'.format(series_obj=series_obj))
 
+    # TODO: Move to apiv2
     def updateKODI(self, showslug=None):
         series_name = series_obj = None
         if showslug:
@@ -1124,6 +904,7 @@ class Home(WebRoot):
         else:
             return self.redirect('/home/')
 
+    # TODO: Move to apiv2
     def updatePLEX(self):
         if None is notifiers.plex_notifier.update_library():
             ui.notifications.message(
@@ -1132,6 +913,7 @@ class Home(WebRoot):
             ui.notifications.error('Unable to contact Plex Media Server host: {host}'.format(host=', '.join(app.PLEX_SERVER_HOST)))
         return self.redirect('/home/')
 
+    # TODO: Move to apiv2
     def updateEMBY(self, showslug=None):
         series_obj = None
         if showslug:
@@ -1160,142 +942,7 @@ class Home(WebRoot):
         """
         return PageTemplate(rh=self, filename='index.mako').render()
 
-        if not showslug:
-            return self._genericMessage('Error', 'You must specify a show')
-
-        identifier = SeriesIdentifier.from_slug(showslug)
-        series_obj = Series.find_by_identifier(identifier)
-
-        if series_obj is None:
-            return self._genericMessage('Error', 'Show not in show list')
-
-        try:
-            series_obj.validate_location  # @UnusedVariable
-        except ShowDirectoryNotFoundException:
-            return self._genericMessage('Error', "Can't rename episodes when the show dir is missing.")
-
-        ep_obj_list = series_obj.get_all_episodes(has_location=True)
-        ep_obj_list = [x for x in ep_obj_list if x.location]
-        ep_obj_rename_list = []
-        for ep_obj in ep_obj_list:
-            has_already = False
-            for check in ep_obj.related_episodes + [ep_obj]:
-                if check in ep_obj_rename_list:
-                    has_already = True
-                    break
-            if not has_already:
-                ep_obj_rename_list.append(ep_obj)
-
-        if ep_obj_rename_list:
-            ep_obj_rename_list.reverse()
-
-        t = PageTemplate(rh=self, filename='testRename.mako')
-        return t.render(ep_obj_list=ep_obj_rename_list, show=series_obj,
-                        controller='home', action='previewRename')
-
-    def doRename(self, showslug=None, eps=None):
-        if not all([showslug, eps]):
-            error_message = 'You must specify a show and at least one episode'
-            return self._genericMessage('Error', error_message)
-
-        series_obj = Series.find_by_identifier(SeriesIdentifier.from_slug(showslug))
-
-        if series_obj is None:
-            error_message = 'Error', 'Show not in show list'
-            return self._genericMessage('Error', error_message)
-
-        try:
-            series_obj.validate_location  # @UnusedVariable
-        except ShowDirectoryNotFoundException:
-            return self._genericMessage('Error', "Can't rename episodes when the show dir is missing.")
-
-        if eps is None:
-            return self.redirect('/home/displayShow?showslug={series_obj.slug}'.format(series_obj=series_obj))
-
-        main_db_con = db.DBConnection()
-        for cur_ep in eps.split('|'):
-            season_no, episode_no = cur_ep.lstrip('s').split('e')
-
-            # this is probably the worst possible way to deal with double eps
-            # but I've kinda painted myself into a corner here with this stupid database
-            ep_result = main_db_con.select(
-                'SELECT location '
-                'FROM tv_episodes '
-                'WHERE indexer = ? AND showid = ? AND season = ? AND episode = ? AND 5=5',
-                [series_obj.indexer, series_obj.series_id, season_no, episode_no])
-            if not ep_result:
-                logger.log(u'Unable to find an episode for {episode}, skipping'.format
-                           (episode=cur_ep), logger.WARNING)
-                continue
-            related_eps_result = main_db_con.select(
-                'SELECT season, episode '
-                'FROM tv_episodes '
-                'WHERE location = ? AND episode != ?',
-                [ep_result[0]['location'], episode_no]
-            )
-
-            root_ep_obj = series_obj.get_episode(season_no, episode_no)
-            root_ep_obj.related_episodes = []
-
-            for cur_related_ep in related_eps_result:
-                related_ep_obj = series_obj.get_episode(cur_related_ep['season'], cur_related_ep['episode'])
-                if related_ep_obj not in root_ep_obj.related_episodes:
-                    root_ep_obj.related_episodes.append(related_ep_obj)
-
-            root_ep_obj.rename()
-
-        return self.redirect('/home/displayShow?showslug={series_obj.slug}'.format(series_obj=series_obj))
-
-    def searchEpisode(self, showslug=None, season=None, episode=None):
-        """Search for a single episode using a Backlog Search using providers that are backlog enabled."""
-        # retrieve the episode object and fail if we can't get one0
-        series_obj = Series.find_by_identifier(SeriesIdentifier.from_slug(showslug))
-        ep_obj = series_obj.get_episode(season, episode)
-        if not ep_obj:
-            return json.dumps({
-                'result': 'failure',
-            })
-
-        # make a queue item for it and put it on the queue
-        ep_queue_item = BacklogQueueItem(ep_obj.series, [ep_obj])
-
-        app.forced_search_queue_scheduler.action.add_item(ep_queue_item)
-
-        # give the CPU a break and some time to start the queue
-        time.sleep(cpu_presets[app.CPU_PRESET])
-
-        if not ep_queue_item.started and ep_queue_item.success is None:
-            return json.dumps({
-                'result': 'success',
-            })  # I Actually want to call it queued, because the search hasn't been started yet!
-        if ep_queue_item.started and ep_queue_item.success is None:
-            return json.dumps({
-                'result': 'success',
-            })
-        else:
-            return json.dumps({
-                'result': 'failure',
-            })
-
-    def getManualSearchStatus(self, showslug=None):
-        """
-        Returns the current ep_queue_item status for the current viewed show.
-        Possible status: Downloaded, Snatched, etc...
-        Returns {'show': 279530, 'episodes' : ['episode' : 6, 'season' : 1, 'searchstatus' : 'queued', 'status' : 'running', 'quality': '4013']
-        :param indexername: Name of indexer. For ex. 'tvdb', 'tmdb', 'tvmaze'
-        :param seriesid: Id of series as identified by the indexer
-        :return:
-        """
-        series_obj = None
-        if showslug:
-            identifier = SeriesIdentifier.from_slug(showslug)
-            series_obj = Series.find_by_identifier(identifier)
-        episodes = collect_episodes_from_search_thread(series_obj)
-
-        return json.dumps({
-            'episodes': episodes,
-        })
-
+    # TODO: Move to apiv2 (used by subtitle-search.vue)
     def searchEpisodeSubtitles(self, showslug=None, season=None, episode=None, lang=None):
         # retrieve the episode object and fail if we can't get one
         series_obj = Series.find_by_identifier(SeriesIdentifier.from_slug(showslug))
@@ -1333,6 +980,7 @@ class Home(WebRoot):
             'description': description
         })
 
+    # TODO: Move to apiv2 (used by subtitle-search.vue)
     def manualSearchSubtitles(self, showslug=None, season=None, episode=None, release_id=None, picked_id=None):
         mode = 'downloading' if picked_id else 'searching'
         description = ''
@@ -1417,6 +1065,7 @@ class Home(WebRoot):
             'description': description
         })
 
+    # Move to apiv2 (used by display-show.vue)
     def setSceneNumbering(self, showslug=None, forSeason=None, forEpisode=None, forAbsolute=None, sceneSeason=None,
                           sceneEpisode=None, sceneAbsolute=None):
 
@@ -1512,6 +1161,7 @@ class Home(WebRoot):
 
         return json.dumps(result)
 
+    # Move to apiv2 (anidb-release-group-ui.vue)
     @staticmethod
     def fetch_releasegroups(series_name):
         """Api route for retrieving anidb release groups for an anime show."""
