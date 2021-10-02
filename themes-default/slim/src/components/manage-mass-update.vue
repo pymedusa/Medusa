@@ -531,7 +531,6 @@ export default {
 .header-with-buttons > div {
     float: right;
     height: 69px;
-    float: right;
     display: flex;
     vertical-align: bottom;
     align-items: flex-end;
