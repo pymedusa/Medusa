@@ -8,6 +8,7 @@ export { default as AppHeader } from './app-header.vue';
 export { default as Backstretch } from './backstretch.vue';
 export { default as Config } from './config.vue';
 export { default as ConfigAnime } from './config-anime.vue';
+export { default as ConfigBackupRestore } from './config-backup-restore.vue';
 export { default as ConfigGeneral } from './config-general.vue';
 export { default as ConfigPostProcessing } from './config-post-processing.vue';
 export { default as ConfigProviders } from './config-providers.vue';

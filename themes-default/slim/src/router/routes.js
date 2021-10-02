@@ -150,8 +150,10 @@ const configRoutes = [
             title: 'Config - Backup/Restore',
             header: 'Backup/Restore',
             topMenu: 'config',
-            subMenu: configSubMenu
-        }
+            subMenu: configSubMenu,
+            converted: true
+        },
+        component: () => import('../components/config-backup-restore.vue')
     },
     {
         path: '/config/general',
