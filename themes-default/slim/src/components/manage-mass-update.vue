@@ -146,12 +146,13 @@ import { VueGoodTable } from 'vue-good-table';
 import { showlistTableMixin } from '../mixins/show-list';
 import { manageCookieMixin } from '../mixins/manage-cookie';
 import { combineQualities } from '../utils/core';
-import { QualityPill, StateSwitch } from './helpers';
+import { AppLink, QualityPill, StateSwitch } from './helpers';
 import { api } from '../api';
 
 export default {
     name: 'manage-mass-update',
     components: {
+        AppLink,
         StateSwitch,
         QualityPill,
         VueGoodTable
@@ -360,7 +361,7 @@ export default {
             },
             errors: {},
             selectedShows: []
-        }
+        };
     },
     // TODO: Replace with Object spread (`...mapState`)
     computed: {
@@ -381,7 +382,7 @@ export default {
                     show.errors = errors[show.id.slug];
                 }
                 return show;
-            })
+            });
         }
     },
     methods: {
@@ -419,7 +420,9 @@ export default {
                 image: []
             };
             for (const action of ['update', 'refresh', 'rename', 'subtitle', 'delete', 'remove', 'image']) {
-                document.querySelectorAll(`[data-action="${action}"]`).forEach(el => el.checked = false);
+                document.querySelectorAll(`[data-action="${action}"]`).forEach(el => {
+                    el.checked = false;
+                });
             }
         },
         actionCheckAllRows(event) {
@@ -484,7 +487,7 @@ export default {
             const showInQueue = showQueue?.find(queue => queue.queueType.toLowerCase() === queueType && queue.showSlug === showSlug);
             const filteredShowQueueItems = showQueueItems?.filter(
                 queue => queue.name === queueItemNames.get(queueType) && queue.show.id.slug === showSlug
-            )
+            );
             if (filteredShowQueueItems.filter(queue => !queue.inProgress).length > 0) {
                 return false;
             }

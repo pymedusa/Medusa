@@ -143,7 +143,7 @@ export default {
                 this.clearPage();
             } catch (error) {
                 this.$snotify.warning('error', `Could not get episode status for status ${this.manageStatus}`);
-            };
+            }
         },
         statusIdToString(status) {
             const { getOverviewStatus, statuses } = this;

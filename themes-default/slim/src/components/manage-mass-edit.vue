@@ -2,7 +2,7 @@
     <div id="config" class="row">
         <div class="col-md-12">
             <app-link href="manage">
-                <svg class="back-arrow"><use xlink:href="images/svg/go-back-arrow.svg#arrow"></use></svg>
+                <svg class="back-arrow"><use xlink:href="images/svg/go-back-arrow.svg#arrow" /></svg>
             </app-link>
             <h3>Main Settings</h3>
             <em class="note"><b>Note:</b> Changing any settings marked with (<span class="separator">*</span>) will force a refresh of the selected shows.</em>
@@ -26,9 +26,9 @@
                         :overall-quality="combinedQualities"
                         @update:quality:allowed="config.qualities.allowed = $event"
                         @update:quality:preferred="config.qualities.preferred = $event"
-                    ></quality-chooser>
+                    />
                 </config-template>
-                                    
+
                 <config-template>
                     <template v-slot:label>
                         Season folders (<span class="separator">*</span>)
@@ -84,7 +84,8 @@
                         <option :value="false">No</option>
                     </select>
                     <p>Set if these shows are sporting or MMA events released as Show.03.02.2010 rather than Show.S02E03.<br>
-                    <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span></p>
+                        <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
+                    </p>
                 </config-template>
 
                 <config-template label="Air by date">
@@ -94,7 +95,8 @@
                         <option :value="false">No</option>
                     </select>
                     <p>Set if these shows are released as Show.03.02.2010 rather than Show.S02E03.<br>
-                    <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span></p>
+                        <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
+                    </p>
                 </config-template>
 
                 <config-template label="Dvd order">
@@ -104,7 +106,8 @@
                         <option :value="false">No</option>
                     </select>
                     <p>use the DVD order instead of the air order<br>
-                    <span>A "Force Full Update" is necessary, and if you have existing episodes you need to sort them manually.</span></p>
+                        <span>A "Force Full Update" is necessary, and if you have existing episodes you need to sort them manually.</span>
+                    </p>
                 </config-template>
 
                 <config-template label="Subtitles">
@@ -128,7 +131,7 @@
 <script>
 import { api } from '../api';
 import { mapActions, mapState } from 'vuex';
-import { AppLink, StateSwitch, QualityChooser } from './helpers'
+import { AppLink, StateSwitch, QualityChooser } from './helpers';
 import ConfigTemplate from './helpers/config-template.vue';
 import EditRootDirs from './helpers/edit-root-dirs.vue';
 import { combineQualities } from '../utils/core';

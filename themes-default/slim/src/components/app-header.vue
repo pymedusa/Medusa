@@ -169,7 +169,7 @@ export default {
             return '';
         },
         linkVisible() {
-            const { clients, notifiers, postprocessing, search, subtitles } = this;
+            const { clients, notifiers, search, subtitles } = this;
             const { general } = search;
             const { kodi, plex, emby } = notifiers;
 

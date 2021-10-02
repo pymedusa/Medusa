@@ -16,7 +16,6 @@
                                         <p>Search subtitles for episodes with DOWNLOADED status</p>
                                     </config-toggle-slider>
 
-
                                     <template v-if="subtitles.enabled">
                                         <config-template label="Subtitle Languages" labelFor="wanted_languages">
                                             <config-subtitle-languages id="wanted_languages" :languages="subtitles.wantedLanguages"

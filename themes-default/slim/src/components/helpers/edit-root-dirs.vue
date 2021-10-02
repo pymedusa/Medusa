@@ -36,7 +36,7 @@ export default {
     data() {
         return {
             newRootDirs: []
-        }
+        };
     },
     mounted() {
         const { rootDirs } = this;
@@ -47,6 +47,7 @@ export default {
         /**
          * Edit the selected root dir's path.
          * Select a new root dir.
+         * @param {object} rootDir root directory.
          */
         editRootDir(rootDir) {
             const { $el } = this;

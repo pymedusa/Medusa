@@ -150,7 +150,7 @@ export default {
         return {
             backlog: [],
             selectedJumpShow: ''
-        }
+        };
     },
     mounted() {
         if (this.period === null) {
@@ -215,7 +215,7 @@ export default {
         async getBacklog() {
             const { period, status } = this;
             try {
-                const { data } = await api.get('internal/getEpisodeBacklog', { params: { period, status }});
+                const { data } = await api.get('internal/getEpisodeBacklog', { params: { period, status } });
                 this.backlog = data;
             } catch (error) {
                 this.$snotify.warning('error', 'Error trying to get episode backlog');
@@ -232,7 +232,7 @@ export default {
                 const { data } = await api.put('search/backlog', { showSlug });
                 this.$snotify.success('Searched', data);
             } catch (error) {
-                this.$snotify.warning('error', `Error trying to start a backlog search for ${showSLug}`);
+                this.$snotify.warning('error', `Error trying to start a backlog search for ${showSlug}`);
             }
         },
         async setStatus(show, episode) {
