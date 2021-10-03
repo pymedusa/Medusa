@@ -25,6 +25,7 @@ export { default as Home } from './home.vue';
 export { default as IRC } from './irc.vue';
 export { default as Login } from './login.vue';
 export { default as Logs } from './logs.vue';
+export { default as LogReporter } from './log-reporter.vue';
 export { default as manageBacklog } from './manage-backlog.vue';
 export { default as manageEpisodeStatus } from './manage-episode-status.vue';
 export { default as manageFailedDownloads } from './manage-failed-downloads.vue';

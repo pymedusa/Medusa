@@ -418,8 +418,11 @@ const errorLogsRoutes = [
         meta: {
             title: 'Logs & Errors',
             topMenu: 'system',
-            subMenu: errorlogsSubMenu
-        }
+            subMenu: errorlogsSubMenu,
+            converted: true
+        },
+        component: () => import('../components/log-reporter.vue'),
+        props: true
     },
     {
         path: '/errorlogs/viewlog',

@@ -29,8 +29,14 @@ class ErrorLogs(WebRoot):
         """Initialize class with default constructor."""
         super(ErrorLogs, self).__init__(*args, **kwargs)
 
-    def index(self, level=logging.ERROR, **kwargs):
-        """Render default index page."""
+    def index(self, **kwargs):
+        """
+        Render template for route /errorlogs.
+
+        [Converted to VueRouter]
+        """
+        return PageTemplate(rh=self, filename='index.mako').render()
+
         try:
             level = int(level)
         except (TypeError, ValueError):
