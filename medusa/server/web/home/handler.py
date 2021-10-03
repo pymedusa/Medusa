@@ -698,7 +698,7 @@ class Home(WebRoot):
                              in iteritems(get_xem_numbering_for_show(series_obj, refresh_data=False))}
         })
 
-    def displayShow(self):
+    def displayShow(self, **query_args):
         """
         Render the home page.
 
@@ -767,7 +767,7 @@ class Home(WebRoot):
             'result': 'failure',
         })
 
-    def snatchSelection(self, showslug, **query_args):
+    def snatchSelection(self, **query_args):
         """
         Render the home page.
 
@@ -934,7 +934,7 @@ class Home(WebRoot):
         else:
             return self.redirect('/home/')
 
-    def testRename(self, showslug=None):
+    def testRename(self, **query_args):
         """
         Render the editShow page.
 
