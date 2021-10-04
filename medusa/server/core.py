@@ -27,7 +27,6 @@ from medusa.server.api.v2.episodes import EpisodeHandler
 from medusa.server.api.v2.history import HistoryHandler
 from medusa.server.api.v2.internal import InternalHandler
 from medusa.server.api.v2.log import LogHandler
-from medusa.server.api.v2.logreporter import LogReporterHandler
 from medusa.server.api.v2.postprocess import PostProcessHandler
 from medusa.server.api.v2.providers import ProvidersHandler
 from medusa.server.api.v2.recommended import RecommendedHandler
@@ -131,9 +130,6 @@ def get_apiv2_handlers(base):
 
         # /api/v2/internal
         InternalHandler.create_app_handler(base),
-
-        # /api/v2/logreporter
-        LogReporterHandler.create_app_handler(base),
 
         # /api/v2/log
         LogHandler.create_app_handler(base),
