@@ -146,7 +146,7 @@ class LogHandler(BaseRequestHandler):
             text = '\n'.join(data_generator())
             return self._ok(stream=text, content_type='text/plain; charset=UTF-8')
 
-    def post(self):
+    def post(self, identifier=None):
         """Create a log line.
 
         By definition this method is NOT idempotent.
