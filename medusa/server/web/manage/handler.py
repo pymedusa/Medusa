@@ -2,46 +2,14 @@
 
 from __future__ import unicode_literals
 
-import datetime
-import json
-import os
 import re
 
 from medusa import (
     app,
-    db,
     helpers,
-    image_cache,
-    logger,
-    network_timezones,
-    sbdatetime,
-    subtitles,
-    ui,
 )
-from medusa.common import (
-    DOWNLOADED,
-    Overview,
-    SNATCHED,
-    SNATCHED_BEST,
-    SNATCHED_PROPER,
-)
-from medusa.helper.common import (
-    episode_num,
-    try_int,
-)
-from medusa.helper.exceptions import (
-    CantRefreshShowException,
-    CantUpdateShowException,
-)
-from medusa.helpers import is_media_file
-from medusa.indexers.utils import indexer_id_to_name, indexer_name_to_id
-from medusa.network_timezones import app_timezone
-from medusa.post_processor import PostProcessor
 from medusa.server.web.core import PageTemplate, WebRoot
 from medusa.server.web.home import Home
-from medusa.show.show import Show
-from medusa.tv import Episode, Series
-from medusa.tv.series import SeriesIdentifier
 
 from tornroutes import route
 
@@ -54,6 +22,7 @@ class Manage(Home, WebRoot):
     def index(self):
         """
         Route to the manage-mass-update.vue component.
+
         [Converted to VueRouter]
         """
         t = PageTemplate(rh=self, filename='index.mako')
