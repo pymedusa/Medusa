@@ -53,7 +53,12 @@
                                         <p>Frequency to check on the download clients (default: 60)</p>
                                     </config-textbox-number>
 
-                                    <config-textbox-number v-if="postprocessing.downloadHandler.enabled" v-model="postprocessing.downloadHandler.torrentSeedRatio" label="Global torrent seed ratio" id="torrent_seed_ratio" :step="0.1" :min="0" :max="100">
+                                    <config-textbox-number
+                                        v-if="postprocessing.downloadHandler.enabled"
+                                        v-model="postprocessing.downloadHandler.torrentSeedRatio"
+                                        label="Global torrent seed ratio" id="torrent_seed_ratio"
+                                        :step="0.1" :min="0" :max="100"
+                                    >
                                         <p>Torrent seed ratio used to trigger a torrent seed action</p>
                                     </config-textbox-number>
 
@@ -211,7 +216,7 @@
                                         :enabled-naming-custom="postprocessing.naming.enableCustomNamingAnime" @change="saveNamingAnime" :flag-loaded="configLoaded"
                                     />
 
-                                    <config-toggle-slider v-model="postprocessing.naming.stripYear" label="Strip Show Year" id="naming_strip_year">
+                                    <config-toggle-slider v-model="postprocessing.naming.stripYear" label="Strip Show Year" id="naming_strip_year" style="margin-top: 1em;">
                                         <span>Remove the TV show's year when renaming the file?</span>
                                         <p>Only applies to shows that have year inside parentheses</p>
                                     </config-toggle-slider>
@@ -242,8 +247,8 @@
                                         <span class="d-block">Toggle the metadata options that you wish to be created. <b>Multiple targets may be used.</b></span>
                                     </config-template>
 
-                                    <div class="metadataDiv" v-show="provider.id === metadataProviderSelected" v-for="provider in metadata.metadataProviders" :key="provider.id" id="provider.id">
-                                        <div class="metadata_options_wrapper">
+                                    <div class="metadata" v-show="provider.id === metadataProviderSelected" v-for="provider in metadata.metadataProviders" :key="provider.id" id="provider.id">
+                                        <div class="metadata-options-wrapper">
                                             <h4>Create:</h4>
                                             <div class="metadata_options">
                                                 <label :for="provider.id + '_show_metadata'"><input type="checkbox" class="metadata_checkbox" :id="provider.id + '_show_metadata'" v-model="provider.showMetadata">&nbsp;Show Metadata</label>
@@ -258,7 +263,7 @@
                                                 <label :for="provider.id + '_season_all_banner'"><input type="checkbox" class="float-left metadata_checkbox" :id="provider.id + '_season_all_banner'" v-model="provider.seasonAllBanner" :disabled="provider.example.seasonAllBanner.includes('not supported')">&nbsp;Season All Banner</label>
                                             </div>
                                         </div>
-                                        <div class="metadata_example_wrapper">
+                                        <div class="metadata-example-wrapper">
                                             <h4>Results:</h4>
                                             <div class="metadata_example">
                                                 <label :for="provider.id + '_show_metadata'"><span :id="provider.id + '_eg_show_metadata'" :class="{disabled: !provider.showMetadata}"><span v-html="'<span>' + provider.example.showMetadata + '</span>'" /></span></label>
@@ -493,4 +498,27 @@ export default {
 };
 </script>
 <style>
+.metadata {
+    padding-left: 20px;
+    display: flex;
+}
+
+.metadata-options-wrapper {
+    min-width: 190px;
+}
+
+.metadata-example-wrapper {
+    width: 325px;
+    margin-left: 4em;
+}
+
+@media (max-width: 480px) {
+    .metadata {
+        flex-direction: column;
+    }
+    .metadata-example-wrapper {
+        margin-left: 0;
+    }
+
+}
 </style>

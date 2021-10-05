@@ -1745,6 +1745,7 @@ td.col-group {
 .form-group label.control-label {
     font-size: 13px;
     font-weight: bold;
+    width: 100%
 }
 
 div.season-scene-exception {
