@@ -1039,26 +1039,6 @@ class MedusaApp(object):
         self.SUBTITLES_SERVICES_LIST = [prov['name'] for prov in value]
         self.SUBTITLES_SERVICES_ENABLED = [int(prov['enabled']) for prov in value]
 
-    # @property
-    # def SUBTITLES_LANGUAGES(self):
-    #     """Return a list of subtitle languages."""
-    #     return self._SUBTITLES_LANGUAGES
-
-    # @SUBTITLES_LANGUAGES.setter
-    # def SUBTITLES_LANGUAGES(self, value):
-    #     """
-    #     Save subtitle languages.
-
-    #     The api returns a list with language codes.
-    #     We check the codes against the subtitle code filter.
-    #     """
-    #     from medusa.subtitles import subtitle_code_filter
-    #     self._SUBTITLES_LANGUAGES = [
-    #         code.strip() for code in value
-    #         if code.strip() in subtitle_code_filter()
-    #     ] if value else []
-    #     pass
-
 
 app = MedusaApp()
 for app_key, app_value in app.__dict__.items():
