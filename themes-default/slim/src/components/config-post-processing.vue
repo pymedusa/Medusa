@@ -516,9 +516,9 @@ export default {
     .metadata {
         flex-direction: column;
     }
+
     .metadata-example-wrapper {
         margin-left: 0;
     }
-
 }
 </style>
