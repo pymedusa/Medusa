@@ -3,10 +3,10 @@
 from __future__ import unicode_literals
 
 import logging
-from os import path, mkdir
+from os import mkdir, path
 
 from medusa import app, helpers
-from medusa.common import INSTANCE_ID, Quality, qualityPresets, statusStrings
+from medusa.common import Quality, qualityPresets, statusStrings
 from medusa.helper.exceptions import (
     CantRefreshShowException,
     CantUpdateShowException,

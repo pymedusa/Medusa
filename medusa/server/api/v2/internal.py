@@ -2,32 +2,33 @@
 """Request handler for internal data."""
 from __future__ import unicode_literals
 
-import logging
-from medusa.providers.generic_provider import GenericProvider
-
-from tornado.escape import json_decode
-from medusa.tv.episode import Episode, EpisodeNumber, RelativeNumber
-from medusa.helpers.utils import to_camel_case
-from medusa.sbdatetime import sbdatetime
-from medusa.common import DOWNLOADED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, Overview, Quality
-import os
 import datetime
+import logging
+import os
 import re
 
-
 from medusa import app, classes, db, network_timezones, providers
-from medusa.common import statusStrings
+from medusa.common import (
+    DOWNLOADED, Overview, Quality,
+    SNATCHED, SNATCHED_BEST, SNATCHED_PROPER,
+    statusStrings
+)
 from medusa.helper.common import episode_num, sanitize_filename, try_int
 from medusa.indexers.api import indexerApi
 from medusa.indexers.exceptions import IndexerException, IndexerUnavailable
 from medusa.indexers.utils import reverse_mappings
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.network_timezones import app_timezone
+from medusa.providers.generic_provider import GenericProvider
+from medusa.sbdatetime import sbdatetime
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.subtitles import subtitle_code_filter, wanted_languages
+from medusa.tv.episode import Episode, EpisodeNumber, RelativeNumber
 from medusa.tv.series import Series, SeriesIdentifier
 
 from six import ensure_text, iteritems, itervalues
+
+from tornado.escape import json_decode
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

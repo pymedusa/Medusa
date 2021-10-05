@@ -37,14 +37,6 @@ class ErrorLogs(WebRoot):
         """
         return PageTemplate(rh=self, filename='index.mako').render()
 
-        try:
-            level = int(level)
-        except (TypeError, ValueError):
-            level = logging.ERROR
-
-        t = PageTemplate(rh=self, filename='errorlogs.mako')
-        return t.render(logLevel=level, controller='errorlogs', action='index')
-
     def clearerrors(self, level=logging.ERROR):
         """Clear the errors or warnings."""
         # @TODO: Replace this with DELETE /api/v2/log/{logLevel} or /api/v2/log/

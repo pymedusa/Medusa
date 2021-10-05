@@ -5,14 +5,10 @@ from __future__ import unicode_literals
 import json
 import os
 import time
-from datetime import date
-from textwrap import dedent
 
 from medusa import (
     app,
     config,
-    db,
-    helpers,
     logger,
     notifiers,
     providers,
@@ -24,30 +20,13 @@ from medusa.clients.nzb import (
     nzbget,
     sab,
 )
-from medusa.common import (
-    ARCHIVED,
-    DOWNLOADED,
-    FAILED,
-    IGNORED,
-    Quality,
-    SKIPPED,
-    SNATCHED,
-    SNATCHED_BEST,
-    SNATCHED_PROPER,
-    UNAIRED,
-    WANTED,
-    cpu_presets,
-    statusStrings
-)
+from medusa.common import cpu_presets
 from medusa.helper.exceptions import (
     AnidbAdbaConnectionException,
-    CantRefreshShowException,
     CantUpdateShowException,
-    ShowDirectoryNotFoundException,
     ex,
 )
 from medusa.helpers.anidb import get_release_groups_for_anime
-from medusa.indexers.api import indexerApi
 from medusa.indexers.utils import indexer_name_to_id
 from medusa.scene_exceptions import (
     get_all_scene_exceptions
@@ -56,19 +35,11 @@ from medusa.scene_numbering import (
     get_scene_absolute_numbering,
     get_scene_numbering,
     get_xem_numbering_for_show,
-    set_scene_numbering,
-    xem_refresh,
+    set_scene_numbering
 )
 from medusa.search import SearchType
-from medusa.search.manual import (
-    collect_episodes_from_search_thread,
-    update_finished_search_queue_item,
-)
-from medusa.search.queue import (
-    BacklogQueueItem,
-    FailedQueueItem,
-    SnatchQueueItem,
-)
+from medusa.search.manual import update_finished_search_queue_item
+from medusa.search.queue import SnatchQueueItem
 from medusa.server.web.core import (
     PageTemplate,
     WebRoot,
@@ -84,7 +55,6 @@ from requests.compat import (
 )
 
 from six import iteritems, text_type
-from six.moves import map
 
 from tornroutes import route
 
@@ -109,74 +79,6 @@ class Home(WebRoot):
         """
         t = PageTemplate(rh=self, filename='index.mako')
         return t.render()
-
-    @staticmethod
-    def show_statistics():
-        pre_today = [SKIPPED, WANTED, FAILED]
-        snatched = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
-        downloaded = [DOWNLOADED, ARCHIVED]
-
-        def query_in(items):
-            return '({0})'.format(','.join(map(text_type, items)))
-
-        query = dedent("""\
-            SELECT showid, indexer,
-              SUM(
-                season > 0 AND
-                episode > 0 AND
-                airdate > 1 AND
-                status IN {status_quality}
-              ) AS ep_snatched,
-              SUM(
-                season > 0 AND
-                episode > 0 AND
-                airdate > 1 AND
-                status IN {status_download}
-              ) AS ep_downloaded,
-              SUM(
-                season > 0 AND
-                episode > 0 AND
-                airdate > 1 AND (
-                  (airdate <= {today} AND status IN {status_pre_today})
-                  OR status IN {status_both}
-                )
-              ) AS ep_total,
-              (SELECT airdate FROM tv_episodes
-               WHERE showid=tv_eps.showid AND
-                     indexer=tv_eps.indexer AND
-                     airdate >= {today} AND
-                     (status = {unaired} OR status = {wanted})
-               ORDER BY airdate ASC
-               LIMIT 1
-              ) AS ep_airs_next,
-              (SELECT airdate FROM tv_episodes
-               WHERE showid=tv_eps.showid AND
-                     indexer=tv_eps.indexer AND
-                     airdate > 1 AND
-                     status <> {unaired}
-               ORDER BY airdate DESC
-               LIMIT 1
-              ) AS ep_airs_prev,
-              SUM(file_size) AS show_size
-            FROM tv_episodes tv_eps
-            GROUP BY showid, indexer
-        """).format(status_quality=query_in(snatched), status_download=query_in(downloaded),
-                    status_pre_today=query_in(pre_today), status_both=query_in(snatched + downloaded),
-                    skipped=SKIPPED, wanted=WANTED, unaired=UNAIRED, today=date.today().toordinal())
-
-        main_db_con = db.DBConnection()
-        sql_result = main_db_con.select(query)
-
-        show_stat = {}
-        max_download_count = 1000
-        for cur_result in sql_result:
-            show_stat[(cur_result['indexer'], cur_result['showid'])] = cur_result
-            if cur_result['ep_total'] > max_download_count:
-                max_download_count = cur_result['ep_total']
-
-        max_download_count *= 100
-
-        return show_stat, max_download_count
 
     def is_alive(self, *args, **kwargs):
         self.set_header('Content-Type', 'application/json; charset=UTF-8')
