@@ -199,7 +199,6 @@ async def test_config_get(http_client, create_url, auth_headers, config_main):
 @pytest.mark.gen_test
 @pytest.mark.parametrize('query', [
     'defaultPage',
-    'subtitlesMulti',
     'wikiUrl',
     'sslVerify'
 ])
