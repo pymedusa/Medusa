@@ -11,7 +11,11 @@ export const manageCookieMixin = cookiePrefix => {
                 if (key.includes(cookiePrefix)) {
                     return JSON.parse(key);
                 }
-                return JSON.parse(this.$cookies.get(`${cookiePrefix}-${key}`));
+                try {
+                    return JSON.parse(this.$cookies.get(`${cookiePrefix}-${key}`));
+                } catch {
+                    return null;
+                }
             },
             setCookie(key, value) {
                 return this.$cookies.set(`${cookiePrefix}-${key}`, JSON.stringify(value));

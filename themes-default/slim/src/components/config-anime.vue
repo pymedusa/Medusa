@@ -1,7 +1,7 @@
 <template>
     <div id="config">
         <div id="config-content">
-            <form id="configForm" method="post" @submit.prevent="save()">
+            <form id="configForm" @submit.prevent="save()">
                 <vue-tabs>
                     <v-tab key="anidb_settings" title="AnimeDB Settings">
                         <div class="row component-group">

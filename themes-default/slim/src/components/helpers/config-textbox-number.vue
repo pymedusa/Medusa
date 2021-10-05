@@ -2,9 +2,11 @@
     <div id="config-textbox-number-content">
         <div class="form-group">
             <div class="row">
-                <label :for="id" class="col-sm-2 control-label">
-                    <span>{{ label }}</span>
-                </label>
+                <div class="col-sm-2">
+                    <label :for="id" class="control-label">
+                        <span>{{ label }}</span>
+                    </label>
+                </div>
                 <div class="col-sm-10 content">
                     <input type="number" v-bind="{min, max, step, id, name: id, class: inputClass, placeholder, disabled}" v-model="localValue" @input="updateValue()">
                     <p v-for="(explanation, index) in explanations" :key="index">{{ explanation }}</p>

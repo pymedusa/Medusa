@@ -40,10 +40,10 @@
         <div v-if="schedulerStatus" class="row">
             <div class="col-lg-12">
                 <h3>Subtitle Search:</h3>
-                <button class="btn-medusa" :disabled="!general.subtitles.enabled" @click="forceSubtitlesFinder">
+                <button class="btn-medusa" :disabled="!subtitles.enabled" @click="forceSubtitlesFinder">
                     <i class="icon-exclamation-sign" /> Force
                 </button>
-                <template v-if="!general.subtitles.enabled">Subtitle search disabled</template>
+                <template v-if="!subtitles.enabled">Subtitle search disabled</template>
                 <template v-else>{{ schedulerStatus.subtitlesFinderStatus ? 'In Progress' : 'Not in progress' }}</template>
             </div>
         </div>
@@ -156,6 +156,7 @@ export default {
         // @TODO: Replace with mapState
         ...mapState({
             general: state => state.config.general,
+            subtitles: state => state.config.subtitles,
             system: state => state.config.system,
             search: state => state.config.search,
             queueItems: state => state.queue.queueitems

@@ -53,7 +53,6 @@
                             <li v-if="linkVisible.manageTorrents"><app-link href="manage/manageTorrents/" target="_blank"><i class="menu-icon-bittorrent" />&nbsp;Manage Torrents</app-link></li>
                             <li v-if="linkVisible.failedDownloads"><app-link href="manage/failedDownloads/"><i class="menu-icon-failed-download" />&nbsp;Failed Downloads</app-link></li>
                             <li v-if="linkVisible.subtitleMissed"><app-link href="manage/subtitleMissed/"><i class="menu-icon-backlog" />&nbsp;Missed Subtitle Management</app-link></li>
-                            <li v-if="linkVisible.subtitleMissedPP"><app-link href="manage/subtitleMissedPP/"><i class="menu-icon-backlog" />&nbsp;Missed Subtitle in Post-Process folder</app-link></li>
                         </ul>
                         <div style="clear:both;" />
                     </li>
@@ -115,6 +114,7 @@ export default {
     computed: {
         ...mapState({
             config: state => state.config.general,
+            subtitles: state => state.config.subtitles,
             clients: state => state.config.clients,
             notifiers: state => state.config.notifiers,
             postprocessing: state => state.config.postprocessing,
@@ -169,8 +169,7 @@ export default {
             return '';
         },
         linkVisible() {
-            const { clients, config, notifiers, postprocessing, search } = this;
-            const { subtitles } = config;
+            const { clients, notifiers, search, subtitles } = this;
             const { general } = search;
             const { kodi, plex, emby } = notifiers;
 
@@ -182,8 +181,7 @@ export default {
                 emby: emby.enabled && emby.host,
                 manageTorrents: clients.torrents.enabled && clients.torrents.method !== 'blackhole',
                 failedDownloads: general.failedDownloads.enabled,
-                subtitleMissed: subtitles.enabled,
-                subtitleMissedPP: postprocessing.postponeIfNoSubs
+                subtitleMissed: subtitles.enabled
             };
         }
     },
