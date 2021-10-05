@@ -28,7 +28,6 @@ from medusa.common import (
     ARCHIVED,
     DOWNLOADED,
     FAILED,
-    IGNORED,
     NAMING_DUPLICATE,
     NAMING_EXTEND,
     NAMING_LIMITED_EXTEND,
