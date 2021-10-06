@@ -675,7 +675,6 @@ class MedusaApp(object):
         # Prowlarr section.
         self.PROWLARR_URL = ''
         self.PROWLARR_APIKEY = ''
-        self.PROWLARR_PROVIDERS = []
 
         self.TORRENTRSS_PROVIDERS = []
 
@@ -1022,6 +1021,23 @@ class MedusaApp(object):
     def SUBTITLES_FINDER_FREQUENCY(self, value):
         """Change SUBTITLES_FINDER_FREQUENCY."""
         self.handle_prop('SUBTITLES_FINDER_FREQUENCY', value)
+
+    @property
+    def SUBTITLE_SERVICES(self):
+        """Return a list of subtitle services."""
+        from medusa.subtitles import sorted_service_list
+        return sorted_service_list()
+
+    @SUBTITLE_SERVICES.setter
+    def SUBTITLE_SERVICES(self, value):
+        """
+        Save subtitle services.
+
+        The order of available subtitle services and the enabled/disabled providers
+            are fleshed out when saving this app property.
+        """
+        self.SUBTITLES_SERVICES_LIST = [prov['name'] for prov in value]
+        self.SUBTITLES_SERVICES_ENABLED = [int(prov['enabled']) for prov in value]
 
 
 app = MedusaApp()

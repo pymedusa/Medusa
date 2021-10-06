@@ -1092,9 +1092,6 @@ class Application(object):
             app.TORZNAB_PROVIDERS = check_setting_list(app.CFG, 'Torznab', 'torznab_providers')
             app.torznab_providers_list = TorznabProvider.get_providers_list(app.TORZNAB_PROVIDERS)
 
-            app.PROWLARR_PROVIDERS = check_setting_list(app.CFG, 'Prowlarr', 'providers')
-            # TODO implement ProwlarrProvider.get_providers_list(app.PROWLARR_PROVIDERS)
-
             all_providers = providers.sorted_provider_list()
 
             # dynamically load provider settings
@@ -1111,7 +1108,7 @@ class Application(object):
                 load_provider_setting(app.CFG, provider, 'bool', 'enable_backlog', provider.supports_backlog)
                 load_provider_setting(app.CFG, provider, 'bool', 'enable_manualsearch', 1)
                 load_provider_setting(app.CFG, provider, 'bool', 'enable_search_delay', 0)
-                load_provider_setting(app.CFG, provider, 'int', 'search_delay', 480)
+                load_provider_setting(app.CFG, provider, 'float', 'search_delay', 480)
 
                 if provider.provider_type == GenericProvider.TORRENT:
                     load_provider_setting(app.CFG, provider, 'string', 'custom_url', '', censor_log='low')
@@ -1140,21 +1137,21 @@ class Application(object):
                     load_provider_setting(app.CFG, provider, 'string', 'title_tag', '')
 
                 if isinstance(provider, TorznabProvider):
-                    load_provider_setting(app.CFG, provider, 'string', 'url', '', censor_log='low')
+                    load_provider_setting(app.CFG, provider, 'string', 'url', '', censor_log='normal')
                     load_provider_setting(app.CFG, provider, 'list', 'cat_ids', '', split_value=',')
                     load_provider_setting(app.CFG, provider, 'list', 'cap_tv_search', '', split_value=',')
-                    load_provider_setting(app.CFG, provider, 'string', 'manager', '', censor_log='low')
-                    load_provider_setting(app.CFG, provider, 'string', 'id_manager', '', censor_log='low')
+                    load_provider_setting(app.CFG, provider, 'string', 'manager', '')
+                    load_provider_setting(app.CFG, provider, 'string', 'id_manager', '')
 
                 if isinstance(provider, NewznabProvider):
                     # non configurable
                     if not provider.default:
-                        load_provider_setting(app.CFG, provider, 'string', 'url', '', censor_log='low')
+                        load_provider_setting(app.CFG, provider, 'string', 'url', '', censor_log='normal')
                         load_provider_setting(app.CFG, provider, 'bool', 'needs_auth', 1)
                     # configurable
                     load_provider_setting(app.CFG, provider, 'list', 'cat_ids', '', split_value=',')
-                    load_provider_setting(app.CFG, provider, 'string', 'manager', '', censor_log='low')
-                    load_provider_setting(app.CFG, provider, 'string', 'id_manager', '', censor_log='low')
+                    load_provider_setting(app.CFG, provider, 'string', 'manager', '')
+                    load_provider_setting(app.CFG, provider, 'string', 'id_manager', '')
 
             if not os.path.isfile(app.CONFIG_FILE):
                 logger.debug(u'Unable to find {config!r}, all settings will be default!', config=app.CONFIG_FILE)
@@ -2047,7 +2044,6 @@ class Application(object):
         new_config['Torznab']['torznab_providers'] = app.TORZNAB_PROVIDERS
 
         new_config['Prowlarr'] = {}
-        new_config['Prowlarr']['providers'] = app.PROWLARR_PROVIDERS
         new_config['Prowlarr']['url'] = app.PROWLARR_URL
         new_config['Prowlarr']['apikey'] = app.PROWLARR_APIKEY
 

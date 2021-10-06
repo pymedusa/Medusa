@@ -89,9 +89,6 @@ export default {
                 this.unwatchProp();
                 getAvailableProviders();
             }
-        }, {
-            immediate: true,
-            deep: true
         });
     },
     methods: {

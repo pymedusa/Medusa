@@ -476,7 +476,7 @@ class ProvidersHandler(BaseRequestHandler):
         if hasattr(provider, 'search_delay'):
             try:
                 search_delay = float(config['search']['delay']['duration'])
-                provider.search_delay = (search_delay, 30)[search_delay < 30]
+                provider.search_delay = search_delay
             except (AttributeError, KeyError, ValueError):
                 provider.search_delay = 480
 

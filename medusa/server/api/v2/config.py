@@ -46,6 +46,11 @@ from medusa.server.api.v2.base import (
     set_nested_value,
 )
 from medusa.show.recommendations.trakt import TraktPopular
+from medusa.subtitles import (
+    name_from_code,
+    subtitle_code_filter,
+    wanted_languages
+)
 
 from six import iteritems, itervalues, text_type
 from six.moves import map
@@ -179,9 +184,7 @@ class ConfigHandler(BaseRequestHandler):
         'wikiUrl': StringField(app, 'WIKI_URL'),
         'donationsUrl': StringField(app, 'DONATIONS_URL'),
         'sourceUrl': StringField(app, 'APPLICATION_URL'),
-        'subtitlesMulti': BooleanField(app, 'SUBTITLES_MULTI'),
         'namingForceFolders': BooleanField(app, 'NAMING_FORCE_FOLDERS'),
-        'subtitles.enabled': BooleanField(app, 'USE_SUBTITLES'),
         'recentShows': ListField(app, 'SHOWS_RECENT'),
         'providers.prowlarr.url': StringField(app, 'PROWLARR_URL'),
         'providers.prowlarr.apikey': StringField(app, 'PROWLARR_APIKEY'),
@@ -509,7 +512,32 @@ class ConfigHandler(BaseRequestHandler):
         'anime.anidb.password': StringField(app, 'ANIDB_PASSWORD'),
         'anime.anidb.useMylist': BooleanField(app, 'ANIDB_USE_MYLIST'),
         'anime.autoAnimeToList': BooleanField(app, 'AUTO_ANIME_TO_LIST'),
-        'anime.showlistDefaultAnime': ListField(app, 'SHOWLISTS_DEFAULT_ANIME')
+        'anime.showlistDefaultAnime': ListField(app, 'SHOWLISTS_DEFAULT_ANIME'),
+
+        'subtitles.multi': BooleanField(app, 'SUBTITLES_MULTI'),
+        'subtitles.enabled': BooleanField(app, 'USE_SUBTITLES'),
+        'subtitles.services': ListField(app, 'SUBTITLE_SERVICES'),
+        'subtitles.languages': ListField(app, 'SUBTITLES_LANGUAGES'),
+        'subtitles.stopAtFirst': BooleanField(app, 'SUBTITLES_STOP_AT_FIRST'),
+        'subtitles.eraseCache': BooleanField(app, 'SUBTITLES_ERASE_CACHE'),
+        'subtitles.location': StringField(app, 'SUBTITLES_DIR'),
+        'subtitles.finderFrequency': IntegerField(app, 'SUBTITLES_FINDER_FREQUENCY'),
+        'subtitles.perfectMatch': BooleanField(app, 'SUBTITLES_PERFECT_MATCH'),
+        'subtitles.logHistory': BooleanField(app, 'SUBTITLES_HISTORY'),
+        'subtitles.multiLanguage': BooleanField(app, 'SUBTITLES_MULTI'),
+        'subtitles.keepOnlyWanted': BooleanField(app, 'SUBTITLES_KEEP_ONLY_WANTED'),
+        'subtitles.ignoreEmbeddedSubs': BooleanField(app, 'IGNORE_EMBEDDED_SUBS'),
+        'subtitles.acceptUnknownEmbeddedSubs': BooleanField(app, 'ACCEPT_UNKNOWN_EMBEDDED_SUBS'),
+        'subtitles.hearingImpaired': BooleanField(app, 'SUBTITLES_HEARING_IMPAIRED'),
+        'subtitles.preScripts': ListField(app, 'SUBTITLES_PRE_SCRIPTS'),
+        'subtitles.extraScripts': ListField(app, 'SUBTITLES_EXTRA_SCRIPTS'),
+        'subtitles.wikiUrl': StringField(app, 'SUBTITLES_URL'),
+        'subtitles.providerLogins.addic7ed.user': StringField(app, 'ADDIC7ED_USER'),
+        'subtitles.providerLogins.addic7ed.pass': StringField(app, 'ADDIC7ED_PASS'),
+        'subtitles.providerLogins.legendastv.user': StringField(app, 'LEGENDASTV_USER'),
+        'subtitles.providerLogins.legendastv.pass': StringField(app, 'LEGENDASTV_PASS'),
+        'subtitles.providerLogins.opensubtitles.user': StringField(app, 'OPENSUBTITLES_USER'),
+        'subtitles.providerLogins.opensubtitles.pass': StringField(app, 'OPENSUBTITLES_PASS'),
     }
 
     def get(self, identifier, path_param=None):
@@ -618,10 +646,7 @@ class DataGenerator(object):
         section_data['wikiUrl'] = app.WIKI_URL
         section_data['donationsUrl'] = app.DONATIONS_URL
         section_data['sourceUrl'] = app.APPLICATION_URL
-        section_data['subtitlesMulti'] = bool(app.SUBTITLES_MULTI)
         section_data['namingForceFolders'] = bool(app.NAMING_FORCE_FOLDERS)
-        section_data['subtitles'] = {}
-        section_data['subtitles']['enabled'] = bool(app.USE_SUBTITLES)
         section_data['recentShows'] = app.SHOWS_RECENT
         section_data['addTitleWithYear'] = bool(app.ADD_TITLE_WITH_YEAR)
         section_data['brokenProviders'] = [provider for provider in app.BROKEN_PROVIDERS if provider]
@@ -1288,4 +1313,36 @@ class DataGenerator(object):
             },
             'autoAnimeToList': bool(app.AUTO_ANIME_TO_LIST),
             'showlistDefaultAnime': app.SHOWLISTS_DEFAULT_ANIME
+        }
+
+    @staticmethod
+    def data_subtitles():
+        """Config subtitles."""
+        return {
+            'enabled': bool(app.USE_SUBTITLES),
+            'languages': app.SUBTITLES_LANGUAGES,
+            'wantedLanguages': [{'id': code, 'name': name_from_code(code)}
+                                for code in wanted_languages()],
+            'codeFilter': [{'id': code, 'name': name_from_code(code)}
+                           for code in subtitle_code_filter()],
+            'services': app.SUBTITLE_SERVICES,
+            'stopAtFirst': bool(app.SUBTITLES_STOP_AT_FIRST),
+            'eraseCache': bool(app.SUBTITLES_ERASE_CACHE),
+            'location': app.SUBTITLES_DIR,
+            'finderFrequency': int(app.SUBTITLES_FINDER_FREQUENCY),
+            'perfectMatch': bool(app.SUBTITLES_PERFECT_MATCH),
+            'logHistory': bool(app.SUBTITLES_HISTORY),
+            'multiLanguage': bool(app.SUBTITLES_MULTI),
+            'keepOnlyWanted': bool(app.SUBTITLES_KEEP_ONLY_WANTED),
+            'ignoreEmbeddedSubs': bool(app.IGNORE_EMBEDDED_SUBS),
+            'acceptUnknownEmbeddedSubs': bool(app.ACCEPT_UNKNOWN_EMBEDDED_SUBS),
+            'hearingImpaired': bool(app.SUBTITLES_HEARING_IMPAIRED),
+            'preScripts': app.SUBTITLES_PRE_SCRIPTS,
+            'extraScripts': app.SUBTITLES_EXTRA_SCRIPTS,
+            'wikiUrl': app.SUBTITLES_URL,
+            'providerLogins': {
+                'addic7ed': {'user': app.ADDIC7ED_USER, 'pass': app.ADDIC7ED_PASS},
+                'legendastv': {'user': app.LEGENDASTV_USER, 'pass': app.LEGENDASTV_PASS},
+                'opensubtitles': {'user': app.OPENSUBTITLES_USER, 'pass': app.OPENSUBTITLES_PASS}
+            }
         }

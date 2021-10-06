@@ -121,8 +121,12 @@
         }
 
         span.episode-title > a {
-            color: black;
             text-decoration: none;
+            
+            &:hover,
+            &:focus {
+                text-decoration: underline;
+            }
         }
 
         .skipped {

@@ -1,10 +1,14 @@
 <template>
-    <div v-if="!experimental || experimentalEnabled" id="config-template-content">
+    <div v-if="!experimental || experimentalEnabled" id="config-template-content" :class="cls">
         <div class="form-group">
             <div class="row">
-                <label :for="labelFor" class="col-sm-2 control-label">
-                    <span>{{ label }}</span>
-                </label>
+                <div class="col-sm-2">
+                    <slot name="label">
+                        <label :for="labelFor" class="control-label">
+                            <span>{{ label }}</span>
+                        </label>
+                    </slot>
+                </div>
                 <div class="col-sm-10 content">
                     <slot />
                     <span style="color: red" v-if="experimental">This is an experimental feature</span>
@@ -19,18 +23,13 @@ import { mapState } from 'vuex';
 export default {
     name: 'config-template',
     props: {
-        label: {
-            type: String,
-            required: true
-        },
-        labelFor: {
-            type: String,
-            required: true
-        },
+        label: String,
+        labelFor: String,
         experimental: {
             type: Boolean,
             required: false
-        }
+        },
+        cls: String
     },
     computed: {
         ...mapState({

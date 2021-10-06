@@ -212,13 +212,13 @@ const actions = {
         return commit(UPDATE_LAYOUT_LOCAL, { [key]: value });
     },
     setBacklogOverview(context, { key, value }) {
-        const { commit } = context;
-        return api.patch('config/main', { layout: { backlogOverview: { [key]: value } } })
-            .then(() => {
-                return commit(ADD_CONFIG, {
-                    section: 'layout', config: { backlogOverview: { [key]: value } }
-                });
-            });
+        const { commit, state } = context;
+        const backlogOverview = { ...state.backlogOverview };
+        backlogOverview[key] = value;
+        commit(ADD_CONFIG, {
+            section: 'layout', config: { backlogOverview }
+        });
+        return api.patch('config/main', { layout: { backlogOverview } });
     }
 };
 
