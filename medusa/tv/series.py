@@ -1998,7 +1998,7 @@ class Series(TV):
         # should go by scene numbering or indexer numbering. Warn the user.
         if not self.scene and get_xem_numbering_for_show(self):
             log.warning(
-                '{id}: while adding the show {title} we noticed thexem.de has an episode mapping available'
+                '{id}: while adding the show {title} we noticed thexem.info has an episode mapping available'
                 '\nyou might want to consider enabling the scene option for this show.',
                 {'id': self.series_id, 'title': self.name}
             )
