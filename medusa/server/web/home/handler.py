@@ -779,15 +779,6 @@ class Home(WebRoot):
 
         return self.redirect('/home/displayShow?showslug={series_obj.slug}'.format(series_obj=series_obj))
 
-    # TODO: Move to apiv2
-    def updatePLEX(self):
-        if None is notifiers.plex_notifier.update_library():
-            ui.notifications.message(
-                'Library update command sent to Plex Media Server host: {host}'.format(host=', '.join(app.PLEX_SERVER_HOST)))
-        else:
-            ui.notifications.error('Unable to contact Plex Media Server host: {host}'.format(host=', '.join(app.PLEX_SERVER_HOST)))
-        return self.redirect('/home/')
-
     def testRename(self, **query_args):
         """
         Render the editShow page.
