@@ -780,25 +780,6 @@ class Home(WebRoot):
         return self.redirect('/home/displayShow?showslug={series_obj.slug}'.format(series_obj=series_obj))
 
     # TODO: Move to apiv2
-    def updateKODI(self):
-        """
-        Route the updateKODI url.
-
-        [Converted to VueRouter]
-        """
-        if app.KODI_UPDATE_ONLYFIRST:
-            host = app.KODI_HOST[0].strip()
-        else:
-            host = ', '.join(app.KODI_HOST)
-
-        if notifiers.kodi_notifier.update_library():
-            ui.notifications.message(f'Library update command sent to KODI host(s): {host}')
-        else:
-            ui.notifications.error(f'Unable to contact one or more KODI host(s): {host}')
-
-        return PageTemplate(rh=self, filename='index.mako').render()
-
-    # TODO: Move to apiv2
     def updatePLEX(self):
         if None is notifiers.plex_notifier.update_library():
             ui.notifications.message(
@@ -806,27 +787,6 @@ class Home(WebRoot):
         else:
             ui.notifications.error('Unable to contact Plex Media Server host: {host}'.format(host=', '.join(app.PLEX_SERVER_HOST)))
         return self.redirect('/home/')
-
-    # TODO: Move to apiv2
-    def updateEMBY(self, showslug=None):
-        series_obj = None
-        if showslug:
-            identifier = SeriesIdentifier.from_slug(showslug)
-            series_obj = Series.find_by_identifier(identifier)
-
-            if series_obj is None:
-                return self._genericMessage('Error', 'Unable to find the specified show')
-
-        if notifiers.emby_notifier.update_library(series_obj):
-            ui.notifications.message(
-                'Library update command sent to Emby host: {host}'.format(host=app.EMBY_HOST))
-        else:
-            ui.notifications.error('Unable to contact Emby host: {host}'.format(host=app.EMBY_HOST))
-
-        if series_obj:
-            return self.redirect('/home/displayShow?showslug={series_obj.slug}'.format(series_obj=series_obj))
-        else:
-            return self.redirect('/home/')
 
     def testRename(self, **query_args):
         """

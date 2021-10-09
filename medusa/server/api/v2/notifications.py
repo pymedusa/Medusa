@@ -9,6 +9,7 @@ import re
 from medusa import app, notifiers, ui
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import BaseRequestHandler
+from medusa.tv.series import Series, SeriesIdentifier
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -54,8 +55,8 @@ class NotificationsHandler(BaseRequestHandler):
 
         return resource_function()
 
-    def kodi_test(self):
-        """Test kodi notifications."""
+    def kodi_update(self):
+        """Update kodi's show library."""
         if app.KODI_UPDATE_ONLYFIRST:
             host = app.KODI_HOST[0].strip()
         else:
@@ -65,5 +66,36 @@ class NotificationsHandler(BaseRequestHandler):
             ui.notifications.message(f'Library update command sent to KODI host(s): {host}')
         else:
             ui.notifications.error(f'Unable to contact one or more KODI host(s): {host}')
+
+        return self._created()
+
+    def emby_update(self):
+        """Update emby's show library."""
+        show_slug = self.get_argument('showslug', '')
+        show = None
+
+        if show_slug:
+            show_identifier = SeriesIdentifier.from_slug(show_slug)
+            if not show_identifier:
+                return self._bad_request('Invalid show slug')
+
+            show = Series.find_by_identifier(show_identifier)
+            if not show:
+                return self._not_found('Series not found')
+
+        if notifiers.emby_notifier.update_library(show):
+            ui.notifications.message(f'Library update command sent to Emby host: {app.EMBY_HOST}')
+        else:
+            ui.notifications.error(f'Unable to contact Emby host: {app.EMBY_HOST}')
+
+        return self._created()
+
+    def plex_update(self):
+        """Update plex's show library."""
+        if None is notifiers.plex_notifier.update_library():
+            ui.notifications.message(
+                'Library update command sent to Plex Media Server host: {host}'.format(host=', '.join(app.PLEX_SERVER_HOST)))
+        else:
+            ui.notifications.error('Unable to contact Plex Media Server host: {host}'.format(host=', '.join(app.PLEX_SERVER_HOST)))
 
         return self._created()
