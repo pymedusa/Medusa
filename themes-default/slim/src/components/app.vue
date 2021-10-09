@@ -18,4 +18,5 @@ export default {
 @use '../style/v-tooltip.scss';
 @use '../style/modal.scss';
 @use '../style/vue-tags.scss';
+@use '../style/back-arrow.scss';
 </style>

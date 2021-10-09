@@ -7,12 +7,13 @@
             </div>
         </div>
 
-        <!-- <input type="hidden" id="series-id" value="${show.indexerid}" />
-        <input type="hidden" id="indexer-name" value="${show.indexer_name}" /> -->
-
         <backstretch :slug="showSlug" />
 
+        <app-link :href="`home/displayShow?showslug=${showSlug}`">
+            <svg class="back-arrow"><use xlink:href="images/svg/go-back-arrow.svg#arrow" /></svg>
+        </app-link>
         <h3>Preview of the proposed name changes</h3>
+
         <blockquote>
             <template v-if="show.config.airByDate && postprocessing.naming.enableCustomNamingAirByDate">{{postprocessing.naming.patternAirByDate}}</template>
             <template v-else-if="show.config.sports && postprocessing.naming.enableCustomNamingSports">{{postprocessing.naming.patternSportse}}</template>
@@ -22,6 +23,7 @@
             <button type="button" class="btn-medusa btn-xs selectAllShows" @click="check(true)">Select all</button>
             <button type="button" class="btn-medusa btn-xs unselectAllShows" @click="check(false)">Clear all</button>
         </div>
+        <state-switch v-if="loading" state="loading" class="loading" />
         <table v-for="season in seasonedList" :key="season.season" id="testRenameTable" :class="{ summaryFanArt: layout.fanartBackground }" class="defaultTable" cellspacing="1" border="0" cellpadding="0">
             <thead>
                 <tr class="seasonheader" :id="`season-${season.season}`">
@@ -59,19 +61,22 @@ import { mapActions, mapGetters, mapState } from 'vuex';
 import { api } from '../api';
 import { AppLink } from './helpers';
 import Backstretch from './backstretch.vue';
+import StateSwitch from './helpers/state-switch.vue';
 
 export default {
     name: 'test-rename',
     components: {
         AppLink,
-        Backstretch
+        Backstretch,
+        StateSwitch
     },
     props: {
         slug: String
     },
     data() {
         return {
-            episodeRenameList: []
+            episodeRenameList: [],
+            loading: false
         };
     },
     created() {
@@ -126,14 +131,17 @@ export default {
         async loadTestRename() {
             const { showSlug } = this;
             try {
+                this.loading = true;
                 const url = `series/${showSlug}/operation`;
-                const { data } = await api.post(url, { type: 'TEST_RENAME' });
+                const { data } = await api.post(url, { type: 'TEST_RENAME' }, { timeout: 120000 });
                 this.episodeRenameList = data;
             } catch (error) {
                 this.$snotify.error(
                     `Error while trying to get the test rename list for ${showSlug}`,
                     'Error'
                 );
+            } finally {
+                this.loading = false;
             }
         },
         /**
@@ -156,13 +164,16 @@ export default {
             const { episodeRenameList, showSlug } = this;
             const episodes = episodeRenameList.filter(ep => ep.selected).map(ep => ep.slug);
             try {
+                this.loading = true;
                 const url = `series/${showSlug}/operation`;
-                await api.post(url, { type: 'RENAME_EPISODES', episodes });
+                await api.post(url, { type: 'RENAME_EPISODES', episodes }, { timeout: 120000 });
             } catch (error) {
                 this.$snotify.error(
                     'Error while trying to perform the rename task',
                     'Error'
                 );
+            } finally {
+                this.loading = false;
             }
         },
         formatRelated(episode) {
@@ -208,5 +219,10 @@ export default {
     display: block;
     padding: 5px 5px;
     font-size: 1em;
+}
+
+.loading {
+    display: block;
+    margin: 10px 0;
 }
 </style>
