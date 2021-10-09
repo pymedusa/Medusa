@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Request handler for internal data."""
+"""Request handler for notifications data."""
 from __future__ import unicode_literals
 
 
