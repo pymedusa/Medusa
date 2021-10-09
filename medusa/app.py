@@ -311,6 +311,10 @@ class MedusaApp(object):
         self.NO_DELETE = False
         self.KEEP_PROCESSED_DIR = False
         self.PROCESS_METHOD = None
+        # The process methods for torrent and nzb are used by the download handler.
+        self.USE_SPECIFIC_PROCESS_METHOD = False
+        self.PROCESS_METHOD_TORRENT = None
+        self.PROCESS_METHOD_NZB = None
         self.DELRARCONTENTS = False
         self.MOVE_ASSOCIATED_FILES = False
         self.POSTPONE_IF_SYNC_FILES = True

@@ -34,7 +34,7 @@
 
                         <div class="row component-group">
                             <div class="component-group-desc col-xs-12 col-md-2">
-                                <h3>Automated Download Handling</h3>
+                                <a name="automated-download-handling" /><h3>Automated Download Handling</h3>
                                 <p>Check clients directly through api's for completed or failed downloads.</p>
                                 <p>The download handler will periodically connect to the nzb or torrent clients and check for completed and failed downloads.</p>
                             </div>
@@ -88,11 +88,33 @@
                                     </config-template>
 
                                     <config-template label-for="processing_method" label="Processing Method">
-                                        <select id="naming_multi_ep" name="naming_multi_ep" v-model="postprocessing.processMethod" class="form-control input-sm">
+                                        <select id="processing_method" name="processing_method" v-model="postprocessing.processMethod" class="form-control input-sm">
                                             <option :value="option.value" v-for="option in processMethods" :key="option.value">{{ option.text }}</option>
                                         </select>
                                         <span>What method should be used to put files into the library?</span>
                                         <p><b>Note:</b> If you keep seeding torrents after they finish, please avoid the 'move' processing method to prevent errors.</p>
+                                        <p v-if="postprocessing.processMethod == 'reflink'">To use reference linking, the <app-link href="http://www.dereferer.org/?https://pypi.python.org/pypi/reflink/0.1.4">reflink package</app-link> needs to be installed.</p>
+                                    </config-template>
+
+                                    <config-toggle-slider v-model="postprocessing.specificPostProcessing" label="Specific postprocessing methods" id="specific_post_processing">
+                                        <span>Enable this option if you want to use different processing methods (copy, move, etc..) for torrent and nzb downloads.</span>
+                                        <p><b>Note:</b>This option is only used by the <a href="config/postProcessing/#automated-download-handling">Automated Download Handling</a> option</p>
+                                    </config-toggle-slider>
+
+                                    <config-template v-if="postprocessing.specificPostProcessing" label-for="processing_method_torrent" label="Processing Method Torrent">
+                                        <select id="processing_method_torrent" name="processing_method_torrent" v-model="postprocessing.processMethodTorrent" class="form-control input-sm">
+                                            <option :value="option.value" v-for="option in processMethods" :key="option.value">{{ option.text }}</option>
+                                        </select>
+                                        <span>What method should be used to put files into the library?</span>
+                                        <p><b>Note:</b> If you keep seeding torrents after they finish, please avoid the 'move' processing method to prevent errors.</p>
+                                        <p v-if="postprocessing.processMethod == 'reflink'">To use reference linking, the <app-link href="http://www.dereferer.org/?https://pypi.python.org/pypi/reflink/0.1.4">reflink package</app-link> needs to be installed.</p>
+                                    </config-template>
+
+                                    <config-template v-if="postprocessing.specificPostProcessing" label-for="processing_method_nzb" label="Processing Method Nzb">
+                                        <select id="processing_method_nzb" name="processing_method_nzb" v-model="postprocessing.processMethodNzb" class="form-control input-sm">
+                                            <option :value="option.value" v-for="option in processMethods" :key="option.value">{{ option.text }}</option>
+                                        </select>
+                                        <span>What method should be used to put files into the library?</span>
                                         <p v-if="postprocessing.processMethod == 'reflink'">To use reference linking, the <app-link href="http://www.dereferer.org/?https://pypi.python.org/pypi/reflink/0.1.4">reflink package</app-link> needs to be installed.</p>
                                     </config-template>
 

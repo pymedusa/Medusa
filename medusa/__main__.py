@@ -679,6 +679,11 @@ class Application(object):
             app.FILE_TIMESTAMP_TIMEZONE = check_setting_str(app.CFG, 'General', 'file_timestamp_timezone', 'network')
             app.KEEP_PROCESSED_DIR = bool(check_setting_int(app.CFG, 'General', 'keep_processed_dir', 1))
             app.PROCESS_METHOD = check_setting_str(app.CFG, 'General', 'process_method', 'copy' if app.KEEP_PROCESSED_DIR else 'move')
+
+            app.USE_SPECIFIC_PROCESS_METHOD = bool(check_setting_int(app.CFG, 'General', 'use_specific_process_method', 0))
+            app.PROCESS_METHOD_TORRENT = check_setting_str(app.CFG, 'General', 'process_method', 'copy' if app.KEEP_PROCESSED_DIR else 'move')
+            app.PROCESS_METHOD_NZB = check_setting_str(app.CFG, 'General', 'process_method', 'copy' if app.KEEP_PROCESSED_DIR else 'move')
+
             app.DELRARCONTENTS = bool(check_setting_int(app.CFG, 'General', 'del_rar_contents', 0))
             app.MOVE_ASSOCIATED_FILES = bool(check_setting_int(app.CFG, 'General', 'move_associated_files', 0))
             app.POSTPONE_IF_SYNC_FILES = bool(check_setting_int(app.CFG, 'General', 'postpone_if_sync_files', 1))
@@ -1687,6 +1692,9 @@ class Application(object):
         new_config['General']['tv_download_dir'] = app.TV_DOWNLOAD_DIR
         new_config['General']['keep_processed_dir'] = int(app.KEEP_PROCESSED_DIR)
         new_config['General']['process_method'] = app.PROCESS_METHOD
+        new_config['General']['use_specific_process_method'] = int(app.USE_SPECIFIC_PROCESS_METHOD)
+        new_config['General']['process_method_torrent'] = app.PROCESS_METHOD_TORRENT
+        new_config['General']['process_method_nzb'] = app.PROCESS_METHOD_NZB
         new_config['General']['del_rar_contents'] = int(app.DELRARCONTENTS)
         new_config['General']['move_associated_files'] = int(app.MOVE_ASSOCIATED_FILES)
         new_config['General']['sync_files'] = app.SYNC_FILES
