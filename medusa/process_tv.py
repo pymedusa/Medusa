@@ -56,7 +56,7 @@ class PostProcessQueueItem(generic_queue.QueueItem):
         # torrent or nzb. Pass info on what sort of download we're processing.
         # We might need this when determining the PROCESS_METHOD.
         self.client_type = client_type
-        self.process_method = self.get_process_method(process_method)
+        self.process_method = self.get_process_method(process_method, client_type)
 
         self.to_json.update({
             'success': self.success,
