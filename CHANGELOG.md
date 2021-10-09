@@ -1,6 +1,7 @@
 ## Unreleased
 
 #### New Features
+- Added separate configs for the process methods (copy, move, etc) for torrent and nzb. (only usuable with the download handler)([9932](https://github.com/pymedusa/Medusa/pull/9932))
 
 #### Improvements
 
