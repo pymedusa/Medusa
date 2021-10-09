@@ -36,7 +36,7 @@ class PostProcessQueueItem(generic_queue.QueueItem):
 
     def __init__(self, path=None, info_hash=None, resource_name=None, force=False,
                  is_priority=False, process_method=None, delete_on=False, failed=False,
-                 proc_type='auto', ignore_subs=False, episodes=[]):
+                 proc_type='auto', ignore_subs=False, episodes=[], client_type=None):
         """Initialize the class."""
         generic_queue.QueueItem.__init__(self, u'Post Process')
 
@@ -47,12 +47,16 @@ class PostProcessQueueItem(generic_queue.QueueItem):
         self.resource_name = resource_name
         self.force = force
         self.is_priority = is_priority
-        self.process_method = process_method
         self.delete_on = delete_on
         self.failed = failed
         self.proc_type = proc_type
         self.ignore_subs = ignore_subs
         self.episodes = episodes
+
+        # torrent or nzb. Pass info on what sort of download we're processing.
+        # We might need this when determining the PROCESS_METHOD.
+        self.client_type = client_type
+        self.process_method = self.get_process_method(process_method, client_type)
 
         self.to_json.update({
             'success': self.success,
@@ -69,6 +73,20 @@ class PostProcessQueueItem(generic_queue.QueueItem):
                 'ignore_subs': self.ignore_subs,
             }
         })
+
+    def get_process_method(self, process_method, client_type):
+        """Determine the correct process method.
+
+        If client_type is provided (torrent/nzb) use that to get a
+            client specific process method.
+        """
+        if process_method:
+            return process_method
+
+        if self.client_type and app.USE_SPECIFIC_PROCESS_METHOD:
+            return app.PROCESS_METHOD_NZB if client_type == 'nzb' else app.PROCESS_METHOD_TORRENT
+
+        return app.PROCESS_METHOD
 
     def update_resource(self, status):
         """
@@ -114,9 +132,7 @@ class PostProcessQueueItem(generic_queue.QueueItem):
 
     def process_path(self):
         """Process for when we have a valid path."""
-        process_method = self.process_method or app.PROCESS_METHOD
-
-        process_results = ProcessResult(self.path, process_method, failed=self.failed, episodes=self.episodes)
+        process_results = ProcessResult(self.path, self.process_method, failed=self.failed, episodes=self.episodes)
         process_results.process(
             resource_name=self.resource_name,
             force=self.force,
