@@ -49,10 +49,7 @@ from medusa.tv.cache import Cache
 from medusa.tv.series import Series, SeriesIdentifier
 from medusa.updater.version_checker import CheckVersion
 
-from requests.compat import (
-    quote_plus,
-    unquote_plus,
-)
+from requests.compat import unquote_plus
 
 from six import iteritems, text_type
 

@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 
 import logging
 
-from medusa import app, db, ws
+from medusa import app, db, notifiers, ui
 from medusa.helper.exceptions import ShowDirectoryNotFoundException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import BaseRequestHandler
@@ -13,6 +13,7 @@ from medusa.tv.episode import Episode, EpisodeNumber
 from medusa.tv.series import Series, SeriesIdentifier
 
 from requests.compat import quote_plus
+
 from tornado.escape import json_decode
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -129,6 +130,7 @@ class SeriesOperationHandler(BaseRequestHandler):
                 root_ep_obj.rename()
             return self._created()
 
+        # This might also be moved to /notifications/kodi/update?showslug=..
         if data['type'] == 'UPDATE_KODI':
             series_name = quote_plus(series.name.encode('utf-8'))
 

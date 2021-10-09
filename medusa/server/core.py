@@ -27,6 +27,7 @@ from medusa.server.api.v2.episodes import EpisodeHandler
 from medusa.server.api.v2.history import HistoryHandler
 from medusa.server.api.v2.internal import InternalHandler
 from medusa.server.api.v2.log import LogHandler
+from medusa.server.api.v2.notifications import NotificationsHandler
 from medusa.server.api.v2.postprocess import PostProcessHandler
 from medusa.server.api.v2.providers import ProvidersHandler
 from medusa.server.api.v2.recommended import RecommendedHandler
@@ -38,7 +39,6 @@ from medusa.server.api.v2.series_legacy import SeriesLegacyHandler
 from medusa.server.api.v2.series_mass_edit import SeriesMassEdit
 from medusa.server.api.v2.series_mass_operation import SeriesMassOperation
 from medusa.server.api.v2.series_operation import SeriesOperationHandler
-from medusa.server.api.v2.notifications import NotificationsHandler
 from medusa.server.api.v2.stats import StatsHandler
 from medusa.server.api.v2.system import SystemHandler
 from medusa.server.web import (
