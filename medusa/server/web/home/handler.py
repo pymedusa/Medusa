@@ -780,31 +780,23 @@ class Home(WebRoot):
         return self.redirect('/home/displayShow?showslug={series_obj.slug}'.format(series_obj=series_obj))
 
     # TODO: Move to apiv2
-    def updateKODI(self, showslug=None):
-        series_name = series_obj = None
-        if showslug:
-            identifier = SeriesIdentifier.from_slug(showslug)
-            series_obj = Series.find_by_identifier(identifier)
+    def updateKODI(self):
+        """
+        Route the updateKODI url.
 
-            if series_obj is None:
-                return self._genericMessage('Error', 'Unable to find the specified show')
-
-            series_name = quote_plus(series_obj.name.encode('utf-8'))
-
+        [Converted to VueRouter]
+        """
         if app.KODI_UPDATE_ONLYFIRST:
             host = app.KODI_HOST[0].strip()
         else:
             host = ', '.join(app.KODI_HOST)
 
-        if notifiers.kodi_notifier.update_library(series_name=series_name):
-            ui.notifications.message('Library update command sent to KODI host(s): {host}'.format(host=host))
+        if notifiers.kodi_notifier.update_library():
+            ui.notifications.message(f'Library update command sent to KODI host(s): {host}')
         else:
-            ui.notifications.error('Unable to contact one or more KODI host(s): {host}'.format(host=host))
+            ui.notifications.error(f'Unable to contact one or more KODI host(s): {host}')
 
-        if series_obj:
-            return self.redirect('/home/displayShow?showslug={series_obj.slug}'.format(series_obj=series_obj))
-        else:
-            return self.redirect('/home/')
+        return PageTemplate(rh=self, filename='index.mako').render()
 
     # TODO: Move to apiv2
     def updatePLEX(self):

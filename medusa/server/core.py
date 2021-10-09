@@ -38,6 +38,7 @@ from medusa.server.api.v2.series_legacy import SeriesLegacyHandler
 from medusa.server.api.v2.series_mass_edit import SeriesMassEdit
 from medusa.server.api.v2.series_mass_operation import SeriesMassOperation
 from medusa.server.api.v2.series_operation import SeriesOperationHandler
+from medusa.server.api.v2.notifications import NotificationsHandler
 from medusa.server.api.v2.stats import StatsHandler
 from medusa.server.api.v2.system import SystemHandler
 from medusa.server.web import (
@@ -96,6 +97,9 @@ def get_apiv2_handlers(base):
 
         # /api/v2/history/tvdb1234/episode
         EpisodeHistoryHandler.create_app_handler(base),
+
+        # /api/v2/notifications
+        NotificationsHandler.create_app_handler(base),
 
         # /api/v2/schedule
         ScheduleHandler.create_app_handler(base),

@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 
 import logging
 
-from medusa import db
+from medusa import app, db, ws
 from medusa.helper.exceptions import ShowDirectoryNotFoundException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import BaseRequestHandler
@@ -12,6 +12,7 @@ from medusa.server.api.v2.series import SeriesHandler
 from medusa.tv.episode import Episode, EpisodeNumber
 from medusa.tv.series import Series, SeriesIdentifier
 
+from requests.compat import quote_plus
 from tornado.escape import json_decode
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -126,6 +127,21 @@ class SeriesOperationHandler(BaseRequestHandler):
                         root_ep_obj.related_episodes.append(related_ep_obj)
 
                 root_ep_obj.rename()
-            self._created()
+            return self._created()
+
+        if data['type'] == 'UPDATE_KODI':
+            series_name = quote_plus(series.name.encode('utf-8'))
+
+            if app.KODI_UPDATE_ONLYFIRST:
+                host = app.KODI_HOST[0].strip()
+            else:
+                host = ', '.join(app.KODI_HOST)
+
+            if notifiers.kodi_notifier.update_library(series_name=series_name):
+                ui.notifications.message(f'Library update command sent to KODI host(s): {host}')
+            else:
+                ui.notifications.error(f'Unable to contact one or more KODI host(s): {host}')
+
+            return self._created()
 
         return self._bad_request('Invalid operation')

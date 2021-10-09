@@ -47,7 +47,7 @@
                             <li><app-link href="manage/manageSearches/"><i class="menu-icon-manage-searches" />&nbsp;Manage Searches</app-link></li>
                             <li><app-link href="manage/episodeStatuses/"><i class="menu-icon-manage2" />&nbsp;Episode Status Management</app-link></li>
                             <li v-if="linkVisible.plex"><app-link href="home/updatePLEX/"><i class="menu-icon-plex" />&nbsp;Update PLEX</app-link></li>
-                            <li v-if="linkVisible.kodi"><app-link href="home/updateKODI/"><i class="menu-icon-kodi" />&nbsp;Update KODI</app-link></li>
+                            <li v-if="linkVisible.kodi"><app-link href="home/updateKODI/" @click.prevent="updateKodi"><i class="menu-icon-kodi" />&nbsp;Update KODI</app-link></li>
                             <li v-if="linkVisible.emby"><app-link href="home/updateEMBY/"><i class="menu-icon-emby" />&nbsp;Update Emby</app-link></li>
                             <!-- Avoid mixed content blocking by open manage torrent in new tab -->
                             <li v-if="linkVisible.manageTorrents"><app-link href="manage/manageTorrents/" target="_blank"><i class="menu-icon-bittorrent" />&nbsp;Manage Torrents</app-link></li>
