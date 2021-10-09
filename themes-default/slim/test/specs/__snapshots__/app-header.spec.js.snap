@@ -259,15 +259,14 @@ exports[`AppHeader.test.js renders 1`] = `
             <!---->
              
             <li>
-              <app-link-stub
+              <a
                 href="home/updateKODI/"
-                placeholder="indexer-to-name"
               >
                 <i
                   class="menu-icon-kodi"
                 />
                  Update KODI
-              </app-link-stub>
+              </a>
             </li>
              
             <!---->

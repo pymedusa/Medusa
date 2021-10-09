@@ -49,10 +49,7 @@ from medusa.tv.cache import Cache
 from medusa.tv.series import Series, SeriesIdentifier
 from medusa.updater.version_checker import CheckVersion
 
-from requests.compat import (
-    quote_plus,
-    unquote_plus,
-)
+from requests.compat import unquote_plus
 
 from six import iteritems, text_type
 
@@ -778,63 +775,6 @@ class Home(WebRoot):
         time.sleep(cpu_presets[app.CPU_PRESET])
 
         return self.redirect('/home/displayShow?showslug={series_obj.slug}'.format(series_obj=series_obj))
-
-    # TODO: Move to apiv2
-    def updateKODI(self, showslug=None):
-        series_name = series_obj = None
-        if showslug:
-            identifier = SeriesIdentifier.from_slug(showslug)
-            series_obj = Series.find_by_identifier(identifier)
-
-            if series_obj is None:
-                return self._genericMessage('Error', 'Unable to find the specified show')
-
-            series_name = quote_plus(series_obj.name.encode('utf-8'))
-
-        if app.KODI_UPDATE_ONLYFIRST:
-            host = app.KODI_HOST[0].strip()
-        else:
-            host = ', '.join(app.KODI_HOST)
-
-        if notifiers.kodi_notifier.update_library(series_name=series_name):
-            ui.notifications.message('Library update command sent to KODI host(s): {host}'.format(host=host))
-        else:
-            ui.notifications.error('Unable to contact one or more KODI host(s): {host}'.format(host=host))
-
-        if series_obj:
-            return self.redirect('/home/displayShow?showslug={series_obj.slug}'.format(series_obj=series_obj))
-        else:
-            return self.redirect('/home/')
-
-    # TODO: Move to apiv2
-    def updatePLEX(self):
-        if None is notifiers.plex_notifier.update_library():
-            ui.notifications.message(
-                'Library update command sent to Plex Media Server host: {host}'.format(host=', '.join(app.PLEX_SERVER_HOST)))
-        else:
-            ui.notifications.error('Unable to contact Plex Media Server host: {host}'.format(host=', '.join(app.PLEX_SERVER_HOST)))
-        return self.redirect('/home/')
-
-    # TODO: Move to apiv2
-    def updateEMBY(self, showslug=None):
-        series_obj = None
-        if showslug:
-            identifier = SeriesIdentifier.from_slug(showslug)
-            series_obj = Series.find_by_identifier(identifier)
-
-            if series_obj is None:
-                return self._genericMessage('Error', 'Unable to find the specified show')
-
-        if notifiers.emby_notifier.update_library(series_obj):
-            ui.notifications.message(
-                'Library update command sent to Emby host: {host}'.format(host=app.EMBY_HOST))
-        else:
-            ui.notifications.error('Unable to contact Emby host: {host}'.format(host=app.EMBY_HOST))
-
-        if series_obj:
-            return self.redirect('/home/displayShow?showslug={series_obj.slug}'.format(series_obj=series_obj))
-        else:
-            return self.redirect('/home/')
 
     def testRename(self, **query_args):
         """
