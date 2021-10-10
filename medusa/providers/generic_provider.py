@@ -979,6 +979,9 @@ class GenericProvider(object):
         if hasattr(self, 'pin'):
             data['config']['pin'] = self.pin
 
+        if hasattr(self, 'pid'):
+            data['config']['pid'] = self.pid
+
         if hasattr(self, 'confirmed'):
             data['config']['confirmed'] = self.confirmed
 

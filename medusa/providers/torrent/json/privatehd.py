@@ -7,14 +7,12 @@ from __future__ import unicode_literals
 import logging
 
 from medusa import tv
-from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import convert_size
 from medusa.helper.exceptions import AuthException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
-from requests.utils import dict_from_cookiejar
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -30,12 +28,14 @@ class PrivateHDProvider(TorrentProvider):
         # Credentials
         self.username = None
         self.password = None
+        self.pid = None
+        self._token = None
 
         # URLs
         self.url = 'https://privatehd.to'
         self.urls = {
-            'login': urljoin(self.url, 'auth/login'),
-            'search': urljoin(self.url, 'torrents'),
+            'login': urljoin(self.url, 'api/v1/jackett/auth'),
+            'search': urljoin(self.url, 'api/v1/jackett/torrents'),
         }
 
         # Proper Strings
@@ -81,12 +81,21 @@ class PrivateHDProvider(TorrentProvider):
                 if not search_string:
                     del search_params['search']
 
-                response = self.session.get(self.urls['search'], params=search_params)
-                if not response or not response.text:
+                headers = {
+                    'Authorization': f'Bearer {self._token}'
+                }
+
+                response = self.session.get(self.urls['search'], params=search_params, headers=headers)
+                try:
+                    jdata = response.json()
+                    if not jdata.get('data') or not len(jdata['data']):
+                        log.debug('No data returned from provider')
+                        continue
+                except ValueError:
                     log.debug('No data returned from provider')
                     continue
 
-                results += self.parse(response.text, mode)
+                results += self.parse(jdata, mode)
 
         return results
 
@@ -100,86 +109,69 @@ class PrivateHDProvider(TorrentProvider):
         :return: A list of items found
         """
         items = []
+        json_data = data.get('data', [])
 
-        with BS4Parser(data, 'html5lib') as html:
-            torrents = html('tr')
-
-            if not torrents or len(torrents) < 2:
-                log.debug('Data returned from provider does not contain any torrents')
-                return items
-
-            # Skip column headers
-            for row in torrents[1:]:
-                # Skip extraneous rows at the end
-                if len(row.contents) < 10:
+        for row in json_data:
+            try:
+                title = row.pop('file_name')
+                download_url = row.pop('download')
+                if not all([title, download_url]):
                     continue
 
-                try:
-                    title = row.find(class_='torrent-filename').get_text(strip=True)
-                    download_url = row.find(class_='torrent-download-icon').get('href')
-                    seeders = row.contents[13].get_text()
-                    leechers = row.contents[15].get_text()
-                    size = convert_size(row.contents[11].get_text(strip=True), default=-1)
-                    pubdate = self.parse_pubdate(row.contents[7].contents[1].get('title'))
+                seeders = row.pop('seed', 0)
+                leechers = row.pop('leech', 0)
 
-                    item = {
-                        'title': title,
-                        'link': download_url,
-                        'size': size,
-                        'seeders': seeders,
-                        'leechers': leechers,
-                        'pubdate': pubdate,
-                    }
+                # Filter unseeded torrent
+                if seeders < self.minseed:
+                    if mode != 'RSS':
+                        log.debug("Discarding torrent because it doesn't meet the"
+                                  ' minimum seeders: {0}. Seeders: {1}',
+                                  title, seeders)
+                    continue
+
+                size = convert_size(row.pop('file_size', None), default=-1)
+                pubdate_raw = row.pop('created_at')
+                pubdate = self.parse_pubdate(pubdate_raw)
+
+                item = {
+                    'title': title,
+                    'link': download_url,
+                    'size': size,
+                    'seeders': seeders,
+                    'leechers': leechers,
+                    'pubdate': pubdate,
+                }
+                if mode != 'RSS':
                     log.debug('Found result: {0} with {1} seeders and {2} leechers',
                               title, seeders, leechers)
 
-                    items.append(item)
-                except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.exception('Failed parsing provider.')
-
+                items.append(item)
+            except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                log.exception('Failed parsing provider.')
         return items
 
     def login(self):
         """Login method used for logging in before doing search and torrent downloads."""
-        if any(dict_from_cookiejar(self.session.cookies).values()):
-            return True
-
-        if 'pass' in dict_from_cookiejar(self.session.cookies):
-            return True
-
-        login_html = self.session.get(self.urls['login'])
-        if not login_html or not login_html.text:
-            log.warning('Unable to connect to provider')
-            return False
-        with BS4Parser(login_html.text, 'html5lib') as html:
-            token = html.find('input', attrs={'name': '_token'}).get('value')
-
         login_params = {
-            '_token': token,
-            'email_username': self.username,
-            'password': self.password,
-            'remember': 1,
-            'submit': 'Login',
+            'pid': self.pid,
+            'username': self.username,
+            'password': self.password
         }
 
         response = self.session.post(self.urls['login'], data=login_params)
-        if not response or not response.text:
-            log.warning('Unable to connect to provider')
-            return False
+        try:
+            jdata = response.json()
+            if 'message' in jdata:
+                raise AuthException(f"Error trying to auth, {jdata['message']}")
+        except ValueError:
+            log.debug('No data returned from provider')
+            raise AuthException('Could not get auth token')
 
-        if 'These credentials do not match our records.' in response.text:
-            log.warning('Invalid username or password. Check your settings')
-            return False
+        if 'token' in jdata:
+            self._token = jdata['token']
+            return True
 
-        return True
-
-    def _check_auth(self):
-
-        if not self.username or not self.password:
-            raise AuthException('Your authentication credentials for {0} are missing,'
-                                ' check your config.'.format(self.name))
-
-        return True
+        return False
 
 
 provider = PrivateHDProvider()
