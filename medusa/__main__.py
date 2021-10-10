@@ -1122,6 +1122,7 @@ class Application(object):
                     load_provider_setting(app.CFG, provider, 'string', 'password', '', censor_log='low')
                     load_provider_setting(app.CFG, provider, 'string', 'passkey', '', censor_log='low')
                     load_provider_setting(app.CFG, provider, 'string', 'pin', '', censor_log='low')
+                    load_provider_setting(app.CFG, provider, 'string', 'pid', '', censor_log='low')
                     load_provider_setting(app.CFG, provider, 'string', 'sorting', 'seeders')
                     load_provider_setting(app.CFG, provider, 'string', 'options', '')
                     load_provider_setting(app.CFG, provider, 'float', 'ratio', -1)
@@ -1767,7 +1768,7 @@ class Application(object):
                     'password',
                 ],
                 GenericProvider.TORRENT: [
-                    'custom_url', 'digest', 'hash', 'passkey', 'pin', 'confirmed', 'ranked', 'engrelease',
+                    'custom_url', 'digest', 'hash', 'passkey', 'pin', 'pid', 'confirmed', 'ranked', 'engrelease',
                     'onlyspasearch', 'sorting', 'ratio', 'minseed', 'minleech', 'options', 'freeleech',
                     'cat', 'subtitle', 'cookies', 'title_tag', 'cap_tv_search',
                 ],

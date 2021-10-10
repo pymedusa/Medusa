@@ -30,6 +30,8 @@
 
             <config-textbox v-if="'pin' in editProvider.config" v-model="editProvider.config.pin" type="password" label="Pin" :id="`${editProvider.id}_pin`" />
 
+            <config-textbox v-if="'pid' in editProvider.config" v-model="editProvider.config.pid" type="password" label="Pid" :id="`${editProvider.id}_pid`" />
+
             <config-textbox-number v-if="'ratio' in editProvider.config" v-model="editProvider.config.ratio" :min="-1" :step="0.1" label="Seed ratio" :id="`${editProvider.id}_seed_ratio`">
                 <p>Configure a desired seeding ratio. Used by the (automated download handler in config - postprocessing)
                     <br>-1 for provider specific option is disabled.
