@@ -1142,6 +1142,7 @@ class DataGenerator(object):
         section_data['runsInDocker'] = bool(app.RUNS_IN_DOCKER)
         section_data['gitRemoteBranches'] = app.GIT_REMOTE_BRANCHES
         section_data['cpuPresets'] = cpu_presets
+        section_data['newestVersionMessage'] = app.NEWEST_VERSION_STRING
 
         section_data['news'] = {}
         section_data['news']['lastRead'] = app.NEWS_LAST_READ

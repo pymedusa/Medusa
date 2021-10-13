@@ -55,6 +55,7 @@ const state = {
     appArgs: [],
     webRoot: null,
     runsInDocker: null,
+    newestVersionMessage: null,
     gitRemoteBranches: [],
     cpuPresets: null,
     news: {
