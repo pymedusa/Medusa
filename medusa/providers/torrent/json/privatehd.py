@@ -91,7 +91,7 @@ class PrivateHDProvider(TorrentProvider):
                     if not jdata.get('data') or not len(jdata['data']):
                         log.debug('No data returned from provider')
                         continue
-                except ValueError:
+                except (AttributeError, ValueError):
                     log.debug('No data returned from provider')
                     continue
 
@@ -163,7 +163,7 @@ class PrivateHDProvider(TorrentProvider):
             jdata = response.json()
             if 'message' in jdata:
                 raise AuthException(f"Error trying to auth, {jdata['message']}")
-        except ValueError:
+        except (AttributeError, ValueError):
             log.debug('No data returned from provider')
             raise AuthException('Could not get auth token')
 
