@@ -425,7 +425,7 @@ class ProcessResult(object):
             if self.unwanted_files:
                 self.delete_files(path, self.unwanted_files)
 
-            if all([not app.NO_DELETE, os.path.normpath(path) != os.path.normpath(app.TV_DOWNLOAD_DIR)]):
+            if not app.NO_DELETE and os.path.normpath(path) != os.path.normpath(app.TV_DOWNLOAD_DIR):
                 if self.delete_folder(path, check_empty=False):
                     self.log_and_output('Deleted folder: {path}', level=logging.DEBUG, **{'path': path})
 
