@@ -13,6 +13,7 @@ import adba
 
 from medusa import app, db
 from medusa.helpers import sanitize_scene_name
+from medusa.helpers.externals import load_externals_from_db
 from medusa.indexers.api import indexerApi
 from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
@@ -251,7 +252,7 @@ def retrieve_exceptions(force=False, exception_type=None):
     :param exception_type: Only refresh a specific exception_type. Options are: 'medusa', 'anidb', 'xem'
     """
     custom_exceptions = _get_custom_exceptions(force) if exception_type in ['custom_exceptions', None] else defaultdict(dict)
-    xem_exceptions = _get_xem_exceptions(force) if exception_type in ['xem', None] else defaultdict(dict)
+    xem_exceptions = _get_xem_exceptions(True) if exception_type in ['xem', None] else defaultdict(dict)
     anidb_exceptions = _get_anidb_exceptions(force) if exception_type in ['anidb', None] else defaultdict(dict)
 
     # Combined scene exceptions from all sources
@@ -353,6 +354,7 @@ def _get_xem_exceptions(force):
     if force or should_refresh('xem'):
         for indexer in indexerApi().indexers:
             indexer_api = indexerApi(indexer)
+            origin = False
 
             try:
                 # Get XEM origin for indexer
@@ -362,7 +364,11 @@ def _get_xem_exceptions(force):
                     raise ValueError(msg)
             except KeyError:
                 # Indexer has no XEM origin
-                continue
+                logger.debug(
+                    'Indexer {indexer} does not have a xem origin. Lets try to get mapped results from tvdb -> {indexer}',
+                    {'indexer': indexer_api.name}
+                )
+                params['origin'] = 'tvdb'
             except ValueError as error:
                 # XEM origin for indexer is invalid
                 logger.error(
@@ -397,8 +403,16 @@ def _get_xem_exceptions(force):
                 continue
 
             for indexer_id, exceptions in iteritems(jdata['data']):
+
+                # For other indexers then tvdb, we try to map (for ex) tvdb -> tvmaze and use that.
+                if not origin:
+                    externals = load_externals_from_db(1, int(indexer_id))
+                    if not externals or not externals.get(indexer_api.config['mapped_to']):
+                        continue
+                    indexer_id = externals.get(indexer_api.config['mapped_to'])
+
                 try:
-                    xem_exceptions[indexer][indexer_id] = exceptions
+                    xem_exceptions[indexer][str(indexer_id)] = exceptions
                 except Exception as error:
                     logger.warning(
                         'XEM: Rejected entry: Indexer ID: {indexer_id},'
