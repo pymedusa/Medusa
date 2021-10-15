@@ -1122,7 +1122,6 @@ class Episode(TV):
         data['file'] = {}
         data['file']['location'] = self.location
         data['file']['name'] = os.path.basename(self.location)
-        data['file']['properPath'] = self.proper_path()
         if self.file_size:
             data['file']['size'] = self.file_size
 
@@ -1137,6 +1136,10 @@ class Episode(TV):
             data['statistics']['subtitleSearch']['count'] = self.subtitles_searchcount
             data['wantedQualities'] = self.wanted_quality
             data['related'] = self.related_episodes
+
+            if self.file_size:
+                # Used by the test-rename vue component.
+                data['file']['properPath'] = self.proper_path()
 
         return data
 
