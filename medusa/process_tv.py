@@ -406,7 +406,7 @@ class ProcessResult(object):
                 self.log_and_output('Missed file: {missed_file}', level=logging.WARNING, **{'missed_file': missed_file})
 
         if all([app.USE_TORRENTS, app.TORRENT_SEED_LOCATION,
-                self.process_method in ('hardlink', 'symlink', 'reflink', 'copy')]):
+                self.process_method in ('hardlink', 'symlink', 'reflink', 'keeplink', 'copy')]):
             for info_hash, release_names in list(iteritems(app.RECENTLY_POSTPROCESSED)):
                 if self.move_torrent(info_hash, release_names):
                     app.RECENTLY_POSTPROCESSED.pop(info_hash, None)
@@ -428,7 +428,7 @@ class ProcessResult(object):
             if all([not app.NO_DELETE or clean_folder, self.process_method in ('move', 'copy'),
                     os.path.normpath(path) != os.path.normpath(app.TV_DOWNLOAD_DIR)]):
 
-                check_empty = False if self.process_method == 'copy' else True
+                check_empty = False if self.process_method == 'move' else True
                 if self.delete_folder(path, check_empty=check_empty):
                     self.log_and_output('Deleted folder: {path}', level=logging.DEBUG, **{'path': path})
 
