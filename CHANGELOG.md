@@ -6,6 +6,7 @@
 #### Improvements
 
 #### Fixes
+- Correctly delete folders with files for move method or if explicitly wanted ([9950](https://github.com/pymedusa/Medusa/pull/9950))
 
 -----
 
@@ -17,7 +18,7 @@
 
 #### Fixes
 - Fix prowlarr provider id's being obfuscated in logs because of a bad log level. ([9857](https://github.com/pymedusa/Medusa/pull/9857))
-- Fix postprocessing specials. ([9812](https://github.com/pymedusa/Medusa/pull/9812)) 
+- Fix postprocessing specials. ([9812](https://github.com/pymedusa/Medusa/pull/9812))
 - Fix storing a negative value in the UI as a search delay value ([9822](https://github.com/pymedusa/Medusa/pull/9822))
 
 -----
