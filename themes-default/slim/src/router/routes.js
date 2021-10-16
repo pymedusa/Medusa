@@ -362,8 +362,7 @@ const manageRoutes = [
             topMenu: 'manage',
             converted: true
         },
-        component: () => import('../components/manage-episode-status.vue'),
-        props: true
+        component: () => import('../components/manage-episode-status.vue')
     },
     {
         path: '/manage/failedDownloads',
