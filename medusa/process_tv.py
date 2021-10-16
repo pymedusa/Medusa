@@ -650,7 +650,7 @@ class ProcessResult(object):
         :return: True on success, False on failure
         """
         # check if it's a folder
-        if not os.path.isdir(folder):
+        if not folder or not os.path.isdir(folder):
             return False
 
         # check if it's a protected folder
