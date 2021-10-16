@@ -1000,7 +1000,7 @@ def real_path(path):
 
     The resulting path will have no symbolic link, '/./' or '/../' components.
     """
-    return os.path.normpath(os.path.normpath(os.path.realpath(path)))
+    return os.path.normpath(os.path.normcase(os.path.realpath(path)))
 
 
 def validate_show(show, season=None, episode=None):

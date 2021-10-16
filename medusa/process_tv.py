@@ -425,7 +425,7 @@ class ProcessResult(object):
             if self.unwanted_files:
                 self.delete_files(path, self.unwanted_files)
 
-            if not app.NO_DELETE and os.path.normpath(path) != os.path.normpath(app.TV_DOWNLOAD_DIR):
+            if not app.NO_DELETE:
                 if self.delete_folder(path, check_empty=False):
                     self.log_and_output('Deleted folder: {path}', level=logging.DEBUG, **{'path': path})
 
@@ -653,10 +653,11 @@ class ProcessResult(object):
         if not os.path.isdir(folder):
             return False
 
-        # check if it isn't TV_DOWNLOAD_DIR
-        if app.TV_DOWNLOAD_DIR:
-            if helpers.real_path(folder) == helpers.real_path(app.TV_DOWNLOAD_DIR):
-                return False
+        # check if it's a protected folder
+        if helpers.real_path(folder) in (helpers.real_path(app.TV_DOWNLOAD_DIR),
+                                         helpers.real_path(app.DEFAULT_CLIENT_PATH),
+                                         helpers.real_path(app.TORRENT_PATH)):
+            return False
 
         # check if it's empty folder when wanted checked
         if check_empty:
