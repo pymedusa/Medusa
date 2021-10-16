@@ -282,7 +282,7 @@ class ProcessResult(object):
         # If the client and the application are not on the same machine,
         # translate the directory into a network directory
         elif all([app.TV_DOWNLOAD_DIR, os.path.isdir(app.TV_DOWNLOAD_DIR),
-                  os.path.normpath(path) == os.path.normpath(app.TV_DOWNLOAD_DIR)]):
+                  helpers.real_path(path) == helpers.real_path(app.TV_DOWNLOAD_DIR)]):
             directory = os.path.join(
                 app.TV_DOWNLOAD_DIR,
                 os.path.abspath(path).split(os.path.sep)[-1]
