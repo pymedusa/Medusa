@@ -671,6 +671,7 @@ class Application(object):
             app.TORRENT_DIR = check_setting_str(app.CFG, 'Blackhole', 'torrent_dir', '')
 
             app.TV_DOWNLOAD_DIR = check_setting_str(app.CFG, 'General', 'tv_download_dir', '')
+            app.DEFAULT_CLIENT_PATH = check_setting_str(app.CFG, 'General', 'default_client_path', '')
             app.PROCESS_AUTOMATICALLY = bool(check_setting_int(app.CFG, 'General', 'process_automatically', 0))
             app.NO_DELETE = bool(check_setting_int(app.CFG, 'General', 'no_delete', 0))
             app.UNPACK = bool(check_setting_int(app.CFG, 'General', 'unpack', 0))
@@ -1691,6 +1692,7 @@ class Application(object):
         new_config['General']['cache_dir'] = app.ACTUAL_CACHE_DIR if app.ACTUAL_CACHE_DIR else 'cache'
         new_config['General']['root_dirs'] = app.ROOT_DIRS if app.ROOT_DIRS else []
         new_config['General']['tv_download_dir'] = app.TV_DOWNLOAD_DIR
+        new_config['General']['default_client_path'] = app.DEFAULT_CLIENT_PATH
         new_config['General']['keep_processed_dir'] = int(app.KEEP_PROCESSED_DIR)
         new_config['General']['process_method'] = app.PROCESS_METHOD
         new_config['General']['use_specific_process_method'] = int(app.USE_SPECIFIC_PROCESS_METHOD)

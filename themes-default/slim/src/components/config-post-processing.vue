@@ -69,6 +69,10 @@
                                         <p>Setting the ratio to 0, will have it perform the action directly after postprocessing.)</p>
                                     </config-template>
 
+                                    <config-template label-for="default_client_path" label="Default client path">
+                                        <file-browser id="default_client_path" name="default_client_path" title="Select client download location" :initial-dir="postprocessing.defaultClientPath" @update="postprocessing.defaultClientPath = $event" />
+                                        <span class="clear-left">To prevent postprocessing from deleting your (root) download location, select the location to protect it from removal.</span>
+                                    </config-template>
                                 </fieldset>
                             </div> <!-- end of col -->
                         </div> <!-- end of row -->

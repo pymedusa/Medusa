@@ -179,6 +179,13 @@ export default {
             this.manageStatus = null;
             this.data = [];
         }
+    },
+    mounted() {
+        const { status } = this.$route.query;
+        if (status) {
+            this.selectedStatus = Number(status);
+            this.getEpisodes();
+        }
     }
 };
 </script>

@@ -401,6 +401,52 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     </div>
                   </div>
                 </div>
+                 
+                <div
+                  id="config-template-content"
+                >
+                  <div
+                    class="form-group"
+                  >
+                    <div
+                      class="row"
+                    >
+                      <div
+                        class="col-sm-2"
+                      >
+                        <label
+                          class="control-label"
+                          for="default_client_path"
+                        >
+                          <span>
+                            Default client path
+                          </span>
+                        </label>
+                      </div>
+                       
+                      <div
+                        class="col-sm-10 content"
+                      >
+                        <file-browser-stub
+                          id="default_client_path"
+                          initialdir=""
+                          localstoragekey=""
+                          name="default_client_path"
+                          showbrowsebutton="true"
+                          title="Select client download location"
+                        />
+                         
+                        <span
+                          class="clear-left"
+                        >
+                          To prevent postprocessing from deleting your (root) download location, select the location to protect it from removal.
+                        </span>
+                         
+                        <!---->
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </fieldset>
             </div>
           </div>
