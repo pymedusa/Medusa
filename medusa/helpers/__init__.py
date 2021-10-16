@@ -1000,6 +1000,9 @@ def real_path(path):
 
     The resulting path will have no symbolic link, '/./' or '/../' components.
     """
+    if path is None:
+        return ''
+
     return os.path.normpath(os.path.normcase(os.path.realpath(path)))
 
 
