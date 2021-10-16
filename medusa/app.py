@@ -321,6 +321,7 @@ class MedusaApp(object):
         self.POSTPONE_IF_NO_SUBS = False
         self.NFO_RENAME = True
         self._TV_DOWNLOAD_DIR = None
+        self.DEFAULT_CLIENT_PATH = None
         self.UNPACK = False
         self.SKIP_REMOVED_FILES = False
         self.ALLOWED_EXTENSIONS = ['srt', 'nfo', 'sub', 'idx']
