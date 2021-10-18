@@ -154,6 +154,7 @@ class ConfigHandler(BaseRequestHandler):
         'proxyIndexers': BooleanField(app, 'PROXY_INDEXERS'),
         'proxyClients': BooleanField(app, 'PROXY_CLIENTS'),
         'proxyOthers': BooleanField(app, 'PROXY_OTHERS'),
+        'disableExternals': BooleanField(app, 'DISABLE_EXTERNALS'),
 
         'skipRemovedFiles': BooleanField(app, 'SKIP_REMOVED_FILES'),
         'epDefaultDeletedStatus': IntegerField(app, 'EP_DEFAULT_DELETED_STATUS'),
@@ -749,6 +750,7 @@ class DataGenerator(object):
         section_data['proxyIndexers'] = bool(app.PROXY_INDEXERS)
         section_data['proxyClients'] = bool(app.PROXY_CLIENTS)
         section_data['proxyOthers'] = bool(app.PROXY_OTHERS)
+        section_data['disableExternals'] = bool(app.DISABLE_EXTERNALS)
 
         section_data['skipRemovedFiles'] = bool(app.SKIP_REMOVED_FILES)
         section_data['epDefaultDeletedStatus'] = app.EP_DEFAULT_DELETED_STATUS

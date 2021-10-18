@@ -187,6 +187,7 @@ class MedusaApp(object):
         self.PROXY_INDEXERS = True
         self.PROXY_CLIENTS = True
         self.PROXY_OTHERS = True
+        self.DISABLE_EXTERNALS = False
 
         self.SSL_VERIFY = True
         self.SSL_CA_BUNDLE = None

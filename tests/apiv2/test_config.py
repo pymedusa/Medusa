@@ -150,6 +150,7 @@ def config_main(monkeypatch, app_config):
     section_data['proxyIndexers'] = bool(app.PROXY_INDEXERS)
     section_data['proxyClients'] = bool(app.PROXY_CLIENTS)
     section_data['proxyOthers'] = bool(app.PROXY_OTHERS)
+    section_data['disableExternals'] = bool(app.DISABLE_EXTERNALS)
     section_data['skipRemovedFiles'] = bool(app.SKIP_REMOVED_FILES)
     section_data['epDefaultDeletedStatus'] = app.EP_DEFAULT_DELETED_STATUS
     section_data['developer'] = bool(app.DEVELOPER)

@@ -98,6 +98,7 @@ const state = {
     proxyClients: null,
     proxyIndexers: null,
     proxyOthers: null,
+    disableExternals: null,
     skipRemovedFiles: null,
     epDefaultDeletedStatus: null,
     developer: null,

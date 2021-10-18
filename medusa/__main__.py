@@ -585,6 +585,7 @@ class Application(object):
             app.PROXY_INDEXERS = bool(check_setting_int(app.CFG, 'General', 'proxy_indexers', 1))
             app.PROXY_CLIENTS = bool(check_setting_int(app.CFG, 'General', 'proxy_clients', 1))
             app.PROXY_OTHERS = bool(check_setting_int(app.CFG, 'General', 'proxy_others', 1))
+            app.DISABLE_EXTERNALS = bool(check_setting_int(app.CFG, 'General', 'disable_externals', 0))
 
             # attempt to help prevent users from breaking links by using a bad url
             if not app.ANON_REDIRECT.endswith('?'):
@@ -1676,6 +1677,7 @@ class Application(object):
         new_config['General']['proxy_indexers'] = int(app.PROXY_INDEXERS)
         new_config['General']['proxy_clients'] = int(app.PROXY_CLIENTS)
         new_config['General']['proxy_others'] = int(app.PROXY_OTHERS)
+        new_config['General']['disable_externals'] = int(app.DISABLE_EXTERNALS)
 
         new_config['General']['use_listview'] = int(app.USE_LISTVIEW)
         new_config['General']['metadata_kodi'] = app.METADATA_KODI

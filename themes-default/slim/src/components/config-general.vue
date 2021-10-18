@@ -134,6 +134,13 @@
                                     <config-textbox-number v-model="general.plexFallBack.timeout" label="Timeout show indexer at" id="Fallback duration" :min="1" :step="1">
                                         <p>Amount of hours after we try to revert back to the thetvdb.com api url (default:3).</p>
                                     </config-textbox-number>
+
+                                    <config-toggle-slider v-model="general.disableExternals" label="Disable external id lookups" id="disable_externals">
+                                        <p>
+                                            When adding a show (for example with tvdb), other indexers like tvmaze and tmdb are queried for possible id's mapped to that tvdb id.
+                                            When mass adding shows this can lead to temporary bans. Enable this option when you'r having difficulties with adding shows.
+                                        </p>
+                                    </config-toggle-slider>
                                 </fieldset>
                             </div>
                         </div>

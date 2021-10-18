@@ -1592,7 +1592,8 @@ class Series(TV):
         self.externals[mappings[self.indexer]] = self.series_id
 
         # Enrich the externals, using reverse lookup.
-        # self.externals.update(get_externals(self))
+        if not app.DISABLE_EXTERNALS:
+            self.externals.update(get_externals(self))
 
         self.imdb_id = self.externals.get('imdb_id') or getattr(indexed_show, 'imdb_id', '')
 
