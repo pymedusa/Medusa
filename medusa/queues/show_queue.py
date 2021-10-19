@@ -373,6 +373,7 @@ class QueueItemAdd(ShowQueueItem):
         # Small helper, to reduce code for messaging
         def message_step(new_step):
             step.append(new_step)
+            log.debug(new_step)
             ws.Message('QueueItemShow', dict(
                 step=step, **self.to_json
             )).push()
