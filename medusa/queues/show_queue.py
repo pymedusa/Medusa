@@ -403,7 +403,7 @@ class QueueItemAdd(ShowQueueItem):
                 self.show.load_from_indexer(tvapi=api)
 
                 message_step('load info from imdb')
-                self.show.load_imdb_info()
+                # self.show.load_imdb_info()
             except IndexerException as error:
                 log.warning('Unable to load series from indexer: {0!r}'.format(error))
                 raise SaveSeriesException('Unable to load series from indexer: {0!r}'.format(error))
