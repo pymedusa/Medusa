@@ -483,13 +483,11 @@ const notFoundRoute = {
 };
 
 // @NOTE: Redirect can only be added once all routes are vue
-/*
-/** @type {import('.').Route} *-/
+/** @type {import('.').Route} */
 const notFoundRedirect = {
     path: '*',
     redirect: '/not-found'
 };
-*/
 
 /** @type {import('.').Route[]} */
 export default [
@@ -506,5 +504,6 @@ export default [
     newsRoute,
     changesRoute,
     ircRoute,
-    notFoundRoute
+    notFoundRoute,
+    notFoundRedirect
 ];
