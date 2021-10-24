@@ -1,14 +1,39 @@
 <template>
     <div id="app">
         <vue-snotify />
+        <app-header />
+        <sub-menu />
+        <alerts />
         <h1 v-if="$route.meta.header" class="header">{{ $route.meta.header }}</h1>
         <router-view :key="$route.meta.nocache ? $route.fullPath : $route.name" />
+        <app-footer v-if="isAuthenticated" />
+        <scroll-buttons />
     </div>
 </template>
 
 <script>
+import Alerts from './alerts.vue';
+import AppHeader from './app-header.vue';
+import SubMenu from './sub-menu.vue';
+import AppFooter from './app-footer.vue';
+import { ScrollButtons } from './helpers';
+
+import { mapState } from 'vuex';
+
 export default {
-    name: 'app'
+    name: 'app',
+    components: {
+        Alerts,
+        AppFooter,
+        AppHeader,
+        ScrollButtons,
+        SubMenu
+    },
+    computed: {
+        ...mapState({
+            isAuthenticated: state => state.auth.isAuthenticated
+        })
+    }
 };
 </script>
 

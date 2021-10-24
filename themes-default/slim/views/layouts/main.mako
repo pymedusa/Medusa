@@ -64,21 +64,14 @@
         </div>
 
         <div v-cloak :style="globalLoading ? { opacity: '0 !important' } : undefined">
-            <app-header></app-header>
-            <sub-menu></sub-menu>
-
-            <%include file="/partials/alerts.mako"/>
-
+            
             <div id="content-row" class="row">
                 <component :is="pageComponent || 'div'" id="content-col" class="${'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1' if not app.LAYOUT_WIDE else 'col-lg-12 col-md-12'} col-sm-12 col-xs-12">
                     <%block name="content" />
                 </component>
             </div><!-- /content -->
 
-            <app-footer v-if="$store.state.auth.isAuthenticated"></app-footer>
-            <scroll-buttons></scroll-buttons>
-
-          </div><!-- /globalLoading wrapper -->
+        </div><!-- /globalLoading wrapper -->
 
         </div>
         <%block name="load_main_app" />

@@ -15,6 +15,7 @@ library.add([faAlignJustify, faImages, faTimesCircle]);
 import {
     App,
     AddShowOptions,
+    Alerts,
     AnidbReleaseGroupUi,
     AppFooter,
     AppHeader,
@@ -54,6 +55,7 @@ export const registerGlobalComponents = () => {
     //        along with some of the `main.mako` template
     components = components.concat([
         App,
+        Alerts,
         AppFooter,
         AppHeader,
         ScrollButtons,

@@ -1,6 +1,7 @@
 export { default as AddRecommended } from './add-recommended.vue';
 export { default as AddShowOptions } from './add-show-options.vue';
 export { default as AddShows } from './add-shows.vue';
+export { default as Alerts } from './alerts.vue';
 export { default as AnidbReleaseGroupUi } from './anidb-release-group-ui.vue';
 export { default as App } from './app.vue';
 export { default as AppFooter } from './app-footer.vue';
