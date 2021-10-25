@@ -4,7 +4,7 @@
             <span class="footerhighlight">{{ stats.overall.shows.total }}</span> Shows (<span class="footerhighlight">{{ stats.overall.shows.active }}</span> Active)
             | <span class="footerhighlight">{{ stats.overall.episodes.downloaded }}</span>
             <template v-if="stats.overall.episodes.snatched">
-                <span class="footerhighlight"><app-link :href="`manage/episodeStatuses?whichStatus=${snatchedStatus}`" title="View overview of snatched episodes">+{{ stats.overall.episodes.snatched }}</app-link></span>
+                <span class="footerhighlight"><app-link :href="`manage/episodeStatuses?status=${snatchedStatus}`" title="View overview of snatched episodes">+{{ stats.overall.episodes.snatched }}</app-link></span>
                 Snatched
             </template>
             / <span class="footerhighlight">{{ stats.overall.episodes.total }}</span> Episodes Downloaded <span v-if="episodePercentage" class="footerhighlight">({{ episodePercentage }})</span>

@@ -192,11 +192,13 @@ def test_authentication(host=None, username=None, password=None, apikey=None):
     data = session.get_json(url, verify=False)
 
     if not data:
-        log.info('Error connecting to sab, no data returned')
+        msg = 'Error connecting to SABnzbd, no data returned'
+        log.warning(msg)
+        return False, msg
     else:
         # check the result and determine if it's good or not
         result, text = _check_sab_response(data)
-        return result, 'success' if result else text
+        return result, 'Successfully connected to SABnzbd' if result else text
 
 
 @ttl_cache(60.0)

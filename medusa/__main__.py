@@ -671,6 +671,7 @@ class Application(object):
             app.TORRENT_DIR = check_setting_str(app.CFG, 'Blackhole', 'torrent_dir', '')
 
             app.TV_DOWNLOAD_DIR = check_setting_str(app.CFG, 'General', 'tv_download_dir', '')
+            app.DEFAULT_CLIENT_PATH = check_setting_str(app.CFG, 'General', 'default_client_path', '')
             app.PROCESS_AUTOMATICALLY = bool(check_setting_int(app.CFG, 'General', 'process_automatically', 0))
             app.NO_DELETE = bool(check_setting_int(app.CFG, 'General', 'no_delete', 0))
             app.UNPACK = bool(check_setting_int(app.CFG, 'General', 'unpack', 0))
@@ -679,6 +680,11 @@ class Application(object):
             app.FILE_TIMESTAMP_TIMEZONE = check_setting_str(app.CFG, 'General', 'file_timestamp_timezone', 'network')
             app.KEEP_PROCESSED_DIR = bool(check_setting_int(app.CFG, 'General', 'keep_processed_dir', 1))
             app.PROCESS_METHOD = check_setting_str(app.CFG, 'General', 'process_method', 'copy' if app.KEEP_PROCESSED_DIR else 'move')
+
+            app.USE_SPECIFIC_PROCESS_METHOD = bool(check_setting_int(app.CFG, 'General', 'use_specific_process_method', 0))
+            app.PROCESS_METHOD_TORRENT = check_setting_str(app.CFG, 'General', 'process_method', 'copy' if app.KEEP_PROCESSED_DIR else 'move')
+            app.PROCESS_METHOD_NZB = check_setting_str(app.CFG, 'General', 'process_method', 'copy' if app.KEEP_PROCESSED_DIR else 'move')
+
             app.DELRARCONTENTS = bool(check_setting_int(app.CFG, 'General', 'del_rar_contents', 0))
             app.MOVE_ASSOCIATED_FILES = bool(check_setting_int(app.CFG, 'General', 'move_associated_files', 0))
             app.POSTPONE_IF_SYNC_FILES = bool(check_setting_int(app.CFG, 'General', 'postpone_if_sync_files', 1))
@@ -1092,9 +1098,6 @@ class Application(object):
             app.TORZNAB_PROVIDERS = check_setting_list(app.CFG, 'Torznab', 'torznab_providers')
             app.torznab_providers_list = TorznabProvider.get_providers_list(app.TORZNAB_PROVIDERS)
 
-            app.PROWLARR_PROVIDERS = check_setting_list(app.CFG, 'Prowlarr', 'providers')
-            # TODO implement ProwlarrProvider.get_providers_list(app.PROWLARR_PROVIDERS)
-
             all_providers = providers.sorted_provider_list()
 
             # dynamically load provider settings
@@ -1111,7 +1114,7 @@ class Application(object):
                 load_provider_setting(app.CFG, provider, 'bool', 'enable_backlog', provider.supports_backlog)
                 load_provider_setting(app.CFG, provider, 'bool', 'enable_manualsearch', 1)
                 load_provider_setting(app.CFG, provider, 'bool', 'enable_search_delay', 0)
-                load_provider_setting(app.CFG, provider, 'int', 'search_delay', 480)
+                load_provider_setting(app.CFG, provider, 'float', 'search_delay', 480)
 
                 if provider.provider_type == GenericProvider.TORRENT:
                     load_provider_setting(app.CFG, provider, 'string', 'custom_url', '', censor_log='low')
@@ -1120,6 +1123,7 @@ class Application(object):
                     load_provider_setting(app.CFG, provider, 'string', 'password', '', censor_log='low')
                     load_provider_setting(app.CFG, provider, 'string', 'passkey', '', censor_log='low')
                     load_provider_setting(app.CFG, provider, 'string', 'pin', '', censor_log='low')
+                    load_provider_setting(app.CFG, provider, 'string', 'pid', '', censor_log='low')
                     load_provider_setting(app.CFG, provider, 'string', 'sorting', 'seeders')
                     load_provider_setting(app.CFG, provider, 'string', 'options', '')
                     load_provider_setting(app.CFG, provider, 'float', 'ratio', -1)
@@ -1140,21 +1144,21 @@ class Application(object):
                     load_provider_setting(app.CFG, provider, 'string', 'title_tag', '')
 
                 if isinstance(provider, TorznabProvider):
-                    load_provider_setting(app.CFG, provider, 'string', 'url', '', censor_log='low')
+                    load_provider_setting(app.CFG, provider, 'string', 'url', '', censor_log='normal')
                     load_provider_setting(app.CFG, provider, 'list', 'cat_ids', '', split_value=',')
                     load_provider_setting(app.CFG, provider, 'list', 'cap_tv_search', '', split_value=',')
-                    load_provider_setting(app.CFG, provider, 'string', 'manager', '', censor_log='low')
-                    load_provider_setting(app.CFG, provider, 'string', 'id_manager', '', censor_log='low')
+                    load_provider_setting(app.CFG, provider, 'string', 'manager', '')
+                    load_provider_setting(app.CFG, provider, 'string', 'id_manager', '')
 
                 if isinstance(provider, NewznabProvider):
                     # non configurable
                     if not provider.default:
-                        load_provider_setting(app.CFG, provider, 'string', 'url', '', censor_log='low')
+                        load_provider_setting(app.CFG, provider, 'string', 'url', '', censor_log='normal')
                         load_provider_setting(app.CFG, provider, 'bool', 'needs_auth', 1)
                     # configurable
                     load_provider_setting(app.CFG, provider, 'list', 'cat_ids', '', split_value=',')
-                    load_provider_setting(app.CFG, provider, 'string', 'manager', '', censor_log='low')
-                    load_provider_setting(app.CFG, provider, 'string', 'id_manager', '', censor_log='low')
+                    load_provider_setting(app.CFG, provider, 'string', 'manager', '')
+                    load_provider_setting(app.CFG, provider, 'string', 'id_manager', '')
 
             if not os.path.isfile(app.CONFIG_FILE):
                 logger.debug(u'Unable to find {config!r}, all settings will be default!', config=app.CONFIG_FILE)
@@ -1688,8 +1692,12 @@ class Application(object):
         new_config['General']['cache_dir'] = app.ACTUAL_CACHE_DIR if app.ACTUAL_CACHE_DIR else 'cache'
         new_config['General']['root_dirs'] = app.ROOT_DIRS if app.ROOT_DIRS else []
         new_config['General']['tv_download_dir'] = app.TV_DOWNLOAD_DIR
+        new_config['General']['default_client_path'] = app.DEFAULT_CLIENT_PATH
         new_config['General']['keep_processed_dir'] = int(app.KEEP_PROCESSED_DIR)
         new_config['General']['process_method'] = app.PROCESS_METHOD
+        new_config['General']['use_specific_process_method'] = int(app.USE_SPECIFIC_PROCESS_METHOD)
+        new_config['General']['process_method_torrent'] = app.PROCESS_METHOD_TORRENT
+        new_config['General']['process_method_nzb'] = app.PROCESS_METHOD_NZB
         new_config['General']['del_rar_contents'] = int(app.DELRARCONTENTS)
         new_config['General']['move_associated_files'] = int(app.MOVE_ASSOCIATED_FILES)
         new_config['General']['sync_files'] = app.SYNC_FILES
@@ -1762,7 +1770,7 @@ class Application(object):
                     'password',
                 ],
                 GenericProvider.TORRENT: [
-                    'custom_url', 'digest', 'hash', 'passkey', 'pin', 'confirmed', 'ranked', 'engrelease',
+                    'custom_url', 'digest', 'hash', 'passkey', 'pin', 'pid', 'confirmed', 'ranked', 'engrelease',
                     'onlyspasearch', 'sorting', 'ratio', 'minseed', 'minleech', 'options', 'freeleech',
                     'cat', 'subtitle', 'cookies', 'title_tag', 'cap_tv_search',
                 ],
@@ -2047,7 +2055,6 @@ class Application(object):
         new_config['Torznab']['torznab_providers'] = app.TORZNAB_PROVIDERS
 
         new_config['Prowlarr'] = {}
-        new_config['Prowlarr']['providers'] = app.PROWLARR_PROVIDERS
         new_config['Prowlarr']['url'] = app.PROWLARR_URL
         new_config['Prowlarr']['apikey'] = app.PROWLARR_APIKEY
 

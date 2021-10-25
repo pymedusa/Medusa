@@ -80,14 +80,18 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <div
                       class="row"
                     >
-                      <label
-                        class="col-sm-2 control-label"
-                        for="process_automatically"
+                      <div
+                        class="col-sm-2"
                       >
-                        <span>
-                          Scheduled Post-Processor
-                        </span>
-                      </label>
+                        <label
+                          class="control-label"
+                          for="process_automatically"
+                        >
+                          <span>
+                            Scheduled Post-Processor
+                          </span>
+                        </label>
+                      </div>
                        
                       <div
                         class="col-sm-10 content"
@@ -134,14 +138,18 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <div
                       class="row"
                     >
-                      <label
-                        class="col-sm-2 control-label"
-                        for="autopostprocessor_frequency"
+                      <div
+                        class="col-sm-2"
                       >
-                        <span>
-                          Auto Post-Processing Frequency
-                        </span>
-                      </label>
+                        <label
+                          class="control-label"
+                          for="autopostprocessor_frequency"
+                        >
+                          <span>
+                            Auto Post-Processing Frequency
+                          </span>
+                        </label>
+                      </div>
                        
                       <div
                         class="col-sm-10 content"
@@ -173,6 +181,9 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
             <div
               class="component-group-desc col-xs-12 col-md-2"
             >
+              <a
+                name="automated-download-handling"
+              />
               <h3>
                 Automated Download Handling
               </h3>
@@ -201,14 +212,18 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <div
                       class="row"
                     >
-                      <label
-                        class="col-sm-2 control-label"
-                        for="enable_download_handler"
+                      <div
+                        class="col-sm-2"
                       >
-                        <span>
-                          Enable download handler
-                        </span>
-                      </label>
+                        <label
+                          class="control-label"
+                          for="enable_download_handler"
+                        >
+                          <span>
+                            Enable download handler
+                          </span>
+                        </label>
+                      </div>
                        
                       <div
                         class="col-sm-10 content"
@@ -247,14 +262,18 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <div
                       class="row"
                     >
-                      <label
-                        class="col-sm-2 control-label"
-                        for="download_handler_frequency"
+                      <div
+                        class="col-sm-2"
                       >
-                        <span>
-                          Download handler frequency
-                        </span>
-                      </label>
+                        <label
+                          class="control-label"
+                          for="download_handler_frequency"
+                        >
+                          <span>
+                            Download handler frequency
+                          </span>
+                        </label>
+                      </div>
                        
                       <div
                         class="col-sm-10 content"
@@ -286,14 +305,18 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <div
                       class="row"
                     >
-                      <label
-                        class="col-sm-2 control-label"
-                        for="torrent_seed_ratio"
+                      <div
+                        class="col-sm-2"
                       >
-                        <span>
-                          Global torrent seed ratio
-                        </span>
-                      </label>
+                        <label
+                          class="control-label"
+                          for="torrent_seed_ratio"
+                        >
+                          <span>
+                            Global torrent seed ratio
+                          </span>
+                        </label>
+                      </div>
                        
                       <div
                         class="col-sm-10 content"
@@ -326,14 +349,18 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <div
                       class="row"
                     >
-                      <label
-                        class="col-sm-2 control-label"
-                        for="torrent_seed_action"
+                      <div
+                        class="col-sm-2"
                       >
-                        <span>
-                          Torrent seed action
-                        </span>
-                      </label>
+                        <label
+                          class="control-label"
+                          for="torrent_seed_action"
+                        >
+                          <span>
+                            Torrent seed action
+                          </span>
+                        </label>
+                      </div>
                        
                       <div
                         class="col-sm-10 content"
@@ -374,6 +401,52 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     </div>
                   </div>
                 </div>
+                 
+                <div
+                  id="config-template-content"
+                >
+                  <div
+                    class="form-group"
+                  >
+                    <div
+                      class="row"
+                    >
+                      <div
+                        class="col-sm-2"
+                      >
+                        <label
+                          class="control-label"
+                          for="default_client_path"
+                        >
+                          <span>
+                            Default client path
+                          </span>
+                        </label>
+                      </div>
+                       
+                      <div
+                        class="col-sm-10 content"
+                      >
+                        <file-browser-stub
+                          id="default_client_path"
+                          initialdir=""
+                          localstoragekey=""
+                          name="default_client_path"
+                          showbrowsebutton="true"
+                          title="Select client download location"
+                        />
+                         
+                        <span
+                          class="clear-left"
+                        >
+                          To prevent postprocessing from deleting your (root) download location, select the location to protect it from removal.
+                        </span>
+                         
+                        <!---->
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </fieldset>
             </div>
           </div>
@@ -408,14 +481,18 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <div
                       class="row"
                     >
-                      <label
-                        class="col-sm-2 control-label"
-                        for="tv_download_dir"
+                      <div
+                        class="col-sm-2"
                       >
-                        <span>
-                          Post-Processing Dir
-                        </span>
-                      </label>
+                        <label
+                          class="control-label"
+                          for="tv_download_dir"
+                        >
+                          <span>
+                            Post-Processing Dir
+                          </span>
+                        </label>
+                      </div>
                        
                       <div
                         class="col-sm-10 content"
@@ -465,22 +542,26 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <div
                       class="row"
                     >
-                      <label
-                        class="col-sm-2 control-label"
-                        for="processing_method"
+                      <div
+                        class="col-sm-2"
                       >
-                        <span>
-                          Processing Method
-                        </span>
-                      </label>
+                        <label
+                          class="control-label"
+                          for="processing_method"
+                        >
+                          <span>
+                            Processing Method
+                          </span>
+                        </label>
+                      </div>
                        
                       <div
                         class="col-sm-10 content"
                       >
                         <select
                           class="form-control input-sm"
-                          id="naming_multi_ep"
-                          name="naming_multi_ep"
+                          id="processing_method"
+                          name="processing_method"
                         >
                           <option
                             value="copy"
@@ -537,14 +618,78 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <div
                       class="row"
                     >
-                      <label
-                        class="col-sm-2 control-label"
-                        for="postpone_if_sync_files"
+                      <div
+                        class="col-sm-2"
                       >
+                        <label
+                          class="control-label"
+                          for="specific_post_processing"
+                        >
+                          <span>
+                            Specific postprocessing methods
+                          </span>
+                        </label>
+                      </div>
+                       
+                      <div
+                        class="col-sm-10 content"
+                      >
+                        <toggle-button-stub
+                          height="22"
+                          id="specific_post_processing"
+                          name="specific_post_processing"
+                          sync=""
+                          width="45"
+                        />
+                          
                         <span>
-                          Postpone post-processing
+                          Enable this option if you want to use different processing methods (copy, move, etc..) for torrent and nzb downloads.
                         </span>
-                      </label>
+                         
+                        <p>
+                          <b>
+                            Note:
+                          </b>
+                          This option is only used by the 
+                          <a
+                            href="config/postProcessing/#automated-download-handling"
+                          >
+                            Automated Download Handling
+                          </a>
+                           option
+                        </p>
+                         
+                        <!---->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                 
+                <!---->
+                 
+                <!---->
+                 
+                <div
+                  id="config-toggle-slider-content"
+                >
+                  <div
+                    class="form-group"
+                  >
+                    <div
+                      class="row"
+                    >
+                      <div
+                        class="col-sm-2"
+                      >
+                        <label
+                          class="control-label"
+                          for="postpone_if_sync_files"
+                        >
+                          <span>
+                            Postpone post-processing
+                          </span>
+                        </label>
+                      </div>
                        
                       <div
                         class="col-sm-10 content"
@@ -576,14 +721,18 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <div
                       class="row"
                     >
-                      <label
-                        class="col-sm-2 control-label"
-                        for="sync_files"
+                      <div
+                        class="col-sm-2"
                       >
-                        <span>
-                          Sync File Extensions
-                        </span>
-                      </label>
+                        <label
+                          class="control-label"
+                          for="sync_files"
+                        >
+                          <span>
+                            Sync File Extensions
+                          </span>
+                        </label>
+                      </div>
                        
                       <div
                         class="col-sm-10 content"
@@ -615,14 +764,18 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <div
                       class="row"
                     >
-                      <label
-                        class="col-sm-2 control-label"
-                        for="postpone_if_no_subs"
+                      <div
+                        class="col-sm-2"
                       >
-                        <span>
-                          Postpone if no subtitle
-                        </span>
-                      </label>
+                        <label
+                          class="control-label"
+                          for="postpone_if_no_subs"
+                        >
+                          <span>
+                            Postpone if no subtitle
+                          </span>
+                        </label>
+                      </div>
                        
                       <div
                         class="col-sm-10 content"
@@ -672,14 +825,18 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <div
                       class="row"
                     >
-                      <label
-                        class="col-sm-2 control-label"
-                        for="rename_episodes"
+                      <div
+                        class="col-sm-2"
                       >
-                        <span>
-                          Rename Episodes
-                        </span>
-                      </label>
+                        <label
+                          class="control-label"
+                          for="rename_episodes"
+                        >
+                          <span>
+                            Rename Episodes
+                          </span>
+                        </label>
+                      </div>
                        
                       <div
                         class="col-sm-10 content"
@@ -711,14 +868,18 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <div
                       class="row"
                     >
-                      <label
-                        class="col-sm-2 control-label"
-                        for="create_missing_show_dirs"
+                      <div
+                        class="col-sm-2"
                       >
-                        <span>
-                          Create missing show directories
-                        </span>
-                      </label>
+                        <label
+                          class="control-label"
+                          for="create_missing_show_dirs"
+                        >
+                          <span>
+                            Create missing show directories
+                          </span>
+                        </label>
+                      </div>
                        
                       <div
                         class="col-sm-10 content"
@@ -750,14 +911,18 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <div
                       class="row"
                     >
-                      <label
-                        class="col-sm-2 control-label"
-                        for="add_shows_wo_dir"
+                      <div
+                        class="col-sm-2"
                       >
-                        <span>
-                          Add shows without directory
-                        </span>
-                      </label>
+                        <label
+                          class="control-label"
+                          for="add_shows_wo_dir"
+                        >
+                          <span>
+                            Add shows without directory
+                          </span>
+                        </label>
+                      </div>
                        
                       <div
                         class="col-sm-10 content"
@@ -789,14 +954,18 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <div
                       class="row"
                     >
-                      <label
-                        class="col-sm-2 control-label"
-                        for="move_associated_files"
+                      <div
+                        class="col-sm-2"
                       >
-                        <span>
-                          Delete associated files
-                        </span>
-                      </label>
+                        <label
+                          class="control-label"
+                          for="move_associated_files"
+                        >
+                          <span>
+                            Delete associated files
+                          </span>
+                        </label>
+                      </div>
                        
                       <div
                         class="col-sm-10 content"
@@ -828,14 +997,18 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <div
                       class="row"
                     >
-                      <label
-                        class="col-sm-2 control-label"
-                        for="allowed_extensions"
+                      <div
+                        class="col-sm-2"
                       >
-                        <span>
-                          Keep associated file extensions
-                        </span>
-                      </label>
+                        <label
+                          class="control-label"
+                          for="allowed_extensions"
+                        >
+                          <span>
+                            Keep associated file extensions
+                          </span>
+                        </label>
+                      </div>
                        
                       <div
                         class="col-sm-10 content"
@@ -872,14 +1045,18 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <div
                       class="row"
                     >
-                      <label
-                        class="col-sm-2 control-label"
-                        for="nfo_rename"
+                      <div
+                        class="col-sm-2"
                       >
-                        <span>
-                          Rename .nfo file
-                        </span>
-                      </label>
+                        <label
+                          class="control-label"
+                          for="nfo_rename"
+                        >
+                          <span>
+                            Rename .nfo file
+                          </span>
+                        </label>
+                      </div>
                        
                       <div
                         class="col-sm-10 content"
@@ -911,14 +1088,18 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <div
                       class="row"
                     >
-                      <label
-                        class="col-sm-2 control-label"
-                        for="airdate_episodes"
+                      <div
+                        class="col-sm-2"
                       >
-                        <span>
-                          Change File Date
-                        </span>
-                      </label>
+                        <label
+                          class="control-label"
+                          for="airdate_episodes"
+                        >
+                          <span>
+                            Change File Date
+                          </span>
+                        </label>
+                      </div>
                        
                       <div
                         class="col-sm-10 content"
@@ -950,14 +1131,18 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <div
                       class="row"
                     >
-                      <label
-                        class="col-sm-2 control-label"
-                        for="file_timestamp_timezone"
+                      <div
+                        class="col-sm-2"
                       >
-                        <span>
-                          Timezone for File Date
-                        </span>
-                      </label>
+                        <label
+                          class="control-label"
+                          for="file_timestamp_timezone"
+                        >
+                          <span>
+                            Timezone for File Date
+                          </span>
+                        </label>
+                      </div>
                        
                       <div
                         class="col-sm-10 content"
@@ -998,14 +1183,18 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <div
                       class="row"
                     >
-                      <label
-                        class="col-sm-2 control-label"
-                        for="unpack"
+                      <div
+                        class="col-sm-2"
                       >
-                        <span>
-                          Unpack
-                        </span>
-                      </label>
+                        <label
+                          class="control-label"
+                          for="unpack"
+                        >
+                          <span>
+                            Unpack
+                          </span>
+                        </label>
+                      </div>
                        
                       <div
                         class="col-sm-10 content"
@@ -1049,14 +1238,18 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <div
                       class="row"
                     >
-                      <label
-                        class="col-sm-2 control-label"
-                        for="del_rar_contents"
+                      <div
+                        class="col-sm-2"
                       >
-                        <span>
-                          Delete RAR contents
-                        </span>
-                      </label>
+                        <label
+                          class="control-label"
+                          for="del_rar_contents"
+                        >
+                          <span>
+                            Delete RAR contents
+                          </span>
+                        </label>
+                      </div>
                        
                       <div
                         class="col-sm-10 content"
@@ -1088,14 +1281,18 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <div
                       class="row"
                     >
-                      <label
-                        class="col-sm-2 control-label"
-                        for="no_delete"
+                      <div
+                        class="col-sm-2"
                       >
-                        <span>
-                          Don't delete empty folders
-                        </span>
-                      </label>
+                        <label
+                          class="control-label"
+                          for="no_delete"
+                        >
+                          <span>
+                            Don't delete empty folders
+                          </span>
+                        </label>
+                      </div>
                        
                       <div
                         class="col-sm-10 content"
@@ -1135,14 +1332,18 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <div
                       class="row"
                     >
-                      <label
-                        class="col-sm-2 control-label"
-                        for="extra_scripts"
+                      <div
+                        class="col-sm-2"
                       >
-                        <span>
-                          Extra Scripts
-                        </span>
-                      </label>
+                        <label
+                          class="control-label"
+                          for="extra_scripts"
+                        >
+                          <span>
+                            Extra Scripts
+                          </span>
+                        </label>
+                      </div>
                        
                       <div
                         class="col-sm-10 content"
@@ -1254,6 +1455,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                  
                 <div
                   id="config-toggle-slider-content"
+                  style="margin-top: 1em;"
                 >
                   <div
                     class="form-group"
@@ -1261,14 +1463,18 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <div
                       class="row"
                     >
-                      <label
-                        class="col-sm-2 control-label"
-                        for="naming_strip_year"
+                      <div
+                        class="col-sm-2"
                       >
-                        <span>
-                          Strip Show Year
-                        </span>
-                      </label>
+                        <label
+                          class="control-label"
+                          for="naming_strip_year"
+                        >
+                          <span>
+                            Strip Show Year
+                          </span>
+                        </label>
+                      </div>
                        
                       <div
                         class="col-sm-10 content"
@@ -1338,14 +1544,18 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <div
                       class="row"
                     >
-                      <label
-                        class="col-sm-2 control-label"
-                        for="metadata_type"
+                      <div
+                        class="col-sm-2"
                       >
-                        <span>
-                          Metadata Type
-                        </span>
-                      </label>
+                        <label
+                          class="control-label"
+                          for="metadata_type"
+                        >
+                          <span>
+                            Metadata Type
+                          </span>
+                        </label>
+                      </div>
                        
                       <div
                         class="col-sm-10 content"
@@ -1408,12 +1618,12 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                 </div>
                  
                 <div
-                  class="metadataDiv"
+                  class="metadata"
                   id="provider.id"
                   style="display: none;"
                 >
                   <div
-                    class="metadata_options_wrapper"
+                    class="metadata-options-wrapper"
                   >
                     <h4>
                       Create:
@@ -1535,7 +1745,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                   </div>
                    
                   <div
-                    class="metadata_example_wrapper"
+                    class="metadata-example-wrapper"
                   >
                     <h4>
                       Results:
@@ -1705,12 +1915,12 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                   </div>
                 </div>
                 <div
-                  class="metadataDiv"
+                  class="metadata"
                   id="provider.id"
                   style="display: none;"
                 >
                   <div
-                    class="metadata_options_wrapper"
+                    class="metadata-options-wrapper"
                   >
                     <h4>
                       Create:
@@ -1832,7 +2042,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                   </div>
                    
                   <div
-                    class="metadata_example_wrapper"
+                    class="metadata-example-wrapper"
                   >
                     <h4>
                       Results:
@@ -2002,12 +2212,12 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                   </div>
                 </div>
                 <div
-                  class="metadataDiv"
+                  class="metadata"
                   id="provider.id"
                   style="display: none;"
                 >
                   <div
-                    class="metadata_options_wrapper"
+                    class="metadata-options-wrapper"
                   >
                     <h4>
                       Create:
@@ -2131,7 +2341,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                   </div>
                    
                   <div
-                    class="metadata_example_wrapper"
+                    class="metadata-example-wrapper"
                   >
                     <h4>
                       Results:
@@ -2305,12 +2515,12 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                   </div>
                 </div>
                 <div
-                  class="metadataDiv"
+                  class="metadata"
                   id="provider.id"
                   style="display: none;"
                 >
                   <div
-                    class="metadata_options_wrapper"
+                    class="metadata-options-wrapper"
                   >
                     <h4>
                       Create:
@@ -2437,7 +2647,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                   </div>
                    
                   <div
-                    class="metadata_example_wrapper"
+                    class="metadata-example-wrapper"
                   >
                     <h4>
                       Results:
@@ -2619,12 +2829,12 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                   </div>
                 </div>
                 <div
-                  class="metadataDiv"
+                  class="metadata"
                   id="provider.id"
                   style="display: none;"
                 >
                   <div
-                    class="metadata_options_wrapper"
+                    class="metadata-options-wrapper"
                   >
                     <h4>
                       Create:
@@ -2754,7 +2964,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                   </div>
                    
                   <div
-                    class="metadata_example_wrapper"
+                    class="metadata-example-wrapper"
                   >
                     <h4>
                       Results:
@@ -2938,12 +3148,12 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                   </div>
                 </div>
                 <div
-                  class="metadataDiv"
+                  class="metadata"
                   id="provider.id"
                   style="display: none;"
                 >
                   <div
-                    class="metadata_options_wrapper"
+                    class="metadata-options-wrapper"
                   >
                     <h4>
                       Create:
@@ -3067,7 +3277,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                   </div>
                    
                   <div
-                    class="metadata_example_wrapper"
+                    class="metadata-example-wrapper"
                   >
                     <h4>
                       Results:
@@ -3241,12 +3451,12 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                   </div>
                 </div>
                 <div
-                  class="metadataDiv"
+                  class="metadata"
                   id="provider.id"
                   style="display: none;"
                 >
                   <div
-                    class="metadata_options_wrapper"
+                    class="metadata-options-wrapper"
                   >
                     <h4>
                       Create:
@@ -3375,7 +3585,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                   </div>
                    
                   <div
-                    class="metadata_example_wrapper"
+                    class="metadata-example-wrapper"
                   >
                     <h4>
                       Results:

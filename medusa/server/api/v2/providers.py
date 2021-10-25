@@ -10,6 +10,7 @@ from datetime import datetime
 from dateutil import parser
 
 from medusa import app, providers
+from medusa.helper.exceptions import AuthException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers import get_provider_class
 from medusa.providers.generic_provider import GenericProvider
@@ -369,7 +370,11 @@ class ProvidersHandler(BaseRequestHandler):
         if not provider:
             return self._not_found(f'Could not locate provider by id {provider_id}')
 
-        result = provider.search(dict(RSS=['']))
+        try:
+            result = provider.search(dict(RSS=['']))
+        except AuthException as error:
+            return self._unauthorized(str(error))
+
         if result and len(result):
             return self._created(f'{provider.name} returned {len(result)} results')
 
@@ -476,7 +481,7 @@ class ProvidersHandler(BaseRequestHandler):
         if hasattr(provider, 'search_delay'):
             try:
                 search_delay = float(config['search']['delay']['duration'])
-                provider.search_delay = (search_delay, 30)[search_delay < 30]
+                provider.search_delay = search_delay
             except (AttributeError, KeyError, ValueError):
                 provider.search_delay = 480
 
@@ -538,6 +543,12 @@ class ProvidersHandler(BaseRequestHandler):
                 provider.pin = config['pin']
             except (AttributeError, KeyError):
                 provider.pin = None
+
+        if hasattr(provider, 'pid'):
+            try:
+                provider.pid = config['pid']
+            except (AttributeError, KeyError):
+                provider.pid = None
 
         if hasattr(provider, 'confirmed'):
             try:

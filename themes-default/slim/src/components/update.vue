@@ -1,6 +1,10 @@
 <template>
     <div id="update">
-        <template v-if="!startUpdate">
+        <template v-if="system.runsInDocker">
+            <span v-if="system.newestVersionMessage">{{system.newestVersionMessage}}</span>
+            <span v-else>You are running Medusa in docker. To update, please pull a new image from the docker hub</span>
+        </template>
+        <template v-else-if="!startUpdate">
             <span>Medusa will automatically create a backup before you update. Are you sure you want to update?</span>
             <button id="update-now" class="btn-medusa btn-danger" @click="performUpdate">Yes</button>
         </template>
@@ -51,7 +55,8 @@ export default {
     computed: {
         ...mapState({
             general: state => state.config.general,
-            layout: state => state.config.layout
+            layout: state => state.config.layout,
+            system: state => state.config.system
         })
     },
     methods: {

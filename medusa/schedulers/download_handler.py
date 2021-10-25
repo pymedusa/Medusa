@@ -242,7 +242,7 @@ class DownloadHandler(object):
 
             self._postprocess(
                 status.destination, history_result['info_hash'], status.resource,
-                failed=str(status) == 'Failed'
+                failed=str(status) == 'Failed', client_type=client_type
             )
 
     def _check_torrent_ratio(self, client):
@@ -327,7 +327,7 @@ class DownloadHandler(object):
 
             self.save_status_to_history(history_result, ClientStatus(status_string='SeededAction'))
 
-    def _postprocess(self, path, info_hash, resource_name, failed=False):
+    def _postprocess(self, path, info_hash, resource_name, failed=False, client_type=None):
         """Queue a postprocess action."""
         # Use the info hash get a segment of episodes.
         history_items = self.main_db_con.select(
@@ -344,29 +344,15 @@ class DownloadHandler(object):
                 continue
             episodes.append(show.get_episode(history_item['season'], history_item['episode']))
 
-        queue_item = PostProcessQueueItem(path, info_hash, resource_name=resource_name, failed=failed, episodes=episodes)
+        queue_item = PostProcessQueueItem(
+            path, info_hash, resource_name=resource_name,
+            failed=failed, episodes=episodes, client_type=client_type
+        )
         app.post_processor_queue_scheduler.action.add_item(queue_item)
-
-    @staticmethod
-    def _test_connection(client, client_type):
-        """Need to structure, because of some subtle differences between clients."""
-        if client_type == 'torrent':
-            return client.test_authentication()
-
-        result = client.test_authentication()
-        if not result:
-            return False
-        return result[0]
 
     def _clean(self, client):
         """Update status in the history table for torrents/nzb's that can't be located anymore."""
         client_type = 'torrent' if isinstance(client, GenericClient) else 'nzb'
-
-        # Make sure the client can be reached. As we don't want to change the state for downloads
-        # because the client is temporary unavailable.
-        if not self._test_connection(client, client_type):
-            log.warning('The client cannot be reached or authentication is failing. Abandon cleanup.')
-            return
 
         for history_result in self._get_history_results_from_db(client_type):
             try:
