@@ -41,6 +41,7 @@ def _queued_show_to_json(item):
         'inProgress': bool(item.inProgress),
         'priority': priority,
         'added': sbdatetime.convert_to_setting(item.added.replace(microsecond=0)).isoformat(),
+        'actionId': item.action_id,
         'queueType': ShowQueueActions.names[item.action_id],
     }
 

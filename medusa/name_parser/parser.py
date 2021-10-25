@@ -326,8 +326,12 @@ class NameParser(object):
         elif result.series.is_anime or result.is_anime:
             new_episode_numbers, new_season_numbers, new_absolute_numbers = self._parse_anime(result)
 
-        elif result.season_number and result.episode_numbers:
+        elif result.season_number is not None:
             new_episode_numbers, new_season_numbers, new_absolute_numbers = self._parse_series(result)
+
+        else:
+            raise InvalidNameException('The result that was found ({result_name}) is not yet supported by Medusa '
+                                       'and will be skipped. Sorry.'.format(result_name=result.original_name))
 
         # Remove None from the list of seasons, as we can't sort on that
         new_season_numbers = sorted({season for season in new_season_numbers if season is not None})

@@ -46,14 +46,13 @@
                             <li><app-link href="manage/backlogOverview/"><i class="menu-icon-backlog-view" />&nbsp;Backlog Overview</app-link></li>
                             <li><app-link href="manage/manageSearches/"><i class="menu-icon-manage-searches" />&nbsp;Manage Searches</app-link></li>
                             <li><app-link href="manage/episodeStatuses/"><i class="menu-icon-manage2" />&nbsp;Episode Status Management</app-link></li>
-                            <li v-if="linkVisible.plex"><app-link href="home/updatePLEX/"><i class="menu-icon-plex" />&nbsp;Update PLEX</app-link></li>
-                            <li v-if="linkVisible.kodi"><app-link href="home/updateKODI/"><i class="menu-icon-kodi" />&nbsp;Update KODI</app-link></li>
-                            <li v-if="linkVisible.emby"><app-link href="home/updateEMBY/"><i class="menu-icon-emby" />&nbsp;Update Emby</app-link></li>
+                            <li v-if="linkVisible.plex"><a href="home/updatePLEX/" @click.prevent="updatePlex"><i class="menu-icon-plex" />&nbsp;Update PLEX</a></li>
+                            <li v-if="linkVisible.kodi"><a href="home/updateKODI/" @click.prevent="updateKodi"><i class="menu-icon-kodi" />&nbsp;Update KODI</a></li>
+                            <li v-if="linkVisible.emby"><a href="home/updateEMBY/" @click.prevent="updateEmby"><i class="menu-icon-emby" />&nbsp;Update Emby</a></li>
                             <!-- Avoid mixed content blocking by open manage torrent in new tab -->
                             <li v-if="linkVisible.manageTorrents"><app-link href="manage/manageTorrents/" target="_blank"><i class="menu-icon-bittorrent" />&nbsp;Manage Torrents</app-link></li>
                             <li v-if="linkVisible.failedDownloads"><app-link href="manage/failedDownloads/"><i class="menu-icon-failed-download" />&nbsp;Failed Downloads</app-link></li>
                             <li v-if="linkVisible.subtitleMissed"><app-link href="manage/subtitleMissed/"><i class="menu-icon-backlog" />&nbsp;Missed Subtitle Management</app-link></li>
-                            <li v-if="linkVisible.subtitleMissedPP"><app-link href="manage/subtitleMissedPP/"><i class="menu-icon-backlog" />&nbsp;Missed Subtitle in Post-Process folder</app-link></li>
                         </ul>
                         <div style="clear:both;" />
                     </li>
@@ -115,6 +114,7 @@ export default {
     computed: {
         ...mapState({
             config: state => state.config.general,
+            subtitles: state => state.config.subtitles,
             clients: state => state.config.clients,
             notifiers: state => state.config.notifiers,
             postprocessing: state => state.config.postprocessing,
@@ -169,8 +169,7 @@ export default {
             return '';
         },
         linkVisible() {
-            const { clients, config, notifiers, postprocessing, search } = this;
-            const { subtitles } = config;
+            const { clients, notifiers, search, subtitles } = this;
             const { general } = search;
             const { kodi, plex, emby } = notifiers;
 
@@ -182,8 +181,7 @@ export default {
                 emby: emby.enabled && emby.host,
                 manageTorrents: clients.torrents.enabled && clients.torrents.method !== 'blackhole',
                 failedDownloads: general.failedDownloads.enabled,
-                subtitleMissed: subtitles.enabled,
-                subtitleMissedPP: postprocessing.postponeIfNoSubs
+                subtitleMissed: subtitles.enabled
             };
         }
     },
@@ -284,6 +282,33 @@ export default {
             } catch (error) {
                 this.$snotify.info(
                     'You are already on the latest version'
+                );
+            }
+        },
+        async updateKodi() {
+            try {
+                await api.post('notifications/kodi/update');
+            } catch (error) {
+                this.$snotify.info(
+                    'Error trying to update kodi'
+                );
+            }
+        },
+        async updateEmby() {
+            try {
+                await api.post('notifications/emby/update');
+            } catch (error) {
+                this.$snotify.info(
+                    'Error trying to update emby'
+                );
+            }
+        },
+        async updatePlex() {
+            try {
+                await api.post('notifications/plex/update');
+            } catch (error) {
+                this.$snotify.info(
+                    'Error trying to update plex'
                 );
             }
         }

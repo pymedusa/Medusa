@@ -40,17 +40,10 @@
                                             <config-toggle-slider v-model="notifiers.kodi.cleanLibrary" label="Clean library" id="kodi_clean_library" :explanations="['clean KODI library when replaces a already downloaded episode?']" @change="save()" />
                                             <config-toggle-slider v-model="notifiers.kodi.update.onlyFirst" label="Only update first host" id="kodi_update_onlyfirst" :explanations="['only send library updates/clean to the first active host?']" @change="save()" />
 
-                                            <div class="form-group">
-                                                <div class="row">
-                                                    <label for="kodi_host" class="col-sm-2 control-label">
-                                                        <span>KODI IP:Port</span>
-                                                    </label>
-                                                    <div class="col-sm-10 content">
-                                                        <select-list name="kodi_host" id="kodi_host" :list-items="notifiers.kodi.host" @change="notifiers.kodi.host = $event.map(x => x.value)" />
-                                                        <p>host running KODI (eg. 192.168.1.100:8080)</p>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                            <config-template label="KODI IP:Port" labelFor="kodi_host">
+                                                <select-list name="kodi_host" id="kodi_host" :list-items="notifiers.kodi.host" @change="notifiers.kodi.host = $event.map(x => x.value)" />
+                                                <p>host running KODI (eg. 192.168.1.100:8080)</p>
+                                            </config-template>
 
                                             <config-textbox v-model="notifiers.kodi.username" label="Username" id="kodi_username" :explanations="['username for your KODI server (blank for none)']" @change="save()" />
                                             <config-textbox v-model="notifiers.kodi.password" type="password" label="Password" id="kodi_password" :explanations="['password for your KODI server (blank for none)']" @change="save()" />

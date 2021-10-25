@@ -1,6 +1,40 @@
 ## Unreleased
 
 #### New Features
+- Added separate configs for the process methods (copy, move, etc) for torrent and nzb. (only usuable with the download handler) ([9932](https://github.com/pymedusa/Medusa/pull/9932))
+- Added setting for the default client path that will be protected (can't be deleted) during post-processing ([9954](https://github.com/pymedusa/Medusa/pull/9954))
+
+#### Improvements
+
+#### Fixes
+- Correctly delete folders with files for move method or if explicitly wanted ([9950](https://github.com/pymedusa/Medusa/pull/9950))
+- Fixed link to the overview of snatched episodes at the bottom of the pages ([9954](https://github.com/pymedusa/Medusa/pull/9954))
+
+-----
+
+## 0.5.18 (14-09-2021)
+
+#### Improvements
+- Add the options to manage/searches page to clean automatic added scene exceptions from cache. ([9859](https://github.com/pymedusa/Medusa/pull/9859))
+- Add custom newznab/torznab category id's through UI. ([9857](https://github.com/pymedusa/Medusa/pull/9857))
+
+#### Fixes
+- Fix prowlarr provider id's being obfuscated in logs because of a bad log level. ([9857](https://github.com/pymedusa/Medusa/pull/9857))
+- Fix postprocessing specials. ([9812](https://github.com/pymedusa/Medusa/pull/9812))
+- Fix storing a negative value in the UI as a search delay value ([9822](https://github.com/pymedusa/Medusa/pull/9822))
+
+-----
+
+## 0.5.17 (16-08-2021)
+
+#### Fixes
+- Fix history page (compact layout) fails to load. ([9794](https://github.com/pymedusa/Medusa/pull/9794))
+- Prevent recommended shows (imdb) to cache empty responses to the api. ([9797](https://github.com/pymedusa/Medusa/pull/9797))
+- Fix download handler throwing errors connecting to NZBget. ([9801](https://github.com/pymedusa/Medusa/pull/9801))
+
+## 0.5.16 (13-08-2021)
+
+#### New Features
 - Implemented recommended shows v2. ([5782](https://github.com/pymedusa/Medusa/pull/5782))
   - Added recommended list from anilist.co
   - Recommended lists are cached nightly
@@ -17,6 +51,8 @@
 - Fixed postprocessing of archives with multiple video files caused a pp of the complete download dir. ([9775](https://github.com/pymedusa/Medusa/pull/9775))
 - Fixed download handler wrongly untrack downloads when connection errors occurred. ([9774](https://github.com/pymedusa/Medusa/pull/9774))
 - Removed anonomized redirect service (derefer.org is down) in favor of "noreferrer noopener" headers ([5782](https://github.com/pymedusa/Medusa/pull/5782))
+- Fixed schedule page not showing day of week for shows airing on sunday (banner/poster layouts) ([9791](https://github.com/pymedusa/Medusa/pull/9791))
+- Group history compact layout results by quality ([9788](https://github.com/pymedusa/Medusa/pull/9788))
 
 ----
 

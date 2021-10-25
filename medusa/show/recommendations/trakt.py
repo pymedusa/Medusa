@@ -24,6 +24,7 @@ from medusa.show.recommendations.recommended import (
 from six import iteritems
 
 from trakt import sync
+from trakt.errors import ForbiddenException
 
 from tvdbapiv2.exceptions import ApiException
 
@@ -172,10 +173,14 @@ class TraktPopular(BasePopular):
             # # Update the dogpile index. This will allow us to retrieve all stored dogpile shows from the dbm.
             # update_recommended_series_cache_index('trakt', [binary_type(s.series_id) for s in trending_shows])
             blacklist = app.TRAKT_BLACKLIST_NAME not in ''
-
+        except ForbiddenException as error:
+            log.warning(
+                'Trying to connect to trakt.tv but it seems you are not authenticated. error: {error}',
+                {'error': error}
+            )
+            raise
         except Exception as error:
             log.exception('Could not connect to Trakt service: {0}', error)
-            raise
 
         return blacklist, recommended_shows, removed_from_medusa
 

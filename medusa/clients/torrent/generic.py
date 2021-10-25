@@ -266,7 +266,7 @@ class GenericClient(object):
         """
         r_code = self._get_auth()
         if self.message:
-            return r_code, self.message
+            return bool(r_code), self.message
         elif not self._check_path():
             return False, self.message
         if r_code:

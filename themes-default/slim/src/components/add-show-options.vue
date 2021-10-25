@@ -3,9 +3,11 @@
         <fieldset class="component-group-list">
             <div class="form-group">
                 <div class="row">
-                    <label for="customQuality" class="col-sm-2 control-label">
-                        <span>Quality</span>
-                    </label>
+                    <div class="col-sm-2">
+                        <label for="customQuality" class="control-label">
+                            <span>Quality</span>
+                        </label>
+                    </div>
                     <div class="col-sm-10 content">
                         <quality-chooser
                             :overall-quality="showDefaults.quality"
@@ -28,9 +30,11 @@
 
             <div class="form-group">
                 <div class="row">
-                    <label for="defaultStatus" class="col-sm-2 control-label">
-                        <span>Status for previously aired episodes</span>
-                    </label>
+                    <div class="col-sm-2">
+                        <label for="defaultStatus" class="control-label">
+                            <span>Status for previously aired episodes</span>
+                        </label>
+                    </div>
                     <div class="col-sm-10 content">
                         <select id="defaultStatus" class="form-control form-control-inline input-sm" v-model="selectedStatus">
                             <option v-for="option in defaultEpisodeStatusOptions" :value="option.value" :key="option.value">{{ option.name }}</option>
@@ -41,9 +45,11 @@
 
             <div class="form-group">
                 <div class="row">
-                    <label for="defaultStatusAfter" class="col-sm-2 control-label">
-                        <span>Status for all future episodes</span>
-                    </label>
+                    <div class="col-sm-2">
+                        <label for="defaultStatusAfter" class="control-label">
+                            <span>Status for all future episodes</span>
+                        </label>
+                    </div>
                     <div class="col-sm-10 content">
                         <select id="defaultStatusAfter" class="form-control form-control-inline input-sm" v-model="selectedStatusAfter">
                             <option v-for="option in defaultEpisodeStatusOptions" :value="option.value" :key="option.value">{{ option.name }}</option>
@@ -72,9 +78,11 @@
 
             <div ref="blackAndWhiteList" v-if="enableAnimeOptions && selectedAnimeEnabled && !disableReleaseGroups" class="form-group">
                 <div class="row">
-                    <label for="anidbReleaseGroup" class="col-sm-2 control-label">
-                        <span>Release Groups</span>
-                    </label>
+                    <div class="col-sm-2">
+                        <label for="anidbReleaseGroup" class="control-label">
+                            <span>Release Groups</span>
+                        </label>
+                    </div>
                     <div class="col-sm-10 content">
                         <anidb-release-group-ui
                             class="max-width"
@@ -105,9 +113,11 @@
 
             <div class="form-group">
                 <div class="row">
-                    <label for="saveDefaultsButton" class="col-sm-2 control-label">
-                        <span>Use current values as the defaults</span>
-                    </label>
+                    <div class="col-sm-2">
+                        <label for="saveDefaultsButton" class="control-label">
+                            <span>Use current values as the defaults</span>
+                        </label>
+                    </div>
                     <div class="col-sm-10 content">
                         <button type="button" class="btn-medusa btn-inline" @click.prevent="saveDefaults" :disabled="saving || saveDefaultsDisabled">Save Defaults</button>
                     </div>
@@ -215,7 +225,7 @@ export default {
             configLoaded: state => state.config.general.wikiUrl !== null,
             layout: state => state.config.layout,
             namingForceFolders: state => state.config.general.namingForceFolders,
-            subtitlesEnabled: state => state.config.general.subtitles.enabled,
+            subtitlesEnabled: state => state.config.subtitles.enabled,
             episodeStatuses: state => state.config.consts.statuses,
             anime: state => state.config.anime
         }),

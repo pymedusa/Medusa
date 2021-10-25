@@ -135,7 +135,7 @@ const getters = {
             if (!weekDay) {
                 weekDay = {
                     airdate: episode.airdate,
-                    header: days[episode.weekday - 1],
+                    header: days[episode.weekday],
                     class: 'soon',
                     episodes: []
                 };
@@ -161,7 +161,7 @@ const getters = {
             missed, today, soon, later
         } = state;
         const { displayPaused } = rootState.config.layout.comingEps;
-        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
         const newArray = [];
 
         if (sort === 'date') {
@@ -212,7 +212,7 @@ const getters = {
 
         if (sort === 'network') {
             const { getScheduleFlattened } = getters;
-            const filteredSchedule = getScheduleFlattened.filter(item => item.paused || displayPaused);
+            const filteredSchedule = getScheduleFlattened.filter(item => !item.paused || displayPaused);
 
             for (const episode of filteredSchedule.sort((a, b) => a.network.localeCompare(b.network))) {
                 let network = newArray.find(item => item.header === episode.network);

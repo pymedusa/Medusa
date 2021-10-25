@@ -155,8 +155,8 @@ class TorznabProvider(TorrentProvider):
                 if any(param in search_params for param in itervalues(INDEXERS_PARAM)):
                     break
 
-        # Reprocess but now use force_query = True if there are no results
-        if not results and not force_query:
+        # Reprocess but now use force_query = True if there are no results and we already tried a `tvsearch`
+        if not results and search_params['t'] == 'tvsearch' and not force_query:
             return self.search(search_strings, ep_obj=ep_obj, force_query=True)
 
         return results

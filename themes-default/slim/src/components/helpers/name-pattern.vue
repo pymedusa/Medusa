@@ -4,9 +4,11 @@
         In that case, we're showing this checkbox, to display the rest of the form.
         If type evaulates to an empty string, we're asuming this is the default name pattern. And it's enabled by default. -->
         <div v-if="type" class="form-group">
-            <label for="enable_naming_custom" class="col-sm-2 control-label">
-                <span>Custom {{ type }}</span>
-            </label>
+            <div class="col-sm-2">
+                <label for="enable_naming_custom" class="control-label">
+                    <span>Custom {{ type }}</span>
+                </label>
+            </div>
             <div class="col-sm-10 content">
                 <toggle-button :width="45" :height="22" id="enable_naming_custom" name="enable_naming_custom" v-model="isEnabled" @input="update()" sync />
                 <span>Name {{ type }} shows differently than regular shows?</span>
@@ -15,9 +17,11 @@
 
         <div v-if="!type || isEnabled" class="episode-naming">
             <div class="form-group">
-                <label for="name_presets" class="col-sm-2 control-label">
-                    <span>Name Pattern:</span>
-                </label>
+                <div class="col-sm-2">
+                    <label for="name_presets" class="control-label">
+                        <span>Name Pattern:</span>
+                    </label>
+                </div>
                 <div class="col-sm-10 content">
                     <select id="name_presets" class="form-control input-sm" v-model="selectedNamingPattern" @change="updatePatternSamples" @input="update()">
                         <option :id="preset.pattern" v-for="preset in presets" :key="preset.pattern">{{ preset.example }}</option>
@@ -27,9 +31,11 @@
 
             <div id="naming_custom">
                 <div v-if="isCustom" class="form-group" style="padding-top: 0;">
-                    <label class="col-sm-2 control-label">
-                        <span>&nbsp;</span>
-                    </label>
+                    <div class="col-sm-2">
+                        <label class="control-label">
+                            <span>&nbsp;</span>
+                        </label>
+                    </div>
                     <div class="col-sm-10 content">
                         <input type="text" name="naming_pattern" id="naming_pattern" v-model="customName" @change="updatePatternSamples" @input="update()" class="form-control-inline-max input-sm max-input350">
                         <img src="images/legend16.png" width="16" height="16" alt="[Toggle Key]" id="show_naming_key" title="Toggle Naming Legend" class="legend" @click="showLegend = !showLegend">
@@ -212,9 +218,11 @@
             </div>
 
             <div v-if="selectedMultiEpStyle" class="form-group">
-                <label class="col-sm-2 control-label" for="naming_multi_ep">
-                    <span>Multi-Episode Style:</span>
-                </label>
+                <div class="col-sm-2">
+                    <label class="control-label" for="naming_multi_ep">
+                        <span>Multi-Episode Style:</span>
+                    </label>
+                </div>
                 <div class="col-sm-10 content">
                     <select id="naming_multi_ep" name="naming_multi_ep" v-model="selectedMultiEpStyle" class="form-control input-sm" @change="updatePatternSamples" @input="update($event)">
                         <option id="multiEpStyle" :value="multiEpStyle.value" v-for="multiEpStyle in availableMultiEpStyles" :key="multiEpStyle.value">{{ multiEpStyle.text }}</option>
@@ -237,9 +245,11 @@
 
             <!-- Anime only -->
             <div v-if="animeType > 0" class="form-group">
-                <label for="naming_anime" class="col-sm-2 control-label">
-                    <span>Add Absolute Number</span>
-                </label>
+                <div class="col-sm-2">
+                    <label for="naming_anime" class="control-label">
+                        <span>Add Absolute Number</span>
+                    </label>
+                </div>
                 <div class="col-sm-10 content">
                     <input type="radio" name="naming_anime" id="naming_anime" value="1" v-model="animeType" @change="updatePatternSamples">
                     <span>Add the absolute number to the season/episode format?</span>
@@ -248,9 +258,11 @@
             </div>
 
             <div v-if="animeType > 0" class="form-group">
-                <label for="naming_anime_only" class="col-sm-2 control-label">
-                    <span>Only Absolute Number</span>
-                </label>
+                <div class="col-sm-2">
+                    <label for="naming_anime_only" class="control-label">
+                        <span>Only Absolute Number</span>
+                    </label>
+                </div>
                 <div class="col-sm-10 content">
                     <input type="radio" name="naming_anime" id="naming_anime_only" value="2" v-model="animeType" @change="updatePatternSamples">
                     <span>Replace season/episode format with absolute number</span>
@@ -259,9 +271,11 @@
             </div>
 
             <div v-if="animeType > 0"  class="form-group">
-                <label for="naming_anime_none" class="col-sm-2 control-label">
-                    <span>No Absolute Number</span>
-                </label>
+                <div class="col-sm-2">
+                    <label for="naming_anime_none" class="control-label">
+                        <span>No Absolute Number</span>
+                    </label>
+                </div>
                 <div class="col-sm-10 content">
                     <input type="radio" name="naming_anime" id="naming_anime_none" value="3" v-model="animeType" @change="updatePatternSamples">
                     <span>Don't include the absolute number</span>

@@ -31,30 +31,39 @@ def nzb_connection(url):
     nzb_get_rpc = ServerProxy(url)
     try:
         if nzb_get_rpc.writelog('INFO', 'Medusa connected to test connection.'):
-            log.debug('Successfully connected to NZBget')
+            msg = 'Successfully connected to NZBget'
+            log.debug(msg)
         else:
-            log.warning('Successfully connected to NZBget but unable to'
-                        ' send a message')
-        return True
+            msg = 'Successfully connected to NZBget but unable to send a message'
+            log.warning(msg)
+
+        return True, msg
 
     except ProtocolError as error:
         if error.errmsg == 'Unauthorized':
-            log.warning('NZBget username or password is incorrect.')
+            msg = 'NZBget username or password is incorrect.'
+            log.warning(msg)
         else:
-            log.error('Protocol Error: {msg}', {'msg': error.errmsg})
-        return False
+            msg = f'Protocol Error: {error.errmsg}'
+            log.error(msg)
+
+        return False, msg
 
     except Error as error:
-        log.warning('Please check your NZBget host and port (if it is running).'
-                    ' NZBget is not responding to this combination.'
-                    ' Error: {msg}', {'msg': error.errmsg})
-        return False
+        msg = ('Please check your NZBget host and port (if it is running).'
+               ' NZBget is not responding to this combination.'
+               f' Error: {error}')
+        log.warning(msg)
+
+        return False, msg
 
     except socket.error as error:
-        log.warning('Please check your NZBget host and port (if it is running).'
-                    ' NZBget is not responding to this combination.'
-                    ' Socket Error: {msg}', {'msg': error})
-        return False
+        msg = ('Please check your NZBget host and port (if it is running).'
+               ' NZBget is not responding to this combination.'
+               f' Socket Error: {error}')
+        log.warning(msg)
+
+        return False, msg
 
 
 def test_authentication(host=None, username=None, password=None, use_https=False):

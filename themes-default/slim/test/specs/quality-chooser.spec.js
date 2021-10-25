@@ -85,8 +85,9 @@ describe('QualityChooser.test.js', () => {
         wrapper.setData({ selectedQualityPreset: 'keep' });
         await wrapper.vm.$nextTick();
         expect(wrapper.find('#customQualityWrapper').element).not.toBeVisible();
-        // Underlying value should be equal to `initialQuality`
-        expect(wrapper.vm.allowedQualities).toEqual([8, 32, 64, 128, 256, 512]); // HD preset
+        // Underlying value should be equal to [], as sending an empty quality list in mass-edit-show
+        // will make the backend not update the quality (and use the existing one)
+        expect(wrapper.vm.allowedQualities).toEqual([]); // HD preset
         expect(wrapper.vm.preferredQualities).toEqual([]);
 
         // And to custom again

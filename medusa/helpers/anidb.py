@@ -11,8 +11,7 @@ from medusa import app
 from medusa.cache import anidb_cache
 from medusa.helper.exceptions import AnidbAdbaConnectionException
 from medusa.logger.adapters.style import BraceAdapter
-
-import six
+from medusa.show.recommendations.recommended import create_key
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -46,15 +45,6 @@ def set_up_anidb_connection():
         return False
 
     return app.ADBA_CONNECTION.authed()
-
-
-def create_key(namespace, fn, **kw):
-    def generate_key(*args, **kw):
-        show_key = namespace + '|' + args[0]
-        if six.PY2:
-            return show_key.encode('utf-8')
-        return show_key
-    return generate_key
 
 
 @anidb_cache.cache_on_arguments(namespace='anidb', function_key_generator=create_key)

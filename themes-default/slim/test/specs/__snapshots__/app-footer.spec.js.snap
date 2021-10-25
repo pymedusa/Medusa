@@ -28,7 +28,7 @@ exports[`AppFooter renders 1`] = `
       class="footerhighlight"
     >
       <app-link-stub
-        href="manage/episodeStatuses?whichStatus=2"
+        href="manage/episodeStatuses?status=2"
         placeholder="indexer-to-name"
         title="View overview of snatched episodes"
       >
