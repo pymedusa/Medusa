@@ -2,9 +2,11 @@
     <div v-if="!experimental || experimentalEnabled" id="config-toggle-slider-content">
         <div class="form-group">
             <div class="row">
-                <label :for="id" class="col-sm-2 control-label">
-                    <span>{{ label }}</span>
-                </label>
+                <div class="col-sm-2">
+                    <label :for="id" class="control-label">
+                        <span>{{ label }}</span>
+                    </label>
+                </div>
                 <div class="col-sm-10 content">
                     <toggle-button :width="45" :height="22" v-bind="{id, name: id, disabled}" v-model="localChecked" sync @input="updateValue()" />
                     <p v-for="(explanation, index) in explanations" :key="index">{{ explanation }}</p>

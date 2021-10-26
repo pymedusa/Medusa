@@ -61,7 +61,7 @@
                             {{ props.row.season > 0 ? 'Season ' + props.row.season : 'Specials' }}
                             <!-- Only show the search manual season search, when any of the episodes in it is not unaired -->
                             <app-link v-if="anyEpisodeNotUnaired(props.row)" class="epManualSearch" :href="`home/snatchSelection?showslug=${show.id.slug}&amp;season=${props.row.season}&amp;episode=1&amp;manual_search_type=season`">
-                                <img v-if="config" data-ep-manual-search src="images/manualsearch-white.png" width="16" height="16" alt="search" title="Manual Search">
+                                <img data-ep-manual-search src="images/manualsearch-white.png" width="16" height="16" alt="search" title="Manual Search">
                             </app-link>
                             <div class="season-scene-exception" :data-season="props.row.season > 0 ? props.row.season : 'Specials'" />
                             <img v-bind="getSeasonExceptions(props.row.season)">
@@ -224,7 +224,7 @@
                             {{ props.row.season > 0 ? 'Season ' + props.row.season : 'Specials' }}
                             <!-- Only show the search manual season search, when any of the episodes in it is not unaired -->
                             <app-link v-if="anyEpisodeNotUnaired(props.row)" class="epManualSearch" :href="`home/snatchSelection?showslug=${show.id.slug}&amp;season=${props.row.season}&amp;episode=1&amp;manual_search_type=season`">
-                                <img v-if="config" data-ep-manual-search src="images/manualsearch-white.png" width="16" height="16" alt="search" title="Manual Search">
+                                <img data-ep-manual-search src="images/manualsearch-white.png" width="16" height="16" alt="search" title="Manual Search">
                             </app-link>
                             <div class="season-scene-exception" :data-season="props.row.season > 0 ? props.row.season : 'Specials'" />
                             <img v-bind="getSeasonExceptions(props.row.season)">
@@ -551,7 +551,7 @@ export default {
     computed: {
         ...mapState({
             shows: state => state.shows.shows,
-            config: state => state.config.general,
+            subtitles: state => state.config.subtitles,
             configLoaded: state => state.config.layout.fanartBackground !== null,
             layout: state => state.config.layout,
             stateSearch: state => state.config.search
@@ -731,7 +731,7 @@ export default {
                 patchData[episode.slug] = { quality: Number.parseInt(quality, 10) };
             });
 
-            api.patch('series/' + show.id.slug + '/episodes', patchData) // eslint-disable-line no-undef
+            api.patch(`series/${show.id.slug}/episodes`, patchData) // eslint-disable-line no-undef
                 .then(_ => {
                     console.info(`patched show ${show.id.slug} with quality ${quality}`);
                     [...new Set(episodes.map(episode => episode.season))].forEach(season => {
@@ -1077,8 +1077,8 @@ export default {
             }
         },
         showSubtitleButton(episode) {
-            const { config, show } = this;
-            return (episode.season !== 0 && config.subtitles.enabled && show.config.subtitlesEnabled && !['Snatched', 'Snatched (Proper)', 'Snatched (Best)', 'Downloaded'].includes(episode.status));
+            const { subtitles, show } = this;
+            return (episode.season !== 0 && subtitles.enabled && show.config.subtitlesEnabled && !['Snatched', 'Snatched (Proper)', 'Snatched (Best)', 'Downloaded'].includes(episode.status));
         },
         totalSeasonEpisodeSize(season) {
             return season.children.filter(x => x.file && x.file.size > 0).reduce((a, b) => a + b.file.size, 0);

@@ -8,6 +8,7 @@ import threading
 from contextlib import contextmanager
 from datetime import datetime, timedelta
 
+from medusa.classes import ErrorViewer, WarningViewer
 from medusa.logger import LOGGING_LEVELS, filter_logline, read_loglines
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import BaseRequestHandler
@@ -85,15 +86,23 @@ class LogHandler(BaseRequestHandler):
     #: resource name
     name = 'log'
     #: identifier
-    identifier = None
+    identifier = ('identifier', r'[a-z]+')
     #: allowed HTTP methods
     allowed_methods = ('GET', 'POST', )
 
-    def get(self):
+    def get(self, identifier=None):
         """Query logs."""
         log_level = self.get_argument('level', 'INFO').upper()
         if log_level not in LOGGING_LEVELS:
             return self._bad_request('Invalid log level')
+
+        if identifier == 'reporter':
+            if log_level == 'WARNING':
+                return self._ok(data=WarningViewer.errors)
+
+            if log_level == 'ERROR':
+                return self._ok(data=ErrorViewer.errors)
+            return self._bad_request('Missing a valid log level. Valid levels are WARNING and ERROR')
 
         thread_name = self.get_argument('thread', '').upper()
         if thread_name not in valid_thread_names:
@@ -137,7 +146,7 @@ class LogHandler(BaseRequestHandler):
             text = '\n'.join(data_generator())
             return self._ok(stream=text, content_type='text/plain; charset=UTF-8')
 
-    def post(self):
+    def post(self, identifier=None):
         """Create a log line.
 
         By definition this method is NOT idempotent.

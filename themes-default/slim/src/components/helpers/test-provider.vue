@@ -40,7 +40,7 @@ export default {
                     type: 'TESTPROVIDER', providerId
                 })
                     .catch(error => {
-                        if (error.response.status === 404) {
+                        if ([404, 401].includes(error.response.status)) {
                             throw new Error(error.response.data.error);
                         }
                         throw error;

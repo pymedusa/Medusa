@@ -562,6 +562,15 @@ manage*.mako
     color: rgb(255, 255, 255);
 }
 
+/* The back image (svg) */
+.back-arrow {
+    fill: white;
+}
+
+.manage-update .title a {
+    color: white;
+}
+
 /* =======================================================================
 Global
 ========================================================================== */
@@ -706,6 +715,10 @@ body {
 
 .vgt-table tr:nth-child(odd) {
     background-color: rgb(51, 51, 51);
+}
+
+.vgt-table span.episode-title > a {
+    color: rgb(255, 255, 255);
 }
 
 .footer__navigation__page-btn {

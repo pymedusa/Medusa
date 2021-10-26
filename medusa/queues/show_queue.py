@@ -282,7 +282,7 @@ class ShowQueueItem(generic_queue.QueueItem):
 
         # Update the generic_queue.py to_json.
         self.to_json.update({
-            'show': self.show
+            'show': self.show.to_json() if self.show else {}
         })
 
     def isInQueue(self):
@@ -366,14 +366,14 @@ class QueueItemAdd(ShowQueueItem):
         )
 
         show_slug = indexer_id_to_slug(self.indexer, self.indexer_id)
-        series = Series.from_identifier(SeriesIdentifier.from_slug(show_slug))
+        self.show = Series.from_identifier(SeriesIdentifier.from_slug(show_slug))
 
         step = []
 
         # Small helper, to reduce code for messaging
         def message_step(new_step):
             step.append(new_step)
-            ws.Message('QueueItemShowAdd', dict(
+            ws.Message('QueueItemShow', dict(
                 step=step, **self.to_json
             )).push()
 
@@ -382,7 +382,7 @@ class QueueItemAdd(ShowQueueItem):
                 # Push an update to any open Web UIs through the WebSocket
                 message_step('load show from {indexer}'.format(indexer=indexerApi(self.indexer).name))
 
-                api = series.identifier.get_indexer_api(self.options)
+                api = self.show.identifier.get_indexer_api(self.options)
 
                 if getattr(api[self.indexer_id], 'seriesname', None) is None:
                     log.error(
@@ -399,30 +399,30 @@ class QueueItemAdd(ShowQueueItem):
                     self._finish_early()
                     raise SaveSeriesException('Indexer is missing a showname in this language: {0!r}')
 
-                series.load_from_indexer(tvapi=api)
+                self.show.load_from_indexer(tvapi=api)
 
                 message_step('load info from imdb')
-                series.load_imdb_info()
+                self.show.load_imdb_info()
             except IndexerException as error:
                 log.warning('Unable to load series from indexer: {0!r}'.format(error))
                 raise SaveSeriesException('Unable to load series from indexer: {0!r}'.format(error))
 
             try:
                 message_step('configure show options')
-                series.configure(self)
+                self.show.configure(self)
             except KeyError as error:
                 log.error(
                     'Unable to add show {series_name} due to an error with one of the provided options: {error}',
-                    {'series_name': series.name, 'error': error}
+                    {'series_name': self.show.name, 'error': error}
                 )
                 ui.notifications.error(
                     'Unable to add show {series_name} due to an error with one of the provided options: {error}'.format(
-                        series_name=series.name, error=error
+                        series_name=self.show.name, error=error
                     )
                 )
                 raise SaveSeriesException(
                     'Unable to add show {series_name} due to an error with one of the provided options: {error}'.format(
-                        series_name=series.name, error=error
+                        series_name=self.show.name, error=error
                     ))
 
             except Exception as error:
@@ -430,15 +430,15 @@ class QueueItemAdd(ShowQueueItem):
                 log.debug(traceback.format_exc())
                 raise
 
-            app.showList.append(series)
-            series.save_to_db()
+            app.showList.append(self.show)
+            self.show.save_to_db()
 
             try:
                 message_step('load episodes from {indexer}'.format(indexer=indexerApi(self.indexer).name))
-                series.load_episodes_from_indexer(tvapi=api)
+                self.show.load_episodes_from_indexer(tvapi=api)
                 # If we provide a default_status_after through the apiv2 series route options object.
                 # set it after we've added the episodes.
-                series.default_ep_status = self.options['default_status_after'] or app.STATUS_DEFAULT_AFTER
+                self.show.default_ep_status = self.options['default_status_after'] or app.STATUS_DEFAULT_AFTER
 
             except IndexerException as error:
                 log.warning('Unable to load series episodes from indexer: {0!r}'.format(error))
@@ -447,22 +447,22 @@ class QueueItemAdd(ShowQueueItem):
                 )
 
             message_step('create metadata in show folder')
-            series.write_metadata()
-            series.update_metadata()
-            series.populate_cache()
-            build_name_cache(series)  # update internal name cache
-            series.flush_episodes()
-            series.sync_trakt()
+            self.show.write_metadata()
+            self.show.update_metadata()
+            self.show.populate_cache()
+            build_name_cache(self.show)  # update internal name cache
+            self.show.flush_episodes()
+            self.show.sync_trakt()
 
             message_step('add scene numbering')
-            series.add_scene_numbering()
+            self.show.add_scene_numbering()
 
             if self.show_dir:
                 # If a show dir was passed, this was added as an existing show.
                 # For new shows we should have any files on disk.
                 message_step('refresh episodes from disk')
                 try:
-                    app.show_queue_scheduler.action.refreshShow(series)
+                    app.show_queue_scheduler.action.refreshShow(self.show)
                 except CantRefreshShowException as error:
                     log.warning('Unable to rescan episodes from disk: {0!r}'.format(error))
 
@@ -475,11 +475,11 @@ class QueueItemAdd(ShowQueueItem):
         default_status = self.options['default_status'] or app.STATUS_DEFAULT
         if statusStrings[default_status] == 'Wanted':
             message_step('trigger backlog search')
-            app.backlog_search_scheduler.action.search_backlog([series])
+            app.backlog_search_scheduler.action.search_backlog([self.show])
 
         self.success = True
 
-        ws.Message('showAdded', series.to_json(detailed=False)).push()  # Send ws update to client
+        ws.Message('showAdded', self.show.to_json(detailed=False)).push()  # Send ws update to client
         message_step('finished')
         self.finish()
 
@@ -508,6 +508,7 @@ class QueueItemRefresh(ShowQueueItem):
             '{id}: Performing refresh on {show}',
             {'id': self.show.series_id, 'show': self.show.name}
         )
+        ws.Message('QueueItemShow', self.to_json).push()
 
         try:
             self.show.refresh_dir()
@@ -518,6 +519,7 @@ class QueueItemRefresh(ShowQueueItem):
 
             # Load XEM data to DB for show
             scene_numbering.xem_refresh(self.show, force=True)
+            self.success = True
         except IndexerException as error:
             log.warning(
                 '{id}: Unable to contact {indexer}. Aborting: {error_msg}',
@@ -531,6 +533,7 @@ class QueueItemRefresh(ShowQueueItem):
             )
 
         self.finish()
+        ws.Message('QueueItemShow', self.to_json).push()
 
 
 class QueueItemRename(ShowQueueItem):
@@ -540,6 +543,7 @@ class QueueItemRename(ShowQueueItem):
     def run(self):
 
         ShowQueueItem.run(self)
+        ws.Message('QueueItemShow', self.to_json).push()
 
         log.info(
             'Performing rename on {series_name}',
@@ -578,6 +582,7 @@ class QueueItemRename(ShowQueueItem):
             cur_ep_obj.rename()
 
         self.finish()
+        ws.Message('QueueItemShow', self.to_json).push()
 
 
 class QueueItemSubtitle(ShowQueueItem):
@@ -587,6 +592,7 @@ class QueueItemSubtitle(ShowQueueItem):
     def run(self):
 
         ShowQueueItem.run(self)
+        ws.Message('QueueItemShow', self.to_json).push()
 
         log.info(
             '{id}: Downloading subtitles for {show}',
@@ -595,6 +601,7 @@ class QueueItemSubtitle(ShowQueueItem):
 
         self.show.download_subtitles()
         self.finish()
+        ws.Message('QueueItemShow', self.to_json).push()
 
 
 class QueueItemUpdate(ShowQueueItem):
@@ -609,6 +616,7 @@ class QueueItemUpdate(ShowQueueItem):
     def run(self):
 
         ShowQueueItem.run(self)
+        ws.Message('QueueItemShow', self.to_json).push()
 
         log.debug(
             '{id}: Beginning update of {show}',
@@ -766,6 +774,7 @@ class QueueItemUpdate(ShowQueueItem):
         # Refresh show needs to be forced since current execution locks the queue
         app.show_queue_scheduler.action.refreshShow(self.show, True)
         self.finish()
+        ws.Message('QueueItemShow', self.to_json).push()
 
 
 class QueueItemSeasonUpdate(ShowQueueItem):
@@ -782,6 +791,7 @@ class QueueItemSeasonUpdate(ShowQueueItem):
     def run(self):
 
         ShowQueueItem.run(self)
+        ws.Message('QueueItemShow', self.to_json).push()
 
         log.info(
             '{id}: Beginning update of {show}{season}',
@@ -922,6 +932,7 @@ class QueueItemSeasonUpdate(ShowQueueItem):
         )
 
         self.finish()
+        ws.Message('QueueItemShow', self.to_json).push()
 
 
 class QueueItemRemove(ShowQueueItem):
@@ -933,8 +944,8 @@ class QueueItemRemove(ShowQueueItem):
         self.full = full
 
     def run(self):
-
         ShowQueueItem.run(self)
+        ws.Message('QueueItemShow', self.to_json).push()
 
         log.info(
             '{id}: Removing {show}',
@@ -957,9 +968,8 @@ class QueueItemRemove(ShowQueueItem):
                 log.exception('Exception occurred while trying to delete show {show}, error: {error',
                               {'show': self.show.name, 'error': error})
 
-        # Send showRemoved to frontend, so we can remove it from localStorage.
-        ws.Message('QueueItemShowRemove', self.show.to_json(detailed=False)).push()  # Send ws update to client
-
         self.show.delete_show(full=self.full)
 
         self.finish()
+        # Send showRemoved to frontend, so we can remove it from localStorage.
+        ws.Message('QueueItemShow', self.show.to_json(detailed=False)).push()
