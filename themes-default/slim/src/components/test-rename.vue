@@ -19,6 +19,11 @@
             <template v-else-if="show.config.sports && postprocessing.naming.enableCustomNamingSports">{{postprocessing.naming.patternSportse}}</template>
             <template v-else>{{postprocessing.naming.pattern}}</template>
         </blockquote>
+
+        <div class="rename-cancel">
+            <button class="btn-medusa btn-success" @click="renameSelected">Rename Selected</button>
+            <app-link :href="`home/displayShow?showslug=${showSlug}`" class="btn-medusa btn-danger">Cancel Rename</app-link>
+        </div>
         <div>
             <button type="button" class="btn-medusa btn-xs selectAllShows" @click="check(true)">Select all</button>
             <button type="button" class="btn-medusa btn-xs unselectAllShows" @click="check(false)">Clear all</button>
@@ -51,8 +56,10 @@
                 </tr>
             </tbody>
         </table>
-        <button class="btn-medusa btn-success" @click="renameSelected">Rename Selected</button>
-        <app-link :href="`home/displayShow?showslug=${showSlug}`" class="btn-medusa btn-danger">Cancel Rename</app-link>
+        <div class="rename-cancel">
+            <button class="btn-medusa btn-success" @click="renameSelected">Rename Selected</button>
+            <app-link :href="`home/displayShow?showslug=${showSlug}`" class="btn-medusa btn-danger">Cancel Rename</app-link>
+        </div>
     </div>
 </template>
 
@@ -167,6 +174,7 @@ export default {
                 this.loading = true;
                 const url = `series/${showSlug}/operation`;
                 await api.post(url, { type: 'RENAME_EPISODES', episodes }, { timeout: 120000 });
+                this.$router.push({ name: 'show', query: { showslug: showSlug } });
             } catch (error) {
                 this.$snotify.error(
                     'Error while trying to perform the rename task',
@@ -204,7 +212,7 @@ export default {
 
 <style scoped>
 .defaultTable {
-    margin: 1em 0;
+    margin: 0.3em 0;
 }
 
 .defaultTable tr.seasonheader > td {
@@ -212,8 +220,9 @@ export default {
 }
 
 .season-header {
+    color: white;
     font-family: inherit;
-    font-weight: 500;
+    font-weight: 700;
     line-height: 1.1;
     background-color: rgb(51, 51, 51);
     display: block;
@@ -224,5 +233,9 @@ export default {
 .loading {
     display: block;
     margin: 10px 0;
+}
+
+.rename-cancel {
+    margin: 5px 0;
 }
 </style>

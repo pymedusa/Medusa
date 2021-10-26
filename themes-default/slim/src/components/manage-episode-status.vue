@@ -2,7 +2,7 @@
     <div id="episode-status">
         <div id="select-status">
             <span>Manage episodes with status</span>
-            <select :disabled="manageStatus" name="whichStatus" v-model="selectedStatus" class="form-control form-control-inline input-sm">
+            <select :disabled="manageStatus" v-model="selectedStatus" class="form-control form-control-inline input-sm">
                 <option v-for="status in availableStatus" :value="status.value" :key="status.value">{{status.text}}</option>
             </select>
 
