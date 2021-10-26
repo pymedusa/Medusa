@@ -27,7 +27,7 @@
   },
   "resolutions": {
     "**/jquery": "3.6.0",
-    "**/date-fns": "2.21.1",
+    "**/date-fns": "2.25.0",
     "jest/**/@babel/core": "7.14.8"
   },
   "dependencies": {
@@ -39,7 +39,7 @@
     "@johmun/vue-tags-input": "2.1.0",
     "bootstrap": "3.4.1",
     "country-language": "0.1.7",
-    "date-fns": "2.21.1",
+    "date-fns": "2.25.0",
     "is-visible": "2.2.0",
     "javascript-time-ago": "2.3.7",
     "jquery": "3.6.0",
