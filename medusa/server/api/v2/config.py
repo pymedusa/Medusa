@@ -238,8 +238,12 @@ class ConfigHandler(BaseRequestHandler):
 
 
         'postProcessing.showDownloadDir': StringField(app, 'TV_DOWNLOAD_DIR'),
+        'postProcessing.defaultClientPath': StringField(app, 'DEFAULT_CLIENT_PATH'),
         'postProcessing.processAutomatically': BooleanField(app, 'PROCESS_AUTOMATICALLY'),
         'postProcessing.processMethod': StringField(app, 'PROCESS_METHOD'),
+        'postProcessing.specificProcessMethod': BooleanField(app, 'USE_SPECIFIC_PROCESS_METHOD'),
+        'postProcessing.processMethodTorrent': StringField(app, 'PROCESS_METHOD_TORRENT'),
+        'postProcessing.processMethodNzb': StringField(app, 'PROCESS_METHOD_NZB'),
         'postProcessing.deleteRarContent': BooleanField(app, 'DELRARCONTENTS'),
         'postProcessing.unpack': BooleanField(app, 'UNPACK'),
         'postProcessing.noDelete': BooleanField(app, 'NO_DELETE'),
@@ -1139,6 +1143,7 @@ class DataGenerator(object):
         section_data['runsInDocker'] = bool(app.RUNS_IN_DOCKER)
         section_data['gitRemoteBranches'] = app.GIT_REMOTE_BRANCHES
         section_data['cpuPresets'] = cpu_presets
+        section_data['newestVersionMessage'] = app.NEWEST_VERSION_STRING
 
         section_data['news'] = {}
         section_data['news']['lastRead'] = app.NEWS_LAST_READ
@@ -1217,6 +1222,7 @@ class DataGenerator(object):
         section_data['naming']['animeNamingType'] = int_default(app.NAMING_ANIME, 3)
         section_data['naming']['stripYear'] = bool(app.NAMING_STRIP_YEAR)
         section_data['showDownloadDir'] = app.TV_DOWNLOAD_DIR
+        section_data['defaultClientPath'] = app.DEFAULT_CLIENT_PATH
         section_data['processAutomatically'] = bool(app.PROCESS_AUTOMATICALLY)
         section_data['postponeIfSyncFiles'] = bool(app.POSTPONE_IF_SYNC_FILES)
         section_data['postponeIfNoSubs'] = bool(app.POSTPONE_IF_NO_SUBS)
@@ -1230,6 +1236,9 @@ class DataGenerator(object):
         section_data['deleteRarContent'] = bool(app.DELRARCONTENTS)
         section_data['noDelete'] = bool(app.NO_DELETE)
         section_data['processMethod'] = app.PROCESS_METHOD
+        section_data['specificProcessMethod'] = bool(app.USE_SPECIFIC_PROCESS_METHOD)
+        section_data['processMethodTorrent'] = app.PROCESS_METHOD_TORRENT
+        section_data['processMethodNzb'] = app.PROCESS_METHOD_NZB
         section_data['reflinkAvailable'] = bool(pkgutil.find_loader('reflink'))
         section_data['autoPostprocessorFrequency'] = int(app.AUTOPOSTPROCESSOR_FREQUENCY)
         section_data['syncFiles'] = app.SYNC_FILES

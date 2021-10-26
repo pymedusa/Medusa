@@ -44,7 +44,7 @@ class InternalHandler(BaseRequestHandler):
     #: path param
     path_param = None
     #: allowed HTTP methods
-    allowed_methods = ('GET', )
+    allowed_methods = ('GET', 'POST')
 
     def get(self, resource, path_param=None):
         """Query internal data.

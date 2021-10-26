@@ -100,8 +100,8 @@
                                 </template>
 
                                 <div id="indexer-wrapper">
-                                    <img id="stored-by-indexer" src="images/star.png">
                                     <app-link v-if="showIndexerUrl && indexerConfig[show.indexer].icon" :href="showIndexerUrl" :title="showIndexerUrl">
+                                        <img id="stored-by-indexer" src="images/star.png">
                                         <img :alt="indexerConfig[show.indexer].name" height="16" width="16" :src="`images/${indexerConfig[show.indexer].icon}`" style="margin-top: -1px; vertical-align:middle;">
                                     </app-link>
                                 </div>

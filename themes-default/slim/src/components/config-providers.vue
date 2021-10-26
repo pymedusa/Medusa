@@ -198,8 +198,12 @@ export default {
         }),
         providerPriorities: {
             get() {
-                const { provider } = this;
-                return provider.providers;
+                const { clients, provider } = this;
+                return provider.providers.filter(provider => (
+                    provider.type === 'torrent' && clients.torrents.enabled
+                ) || (
+                    provider.type === 'nzb' && clients.nzb.enabled
+                ));
             },
             set(providers) {
                 this.provider.providers = providers;

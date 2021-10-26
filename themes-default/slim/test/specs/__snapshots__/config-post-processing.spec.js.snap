@@ -181,6 +181,9 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
             <div
               class="component-group-desc col-xs-12 col-md-2"
             >
+              <a
+                name="automated-download-handling"
+              />
               <h3>
                 Automated Download Handling
               </h3>
@@ -398,6 +401,52 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     </div>
                   </div>
                 </div>
+                 
+                <div
+                  id="config-template-content"
+                >
+                  <div
+                    class="form-group"
+                  >
+                    <div
+                      class="row"
+                    >
+                      <div
+                        class="col-sm-2"
+                      >
+                        <label
+                          class="control-label"
+                          for="default_client_path"
+                        >
+                          <span>
+                            Default client path
+                          </span>
+                        </label>
+                      </div>
+                       
+                      <div
+                        class="col-sm-10 content"
+                      >
+                        <file-browser-stub
+                          id="default_client_path"
+                          initialdir=""
+                          localstoragekey=""
+                          name="default_client_path"
+                          showbrowsebutton="true"
+                          title="Select client download location"
+                        />
+                         
+                        <span
+                          class="clear-left"
+                        >
+                          To prevent postprocessing from deleting your (root) download location, select the location to protect it from removal.
+                        </span>
+                         
+                        <!---->
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </fieldset>
             </div>
           </div>
@@ -511,8 +560,8 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                       >
                         <select
                           class="form-control input-sm"
-                          id="naming_multi_ep"
-                          name="naming_multi_ep"
+                          id="processing_method"
+                          name="processing_method"
                         >
                           <option
                             value="copy"
@@ -559,6 +608,66 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     </div>
                   </div>
                 </div>
+                 
+                <div
+                  id="config-toggle-slider-content"
+                >
+                  <div
+                    class="form-group"
+                  >
+                    <div
+                      class="row"
+                    >
+                      <div
+                        class="col-sm-2"
+                      >
+                        <label
+                          class="control-label"
+                          for="specific_post_processing"
+                        >
+                          <span>
+                            Specific postprocessing methods
+                          </span>
+                        </label>
+                      </div>
+                       
+                      <div
+                        class="col-sm-10 content"
+                      >
+                        <toggle-button-stub
+                          height="22"
+                          id="specific_post_processing"
+                          name="specific_post_processing"
+                          sync=""
+                          width="45"
+                        />
+                          
+                        <span>
+                          Enable this option if you want to use different processing methods (copy, move, etc..) for torrent and nzb downloads.
+                        </span>
+                         
+                        <p>
+                          <b>
+                            Note:
+                          </b>
+                          This option is only used by the 
+                          <a
+                            href="config/postProcessing/#automated-download-handling"
+                          >
+                            Automated Download Handling
+                          </a>
+                           option
+                        </p>
+                         
+                        <!---->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                 
+                <!---->
+                 
+                <!---->
                  
                 <div
                   id="config-toggle-slider-content"

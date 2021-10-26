@@ -28,7 +28,7 @@ class Manage(Home, WebRoot):
         t = PageTemplate(rh=self, filename='index.mako')
         return t.render()
 
-    def episodeStatuses(self):
+    def episodeStatuses(self, status=None):
         """
         Serve manageEpisodeStatus page.
 
