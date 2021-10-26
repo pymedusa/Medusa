@@ -4,7 +4,7 @@
             <div class="day-column" v-for="day in groupedSchedule" :key="day.airdate">
                 <span class="day-header" :title="day.airdate ? `airs ${day.airdate}` : 'No shows for this day'">{{day.header}}</span>
                 <ul v-if="day.episodes.length > 0">
-                    <li v-for="episode in day.episodes" :key="episode.episodeSlug" class="calendar-show">
+                    <li v-for="episode in day.episodes" :key="`${episode.showSlug}${episode.episodeSlug}`" class="calendar-show">
                         <div class="poster">
                             <app-link :title="episode.showName" :href="`home/displayShow?showslug=${episode.showSlug}`">
                                 <asset default-src="images/poster.png" :show-slug="episode.showSlug" type="posterThumb" :link="false" />

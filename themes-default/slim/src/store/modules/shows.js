@@ -481,11 +481,6 @@ const actions = {
         const { commit } = context;
         commit(ADD_SHOW_CONFIG, { show, config });
     },
-    updateShowQueueItem(context, queueItem) {
-        // Update store's search queue item. (provided through websocket)
-        const { commit } = context;
-        return commit(ADD_SHOW_QUEUE_ITEM, queueItem);
-    },
     removeShow({ commit, rootState, state }, show) {
         // Remove the show from store and localStorage (provided through websocket)
         commit(REMOVE_SHOW, show);
@@ -493,6 +488,11 @@ const actions = {
         // Update (namespaced) localStorage
         const namespace = rootState.config.system.webRoot ? `${rootState.config.system.webRoot}_` : '';
         localStorage.setItem(`${namespace}shows`, JSON.stringify(state.shows));
+    },
+    updateShowQueueItem(context, queueItem) {
+        // Update store's search queue item. (provided through websocket)
+        const { commit } = context;
+        return commit(ADD_SHOW_QUEUE_ITEM, queueItem);
     }
 };
 

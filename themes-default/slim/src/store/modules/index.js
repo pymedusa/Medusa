@@ -3,6 +3,7 @@ export { default as defaults } from './defaults';
 export { default as history } from './history';
 export { default as notifications } from './notifications';
 export { default as provider } from './provider';
+export { default as recommended } from './recommended';
 export { default as shows } from './shows';
 export { default as schedule } from './schedule';
 export { default as socket } from './socket';

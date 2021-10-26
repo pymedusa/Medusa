@@ -21,9 +21,10 @@ import hashlib
 import logging
 import os
 import pickle
-import requests
 import sys
+import requests
 import time
+import ttl_cache
 import xml.etree.cElementTree as etree
 
 
@@ -119,6 +120,7 @@ def read_tvdb_map_xml(file_path=None):
     return read_xml_into_etree(file_path)
 
 
+@ttl_cache(180.0)
 def read_xml_into_etree(filePath):
     if not filePath:
         return None

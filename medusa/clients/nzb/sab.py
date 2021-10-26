@@ -16,17 +16,19 @@ from os.path import basename, dirname
 
 from medusa import app
 from medusa.helper.common import sanitize_filename
+from medusa.helper.exceptions import DownloadClientConnectionException
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.session.core import ClientSession
+from medusa.session.core import MedusaSession
 
 from requests.compat import urljoin
+from requests.exceptions import ConnectionError
 
 import ttl_cache
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
-session = ClientSession()
+session = MedusaSession()
 
 
 def send_nzb(nzb):
@@ -190,11 +192,13 @@ def test_authentication(host=None, username=None, password=None, apikey=None):
     data = session.get_json(url, verify=False)
 
     if not data:
-        log.info('Error connecting to sab, no data returned')
+        msg = 'Error connecting to SABnzbd, no data returned'
+        log.warning(msg)
+        return False, msg
     else:
         # check the result and determine if it's good or not
         result, text = _check_sab_response(data)
-        return result, 'success' if result else text
+        return result, 'Successfully connected to SABnzbd' if result else text
 
 
 @ttl_cache(60.0)
@@ -209,7 +213,11 @@ def _get_nzb_queue(host=None):
         'limit': 100
     }
 
-    data = session.get_json(url, params=params, verify=False)
+    try:
+        data = session.get_json(url, params=params, verify=False)
+    except ConnectionError as error:
+        raise DownloadClientConnectionException(f'Error while fetching sabnzbd queue. Error: {error}')
+
     if not data:
         log.info('Error connecting to sab, no data returned')
     else:
@@ -234,7 +242,11 @@ def _get_nzb_history(host=None):
         'limit': 100
     }
 
-    data = session.get_json(url, params=params, verify=False)
+    try:
+        data = session.get_json(url, params=params, verify=False)
+    except ConnectionError as error:
+        raise DownloadClientConnectionException(f'Error while fetching sabnzbd history. Error: {error}')
+
     if not data:
         log.info('Error connecting to sab, no data returned')
     else:

@@ -2,9 +2,11 @@
     <div id="config-textbox">
         <div class="form-group">
             <div class="row">
-                <label :for="id" class="col-sm-2 control-label">
-                    <span>{{ label }}</span>
-                </label>
+                <div class="col-sm-2">
+                    <label :for="id" class="control-label">
+                        <span>{{ label }}</span>
+                    </label>
+                </div>
                 <div class="col-sm-10 content">
                     <div class="parent" :class="inputClass">
                         <input v-bind="{id, type, name: id, placeholder, disabled}" v-model="localValue" @input="updateValue()">

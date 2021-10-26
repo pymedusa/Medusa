@@ -68,6 +68,7 @@ from medusa.helpers.utils import dict_to_array, safe_get, to_camel_case
 from medusa.imdb import Imdb
 from medusa.indexers.api import indexerApi
 from medusa.indexers.config import (
+    EXTERNAL_MAPPINGS,
     INDEXER_TVRAGE,
     STATUS_MAP,
     indexerConfig
@@ -1738,7 +1739,8 @@ class Series(TV):
 
         self.subtitles = options['subtitles'] if options.get('subtitles') is not None else app.SUBTITLES_DEFAULT
 
-        if options.get('quality'):
+        if options.get('quality') and (options['quality']['allowed'] or options['quality']['preferred']):
+            # We need to pass at a minimum a allowed or preferred quality. Else use the Quality default.
             self.qualities_allowed = options['quality']['allowed']
             self.qualities_preferred = options['quality']['preferred']
         else:
@@ -1953,6 +1955,36 @@ class Series(TV):
                 log.info('updating trakt watchlist')
                 notifiers.trakt_notifier.update_watchlist_show(self)
 
+    def sync_trakt_episodes(self, status, episodes):
+        """
+        If Trakt enabled and trakt sync watchlist enabled, add/remove the episode from the watchlist.
+
+        :param status: The value of the status that the episodes have changed to.
+        :type status: int
+        :param episodes: list of episode objects.
+        :type episodes: list
+        """
+        if not app.USE_TRAKT or not app.TRAKT_SYNC_WATCHLIST:
+            return
+
+        upd = None
+        if status in [WANTED, FAILED]:
+            upd = 'Add'
+
+        elif status in [IGNORED, SKIPPED, DOWNLOADED, ARCHIVED]:
+            upd = 'Remove'
+
+        if not upd:
+            return
+
+        log.debug('{action} episodes [{episodes}], showid: indexerid {show_id},'
+                  'Title {show_name} to Watchlist', {
+                      'action': upd, 'episodes': ', '.join([ep.slug for ep in episodes]),
+                      'show_id': self.series_id, 'show_name': self.name
+                  })
+
+        notifiers.trakt_notifier.update_watchlist_episode(self, episodes, upd == 'Remove')
+
     def add_scene_numbering(self):
         """
         Add XEM data to DB for show.
@@ -1966,7 +1998,7 @@ class Series(TV):
         # should go by scene numbering or indexer numbering. Warn the user.
         if not self.scene and get_xem_numbering_for_show(self):
             log.warning(
-                '{id}: while adding the show {title} we noticed thexem.de has an episode mapping available'
+                '{id}: while adding the show {title} we noticed thexem.info has an episode mapping available'
                 '\nyou might want to consider enabling the scene option for this show.',
                 {'id': self.series_id, 'title': self.name}
             )
@@ -1975,6 +2007,32 @@ class Series(TV):
                 'for show {title} you might want to consider enabling the scene option'
                 .format(title=self.name)
             )
+
+    def update_mapped_id_cache(self):
+        """Search the show in the recommended show cache. And update the mapped_indexer and mapped_series_id fields."""
+        if self.externals:
+            cache_db_con = db.DBConnection('cache.db')
+            query = 'SELECT recommended_id from recommended {where}'
+
+            rev_external_mappings = {v: k for k, v in viewitems(EXTERNAL_MAPPINGS)}
+            # Adding just in case the recommended show provider is also an indexer. Like for example maybe IMDB
+            rev_external_mappings.update({self.indexer_name + '_id': self.indexer})
+
+            for indexer, series_id in viewitems(self.externals):
+                if not rev_external_mappings.get(indexer):
+                    continue
+                where = ['source = ? AND series_id = ?']
+                params = [reverse_mappings[indexer], series_id]
+
+                recommended_show = cache_db_con.select(
+                    query.format(where=' WHERE ' + ' AND '.join(where)), params
+                )
+
+                if recommended_show:
+                    query = 'UPDATE recommended SET mapped_indexer = ?, mapped_series_id = ? WHERE recommended_id = ?'
+                    params = [self.indexer, self.series_id, recommended_show[0]['recommended_id']]
+                    cache_db_con.action(query, params)
+                    return True
 
     def refresh_dir(self):
         """Refresh show using its location.
@@ -2281,6 +2339,7 @@ class Series(TV):
         data['plot'] = self.plot or self.imdb_plot
         data['config'] = {}
         data['config']['location'] = self.location
+        data['config']['rootDir'] = os.path.dirname(self._location)
         data['config']['locationValid'] = self.is_location_valid()
         data['config']['qualities'] = {}
         data['config']['qualities']['allowed'] = self.qualities_allowed
@@ -2758,3 +2817,31 @@ class Series(TV):
             return ShowPoster(self, media_format, fallback)
         elif asset_type.startswith('network'):
             return ShowNetworkLogo(self, media_format, fallback)
+
+    def erase_provider_cache(self):
+        """Erase provider cache results for this show."""
+        from medusa.providers import sorted_provider_list  # Prevent circular import.
+        try:
+            main_db_con = db.DBConnection('cache.db')
+            for cur_provider in sorted_provider_list():
+                # Let's check if this provider table already exists
+                table_exists = main_db_con.select(
+                    'SELECT name '
+                    'FROM sqlite_master '
+                    "WHERE type='table' AND name=?",
+                    [cur_provider.get_id()]
+                )
+                if not table_exists:
+                    continue
+                try:
+                    main_db_con.action(
+                        "DELETE FROM '{provider}' "
+                        'WHERE indexerid = ?'.format(provider=cur_provider.get_id()),
+                        [self.series_id]
+                    )
+                except Exception:
+                    log.debug(u'Unable to delete cached results for provider {provider} for show: {show}',
+                              {'provider': cur_provider, 'show': self.name})
+
+        except Exception:
+            log.warning(u'Unable to delete cached results for show: {show}', {'show': self.name})

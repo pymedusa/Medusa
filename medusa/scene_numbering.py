@@ -564,14 +564,14 @@ def xem_refresh(series_obj, force=False):
                 logger.log(u'{0} is an unsupported indexer in XEM'.format(indexerApi(indexer_id).name), logger.DEBUG)
                 return
             # XEM MAP URL
-            url = 'http://thexem.de/map/havemap?origin={0}'.format(indexerApi(indexer_id).config['xem_origin'])
+            url = 'https://thexem.info/map/havemap?origin={0}'.format(indexerApi(indexer_id).config['xem_origin'])
             parsed_json = safe_session.get_json(url)
             if not parsed_json or 'result' not in parsed_json or 'success' not in parsed_json['result'] or 'data' not in parsed_json or str(series_id) not in parsed_json['data']:
                 logger.log(u'No XEM data for show ID {0} on {1}'.format(series_id, series_obj.indexer_name), logger.DEBUG)
                 return
 
             # XEM API URL
-            url = 'http://thexem.de/map/all?id={0}&origin={1}&destination=scene'.format(series_id, indexerApi(indexer_id).config['xem_origin'])
+            url = 'https://thexem.info/map/all?id={0}&origin={1}&destination=scene'.format(series_id, indexerApi(indexer_id).config['xem_origin'])
             parsed_json = safe_session.get_json(url)
             if not parsed_json or 'result' not in parsed_json or 'success' not in parsed_json['result']:
                 logger.log(u'No XEM data for show ID {0} on {1}'.format(indexer_id, series_obj.indexer_name), logger.DEBUG)

@@ -29,11 +29,9 @@ class ConfigSubtitles(Config):
 
     def index(self):
         """
-        Render the Subtitle Search configuration page
+        Changed to a Vue Route.
         """
-        t = PageTemplate(rh=self, filename='config_subtitles.mako')
-
-        return t.render(controller='config', action='subtitlesPage')
+        return PageTemplate(rh=self, filename='index.mako').render()
 
     def saveSubtitles(self, use_subtitles=None, subtitles_plugins=None, subtitles_languages=None, subtitles_dir=None, subtitles_perfect_match=None,
                       service_order=None, subtitles_history=None, subtitles_finder_frequency=None, subtitles_erase_cache=None,

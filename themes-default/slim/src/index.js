@@ -12,6 +12,7 @@ import Vuex from 'vuex';
 import { ToggleButton } from 'vue-js-toggle-button';
 import axios from 'axios';
 import debounce from 'lodash/debounce';
+import isotope from 'vueisotope';
 import store from './store';
 import router from './router';
 import { apiRoute, apiv1, api, webRoot, apiKey } from './api';
@@ -49,6 +50,7 @@ if (window) {
 
     // Push x-template components to this array to register them globally
     window.components = [];
+    window.components.push(isotope);
 }
 
 const UTIL = {

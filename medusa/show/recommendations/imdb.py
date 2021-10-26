@@ -1,22 +1,22 @@
 # coding=utf-8
-
+"""Anidb recommended show class."""
 from __future__ import unicode_literals
 
 import logging
 import os
 import posixpath
 import re
-from builtins import object
 
-from medusa import helpers
 from medusa.cache import recommended_series_cache
 from medusa.imdb import Imdb
-from medusa.indexers.config import INDEXER_TVDBV2
+from medusa.indexers.api import indexerApi
+from medusa.indexers.config import EXTERNAL_IMDB, INDEXER_TMDB
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.session.core import MedusaSession
 from medusa.show.recommendations.recommended import (
+    BasePopular,
     RecommendedShow,
     cached_get_imdb_series_details,
+    cached_get_imdb_series_genres,
     create_key_from_series,
 )
 
@@ -26,34 +26,42 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
-class ImdbPopular(object):
+class ImdbPopular(BasePopular):
     """Gets a list of most popular TV series from imdb."""
+
+    TITLE = 'IMDB Popular'
+    CACHE_SUBFOLDER = __name__.split('.')[-1] if '.' in __name__ else __name__
 
     def __init__(self):
         """Initialize class."""
-        self.cache_subfolder = __name__.split('.')[-1] if '.' in __name__ else __name__
-        self.session = MedusaSession()
+        super(ImdbPopular, self).__init__()
+        self.cache_subfolder = ImdbPopular.CACHE_SUBFOLDER
         self.imdb_api = Imdb(session=self.session)
-        self.recommender = 'IMDB Popular'
-        self.default_img_src = 'poster.png'
+        self.recommender = ImdbPopular.TITLE
+        self.source = EXTERNAL_IMDB
 
     @recommended_series_cache.cache_on_arguments(namespace='imdb', function_key_generator=create_key_from_series)
-    def _create_recommended_show(self, storage_key, series):
+    def _create_recommended_show(self, series):
         """Create the RecommendedShow object from the returned showobj."""
-        tvdb_id = helpers.get_tvdb_from_id(series.get('imdb_tt'), 'IMDB')
+        externals = {'imdb_id': series.get('imdb_tt')}
 
-        if not tvdb_id:
-            return None
+        # Get tmdb id using a call to tmdb api.
+        t = indexerApi(INDEXER_TMDB).indexer(**indexerApi(INDEXER_TMDB).api_params.copy())
+        externals.update(t.get_id_by_external(**externals))
 
         rec_show = RecommendedShow(
             self,
             series.get('imdb_tt'),
             series.get('name'),
-            INDEXER_TVDBV2,
-            int(tvdb_id),
-            **{'rating': series.get('rating'),
-               'votes': series.get('votes'),
-               'image_href': series.get('imdb_url')}
+            **{
+                'rating': series.get('rating'),
+                'votes': series.get('votes'),
+                'image_href': series.get('imdb_url'),
+                'ids': externals,
+                'subcat': 'popular',
+                'genres': [genre.lower() for genre in series.get('genres')],
+                'plot': series.get('outline')
+            }
         )
 
         if series.get('image_url'):
@@ -63,43 +71,53 @@ class ImdbPopular(object):
 
     def fetch_popular_shows(self):
         """Get popular show information from IMDB."""
-        popular_shows = []
-
         imdb_result = self.imdb_api.get_popular_shows()
-
+        result = []
         for imdb_show in imdb_result['ranks']:
             series = {}
+            show_details = None
             imdb_id = series['imdb_tt'] = imdb_show['id'].strip('/').split('/')[-1]
 
-            if imdb_id:
-                show_details = cached_get_imdb_series_details(imdb_id)
-                if show_details:
-                    try:
-                        series['year'] = imdb_show.get('year')
-                        series['name'] = imdb_show['title']
-                        series['image_url_large'] = imdb_show['image']['url']
-                        series['image_path'] = posixpath.join('images', 'imdb_popular',
-                                                              os.path.basename(series['image_url_large']))
-                        series['image_url'] = '{0}{1}'.format(imdb_show['image']['url'].split('V1')[0], '_SY600_AL_.jpg')
-                        series['imdb_url'] = 'http://www.imdb.com{imdb_id}'.format(imdb_id=imdb_show['id'])
-                        series['votes'] = show_details['ratings'].get('ratingCount', 0)
-                        series['outline'] = show_details['plot'].get('outline', {}).get('text')
-                        series['rating'] = show_details['ratings'].get('rating', 0)
-                    except Exception as error:
-                        log.warning('Could not parse show {imdb_id} with error: {error!r}',
-                                    {'imdb_id': imdb_id, 'error': error})
-                else:
-                    continue
+            if not imdb_id:
+                continue
 
-            if all([series['year'], series['name'], series['imdb_tt']]):
-                popular_shows.append(series)
+            series['year'] = imdb_show.get('year')
+            series['name'] = imdb_show['title']
+            series['image_url_large'] = imdb_show['image']['url']
+            series['image_path'] = posixpath.join(
+                'images', 'imdb_popular', os.path.basename(series['image_url_large'])
+            )
+            series['image_url'] = '{0}{1}'.format(imdb_show['image']['url'].split('V1')[0], '_SY600_AL_.jpg')
+            series['imdb_url'] = 'http://www.imdb.com{imdb_id}'.format(imdb_id=imdb_show['id'])
 
-        result = []
-        for series in popular_shows:
+            show_details = {}
+            show_genres = {}
             try:
-                recommended_show = self._create_recommended_show(storage_key=series['imdb_tt'],
-                                                                 series=series)
+                show_details = cached_get_imdb_series_details(imdb_id)
+                show_genres = cached_get_imdb_series_genres(imdb_id)
+            except Exception as error:
+                log.warning('Could not get show details for {imdb_id} with error: {error}',
+                            {'imdb_id': imdb_id, 'error': error})
+
+            if not show_details:
+                continue
+
+            # Get details.
+            try:
+                series['votes'] = show_details.get('ratings', {}).get('ratingCount', 0)
+                series['outline'] = show_details.get('plot', {}).get('outline', {}).get('text')
+                series['rating'] = show_details.get('ratings', {}).get('rating', 0)
+            except Exception as error:
+                log.warning('Could not parse show {imdb_id} with error: {error!r}',
+                            {'imdb_id': imdb_id, 'error': error})
+
+            series['genres'] = show_genres.get('genres', [])
+
+        if all([series['year'], series['name'], series['imdb_tt']]):
+            try:
+                recommended_show = self._create_recommended_show(series)
                 if recommended_show:
+                    recommended_show.save_to_db()
                     result.append(recommended_show)
             except RequestException:
                 log.warning(

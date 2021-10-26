@@ -40,10 +40,10 @@
         <div v-if="schedulerStatus" class="row">
             <div class="col-lg-12">
                 <h3>Subtitle Search:</h3>
-                <button class="btn-medusa" :disabled="!general.subtitles.enabled" @click="forceSubtitlesFinder">
+                <button class="btn-medusa" :disabled="!subtitles.enabled" @click="forceSubtitlesFinder">
                     <i class="icon-exclamation-sign" /> Force
                 </button>
-                <template v-if="!general.subtitles.enabled">Subtitle search disabled</template>
+                <template v-if="!subtitles.enabled">Subtitle search disabled</template>
                 <template v-else>{{ schedulerStatus.subtitlesFinderStatus ? 'In Progress' : 'Not in progress' }}</template>
             </div>
         </div>
@@ -75,6 +75,27 @@
                         {{ item.lastRefresh }}
                     </li>
                 </ul>
+                <app-link v-if="!sceneRefresh.inProgress" href="internal/deleteSceneExceptions" class="clean-cache" @click.native.prevent="cleanScenExceptionCache">Clean scene exception cache</app-link>
+                <transition name="fade">
+                    <state-switch v-if="sceneExceptionsDeleted" state="yes" />
+                </transition>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <h3>Force refresh recommended list:</h3>
+                <span>
+                    Note! Syncing shows with a recommended list may take a while.
+                    The action will be queued. For example staring a sync with Trakt and directly after Imdb.
+                    You will won't see results for Imdb after the sync of Trakt has fully completed.
+                </span>
+                <ul class="simpleList recommended-list">
+                    <li><span @click="searchRecommendedShows('trakt')">Trakt</span></li>
+                    <li><span @click="searchRecommendedShows('imdb')">Imdb</span></li>
+                    <li><span @click="searchRecommendedShows('anidb')">Anidb</span></li>
+                    <li><span @click="searchRecommendedShows('anilist')">AniList</span></li>
+                </ul>
             </div>
         </div>
 
@@ -97,11 +118,13 @@
 import { mapActions, mapGetters, mapState } from 'vuex';
 import { api } from '../api';
 import { AppLink } from './helpers';
+import StateSwitch from './helpers/state-switch.vue';
 
 export default {
     name: 'manage-searches',
     components: {
-        AppLink
+        AppLink,
+        StateSwitch
     },
     data() {
         return {
@@ -125,13 +148,15 @@ export default {
                 inProgress: true,
                 showSpinner: false,
                 message: ''
-            }
+            },
+            sceneExceptionsDeleted: false
         };
     },
     computed: {
         // @TODO: Replace with mapState
         ...mapState({
             general: state => state.config.general,
+            subtitles: state => state.config.subtitles,
             system: state => state.config.system,
             search: state => state.config.search,
             queueItems: state => state.queue.queueitems
@@ -250,6 +275,42 @@ export default {
         },
         forceDownloadHandler() {
             api.post('system/operation', { type: 'FORCEADH' });
+        },
+        async searchRecommendedShows(source) {
+            try {
+                await api.post(`recommended/${source}`);
+                this.$snotify.success(
+                    'Started search for new recommended shows',
+                    `Searching ${source}`
+                );
+            } catch (error) {
+                if (error.response.status === 409) {
+                    this.$snotify.error(
+                        error.response.data.error,
+                        'Error'
+                    );
+                }
+            }
+        },
+        cleanScenExceptionCache() {
+            const vm = this;
+            $.confirm({
+                title: 'Clear scene exception cache',
+                text: 'Do you really want to clear the scene exception cache? Custom exception will be left untouched.',
+                confirmButton: 'Yes',
+                cancelButton: 'Cancel',
+                dialogClass: 'modal-dialog',
+                post: false,
+                confirm() {
+                    api.post('internal/deleteSceneExceptions')
+                        .then(() => {
+                            vm.sceneExceptionsDeleted = true;
+                            setTimeout(() => {
+                                vm.sceneExceptionsDeleted = false;
+                            }, 3000);
+                        });
+                }
+            });
         }
     },
     mounted() {
@@ -270,4 +331,24 @@ export default {
 };
 </script>
 <style scoped>
+.recommended-list span {
+    cursor: pointer;
+    color: #337ab7;
+    text-decoration: none;
+}
+
+.recommended-list span:focus,
+.recommended-list span:hover {
+    text-decoration: underline;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.5s;
+}
+
+.fade-enter,
+.fade-leave-to {
+    opacity: 0;
+}
 </style>

@@ -45,6 +45,12 @@ from medusa.server.api.v2.base import (
     iter_nested_items,
     set_nested_value,
 )
+from medusa.show.recommendations.trakt import TraktPopular
+from medusa.subtitles import (
+    name_from_code,
+    subtitle_code_filter,
+    wanted_languages
+)
 
 from six import iteritems, itervalues, text_type
 from six.moves import map
@@ -108,6 +114,7 @@ class ConfigHandler(BaseRequestHandler):
 
         'indexerDefaultLanguage': StringField(app, 'INDEXER_DEFAULT_LANGUAGE'),
         'showUpdateHour': IntegerField(app, 'SHOWUPDATE_HOUR'),
+        'recommendedShowUpdateHour': IntegerField(app, 'RECOMMENDED_SHOW_UPDATE_HOUR'),
         'indexerTimeout': IntegerField(app, 'INDEXER_TIMEOUT'),
         'indexerDefault': IntegerField(app, 'INDEXER_DEFAULT'),
         'plexFallBack.enable': BooleanField(app, 'FALLBACK_PLEX_ENABLE'),
@@ -177,12 +184,17 @@ class ConfigHandler(BaseRequestHandler):
         'wikiUrl': StringField(app, 'WIKI_URL'),
         'donationsUrl': StringField(app, 'DONATIONS_URL'),
         'sourceUrl': StringField(app, 'APPLICATION_URL'),
-        'subtitlesMulti': BooleanField(app, 'SUBTITLES_MULTI'),
         'namingForceFolders': BooleanField(app, 'NAMING_FORCE_FOLDERS'),
-        'subtitles.enabled': BooleanField(app, 'USE_SUBTITLES'),
         'recentShows': ListField(app, 'SHOWS_RECENT'),
         'providers.prowlarr.url': StringField(app, 'PROWLARR_URL'),
         'providers.prowlarr.apikey': StringField(app, 'PROWLARR_APIKEY'),
+
+        'recommended.cache.shows': BooleanField(app, 'CACHE_RECOMMENDED_SHOWS'),
+        'recommended.cache.trakt': BooleanField(app, 'CACHE_RECOMMENDED_TRAKT'),
+        'recommended.cache.imdb': BooleanField(app, 'CACHE_RECOMMENDED_IMDB'),
+        'recommended.cache.anidb': BooleanField(app, 'CACHE_RECOMMENDED_ANIDB'),
+        'recommended.cache.anilist': BooleanField(app, 'CACHE_RECOMMENDED_ANILIST'),
+        'recommended.trakt.selectedLists': ListField(app, 'CACHE_RECOMMENDED_TRAKT_LISTS'),
 
         # Sections
         'clients.torrents.authType': StringField(app, 'TORRENT_AUTH_TYPE'),
@@ -226,8 +238,12 @@ class ConfigHandler(BaseRequestHandler):
 
 
         'postProcessing.showDownloadDir': StringField(app, 'TV_DOWNLOAD_DIR'),
+        'postProcessing.defaultClientPath': StringField(app, 'DEFAULT_CLIENT_PATH'),
         'postProcessing.processAutomatically': BooleanField(app, 'PROCESS_AUTOMATICALLY'),
         'postProcessing.processMethod': StringField(app, 'PROCESS_METHOD'),
+        'postProcessing.specificProcessMethod': BooleanField(app, 'USE_SPECIFIC_PROCESS_METHOD'),
+        'postProcessing.processMethodTorrent': StringField(app, 'PROCESS_METHOD_TORRENT'),
+        'postProcessing.processMethodNzb': StringField(app, 'PROCESS_METHOD_NZB'),
         'postProcessing.deleteRarContent': BooleanField(app, 'DELRARCONTENTS'),
         'postProcessing.unpack': BooleanField(app, 'UNPACK'),
         'postProcessing.noDelete': BooleanField(app, 'NO_DELETE'),
@@ -500,7 +516,32 @@ class ConfigHandler(BaseRequestHandler):
         'anime.anidb.password': StringField(app, 'ANIDB_PASSWORD'),
         'anime.anidb.useMylist': BooleanField(app, 'ANIDB_USE_MYLIST'),
         'anime.autoAnimeToList': BooleanField(app, 'AUTO_ANIME_TO_LIST'),
-        'anime.showlistDefaultAnime': ListField(app, 'SHOWLISTS_DEFAULT_ANIME')
+        'anime.showlistDefaultAnime': ListField(app, 'SHOWLISTS_DEFAULT_ANIME'),
+
+        'subtitles.multi': BooleanField(app, 'SUBTITLES_MULTI'),
+        'subtitles.enabled': BooleanField(app, 'USE_SUBTITLES'),
+        'subtitles.services': ListField(app, 'SUBTITLE_SERVICES'),
+        'subtitles.languages': ListField(app, 'SUBTITLES_LANGUAGES'),
+        'subtitles.stopAtFirst': BooleanField(app, 'SUBTITLES_STOP_AT_FIRST'),
+        'subtitles.eraseCache': BooleanField(app, 'SUBTITLES_ERASE_CACHE'),
+        'subtitles.location': StringField(app, 'SUBTITLES_DIR'),
+        'subtitles.finderFrequency': IntegerField(app, 'SUBTITLES_FINDER_FREQUENCY'),
+        'subtitles.perfectMatch': BooleanField(app, 'SUBTITLES_PERFECT_MATCH'),
+        'subtitles.logHistory': BooleanField(app, 'SUBTITLES_HISTORY'),
+        'subtitles.multiLanguage': BooleanField(app, 'SUBTITLES_MULTI'),
+        'subtitles.keepOnlyWanted': BooleanField(app, 'SUBTITLES_KEEP_ONLY_WANTED'),
+        'subtitles.ignoreEmbeddedSubs': BooleanField(app, 'IGNORE_EMBEDDED_SUBS'),
+        'subtitles.acceptUnknownEmbeddedSubs': BooleanField(app, 'ACCEPT_UNKNOWN_EMBEDDED_SUBS'),
+        'subtitles.hearingImpaired': BooleanField(app, 'SUBTITLES_HEARING_IMPAIRED'),
+        'subtitles.preScripts': ListField(app, 'SUBTITLES_PRE_SCRIPTS'),
+        'subtitles.extraScripts': ListField(app, 'SUBTITLES_EXTRA_SCRIPTS'),
+        'subtitles.wikiUrl': StringField(app, 'SUBTITLES_URL'),
+        'subtitles.providerLogins.addic7ed.user': StringField(app, 'ADDIC7ED_USER'),
+        'subtitles.providerLogins.addic7ed.pass': StringField(app, 'ADDIC7ED_PASS'),
+        'subtitles.providerLogins.legendastv.user': StringField(app, 'LEGENDASTV_USER'),
+        'subtitles.providerLogins.legendastv.pass': StringField(app, 'LEGENDASTV_PASS'),
+        'subtitles.providerLogins.opensubtitles.user': StringField(app, 'OPENSUBTITLES_USER'),
+        'subtitles.providerLogins.opensubtitles.pass': StringField(app, 'OPENSUBTITLES_PASS'),
     }
 
     def get(self, identifier, path_param=None):
@@ -609,10 +650,7 @@ class DataGenerator(object):
         section_data['wikiUrl'] = app.WIKI_URL
         section_data['donationsUrl'] = app.DONATIONS_URL
         section_data['sourceUrl'] = app.APPLICATION_URL
-        section_data['subtitlesMulti'] = bool(app.SUBTITLES_MULTI)
         section_data['namingForceFolders'] = bool(app.NAMING_FORCE_FOLDERS)
-        section_data['subtitles'] = {}
-        section_data['subtitles']['enabled'] = bool(app.USE_SUBTITLES)
         section_data['recentShows'] = app.SHOWS_RECENT
         section_data['addTitleWithYear'] = bool(app.ADD_TITLE_WITH_YEAR)
         section_data['brokenProviders'] = [provider for provider in app.BROKEN_PROVIDERS if provider]
@@ -652,6 +690,9 @@ class DataGenerator(object):
 
         section_data['indexerDefaultLanguage'] = app.INDEXER_DEFAULT_LANGUAGE
         section_data['showUpdateHour'] = int_default(app.SHOWUPDATE_HOUR, app.DEFAULT_SHOWUPDATE_HOUR)
+        section_data['recommendedShowUpdateHour'] = int_default(
+            app.RECOMMENDED_SHOW_UPDATE_HOUR, app.DEFAULT_RECOMMENDED_SHOW_UPDATE_HOUR
+        )
         section_data['indexerTimeout'] = int_default(app.INDEXER_TIMEOUT, 20)
         section_data['indexerDefault'] = app.INDEXER_DEFAULT
 
@@ -659,6 +700,15 @@ class DataGenerator(object):
         section_data['plexFallBack']['enable'] = bool(app.FALLBACK_PLEX_ENABLE)
         section_data['plexFallBack']['notifications'] = bool(app.FALLBACK_PLEX_NOTIFICATIONS)
         section_data['plexFallBack']['timeout'] = int(app.FALLBACK_PLEX_TIMEOUT)
+
+        section_data['recommended'] = {'cache': {}, 'trakt': {}}
+        section_data['recommended']['cache']['shows'] = bool(app.CACHE_RECOMMENDED_SHOWS)
+        section_data['recommended']['cache']['trakt'] = bool(app.CACHE_RECOMMENDED_TRAKT)
+        section_data['recommended']['cache']['imdb'] = bool(app.CACHE_RECOMMENDED_IMDB)
+        section_data['recommended']['cache']['anidb'] = bool(app.CACHE_RECOMMENDED_ANIDB)
+        section_data['recommended']['cache']['anilist'] = bool(app.CACHE_RECOMMENDED_ANILIST)
+        section_data['recommended']['trakt']['selectedLists'] = app.CACHE_RECOMMENDED_TRAKT_LISTS
+        section_data['recommended']['trakt']['availableLists'] = TraktPopular.CATEGORIES
 
         section_data['versionNotify'] = bool(app.VERSION_NOTIFY)
         section_data['autoUpdate'] = bool(app.AUTO_UPDATE)
@@ -1093,6 +1143,7 @@ class DataGenerator(object):
         section_data['runsInDocker'] = bool(app.RUNS_IN_DOCKER)
         section_data['gitRemoteBranches'] = app.GIT_REMOTE_BRANCHES
         section_data['cpuPresets'] = cpu_presets
+        section_data['newestVersionMessage'] = app.NEWEST_VERSION_STRING
 
         section_data['news'] = {}
         section_data['news']['lastRead'] = app.NEWS_LAST_READ
@@ -1171,6 +1222,7 @@ class DataGenerator(object):
         section_data['naming']['animeNamingType'] = int_default(app.NAMING_ANIME, 3)
         section_data['naming']['stripYear'] = bool(app.NAMING_STRIP_YEAR)
         section_data['showDownloadDir'] = app.TV_DOWNLOAD_DIR
+        section_data['defaultClientPath'] = app.DEFAULT_CLIENT_PATH
         section_data['processAutomatically'] = bool(app.PROCESS_AUTOMATICALLY)
         section_data['postponeIfSyncFiles'] = bool(app.POSTPONE_IF_SYNC_FILES)
         section_data['postponeIfNoSubs'] = bool(app.POSTPONE_IF_NO_SUBS)
@@ -1184,6 +1236,9 @@ class DataGenerator(object):
         section_data['deleteRarContent'] = bool(app.DELRARCONTENTS)
         section_data['noDelete'] = bool(app.NO_DELETE)
         section_data['processMethod'] = app.PROCESS_METHOD
+        section_data['specificProcessMethod'] = bool(app.USE_SPECIFIC_PROCESS_METHOD)
+        section_data['processMethodTorrent'] = app.PROCESS_METHOD_TORRENT
+        section_data['processMethodNzb'] = app.PROCESS_METHOD_NZB
         section_data['reflinkAvailable'] = bool(pkgutil.find_loader('reflink'))
         section_data['autoPostprocessorFrequency'] = int(app.AUTOPOSTPROCESSOR_FREQUENCY)
         section_data['syncFiles'] = app.SYNC_FILES
@@ -1267,4 +1322,36 @@ class DataGenerator(object):
             },
             'autoAnimeToList': bool(app.AUTO_ANIME_TO_LIST),
             'showlistDefaultAnime': app.SHOWLISTS_DEFAULT_ANIME
+        }
+
+    @staticmethod
+    def data_subtitles():
+        """Config subtitles."""
+        return {
+            'enabled': bool(app.USE_SUBTITLES),
+            'languages': app.SUBTITLES_LANGUAGES,
+            'wantedLanguages': [{'id': code, 'name': name_from_code(code)}
+                                for code in wanted_languages()],
+            'codeFilter': [{'id': code, 'name': name_from_code(code)}
+                           for code in subtitle_code_filter()],
+            'services': app.SUBTITLE_SERVICES,
+            'stopAtFirst': bool(app.SUBTITLES_STOP_AT_FIRST),
+            'eraseCache': bool(app.SUBTITLES_ERASE_CACHE),
+            'location': app.SUBTITLES_DIR,
+            'finderFrequency': int(app.SUBTITLES_FINDER_FREQUENCY),
+            'perfectMatch': bool(app.SUBTITLES_PERFECT_MATCH),
+            'logHistory': bool(app.SUBTITLES_HISTORY),
+            'multiLanguage': bool(app.SUBTITLES_MULTI),
+            'keepOnlyWanted': bool(app.SUBTITLES_KEEP_ONLY_WANTED),
+            'ignoreEmbeddedSubs': bool(app.IGNORE_EMBEDDED_SUBS),
+            'acceptUnknownEmbeddedSubs': bool(app.ACCEPT_UNKNOWN_EMBEDDED_SUBS),
+            'hearingImpaired': bool(app.SUBTITLES_HEARING_IMPAIRED),
+            'preScripts': app.SUBTITLES_PRE_SCRIPTS,
+            'extraScripts': app.SUBTITLES_EXTRA_SCRIPTS,
+            'wikiUrl': app.SUBTITLES_URL,
+            'providerLogins': {
+                'addic7ed': {'user': app.ADDIC7ED_USER, 'pass': app.ADDIC7ED_PASS},
+                'legendastv': {'user': app.LEGENDASTV_USER, 'pass': app.LEGENDASTV_PASS},
+                'opensubtitles': {'user': app.OPENSUBTITLES_USER, 'pass': app.OPENSUBTITLES_PASS}
+            }
         }

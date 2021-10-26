@@ -15,6 +15,12 @@ from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.network_timezones import app_timezone
 from medusa.sbdatetime import date_presets, time_presets
 from medusa.schedulers.utils import all_schedulers
+from medusa.show.recommendations.trakt import TraktPopular
+from medusa.subtitles import (
+    name_from_code,
+    subtitle_code_filter,
+    wanted_languages
+)
 
 from tests.apiv2.conftest import TEST_API_KEY
 
@@ -44,10 +50,7 @@ def config_main(monkeypatch, app_config):
     section_data['wikiUrl'] = app.WIKI_URL
     section_data['donationsUrl'] = app.DONATIONS_URL
     section_data['sourceUrl'] = app.APPLICATION_URL
-    section_data['subtitlesMulti'] = bool(app.SUBTITLES_MULTI)
     section_data['namingForceFolders'] = bool(app.NAMING_FORCE_FOLDERS)
-    section_data['subtitles'] = {}
-    section_data['subtitles']['enabled'] = bool(app.USE_SUBTITLES)
     section_data['recentShows'] = app.SHOWS_RECENT
     section_data['addTitleWithYear'] = bool(app.ADD_TITLE_WITH_YEAR)
     section_data['brokenProviders'] = [provider for provider in app.BROKEN_PROVIDERS if provider]
@@ -87,6 +90,10 @@ def config_main(monkeypatch, app_config):
 
     section_data['indexerDefaultLanguage'] = app.INDEXER_DEFAULT_LANGUAGE
     section_data['showUpdateHour'] = int_default(app.SHOWUPDATE_HOUR, app.DEFAULT_SHOWUPDATE_HOUR)
+    section_data['recommendedShowUpdateHour'] = int_default(
+        app.RECOMMENDED_SHOW_UPDATE_HOUR, app.DEFAULT_RECOMMENDED_SHOW_UPDATE_HOUR
+    )
+
     section_data['indexerTimeout'] = int_default(app.INDEXER_TIMEOUT, 20)
     section_data['indexerDefault'] = app.INDEXER_DEFAULT
 
@@ -94,6 +101,15 @@ def config_main(monkeypatch, app_config):
     section_data['plexFallBack']['enable'] = bool(app.FALLBACK_PLEX_ENABLE)
     section_data['plexFallBack']['notifications'] = bool(app.FALLBACK_PLEX_NOTIFICATIONS)
     section_data['plexFallBack']['timeout'] = int(app.FALLBACK_PLEX_TIMEOUT)
+
+    section_data['recommended'] = {'cache': {}, 'trakt': {}}
+    section_data['recommended']['cache']['shows'] = bool(app.CACHE_RECOMMENDED_SHOWS)
+    section_data['recommended']['cache']['trakt'] = bool(app.CACHE_RECOMMENDED_TRAKT)
+    section_data['recommended']['cache']['imdb'] = bool(app.CACHE_RECOMMENDED_IMDB)
+    section_data['recommended']['cache']['anidb'] = bool(app.CACHE_RECOMMENDED_ANIDB)
+    section_data['recommended']['cache']['anilist'] = bool(app.CACHE_RECOMMENDED_ANILIST)
+    section_data['recommended']['trakt']['selectedLists'] = app.CACHE_RECOMMENDED_TRAKT_LISTS
+    section_data['recommended']['trakt']['availableLists'] = TraktPopular.CATEGORIES
 
     section_data['versionNotify'] = bool(app.VERSION_NOTIFY)
     section_data['autoUpdate'] = bool(app.AUTO_UPDATE)
@@ -183,7 +199,6 @@ async def test_config_get(http_client, create_url, auth_headers, config_main):
 @pytest.mark.gen_test
 @pytest.mark.parametrize('query', [
     'defaultPage',
-    'subtitlesMulti',
     'wikiUrl',
     'sslVerify'
 ])
@@ -356,6 +371,7 @@ def config_system(monkeypatch):
     section_data['appArgs'] = app.MY_ARGS
     section_data['webRoot'] = app.WEB_ROOT
     section_data['runsInDocker'] = bool(app.RUNS_IN_DOCKER)
+    section_data['newestVersionMessage'] = app.NEWEST_VERSION_STRING
     section_data['gitRemoteBranches'] = app.GIT_REMOTE_BRANCHES
     section_data['cpuPresets'] = cpu_presets
 
@@ -849,6 +865,53 @@ async def test_config_get_layout(http_client, create_url, auth_headers, config_l
     expected = config_layout
 
     url = create_url('/config/layout')
+
+    # when
+    response = await http_client.fetch(url, **auth_headers)
+
+    # then
+    assert response.code == 200
+    assert expected == json.loads(response.body)
+
+
+@pytest.fixture
+def config_subtitles():
+    return {
+        'enabled': bool(app.USE_SUBTITLES),
+        'languages': app.SUBTITLES_LANGUAGES,
+        'wantedLanguages': [{'id': code, 'name': name_from_code(code)}
+                            for code in wanted_languages()],
+        'codeFilter': [{'id': code, 'name': name_from_code(code)}
+                       for code in subtitle_code_filter()],
+        'services': app.SUBTITLE_SERVICES,
+        'stopAtFirst': bool(app.SUBTITLES_STOP_AT_FIRST),
+        'eraseCache': bool(app.SUBTITLES_ERASE_CACHE),
+        'location': app.SUBTITLES_DIR,
+        'finderFrequency': int(app.SUBTITLES_FINDER_FREQUENCY),
+        'perfectMatch': bool(app.SUBTITLES_PERFECT_MATCH),
+        'logHistory': bool(app.SUBTITLES_HISTORY),
+        'multiLanguage': bool(app.SUBTITLES_MULTI),
+        'keepOnlyWanted': bool(app.SUBTITLES_KEEP_ONLY_WANTED),
+        'ignoreEmbeddedSubs': bool(app.IGNORE_EMBEDDED_SUBS),
+        'acceptUnknownEmbeddedSubs': bool(app.ACCEPT_UNKNOWN_EMBEDDED_SUBS),
+        'hearingImpaired': bool(app.SUBTITLES_HEARING_IMPAIRED),
+        'preScripts': app.SUBTITLES_PRE_SCRIPTS,
+        'extraScripts': app.SUBTITLES_EXTRA_SCRIPTS,
+        'wikiUrl': app.SUBTITLES_URL,
+        'providerLogins': {
+            'addic7ed': {'user': app.ADDIC7ED_USER, 'pass': app.ADDIC7ED_PASS},
+            'legendastv': {'user': app.LEGENDASTV_USER, 'pass': app.LEGENDASTV_PASS},
+            'opensubtitles': {'user': app.OPENSUBTITLES_USER, 'pass': app.OPENSUBTITLES_PASS}
+        }
+    }
+
+
+@pytest.mark.gen_test
+async def test_config_get_postprocessing(http_client, create_url, auth_headers, config_subtitles):
+    # given
+    expected = config_subtitles
+
+    url = create_url('/config/subtitles')
 
     # when
     response = await http_client.fetch(url, **auth_headers)

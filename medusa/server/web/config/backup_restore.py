@@ -21,19 +21,23 @@ class ConfigBackupRestore(Config):
         super(ConfigBackupRestore, self).__init__(*args, **kwargs)
 
     def index(self):
-        t = PageTemplate(rh=self, filename='config_backuprestore.mako')
+        """
+        Render the Backup & Restore page.
 
-        return t.render(controller='config', action='backupRestore')
+        [Converted to VueRouter]
+        """
+        return PageTemplate(rh=self, filename='index.mako').render()
 
     @staticmethod
     def backup(backupDir=None):
-
+        """Create backup."""
         final_result = ''
 
         if backupDir:
             source = [os.path.join(app.DATA_DIR, app.APPLICATION_DB), app.CONFIG_FILE,
                       os.path.join(app.DATA_DIR, app.FAILED_DB),
-                      os.path.join(app.DATA_DIR, app.CACHE_DB)]
+                      os.path.join(app.DATA_DIR, app.CACHE_DB),
+                      os.path.join(app.DATA_DIR, app.RECOMMENDED_DB)]
             target = os.path.join(backupDir, 'medusa-{date}.zip'.format(date=time.strftime('%Y%m%d%H%M%S')))
 
             for (path, dirs, files) in os.walk(app.CACHE_DIR, topdown=True):
@@ -56,7 +60,7 @@ class ConfigBackupRestore(Config):
 
     @staticmethod
     def restore(backupFile=None):
-
+        """Restore backup."""
         final_result = ''
 
         if backupFile:

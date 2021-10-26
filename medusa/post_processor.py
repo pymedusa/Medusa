@@ -918,7 +918,7 @@ class PostProcessor(object):
         self.log(u'Snatch in history: {0}'.format(self.in_history), level)
         self.log(u'Manually snatched: {0}'.format(self.manually_searched), level)
         self.log(u'Info hash: {0}'.format(self.info_hash), level)
-        self.log(u'NZB: {0}'.format(bool(self.nzb_name)), level)
+        self.log(u'Resource name: {0}'.format(self.nzb_name), level)
         self.log(u'Current quality: {0}'.format(Quality.qualityStrings[old_ep_quality]), level)
         self.log(u'New quality: {0}'.format(Quality.qualityStrings[new_ep_quality]), level)
         self.log(u'Proper: {0}'.format(self.is_proper), level)
