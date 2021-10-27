@@ -41,11 +41,12 @@ const app = new Vue({
 
         if (!window.location.pathname.includes('/login')) {
             const { $store } = this;
+            await $store.dispatch('login');
+
             Promise.all([
-                $store.dispatch('login', { username: window.username }),
                 $store.dispatch('getConfig'),
                 $store.dispatch('getStats')
-            ]).then(([_, config]) => {
+            ]).then(([config]) => {
                 if (isDevelopment) {
                     console.log('App Loaded!');
                 }

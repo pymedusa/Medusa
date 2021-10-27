@@ -309,9 +309,8 @@ const actions = {
      * @param {ShowIdentifier&ShowGetParameters} parameters Request parameters.
      * @returns {Promise} The API response.
      */
-    getShow(context, { showSlug, detailed, episodes }) {
+    getShow({ rootState, commit }, { showSlug, detailed, episodes }) {
         return new Promise((resolve, reject) => {
-            const { commit } = context;
             const params = {};
             let timeout = 30000;
 
@@ -326,7 +325,7 @@ const actions = {
                 timeout = 60000;
             }
 
-            api.get(`/series/${showSlug}`, { params, timeout })
+            rootState.auth.client.api.get(`/series/${showSlug}`, { params, timeout })
                 .then(res => {
                     commit(ADD_SHOW, res.data);
                     resolve(res.data);
@@ -450,9 +449,9 @@ const actions = {
             );
         });
     },
-    setShow(_, { showSlug, data }) {
+    setShow({ rootState }, { showSlug, data }) {
         // Update show, updated show will arrive over a WebSocket message
-        return api.patch(`series/${showSlug}`, data);
+        return rootState.auth.client.api.patch(`series/${showSlug}`, data);
     },
     updateShow(context, show) {
         // Update local store

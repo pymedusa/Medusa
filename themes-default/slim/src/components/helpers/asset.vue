@@ -49,7 +49,7 @@ export default {
     },
     computed: {
         ...mapState({
-            client: state => state.auth.client
+            apiKey: state => state.auth.apiKey
         }),
         src() {
             const { defaultSrc, error, showSlug, type } = this;
@@ -59,7 +59,7 @@ export default {
             }
 
             // FIXME: This needs to be tested with webRoot
-            return `api/v2/series/${showSlug}/asset/${type}?api_key=${this.client.apiKey}`;
+            return `api/v2/series/${showSlug}/asset/${type}?api_key=${this.apiKey}`;
         },
         href() {
             const { link, src } = this;

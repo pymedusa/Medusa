@@ -17,7 +17,7 @@ export default {
         ...mapState({
             enabled: state => state.config.layout.fanartBackground,
             opacity: state => state.config.layout.fanartBackgroundOpacity,
-            client: state => state.auth.client
+            apiKey: state => state.auth.apiKey
         }),
         offset() {
             let offset = '90px';
@@ -42,7 +42,7 @@ export default {
         }
         const { opacity, slug, offset } = this;
         if (slug) {
-            const imgUrl = `api/v2/series/${slug}/asset/fanart?api_key=${this.client.apiKey}`;
+            const imgUrl = `api/v2/series/${slug}/asset/fanart?api_key=${this.apiKey}`;
 
             // If no element is supplied, attaches to `<body>`
             const { $wrap } = $.backstretch(imgUrl);

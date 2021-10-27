@@ -4,23 +4,14 @@ import axios from 'axios';
 // Because of this, a page reload is required.
 
 export default function() {
-    this.apiKey = null;
+    this.token = null;
     this.getToken = () => {
         return axios.get('/token')
             .then(response => {
-                this.apiKey = response.data.token;
+                this.token = response.data;
                 this.apiRoute = axios.create({
                     baseURL: '/',
                     timeout: 60000,
-                    headers: {
-                        Accept: 'application/json',
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                this.apiv1 = axios.create({
-                    baseURL: `/api/v1/${this.apiKey}/`,
-                    timeout: 30000,
                     headers: {
                         Accept: 'application/json',
                         'Content-Type': 'application/json'
@@ -33,7 +24,7 @@ export default function() {
                     headers: {
                         Accept: 'application/json',
                         'Content-Type': 'application/json',
-                        'X-Api-Key': this.apiKey
+                        Authorization: `Bearer ${this.token}`
                     }
                 });
             });

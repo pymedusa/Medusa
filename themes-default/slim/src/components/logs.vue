@@ -143,19 +143,18 @@ export default {
         ...mapState({
             config: state => state.config.general,
             layout: state => state.config.layout,
-            client: state => state.auth.client
+            apiKey: state => state.auth.apiKey
         }),
         rawViewLink() {
-            const { client } = this;
             const qs = new URLSearchParams();
             qs.set('level', this.minLevel);
             qs.set('thread', this.threadFilter);
             qs.set('period', this.periodFilter);
             qs.set('query', this.searchQuery);
             qs.set('limit', 1000);
-            qs.set('api_key', client.apiKey);
+            qs.set('api_key', this.apiKey);
             qs.set('raw', 'true');
-            return `${api.defaults.baseURL}log?${qs}`;
+            return `log?${qs}`;
         },
         levels() {
             const { debug, dbDebug, loggingLevels } = this.config.logs;
