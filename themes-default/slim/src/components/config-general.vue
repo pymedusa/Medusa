@@ -633,7 +633,6 @@
 </template>
 
 <script>
-import { api, apiRoute } from '../api.js';
 import { mapActions, mapGetters, mapState } from 'vuex';
 import RootDirs from './root-dirs.vue';
 import {
@@ -715,7 +714,8 @@ export default {
             statuses: state => state.config.consts.statuses,
             indexers: state => state.config.indexers,
             system: state => state.config.system,
-            gitRemoteBranches: state => state.config.system.gitRemoteBranches // We need the reactivity on this.
+            gitRemoteBranches: state => state.config.system.gitRemoteBranches, // We need the reactivity on this.
+            client: state => state.auth.client
         }),
         ...mapGetters([
             'getStatus'
@@ -933,11 +933,11 @@ export default {
             setLayoutShow(mergedShowLayout);
         },
         async compareDBUpgrade() {
-            const { checkoutBranch, selectedBranch } = this;
+            const { client, checkoutBranch, selectedBranch } = this;
 
             try {
                 this.checkoutBranchMessage = 'Checking if the checkout requires a database upgrade / downgrade';
-                const result = await apiRoute.get('home/getDBcompare');
+                const result = await client.this.client.apiRoute.get('home/getDBcompare');
                 if (result.data.status === 'success') {
                     if (result.data.message === 'equal') {
                         // Checkout Branch
@@ -981,10 +981,10 @@ export default {
             compareDBUpgrade();
         },
         async checkoutBranch() {
-            const { selectedBranch } = this;
+            const { client, selectedBranch } = this;
             this.checkoutBranchMessage = `Checking out branch ${selectedBranch}`;
 
-            await api.post('system/operation', { type: 'CHECKOUT_BRANCH', branch: selectedBranch }, { timeout: 120000 });
+            await client.api.post('system/operation', { type: 'CHECKOUT_BRANCH', branch: selectedBranch }, { timeout: 120000 });
             this.checkoutBranchMessage = `Finished checking out branch ${selectedBranch}`;
 
             setTimeout(() => {

@@ -46,8 +46,6 @@
 
 <script>
 import { mapState } from 'vuex';
-
-import { apiRoute } from '../api';
 import { StateSwitch } from './helpers';
 
 export default {
@@ -100,7 +98,7 @@ export default {
             };
 
             try {
-                const { data } = await apiRoute.get('home/fetch_releasegroups', { params, timeout: 30000 });
+                const { data } = await this.client.apiRoute.get('home/fetch_releasegroups', { params, timeout: 30000 });
                 if (data.result !== 'success') {
                     throw new Error('Failed to get release groups, check server logs for errors.');
                 }
@@ -175,7 +173,8 @@ export default {
     },
     computed: {
         ...mapState({
-            layout: state => state.config.layout
+            layout: state => state.config.layout,
+            client: state => state.auth.client
         }),
         itemsWhitelist() {
             return this.allReleaseGroups.filter(x => x.memberOf === 'whitelist');

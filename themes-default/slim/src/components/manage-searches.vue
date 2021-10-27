@@ -116,7 +116,6 @@
 
 <script>
 import { mapActions, mapGetters, mapState } from 'vuex';
-import { api } from '../api';
 import { AppLink } from './helpers';
 import StateSwitch from './helpers/state-switch.vue';
 
@@ -159,7 +158,8 @@ export default {
             subtitles: state => state.config.subtitles,
             system: state => state.config.system,
             search: state => state.config.search,
-            queueItems: state => state.queue.queueitems
+            queueItems: state => state.queue.queueitems,
+            client: state => state.auth.client
         }),
         ...mapGetters({
             getQueueItemsByName: 'getQueueItemsByName'
@@ -213,16 +213,16 @@ export default {
          * Trigger the force refresh of all the exception types.
          */
         forceSceneExceptionRefresh() {
-            const { updateExceptionData, sceneRefresh } = this;
+            const { client, updateExceptionData, sceneRefresh } = this;
             // Start a spinner.
             sceneRefresh.showSpinner = true;
             sceneRefresh.inProgress = true;
             sceneRefresh.message = 'Retrieving scene exceptions...';
 
-            api.post('alias-source/all/operation', { type: 'REFRESH' }, {
+            client.api.post('alias-source/all/operation', { type: 'REFRESH' }, {
                 timeout: 60000
             }).then(() => {
-                api.get('alias-source').then(response => {
+                client.api.get('alias-source').then(response => {
                     updateExceptionData(response.data);
                 }).catch(error => {
                     console.error('Trying to get scene exceptions failed with error: ' + error);
@@ -258,27 +258,27 @@ export default {
             sceneRefresh.inProgress = false;
         },
         forceBacklog() {
-            api.put('search/backlog');
+            this.client.api.put('search/backlog');
         },
         forceDaily() {
-            api.put('search/daily');
+            this.client.api.put('search/daily');
         },
         forceFindPropers() {
-            api.put('search/proper');
+            this.client.api.put('search/proper');
         },
         forceSubtitlesFinder() {
-            api.put('search/subtitles');
+            this.client.api.put('search/subtitles');
         },
         toggleBacklog() {
             const { schedulerStatus } = this;
-            api.put('search/backlog', { options: { paused: !schedulerStatus.backlogPaused } }); // eslint-disable-line no-undef
+            this.client.api.put('search/backlog', { options: { paused: !schedulerStatus.backlogPaused } }); // eslint-disable-line no-undef
         },
         forceDownloadHandler() {
-            api.post('system/operation', { type: 'FORCEADH' });
+            this.client.api.post('system/operation', { type: 'FORCEADH' });
         },
         async searchRecommendedShows(source) {
             try {
-                await api.post(`recommended/${source}`);
+                await this.client.api.post(`recommended/${source}`);
                 this.$snotify.success(
                     'Started search for new recommended shows',
                     `Searching ${source}`
@@ -302,7 +302,7 @@ export default {
                 dialogClass: 'modal-dialog',
                 post: false,
                 confirm() {
-                    api.post('internal/deleteSceneExceptions')
+                    this.client.api.post('internal/deleteSceneExceptions')
                         .then(() => {
                             vm.sceneExceptionsDeleted = true;
                             setTimeout(() => {
@@ -316,7 +316,7 @@ export default {
     mounted() {
         // Initially load the exception types last updates on page load.
         const { updateExceptionData } = this;
-        api.get('alias-source').then(response => {
+        this.client.api.get('alias-source').then(response => {
             updateExceptionData(response.data);
         }).catch(error => {
             console.error('Trying to get scene exceptions failed with error: ' + error);

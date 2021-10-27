@@ -1,5 +1,4 @@
 import Vue from 'vue';
-import { api } from '../../api';
 import { ADD_RECOMMENDED_SHOW, SET_RECOMMENDED_SHOWS } from '../mutation-types';
 
 const IMDB = 10;
@@ -66,11 +65,11 @@ const actions = {
      * @Param {String} params - Filter params, for getting a specific recommended list type.
      * @returns {(undefined|Promise)} undefined if `shows` was provided or the API response if not.
      */
-    getRecommendedShows({ commit }, identifier, params) {
+    getRecommendedShows({ rootState, commit }, identifier, params) {
         params = {};
 
         identifier = identifier ? identifier : '';
-        return api.get(`/recommended/${identifier}`, { params })
+        return rootState.auth.client.api.get(`/recommended/${identifier}`, { params })
             .then(response => {
                 commit(SET_RECOMMENDED_SHOWS, response.data);
             });

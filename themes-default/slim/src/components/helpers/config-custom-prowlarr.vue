@@ -44,7 +44,6 @@
 </template>
 
 <script>
-import { api } from '../../api';
 import { mapActions, mapGetters, mapState } from 'vuex';
 import { ADD_PROVIDER, REMOVE_PROVIDER } from '../../store/mutation-types';
 import { ConfigTextbox } from '.';
@@ -98,7 +97,7 @@ export default {
         async addProvider(provider) {
             const subType = provider.protocol === 'torrent' ? 'torznab' : 'newznab';
             try {
-                const response = await api.post('providers/prowlarr', { subType, id: provider.id, name: provider.name });
+                const response = await this.client.api.post('providers/prowlarr', { subType, id: provider.id, name: provider.name });
                 this.$store.commit(ADD_PROVIDER, response.data.result);
                 this.$snotify.success(
                     `Saved provider ${provider.name}`,
@@ -117,7 +116,7 @@ export default {
             const useProviderId = provider.localProvider ? provider.localProvider.id : provider.localId;
 
             try {
-                await api.delete(`providers/${subType}/${useProviderId}`);
+                await this.client.api.delete(`providers/${subType}/${useProviderId}`);
                 this.$store.commit(REMOVE_PROVIDER, useProviderId);
                 this.$snotify.success(
                     `Removed provider ${provider.name}`,
@@ -134,7 +133,7 @@ export default {
         async testConnectivity() {
             const { prowlarr } = this;
             try {
-                await api.post('providers/prowlarr/operation', {
+                await this.client.api.post('providers/prowlarr/operation', {
                     type: 'TEST', url: prowlarr.url, apikey: prowlarr.apikey
                 });
                 this.testResult = 'connected';
@@ -172,7 +171,7 @@ export default {
             const { prowlarr } = this;
             if (prowlarr.url && prowlarr.apikey) {
                 try {
-                    const response = await api.post('providers/prowlarr/operation', {
+                    const response = await this.client.api.post('providers/prowlarr/operation', {
                         type: 'GETINDEXERS', url: prowlarr.url, apikey: prowlarr.apikey
                     });
                     this.availableProviders = response.data;
@@ -188,7 +187,8 @@ export default {
     computed: {
         ...mapState({
             prowlarr: state => state.config.general.providers.prowlarr,
-            providers: state => state.provider.providers
+            providers: state => state.provider.providers,
+            client: state => state.auth.client
         }),
         ...mapGetters(['providerNameToId']),
         prowlarrProviders() {

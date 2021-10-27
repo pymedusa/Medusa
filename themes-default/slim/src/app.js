@@ -29,12 +29,15 @@ const app = new Vue({
             showsLoading: state => state.shows.loading
         })
     },
-    mounted() {
+    async mounted() {
         const { getShows, setLoadingDisplay, setLoadingFinished } = this;
 
         if (isDevelopment) {
             console.log('App Mounted!');
         }
+
+        // Create the api client object.
+        await this.$store.dispatch('auth');
 
         if (!window.location.pathname.includes('/login')) {
             const { $store } = this;

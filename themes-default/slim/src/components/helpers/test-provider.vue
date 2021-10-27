@@ -7,7 +7,6 @@
 </template>
 <script>
 import { mapState } from 'vuex';
-import { api } from '../../api';
 import StateSwitch from './state-switch.vue';
 
 export default {
@@ -27,7 +26,8 @@ export default {
     },
     computed: {
         ...mapState({
-            layout: state => state.config.layout
+            layout: state => state.config.layout,
+            client: state => state.auth.client
         })
     },
     methods: {
@@ -36,7 +36,7 @@ export default {
             this.testResult = '';
             this.loading = true;
             try {
-                const response = await api.post('providers/internal/operation', {
+                const response = await this.client.api.post('providers/internal/operation', {
                     type: 'TESTPROVIDER', providerId
                 })
                     .catch(error => {

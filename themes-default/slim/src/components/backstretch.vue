@@ -1,7 +1,5 @@
 <script>
 import { mapState } from 'vuex';
-
-import { webRoot, apiKey } from '../api';
 import { waitFor } from '../utils/core';
 
 export default {
@@ -18,7 +16,8 @@ export default {
     computed: {
         ...mapState({
             enabled: state => state.config.layout.fanartBackground,
-            opacity: state => state.config.layout.fanartBackgroundOpacity
+            opacity: state => state.config.layout.fanartBackgroundOpacity,
+            client: state => state.auth.client
         }),
         offset() {
             let offset = '90px';
@@ -43,7 +42,7 @@ export default {
         }
         const { opacity, slug, offset } = this;
         if (slug) {
-            const imgUrl = `${webRoot}/api/v2/series/${slug}/asset/fanart?api_key=${apiKey}`;
+            const imgUrl = `api/v2/series/${slug}/asset/fanart?api_key=${this.client.apiKey}`;
 
             // If no element is supplied, attaches to `<body>`
             const { $wrap } = $.backstretch(imgUrl);

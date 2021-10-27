@@ -65,7 +65,6 @@
 
 <script>
 import { mapActions, mapGetters, mapState } from 'vuex';
-import { api } from '../api';
 import { AppLink } from './helpers';
 import Backstretch from './backstretch.vue';
 import StateSwitch from './helpers/state-switch.vue';
@@ -99,7 +98,8 @@ export default {
         ...mapState({
             postprocessing: state => state.config.postprocessing,
             seedLocation: state => state.clients.torrents.seedLocation,
-            layout: state => state.config.layout
+            layout: state => state.config.layout,
+            client: state => state.auth.client
         }),
         showConfigLoaded() {
             return this.show.id.slug !== null;
@@ -140,7 +140,7 @@ export default {
             try {
                 this.loading = true;
                 const url = `series/${showSlug}/operation`;
-                const { data } = await api.post(url, { type: 'TEST_RENAME' }, { timeout: 120000 });
+                const { data } = await this.client.api.post(url, { type: 'TEST_RENAME' }, { timeout: 120000 });
                 this.episodeRenameList = data;
             } catch (error) {
                 this.$snotify.error(
@@ -173,7 +173,7 @@ export default {
             try {
                 this.loading = true;
                 const url = `series/${showSlug}/operation`;
-                await api.post(url, { type: 'RENAME_EPISODES', episodes }, { timeout: 120000 });
+                await this.client.api.post(url, { type: 'RENAME_EPISODES', episodes }, { timeout: 120000 });
                 this.$router.push({ name: 'show', query: { showslug: showSlug } });
             } catch (error) {
                 this.$snotify.error(

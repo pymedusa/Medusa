@@ -1,6 +1,4 @@
 import Vue from 'vue';
-
-import { api } from '../../api';
 import {
     ADD_PROVIDER,
     ADD_PROVIDERS,
@@ -112,10 +110,9 @@ const actions = {
      * @param {*} context The store context.
      * @returns {Promise} The API response.
      */
-    getProviders(context) {
+    getProviders({ rootState, commit }) {
         return new Promise((resolve, reject) => {
-            const { commit } = context;
-            api.get('/providers')
+            rootState.auth.client.api.get('/providers')
                 .then(response => {
                     commit(ADD_PROVIDERS, response.data);
                     resolve();
@@ -133,8 +130,7 @@ const actions = {
      * @param {String} The provider id.
      * @returns {void}.
      */
-    async getProviderCacheResults(context, { showSlug, season, episode }) {
-        const { commit, state } = context;
+    async getProviderCacheResults({ rootState, commit, state }, { showSlug, season, episode }) {
         const limit = 1000;
         const params = { limit, showslug: showSlug, season };
         if (episode) {
@@ -163,7 +159,7 @@ const actions = {
                 params.page = page;
 
                 try {
-                    response = await api.get(`/providers/${providerId}/results`, { params }); // eslint-disable-line no-await-in-loop
+                    response = await rootState.client.api.get(`/providers/${providerId}/results`, { params }); // eslint-disable-line no-await-in-loop
                 } catch (error) {
                     if (error.response && error.response.status === 404) {
                         console.debug(`No results available for provider ${provider}`);

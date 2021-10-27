@@ -1,12 +1,12 @@
 <template>
-    <div id="app">
+    <div v-if="isAuthenticated" id="app">
         <vue-snotify />
         <app-header />
         <sub-menu />
         <alerts />
         <h1 v-if="$route.meta.header" class="header">{{ $route.meta.header }}</h1>
         <router-view :key="$route.meta.nocache ? $route.fullPath : $route.name" />
-        <app-footer v-if="isAuthenticated" />
+        <app-footer />
         <scroll-buttons />
     </div>
 </template>

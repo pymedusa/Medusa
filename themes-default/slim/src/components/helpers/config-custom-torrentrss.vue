@@ -39,7 +39,6 @@
 </template>
 
 <script>
-import { api } from '../../api';
 import { mapGetters, mapState } from 'vuex';
 import { ADD_PROVIDER, REMOVE_PROVIDER } from '../../store/mutation-types';
 import {
@@ -70,7 +69,7 @@ export default {
             this.saving = true;
 
             try {
-                await api.patch(`providers/${provider.id}`, provider.config);
+                await this.client.api.patch(`providers/${provider.id}`, provider.config);
                 this.$snotify.success(
                     `Saved provider ${provider.name}`,
                     'Saved',
@@ -88,7 +87,7 @@ export default {
         async addProvider() {
             const { name, url, cookies, searchElement } = this;
             try {
-                const response = await api.post('providers/torrentrss', { name, url, cookies, titleTag: searchElement });
+                const response = await this.client.api.post('providers/torrentrss', { name, url, cookies, titleTag: searchElement });
                 this.$store.commit(ADD_PROVIDER, response.data.result);
                 this.$snotify.success(
                     `Saved provider ${name}`,
@@ -108,7 +107,7 @@ export default {
         async removeProvider() {
             const { currentProvider } = this;
             try {
-                await api.delete(`providers/torrentrss/${currentProvider.id}`);
+                await this.client.api.delete(`providers/torrentrss/${currentProvider.id}`);
                 this.$store.commit(REMOVE_PROVIDER, currentProvider.id);
                 this.$snotify.success(
                     `Removed provider ${currentProvider.name}`,
@@ -126,7 +125,8 @@ export default {
     },
     computed: {
         ...mapState({
-            providers: state => state.provider.providers
+            providers: state => state.provider.providers,
+            client: state => state.auth.client
         }),
         ...mapGetters(['providerNameToId']),
         torrentrssProviderOptions() {

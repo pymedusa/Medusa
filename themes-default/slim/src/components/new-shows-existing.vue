@@ -110,7 +110,6 @@
 
 <script>
 import Vue from 'vue';
-import { api } from '../api';
 import { mapState } from 'vuex';
 import RootDirs from './root-dirs.vue';
 import { AddShowOptions, NewShow } from '.';
@@ -162,7 +161,8 @@ export default {
         ...mapState({
             indexers: state => state.config.indexers,
             indexerDefault: state => state.config.general.indexerDefault,
-            queueitems: state => state.shows.queueitems
+            queueitems: state => state.shows.queueitems,
+            client: state => state.auth.client
         }),
         selectedRootDirs() {
             return this.rootDirs.filter(rd => rd.selected);
@@ -239,7 +239,7 @@ export default {
             });
         },
         update() {
-            const { indexerDefault } = this;
+            const { client, indexerDefault } = this;
 
             if (this.isLoading) {
                 return;
@@ -267,7 +267,7 @@ export default {
                 },
                 timeout: this.requestTimeout
             };
-            api.get('internal/existingSeries', config).then(response => {
+            client.api.get('internal/existingSeries', config).then(response => {
                 const { data } = response;
                 this.dirList = data
                     .map(dir => {

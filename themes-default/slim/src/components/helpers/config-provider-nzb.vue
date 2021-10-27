@@ -63,7 +63,7 @@
 </template>
 
 <script>
-import { api } from '../../api';
+import { mapState } from 'vuex';
 import {
     ConfigTextbox,
     ConfigTextboxNumber,
@@ -94,6 +94,11 @@ export default {
             editProvider: {}
         };
     },
+    computed: {
+        ...mapState({
+            client: state => state.auth.client
+        })
+    },
     mounted() {
         const { provider } = this;
         this.editProvider = { ...provider };
@@ -105,7 +110,7 @@ export default {
             this.saving = true;
 
             try {
-                await api.patch(`providers/${editProvider.id}`, editProvider.config);
+                await this.client.api.patch(`providers/${editProvider.id}`, editProvider.config);
                 this.$snotify.success(
                     `Saved provider ${editProvider.name}`,
                     'Saved',

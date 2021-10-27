@@ -21,7 +21,6 @@
     </div>
 </template>
 <script>
-import { apiRoute } from '../api';
 import { mapActions, mapGetters } from 'vuex';
 import { AppLink, ShowSelector } from './helpers';
 
@@ -87,7 +86,7 @@ export default {
                     }
 
                     // Start removal of show in backend
-                    await apiRoute.get('home/deleteShow', { params });
+                    await this.client.apiRoute.get('home/deleteShow', { params });
 
                     // Navigate back to /home
                     $router.push({ name: 'home', query: undefined });

@@ -51,9 +51,8 @@
         <link rel="stylesheet" type="text/css" href="css/country-flags.css?${sbPID}"/>
         <%block name="css" />
     </head>
-    <% attributes = 'data-controller="' + controller + '" data-action="' + action + '" api-key="' + app.API_KEY + '"' %>
 
-<body ${('', attributes)[bool(loggedIn)]} web-root="${app.WEB_ROOT}">
+<body>
     <div id="vue-wrap" class="container-fluid">
         <load-progress-bar v-if="showsLoading" v-bind="{display: showsLoading.display, current: showsLoading.current, total: showsLoading.total}"></load-progress-bar>
 

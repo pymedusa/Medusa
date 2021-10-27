@@ -971,7 +971,6 @@
 </template>
 
 <script>
-import { apiRoute } from '../api.js';
 import { mapActions, mapState } from 'vuex';
 import {
     AppLink,
@@ -1116,11 +1115,11 @@ export default {
             }
 
             // Save the list
-            apiRoute.post('home/saveShowNotifyList', form);
+            this.client.apiRoute.post('home/saveShowNotifyList', form);
         },
         async prowlUpdateApiKeys(selectedShow) {
             this.prowlSelectedShow = selectedShow;
-            const response = await apiRoute('home/loadShowNotifyLists');
+            const response = await this.client.apiRoute('home/loadShowNotifyLists');
             if (response.data._size > 0) {
                 const list = response.data[selectedShow].prowl_notify_list ? response.data[selectedShow].prowl_notify_list.split(',') : [];
                 this.prowlSelectedShowApiKeys = selectedShow ? list : [];
@@ -1128,7 +1127,7 @@ export default {
         },
         async emailUpdateShowEmail(selectedShow) {
             this.emailSelectedShow = selectedShow;
-            const response = await apiRoute('home/loadShowNotifyLists');
+            const response = await this.client.apiRoute('home/loadShowNotifyLists');
             if (response.data._size > 0) {
                 const list = response.data[selectedShow].list ? response.data[selectedShow].list.split(',') : [];
                 this.emailSelectedShowAdresses = selectedShow ? list : [];
@@ -1145,7 +1144,7 @@ export default {
                 return false;
             }
 
-            const response = await apiRoute('home/getPushbulletDevices', { params: { api: pushbulletApiKey } });
+            const response = await this.client.apiRoute('home/getPushbulletDevices', { params: { api: pushbulletApiKey } });
             const options = [];
 
             const { data } = response;
@@ -1170,7 +1169,7 @@ export default {
                 return false;
             }
 
-            const response = await apiRoute('home/testPushbullet', { params: { api: pushbulletApiKey } });
+            const response = await this.client.apiRoute('home/testPushbullet', { params: { api: pushbulletApiKey } });
             const { data } = response;
 
             if (data) {
@@ -1185,7 +1184,7 @@ export default {
                 return false;
             }
 
-            const response = await apiRoute('home/testJoin', { params: { api: joinApiKey } });
+            const response = await this.client.apiRoute('home/testJoin', { params: { api: joinApiKey } });
             const { data } = response;
 
             if (data) {
@@ -1195,7 +1194,7 @@ export default {
         async twitterStep1() {
             this.twitterTestInfo = MEDUSA.config.layout.loading;
 
-            const response = await apiRoute('home/twitterStep1');
+            const response = await this.client.apiRoute('home/twitterStep1');
             const { data } = response;
             window.open(data);
             this.twitterTestInfo = '<b>Step1:</b> Confirm Authorization';
@@ -1206,7 +1205,7 @@ export default {
             twitter.key = twitterKey;
 
             if (twitter.key) {
-                const response = await apiRoute('home/twitterStep2', { params: { key: twitter.key } });
+                const response = await this.client.apiRoute('home/twitterStep2', { params: { key: twitter.key } });
                 const { data } = response;
                 this.twitterTestInfo = data;
             } else {
@@ -1215,7 +1214,7 @@ export default {
         },
         async twitterTest() {
             try {
-                const response = await apiRoute('home/testTwitter');
+                const response = await this.client.apiRoute('home/testTwitter');
                 const { data } = response;
                 this.twitterTestInfo = data;
             } catch (error) {
@@ -1630,7 +1629,7 @@ export default {
         async TraktRequestDeviceCode() {
             this.traktUserCode = '';
             this.traktRequestAuthenticated = false;
-            const response = await apiRoute('home/requestTraktDeviceCodeOauth');
+            const response = await this.client.apiRoute('home/requestTraktDeviceCodeOauth');
             if (response.data) {
                 this.traktVerificationUrl = response.data.verification_url;
                 window.open(response.data.verification_url, 'popUp', 'toolbar=no, scrollbars=no, resizable=no, top=200, left=200, width=650, height=550');
@@ -1642,7 +1641,7 @@ export default {
         checkTraktAuthenticated() {
             let counter = 0;
             const i = setInterval(() => {
-                apiRoute('home/checkTrakTokenOauth')
+                this.client.apiRoute('home/checkTrakTokenOauth')
                     .then(response => {
                         if (response.data) {
                             this.traktRequestMessage = response.data.result;
@@ -1673,7 +1672,7 @@ export default {
             }
             $('#trakt_blacklist_name').removeClass('warning');
             $('#testTrakt-result').html(MEDUSA.config.layout.loading);
-            apiRoute(`home/testTrakt?blacklist_name=${trakt.trendingBlacklist}`)
+            this.client.apiRoute(`home/testTrakt?blacklist_name=${trakt.trendingBlacklist}`)
                 .then(result => {
                     $('#testTrakt-result').html(result.data);
                     $('#testTrakt').prop('disabled', false);

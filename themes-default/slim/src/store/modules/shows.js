@@ -1,6 +1,4 @@
 import Vue from 'vue';
-
-import { api } from '../../api';
 import {
     ADD_SHOW,
     ADD_SHOW_QUEUE_ITEM,
@@ -345,7 +343,7 @@ const actions = {
      * @param {ShowParameteres} parameters - Request parameters.
      * @returns {Promise} The API response.
      */
-    getEpisodes({ commit, getters }, { showSlug, season }) {
+    getEpisodes({ rootState, commit, getters }, { showSlug, season }) {
         return new Promise((resolve, reject) => {
             const { getShowById } = getters;
             const show = getShowById(showSlug);
@@ -360,7 +358,7 @@ const actions = {
             }
 
             // Get episodes
-            api.get(`/series/${showSlug}/episodes`, { params })
+            rootState.auth.client.api.get(`/series/${showSlug}/episodes`, { params })
                 .then(response => {
                     commit(ADD_SHOW_EPISODE, { show, episodes: response.data });
                     resolve();
@@ -404,7 +402,7 @@ const actions = {
             const newShows = [];
 
             // Get first page
-            pageRequests.push(api.get('/series', { params })
+            pageRequests.push(rootState.auth.client.api.get('/series', { params })
                 .then(response => {
                     commit('setLoadingTotal', Number(response.headers['x-pagination-count']));
                     const totalPages = Number(response.headers['x-pagination-total']);
@@ -418,7 +416,7 @@ const actions = {
                         pageRequests.push(new Promise((resolve, reject) => {
                             const newPage = { page };
                             newPage.limit = params.limit;
-                            return api.get('/series', { params: newPage })
+                            return rootState.auth.client.api.get('/series', { params: newPage })
                                 .then(response => {
                                     newShows.push(...response.data);
                                     commit('updateLoadingCurrent', response.data.length);

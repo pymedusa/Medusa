@@ -147,7 +147,6 @@ import { showlistTableMixin } from '../mixins/show-list';
 import { manageCookieMixin } from '../mixins/manage-cookie';
 import { combineQualities } from '../utils/core';
 import { AppLink, QualityPill, StateSwitch } from './helpers';
-import { api } from '../api';
 
 export default {
     name: 'manage-mass-update',
@@ -456,7 +455,7 @@ export default {
             const { massUpdateActions } = this;
 
             try {
-                const { data } = await api.post('massupdate', massUpdateActions);
+                const { data } = await this.client.api.post('massupdate', massUpdateActions);
                 if (Object.keys(data.shows).length > 0) {
                     this.errors = data.shows;
                 }
@@ -502,7 +501,7 @@ export default {
             };
 
             try {
-                await api.patch(`series/${show.id.slug}`, data);
+                await this.client.api.patch(`series/${show.id.slug}`, data);
                 this.$snotify.success(
                     `${data.config[option] ? 'enabled' : 'disabled'} show option ${option}`,
                     'Saved',

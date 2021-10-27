@@ -51,8 +51,6 @@
 
 <script>
 import { mapState } from 'vuex';
-import { api } from '../api';
-
 import { AppLink } from './helpers';
 
 export default {
@@ -69,7 +67,8 @@ export default {
     },
     computed: {
         ...mapState({
-            subtitleLanguages: state => state.config.subtitles.wantedLanguages
+            subtitleLanguages: state => state.config.subtitles.wantedLanguages,
+            client: state => state.auth.client
         }),
         availableLanguages() {
             const { subtitleLanguages } = this;
@@ -81,9 +80,10 @@ export default {
     },
     methods: {
         async getSubtitleMissed() {
+            const { client } = this;
             this.manageLanguage = this.selectedLanguage;
             try {
-                const { data } = await api.get('internal/getSubtitleMissed', { params: { language: this.manageLanguage } });
+                const { data } = await client.api.get('internal/getSubtitleMissed', { params: { language: this.manageLanguage } });
                 this.data = data;
             } catch (error) {
                 this.$snotify.warning('error', `Could not get missed subtitles for ${this.manageLanguage}`);
@@ -93,7 +93,7 @@ export default {
          * Search for subtitles.
          */
         async searchSubtitles() {
-            const { data, manageLanguage } = this;
+            const { client, data, manageLanguage } = this;
             // Create episode data structure.
             const shows = [];
             // eslint-disable-next-line guard-for-in
@@ -110,7 +110,7 @@ export default {
                 shows
             };
             try {
-                const { data } = await api.post('internal/searchMissingSubtitles', postData, { timeout: 120000 });
+                const { data } = await client.api.post('internal/searchMissingSubtitles', postData, { timeout: 120000 });
                 if (data.count > 0) {
                     this.$snotify.success(
                         `Searched for ${manageLanguage} missing subtitle languages`,

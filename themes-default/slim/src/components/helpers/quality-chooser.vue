@@ -104,8 +104,6 @@
 </template>
 <script>
 import { mapGetters, mapState } from 'vuex';
-
-import { api } from '../../api';
 import AppLink from './app-link';
 
 export default {
@@ -146,7 +144,8 @@ export default {
         ...mapState({
             qualityValues: state => state.config.consts.qualities.values,
             qualityPresets: state => state.config.consts.qualities.presets,
-            defaultQuality: state => state.config.general.showDefaults.quality
+            defaultQuality: state => state.config.general.showDefaults.quality,
+            client: state => state.auth.client
         }),
         ...mapGetters([
             'getQualityPreset',
@@ -209,7 +208,7 @@ export default {
             let status = false; // Set to `false` for red text, `true` for normal color
             let response;
             try {
-                response = await api.get(url, { params });
+                response = await this.client.api.get(url, { params });
             } catch (error) {
                 return {
                     status,
@@ -262,7 +261,7 @@ export default {
             this.archivedStatus = 'Archiving...';
 
             const url = `series/${this.showSlug}/operation`;
-            const response = await api.post(url, { type: 'ARCHIVE_EPISODES' });
+            const response = await this.client.api.post(url, { type: 'ARCHIVE_EPISODES' });
 
             if (response.status === 201) {
                 this.archivedStatus = 'Successfully archived episodes';

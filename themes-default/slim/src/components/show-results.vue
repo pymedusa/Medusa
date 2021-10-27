@@ -82,7 +82,6 @@
 </template>
 <script>
 
-import { apiRoute } from '../api';
 import { mapActions, mapGetters, mapState } from 'vuex';
 import { VueGoodTable } from 'vue-good-table';
 import { manageCookieMixin } from '../mixins/manage-cookie';
@@ -311,7 +310,7 @@ export default {
 
             this.loading = true;
             this.loadingMessage = 'Queue search...';
-            api.put('search/manual', data) // eslint-disable-line no-undef
+            this.client.api.put('search/manual', data) // eslint-disable-line no-undef
                 .then(() => {
                     console.info(`Queued search for show: ${show.id.slug} season: ${season}, episode: ${episode}`);
                     this.loadingMessage = 'Queued search...';
@@ -353,7 +352,7 @@ export default {
             const { layout } = this;
             evt.target.src = `images/loading16-${layout.themeName}.gif`;
             try {
-                const response = await apiRoute('home/pickManualSearch', { params: { provider: result.provider.id, identifier: result.identifier } });
+                const response = await this.client.apiRoute('home/pickManualSearch', { params: { provider: result.provider.id, identifier: result.identifier } });
                 if (response.data.result === 'success') {
                     evt.target.src = 'images/save.png';
                 } else {

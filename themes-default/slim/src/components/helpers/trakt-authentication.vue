@@ -87,7 +87,6 @@ import {
     ConfigTextboxNumber,
     ConfigTextbox
 } from '.';
-import { apiRoute } from '../../api';
 
 export default {
     components: {
@@ -135,7 +134,7 @@ export default {
         async TraktRequestDeviceCode() {
             this.traktUserCode = '';
             this.traktRequestAuthenticated = false;
-            const response = await apiRoute('home/requestTraktDeviceCodeOauth');
+            const response = await this.client.apiRoute('home/requestTraktDeviceCodeOauth');
             if (response.data) {
                 this.traktVerificationUrl = response.data.verification_url;
                 window.open(response.data.verification_url, 'popUp', 'toolbar=no, scrollbars=no, resizable=no, top=200, left=200, width=650, height=550');
@@ -147,7 +146,7 @@ export default {
         checkTraktAuthenticated() {
             let counter = 0;
             const i = setInterval(() => {
-                apiRoute('home/checkTrakTokenOauth')
+                this.client.apiRoute('home/checkTrakTokenOauth')
                     .then(response => {
                         if (response.data) {
                             this.traktRequestMessage = response.data.result;
@@ -179,7 +178,7 @@ export default {
             this.traktBlacklistClass = '';
 
             // $('#testTrakt-result').html(MEDUSA.config.layout.loading);
-            apiRoute(`home/testTrakt?blacklist_name=${blacklistName}`)
+            this.client.apiRoute(`home/testTrakt?blacklist_name=${blacklistName}`)
                 .then(result => {
                     this.testTraktResult = result.data;
                     // $('#testTrakt').prop('disabled', false);

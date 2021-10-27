@@ -15,7 +15,6 @@ import debounce from 'lodash/debounce';
 import isotope from 'vueisotope';
 import store from './store';
 import router from './router';
-import { apiRoute, apiv1, api, webRoot, apiKey } from './api';
 import globalVueShim from './global-vue-shim';
 
 if (window) {
@@ -32,9 +31,9 @@ if (window) {
     window._ = { debounce };
     window.store = store;
     window.router = router;
-    window.apiRoute = apiRoute;
-    window.apiv1 = apiv1;
-    window.api = api;
+    // window.apiRoute = apiRoute;
+    // window.apiv1 = apiv1;
+    // window.api = api;
 
     window.MEDUSA = {
         common: {},
@@ -45,8 +44,8 @@ if (window) {
         home: {},
         addShows: {}
     };
-    window.webRoot = webRoot;
-    window.apiKey = apiKey;
+    // window.webRoot = webRoot;
+    // window.apiKey = apiKey;
 
     // Push x-template components to this array to register them globally
     window.components = [];

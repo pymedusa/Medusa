@@ -1,4 +1,5 @@
 import {
+    AUTHENTICATE,
     LOGIN_PENDING,
     LOGIN_SUCCESS,
     LOGIN_FAILED,
@@ -6,6 +7,7 @@ import {
     REFRESH_TOKEN,
     REMOVE_AUTH_ERROR
 } from '../mutation-types';
+import ApiClient from '../../api';
 
 const state = {
     isAuthenticated: false,
@@ -14,7 +16,8 @@ const state = {
         access: null,
         refresh: null
     },
-    error: null
+    error: null,
+    client: null
 };
 
 const mutations = {
@@ -35,7 +38,10 @@ const mutations = {
         state.error = null;
     },
     [REFRESH_TOKEN]() {},
-    [REMOVE_AUTH_ERROR]() {}
+    [REMOVE_AUTH_ERROR]() {},
+    [AUTHENTICATE](state, client) {
+        state.client = client;
+    }
 };
 
 const getters = {};
@@ -59,6 +65,17 @@ const actions = {
     logout(context) {
         const { commit } = context;
         commit(LOGOUT);
+    },
+    auth({ commit }) {
+        // Get the JWT token
+        return new Promise(resolve => {
+            const apiClient = new ApiClient();
+            apiClient.getToken()
+                .then(() => {
+                    commit(AUTHENTICATE, apiClient);
+                    resolve();
+                });
+        });
     }
 };
 

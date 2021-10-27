@@ -94,7 +94,6 @@
 
 <script>
 import { mapState } from 'vuex';
-import { api, apiRoute } from '../api';
 import {
     Asset,
     AppLink
@@ -170,7 +169,7 @@ export default {
             }
 
             try {
-                const response = await api.post('series', { id: showId, options });
+                const response = await this.client.api.post('series', { id: showId, options });
                 if (response && response.data && response.data.identifier) {
                     this.addingShow.identifier = response.data.identifier;
                     this.addingShow.started = true;
@@ -192,7 +191,7 @@ export default {
         },
         blacklistTrakt(show) {
             show.trakt.blacklisted = true;
-            apiRoute(`addShows/addShowToBlacklist?seriesid=${show.externals.tvdb_id}`);
+            this.client.apiRoute(`addShows/addShowToBlacklist?seriesid=${show.externals.tvdb_id}`);
         },
         addShowOptions(show) {
             const { externals } = show;

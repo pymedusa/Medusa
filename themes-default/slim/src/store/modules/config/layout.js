@@ -1,5 +1,4 @@
 import { ADD_CONFIG, UPDATE_LAYOUT_LOCAL } from '../../mutation-types';
-import { api } from '../../../api';
 import formatDate from 'date-fns/format';
 import parseISO from 'date-fns/parseISO';
 import TimeAgo from 'javascript-time-ago';
