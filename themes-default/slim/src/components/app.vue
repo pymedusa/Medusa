@@ -1,5 +1,6 @@
 <template>
     <div v-if="isAuthenticated" id="app">
+        <load-progress-bar v-if="showsLoading" v-bind="{display: showsLoading.display, current: showsLoading.current, total: showsLoading.total}" />
         <div id="content-row" class="row">
             <div id="content-col" :class="layout.wide ? 'col-lg-12 col-md-12' : 'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1'">
                 <vue-snotify />
@@ -20,7 +21,7 @@ import Alerts from './alerts.vue';
 import AppHeader from './app-header.vue';
 import SubMenu from './sub-menu.vue';
 import AppFooter from './app-footer.vue';
-import { ScrollButtons } from './helpers';
+import { LoadProgressBar, ScrollButtons } from './helpers';
 
 import { mapState } from 'vuex';
 
@@ -30,13 +31,15 @@ export default {
         Alerts,
         AppFooter,
         AppHeader,
+        LoadProgressBar,
         ScrollButtons,
         SubMenu
     },
     computed: {
         ...mapState({
             isAuthenticated: state => state.auth.isAuthenticated,
-            layout: state => state.config.layout
+            layout: state => state.config.layout,
+            showsLoading: state => state.shows.loading
         })
     }
 };
