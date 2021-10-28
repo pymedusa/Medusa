@@ -105,9 +105,8 @@ const actions = {
             return showQueue;
         });
     },
-    updateQueueItemShow(context, queueItem) {
+    updateQueueItemShow({ commit }, queueItem) {
         // Update store's show queue item. (provided through websocket)
-        const { commit } = context;
         return commit(ADD_SHOW_QUEUE_ITEM, queueItem);
     }
 
