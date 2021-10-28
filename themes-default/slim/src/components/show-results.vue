@@ -219,7 +219,8 @@ export default {
             search: state => state.config.search,
             providers: state => state.provider.providers,
             queueitems: state => state.queue.queueitems,
-            history: state => state.history.episodeHistory
+            history: state => state.history.episodeHistory,
+            client: state => state.auth.client
         }),
         ...mapGetters({
             fuzzyParseDateTime: 'fuzzyParseDateTime',
