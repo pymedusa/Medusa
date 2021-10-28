@@ -290,6 +290,7 @@
 <script>
 import formatDate from 'date-fns/format';
 import { ToggleButton } from 'vue-js-toggle-button';
+import { mapState } from 'vuex';
 
 export default {
     name: 'name-pattern',
@@ -385,7 +386,8 @@ export default {
             }
 
             try {
-                return this.client.apiRoute.get('config/postProcessing/testNaming', { params, timeout: 20000 }).then(res => res.data);
+                return this.client.apiRoute.get('config/postProcessing/testNaming', { params, timeout: 20000 })
+                    .then(res => res.data);
             } catch (error) {
                 console.warn(error);
                 return '';
@@ -499,6 +501,9 @@ export default {
         }
     },
     computed: {
+        ...mapState({
+            client: state => state.auth.client
+        }),
         isCustom() {
             if (this.pattern) {
                 return !this.presetsPatterns.includes(this.pattern) || this.pattern === 'Custom...';

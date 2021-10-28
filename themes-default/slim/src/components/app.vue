@@ -1,13 +1,17 @@
 <template>
     <div v-if="isAuthenticated" id="app">
-        <vue-snotify />
-        <app-header />
-        <sub-menu />
-        <alerts />
-        <h1 v-if="$route.meta.header" class="header">{{ $route.meta.header }}</h1>
-        <router-view :key="$route.meta.nocache ? $route.fullPath : $route.name" />
-        <app-footer />
-        <scroll-buttons />
+        <div id="content-row" class="row">
+            <div id="content-col" :class="layout.wide ? 'col-lg-12 col-md-12' : 'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1'">
+                <vue-snotify />
+                <app-header />
+                <sub-menu />
+                <alerts />
+                <h1 v-if="$route.meta.header" class="header">{{ $route.meta.header }}</h1>
+                <router-view :key="$route.meta.nocache ? $route.fullPath : $route.name" />
+                <app-footer />
+                <scroll-buttons />
+            </div>
+        </div><!-- /content -->
     </div>
 </template>
 
@@ -31,7 +35,8 @@ export default {
     },
     computed: {
         ...mapState({
-            isAuthenticated: state => state.auth.isAuthenticated
+            isAuthenticated: state => state.auth.isAuthenticated,
+            layout: state => state.config.layout
         })
     }
 };

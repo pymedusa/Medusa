@@ -18,22 +18,9 @@ import router from './router';
 import globalVueShim from './global-vue-shim';
 
 if (window) {
-    // @TODO: Remove this before v1.0.0
-    window.globalVueShim = globalVueShim;
-
     // Adding libs to window so mako files can use them
     window.$ = $;
     window.jQuery = $;
-    window.Vue = Vue;
-    window.Vuex = Vuex;
-    window.ToggleButton = ToggleButton;
-    window.axios = axios;
-    window._ = { debounce };
-    window.store = store;
-    window.router = router;
-    // window.apiRoute = apiRoute;
-    // window.apiv1 = apiv1;
-    // window.api = api;
 
     window.MEDUSA = {
         common: {},
@@ -44,34 +31,11 @@ if (window) {
         home: {},
         addShows: {}
     };
-    // window.webRoot = webRoot;
-    // window.apiKey = apiKey;
-
-    // Push x-template components to this array to register them globally
-    window.components = [];
-    window.components.push(isotope);
 }
 
 const UTIL = {
-    exec(controller, action) {
-        const ns = MEDUSA;
-        action = (action === undefined) ? 'init' : action;
-
-        if (controller !== '' && ns[controller] && typeof ns[controller][action] === 'function') {
-            ns[controller][action]();
-        }
-    },
     init() {
         $('[v-cloak]').removeAttr('v-cloak');
-
-        const { body } = document;
-        const controller = body.getAttribute('data-controller');
-        const action = body.getAttribute('data-action');
-
-        UTIL.exec('common'); // Load common
-        UTIL.exec(controller); // Load MEDUSA[controller]
-        UTIL.exec(controller, action); // Load MEDUSA[controller][action]
-
         window.dispatchEvent(new Event('medusa-loaded'));
     }
 };
