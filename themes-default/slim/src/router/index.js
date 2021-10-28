@@ -5,10 +5,10 @@ import routes from './routes';
 
 Vue.use(VueRouter);
 
-export const base = document.body.getAttribute('web-root') + '/';
+// export const base = document.body.getAttribute('web-root') + '/';
 
 const router = new VueRouter({
-    base,
+    // base,
     mode: 'history',
     routes
 });

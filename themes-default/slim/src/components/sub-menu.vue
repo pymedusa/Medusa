@@ -21,7 +21,7 @@
     </div>
 </template>
 <script>
-import { mapActions, mapGetters } from 'vuex';
+import { mapState, mapActions, mapGetters } from 'vuex';
 import { AppLink, ShowSelector } from './helpers';
 
 export default {
@@ -31,6 +31,9 @@ export default {
         ShowSelector
     },
     computed: {
+        ...mapState({
+            client: state => state.auth.client
+        }),
         ...mapGetters({
             getCurrentShow: 'getCurrentShow'
         }),
@@ -72,7 +75,7 @@ export default {
             };
 
             if (action === 'removeshow') {
-                const { getCurrentShow, removeShow, $router } = this;
+                const { client, getCurrentShow, removeShow, $router } = this;
                 options.title = 'Remove Show';
                 options.text = `Are you sure you want to remove <span class="footerhighlight">${getCurrentShow.title}</span> from the database?<br><br>
                                 <input type="checkbox" id="deleteFiles"> <span class="red-text">Check to delete files as well. IRREVERSIBLE</span>`;
@@ -86,7 +89,7 @@ export default {
                     }
 
                     // Start removal of show in backend
-                    await this.client.apiRoute.get('home/deleteShow', { params });
+                    await client.apiRoute.get('home/deleteShow', { params });
 
                     // Navigate back to /home
                     $router.push({ name: 'home', query: undefined });

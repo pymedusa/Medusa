@@ -143,7 +143,8 @@ export default {
         ...mapState({
             config: state => state.config.general,
             layout: state => state.config.layout,
-            apiKey: state => state.auth.apiKey
+            apiKey: state => state.auth.apiKey,
+            client: state => state.auth.client
         }),
         rawViewLink() {
             const qs = new URLSearchParams();
@@ -154,7 +155,7 @@ export default {
             qs.set('limit', 1000);
             qs.set('api_key', this.apiKey);
             qs.set('raw', 'true');
-            return `log?${qs}`;
+            return `api/v2/log?${qs}`;
         },
         levels() {
             const { debug, dbDebug, loggingLevels } = this.config.logs;
@@ -212,7 +213,7 @@ export default {
                 limit: 1000
             };
             try {
-                const resp = await client.api.get('log', { params });
+                const resp = await client.api.get('/log', { params });
                 this.logLines = resp.data;
                 return true;
             } catch (error) {

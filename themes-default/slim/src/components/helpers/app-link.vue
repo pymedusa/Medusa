@@ -14,7 +14,7 @@
 <script>
 import { mapGetters, mapState } from 'vuex';
 
-import router, { base as routerBase } from '../../router';
+import router from '../../router';
 
 export default {
     name: 'app-link',
@@ -94,7 +94,9 @@ export default {
                 return;
             }
 
-            const { route } = router.resolve(routerBase + computedHref);
+            // FIXME: Might need to use webRoot here.
+            // const { route } = router.resolve(routerBase + computedHref);
+            const { route } = router.resolve('/' + computedHref);
             if (!route.name) {
                 return;
             }
