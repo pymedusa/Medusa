@@ -7,17 +7,12 @@ import '../vendor/js/tablesorter';
 import '../vendor/css/open-sans.css';
 /* eslint-enable import/no-unassigned-import */
 
-import Vue from 'vue';
-import Vuex from 'vuex';
-import { ToggleButton } from 'vue-js-toggle-button';
-import axios from 'axios';
-import debounce from 'lodash/debounce';
-import isotope from 'vueisotope';
-import store from './store';
-import router from './router';
 import globalVueShim from './global-vue-shim';
 
 if (window) {
+    // @TODO: Remove this before v1.0.0
+    window.globalVueShim = globalVueShim;
+
     // Adding libs to window so mako files can use them
     window.$ = $;
     window.jQuery = $;

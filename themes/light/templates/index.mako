@@ -52,8 +52,6 @@
 
 <body>
     <div id="vue-wrap" class="container-fluid">
-        <load-progress-bar v-if="showsLoading" v-bind="{display: showsLoading.display, current: showsLoading.current, total: showsLoading.total}"></load-progress-bar>
-
         <div v-if="globalLoading" class="text-center">
             <h3>Loading&hellip;</h3>
             If this is taking too long,<br>
@@ -75,17 +73,20 @@
     <script type="text/javascript" src="js/index.js?${sbPID}"></script>
 
     <script type="text/javascript" src="js/vender${('.min', '')[app.DEVELOPER]}.js?${sbPID}"></script>
+
+    <!-- bfhlanguages used in language-select.vue -->
     <script type="text/javascript" src="js/lib/bootstrap-formhelpers.min.js?${sbPID}"></script>
-    <script type="text/javascript" src="js/lib/formwizard.js?${sbPID}"></script>
-    <script type="text/javascript" src="js/lib/lazyload.js?${sbPID}"></script>
+    
+    <!-- <script type="text/javascript" src="js/lib/formwizard.js?${sbPID}"></script>
+    <!-- <script type="text/javascript" src="js/lib/lazyload.js?${sbPID}"></script>
 
-    <script type="text/javascript" src="js/parsers.js?${sbPID}"></script>
+    <!-- <script type="text/javascript" src="js/parsers.js?${sbPID}"></script>
 
-    <script type="text/javascript" src="js/config/init.js?${sbPID}"></script>
+    <!-- <script type="text/javascript" src="js/config/init.js?${sbPID}"></script> -->
 
-    <script type="text/javascript" src="js/common/init.js?${sbPID}"></script>
+    <!-- <script type="text/javascript" src="js/common/init.js?${sbPID}"></script> -->
 
-    <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
+    <!-- <script type="text/javascript" src="js/browser.js?${sbPID}"></script> -->
 
     <script type="text/javascript" src="js/notifications.js?${sbPID}"></script>
 
