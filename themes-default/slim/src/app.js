@@ -3,7 +3,7 @@ import Vue from 'vue';
 import { registerGlobalComponents, registerPlugins } from './global-vue-shim';
 import router from './router';
 import store from './store';
-import { mapActions, mapMutations, mapState } from 'vuex';
+import { mapActions, mapMutations } from 'vuex';
 import { isDevelopment } from './utils/core';
 
 Vue.config.devtools = true;
@@ -23,11 +23,6 @@ const app = new Vue({
             globalLoading: false,
             pageComponent: false
         };
-    },
-    computed: {
-        ...mapState({
-            showsLoading: state => state.shows.loading
-        })
     },
     async mounted() {
         const { getShows, setLoadingDisplay, setLoadingFinished } = this;
