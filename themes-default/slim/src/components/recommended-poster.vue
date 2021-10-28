@@ -293,6 +293,7 @@ select.max-width {
     height: 100%;
     display: block;
     font-size: 11px;
+    color: white;
 }
 
 .plot-overlay::-webkit-scrollbar {
@@ -331,7 +332,6 @@ select.max-width {
     z-index: 1;
     text-decoration: underline;
     cursor: pointer;
-    background-color: rgb(51, 51, 51);
     padding: 0 2px;
 }
 

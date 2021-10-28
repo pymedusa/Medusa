@@ -231,7 +231,8 @@ export default {
             recommendedShows: state => state.recommended.shows,
             traktConfig: state => state.recommended.trakt,
             recommendedLists: state => state.recommended.categories,
-            queueitems: state => state.queue.queueitems
+            queueitems: state => state.queue.queueitems,
+            client: state => state.auth.client
         }),
         filteredShowsByList() {
             const { imgLazyLoad, recommendedShows, selectedSource, selectedList } = this;

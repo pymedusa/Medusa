@@ -66,10 +66,10 @@ const actions = {
      * @returns {(undefined|Promise)} undefined if `shows` was provided or the API response if not.
      */
     getRecommendedShows({ rootState, commit }, identifier, params) {
-        params = {};
+        params = params || {};
 
         identifier = identifier ? identifier : '';
-        return rootState.auth.client.api.get(`/recommended/${identifier}`, { params })
+        return rootState.auth.client.api.get(`/recommended/${identifier}`, { params, timeout: 120000 })
             .then(response => {
                 commit(SET_RECOMMENDED_SHOWS, response.data);
             });

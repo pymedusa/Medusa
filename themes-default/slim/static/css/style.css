@@ -1154,7 +1154,7 @@ div.recommended-image {
     font-size: 12px;
     overflow: hidden;
     text-decoration: none;
-    color: rgb(255, 255, 255);
+    color: rgb(0, 0, 0);
 }
 
 .recommended-container {
