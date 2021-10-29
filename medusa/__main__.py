@@ -2344,10 +2344,14 @@ class Application(object):
 
             self.clear_cache()  # Clean cache
 
+        except Exception as error:
+            exception_handler.handle(error, 'Something went wrong during shutdown')
+
+        finally:
             # if run as daemon delete the pid file
             if self.run_as_daemon and self.create_pid:
                 self.remove_pid_file(self.pid_file)
-        finally:
+
             if event == Events.SystemEvent.RESTART:
                 self.restart()
 
