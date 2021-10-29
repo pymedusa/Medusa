@@ -2278,7 +2278,8 @@ class Application(object):
         try:
             if os.path.exists(pid_file):
                 os.remove(pid_file)
-        except EnvironmentError:
+        except EnvironmentError as error:
+            exception_handler.handle(error)
             return False
 
         return True
