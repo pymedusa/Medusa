@@ -11848,10 +11848,10 @@ value-or-function@^3.0.0:
   resolved "https://registry.yarnpkg.com/value-or-function/-/value-or-function-3.0.0.tgz#1c243a50b595c1be54a754bfece8563b9ff8d813"
   integrity sha1-HCQ6ULWVwb5Up1S/7OhWO5/42BM=
 
-vanilla-lazyload@12.0.0:
-  version "12.0.0"
-  resolved "https://registry.yarnpkg.com/vanilla-lazyload/-/vanilla-lazyload-12.0.0.tgz#5673fd80dfa20c554afe46891b3450f596f953b1"
-  integrity sha512-KlcDPYUHRKXp4Ighh3294xzGZiZxeFeddNBRtD5TCD7+x0A1jzeaO0IO7eLFjWgD7gDS+qfL3qo8tWOGhLER/A==
+vanilla-lazyload@12.5.1:
+  version "12.5.1"
+  resolved "https://registry.yarnpkg.com/vanilla-lazyload/-/vanilla-lazyload-12.5.1.tgz#daba44bd856c9f550909e73f7219577c96b28ec7"
+  integrity sha512-gB986dXslHqkbYMDnwfIlKHl++lLADAEZhI6FNZy7gtVddR+1N69xkOI2vRAJssr6QzmKPCfZu4btEHWjG0pNA==
 
 vendors@^1.0.3:
   version "1.0.4"
