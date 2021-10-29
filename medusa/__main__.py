@@ -1515,7 +1515,6 @@ class Application(object):
                 app.show_update_scheduler,
                 app.episode_update_scheduler,
                 app.version_check_scheduler,
-                app.generic_update_scheduler,
                 app.show_queue_scheduler,
                 app.search_queue_scheduler,
                 app.forced_search_queue_scheduler,
