@@ -2,6 +2,7 @@
 """Provider test code for Generic Provider."""
 from __future__ import unicode_literals
 
+from collections import namedtuple
 from datetime import date, datetime, timedelta
 
 from dateutil import tz
@@ -9,7 +10,6 @@ from dateutil import tz
 from medusa.providers.generic_provider import GenericProvider
 
 import pytest
-from collections import namedtuple
 ExceptionTitle = namedtuple('ExceptionTitle', 'title')
 
 sut = GenericProvider('FakeProvider')
