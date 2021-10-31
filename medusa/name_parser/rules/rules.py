@@ -332,12 +332,8 @@ class CreateAliasWithAlternativeTitles(Rule):
             for alternative_title in alternative_titles:
                 holes = matches.holes(start=previous.end, end=alternative_title.start)
                 # if the separator is a dash, add an extra space before and after
-                if six.PY3:
-                    separators = [' ' + h.value + ' ' if h.value == '-' else h.value for h in holes]
-                    separator = ' '.join(separators) if separators else ' '
-                else:
-                    separators = [b' ' + h.value + b' ' if h.value == b'-' else h.value for h in holes]
-                    separator = b' '.join(separators) if separators else b' '
+                separators = [' ' + h.value + ' ' if h.value == '-' else h.value for h in holes]
+                separator = ' '.join(separators) if separators else ' '
                 alias.value += separator + alternative_title.value
 
                 previous = alternative_title
