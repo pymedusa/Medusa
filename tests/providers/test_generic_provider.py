@@ -9,7 +9,8 @@ from dateutil import tz
 from medusa.providers.generic_provider import GenericProvider
 
 import pytest
-
+from collections import namedtuple
+ExceptionTitle = namedtuple('ExceptionTitle', 'title')
 
 sut = GenericProvider('FakeProvider')
 
@@ -302,11 +303,11 @@ def test_create_search_string_sports(p, create_tvshow, create_tvepisode):
         'absolute_number': 12,
         'scene_absolute_number': 12,
         # These season_scene_name_exceptions should be returned when querying for the season exceptions for season 2.
-        'season_scene_name_exceptions': {
-            'My Series Season2',
-            'My Series Season Scene title',
-            'My Series S2'
-        },
+        'season_scene_name_exceptions': [
+            ExceptionTitle('My Series Season2'),
+            ExceptionTitle('My Series Season Scene title'),
+            ExceptionTitle('My Series S2')
+        ],
         'expected': [
             u'My Series+12+add_string',
             u'My Series S1+12+add_string',
@@ -336,11 +337,11 @@ def test_create_search_string_sports(p, create_tvshow, create_tvepisode):
         'absolute_number': 12,
         'scene_absolute_number': 13,
         # These season_scene_name_exceptions should be returned when querying for the season exceptions for season 2.
-        'season_scene_name_exceptions': {
-            'My Series Season2',
-            'My Series Season Scene title',
-            'My Series S2'
-        },
+        'season_scene_name_exceptions': [
+            ExceptionTitle('My Series Season2'),
+            ExceptionTitle('My Series Season Scene title'),
+            ExceptionTitle('My Series S2')
+        ],
         'expected': [
             u'My Series+13+add_string',
             u'My Series S1+13+add_string',
