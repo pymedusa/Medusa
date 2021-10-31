@@ -1,3 +1,18 @@
+## 0.5.19 (31-10-2021)
+
+#### New Features
+- Added separate configs for the process methods (copy, move, etc) for torrent and nzb. (only usuable with the download handler) ([9932](https://github.com/pymedusa/Medusa/pull/9932))
+- Added setting for the default client path that will be protected (can't be deleted) during post-processing ([9954](https://github.com/pymedusa/Medusa/pull/9954))
+
+#### Fixes
+- Correctly delete folders with files for move method or if explicitly wanted ([9950](https://github.com/pymedusa/Medusa/pull/9950))
+- Fixed link to the overview of snatched episodes at the bottom of the pages ([9954](https://github.com/pymedusa/Medusa/pull/9954))
+- Prevent duplicate searches for Torznab
+- Catch exceptions during shutdown and always delete PID file
+- Fix scene season searches
+
+-----
+
 ## 0.5.18 (14-09-2021)
 
 #### Improvements
@@ -6,7 +21,7 @@
 
 #### Fixes
 - Fix prowlarr provider id's being obfuscated in logs because of a bad log level. ([9857](https://github.com/pymedusa/Medusa/pull/9857))
-- Fix postprocessing specials. ([9812](https://github.com/pymedusa/Medusa/pull/9812)) 
+- Fix postprocessing specials. ([9812](https://github.com/pymedusa/Medusa/pull/9812))
 - Fix storing a negative value in the UI as a search delay value ([9822](https://github.com/pymedusa/Medusa/pull/9822))
 
 -----

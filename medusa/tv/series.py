@@ -1955,6 +1955,36 @@ class Series(TV):
                 log.info('updating trakt watchlist')
                 notifiers.trakt_notifier.update_watchlist_show(self)
 
+    def sync_trakt_episodes(self, status, episodes):
+        """
+        If Trakt enabled and trakt sync watchlist enabled, add/remove the episode from the watchlist.
+
+        :param status: The value of the status that the episodes have changed to.
+        :type status: int
+        :param episodes: list of episode objects.
+        :type episodes: list
+        """
+        if not app.USE_TRAKT or not app.TRAKT_SYNC_WATCHLIST:
+            return
+
+        upd = None
+        if status in [WANTED, FAILED]:
+            upd = 'Add'
+
+        elif status in [IGNORED, SKIPPED, DOWNLOADED, ARCHIVED]:
+            upd = 'Remove'
+
+        if not upd:
+            return
+
+        log.debug('{action} episodes [{episodes}], showid: indexerid {show_id},'
+                  'Title {show_name} to Watchlist', {
+                      'action': upd, 'episodes': ', '.join([ep.slug for ep in episodes]),
+                      'show_id': self.series_id, 'show_name': self.name
+                  })
+
+        notifiers.trakt_notifier.update_watchlist_episode(self, episodes, upd == 'Remove')
+
     def add_scene_numbering(self):
         """
         Add XEM data to DB for show.
@@ -1968,7 +1998,7 @@ class Series(TV):
         # should go by scene numbering or indexer numbering. Warn the user.
         if not self.scene and get_xem_numbering_for_show(self):
             log.warning(
-                '{id}: while adding the show {title} we noticed thexem.de has an episode mapping available'
+                '{id}: while adding the show {title} we noticed thexem.info has an episode mapping available'
                 '\nyou might want to consider enabling the scene option for this show.',
                 {'id': self.series_id, 'title': self.name}
             )
@@ -2309,6 +2339,7 @@ class Series(TV):
         data['plot'] = self.plot or self.imdb_plot
         data['config'] = {}
         data['config']['location'] = self.location
+        data['config']['rootDir'] = os.path.dirname(self._location)
         data['config']['locationValid'] = self.is_location_valid()
         data['config']['qualities'] = {}
         data['config']['qualities']['allowed'] = self.qualities_allowed
@@ -2786,3 +2817,31 @@ class Series(TV):
             return ShowPoster(self, media_format, fallback)
         elif asset_type.startswith('network'):
             return ShowNetworkLogo(self, media_format, fallback)
+
+    def erase_provider_cache(self):
+        """Erase provider cache results for this show."""
+        from medusa.providers import sorted_provider_list  # Prevent circular import.
+        try:
+            main_db_con = db.DBConnection('cache.db')
+            for cur_provider in sorted_provider_list():
+                # Let's check if this provider table already exists
+                table_exists = main_db_con.select(
+                    'SELECT name '
+                    'FROM sqlite_master '
+                    "WHERE type='table' AND name=?",
+                    [cur_provider.get_id()]
+                )
+                if not table_exists:
+                    continue
+                try:
+                    main_db_con.action(
+                        "DELETE FROM '{provider}' "
+                        'WHERE indexerid = ?'.format(provider=cur_provider.get_id()),
+                        [self.series_id]
+                    )
+                except Exception:
+                    log.debug(u'Unable to delete cached results for provider {provider} for show: {show}',
+                              {'provider': cur_provider, 'show': self.name})
+
+        except Exception:
+            log.warning(u'Unable to delete cached results for show: {show}', {'show': self.name})

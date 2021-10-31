@@ -616,8 +616,11 @@ class GenericProvider(object):
         episode_string = show_scene_name + self.search_separator
 
         # If the show name is a season scene exception, we want to use the episode number
-        if episode.scene_season is not None and show_scene_name in scene_exceptions.get_season_scene_exceptions(
-                episode.series, episode.scene_season):
+        if episode.scene_season is not None and show_scene_name in [
+            exception.title for exception in scene_exceptions.get_season_scene_exceptions(
+                episode.series, episode.scene_season
+            )
+        ]:
             # This is apparently a season exception, let's use the episode instead of absolute
             ep = episode.scene_episode
         else:
@@ -978,6 +981,9 @@ class GenericProvider(object):
 
         if hasattr(self, 'pin'):
             data['config']['pin'] = self.pin
+
+        if hasattr(self, 'pid'):
+            data['config']['pid'] = self.pid
 
         if hasattr(self, 'confirmed'):
             data['config']['confirmed'] = self.confirmed

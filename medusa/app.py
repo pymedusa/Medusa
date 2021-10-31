@@ -311,12 +311,17 @@ class MedusaApp(object):
         self.NO_DELETE = False
         self.KEEP_PROCESSED_DIR = False
         self.PROCESS_METHOD = None
+        # The process methods for torrent and nzb are used by the download handler.
+        self.USE_SPECIFIC_PROCESS_METHOD = False
+        self.PROCESS_METHOD_TORRENT = None
+        self.PROCESS_METHOD_NZB = None
         self.DELRARCONTENTS = False
         self.MOVE_ASSOCIATED_FILES = False
         self.POSTPONE_IF_SYNC_FILES = True
         self.POSTPONE_IF_NO_SUBS = False
         self.NFO_RENAME = True
         self._TV_DOWNLOAD_DIR = None
+        self.DEFAULT_CLIENT_PATH = None
         self.UNPACK = False
         self.SKIP_REMOVED_FILES = False
         self.ALLOWED_EXTENSIONS = ['srt', 'nfo', 'sub', 'idx']
@@ -1021,6 +1026,23 @@ class MedusaApp(object):
     def SUBTITLES_FINDER_FREQUENCY(self, value):
         """Change SUBTITLES_FINDER_FREQUENCY."""
         self.handle_prop('SUBTITLES_FINDER_FREQUENCY', value)
+
+    @property
+    def SUBTITLE_SERVICES(self):
+        """Return a list of subtitle services."""
+        from medusa.subtitles import sorted_service_list
+        return sorted_service_list()
+
+    @SUBTITLE_SERVICES.setter
+    def SUBTITLE_SERVICES(self, value):
+        """
+        Save subtitle services.
+
+        The order of available subtitle services and the enabled/disabled providers
+            are fleshed out when saving this app property.
+        """
+        self.SUBTITLES_SERVICES_LIST = [prov['name'] for prov in value]
+        self.SUBTITLES_SERVICES_ENABLED = [int(prov['enabled']) for prov in value]
 
 
 app = MedusaApp()
