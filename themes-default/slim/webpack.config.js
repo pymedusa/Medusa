@@ -221,11 +221,10 @@ const webpackConfig = (env, mode) => ({
                 ]
             },
             {
-                test: /\.(woff2?|ttf|eot|svg)$/,
-                loader: 'file-loader',
-                options: {
-                    name: '[name].[ext]',
-                    outputPath: 'fonts'
+                test: /\.(woff(2)?|ttf|eot|svg)$/,
+                type: 'asset/resource',
+                generator: {
+                    filename: './fonts/[name][ext]'
                 }
             }
         ]
