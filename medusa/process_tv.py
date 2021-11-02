@@ -416,7 +416,7 @@ class ProcessResult(object):
     def _clean_up(self, path, proc_type, delete=False):
         """Clean up post-processed folder based on the checks below."""
         clean_folder = proc_type == 'manual' and delete
-        if self.process_method == 'move' or clean_folder:
+        if self.process_method in ('copy', 'move') or clean_folder:
 
             for folder in self.IGNORED_FOLDERS:
                 self.delete_folder(os.path.join(path, folder))
