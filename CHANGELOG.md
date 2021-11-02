@@ -1,3 +1,10 @@
+## 0.5.20 (02-11-2021)
+
+#### Fixes
+- Restore original behavior when processing files and folders ([10020](https://github.com/pymedusa/Medusa/pull/10020))
+
+-----
+
 ## 0.5.19 (31-10-2021)
 
 #### New Features
