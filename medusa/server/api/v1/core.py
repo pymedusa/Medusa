@@ -1294,7 +1294,7 @@ class CMD_PostProcess(ApiCall):
             'return_data': {'desc': 'Returns the result of the post-process'},
             'process_method': {'desc': 'How should valid post-processed files be handled'},
             'is_priority': {'desc': 'Replace the file even if it exists in a higher quality'},
-            'delete_files': {'desc': 'Delete files and folders like auto processing'},
+            'delete_files': {'desc': 'Delete files and folders'},
             'failed': {'desc': 'Mark download as failed'},
             'type': {'desc': 'The type of post-process being requested'},
         }
