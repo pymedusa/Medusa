@@ -426,7 +426,7 @@ class ProcessResult(object):
                 self.delete_files(path, self.unwanted_files)
 
             if not app.NO_DELETE:
-                if self.delete_folder(path, check_empty=False):
+                if self.delete_folder(path):
                     self.log_and_output('Deleted folder: {path}', level=logging.DEBUG, **{'path': path})
 
     def should_process(self, path):
