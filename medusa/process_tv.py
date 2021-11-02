@@ -415,7 +415,6 @@ class ProcessResult(object):
 
     def _clean_up(self, path, proc_type, delete=False):
         """Clean up post-processed folder based on the checks below."""
-        # Always delete files if they are being moved or if it's explicitly wanted
         clean_folder = proc_type == 'manual' and delete
         if self.process_method == 'move' or clean_folder:
 
@@ -425,8 +424,9 @@ class ProcessResult(object):
             if self.unwanted_files:
                 self.delete_files(path, self.unwanted_files)
 
-            if not app.NO_DELETE:
-                if self.delete_folder(path, check_empty=False):
+            if not app.NO_DELETE or clean_folder:
+                check_empty = False if clean_folder else True
+                if self.delete_folder(path, check_empty=check_empty):
                     self.log_and_output('Deleted folder: {path}', level=logging.DEBUG, **{'path': path})
 
     def should_process(self, path):
