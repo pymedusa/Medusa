@@ -5,6 +5,7 @@
 #### Improvements
 
 #### Fixes
+- Restore original behavior when processing files and folders ([10020](https://github.com/pymedusa/Medusa/pull/10020))
 
 -----
 
