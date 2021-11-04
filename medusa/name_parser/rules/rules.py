@@ -386,12 +386,15 @@ class FixTitlesThatExistOfNumbers(Rule):
         :type context: dict
         :return:
         """
+        absolute_episodes = matches.named('absolute_episode')
+        if not absolute_episodes:
+            return
+
         fileparts = matches.markers.named('path')
         for filepart in marker_sorted(fileparts, matches):
             title = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'title', index=0)
-            absolute_episodes = matches.named('absolute_episode')
 
-            if title or not absolute_episodes:
+            if title:
                 continue
 
             if not filepart.value.startswith(str(absolute_episodes[0].value)):
