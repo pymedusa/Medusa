@@ -375,7 +375,7 @@ class FixTitlesThatExistOfNumbers(Rule):
     """
 
     priority = POST_PROCESS
-    consequence = AppendMatch
+    consequence = [RemoveMatch, AppendMatch]
 
     def when(self, matches, context):
         """Evaluate the rule.
@@ -391,7 +391,7 @@ class FixTitlesThatExistOfNumbers(Rule):
             title = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'title', index=0)
             absolute_episodes = matches.named('absolute_episode')
 
-            if title and not absolute_episodes:
+            if title or not absolute_episodes:
                 continue
 
             if not filepart.value.startswith(str(absolute_episodes[0].value)):
