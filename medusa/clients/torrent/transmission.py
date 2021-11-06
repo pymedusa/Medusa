@@ -135,9 +135,7 @@ class TransmissionAPI(GenericClient):
 
     def _set_torrent_ratio(self, result):
 
-        ratio = None
-        if result.ratio:
-            ratio = result.ratio
+        ratio = result.ratio
 
         arguments = {
             'ids': [result.hash]

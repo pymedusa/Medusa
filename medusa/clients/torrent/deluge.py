@@ -381,9 +381,7 @@ class DelugeAPI(GenericClient):
 
     def _set_torrent_ratio(self, result):
 
-        ratio = None
-        if result.ratio:
-            ratio = result.ratio
+        ratio = result.ratio
 
         # blank is default client ratio, so we also shouldn't set ratio
         if ratio and float(ratio) >= 0:
