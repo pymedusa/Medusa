@@ -307,7 +307,7 @@ class DelugeAPI(GenericClient):
         :return
         :rtype: bool
         """
-        return self._remove(logging.info)
+        return self._remove(info_hash)
 
     def remove_torrent_data(self, info_hash):
         """Remove torrent from client and disk using given info_hash.
