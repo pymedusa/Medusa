@@ -61,7 +61,7 @@
                     <trakt-authentication v-if="showTraktAuthDialog" auth-only />
                 </div>
 
-                <isotope ref="filteredShows" v-if="filteredShowsByList.length" :list="filteredShowsByList" id="isotope-container" class="isoDefault" :options="option" @layout="isotopeLayout">
+                <isotope ref="filteredShows" v-if="showsLoaded && filteredShowsByList.length" :list="filteredShowsByList" id="isotope-container" class="isoDefault" :options="option" @layout="isotopeLayout">
                     <div v-for="show in filteredShowsByList" :key="show.seriesId" :class="containerClass(show)" :data-name="show.title" :data-rating="show.rating" :data-votes="show.votes" :data-anime="show.isAnime">
                         <recommended-poster :show="show" />
                     </div>
@@ -208,13 +208,18 @@ export default {
             showsLoaded: false
         };
     },
-    mounted() {
-        const { getRecommendedShows } = this;
-        getRecommendedShows().then(() => {
-            this.showsLoaded = true;
-            this.$nextTick(() => {
-                this.isotopeLayout();
-            });
+    async mounted() {
+        const { getRecommendedShows, sourceToString } = this;
+        const identifiers = Object.values(sourceToString);
+
+        for (const identifier of identifiers) {
+            // eslint-disable-next-line no-await-in-loop
+            await getRecommendedShows(identifier);
+        }
+
+        this.showsLoaded = true;
+        this.$nextTick(() => {
+            this.isotopeLayout();
         });
 
         this.$once('loaded', () => {
@@ -379,8 +384,11 @@ export default {
             }
         },
         queueitems(queueItems) {
+            const filterRecommended = item => {
+                return item.name.includes('UPDATE-RECOMMENDED') && item.success;
+            };
             // Check for a new recommended show queue item and refresh results.
-            if (queueItems.filter(item => item.name.includes('UPDATE-RECOMMENDED'))) {
+            if (queueItems.filter(filterRecommended)) {
                 this.getRecommendedShows();
             }
         }
