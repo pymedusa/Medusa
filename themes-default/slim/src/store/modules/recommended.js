@@ -1,6 +1,10 @@
 import Vue from 'vue';
 import { api } from '../../api';
-import { ADD_RECOMMENDED_SHOW, SET_RECOMMENDED_SHOWS } from '../mutation-types';
+import {
+    ADD_RECOMMENDED_SHOW,
+    SET_RECOMMENDED_SHOWS,
+    SET_RECOMMENDED_SHOWS_OPTIONS
+} from '../mutation-types';
 
 const IMDB = 10;
 const ANIDB = 11;
@@ -20,6 +24,12 @@ const state = {
         ANIDB,
         TRAKT,
         ANILIST
+    },
+    sourceToString: {
+        [IMDB]: 'imdb',
+        [ANIDB]: 'anidb',
+        [TRAKT]: 'trakt',
+        [ANILIST]: 'anilist'
     }
 };
 
@@ -46,13 +56,24 @@ const mutations = {
         Vue.set(state.shows, state.shows.indexOf(existingShow), newShow);
         console.debug(`Merged ${newShow.title || newShow.source + String(newShow.seriesId)}`, newShow);
     },
-    [SET_RECOMMENDED_SHOWS](state, data) {
+    [SET_RECOMMENDED_SHOWS](state, { shows, identifier }) {
+        if (identifier) {
+            // If an identifier has been passed, remove the old shows for this identifier.
+            const source = Number(Object.keys(state.sourceToString).find(key => state.sourceToString[key] === identifier));
+            state.shows = state.shows.filter(show => show.source !== source);
+        } else {
+            // No identifier passed, meaning remove all shows from store.
+            state.shows = [];
+        }
+        state.shows = [...state.shows, ...shows];
+    },
+    [SET_RECOMMENDED_SHOWS_OPTIONS](state, data) {
         state.trakt.removedFromMedusa = data.trakt.removedFromMedusa;
         state.trakt.blacklistEnabled = data.trakt.blacklistEnabled;
         state.trakt.availableLists = data.trakt.availableLists;
         state.categories = data.categories;
-        state.shows = data.shows;
     }
+
 };
 
 const getters = {};
@@ -63,16 +84,14 @@ const actions = {
      *
      * @param {*} context - The store context.
      * @param {String} identifier - Identifier for the recommended shows list.
-     * @Param {String} params - Filter params, for getting a specific recommended list type.
      * @returns {(undefined|Promise)} undefined if `shows` was provided or the API response if not.
      */
-    getRecommendedShows({ commit }, identifier, params) {
-        params = {};
-
+    getRecommendedShows({ commit }, identifier) {
         identifier = identifier ? identifier : '';
-        return api.get(`/recommended/${identifier}`, { params })
+        return api.get(`/recommended/${identifier}`, { timeout: 60000 })
             .then(response => {
-                commit(SET_RECOMMENDED_SHOWS, response.data);
+                commit(SET_RECOMMENDED_SHOWS, { shows: response.data.shows, identifier });
+                commit(SET_RECOMMENDED_SHOWS_OPTIONS, response.data);
             });
     }
 };
