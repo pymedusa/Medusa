@@ -14,7 +14,7 @@
             <div v-if="isAuthenticated" class="collapse navbar-collapse" id="main_nav">
                 <ul class="nav navbar-nav navbar-right">
                     <li id="NAVhome" class="navbar-split dropdown" :class="{ active: topMenu === 'home' }">
-                        <app-link href="home/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span>Shows</span>
+                        <app-link class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span>Shows</span>
                             <b class="caret" />
                         </app-link>
                         <ul class="dropdown-menu">
@@ -38,7 +38,7 @@
                         <app-link href="history/">History</app-link>
                     </li>
                     <li id="NAVmanage" class="navbar-split dropdown" :class="{ active: topMenu === 'manage' }">
-                        <app-link href="manage/episodeStatuses/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown">
+                        <app-link class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown">
                             <span>Manage</span> <b class="caret" />
                         </app-link>
                         <ul class="dropdown-menu">
@@ -57,7 +57,7 @@
                         <div style="clear:both;" />
                     </li>
                     <li id="NAVconfig" class="navbar-split dropdown" :class="{ active: topMenu === 'config' }">
-                        <app-link href="config/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown">
+                        <app-link class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown">
                             <span class="visible-xs-inline">Config</span><img src="images/menu/system18.png" class="navbaricon hidden-xs"> <b class="caret" />
                         </app-link>
                         <ul class="dropdown-menu">
@@ -74,7 +74,7 @@
                         <div style="clear:both;" />
                     </li>
                     <li id="NAVsystem" class="navbar-split dropdown" :class="{ active: topMenu === 'system' }">
-                        <app-link href="home/status/" class="padding-right-15 dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span class="visible-xs-inline">Tools</span><img src="images/menu/system18-2.png" class="navbaricon hidden-xs">
+                        <app-link class="padding-right-15 dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span class="visible-xs-inline">Tools</span><img src="images/menu/system18-2.png" class="navbaricon hidden-xs">
                             <span v-if="toolsBadgeCount > 0" :class="`badge${toolsBadgeClass}`">{{ toolsBadgeCount }}</span>
                             <b class="caret" />
                         </app-link>
@@ -220,14 +220,14 @@ export default {
 
         // @TODO Replace this with a real touchscreen check
         // hack alert: if we don't have a touchscreen, and we are already hovering the mouse, then click should link instead of toggle
-        if ((navigator.maxTouchPoints || 0) < 2) {
-            $($el).on('click', '.dropdown-toggle', event => {
-                const $target = $(event.currentTarget);
-                if ($target.attr('aria-expanded') === 'true') {
-                    window.location.href = $target.attr('href');
-                }
-            });
-        }
+        // if ((navigator.maxTouchPoints || 0) < 2) {
+        //     $($el).on('click', '.dropdown-toggle', event => {
+        //         const $target = $(event.currentTarget);
+        //         if ($target.attr('aria-expanded') === 'true') {
+        //             window.location.href = $target.attr('href');
+        //         }
+        //     });
+        // }
     },
     destroyed() {
         // Revert `mounted()`
