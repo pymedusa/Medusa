@@ -2832,6 +2832,11 @@ select,
         color: rgb(204, 204, 204);
         background-color: transparent;
     }
+
+    .navbar-fixed-bottom .navbar-collapse, .navbar-fixed-top .navbar-collapse {
+        max-height: 100vh;
+        height: 100vh;
+    }
 }
 
 .navbar-default .navbar-link {

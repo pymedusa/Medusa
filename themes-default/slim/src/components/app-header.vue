@@ -191,7 +191,7 @@ export default {
         // Auto close menus when clicking a RouterLink
         $el.clickCloseMenus = event => {
             const { target } = event;
-            if (target.matches('#main_nav a.router-link, #main_nav a.router-link *')) {
+            if (target.matches('#main_nav a.router-link, #main_nav a.router-link *') && (target.ariaExpanded === 'true' || target.ariaExpanded === null)) {
                 const dropdown = target.closest('.dropdown');
                 if (dropdown) {
                     dropdown.querySelector('.dropdown-toggle').setAttribute('aria-expanded', false);
