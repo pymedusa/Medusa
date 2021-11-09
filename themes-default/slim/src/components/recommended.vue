@@ -127,12 +127,6 @@ export default {
             TRAKT,
             ANILIST
         };
-        const sourceToString = {
-            [externals.IMDB]: 'imdb',
-            [externals.ANIDB]: 'anidb',
-            [externals.TRAKT]: 'trakt',
-            [externals.ANILIST]: 'anilist'
-        };
         const sortOptions = [
             { text: 'Name', value: 'name' },
             { text: 'Original', value: 'original' },
@@ -146,7 +140,6 @@ export default {
         ];
         return {
             externals,
-            sourceToString,
             sortOptions,
             sortDirectionOptions,
             sortOptionsValue: 'original',
@@ -237,7 +230,8 @@ export default {
             recommendedShows: state => state.recommended.shows,
             traktConfig: state => state.recommended.trakt,
             recommendedLists: state => state.recommended.categories,
-            queueitems: state => state.queue.queueitems
+            queueitems: state => state.queue.queueitems,
+            sourceToString: state => state.recommended.sourceToString
         }),
         filteredShowsByList() {
             const { imgLazyLoad, recommendedShows, selectedSource, selectedList } = this;
