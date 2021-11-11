@@ -4,9 +4,9 @@
 
 from __future__ import unicode_literals
 
+import json
 import logging
 import re
-import json
 
 from medusa import tv
 from medusa.helper.common import convert_size
