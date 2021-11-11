@@ -66,6 +66,7 @@ ext | **`urllib3`** | [1.24.1](https://pypi.org/project/urllib3/1.24.1/) | `requ
 ext | **`validators`** | [0.18.2](https://pypi.org/project/validators/0.18.2/) | **`medusa`** | -
 ext | **`webencodings`** | [0.5.1](https://pypi.org/project/webencodings/0.5.1/) | `html5lib` | -
 ext | **`wrapt`** | [1.10.11](https://pypi.org/project/wrapt/1.10.11/) | `deprecated` | -
+ext | `zipp` | [3.6.0](https://pypi.org/project/zipp/3.6.0/) | `importlib_resources` | File: `zipp.py`
 
 #### Notes:
 - `ext` compatible with Python 2 and Python 3
