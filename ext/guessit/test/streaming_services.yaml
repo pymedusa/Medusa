@@ -463,6 +463,7 @@
 # Streaming service: Nickelodeon
 ? Show.Name.S01.1080p.NICK.WEBRip.AAC.2.0.x264-monkee
 ? Show.Name.S01.1080p.Nickelodeon.WEBRip.AAC.2.0.x264-monkee
+? Show.Name.S01.1080p.NICKAPP.WEBRip.AAC.2.0.x264-monkee
 : title: Show Name
   season: 1
   screen_size: 1080p
@@ -646,6 +647,19 @@
   title: Smack The Pony
   type: episode
   video_codec: H.264
+
+? Junior.Bake.Off.S06E03.1080p.ALL4.WEB-DL.AAC2.0.x264-NTb
+: title: Junior Bake Off
+  season: 6
+  episode: 3
+  screen_size: 1080p
+  streaming_service: Channel 4
+  source: Web
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: H.264
+  release_group: NTb
+  type: episode
 
 ? The.Toy.Box.S01E01.720p.AMBC.WEBRip.AAC2.0.x264-BTN
 : audio_channels: '2.0'
@@ -1581,7 +1595,7 @@
   screen_size: 720p
   season: 2
   source: Web
-  streaming_service: SBS (AU)
+  streaming_service: SBS
   title: The Family Law
   type: episode
   video_codec: H.264
@@ -1892,6 +1906,417 @@
   # title: '555'
   type: episode
   video_codec: H.264
+
+? Good.Bones.S02E01.Decaying.Duplex.Transformed.720p.9NOW.WEB-DL.AAC2.0.x264-RTN
+: title: Good Bones
+  season: 2
+  episode: 1
+  episode_title: Decaying Duplex Transformed
+  screen_size: 720p
+  streaming_service: 9Now
+  source: Web
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: H.264
+  release_group: RTN
+  type: episode
+
+? Satisfaction.S01E01.Running.Girl.1080p.BNGE.WEB-DL.DD5.1.H.264-NTb
+: title: Satisfaction
+  season: 1
+  episode: 1
+  episode_title: Running Girl
+  screen_size: 1080p
+  streaming_service: Binge
+  source: Web
+  audio_codec: Dolby Digital
+  audio_channels: '5.1'
+  video_codec: H.264
+  release_group: NTb
+  type: episode
+
+? Virgin.S01E01.Birthday.Party.1440p.BKPL.WEB-DL.H.264-LiGHT
+: title: Virgin
+  season: 1
+  episode: 1
+  episode_title: Birthday Party
+  screen_size: 1440p
+  streaming_service: Blackpills
+  source: Web
+  video_codec: H.264
+  release_group: LiGHT
+  type: episode
+
+? Ciplak S01E05 1080p BLU WEBRip AAC2.0 H.264 TURG
+: title: Ciplak
+  season: 1
+  episode: 5
+  screen_size: 1080p
+  streaming_service: BluTV
+  source: Web
+  other: Rip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: H.264
+  release_group: TURG
+  type: episode
+
+? Scooby.Doo.and.Guess.Who.S01E01.Revenge.of.the.Swamp.Monster.1080p.BOOM.WEB-DL.AAC2.0.H.264-QOQ
+: title: Scooby Doo and Guess Who
+  season: 1
+  episode: 1
+  episode_title: Revenge of the Swamp Monster
+  screen_size: 1080p
+  streaming_service: Boomerang
+  source: Web
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: H.264
+  release_group: QOQ
+  type: episode
+
+? The.Beaverton.S01E01.1080p.CRAV.WEB-DL.DD5.1.H.264-NTb
+: title: The Beaverton
+  season: 1
+  episode: 1
+  screen_size: 1080p
+  streaming_service: Crave
+  source: Web
+  audio_codec: Dolby Digital
+  audio_channels: '5.1'
+  video_codec: H.264
+  release_group: NTb
+  type: episode
+
+? Gold.Rush.Freddy.Dodges.Mine.Rescue.S01E06.Sink.or.Swim.1080p.DSCP.WEB-DL.AAC2.0.X264-RTN
+: title: Gold Rush Freddy Dodges Mine Rescue
+  season: 1
+  episode: 6
+  episode_title: Sink or Swim
+  screen_size: 1080p
+  streaming_service: Discovery Plus
+  source: Web
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: H.264
+  release_group: RTN
+  type: episode
+
+? The.Mandalorian.S01E01.Chapter.1.2160p.DSNP.WEB-DL.DDP5.1.Atmos.DV.HEVC-MZABI
+: title: The Mandalorian
+  season: 1
+  episode: 1
+  episode_title: Chapter 1
+  screen_size: 2160p
+  streaming_service: Disney+
+  source: Web
+  audio_codec:
+  - Dolby Digital Plus
+  - Dolby Atmos
+  audio_channels: '5.1'
+  video_codec: 'H.265'
+  release_group: 'MZABI'
+  type: episode
+
+? Sorry.For.Your.Loss.S01E01.One.Fun.Thing.1080p.FBWatch.WEB-DL.AAC2.0.x264-SAMUEL98
+: title: Sorry For Your Loss
+  season: 1
+  episode: 1
+  episode_title: One Fun Thing
+  screen_size: 1080p
+  streaming_service: Facebook Watch
+  source: Web
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: H.264
+  release_group: SAMUEL98
+  type: episode
+
+? Heartland.1979.720p.FANDOR.WEB-DL.AAC2.0.H.264-Cinefeel
+: title: Heartland
+  year: 1979
+  screen_size: 720p
+  streaming_service: Fandor
+  source: Web
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: H.264
+  release_group: Cinefeel
+
+? Rio.Heroes.S01E01.Sem.Regras.720p.FOXP.WEB-DL.AAC2.0.x264-BTW
+: title: Rio Heroes
+  season: 1
+  episode: 1
+  episode_title: Sem Regras
+  screen_size: 720p
+  streaming_service: Fox Premium
+  source: Web
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: H.264
+  release_group: BTW
+  type: episode
+
+? Deadline.Gallipoli.S01E01.1080p.FXTL.WEB-DL.DDP5.1.H.264-NTb
+: title: Deadline Gallipoli
+  season: 1
+  episode: 1
+  screen_size: 1080p
+  streaming_service: Foxtel
+  source: Web
+  audio_codec: Dolby Digital Plus
+  audio_channels: '5.1'
+  video_codec: 'H.264'
+  release_group: NTb
+  type: episode
+
+? My Bromance 2 - 5 Years Later S01E01 1080p Gaga WEB-DL AAC2.0 H.264-FRE3LOV
+: title: My Bromance 2
+  alternative_title: 5 Years Later
+  season: 1
+  episode: 1
+  screen_size: 1080p
+  streaming_service: GagaOOLala
+  source: Web
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: H.264
+  release_group: FRE3LOV
+  type: episode
+
+? Cheeni.2020.1080p.HoiChoi.WEB-DL.AAC.2.0.H.264-iDC
+: title: Cheeni
+  year: 2020
+  screen_size: 1080p
+  streaming_service: hoichoi
+  source: Web
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: H.264
+  release_group: iDC
+  type: movie
+
+? Surau.dan.Silek.2017.720p.IFX.WEB-DL.AAC.x264-RsA
+: title: Surau dan Silek
+  year: 2017
+  screen_size: 720p
+  streaming_service: iflix
+  source: Web
+  audio_codec: AAC
+  video_codec: H.264
+  release_group: RsA
+  type: movie
+
+? She.Would.Never.Know.S01E10.1080p.iQIYI.WEB-DL.AAC.2.0.x265-SH3LBY
+: title: She Would Never Know
+  season: 1
+  episode: 10
+  screen_size: 1080p
+  streaming_service: iQIYI
+  source: Web
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: H.265
+  release_group: SH3LBY
+  type: episode
+
+? Direktoren.for.det.hele.2006.SUBBED.1080p.MUBI.WEB-DL.AAC2.0.H264-CMYK
+: title: Direktoren for det hele
+  year: 2006
+  screen_size: 1080p
+  streaming_service: MUBI
+  source: Web
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: H.264
+  release_group: CMYK
+  type: movie
+
+? Les.trois.couronnes.du.matelot.1983.1080p.INA.WEB-DL.AAC2.0.x264-KG
+: title: Les trois couronnes du matelot
+  year: 1983
+  screen_size: 1080p
+  streaming_service: National Audiovisual Institute
+  source: Web
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: H.264
+  release_group: KG
+  type: movie
+
+? Caninabis.Junkie.Dog.1979.480p.NFB.WEB-DL.AAC2.0.H.264-QiQ
+: title: Caninabis Junkie Dog
+  year: 1979
+  screen_size: 480p
+  streaming_service: National Film Board
+  source: Web
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: H.264
+  release_group: QiQ
+  type: movie
+
+
+? First.Ladies.S01E04.1080p.OPTO.WEB-DL.H264-CKTV
+: title: First Ladies
+  season: 1
+  episode: 4
+  screen_size: 1080p
+  streaming_service: Opto
+  source: Web
+  video_codec: H.264
+  release_group: CKTV
+  type: episode
+
+? Queen.Sugar.S05E01.720p.OWN.WEB-DL.AAC2.0.H.264-BTN
+: title: Queen Sugar
+  season: 5
+  episode: 1
+  screen_size: 720p
+  streaming_service: Oprah Winfrey Network
+  source: Web
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: H.264
+  release_group: BTN
+  type: episode
+
+? Saved.by.the.Bell.2020.S01E01.Pilot.1080p.PCOK.WEB-DL.DDP5.1.x264-NTb
+: title: Saved by the Bell
+  year: 2020
+  season: 1
+  episode: 1
+  episode_title: Pilot
+  screen_size: 1080p
+  streaming_service: Peacock
+  source: Web
+  audio_codec: Dolby Digital Plus
+  audio_channels: '5.1'
+  video_codec: H.264
+  release_group: NTb
+  type: episode
+
+? Where's.Waldo.2019.S01E01.1080p.Peacock.WEB_DL.DD+5.1.H.264-SH3LBY
+: title: Where's Waldo
+  year: 2019
+  season: 1
+  episode: 1
+  screen_size: 1080p
+  streaming_service: Peacock
+  source: Web
+  audio_codec: Dolby Digital Plus
+  audio_channels: '5.1'
+  video_codec: H.264
+  release_group: SH3LBY
+  type: episode
+
+? High.Stakes.Poker.S08E01.1080p.POGO.WEB-DL.AAC2.0.H.264-RAiSY
+: title: High Stakes Poker
+  season: 8
+  episode: 1
+  screen_size: 1080p
+  streaming_service: PokerGO
+  source: Web
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: H.264
+  release_group: RAiSY
+  type: episode
+
+? Into.the.Darkness.2020.HDR.2160.RKTN.WEB-DL.x265-ROCCaT
+: title: Into the Darkness
+  year: 2020
+  other: HDR10
+  screen_size: 2160p
+  streaming_service: Rakuten TV
+  source: Web
+  video_codec: H.265
+  release_group: ROCCaT
+  type: movie
+
+? Cold.Case.S01E01.Look.Again.1080p.ROKU.WEB-DL.AAC2.0.H.264-ETHiCS
+: title: Cold Case
+  season: 1
+  episode: 1
+  episode_title: Look Again
+  screen_size: 1080p
+  streaming_service: The Roku Channel
+  source: Web
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: H.264
+  release_group: ETHiCS
+  type: episode
+
+? Valmentaja.2018.720p.RUUTU.WEB-DL.AAC2.0.x264-D3
+: title: Valmentaja
+  year: 2018
+  screen_size: 720p
+  streaming_service: RUUTU
+  source: Web
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: H.264
+  release_group: D3
+  type: movie
+
+? Mysteries.of.the.Abandoned.S07E10.Mystery.of.the.Alien.Base.720p.SCI.WEBRip.AAC2.0.x264-BOOP
+: title: Mysteries of the Abandoned
+  season: 7
+  episode: 10
+  episode_title: Mystery of the Alien Base
+  screen_size: 720p
+  streaming_service: Science Channel
+  source: Web
+  other: Rip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: H.264
+  release_group: BOOP
+  type: episode
+
+? Powers (2015) S01E01 Pilot 2160p Sony WEBRip DTS-HD MA 5.1 x264-TrollUHD
+: title: Powers
+  year: 2015
+  season: 1
+  episode: 1
+  episode_title: Pilot
+  screen_size: 2160p
+  streaming_service: Sony
+  source: Web
+  other: Rip
+  audio_codec: DTS-HD
+  audio_profile: Master Audio
+  audio_channels: '5.1'
+  video_codec: H.264
+  release_group: TrollUHD
+  type: episode
+
+? Wellington.Paranormal.S02E01.Taniwha.1080p.TVNZ.WEB-DL.AAC2.0.H.264-Dulus
+: title: Wellington Paranormal
+  season: 2
+  episode: 1
+  episode_title: Taniwha
+  screen_size: 1080p
+  streaming_service: TVNZ
+  source: Web
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: H.264
+  release_group: Dulus
+  type: episode
+
+? UFC.Fight.Night.185.Prelims.FP.WEB-DL.H264-SHREDDiE
+: title: UFC Fight Night
+  # NOTE: E185 exceeds the default configuration of E100 being the max.
+  season: 1
+  episode: 85
+  episode_title: Prelims
+  streaming_service: UFC Fight Pass
+  source: Web
+  video_codec: H.264
+  release_group: SHREDDiE
+  type: episode
 
 # All this below shouldn't match any streaming services
 ? London.2012.Olympics.CTV.Preview.Show.HDTV.x264-2HD
