@@ -86,7 +86,8 @@
 
     <!-- <script type="text/javascript" src="js/common/init.js?${sbPID}"></script> -->
 
-    <!-- <script type="text/javascript" src="js/browser.js?${sbPID}"></script> -->
+    <!-- Used by components root-dirs.vue -->
+    <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
 
     <script type="text/javascript" src="js/notifications.js?${sbPID}"></script>
 
