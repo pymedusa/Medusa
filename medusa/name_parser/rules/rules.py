@@ -338,6 +338,82 @@ class CreateAliasWithAlternativeTitles(Rule):
             return [alias]
 
 
+class FixTitlesThatExistOfNumbers(Rule):
+    """Don't parse titles that exist out of numbers as the 'absolute number'.
+
+    'title' - post processor to create titles for show with exlusively numbers in the titel.
+
+    e.g.: 4400.S01E01.1080p.HEVC.x265-Group.mkv
+
+    guessit -t episode "4400.S01E01.1080p.HEVC.x265-Group.mkv"
+
+    without this rule:
+        For: 4400.S01E01.1080p.HEVC.x265-Group.mkv
+        GuessIt found: {
+            "absolute_episode": 4400
+            "season": 1
+            "episode": 1
+            "screen_size": 1080p
+            "video_codec": H.265
+            "video_encoder": x265
+            "release_group": Group
+            "type": episode
+        }
+
+    with this rule:
+        For: 4400.S01E01.1080p.HEVC.x265-Group.mkv
+        GuessIt found: {
+            "title": 4400
+            "season": 1
+            "episode": 1
+            "screen_size": 1080p
+            "video_codec": H.265
+            "video_encoder": x265
+            "release_group": Group
+            "type": episode
+        }
+    """
+
+    priority = POST_PROCESS
+    consequence = [RemoveMatch, AppendMatch]
+
+    def when(self, matches, context):
+        """Evaluate the rule.
+
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        absolute_episodes = matches.named('absolute_episode')
+        if not absolute_episodes:
+            return
+
+        fileparts = matches.markers.named('path')
+        for filepart in marker_sorted(fileparts, matches):
+            title = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'title', index=0)
+
+            if title:
+                continue
+
+            if not filepart.value.startswith(str(absolute_episodes[0].value)):
+                continue
+
+            to_remove = []
+            to_append = []
+
+            absolute_episode = absolute_episodes[0]
+            new_title = copy.copy(absolute_episode)
+            new_title.name = 'title'
+            new_title.value = str(absolute_episode.value)
+
+            to_append.append(new_title)
+            to_remove.append(absolute_episode)
+
+            return to_remove, to_append
+
+
 class CreateAliasWithCountryOrYear(Rule):
     """Create alias property using country or year information.
 
@@ -1732,6 +1808,7 @@ def rules():
         RemoveInvalidEpisodeSeparator,
         CreateAliasWithAlternativeTitles,
         CreateAliasWithCountryOrYear,
+        FixTitlesThatExistOfNumbers,
         ReleaseGroupPostProcessor,
         FixParentFolderReplacingTitle,
         FixMultipleSources,

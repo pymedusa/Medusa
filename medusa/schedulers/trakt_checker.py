@@ -532,7 +532,15 @@ class TraktChecker(object):
             if show:
                 continue
 
+            # If we don't have an indexer id for the trakt default indexer, skip it.
             indexer_id = trakt_show.ids['ids'].get(get_trakt_indexer(trakt_default_indexer), -1)
+            if not indexer_id:
+                log.info(
+                    'Can not add show {show_name}, as we dont trakt does not have a {indexer} id for this show.',
+                    {'show_name': show_name, 'indexer': get_trakt_indexer(trakt_default_indexer)}
+                )
+                continue
+
             if int(app.TRAKT_METHOD_ADD) != 2:
                 self.add_show(trakt_default_indexer, indexer_id, show_name, SKIPPED)
             else:

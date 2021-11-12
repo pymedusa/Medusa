@@ -29,7 +29,7 @@
                     </config-toggle-slider>
 
                     <config-toggle-slider v-model="deleteOn" label="Delete files and folders" id="deleteOn">
-                        <span class="smallhelp"><i>&nbsp;(Check this to delete files and folders like auto processing)</i></span>
+                        <span class="smallhelp"><i>&nbsp;(Check this to delete files and folders)</i></span>
                     </config-toggle-slider>
 
                     <config-toggle-slider :disabled="!search.general.failedDownloads.enabled" v-model="failed" label="Mark as failed" id="failed">
