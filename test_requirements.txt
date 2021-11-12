@@ -9,7 +9,7 @@ flake8-quotes==3.3.1
 pep8-naming==0.12.1
 pytest==4.6.11
 pytest-cov==2.12.1
-git+"https://github.com/erikkemperman/pytest-flake8.git@eda4ef74c0f25b856fe282742ea206b21e94c24c#egg=pytest-flake8"
+pytest-flake8 @ https://codeload.github.com/erikkemperman/pytest-flake8/tar.gz/eda4ef74c0f25b856fe282742ea206b21e94c24c
 pytest-tornado==0.8.1
 PyYAML==5.4.1
 six==1.15.0
