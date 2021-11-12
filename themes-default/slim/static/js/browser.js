@@ -211,7 +211,7 @@
             options.field.after($('<input type="button" value="Browse&hellip;" class="btn-medusa btn-inline fileBrowser">').on('click', function() {
                 const initialDir = options.field.val() || (options.key && path) || '';
                 const optionsWithInitialDir = $.extend({}, options, { initialDir });
-                $(this).nFileBrowser(callback, optionsWithInitialDir);
+                $(this).;(callback, optionsWithInitialDir);
                 return false;
             }));
         }
