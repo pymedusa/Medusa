@@ -230,8 +230,7 @@ export default {
             traktConfig: state => state.recommended.trakt,
             recommendedLists: state => state.recommended.categories,
             queueitems: state => state.queue.queueitems,
-            sourceToString: state => state.recommended.sourceToString
-
+            sourceToString: state => state.recommended.sourceToString,
             client: state => state.auth.client
         }),
         filteredShowsByList() {
