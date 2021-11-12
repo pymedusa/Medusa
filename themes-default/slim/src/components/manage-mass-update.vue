@@ -276,14 +276,18 @@ export default {
                 label: 'Default Ep Status',
                 field: 'config.defaultEpisodeStatus',
                 filterOptions: {
-                    enabled: false
+                    enabled: true,
+                    placeholder: '--no filter-- ',
+                    filterDropdownItems: []
                 },
                 hidden: getCookie('Default Ep Status')
             }, {
                 label: 'Status',
                 field: 'status',
                 filterOptions: {
-                    enabled: false
+                    enabled: true,
+                    placeholder: '--no filter-- ',
+                    filterDropdownItems: []
                 },
                 hidden: getCookie('Status')
             }, {
@@ -363,14 +367,14 @@ export default {
             selectedShows: []
         };
     },
-    // TODO: Replace with Object spread (`...mapState`)
     computed: {
         ...mapState({
             general: state => state.config.general,
             shows: state => state.shows.shows,
             layout: state => state.config.layout,
             showQueue: state => state.config.system.showQueue,
-            showQueueItems: state => state.shows.queueitems
+            showQueueItems: state => state.shows.queueitems,
+            statuses: state => state.config.consts.clientStatuses
         }),
         filteredShows() {
             const { shows, errors } = this;
@@ -514,6 +518,17 @@ export default {
                     'Error'
                 );
             }
+        }
+    },
+    watch: {
+        shows(shows) {
+            const defaultEpColumn = this.columns.find(column => column.field === 'config.defaultEpisodeStatus');
+            const defaultEpSet = new Set(shows.map(show => show.config.defaultEpisodeStatus));
+            defaultEpColumn.filterOptions.filterDropdownItems = [...defaultEpSet].map(status => ({ text: status, value: status }));
+
+            const statusColumn = this.columns.find(column => column.field === 'status');
+            const statusSet = new Set(shows.map(show => show.status));
+            statusColumn.filterOptions.filterDropdownItems = [...statusSet].map(status => ({ text: status, value: status }));
         }
     }
 };
