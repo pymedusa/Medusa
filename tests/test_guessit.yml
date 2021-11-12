@@ -4383,7 +4383,7 @@
   audio_codec: [DTS, DTS-HD]
   audio_channels: ['5.1', '7.1']
   language: ca
-  subtitle_language: [und, es, en]
+  subtitle_language: [es, en]
   release_group: NEWPCT
   type: episode
 

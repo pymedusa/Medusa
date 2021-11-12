@@ -170,3 +170,7 @@
 ? Upscale
 : other: Upscaled
 
+? REPACK5
+? ReRip5
+: other: Proper
+  proper_count: 5
