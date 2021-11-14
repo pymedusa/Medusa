@@ -10,10 +10,7 @@ import time
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
-from medusa.helper.common import (
-    convert_size,
-    try_int,
-)
+from medusa.helper.common import convert_size
 from medusa.helper.exceptions import AuthException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
@@ -21,7 +18,6 @@ from medusa.providers.torrent.torrent_provider import TorrentProvider
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 
-from six.moves.urllib_parse import parse_qs
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -151,8 +147,8 @@ class MoreThanTVProvider(TorrentProvider):
                     if not all([title, download_url]):
                         continue
 
-                    seeders = try_int(cells[labels.index('Seeders')].get_text(strip=True).replace(',', ''), 1)
-                    leechers = try_int(cells[labels.index('Leechers')].get_text(strip=True).replace(',', ''))
+                    seeders = int(cells[labels.index('Seeders')].get_text(strip=True).replace(',', ''), 1)
+                    leechers = int(cells[labels.index('Leechers')].get_text(strip=True).replace(',', ''))
 
                     # Filter unseeded torrent
                     if seeders < self.minseed:
@@ -228,37 +224,6 @@ class MoreThanTVProvider(TorrentProvider):
                                 ' check your config.'.format(self.name))
 
         return True
-
-    def _parse_season(self, row, download_url, title):
-        """Parse the torrent's detail page and return the season pack title."""
-        details_url = row.find('span').find_next(title='View torrent').get('href')
-        torrent_id = parse_qs(download_url).get('id')
-        if not all([details_url, torrent_id]):
-            log.debug("Couldn't parse season pack details page for title: {0}", title)
-            return title
-
-        # Take a break before querying the provider again
-        time.sleep(0.5)
-        response = self.session.get(urljoin(self.url, details_url))
-        if not response or not response.text:
-            log.debug("Couldn't open season pack details page for title: {0}", title)
-            return title
-
-        with BS4Parser(response.text, 'html5lib') as html:
-            torrent_table = html.find('table', class_='torrent_table')
-            torrent_row = torrent_table.find(
-                'tr', id='torrent_{0}'.format(torrent_id[0])
-            ) if torrent_table else None
-            if not torrent_row:
-                log.debug("Couldn't find season pack details for title: {0}", title)
-                return title
-
-            # Strip leading and trailing slash
-            season_title = torrent_row.find('div', class_='filelist_path')
-            if not season_title or not season_title.get_text():
-                log.debug("Couldn't parse season pack title for: {0}", title)
-                return title
-            return season_title.get_text(strip=True).strip('/')
 
 
 provider = MoreThanTVProvider()
