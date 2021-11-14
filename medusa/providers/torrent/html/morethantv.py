@@ -39,9 +39,9 @@ class MoreThanTVProvider(TorrentProvider):
         self.password = None
 
         # URLs
-        self.url = 'https://www.morethan.tv/'
+        self.url = 'https://www.morethantv.me/'
         self.urls = {
-            'login': urljoin(self.url, 'login.php'),
+            'login': urljoin(self.url, 'login'),
             'search': urljoin(self.url, 'torrents.php'),
         }
 
@@ -67,13 +67,13 @@ class MoreThanTVProvider(TorrentProvider):
 
         # Search Params
         search_params = {
-            'tags_type': 1,
             'order_by': 'time',
             'order_way': 'desc',
-            'action': 'basic',
-            'group_results': 0,
-            'searchsubmit': 1,
-            'searchstr': '',
+            'searchtext': '',
+            'filter_cat[3]': 1,
+            'filter_cat[5]': 1,
+            'filter_cat[4]': 1,
+            'filter_cat[6]': 1
         }
 
         for mode in search_strings:
@@ -91,7 +91,7 @@ class MoreThanTVProvider(TorrentProvider):
                     log.debug('Search string: {search}',
                               {'search': search_string})
 
-                search_params['searchstr'] = search_string
+                search_params['searchtext'] = search_string
 
                 response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.text:
@@ -117,6 +117,8 @@ class MoreThanTVProvider(TorrentProvider):
                 result = td.a.img.get('title', td.a.get_text(strip=True))
             if not result:
                 result = td.get_text(strip=True)
+            if not result and td.a and td.a.get('title'):
+                result = td.a['title']
             return result
 
         items = []
@@ -130,11 +132,12 @@ class MoreThanTVProvider(TorrentProvider):
                 log.debug('Data returned from provider does not contain any torrents')
                 return items
 
-            labels = [process_column_header(label) for label in torrent_rows[0]('td')]
+            # Need to only search one level deep for 'td' tags, as one of the td's also has a td.
+            labels = [process_column_header(label) for label in torrent_rows[0].find_all('td', recursive=False)]
 
             # Skip column headers
             for row in torrent_rows[1:]:
-                cells = row('td')
+                cells = row.find_all('td', recursive=False)
                 if len(cells) < len(labels):
                     continue
 
@@ -143,8 +146,8 @@ class MoreThanTVProvider(TorrentProvider):
                     if row.find('img', alt='Nuked'):
                         continue
 
-                    title = row.find('a', title='View torrent').get_text(strip=True)
-                    download_url = urljoin(self.url, row.find('span', title='Download').parent['href'])
+                    title = cells[labels.index('Name')].find('table').get_text(strip=True)
+                    download_url = urljoin(self.url, cells[labels.index('Name')].find('table').find('a')['href'])
                     if not all([title, download_url]):
                         continue
 
@@ -159,14 +162,12 @@ class MoreThanTVProvider(TorrentProvider):
                                       title, seeders)
                         continue
 
-                    # If it's a season search, query the torrent's detail page.
-                    if mode == 'Season':
-                        title = self._parse_season(row, download_url, title)
+                    units = ['B', 'KIB', 'MIB', 'GIB', 'TB', 'PB']
 
                     torrent_size = cells[labels.index('Size')].get_text(strip=True)
-                    size = convert_size(torrent_size) or -1
+                    size = convert_size(torrent_size, units=units) or -1
 
-                    pubdate_raw = cells[labels.index('Time')].find('span')['title']
+                    pubdate_raw = cells[4].find('span')['title']
                     pubdate = self.parse_pubdate(pubdate_raw)
 
                     item = {
@@ -192,11 +193,21 @@ class MoreThanTVProvider(TorrentProvider):
         if any(dict_from_cookiejar(self.session.cookies).values()):
             return True
 
+        # Get the login page, to retrieve the token
+        response = self.session.get(self.urls['login'])
+        token = re.search(r'token".value="([^"]+)"', response.text)
+        if not token:
+            log.warning('Unable to get login token')
+            return False
+
         login_params = {
             'username': self.username,
             'password': self.password,
-            'keeplogged': '1',
-            'login': 'Log in',
+            # screen_resolution (x) | screen_resolution (y) | color depth | timezone offset.
+            'cinfo': f'1536|864|24|{int(time.timezone / 60)}',
+            'token': token.groups()[0],
+            'keeploggedin': '1',
+            'submit': 'login',
         }
 
         response = self.session.post(self.urls['login'], data=login_params)
@@ -204,7 +215,7 @@ class MoreThanTVProvider(TorrentProvider):
             log.warning('Unable to connect to provider')
             return False
 
-        if re.search('Your username or password was incorrect.', response.text):
+        if re.search('Invalid username or password', response.text):
             log.warning('Invalid username or password. Check your settings')
             return False
 
