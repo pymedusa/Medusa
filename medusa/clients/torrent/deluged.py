@@ -306,7 +306,7 @@ class DelugeRPC(object):
         version = None
         try:
             version = self.client.daemon.get_version()
-            split_version = version.json()['result'].split('.')[0:2]
+            split_version = version.split('.')[0:2]
             version = tuple(int(x) for x in split_version)
         except Exception as error:
             log.warning('Error while trying to get the deluge daemon version. Error: {error}', {'error': error})
