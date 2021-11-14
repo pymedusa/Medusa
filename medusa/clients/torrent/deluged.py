@@ -301,6 +301,19 @@ class DelugeRPC(object):
             log.warning('Error while trying to connect to deluge daemon. Error: {error}', {'error': error})
             raise
 
+    def get_version(self):
+        """Return the deluge daemon major, minor version as a tuple."""
+        version = None
+        try:
+            version = self.client.daemon.get_version()
+            split_version = version.json()['result'].split('.')[0:2]
+            version = tuple(int(x) for x in split_version)
+        except Exception as error:
+            log.warning('Error while trying to get the deluge daemon version. Error: {error}', {'error': error})
+            raise
+
+        return version
+
     def disconnect(self):
         """Disconnect RPC client."""
         self.client.disconnect()
@@ -420,8 +433,12 @@ class DelugeRPC(object):
         """
         try:
             self.connect()
-            self.client.core.set_torrent_move_completed_path(torrent_id, path)
-            self.client.core.set_torrent_move_completed(torrent_id, 1)
+            if self.get_version() >= (2, 0):
+                self.client.core.set_torrent_options(torrent_id, {'completed_path': path})
+                self.client.core.set_torrent_options(torrent_id, {'move_completed': 1})
+            else:
+                self.client.core.set_torrent_move_completed_path(torrent_id, path)
+                self.client.core.set_torrent_move_completed(torrent_id, 1)
         except Exception:
             return False
         else:
@@ -464,8 +481,13 @@ class DelugeRPC(object):
         """
         try:
             self.connect()
-            self.client.core.set_torrent_stop_at_ratio(torrent_id, True)
-            self.client.core.set_torrent_stop_ratio(torrent_id, ratio)
+            if self.get_version() >= (2, 0):
+                self.client.core.set_torrent_options(torrent_id, {'stop_at_ratio': True})
+                self.client.core.set_torrent_options(torrent_id, {'stop_ratio': ratio})
+            else:
+                self.client.core.set_torrent_stop_at_ratio(torrent_id, True)
+                self.client.core.set_torrent_stop_ratio(torrent_id, ratio)
+
         except Exception:
             return False
         else:
