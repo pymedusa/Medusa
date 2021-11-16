@@ -76,7 +76,7 @@ from medusa.name_parser.parser import (
 from medusa.sbdatetime import sbdatetime
 from medusa.scene_numbering import (
     get_scene_absolute_numbering,
-    get_scene_numbering,
+    load_scene_numbering,
 )
 from medusa.tv.base import Identifier, TV
 
@@ -724,13 +724,19 @@ class Episode(TV):
                     self.absolute_number
                 )
 
-            if self.scene_season is None or self.scene_episode == 0:
-                self.scene_season, self.scene_episode = get_scene_numbering(
-                    self.series, self.episode, self.season
-                )
+            if self.series.is_scene:
+                self._load_scene_numbering()
 
             self.reset_dirty()
             return True
+
+    def _load_scene_numbering(self):
+        scene_mapping = load_scene_numbering(
+            self.series, self.episode, self.season
+        )
+        if scene_mapping:
+            self.scene_season = scene_mapping[0]
+            self.scene_episode = scene_mapping[1]
 
     def set_indexer_data(self, season=None, indexer_api=None):
         """Set episode information from indexer.
@@ -865,9 +871,7 @@ class Episode(TV):
 
         # TODO: Just me not understanding. If we're getting the show info from the indexer.
         # Why are we trying to get the scene_season and scene_episode from the db?
-        self.scene_season, self.scene_episode = get_scene_numbering(
-            self.series, self.episode, self.season
-        )
+        self._load_scene_numbering()
 
         self.description = getattr(my_ep, 'overview', '')
 
@@ -1045,9 +1049,7 @@ class Episode(TV):
                         self.absolute_number
                     )
 
-                    self.scene_season, self.scene_episode = get_scene_numbering(
-                        self.series, self.episode, self.season
-                    )
+                    self._load_scene_numbering()
 
                     self.description = ep_details.findtext('plot')
                     if self.description is None:
