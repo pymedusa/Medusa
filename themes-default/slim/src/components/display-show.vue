@@ -57,7 +57,8 @@
                                 @on-page-change="onPageChange">
 
                     <template slot="table-header-row" slot-scope="props">
-                        <h3 class="season-header toggle collapse"><app-link :name="'season-'+ props.row.season" />
+                        <h3 class="season-header toggle collapse">
+                            <app-link :name="'season-'+ props.row.season" />
                             {{ props.row.season > 0 ? 'Season ' + props.row.season : 'Specials' }}
                             <!-- Only show the search manual season search, when any of the episodes in it is not unaired -->
                             <app-link v-if="anyEpisodeNotUnaired(props.row)" class="epManualSearch" :href="`home/snatchSelection?showslug=${show.id.slug}&amp;season=${props.row.season}&amp;episode=1&amp;manual_search_type=season`">
@@ -88,12 +89,11 @@
                         </span>
 
                         <span v-else-if="props.column.label == 'Scene'" class="align-center">
-                            <input type="text" :placeholder="`${props.formattedRow[props.column.field].season}x${props.formattedRow[props.column.field].episode}`" size="6" maxlength="8"
-                                   class="sceneSeasonXEpisode form-control input-scene addQTip" :data-for-season="props.row.season" :data-for-episode="props.row.episode"
-                                   :id="`sceneSeasonXEpisode_${show.id[show.indexer]}_${props.row.season}_${props.row.episode}`"
-                                   title="Change this value if scene numbering differs from the indexer episode numbering. Generally used for non-anime shows."
-                                   :value="props.formattedRow[props.column.field].season + 'x' + props.formattedRow[props.column.field].episode"
-                                   style="padding: 0; text-align: center; max-width: 60px;">
+                            <scene-number-input :show="show"
+                                                :initial-season="props.row.season"
+                                                :initial-episode="props.row.episode"
+                                                :initial-scene-episode="getSceneNumbering(props.row)"
+                            />
                         </span>
 
                         <span v-else-if="props.column.label == 'Scene Abs. #'" class="align-center">
@@ -397,7 +397,7 @@
 <script>
 import debounce from 'lodash/debounce';
 import { mapState, mapGetters, mapActions } from 'vuex';
-import { AppLink, PlotInfo } from './helpers';
+import { AppLink, PlotInfo, SceneNumberInput } from './helpers';
 import { humanFileSize } from '../utils/core';
 import { manageCookieMixin } from '../mixins/manage-cookie';
 import { addQTip, updateSearchIcons } from '../utils/jquery';
@@ -406,6 +406,7 @@ import Backstretch from './backstretch.vue';
 import ShowHeader from './show-header.vue';
 import SubtitleSearch from './subtitle-search.vue';
 import QualityPill from './helpers/quality-pill.vue';
+import { apiRoute } from '../api';
 
 export default {
     name: 'show',
@@ -414,6 +415,7 @@ export default {
         Backstretch,
         PlotInfo,
         QualityPill,
+        SceneNumberInput,
         ShowHeader,
         VueGoodTable
     },
@@ -482,10 +484,7 @@ export default {
                 hidden: getCookie('Abs. #')
             }, {
                 label: 'Scene',
-                field: row => {
-                    const { getSceneNumbering } = this;
-                    return getSceneNumbering(row);
-                },
+                field: 'scene',
                 sortable: false,
                 hidden: getCookie('Scene')
             }, {
@@ -640,7 +639,7 @@ export default {
             });
         });
 
-        $(document.body).on('change', '.sceneSeasonXEpisode', event => {
+        $(document.body).on('change', '.sceneSeasonXEpisode_disabled', event => {
             const target = event.currentTarget;
             // Strip non-numeric characters
             const value = $(target).val();
@@ -820,7 +819,7 @@ export default {
             addQTip(); // eslint-disable-line no-undef
         }, 1000),
 
-        setEpisodeSceneNumbering(forSeason, forEpisode, sceneSeason, sceneEpisode) {
+        async setEpisodeSceneNumbering(forSeason, forEpisode, sceneSeason, sceneEpisode) {
             const { $snotify, show } = this;
 
             if (!show.config.scene) {
@@ -839,13 +838,7 @@ export default {
                 sceneEpisode = null;
             }
 
-            $.getJSON('home/setSceneNumbering', {
-                showslug: show.id.slug,
-                forSeason,
-                forEpisode,
-                sceneSeason,
-                sceneEpisode
-            }, data => {
+            $.getJSON('home/setSceneNumbering', data => {
                 // Set the values we get back
                 if (data.sceneSeason === null || data.sceneEpisode === null) {
                     $(`#sceneSeasonXEpisode_${show.id[show.indexer]}_${forSeason}_${forEpisode}`).val('');
@@ -950,21 +943,21 @@ export default {
             }
 
             // Manually configured scene numbering
-            if (sceneNumbering.length !== 0) {
+            if (sceneNumbering.length > 0) {
                 const mapped = sceneNumbering.filter(x => {
                     return x.source.season === episode.season && x.source.episode === episode.episode;
                 });
-                if (mapped.length !== 0) {
+                if (mapped.length > 0) {
                     return mapped[0].destination;
                 }
             }
 
             // Scene numbering downloaded from thexem.de.
-            if (xemNumbering.length !== 0) {
+            if (xemNumbering.length > 0) {
                 const mapped = xemNumbering.filter(x => {
                     return x.source.season === episode.season && x.source.episode === episode.episode;
                 });
-                if (mapped.length !== 0) {
+                if (mapped.length > 0) {
                     return mapped[0].destination;
                 }
             }
@@ -1240,6 +1233,11 @@ export default {
             setTimeout(() => {
                 event.target.value = 'search action';
             }, 2000);
+        }
+    },
+    filters: {
+        sceneObjectToString(value) {
+            return `${value.season}x${value.episode}`;
         }
     },
     watch: {

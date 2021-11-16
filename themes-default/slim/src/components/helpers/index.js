@@ -23,6 +23,7 @@ export { default as ProgressBar } from './progress-bar.vue';
 export { default as PosterSizeSlider } from './poster-size-slider.vue';
 export { default as QualityChooser } from './quality-chooser.vue';
 export { default as QualityPill } from './quality-pill.vue';
+export { default as SceneNumberInput } from './scene-number-input.vue';
 export { default as ScrollButtons } from './scroll-buttons.vue';
 export { default as Search } from './search.vue';
 export { default as SelectList } from './select-list.vue';
