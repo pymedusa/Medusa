@@ -147,7 +147,7 @@ class MoreThanTVProvider(TorrentProvider):
                     if not all([title, download_url]):
                         continue
 
-                    seeders = int(cells[labels.index('Seeders')].get_text(strip=True).replace(',', ''), 1)
+                    seeders = int(cells[labels.index('Seeders')].get_text(strip=True).replace(',', ''))
                     leechers = int(cells[labels.index('Leechers')].get_text(strip=True).replace(',', ''))
 
                     # Filter unseeded torrent
