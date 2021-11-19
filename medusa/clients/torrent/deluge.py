@@ -448,7 +448,7 @@ class DelugeAPI(GenericClient):
                         result.hash,
                         float(ratio),
                     ],
-                    'id': 6,
+                    'id': 5,
                 })
 
             self._request(method='post', data=post_data)
