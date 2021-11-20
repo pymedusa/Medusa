@@ -254,7 +254,7 @@ def get_indexer_numbering_from_scene(series_obj, scene_episode, scene_season=Non
     return new_sea, new_ep
 
 
-def get_abs_number_from_scene_abs(series_obj, episode, season=None):
+def get_abs_number_from_scene(series_obj, episode, season=None):
     """Return the shows absolute episode number from scene scene absolute episode or else scene season/episode."""
     xem_refresh(series_obj)
     main_db_con = db.DBConnection()
@@ -413,7 +413,7 @@ def get_indexer_abs_numbering(series_obj, episode, season=None):
         return abs_number
 
     if series_obj.is_scene:
-        abs_number = get_abs_number_from_scene_abs(series_obj, episode, season)
+        abs_number = get_abs_number_from_scene(series_obj, episode, season)
         if abs_number:
             return abs_number
 
