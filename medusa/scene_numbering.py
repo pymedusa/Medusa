@@ -221,7 +221,7 @@ def find_xem_absolute_numbering(series_obj, absolute_number):
         return int(rows[0]['scene_absolute_number'])
 
 
-def get_scene_numbering(series_obj, scene_episode, scene_season=None):
+def get_indexer_numbering_from_scene(series_obj, scene_episode, scene_season=None):
     """Match an episode in the library with a passed (scene) season / episode."""
     xem_refresh(series_obj)
     main_db_con = db.DBConnection()
@@ -252,7 +252,8 @@ def get_scene_numbering(series_obj, scene_episode, scene_season=None):
     return new_sea, new_ep
 
 
-def get_scene_abs_number(series_obj, episode, season=None):
+def get_abs_number_from_scene_abs(series_obj, episode, season=None):
+    """Return the shows absolute episode number from scene scene absolute episode or else scene season/episode."""
     xem_refresh(series_obj)
     main_db_con = db.DBConnection()
 
@@ -311,6 +312,11 @@ def get_custom_numbering_from_scene(series_obj, scene_episode, scene_season=None
 
 
 def get_custom_abs_number(series_obj, episode, season=None):
+    """
+    Get the custom absolute number from scene_numbering table using the scene absolute ep.
+
+    Or if a season passed from the scene season + scene episode.
+    """
     main_db_con = db.DBConnection()
 
     if season is None:
@@ -350,7 +356,7 @@ def get_indexer_numbering(series_obj, episode, season=None):
         return numbering
 
     if series_obj.is_scene:
-        numbering = get_scene_numbering(series_obj, episode, season)
+        numbering = get_indexer_numbering_from_scene(series_obj, episode, season)
         if all(number is not None for number in numbering):
             return numbering
 
@@ -397,7 +403,7 @@ def get_indexer_abs_numbering(series_obj, episode, season=None):
         return abs_number
 
     if series_obj.is_scene:
-        abs_number = get_scene_abs_number(series_obj, episode, season)
+        abs_number = get_abs_number_from_scene_abs(series_obj, episode, season)
         if abs_number:
             return abs_number
 
