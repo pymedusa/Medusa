@@ -1,11 +1,11 @@
 <template>
     <input
-        type="text" :placeholder="`${sceneSeason || season}x${sceneEpisode || episode}`" size="6" maxlength="8"
+        type="text" :placeholder="`${sceneSeason || initialEpisode.season}x${sceneEpisode || initialEpisode.episode}`" size="6" maxlength="8"
         class="sceneSeasonXEpisode form-control input-scene addQTip"
         title="Change this value if scene numbering differs from the indexer episode numbering. Generally used for non-anime shows."
-        :value="`${sceneSeason || season}x${sceneEpisode || episode}`"
+        :value="`${sceneSeason || initialEpisode.season}x${sceneEpisode || initialEpisode.episode}`"
         style="padding: 0; text-align: center; max-width: 60px;"
-        :class="[isValid === true ? 'isValid' : '', isValid === false ? 'isInvalid' : '']"
+        :class="[isValid === true ? 'isValid' : '', isValid === false ? 'isInvalid' : '', numberingFrom === 'custom' ? 'isCustom' : '']"
         @change="changeSceneNumbering"
     >
 </template>
@@ -17,17 +17,14 @@ export default {
     name: 'scene-number-input',
     props: {
         show: Object,
-        initialSeason: Number,
-        initialEpisode: Number,
-        initialSceneEpisode: Object
+        initialEpisode: Object
     },
     data() {
         return {
-            season: this.initialSeason,
-            episode: this.initialEpisode,
-            sceneSeason: this.sceneEpisode ? this.sceneEpisode.season : null,
-            sceneEpisode: this.sceneEpisode ? this.sceneEpisode.episode : null,
-            isValid: null
+            sceneSeason: this.initialEpisode.scene.season,
+            sceneEpisode: this.initialEpisode.scene.episode,
+            isValid: null,
+            numberingFrom: 'indexer'
         };
     },
     mounted() {
@@ -37,8 +34,8 @@ export default {
         changeSceneNumbering(event) {
             let { value } = event.currentTarget;
             value = value.replace(/[^\dXx]*/g, '');
-            const forSeason = this.season;
-            const forEpisode = this.episode;
+            const forSeason = this.initialEpisode.season;
+            const forEpisode = this.initialEpisode.episode;
 
             // If empty reset the field
             if (value === '') {
@@ -102,6 +99,9 @@ export default {
                 } });
                 if (data.success) {
                     if (data.sceneSeason === null || data.sceneEpisode === null) {
+                        this.sceneSeason = '';
+                        this.sceneEpisode = '';
+                    } else {
                         this.sceneSeason = data.sceneSeason;
                         this.sceneEpisode = data.sceneEpisode;
                     }
@@ -127,8 +127,10 @@ export default {
          * Check if the season/episode combination exists in the scene numbering.
          */
         getSceneNumbering() {
-            const { show, season, episode } = this;
+            const { show, initialEpisode } = this;
             const { sceneNumbering, xemNumbering } = show;
+
+            const { season, episode } = initialEpisode;
 
             if (!show.config.scene) {
                 this.sceneSeason = 0;
@@ -142,16 +144,16 @@ export default {
                 });
                 if (mapped.length > 0) {
                     this.sceneSeason = mapped[0].destination.season;
+                    this.numberingFrom = 'custom';
                 }
-            }
-
-            // Scene numbering downloaded from thexem.de.
-            if (xemNumbering.length > 0) {
+            } else if (xemNumbering.length > 0) {
+                // Scene numbering downloaded from thexem.de.
                 const mapped = xemNumbering.filter(x => {
                     return x.source.season === season && x.source.episode === episode;
                 });
                 if (mapped.length > 0) {
                     this.sceneSeason = mapped[0].destination.season;
+                    this.numberingFrom = 'xem';
                 }
             }
         }
@@ -168,6 +170,12 @@ export default {
 
 .isInvalid {
     background-color: #FF0000;
+    color: #FFF !important;
+    font-weight: bold;
+}
+
+.isCustom {
+    background-color: #00ebaf;
     color: #FFF !important;
     font-weight: bold;
 }

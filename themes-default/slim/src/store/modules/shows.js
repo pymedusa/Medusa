@@ -61,7 +61,13 @@ const mutations = {
         for (const newShow of shows) {
             const existing = state.shows.find(stateShow => stateShow.id.slug === newShow.id.slug);
             if (existing) {
-                mergedShows.push({ ...existing, ...newShow });
+                const {
+                    sceneAbsoluteNumbering,
+                    xemAbsoluteNumbering,
+                    sceneNumbering,
+                    ...showWithoutDetailed
+                } = newShow;
+                mergedShows.push({ ...existing, ...showWithoutDetailed });
             } else {
                 mergedShows.push(newShow);
             }

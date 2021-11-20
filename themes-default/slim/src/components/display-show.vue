@@ -89,20 +89,11 @@
                         </span>
 
                         <span v-else-if="props.column.label == 'Scene'" class="align-center">
-                            <scene-number-input :show="show"
-                                                :initial-season="props.row.season"
-                                                :initial-episode="props.row.episode"
-                                                :initial-scene-episode="getSceneNumbering(props.row)"
-                            />
+                            <scene-number-input :show="show" :initial-episode="props.row" />
                         </span>
 
                         <span v-else-if="props.column.label == 'Scene Abs. #'" class="align-center">
-                            <input type="text" :placeholder="`${props.formattedRow[props.column.field]}`" size="6" maxlength="8"
-                                   class="sceneAbsolute form-control input-scene addQTip" :data-for-absolute="props.row.absoluteNumber"
-                                   :id="`sceneAbsolute_${show.id[show.indexer]}_${props.row.absoluteNumber}`"
-                                   title="Change this value if scene absolute numbering differs from the indexer absolute numbering. Generally used for anime shows."
-                                   :value="props.formattedRow[props.column.field]"
-                                   style="padding: 0; text-align: center; max-width: 60px;">
+                            <scene-number-anime-input :show="show" :initial-episode="props.row" />
                         </span>
 
                         <span v-else-if="props.column.label == 'Title'">
@@ -397,7 +388,7 @@
 <script>
 import debounce from 'lodash/debounce';
 import { mapState, mapGetters, mapActions } from 'vuex';
-import { AppLink, PlotInfo, SceneNumberInput } from './helpers';
+import { AppLink, PlotInfo, SceneNumberInput, SceneNumberAnimeInput } from './helpers';
 import { humanFileSize } from '../utils/core';
 import { manageCookieMixin } from '../mixins/manage-cookie';
 import { addQTip, updateSearchIcons } from '../utils/jquery';
@@ -406,7 +397,6 @@ import Backstretch from './backstretch.vue';
 import ShowHeader from './show-header.vue';
 import SubtitleSearch from './subtitle-search.vue';
 import QualityPill from './helpers/quality-pill.vue';
-import { apiRoute } from '../api';
 
 export default {
     name: 'show',
@@ -416,6 +406,7 @@ export default {
         PlotInfo,
         QualityPill,
         SceneNumberInput,
+        SceneNumberAnimeInput,
         ShowHeader,
         VueGoodTable
     },
@@ -489,10 +480,7 @@ export default {
                 hidden: getCookie('Scene')
             }, {
                 label: 'Scene Abs. #',
-                field: row => {
-                    const { getSceneAbsoluteNumbering } = this;
-                    return getSceneAbsoluteNumbering(row);
-                },
+                field: 'sceneAbsolute',
                 type: 'number',
                 hidden: getCookie('Scene Abs. #')
             }, {
@@ -611,14 +599,7 @@ export default {
     },
 
     mounted() {
-        const {
-            setEpisodeSceneNumbering,
-            setAbsoluteSceneNumbering,
-            setInputValidInvalid
-        } = this;
-
         this.loadShow();
-
         ['load', 'resize'].map(event => {
             return window.addEventListener(event, () => {
                 this.reflowLayout();
@@ -637,58 +618,6 @@ export default {
                     element.checked = seasCheck.checked;
                 }
             });
-        });
-
-        $(document.body).on('change', '.sceneSeasonXEpisode_disabled', event => {
-            const target = event.currentTarget;
-            // Strip non-numeric characters
-            const value = $(target).val();
-            $(target).val(value.replace(/[^\dXx]*/g, ''));
-            const forSeason = $(target).attr('data-for-season');
-            const forEpisode = $(target).attr('data-for-episode');
-
-            // If empty reset the field
-            if (value === '') {
-                setEpisodeSceneNumbering(forSeason, forEpisode, null, null);
-                return;
-            }
-
-            const m = $(target).val().match(/^(\d+)x(\d+)$/i);
-            const onlyEpisode = $(target).val().match(/^(\d+)$/i);
-            let sceneSeason = null;
-            let sceneEpisode = null;
-            let isValid = false;
-            if (m) {
-                sceneSeason = m[1];
-                sceneEpisode = m[2];
-                isValid = setInputValidInvalid(true, $(target));
-            } else if (onlyEpisode) {
-                // For example when '5' is filled in instead of '1x5', asume it's the first season
-                sceneSeason = forSeason;
-                sceneEpisode = onlyEpisode[1];
-                isValid = setInputValidInvalid(true, $(target));
-            } else {
-                isValid = setInputValidInvalid(false, $(target));
-            }
-
-            if (isValid) {
-                setEpisodeSceneNumbering(forSeason, forEpisode, sceneSeason, sceneEpisode);
-            }
-        });
-
-        $(document.body).on('change', '.sceneAbsolute', event => {
-            const target = event.currentTarget;
-            // Strip non-numeric characters
-            $(target).val($(target).val().replace(/[^\dXx]*/g, ''));
-            const forAbsolute = $(target).attr('data-for-absolute');
-
-            const m = $(target).val().match(/^(\d{1,3})$/i);
-            let sceneAbsolute = null;
-            if (m) {
-                sceneAbsolute = m[1];
-            }
-
-            setAbsoluteSceneNumbering(forAbsolute, sceneAbsolute);
         });
     },
     methods: {
@@ -818,96 +747,6 @@ export default {
             console.debug('Reflowing layout');
             addQTip(); // eslint-disable-line no-undef
         }, 1000),
-
-        async setEpisodeSceneNumbering(forSeason, forEpisode, sceneSeason, sceneEpisode) {
-            const { $snotify, show } = this;
-
-            if (!show.config.scene) {
-                $snotify.warning(
-                    'To change episode scene numbering you need to enable the show option `scene` first',
-                    'Warning',
-                    { timeout: 0 }
-                );
-            }
-
-            if (sceneSeason === '') {
-                sceneSeason = null;
-            }
-
-            if (sceneEpisode === '') {
-                sceneEpisode = null;
-            }
-
-            $.getJSON('home/setSceneNumbering', data => {
-                // Set the values we get back
-                if (data.sceneSeason === null || data.sceneEpisode === null) {
-                    $(`#sceneSeasonXEpisode_${show.id[show.indexer]}_${forSeason}_${forEpisode}`).val('');
-                } else {
-                    $(`#sceneSeasonXEpisode_${show.id[show.indexer]}_${forSeason}_${forEpisode}`).val(data.sceneSeason + 'x' + data.sceneEpisode);
-                }
-
-                if (!data.success) {
-                    if (data.errorMessage) {
-                        alert(data.errorMessage); // eslint-disable-line no-alert
-                    } else {
-                        alert('Update failed.'); // eslint-disable-line no-alert
-                    }
-                }
-            });
-        },
-        setAbsoluteSceneNumbering(forAbsolute, sceneAbsolute) {
-            const { $snotify, show } = this;
-
-            if (!show.config.scene) {
-                $snotify.warning(
-                    'To change an anime episode scene numbering you need to enable the show option `scene` first',
-                    'Warning',
-                    { timeout: 0 }
-                );
-            }
-
-            if (sceneAbsolute === '') {
-                sceneAbsolute = null;
-            }
-
-            $.getJSON('home/setSceneNumbering', {
-                showslug: show.id.slug,
-                forAbsolute,
-                sceneAbsolute
-            }, data => {
-                // Set the values we get back
-                if (data.sceneAbsolute === null) {
-                    $(`#sceneAbsolute_${show.id[show.indexer]}_${forAbsolute}`).val('');
-                } else {
-                    $(`#sceneAbsolute_${show.id[show.indexer]}_${forAbsolute}`).val(data.sceneAbsolute);
-                }
-
-                if (!data.success) {
-                    if (data.errorMessage) {
-                        alert(data.errorMessage); // eslint-disable-line no-alert
-                    } else {
-                        alert('Update failed.'); // eslint-disable-line no-alert
-                    }
-                }
-            });
-        },
-        setInputValidInvalid(valid, el) {
-            if (valid) {
-                $(el).css({
-                    'background-color': '#90EE90', // Green
-                    'color': '#FFF', // eslint-disable-line quote-props
-                    'font-weight': 'bold'
-                });
-                return true;
-            }
-
-            $(el).css({
-                'background-color': '#FF0000', // Red
-                'color': '#FFF !important', // eslint-disable-line quote-props
-                'font-weight': 'bold'
-            });
-            return false;
-        },
         /**
          * Check if any of the episodes in this season does not have the status "unaired".
          * If that's the case we want to manual season search icon.
@@ -963,34 +802,6 @@ export default {
             }
 
             return { season: episode.scene.season || 0, episode: episode.scene.episode || 0 };
-        },
-        getSceneAbsoluteNumbering(episode) {
-            const { show } = this;
-            const { sceneAbsoluteNumbering, xemAbsoluteNumbering } = show;
-
-            if (!show.config.anime || !show.config.scene) {
-                return episode.scene.absoluteNumber;
-            }
-
-            if (Object.keys(sceneAbsoluteNumbering).length > 0) {
-                const mapped = sceneAbsoluteNumbering.filter(x => {
-                    return x.absolute === episode.absoluteNumber;
-                });
-                if (mapped.length !== 0) {
-                    return mapped[0].sceneAbsolute;
-                }
-            }
-
-            if (Object.keys(xemAbsoluteNumbering).length > 0) {
-                const mapped = xemAbsoluteNumbering.filter(x => {
-                    return x.absolute === episode.absoluteNumber;
-                });
-                if (mapped.length !== 0) {
-                    return mapped[0].sceneAbsolute;
-                }
-            }
-
-            return episode.scene.absoluteNumber;
         },
         /**
          * Vue-js-modal requires a method, to pass an event to.
