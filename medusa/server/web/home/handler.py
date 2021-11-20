@@ -32,8 +32,8 @@ from medusa.scene_exceptions import (
     get_all_scene_exceptions
 )
 from medusa.scene_numbering import (
-    get_scene_absolute_numbering,
     get_indexer_numbering_from_scene,
+    get_scene_absolute_numbering,
     get_xem_numbering_for_show,
     set_scene_numbering
 )
