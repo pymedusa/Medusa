@@ -242,21 +242,11 @@
                         </span>
 
                         <span v-else-if="props.column.label == 'Scene'" class="align-center">
-                            <input type="text" :placeholder="`${props.formattedRow[props.column.field].season}x${props.formattedRow[props.column.field].episode}`" size="6" maxlength="8"
-                                   class="sceneSeasonXEpisode form-control input-scene addQTip" :data-for-season="props.row.season" :data-for-episode="props.row.episode"
-                                   :id="`sceneSeasonXEpisode_${show.id[show.indexer]}_${props.row.season}_${props.row.episode}`"
-                                   title="Change this value if scene numbering differs from the indexer episode numbering. Generally used for non-anime shows."
-                                   :value="props.formattedRow[props.column.field].season + 'x' + props.formattedRow[props.column.field].episode"
-                                   style="padding: 0; text-align: center; max-width: 60px;">
+                            <scene-number-input :show="show" :initial-episode="props.row" />
                         </span>
 
                         <span v-else-if="props.column.label == 'Scene Abs. #'" class="align-center">
-                            <input type="text" :placeholder="`${props.formattedRow[props.column.field]}`" size="6" maxlength="8"
-                                   class="sceneAbsolute form-control input-scene addQTip" :data-for-absolute="props.row.absoluteNumber"
-                                   :id="`sceneAbsolute_${show.id[show.indexer]}_${props.row.absoluteNumber}`"
-                                   title="Change this value if scene absolute numbering differs from the indexer absolute numbering. Generally used for anime shows."
-                                   :value="props.formattedRow[props.column.field]"
-                                   style="padding: 0; text-align: center; max-width: 60px;">
+                            <scene-number-anime-input :show="show" :initial-episode="props.row" />
                         </span>
 
                         <span v-else-if="props.column.label == 'Title'">
