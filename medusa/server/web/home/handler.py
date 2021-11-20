@@ -33,7 +33,7 @@ from medusa.scene_exceptions import (
 )
 from medusa.scene_numbering import (
     get_scene_absolute_numbering,
-    get_scene_numbering,
+    get_indexer_numbering_from_scene,
     get_xem_numbering_for_show,
     set_scene_numbering
 )
@@ -997,7 +997,7 @@ class Home(WebRoot):
             sn = get_scene_absolute_numbering(series_obj, for_absolute)
             result['scene_absolute'] = sn
         else:
-            sn = get_scene_numbering(series_obj, for_episode, for_season)
+            sn = get_indexer_numbering_from_scene(series_obj, for_episode, for_season)
             (result['scene_season'], result['scene_episode']) = sn
             ep_obj.load_scene_numbering()
 
