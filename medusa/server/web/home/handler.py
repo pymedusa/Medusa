@@ -32,8 +32,8 @@ from medusa.scene_exceptions import (
     get_all_scene_exceptions
 )
 from medusa.scene_numbering import (
-    get_indexer_numbering_from_scene,
     get_scene_absolute_numbering,
+    get_scene_numbering,
     get_xem_numbering_for_show,
     set_scene_numbering
 )
@@ -933,27 +933,27 @@ class Home(WebRoot):
                 'success': False,
                 'errorMessage': "You can't use the Scene numbering for anime shows. "
                                 'Use the Scene Absolute field, to configure a diverging episode number.',
-                'scene_season': None,
-                'scene_absolute': None,
+                'sceneSeason': None,
+                'sceneAbsolute': None,
             })
         elif not series_obj.is_anime and (for_season is None or for_episode is None):
             return json.dumps({
                 'success': False,
                 'errorMessage': "You can't use the Scene Absolute for non-anime shows. "
                                 'Use the scene field, to configure a diverging episode number.',
-                'scene_season': None,
-                'scene_absolute': None,
+                'sceneSeason': None,
+                'sceneAbsolute': None,
             })
         elif series_obj.is_anime:
             result = {
                 'success': True,
-                'for_absolute': for_absolute,
+                'forAbsolute': for_absolute,
             }
         else:
             result = {
                 'success': True,
-                'for_season': for_season,
-                'for_episode': for_episode,
+                'forSeason': for_season,
+                'forEpisode': for_episode,
             }
 
         # retrieve the episode object and fail if we can't get one
@@ -995,11 +995,10 @@ class Home(WebRoot):
 
         if series_obj.is_anime:
             sn = get_scene_absolute_numbering(series_obj, for_absolute)
-            result['scene_absolute'] = sn
+            result['sceneAbsolute'] = sn
         else:
-            sn = get_indexer_numbering_from_scene(series_obj, for_episode, for_season)
-            (result['scene_season'], result['scene_episode']) = sn
-            ep_obj.load_scene_numbering()
+            sn = get_scene_numbering(series_obj, for_season, for_episode)
+            result['sceneSeason'], result['sceneEpisode'] = sn
 
         return json.dumps(result)
 

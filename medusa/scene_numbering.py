@@ -43,7 +43,7 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
-def load_scene_numbering(series_obj, season, episode):
+def get_scene_numbering(series_obj, season, episode):
     """
     Try loading a scene number mapping from the scene_numbering table and then the tv_episodes table.
 
@@ -54,13 +54,16 @@ def load_scene_numbering(series_obj, season, episode):
     :param series_obj: Show object.
     :param season: Season number as specified by the indexer.
     :param episode: episode number as specified by the indexer.
-    :returns: A tuple of scene_season, scene_episode or None.
+    :returns: A tuple of scene_season, scene_episode
     """
     result = find_scene_numbering(series_obj, season, episode)
     if result:
         return result
 
-    return find_xem_numbering(series_obj, season, episode)
+    result = find_xem_numbering(series_obj, season, episode)
+    if result:
+        return result
+    return (None, None)
 
 
 def find_scene_numbering(series_obj, season, episode):
@@ -114,7 +117,7 @@ def find_xem_numbering(series_obj, season, episode):
         return int(rows[0]['scene_season']), int(rows[0]['scene_episode'])
 
 
-def get_scene_absolute_numbering(series_obj, absolute_number, fallback_to_xem=True):
+def get_scene_absolute_numbering(series_obj, absolute_number):
     """
     Return a tuple, (season, episode), with the scene numbering (if there is one),
     otherwise returns the xem numbering (if fallback_to_xem is set), otherwise
@@ -134,10 +137,9 @@ def get_scene_absolute_numbering(series_obj, absolute_number, fallback_to_xem=Tr
     if result:
         return result
     else:
-        if fallback_to_xem:
-            xem_result = find_xem_absolute_numbering(series_obj, absolute_number)
-            if xem_result:
-                return xem_result
+        xem_result = find_xem_absolute_numbering(series_obj, absolute_number)
+        if xem_result:
+            return xem_result
         return absolute_number
 
 
@@ -343,37 +345,45 @@ def get_custom_abs_number(series_obj, episode, season=None):
         return absolute_number
 
 
-def get_indexer_numbering(series_obj, episode, season=None):
+def get_indexer_numbering(series_obj, scene_episode, scene_season=None):
     """Match an episode in the library to a parsed scene season or scene episode.
+
+    This function is used by Guessit to match a parsed episode/season to indexer.
+    This works like a reverse of get_scene_numbering
 
     :param series_obj: Show object
     :param episode: Episode number
     :param season: Season number (optional)
     :return: Tuple, (season, episode) or (None, None)
     """
-    numbering = get_custom_numbering_from_scene(series_obj, episode, season)
-    if all(number is not None for number in numbering):
-        return numbering
-
-    if series_obj.is_scene:
-        numbering = get_indexer_numbering_from_scene(series_obj, episode, season)
-        if all(number is not None for number in numbering):
-            return numbering
-
-    if season is not None:
-        log.debug('Found numbering {new} from parser for show {show} {old}', {
-            'new': episode_num(season, episode),
-            'show': series_obj.name,
-            'old': episode_num(season, episode)
-        })
+    # Try to get a mapping from scene_numbering.
+    season, episode = get_custom_numbering_from_scene(series_obj, scene_episode, scene_season)
+    if all(season, episode):
         return season, episode
 
+    if series_obj.is_scene:
+        # Try to get a mapping from tv_episodes.
+        season, episode = get_indexer_numbering_from_scene(series_obj, scene_episode, scene_season)
+        if all(season, episode):
+            return season, episode
+
+    if scene_season is not None:
+        # We didn't get back a mapping from scene_numbering (custom) or tv_episodes (xem)
+        # But we did pass a scene_season. Meaning we can just return the scene_season / scene_episode.
+        log.debug('No mapping found, returning passed season and episode {episode} for show {show}', {
+            'episode': episode_num(scene_season, scene_episode),
+            'show': series_obj.name
+        })
+        return scene_season, scene_episode
+
+    # At this point a scene_season was not passed. Meaning we are going to try to resolve
+    # by absolute number.
     main_db_con = db.DBConnection()
     rows = main_db_con.select(
         'SELECT season, episode FROM tv_episodes '
         'WHERE indexer = ? AND showid = ? '
         'AND absolute_number = ?',
-        [series_obj.indexer, series_obj.series_id, episode]
+        [series_obj.indexer, series_obj.series_id, scene_episode]
     )
 
     if not rows:

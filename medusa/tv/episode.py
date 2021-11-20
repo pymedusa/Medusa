@@ -76,7 +76,7 @@ from medusa.name_parser.parser import (
 from medusa.sbdatetime import sbdatetime
 from medusa.scene_numbering import (
     get_scene_absolute_numbering,
-    load_scene_numbering,
+    get_scene_numbering,
 )
 from medusa.tv.base import Identifier, TV
 
@@ -731,10 +731,10 @@ class Episode(TV):
             return True
 
     def _load_scene_numbering(self):
-        scene_mapping = load_scene_numbering(
-            self.series, self.episode, self.season
+        scene_mapping = get_scene_numbering(
+            self.series, self.season, self.episode
         )
-        if scene_mapping:
+        if all(scene_mapping):
             self.scene_season = scene_mapping[0]
             self.scene_episode = scene_mapping[1]
 
