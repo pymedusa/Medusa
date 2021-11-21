@@ -5,7 +5,11 @@
         title="Change this value if scene numbering differs from the indexer episode numbering. Generally used for non-anime shows."
         :value="`${sceneSeason || initialEpisode.season}x${sceneEpisode || initialEpisode.episode}`"
         style="padding: 0; text-align: center; max-width: 60px;"
-        :class="[isValid === true ? 'isValid' : '', isValid === false ? 'isInvalid' : '', numberingFrom === 'custom' ? 'isCustom' : '']"
+        :class="[
+            isValid === true ? 'isValid' : '',
+            isValid === false ? 'isInvalid' : '',
+            numberingFrom === 'custom' ? 'isCustom' : ''
+        ]"
         @change="changeSceneNumbering"
     >
 </template>

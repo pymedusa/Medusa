@@ -5,7 +5,11 @@
         title="Change this value if scene absolute numbering differs from the indexer absolute numbering. Generally used for anime shows."
         :value="sceneAbsolute"
         style="padding: 0; text-align: center; max-width: 60px;"
-        :class="[isValid === true ? 'isValid' : '', isValid === false ? 'isInvalid' : '']"
+        :class="[
+            isValid === true ? 'isValid' : '',
+            isValid === false ? 'isInvalid' : '',
+            numberingFrom === 'custom' ? 'isCustom' : ''
+        ]"
         @change="changeSceneNumbering"
     >
 </template>
@@ -22,7 +26,8 @@ export default {
     data() {
         return {
             sceneAbsolute: this.initialEpisode.scene.absoluteNumber,
-            isValid: null
+            isValid: null,
+            numberingFrom: 'indexer'
         };
     },
     mounted() {
@@ -105,6 +110,7 @@ export default {
                 });
                 if (mapped.length !== 0) {
                     this.sceneAbsolute = mapped[0].sceneAbsolute;
+                    this.numberingFrom = 'custom';
                 }
             } else if (Object.keys(xemAbsoluteNumbering).length > 0) {
                 const mapped = xemAbsoluteNumbering.filter(x => {
@@ -112,6 +118,7 @@ export default {
                 });
                 if (mapped.length !== 0) {
                     this.sceneAbsolute = mapped[0].sceneAbsolute;
+                    this.numberingFrom = 'xem';
                 }
             }
         }
@@ -128,6 +135,12 @@ export default {
 
 .isInvalid {
     background-color: #FF0000;
+    color: #FFF !important;
+    font-weight: bold;
+}
+
+.isCustom {
+    background-color: #00ebaf;
     color: #FFF !important;
     font-weight: bold;
 }
