@@ -167,20 +167,20 @@ export default {
 
 <style scoped>
 .isValid {
-    background-color: #90EE90;
-    color: #FFF;
+    background-color: #90ee90;
+    color: #fff;
     font-weight: bold;
 }
 
 .isInvalid {
-    background-color: #FF0000;
-    color: #FFF !important;
+    background-color: #f00;
+    color: #fff !important;
     font-weight: bold;
 }
 
 .isCustom {
     background-color: #00ebaf;
-    color: #FFF !important;
+    color: #fff !important;
     font-weight: bold;
 }
 </style>
