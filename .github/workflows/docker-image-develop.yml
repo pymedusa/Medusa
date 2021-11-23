@@ -12,6 +12,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: install buildx
+      id: buildx
+      uses: crazy-max/ghaction-docker-buildx@v1
+      with:
+        version: latest
     - name: docker login
       env:
         DOCKER_USER: ${{secrets.DOCKER_USER}}
@@ -19,6 +24,6 @@ jobs:
       run: |
         docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag pymedusa/medusa:develop
+      run: docker buildx build . --platform linux/amd64,linux/arm/v7,linux/arm64 --file Dockerfile --tag pymedusa/medusa:develop
     - name: Docker push
       run: docker push pymedusa/medusa:develop
