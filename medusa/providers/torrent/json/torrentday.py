@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 import json
 import logging
 import re
+from json.decoder import JSONDecodeError
 
 from medusa import tv
 from medusa.helper.common import convert_size
@@ -19,6 +20,27 @@ import validators
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
+
+
+class ReplaceBackslashDecoder(json.JSONDecoder):
+    r"""
+    Decoder helper for removing backslashes.
+
+    Torrentday returns a Json with show titles like:
+        `name":"Marvel\'s Daredevil S01-S03 WEBRip 1080p DDP5 1 H265-d3g"`
+        This generates a JsonDecodeError. The backslash is not needed as json
+        already encapsulates the string in double quotes.
+    """
+
+    def decode(self, s, **kwargs):
+        """Remove backslash."""
+        regex_replacements = [
+            (re.compile(r'([^\\])\\([^\\])'), r'\1\2'),
+            (re.compile(r',(\s*])'), r'\1'),
+        ]
+        for regex, replacement in regex_replacements:
+            s = regex.sub(replacement, s)
+        return super().decode(s, **kwargs)
 
 
 class TorrentDayProvider(TorrentProvider):
@@ -104,7 +126,10 @@ class TorrentDayProvider(TorrentProvider):
                     continue
 
                 try:
-                    jdata = json.loads(response.text)
+                    jdata = json.loads(response.text, cls=ReplaceBackslashDecoder)
+                except JSONDecodeError:
+                    log.error(f'Torrentday parse error with response output: \n{response.text}')
+                    continue
                 except ValueError as error:
                     log.error("Couldn't deserialize JSON document. Error: {0!r}", error)
                     continue
