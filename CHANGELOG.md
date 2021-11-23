@@ -3,6 +3,7 @@
 #### New Features
 
 #### Improvements
+- Testing out git workflow docker build
 
 #### Fixes
 
