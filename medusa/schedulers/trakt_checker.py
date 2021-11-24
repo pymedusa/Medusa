@@ -12,6 +12,7 @@ from builtins import str
 from medusa import app, db, ui
 from medusa.common import ARCHIVED, DOWNLOADED, Quality, SKIPPED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, WANTED
 from medusa.helper.common import episode_num
+from medusa.helpers.externals import show_in_library
 from medusa.helpers.trakt import create_episode_structure, create_show_structure, get_trakt_user
 from medusa.indexers.config import EXTERNAL_IMDB, EXTERNAL_TRAKT, indexerConfig
 from medusa.indexers.utils import get_trakt_indexer
@@ -301,21 +302,25 @@ class TraktChecker(object):
 
     def sync_watchlist(self):
         """Sync Trakt watchlist."""
-        if app.TRAKT_SYNC_WATCHLIST and app.USE_TRAKT:
+        if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
             log.debug('Syncing Trakt Watchlist')
 
             self.remove_from_library()
 
             if self._get_show_watchlist():
-                log.debug('Syncing shows with Trakt watchlist')
-                self.add_show_watchlist()
+                log.debug('Syncing shows from Trakt watchlist to library')
                 self.sync_trakt_shows()
 
+            log.debug('Syncing shows from library to Trakt watchlist')
+            self.add_show_watchlist()
+
             if self._get_episode_watchlist():
-                log.debug('Syncing episodes with Trakt watchlist')
+                log.debug('Syncing episodes from Trakt watchlist to library')
                 self.remove_episode_watchlist()
-                self.add_episode_watchlist()
                 self.sync_trakt_episodes()
+
+            log.debug('Syncing episodes from library to trakt watchlist')
+            self.add_episode_watchlist()
 
             log.debug('Synced Trakt watchlist')
 
@@ -511,11 +516,15 @@ class TraktChecker(object):
 
             show = None
             indexer = None
+
             for i in indexerConfig:
                 trakt_indexer = get_trakt_indexer(i)
                 indexer_id = trakt_show.ids['ids'].get(trakt_indexer)
+                if not indexer_id:
+                    continue
                 indexer = indexerConfig[i]['id']
-                show = Show.find_by_id(app.showList, indexer, indexer_id)
+                show = show_in_library(i, indexer_id)
+                # show = Show.find_by_id(app.showList, indexer, indexer_id)
                 if show:
                     break
             if not show:
@@ -536,7 +545,7 @@ class TraktChecker(object):
             indexer_id = trakt_show.ids['ids'].get(get_trakt_indexer(trakt_default_indexer))
             if not indexer_id:
                 log.info(
-                    'Can not add show {show_name}, as we dont trakt does not have a {indexer} id for this show.',
+                    'Can not add show {show_name}, as trakt does not have an {indexer} id for this show.',
                     {'show_name': show_name, 'indexer': get_trakt_indexer(trakt_default_indexer)}
                 )
                 continue
