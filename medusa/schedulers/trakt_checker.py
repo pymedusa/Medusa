@@ -311,8 +311,9 @@ class TraktChecker(object):
                 log.debug('Syncing shows from Trakt watchlist to library')
                 self.sync_trakt_shows()
 
-            log.debug('Syncing shows from library to Trakt watchlist')
-            self.add_show_watchlist()
+            if app.TRAKT_SYNC_TO_WATCHLIST:
+                log.debug('Syncing shows from library to Trakt watchlist')
+                self.add_show_watchlist()
 
             if self._get_episode_watchlist():
                 log.debug('Syncing episodes from Trakt watchlist to library')

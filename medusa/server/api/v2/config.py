@@ -453,6 +453,7 @@ class ConfigHandler(BaseRequestHandler):
         'notifiers.trakt.sync': BooleanField(app, 'TRAKT_SYNC'),
         'notifiers.trakt.syncRemove': BooleanField(app, 'TRAKT_SYNC_REMOVE'),
         'notifiers.trakt.syncWatchlist': BooleanField(app, 'TRAKT_SYNC_WATCHLIST'),
+        'notifiers.trakt.syncToWatchlist': BooleanField(app, 'TRAKT_SYNC_TO_WATCHLIST'),
         'notifiers.trakt.methodAdd': IntegerField(app, 'TRAKT_METHOD_ADD'),
         'notifiers.trakt.removeWatchlist': BooleanField(app, 'TRAKT_REMOVE_WATCHLIST'),
         'notifiers.trakt.removeSerieslist': BooleanField(app, 'TRAKT_REMOVE_SERIESLIST'),
@@ -1076,6 +1077,7 @@ class DataGenerator(object):
         section_data['trakt']['sync'] = bool(app.TRAKT_SYNC)
         section_data['trakt']['syncRemove'] = bool(app.TRAKT_SYNC_REMOVE)
         section_data['trakt']['syncWatchlist'] = bool(app.TRAKT_SYNC_WATCHLIST)
+        section_data['trakt']['syncToWatchlist'] = bool(app.TRAKT_SYNC_TO_WATCHLIST)
         section_data['trakt']['methodAdd'] = int_default(app.TRAKT_METHOD_ADD)
         section_data['trakt']['removeWatchlist'] = bool(app.TRAKT_REMOVE_WATCHLIST)
         section_data['trakt']['removeSerieslist'] = bool(app.TRAKT_REMOVE_SERIESLIST)

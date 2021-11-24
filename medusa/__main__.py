@@ -879,6 +879,8 @@ class Application(object):
                 app.TRAKT_REMOVE_SHOW_FROM_APPLICATION = bool(check_setting_int(app.CFG, 'Trakt', 'trakt_remove_show_from_application', 0))
 
             app.TRAKT_SYNC_WATCHLIST = bool(check_setting_int(app.CFG, 'Trakt', 'trakt_sync_watchlist', 0))
+            app.TRAKT_SYNC_TO_WATCHLIST = bool(check_setting_int(app.CFG, 'Trakt', 'trakt_sync_to_watchlist', 1))
+
             app.TRAKT_METHOD_ADD = check_setting_int(app.CFG, 'Trakt', 'trakt_method_add', 0)
             app.TRAKT_START_PAUSED = bool(check_setting_int(app.CFG, 'Trakt', 'trakt_start_paused', 0))
             app.TRAKT_USE_RECOMMENDED = bool(check_setting_int(app.CFG, 'Trakt', 'trakt_use_recommended', 0))
@@ -1988,6 +1990,7 @@ class Application(object):
         new_config['Trakt']['trakt_remove_serieslist'] = int(app.TRAKT_REMOVE_SERIESLIST)
         new_config['Trakt']['trakt_remove_show_from_application'] = int(app.TRAKT_REMOVE_SHOW_FROM_APPLICATION)
         new_config['Trakt']['trakt_sync_watchlist'] = int(app.TRAKT_SYNC_WATCHLIST)
+        new_config['Trakt']['trakt_sync_to_watchlist'] = int(app.TRAKT_SYNC_TO_WATCHLIST)
         new_config['Trakt']['trakt_method_add'] = int(app.TRAKT_METHOD_ADD)
         new_config['Trakt']['trakt_start_paused'] = int(app.TRAKT_START_PAUSED)
         new_config['Trakt']['trakt_use_recommended'] = int(app.TRAKT_USE_RECOMMENDED)
