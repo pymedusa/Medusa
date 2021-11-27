@@ -58,6 +58,7 @@ from medusa.helper.exceptions import (
 )
 from medusa.helpers import is_subtitle, verify_freespace
 from medusa.helpers.anidb import set_up_anidb_connection
+from medusa.helpers.ffmpeg import FfMpeg
 from medusa.helpers.utils import generate
 from medusa.name_parser.parser import (
     InvalidNameException,
@@ -1037,6 +1038,16 @@ class PostProcessor(object):
             if ignore_file in self.file_path:
                 self.log(u'File {0} is ignored type, skipping'.format(self.file_path))
                 return False
+
+        ffmpeg = FfMpeg()
+        if app.FFMPEG_CHECK_CORRUPTION and ffmpeg.test_ffmpeg_binary():
+            self.log(f'Scanning file {self.file_path} with ffmpeg')
+            result = FfMpeg().detect_video_complete(self.file_path)
+            if result['errors']:
+                self.log('ffmpeg reported an error while scanning the file {file_path}. Error: {error}'.format(
+                    file_path=self.file_path, error=result['errors']), logger.WARNING
+                )
+                raise EpisodePostProcessingFailedException(f'ffmpeg detected a corruption in this video file: {self.file_path}')
 
         # reset in_history
         self.in_history = False

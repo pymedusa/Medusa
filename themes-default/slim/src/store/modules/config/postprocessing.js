@@ -42,6 +42,10 @@ const state = {
         minFrequency: null,
         torrentSeedRatio: null,
         torrentSeedAction: null
+    },
+    ffmpeg: {
+        checkCorruption: null,
+        path: ''
     }
 };
 

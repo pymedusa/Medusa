@@ -62,7 +62,8 @@ const state = {
         lastRead: null,
         latest: null,
         unread: null
-    }
+    },
+    ffmpegVersion: null
 };
 
 const mutations = {

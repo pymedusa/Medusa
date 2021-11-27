@@ -39,6 +39,9 @@
             <tr v-if="system.runsInDocker"><td><i class="icon16-config-docker" /> Runs in Docker:</td><td>Yes</td></tr>
             <tr><td>&nbsp;</td><td>&nbsp;</td></tr>
             <tr class="infoTableSeperator"><td>&nbsp;</td><td>&nbsp;</td></tr>
+            <tr><td><i class="icon16-config-arguments" /> Ffmpeg version:</td><td>{{system.ffmpegVersion}}</td></tr>
+            <tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+            <tr class="infoTableSeperator"><td>&nbsp;</td><td>&nbsp;</td></tr>
             <tr><td><i class="icon16-config-web" /> Website:</td><td><app-link :href="config.git.url">{{config.git.url}}</app-link></td></tr>
             <tr><td><i class="icon16-config-wiki" /> Wiki:</td><td><app-link :href="config.wikiUrl">{{config.wikiUrl}}</app-link></td></tr>
             <tr><td><i class="icon16-config-github" /> Source:</td><td><app-link :href="config.sourceUrl">{{config.sourceUrl}}</app-link></td></tr>
