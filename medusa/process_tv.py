@@ -36,7 +36,7 @@ class PostProcessQueueItem(generic_queue.QueueItem):
 
     def __init__(self, path=None, info_hash=None, resource_name=None, force=False,
                  is_priority=False, process_method=None, delete_on=False, failed=False,
-                 proc_type='auto', ignore_subs=False, episodes=[], client_type=None):
+                 proc_type='auto', ignore_subs=False, episodes=[], client_type=None, process_single_resource=False):
         """Initialize the class."""
         generic_queue.QueueItem.__init__(self, u'Post Process')
 
@@ -52,6 +52,7 @@ class PostProcessQueueItem(generic_queue.QueueItem):
         self.proc_type = proc_type
         self.ignore_subs = ignore_subs
         self.episodes = episodes
+        self.process_single_resource = process_single_resource
 
         # torrent or nzb. Pass info on what sort of download we're processing.
         # We might need this when determining the PROCESS_METHOD.
@@ -132,7 +133,11 @@ class PostProcessQueueItem(generic_queue.QueueItem):
 
     def process_path(self):
         """Process for when we have a valid path."""
-        process_results = ProcessResult(self.path, self.process_method, failed=self.failed, episodes=self.episodes)
+        process_results = ProcessResult(
+            self.path, self.process_method,
+            failed=self.failed, episodes=self.episodes,
+            process_single_resource=self.process_single_resource
+        )
         process_results.process(
             resource_name=self.resource_name,
             force=self.force,
@@ -143,7 +148,7 @@ class PostProcessQueueItem(generic_queue.QueueItem):
         )
 
         # A user might want to use advanced post-processing, but opt-out of failed download handling.
-        if (app.USE_FAILED_DOWNLOADS and (process_results.failed or (not process_results.succeeded and self.resource_name))):
+        if (app.USE_FAILED_DOWNLOADS and (process_results.failed or not process_results.succeeded)):
             process_results.process_failed(self.path)
 
         # In case we have an info_hash or (nzbid), update the history table with the pp results.
@@ -237,7 +242,7 @@ class ProcessResult(object):
 
     IGNORED_FOLDERS = ('@eaDir', '#recycle', '.@__thumb',)
 
-    def __init__(self, path, process_method=None, failed=False, episodes=[]):
+    def __init__(self, path, process_method=None, failed=False, episodes=[], process_single_resource=False):
         """
         Initialize ProcessResult object.
 
@@ -262,6 +267,7 @@ class ProcessResult(object):
         # When multiple media folders/files processed. Flag postpone_any of any them was postponed.
         self.postpone_any = False
         self.episodes = episodes
+        self.process_single_resource = process_single_resource
 
     @property
     def directory(self):
@@ -879,6 +885,11 @@ class ProcessResult(object):
                 self.missed_files.append('{0}: Processing failed: {1}'.format(file_path, process_fail_message))
                 self.succeeded = False
 
+                if not self.process_single_resource:
+                    # If this PostprocessQueueItem wasn't started through the download handler
+                    # or apiv2 we want to fail the media item right here.
+                    self.process_failed(path, resource_name=video)
+
     def _process_postponed(self, processor, path, video, ignore_subs):
         if not ignore_subs:
             if self.subtitles_enabled(path, self.resource_name):
@@ -910,10 +921,12 @@ class ProcessResult(object):
                                 'Continuing the post-processing of this file: {video}', **{'video': video})
         return True
 
-    def process_failed(self, path):
+    def process_failed(self, path, resource_name=None):
         """Process a download that did not complete correctly."""
         try:
-            processor = failed_processor.FailedProcessor(path, self.resource_name, self.episodes)
+            processor = failed_processor.FailedProcessor(
+                path, resource_name or self.resource_name, self.episodes
+            )
             self.result = processor.process()
             process_fail_message = ''
         except FailedPostProcessingFailedException as error:
