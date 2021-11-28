@@ -39,8 +39,8 @@ class FfMpeg(object):
             encoding='utf-8', universal_newlines=False
         )
 
-        _, err = ffmpeg.communicate()
-        err = err.split('\n')
+        _, errors = ffmpeg.communicate()
+        err = [err.strip() for err in errors.split('\n') if err]
         if(err):
             print(err)
             return {
