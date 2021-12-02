@@ -170,10 +170,7 @@ class ConfigHandler(BaseRequestHandler):
         'developer': BooleanField(app, 'DEVELOPER'),
         'experimental': BooleanField(app, 'EXPERIMENTAL'),
 
-        'git.username': StringField(app, 'GIT_USERNAME'),
-        'git.password': StringField(app, 'GIT_PASSWORD'),
         'git.token': StringField(app, 'GIT_TOKEN'),
-        'git.authType': IntegerField(app, 'GIT_AUTH_TYPE'),
         'git.remote': StringField(app, 'GIT_REMOTE'),
         'git.path': StringField(app, 'GIT_PATH'),
         'git.org': StringField(app, 'GIT_ORG'),
@@ -757,10 +754,7 @@ class DataGenerator(object):
         section_data['experimental'] = bool(app.EXPERIMENTAL)
 
         section_data['git'] = {}
-        section_data['git']['username'] = app.GIT_USERNAME
-        section_data['git']['password'] = app.GIT_PASSWORD
         section_data['git']['token'] = app.GIT_TOKEN
-        section_data['git']['authType'] = int(app.GIT_AUTH_TYPE)
         section_data['git']['remote'] = app.GIT_REMOTE
         section_data['git']['path'] = app.GIT_PATH
         section_data['git']['org'] = app.GIT_ORG
