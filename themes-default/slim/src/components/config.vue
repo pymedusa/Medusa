@@ -40,6 +40,7 @@
             <tr><td>&nbsp;</td><td>&nbsp;</td></tr>
             <tr class="infoTableSeperator"><td>&nbsp;</td><td>&nbsp;</td></tr>
             <tr><td><i class="icon16-config-arguments" /> Ffmpeg version:</td><td>{{system.ffmpegVersion}}</td></tr>
+            <tr><td><i class="icon16-config-arguments" /> Ffprobe version:</td><td>{{system.ffprobeVersion}}</td></tr>
             <tr><td>&nbsp;</td><td>&nbsp;</td></tr>
             <tr class="infoTableSeperator"><td>&nbsp;</td><td>&nbsp;</td></tr>
             <tr><td><i class="icon16-config-web" /> Website:</td><td><app-link :href="config.git.url">{{config.git.url}}</app-link></td></tr>

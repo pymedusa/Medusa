@@ -194,8 +194,13 @@
                                         <span>See <app-link :href="postprocessing.extraScriptsUrl" class="wikie"><strong>Wiki</strong></app-link> for script arguments description and usage.</span>
                                     </config-template>
 
+                                    <config-toggle-slider :disabled="system.ffmpegVersion === 'ffprobe not available'" v-model="postprocessing.ffmpeg.checkStreams" label="Use ffprobe to validate downloaded video files for a minimum of one video and audio stream" id="check_streams">
+                                        <span>Use PPROBE to check a video for a minimum of one audio and video stream. This is the more safe version of the two. It will only scan the video files meta data.</span><br>
+                                        <span v-if="system.ffmpegVersion === 'ffprobe not available'" style="color: red">Ffmpeg binary not found. Add the ffmpeg bin location to your system's environment or configure a path manually below.</span>
+                                    </config-toggle-slider>
+
                                     <config-toggle-slider :disabled="system.ffmpegVersion === 'ffmpeg not available'" v-model="postprocessing.ffmpeg.checkCorruption" label="Use ffmpeg to validate downloaded video files" id="check_corruption">
-                                        <span>Use FFMPEG to check for the last 60s of the video file. Detecting possible truncated video files.</span><br>
+                                        <span>Use FFMPEG to check for the last 60s of the video file. Detecting possible truncated video files. This option can potentially result in more failed downloads. As it will also error on encoding errors. It will also take more of you systems resources as it will attempt to scan the whole file.</span><br>
                                         <span v-if="system.ffmpegVersion === 'ffmpeg not available'" style="color: red">Ffmpeg binary not found. Add the ffmpeg bin location to your system's environment or configure a path manually below.</span>
                                     </config-toggle-slider>
 

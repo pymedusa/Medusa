@@ -695,6 +695,7 @@ class Application(object):
             app.ADD_SHOWS_WO_DIR = bool(check_setting_int(app.CFG, 'General', 'add_shows_wo_dir', 0))
 
             app.FFMPEG_CHECK_CORRUPTION = bool(check_setting_int(app.CFG, 'ffmpeg', 'ffmpeg_check_corruption', 0))
+            app.FFMPEG_CHECK_STREAMS = bool(check_setting_int(app.CFG, 'ffmpeg', 'ffmpeg_check_streams', 0))
             app.FFMPEG_PATH = check_setting_str(app.CFG, 'ffmpeg', 'ffmpeg_path', '')
 
             app.PROWLARR_URL = check_setting_str(app.CFG, 'Prowlarr', 'url', '', censor_log='normal')
@@ -1742,6 +1743,7 @@ class Application(object):
 
         new_config['ffmpeg'] = {}
         new_config['ffmpeg']['ffmpeg_check_corruption'] = app.FFMPEG_CHECK_CORRUPTION
+        new_config['ffmpeg']['ffmpeg_check_streams'] = app.FFMPEG_CHECK_STREAMS
         new_config['ffmpeg']['ffmpeg_path'] = app.FFMPEG_PATH
 
         new_config['Recommended'] = {}

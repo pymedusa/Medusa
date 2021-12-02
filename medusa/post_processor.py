@@ -58,7 +58,7 @@ from medusa.helper.exceptions import (
 )
 from medusa.helpers import is_subtitle, verify_freespace
 from medusa.helpers.anidb import set_up_anidb_connection
-from medusa.helpers.ffmpeg import FfMpeg
+from medusa.helpers.ffmpeg import FfMpeg, FfmpegBinaryException, FfprobeBinaryException
 from medusa.helpers.utils import generate
 from medusa.name_parser.parser import (
     InvalidNameException,
@@ -1040,14 +1040,33 @@ class PostProcessor(object):
                 return False
 
         ffmpeg = FfMpeg()
-        if app.FFMPEG_CHECK_CORRUPTION and ffmpeg.test_ffmpeg_binary():
-            self.log(f'Scanning file {self.file_path} with ffmpeg')
-            result = FfMpeg().detect_video_complete(self.file_path)
-            if result['errors']:
-                self.log('ffmpeg reported an error while scanning the file {file_path}. Error: {error}'.format(
-                    file_path=self.file_path, error=result['errors']), logger.WARNING
-                )
-                raise EpisodePostProcessingFailedException(f'ffmpeg detected a corruption in this video file: {self.file_path}')
+        if app.FFMPEG_CHECK_STREAMS:
+            try:
+                ffmpeg.test_ffprobe_binary()
+                self.log(f'Checking {self.file_path} for minimal one video and audio stream')
+                result = FfMpeg().check_for_video_and_audio_streams(self.file_path)
+            except FfprobeBinaryException:
+                self.log('Cannot access ffprobe binary. Make sure ffprobe is accessable throug your environment variables or configure a path.')
+            else:
+                if not result:
+                    self.log('ffprobe reported an error while checking {file_path} for a video and audio stream. Error: {error}'.format(
+                        file_path=self.file_path, error=result['errors']), logger.WARNING
+                    )
+                    raise EpisodePostProcessingFailedException(f'ffmpeg detected a corruption in this video file: {self.file_path}')
+
+        if app.FFMPEG_CHECK_CORRUPTION:
+            try:
+                ffmpeg.test_ffmpeg_binary()
+                self.log(f'Scanning file {self.file_path} with ffmpeg')
+                result = FfMpeg().scan_for_errors(self.file_path)
+            except FfmpegBinaryException:
+                self.log('Cannot access ffmpeg binary. Make sure ffmpeg is accessable throug your environment variables or configure a path.')
+            else:
+                if result['errors']:
+                    self.log('ffmpeg reported an error while scanning the file {file_path}. Error: {error}'.format(
+                        file_path=self.file_path, error=result['errors']), logger.WARNING
+                    )
+                    raise EpisodePostProcessingFailedException(f'ffmpeg detected a corruption in this video file: {self.file_path}')
 
         # reset in_history
         self.in_history = False
