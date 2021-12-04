@@ -1,0 +1,18 @@
+.vue-tags-input {
+    width: 273px;
+    border: 1px solid rgb(204, 204, 204);
+    border-radius: 3px;
+
+    .ti-tag {
+        display: inline-flex;
+        width: 100%;
+    }
+
+    .ti-input {
+        border: none;
+    }
+
+    .country-left {
+        margin-right: 5px;
+    }
+}

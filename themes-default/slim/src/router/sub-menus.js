@@ -107,6 +107,7 @@ export const showSubMenu = vm => {
             {
                 title: 'Update show in KODI',
                 path: `home/updateKODI?showslug=${showSlug}`,
+                method: 'updatekodi',
                 requires: notifiers.kodi.enabled && notifiers.kodi.update.library,
                 icon: 'menu-icon-kodi'
             },

@@ -104,12 +104,11 @@ class ThePirateBayProvider(TorrentProvider):
         units = ['B', 'KIB', 'MIB', 'GIB', 'TIB', 'PIB']
 
         def process_column_header(th):
-            result = ''
+            if th.find_all():
+                return th.next.get_text().split(' ')[0]
             if th.a:
-                result = th.a.get_text(strip=True)
-            if not result:
-                result = th.get_text(strip=True)
-            return result
+                return th.a.get_text(strip=True)
+            return th.get_text(strip=True)
 
         items = []
 

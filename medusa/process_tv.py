@@ -36,7 +36,7 @@ class PostProcessQueueItem(generic_queue.QueueItem):
 
     def __init__(self, path=None, info_hash=None, resource_name=None, force=False,
                  is_priority=False, process_method=None, delete_on=False, failed=False,
-                 proc_type='auto', ignore_subs=False, episodes=[]):
+                 proc_type='auto', ignore_subs=False, episodes=[], client_type=None):
         """Initialize the class."""
         generic_queue.QueueItem.__init__(self, u'Post Process')
 
@@ -47,12 +47,16 @@ class PostProcessQueueItem(generic_queue.QueueItem):
         self.resource_name = resource_name
         self.force = force
         self.is_priority = is_priority
-        self.process_method = process_method
         self.delete_on = delete_on
         self.failed = failed
         self.proc_type = proc_type
         self.ignore_subs = ignore_subs
         self.episodes = episodes
+
+        # torrent or nzb. Pass info on what sort of download we're processing.
+        # We might need this when determining the PROCESS_METHOD.
+        self.client_type = client_type
+        self.process_method = self.get_process_method(process_method, client_type)
 
         self.to_json.update({
             'success': self.success,
@@ -69,6 +73,20 @@ class PostProcessQueueItem(generic_queue.QueueItem):
                 'ignore_subs': self.ignore_subs,
             }
         })
+
+    def get_process_method(self, process_method, client_type):
+        """Determine the correct process method.
+
+        If client_type is provided (torrent/nzb) use that to get a
+            client specific process method.
+        """
+        if process_method:
+            return process_method
+
+        if self.client_type and app.USE_SPECIFIC_PROCESS_METHOD:
+            return app.PROCESS_METHOD_NZB if client_type == 'nzb' else app.PROCESS_METHOD_TORRENT
+
+        return app.PROCESS_METHOD
 
     def update_resource(self, status):
         """
@@ -114,9 +132,7 @@ class PostProcessQueueItem(generic_queue.QueueItem):
 
     def process_path(self):
         """Process for when we have a valid path."""
-        process_method = self.process_method or app.PROCESS_METHOD
-
-        process_results = ProcessResult(self.path, process_method, failed=self.failed, episodes=self.episodes)
+        process_results = ProcessResult(self.path, self.process_method, failed=self.failed, episodes=self.episodes)
         process_results.process(
             resource_name=self.resource_name,
             force=self.force,
@@ -266,7 +282,7 @@ class ProcessResult(object):
         # If the client and the application are not on the same machine,
         # translate the directory into a network directory
         elif all([app.TV_DOWNLOAD_DIR, os.path.isdir(app.TV_DOWNLOAD_DIR),
-                  os.path.normpath(path) == os.path.normpath(app.TV_DOWNLOAD_DIR)]):
+                  helpers.real_path(path) == helpers.real_path(app.TV_DOWNLOAD_DIR)]):
             directory = os.path.join(
                 app.TV_DOWNLOAD_DIR,
                 os.path.abspath(path).split(os.path.sep)[-1]
@@ -390,7 +406,7 @@ class ProcessResult(object):
                 self.log_and_output('Missed file: {missed_file}', level=logging.WARNING, **{'missed_file': missed_file})
 
         if all([app.USE_TORRENTS, app.TORRENT_SEED_LOCATION,
-                self.process_method in ('hardlink', 'symlink', 'reflink', 'copy')]):
+                self.process_method in ('hardlink', 'symlink', 'reflink', 'keeplink', 'copy')]):
             for info_hash, release_names in list(iteritems(app.RECENTLY_POSTPROCESSED)):
                 if self.move_torrent(info_hash, release_names):
                     app.RECENTLY_POSTPROCESSED.pop(info_hash, None)
@@ -399,7 +415,6 @@ class ProcessResult(object):
 
     def _clean_up(self, path, proc_type, delete=False):
         """Clean up post-processed folder based on the checks below."""
-        # Always delete files if they are being moved or if it's explicitly wanted
         clean_folder = proc_type == 'manual' and delete
         if self.process_method == 'move' or clean_folder:
 
@@ -409,10 +424,8 @@ class ProcessResult(object):
             if self.unwanted_files:
                 self.delete_files(path, self.unwanted_files)
 
-            if all([not app.NO_DELETE or clean_folder, self.process_method in ('move', 'copy'),
-                    os.path.normpath(path) != os.path.normpath(app.TV_DOWNLOAD_DIR)]):
-
-                check_empty = False if self.process_method == 'copy' else True
+            if not app.NO_DELETE or clean_folder:
+                check_empty = False if clean_folder else True
                 if self.delete_folder(path, check_empty=check_empty):
                     self.log_and_output('Deleted folder: {path}', level=logging.DEBUG, **{'path': path})
 
@@ -637,13 +650,14 @@ class ProcessResult(object):
         :return: True on success, False on failure
         """
         # check if it's a folder
-        if not os.path.isdir(folder):
+        if not folder or not os.path.isdir(folder):
             return False
 
-        # check if it isn't TV_DOWNLOAD_DIR
-        if app.TV_DOWNLOAD_DIR:
-            if helpers.real_path(folder) == helpers.real_path(app.TV_DOWNLOAD_DIR):
-                return False
+        # check if it's a protected folder
+        if helpers.real_path(folder) in (helpers.real_path(app.TV_DOWNLOAD_DIR),
+                                         helpers.real_path(app.DEFAULT_CLIENT_PATH),
+                                         helpers.real_path(app.TORRENT_PATH)):
+            return False
 
         # check if it's empty folder when wanted checked
         if check_empty:

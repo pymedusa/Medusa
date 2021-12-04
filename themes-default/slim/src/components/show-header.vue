@@ -87,7 +87,7 @@
                                     <span v-if="show.year.start">({{ show.year.start }}) - {{ show.runtime }} minutes - </span>
                                 </template>
                                 <template v-else>
-                                    <img v-for="country in show.countryCodes" :key="'flag-' + country" src="images/blank.png" :class="['country-flag', 'flag-' + country]" width="16" height="11" style="margin-left: 3px; vertical-align:middle;">
+                                    <img v-for="country in show.countryCodes" :key="`flag-${country}`" src="images/blank.png" :class="['country-flag', `flag-${country}`]" width="16" height="11" style="margin-left: 3px; vertical-align:middle;">
                                     <span v-if="show.imdbInfo.year">
                                         ({{ show.imdbInfo.year }}) -
                                     </span>
@@ -100,8 +100,8 @@
                                 </template>
 
                                 <div id="indexer-wrapper">
-                                    <img id="stored-by-indexer" src="images/star.png">
                                     <app-link v-if="showIndexerUrl && indexerConfig[show.indexer].icon" :href="showIndexerUrl" :title="showIndexerUrl">
+                                        <img id="stored-by-indexer" src="images/star.png">
                                         <img :alt="indexerConfig[show.indexer].name" height="16" width="16" :src="`images/${indexerConfig[show.indexer].icon}`" style="margin-top: -1px; vertical-align:middle;">
                                     </app-link>
                                 </div>
@@ -152,9 +152,9 @@
                                                 <tr v-if="combineQualities(show.config.qualities.allowed) > 0">
                                                     <td class="showLegend">Allowed Qualities:</td>
                                                     <td>
-                                                        <template v-for="(curQuality, index) in show.config.qualities.allowed"><!--
-                                                            -->{{ index > 0 ? ', ' : '' }}<!--
-                                                            --><quality-pill :quality="curQuality" :key="`allowed-${curQuality}`" />
+                                                        <template v-for="(curQuality, index) in show.config.qualities.allowed">
+                                                            {{ index > 0 ? ', ' : '' }}
+                                                            <quality-pill :quality="curQuality" :key="`allowed-${curQuality}`" />
                                                         </template>
                                                     </td>
                                                 </tr>
@@ -162,9 +162,9 @@
                                                 <tr v-if="combineQualities(show.config.qualities.preferred) > 0">
                                                     <td class="showLegend">Preferred Qualities:</td>
                                                     <td>
-                                                        <template v-for="(curQuality, index) in show.config.qualities.preferred"><!--
-                                                            -->{{ index > 0 ? ', ' : '' }}<!--
-                                                            --><quality-pill :quality="curQuality" :key="`preferred-${curQuality}`" />
+                                                        <template v-for="(curQuality, index) in show.config.qualities.preferred">
+                                                            {{ index > 0 ? ', ' : '' }}
+                                                            <quality-pill :quality="curQuality" :key="`preferred-${curQuality}`" />
                                                         </template>
                                                     </td>
                                                 </tr>
@@ -267,8 +267,8 @@
                                     <div id="show-status" class="col-lg-3 col-md-4 col-sm-4 col-xs-12 pull-xs-left">
                                         <table class="pull-xs-left pull-md-right pull-sm-right pull-lg-right">
                                             <tr v-if="show.language"><td class="showLegend">Info Language:</td><td><img :src="'images/subtitles/flags/' + getCountryISO2ToISO3(show.language) + '.png'" width="16" height="11" :alt="show.language" :title="show.language" onError="this.onerror=null;this.src='images/flags/unknown.png';"></td></tr>
-                                            <tr v-if="config.subtitles.enabled"><td class="showLegend">Subtitles: </td><td><state-switch :theme="layout.themeName" :state="show.config.subtitlesEnabled" @click="toggleConfigOption('subtitlesEnabled');" /></td></tr>
-                                            <tr><td class="showLegend">Season Folders: </td><td><state-switch :theme="layout.themeName" :state="show.config.seasonFolders || config.namingForceFolders" /></td></tr>
+                                            <tr v-if="subtitles.enabled"><td class="showLegend">Subtitles: </td><td><state-switch :theme="layout.themeName" :state="show.config.subtitlesEnabled" @click="toggleConfigOption('subtitlesEnabled');" /></td></tr>
+                                            <tr><td class="showLegend">Season Folders: </td><td><state-switch :theme="layout.themeName" :state="show.config.seasonFolders || general.namingForceFolders" /></td></tr>
                                             <tr><td class="showLegend">Paused: </td><td><state-switch :theme="layout.themeName" :state="show.config.paused" @click="toggleConfigOption('paused')" /></td></tr>
                                             <tr><td class="showLegend">Air-by-Date: </td><td><state-switch :theme="layout.themeName" :state="show.config.airByDate" @click="toggleConfigOption('airByDate')" /></td></tr>
                                             <tr><td class="showLegend">Sports: </td><td><state-switch :theme="layout.themeName" :state="show.config.sports" @click="toggleConfigOption('sports')" /></td></tr>
@@ -430,7 +430,8 @@ export default {
     },
     computed: {
         ...mapState({
-            config: state => state.config.general,
+            general: state => state.config.general,
+            subtitles: state => state.config.subtitles,
             layout: state => state.config.layout,
             shows: state => state.shows.shows,
             indexers: state => state.config.indexers,

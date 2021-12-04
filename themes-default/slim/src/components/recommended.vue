@@ -61,7 +61,7 @@
                     <trakt-authentication v-if="showTraktAuthDialog" auth-only />
                 </div>
 
-                <isotope ref="filteredShows" v-if="filteredShowsByList.length" :list="filteredShowsByList" id="isotope-container" class="isoDefault" :options="option" @layout="isotopeLayout">
+                <isotope ref="filteredShows" v-if="showsLoaded && filteredShowsByList.length" :list="filteredShowsByList" id="isotope-container" class="isoDefault" :options="option" @layout="isotopeLayout">
                     <div v-for="show in filteredShowsByList" :key="show.seriesId" :class="containerClass(show)" :data-name="show.title" :data-rating="show.rating" :data-votes="show.votes" :data-anime="show.isAnime">
                         <recommended-poster :show="show" />
                     </div>
@@ -127,12 +127,6 @@ export default {
             TRAKT,
             ANILIST
         };
-        const sourceToString = {
-            [externals.IMDB]: 'imdb',
-            [externals.ANIDB]: 'anidb',
-            [externals.TRAKT]: 'trakt',
-            [externals.ANILIST]: 'anilist'
-        };
         const sortOptions = [
             { text: 'Name', value: 'name' },
             { text: 'Original', value: 'original' },
@@ -146,7 +140,6 @@ export default {
         ];
         return {
             externals,
-            sourceToString,
             sortOptions,
             sortDirectionOptions,
             sortOptionsValue: 'original',
@@ -208,13 +201,18 @@ export default {
             showsLoaded: false
         };
     },
-    mounted() {
-        const { getRecommendedShows } = this;
-        getRecommendedShows().then(() => {
-            this.showsLoaded = true;
-            this.$nextTick(() => {
-                this.isotopeLayout();
-            });
+    async mounted() {
+        const { getRecommendedShows, sourceToString } = this;
+        const identifiers = Object.values(sourceToString);
+
+        for (const identifier of identifiers) {
+            // eslint-disable-next-line no-await-in-loop
+            await getRecommendedShows(identifier);
+        }
+
+        this.showsLoaded = true;
+        this.$nextTick(() => {
+            this.isotopeLayout();
         });
 
         this.$once('loaded', () => {
@@ -232,7 +230,8 @@ export default {
             recommendedShows: state => state.recommended.shows,
             traktConfig: state => state.recommended.trakt,
             recommendedLists: state => state.recommended.categories,
-            queueitems: state => state.queue.queueitems
+            queueitems: state => state.queue.queueitems,
+            sourceToString: state => state.recommended.sourceToString
         }),
         filteredShowsByList() {
             const { imgLazyLoad, recommendedShows, selectedSource, selectedList } = this;
@@ -379,8 +378,11 @@ export default {
             }
         },
         queueitems(queueItems) {
+            const filterRecommended = item => {
+                return item.name.includes('UPDATE-RECOMMENDED') && item.success;
+            };
             // Check for a new recommended show queue item and refresh results.
-            if (queueItems.filter(item => item.name.includes('UPDATE-RECOMMENDED'))) {
+            if (queueItems.filter(filterRecommended)) {
                 this.getRecommendedShows();
             }
         }

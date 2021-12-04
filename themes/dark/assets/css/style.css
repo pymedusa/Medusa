@@ -18,6 +18,20 @@ inc_top.mako
 
 .icon-white {
     background-image: url("../images/glyphicons-halflings-white.png");
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    vertical-align: -2px;
+}
+
+.icon-white-search {
+    background-position-x: -48px;
+    background-position-y: 0;
+}
+
+.icon-play-configure {
+    background-position-x: -360px;
+    background-position-y: -145px;
 }
 
 .ui-autocomplete-loading {
@@ -1731,6 +1745,7 @@ td.col-group {
 .form-group label.control-label {
     font-size: 13px;
     font-weight: bold;
+    width: 100%;
 }
 
 div.season-scene-exception {
@@ -2550,6 +2565,15 @@ a.whitelink {
     padding-bottom: 2px;
 }
 
+/* The back image (svg) */
+.back-arrow {
+    fill: black;
+}
+
+.manage-update .title a {
+    color: black;
+}
+
 /* =======================================================================
 Global
 ========================================================================== */
@@ -2924,6 +2948,10 @@ fieldset[disabled] .navbar-default .btn-link:focus {
 .vgt-dropdown-menu > li > span {
     padding: 4px 36px 4px 20px;
     color: #333;
+}
+
+.vgt-table span.episode-title > a {
+    color: rgb(0, 0, 0);
 }
 
 .footer__navigation__page-btn {
@@ -4276,6 +4304,11 @@ CSS helper classes
 .align-center {
     display: flex;
     justify-content: center;
+}
+
+.align-center-evenly {
+    display: flex;
+    justify-content: space-evenly;
 }
 
 /* sub-menu */

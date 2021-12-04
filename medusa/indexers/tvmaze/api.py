@@ -167,7 +167,7 @@ class TVmaze(BaseIndexer):
             raise IndexerShowNotFound(
                 'Show search failed in getting a result with reason: {0}'.format(error.value)
             )
-        except BaseError as error:
+        except (AttributeError, BaseError) as error:
             raise IndexerUnavailable('Show search failed in getting a result with error: {0!r}'.format(error))
 
         return results
@@ -224,7 +224,7 @@ class TVmaze(BaseIndexer):
                 raise IndexerShowNotFound(
                     'Show search failed in getting a result with reason: {0}'.format(error.value)
                 )
-            except BaseError as error:
+            except (AttributeError, BaseError) as error:
                 raise IndexerUnavailable('Show search failed in getting a result with error: {0!r}'.format(error))
 
         if not results:
@@ -247,7 +247,7 @@ class TVmaze(BaseIndexer):
         except IDNotFound:
             log.debug('Episode search did not return any results.')
             return False
-        except BaseError as e:
+        except (AttributeError, BaseError) as e:
             raise IndexerException('Show episodes search failed in getting a result with error: {0!r}'.format(e))
 
         episodes = self._map_results(results, self.series_map)
@@ -345,7 +345,7 @@ class TVmaze(BaseIndexer):
             log.debug('Getting all show data for {0}', tvmaze_id)
             try:
                 seasons = self.tvmaze_api.show_seasons(maze_id=tvmaze_id)
-            except BaseError as e:
+            except (AttributeError, BaseError) as e:
                 log.warning('Getting show seasons for the season images failed. Cause: {0}', e)
 
         _images = {'season': {'original': {}}}
@@ -390,7 +390,7 @@ class TVmaze(BaseIndexer):
         except CastNotFound:
             log.debug('Actors result returned zero')
             return
-        except BaseError as e:
+        except (AttributeError, BaseError) as e:
             log.warning('Getting actors failed. Cause: {0}', e)
             return
 
@@ -465,11 +465,11 @@ class TVmaze(BaseIndexer):
         results = []
         try:
             updates = self.tvmaze_api.show_updates()
-        except (AttributeError, ShowIndexError, UpdateNotFound):
+        except (ShowIndexError, UpdateNotFound):
+            return results
+        except (AttributeError, BaseError) as e:
             # Tvmaze api depends on .status_code in.., but does not catch request exceptions.
             # Therefor the AttributeError.
-            return results
-        except BaseError as e:
             log.warning('Getting show updates failed. Cause: {0}', e)
             return results
 
@@ -525,7 +525,7 @@ class TVmaze(BaseIndexer):
                     log.debug('Could not get tvmaze externals using external key {0} and id {1}',
                               external_id, kwargs.get(external_id))
                     continue
-                except BaseError as e:
+                except (AttributeError, BaseError) as e:
                     log.warning('Could not get tvmaze externals. Cause: {0}', e)
                     continue
         return {}

@@ -61,7 +61,13 @@ const mutations = {
         for (const newShow of shows) {
             const existing = state.shows.find(stateShow => stateShow.id.slug === newShow.id.slug);
             if (existing) {
-                mergedShows.push({ ...existing, ...newShow });
+                const {
+                    sceneAbsoluteNumbering,
+                    xemAbsoluteNumbering,
+                    sceneNumbering,
+                    ...showWithoutDetailed
+                } = newShow;
+                mergedShows.push({ ...existing, ...showWithoutDetailed });
             } else {
                 mergedShows.push(newShow);
             }
@@ -481,11 +487,6 @@ const actions = {
         const { commit } = context;
         commit(ADD_SHOW_CONFIG, { show, config });
     },
-    updateShowQueueItem(context, queueItem) {
-        // Update store's search queue item. (provided through websocket)
-        const { commit } = context;
-        return commit(ADD_SHOW_QUEUE_ITEM, queueItem);
-    },
     removeShow({ commit, rootState, state }, show) {
         // Remove the show from store and localStorage (provided through websocket)
         commit(REMOVE_SHOW, show);
@@ -493,6 +494,11 @@ const actions = {
         // Update (namespaced) localStorage
         const namespace = rootState.config.system.webRoot ? `${rootState.config.system.webRoot}_` : '';
         localStorage.setItem(`${namespace}shows`, JSON.stringify(state.shows));
+    },
+    updateShowQueueItem(context, queueItem) {
+        // Update store's search queue item. (provided through websocket)
+        const { commit } = context;
+        return commit(ADD_SHOW_QUEUE_ITEM, queueItem);
     }
 };
 

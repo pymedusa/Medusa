@@ -94,7 +94,7 @@ class SearchHandler(BaseRequestHandler):
               ]
             }
         """
-        if not data or not all([data.get('showSlug'), data.get('episodes') or data.get('season')]):
+        if not data or not data.get('showSlug'):
             if data and data.get('options'):
                 if data['options'].get('paused', False):
                     app.search_queue_scheduler.action.pause_backlog()
@@ -112,9 +112,6 @@ class SearchHandler(BaseRequestHandler):
         if not data.get('showSlug'):
             return self._bad_request('You need to provide a show slug')
 
-        if not data.get('episodes') and not data.get('season'):
-            return self._bad_request('For a backlog search you need to provide a list of episodes or seasons')
-
         identifier = SeriesIdentifier.from_slug(data['showSlug'])
         if not identifier:
             return self._bad_request('Invalid series slug')
@@ -122,6 +119,11 @@ class SearchHandler(BaseRequestHandler):
         series = Series.find_by_identifier(identifier)
         if not series:
             return self._not_found('Series not found')
+
+        if not data.get('episodes') and not data.get('season'):
+            # Queue a backlog search for a show.
+            app.backlog_search_scheduler.action.search_backlog([series])
+            return self._accepted(f"Backlog search for {data['showSlug']} started")
 
         episode_segments = self._get_episode_segments(series, data)
 

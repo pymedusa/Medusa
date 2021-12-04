@@ -39,7 +39,6 @@ from rebulk.processors import POST_PROCESS
 from rebulk.rebulk import Rebulk
 from rebulk.rules import AppendMatch, RemoveMatch, RenameMatch, Rule
 
-import six
 from six.moves import range
 
 log = logging.getLogger(__name__)
@@ -53,10 +52,7 @@ class BlacklistedReleaseGroup(Rule):
 
     priority = POST_PROCESS
     consequence = RemoveMatch
-    if six.PY3:
-        blacklist = ('private', 'req', 'no.rar', 'season')
-    else:
-        blacklist = (b'private', b'req', b'no.rar', b'season')
+    blacklist = ('private', 'req', 'no.rar', 'season')
 
     def when(self, matches, context):
         """Evaluate the rule.
@@ -332,18 +328,90 @@ class CreateAliasWithAlternativeTitles(Rule):
             for alternative_title in alternative_titles:
                 holes = matches.holes(start=previous.end, end=alternative_title.start)
                 # if the separator is a dash, add an extra space before and after
-                if six.PY3:
-                    separators = [' ' + h.value + ' ' if h.value == '-' else h.value for h in holes]
-                    separator = ' '.join(separators) if separators else ' '
-                else:
-                    separators = [b' ' + h.value + b' ' if h.value == b'-' else h.value for h in holes]
-                    separator = b' '.join(separators) if separators else b' '
+                separators = [' ' + h.value + ' ' if h.value == '-' else h.value for h in holes]
+                separator = ' '.join(separators) if separators else ' '
                 alias.value += separator + alternative_title.value
 
                 previous = alternative_title
 
             alias.end = previous.end
             return [alias]
+
+
+class FixTitlesThatExistOfNumbers(Rule):
+    """Don't parse titles that exist out of numbers as the 'absolute number'.
+
+    'title' - post processor to create titles for show with exlusively numbers in the titel.
+
+    e.g.: 4400.S01E01.1080p.HEVC.x265-Group.mkv
+
+    guessit -t episode "4400.S01E01.1080p.HEVC.x265-Group.mkv"
+
+    without this rule:
+        For: 4400.S01E01.1080p.HEVC.x265-Group.mkv
+        GuessIt found: {
+            "absolute_episode": 4400
+            "season": 1
+            "episode": 1
+            "screen_size": 1080p
+            "video_codec": H.265
+            "video_encoder": x265
+            "release_group": Group
+            "type": episode
+        }
+
+    with this rule:
+        For: 4400.S01E01.1080p.HEVC.x265-Group.mkv
+        GuessIt found: {
+            "title": 4400
+            "season": 1
+            "episode": 1
+            "screen_size": 1080p
+            "video_codec": H.265
+            "video_encoder": x265
+            "release_group": Group
+            "type": episode
+        }
+    """
+
+    priority = POST_PROCESS
+    consequence = [RemoveMatch, AppendMatch]
+
+    def when(self, matches, context):
+        """Evaluate the rule.
+
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        absolute_episodes = matches.named('absolute_episode')
+        if not absolute_episodes:
+            return
+
+        fileparts = matches.markers.named('path')
+        for filepart in marker_sorted(fileparts, matches):
+            title = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'title', index=0)
+
+            if title:
+                continue
+
+            if not filepart.value.startswith(str(absolute_episodes[0].value)):
+                continue
+
+            to_remove = []
+            to_append = []
+
+            absolute_episode = absolute_episodes[0]
+            new_title = copy.copy(absolute_episode)
+            new_title.name = 'title'
+            new_title.value = str(absolute_episode.value)
+
+            to_append.append(new_title)
+            to_remove.append(absolute_episode)
+
+            return to_remove, to_append
 
 
 class CreateAliasWithCountryOrYear(Rule):
@@ -424,10 +492,7 @@ class CreateAliasWithCountryOrYear(Rule):
             if next_match:
                 alias = copy.copy(title)
                 alias.name = 'alias'
-                if six.PY3:
-                    alias.value = alias.value + ' ' + re.sub(r'\W*', '', after_title.raw)
-                else:
-                    alias.value = alias.value + b' ' + re.sub(r'\W*', b'', after_title.raw)
+                alias.value = alias.value + ' ' + re.sub(r'\W*', '', after_title.raw)
                 alias.end = after_title.end
                 alias.raw_end = after_title.raw_end
                 return [alias]
@@ -581,10 +646,7 @@ class AnimeWithSeasonAbsoluteEpisodeNumbers(Rule):
                 # adjust title to append the series name.
                 # Only the season.parent contains the S prefix in its value
                 new_title = copy.copy(title)
-                if six.PY3:
-                    new_title.value = ' '.join([title.value, season.parent.value])
-                else:
-                    new_title.value = b' '.join([title.value, season.parent.value])
+                new_title.value = ' '.join([title.value, season.parent.value])
                 new_title.end = season.end
 
                 # other fileparts might have the same season to be removed from the matches
@@ -698,10 +760,7 @@ class AnimeWithSeasonMultipleEpisodeNumbers(Rule):
             for i, episode in enumerate(episodes):
                 if i == 0:
                     new_title = copy.copy(title)
-                    if six.PY3:
-                        new_title.value = ' '.join([title.value, str(episode.value)])
-                    else:
-                        new_title.value = b' '.join([title.value, str(episode.value)])
+                    new_title.value = ' '.join([title.value, str(episode.value)])
                     new_title.end = episode.end
 
                     to_remove.append(title)
@@ -1704,18 +1763,12 @@ class ReleaseGroupPostProcessor(Rule):
         for release_group in release_groups:
             value = release_group.value
             for regex in self.regexes:
-                if six.PY3:
-                    value = regex.sub(' ', value).strip()
-                else:
-                    value = regex.sub(b' ', value).strip()
+                value = regex.sub(' ', value).strip()
                 if not value:
                     break
 
             if value and matches.tagged('scene') and not matches.next(release_group):
-                if six.PY3:
-                    value = value.split('-')[0]
-                else:
-                    value = value.split(b'-')[0]
+                value = value.split('-')[0]
 
             if release_group.value != value:
                 to_remove.append(release_group)
@@ -1755,6 +1808,7 @@ def rules():
         RemoveInvalidEpisodeSeparator,
         CreateAliasWithAlternativeTitles,
         CreateAliasWithCountryOrYear,
+        FixTitlesThatExistOfNumbers,
         ReleaseGroupPostProcessor,
         FixParentFolderReplacingTitle,
         FixMultipleSources,

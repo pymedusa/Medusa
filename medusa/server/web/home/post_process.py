@@ -35,6 +35,7 @@ class HomePostProcess(Home):
         t = PageTemplate(rh=self, filename='index.mako')
         return t.render()
 
+    # TODO: move to apiv2
     def processEpisode(self, proc_dir=None, nzbName=None, jobName=None, quiet=None, process_method=None, force=None,
                        is_priority=None, delete_on='0', failed='0', proc_type='auto', ignore_subs=None, *args, **kwargs):
 

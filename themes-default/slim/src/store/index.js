@@ -69,10 +69,14 @@ const passToStoreHandler = function(eventName, event, next) {
             this.store.dispatch('addManualSearchResult', data);
         } else if (event === 'QueueItemUpdate') {
             this.store.dispatch('updateQueueItem', data);
-        } else if (event === 'QueueItemShowAdd') {
-            this.store.dispatch('updateShowQueueItem', data);
-        } else if (event === 'QueueItemShowRemove') {
-            this.store.dispatch('removeShow', data);
+        } else if (event === 'QueueItemShow') {
+            // Used as a generic showqueue item. If you want to know the specific action (update, refresh, remove, etc.)
+            // Use queueItem.name. Like queueItem.name === 'REFRESH'.
+            if (data.name === 'REMOVE-SHOW') {
+                this.store.dispatch('removeShow', data.show);
+            } else {
+                this.store.dispatch('updateShowQueueItem', data);
+            }
         } else if (event === 'historyUpdate') {
             this.store.dispatch('updateHistory', data);
         } else {
