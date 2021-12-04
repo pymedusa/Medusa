@@ -325,22 +325,6 @@ class QueueItemChangeIndexer(ShowQueueItem):
         self.show_dir = None
         self.root_dir = None
 
-        # self.indexer = indexer
-        # self.indexer_id = indexer_id
-        # self.show_dir = ensure_text(show_dir) if show_dir else None
-        # self.default_status = options.get('default_status')
-        # self.quality = options.get('quality')
-        # self.season_folders = options.get('season_folders')
-        # self.lang = options.get('lang')
-        # self.subtitles = options.get('subtitles')
-        # self.anime = options.get('anime')
-        # self.scene = options.get('scene')
-        # self.paused = options.get('paused')
-        # self.blacklist = options.get('blacklist')
-        # self.whitelist = options.get('whitelist')
-        # self.default_status_after = options.get('default_status_after')
-        # self.root_dir = options.get('root_dir')
-        # self.show_lists = options.get('show_lists')
         self.options = {}
         self.old_show = None
         self.new_show = None
@@ -371,12 +355,13 @@ class QueueItemChangeIndexer(ShowQueueItem):
         self.show_dir = self.old_show._location
 
     def run(self):
+        """Run QueueItemChangeIndexer queue item."""
         step = []
 
         # Small helper, to reduce code for messaging
         def message_step(new_step):
             step.append(new_step)
-            ws.Message('QueueItemShowAdd', dict(
+            ws.Message('QueueItemShow', dict(
                 step=step, **self.to_json
             )).push()
 
@@ -422,8 +407,9 @@ class QueueItemChangeIndexer(ShowQueueItem):
                                   {'show': self.old_show.name, 'error': error})
 
             self.old_show.delete_show(full=False)
+
             # Send showRemoved to frontend, so we can remove it from localStorage.
-            ws.Message('QueueItemShowRemove', self.old_show.to_json(detailed=False)).push()  # Send ws update to client
+            ws.Message('showRemoved', self.old_show.to_json(detailed=False)).push()  # Send ws update to client
 
             # Double check to see if the show really has been removed, else bail.
             if get_show_from_slug(self.old_slug):
@@ -737,7 +723,10 @@ class QueueItemAdd(ShowQueueItem):
 
 
 class QueueItemRefresh(ShowQueueItem):
+    """QueueItemRefresh class."""
+
     def __init__(self, show=None, force=False):
+        """Queue item refresh constructor."""
         ShowQueueItem.__init__(self, ShowQueueActions.REFRESH, show)
 
         # do refreshes first because they're quick
@@ -747,7 +736,7 @@ class QueueItemRefresh(ShowQueueItem):
         self.force = force
 
     def run(self):
-
+        """Run QueueItemRefresh queue item."""
         ShowQueueItem.run(self)
 
         log.info(

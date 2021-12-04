@@ -36,7 +36,6 @@ class Manage(Home, WebRoot):
         """
         return PageTemplate(rh=self, filename='index.mako').render()
 
-
     def changeIndexer(self):
         """
         Render manage/changeIndexer page.
@@ -44,6 +43,7 @@ class Manage(Home, WebRoot):
         [Converted to VueRouter]
         """
         return PageTemplate(rh=self, filename='index.mako').render()
+
     def subtitleMissed(self, whichSubs=None):
         """
         Serve manageEpisodeStatus page.

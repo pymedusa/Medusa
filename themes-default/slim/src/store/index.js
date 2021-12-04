@@ -65,6 +65,9 @@ const passToStoreHandler = function(eventName, event, next) {
             this.store.dispatch('updateConfig', { section, config });
         } else if (event === 'showUpdated' || event === 'showAdded') {
             this.store.dispatch('updateShow', data);
+        } else if (event === 'QueueItemShowRemove') {
+            // We need this for the QueueItemChangeIndexer
+            this.store.dispatch('removeShow', data.show);
         } else if (event === 'addManualSearchResult') {
             this.store.dispatch('addManualSearchResult', data);
         } else if (event === 'QueueItemUpdate') {

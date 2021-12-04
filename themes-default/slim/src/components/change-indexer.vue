@@ -48,16 +48,17 @@ export default {
                 tmdb: true
             },
             started: false
-        }
+        };
     },
     mounted() {
-        const unwatchProp = this.$watch('shows', shows => {
-            unwatchProp();
-            this.allShows = shows;
-        }, {
-            immediate: true,
-            deep: true
-        });
+        if (this.shows.length > 0) {
+            this.allShows = this.shows;
+        } else {
+            const unwatchProp = this.$watch('shows', shows => {
+                unwatchProp();
+                this.allShows = shows;
+            });
+        }
     },
     computed: {
         ...mapState({
@@ -71,9 +72,9 @@ export default {
             const { allShows, filter } = this;
             return allShows.filter(
                 show =>
-                show.indexer === 'tvdb' && filter.tvdb
-                || show.indexer === 'tvmaze' && filter.tvmaze
-                || show.indexer === 'tmdb' && filter.tmdb
+                    (show.indexer === 'tvdb' && filter.tvdb) ||
+                    (show.indexer === 'tvmaze' && filter.tvmaze) ||
+                    (show.indexer === 'tmdb' && filter.tmdb)
             );
         }
     },
