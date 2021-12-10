@@ -97,7 +97,7 @@ see <https://github.com/trentm/python-markdown2/wiki/Extras> for details):
 #   not yet sure if there implications with this. Compare 'pydoc sre'
 #   and 'perldoc perlre'.
 
-__version_info__ = (2, 4, 0)
+__version_info__ = (2, 4, 2)
 __version__ = '.'.join(map(str, __version_info__))
 __author__ = "Trent Mick"
 
@@ -1029,6 +1029,9 @@ class Markdown(object):
         return text
 
     def _pyshell_block_sub(self, match):
+        if "fenced-code-blocks" in self.extras:
+            dedented = _dedent(match.group(0))
+            return self._do_fenced_code_blocks("```pycon\n" + dedented + "```\n")
         lines = match.group(0).splitlines(0)
         _dedentlines(lines)
         indent = ' ' * self.tab_width
@@ -1113,10 +1116,10 @@ class Markdown(object):
                 ^[ ]{0,%d}                      # allowed whitespace
                 (                               # $2: underline row
                     # underline row with leading bar
-                    (?:  \|\ *:?-+:?\ *  )+  \|?  \n
+                    (?:  \|\ *:?-+:?\ *  )+  \|? \s? \n
                     |
                     # or, underline row without leading bar
-                    (?:  \ *:?-+:?\ *\|  )+  (?:  \ *:?-+:?\ *  )?  \n
+                    (?:  \ *:?-+:?\ *\|  )+  (?:  \ *:?-+:?\ *  )? \s? \n
                 )
 
                 (                               # $3: data rows
@@ -1232,7 +1235,7 @@ class Markdown(object):
             \s*/?>
             |
             # auto-link (e.g., <http://www.activestate.com/>)
-            <\w+[^>]*>
+            <[\w~:/?#\[\]@!$&'\(\)*+,;%=\.\\-]+>
             |
             <!--.*?-->      # comment
             |
@@ -1605,12 +1608,12 @@ class Markdown(object):
         self._toc.append((level, id, self._unescape_special_chars(name)))
 
     _h_re_base = r'''
-        (^(.+)[ \t]*\n(=+|-+)[ \t]*\n+)
+        (^(.+)[ \t]{0,99}\n(=+|-+)[ \t]*\n+)
         |
         (^(\#{1,6})  # \1 = string of #'s
         [ \t]%s
         (.+?)       # \2 = Header text
-        [ \t]*
+        [ \t]{0,99}
         (?<!\\)     # ensure not an escaped trailing '#'
         \#*         # optional closing #'s (not counted)
         \n+
@@ -1926,7 +1929,7 @@ class Markdown(object):
 
     _fenced_code_block_re = re.compile(r'''
         (?:\n+|\A\n?)
-        ^```\s{0,99}([\w+-]+)?\s{0,99}\n  # opening fence, $1 = optional lang
+        ^```\s{0,99}?([\w+-]+)?\s{0,99}?\n  # opening fence, $1 = optional lang
         (.*?)                             # $2 = code block content
         ^```[ \t]*\n                      # closing fence
         ''', re.M | re.X | re.S)
