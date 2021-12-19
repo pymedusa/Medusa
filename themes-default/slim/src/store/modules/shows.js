@@ -491,6 +491,15 @@ const actions = {
         // Remove the show from store and localStorage (provided through websocket)
         commit(REMOVE_SHOW, show);
 
+        // Update recentShows.
+        rootState.config.general.recentShows = rootState.config.general.recentShows.filter(
+            recentShow => recentShow.showSlug !== show.id.slug
+        );
+        const config = {
+            recentShows: rootState.config.general.recentShows
+        };
+        api.patch('config/main', config);
+
         // Update (namespaced) localStorage
         const namespace = rootState.config.system.webRoot ? `${rootState.config.system.webRoot}_` : '';
         localStorage.setItem(`${namespace}shows`, JSON.stringify(state.shows));
