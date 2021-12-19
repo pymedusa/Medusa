@@ -506,7 +506,7 @@ class QueueItemChangeIndexer(ShowQueueItem):
 
             if self.show_dir:
                 # If a show dir was passed, this was added as an existing show.
-                # For new shows we should have any files on disk.
+                # For new shows we shouldn't have any files on disk.
                 message_step('refresh episodes from disk')
                 try:
                     app.show_queue_scheduler.action.refreshShow(self.new_show)

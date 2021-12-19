@@ -1381,8 +1381,15 @@ class Series(TV):
         season_all_poster_result = metadata_provider.create_season_all_poster(self) or season_all_poster_result
         season_all_banner_result = metadata_provider.create_season_all_banner(self) or season_all_banner_result
 
-        return (fanart_result or poster_result or banner_result or season_posters_result or
-                season_banners_result or season_all_poster_result or season_all_banner_result)
+        return (
+            fanart_result
+            or poster_result
+            or banner_result
+            or season_posters_result
+            or season_banners_result
+            or season_all_poster_result
+            or season_all_banner_result
+        )
 
     def make_ep_from_file(self, filepath):
         """Make a TVEpisode object from a media file.
