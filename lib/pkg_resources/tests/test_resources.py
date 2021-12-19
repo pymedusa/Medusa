@@ -1,12 +1,8 @@
-from __future__ import unicode_literals
-
 import os
 import sys
 import string
 import platform
 import itertools
-
-from pkg_resources.extern.six.moves import map
 
 import pytest
 from pkg_resources.extern import packaging
@@ -116,7 +112,7 @@ class TestDistro:
         self.checkFooPkg(d)
 
         d = Distribution("/some/path")
-        assert d.py_version == sys.version[:3]
+        assert d.py_version == '{}.{}'.format(*sys.version_info)
         assert d.platform is None
 
     def testDistroParse(self):
@@ -144,6 +140,35 @@ class TestDistro:
     def testDistroDependsSimple(self):
         for v in "Twisted>=1.5", "Twisted>=1.5\nZConfig>=2.0":
             self.checkRequires(self.distRequires(v), v)
+
+    needs_object_dir = pytest.mark.skipif(
+        not hasattr(object, '__dir__'),
+        reason='object.__dir__ necessary for self.__dir__ implementation',
+    )
+
+    def test_distribution_dir(self):
+        d = pkg_resources.Distribution()
+        dir(d)
+
+    @needs_object_dir
+    def test_distribution_dir_includes_provider_dir(self):
+        d = pkg_resources.Distribution()
+        before = d.__dir__()
+        assert 'test_attr' not in before
+        d._provider.test_attr = None
+        after = d.__dir__()
+        assert len(after) == len(before) + 1
+        assert 'test_attr' in after
+
+    @needs_object_dir
+    def test_distribution_dir_ignores_provider_dir_leading_underscore(self):
+        d = pkg_resources.Distribution()
+        before = d.__dir__()
+        assert '_test_attr' not in before
+        d._provider._test_attr = None
+        after = d.__dir__()
+        assert len(after) == len(before)
+        assert '_test_attr' not in after
 
     def testResolve(self):
         ad = pkg_resources.Environment([])
@@ -463,6 +488,14 @@ class TestEntryPoints:
         with pytest.raises(ValueError):
             EntryPoint.parse_map(self.submap_str)
 
+    def testDeprecationWarnings(self):
+        ep = EntryPoint(
+            "foo", "pkg_resources.tests.test_resources", ["TestEntryPoints"],
+            ["x"]
+        )
+        with pytest.warns(pkg_resources.PkgResourcesDeprecationWarning):
+            ep.load(require=False)
+
 
 class TestRequirements:
     def testBasics(self):
@@ -482,6 +515,11 @@ class TestRequirements:
         assert r1 == r2
         assert str(r1) == str(r2)
         assert str(r2) == "Twisted==1.2c1,>=1.2"
+        assert (
+            Requirement("Twisted")
+            !=
+            Requirement("Twisted @ https://localhost/twisted.zip")
+        )
 
     def testBasicContains(self):
         r = Requirement("Twisted>=1.2")
@@ -508,8 +546,20 @@ class TestRequirements:
             ==
             hash((
                 "twisted",
+                None,
                 packaging.specifiers.SpecifierSet(">=1.2"),
                 frozenset(["foo", "bar"]),
+                None
+            ))
+        )
+        assert (
+            hash(Requirement.parse("Twisted @ https://localhost/twisted.zip"))
+            ==
+            hash((
+                "twisted",
+                "https://localhost/twisted.zip",
+                packaging.specifiers.SpecifierSet(),
+                frozenset(),
                 None
             ))
         )
@@ -639,7 +689,7 @@ class TestParsing:
         assert (
             Requirement.parse("name==1.1;python_version=='2.7'")
             !=
-            Requirement.parse("name==1.1;python_version=='3.3'")
+            Requirement.parse("name==1.1;python_version=='3.6'")
         )
         assert (
             Requirement.parse("name==1.0;python_version=='2.7'")
@@ -647,13 +697,13 @@ class TestParsing:
             Requirement.parse("name==1.2;python_version=='2.7'")
         )
         assert (
-            Requirement.parse("name[foo]==1.0;python_version=='3.3'")
+            Requirement.parse("name[foo]==1.0;python_version=='3.6'")
             !=
-            Requirement.parse("name[foo,bar]==1.0;python_version=='3.3'")
+            Requirement.parse("name[foo,bar]==1.0;python_version=='3.6'")
         )
 
     def test_local_version(self):
-        req, = parse_requirements('foo==1.0.org1')
+        req, = parse_requirements('foo==1.0+org1')
 
     def test_spaces_between_multiple_versions(self):
         req, = parse_requirements('foo>=1.0, <3')
@@ -723,7 +773,7 @@ class TestNamespaces:
 
     ns_str = "__import__('pkg_resources').declare_namespace(__name__)\n"
 
-    @pytest.yield_fixture
+    @pytest.fixture
     def symlinked_tmpdir(self, tmpdir):
         """
         Where available, return the tempdir as a symlink,
@@ -741,7 +791,7 @@ class TestNamespaces:
         finally:
             os.unlink(link_name)
 
-    @pytest.yield_fixture(autouse=True)
+    @pytest.fixture(autouse=True)
     def patched_path(self, tmpdir):
         """
         Patch sys.path to include the 'site-pkgs' dir. Also
