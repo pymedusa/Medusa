@@ -1,11 +1,20 @@
-## Unreleased
+## 0.5.21 (20-12-2021)
 
 #### New Features
+- Add official Python 3.10 support
 
 #### Improvements
-- Testing out git workflow docker build
+- Catch AttributeError for TVMaze API
+- Separate recommended lists calls
+- Add rule for parsing shows that begin with a number as title
+- Add anime category for TorrentDay
 
 #### Fixes
+- Fix Plex Server library update from /manage/plex
+- Fix TorrentDay generating a JSONDecodeError
+- Fix update Kodi library
+- Fix provider Morethantv
+- Prevent dropdowns from closing when using touch navigation
 
 -----
 
