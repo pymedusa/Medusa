@@ -12,11 +12,17 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: install buildx
-      id: buildx
-      uses: crazy-max/ghaction-docker-buildx@v1
+    # https://github.com/docker/setup-qemu-action
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v1
       with:
-        version: latest
+        platforms: linux/amd64,linux/arm/v7,linux/arm64
+    # https://github.com/docker/setup-buildx-action
+    - name: Set up Docker Buildx
+      id: buildx
+      uses: docker/setup-buildx-action@v1
+      with:
+        install: true
     - name: docker login
       env:
         DOCKER_USER: ${{secrets.DOCKER_USER}}
@@ -24,4 +30,4 @@ jobs:
       run: |
         docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
     - name: Build the Docker image
-      run: docker buildx build . --push --platform linux/amd64,linux/arm/v7,linux/arm64 --file Dockerfile --tag pymedusa/medusa:develop
+      run: docker buildx build . --push --file Dockerfile --tag pymedusa/medusa:develop
