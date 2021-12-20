@@ -154,9 +154,9 @@ class UTorrentAPI(GenericClient):
         )
 
     def _set_torrent_ratio(self, result):
-        ratio = result.ratio or None
+        ratio = result.ratio
 
-        if ratio:
+        if ratio is not None:
             if self._request(params={
                 'action': 'setprops',
                 'hash': result.hash,

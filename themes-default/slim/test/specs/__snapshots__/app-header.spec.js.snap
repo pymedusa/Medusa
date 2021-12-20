@@ -73,7 +73,6 @@ exports[`AppHeader.test.js renders 1`] = `
             class="dropdown-toggle"
             data-hover="dropdown"
             data-toggle="dropdown"
-            href="home/"
             placeholder="indexer-to-name"
           >
             <span>
@@ -193,7 +192,6 @@ exports[`AppHeader.test.js renders 1`] = `
             class="dropdown-toggle"
             data-hover="dropdown"
             data-toggle="dropdown"
-            href="manage/episodeStatuses/"
             placeholder="indexer-to-name"
           >
             <span>
@@ -312,7 +310,6 @@ exports[`AppHeader.test.js renders 1`] = `
             class="dropdown-toggle"
             data-hover="dropdown"
             data-toggle="dropdown"
-            href="config/"
             placeholder="indexer-to-name"
           >
             <span
@@ -456,7 +453,6 @@ exports[`AppHeader.test.js renders 1`] = `
             class="padding-right-15 dropdown-toggle"
             data-hover="dropdown"
             data-toggle="dropdown"
-            href="home/status/"
             placeholder="indexer-to-name"
           >
             <span

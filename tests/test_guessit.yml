@@ -4383,7 +4383,7 @@
   audio_codec: [DTS, DTS-HD]
   audio_channels: ['5.1', '7.1']
   language: ca
-  subtitle_language: [und, es, en]
+  subtitle_language: [es, en]
   release_group: NEWPCT
   type: episode
 
@@ -4515,4 +4515,30 @@
   video_encoder: x264
   audio_codec: AAC
   screen_size: 720p
+  type: episode
+
+# Title begins with number, don't parse as absolute
+? 4400.S01E01.1080p.HEVC.x265-Group.mkv
+: title: "4400"
+  season: 1
+  episode: 1
+  screen_size: 1080p
+  video_codec: H.265
+  video_encoder: x265
+  release_group: Group
+  container: mkv
+  video_profile: 'High Efficiency Video Coding'
+  type: episode
+
+# Title begins with number, don't parse as absolute
+? /4400/Season 01/4400.S01E01.1080p.HEVC.x265-Group.mkv
+: title: "4400"
+  season: 1
+  episode: 1
+  screen_size: 1080p
+  video_codec: H.265
+  video_encoder: x265
+  release_group: Group
+  container: mkv
+  video_profile: 'High Efficiency Video Coding'
   type: episode

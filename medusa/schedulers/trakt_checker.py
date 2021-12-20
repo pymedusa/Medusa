@@ -513,7 +513,7 @@ class TraktChecker(object):
             indexer = None
             for i in indexerConfig:
                 trakt_indexer = get_trakt_indexer(i)
-                indexer_id = trakt_show.ids['ids'].get(trakt_indexer, -1)
+                indexer_id = trakt_show.ids['ids'].get(trakt_indexer)
                 indexer = indexerConfig[i]['id']
                 show = Show.find_by_id(app.showList, indexer, indexer_id)
                 if show:
@@ -521,18 +521,26 @@ class TraktChecker(object):
             if not show:
                 # If can't find with available indexers try IMDB
                 trakt_indexer = get_trakt_indexer(EXTERNAL_IMDB)
-                indexer_id = trakt_show.ids['ids'].get(trakt_indexer, -1)
+                indexer_id = trakt_show.ids['ids'].get(trakt_indexer)
                 show = Show.find_by_id(app.showList, EXTERNAL_IMDB, indexer_id)
             if not show:
                 # If can't find with available indexers try TRAKT
                 trakt_indexer = get_trakt_indexer(EXTERNAL_TRAKT)
-                indexer_id = trakt_show.ids['ids'].get(trakt_indexer, -1)
+                indexer_id = trakt_show.ids['ids'].get(trakt_indexer)
                 show = Show.find_by_id(app.showList, EXTERNAL_TRAKT, indexer_id)
 
             if show:
                 continue
 
-            indexer_id = trakt_show.ids['ids'].get(get_trakt_indexer(trakt_default_indexer), -1)
+            # If we don't have an indexer id for the trakt default indexer, skip it.
+            indexer_id = trakt_show.ids['ids'].get(get_trakt_indexer(trakt_default_indexer))
+            if not indexer_id:
+                log.info(
+                    'Can not add show {show_name}, as we dont trakt does not have a {indexer} id for this show.',
+                    {'show_name': show_name, 'indexer': get_trakt_indexer(trakt_default_indexer)}
+                )
+                continue
+
             if int(app.TRAKT_METHOD_ADD) != 2:
                 self.add_show(trakt_default_indexer, indexer_id, show_name, SKIPPED)
             else:
@@ -570,7 +578,7 @@ class TraktChecker(object):
                 if not trakt_indexer:
                     continue
 
-                indexer_id = trakt_show['ids'].get(trakt_indexer, -1)
+                indexer_id = trakt_show['ids'].get(trakt_indexer)
                 indexer = indexerConfig[i]['id']
                 show = Show.find_by_id(app.showList, indexer, indexer_id)
                 if show:
@@ -579,18 +587,18 @@ class TraktChecker(object):
             if not show:
                 # If can't find with available indexers try IMDB
                 trakt_indexer = get_trakt_indexer(EXTERNAL_IMDB)
-                indexer_id = trakt_show['ids'].get(trakt_indexer, -1)
+                indexer_id = trakt_show['ids'].get(trakt_indexer)
                 show = Show.find_by_id(app.showList, EXTERNAL_IMDB, indexer_id)
             if not show:
                 # If can't find with available indexers try TRAKT
                 trakt_indexer = get_trakt_indexer(EXTERNAL_TRAKT)
-                indexer_id = trakt_show['ids'].get(trakt_indexer, -1)
+                indexer_id = trakt_show['ids'].get(trakt_indexer)
                 show = Show.find_by_id(app.showList, EXTERNAL_TRAKT, indexer_id)
 
             # If can't find show add with default trakt indexer
             if not show:
                 trakt_indexer = get_trakt_indexer(trakt_default_indexer)
-                indexer_id = trakt_show['ids'].get(trakt_indexer, -1)
+                indexer_id = trakt_show['ids'].get(trakt_indexer)
                 # Only add show if we didn't added it before
                 if indexer_id not in added_shows:
                     self.add_show(trakt_default_indexer, indexer_id, trakt_show['title'], SKIPPED)
