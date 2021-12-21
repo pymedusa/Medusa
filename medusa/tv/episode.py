@@ -1598,6 +1598,7 @@ class Episode(TV):
             '%CY': str(date.today().year),
             '%CM': str(date.today().month),
             '%CD': str(date.today().day),
+            '%SY': str(self.series.start_year),
             '%0M': '%02d' % self.airdate.month,
             '%0D': '%02d' % self.airdate.day,
             '%RT': 'PROPER' if self.is_proper else '',
