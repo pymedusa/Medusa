@@ -223,21 +223,34 @@ class DelugeAPI(GenericClient):
         return self.auth
 
     def _get_version(self):
-        params = {
-            'method': 'daemon.get_version',
-            'params': {},
-            'id': 12
-        }
-
-        version = self.session.post(
+        result = self.session.post(
             self.url,
-            data=json.dumps(params),
+            data=json.dumps({
+                'method': 'daemon.get_version',
+                'params': {},
+                'id': 12
+            }),
             verify=app.TORRENT_VERIFY_CERT
         )
 
-        split_version = version.json()['result'].split('.')[0:2]
-        self.version = tuple(int(x) for x in split_version)
-        return self.version
+        result = result.json()
+        if not result.get('result'):
+            # Version 1.3.15 needs a different rpc method.
+            result = self.session.post(
+                self.url,
+                data=json.dumps({
+                    'method': 'daemon.info',
+                    'params': {},
+                    'id': 12
+                }),
+                verify=app.TORRENT_VERIFY_CERT
+            )
+            result = result.json()
+
+        if result.get('result'):
+            split_version = result['result'].split('.')[0:2]
+            self.version = tuple(int(x) for x in split_version)
+            return self.version
 
     def _add_torrent_uri(self, result):
 
