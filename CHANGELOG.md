@@ -1,3 +1,10 @@
+## 0.5.22 (23-12-2021)
+
+#### Fixes
+- Fix connecting to deluge version < 2.x ([10192](https://github.com/pymedusa/Medusa/pull/10192))
+
+-----
+
 ## 0.5.21 (20-12-2021)
 
 #### New Features
