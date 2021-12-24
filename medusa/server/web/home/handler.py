@@ -6,6 +6,8 @@ import json
 import os
 import time
 
+from requests.exceptions import RequestException
+
 from medusa import (
     app,
     config,
@@ -349,7 +351,7 @@ class Home(WebRoot):
         logger.log('Start a new Oauth device authentication request. Request is valid for 60 minutes.', logger.INFO)
         try:
             app.TRAKT_DEVICE_CODE = trakt.get_device_code(app.TRAKT_API_KEY, app.TRAKT_API_SECRET)
-        except TraktException as error:
+        except (TraktException, RequestException) as error:
             logger.log('Unable to get trakt device code. Error: {error!r}'.format(error=error), logger.WARNING)
             return json.dumps({'result': False})
 
@@ -376,7 +378,7 @@ class Home(WebRoot):
             response = trakt.get_device_token(
                 app.TRAKT_DEVICE_CODE.get('device_code'), app.TRAKT_API_KEY, app.TRAKT_API_SECRET, store=True
             )
-        except TraktException as error:
+        except (TraktException, RequestException) as error:
             logger.log('Unable to get trakt device token. Error: {error!r}'.format(error=error), logger.WARNING)
             return json.dumps({'result': 'Trakt error while retrieving device token', 'error': True})
 

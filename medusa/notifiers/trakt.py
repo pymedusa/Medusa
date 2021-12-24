@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 
 import logging
 from builtins import object
+from requests.exceptions import RequestException
 
 from medusa import app
 from medusa.helpers import get_title_without_year
@@ -81,7 +82,7 @@ class Notifier(object):
 
                 # update library
                 sync.add_to_collection(data)
-            except TraktException as error:
+            except (TraktException, RequestException) as error:
                 log.warning('Unable to update Trakt: {error!r}', {'error': error})
 
     @staticmethod
@@ -94,7 +95,7 @@ class Notifier(object):
                 result = sync.remove_from_watchlist(trakt_media_object)
             else:
                 result = sync.add_to_watchlist(trakt_media_object)
-        except TraktException as error:
+        except (TraktException, RequestException) as error:
             log.warning('Unable to update Trakt: {error!r}', {'error': error})
             return False
 
@@ -118,7 +119,7 @@ class Notifier(object):
                 result = sync.remove_from_watchlist({'shows': [create_episode_structure(show_obj, episodes)]})
             else:
                 result = sync.add_to_watchlist({'shows': [create_episode_structure(show_obj, episodes)]})
-        except TraktException as error:
+        except (TraktException, RequestException) as error:
             log.warning('Unable to update Trakt watchlist: {error!r}', {'error': error})
             return False
 
@@ -140,7 +141,7 @@ class Notifier(object):
         try:
             tv_episode = tv.TVEpisode(show_id, episode.season, episode.episode)
             tv_episode.add_to_watchlist()
-        except TraktException as error:
+        except (TraktException, RequestException) as error:
             log.warning('Unable to add episode to watchlist: {error!r}', {'error': error})
 
     @staticmethod
@@ -165,6 +166,6 @@ class Notifier(object):
                     return "Trakt blacklist doesn't exists"
             else:
                 return 'Test notice sent successfully to Trakt'
-        except TraktException as error:
+        except (TraktException, RequestException) as error:
             log.warning('Unable to test TRAKT: {error!r}', {'error': error})
             return 'Test notice failed to Trakt: {0!r}'.format(error)
