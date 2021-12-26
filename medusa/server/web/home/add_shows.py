@@ -12,6 +12,8 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.web.core import PageTemplate
 from medusa.server.web.home.handler import Home
 
+from requests.exceptions import RequestException
+
 from tornroutes import route
 
 from trakt.errors import TraktException
@@ -84,7 +86,7 @@ class HomeAddShows(Home):
 
             ui.notifications.message('Success!',
                                      "Added show '{0}' to blacklist".format(show_name))
-        except TraktException as error:
+        except (TraktException, RequestException) as error:
             ui.notifications.error('Error!',
                                    "Unable to add show '{0}' to blacklist. Check logs.".format(show_name))
             log.warning("Error while adding show '{name}' to trakt blacklist: {error}",
