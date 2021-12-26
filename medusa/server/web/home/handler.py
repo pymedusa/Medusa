@@ -6,7 +6,6 @@ import json
 import os
 import time
 
-from requests.exceptions import RequestException
 
 from medusa import (
     app,
@@ -52,6 +51,7 @@ from medusa.tv.series import Series, SeriesIdentifier
 from medusa.updater.version_checker import CheckVersion
 
 from requests.compat import unquote_plus
+from requests.exceptions import RequestException
 
 from six import iteritems, text_type
 

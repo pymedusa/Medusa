@@ -5,13 +5,14 @@ from __future__ import unicode_literals
 
 import logging
 from builtins import object
-from requests.exceptions import RequestException
 
 from medusa import app
 from medusa.helpers import get_title_without_year
 from medusa.helpers.trakt import create_episode_structure, create_show_structure, get_trakt_user
 from medusa.indexers.utils import get_trakt_indexer
 from medusa.logger.adapters.style import BraceAdapter
+
+from requests.exceptions import RequestException
 
 from trakt import sync, tv
 from trakt.errors import TraktException

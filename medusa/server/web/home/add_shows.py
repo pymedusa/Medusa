@@ -4,8 +4,6 @@ from __future__ import unicode_literals
 
 import logging
 
-from requests.exceptions import RequestException
-
 from medusa import app, ui
 from medusa.helpers import get_showname_from_indexer
 from medusa.helpers.trakt import get_trakt_user
@@ -13,6 +11,8 @@ from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.web.core import PageTemplate
 from medusa.server.web.home.handler import Home
+
+from requests.exceptions import RequestException
 
 from tornroutes import route
 

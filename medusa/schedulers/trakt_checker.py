@@ -8,7 +8,6 @@ import logging
 import time
 from builtins import object
 from builtins import str
-from requests.exceptions import RequestException
 
 from medusa import app, db, ui
 from medusa.common import ARCHIVED, DOWNLOADED, Quality, SKIPPED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, WANTED
@@ -19,6 +18,8 @@ from medusa.indexers.utils import get_trakt_indexer
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.search.queue import BacklogQueueItem
 from medusa.show.show import Show
+
+from requests.exceptions import RequestException
 
 from trakt import sync, tv
 from trakt.errors import TraktException

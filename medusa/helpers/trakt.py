@@ -1,11 +1,11 @@
 """Module with Trakt helper methods."""
 
-
 import logging
-from requests.exceptions import RequestException
 
 from medusa.helpers import get_title_without_year
 from medusa.logger.adapters.style import BraceAdapter
+
+from requests.exceptions import RequestException
 
 from trakt import calendar, tv, users
 from trakt.errors import TraktException

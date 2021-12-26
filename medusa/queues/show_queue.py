@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 import logging
 import traceback
 from builtins import object
-from requests.exceptions import RequestException
 
 from imdbpie.exceptions import ImdbAPIError
 
@@ -52,6 +51,8 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_cache import build_name_cache
 from medusa.queues import generic_queue
 from medusa.tv.series import SaveSeriesException, Series, SeriesIdentifier
+
+from requests.exceptions import RequestException
 
 from six import ensure_text, text_type, viewitems
 
