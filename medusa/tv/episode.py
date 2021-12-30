@@ -2163,9 +2163,7 @@ class Episode(TV):
                               {'series': self.series.name, 'episode': self.slug})
                     self.manually_searched = False
 
-            # Only in failed_history we set to FAILED.
-            if new_status != FAILED:
-                self.status = new_status
+            self.status = new_status
 
             # Make sure to run the collected sql through a mass action.
             return self.get_sql()
