@@ -123,10 +123,10 @@
                                                     <thead>
                                                         <tr>
                                                             <th />
-                                                            <th>Show Name</th>
-                                                            <th class="premiere">Premiere</th>
-                                                            <th class="network">Network</th>
-                                                            <th class="indexer">Indexer</th>
+                                                            <th :class="sorting.showName" @click="toggleSort('showName')">Show Name</th>
+                                                            <th class="premiere" :class="sorting.premiere" @click="toggleSort('premiere')">Premiere</th>
+                                                            <th class="network" :class="sorting.network" @click="toggleSort('network')">Network</th>
+                                                            <th class="indexer" :class="sorting.indexerName" @click="toggleSort('indexerName')">Indexer</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -309,7 +309,14 @@ export default {
                 showLists: []
             },
             addedQueueItem: null,
-            existingFolder: null
+            existingFolder: null,
+            sorting: {
+                showName: 'desc',
+                premiere: null,
+                network: null,
+                indexer: null,
+                currentSortColumn: null
+            }
         };
     },
     mounted() {
@@ -795,6 +802,23 @@ export default {
             } catch (error) {
                 this.$snotify.warning('Error while checking for existing folder');
             }
+        },
+        toggleSort(column) {
+            // Set the sort column
+            this.sorting.currentSortColumn = column;
+
+            // Toggle through (tri-state) the sort options, 'desc', 'asc' and null.
+            const states = ['desc', 'asc'];
+            if (!this.sorting[column]) {
+                this.sorting[column] = states[0];
+                return;
+            }
+
+            let i = states.indexOf(this.sorting[column]);
+
+            // Increment the counter, but don't let it exceed the maximum index
+            i = ++i % states.length;
+            this.sorting[column] = states[i];
         }
     },
     watch: {
@@ -811,6 +835,28 @@ export default {
         },
         selectedShowSlug() {
             this.checkFolder();
+        },
+        sorting: {
+            deep: true,
+            handler(sorting) {
+                const { currentSortColumn } = sorting;
+                if (currentSortColumn && sorting[currentSortColumn]) {
+                    this.searchResults.sort((firstItem, secondItem) => {
+                        if (currentSortColumn === 'premiere') {
+                            if (!firstItem.premiereDate || !secondItem.premiereDate) {
+                                return firstItem.premiereDate ? 1 : -1;
+                            }
+                            return new Date(firstItem.premiereDate) - new Date(secondItem.premiereDate);
+                        }
+
+                        // Handle showName, indexerName and network
+                        return firstItem[currentSortColumn].localeCompare(secondItem[currentSortColumn]);
+                    });
+                    if (sorting[currentSortColumn] === 'desc') {
+                        this.searchResults.reverse();
+                    }
+                }
+            }
         }
     }
 };
