@@ -392,10 +392,7 @@ class FixTitlesThatExistOfNumbers(Rule):
 
         fileparts = matches.markers.named('path')
         for filepart in marker_sorted(fileparts, matches):
-            title = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'title', index=0)
-
-            if title:
-                continue
+            old_title = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'title', index=0)
 
             if not filepart.value.startswith(str(absolute_episodes[0].value)):
                 continue
@@ -410,6 +407,7 @@ class FixTitlesThatExistOfNumbers(Rule):
 
             to_append.append(new_title)
             to_remove.append(absolute_episode)
+            to_remove.append(old_title)
 
             return to_remove, to_append
 

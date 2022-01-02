@@ -77,8 +77,8 @@
   "devDependencies": {
     "@babel/core": "7.16.0",
     "@babel/eslint-parser": "7.16.3",
-    "@babel/plugin-transform-runtime": "7.16.0",
-    "@babel/preset-env": "7.16.0",
+    "@babel/plugin-transform-runtime": "7.16.4",
+    "@babel/preset-env": "7.16.4",
     "@babel/runtime": "7.16.3",
     "@mapbox/stylelint-processor-arbitrary-tags": "0.4.0",
     "@sharkykh/eslint-plugin-vue-extra": "0.1.1",
@@ -118,7 +118,7 @@
     "timekeeper": "2.2.0",
     "vue-jest": "3.0.7",
     "vue-loader": "15.9.8",
-    "webpack": "5.61.0",
+    "webpack": "5.65.0",
     "webpack-cli": "4.9.1"
   },
   "stylelint": {
