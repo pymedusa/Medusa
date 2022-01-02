@@ -123,10 +123,10 @@
                                                     <thead>
                                                         <tr>
                                                             <th />
-                                                            <th :class="sorting.showName" @click="toggleSort('showName')">Show Name</th>
-                                                            <th class="premiere" :class="sorting.premiere" @click="toggleSort('premiere')">Premiere</th>
-                                                            <th class="network" :class="sorting.network" @click="toggleSort('network')">Network</th>
-                                                            <th class="indexer" :class="sorting.indexerName" @click="toggleSort('indexerName')">Indexer</th>
+                                                            <th class="sorting" :class="sorting.showName" @click="toggleSort('showName')">Show Name</th>
+                                                            <th class="sorting premiere" :class="sorting.premiere" @click="toggleSort('premiere')">Premiere</th>
+                                                            <th class="sorting network" :class="sorting.network" @click="toggleSort('network')">Network</th>
+                                                            <th class="sorting indexer" :class="sorting.indexerName" @click="toggleSort('indexerName')">Indexer</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -311,10 +311,10 @@ export default {
             addedQueueItem: null,
             existingFolder: null,
             sorting: {
-                showName: 'desc',
+                showName: null,
                 premiere: null,
                 network: null,
-                indexer: null,
+                indexerName: null,
                 currentSortColumn: null
             }
         };
@@ -806,6 +806,11 @@ export default {
         toggleSort(column) {
             // Set the sort column
             this.sorting.currentSortColumn = column;
+            Object.keys(this.sorting).filter(
+                key => key !== 'currentSortColumn' && key !== this.sorting.currentSortColumn
+            ).forEach(key => {
+                this.sorting[key] = null;
+            });
 
             // Toggle through (tri-state) the sort options, 'desc', 'asc' and null.
             const states = ['desc', 'asc'];
@@ -915,4 +920,19 @@ ul.wizard-nav .step .smalltext {
     line-height: 40px;
 }
 
+.sorting {
+    background-repeat: no-repeat;
+}
+
+.desc {
+    background-color: rgb(85, 85, 85);
+    background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
+}
+
+.asc {
+    background-color: rgb(85, 85, 85);
+    background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjI8Bya2wnINUMopZAQA7);
+    background-position-x: right;
+    background-position-y: bottom;
+}
 </style>
