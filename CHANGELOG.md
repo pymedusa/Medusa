@@ -3,8 +3,14 @@
 #### New Features
 
 #### Improvements
+- Add column sorting for the add new show page search results ([10217](https://github.com/pymedusa/Medusa/pull/10217))
+- Add series start year as a renaming option ([10183](https://github.com/pymedusa/Medusa/pull/10183))
+- Remove git username/password authentication. No longer supported by github. ([10144](https://github.com/pymedusa/Medusa/pull/10144))
 
 #### Fixes
+- Fix displayShow search subtitle button ([10214](https://github.com/pymedusa/Medusa/pull/10214))
+- Prevent failedDownloads from errorring, when a provider has been deleted ([10214](https://github.com/pymedusa/Medusa/pull/10214))
+- Fix mass update status page, start a new snatch when changing status to failed. ([10213](https://github.com/pymedusa/Medusa/pull/10213))
 
 -----
 
