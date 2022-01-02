@@ -2,23 +2,15 @@
 
 from __future__ import unicode_literals
 
-import os
-
-from github import GithubException
-
 from medusa import (
     app,
     config,
-    github_client,
     helpers,
-    logger,
-    ui,
 )
 from medusa.common import (
     Quality,
     WANTED,
 )
-from medusa.helper.common import try_int
 from medusa.server.web.config.handler import Config
 from medusa.server.web.core import PageTemplate
 
