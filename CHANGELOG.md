@@ -11,6 +11,7 @@
 - Fix displayShow search subtitle button ([10214](https://github.com/pymedusa/Medusa/pull/10214))
 - Prevent failedDownloads from errorring, when a provider has been deleted ([10214](https://github.com/pymedusa/Medusa/pull/10214))
 - Fix mass update status page, start a new snatch when changing status to failed. ([10213](https://github.com/pymedusa/Medusa/pull/10213))
+- Fix changing process method in manual postprocessing. ([10220](https://github.com/pymedusa/Medusa/pull/10220))
 
 -----
 
