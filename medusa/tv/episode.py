@@ -78,6 +78,7 @@ from medusa.scene_numbering import (
     get_scene_absolute_numbering,
     get_scene_numbering,
 )
+from medusa.search.queue import FailedQueueItem
 from medusa.tv.base import Identifier, TV
 
 from six import itervalues, viewitems
@@ -2145,11 +2146,15 @@ class Episode(TV):
                             {'series': self.series.name, 'episode': self.slug})
                 return
 
-            if new_status == FAILED and self.status not in snatched_qualities + [DOWNLOADED, ARCHIVED]:
-                log.warning('Refusing to change status of {series} {episode} to FAILED'
-                            " because it's not SNATCHED/DOWNLOADED/ARCHIVED",
-                            {'series': self.series.name, 'episode': self.slug})
-                return
+            if new_status == FAILED:
+                if self.status not in snatched_qualities + [DOWNLOADED, ARCHIVED]:
+                    log.warning('Refusing to change status of {series} {episode} to FAILED'
+                                " because it's not SNATCHED/DOWNLOADED/ARCHIVED",
+                                {'series': self.series.name, 'episode': self.slug})
+                    return
+                else:
+                    cur_failed_queue_item = FailedQueueItem(self.series, [self])
+                    app.forced_search_queue_scheduler.action.add_item(cur_failed_queue_item)
 
             if new_status == WANTED:
                 if self.status in [DOWNLOADED, ARCHIVED]:
@@ -2163,9 +2168,7 @@ class Episode(TV):
                               {'series': self.series.name, 'episode': self.slug})
                     self.manually_searched = False
 
-            # Only in failed_history we set to FAILED.
-            if new_status != FAILED:
-                self.status = new_status
+            self.status = new_status
 
             # Make sure to run the collected sql through a mass action.
             return self.get_sql()
