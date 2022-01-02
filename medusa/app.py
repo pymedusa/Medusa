@@ -512,6 +512,7 @@ class MedusaApp(object):
         self.TRAKT_REMOVE_SERIESLIST = False
         self.TRAKT_REMOVE_SHOW_FROM_APPLICATION = False
         self.TRAKT_SYNC_WATCHLIST = False
+        self.TRAKT_SYNC_TO_WATCHLIST = False
         self.TRAKT_METHOD_ADD = None
         self.TRAKT_START_PAUSED = False
         self.TRAKT_USE_RECOMMENDED = False
