@@ -139,9 +139,6 @@ class MedusaApp(object):
         self.GIT_REMOTE = ''
         self.GIT_REMOTE_URL = ''
         self.CUR_COMMIT_BRANCH = ''
-        self.GIT_AUTH_TYPE = 0
-        self.GIT_USERNAME = None
-        self.GIT_PASSWORD = None
         self.GIT_TOKEN = None
         self._GIT_PATH = ''
         self.DEVELOPER = False
