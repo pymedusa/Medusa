@@ -98,8 +98,6 @@ app.CFG = ConfigObj(app.CONFIG_FILE)
 
 app.BRANCH = config.check_setting_str(app.CFG, 'General', 'branch', '')
 app.CUR_COMMIT_HASH = config.check_setting_str(app.CFG, 'General', 'cur_commit_hash', '')
-app.GIT_USERNAME = config.check_setting_str(app.CFG, 'General', 'git_username', '')
-app.GIT_PASSWORD = config.check_setting_str(app.CFG, 'General', 'git_password', '', censor_log='low')
 
 app.LOG_DIR = os.path.join(TEST_DIR, 'Logs')
 logger.log_file = os.path.join(app.LOG_DIR, 'test_application.log')

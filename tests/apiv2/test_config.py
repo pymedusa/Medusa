@@ -156,8 +156,6 @@ def config_main(monkeypatch, app_config):
     section_data['experimental'] = bool(app.EXPERIMENTAL)
 
     section_data['git'] = {}
-    section_data['git']['username'] = app.GIT_USERNAME
-    section_data['git']['password'] = app.GIT_PASSWORD
     section_data['git']['token'] = app.GIT_TOKEN
     section_data['git']['authType'] = int(app.GIT_AUTH_TYPE)
     section_data['git']['remote'] = app.GIT_REMOTE
