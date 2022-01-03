@@ -386,7 +386,7 @@ class Home(WebRoot):
             response_json = response.json()
             app.TRAKT_ACCESS_TOKEN, app.TRAKT_REFRESH_TOKEN = \
                 response_json.get('access_token'), response_json.get('refresh_token')
-            return json.dumps({'result': 'succesfully updated trakt access and refresh token', 'error': False})
+            return json.dumps({'result': 'successfully updated trakt access and refresh token', 'error': False})
         else:
             if response.status_code == 400:
                 return json.dumps({'result': 'device code has not been activated yet', 'error': True})
