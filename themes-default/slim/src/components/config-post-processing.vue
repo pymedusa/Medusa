@@ -97,7 +97,7 @@
                                         </select>
                                         <span>What method should be used to put files into the library?</span>
                                         <p><b>Note:</b> If you keep seeding torrents after they finish, please avoid the 'move' processing method to prevent errors.</p>
-                                        <p v-if="postprocessing.processMethod == 'reflink'">To use reference linking, the <app-link href="http://www.dereferer.org/?https://pypi.python.org/pypi/reflink/0.1.4">reflink package</app-link> needs to be installed.</p>
+                                        <p v-if="postprocessing.processMethod == 'reflink'">To use reference linking, the <app-link href="https://pypi.python.org/pypi/reflink/0.1.4">reflink package</app-link> needs to be installed.</p>
                                     </config-template>
 
                                     <config-toggle-slider v-model="postprocessing.specificPostProcessing" label="Specific postprocessing methods" id="specific_post_processing">
@@ -111,7 +111,7 @@
                                         </select>
                                         <span>What method should be used to put files into the library?</span>
                                         <p><b>Note:</b> If you keep seeding torrents after they finish, please avoid the 'move' processing method to prevent errors.</p>
-                                        <p v-if="postprocessing.processMethod == 'reflink'">To use reference linking, the <app-link href="http://www.dereferer.org/?https://pypi.python.org/pypi/reflink/0.1.4">reflink package</app-link> needs to be installed.</p>
+                                        <p v-if="postprocessing.processMethod == 'reflink'">To use reference linking, the <app-link href="https://pypi.python.org/pypi/reflink/0.1.4">reflink package</app-link> needs to be installed.</p>
                                     </config-template>
 
                                     <config-template v-if="postprocessing.specificPostProcessing" label-for="processing_method_nzb" label="Processing Method Nzb">
@@ -119,7 +119,7 @@
                                             <option :value="option.value" v-for="option in processMethods" :key="option.value">{{ option.text }}</option>
                                         </select>
                                         <span>What method should be used to put files into the library?</span>
-                                        <p v-if="postprocessing.processMethod == 'reflink'">To use reference linking, the <app-link href="http://www.dereferer.org/?https://pypi.python.org/pypi/reflink/0.1.4">reflink package</app-link> needs to be installed.</p>
+                                        <p v-if="postprocessing.processMethod == 'reflink'">To use reference linking, the <app-link href="https://pypi.python.org/pypi/reflink/0.1.4">reflink package</app-link> needs to be installed.</p>
                                     </config-template>
 
                                     <config-toggle-slider v-model="postprocessing.postponeIfSyncFiles" label="Postpone post-processing" id="postpone_if_sync_files">
