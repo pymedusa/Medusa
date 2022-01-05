@@ -261,6 +261,38 @@ exports[`Config.test.js renders 1`] = `
     <tr>
       <td>
         <i
+          class="icon16-config-arguments"
+        />
+         Ffprobe version:
+      </td>
+      <td>
+        
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+         
+      </td>
+      <td>
+         
+      </td>
+    </tr>
+     
+    <tr
+      class="infoTableSeperator"
+    >
+      <td>
+         
+      </td>
+      <td>
+         
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+        <i
           class="icon16-config-web"
         />
          Website:
