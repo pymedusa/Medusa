@@ -576,7 +576,7 @@ class Application(object):
             app.DOWNLOAD_URL = check_setting_str(app.CFG, 'General', 'download_url', '')
             app.LOCALHOST_IP = check_setting_str(app.CFG, 'General', 'localhost_ip', '')
             app.CPU_PRESET = check_setting_str(app.CFG, 'General', 'cpu_preset', 'NORMAL')
-            app.ANON_REDIRECT = check_setting_str(app.CFG, 'General', 'anon_redirect', 'http://dereferer.org/?')
+            app.ANON_REDIRECT = check_setting_str(app.CFG, 'General', 'anon_redirect', 'https://anonym.to/?')
             app.PROXY_SETTING = check_setting_str(app.CFG, 'General', 'proxy_setting', '')
             app.PROXY_PROVIDERS = bool(check_setting_int(app.CFG, 'General', 'proxy_providers', 1))
             app.PROXY_INDEXERS = bool(check_setting_int(app.CFG, 'General', 'proxy_indexers', 1))
