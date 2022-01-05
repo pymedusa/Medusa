@@ -8,7 +8,7 @@
 
                 <div class="col-xs-12 col-lg-9">
                     <config-template label="Process Method to be used" label-for="process_method">
-                        <select id="process_method" name="process_method" :value="postprocessing.processMethod" @update="processMethod = $event" class="form-control input-sm">
+                        <select id="process_method" name="process_method" :value="processMethod" @input="processMethod = $event.target.value" class="form-control input-sm">
                             <option v-for="option in availableMethods" :value="option.value" :key="option.value">
                                 {{option.text}}
                             </option>

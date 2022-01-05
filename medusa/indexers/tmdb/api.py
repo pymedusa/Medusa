@@ -199,6 +199,8 @@ class Tmdb(BaseIndexer):
         mapped_results = []
         if results:
             mapped_results = self._map_results(results, self.series_map, '|')
+            if not isinstance(mapped_results, list):
+                mapped_results = [mapped_results]
 
         # The search by id result, is already mapped. We can just add it to the array with results.
         if show_by_id:

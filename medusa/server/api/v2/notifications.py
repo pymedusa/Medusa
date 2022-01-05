@@ -38,7 +38,7 @@ class NotificationsHandler(BaseRequestHandler):
             return self._bad_request('You must provide a notifications resource name')
 
         available_resources = (
-            'kodi', 'plexserver', 'plexhome', 'emby', 'nmj', 'nmjv2', 'trakt'
+            'kodi', 'plexserver', 'plexhome', 'emby', 'nmj', 'nmjv2', 'trakt', 'plex'
         )
 
         if resource not in available_resources:
@@ -92,10 +92,10 @@ class NotificationsHandler(BaseRequestHandler):
 
     def plex_update(self):
         """Update plex's show library."""
-        if None is notifiers.plex_notifier.update_library():
+        if not notifiers.plex_notifier.update_library():
             ui.notifications.message(
-                'Library update command sent to Plex Media Server host: {host}'.format(host=', '.join(app.PLEX_SERVER_HOST)))
+                f"Library update command sent to Plex Media Server host: {', '.join(app.PLEX_SERVER_HOST)}")
         else:
-            ui.notifications.error('Unable to contact Plex Media Server host: {host}'.format(host=', '.join(app.PLEX_SERVER_HOST)))
+            ui.notifications.error(f"Unable to contact Plex Media Server host: {', '.join(app.PLEX_SERVER_HOST)}")
 
         return self._created()

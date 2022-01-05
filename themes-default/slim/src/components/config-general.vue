@@ -476,12 +476,12 @@
                                 <fieldset class="component-group-list">
 
                                     <config-template label-for="github_remote_branches" label="Branch version">
-                                        <select id="github_remote_branches" name="github_remote_branches" v-model="selectedBranch" class="form-control input-sm margin-bottom-5">
+                                        <select id="github_remote_branches" name="github_remote_branches" v-model="selectedBranch" class="form-control input-sm margin-bottom-10">
                                             <option disabled value="">Please select a branch</option>
                                             <option :value="option.value" v-for="option in githubRemoteBranchesOptions" :key="option.value">{{ option.text }}</option>
                                         </select>
                                         <input :disabled="!gitRemoteBranches.length > 0"
-                                               class="btn-medusa btn-inline" style="margin-left: 6px;" type="button" id="branchCheckout"
+                                               class="btn-medusa btn-inline" type="button" id="branchCheckout"
                                                value="Checkout Branch" @click="validateCheckoutBranch"
                                         >
                                         <span v-if="!gitRemoteBranches.length > 0" style="color:rgb(255, 0, 0);"><p>Error: No branches found.</p></span>
@@ -492,61 +492,44 @@
                                         </p>
                                     </config-template>
 
-                                    <config-template label-for="date_presets" label="GitHub authentication type">
-                                        <div class="radio-item">
-                                            <input type="radio" name="git_auth_type_basic" id="git_auth_type_basic" :value="0" v-model="general.git.authType">
-                                            <label for="one">Username and password</label>
-                                        </div>
-                                        <div class="radio-item">
-                                            <input type="radio" name="git_auth_type_token" id="git_auth_type_token" :value="1" v-model="general.git.authType">
-                                            <label for="one">Personal access token</label>
-                                        </div>
-                                        <p>You must use a personal access token if you're using "two-factor authentication" on GitHub.</p>
-                                    </config-template>
+                                    <!-- Token authentication -->
+                                    <config-textbox
+                                        v-model="general.git.token"
+                                        label="GitHub personal access token"
+                                        id="git_token"
+                                        input-class="display-inline form-control input-sm max-input350"
+                                        @focus.native="$event.target.select()"
+                                    >
+                                        <template v-if="general.git.token === ''">
+                                            <v-popover
+                                                trigger="click"
+                                                offset="16"
+                                                placement="right"
+                                                popoverBaseClass="tooltip-base"
+                                                :popoverClass="`tooltip-themed${layout.themeName === 'dark' ? '-dark' : '-light'}`"
+                                            >
+                                                <input class="btn-medusa btn-inline" style="margin-top: 10px;" type="button" id="create_access_token" value="Generate Token">
+                                                <template slot="popover">
+                                                    <div class="tooltip-title">Github Token</div>
+                                                    <div class="tooltip-content">
+                                                        <p>Copy the generated token and paste it in the token input box.</p>
+                                                        <p>
+                                                            <a :href="`${(general.anonRedirect || '')}https://github.com/settings/tokens/new?description=Medusa&scopes=gist,public_repo`" target="_blank">
+                                                                <input class="btn-medusa" type="button" value="Continue to Github...">
+                                                            </a>
+                                                        </p><br>
+                                                    </div>
+                                                </template>
+                                            </v-popover>
+                                        </template>
+                                        <template v-else>
+                                            <a :href="`${(general.anonRedirect || '')}https://github.com/settings/tokens`" target="_blank">
+                                                <input class="btn-medusa btn-inline" style="margin-top: 10px" type="button" id="manage_tokens" value="Manage Tokens">
+                                            </a>
+                                        </template>
 
-                                    <div v-show="general.git.authType === 0">
-                                        <!-- username + password authentication -->
-                                        <config-textbox v-model="general.git.username" label="GitHub username" id="git_username">
-                                            <p>*** (REQUIRED FOR SUBMITTING ISSUES) ***</p>
-                                        </config-textbox>
-                                        <config-textbox v-model="general.git.password" label="GitHub password" id="git_password" type="password">
-                                            <p>*** (REQUIRED FOR SUBMITTING ISSUES) ***</p>
-                                        </config-textbox>
-                                    </div>
-                                    <div v-show="general.git.authType !== 0">
-                                        <!-- Token authentication -->
-                                        <config-textbox v-model="general.git.token" @focus.native="$event.target.select()" label="GitHub personal access token" id="git_token" input-class="display-inline margin-bottom-5">
-                                            <template v-if="general.git.token === ''">
-                                                <v-popover
-                                                    trigger="click"
-                                                    offset="16"
-                                                    placement="right"
-                                                    popoverBaseClass="tooltip-base"
-                                                    :popoverClass="`tooltip-themed${layout.themeName === 'dark' ? '-dark' : '-light'}`"
-                                                >
-                                                    <input class="btn-medusa btn-inline" type="button" id="create_access_token" value="Generate Token">
-                                                    <template slot="popover">
-                                                        <div class="tooltip-title">Github Token</div>
-                                                        <div class="tooltip-content">
-                                                            <p>Copy the generated token and paste it in the token input box.</p>
-                                                            <p>
-                                                                <a :href="`${(general.anonRedirect || '')}https://github.com/settings/tokens/new?description=Medusa&scopes=gist,public_repo`" target="_blank">
-                                                                    <input class="btn-medusa" type="button" value="Continue to Github...">
-                                                                </a>
-                                                            </p><br>
-                                                        </div>
-                                                    </template>
-                                                </v-popover>
-                                            </template>
-                                            <template v-else>
-                                                <a :href="`${(general.anonRedirect || '')}https://github.com/settings/tokens`" target="_blank">
-                                                    <input class="btn-medusa btn-inline" type="button" id="manage_tokens" value="Manage Tokens">
-                                                </a>
-                                            </template>
-
-                                            <p>*** (REQUIRED FOR SUBMITTING ISSUES) ***</p>
-                                        </config-textbox>
-                                    </div>
+                                        <p>*** (REQUIRED FOR SUBMITTING ISSUES) ***</p>
+                                    </config-textbox>
 
                                     <config-textbox v-model="general.git.remote" label="GitHub remote for branch" id="git_remote">
                                         <p>default:origin. Access repo configured remotes (save then refresh browser)</p>
@@ -566,7 +549,7 @@
                                             :multiple="true"
                                             :options="gitRemoteBranches"
                                         />
-                                        <input class="btn-medusa btn-inline" style="margin-left: 6px;" type="button" id="branch_force_update" value="Update Branches" @click="gitRemoteBranches()">
+                                        <input class="btn-medusa btn-inline" type="button" id="branch_force_update" value="Update Branches" @click="gitRemoteBranches()">
                                         <span><b>Note:</b> Empty selection means that any branch could be reset.</span>
                                     </config-template>
                                     <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
@@ -1011,8 +994,8 @@ export default {
     margin-bottom: 10px;
 }
 
-.margin-bottom-5 {
-    margin-bottom: 5px;
+.margin-bottom-10 {
+    margin-bottom: 10px;
 }
 
 .plotInfo {
