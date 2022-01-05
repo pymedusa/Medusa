@@ -369,6 +369,7 @@ def config_system(monkeypatch):
     section_data['webRoot'] = app.WEB_ROOT
     section_data['runsInDocker'] = bool(app.RUNS_IN_DOCKER)
     section_data['newestVersionMessage'] = app.NEWEST_VERSION_STRING
+    section_data['ffprobeVersion'] = 'ffprobe not available'
     section_data['gitRemoteBranches'] = app.GIT_REMOTE_BRANCHES
     section_data['cpuPresets'] = cpu_presets
 
