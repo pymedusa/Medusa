@@ -448,6 +448,10 @@ def config_postprocessing():
     section_data['downloadHandler']['torrentSeedRatio'] = float(app.TORRENT_SEED_RATIO) if app.TORRENT_SEED_RATIO is not None else -1
     section_data['downloadHandler']['torrentSeedAction'] = app.TORRENT_SEED_ACTION
 
+    section_data['ffmpeg'] = {}
+    section_data['ffmpeg']['checkStreams'] = bool(app.FFMPEG_CHECK_STREAMS)
+    section_data['ffmpeg']['path'] = app.FFMPEG_PATH
+
     return section_data
 
 
