@@ -188,4 +188,3 @@ class FfMpeg(object):
             return output[2]
 
         return False
-
