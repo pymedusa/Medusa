@@ -58,7 +58,7 @@ from medusa.helper.exceptions import (
 )
 from medusa.helpers import is_subtitle, verify_freespace
 from medusa.helpers.anidb import set_up_anidb_connection
-from medusa.helpers.ffmpeg import FfMpeg, FfmpegBinaryException, FfprobeBinaryException
+from medusa.helpers.ffmpeg import FfMpeg, FfprobeBinaryException
 from medusa.helpers.utils import generate
 from medusa.name_parser.parser import (
     InvalidNameException,
