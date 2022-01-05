@@ -1145,11 +1145,6 @@ class DataGenerator(object):
         section_data['cpuPresets'] = cpu_presets
         section_data['newestVersionMessage'] = app.NEWEST_VERSION_STRING
         try:
-            section_data['ffmpegVersion'] = FfMpeg().get_ffmpeg_version()
-        except FfmpegBinaryException:
-            section_data['ffmpegVersion'] = 'ffmpeg not available'
-
-        try:
             section_data['ffprobeVersion'] = FfMpeg().get_ffprobe_version()
         except FfprobeBinaryException:
             section_data['ffprobeVersion'] = 'ffprobe not available'

@@ -63,7 +63,6 @@ const state = {
         latest: null,
         unread: null
     },
-    ffmpegVersion: null,
     ffprobeVersion: null
 };
 

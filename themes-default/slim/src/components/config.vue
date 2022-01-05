@@ -39,7 +39,6 @@
             <tr v-if="system.runsInDocker"><td><i class="icon16-config-docker" /> Runs in Docker:</td><td>Yes</td></tr>
             <tr><td>&nbsp;</td><td>&nbsp;</td></tr>
             <tr class="infoTableSeperator"><td>&nbsp;</td><td>&nbsp;</td></tr>
-            <tr><td><i class="icon16-config-arguments" /> Ffmpeg version:</td><td>{{system.ffmpegVersion}}</td></tr>
             <tr><td><i class="icon16-config-arguments" /> Ffprobe version:</td><td>{{system.ffprobeVersion}}</td></tr>
             <tr><td>&nbsp;</td><td>&nbsp;</td></tr>
             <tr class="infoTableSeperator"><td>&nbsp;</td><td>&nbsp;</td></tr>
