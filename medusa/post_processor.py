@@ -1054,20 +1054,6 @@ class PostProcessor(object):
                     )
                     raise EpisodePostProcessingFailedException(f'ffmpeg detected a corruption in this video file: {self.file_path}')
 
-        if app.FFMPEG_CHECK_CORRUPTION:
-            try:
-                ffmpeg.test_ffmpeg_binary()
-                self.log(f'Scanning file {self.file_path} with ffmpeg')
-                result = FfMpeg().scan_for_errors(self.file_path)
-            except FfmpegBinaryException:
-                self.log('Cannot access ffmpeg binary. Make sure ffmpeg is accessable throug your environment variables or configure a path.')
-            else:
-                if result['errors']:
-                    self.log('ffmpeg reported an error while scanning the file {file_path}. Error: {error}'.format(
-                        file_path=self.file_path, error=result['errors']), logger.WARNING
-                    )
-                    raise EpisodePostProcessingFailedException(f'ffmpeg detected a corruption in this video file: {self.file_path}')
-
         # reset in_history
         self.in_history = False
 

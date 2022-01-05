@@ -276,7 +276,6 @@ class ConfigHandler(BaseRequestHandler):
         'postProcessing.downloadHandler.torrentSeedRatio': FloatField(app, 'TORRENT_SEED_RATIO'),
         'postProcessing.downloadHandler.torrentSeedAction': StringField(app, 'TORRENT_SEED_ACTION'),
 
-        'postProcessing.ffmpeg.checkCorruption': BooleanField(app, 'FFMPEG_CHECK_CORRUPTION'),
         'postProcessing.ffmpeg.checkStreams': BooleanField(app, 'FFMPEG_CHECK_STREAMS'),
         'postProcessing.ffmpeg.path': StringField(app, 'FFMPEG_PATH'),
 
@@ -1266,7 +1265,6 @@ class DataGenerator(object):
         section_data['downloadHandler']['torrentSeedAction'] = app.TORRENT_SEED_ACTION
 
         section_data['ffmpeg'] = {}
-        section_data['ffmpeg']['checkCorruption'] = bool(app.FFMPEG_CHECK_CORRUPTION)
         section_data['ffmpeg']['checkStreams'] = bool(app.FFMPEG_CHECK_STREAMS)
         section_data['ffmpeg']['path'] = app.FFMPEG_PATH
 

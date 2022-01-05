@@ -323,7 +323,6 @@ class MedusaApp(object):
         self.SKIP_REMOVED_FILES = False
         self.ALLOWED_EXTENSIONS = ['srt', 'nfo', 'sub', 'idx']
 
-        self.FFMPEG_CHECK_CORRUPTION = False
         self.FFMPEG_CHECK_STREAMS = False
         self.FFMPEG_PATH = ''
 

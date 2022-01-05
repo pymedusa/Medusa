@@ -691,7 +691,6 @@ class Application(object):
             app.CREATE_MISSING_SHOW_DIRS = bool(check_setting_int(app.CFG, 'General', 'create_missing_show_dirs', 0))
             app.ADD_SHOWS_WO_DIR = bool(check_setting_int(app.CFG, 'General', 'add_shows_wo_dir', 0))
 
-            app.FFMPEG_CHECK_CORRUPTION = bool(check_setting_int(app.CFG, 'ffmpeg', 'ffmpeg_check_corruption', 0))
             app.FFMPEG_CHECK_STREAMS = bool(check_setting_int(app.CFG, 'ffmpeg', 'ffmpeg_check_streams', 0))
             app.FFMPEG_PATH = check_setting_str(app.CFG, 'ffmpeg', 'ffmpeg_path', '')
 
@@ -1738,7 +1737,6 @@ class Application(object):
         new_config['General']['fallback_plex_timeout'] = app.FALLBACK_PLEX_TIMEOUT
 
         new_config['ffmpeg'] = {}
-        new_config['ffmpeg']['ffmpeg_check_corruption'] = app.FFMPEG_CHECK_CORRUPTION
         new_config['ffmpeg']['ffmpeg_check_streams'] = app.FFMPEG_CHECK_STREAMS
         new_config['ffmpeg']['ffmpeg_path'] = app.FFMPEG_PATH
 

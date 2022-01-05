@@ -199,11 +199,6 @@
                                         <span v-if="system.ffmpegVersion === 'ffprobe not available'" style="color: red">Ffmpeg binary not found. Add the ffmpeg bin location to your system's environment or configure a path manually below.</span>
                                     </config-toggle-slider>
 
-                                    <config-toggle-slider :disabled="system.ffmpegVersion === 'ffmpeg not available'" v-model="postprocessing.ffmpeg.checkCorruption" label="Use ffmpeg to validate downloaded video files" id="check_corruption">
-                                        <span>Use FFMPEG to check for the last 60s of the video file. Detecting possible truncated video files. This option can potentially result in more failed downloads. As it will also error on encoding errors. It will also take more of you systems resources as it will attempt to scan the whole file.</span><br>
-                                        <span v-if="system.ffmpegVersion === 'ffmpeg not available'" style="color: red">Ffmpeg binary not found. Add the ffmpeg bin location to your system's environment or configure a path manually below.</span>
-                                    </config-toggle-slider>
-
                                     <config-template label-for="ffmpeg_path" label="Alternative ffmpeg path">
                                         <file-browser id="ffmpeg_path" name="ffmpeg_path" title="Select folder location for the ffmpeg binary" :initial-dir="postprocessing.ffmpeg.path" @update="postprocessing.ffmpeg.path = $event" />
                                         <span>If you can't or don't want to depend on the os environment path, you can fix the location to your ffmpeg binary.</span>

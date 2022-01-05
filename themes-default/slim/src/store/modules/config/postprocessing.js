@@ -44,7 +44,7 @@ const state = {
         torrentSeedAction: null
     },
     ffmpeg: {
-        checkCorruption: null,
+        checkStreams: null,
         path: ''
     }
 };
