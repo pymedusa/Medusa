@@ -1,6 +1,7 @@
 ## Unreleased
 
 #### New Features
+- Add support for banner and background images to indexer tvmaze ([10234](https://github.com/pymedusa/Medusa/pull/10234))
 
 #### Improvements
 - Add column sorting for the add new show page search results ([10217](https://github.com/pymedusa/Medusa/pull/10217))
