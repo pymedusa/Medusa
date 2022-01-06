@@ -266,7 +266,7 @@ exports[`Config.test.js renders 1`] = `
          Ffprobe version:
       </td>
       <td>
-        
+        ffprobe not available
       </td>
     </tr>
      
