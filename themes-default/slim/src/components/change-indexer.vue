@@ -30,9 +30,10 @@
     </div>
 </template>
 <script>
+import { api } from '../api';
 import Vue from 'vue';
 import { mapState } from 'vuex';
-import { ChangeIndexerRow }  from './manage';
+import { ChangeIndexerRow } from './manage';
 
 export default {
     name: 'change-indexer',
@@ -84,8 +85,7 @@ export default {
             filteredShows.forEach(show => Vue.set(show, 'checked', value));
         },
         // An indexer/showId has been choosen.
-        // Update 
-        showSelected({show, indexer, showId}) {
+        showSelected({ show, indexer, showId }) {
             const { filteredShows } = this;
             Vue.set(filteredShows.find(s => s === show), 'selected', { indexer, showId });
         },
@@ -106,9 +106,10 @@ export default {
                     );
                     continue;
                 }
-                
+
                 try {
                     this.started = true;
+                    // eslint-disable-next-line no-await-in-loop
                     const { data } = await api.post('changeindexer', {
                         oldSlug, newSlug
                     });
@@ -117,13 +118,15 @@ export default {
                         steps: []
                     });
                 } catch (error) {
-                    debugger;
+                    this.$snotify.warning(
+                        'Error while trying to change shows indexer',
+                        `Error: ${error}`
+                    );
                 }
-
             }
         }
-    },
-}
+    }
+};
 </script>
 <style scoped>
 #filter-indexers {

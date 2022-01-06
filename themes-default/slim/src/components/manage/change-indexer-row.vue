@@ -1,6 +1,6 @@
 <template>
     <tr ref="changeIndexerRow">
-        <td><input type="checkbox" v-model="show.checked" :data-slug="show.id.slug"></td>
+        <td><input type="checkbox" v-model="currentShow.checked" :data-slug="show.id.slug"></td>
         <td><app-link :href="`home/displayShow?showslug=${show.id.slug}`">{{show.name}}</app-link></td>
         <td>{{show.indexer}}</td>
         <td><select-indexer v-bind="{show, searchedShow}" @change="selectIndexerChange" /></td>
@@ -19,14 +19,16 @@
     </tr>
 </template>
 <script>
+import Vue from 'vue';
 import { mapGetters, mapState } from 'vuex';
 import SelectIndexer from './select-indexer.vue';
 import NewShowSearch from '../new-show-search.vue';
-import { StateSwitch } from '../helpers';
+import { AppLink, StateSwitch } from '../helpers';
 
 export default {
     name: 'change-indexer-row',
     components: {
+        AppLink,
         SelectIndexer,
         StateSwitch
     },
@@ -36,6 +38,7 @@ export default {
     data() {
         return {
             // Keep track of the manual searched/selected show.
+            currentShow: this.show,
             searchedShow: {
                 searched: false,
                 indexer: null,
@@ -44,7 +47,7 @@ export default {
             displaySearch: false,
             searchComponent: null,
             state: false
-        }
+        };
     },
     computed: {
         ...mapState({
@@ -53,7 +56,7 @@ export default {
         ...mapGetters(['indexerIdToName'])
     },
     methods: {
-        selectIndexerChange({text, value}) {
+        selectIndexerChange({ text, value }) {
             const { show } = this;
 
             this.displaySearch = text === '--search--';
@@ -121,9 +124,9 @@ export default {
                     this.state = 'yes';
                 }
             }
-        }        
+        }
     }
-}
+};
 </script>
 <style scoped>
 .step-container {

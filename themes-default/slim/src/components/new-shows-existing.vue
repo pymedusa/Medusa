@@ -322,10 +322,7 @@ export default {
                         this.openAddNewShow(idx, true);
                     }
                 });
-            })
-
-            // for (const [curDirIndex] of this.filteredDirList.entries()) {
-            // }
+            });
         },
         updateOptions(options) {
             // Update seleted options from add-show-options.vue @change event.

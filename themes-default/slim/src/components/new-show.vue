@@ -93,7 +93,7 @@
 import { mapGetters, mapState } from 'vuex';
 import RootDirs from './root-dirs.vue';
 import { AddShowOptions } from '.';
-import  NewShowSearch from './new-show-search.vue';
+import NewShowSearch from './new-show-search.vue';
 import { api } from '../api';
 import { VueTabs, VTab } from 'vue-nav-tabs/dist/vue-tabs.js';
 import { FormWizard, TabContent } from 'vue-form-wizard';
@@ -177,7 +177,7 @@ export default {
         };
     },
     mounted() {
-        // IF switching to the first tab, auto focus on the name field.
+        // If switching to the first tab, auto focus on the name field.
         this.$watch('formwizard.currentIndex', newValue => {
             if (newValue === 0 && this.$refs.newShowSearch.$refs.nameToSearch) {
                 this.$refs.newShowSearch.$refs.nameToSearch.focus();
@@ -191,15 +191,6 @@ export default {
                 navigateStep(2);
             }
         }, 100);
-
-        // const { general } = this;
-        // // Set the indexer to the indexer default.
-        // if (general.indexerDefault) {
-        //     this.indexerId = general.indexerDefault;
-        // }
-
-        // // Set default indexer language.
-        // this.indexerLanguage = general.indexerDefaultLanguage;
 
         // Assign formwizard ref to this.formwizard.ref.
         this.formwizard.ref = this.$refs.formwizard;
@@ -273,7 +264,7 @@ export default {
         enableAnimeOptions() {
             const { providedInfo, selectedShow } = this;
             return Boolean(selectedShow || (providedInfo.use && providedInfo.indexerId === 1));
-        },
+        }
     },
     methods: {
         async submitForm() {
