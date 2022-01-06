@@ -73,7 +73,8 @@ class PostProcessHandler(BaseRequestHandler):
             delete_on=delete_on,
             failed=failed,
             proc_type=proc_type,
-            ignore_subs=ignore_subs
+            ignore_subs=ignore_subs,
+            process_single_resource=True
         )
         app.post_processor_queue_scheduler.action.add_item(queue_item)
 

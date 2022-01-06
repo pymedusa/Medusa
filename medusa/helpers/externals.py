@@ -45,7 +45,7 @@ def get_trakt_externals(externals):
 
         try:
             result = sync.search_by_id(externals[external_key], id_type=trakt_mapping[external_key], media_type='show')
-        except TraktException as error:
+        except (TraktException, RequestException) as error:
             log.warning('Error getting external key {external}, error: {error!r}', {
                 'external': trakt_mapping[external_key], 'error': error
             })

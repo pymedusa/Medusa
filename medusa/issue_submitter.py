@@ -14,7 +14,7 @@ from github.GithubException import GithubException, RateLimitExceededException, 
 
 from medusa import app, db
 from medusa.classes import ErrorViewer
-from medusa.github_client import authenticate, get_github_repo, token_authenticate
+from medusa.github_client import get_github_repo, token_authenticate
 from medusa.logger.adapters.style import BraceAdapter
 
 from six import text_type
@@ -41,7 +41,6 @@ _STAFF NOTIFIED_: @{org}/support @{org}/moderators
 class IssueSubmitter(object):
     """GitHub issue submitter."""
 
-    MISSING_CREDENTIALS = 'Please set your GitHub Username and Password in the config. Unable to submit issue ticket to GitHub.'
     MISSING_CREDENTIALS_TOKEN = 'Please set your GitHub personal access token in the config. Unable to submit issue ticket to GitHub.'
     DEBUG_NOT_ENABLED = 'Please enable Debug mode in the config. Unable to submit issue ticket to GitHub.'
     NO_ISSUES = 'No issue to be submitted to GitHub.'
@@ -168,11 +167,8 @@ class IssueSubmitter(object):
         if not app.DEBUG:
             return result(self.DEBUG_NOT_ENABLED)
 
-        if app.GIT_AUTH_TYPE == 1 and not app.GIT_TOKEN:
+        if not app.GIT_TOKEN:
             return result(self.MISSING_CREDENTIALS_TOKEN)
-
-        if app.GIT_AUTH_TYPE == 0 and not (app.GIT_USERNAME and app.GIT_PASSWORD):
-            return result(self.MISSING_CREDENTIALS)
 
         if not ErrorViewer.errors:
             return result(self.NO_ISSUES, logging.INFO)
@@ -185,10 +181,7 @@ class IssueSubmitter(object):
 
         self.running = True
         try:
-            if app.GIT_AUTH_TYPE:
-                github = token_authenticate(app.GIT_TOKEN)
-            else:
-                github = authenticate(app.GIT_USERNAME, app.GIT_PASSWORD)
+            github = token_authenticate(app.GIT_TOKEN)
             if not github:
                 return result(self.BAD_CREDENTIALS)
 

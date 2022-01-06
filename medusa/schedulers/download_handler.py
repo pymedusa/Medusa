@@ -346,7 +346,8 @@ class DownloadHandler(object):
 
         queue_item = PostProcessQueueItem(
             path, info_hash, resource_name=resource_name,
-            failed=failed, episodes=episodes, client_type=client_type
+            failed=failed, episodes=episodes, client_type=client_type,
+            process_single_resource=True
         )
         app.post_processor_queue_scheduler.action.add_item(queue_item)
 

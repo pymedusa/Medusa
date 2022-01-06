@@ -834,6 +834,8 @@
                 ],
                 "webRoot": "",
                 "runsInDocker": false,
+                "newestVersionMessage": "",
+                "ffprobeVersion": "ffprobe not available",
                 "gitRemoteBranches": [
                     "develop",
                     "master"
@@ -1305,6 +1307,10 @@
                     "minFrequency": 5,
                     "torrentSeedRatio": 1,
                     "torrentSeedAction": "remove"
+                },
+                "ffmpeg": {
+                    "checkStreams": true,
+                    "path": ""
                 }
             },
             "search": {

@@ -1,11 +1,45 @@
 ## Unreleased
 
 #### New Features
+- Add option for using ffprobe to validate postprocessed media ([10132](https://github.com/pymedusa/Medusa/pull/10132))
 
 #### Improvements
-- Testing out git workflow docker build
+- Add column sorting for the add new show page search results ([10217](https://github.com/pymedusa/Medusa/pull/10217))
+- Add series start year as a renaming option ([10183](https://github.com/pymedusa/Medusa/pull/10183))
+- Remove git username/password authentication. No longer supported by github. ([10144](https://github.com/pymedusa/Medusa/pull/10144))
 
 #### Fixes
+- Fix displayShow search subtitle button ([10214](https://github.com/pymedusa/Medusa/pull/10214))
+- Prevent failedDownloads from errorring, when a provider has been deleted ([10214](https://github.com/pymedusa/Medusa/pull/10214))
+- Fix mass update status page, start a new snatch when changing status to failed. ([10213](https://github.com/pymedusa/Medusa/pull/10213))
+- Fix changing process method in manual postprocessing. ([10220](https://github.com/pymedusa/Medusa/pull/10220))
+
+-----
+
+## 0.5.22 (23-12-2021)
+
+#### Fixes
+- Fix connecting to deluge version < 2.x ([10192](https://github.com/pymedusa/Medusa/pull/10192))
+
+-----
+
+## 0.5.21 (20-12-2021)
+
+#### New Features
+- Add official Python 3.10 support
+
+#### Improvements
+- Catch AttributeError for TVMaze API
+- Separate recommended lists calls
+- Add rule for parsing shows that begin with a number as title
+- Add anime category for TorrentDay
+
+#### Fixes
+- Fix Plex Server library update from /manage/plex
+- Fix TorrentDay generating a JSONDecodeError
+- Fix update Kodi library
+- Fix provider Morethantv
+- Prevent dropdowns from closing when using touch navigation
 
 -----
 

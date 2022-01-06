@@ -21,6 +21,7 @@ from medusa import (
 )
 from medusa.app import app
 from medusa.common import IGNORED, Quality, SKIPPED, WANTED, cpu_presets
+from medusa.helpers.ffmpeg import FfMpeg, FfprobeBinaryException
 from medusa.helpers.utils import int_default, to_camel_case
 from medusa.indexers.config import INDEXER_TVDBV2, get_indexer_config
 from medusa.logger.adapters.style import BraceAdapter
@@ -170,10 +171,7 @@ class ConfigHandler(BaseRequestHandler):
         'developer': BooleanField(app, 'DEVELOPER'),
         'experimental': BooleanField(app, 'EXPERIMENTAL'),
 
-        'git.username': StringField(app, 'GIT_USERNAME'),
-        'git.password': StringField(app, 'GIT_PASSWORD'),
         'git.token': StringField(app, 'GIT_TOKEN'),
-        'git.authType': IntegerField(app, 'GIT_AUTH_TYPE'),
         'git.remote': StringField(app, 'GIT_REMOTE'),
         'git.path': StringField(app, 'GIT_PATH'),
         'git.org': StringField(app, 'GIT_ORG'),
@@ -277,6 +275,9 @@ class ConfigHandler(BaseRequestHandler):
         'postProcessing.downloadHandler.minFrequency': IntegerField(app, 'MIN_DOWNLOAD_HANDLER_FREQUENCY'),
         'postProcessing.downloadHandler.torrentSeedRatio': FloatField(app, 'TORRENT_SEED_RATIO'),
         'postProcessing.downloadHandler.torrentSeedAction': StringField(app, 'TORRENT_SEED_ACTION'),
+
+        'postProcessing.ffmpeg.checkStreams': BooleanField(app, 'FFMPEG_CHECK_STREAMS'),
+        'postProcessing.ffmpeg.path': StringField(app, 'FFMPEG_PATH'),
 
         'search.general.randomizeProviders': BooleanField(app, 'RANDOMIZE_PROVIDERS'),
         'search.general.downloadPropers': BooleanField(app, 'DOWNLOAD_PROPERS'),
@@ -453,6 +454,7 @@ class ConfigHandler(BaseRequestHandler):
         'notifiers.trakt.sync': BooleanField(app, 'TRAKT_SYNC'),
         'notifiers.trakt.syncRemove': BooleanField(app, 'TRAKT_SYNC_REMOVE'),
         'notifiers.trakt.syncWatchlist': BooleanField(app, 'TRAKT_SYNC_WATCHLIST'),
+        'notifiers.trakt.syncToWatchlist': BooleanField(app, 'TRAKT_SYNC_TO_WATCHLIST'),
         'notifiers.trakt.methodAdd': IntegerField(app, 'TRAKT_METHOD_ADD'),
         'notifiers.trakt.removeWatchlist': BooleanField(app, 'TRAKT_REMOVE_WATCHLIST'),
         'notifiers.trakt.removeSerieslist': BooleanField(app, 'TRAKT_REMOVE_SERIESLIST'),
@@ -757,10 +759,7 @@ class DataGenerator(object):
         section_data['experimental'] = bool(app.EXPERIMENTAL)
 
         section_data['git'] = {}
-        section_data['git']['username'] = app.GIT_USERNAME
-        section_data['git']['password'] = app.GIT_PASSWORD
         section_data['git']['token'] = app.GIT_TOKEN
-        section_data['git']['authType'] = int(app.GIT_AUTH_TYPE)
         section_data['git']['remote'] = app.GIT_REMOTE
         section_data['git']['path'] = app.GIT_PATH
         section_data['git']['org'] = app.GIT_ORG
@@ -1076,6 +1075,7 @@ class DataGenerator(object):
         section_data['trakt']['sync'] = bool(app.TRAKT_SYNC)
         section_data['trakt']['syncRemove'] = bool(app.TRAKT_SYNC_REMOVE)
         section_data['trakt']['syncWatchlist'] = bool(app.TRAKT_SYNC_WATCHLIST)
+        section_data['trakt']['syncToWatchlist'] = bool(app.TRAKT_SYNC_TO_WATCHLIST)
         section_data['trakt']['methodAdd'] = int_default(app.TRAKT_METHOD_ADD)
         section_data['trakt']['removeWatchlist'] = bool(app.TRAKT_REMOVE_WATCHLIST)
         section_data['trakt']['removeSerieslist'] = bool(app.TRAKT_REMOVE_SERIESLIST)
@@ -1144,6 +1144,10 @@ class DataGenerator(object):
         section_data['gitRemoteBranches'] = app.GIT_REMOTE_BRANCHES
         section_data['cpuPresets'] = cpu_presets
         section_data['newestVersionMessage'] = app.NEWEST_VERSION_STRING
+        try:
+            section_data['ffprobeVersion'] = FfMpeg().get_ffprobe_version()
+        except FfprobeBinaryException:
+            section_data['ffprobeVersion'] = 'ffprobe not available'
 
         section_data['news'] = {}
         section_data['news']['lastRead'] = app.NEWS_LAST_READ
@@ -1254,6 +1258,10 @@ class DataGenerator(object):
         section_data['downloadHandler']['minFrequency'] = int(app.MIN_DOWNLOAD_HANDLER_FREQUENCY)
         section_data['downloadHandler']['torrentSeedRatio'] = float(app.TORRENT_SEED_RATIO) if app.TORRENT_SEED_RATIO is not None else -1
         section_data['downloadHandler']['torrentSeedAction'] = app.TORRENT_SEED_ACTION
+
+        section_data['ffmpeg'] = {}
+        section_data['ffmpeg']['checkStreams'] = bool(app.FFMPEG_CHECK_STREAMS)
+        section_data['ffmpeg']['path'] = app.FFMPEG_PATH
 
         return section_data
 
