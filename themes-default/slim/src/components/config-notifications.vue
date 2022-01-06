@@ -843,6 +843,7 @@
                                                     <p>method in which to download episodes for new shows.</p>
                                                 </config-template>
 
+                                                <config-toggle-slider v-model="notifiers.trakt.syncToWatchlist" label="Sync medusa shows to your trakt watchlist" id="sync_to_watchlist" :explanations="['Additionallly to adding shows from your watchlist to medusa, add shows from medusa to your watchlist']" @change="save()" />
                                                 <config-toggle-slider v-model="notifiers.trakt.removeWatchlist" label="Remove episode" id="trakt_remove_watchlist" :explanations="['remove an episode from your watchlist after it\'s downloaded.']" @change="save()" />
                                                 <config-toggle-slider v-model="notifiers.trakt.removeSerieslist" label="Remove series" id="trakt_remove_serieslist" :explanations="['remove the whole series from your watchlist after any download.']" @change="save()" />
                                                 <config-toggle-slider v-model="notifiers.trakt.removeShowFromApplication" label="Remove watched show" id="trakt_remove_show_from_application" :explanations="['remove the show from Medusa if it\'s ended and completely watched']" @change="save()" />

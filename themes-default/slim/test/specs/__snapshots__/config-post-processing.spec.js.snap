@@ -1375,6 +1375,101 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     </div>
                   </div>
                 </div>
+                 
+                <div
+                  id="config-toggle-slider-content"
+                >
+                  <div
+                    class="form-group"
+                  >
+                    <div
+                      class="row"
+                    >
+                      <div
+                        class="col-sm-2"
+                      >
+                        <label
+                          class="control-label"
+                          for="check_streams"
+                        >
+                          <span>
+                            Use ffprobe to validate downloaded video files for a minimum of one video and audio stream
+                          </span>
+                        </label>
+                      </div>
+                       
+                      <div
+                        class="col-sm-10 content"
+                      >
+                        <toggle-button-stub
+                          disabled="true"
+                          height="22"
+                          id="check_streams"
+                          name="check_streams"
+                          sync=""
+                          width="45"
+                        />
+                          
+                        <span>
+                          Use PPROBE to check a video for a minimum of one audio and video stream. This is the more safe version of the two. It will only scan the video files meta data.
+                        </span>
+                        <br />
+                         
+                        <span
+                          style="color: red;"
+                        >
+                          Ffmpeg binary not found. Add the ffmpeg bin location to your system's environment or configure a path manually below.
+                        </span>
+                         
+                        <!---->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                 
+                <div
+                  id="config-template-content"
+                >
+                  <div
+                    class="form-group"
+                  >
+                    <div
+                      class="row"
+                    >
+                      <div
+                        class="col-sm-2"
+                      >
+                        <label
+                          class="control-label"
+                          for="ffmpeg_path"
+                        >
+                          <span>
+                            Alternative ffmpeg path
+                          </span>
+                        </label>
+                      </div>
+                       
+                      <div
+                        class="col-sm-10 content"
+                      >
+                        <file-browser-stub
+                          id="ffmpeg_path"
+                          initialdir=""
+                          localstoragekey=""
+                          name="ffmpeg_path"
+                          showbrowsebutton="true"
+                          title="Select folder location for the ffmpeg binary"
+                        />
+                         
+                        <span>
+                          If you can't or don't want to depend on the os environment path, you can fix the location to your ffmpeg binary.
+                        </span>
+                         
+                        <!---->
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </fieldset>
                
               <input

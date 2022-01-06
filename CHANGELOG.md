@@ -2,6 +2,7 @@
 
 #### New Features
 - Add support for banner and background images to indexer tvmaze ([10234](https://github.com/pymedusa/Medusa/pull/10234))
+- Add option for using ffprobe to validate postprocessed media ([10132](https://github.com/pymedusa/Medusa/pull/10132))
 
 #### Improvements
 - Add column sorting for the add new show page search results ([10217](https://github.com/pymedusa/Medusa/pull/10217))
@@ -12,6 +13,7 @@
 - Fix displayShow search subtitle button ([10214](https://github.com/pymedusa/Medusa/pull/10214))
 - Prevent failedDownloads from errorring, when a provider has been deleted ([10214](https://github.com/pymedusa/Medusa/pull/10214))
 - Fix mass update status page, start a new snatch when changing status to failed. ([10213](https://github.com/pymedusa/Medusa/pull/10213))
+- Fix changing process method in manual postprocessing. ([10220](https://github.com/pymedusa/Medusa/pull/10220))
 
 -----
 
