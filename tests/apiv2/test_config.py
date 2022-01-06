@@ -369,6 +369,7 @@ def config_system(monkeypatch):
     section_data['webRoot'] = app.WEB_ROOT
     section_data['runsInDocker'] = bool(app.RUNS_IN_DOCKER)
     section_data['newestVersionMessage'] = app.NEWEST_VERSION_STRING
+    section_data['ffprobeVersion'] = 'ffprobe not available'
     section_data['gitRemoteBranches'] = app.GIT_REMOTE_BRANCHES
     section_data['cpuPresets'] = cpu_presets
 
@@ -446,6 +447,10 @@ def config_postprocessing():
     section_data['downloadHandler']['minFrequency'] = int(app.MIN_DOWNLOAD_HANDLER_FREQUENCY)
     section_data['downloadHandler']['torrentSeedRatio'] = float(app.TORRENT_SEED_RATIO) if app.TORRENT_SEED_RATIO is not None else -1
     section_data['downloadHandler']['torrentSeedAction'] = app.TORRENT_SEED_ACTION
+
+    section_data['ffmpeg'] = {}
+    section_data['ffmpeg']['checkStreams'] = bool(app.FFMPEG_CHECK_STREAMS)
+    section_data['ffmpeg']['path'] = app.FFMPEG_PATH
 
     return section_data
 

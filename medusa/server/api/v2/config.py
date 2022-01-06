@@ -21,6 +21,7 @@ from medusa import (
 )
 from medusa.app import app
 from medusa.common import IGNORED, Quality, SKIPPED, WANTED, cpu_presets
+from medusa.helpers.ffmpeg import FfMpeg, FfprobeBinaryException
 from medusa.helpers.utils import int_default, to_camel_case
 from medusa.indexers.config import INDEXER_TVDBV2, get_indexer_config
 from medusa.logger.adapters.style import BraceAdapter
@@ -274,6 +275,9 @@ class ConfigHandler(BaseRequestHandler):
         'postProcessing.downloadHandler.minFrequency': IntegerField(app, 'MIN_DOWNLOAD_HANDLER_FREQUENCY'),
         'postProcessing.downloadHandler.torrentSeedRatio': FloatField(app, 'TORRENT_SEED_RATIO'),
         'postProcessing.downloadHandler.torrentSeedAction': StringField(app, 'TORRENT_SEED_ACTION'),
+
+        'postProcessing.ffmpeg.checkStreams': BooleanField(app, 'FFMPEG_CHECK_STREAMS'),
+        'postProcessing.ffmpeg.path': StringField(app, 'FFMPEG_PATH'),
 
         'search.general.randomizeProviders': BooleanField(app, 'RANDOMIZE_PROVIDERS'),
         'search.general.downloadPropers': BooleanField(app, 'DOWNLOAD_PROPERS'),
@@ -1140,6 +1144,10 @@ class DataGenerator(object):
         section_data['gitRemoteBranches'] = app.GIT_REMOTE_BRANCHES
         section_data['cpuPresets'] = cpu_presets
         section_data['newestVersionMessage'] = app.NEWEST_VERSION_STRING
+        try:
+            section_data['ffprobeVersion'] = FfMpeg().get_ffprobe_version()
+        except FfprobeBinaryException:
+            section_data['ffprobeVersion'] = 'ffprobe not available'
 
         section_data['news'] = {}
         section_data['news']['lastRead'] = app.NEWS_LAST_READ
@@ -1250,6 +1258,10 @@ class DataGenerator(object):
         section_data['downloadHandler']['minFrequency'] = int(app.MIN_DOWNLOAD_HANDLER_FREQUENCY)
         section_data['downloadHandler']['torrentSeedRatio'] = float(app.TORRENT_SEED_RATIO) if app.TORRENT_SEED_RATIO is not None else -1
         section_data['downloadHandler']['torrentSeedAction'] = app.TORRENT_SEED_ACTION
+
+        section_data['ffmpeg'] = {}
+        section_data['ffmpeg']['checkStreams'] = bool(app.FFMPEG_CHECK_STREAMS)
+        section_data['ffmpeg']['path'] = app.FFMPEG_PATH
 
         return section_data
 

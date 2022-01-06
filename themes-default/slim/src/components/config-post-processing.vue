@@ -193,6 +193,17 @@
                                         <select-list name="extra_scripts" id="extra_scripts" csv-enabled :list-items="postprocessing.extraScripts" @change="onChangeExtraScripts" />
                                         <span>See <app-link :href="postprocessing.extraScriptsUrl" class="wikie"><strong>Wiki</strong></app-link> for script arguments description and usage.</span>
                                     </config-template>
+
+                                    <config-toggle-slider :disabled="system.ffprobeVersion === 'ffprobe not available'" v-model="postprocessing.ffmpeg.checkStreams" label="Use ffprobe to validate downloaded video files for a minimum of one video and audio stream" id="check_streams">
+                                        <span>Use PPROBE to check a video for a minimum of one audio and video stream. This is the more safe version of the two. It will only scan the video files meta data.</span><br>
+                                        <span v-if="system.ffprobeVersion === 'ffprobe not available'" style="color: red">Ffmpeg binary not found. Add the ffmpeg bin location to your system's environment or configure a path manually below.</span>
+                                    </config-toggle-slider>
+
+                                    <config-template label-for="ffmpeg_path" label="Alternative ffmpeg path">
+                                        <file-browser id="ffmpeg_path" name="ffmpeg_path" title="Select folder location for the ffmpeg binary" :initial-dir="postprocessing.ffmpeg.path" @update="postprocessing.ffmpeg.path = $event" />
+                                        <span>If you can't or don't want to depend on the os environment path, you can fix the location to your ffmpeg binary.</span>
+                                    </config-template>
+
                                 </fieldset>
                                 <input type="submit"
                                        class="btn-medusa config_submitter"
@@ -371,6 +382,7 @@ export default {
     },
     methods: {
         ...mapActions([
+            'getConfig',
             'setConfig'
         ]),
         onChangeSyncFiles(items) {
@@ -448,6 +460,8 @@ export default {
                     'Saved',
                     { timeout: 5000 }
                 );
+                // Get system config to check for the ffmpeg binary.
+                this.getConfig('system');
             } catch (error) {
                 this.$snotify.error(
                     'Error while trying to save Post-Processing config',

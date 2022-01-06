@@ -1,6 +1,7 @@
 ## Unreleased
 
 #### New Features
+- Add option for using ffprobe to validate postprocessed media ([10132](https://github.com/pymedusa/Medusa/pull/10132))
 
 #### Improvements
 - Add column sorting for the add new show page search results ([10217](https://github.com/pymedusa/Medusa/pull/10217))
