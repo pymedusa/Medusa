@@ -1,6 +1,7 @@
 ## Unreleased
 
 #### New Features
+- Add support for banner and background images to indexer tvmaze ([10234](https://github.com/pymedusa/Medusa/pull/10234))
 - Add option for using ffprobe to validate postprocessed media ([10132](https://github.com/pymedusa/Medusa/pull/10132))
 
 #### Improvements
