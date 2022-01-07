@@ -265,8 +265,8 @@ class GenericMetadata(object):
         """
         return None
 
-    def create_show_metadata(self, show_obj):
-        if self.show_metadata and show_obj and not self._has_show_metadata(show_obj):
+    def create_show_metadata(self, show_obj, force=False):
+        if self.show_metadata and show_obj and (not self._has_show_metadata(show_obj) or force):
             log.debug(
                 u'Metadata provider {name} creating series metadata for {series}',
                 {u'name': self.name, u'series': show_obj.name}

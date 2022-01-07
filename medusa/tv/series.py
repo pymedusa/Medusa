@@ -996,14 +996,14 @@ class Series(TV):
 
         return words(preferred_words, undesired_words, ignored_words, required_words)
 
-    def __write_show_nfo(self, metadata_provider):
+    def __write_show_nfo(self, metadata_provider, force=False):
 
         result = False
-        result = metadata_provider.create_show_metadata(self) or result
+        result = metadata_provider.create_show_metadata(self, force=force) or result
 
         return result
 
-    def write_metadata(self, show_only=False):
+    def write_metadata(self, show_only=False, force=False):
         """Write show metadata files.
 
         :param show_only:
@@ -1016,7 +1016,7 @@ class Series(TV):
 
         for metadata_provider in itervalues(app.metadata_provider_dict):
             self.__get_images(metadata_provider)
-            self.__write_show_nfo(metadata_provider)
+            self.__write_show_nfo(metadata_provider, force=force)
 
         if not show_only:
             self.__write_episode_nfos()
