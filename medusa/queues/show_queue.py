@@ -514,7 +514,7 @@ class QueueItemRefresh(ShowQueueItem):
             self.show.refresh_dir()
             if self.force:
                 self.show.update_metadata()
-            self.show.write_metadata(force=self.force)
+            self.show.write_metadata()
             self.show.populate_cache()
 
             # Load XEM data to DB for show

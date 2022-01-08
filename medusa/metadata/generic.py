@@ -61,11 +61,11 @@ class GenericMetadata(object):
     def __init__(self, show_metadata=False, episode_metadata=False, fanart=False,
                  poster=False, banner=False, episode_thumbnails=False,
                  season_posters=False, season_banners=False,
-                 season_all_poster=False, season_all_banner=False):
+                 season_all_poster=False, season_all_banner=False, overwrite_nfo=False):
 
         self.name = u'Generic'
         self._ep_nfo_extension = u'nfo'
-        self._show_metadata_filename = u'tvshow.nfo'
+        self._show_metadata_filename = u'tvseason_all_bannershow.nfo'
         self.fanart_name = u'fanart.jpg'
         self.poster_name = u'poster.jpg'
         self.banner_name = u'banner.jpg'
@@ -81,6 +81,7 @@ class GenericMetadata(object):
         self.season_banners = season_banners
         self.season_all_poster = season_all_poster
         self.season_all_banner = season_all_banner
+        self.overwrite_nfo = overwrite_nfo
 
         # Web UI metadata template (override when subclassing)
         self.eg_show_metadata = '<i>not supported</i>'
@@ -100,7 +101,7 @@ class GenericMetadata(object):
     def get_config(self):
         config_list = [self.show_metadata, self.episode_metadata, self.fanart, self.poster, self.banner,
                        self.episode_thumbnails, self.season_posters, self.season_banners, self.season_all_poster,
-                       self.season_all_banner]
+                       self.season_all_banner, self.overwrite_nfo]
         return u'|'.join([str(int(x)) for x in config_list])
 
     def get_id(self):
@@ -124,6 +125,11 @@ class GenericMetadata(object):
         self.season_banners = config_list[7]
         self.season_all_poster = config_list[8]
         self.season_all_banner = config_list[9]
+        
+        if len(config_list) > 10:
+            self.overwrite_nfo = config_list[10]
+        else:
+            self.overwrite_nfo = False
 
     @staticmethod
     def _check_exists(location):
@@ -265,8 +271,8 @@ class GenericMetadata(object):
         """
         return None
 
-    def create_show_metadata(self, show_obj, force=False):
-        if self.show_metadata and show_obj and (not self._has_show_metadata(show_obj) or force):
+    def create_show_metadata(self, show_obj):
+        if self.show_metadata and show_obj and (not self._has_show_metadata(show_obj) or self.overwrite_nfo):
             log.debug(
                 u'Metadata provider {name} creating series metadata for {series}',
                 {u'name': self.name, u'series': show_obj.name}
@@ -275,7 +281,7 @@ class GenericMetadata(object):
         return False
 
     def create_episode_metadata(self, ep_obj):
-        if self.episode_metadata and ep_obj and not self.has_episode_metadata(ep_obj):
+        if self.episode_metadata and ep_obj and (not self.has_episode_metadata(ep_obj) or self.overwrite_nfo):
             log.debug(
                 u'Metadata provider {name} creating episode metadata for {episode}',
                 {u'name': self.name, u'episode': ep_obj.pretty_name()}
@@ -1058,6 +1064,7 @@ class GenericMetadata(object):
         data['seasonBanners'] = self.season_banners
         data['seasonAllPoster'] = self.season_all_poster
         data['seasonAllBanner'] = self.season_all_banner
+        data['overwriteNfo'] = self.overwrite_nfo
 
         data['example'] = {}
         data['example']['banner'] = self.eg_banner
