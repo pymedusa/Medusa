@@ -8,7 +8,7 @@
                     <!-- @TODO: Remove data attributes -->
                     <!-- @SEE: https://github.com/pymedusa/Medusa/pull/5087#discussion_r214077142 -->
                     <h1 class="title" :data-indexer-name="show.indexer" :data-series-id="show.id[show.indexer]" :id="'scene_exception_' + show.id[show.indexer]">
-                        <app-link :href="`home/displayShow?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}`" class="snatchTitle">{{ show.title }}</app-link>
+                        <app-link :href="`home/displayShow?showslug=${show.id.slug}`" class="snatchTitle">{{ show.title }}</app-link>
                     </h1>
                 </div>
 
@@ -63,7 +63,7 @@
                     <div class="show-poster-container">
                         <div class="row">
                             <div class="image-flex-container col-md-12">
-                                <asset default-src="images/poster.png" :show-slug="show.id.slug" type="posterThumb" cls="show-image shadow" :link="true" />
+                                <asset v-if="show.id.slug" default-src="images/poster.png" :show-slug="show.id.slug" type="posterThumb" cls="show-image shadow" :link="true" />
                             </div>
                         </div>
                     </div>
@@ -73,7 +73,7 @@
                     <div class="show-info-container">
                         <div class="row">
                             <div class="pull-right col-lg-3 col-md-3 hidden-sm hidden-xs">
-                                <asset default-src="images/banner.png" :show-slug="show.id.slug" type="banner" cls="show-banner pull-right shadow" :link="true" />
+                                <asset v-if="show.id.slug" default-src="images/banner.png" :show-slug="show.id.slug" type="banner" cls="show-banner pull-right shadow" :link="true" />
                             </div>
                             <div id="indexers" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
                                 <span
@@ -87,7 +87,7 @@
                                     <span v-if="show.year.start">({{ show.year.start }}) - {{ show.runtime }} minutes - </span>
                                 </template>
                                 <template v-else>
-                                    <img v-for="country in show.countryCodes" :key="'flag-' + country" src="images/blank.png" :class="['country-flag', 'flag-' + country]" width="16" height="11" style="margin-left: 3px; vertical-align:middle;">
+                                    <img v-for="country in show.countryCodes" :key="`flag-${country}`" src="images/blank.png" :class="['country-flag', `flag-${country}`]" width="16" height="11" style="margin-left: 3px; vertical-align:middle;">
                                     <span v-if="show.imdbInfo.year">
                                         ({{ show.imdbInfo.year }}) -
                                     </span>
@@ -100,8 +100,8 @@
                                 </template>
 
                                 <div id="indexer-wrapper">
-                                    <img id="stored-by-indexer" src="images/star.png">
                                     <app-link v-if="showIndexerUrl && indexerConfig[show.indexer].icon" :href="showIndexerUrl" :title="showIndexerUrl">
+                                        <img id="stored-by-indexer" src="images/star.png">
                                         <img :alt="indexerConfig[show.indexer].name" height="16" width="16" :src="`images/${indexerConfig[show.indexer].icon}`" style="margin-top: -1px; vertical-align:middle;">
                                     </app-link>
                                 </div>
@@ -133,7 +133,7 @@
                             <!-- Show Summary -->
                             <div ref="summary" v-if="configLoaded" id="summary" class="col-md-12">
                                 <div class="row">
-                                    <div id="show-summary" :class="{summaryFanArt: layout.fanartBackground}" class="col-lg-9 col-md-8 col-sm-8 col-xs-12">
+                                    <div id="show-summary" class="col-lg-9 col-md-8 col-sm-8 col-xs-12">
                                         <table class="summaryTable pull-left">
                                             <tr v-if="show.plot">
                                                 <td colspan="2" style="padding-bottom: 15px;">
@@ -152,9 +152,9 @@
                                                 <tr v-if="combineQualities(show.config.qualities.allowed) > 0">
                                                     <td class="showLegend">Allowed Qualities:</td>
                                                     <td>
-                                                        <template v-for="(curQuality, index) in show.config.qualities.allowed"><!--
-                                                            -->{{ index > 0 ? ', ' : '' }}<!--
-                                                            --><quality-pill :quality="curQuality" :key="`allowed-${curQuality}`" />
+                                                        <template v-for="(curQuality, index) in show.config.qualities.allowed">
+                                                            {{ index > 0 ? ', ' : '' }}
+                                                            <quality-pill :quality="curQuality" :key="`allowed-${curQuality}`" />
                                                         </template>
                                                     </td>
                                                 </tr>
@@ -162,9 +162,9 @@
                                                 <tr v-if="combineQualities(show.config.qualities.preferred) > 0">
                                                     <td class="showLegend">Preferred Qualities:</td>
                                                     <td>
-                                                        <template v-for="(curQuality, index) in show.config.qualities.preferred"><!--
-                                                            -->{{ index > 0 ? ', ' : '' }}<!--
-                                                            --><quality-pill :quality="curQuality" :key="`preferred-${curQuality}`" />
+                                                        <template v-for="(curQuality, index) in show.config.qualities.preferred">
+                                                            {{ index > 0 ? ', ' : '' }}
+                                                            <quality-pill :quality="curQuality" :key="`preferred-${curQuality}`" />
                                                         </template>
                                                     </td>
                                                 </tr>
@@ -267,8 +267,8 @@
                                     <div id="show-status" class="col-lg-3 col-md-4 col-sm-4 col-xs-12 pull-xs-left">
                                         <table class="pull-xs-left pull-md-right pull-sm-right pull-lg-right">
                                             <tr v-if="show.language"><td class="showLegend">Info Language:</td><td><img :src="'images/subtitles/flags/' + getCountryISO2ToISO3(show.language) + '.png'" width="16" height="11" :alt="show.language" :title="show.language" onError="this.onerror=null;this.src='images/flags/unknown.png';"></td></tr>
-                                            <tr v-if="config.subtitles.enabled"><td class="showLegend">Subtitles: </td><td><state-switch :theme="layout.themeName" :state="show.config.subtitlesEnabled" @click="toggleConfigOption('subtitlesEnabled');" /></td></tr>
-                                            <tr><td class="showLegend">Season Folders: </td><td><state-switch :theme="layout.themeName" :state="show.config.seasonFolders || config.namingForceFolders" /></td></tr>
+                                            <tr v-if="subtitles.enabled"><td class="showLegend">Subtitles: </td><td><state-switch :theme="layout.themeName" :state="show.config.subtitlesEnabled" @click="toggleConfigOption('subtitlesEnabled');" /></td></tr>
+                                            <tr><td class="showLegend">Season Folders: </td><td><state-switch :theme="layout.themeName" :state="show.config.seasonFolders || general.namingForceFolders" /></td></tr>
                                             <tr><td class="showLegend">Paused: </td><td><state-switch :theme="layout.themeName" :state="show.config.paused" @click="toggleConfigOption('paused')" /></td></tr>
                                             <tr><td class="showLegend">Air-by-Date: </td><td><state-switch :theme="layout.themeName" :state="show.config.airByDate" @click="toggleConfigOption('airByDate')" /></td></tr>
                                             <tr><td class="showLegend">Sports: </td><td><state-switch :theme="layout.themeName" :state="show.config.sports" @click="toggleConfigOption('sports')" /></td></tr>
@@ -370,16 +370,10 @@ export default {
             ].includes(value)
         },
         /**
-         * Show indexer
+         * Show Slug
          */
-        showIndexer: {
+        slug: {
             type: String
-        },
-        /**
-         * Show id
-         */
-        showId: {
-            type: Number
         },
         /**
          * Season
@@ -436,7 +430,8 @@ export default {
     },
     computed: {
         ...mapState({
-            config: state => state.config.general,
+            general: state => state.config.general,
+            subtitles: state => state.config.subtitles,
             layout: state => state.config.layout,
             shows: state => state.shows.shows,
             indexers: state => state.config.indexers,
@@ -454,12 +449,6 @@ export default {
             getQualityPreset: 'getQualityPreset',
             getStatus: 'getStatus'
         }),
-        indexer() {
-            return this.showIndexer || this.$route.query.indexername;
-        },
-        id() {
-            return this.showId || Number(this.$route.query.seriesid) || undefined;
-        },
         season() {
             return resolveToValue(this.showSeason, Number(this.$route.query.season));
         },
@@ -509,7 +498,7 @@ export default {
                 Allowed: 0
             };
             seasons.forEach(season => {
-                season.episodes.forEach(episode => {
+                season.children.forEach(episode => {
                     summary[getOverviewStatus(episode.status, episode.quality, show.config.qualities)] += 1;
                 });
             });

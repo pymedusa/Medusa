@@ -8,7 +8,7 @@
 
                     <form id="addShowForm" @submit.prevent="">
 
-                        <form-wizard ref="formwizard" class="formwizard" title="" subtitle="" @change="updateFormWizardStep" color="rgb(95, 95, 95)">
+                        <form-wizard ref="formwizard" class="formwizard" title="" subtitle="" @on-change="updateFormWizardStep" color="rgb(95, 95, 95)">
                             <template slot="step" slot-scope="props">
                                 <div class="step" :class="{disabledstep: !props.tab.active}" @click="navigateStep(props.index)">
                                     Step {{props.index + 1}}<div class="smalltext">{{props.tab.title}}</div>
@@ -123,10 +123,10 @@
                                                     <thead>
                                                         <tr>
                                                             <th />
-                                                            <th>Show Name</th>
-                                                            <th class="premiere">Premiere</th>
-                                                            <th class="network">Network</th>
-                                                            <th class="indexer">Indexer</th>
+                                                            <th class="sorting" :class="sorting.showName" @click="toggleSort('showName')">Show Name</th>
+                                                            <th class="sorting premiere" :class="sorting.premiere" @click="toggleSort('premiere')">Premiere</th>
+                                                            <th class="sorting network" :class="sorting.network" @click="toggleSort('network')">Network</th>
+                                                            <th class="sorting indexer" :class="sorting.indexerName" @click="toggleSort('indexerName')">Indexer</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -177,7 +177,9 @@
                     </form>
                     <br>
                     <div style="width: 100%; text-align: center;">
-                        <input @click.prevent="submitForm" class="btn-medusa btn-inline" type="button" value="Add Show" :disabled="addButtonDisabled">
+                        <input @click.prevent="submitForm" class="btn-medusa btn-inline"
+                               v-show="formwizard.currentIndex !== 2"
+                               type="button" value="Add Show" :disabled="addButtonDisabled">
                     </div>
                 </div>
             </v-tab>
@@ -307,7 +309,14 @@ export default {
                 showLists: []
             },
             addedQueueItem: null,
-            existingFolder: null
+            existingFolder: null,
+            sorting: {
+                showName: null,
+                premiere: null,
+                network: null,
+                indexerName: null,
+                currentSortColumn: null
+            }
         };
     },
     mounted() {
@@ -451,7 +460,7 @@ export default {
         },
         enableAnimeOptions() {
             const { providedInfo, selectedShow } = this;
-            return Boolean((selectedShow && selectedShow.indexerId === 1) || (providedInfo.use && providedInfo.indexerId === 1));
+            return Boolean(selectedShow || (providedInfo.use && providedInfo.indexerId === 1));
         },
         indexerListOptions() {
             const { indexers } = this;
@@ -469,9 +478,9 @@ export default {
 
             if (providedInfo.showDir) {
                 // Try to get a show name from the show dir.
-                const titleWithoutYear = providedInfo.showDir.replace(/\d{4}/gi, '');
+                const titleWithoutYear = providedInfo.showDir.replace(/\(?\d{4}\)?/gi, '');
                 titleWithoutYear.split(/[/\\]/).pop();
-                return showBaseName(titleWithoutYear);
+                return showBaseName(titleWithoutYear).trim();
             }
 
             return '';
@@ -677,7 +686,7 @@ export default {
                         }
                         // Extract existing show info
                         const [matchIndexerName, matchShowId] = alreadyAdded;
-                        return 'home/displayShow?indexername=' + matchIndexerName + '&seriesid=' + matchShowId;
+                        return `home/displayShow?showslug=${matchIndexerName}${matchShowId}`;
                     })();
 
                     return {
@@ -756,9 +765,10 @@ export default {
         },
         async checkFolder() {
             // Check if selected show already has a folder in one of the root dirs.
+            // We only check this for the addNewShow route.
             const { indexerIdToName, selectedRootDir, selectedShow } = this;
 
-            if (!selectedShow) {
+            if (this.$route.name === 'addExistingShows' || !selectedShow) {
                 return;
             }
 
@@ -792,6 +802,28 @@ export default {
             } catch (error) {
                 this.$snotify.warning('Error while checking for existing folder');
             }
+        },
+        toggleSort(column) {
+            // Set the sort column
+            this.sorting.currentSortColumn = column;
+            Object.keys(this.sorting).filter(
+                key => key !== 'currentSortColumn' && key !== this.sorting.currentSortColumn
+            ).forEach(key => {
+                this.sorting[key] = null;
+            });
+
+            // Toggle through (tri-state) the sort options, 'desc', 'asc' and null.
+            const states = ['desc', 'asc'];
+            if (!this.sorting[column]) {
+                this.sorting[column] = states[0];
+                return;
+            }
+
+            let i = states.indexOf(this.sorting[column]);
+
+            // Increment the counter, but don't let it exceed the maximum index
+            i = ++i % states.length;
+            this.sorting[column] = states[i];
         }
     },
     watch: {
@@ -808,6 +840,28 @@ export default {
         },
         selectedShowSlug() {
             this.checkFolder();
+        },
+        sorting: {
+            deep: true,
+            handler(sorting) {
+                const { currentSortColumn } = sorting;
+                if (currentSortColumn && sorting[currentSortColumn]) {
+                    this.searchResults.sort((firstItem, secondItem) => {
+                        if (currentSortColumn === 'premiere') {
+                            if (!firstItem.premiereDate || !secondItem.premiereDate) {
+                                return firstItem.premiereDate ? 1 : -1;
+                            }
+                            return new Date(firstItem.premiereDate) - new Date(secondItem.premiereDate);
+                        }
+
+                        // Handle showName, indexerName and network
+                        return firstItem[currentSortColumn].localeCompare(secondItem[currentSortColumn]);
+                    });
+                    if (sorting[currentSortColumn] === 'desc') {
+                        this.searchResults.reverse();
+                    }
+                }
+            }
         }
     }
 };
@@ -866,4 +920,19 @@ ul.wizard-nav .step .smalltext {
     line-height: 40px;
 }
 
+.sorting {
+    background-repeat: no-repeat;
+}
+
+.desc {
+    background-color: rgb(85, 85, 85);
+    background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
+}
+
+.asc {
+    background-color: rgb(85, 85, 85);
+    background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjI8Bya2wnINUMopZAQA7);
+    background-position-x: right;
+    background-position-y: bottom;
+}
 </style>

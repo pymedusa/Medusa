@@ -5,6 +5,8 @@
 from __future__ import unicode_literals
 
 import logging
+import random
+import string
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -13,6 +15,7 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
+from requests.utils import add_dict_to_cookiejar
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -39,6 +42,23 @@ class AniDexProvider(TorrentProvider):
 
         # Cache
         self.cache = tv.Cache(self, min_time=20)
+
+        self.cookies = {
+            '__ddg1': self.random_sixteen(),
+            '__ddg2': self.random_sixteen(),
+            'smpush_desktop_request': 'true'
+        }
+
+    @staticmethod
+    def random_sixteen():
+        """
+        Create 16 character string, for cookies.
+
+        This will bypass DDos-guard.net protection
+        """
+        return ''.join(random.choice(
+            string.ascii_uppercase + string.ascii_lowercase + string.digits
+        ) for _ in range(16))
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
@@ -70,6 +90,7 @@ class AniDexProvider(TorrentProvider):
 
                     search_params.update({'q': search_string})
 
+                add_dict_to_cookiejar(self.session.cookies, self.cookies)
                 response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.text:
                     log.debug('No data returned from provider')

@@ -10,14 +10,18 @@ exports[`ConfigTextboxNumber.test.js renders 1`] = `
     <div
       class="row"
     >
-      <label
-        class="col-sm-2 control-label"
-        for="test-id"
+      <div
+        class="col-sm-2"
       >
-        <span>
-          test-label
-        </span>
-      </label>
+        <label
+          class="control-label"
+          for="test-id"
+        >
+          <span>
+            test-label
+          </span>
+        </label>
+      </div>
        
       <div
         class="col-sm-10 content"
@@ -55,14 +59,18 @@ exports[`ConfigTextboxNumber.test.js renders with min and max 1`] = `
     <div
       class="row"
     >
-      <label
-        class="col-sm-2 control-label"
-        for="test-id"
+      <div
+        class="col-sm-2"
       >
-        <span>
-          test-label
-        </span>
-      </label>
+        <label
+          class="control-label"
+          for="test-id"
+        >
+          <span>
+            test-label
+          </span>
+        </label>
+      </div>
        
       <div
         class="col-sm-10 content"

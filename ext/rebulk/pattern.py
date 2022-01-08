@@ -5,21 +5,18 @@ Abstract pattern class definition along with various implementations (regexp, st
 """
 # pylint: disable=super-init-not-called,wrong-import-position
 
-from abc import ABCMeta, abstractmethod, abstractproperty
-
-import six
+from abc import ABCMeta, abstractmethod
 
 from . import debug
 from .formatters import default_formatter
 from .loose import call, ensure_list, ensure_dict
 from .match import Match
-from .remodule import re, REGEX_AVAILABLE
+from .remodule import re, REGEX_ENABLED
 from .utils import find_all, is_iterable, get_first_defined
 from .validators import allways_true
 
 
-@six.add_metaclass(ABCMeta)
-class BasePattern(object):
+class BasePattern(metaclass=ABCMeta):
     """
     Base class for Pattern like objects
     """
@@ -41,8 +38,7 @@ class BasePattern(object):
         pass
 
 
-@six.add_metaclass(ABCMeta)
-class Pattern(BasePattern):
+class Pattern(BasePattern, metaclass=ABCMeta):
     """
     Definition of a particular pattern to search for.
     """
@@ -333,7 +329,8 @@ class Pattern(BasePattern):
             return self.post_processor(matches, self)
         return matches
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def patterns(self):  # pragma: no cover
         """
         List of base patterns defined
@@ -354,7 +351,8 @@ class Pattern(BasePattern):
             return self._properties
         return {}
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def match_options(self):  # pragma: no cover
         """
         dict of default options for generated Match objects
@@ -382,8 +380,8 @@ class Pattern(BasePattern):
     def __repr__(self):
         defined = ""
         if self.defined_at:
-            defined = "@%s" % (self.defined_at,)
-        return "<%s%s:%s>" % (self.__class__.__name__, defined, self.__repr__patterns__)
+            defined = f"@{self.defined_at}"
+        return f"<{self.__class__.__name__}{defined}:{self.__repr__patterns__}>"
 
     @property
     def __repr__patterns__(self):
@@ -396,7 +394,7 @@ class StringPattern(Pattern):
     """
 
     def __init__(self, *patterns, **kwargs):
-        super(StringPattern, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self._patterns = patterns
         self._kwargs = kwargs
         self._match_kwargs = filter_match_kwargs(kwargs)
@@ -422,11 +420,11 @@ class RePattern(Pattern):
     """
 
     def __init__(self, *patterns, **kwargs):
-        super(RePattern, self).__init__(**kwargs)
-        self.repeated_captures = REGEX_AVAILABLE
+        super().__init__(**kwargs)
+        self.repeated_captures = REGEX_ENABLED
         if 'repeated_captures' in kwargs:
             self.repeated_captures = kwargs.get('repeated_captures')
-        if self.repeated_captures and not REGEX_AVAILABLE:  # pragma: no cover
+        if self.repeated_captures and not REGEX_ENABLED:  # pragma: no cover
             raise NotImplementedError("repeated_capture is available only with regex module.")
         self.abbreviations = kwargs.get('abbreviations', [])
         self._kwargs = kwargs
@@ -434,7 +432,7 @@ class RePattern(Pattern):
         self._children_match_kwargs = filter_match_kwargs(kwargs, children=True)
         self._patterns = []
         for pattern in patterns:
-            if isinstance(pattern, six.string_types):
+            if isinstance(pattern, str):
                 if self.abbreviations and pattern:
                     for key, replacement in self.abbreviations:
                         pattern = pattern.replace(key, replacement)
@@ -494,7 +492,7 @@ class FunctionalPattern(Pattern):
     """
 
     def __init__(self, *patterns, **kwargs):
-        super(FunctionalPattern, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self._patterns = patterns
         self._kwargs = kwargs
         self._match_kwargs = filter_match_kwargs(kwargs)

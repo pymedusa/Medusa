@@ -223,9 +223,13 @@ def test__parse_name(p):
         }
     }
 ])
-def test__generate_recipients(p, app_config, monkeypatch_function_return):
+def test__generate_recipients(p, app_config, monkeypatch_function_return, create_tvshow):
     # Given
     show = p['show']
+    show_obj = None
+    if show:
+        show_obj = create_tvshow(indexerid=12, name=show)
+
     expected = p['expected']
 
     app_config('EMAIL_LIST', p['EMAIL_LIST'])
@@ -233,7 +237,7 @@ def test__generate_recipients(p, app_config, monkeypatch_function_return):
         monkeypatch_function_return(p['mocks'])
 
     # When
-    actual = Notifier._generate_recipients(show)
+    actual = Notifier._generate_recipients(show_obj)
 
     # Then
     assert actual == expected

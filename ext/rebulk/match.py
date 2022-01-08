@@ -5,21 +5,13 @@ Classes and functions related to matches
 """
 import copy
 import itertools
+from collections import OrderedDict
 from collections import defaultdict
-try:
-    from collections.abc import MutableSequence
-except ImportError:
-    from collections import MutableSequence
+from collections.abc import MutableSequence
 
-try:
-    from collections import OrderedDict  # pylint:disable=ungrouped-imports
-except ImportError:  # pragma: no cover
-    from ordereddict import OrderedDict  # pylint:disable=import-error
-import six
-
+from .debug import defined_at
 from .loose import ensure_list, filter_index
 from .utils import is_iterable
-from .debug import defined_at
 
 
 class MatchesDict(OrderedDict):
@@ -28,7 +20,7 @@ class MatchesDict(OrderedDict):
     """
 
     def __init__(self):
-        super(MatchesDict, self).__init__()
+        super().__init__()
         self.matches = defaultdict(list)
         self.values_list = defaultdict(list)
 
@@ -67,7 +59,7 @@ class _BaseMatches(MutableSequence):
     def _start_dict(self):
         if self.__start_dict is None:
             self.__start_dict = defaultdict(_BaseMatches._base)
-            for start, values in itertools.groupby([m for m in self._delegate], lambda item: item.start):
+            for start, values in itertools.groupby(list(self._delegate), lambda item: item.start):
                 _BaseMatches._base_extend(self.__start_dict[start], values)
 
         return self.__start_dict
@@ -76,7 +68,7 @@ class _BaseMatches(MutableSequence):
     def _end_dict(self):
         if self.__end_dict is None:
             self.__end_dict = defaultdict(_BaseMatches._base)
-            for start, values in itertools.groupby([m for m in self._delegate], lambda item: item.end):
+            for start, values in itertools.groupby(list(self._delegate), lambda item: item.end):
                 _BaseMatches._base_extend(self.__end_dict[start], values)
 
         return self.__end_dict
@@ -534,13 +526,6 @@ class _BaseMatches(MutableSequence):
                     ret[match.name] = value
         return ret
 
-    if six.PY2:  # pragma: no cover
-        def clear(self):
-            """
-            Python 3 backport
-            """
-            del self[:]
-
     def __len__(self):
         return len(self._delegate)
 
@@ -583,11 +568,11 @@ class Matches(_BaseMatches):
 
     def __init__(self, matches=None, input_string=None):
         self.markers = Markers(input_string=input_string)
-        super(Matches, self).__init__(matches=matches, input_string=input_string)
+        super().__init__(matches=matches, input_string=input_string)
 
     def _add_match(self, match):
         assert not match.marker, "A marker match should not be added to <Matches> object"
-        super(Matches, self)._add_match(match)
+        super()._add_match(match)
 
 
 class Markers(_BaseMatches):
@@ -596,11 +581,11 @@ class Markers(_BaseMatches):
     """
 
     def __init__(self, matches=None, input_string=None):
-        super(Markers, self).__init__(matches=None, input_string=input_string)
+        super().__init__(matches=None, input_string=input_string)
 
     def _add_match(self, match):
         assert match.marker, "A non-marker match should not be added to <Markers> object"
-        super(Markers, self)._add_match(match)
+        super()._add_match(match)
 
 
 class Match(object):
@@ -800,8 +785,8 @@ class Match(object):
         current_match = split_match
         ret = []
 
-        for i in range(0, len(self.raw)):
-            if self.raw[i] in seps:
+        for i, char in enumerate(self.raw):
+            if char in seps:
                 if not split_match:
                     split_match = copy.deepcopy(current_match)
                     current_match.end = self.start + i
@@ -878,13 +863,13 @@ class Match(object):
         defined = ""
         initiator = ""
         if self.initiator.value != self.value:
-            initiator = "+initiator=" + self.initiator.value
+            initiator = f"+initiator={self.initiator.value}"
         if self.private:
             flags += '+private'
         if self.name:
-            name = "+name=%s" % (self.name,)
+            name = f"+name={self.name}"
         if self.tags:
-            tags = "+tags=%s" % (self.tags,)
+            tags = f"+tags={self.tags}"
         if self.defined_at:
-            defined += "@%s" % (self.defined_at,)
-        return "<%s:%s%s%s%s%s%s>" % (self.value, self.span, flags, name, tags, initiator, defined)
+            defined += f"@{self.defined_at}"
+        return f"<{self.value}:{self.span}{flags}{name}{tags}{initiator}{defined}>"

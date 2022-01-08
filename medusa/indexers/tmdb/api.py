@@ -199,6 +199,8 @@ class Tmdb(BaseIndexer):
         mapped_results = []
         if results:
             mapped_results = self._map_results(results, self.series_map, '|')
+            if not isinstance(mapped_results, list):
+                mapped_results = [mapped_results]
 
         # The search by id result, is already mapped. We can just add it to the array with results.
         if show_by_id:
@@ -233,7 +235,7 @@ class Tmdb(BaseIndexer):
         log.debug('Getting all show data for {0}', tmdb_id)
         try:
             results = self.tmdb.TV(tmdb_id).info(
-                language='{0},null'.format(request_language),
+                language='{0}'.format(request_language),
                 append_to_response=extra_info
             )
         except RequestException as error:
@@ -295,6 +297,8 @@ class Tmdb(BaseIndexer):
         if not isinstance(episodes, list):
             episodes = [episodes]
 
+        absolute_number_counter = 1
+
         for cur_ep in episodes:
             if self.config['dvdorder']:
                 log.debug('Using DVD ordering.')
@@ -320,6 +324,10 @@ class Tmdb(BaseIndexer):
 
             seas_no = int(seasnum)
             ep_no = int(epno)
+
+            if seas_no > 0:
+                cur_ep['absolute_number'] = absolute_number_counter
+                absolute_number_counter += 1
 
             image_width = {'fanart': 'w1280', 'poster': 'w780', 'filename': 'w300'}
             for k, v in viewitems(cur_ep):
@@ -347,7 +355,7 @@ class Tmdb(BaseIndexer):
         _images = {}
 
         # Let's get the different type of images available for this series
-        params = {'include_image_language': '{search_language},null'.format(search_language=self.config['language'])}
+        params = {'include_image_language': '{search_language}'.format(search_language=self.config['language'])}
 
         try:
             images = self.tmdb.TV(tmdb_id).images(params=params)
@@ -649,7 +657,7 @@ class Tmdb(BaseIndexer):
         :returns: A dict with externals, including the tvmaze id.
         """
         try:
-            wanted_externals = ['tvdb_id', 'imdb_id', 'tvrage_id']
+            wanted_externals = ['tvdb_id', 'imdb_id', 'tvrage_id', 'imdb_id']
             for external_id in wanted_externals:
                 if kwargs.get(external_id):
                     result = self.tmdb.Find(kwargs.get(external_id)).info(**{'external_source': external_id})

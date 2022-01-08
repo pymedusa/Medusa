@@ -1,7 +1,7 @@
 <template>
     <div id="config">
         <div id="config-content">
-            <form id="configForm" method="post" @submit.prevent="save()">
+            <form id="configForm" @submit.prevent="save()">
                 <vue-tabs>
                     <v-tab key="anidb_settings" title="AnimeDB Settings">
                         <div class="row component-group">
@@ -33,14 +33,15 @@
                                         </config-toggle-slider>
 
                                     </div><!-- #content_use_anidb //-->
-                                    <input type="submit"
-                                           class="btn-medusa config_submitter"
-                                           value="Save Changes"
-                                           :disabled="saving"
-                                    >
                                 </fieldset><!-- .component-group-list //-->
                             </div>
                         </div>
+                        <br>
+                        <input type="submit"
+                               class="btn-medusa config_submitter"
+                               value="Save Changes"
+                               :disabled="saving"
+                        >
                     </v-tab>
 
                     <v-tab key="look_and_feel" title="Look &amp; Feel">
@@ -64,16 +65,15 @@
                                         />
                                         <span>Customize the showslist when auto anime lists is enabled</span>
                                     </config-template>
-
-                                    <input type="submit"
-                                           class="btn-medusa config_submitter"
-                                           value="Save Changes"
-                                           :disabled="saving"
-                                           @click="save"
-                                    >
                                 </fieldset><!-- .component-group-list //-->
                             </div>
                         </div><!-- row component-group //-->
+                        <br>
+                        <input type="submit"
+                               class="btn-medusa config_submitter"
+                               value="Save Changes"
+                               :disabled="saving"
+                        >
                     </v-tab>
                 </vue-tabs>
             </form><!-- #configForm //-->

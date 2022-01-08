@@ -8,7 +8,7 @@
                             <img src="images/poster-back-dark.png">
                         </div>
                         <div class="poster-overlay">
-                            <app-link :href="`home/displayShow?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}`">
+                            <app-link :href="`home/displayShow?showslug=${show.id.slug}`">
                                 <asset default-src="images/poster.png" :show-slug="show.id.slug" lazy type="posterThumb" cls="show-image" :link="false" />
                             </app-link>
                         </div>
@@ -27,7 +27,7 @@
                                 {{dateOrStatus(show)}}
                             </div>
                             <div v-show="fontSize !== null" class="show-details">
-                                <table :class="{fanartOpacity: stateLayout.fanartBackground}" class="show-details" width="100%" cellspacing="1" border="0" cellpadding="0">
+                                <table class="show-details" width="100%" cellspacing="1" border="0" cellpadding="0">
                                     <tr>
                                         <td class="show-table">
                                             <span class="show-dlstats" :style="{fontSize}" :title="`Downloaded: ${show.stats.episodes.downloaded}${!show.stats.episodes.snatched ? '' : '; Snatched:' + show.stats.episodes.snatched}; Total: ${show.stats.episodes.total}`">

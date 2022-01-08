@@ -36,7 +36,7 @@ describe('ShowSelector.test.js', () => {
         });
 
         // Let's start navigating to displayShow, which should also display the show-selector.
-        router.push({ name: 'show', query: { indexername: 'tvdb', seriesid: String(12345) } });
+        router.push({ name: 'show', query: { showslug: 'tvdb12345' } });
     });
 
     it('renders "loading..." with empty show array in /home/displayShow', () => {
@@ -165,7 +165,7 @@ describe('ShowSelector.test.js', () => {
 
     it('renders with shows in /home/editShow', () => {
         // Navigate to editShow, which should also display the show-selector.
-        router.push({ name: 'editShow', query: { indexername: 'tvdb', seriesid: String(12345) } });
+        router.push({ name: 'editShow', query: { showslug: 'tvdb12345' } });
         const wrapper = shallowMount(ShowSelector, {
             localVue,
             computed: {

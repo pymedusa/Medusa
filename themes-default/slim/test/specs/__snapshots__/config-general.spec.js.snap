@@ -233,10 +233,96 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   <root-dirs-stub />
                 </config-template-stub>
                  
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="add_title_year"
+                  label="Append (year) to each show title"
+                >
+                  <p>
+                    Make sure that each show title is added with (year) appended to it
+                  </p>
+                   
+                  <p>
+                    The show title with year is only used for show folder creation as representation in the UI.
+                  </p>
+                </config-toggle-slider-stub>
+                 
                 <input
                   class="btn-medusa config_submitter"
                   type="submit"
                   value="Save Changes"
+                />
+              </fieldset>
+            </div>
+          </div>
+           
+          <div
+            class="row component-group"
+          >
+            <div
+              class="component-group-desc col-xs-12 col-md-2"
+            >
+              <h3
+                style="word-break: break-word;"
+              >
+                Recommended shows
+              </h3>
+               
+              <p>
+                Options for controlling the caching of recommended shows.
+              </p>
+            </div>
+             
+            <div
+              class="col-xs-12 col-md-10"
+            >
+              <fieldset
+                class="component-group-list"
+              >
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="cache_rec_shows"
+                  label="Cache recommended shows"
+                  value="true"
+                >
+                  <p>
+                    Enabling recommended shows, will cache recommended shows on a daily interval.
+                  </p>
+                </config-toggle-slider-stub>
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="cache_rec_trakt"
+                  label="Cache Trakt lists"
+                  value="true"
+                />
+                 
+                <config-template-stub
+                  label="Trakt enabled lists"
+                  labelfor="trakt_selected_lists"
+                >
+                  <select-trakt-lists-stub />
+                </config-template-stub>
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="cache_rec_imdb"
+                  label="Cache Imdb lists"
+                  value="true"
+                />
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="cache_rec_anidb"
+                  label="Cache Anidb lists"
+                  value="true"
+                />
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="cache_rec_anilist"
+                  label="Cache AniList lists"
+                  value="true"
                 />
               </fieldset>
             </div>
@@ -769,22 +855,6 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   </p>
                 </config-template-stub>
                  
-                <config-textbox-stub
-                  explanations=""
-                  id="download_url"
-                  inputclass="form-control input-sm max-input350"
-                  label="Download url"
-                  placeholder=""
-                  type="text"
-                  value=""
-                >
-                  <span
-                    class="component-desc"
-                  >
-                    URL where the shows can be downloaded.
-                  </span>
-                </config-textbox-stub>
-                 
                 <config-toggle-slider-stub
                   explanations=""
                   id="show_pagination"
@@ -1170,6 +1240,12 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                  
                 <!---->
                  
+                <!---->
+                 
+                <!---->
+                 
+                <!---->
+                 
                 <config-toggle-slider-stub
                   explanations=""
                   id="skip_removed_files"
@@ -1236,6 +1312,16 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                     Example: Downloaded (1080p WEB-DL) ==&gt; Archived (1080p WEB-DL)
                   </p>
                 </config-template-stub>
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="experimental"
+                  label="Enable experimental features"
+                >
+                  <p>
+                    allow for using experimental features
+                  </p>
+                </config-toggle-slider-stub>
                  
                 <input
                   class="btn-medusa config_submitter"
@@ -1370,7 +1456,7 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   labelfor="github_remote_branches"
                 >
                   <select
-                    class="form-control input-sm margin-bottom-5"
+                    class="form-control input-sm margin-bottom-10"
                     id="github_remote_branches"
                     name="github_remote_branches"
                   >
@@ -1391,7 +1477,6 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   <input
                     class="btn-medusa btn-inline"
                     id="branchCheckout"
-                    style="margin-left: 6px;"
                     type="button"
                     value="Checkout Branch"
                   />
@@ -1403,150 +1488,74 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   <!---->
                 </config-template-stub>
                  
-                <config-template-stub
-                  label="GitHub authentication type"
-                  labelfor="date_presets"
+                <config-textbox-stub
+                  explanations=""
+                  id="git_token"
+                  inputclass="display-inline form-control input-sm max-input350"
+                  label="GitHub personal access token"
+                  placeholder=""
+                  type="text"
+                  value=""
                 >
-                  <div
-                    class="radio-item"
+                  <v-popover-stub
+                    autohide="true"
+                    container="body"
+                    delay="0"
+                    handleresize="true"
+                    offset="16"
+                    openclass="open"
+                    placement="right"
+                    popoverarrowclass="tooltip-arrow popover-arrow"
+                    popoverbaseclass="tooltip-base"
+                    popoverclass="tooltip-themed-light"
+                    popoverinnerclass="tooltip-inner popover-inner"
+                    popoverwrapperclass="wrapper"
+                    popperoptions="[object Object]"
+                    trigger="click"
                   >
                     <input
-                      id="git_auth_type_basic"
-                      name="git_auth_type_basic"
-                      type="radio"
-                      value="0"
+                      class="btn-medusa btn-inline"
+                      id="create_access_token"
+                      style="margin-top: 10px;"
+                      type="button"
+                      value="Generate Token"
                     />
                      
-                    <label
-                      for="one"
-                    >
-                      Username and password
-                    </label>
-                  </div>
-                   
-                  <div
-                    class="radio-item"
-                  >
-                    <input
-                      id="git_auth_type_token"
-                      name="git_auth_type_token"
-                      type="radio"
-                      value="1"
-                    />
-                     
-                    <label
-                      for="one"
-                    >
-                      Personal access token
-                    </label>
-                  </div>
+                    <template>
+                      <div
+                        class="tooltip-title"
+                      >
+                        Github Token
+                      </div>
+                       
+                      <div
+                        class="tooltip-content"
+                      >
+                        <p>
+                          Copy the generated token and paste it in the token input box.
+                        </p>
+                         
+                        <p>
+                          <a
+                            href="http://dereferer.org/?https://github.com/settings/tokens/new?description=Medusa&scopes=gist,public_repo"
+                            target="_blank"
+                          >
+                            <input
+                              class="btn-medusa"
+                              type="button"
+                              value="Continue to Github..."
+                            />
+                          </a>
+                        </p>
+                        <br />
+                      </div>
+                    </template>
+                  </v-popover-stub>
                    
                   <p>
-                    You must use a personal access token if you're using "two-factor authentication" on GitHub.
+                    *** (REQUIRED FOR SUBMITTING ISSUES) ***
                   </p>
-                </config-template-stub>
-                 
-                <div>
-                  <config-textbox-stub
-                    explanations=""
-                    id="git_username"
-                    inputclass="form-control input-sm max-input350"
-                    label="GitHub username"
-                    placeholder=""
-                    type="text"
-                    value=""
-                  >
-                    <p>
-                      *** (REQUIRED FOR SUBMITTING ISSUES) ***
-                    </p>
-                  </config-textbox-stub>
-                   
-                  <config-textbox-stub
-                    explanations=""
-                    id="git_password"
-                    inputclass="form-control input-sm max-input350"
-                    label="GitHub password"
-                    placeholder=""
-                    type="password"
-                    value=""
-                  >
-                    <p>
-                      *** (REQUIRED FOR SUBMITTING ISSUES) ***
-                    </p>
-                  </config-textbox-stub>
-                </div>
-                 
-                <div
-                  style="display: none;"
-                >
-                  <config-textbox-stub
-                    explanations=""
-                    id="git_token"
-                    inputclass="display-inline margin-bottom-5"
-                    label="GitHub personal access token"
-                    placeholder=""
-                    type="text"
-                    value=""
-                  >
-                    <v-popover-stub
-                      autohide="true"
-                      container="body"
-                      delay="0"
-                      handleresize="true"
-                      offset="16"
-                      openclass="open"
-                      placement="right"
-                      popoverarrowclass="tooltip-arrow popover-arrow"
-                      popoverbaseclass="tooltip-base"
-                      popoverclass="tooltip-themed-light"
-                      popoverinnerclass="tooltip-inner popover-inner"
-                      popoverwrapperclass="wrapper"
-                      popperoptions="[object Object]"
-                      trigger="click"
-                    >
-                      <input
-                        class="btn-medusa btn-inline"
-                        id="create_access_token"
-                        type="button"
-                        value="Generate Token"
-                      />
-                       
-                      <template>
-                        <div
-                          class="tooltip-title"
-                        >
-                          Github Token
-                        </div>
-                         
-                        <div
-                          class="tooltip-content"
-                        >
-                          <p>
-                            Copy the generated token and paste it in the token input box.
-                          </p>
-                           
-                          <p>
-                            <a
-                              href="http://dereferer.org/?https://github.com/settings/tokens/new?description=Medusa&scopes=gist,public_repo"
-                              target="_blank"
-                            >
-                              <input
-                                class="btn-medusa"
-                                type="button"
-                                value="Continue to Github..."
-                              />
-                            </a>
-                          </p>
-                          <br />
-                        </div>
-                      </template>
-                    </v-popover-stub>
-                     
-                    <p>
-                      *** (REQUIRED FOR SUBMITTING ISSUES) ***
-                    </p>
-                  </config-textbox-stub>
-                </div>
+                </config-textbox-stub>
                  
                 <config-textbox-stub
                   explanations=""
@@ -1596,12 +1605,12 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                     blockkeys=""
                     clearonselect="true"
                     closeonselect="true"
-                    customlabel="function(t,e){return i(t)?\\"\\":e?t[e]:t}"
+                    customlabel="[Function]"
                     deselectgrouplabel="Press enter to deselect group"
                     deselectlabel="Press enter to remove"
                     internalsearch="true"
                     limit="99999"
-                    limittext="function(t){return\\"and \\".concat(t,\\" more\\")}"
+                    limittext="[Function]"
                     maxheight="300"
                     multiple="true"
                     name=""
@@ -1627,7 +1636,6 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   <input
                     class="btn-medusa btn-inline"
                     id="branch_force_update"
-                    style="margin-left: 6px;"
                     type="button"
                     value="Update Branches"
                   />
@@ -1664,12 +1672,6 @@ exports[`ConfigGeneral.test.js renders 1`] = `
             </span>
           </b>
         </h6>
-         
-        <input
-          class="btn-medusa pull-left config_submitter button"
-          type="submit"
-          value="Save Changes"
-        />
       </div>
     </form>
   </div>

@@ -2,6 +2,7 @@
 """Request handler for configuration."""
 from __future__ import unicode_literals
 
+import datetime
 import inspect
 import logging
 import pkgutil
@@ -10,7 +11,6 @@ import sys
 from random import choice
 
 from medusa import (
-    app,
     classes,
     common,
     config,
@@ -19,12 +19,20 @@ from medusa import (
     logger,
     ws,
 )
+from medusa.app import app
 from medusa.common import IGNORED, Quality, SKIPPED, WANTED, cpu_presets
+from medusa.helpers.ffmpeg import FfMpeg, FfprobeBinaryException
 from medusa.helpers.utils import int_default, to_camel_case
 from medusa.indexers.config import INDEXER_TVDBV2, get_indexer_config
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.queues.utils import generate_location_disk_space, generate_show_queue
+from medusa.network_timezones import app_timezone
+from medusa.queues.utils import (
+    generate_location_disk_space,
+    generate_postprocessing_queue,
+    generate_show_queue,
+)
 from medusa.sbdatetime import date_presets, time_presets
+from medusa.schedulers.download_handler import status_strings
 from medusa.schedulers.utils import generate_schedulers
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
@@ -37,6 +45,12 @@ from medusa.server.api.v2.base import (
     StringField,
     iter_nested_items,
     set_nested_value,
+)
+from medusa.show.recommendations.trakt import TraktPopular
+from medusa.subtitles import (
+    name_from_code,
+    subtitle_code_filter,
+    wanted_languages
 )
 
 from six import iteritems, itervalues, text_type
@@ -79,6 +93,7 @@ class ConfigHandler(BaseRequestHandler):
     patches = {
         # Main
         'rootDirs': ListField(app, 'ROOT_DIRS'),
+        'addTitleWithYear': BooleanField(app, 'ADD_TITLE_WITH_YEAR'),
 
         'showDefaults.status': EnumField(app, 'STATUS_DEFAULT', (SKIPPED, WANTED, IGNORED), int),
         'showDefaults.statusAfter': EnumField(app, 'STATUS_DEFAULT_AFTER', (SKIPPED, WANTED, IGNORED), int),
@@ -96,9 +111,11 @@ class ConfigHandler(BaseRequestHandler):
         'defaultPage': StringField(app, 'DEFAULT_PAGE'),
         'trashRemoveShow': BooleanField(app, 'TRASH_REMOVE_SHOW'),
         'trashRotateLogs': BooleanField(app, 'TRASH_ROTATE_LOGS'),
+        'brokenProviders': ListField(app, 'BROKEN_PROVIDERS'),
 
         'indexerDefaultLanguage': StringField(app, 'INDEXER_DEFAULT_LANGUAGE'),
         'showUpdateHour': IntegerField(app, 'SHOWUPDATE_HOUR'),
+        'recommendedShowUpdateHour': IntegerField(app, 'RECOMMENDED_SHOW_UPDATE_HOUR'),
         'indexerTimeout': IntegerField(app, 'INDEXER_TIMEOUT'),
         'indexerDefault': IntegerField(app, 'INDEXER_DEFAULT'),
         'plexFallBack.enable': BooleanField(app, 'FALLBACK_PLEX_ENABLE'),
@@ -117,6 +134,7 @@ class ConfigHandler(BaseRequestHandler):
         'webInterface.username': StringField(app, 'WEB_USERNAME'),
         'webInterface.password': StringField(app, 'WEB_PASSWORD'),
         'webInterface.port': IntegerField(app, 'WEB_PORT'),
+        'webInterface.host': StringField(app, 'WEB_HOST'),
         'webInterface.notifyOnLogin': BooleanField(app, 'NOTIFY_ON_LOGIN'),
         'webInterface.ipv6': BooleanField(app, 'WEB_IPV6'),
         'webInterface.httpsEnable': BooleanField(app, 'ENABLE_HTTPS'),
@@ -133,7 +151,10 @@ class ConfigHandler(BaseRequestHandler):
         'calendarUnprotected': BooleanField(app, 'CALENDAR_UNPROTECTED'),
         'calendarIcons': BooleanField(app, 'CALENDAR_ICONS'),
         'proxySetting': StringField(app, 'PROXY_SETTING'),
+        'proxyProviders': BooleanField(app, 'PROXY_PROVIDERS'),
         'proxyIndexers': BooleanField(app, 'PROXY_INDEXERS'),
+        'proxyClients': BooleanField(app, 'PROXY_CLIENTS'),
+        'proxyOthers': BooleanField(app, 'PROXY_OTHERS'),
 
         'skipRemovedFiles': BooleanField(app, 'SKIP_REMOVED_FILES'),
         'epDefaultDeletedStatus': IntegerField(app, 'EP_DEFAULT_DELETED_STATUS'),
@@ -148,11 +169,9 @@ class ConfigHandler(BaseRequestHandler):
         'logs.custom': ListField(app, 'CUSTOM_LOGS'),
 
         'developer': BooleanField(app, 'DEVELOPER'),
+        'experimental': BooleanField(app, 'EXPERIMENTAL'),
 
-        'git.username': StringField(app, 'GIT_USERNAME'),
-        'git.password': StringField(app, 'GIT_PASSWORD'),
         'git.token': StringField(app, 'GIT_TOKEN'),
-        'git.authType': IntegerField(app, 'GIT_AUTH_TYPE'),
         'git.remote': StringField(app, 'GIT_REMOTE'),
         'git.path': StringField(app, 'GIT_PATH'),
         'git.org': StringField(app, 'GIT_ORG'),
@@ -163,11 +182,17 @@ class ConfigHandler(BaseRequestHandler):
         'wikiUrl': StringField(app, 'WIKI_URL'),
         'donationsUrl': StringField(app, 'DONATIONS_URL'),
         'sourceUrl': StringField(app, 'APPLICATION_URL'),
-        'downloadUrl': StringField(app, 'DOWNLOAD_URL'),
-        'subtitlesMulti': BooleanField(app, 'SUBTITLES_MULTI'),
         'namingForceFolders': BooleanField(app, 'NAMING_FORCE_FOLDERS'),
-        'subtitles.enabled': BooleanField(app, 'USE_SUBTITLES'),
         'recentShows': ListField(app, 'SHOWS_RECENT'),
+        'providers.prowlarr.url': StringField(app, 'PROWLARR_URL'),
+        'providers.prowlarr.apikey': StringField(app, 'PROWLARR_APIKEY'),
+
+        'recommended.cache.shows': BooleanField(app, 'CACHE_RECOMMENDED_SHOWS'),
+        'recommended.cache.trakt': BooleanField(app, 'CACHE_RECOMMENDED_TRAKT'),
+        'recommended.cache.imdb': BooleanField(app, 'CACHE_RECOMMENDED_IMDB'),
+        'recommended.cache.anidb': BooleanField(app, 'CACHE_RECOMMENDED_ANIDB'),
+        'recommended.cache.anilist': BooleanField(app, 'CACHE_RECOMMENDED_ANILIST'),
+        'recommended.trakt.selectedLists': ListField(app, 'CACHE_RECOMMENDED_TRAKT_LISTS'),
 
         # Sections
         'clients.torrents.authType': StringField(app, 'TORRENT_AUTH_TYPE'),
@@ -178,6 +203,7 @@ class ConfigHandler(BaseRequestHandler):
         'clients.torrents.label': StringField(app, 'TORRENT_LABEL'),
         'clients.torrents.labelAnime': StringField(app, 'TORRENT_LABEL_ANIME'),
         'clients.torrents.method': StringField(app, 'TORRENT_METHOD'),
+        'clients.torrents.saveMagnetFile': BooleanField(app, 'SAVE_MAGNET_FILE'),
         'clients.torrents.password': StringField(app, 'TORRENT_PASSWORD'),
         'clients.torrents.path': StringField(app, 'TORRENT_PATH'),
         'clients.torrents.paused': BooleanField(app, 'TORRENT_PAUSED'),
@@ -210,8 +236,12 @@ class ConfigHandler(BaseRequestHandler):
 
 
         'postProcessing.showDownloadDir': StringField(app, 'TV_DOWNLOAD_DIR'),
+        'postProcessing.defaultClientPath': StringField(app, 'DEFAULT_CLIENT_PATH'),
         'postProcessing.processAutomatically': BooleanField(app, 'PROCESS_AUTOMATICALLY'),
         'postProcessing.processMethod': StringField(app, 'PROCESS_METHOD'),
+        'postProcessing.specificProcessMethod': BooleanField(app, 'USE_SPECIFIC_PROCESS_METHOD'),
+        'postProcessing.processMethodTorrent': StringField(app, 'PROCESS_METHOD_TORRENT'),
+        'postProcessing.processMethodNzb': StringField(app, 'PROCESS_METHOD_NZB'),
         'postProcessing.deleteRarContent': BooleanField(app, 'DELRARCONTENTS'),
         'postProcessing.unpack': BooleanField(app, 'UNPACK'),
         'postProcessing.noDelete': BooleanField(app, 'NO_DELETE'),
@@ -240,6 +270,14 @@ class ConfigHandler(BaseRequestHandler):
         'postProcessing.naming.animeNamingType': IntegerField(app, 'NAMING_ANIME'),
         'postProcessing.naming.multiEp': IntegerField(app, 'NAMING_MULTI_EP'),
         'postProcessing.naming.stripYear': BooleanField(app, 'NAMING_STRIP_YEAR'),
+        'postProcessing.downloadHandler.enabled': BooleanField(app, 'USE_DOWNLOAD_HANDLER'),
+        'postProcessing.downloadHandler.frequency': IntegerField(app, 'DOWNLOAD_HANDLER_FREQUENCY'),
+        'postProcessing.downloadHandler.minFrequency': IntegerField(app, 'MIN_DOWNLOAD_HANDLER_FREQUENCY'),
+        'postProcessing.downloadHandler.torrentSeedRatio': FloatField(app, 'TORRENT_SEED_RATIO'),
+        'postProcessing.downloadHandler.torrentSeedAction': StringField(app, 'TORRENT_SEED_ACTION'),
+
+        'postProcessing.ffmpeg.checkStreams': BooleanField(app, 'FFMPEG_CHECK_STREAMS'),
+        'postProcessing.ffmpeg.path': StringField(app, 'FFMPEG_PATH'),
 
         'search.general.randomizeProviders': BooleanField(app, 'RANDOMIZE_PROVIDERS'),
         'search.general.downloadPropers': BooleanField(app, 'DOWNLOAD_PROPERS'),
@@ -252,8 +290,6 @@ class ConfigHandler(BaseRequestHandler):
         'search.general.dailySearchFrequency': IntegerField(app, 'DAILYSEARCH_FREQUENCY'),
         'search.general.minDailySearchFrequency': IntegerField(app, 'MIN_DAILYSEARCH_FREQUENCY'),
         'search.general.removeFromClient': BooleanField(app, 'REMOVE_FROM_CLIENT'),
-        'search.general.torrentCheckerFrequency': IntegerField(app, 'TORRENT_CHECKER_FREQUENCY'),
-        'search.general.minTorrentCheckerFrequency': IntegerField(app, 'MIN_TORRENT_CHECKER_FREQUENCY'),
         'search.general.usenetRetention': IntegerField(app, 'USENET_RETENTION'),
         'search.general.trackersList': ListField(app, 'TRACKERS_LIST'),
         'search.general.allowHighPriority': BooleanField(app, 'ALLOW_HIGH_PRIORITY'),
@@ -418,6 +454,7 @@ class ConfigHandler(BaseRequestHandler):
         'notifiers.trakt.sync': BooleanField(app, 'TRAKT_SYNC'),
         'notifiers.trakt.syncRemove': BooleanField(app, 'TRAKT_SYNC_REMOVE'),
         'notifiers.trakt.syncWatchlist': BooleanField(app, 'TRAKT_SYNC_WATCHLIST'),
+        'notifiers.trakt.syncToWatchlist': BooleanField(app, 'TRAKT_SYNC_TO_WATCHLIST'),
         'notifiers.trakt.methodAdd': IntegerField(app, 'TRAKT_METHOD_ADD'),
         'notifiers.trakt.removeWatchlist': BooleanField(app, 'TRAKT_REMOVE_WATCHLIST'),
         'notifiers.trakt.removeSerieslist': BooleanField(app, 'TRAKT_REMOVE_SERIESLIST'),
@@ -481,7 +518,32 @@ class ConfigHandler(BaseRequestHandler):
         'anime.anidb.password': StringField(app, 'ANIDB_PASSWORD'),
         'anime.anidb.useMylist': BooleanField(app, 'ANIDB_USE_MYLIST'),
         'anime.autoAnimeToList': BooleanField(app, 'AUTO_ANIME_TO_LIST'),
-        'anime.showlistDefaultAnime': ListField(app, 'SHOWLISTS_DEFAULT_ANIME')
+        'anime.showlistDefaultAnime': ListField(app, 'SHOWLISTS_DEFAULT_ANIME'),
+
+        'subtitles.multi': BooleanField(app, 'SUBTITLES_MULTI'),
+        'subtitles.enabled': BooleanField(app, 'USE_SUBTITLES'),
+        'subtitles.services': ListField(app, 'SUBTITLE_SERVICES'),
+        'subtitles.languages': ListField(app, 'SUBTITLES_LANGUAGES'),
+        'subtitles.stopAtFirst': BooleanField(app, 'SUBTITLES_STOP_AT_FIRST'),
+        'subtitles.eraseCache': BooleanField(app, 'SUBTITLES_ERASE_CACHE'),
+        'subtitles.location': StringField(app, 'SUBTITLES_DIR'),
+        'subtitles.finderFrequency': IntegerField(app, 'SUBTITLES_FINDER_FREQUENCY'),
+        'subtitles.perfectMatch': BooleanField(app, 'SUBTITLES_PERFECT_MATCH'),
+        'subtitles.logHistory': BooleanField(app, 'SUBTITLES_HISTORY'),
+        'subtitles.multiLanguage': BooleanField(app, 'SUBTITLES_MULTI'),
+        'subtitles.keepOnlyWanted': BooleanField(app, 'SUBTITLES_KEEP_ONLY_WANTED'),
+        'subtitles.ignoreEmbeddedSubs': BooleanField(app, 'IGNORE_EMBEDDED_SUBS'),
+        'subtitles.acceptUnknownEmbeddedSubs': BooleanField(app, 'ACCEPT_UNKNOWN_EMBEDDED_SUBS'),
+        'subtitles.hearingImpaired': BooleanField(app, 'SUBTITLES_HEARING_IMPAIRED'),
+        'subtitles.preScripts': ListField(app, 'SUBTITLES_PRE_SCRIPTS'),
+        'subtitles.extraScripts': ListField(app, 'SUBTITLES_EXTRA_SCRIPTS'),
+        'subtitles.wikiUrl': StringField(app, 'SUBTITLES_URL'),
+        'subtitles.providerLogins.addic7ed.user': StringField(app, 'ADDIC7ED_USER'),
+        'subtitles.providerLogins.addic7ed.pass': StringField(app, 'ADDIC7ED_PASS'),
+        'subtitles.providerLogins.legendastv.user': StringField(app, 'LEGENDASTV_USER'),
+        'subtitles.providerLogins.legendastv.pass': StringField(app, 'LEGENDASTV_PASS'),
+        'subtitles.providerLogins.opensubtitles.user': StringField(app, 'OPENSUBTITLES_USER'),
+        'subtitles.providerLogins.opensubtitles.pass': StringField(app, 'OPENSUBTITLES_PASS'),
     }
 
     def get(self, identifier, path_param=None):
@@ -590,12 +652,10 @@ class DataGenerator(object):
         section_data['wikiUrl'] = app.WIKI_URL
         section_data['donationsUrl'] = app.DONATIONS_URL
         section_data['sourceUrl'] = app.APPLICATION_URL
-        section_data['downloadUrl'] = app.DOWNLOAD_URL
-        section_data['subtitlesMulti'] = bool(app.SUBTITLES_MULTI)
         section_data['namingForceFolders'] = bool(app.NAMING_FORCE_FOLDERS)
-        section_data['subtitles'] = {}
-        section_data['subtitles']['enabled'] = bool(app.USE_SUBTITLES)
         section_data['recentShows'] = app.SHOWS_RECENT
+        section_data['addTitleWithYear'] = bool(app.ADD_TITLE_WITH_YEAR)
+        section_data['brokenProviders'] = [provider for provider in app.BROKEN_PROVIDERS if provider]
 
         # Pick a random series to show as background.
         # TODO: Recreate this in Vue when the webapp has a reliable list of shows to choose from.
@@ -632,6 +692,9 @@ class DataGenerator(object):
 
         section_data['indexerDefaultLanguage'] = app.INDEXER_DEFAULT_LANGUAGE
         section_data['showUpdateHour'] = int_default(app.SHOWUPDATE_HOUR, app.DEFAULT_SHOWUPDATE_HOUR)
+        section_data['recommendedShowUpdateHour'] = int_default(
+            app.RECOMMENDED_SHOW_UPDATE_HOUR, app.DEFAULT_RECOMMENDED_SHOW_UPDATE_HOUR
+        )
         section_data['indexerTimeout'] = int_default(app.INDEXER_TIMEOUT, 20)
         section_data['indexerDefault'] = app.INDEXER_DEFAULT
 
@@ -639,6 +702,15 @@ class DataGenerator(object):
         section_data['plexFallBack']['enable'] = bool(app.FALLBACK_PLEX_ENABLE)
         section_data['plexFallBack']['notifications'] = bool(app.FALLBACK_PLEX_NOTIFICATIONS)
         section_data['plexFallBack']['timeout'] = int(app.FALLBACK_PLEX_TIMEOUT)
+
+        section_data['recommended'] = {'cache': {}, 'trakt': {}}
+        section_data['recommended']['cache']['shows'] = bool(app.CACHE_RECOMMENDED_SHOWS)
+        section_data['recommended']['cache']['trakt'] = bool(app.CACHE_RECOMMENDED_TRAKT)
+        section_data['recommended']['cache']['imdb'] = bool(app.CACHE_RECOMMENDED_IMDB)
+        section_data['recommended']['cache']['anidb'] = bool(app.CACHE_RECOMMENDED_ANIDB)
+        section_data['recommended']['cache']['anilist'] = bool(app.CACHE_RECOMMENDED_ANILIST)
+        section_data['recommended']['trakt']['selectedLists'] = app.CACHE_RECOMMENDED_TRAKT_LISTS
+        section_data['recommended']['trakt']['availableLists'] = TraktPopular.CATEGORIES
 
         section_data['versionNotify'] = bool(app.VERSION_NOTIFY)
         section_data['autoUpdate'] = bool(app.AUTO_UPDATE)
@@ -658,6 +730,7 @@ class DataGenerator(object):
         section_data['webInterface']['username'] = app.WEB_USERNAME
         section_data['webInterface']['password'] = app.WEB_PASSWORD
         section_data['webInterface']['port'] = int_default(app.WEB_PORT, 8081)
+        section_data['webInterface']['host'] = app.WEB_HOST
         section_data['webInterface']['notifyOnLogin'] = bool(app.NOTIFY_ON_LOGIN)
         section_data['webInterface']['ipv6'] = bool(app.WEB_IPV6)
         section_data['webInterface']['httpsEnable'] = bool(app.ENABLE_HTTPS)
@@ -673,17 +746,20 @@ class DataGenerator(object):
         section_data['encryptionVersion'] = bool(app.ENCRYPTION_VERSION)
         section_data['calendarUnprotected'] = bool(app.CALENDAR_UNPROTECTED)
         section_data['calendarIcons'] = bool(app.CALENDAR_ICONS)
+
         section_data['proxySetting'] = app.PROXY_SETTING
+        section_data['proxyProviders'] = bool(app.PROXY_PROVIDERS)
         section_data['proxyIndexers'] = bool(app.PROXY_INDEXERS)
+        section_data['proxyClients'] = bool(app.PROXY_CLIENTS)
+        section_data['proxyOthers'] = bool(app.PROXY_OTHERS)
+
         section_data['skipRemovedFiles'] = bool(app.SKIP_REMOVED_FILES)
         section_data['epDefaultDeletedStatus'] = app.EP_DEFAULT_DELETED_STATUS
         section_data['developer'] = bool(app.DEVELOPER)
+        section_data['experimental'] = bool(app.EXPERIMENTAL)
 
         section_data['git'] = {}
-        section_data['git']['username'] = app.GIT_USERNAME
-        section_data['git']['password'] = app.GIT_PASSWORD
         section_data['git']['token'] = app.GIT_TOKEN
-        section_data['git']['authType'] = int(app.GIT_AUTH_TYPE)
         section_data['git']['remote'] = app.GIT_REMOTE
         section_data['git']['path'] = app.GIT_PATH
         section_data['git']['org'] = app.GIT_ORG
@@ -696,6 +772,11 @@ class DataGenerator(object):
         section_data['backlogOverview'] = {}
         section_data['backlogOverview']['status'] = app.BACKLOG_STATUS
         section_data['backlogOverview']['period'] = app.BACKLOG_PERIOD
+
+        section_data['providers'] = {}
+        section_data['providers']['prowlarr'] = {}
+        section_data['providers']['prowlarr']['url'] = app.PROWLARR_URL
+        section_data['providers']['prowlarr']['apikey'] = app.PROWLARR_APIKEY
 
         return section_data
 
@@ -756,6 +837,10 @@ class DataGenerator(object):
             )
         ]
 
+        section_data['clientStatuses'] = [
+            {'value': k.value, 'name': v} for k, v in status_strings.items()
+        ]
+
         # Save it for next time
         cls._generated_data_consts = section_data
 
@@ -792,9 +877,6 @@ class DataGenerator(object):
         section_data['general']['minBacklogFrequency'] = int(app.MIN_BACKLOG_FREQUENCY)
         section_data['general']['dailySearchFrequency'] = int_default(app.DAILYSEARCH_FREQUENCY, app.DEFAULT_DAILYSEARCH_FREQUENCY)
         section_data['general']['minDailySearchFrequency'] = int(app.MIN_DAILYSEARCH_FREQUENCY)
-        section_data['general']['removeFromClient'] = bool(app.REMOVE_FROM_CLIENT)
-        section_data['general']['torrentCheckerFrequency'] = int_default(app.TORRENT_CHECKER_FREQUENCY, app.DEFAULT_TORRENT_CHECKER_FREQUENCY)
-        section_data['general']['minTorrentCheckerFrequency'] = int(app.MIN_TORRENT_CHECKER_FREQUENCY)
         section_data['general']['usenetRetention'] = int_default(app.USENET_RETENTION, 500)
         section_data['general']['trackersList'] = app.TRACKERS_LIST
         section_data['general']['allowHighPriority'] = bool(app.ALLOW_HIGH_PRIORITY)
@@ -993,6 +1075,7 @@ class DataGenerator(object):
         section_data['trakt']['sync'] = bool(app.TRAKT_SYNC)
         section_data['trakt']['syncRemove'] = bool(app.TRAKT_SYNC_REMOVE)
         section_data['trakt']['syncWatchlist'] = bool(app.TRAKT_SYNC_WATCHLIST)
+        section_data['trakt']['syncToWatchlist'] = bool(app.TRAKT_SYNC_TO_WATCHLIST)
         section_data['trakt']['methodAdd'] = int_default(app.TRAKT_METHOD_ADD)
         section_data['trakt']['removeWatchlist'] = bool(app.TRAKT_REMOVE_WATCHLIST)
         section_data['trakt']['removeSerieslist'] = bool(app.TRAKT_REMOVE_SERIESLIST)
@@ -1031,6 +1114,7 @@ class DataGenerator(object):
         section_data['memoryUsage'] = helpers.memory_usage(pretty=True)
         section_data['schedulers'] = generate_schedulers()
         section_data['showQueue'] = generate_show_queue()
+        section_data['postProcessQueue'] = generate_postprocessing_queue()
         section_data['diskSpace'] = generate_location_disk_space()
 
         section_data['branch'] = app.BRANCH
@@ -1047,6 +1131,7 @@ class DataGenerator(object):
         section_data['pid'] = app.PID
         section_data['locale'] = '.'.join([text_type(loc or 'Unknown') for loc in app.LOCALE])
         section_data['localUser'] = app.OS_USER or 'Unknown'
+        section_data['timezone'] = app_timezone.tzname(datetime.datetime.now())
         section_data['programDir'] = app.PROG_DIR
         section_data['dataDir'] = app.DATA_DIR
         section_data['configFile'] = app.CONFIG_FILE
@@ -1058,6 +1143,11 @@ class DataGenerator(object):
         section_data['runsInDocker'] = bool(app.RUNS_IN_DOCKER)
         section_data['gitRemoteBranches'] = app.GIT_REMOTE_BRANCHES
         section_data['cpuPresets'] = cpu_presets
+        section_data['newestVersionMessage'] = app.NEWEST_VERSION_STRING
+        try:
+            section_data['ffprobeVersion'] = FfMpeg().get_ffprobe_version()
+        except FfprobeBinaryException:
+            section_data['ffprobeVersion'] = 'ffprobe not available'
 
         section_data['news'] = {}
         section_data['news']['lastRead'] = app.NEWS_LAST_READ
@@ -1080,6 +1170,7 @@ class DataGenerator(object):
         section_data['torrents']['label'] = app.TORRENT_LABEL
         section_data['torrents']['labelAnime'] = app.TORRENT_LABEL_ANIME
         section_data['torrents']['method'] = app.TORRENT_METHOD
+        section_data['torrents']['saveMagnetFile'] = bool(app.SAVE_MAGNET_FILE)
         section_data['torrents']['path'] = app.TORRENT_PATH
         section_data['torrents']['paused'] = bool(app.TORRENT_PAUSED)
         section_data['torrents']['rpcUrl'] = app.TORRENT_RPCURL
@@ -1135,6 +1226,7 @@ class DataGenerator(object):
         section_data['naming']['animeNamingType'] = int_default(app.NAMING_ANIME, 3)
         section_data['naming']['stripYear'] = bool(app.NAMING_STRIP_YEAR)
         section_data['showDownloadDir'] = app.TV_DOWNLOAD_DIR
+        section_data['defaultClientPath'] = app.DEFAULT_CLIENT_PATH
         section_data['processAutomatically'] = bool(app.PROCESS_AUTOMATICALLY)
         section_data['postponeIfSyncFiles'] = bool(app.POSTPONE_IF_SYNC_FILES)
         section_data['postponeIfNoSubs'] = bool(app.POSTPONE_IF_NO_SUBS)
@@ -1148,6 +1240,9 @@ class DataGenerator(object):
         section_data['deleteRarContent'] = bool(app.DELRARCONTENTS)
         section_data['noDelete'] = bool(app.NO_DELETE)
         section_data['processMethod'] = app.PROCESS_METHOD
+        section_data['specificProcessMethod'] = bool(app.USE_SPECIFIC_PROCESS_METHOD)
+        section_data['processMethodTorrent'] = app.PROCESS_METHOD_TORRENT
+        section_data['processMethodNzb'] = app.PROCESS_METHOD_NZB
         section_data['reflinkAvailable'] = bool(pkgutil.find_loader('reflink'))
         section_data['autoPostprocessorFrequency'] = int(app.AUTOPOSTPROCESSOR_FREQUENCY)
         section_data['syncFiles'] = app.SYNC_FILES
@@ -1156,6 +1251,17 @@ class DataGenerator(object):
         section_data['extraScripts'] = app.EXTRA_SCRIPTS
         section_data['extraScriptsUrl'] = app.EXTRA_SCRIPTS_URL
         section_data['multiEpStrings'] = common.MULTI_EP_STRINGS
+
+        section_data['downloadHandler'] = {}
+        section_data['downloadHandler']['enabled'] = bool(app.USE_DOWNLOAD_HANDLER)
+        section_data['downloadHandler']['frequency'] = int_default(app.DOWNLOAD_HANDLER_FREQUENCY, app.DEFAULT_DOWNLOAD_HANDLER_FREQUENCY)
+        section_data['downloadHandler']['minFrequency'] = int(app.MIN_DOWNLOAD_HANDLER_FREQUENCY)
+        section_data['downloadHandler']['torrentSeedRatio'] = float(app.TORRENT_SEED_RATIO) if app.TORRENT_SEED_RATIO is not None else -1
+        section_data['downloadHandler']['torrentSeedAction'] = app.TORRENT_SEED_ACTION
+
+        section_data['ffmpeg'] = {}
+        section_data['ffmpeg']['checkStreams'] = bool(app.FFMPEG_CHECK_STREAMS)
+        section_data['ffmpeg']['path'] = app.FFMPEG_PATH
 
         return section_data
 
@@ -1224,4 +1330,36 @@ class DataGenerator(object):
             },
             'autoAnimeToList': bool(app.AUTO_ANIME_TO_LIST),
             'showlistDefaultAnime': app.SHOWLISTS_DEFAULT_ANIME
+        }
+
+    @staticmethod
+    def data_subtitles():
+        """Config subtitles."""
+        return {
+            'enabled': bool(app.USE_SUBTITLES),
+            'languages': app.SUBTITLES_LANGUAGES,
+            'wantedLanguages': [{'id': code, 'name': name_from_code(code)}
+                                for code in wanted_languages()],
+            'codeFilter': [{'id': code, 'name': name_from_code(code)}
+                           for code in subtitle_code_filter()],
+            'services': app.SUBTITLE_SERVICES,
+            'stopAtFirst': bool(app.SUBTITLES_STOP_AT_FIRST),
+            'eraseCache': bool(app.SUBTITLES_ERASE_CACHE),
+            'location': app.SUBTITLES_DIR,
+            'finderFrequency': int(app.SUBTITLES_FINDER_FREQUENCY),
+            'perfectMatch': bool(app.SUBTITLES_PERFECT_MATCH),
+            'logHistory': bool(app.SUBTITLES_HISTORY),
+            'multiLanguage': bool(app.SUBTITLES_MULTI),
+            'keepOnlyWanted': bool(app.SUBTITLES_KEEP_ONLY_WANTED),
+            'ignoreEmbeddedSubs': bool(app.IGNORE_EMBEDDED_SUBS),
+            'acceptUnknownEmbeddedSubs': bool(app.ACCEPT_UNKNOWN_EMBEDDED_SUBS),
+            'hearingImpaired': bool(app.SUBTITLES_HEARING_IMPAIRED),
+            'preScripts': app.SUBTITLES_PRE_SCRIPTS,
+            'extraScripts': app.SUBTITLES_EXTRA_SCRIPTS,
+            'wikiUrl': app.SUBTITLES_URL,
+            'providerLogins': {
+                'addic7ed': {'user': app.ADDIC7ED_USER, 'pass': app.ADDIC7ED_PASS},
+                'legendastv': {'user': app.LEGENDASTV_USER, 'pass': app.LEGENDASTV_PASS},
+                'opensubtitles': {'user': app.OPENSUBTITLES_USER, 'pass': app.OPENSUBTITLES_PASS}
+            }
         }

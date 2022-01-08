@@ -9,18 +9,15 @@ http://download.synology.com/download/Document/DeveloperGuide/Synology_Download_
 
 from __future__ import unicode_literals
 
-import json
 import logging
 import os
 import re
 
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
-from medusa.helpers import handle_requests_exception
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.compat import urljoin
-from requests.exceptions import RequestException
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -29,8 +26,8 @@ log.logger.addHandler(logging.NullHandler())
 class DownloadStationAPI(GenericClient):
     """Synology Download Station API class."""
 
-    def __init__(self, host=None, username=None, password=None):
-        """Constructor.
+    def __init__(self, host=None, username=None, password=None, torrent_path=None):
+        """Downloadstationapi constructor.
 
         :param host:
         :type host: string
@@ -39,16 +36,7 @@ class DownloadStationAPI(GenericClient):
         :param password:
         :type password: string
         """
-        super(DownloadStationAPI, self).__init__('DownloadStation', host, username, password)
-
-        self.urls = {
-            'login': urljoin(self.host, 'webapi/auth.cgi'),
-            'task': urljoin(self.host, 'webapi/DownloadStation/task.cgi'),
-            'info': urljoin(self.host, '/webapi/DownloadStation/info.cgi'),
-        }
-
-        self.url = self.urls['task']
-
+        super(DownloadStationAPI, self).__init__('DownloadStation', host, username, password, torrent_path)
         self.error_map = {
             100: 'Unknown error',
             101: 'Invalid parameter',
@@ -58,172 +46,143 @@ class DownloadStationAPI(GenericClient):
             105: 'The logged in session does not have permission',
             106: 'Session timeout',
             107: 'Session interrupted by duplicate login',
+            119: 'SID not found',
+            120: 'Wrong parameter',
+            400: 'File upload failed',
+            401: 'Max number of tasks reached',
+            402: 'Destination denied',
+            403: 'Destination does not exist',
+            404: 'Invalid task id',
+            405: 'Invalid task action',
+            406: 'No default destination',
+            407: 'Set destination failed',
+            408: 'File does not exist'
         }
-        self.checked_destination = False
-        self.destination = app.TORRENT_PATH
+        self.url = self.host
+        app.TORRENT_PATH = re.sub(r'^/volume\d*/', '', app.TORRENT_PATH)
 
-    def _check_response(self):
-        """Check if session is still valid."""
-        try:
-            jdata = self.response.json()
-        except ValueError:
-            self.session.cookies.clear()
-            self.auth = False
-            return self.auth
+        self._get_auth()
+
+    def _check_path(self):
+        """Validate the destination."""
+        if not self.torrent_path:
+            return True
+        log.info('{name} checking if "{torrent_path}" is a valid share', {
+            'name': self.name, 'torrent_path': self.torrent_path
+        })
+        self.url = urljoin(self.host, 'webapi/entry.cgi')
+        params = {
+            'api': 'SYNO.Core.Share',
+            'version': 1,
+            'method': 'list'
+        }
+
+        # Get all available shares from DSM)
+        if not self._request(method='get', params=params):
+            return False
+        jdata = self.response.json()
+        if not jdata['success']:
+            err_code = jdata.get('error', {}).get('code', 100)
+            self.message = f'Could not get the list of shares from {self.name}: {self.error_map[err_code]}'
+            log.warning(self.message)
+            return False
+
+            # Walk through the available shares and check if the path is a valid share (if present we remove the volume name).
+        for share in jdata.get('data', {}).get('shares', ''):
+            if self.torrent_path.startswith(f"{share['vol_path']}/{share['name']}"):
+                fullpath = self.torrent_path
+                self.torrent_path = fullpath.replace(f"{share['vol_path']}/", '')
+                break
+            elif self.torrent_path.lstrip('/').startswith(f"{share['name']}"):
+                self.torrent_path = self.torrent_path.lstrip('/')
+                fullpath = f"{share['vol_path']}/{self.torrent_path}"
+                break
         else:
-            self.auth = jdata.get('success')
-            if not self.auth:
-                error_code = jdata.get('error', {}).get('code')
-                log.warning('Error: {error!r}', {'error': self.error_map.get(error_code, jdata)})
-                self.session.cookies.clear()
-
-            return self.auth
+            # No break occurred, so the destination is not a valid share
+            self.message = f'"{self.torrent_path}" is not a valid location'
+            return False
+        if os.access(fullpath, os.W_OK | os.X_OK):
+            return True
+        else:
+            self.message = f'This user does not have the correct permissions to use "{fullpath}"'
+            log.warning(self.message)
+            return False
 
     def _get_auth(self):
-        if self.session.cookies and self.auth:
-            return self.auth
-
-        params = {
-            'api': 'SYNO.API.Auth',
-            'version': 2,
-            'method': 'login',
-            'account': self.username,
-            'passwd': self.password,
-            'session': 'DownloadStation',
-            'format': 'cookie',
+        """Downloadstation login."""
+        errmap = {
+            400: 'No such account or incorrect password',
+            401: 'Account disabled',
+            402: 'Permission denied',
+            403: '2-step verification code required',
+            404: 'Failed to authenticate 2-step verification code'
         }
-
-        try:
-            self.response = self.session.get(self.urls['login'], params=params, verify=False)
-            self.response.raise_for_status()
-        except RequestException as error:
-            handle_requests_exception(error)
-            self.session.cookies.clear()
+        self.url = urljoin(self.host, 'webapi/auth.cgi')
+        params = {
+            'method': 'login',
+            'api': 'SYNO.API.Auth',
+            'version': 3,
+            'session': 'DownloadStation',
+            'account': self.username,
+            'passwd': self.password
+        }
+        self.auth = True
+        if not self._request(method='get', params=params):
             self.auth = False
-            return self.auth
+            return False
+        jdata = self.response.json()
+        if jdata.get('success'):
+            self.auth = True
         else:
-            return self._check_response()
+            err_code = jdata.get('error', {}).get('code', 100)
+            self.message = f'{self.name} login error: {errmap[err_code]}'
+            log.warning(self.message)
+            self.auth = False
+        return self.auth
 
     def _add_torrent_uri(self, result):
-
-        torrent_path = app.TORRENT_PATH
-
-        data = {
-            'api': 'SYNO.DownloadStation.Task',
-            'version': '1',
+        # parameters "type' and "destination" must be coded as a json string so we add double quotes to those parameters
+        params = {
+            'api': 'SYNO.DownloadStation2.Task',
+            'version': 2,
             'method': 'create',
-            'session': 'DownloadStation',
-            'uri': result.url,
+            'create_list': 'false',
+            'destination': f'"{app.TORRENT_PATH}"',
+            'type': '"url"',
+            'url': result.url
         }
-
-        if not self._check_destination():
-            return False
-
-        if torrent_path:
-            data['destination'] = torrent_path
-        log.debug('Add torrent URI with data: {0}', json.dumps(data))
-        self._request(method='post', data=data)
-        return self._check_response()
+        return self._add_torrent(params)
 
     def _add_torrent_file(self, result):
-
-        torrent_path = app.TORRENT_PATH
-
-        data = {
-            'api': 'SYNO.DownloadStation.Task',
-            'version': '1',
-            'method': 'create',
-            'session': 'DownloadStation',
-        }
-
-        if not self._check_destination():
-            return False
-
-        if torrent_path:
-            data['destination'] = torrent_path
-
-        files = {'file': ('{name}.torrent'.format(name=result.name), result.content)}
-
-        log.debug('Add torrent files with data: {0}', json.dumps(data))
-        self._request(method='post', data=data, files=files)
-        return self._check_response()
-
-    def _check_destination(self):
-        """Validate and set torrent destination."""
-        torrent_path = app.TORRENT_PATH
-
-        if not (self.auth or self._get_auth()):
-            return False
-
-        if self.checked_destination and self.destination == torrent_path:
-            return True
-
+        # Parameters "type" and "file" must be individually coded as a json string so we add double quotes to those parameters
+        # The "file" paramater (torrent in this case) must corrospondent with the key in the files parameter
         params = {
-            'api': 'SYNO.DownloadStation.Info',
+            'api': 'SYNO.DownloadStation2.Task',
             'version': 2,
-            'method': 'getinfo',
-            'session': 'DownloadStation',
+            'method': 'create',
+            'create_list': 'false',
+            'destination': f'"{app.TORRENT_PATH}"',
+            'type': '"file"',
+            'file': '["torrent"]'
         }
+        torrent_file = {'torrent': (f'{result.name}.torrent', result.content)}
+        return self._add_torrent(params, torrent_file)
 
-        try:
-            self.response = self.session.get(self.urls['info'], params=params, verify=False, timeout=120)
-            self.response.raise_for_status()
-        except RequestException as error:
-            handle_requests_exception(error)
-            self.session.cookies.clear()
-            self.auth = False
+    def _add_torrent(self, params, torrent_file=None):
+        """Add a torrent to DownloadStation."""
+        self.url = urljoin(app.TORRENT_HOST, 'webapi/entry.cgi')
+        if not self._request(method='post', data=params, files=torrent_file):
             return False
-
-        destination = ''
-        if self._check_response():
-            jdata = self.response.json()
-            version_string = jdata.get('data', {}).get('version_string')
-            if not version_string:
-                log.warning('Could not get the version string from DSM:'
-                            ' {response}', {'response': jdata})
-                return False
-
-            if version_string.startswith('DSM 6'):
-                #  This is DSM6, lets make sure the location is relative
-                if torrent_path and os.path.isabs(torrent_path):
-                    torrent_path = re.sub(r'^/volume\d/', '', torrent_path).lstrip('/')
-                else:
-                    #  Since they didn't specify the location in the settings,
-                    #  lets make sure the default is relative,
-                    #  or forcefully set the location setting
-                    params.update({
-                        'method': 'getconfig',
-                        'version': 2,
-                    })
-
-                    try:
-                        self.response = self.session.get(self.urls['info'], params=params, verify=False, timeout=120)
-                        self.response.raise_for_status()
-                    except RequestException as error:
-                        handle_requests_exception(error)
-                        self.session.cookies.clear()
-                        self.auth = False
-                        return False
-
-                    if self._check_response():
-                        jdata = self.response.json()
-                        destination = jdata.get('data', {}).get('default_destination')
-                        if destination and os.path.isabs(destination):
-                            torrent_path = re.sub(r'^/volume\d/', '', destination).lstrip('/')
-                        else:
-                            log.info('Default destination could not be'
-                                     ' determined for DSM6: {response}',
-                                     {'response': jdata})
-
-                            return False
-
-        if destination or torrent_path:
-            log.info('Destination is now {path}',
-                     {'path': torrent_path or destination})
-
-        self.checked_destination = True
-        self.destination = torrent_path
-        return True
+        jdata = self.response.json()
+        if jdata['success']:
+            log.info('Torrent added as task {task_id} to {self_name}', {
+                'task_id': jdata['data']['task_id'], 'self_name': self.name
+            })
+            return True
+        log.warning('Add torrent error: {error}', {
+            'error': self.error_map[jdata.get('error', {}).get('code', 100)]
+        })
+        return False
 
 
 api = DownloadStationAPI

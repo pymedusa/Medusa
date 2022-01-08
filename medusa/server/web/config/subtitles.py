@@ -29,11 +29,9 @@ class ConfigSubtitles(Config):
 
     def index(self):
         """
-        Render the Subtitle Search configuration page
+        Changed to a Vue Route.
         """
-        t = PageTemplate(rh=self, filename='config_subtitles.mako')
-
-        return t.render(controller='config', action='subtitlesPage')
+        return PageTemplate(rh=self, filename='index.mako').render()
 
     def saveSubtitles(self, use_subtitles=None, subtitles_plugins=None, subtitles_languages=None, subtitles_dir=None, subtitles_perfect_match=None,
                       service_order=None, subtitles_history=None, subtitles_finder_frequency=None, subtitles_erase_cache=None,
@@ -46,7 +44,11 @@ class ConfigSubtitles(Config):
         results = []
 
         config.change_SUBTITLES_FINDER_FREQUENCY(subtitles_finder_frequency)
-        config.change_USE_SUBTITLES(use_subtitles)
+        app._init_scheduler(
+            app_prop='USE_SUBTITLES',
+            scheduler='subtitles_finder_scheduler',
+            enabled=config.checkbox_to_value(use_subtitles)
+        )
         app.SUBTITLES_ERASE_CACHE = config.checkbox_to_value(subtitles_erase_cache)
         app.SUBTITLES_LANGUAGES = [code.strip() for code in subtitles_languages.split(',') if code.strip() in subtitles.subtitle_code_filter()] if subtitles_languages else []
         app.SUBTITLES_DIR = subtitles_dir

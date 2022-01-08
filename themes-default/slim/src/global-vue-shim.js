@@ -7,11 +7,13 @@ import VueCookies from 'vue-cookies';
 import VModal from 'vue-js-modal';
 import { VTooltip } from 'v-tooltip';
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faAlignJustify } from '@fortawesome/free-solid-svg-icons';
+import { faAlignJustify, faImages } from '@fortawesome/free-solid-svg-icons';
+import { faTimesCircle } from '@fortawesome/free-regular-svg-icons';
 
-library.add(faAlignJustify);
+library.add([faAlignJustify, faImages, faTimesCircle]);
 
 import {
+    App,
     AddShowOptions,
     AnidbReleaseGroupUi,
     AppFooter,
@@ -24,10 +26,8 @@ import {
     ConfigTextboxNumber,
     ConfigToggleSlider,
     FileBrowser,
-    History,
     LanguageSelect,
     LoadProgressBar,
-    ManualPostProcess,
     PlotInfo,
     QualityChooser,
     QualityPill,
@@ -53,6 +53,7 @@ export const registerGlobalComponents = () => {
     // @TODO: These should be registered in an `App.vue` component when possible,
     //        along with some of the `main.mako` template
     components = components.concat([
+        App,
         AppFooter,
         AppHeader,
         ScrollButtons,
@@ -89,8 +90,6 @@ export const registerGlobalComponents = () => {
     // Add components for pages that use `pageComponent`
     // @TODO: These need to be converted to Vue SFCs
     components = components.concat([
-        History,
-        ManualPostProcess,
         Schedule
     ]);
 

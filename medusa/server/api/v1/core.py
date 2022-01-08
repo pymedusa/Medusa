@@ -1294,7 +1294,7 @@ class CMD_PostProcess(ApiCall):
             'return_data': {'desc': 'Returns the result of the post-process'},
             'process_method': {'desc': 'How should valid post-processed files be handled'},
             'is_priority': {'desc': 'Replace the file even if it exists in a higher quality'},
-            'delete_files': {'desc': 'Delete files and folders like auto processing'},
+            'delete_files': {'desc': 'Delete files and folders'},
             'failed': {'desc': 'Mark download as failed'},
             'type': {'desc': 'The type of post-process being requested'},
         }
@@ -1944,15 +1944,8 @@ class CMD_Show(ApiCall):
         show_dict['airs'] = text_type(show_obj.airs).replace('am', ' AM').replace('pm', ' PM').replace('  ', ' ')
         show_dict['dvdorder'] = (0, 1)[show_obj.dvd_order]
 
-        if show_obj.rls_require_words:
-            show_dict['rls_require_words'] = show_obj.rls_require_words.split(', ')
-        else:
-            show_dict['rls_require_words'] = []
-
-        if show_obj.rls_ignore_words:
-            show_dict['rls_ignore_words'] = show_obj.rls_ignore_words.split(', ')
-        else:
-            show_dict['rls_ignore_words'] = []
+        show_dict['release_required_words'] = show_obj.release_required_words
+        show_dict['release_ignored_words'] = show_obj.release_ignored_words
 
         show_dict['scene'] = (0, 1)[show_obj.scene]
         # show_dict['archive_firstmatch'] = (0, 1)[show_obj.archive_firstmatch]

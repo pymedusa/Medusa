@@ -16,10 +16,12 @@ all_schedulers = [
     ('forcedSearchQueue', 'Forced Search Queue', 'forced_search_queue_scheduler'),
     ('properFinder', 'Proper Finder', 'proper_finder_scheduler'),
     ('postProcess', 'Post Process', 'post_processor_scheduler'),
+    ('postProcessQueue', 'Post Process Queue', 'post_processor_queue_scheduler'),
     ('subtitlesFinder', 'Subtitles Finder', 'subtitles_finder_scheduler'),
     ('traktChecker', 'Trakt Checker', 'trakt_checker_scheduler'),
-    ('torrentChecker', 'Torrent Checker', 'torrent_checker_scheduler'),
     ('snatchQueue', 'Snatch Queue', 'manual_snatch_scheduler'),
+    ('downloadHandler', 'Download Handler', 'download_handler_scheduler'),
+    ('episodeUpdater', 'Episode Updater', 'episode_update_scheduler'),
 ]
 
 

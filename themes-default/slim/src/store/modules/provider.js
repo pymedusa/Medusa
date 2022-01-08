@@ -1,35 +1,56 @@
 import Vue from 'vue';
 
 import { api } from '../../api';
-import { ADD_PROVIDERS, ADD_PROVIDER_CACHE, ADD_SEARCH_RESULTS } from '../mutation-types';
+import {
+    ADD_PROVIDER,
+    ADD_PROVIDERS,
+    ADD_PROVIDER_CACHE,
+    ADD_SEARCH_RESULTS,
+    REMOVE_PROVIDER
+} from '../mutation-types';
 
 const state = {
-    providers: {}
+    providers: []
 };
 
 const mutations = {
-    [ADD_PROVIDERS](state, providers) {
-        for (const provider of providers) {
-            Vue.set(state.providers, provider.id, { ...state.providers[provider.id], ...provider });
+    [ADD_PROVIDER](state, provider) {
+        if (!state.providers.find(p => p.id === provider.id)) {
+            state.providers.push(provider);
         }
+    },
+    [ADD_PROVIDERS](state, providers) {
+        providers.forEach(provider => {
+            const existingProvider = state.providers.find(p => p.id === provider.id);
+            if (existingProvider) {
+                Vue.set(state.providers, state.providers.indexOf(existingProvider), provider);
+            } else {
+                state.providers.push(provider);
+            }
+        });
+    },
+    [REMOVE_PROVIDER](state, providerId) {
+        state.providers = state.providers.filter(prov => prov.id !== providerId);
     },
     [ADD_PROVIDER_CACHE](state, { providerId, cache }) {
         // Check if this provider has already been added.
-        if (!state.providers[providerId]) {
-            state.providers[providerId] = {
+        let currentProvider = state.providers.find(prov => prov.id === providerId);
+        if (!currentProvider) {
+            currentProvider = {
                 name: '',
                 config: {}
             };
+            state.providers.push(currentProvider);
         }
 
-        if (state.providers[providerId].cache === undefined) {
-            Vue.set(state.providers[providerId], 'cache', []);
+        if (currentProvider.cache === undefined) {
+            Vue.set(currentProvider, 'cache', []);
         }
 
         const newCache = [];
 
         for (const result of cache) {
-            const existingIdentifier = state.providers[providerId].cache.find(item => item.identifier === result.identifier);
+            const existingIdentifier = currentProvider.cache.find(item => item.identifier === result.identifier);
             if (existingIdentifier) {
                 newCache.push({ ...existingIdentifier, ...result });
             } else {
@@ -37,7 +58,7 @@ const mutations = {
             }
         }
 
-        Vue.set(state.providers[providerId], 'cache', newCache);
+        Vue.set(currentProvider, 'cache', newCache);
     },
     /**
      * Add search results which have been retreived through the webSocket.
@@ -46,15 +67,17 @@ const mutations = {
      */
     [ADD_SEARCH_RESULTS](state, searchResults) {
         for (const searchResult of searchResults) {
-            if (!state.providers[searchResult.provider.id]) {
-                state.providers[searchResult.provider.id] = {
+            let currentProvider = state.providers.find(prov => prov.id === searchResult.provider.id);
+
+            if (!currentProvider) {
+                currentProvider = {
                     name: '',
                     config: {},
                     cache: []
                 };
             }
 
-            const { cache } = state.providers[searchResult.provider.id];
+            const { cache } = currentProvider;
 
             // Check if we don't allready have this result in our store.
             // In that case, we update the existing object.
@@ -62,15 +85,17 @@ const mutations = {
             if (existingSearchResult) {
                 // Because this is an existing result, whe're not overwriting dateAdded field.
                 const { dateAdded, ...rest } = searchResult;
-                Vue.set(state.providers[searchResult.provider.id].cache, cache.indexOf(existingSearchResult), { ...existingSearchResult, ...rest });
+                Vue.set(currentProvider.cache, cache.indexOf(existingSearchResult), { ...existingSearchResult, ...rest });
             } else {
-                Vue.set(state.providers[searchResult.provider.id], 'cache', [...cache || [], ...[searchResult]]);
+                Vue.set(currentProvider, 'cache', [...cache || [], ...[searchResult]]);
             }
         }
     }
 };
 
-const getters = {};
+const getters = {
+    providerNameToId: _ => providerName => providerName.replace(/[^\d\w_]/gi, '_').toLowerCase().trim() // eslint-disable-line unicorn/better-regex
+};
 
 /**
  * An object representing request parameters for getting a show from the API.
@@ -121,7 +146,12 @@ const actions = {
             let lastPage = false;
             const results = [];
 
-            const { id: providerId } = state.providers[provider];
+            const currentProvider = state.providers.find(prov => prov.id === provider.id);
+            if (!currentProvider) {
+                return results;
+            }
+
+            const { id: providerId } = currentProvider;
 
             page = 0;
             lastPage = false;
@@ -161,8 +191,8 @@ const actions = {
             totalSearchResults: []
         };
 
-        for (const provider in state.providers) {
-            if (!state.providers[provider].config.enabled) {
+        for (const provider of state.providers) {
+            if (!provider.config.enabled) {
                 continue;
             }
 

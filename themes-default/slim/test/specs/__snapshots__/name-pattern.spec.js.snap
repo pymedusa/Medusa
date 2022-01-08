@@ -12,14 +12,18 @@ exports[`NamePattern.test.js renders 1`] = `
     <div
       class="form-group"
     >
-      <label
-        class="col-sm-2 control-label"
-        for="name_presets"
+      <div
+        class="col-sm-2"
       >
-        <span>
-          Name Pattern:
-        </span>
-      </label>
+        <label
+          class="control-label"
+          for="name_presets"
+        >
+          <span>
+            Name Pattern:
+          </span>
+        </label>
+      </div>
        
       <div
         class="col-sm-10 content"
@@ -42,14 +46,18 @@ exports[`NamePattern.test.js renders 1`] = `
     <div
       class="form-group"
     >
-      <label
-        class="col-sm-2 control-label"
-        for="naming_multi_ep"
+      <div
+        class="col-sm-2"
       >
-        <span>
-          Multi-Episode Style:
-        </span>
-      </label>
+        <label
+          class="control-label"
+          for="naming_multi_ep"
+        >
+          <span>
+            Multi-Episode Style:
+          </span>
+        </label>
+      </div>
        
       <div
         class="col-sm-10 content"

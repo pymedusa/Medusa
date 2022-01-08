@@ -28,7 +28,7 @@ def show_list(create_tvshow):
         create_tvshow(indexerid=6, name='60 Minutes'),
         create_tvshow(indexerid=7, name='Incredible Show 2007'),
         create_tvshow(indexerid=8, name='Mobile Suit Gundam UC RE:0096',
-                      exceptions=[TitleException(
+                      _aliases=[TitleException(
                           title='Mobile Suit Gundam Unicorn RE 0096',
                           season=-1,
                           indexer=1,

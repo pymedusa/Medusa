@@ -73,7 +73,7 @@ class Notifier(object):
         self.gobject = GObject
         return True
 
-    def notify_snatch(self, title, message):
+    def notify_snatch(self, title, message, **kwargs):
         if app.LIBNOTIFY_NOTIFY_ONSNATCH:
             self._notify(title, message)
 

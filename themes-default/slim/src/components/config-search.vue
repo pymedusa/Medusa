@@ -45,13 +45,6 @@
                                         <p>time in minutes between searches (min. {{search.general.minDailySearchFrequency}})</p>
                                     </config-textbox-number>
 
-                                    <config-toggle-slider v-if="clientsConfig.torrent[clients.torrents.method]" v-show="clientsConfig.torrent[clients.torrents.method].removeFromClientOption" v-model="search.general.removeFromClient" label="Remove torrents from client" id="remove_from_client">
-                                        <p>Remove torrent from client (also torrent data) when provider ratio is reached</p>
-                                        <p><b>Note:</b> For now only Transmission and Deluge are supported</p>
-                                    </config-toggle-slider>
-
-                                    <config-textbox-number v-show="search.general.removeFromClient" :min="search.general.minTorrentCheckerFrequency" :step="1" v-model.number="search.general.torrentCheckerFrequency" label="Frequency to check torrents ratio" id="torrent_checker_frequency" :explanations="['Frequency in minutes to check torrent\'s ratio (default: 60)']" />
-
                                     <config-textbox-number :min="1" :step="1" v-model.number="search.general.usenetRetention" label="Usenet retention" id="usenet_retention" :explanations="['age limit in days for usenet articles to be used (e.g. 500)']" />
 
                                     <config-template label-for="trackers_list" label="Trackers list">
@@ -158,10 +151,9 @@
 
                                         <div v-if="clients.nzb.method" v-show="clients.nzb.method === 'sabnzbd'" id="sabnzbd_settings">
 
-                                            <config-textbox v-model="clients.nzb.sabnzbd.host" label="SABnzbd server URL" id="sab_host" :explanations="['username for your KODI server (blank for none)']" @change="save()">
-                                                <div class="clear-left">
-                                                    <p v-html="clientsConfig.nzb[clients.nzb.method].description" />
-                                                </div>
+                                            <config-textbox v-model="clients.nzb.sabnzbd.host" label="SABnzbd server URL" id="sab_host" validate-uri @change="save()">
+                                                <p>username for your KODI server (blank for none)</p>
+                                                <p v-html="clientsConfig.nzb[clients.nzb.method].description" />
                                             </config-textbox>
 
                                             <config-textbox v-model="clients.nzb.sabnzbd.username" label="SABnzbd username" id="sab_username" :explanations="['(blank for none)']" />
@@ -175,12 +167,6 @@
 
                                             <div class="testNotification" v-show="clientsConfig.nzb.sabnzbd.testStatus" v-html="clientsConfig.nzb.sabnzbd.testStatus" />
                                             <input @click="testSabnzbd" type="button" value="Test SABnzbd" class="btn-medusa test-button">
-                                            <input type="submit"
-                                                   class="btn-medusa config_submitter"
-                                                   value="Save Changes"
-                                                   :disabled="saving"
-                                            >
-                                            <br>
                                         </div>
 
                                         <div v-if="clients.nzb.method" v-show="clients.nzb.method === 'nzbget'" id="nzbget_settings">
@@ -189,7 +175,7 @@
                                                 <p><b>Note:</b> enable Secure control in NZBGet and set the correct Secure Port here</p>
                                             </config-toggle-slider>
 
-                                            <config-textbox v-model="clients.nzb.nzbget.host" label="NZBget host:port" id="nzbget_host">
+                                            <config-textbox v-model="clients.nzb.nzbget.host" validate-url label="NZBget host:port" id="nzbget_host">
                                                 <p v-if="clientsConfig.nzb[clients.nzb.method]" v-html="clientsConfig.nzb[clients.nzb.method].description" />
                                             </config-textbox>
 
@@ -209,15 +195,17 @@
 
                                             <div class="testNotification" v-show="clientsConfig.nzb.nzbget.testStatus" v-html="clientsConfig.nzb.nzbget.testStatus" />
                                             <input @click="testNzbget" type="button" value="Test NZBget" class="btn-medusa test-button">
-                                            <input type="submit"
-                                                   class="btn-medusa config_submitter"
-                                                   value="Save Changes"
-                                                   :disabled="saving"
-                                            >
+
                                             <br>
                                         </div><!-- /nzb.enabled //-->
                                     </div>
                                 </fieldset>
+                                <br>
+                                <input type="submit"
+                                       class="btn-medusa config_submitter"
+                                       value="Save Changes"
+                                       :disabled="saving"
+                                >
                             </div>
                         </div> <!-- /row -->
                     </div><!-- /#nzb-search //-->
@@ -246,21 +234,29 @@
                                                 <file-browser name="torrent_dir" title="Select .torrent black hole location" :initial-dir="clients.torrents.dir" @update="clients.torrents.dir = $event" />
                                                 <p><b>.torrent</b> files are stored at this location for external software to find and use</p>
                                             </config-template>
-                                            <input type="submit"
-                                                   class="btn-medusa config_submitter"
-                                                   value="Save Changes"
-                                                   :disabled="saving"
-                                            >
-                                            <br>
+
+                                            <config-toggle-slider v-model="clients.torrents.saveMagnetFile" label="Save to .magnet" id="save_to_magnet">
+                                                <p>Save Magnet URI to a .magnet file if a Magnet URI is available instead of a Torrent</p>
+                                                <p>A .magnet file is only created if this option is enabled and a Torrent could not be downloaded from one of the online Magnet registries</p>
+                                            </config-toggle-slider>
                                         </div>
 
                                         <div v-if="clients.torrents.method" v-show="clients.torrents.method !== 'blackhole'">
 
-                                            <config-textbox v-model="clients.torrents.host" :label="clientsConfig.torrent[clients.torrents.method].shortTitle || clientsConfig.torrent[clients.torrents.method].title + ' host:port'" id="torrent_host">
+                                            <config-textbox
+                                                v-model="clients.torrents.host"
+                                                :label="clientsConfig.torrent[clients.torrents.method].shortTitle || `${clientsConfig.torrent[clients.torrents.method].title} host:port`"
+                                                id="torrent_host" validate-uri
+                                            >
                                                 <p v-html="clientsConfig.torrent[clients.torrents.method].description" />
                                             </config-textbox>
 
-                                            <config-textbox v-show="clients.torrents.method === 'transmission'" v-model="clients.torrents.rpcUrl" :label="clientsConfig.torrent[clients.torrents.method].shortTitle || clientsConfig.torrent[clients.torrents.method].title + ' RPC URL'" id="rpcurl_title">
+                                            <config-textbox
+                                                v-show="clients.torrents.method === 'transmission'"
+                                                v-model="clients.torrents.rpcUrl"
+                                                :label="clientsConfig.torrent[clients.torrents.method].shortTitle || `${clientsConfig.torrent[clients.torrents.method].title} RPC URL`"
+                                                id="rpcurl_title"
+                                            >
                                                 <p id="rpcurl_desc_">The path without leading and trailing slashes (e.g. transmission)</p>
                                             </config-textbox>
 
@@ -270,16 +266,26 @@
                                                 </select>
                                             </config-template>
 
-                                            <config-toggle-slider v-show="clientsConfig.torrent[clients.torrents.method].verifySSLOption" v-model="clients.torrents.verifySSL" label="Verify certificate" id="torrent_verify_cert">
+                                            <config-toggle-slider
+                                                v-show="clientsConfig.torrent[clients.torrents.method].verifySSLOption" v-model="clients.torrents.verifySSL"
+                                                label="Verify certificate" id="torrent_verify_cert"
+                                            >
                                                 <p>Verify SSL certificates for HTTPS requests</p>
                                                 <p v-show="clients.torrents.method === 'deluge'">disable if you get "Deluge: Authentication Error" in your log</p>
                                             </config-toggle-slider>
 
-                                            <config-textbox v-show="!torrentUsernameIsDisabled"
-                                                            v-model="clients.torrents.username" :label="(clientsConfig.torrent[clients.torrents.method].shortTitle || clientsConfig.torrent[clients.torrents.method].title) + ' username'" id="torrent_username" :explanations="['(blank for none)']" />
+                                            <config-textbox
+                                                v-show="!torrentUsernameIsDisabled"
+                                                v-model="clients.torrents.username"
+                                                :label="(clientsConfig.torrent[clients.torrents.method].shortTitle || clientsConfig.torrent[clients.torrents.method].title) + ' username'" id="torrent_username" :explanations="['(blank for none)']"
+                                            />
 
-                                            <config-textbox type="password" v-show="!torrentPasswordIsDisabled"
-                                                            v-model="clients.torrents.password" :label="(clientsConfig.torrent[clients.torrents.method].shortTitle || clientsConfig.torrent[clients.torrents.method].title) + ' password'" id="torrent_password" :explanations="['(blank for none)']" />
+                                            <config-textbox
+                                                type="password" v-show="!torrentPasswordIsDisabled"
+                                                v-model="clients.torrents.password"
+                                                :label="(clientsConfig.torrent[clients.torrents.method].shortTitle || clientsConfig.torrent[clients.torrents.method].title) + ' password'"
+                                                id="torrent_password" :explanations="['(blank for none)']"
+                                            />
 
                                             <div v-show="clientsConfig.torrent[clients.torrents.method].labelOption" id="torrent_label_option">
                                                 <config-textbox v-model="clients.torrents.label" label="Add label to torrent" id="torrent_label">
@@ -344,25 +350,20 @@
 
                                             <div class="testNotification" v-show="clientsConfig.torrent[clients.torrents.method].testStatus" v-html="clientsConfig.torrent[clients.torrents.method].testStatus" />
                                             <input @click="testTorrentClient" type="button" value="Test Connection" class="btn-medusa test-button">
-                                            <input type="submit"
-                                                   class="btn-medusa config_submitter"
-                                                   value="Save Changes"
-                                                   :disabled="saving"
-                                            >
-                                            <br>
                                         </div>
                                     </div><!-- /torrent.enabled //-->
                                 </fieldset>
+                                <br>
+                                <input type="submit"
+                                       class="btn-medusa config_submitter"
+                                       value="Save Changes"
+                                       :disabled="saving"
+                                >
                             </div>
                         </div>
                     </div><!-- /#torrent-search //-->
                     <br>
                     <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">{{system.dataDir}}</span></b> </h6>
-                    <input type="submit"
-                           class="btn-medusa config_submitter"
-                           value="Save Changes"
-                           :disabled="saving"
-                    >
                 </div><!-- /config-components //-->
             </form>
         </div>

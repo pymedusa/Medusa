@@ -35,7 +35,18 @@ const state = {
     fileTimestampTimezone: 'local',
     extraScripts: [],
     extraScriptsUrl: null,
-    multiEpStrings: {}
+    multiEpStrings: {},
+    downloadHandler: {
+        enabled: null,
+        frequency: null,
+        minFrequency: null,
+        torrentSeedRatio: null,
+        torrentSeedAction: null
+    },
+    ffmpeg: {
+        checkStreams: null,
+        path: ''
+    }
 };
 
 const mutations = {

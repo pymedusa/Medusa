@@ -1,4 +1,5 @@
-import { ADD_CONFIG } from '../../mutation-types';
+import { ADD_CONFIG, ADD_REMOTE_BRANCHES, ADD_SHOW_QUEUE_ITEM } from '../../mutation-types';
+import { api, apiRoute } from '../../../api.js';
 
 /**
  * An object representing a scheduler.
@@ -46,6 +47,7 @@ const state = {
         minor: null
     },
     locale: null,
+    timezone: null,
     localUser: null,
     programDir: null,
     dataDir: null,
@@ -53,13 +55,15 @@ const state = {
     appArgs: [],
     webRoot: null,
     runsInDocker: null,
+    newestVersionMessage: null,
     gitRemoteBranches: [],
     cpuPresets: null,
     news: {
         lastRead: null,
         latest: null,
         unread: null
-    }
+    },
+    ffprobeVersion: null
 };
 
 const mutations = {
@@ -67,6 +71,9 @@ const mutations = {
         if (section === 'system') {
             state = Object.assign(state, config);
         }
+    },
+    [ADD_REMOTE_BRANCHES](state, branches) {
+        state.gitRemoteBranches = branches;
     }
 };
 
@@ -83,7 +90,33 @@ const getters = {
     }
 };
 
-const actions = {};
+const actions = {
+    getGitRemoteBranches(context) {
+        const { commit } = context;
+        return apiRoute('home/branchForceUpdate')
+            .then(response => {
+                if (response.data && response.data.branches.length > 0) {
+                    commit(ADD_REMOTE_BRANCHES, response.data.branches);
+                    return response.data.branches;
+                }
+            });
+    },
+    getShowQueue(context) {
+        const { commit } = context;
+        return api.get('/config/system/showQueue').then(res => {
+            const showQueue = res.data;
+            const config = { showQueue };
+            commit(ADD_CONFIG, { section: 'system', config });
+            return showQueue;
+        });
+    },
+    updateQueueItemShow(context, queueItem) {
+        // Update store's show queue item. (provided through websocket)
+        const { commit } = context;
+        return commit(ADD_SHOW_QUEUE_ITEM, queueItem);
+    }
+
+};
 
 export default {
     state,

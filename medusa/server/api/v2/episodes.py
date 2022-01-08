@@ -125,6 +125,9 @@ class EpisodeHandler(BaseRequestHandler):
 
             self._patch_episode(episode, data)
 
+            # Save patched attributes in db.
+            episode.save_to_db()
+
             statuses[slug] = {'status': 200}
 
         return self._multi_status(data=statuses)
@@ -146,9 +149,6 @@ class EpisodeHandler(BaseRequestHandler):
                 set_nested_value(accepted, key, value)
             else:
                 set_nested_value(ignored, key, value)
-
-        # Save patched attributes in db.
-        episode.save_to_db()
 
         if ignored:
             log.warning(

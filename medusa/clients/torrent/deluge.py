@@ -9,6 +9,7 @@ from base64 import b64encode
 
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
+from medusa.helper.exceptions import DownloadClientConnectionException
 from medusa.helpers import (
     get_extension,
     is_already_processed_media,
@@ -17,6 +18,7 @@ from medusa.helpers import (
     is_media_file,
 )
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.schedulers.download_handler import ClientStatus
 
 from requests.compat import urljoin
 from requests.exceptions import RequestException
@@ -118,6 +120,9 @@ class DelugeAPI(GenericClient):
         super(DelugeAPI, self).__init__('Deluge', host, username, password)
         self.session.headers.update({'Content-Type': 'application/json'})
         self.url = urljoin(self.host, 'json')
+        self.version = None
+
+        self._get_auth()
 
     def _get_auth(self):
         post_data = json.dumps({
@@ -212,7 +217,40 @@ class DelugeAPI(GenericClient):
                           {'name': self.name})
                 return None
 
+        if self.auth:
+            self._get_version()
+
         return self.auth
+
+    def _get_version(self):
+        result = self.session.post(
+            self.url,
+            data=json.dumps({
+                'method': 'daemon.get_version',
+                'params': {},
+                'id': 12
+            }),
+            verify=app.TORRENT_VERIFY_CERT
+        )
+
+        result = result.json()
+        if not result.get('result'):
+            # Version 1.3.15 needs a different rpc method.
+            result = self.session.post(
+                self.url,
+                data=json.dumps({
+                    'method': 'daemon.info',
+                    'params': {},
+                    'id': 12
+                }),
+                verify=app.TORRENT_VERIFY_CERT
+            )
+            result = result.json()
+
+        if result.get('result'):
+            split_version = result['result'].split('.')[0:2]
+            self.version = tuple(int(x) for x in split_version)
+            return self.version
 
     def _add_torrent_uri(self, result):
 
@@ -275,7 +313,7 @@ class DelugeAPI(GenericClient):
 
         return not self.response.json()['error'] if self._request(method='post', data=post_data) else False
 
-    def remove_torrent(self, info_hash):
+    def _remove(self, info_hash, from_disk=False):
         """Remove torrent from client using given info_hash.
 
         :param info_hash:
@@ -287,13 +325,33 @@ class DelugeAPI(GenericClient):
             'method': 'core.remove_torrent',
             'params': [
                 info_hash,
-                True,
+                from_disk,
             ],
             'id': 5,
         })
 
         self._request(method='post', data=post_data)
         return not self.response.json()['error']
+
+    def remove_torrent(self, info_hash):
+        """Remove torrent from client using given info_hash.
+
+        :param info_hash:
+        :type info_hash: string
+        :return
+        :rtype: bool
+        """
+        return self._remove(info_hash)
+
+    def remove_torrent_data(self, info_hash):
+        """Remove torrent from client and disk using given info_hash.
+
+        :param info_hash:
+        :type info_hash: string
+        :return
+        :rtype: bool
+        """
+        return self._remove(info_hash, from_disk=True)
 
     def _set_torrent_label(self, result):
 
@@ -357,36 +415,54 @@ class DelugeAPI(GenericClient):
 
     def _set_torrent_ratio(self, result):
 
-        ratio = None
-        if result.ratio:
-            ratio = result.ratio
+        ratio = result.ratio
 
         # blank is default client ratio, so we also shouldn't set ratio
         if ratio and float(ratio) >= 0:
-            post_data = json.dumps({
-                'method': 'core.set_torrent_stop_at_ratio',
-                'params': [
-                    result.hash,
-                    True,
-                ],
-                'id': 5,
-            })
+            if self.version >= (2, 0):
+                post_data = json.dumps({
+                    'method': 'core.set_torrent_options',
+                    'params': [
+                        result.hash,
+                        {'stop_at_ratio': True},
+                    ],
+                    'id': 5,
+                })
+            else:
+                post_data = json.dumps({
+                    'method': 'core.set_torrent_stop_ratio',
+                    'params': [
+                        result.hash,
+                        True,
+                    ],
+                    'id': 6,
+                })
 
             self._request(method='post', data=post_data)
 
-            # if unable to set_torrent_stop_at_ratio return False
+            # if unable to set_torrent_options return False
             # No reason to set ratio.
             if self.response.json()['error']:
                 return False
 
-            post_data = json.dumps({
-                'method': 'core.set_torrent_stop_ratio',
-                'params': [
-                    result.hash,
-                    float(ratio),
-                ],
-                'id': 6,
-            })
+            if self.version >= (2, 0):
+                post_data = json.dumps({
+                    'method': 'core.set_torrent_options',
+                    'params': [
+                        result.hash,
+                        {'stop_ratio': float(ratio)},
+                    ],
+                    'id': 5,
+                })
+            else:
+                post_data = json.dumps({
+                    'method': 'core.set_torrent_stop_ratio',
+                    'params': [
+                        result.hash,
+                        float(ratio),
+                    ],
+                    'id': 5,
+                })
 
             self._request(method='post', data=post_data)
 
@@ -394,9 +470,21 @@ class DelugeAPI(GenericClient):
 
         elif ratio and float(ratio) == -1:
             # Disable stop at ratio to seed forever
-            post_data = json.dumps({'method': 'core.set_torrent_stop_at_ratio',
-                                    'params': [result.hash, False],
-                                    'id': 5})
+            if self.version >= (2, 0):
+                post_data = json.dumps({
+                    'method': 'core.set_torrent_options',
+                    'params': [
+                        result.hash,
+                        {'stop_at_ratio': False},
+                    ],
+                    'id': 5,
+                })
+            else:
+                post_data = json.dumps({
+                    'method': 'core.set_torrent_stop_at_ratio',
+                    'params': [result.hash, False],
+                    'id': 5
+                })
 
             self._request(method='post', data=post_data)
 
@@ -407,25 +495,45 @@ class DelugeAPI(GenericClient):
     def _set_torrent_path(self, result):
 
         if app.TORRENT_PATH:
-            post_data = json.dumps({
-                'method': 'core.set_torrent_move_completed',
-                'params': [
-                    result.hash,
-                    True,
-                ],
-                'id': 7,
-            })
+            if self.version >= (2, 0):
+                post_data = json.dumps({
+                    'method': 'core.set_torrent_options ',
+                    'params': [
+                        result.hash,
+                        {'move_completed': True},
+                    ],
+                    'id': 7,
+                })
+            else:
+                post_data = json.dumps({
+                    'method': 'core.set_torrent_move_completed',
+                    'params': [
+                        result.hash,
+                        True,
+                    ],
+                    'id': 7,
+                })
 
             self._request(method='post', data=post_data)
 
-            post_data = json.dumps({
-                'method': 'core.set_torrent_move_completed_path',
-                'params': [
-                    result.hash,
-                    app.TORRENT_PATH,
-                ],
-                'id': 8,
-            })
+            if self.version >= (2, 0):
+                post_data = json.dumps({
+                    'method': 'core.set_torrent_options',
+                    'params': [
+                        result.hash,
+                        {'move_completed_path': app.TORRENT_PATH},
+                    ],
+                    'id': 8,
+                })
+            else:
+                post_data = json.dumps({
+                    'method': 'core.set_torrent_move_completed_path',
+                    'params': [
+                        result.hash,
+                        app.TORRENT_PATH,
+                    ],
+                    'id': 8,
+                })
 
             self._request(method='post', data=post_data)
 
@@ -434,50 +542,131 @@ class DelugeAPI(GenericClient):
         return True
 
     def _set_torrent_pause(self, result):
-
+        """Pause torrent after adding, if setting app.TORRENT_PAUSED enabled."""
         if app.TORRENT_PAUSED:
-            post_data = json.dumps({
-                'method': 'core.pause_torrent',
-                'params': [
-                    [result.hash],
-                ],
-                'id': 9,
-            })
-
-            self._request(method='post', data=post_data)
-
-            return not self.response.json()['error']
-
+            return self.pause_torrent(result.hash)
         return True
 
-    def remove_ratio_reached(self):
-        """Remove all Medusa torrents that ratio was reached.
-
-        It loops in all hashes returned from client and check if it is in the snatch history
-        if its then it checks if we already processed media from the torrent (episode status `Downloaded`)
-        If is a RARed torrent then we don't have a media file so we check if that hash is from an
-        episode that has a `Downloaded` status
-        """
+    def pause_torrent(self, info_hash):
+        """Pause a torrent by info_hash."""
         post_data = json.dumps({
-            'method': 'core.get_torrents_status',
+            'method': 'core.pause_torrent',
             'params': [
-                {},
+                [info_hash],
+            ],
+            'id': 9,
+        })
+
+        self._request(method='post', data=post_data)
+        return not self.response.json()['error']
+
+    def _torrent_properties(self, info_hash):
+        """Get torrent properties."""
+        post_data = json.dumps({
+            'method': 'core.get_torrent_status',
+            'params': [
+                info_hash,
                 ['name', 'hash', 'progress', 'state', 'ratio', 'stop_ratio',
-                 'is_seed', 'is_finished', 'paused', 'files'],
+                 'is_seed', 'is_finished', 'paused', 'files', 'download_location'],
             ],
             'id': 72,
         })
 
-        log.info('Checking Deluge torrent status.')
-        if self._request(method='post', data=post_data):
-            if self.response.json()['error']:
-                log.warning('Error while fetching torrents status')
+        log.debug('Checking {client} torrent {hash} status.', {'client': self.name, 'hash': info_hash})
+
+        try:
+            if not self._request(method='post', data=post_data) or self.response.json()['error']:
+                log.warning('Error while fetching torrent {hash} status.', {'hash': info_hash})
                 return
-            else:
-                torrent_data = self.response.json()['result']
-                info_hash_to_remove = read_torrent_status(torrent_data)
-                for info_hash in info_hash_to_remove:
-                    self.remove_torrent(info_hash)
+        except RequestException as error:
+            raise DownloadClientConnectionException(f'Error while fetching torrent info_hash {info_hash}. Error: {error}')
+
+        return self.response.json()['result']
+
+    def torrent_completed(self, info_hash):
+        """Check if the torrent has finished downloading."""
+        get_status = self.get_status(info_hash)
+        if not get_status:
+            return False
+
+        return str(get_status) == 'Completed'
+
+    def torrent_seeded(self, info_hash):
+        """Check if the torrent has finished seeding."""
+        get_status = self.get_status(info_hash)
+        if not get_status:
+            return False
+
+        return str(get_status) == 'Seeded'
+
+    def torrent_ratio(self, info_hash):
+        """Get torrent ratio."""
+        get_status = self.get_status(info_hash)
+        if not get_status:
+            return False
+
+        return get_status.ratio
+
+    def torrent_progress(self, info_hash):
+        """Get torrent download progress."""
+        get_status = self.get_status(info_hash)
+        if not get_status:
+            return False
+
+        return get_status.progress
+
+    def get_status(self, info_hash):
+        """
+        Return torrent status.
+
+        Example result:
+        ```
+            'hash': '35b814f1438054158b0bd07d305dc0edeb20b704'
+            'is_finished': False
+            'ratio': 0.0
+            'paused': False
+            'name': '[FFA] Haikyuu!!: To the Top 2nd Season - 11 [1080p][HEVC][Multiple Subtitle].mkv'
+            'stop_ratio': 2.0
+            'state': 'Downloading'
+            'progress': 23.362499237060547
+            'files': ({'index': 0, 'offset': 0, 'path': '[FFA] Haikyuu!!: To ...title].mkv', 'size': 362955692},)
+            'is_seed': False
+        ```
+        """
+        torrent = self._torrent_properties(info_hash)
+        if not torrent:
+            return False
+
+        client_status = ClientStatus()
+        if torrent['state'] == 'Downloading':
+            client_status.add_status_string('Downloading')
+
+        if torrent['paused']:
+            client_status.add_status_string('Paused')
+
+        # TODO: Find out which state the torrent get's when it fails.
+        # if torrent[1] & 16:
+        #     client_status.add_status_string('Failed')
+
+        if torrent['is_finished']:
+            client_status.add_status_string('Completed')
+
+        if torrent['ratio'] >= torrent['stop_ratio']:
+            client_status.add_status_string('Seeded')
+
+        # Store ratio
+        client_status.ratio = torrent['ratio']
+
+        # Store progress
+        client_status.progress = int(torrent['progress'])
+
+        # Store destination
+        client_status.destination = torrent['download_location']
+
+        # Store resource
+        client_status.resource = torrent['name']
+
+        return client_status
 
 
 api = DelugeAPI

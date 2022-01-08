@@ -37,7 +37,7 @@ from medusa.helper.common import dateFormat, timeFormat
 from medusa.helpers.quality import get_quality_string
 from medusa.network_timezones import parse_date_time
 from medusa.sbdatetime import sbdatetime
-from medusa.tv.series import SeriesIdentifier
+from medusa.tv.series import Series, SeriesIdentifier
 
 
 class ComingEpisodes(object):
@@ -129,9 +129,12 @@ class ComingEpisodes(object):
         )
 
         for index, item in enumerate(results):
-            item['series_slug'] = str(SeriesIdentifier.from_id(int(item['indexer']), item['indexer_id']))
+            identifier = SeriesIdentifier.from_id(int(item['indexer']), item['indexer_id'])
+            show = Series.find_by_identifier(identifier)
+            item['series_slug'] = identifier.slug
             results[index]['localtime'] = sbdatetime.convert_to_setting(
                 parse_date_time(item['airdate'], item['airs'], item['network']))
+            results[index]['externals'] = show.externals
 
         results.sort(key=ComingEpisodes.sorts[sort])
 
@@ -162,9 +165,11 @@ class ComingEpisodes(object):
             if not result['network']:
                 result['network'] = ''
 
+            result['qualityValue'] = result['quality']
             result['quality'] = get_quality_string(result['quality'])
             result['airs'] = sbdatetime.sbftime(result['localtime'], t_preset=timeFormat).lstrip('0').replace(' 0', ' ')
-            result['weekday'] = 1 + date.fromordinal(result['airdate']).weekday()
+            # Monday - Sunday (0 - 6)
+            result['weekday'] = date.fromordinal(result['airdate']).weekday()
             result['tvdbid'] = result['indexer_id']
             result['airdate'] = sbdatetime.sbfdate(result['localtime'], d_preset=dateFormat)
             result['localtime'] = result['localtime'].toordinal()

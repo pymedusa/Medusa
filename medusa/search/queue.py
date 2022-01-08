@@ -28,7 +28,7 @@ from medusa.search.core import (
     pick_result,
     search_for_needed_episodes,
     search_providers,
-    snatch_episode,
+    snatch_result,
 )
 from medusa.show.history import History
 
@@ -37,8 +37,6 @@ from six import itervalues, text_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
-
-search_queue_lock = threading.Lock()
 
 SEARCH_HISTORY = []
 SEARCH_HISTORY_SIZE = 100
@@ -77,21 +75,21 @@ class SearchQueue(generic_queue.GenericQueue):
 
     def is_backlog_in_progress(self):
         """Check is backlog is in progress."""
-        for cur_item in self.queue + [self.currentItem]:
+        for cur_item in self.queue + [self.current_item]:
             if isinstance(cur_item, BacklogQueueItem):
                 return True
         return False
 
     def is_dailysearch_in_progress(self):
         """Check if daily search is in progress."""
-        for cur_item in self.queue + [self.currentItem]:
+        for cur_item in self.queue + [self.current_item]:
             if isinstance(cur_item, DailySearchQueueItem):
                 return True
         return False
 
     def is_proper_search_in_progress(self):
         """Check if proper search is in progress."""
-        for cur_item in self.queue + [self.currentItem]:
+        for cur_item in self.queue + [self.current_item]:
             if isinstance(cur_item, ProperSearchQueueItem):
                 return True
         return False
@@ -120,7 +118,7 @@ class SearchQueue(generic_queue.GenericQueue):
 
     def force_daily(self):
         """Force daily searched."""
-        if not self.is_dailysearch_in_progress and not self.currentItem.amActive:
+        if not self.is_dailysearch_in_progress and not self.current_item.amActive:
             self.force = True
             return True
         return False
@@ -185,7 +183,7 @@ class ForcedSearchQueue(generic_queue.GenericQueue):
 
         It doesn't check what's in queue.
         """
-        if isinstance(self.currentItem, (BacklogQueueItem, ManualSearchQueueItem, FailedQueueItem)):
+        if isinstance(self.current_item, (BacklogQueueItem, ManualSearchQueueItem, FailedQueueItem)):
             return True
         return False
 
@@ -515,7 +513,7 @@ class SnatchQueueItem(generic_queue.QueueItem):
                             'search_type': result.search_type
                         }
                     )
-                self.success = snatch_episode(result)
+                self.success = snatch_result(result)
             else:
                 log.info('Unable to snatch release: {name}',
                          {'name': result.name})
@@ -668,8 +666,7 @@ class FailedQueueItem(generic_queue.QueueItem):
         try:
             for ep_obj in self.segment:
 
-                log.info('Marking episode as bad: {ep}',
-                         {'ep': ep_obj.pretty_name()})
+                log.info('Marking episode as failed: {ep}', {'ep': ep_obj.pretty_name()})
 
                 failed_history.mark_failed(ep_obj)
 
@@ -684,7 +681,7 @@ class FailedQueueItem(generic_queue.QueueItem):
 
             # If it is wanted, self.down_cur_quality doesnt matter
             # if it isn't wanted, we need to make sure to not overwrite the existing ep that we reverted to!
-            search_result = search_providers(self.show, self.segment, True)
+            search_result = search_providers(self.show, self.segment, forced_search=True)
 
             if search_result:
                 for result in search_result:
@@ -1105,7 +1102,7 @@ class ProperSearchQueueItem(generic_queue.QueueItem):
 
             else:
                 # snatch it
-                snatch_episode(candidate)
+                snatch_result(candidate)
 
     @staticmethod
     def _canonical_name(name, clear_extension=False):
@@ -1145,6 +1142,62 @@ class ProperSearchQueueItem(generic_queue.QueueItem):
             return datetime.date.fromordinal(1)
 
         return last_proper_search
+
+
+class PostProcessQueue(generic_queue.GenericQueue):
+    """Queue for queuing PostProcess queue objects."""
+
+    def __init__(self):
+        """Initialize the PostProcess queue object."""
+        generic_queue.GenericQueue.__init__(self)
+        self.queue_name = 'POSTPROCESSQUEUE'
+
+    def is_in_queue(self, item):
+        """
+        Check if the postprocess job is in queue based on it's path and resource_name.
+
+        :param item: New post-process queue item
+        :type item: :class:`PostProcessQueueItem` object.
+
+        :return: True or False
+        """
+        for queue_item in self.queue:
+            if queue_item.path == item.path and queue_item.resource_name == item.resource_name:
+                return True
+        return False
+
+    def is_running(self, item):
+        """Check if the postprocess job is currently running based on its path and resource_name.
+
+        :param item: New post-process queue item
+        :type item: :class:`PostProcessQueueItem` object.
+
+        :return: True or False
+        """
+        if not self.current_item:
+            return False
+
+        return item.path == self.current_item.path and item.resource_name == self.current_item.resource_name
+
+    def queue_length(self):
+        """
+        Get the length of the current queue.
+
+        :return: length of queue
+        """
+        return {'postprocess': len(self.queue)}
+
+    def add_item(self, item):
+        """
+        Add a PostProcess queue item.
+
+        :param item: PostProcess gueue object
+        """
+        if not self.is_in_queue(item) and not self.is_running(item):
+            # Add PostProcessQueueItem item.
+            generic_queue.GenericQueue.add_item(self, item)
+        else:
+            log.debug("Not adding item, it's already in the queue")
 
 
 def fifo(my_list, item, max_size=100):

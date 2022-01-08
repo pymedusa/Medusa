@@ -80,6 +80,9 @@
 ? Remux
 : other: Remux
 
+? Hybrid
+: other: Hybrid
+
 ? 3D.2019
 : other: 3D
 
@@ -167,3 +170,7 @@
 ? Upscale
 : other: Upscaled
 
+? REPACK5
+? ReRip5
+: other: Proper
+  proper_count: 5

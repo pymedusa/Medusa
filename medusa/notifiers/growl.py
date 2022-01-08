@@ -23,7 +23,7 @@ class Notifier(object):
         return self._sendGrowl('Test Growl', 'Testing Growl settings from Medusa', 'Test', host, password,
                                force=True)
 
-    def notify_snatch(self, title, message):
+    def notify_snatch(self, title, message, **kwargs):
         if app.GROWL_NOTIFY_ONSNATCH:
             self._sendGrowl(title, message)
 

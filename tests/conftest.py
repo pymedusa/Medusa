@@ -26,6 +26,7 @@ from medusa.updater.version_checker import CheckVersion
 from mock.mock import Mock
 import pytest
 
+import requests_mock as rm_module
 from six import iteritems, text_type
 from subliminal.subtitle import Subtitle
 from subliminal.video import Video
@@ -316,6 +317,14 @@ def raise_github_exception():
         raise exception_type(http_status, {})
 
     return raise_ex
+
+
+@pytest.fixture
+def requests_mock(request):
+    m = rm_module.Mocker()
+    m.start()
+    request.addfinalizer(m.stop)
+    return m
 
 
 @pytest.fixture

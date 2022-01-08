@@ -49,21 +49,22 @@ const app = new Vue({
                 // Legacy - send config.general to jQuery (received by index.js)
                 const event = new CustomEvent('medusa-config-loaded', { detail: { general: config.general, layout: config.layout } });
                 window.dispatchEvent(event);
+
+                // Let's bootstrap the app with essential data like the shows.
+                // For the storing of the shows in the browsers cache, we depend on config/general.
+                getShows()
+                    .then(() => {
+                        console.log('Finished loading all shows.');
+                        setTimeout(() => {
+                            setLoadingFinished(true);
+                            setLoadingDisplay(false);
+                        }, 2000);
+                    });
             }).catch(error => {
                 console.debug(error);
                 alert('Unable to connect to Medusa!'); // eslint-disable-line no-alert
             });
         }
-
-        // Let's bootstrap the app with essential data.
-        getShows()
-            .then(() => {
-                console.log('Finished loading all shows.');
-                setTimeout(() => {
-                    setLoadingFinished(true);
-                    setLoadingDisplay(false);
-                }, 2000);
-            });
     },
     methods: {
         ...mapActions({

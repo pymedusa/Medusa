@@ -3,11 +3,8 @@
 # pylint: disable=no-self-use, pointless-statement, missing-docstring, invalid-name
 import logging
 import os
-# io.open supports encoding= in python 2.7
-from io import open  # pylint: disable=redefined-builtin
 
 import babelfish
-import six  # pylint:disable=wrong-import-order
 import yaml  # pylint:disable=wrong-import-order
 from rebulk.remodule import re
 from rebulk.utils import is_iterable
@@ -53,16 +50,16 @@ class EntryResult(object):
         if self.ok:
             return self.string + ': OK!'
         if self.warning:
-            return '%s%s: WARNING! (valid=%i, extra=%i)' % ('-' if self.negates else '', self.string, len(self.valid),
-                                                            len(self.extra))
+            return f'{"-" if self.negates else ""}{self.string}: ' \
+                   f'WARNING! (valid={len(self.valid)}, extra={self.extra})'
         if self.error:
-            return '%s%s: ERROR! (valid=%i, missing=%i, different=%i, extra=%i, others=%i)' % \
-                   ('-' if self.negates else '', self.string, len(self.valid), len(self.missing), len(self.different),
-                    len(self.extra), len(self.others))
+            return f'{"-" if self.negates else ""}{self.string}: ' \
+                   f'ERROR! (valid={len(self.valid)}, extra={self.extra}, ' \
+                   f'missing={self.missing}, different={self.different}, others={self.others})'
 
-        return '%s%s: UNKOWN! (valid=%i, missing=%i, different=%i, extra=%i, others=%i)' % \
-               ('-' if self.negates else '', self.string, len(self.valid), len(self.missing), len(self.different),
-                len(self.extra), len(self.others))
+        return f'{"-" if self.negates else ""}{self.string}: ' \
+               f'UNKOWN! (valid={len(self.valid)}, extra={self.extra}, ' \
+               f'missing={self.missing}, different={self.different}, others={self.others})'
 
     @property
     def details(self):
@@ -110,7 +107,7 @@ def files_and_ids(predicate=None):
         for filename in filenames:
             name, ext = os.path.splitext(filename)
             filepath = os.path.join(dirpath_rel, filename)
-            if ext == '.yml' and (not predicate or predicate(filepath)):
+            if ext in ['.yml', '.yaml'] and (not predicate or predicate(filepath)):
                 files.append(filepath)
                 ids.append(os.path.join(dirpath_rel, name))
 
@@ -161,7 +158,7 @@ class TestYml(object):
 
                 for string, expected in data.items():
                     TestYml.set_default(expected, default)
-                    string = TestYml.fix_encoding(string, expected)
+                    string = TestYml.fix_encoding(string)
 
                     entries.append((filename, string, expected))
                     unique_id = self._get_unique_id(entry_set, '[' + filename + '] ' + str(string))
@@ -178,17 +175,7 @@ class TestYml(object):
                     expected[k] = v
 
     @classmethod
-    def fix_encoding(cls, string, expected):
-        if six.PY2:
-            if isinstance(string, six.text_type):
-                string = string.encode('utf-8')
-            converts = []
-            for k, v in expected.items():
-                if isinstance(v, six.text_type):
-                    v = v.encode('utf-8')
-                    converts.append((k, v))
-            for k, v in converts:
-                expected[k] = v
+    def fix_encoding(cls, string):
         if not isinstance(string, str):
             string = str(string)
         return string

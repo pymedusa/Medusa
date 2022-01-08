@@ -13,14 +13,18 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` disabled 1
       <div
         class="row"
       >
-        <label
-          class="col-sm-2 control-label"
-          for="customQuality"
+        <div
+          class="col-sm-2"
         >
-          <span>
-            Quality
-          </span>
-        </label>
+          <label
+            class="control-label"
+            for="customQuality"
+          >
+            <span>
+              Quality
+            </span>
+          </label>
+        </div>
          
         <div
           class="col-sm-10 content"
@@ -44,14 +48,18 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` disabled 1
           <div
             class="row"
           >
-            <label
-              class="col-sm-2 control-label"
-              for="subtitles"
+            <div
+              class="col-sm-2"
             >
-              <span>
-                Subtitles
-              </span>
-            </label>
+              <label
+                class="control-label"
+                for="subtitles"
+              >
+                <span>
+                  Subtitles
+                </span>
+              </label>
+            </div>
              
             <div
               class="col-sm-10 content"
@@ -67,7 +75,8 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` disabled 1
               <p>
                 Download subtitles for this show?
               </p>
-               
+                
+              <!---->
             </div>
           </div>
         </div>
@@ -80,14 +89,18 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` disabled 1
       <div
         class="row"
       >
-        <label
-          class="col-sm-2 control-label"
-          for="defaultStatus"
+        <div
+          class="col-sm-2"
         >
-          <span>
-            Status for previously aired episodes
-          </span>
-        </label>
+          <label
+            class="control-label"
+            for="defaultStatus"
+          >
+            <span>
+              Status for previously aired episodes
+            </span>
+          </label>
+        </div>
          
         <div
           class="col-sm-10 content"
@@ -122,14 +135,18 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` disabled 1
       <div
         class="row"
       >
-        <label
-          class="col-sm-2 control-label"
-          for="defaultStatusAfter"
+        <div
+          class="col-sm-2"
         >
-          <span>
-            Status for all future episodes
-          </span>
-        </label>
+          <label
+            class="control-label"
+            for="defaultStatusAfter"
+          >
+            <span>
+              Status for all future episodes
+            </span>
+          </label>
+        </div>
          
         <div
           class="col-sm-10 content"
@@ -167,14 +184,18 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` disabled 1
         <div
           class="row"
         >
-          <label
-            class="col-sm-2 control-label"
-            for="season_folders"
+          <div
+            class="col-sm-2"
           >
-            <span>
-              Season Folders
-            </span>
-          </label>
+            <label
+              class="control-label"
+              for="season_folders"
+            >
+              <span>
+                Season Folders
+              </span>
+            </label>
+          </div>
            
           <div
             class="col-sm-10 content"
@@ -190,7 +211,8 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` disabled 1
             <p>
               Group episodes by season folders?
             </p>
-             
+              
+            <!---->
           </div>
         </div>
       </div>
@@ -209,14 +231,18 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` disabled 1
         <div
           class="row"
         >
-          <label
-            class="col-sm-2 control-label"
-            for="scene"
+          <div
+            class="col-sm-2"
           >
-            <span>
-              Scene Numbering
-            </span>
-          </label>
+            <label
+              class="control-label"
+              for="scene"
+            >
+              <span>
+                Scene Numbering
+              </span>
+            </label>
+          </div>
            
           <div
             class="col-sm-10 content"
@@ -232,7 +258,8 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` disabled 1
             <p>
               Is this show scene numbered?
             </p>
-             
+              
+            <!---->
           </div>
         </div>
       </div>
@@ -247,14 +274,18 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` disabled 1
         <div
           class="row"
         >
-          <label
-            class="col-sm-2 control-label"
-            for="show_lists"
+          <div
+            class="col-sm-2"
           >
-            <span>
-              Display in show lists
-            </span>
-          </label>
+            <label
+              class="control-label"
+              for="show_lists"
+            >
+              <span>
+                Display in show lists
+              </span>
+            </label>
+          </div>
            
           <div
             class="col-sm-10 content"
@@ -383,6 +414,8 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` disabled 1
             <span>
               If no list selected, the default 'series' will apply
             </span>
+             
+            <!---->
           </div>
         </div>
       </div>
@@ -394,14 +427,18 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` disabled 1
       <div
         class="row"
       >
-        <label
-          class="col-sm-2 control-label"
-          for="saveDefaultsButton"
+        <div
+          class="col-sm-2"
         >
-          <span>
-            Use current values as the defaults
-          </span>
-        </label>
+          <label
+            class="control-label"
+            for="saveDefaultsButton"
+          >
+            <span>
+              Use current values as the defaults
+            </span>
+          </label>
+        </div>
          
         <div
           class="col-sm-10 content"
@@ -432,14 +469,18 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` enabled 1`
       <div
         class="row"
       >
-        <label
-          class="col-sm-2 control-label"
-          for="customQuality"
+        <div
+          class="col-sm-2"
         >
-          <span>
-            Quality
-          </span>
-        </label>
+          <label
+            class="control-label"
+            for="customQuality"
+          >
+            <span>
+              Quality
+            </span>
+          </label>
+        </div>
          
         <div
           class="col-sm-10 content"
@@ -463,14 +504,18 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` enabled 1`
           <div
             class="row"
           >
-            <label
-              class="col-sm-2 control-label"
-              for="subtitles"
+            <div
+              class="col-sm-2"
             >
-              <span>
-                Subtitles
-              </span>
-            </label>
+              <label
+                class="control-label"
+                for="subtitles"
+              >
+                <span>
+                  Subtitles
+                </span>
+              </label>
+            </div>
              
             <div
               class="col-sm-10 content"
@@ -486,7 +531,8 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` enabled 1`
               <p>
                 Download subtitles for this show?
               </p>
-               
+                
+              <!---->
             </div>
           </div>
         </div>
@@ -499,14 +545,18 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` enabled 1`
       <div
         class="row"
       >
-        <label
-          class="col-sm-2 control-label"
-          for="defaultStatus"
+        <div
+          class="col-sm-2"
         >
-          <span>
-            Status for previously aired episodes
-          </span>
-        </label>
+          <label
+            class="control-label"
+            for="defaultStatus"
+          >
+            <span>
+              Status for previously aired episodes
+            </span>
+          </label>
+        </div>
          
         <div
           class="col-sm-10 content"
@@ -541,14 +591,18 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` enabled 1`
       <div
         class="row"
       >
-        <label
-          class="col-sm-2 control-label"
-          for="defaultStatusAfter"
+        <div
+          class="col-sm-2"
         >
-          <span>
-            Status for all future episodes
-          </span>
-        </label>
+          <label
+            class="control-label"
+            for="defaultStatusAfter"
+          >
+            <span>
+              Status for all future episodes
+            </span>
+          </label>
+        </div>
          
         <div
           class="col-sm-10 content"
@@ -586,14 +640,18 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` enabled 1`
         <div
           class="row"
         >
-          <label
-            class="col-sm-2 control-label"
-            for="season_folders"
+          <div
+            class="col-sm-2"
           >
-            <span>
-              Season Folders
-            </span>
-          </label>
+            <label
+              class="control-label"
+              for="season_folders"
+            >
+              <span>
+                Season Folders
+              </span>
+            </label>
+          </div>
            
           <div
             class="col-sm-10 content"
@@ -609,7 +667,8 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` enabled 1`
             <p>
               Group episodes by season folders?
             </p>
-             
+              
+            <!---->
           </div>
         </div>
       </div>
@@ -624,14 +683,18 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` enabled 1`
         <div
           class="row"
         >
-          <label
-            class="col-sm-2 control-label"
-            for="anime"
+          <div
+            class="col-sm-2"
           >
-            <span>
-              Anime
-            </span>
-          </label>
+            <label
+              class="control-label"
+              for="anime"
+            >
+              <span>
+                Anime
+              </span>
+            </label>
+          </div>
            
           <div
             class="col-sm-10 content"
@@ -647,7 +710,8 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` enabled 1`
             <p>
               Is this show an Anime?
             </p>
-             
+              
+            <!---->
           </div>
         </div>
       </div>
@@ -664,14 +728,18 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` enabled 1`
         <div
           class="row"
         >
-          <label
-            class="col-sm-2 control-label"
-            for="scene"
+          <div
+            class="col-sm-2"
           >
-            <span>
-              Scene Numbering
-            </span>
-          </label>
+            <label
+              class="control-label"
+              for="scene"
+            >
+              <span>
+                Scene Numbering
+              </span>
+            </label>
+          </div>
            
           <div
             class="col-sm-10 content"
@@ -687,7 +755,8 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` enabled 1`
             <p>
               Is this show scene numbered?
             </p>
-             
+              
+            <!---->
           </div>
         </div>
       </div>
@@ -702,14 +771,18 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` enabled 1`
         <div
           class="row"
         >
-          <label
-            class="col-sm-2 control-label"
-            for="show_lists"
+          <div
+            class="col-sm-2"
           >
-            <span>
-              Display in show lists
-            </span>
-          </label>
+            <label
+              class="control-label"
+              for="show_lists"
+            >
+              <span>
+                Display in show lists
+              </span>
+            </label>
+          </div>
            
           <div
             class="col-sm-10 content"
@@ -838,6 +911,8 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` enabled 1`
             <span>
               If no list selected, the default 'series' will apply
             </span>
+             
+            <!---->
           </div>
         </div>
       </div>
@@ -849,14 +924,18 @@ exports[`AddShowOptions.test.js renders with \`enable-anime-options\` enabled 1`
       <div
         class="row"
       >
-        <label
-          class="col-sm-2 control-label"
-          for="saveDefaultsButton"
+        <div
+          class="col-sm-2"
         >
-          <span>
-            Use current values as the defaults
-          </span>
-        </label>
+          <label
+            class="control-label"
+            for="saveDefaultsButton"
+          >
+            <span>
+              Use current values as the defaults
+            </span>
+          </label>
+        </div>
          
         <div
           class="col-sm-10 content"

@@ -9,7 +9,7 @@ from medusa.app import app
 from medusa.indexers.tmdb.api import Tmdb
 from medusa.indexers.tvdbv2.api import TVDBv2
 from medusa.indexers.tvmaze.api import TVmaze
-from medusa.session.core import MedusaSession
+from medusa.session.core import IndexerSession
 
 from six import iteritems
 
@@ -34,9 +34,15 @@ INDEXER_TMDB = 4
 EXTERNAL_IMDB = 10
 EXTERNAL_ANIDB = 11
 EXTERNAL_TRAKT = 12
+EXTERNAL_ANILIST = 13
 
-EXTERNAL_MAPPINGS = {EXTERNAL_IMDB: 'imdb_id', EXTERNAL_ANIDB: 'anidb_id',
-                     INDEXER_TVRAGE: 'tvrage_id', EXTERNAL_TRAKT: 'trakt_id'}
+EXTERNAL_MAPPINGS = {
+    EXTERNAL_IMDB: 'imdb_id',
+    EXTERNAL_ANIDB: 'anidb_id',
+    INDEXER_TVRAGE: 'tvrage_id',
+    EXTERNAL_TRAKT: 'trakt_id',
+    EXTERNAL_ANILIST: 'anilist_id'
+}
 
 # trakt indexer name vs Medusa indexer
 TRAKT_INDEXERS = {'tvdb': INDEXER_TVDBV2, 'tmdb': INDEXER_TMDB, 'imdb': EXTERNAL_IMDB, 'trakt': EXTERNAL_TRAKT}
@@ -77,7 +83,7 @@ indexerConfig = {
         'api_params': {
             'language': 'en',
             'use_zip': True,
-            'session': MedusaSession(cache_control={'cache_etags': False}),
+            'session': IndexerSession(cache_control={'cache_etags': False}),
         },
         'xem_origin': 'tvdb',
         'icon': 'thetvdb16.png',
@@ -95,13 +101,13 @@ indexerConfig = {
         'api_params': {
             'language': 'en',
             'use_zip': True,
-            'session': MedusaSession(cache_control={'cache_etags': False}),
+            'session': IndexerSession(cache_control={'cache_etags': False}),
         },
         'xem_mapped_to': INDEXER_TVDBV2,
         'icon': 'tvmaze16.png',
         'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tvmaze.json'.format(base_url=app.BASE_PYMEDUSA_URL),
-        'show_url': 'http://www.tvmaze.com/shows/',
-        'base_url': 'http://api.tvmaze.com/',
+        'show_url': 'https://www.tvmaze.com/shows/',
+        'base_url': 'https://api.tvmaze.com/',
         'mapped_to': 'tvmaze_id',  # The attribute to which other indexers can map there tvmaze id to
         'identifier': 'tvmaze',  # Also used as key for the custom scenename exceptions. (_get_custom_exceptions())
     },
@@ -113,7 +119,7 @@ indexerConfig = {
         'api_params': {
             'language': 'en',
             'use_zip': True,
-            'session': MedusaSession(cache_control={'cache_etags': False}),
+            'session': IndexerSession(cache_control={'cache_etags': False}),
         },
         'icon': 'tmdb16.png',
         'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tmdb.json'.format(base_url=app.BASE_PYMEDUSA_URL),

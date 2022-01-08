@@ -3,15 +3,16 @@ import { ADD_CONFIG } from '../../mutation-types';
 import { arrayUnique, arrayExclude } from '../../../utils/core';
 
 const state = {
+    addTitleWithYear: null,
     wikiUrl: null,
     donationsUrl: null,
     namingForceFolders: null,
     sourceUrl: null,
-    downloadUrl: null,
     rootDirs: [],
     subtitles: {
         enabled: null
     },
+    brokenProviders: [],
     logs: {
         debug: null,
         dbDebug: null,
@@ -52,6 +53,19 @@ const state = {
         notifications: null,
         timeout: null
     },
+    recommended: {
+        cache: {
+            shows: null,
+            trakt: null,
+            imdb: null,
+            anidb: null,
+            anilist: null
+        },
+        trakt: {
+            selectedLists: [],
+            availableLists: []
+        }
+    },
     versionNotify: null,
     autoUpdate: null,
     updateFrequency: null,
@@ -65,6 +79,7 @@ const state = {
         username: null,
         password: null,
         port: null,
+        host: null,
         notifyOnLogin: null,
         ipv6: null,
         httpsEnable: null,
@@ -79,10 +94,14 @@ const state = {
     calendarUnprotected: null,
     calendarIcons: null,
     proxySetting: null,
+    proxyProviders: null,
+    proxyClients: null,
     proxyIndexers: null,
+    proxyOthers: null,
     skipRemovedFiles: null,
     epDefaultDeletedStatus: null,
     developer: null,
+    experimental: null,
     git: {
         username: null,
         password: null,
@@ -101,7 +120,13 @@ const state = {
         period: null
     },
     // Remove themeName when we get fully rid of MEDUSA.config.
-    themeName: null
+    themeName: null,
+    providers: {
+        prowlarr: {
+            url: null,
+            apikey: null
+        }
+    }
 };
 
 const mutations = {
@@ -113,11 +138,14 @@ const mutations = {
     addRecentShow(state, { show }) {
         state.recentShows = state.recentShows.filter(
             filterShow =>
-                !(filterShow.indexerName === show.indexerName && filterShow.showId === show.showId && filterShow.name === show.name)
+                !(filterShow.showSlug === show.showSlug && filterShow.name === show.name)
         );
 
         state.recentShows.unshift(show); // Add the new show object to the start of the array.
         state.recentShows = state.recentShows.slice(0, 5); // Cut the array of at 5 items.
+    },
+    updateTraktSelectedLists(state, selectedLists) {
+        state.recommended.trakt.selectedLists = selectedLists;
     }
 };
 
@@ -191,6 +219,12 @@ const actions = {
                 return commit(ADD_CONFIG, {
                     section: 'main', config: { logs: { custom: reducedLogs } }
                 });
+            });
+    },
+    setTraktSelectedLists({ commit }, selectedLists) {
+        return api.patch('config/main', { recommended: { trakt: { selectedLists } } })
+            .then(() => {
+                return commit('updateTraktSelectedLists', selectedLists);
             });
     }
 };

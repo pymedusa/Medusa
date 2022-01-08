@@ -25,6 +25,7 @@
             <tr><td><i class="icon16-config-ssl" /> SSL Version:</td><td>{{system.sslVersion}}</td></tr>
             <tr><td><i class="icon16-config-os" /> OS:</td><td>{{system.os}}</td></tr>
             <tr><td><i class="icon16-config-locale" /> Locale:</td><td>{{system.locale}}</td></tr>
+            <tr><td><i class="icon16-config-locale" /> Timezone:</td><td>{{system.timezone}}</td></tr>
             <tr><td>&nbsp;</td><td>&nbsp;</td></tr>
             <tr class="infoTableSeperator"><td>&nbsp;</td><td>&nbsp;</td></tr>
             <tr><td><i class="icon16-config-user" /> User:</td><td>{{system.localUser}}</td></tr>
@@ -36,6 +37,9 @@
             <tr v-if="system.appArgs"><td><i class="icon16-config-arguments" /> Arguments:</td><td><pre>{{system.appArgs.join(' ')}}</pre></td></tr>
             <tr v-if="system.webRoot"><td><i class="icon16-config-dir" /> Web Root:</td><td>{{system.webRoot}}</td></tr>
             <tr v-if="system.runsInDocker"><td><i class="icon16-config-docker" /> Runs in Docker:</td><td>Yes</td></tr>
+            <tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+            <tr class="infoTableSeperator"><td>&nbsp;</td><td>&nbsp;</td></tr>
+            <tr><td><i class="icon16-config-arguments" /> Ffprobe version:</td><td>{{system.ffprobeVersion}}</td></tr>
             <tr><td>&nbsp;</td><td>&nbsp;</td></tr>
             <tr class="infoTableSeperator"><td>&nbsp;</td><td>&nbsp;</td></tr>
             <tr><td><i class="icon16-config-web" /> Website:</td><td><app-link :href="config.git.url">{{config.git.url}}</app-link></td></tr>

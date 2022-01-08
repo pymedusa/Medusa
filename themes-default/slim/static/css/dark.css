@@ -290,11 +290,8 @@ home_recommendedShows.mako
 ========================================================================== */
 
 .recommended-container {
-    margin: 12px;
-    width: 188px;
     background-color: rgb(51, 51, 51);
     border: 1px solid rgb(17, 17, 17);
-    border-radius: 6px;
 }
 
 /* =======================================================================
@@ -565,6 +562,15 @@ manage*.mako
     color: rgb(255, 255, 255);
 }
 
+/* The back image (svg) */
+.back-arrow {
+    fill: white;
+}
+
+.manage-update .title a {
+    color: white;
+}
+
 /* =======================================================================
 Global
 ========================================================================== */
@@ -667,9 +673,6 @@ body {
 
 .dropdown-toggle {
     color: rgb(255, 255, 255);
-    background-color: rgb(41, 41, 41);
-    border: 1px solid rgba(0, 0, 0, 0.15);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.176);
 }
 
 .vgt-dropdown-menu {
@@ -703,7 +706,6 @@ body {
 
 .vgt-table th {
     color: rgb(255, 255, 255);
-    text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
     background-color: rgb(85, 85, 85);
 }
 
@@ -713,6 +715,30 @@ body {
 
 .vgt-table tr:nth-child(odd) {
     background-color: rgb(51, 51, 51);
+}
+
+.vgt-table span.episode-title > a {
+    color: rgb(255, 255, 255);
+}
+
+.footer__navigation__page-btn {
+    color: rgb(255, 255, 255);
+    text-shadow: 0 1px 1px rgb(0 0 0 / 75%);
+    background-image: linear-gradient(to top, rgb(85, 85, 85), rgb(51, 51, 51));
+    border: 1px solid rgb(17, 17, 17);
+    border-color: rgb(17, 17, 17) rgb(17, 17, 17) rgb(17, 17, 17);
+    filter: progid:dximagetransform.microsoft.gradient(startColorstr='#297AB8', endColorstr='#15528F', GradientType=0);
+    filter: progid:dximagetransform.microsoft.gradient(enabled=false);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0%), 0 1px 2px rgb(0 0 0 / 5%);
+}
+
+.footer__navigation__page-btn:hover {
+    text-decoration: none;
+    background-color: rgb(30, 30, 30);
+    color: rgb(255, 255, 255);
+    background-position: 0 -150px;
+    transition: background-position 0s linear;
+    background-image: none;
 }
 
 /* submenu styling */
@@ -1144,3 +1170,38 @@ vue-nav-tabs
 }
 
 /* End of nav tabs section */
+
+/* History.vue -> calendar layout */
+.wrap-center {
+    --background-text-grey-200: rgb(210, 210, 210);
+    --background-text-grey-400: rgb(136, 136, 136);
+    --background-text-grey-800: rgb(51, 51, 51);
+}
+
+.day-column {
+    color: rgb(0, 0, 0);
+}
+
+.calendar-show .text {
+    color: rgb(255, 255, 255);
+    background-color: var(--background-text-grey-800);
+}
+
+.day-header {
+    color: rgb(255, 255, 255);
+    text-shadow: 0 1px 1px rgb(0 0 0 / 25%);
+    background-color: var(--background-text-grey-800);
+    background-image:
+        linear-gradient(
+            rgb(85, 85, 85),
+            rgb(51, 51, 51)
+        );
+}
+
+.calendar-show .text .airtime {
+    color: rgb(255, 255, 255);
+}
+
+.calendar-show .text .episode-title {
+    color: var(--background-text-grey-200);
+}

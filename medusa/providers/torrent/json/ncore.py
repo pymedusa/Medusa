@@ -29,10 +29,10 @@ class NcoreProvider(TorrentProvider):
         self.password = None
 
         # URLs
-        self.url = 'https://ncore.cc'
+        self.url = 'https://ncore.pro'
         self.urls = {
-            'login': 'https://ncore.cc/login.php',
-            'search': 'https://ncore.cc/torrents.php',
+            'login': 'https://ncore.pro/login.php',
+            'search': 'https://ncore.pro/torrents.php',
         }
 
         # Proper Strings

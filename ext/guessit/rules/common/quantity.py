@@ -3,10 +3,9 @@
 """
 Quantities: Size
 """
-import re
 from abc import abstractmethod
 
-import six
+from rebulk.remodule import re
 
 from ..common import seps
 
@@ -50,7 +49,7 @@ class Quantity(object):
         return hash(str(self))
 
     def __eq__(self, other):
-        if isinstance(other, six.string_types):
+        if isinstance(other, str):
             return str(self) == other
         if not isinstance(other, self.__class__):
             return NotImplemented
@@ -60,10 +59,10 @@ class Quantity(object):
         return not self == other
 
     def __repr__(self):
-        return '<{0} [{1}]>'.format(self.__class__.__name__, self)
+        return f'<{self.__class__.__name__} [{self}]>'
 
     def __str__(self):
-        return '{0}{1}'.format(self.magnitude, self.units)
+        return f'{self.magnitude}{self.units}'
 
 
 class Size(Quantity):

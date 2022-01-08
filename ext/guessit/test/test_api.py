@@ -3,12 +3,13 @@
 # pylint: disable=no-self-use, pointless-statement, missing-docstring, invalid-name, pointless-string-statement
 import json
 import os
-import sys
+from pathlib import Path
 
 import pytest
-import six
+from pytest_mock import MockerFixture
 
-from ..api import guessit, properties, suggested_expected, GuessitException
+from .. import api
+from ..api import guessit, properties, suggested_expected, GuessitException, default_api
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
@@ -19,25 +20,19 @@ def test_default():
 
 
 def test_forced_unicode():
-    ret = guessit(u'Fear.and.Loathing.in.Las.Vegas.FRENCH.ENGLISH.720p.HDDVD.DTS.x264-ESiR.mkv')
-    assert ret and 'title' in ret and isinstance(ret['title'], six.text_type)
+    ret = guessit('Fear.and.Loathing.in.Las.Vegas.FRENCH.ENGLISH.720p.HDDVD.DTS.x264-ESiR.mkv')
+    assert ret and 'title' in ret and isinstance(ret['title'], str)
 
 
 def test_forced_binary():
     ret = guessit(b'Fear.and.Loathing.in.Las.Vegas.FRENCH.ENGLISH.720p.HDDVD.DTS.x264-ESiR.mkv')
-    assert ret and 'title' in ret and isinstance(ret['title'], six.binary_type)
+    assert ret and 'title' in ret and isinstance(ret['title'], bytes)
 
 
-@pytest.mark.skipif(sys.version_info < (3, 4), reason="Path is not available")
 def test_pathlike_object():
-    try:
-        from pathlib import Path
-
-        path = Path('Fear.and.Loathing.in.Las.Vegas.FRENCH.ENGLISH.720p.HDDVD.DTS.x264-ESiR.mkv')
-        ret = guessit(path)
-        assert ret and 'title' in ret
-    except ImportError:  # pragma: no-cover
-        pass
+    path = Path('Fear.and.Loathing.in.Las.Vegas.FRENCH.ENGLISH.720p.HDDVD.DTS.x264-ESiR.mkv')
+    ret = guessit(path)
+    assert ret and 'title' in ret
 
 
 def test_unicode_japanese():
@@ -51,16 +46,8 @@ def test_unicode_japanese_options():
 
 
 def test_forced_unicode_japanese_options():
-    ret = guessit(u"[阿维达].Avida.2006.FRENCH.DVDRiP.XViD-PROD.avi", options={"expected_title": [u"阿维达"]})
-    assert ret and 'title' in ret and ret['title'] == u"阿维达"
-
-# TODO: This doesn't compile on python 3, but should be tested on python 2.
-"""
-if six.PY2:
-    def test_forced_binary_japanese_options():
-        ret = guessit(b"[阿维达].Avida.2006.FRENCH.DVDRiP.XViD-PROD.avi", options={"expected_title": [b"阿维达"]})
-        assert ret and 'title' in ret and ret['title'] == b"阿维达"
-"""
+    ret = guessit("[阿维达].Avida.2006.FRENCH.DVDRiP.XViD-PROD.avi", options={"expected_title": ["阿维达"]})
+    assert ret and 'title' in ret and ret['title'] == "阿维达"
 
 
 def test_properties():
@@ -77,7 +64,53 @@ def test_exception():
 
 
 def test_suggested_expected():
-    with open(os.path.join(__location__, 'suggested.json'), 'r') as f:
+    with open(os.path.join(__location__, 'suggested.json'), 'r', encoding='utf-8') as f:
         content = json.load(f)
     actual = suggested_expected(content['titles'])
     assert actual == content['suggested']
+
+
+def test_should_rebuild_rebulk_on_advanced_config_change(mocker: MockerFixture):
+    api.reset()
+    rebulk_builder_spy = mocker.spy(api, 'rebulk_builder')
+
+    string = "some.movie.trfr.mkv"
+
+    result1 = default_api.guessit(string)
+
+    assert result1.get('title') == 'some movie trfr'
+    assert 'subtitle_language' not in result1
+
+    rebulk_builder_spy.assert_called_once_with(mocker.ANY)
+    rebulk_builder_spy.reset_mock()
+
+    result2 = default_api.guessit(string, {'advanced_config': {'language': {'subtitle_prefixes': ['tr']}}})
+
+    assert result2.get('title') == 'some movie'
+    assert str(result2.get('subtitle_language')) == 'fr'
+
+    rebulk_builder_spy.assert_called_once_with(mocker.ANY)
+    rebulk_builder_spy.reset_mock()
+
+
+def test_should_not_rebuild_rebulk_on_same_advanced_config(mocker: MockerFixture):
+    api.reset()
+    rebulk_builder_spy = mocker.spy(api, 'rebulk_builder')
+
+    string = "some.movie.subfr.mkv"
+
+    result1 = default_api.guessit(string)
+
+    assert result1.get('title') == 'some movie'
+    assert str(result1.get('subtitle_language')) == 'fr'
+
+    rebulk_builder_spy.assert_called_once_with(mocker.ANY)
+    rebulk_builder_spy.reset_mock()
+
+    result2 = default_api.guessit(string)
+
+    assert result2.get('title') == 'some movie'
+    assert str(result2.get('subtitle_language')) == 'fr'
+
+    assert rebulk_builder_spy.call_count == 0
+    rebulk_builder_spy.reset_mock()

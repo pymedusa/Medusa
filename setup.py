@@ -47,8 +47,8 @@ with open(os.path.join(here, 'readme.md'), 'r') as r:
     long_description = r.read()
 
 
-def install_requires():
-    with open(os.path.join(here, 'requirements.txt'), 'r') as r:
+def test_install_requires():
+    with open(os.path.join(here, 'test_requirements.txt'), 'r') as r:
         return r.read().splitlines(keepends=False)
 
 
@@ -65,10 +65,6 @@ def packages():
 
     return result
 
-
-# These requirements probably won't be needed
-# when `install_requires` is populated with `requirements.txt`
-tests_runtime_require = ['tornado==5.1.1', 'six>=1.13.0', 'profilehooks', 'contextlib2', ]
 
 setup(
     name='pymedusa',
@@ -92,30 +88,7 @@ setup(
         ]
     },
     cmdclass={'test': PyTest},
-    tests_require=tests_runtime_require + [
-        # zipp v2.0.0 dropped support for Python 2 (flake8 -> importlib-metadata -> zipp)
-        'zipp < 2.0.0 ; python_version == "2.*"',
-        # configparser v5.0.0 dropped support for Python 2
-        'configparser < 5.0.0 ; python_version == "2.*"',
-        # pyparsing 3.0.0 dropped support for Python 2
-        'pyparsing < 3.0.0 ; python_version == "2.*"',
-        'flake8==3.7.9',
-        'pycodestyle==2.5.0',
-        'flake8-docstrings>=1.3.0',
-        'flake8-import-order>=0.18',
-        'flake8-quotes>=1.0.0',
-        'pep8-naming>=0.7.0',
-        'pytest<5.0.0 ; python_version < "3.5"',
-        'pytest>=5.0.0 ; python_version >= "3.5"',
-        'pytest-cov>=2.6.1',
-        'pytest-flake8>=1.0.4',
-        'pytest-tornado>=0.8.1',
-        'PyYAML>=5.1',
-        'vcrpy<4.0.0 ; python_version < "3.5"',
-        'vcrpy>=4.0.0 ; python_version >= "3.5"',
-        'mock<=3.0.5 ; python_version <= "3.5"',
-        'mock>=3.0.5 ; python_version > "3.5"',
-    ],
+    tests_require=test_install_requires(),
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: End Users/Desktop',

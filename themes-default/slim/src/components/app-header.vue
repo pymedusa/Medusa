@@ -14,7 +14,7 @@
             <div v-if="isAuthenticated" class="collapse navbar-collapse" id="main_nav">
                 <ul class="nav navbar-nav navbar-right">
                     <li id="NAVhome" class="navbar-split dropdown" :class="{ active: topMenu === 'home' }">
-                        <app-link href="home/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span>Shows</span>
+                        <app-link class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span>Shows</span>
                             <b class="caret" />
                         </app-link>
                         <ul class="dropdown-menu">
@@ -38,7 +38,7 @@
                         <app-link href="history/">History</app-link>
                     </li>
                     <li id="NAVmanage" class="navbar-split dropdown" :class="{ active: topMenu === 'manage' }">
-                        <app-link href="manage/episodeStatuses/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown">
+                        <app-link class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown">
                             <span>Manage</span> <b class="caret" />
                         </app-link>
                         <ul class="dropdown-menu">
@@ -46,19 +46,18 @@
                             <li><app-link href="manage/backlogOverview/"><i class="menu-icon-backlog-view" />&nbsp;Backlog Overview</app-link></li>
                             <li><app-link href="manage/manageSearches/"><i class="menu-icon-manage-searches" />&nbsp;Manage Searches</app-link></li>
                             <li><app-link href="manage/episodeStatuses/"><i class="menu-icon-manage2" />&nbsp;Episode Status Management</app-link></li>
-                            <li v-if="linkVisible.plex"><app-link href="home/updatePLEX/"><i class="menu-icon-plex" />&nbsp;Update PLEX</app-link></li>
-                            <li v-if="linkVisible.kodi"><app-link href="home/updateKODI/"><i class="menu-icon-kodi" />&nbsp;Update KODI</app-link></li>
-                            <li v-if="linkVisible.emby"><app-link href="home/updateEMBY/"><i class="menu-icon-emby" />&nbsp;Update Emby</app-link></li>
+                            <li v-if="linkVisible.plex"><a href="home/updatePLEX/" @click.prevent="updatePlex"><i class="menu-icon-plex" />&nbsp;Update PLEX</a></li>
+                            <li v-if="linkVisible.kodi"><a href="home/updateKODI/" @click.prevent="updateKodi"><i class="menu-icon-kodi" />&nbsp;Update KODI</a></li>
+                            <li v-if="linkVisible.emby"><a href="home/updateEMBY/" @click.prevent="updateEmby"><i class="menu-icon-emby" />&nbsp;Update Emby</a></li>
                             <!-- Avoid mixed content blocking by open manage torrent in new tab -->
                             <li v-if="linkVisible.manageTorrents"><app-link href="manage/manageTorrents/" target="_blank"><i class="menu-icon-bittorrent" />&nbsp;Manage Torrents</app-link></li>
                             <li v-if="linkVisible.failedDownloads"><app-link href="manage/failedDownloads/"><i class="menu-icon-failed-download" />&nbsp;Failed Downloads</app-link></li>
                             <li v-if="linkVisible.subtitleMissed"><app-link href="manage/subtitleMissed/"><i class="menu-icon-backlog" />&nbsp;Missed Subtitle Management</app-link></li>
-                            <li v-if="linkVisible.subtitleMissedPP"><app-link href="manage/subtitleMissedPP/"><i class="menu-icon-backlog" />&nbsp;Missed Subtitle in Post-Process folder</app-link></li>
                         </ul>
                         <div style="clear:both;" />
                     </li>
                     <li id="NAVconfig" class="navbar-split dropdown" :class="{ active: topMenu === 'config' }">
-                        <app-link href="config/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown">
+                        <app-link class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown">
                             <span class="visible-xs-inline">Config</span><img src="images/menu/system18.png" class="navbaricon hidden-xs"> <b class="caret" />
                         </app-link>
                         <ul class="dropdown-menu">
@@ -75,7 +74,7 @@
                         <div style="clear:both;" />
                     </li>
                     <li id="NAVsystem" class="navbar-split dropdown" :class="{ active: topMenu === 'system' }">
-                        <app-link href="home/status/" class="padding-right-15 dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span class="visible-xs-inline">Tools</span><img src="images/menu/system18-2.png" class="navbaricon hidden-xs">
+                        <app-link class="padding-right-15 dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span class="visible-xs-inline">Tools</span><img src="images/menu/system18-2.png" class="navbaricon hidden-xs">
                             <span v-if="toolsBadgeCount > 0" :class="`badge${toolsBadgeClass}`">{{ toolsBadgeCount }}</span>
                             <b class="caret" />
                         </app-link>
@@ -115,6 +114,7 @@ export default {
     computed: {
         ...mapState({
             config: state => state.config.general,
+            subtitles: state => state.config.subtitles,
             clients: state => state.config.clients,
             notifiers: state => state.config.notifiers,
             postprocessing: state => state.config.postprocessing,
@@ -139,13 +139,12 @@ export default {
             const { config, currentShowRoute } = this;
             const { recentShows } = config;
 
-            const showAlreadyActive = show => !currentShowRoute.name === 'show' || !(show.indexerName === currentShowRoute.query.indexername && show.showId === Number(currentShowRoute.query.seriesid));
+            const hideActiveShow = show => !(currentShowRoute.name === 'show' && show.showSlug === currentShowRoute.query.showslug);
 
-            return recentShows.filter(showAlreadyActive)
+            return recentShows.filter(hideActiveShow)
                 .map(show => {
-                    const { name, indexerName, showId } = show;
-                    const link = `home/displayShow?indexername=${indexerName}&seriesid=${showId}`;
-                    return { name, link };
+                    const link = `home/displayShow?showslug=${show.showSlug}`;
+                    return { name: show.name, link };
                 });
         },
         topMenu() {
@@ -170,8 +169,7 @@ export default {
             return '';
         },
         linkVisible() {
-            const { clients, config, notifiers, postprocessing, search } = this;
-            const { subtitles } = config;
+            const { clients, notifiers, search, subtitles } = this;
             const { general } = search;
             const { kodi, plex, emby } = notifiers;
 
@@ -183,8 +181,7 @@ export default {
                 emby: emby.enabled && emby.host,
                 manageTorrents: clients.torrents.enabled && clients.torrents.method !== 'blackhole',
                 failedDownloads: general.failedDownloads.enabled,
-                subtitleMissed: subtitles.enabled,
-                subtitleMissedPP: postprocessing.postponeIfNoSubs
+                subtitleMissed: subtitles.enabled
             };
         }
     },
@@ -194,10 +191,12 @@ export default {
         // Auto close menus when clicking a RouterLink
         $el.clickCloseMenus = event => {
             const { target } = event;
-            if (target.matches('#main_nav a.router-link, #main_nav a.router-link *')) {
+            if (target.matches('#main_nav a.router-link, #main_nav a.router-link *') && (target.ariaExpanded === 'true' || target.ariaExpanded === null)) {
                 const dropdown = target.closest('.dropdown');
-                dropdown.querySelector('.dropdown-toggle').setAttribute('aria-expanded', false);
-                dropdown.querySelector('.dropdown-menu').style.display = 'none';
+                if (dropdown) {
+                    dropdown.querySelector('.dropdown-toggle').setAttribute('aria-expanded', false);
+                    dropdown.querySelector('.dropdown-menu').style.display = 'none';
+                }
                 // Also collapse the main nav if it's open
                 $('#main_nav').collapse('hide');
             }
@@ -218,17 +217,6 @@ export default {
                 $target.find('.dropdown-menu').stop(true, true).delay(200).fadeOut(500);
             }
         }, 'ul.nav li.dropdown');
-
-        // @TODO Replace this with a real touchscreen check
-        // hack alert: if we don't have a touchscreen, and we are already hovering the mouse, then click should link instead of toggle
-        if ((navigator.maxTouchPoints || 0) < 2) {
-            $($el).on('click', '.dropdown-toggle', event => {
-                const $target = $(event.currentTarget);
-                if ($target.attr('aria-expanded') === 'true') {
-                    window.location.href = $target.attr('href');
-                }
-            });
-        }
     },
     destroyed() {
         // Revert `mounted()`
@@ -283,6 +271,33 @@ export default {
             } catch (error) {
                 this.$snotify.info(
                     'You are already on the latest version'
+                );
+            }
+        },
+        async updateKodi() {
+            try {
+                await api.post('notifications/kodi/update');
+            } catch (error) {
+                this.$snotify.info(
+                    'Error trying to update kodi'
+                );
+            }
+        },
+        async updateEmby() {
+            try {
+                await api.post('notifications/emby/update');
+            } catch (error) {
+                this.$snotify.info(
+                    'Error trying to update emby'
+                );
+            }
+        },
+        async updatePlex() {
+            try {
+                await api.post('notifications/plex/update');
+            } catch (error) {
+                this.$snotify.info(
+                    'Error trying to update plex'
                 );
             }
         }

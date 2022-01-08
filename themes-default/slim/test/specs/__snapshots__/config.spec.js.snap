@@ -118,6 +118,18 @@ exports[`Config.test.js renders 1`] = `
      
     <tr>
       <td>
+        <i
+          class="icon16-config-locale"
+        />
+         Timezone:
+      </td>
+      <td>
+        
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
          
       </td>
       <td>
@@ -225,6 +237,38 @@ exports[`Config.test.js renders 1`] = `
     <!---->
      
     <!---->
+     
+    <tr>
+      <td>
+         
+      </td>
+      <td>
+         
+      </td>
+    </tr>
+     
+    <tr
+      class="infoTableSeperator"
+    >
+      <td>
+         
+      </td>
+      <td>
+         
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+        <i
+          class="icon16-config-arguments"
+        />
+         Ffprobe version:
+      </td>
+      <td>
+        ffprobe not available
+      </td>
+    </tr>
      
     <tr>
       <td>

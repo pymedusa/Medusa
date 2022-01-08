@@ -54,10 +54,13 @@ const homeRoutes = [
         path: '/home/testRename',
         name: 'testRename',
         meta: {
+            topMenu: 'home',
+            subMenu: showSubMenu,
             title: 'Preview Rename',
             header: 'Preview Rename',
-            topMenu: 'home'
-        }
+            converted: true
+        },
+        component: () => import('../components/test-rename.vue')
     },
     {
         path: '/home/postprocess',
@@ -65,8 +68,10 @@ const homeRoutes = [
         meta: {
             title: 'Manual Post-Processing',
             header: 'Manual Post-Processing',
-            topMenu: 'home'
-        }
+            topMenu: 'home',
+            converted: true
+        },
+        component: () => import('../components/manual-post-process.vue')
     },
     {
         path: '/home/status',
@@ -145,8 +150,10 @@ const configRoutes = [
             title: 'Config - Backup/Restore',
             header: 'Backup/Restore',
             topMenu: 'config',
-            subMenu: configSubMenu
-        }
+            subMenu: configSubMenu,
+            converted: true
+        },
+        component: () => import('../components/config-backup-restore.vue')
     },
     {
         path: '/config/general',
@@ -191,8 +198,10 @@ const configRoutes = [
             title: 'Config - Providers',
             header: 'Search Providers',
             topMenu: 'config',
-            subMenu: configSubMenu
-        }
+            subMenu: configSubMenu,
+            converted: true
+        },
+        component: () => import('../components/config-providers.vue')
     },
     {
         path: '/config/search',
@@ -213,8 +222,10 @@ const configRoutes = [
             title: 'Config - Subtitles',
             header: 'Subtitles',
             topMenu: 'config',
-            subMenu: configSubMenu
-        }
+            subMenu: configSubMenu,
+            converted: true
+        },
+        component: () => import('../components/config-subtitles.vue')
     }
 ];
 
@@ -251,32 +262,8 @@ const addShowRoutes = [
             topMenu: 'home',
             converted: true
         },
+        props: route => ({ ...route.params }),
         component: () => import('../components/new-show.vue')
-    },
-    {
-        path: '/addShows/trendingShows',
-        name: 'addTrendingShows',
-        meta: {
-            topMenu: 'home'
-        }
-    },
-    {
-        path: '/addShows/popularShows',
-        name: 'addPopularShows',
-        meta: {
-            title: 'Popular Shows',
-            header: 'Popular Shows',
-            topMenu: 'home'
-        }
-    },
-    {
-        path: '/addShows/popularAnime',
-        name: 'addPopularAnime',
-        meta: {
-            title: 'Popular Anime Shows',
-            header: 'Popular Anime Shows',
-            topMenu: 'home'
-        }
     }
 ];
 
@@ -300,7 +287,7 @@ const addRecommendedRoute = {
         topMenu: 'home',
         converted: true
     },
-    component: () => import('../components/add-recommended.vue')
+    component: () => import('../components/recommended.vue')
 };
 
 /** @type {import('.').Route} */
@@ -310,8 +297,10 @@ const scheduleRoute = {
     meta: {
         title: 'Schedule',
         header: 'Schedule',
-        topMenu: 'schedule'
-    }
+        topMenu: 'schedule',
+        converted: true
+    },
+    component: () => import('../components/schedule.vue')
 };
 
 /** @type {import('.').Route} */
@@ -322,8 +311,22 @@ const historyRoute = {
         title: 'History',
         header: 'History',
         topMenu: 'history',
-        subMenu: historySubMenu
-    }
+        subMenu: historySubMenu,
+        converted: true
+    },
+    component: () => import('../components/history.vue')
+};
+
+/** @type {import('.').Route} */
+const downloadsRoute = {
+    path: '/downloads',
+    name: 'downloads',
+    meta: {
+        title: 'Downloads',
+        header: 'Downloads',
+        converted: true
+    },
+    component: () => import('../components/current-downloads.vue')
 };
 
 /** @type {import('.').Route[]} */
@@ -333,9 +336,11 @@ const manageRoutes = [
         name: 'manage',
         meta: {
             title: 'Mass Update',
-            header: 'Mass Update',
-            topMenu: 'manage'
-        }
+            topMenu: 'manage',
+            converted: true
+        },
+        component: () => import('../components/manage-mass-update.vue'),
+        props: true
     },
     {
         path: '/manage/backlogOverview',
@@ -343,8 +348,10 @@ const manageRoutes = [
         meta: {
             title: 'Backlog Overview',
             header: 'Backlog Overview',
-            topMenu: 'manage'
-        }
+            topMenu: 'manage',
+            converted: true
+        },
+        component: () => import('../components/manage-backlog.vue')
     },
     {
         path: '/manage/episodeStatuses',
@@ -352,8 +359,10 @@ const manageRoutes = [
         meta: {
             title: 'Episode Overview',
             header: 'Episode Overview',
-            topMenu: 'manage'
-        }
+            topMenu: 'manage',
+            converted: true
+        },
+        component: () => import('../components/manage-episode-status.vue')
     },
     {
         path: '/manage/failedDownloads',
@@ -361,8 +370,10 @@ const manageRoutes = [
         meta: {
             title: 'Failed Downloads',
             header: 'Failed Downloads',
-            topMenu: 'manage'
-        }
+            topMenu: 'manage',
+            converted: true
+        },
+        component: () => import('../components/manage-failed-downloads.vue')
     },
     {
         path: '/manage/manageSearches',
@@ -380,8 +391,11 @@ const manageRoutes = [
         name: 'manageMassEdit',
         meta: {
             title: 'Mass Edit',
-            topMenu: 'manage'
-        }
+            topMenu: 'manage',
+            converted: true
+        },
+        component: () => import('../components/manage-mass-edit.vue'),
+        props: true
     },
     {
         path: '/manage/subtitleMissed',
@@ -389,17 +403,10 @@ const manageRoutes = [
         meta: {
             title: 'Missing Subtitles',
             header: 'Missing Subtitles',
-            topMenu: 'manage'
-        }
-    },
-    {
-        path: '/manage/subtitleMissedPP',
-        name: 'manageSubtitleMissedPP',
-        meta: {
-            title: 'Missing Subtitles in Post-Process folder',
-            header: 'Missing Subtitles in Post-Process folder',
-            topMenu: 'manage'
-        }
+            topMenu: 'manage',
+            converted: true
+        },
+        component: () => import('../components/manage-missing-subtitles.vue')
     }
 ];
 
@@ -411,8 +418,11 @@ const errorLogsRoutes = [
         meta: {
             title: 'Logs & Errors',
             topMenu: 'system',
-            subMenu: errorlogsSubMenu
-        }
+            subMenu: errorlogsSubMenu,
+            converted: true
+        },
+        component: () => import('../components/log-reporter.vue'),
+        props: true
     },
     {
         path: '/errorlogs/viewlog',
@@ -490,6 +500,7 @@ export default [
     addRecommendedRoute,
     scheduleRoute,
     historyRoute,
+    downloadsRoute,
     ...manageRoutes,
     ...errorLogsRoutes,
     newsRoute,

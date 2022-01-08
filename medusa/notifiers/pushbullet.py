@@ -41,7 +41,7 @@ class Notifier(object):
         except ValueError:
             return {}
 
-    def notify_snatch(self, title, message):
+    def notify_snatch(self, title, message, **kwargs):
         if app.PUSHBULLET_NOTIFY_ONSNATCH:
             self._sendPushbullet(
                 pushbullet_api=None,

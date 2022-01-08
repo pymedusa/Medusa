@@ -3,13 +3,18 @@
 """Guessit Name Parser."""
 from __future__ import unicode_literals
 
+import logging
 import re
 from datetime import timedelta
 from time import time
 
 from medusa import app
+from medusa.logger.adapters.style import BraceAdapter
+from medusa.name_parser.cache import BaseCache
 from medusa.name_parser.rules import default_api
 
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 EXPECTED_TITLES_EXPIRATION_TIME = timedelta(days=1).total_seconds()
 
@@ -68,14 +73,19 @@ def guessit(name, options=None):
     :rtype: dict
     """
     start_time = time()
-    final_options = dict(options) if options else dict()
+    final_options = dict(options) if options else dict(show_type='normal')
     final_options.update(dict(type='episode', implicit=True,
                               episode_prefer_number=final_options.get('show_type') == 'anime',
                               expected_title=get_expected_titles(app.showList),
                               expected_group=expected_groups,
                               allowed_languages=allowed_languages,
                               allowed_countries=allowed_countries))
-    result = default_api.guessit(name, options=final_options)
+
+    result = guessit_cache.get_or_invalidate(name, final_options)
+    if not result:
+        result = default_api.guessit(name, options=final_options)
+        guessit_cache.add(name, result)
+
     result['parsing_time'] = time() - start_time
     return result
 
@@ -109,3 +119,30 @@ def get_expected_titles(show_list):
             expected_titles.append(exception)
 
     return expected_titles
+
+
+class GuessItCache(BaseCache):
+    """GuessIt cache."""
+
+    def __init__(self):
+        """Initialize the cache with a maximum size."""
+        super().__init__(25000)
+        self.invalidation_object = None
+
+    def get_or_invalidate(self, name, obj):
+        """Return an item from the cache if the obj matches the previous invalidation object. Clears the cache and returns None if not."""
+        if not self.invalidation_object:
+            self.invalidation_object = obj
+
+        if self.invalidation_object == obj:
+            log.debug('Using guessit cache item for {name}', {'name': name})
+            return self.get(name)
+
+        log.debug('GuessIt cache was cleared due to invalidation object change: previous={previous} new={new}',
+                  {'previous': self.invalidation_object, 'new': obj})
+        self.invalidation_object = obj
+        self.clear()
+        return None
+
+
+guessit_cache = GuessItCache()

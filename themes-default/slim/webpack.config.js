@@ -210,11 +210,21 @@ const webpackConfig = (env, mode) => ({
                 ]
             },
             {
-                test: /\.(woff2?|ttf|eot|svg)$/,
-                loader: 'file-loader',
-                options: {
-                    name: '[name].[ext]',
-                    outputPath: 'fonts'
+                test: /\.s[ac]ss$/i,
+                use: [
+                    // Creates `style` nodes from JS strings
+                    'style-loader',
+                    // Translates CSS into CommonJS
+                    'css-loader',
+                    // Compiles Sass to CSS
+                    'sass-loader'
+                ]
+            },
+            {
+                test: /\.(woff(2)?|ttf|eot|svg)$/,
+                type: 'asset/resource',
+                generator: {
+                    filename: './fonts/[name][ext]'
                 }
             }
         ]
@@ -233,12 +243,14 @@ const webpackConfig = (env, mode) => ({
         // Copy bundled assets for each theme
         // Only use for assets emitted by Webpack.
         new FileManagerPlugin({
-            onEnd: {
-                copy: [
-                    ...perTheme(copyAssets('js')),
-                    ...perTheme(copyAssets('css')),
-                    ...perTheme(copyAssets('fonts'))
-                ]
+            events: {
+                onEnd: {
+                    copy: [
+                        ...perTheme(copyAssets('js')),
+                        ...perTheme(copyAssets('css')),
+                        ...perTheme(copyAssets('fonts'))
+                    ]
+                }
             }
         }),
         // Copy static files for each theme

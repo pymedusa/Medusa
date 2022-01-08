@@ -7,12 +7,12 @@
                     :key="`sub-menu-${menuItem.title}`"
                     :href="menuItem.path"
                     class="btn-medusa top-5 bottom-5"
-                    @[clickEventCond(menuItem)].native.prevent="confirmDialog($event, menuItem.confirm)"
+                    @[clickEventCond(menuItem)].native.prevent="runMethod($event, menuItem)"
                 >
                     <span :class="['pull-left', menuItem.icon]" /> {{ menuItem.title }}
                 </app-link>
 
-                <show-selector v-if="showForRoutes" :show-slug="curShowSlug" follow-selection />
+                <show-selector v-if="showForRoutes" :show-slug="$route.query.showslug" follow-selection />
             </div>
         </div>
 
@@ -21,7 +21,8 @@
     </div>
 </template>
 <script>
-import { mapGetters } from 'vuex';
+import { api, apiRoute } from '../api';
+import { mapActions, mapGetters } from 'vuex';
 import { AppLink, ShowSelector } from './helpers';
 
 export default {
@@ -45,12 +46,7 @@ export default {
             return subMenu.reduceRight(reducer, []);
         },
         curShowSlug() {
-            const { $route } = this;
-            const { indexername, seriesid } = $route.query;
-            if (indexername && seriesid) {
-                return indexername + seriesid;
-            }
-            return '';
+            return this.$route.query.slug;
         },
         showForRoutes() {
             const { $route } = this;
@@ -58,10 +54,15 @@ export default {
         }
     },
     methods: {
+        ...mapActions({
+            removeShow: 'removeShow'
+        }),
         clickEventCond(menuItem) {
-            return menuItem.confirm ? 'click' : null;
+            // If the menu item has properties confirm or method, we want to handle the click by
+            // the runMethod() method.
+            return menuItem.confirm || menuItem.method ? 'click' : null;
         },
-        confirmDialog(event, action) {
+        async runMethod(event, menuItem) {
             const options = {
                 confirmButton: 'Yes',
                 cancelButton: 'Cancel',
@@ -73,30 +74,57 @@ export default {
                 }
             };
 
-            if (action === 'removeshow') {
-                const { getCurrentShow } = this;
+            if (menuItem.confirm === 'removeshow') {
+                const { getCurrentShow, removeShow, $router } = this;
                 options.title = 'Remove Show';
                 options.text = `Are you sure you want to remove <span class="footerhighlight">${getCurrentShow.title}</span> from the database?<br><br>
                                 <input type="checkbox" id="deleteFiles"> <span class="red-text">Check to delete files as well. IRREVERSIBLE</span>`;
-                options.confirm = $element => {
-                    window.location.href = $element[0].href + (document.querySelector('#deleteFiles').checked ? '&full=1' : '');
+                options.confirm = async () => {
+                    // Already remove show from frontend store + localStorage
+                    removeShow(getCurrentShow);
+
+                    const params = { showslug: getCurrentShow.id.slug };
+                    if (document.querySelector('#deleteFiles').checked) {
+                        params.full = 1;
+                    }
+
+                    // Start removal of show in backend
+                    await apiRoute.get('home/deleteShow', { params });
+
+                    // Navigate back to /home
+                    $router.push({ name: 'home', query: undefined });
                 };
-            } else if (action === 'clearhistory') {
+            } else if (menuItem.confirm === 'clearhistory') {
                 options.title = 'Clear History';
                 options.text = 'Are you sure you want to clear all download history?';
-            } else if (action === 'trimhistory') {
+            } else if (menuItem.confirm === 'trimhistory') {
                 options.title = 'Trim History';
                 options.text = 'Are you sure you want to trim all download history older than 30 days?';
-            } else if (action === 'submiterrors') {
+            } else if (menuItem.confirm === 'submiterrors') {
                 options.title = 'Submit Errors';
                 options.text = `Are you sure you want to submit these errors?<br><br>
                                 <span class="red-text">Make sure Medusa is updated and trigger<br>
                                 this error with debug enabled before submitting</span>`;
+            } else if (menuItem.method === 'updatekodi') {
+                try {
+                    await api.post('notifications/kodi/update');
+                    this.$snotify.success(
+                        'Update kodi library',
+                        'Success'
+                    );
+                } catch (error) {
+                    this.$snotify.warning(
+                        'Error Update kodi library, check your logs',
+                        'Warning'
+                    );
+                }
             } else {
                 return;
             }
 
-            $.confirm(options, event);
+            if (menuItem.confirm) {
+                $.confirm(options, event);
+            }
         }
     }
 };

@@ -177,6 +177,9 @@ class Anime(aniDBabstractObject):
         if not self.allAnimeXML:
             self.allAnimeXML = read_anidb_xml(self.cache_path)
 
+        if not self.allAnimeXML:
+            return 0
+
         regex = re.compile('( \(\d{4}\))|[%s]' % re.escape(string.punctuation))  # remove any punctuation and e.g. ' (2011)'
         # regex = re.compile('[%s]'  % re.escape(string.punctuation)) # remove any punctuation and e.g. ' (2011)'
         name = regex.sub('', name.lower())

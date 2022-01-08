@@ -53,7 +53,7 @@ class TitleBaseRule(Rule):
     consequence = [AppendMatch, RemoveMatch]
 
     def __init__(self, match_name, match_tags=None, alternative_match_name=None):
-        super(TitleBaseRule, self).__init__()
+        super().__init__()
         self.match_name = match_name
         self.match_tags = match_tags
         self.alternative_match_name = alternative_match_name
@@ -205,7 +205,7 @@ class TitleBaseRule(Rule):
                 for ignored_match in ignored_matches:
                     if ignored_match not in to_keep:
                         starting = matches.chain_after(hole.start, seps,
-                                                       predicate=lambda m: m == ignored_match)
+                                                       predicate=lambda m, im=ignored_match: m == im)
                         if starting:
                             should_keep = self.should_keep(ignored_match, to_keep, matches, filepart, hole, True)
                             if should_keep:
@@ -299,7 +299,7 @@ class TitleFromPosition(TitleBaseRule):
     properties = {'title': [None], 'alternative_title': [None]}
 
     def __init__(self):
-        super(TitleFromPosition, self).__init__('title', ['title'], 'alternative_title')
+        super().__init__('title', ['title'], 'alternative_title')
 
     def enabled(self, context):
         return not is_disabled(context, 'alternative_title')

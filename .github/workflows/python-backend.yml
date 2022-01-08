@@ -1,6 +1,6 @@
 name: Backend tests
 
-on: [push]
+on: [pull_request]
 
 jobs:
   build:
@@ -8,7 +8,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9]
+        python-version: [3.6, 3.7, 3.8, 3.9, '3.10']
 
     steps:
     - uses: actions/checkout@v2
@@ -23,4 +23,4 @@ jobs:
     - name: Test with tox
       run: tox
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
+      uses: codecov/codecov-action@v2

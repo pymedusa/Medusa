@@ -4,10 +4,10 @@
 
 from __future__ import unicode_literals
 
+import json
 import logging
 import re
-
-import dirtyjson as djson
+from json.decoder import JSONDecodeError
 
 from medusa import tv
 from medusa.helper.common import convert_size
@@ -22,6 +22,27 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
+class ReplaceBackslashDecoder(json.JSONDecoder):
+    r"""
+    Decoder helper for removing backslashes.
+
+    Torrentday returns a Json with show titles like:
+        `name":"Marvel\'s Daredevil S01-S03 WEBRip 1080p DDP5 1 H265-d3g"`
+        This generates a JsonDecodeError. The backslash is not needed as json
+        already encapsulates the string in double quotes.
+    """
+
+    def decode(self, s, **kwargs):
+        """Remove backslash."""
+        regex_replacements = [
+            (re.compile(r'([^\\])\\([^\\])'), r'\1\2'),
+            (re.compile(r',(\s*])'), r'\1'),
+        ]
+        for regex, replacement in regex_replacements:
+            s = regex.sub(replacement, s)
+        return super().decode(s, **kwargs)
+
+
 class TorrentDayProvider(TorrentProvider):
     """TorrentDay Torrent provider."""
 
@@ -30,7 +51,7 @@ class TorrentDayProvider(TorrentProvider):
         super(TorrentDayProvider, self).__init__('TorrentDay')
 
         # URLs
-        self.url = 'https://www.torrentday.com'
+        self.url = 'https://torrentday.it'
         self.custom_url = None
 
         # Proper Strings
@@ -39,7 +60,7 @@ class TorrentDayProvider(TorrentProvider):
         self.freeleech = False
         self.enable_cookies = True
         self.cookies = ''
-        self.required_cookies = ('uid', 'pass')
+        self.required_cookies = ('uid', 'pass', 'cf_clearance')
 
         # TV/480p - 24
         # TV/Bluray - 32
@@ -54,8 +75,8 @@ class TorrentDayProvider(TorrentProvider):
 
         self.categories = {
             'Season': {'14': 1},
-            'Episode': {'2': 1, '26': 1, '7': 1, '24': 1, '34': 1},
-            'RSS': {'2': 1, '26': 1, '7': 1, '24': 1, '34': 1, '14': 1}
+            'Episode': {'2': 1, '26': 1, '29': 1, '7': 1, '24': 1, '34': 1},
+            'RSS': {'2': 1, '26': 1, '29': 1, '7': 1, '24': 1, '34': 1, '14': 1}
         }
 
         # Cache
@@ -105,7 +126,10 @@ class TorrentDayProvider(TorrentProvider):
                     continue
 
                 try:
-                    jdata = djson.loads(response.text)
+                    jdata = json.loads(response.text, cls=ReplaceBackslashDecoder)
+                except JSONDecodeError:
+                    log.error(f'Torrentday parse error with response output: \n{response.text}')
+                    continue
                 except ValueError as error:
                     log.error("Couldn't deserialize JSON document. Error: {0!r}", error)
                     continue

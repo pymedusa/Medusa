@@ -2,11 +2,8 @@
 
 from __future__ import unicode_literals
 
-import datetime
-
-from medusa import app, network_timezones
+from medusa import app
 from medusa.server.web.core.base import PageTemplate, WebRoot
-from medusa.show.coming_episodes import ComingEpisodes
 
 from tornroutes import route
 
@@ -17,14 +14,12 @@ class Schedule(WebRoot):
         super(Schedule, self).__init__(*args, **kwargs)
 
     def index(self):
-        next_week = datetime.date.today() + datetime.timedelta(days=7)
-        next_week1 = datetime.datetime.combine(next_week, datetime.time(tzinfo=network_timezones.app_timezone))
-        results = ComingEpisodes.get_coming_episodes(ComingEpisodes.categories, app.COMING_EPS_SORT, False)
-        today = datetime.datetime.now().replace(tzinfo=network_timezones.app_timezone)
+        """
+        Render the schedule page.
 
-        t = PageTemplate(rh=self, filename='schedule.mako')
-        return t.render(next_week=next_week1, today=today, results=results,
-                        layout=app.COMING_EPS_LAYOUT, controller='schedule', action='index')
+        [Converted to VueRouter]
+        """
+        return PageTemplate(rh=self, filename='index.mako').render()
 
     def toggleScheduleDisplayPaused(self):
         app.COMING_EPS_DISPLAY_PAUSED = not app.COMING_EPS_DISPLAY_PAUSED

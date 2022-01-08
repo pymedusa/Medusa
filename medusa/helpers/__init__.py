@@ -25,9 +25,7 @@ import traceback
 import uuid
 import zipfile
 from builtins import chr
-from builtins import hex
 from builtins import str
-from builtins import zip
 from itertools import cycle
 from xml.etree import ElementTree
 
@@ -895,39 +893,20 @@ def check_url(url):
         return None
 
 
-# Encryption
-# ==========
-# By Pedro Jose Pereira Vieito <pvieito@gmail.com> (@pvieito)
-#
-# * If encryption_version==0 then return data without encryption
-# * The keys should be unique for each device
-#
-# To add a new encryption_version:
-#   1) Code your new encryption_version
-#   2) Update the last encryption_version available in server/web/config/general.py
-#   3) Remember to maintain old encryption versions and key generators for retro-compatibility
-
-
-# Key Generators
-unique_key1 = hex(uuid.getnode() ** 2)  # Used in encryption v1
-
-# Encryption Functions
-
-
 def encrypt(data, encryption_version=0, _decrypt=False):
     # Version 0: Plain text
     if encryption_version == 0:
         return data
+
+    # Simple XOR encryption, Base64 encoded
+    # Version 2: app.ENCRYPTION_SECRET
+    key = app.ENCRYPTION_SECRET
+    if _decrypt:
+        data = ensure_text(base64.decodebytes(ensure_binary(data)))
+        return ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(data, cycle(key)))
     else:
-        # Simple XOR encryption, Base64 encoded
-        # Version 1: unique_key1; Version 2: app.ENCRYPTION_SECRET
-        key = unique_key1 if encryption_version == 1 else app.ENCRYPTION_SECRET
-        if _decrypt:
-            data = ensure_text(base64.decodebytes(ensure_binary(data)))
-            return ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(data, cycle(key)))
-        else:
-            data = ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(data, cycle(key)))
-            return ensure_text(base64.encodebytes(ensure_binary(data))).strip()
+        data = ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(data, cycle(key)))
+        return ensure_text(base64.encodebytes(ensure_binary(data))).strip()
 
 
 def decrypt(data, encryption_version=0):
@@ -1021,7 +1000,10 @@ def real_path(path):
 
     The resulting path will have no symbolic link, '/./' or '/../' components.
     """
-    return os.path.normpath(os.path.normpath(os.path.realpath(path)))
+    if path is None:
+        return ''
+
+    return os.path.normpath(os.path.normcase(os.path.realpath(path)))
 
 
 def validate_show(show, season=None, episode=None):
@@ -1275,7 +1257,7 @@ def remove_article(text=''):
 
 def generate_cookie_secret():
     """Generate a new cookie secret."""
-    return base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes)
+    return base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes).decode('utf-8')
 
 
 def verify_freespace(src, dest, oldfile=None):
@@ -1732,24 +1714,15 @@ def title_to_imdb(title, start_year, imdb_api=None):
         imdb_api = Imdb()
 
     titles = imdb_api.search_for_title(title)
-    if len(titles) == 1:
-        return titles[0]['imdb_id']
 
     # ImdbPie returns the year as string
     start_year = str(start_year)
     title = title.lower()
 
-    title_matches = []
     for candidate in titles:
-        # This check should be made more reliable
-        if candidate['title'].lower() == title:
-            if candidate['year'] == start_year:
-                return candidate['imdb_id']
-            title_matches.append(candidate['imdb_id'])
-
-    # Return the most relevant result (can be erroneous)
-    if title_matches:
-        return title_matches[0]
+        # Only return matches by year
+        if candidate['title'].lower() == title and candidate['year'] == start_year:
+            return candidate['imdb_id']
 
 
 def get_title_without_year(title, title_year):

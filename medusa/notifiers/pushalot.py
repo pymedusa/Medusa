@@ -25,7 +25,7 @@ class Notifier(object):
             force=True
         )
 
-    def notify_snatch(self, title, message):
+    def notify_snatch(self, title, message, **kwargs):
         if app.PUSHALOT_NOTIFY_ONSNATCH:
             self._sendPushalot(
                 pushalot_authorizationtoken=None,

@@ -71,7 +71,7 @@ const getters = {
         const timeAgo = new TimeAgo('en-US');
         const { dateStyle, fuzzyDating, timeStyle } = state;
 
-        if (!airDate) {
+        if (!airDate || !dateStyle) {
             return '';
         }
 
@@ -85,7 +85,6 @@ const getters = {
 
         // Only the history page should show seconds.
         const formatTimeStyle = showSeconds ? timeStyle : timeStyle.replace(':%S', '');
-
         const fdate = parseISO(airDate);
         return formatDate(fdate, convertDateFormat(`${dateStyle} ${formatTimeStyle}`));
     },
@@ -213,13 +212,13 @@ const actions = {
         return commit(UPDATE_LAYOUT_LOCAL, { [key]: value });
     },
     setBacklogOverview(context, { key, value }) {
-        const { commit } = context;
-        return api.patch('config/main', { layout: { backlogOverview: { [key]: value } } })
-            .then(() => {
-                return commit(ADD_CONFIG, {
-                    section: 'layout', config: { backlogOverview: { [key]: value } }
-                });
-            });
+        const { commit, state } = context;
+        const backlogOverview = { ...state.backlogOverview };
+        backlogOverview[key] = value;
+        commit(ADD_CONFIG, {
+            section: 'layout', config: { backlogOverview }
+        });
+        return api.patch('config/main', { layout: { backlogOverview } });
     }
 };
 

@@ -2,11 +2,19 @@
     <div id="config-textbox">
         <div class="form-group">
             <div class="row">
-                <label :for="id" class="col-sm-2 control-label">
-                    <span>{{ label }}</span>
-                </label>
+                <div class="col-sm-2">
+                    <label :for="id" class="control-label">
+                        <span>{{ label }}</span>
+                    </label>
+                </div>
                 <div class="col-sm-10 content">
-                    <input v-bind="{id, type, name: id, class: inputClass, placeholder, disabled}" v-model="localValue" @input="updateValue()">
+                    <div class="parent" :class="inputClass">
+                        <input v-bind="{id, type, name: id, placeholder, disabled}" v-model="localValue" @input="updateValue()">
+                        <transition name="uri-error">
+                            <div v-if="uriError" class="uri-error">Make sure to start your URI with http://, https://, scgi://, etc..</div>
+                        </transition>
+                        <slot name="warning" />
+                    </div>
                     <p v-for="(explanation, index) in explanations" :key="index">{{ explanation }}</p>
                     <slot />
                 </div>
@@ -39,10 +47,7 @@ export default {
             type: String,
             default: 'text'
         },
-        disabled: {
-            type: Boolean,
-            default: false
-        },
+        disabled: Boolean,
         /**
          * Overwrite the default configured class on the <input/> element.
          */
@@ -53,8 +58,8 @@ export default {
         placeholder: {
             type: String,
             default: ''
-        }
-
+        },
+        validateUri: Boolean
     },
     data() {
         return {
@@ -64,6 +69,15 @@ export default {
     mounted() {
         const { value } = this;
         this.localValue = value;
+    },
+    computed: {
+        uriError() {
+            const { localValue, validateUri } = this;
+            if (!validateUri || !localValue) {
+                return false;
+            }
+            return !localValue.match(/^[A-Za-z]{3,5}:\/\//);
+        }
     },
     watch: {
         value() {
@@ -80,7 +94,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .input75 {
     width: 75px;
     margin-top: -4px;
@@ -103,5 +117,43 @@ export default {
 
 input {
     margin-bottom: 5px;
+    width: 100%;
+    border: none;
+}
+
+.uri-error-enter-active,
+.uri-error-leave-active {
+    -moz-transition-duration: 0.3s;
+    -webkit-transition-duration: 0.3s;
+    -o-transition-duration: 0.3s;
+    transition-duration: 0.3s;
+    -moz-transition-timing-function: ease-in;
+    -webkit-transition-timing-function: ease-in;
+    -o-transition-timing-function: ease-in;
+    transition-timing-function: ease-in;
+}
+
+.uri-error-enter-to,
+.uri-error-leave {
+    max-height: 100%;
+}
+
+.uri-error-enter,
+.uri-error-leave-to {
+    max-height: 0;
+}
+
+.parent {
+    position: relative;
+}
+
+div.uri-error {
+    display: block;
+    overflow: hidden;
+    width: 100%;
+    position: absolute;
+    left: 0;
+    background-color: #e23636;
+    padding: 0 2px 0 2px;
 }
 </style>

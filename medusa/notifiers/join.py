@@ -35,7 +35,7 @@ class Notifier(object):
             force=True
         )
 
-    def notify_snatch(self, title, message):
+    def notify_snatch(self, title, message, **kwargs):
         """Send Join notification when nzb snatched if selected in config."""
         if app.JOIN_NOTIFY_ONSNATCH:
             self._sendjoin(
