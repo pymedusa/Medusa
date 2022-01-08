@@ -125,11 +125,7 @@ class GenericMetadata(object):
         self.season_banners = config_list[7]
         self.season_all_poster = config_list[8]
         self.season_all_banner = config_list[9]
-        
-        if len(config_list) > 10:
-            self.overwrite_nfo = config_list[10]
-        else:
-            self.overwrite_nfo = False
+        self.overwrite_nfo = config_list[10]
 
     @staticmethod
     def _check_exists(location):
