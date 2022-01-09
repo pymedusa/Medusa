@@ -24,9 +24,7 @@
                                             :value="option"
                                             v-for="option in selectTitles"
                                             :key="option.title"
-                                            >{{
-                                                titleOptionDescription(option)
-                                            }}
+                                        >{{ titleOptionDescription(option) }}
                                         </option>
                                     </select>
                                 </div>
@@ -47,14 +45,14 @@
                                         id="episode"
                                         :value="'episode'"
                                         v-model="episodeOrSeason"
-                                    />
+                                    >
                                     <label for="episode">Season</label>
                                     <input
                                         type="radio"
                                         id="season"
                                         :value="'season'"
                                         v-model="episodeOrSeason"
-                                    />
+                                    >
                                 </div>
                             </div>
                         </div>
@@ -72,8 +70,8 @@
                                         name="new_pattern"
                                         v-model="addPattern"
                                         class="form-control-inline-max input-sm max-input350 search-pattern"
-                                    />
-                                    <input type="checkbox" v-model="enabled" />
+                                    >
+                                    <input type="checkbox" v-model="enabled">
                                 </div>
                             </div>
                         </div>
@@ -103,7 +101,7 @@
                                         class="btn-medusa pull-left button"
                                         :disabled="!validated"
                                         @click="add"
-                                    />
+                                    >
                                     <p>{{ notification }}</p>
                                 </div>
                             </div>
@@ -116,7 +114,6 @@
 </template>
 
 <script>
-import formatDate from 'date-fns/format';
 import { apiRoute } from '../../api';
 import { VTooltip } from 'v-tooltip';
 import AsyncComputed from 'vue-async-computed';
@@ -166,7 +163,7 @@ export default {
         };
     },
     watch: {
-        combinedPattern(newPattern, oldPattern) {
+        combinedPattern(newPattern) {
             if (!newPattern) {
                 return;
             }
@@ -197,7 +194,7 @@ export default {
                 indexer: show.indexer,
                 seriesId: show.id[show.indexer],
                 season: -1,
-                title: title
+                title
             };
 
             return [...[titleOption], ...aliases];
@@ -226,6 +223,7 @@ export default {
             };
 
             const formatMap = new Map([
+                // eslint-disable-next-line camelcase
                 ['anime', { anime_type: animeType }],
                 ['sports', { sports: true }],
                 ['airByDate', { abd: true }]
@@ -260,6 +258,7 @@ export default {
                 pattern: combinedPattern
             };
             const formatMap = new Map([
+                // eslint-disable-next-line camelcase
                 ['anime', { anime_type: animeType }],
                 ['sports', { sports: true }],
                 ['airByDate', { abd: true }]

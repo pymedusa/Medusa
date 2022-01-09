@@ -109,7 +109,7 @@ export default {
             ];
         },
         unique() {
-            const { items, newItem, selectedSeason } = this;
+            const { items, newItem } = this;
             return !items.find(exception => exception.title === newItem);
         }
     },

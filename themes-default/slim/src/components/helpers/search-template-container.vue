@@ -55,7 +55,7 @@
         />
 
         <!-- Anime only -->
-        <template v-show="format === 'anime'">
+        <div v-show="format === 'anime'">
             <div class="row">
                 <div v-if="animeType > 0" class="form-group">
                     <label for="naming_anime" class="col-sm-2 control-label">
@@ -68,7 +68,7 @@
                             id="naming_anime"
                             :value="1"
                             v-model="animeType"
-                        />
+                        >
                         <span>Add the absolute number to the season/episode format?</span>
                         <p>Only applies to animes. (e.g. S15E45 - 310 vs S15E45)</p>
                     </div>
@@ -87,7 +87,7 @@
                             id="naming_anime_only"
                             :value="2"
                             v-model="animeType"
-                        />
+                        >
                         <span>Replace season/episode format with absolute number</span>
                         <p>Only applies to animes.</p>
                     </div>
@@ -106,13 +106,13 @@
                             id="naming_anime_none"
                             :value="3"
                             v-model="animeType"
-                        />
+                        >
                         <span>Don't include the absolute number</span>
                         <p>Only applies to animes.</p>
                     </div>
                 </div>
             </div>
-        </template>
+        </div>
 
         <div id="naming-key" class="nocheck">
             <table class="Key">

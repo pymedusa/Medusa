@@ -15,10 +15,10 @@
                         @change="updateExample"
                         @input="update()"
                         class="form-control-inline-max input-sm max-input350 search-pattern"
-                    />
+                    >
                 </div>
 
-                <input type="checkbox" v-model="searchTemplate.enabled" />
+                <input type="checkbox" v-model="searchTemplate.enabled">
                 <i
                     class="show-template glyphicon"
                     :class="`glyphicon-eye-${showExample ? 'close' : 'open'}`"
@@ -31,8 +31,8 @@
                     class="template-example"
                     v-if="showExample"
                     name="search_pattern"
-                    >Example: {{ searchTemplateExample }}</span
-                >
+                >Example: {{ searchTemplateExample }}
+                </span>
             </div>
         </div>
     </div>
@@ -94,9 +94,9 @@ export default {
     computed: {
         tooltipContent() {
             const { searchTemplate } = this;
-            return searchTemplate.default
-                ? "This template has been generated based on a scene exception / title. It's a default template and cannot be modified. It can only be enabled/disabled."
-                : 'You can modify this template. On changing the template, it will be tested against the template rules. And shown red if not valid.';
+            return searchTemplate.default ?
+                "This template has been generated based on a scene exception / title. It's a default template and cannot be modified. It can only be enabled/disabled." :
+                'You can modify this template. On changing the template, it will be tested against the template rules. And shown red if not valid.';
         }
     },
     methods: {
@@ -113,6 +113,7 @@ export default {
                 pattern: searchTemplate.template
             };
             const formatMap = new Map([
+                // eslint-disable-next-line camelcase
                 ['anime', { anime_type: animeType }],
                 ['sports', { sports: true }],
                 ['airByDate', { abd: true }]
@@ -144,6 +145,7 @@ export default {
             };
 
             const formatMap = new Map([
+                // eslint-disable-next-line camelcase
                 ['anime', { anime_type: animeType }],
                 ['sports', { sports: true }],
                 ['airByDate', { abd: true }]
@@ -213,7 +215,7 @@ export default {
         this.debouncedTestNaming = debounce(this.testNaming, 500);
     },
     watch: {
-        template(newTemplate, oldTemplate) {
+        template(newTemplate) {
             this.searchTemplate = newTemplate;
             this.updateExample();
         },

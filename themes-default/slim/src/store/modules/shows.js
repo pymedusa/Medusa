@@ -165,7 +165,6 @@ const mutations = {
         } else {
             Vue.set(state.queueitems, state.queueitems.length, queueItem);
         }
-
     },
     [ADD_SHOW_CONFIG_TEMPLATE](state, { show, template }) {
         // Get current show object
