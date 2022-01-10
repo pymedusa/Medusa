@@ -2,12 +2,14 @@
     <div id="search-template-container">
         <vue-snotify />
         <!-- Display the default episode search templates -->
-        <div class="row">
-            <div class="form-group">
-                <label for="default_templates" class="col-sm-2 control-label">
-                    <span>Default Episode Templates</span>
-                </label>
-                <div class="col-sm-10 content template-container">
+        <div class="form-group">
+            <div class="row">
+                <div class="col-sm-2">
+                    <label for="default_templates" class="control-label">
+                        <span>Default Episode Templates</span>
+                    </label>
+                </div>
+                <div class="col-sm-10 content">
                     <search-template-pattern
                         v-for="template in defaultEpisodeTemplates"
                         v-bind="{ template, format: showFormat, animeType }"
@@ -18,12 +20,14 @@
         </div>
 
         <!-- Display the default season search templates -->
-        <div class="row">
-            <div class="form-group">
-                <label for="default_templates" class="col-sm-2 control-label">
-                    <span>Default Season Templates</span>
-                </label>
-                <div class="col-sm-10 content template-container">
+        <div class="form-group">
+            <div class="row">
+                <div class="col-sm-2">
+                    <label for="default_templates" class="control-label">
+                        <span>Default Season Templates</span>
+                    </label>
+                </div>
+                <div class="col-sm-10 content">
                     <search-template-pattern
                         v-for="template in defaultSeasonTemplates"
                         v-bind="{ template, format: showFormat, animeType }"
@@ -34,12 +38,14 @@
         </div>
 
         <!-- Display the custom templates -->
-        <div class="row">
-            <div class="form-group">
-                <label for="default_templates" class="col-sm-2 control-label">
-                    <span>Custom Templates</span>
-                </label>
-                <div class="col-sm-10 content template-container">
+        <div class="form-group">
+            <div class="row">
+                <div class="col-sm-2">
+                    <label for="default_templates" class="control-label">
+                        <span>Custom Templates</span>
+                    </label>
+                </div>
+                <div class="col-sm-10 content">
                     <search-template-pattern
                         v-for="template in customTemplates"
                         v-bind="{ template, format: showFormat, animeType }"
@@ -55,7 +61,7 @@
         />
 
         <!-- Anime only -->
-        <div v-show="format === 'anime'">
+        <div v-show="showFormat === 'anime'">
             <div class="row">
                 <div v-if="animeType > 0" class="form-group">
                     <label for="naming_anime" class="col-sm-2 control-label">
@@ -430,10 +436,10 @@ export default {
 
             // Use vuex action to commit the new template.
             addSearchTemplate({ show, template: {
-                title: template.title.seriesName,
+                title: template.title.title,
                 template: template.pattern,
-                season: template.title.season,
                 enabled: template.enabled,
+                season: template.title.season,
                 default: false,
                 seasonSearch: template.seasonSearch
             } });
@@ -458,5 +464,8 @@ export default {
     position: absolute;
     z-index: 10;
     opacity: 0.6;
+}
+.move-down {
+    transform: translatey(10px);
 }
 </style>

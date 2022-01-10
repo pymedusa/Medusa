@@ -1001,9 +1001,9 @@ class AddSearchTemplates(AddHistoryFDHFields):
 
     def test(self):
         """
-        Test if the version is at least 44.18
+        Test if the version is at least 44.19
         """
-        return self.connection.version >= (44, 18)
+        return self.connection.version >= (44, 19)
 
     def execute(self):
         utils.backup_database(self.connection.path, self.connection.version)
@@ -1021,7 +1021,7 @@ class AddSearchTemplates(AddHistoryFDHFields):
             `enabled`	INTEGER DEFAULT 1,
             `default`	INTEGER DEFAULT 1,
             `season_search` INTEGER DEFAULT 0,
-            UNIQUE(template, season));'''
+            UNIQUE(template, title, season));'''
         )
 
         log.info(u'Adding new templates field in the tv_shows table')

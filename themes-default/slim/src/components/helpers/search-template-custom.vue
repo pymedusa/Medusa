@@ -1,111 +1,108 @@
 <template>
-    <div id="search-template-custom">
+    <div id="search-template-custom" class="form-group">
         <!-- Display add a new tempalte input -->
         <div class="row">
-            <div class="form-group">
-                <label for="default_templates" class="col-sm-2 control-label">
+            <div class="col-sm-2">
+                <label for="default_templates" class="control-label">
                     <span>Add Custom Template</span>
                 </label>
-                <div class="col-sm-10 content">
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <div class="form-group">
-                                <label class="col-sm-2">
-                                    <span>Title:</span>
-                                </label>
-                                <div class="col-sm-10 content">
-                                    <select
-                                        id="default_page"
-                                        name="default_page"
-                                        v-model="selectedTitle"
-                                        class="form-control input-sm"
-                                    >
-                                        <option
-                                            :value="option"
-                                            v-for="option in selectTitles"
-                                            :key="option.title"
-                                        >{{ titleOptionDescription(option) }}
-                                        </option>
-                                    </select>
-                                </div>
-                            </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12 content">
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label class="control-label">
+                            <span>Title:</span>
+                        </label>
+                    </div>
+                    <div class="col-sm-10 content">
+                        <select
+                            id="default_page"
+                            name="default_page"
+                            v-model="selectedTitle"
+                            class="form-control input-sm"
+                        >
+                            <option
+                                :value="option"
+                                v-for="option in selectTitles"
+                                :key="option.title"
+                            >{{ titleOptionDescription(option) }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label class="control-label">
+                            <span>Episode or Season search:</span>
+                        </label>
+                    </div>
+                    <div class="col-sm-10">
+                        <div class="checkbox">
+                            <label for="episode">Episode</label>
+                            <input
+                                type="radio"
+                                id="episode"
+                                :value="'episode'"
+                                v-model="episodeOrSeason"
+                            >
+                            <label for="episode">Season</label>
+                            <input
+                                type="radio"
+                                id="season"
+                                :value="'season'"
+                                v-model="episodeOrSeason"
+                            >
+
                         </div>
                     </div>
+                </div>
 
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <div class="form-group">
-                                <label class="col-sm-2">
-                                    <span>Episode or Season search:</span>
-                                </label>
-                                <div class="col-sm-10">
-                                    <label for="episode">Episode</label>
-                                    <input
-                                        type="radio"
-                                        id="episode"
-                                        :value="'episode'"
-                                        v-model="episodeOrSeason"
-                                    >
-                                    <label for="episode">Season</label>
-                                    <input
-                                        type="radio"
-                                        id="season"
-                                        :value="'season'"
-                                        v-model="episodeOrSeason"
-                                    >
-                                </div>
-                            </div>
-                        </div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label class="control-label">
+                            <span>Search Template:</span>
+                        </label>
                     </div>
-
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <div class="form-group">
-                                <label class="col-sm-2">
-                                    <span>Pattern:</span>
-                                </label>
-                                <div class="col-sm-10">
-                                    <input
-                                        type="text"
-                                        name="new_pattern"
-                                        v-model="addPattern"
-                                        class="form-control-inline-max input-sm max-input350 search-pattern"
-                                    >
-                                    <input type="checkbox" v-model="enabled">
-                                </div>
-                            </div>
-                        </div>
+                    <div class="col-sm-10 pattern">
+                        <span ref="inputTitle" v-if="selectedTitle">%SN</span>
+                        <input
+                            type="text"
+                            name="new_pattern"
+                            v-model="addPattern"
+                            class="form-control-inline-max input-sm max-input350 search-pattern"
+                            :style="{'padding-left': `${inputTitleOffset}px`}"
+                        >
+                        <input type="checkbox" v-model="enabled">
+                        <p v-if="!validated && isValidMessage">{{isValidMessage}}</p>
                     </div>
+                </div>
 
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <div class="form-group">
-                                <label class="col-sm-2">
-                                    <span>example:</span>
-                                </label>
-                                <div class="col-sm-10">
-                                    {{ patternExample }}
-                                </div>
-                            </div>
-                        </div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label class="control-label">
+                            <span>example:</span>
+                        </label>
                     </div>
+                    <div class="col-sm-10" :class="{ 'error-message': !validated }">
+                        {{ patternExample }}
+                    </div>
+                </div>
 
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <div class="form-group">
-                                <div class="col-sm-10 .offset-sm-2">
-                                    <input
-                                        id="submit"
-                                        type="submit"
-                                        value="Add custom exception"
-                                        class="btn-medusa pull-left button"
-                                        :disabled="!validated"
-                                        @click="add"
-                                    >
-                                    <p>{{ notification }}</p>
-                                </div>
-                            </div>
-                        </div>
+                <div class="row">
+                    <div class="col-sm-2" />
+                    <div class="col-sm-10 vertical-align">
+                        <input
+                            id="submit"
+                            type="submit"
+                            value="Add custom exception"
+                            class="btn-medusa pull-left button"
+                            :disabled="!validated"
+                            @click="add"
+                        >
+                        <p>{{ notification }}</p>
                     </div>
                 </div>
             </div>
@@ -151,6 +148,7 @@ export default {
             showFormat: null,
             patternExample: '',
             validated: false,
+            isValidMessage: '',
             seasonPattern: false,
             showExample: false,
 
@@ -159,11 +157,13 @@ export default {
             enabled: true,
             separator: ' ',
             episodeOrSeason: 'episode',
-            notification: ''
+            notification: '',
+
+            inputTitleOffset: 0
         };
     },
     watch: {
-        combinedPattern(newPattern) {
+        addPattern(newPattern) {
             if (!newPattern) {
                 return;
             }
@@ -171,6 +171,16 @@ export default {
                 'testing the pattern as soon as you stop typing';
             this.debouncedIsValid();
             this.debouncedTestNaming();
+        },
+        selectedTitle: {
+            deep: true,
+            handler(selectedTitle) {
+                this.$nextTick(() => {
+                    if (selectedTitle && selectedTitle.title && this.$refs.inputTitle) {
+                        this.inputTitleOffset = this.$refs.inputTitle.offsetWidth + 10;
+                    }
+                });
+            }
         }
     },
     created() {
@@ -178,13 +188,6 @@ export default {
         this.debouncedTestNaming = debounce(this.testNaming, 500);
     },
     computed: {
-        combinedPattern() {
-            const { separator, selectedTitle, addPattern } = this;
-            if (!selectedTitle || !addPattern) {
-                return '';
-            }
-            return `${selectedTitle.title}${separator}${addPattern}`;
-        },
         selectTitles() {
             const { show } = this;
             const { config, title } = show;
@@ -198,6 +201,16 @@ export default {
             };
 
             return [...[titleOption], ...aliases];
+        },
+        templateExists() {
+            const { addPattern, selectedTitle, show } = this;
+            const { config } = show;
+            const combinedPattern = `%SN${addPattern}`;
+            return config.searchTemplates.find(
+                template => template.title === selectedTitle.title &&
+                template.season === selectedTitle.season &&
+                template.template === combinedPattern
+            );
         }
     },
     methods: {
@@ -211,12 +224,14 @@ export default {
             return option.title + seasonDescription;
         },
         async testNaming() {
-            const { animeType, combinedPattern, format } = this;
-            if (!combinedPattern) {
+            const { animeType, addPattern, format, selectedTitle } = this;
+            if (!addPattern) {
                 return;
             }
 
-            console.debug(`Test pattern ${combinedPattern}`);
+            console.debug(`Test pattern ${addPattern}`);
+
+            const combinedPattern = `${selectedTitle.title}${addPattern}`;
 
             let params = {
                 pattern: combinedPattern
@@ -249,10 +264,24 @@ export default {
             }
         },
         async isValid() {
-            const { animeType, combinedPattern, showFormat } = this;
-            if (!combinedPattern) {
+            const { animeType, addPattern, showFormat, selectedTitle } = this;
+            if (!addPattern) {
                 return;
             }
+
+            if (!(addPattern.startsWith(' ') || addPattern.startsWith('.'))) {
+                this.validated = false;
+                this.isValidMessage = 'Dont forget to start the pattern with a separator. For example a dot or space.';
+                return;
+            }
+
+            if (this.templateExists) {
+                this.validated = false;
+                this.isValidMessage = 'This template combination is already in use';
+                return;
+            }
+
+            const combinedPattern = `${selectedTitle.title}${addPattern}`;
 
             let params = {
                 pattern: combinedPattern
@@ -275,22 +304,28 @@ export default {
                 );
                 if (response.data !== 'invalid') {
                     this.validated = true;
+                    this.isValidMessage = '';
                     return;
                 }
+
+                this.validated = false;
+                this.isValidMessage = 'Failed to validate the template for a valid show search';
             } catch (error) {
                 console.warn(error);
+                this.validated = false;
+                this.isValidMessage = `Something went wrong, error: ${error}`;
             }
-            this.validated = false;
         },
         add() {
             const {
-                combinedPattern,
+                addPattern,
                 episodeOrSeason,
                 enabled,
                 selectedTitle
             } = this;
+
             this.$emit('input', {
-                pattern: combinedPattern,
+                pattern: `%SN${addPattern}`,
                 seasonSearch: episodeOrSeason === 'season',
                 enabled,
                 title: selectedTitle
@@ -328,6 +363,10 @@ export default {
 
 .invalid {
     background-color: #ff5b5b;
+}
+
+.error-message {
+    color: red;
 }
 
 .tooltip {
@@ -437,5 +476,24 @@ export default {
     visibility: visible;
     opacity: 1;
     transition: opacity 0.15s;
+}
+
+.vertical-align {
+    display: flex;
+    align-items: center;
+}
+
+.vertical-align > p {
+    margin: auto 10px;
+}
+
+.pattern > span {
+    position: absolute;
+    top: 0;
+    left: 25px;
+    color: black;
+}
+.pattern {
+    position: relative;
 }
 </style>

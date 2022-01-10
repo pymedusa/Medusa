@@ -2533,7 +2533,7 @@ class Series(TV):
 
     @search_templates.setter
     def search_templates(self, templates):
-        self._search_templates.templates = self._search_templates.update(templates)
+        self._search_templates.update(templates)
 
     def want_episode(self, season, episode, quality,
                      download_current_quality=False, search_type=None):

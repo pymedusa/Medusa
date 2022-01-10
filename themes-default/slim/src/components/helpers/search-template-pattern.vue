@@ -6,25 +6,32 @@
                     class="tooltip-wrapper"
                     v-tooltip.right="{ content: tooltipContent }"
                 >
-                    <input
-                        :class="{ invalid: !validated }"
-                        type="text"
-                        name="search_pattern"
-                        :disabled="searchTemplate.default"
-                        v-model="searchTemplate.template"
-                        @change="updateExample"
-                        @input="update()"
-                        class="form-control-inline-max input-sm max-input350 search-pattern"
-                    >
+                    <span class="template-title">{{searchTemplate.title}}</span>
+
+                    <div class="template-body">
+                        <input
+                            :class="{ invalid: !validated }"
+                            type="text"
+                            name="search_pattern"
+                            :disabled="searchTemplate.default"
+                            v-model="searchTemplate.template"
+                            @change="updateExample"
+                            @input="update()"
+                            class="form-control-inline-max input-sm max-input350 search-pattern"
+                        >
+
+                        <input type="checkbox" v-model="searchTemplate.enabled">
+                        <i
+                            class="show-template glyphicon"
+                            :class="`glyphicon-eye-${showExample ? 'close' : 'open'}`"
+                            @click="showExample = !showExample"
+                            title="Show template example"
+                        />
+
+                    </div>
                 </div>
 
-                <input type="checkbox" v-model="searchTemplate.enabled">
-                <i
-                    class="show-template glyphicon"
-                    :class="`glyphicon-eye-${showExample ? 'close' : 'open'}`"
-                    @click="showExample = !showExample"
-                    title="Show template example"
-                />
+                
 
                 <span
                     :class="{ invalid: !validated }"
@@ -104,13 +111,15 @@ export default {
             return formatDate(new Date(), format);
         },
         async isValid() {
-            const { animeType, searchTemplate, showFormat } = this;
+            const { animeType, searchTemplate, showFormat, template } = this;
+            const { seasonSearch } = template;
             if (!searchTemplate.template) {
                 return;
             }
 
             let params = {
-                pattern: searchTemplate.template
+                pattern: searchTemplate.template,
+                season: seasonSearch
             };
             const formatMap = new Map([
                 // eslint-disable-next-line camelcase
@@ -125,11 +134,11 @@ export default {
 
             this.validated = false;
             try {
-                const response = await apiRoute.get(
+                const { data } = await apiRoute.get(
                     'config/postProcessing/isNamingValid',
                     { params, timeout: 20000 }
                 );
-                if (response.data !== 'invalid') {
+                if (data !== 'invalid') {
                     this.validated = true;
                 }
             } catch (error) {
@@ -359,5 +368,14 @@ export default {
     visibility: visible;
     opacity: 1;
     transition: opacity 0.15s;
+}
+
+.template-title {
+    padding: 0px 0 3px 5px;
+    display: block;
+}
+
+.template-body {
+    display: flex;
 }
 </style>

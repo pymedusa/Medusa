@@ -34,7 +34,7 @@ class SearchTemplates(object):
 
         assert self.show_obj, 'You need to configure a show object before generating exceptions.'
 
-        # Create the default templates. Don't add them when their already in the list
+        # Create the default templates. Don't add them when they are already in the list
         if not self.show_obj.aliases:
             scene_exceptions = self.main_db_con.select(
             'SELECT season, title '
@@ -56,12 +56,24 @@ class SearchTemplates(object):
 
     def _clean(self):
         """Clean up templates when there is no scene exception for it anymore."""
+        # Get the default title search string for Episode and Season
+        episode_search_template = self._get_episode_search_strings(self.show_obj.name, -1)
+        season_search_template = self._get_season_search_strings(self.show_obj.name)
+        
         self.main_db_con.action("""
             DELETE from search_templates
             WHERE indexer = ?
             AND series_id = ?
             AND title not in (select title from scene_exceptions where indexer = ? and series_id = ?)
-        """, [self.show_obj.indexer, self.show_obj.series_id, self.show_obj.indexer, self.show_obj.series_id])
+            AND title != ?
+            AND template not in (?,?)
+        """, [
+            self.show_obj.indexer, self.show_obj.series_id,
+            self.show_obj.indexer, self.show_obj.series_id,
+            self.show_obj.name,
+            episode_search_template,
+            season_search_template
+        ])
 
 
     def _generate_episode_search_pattern(self, exception):
@@ -78,6 +90,7 @@ class SearchTemplates(object):
             'season_search': 0
         }
         control_values = {
+            'template': template,
             'indexer': self.show_obj.indexer,
             'series_id': self.show_obj.series_id,
             'title': exception['title'],
@@ -169,17 +182,17 @@ class SearchTemplates(object):
 
     def _create_air_by_date_search_string(self, title):
         """Create a search string used for series that are indexed by air date."""
-        return title + self.search_separator + '%A-D'
+        return '%SN' + self.search_separator + '%A-D'
 
     def _create_sports_search_string(self, title):
         """Create a search string used for sport series."""
-        episode_string = title + self.search_separator
+        episode_string = '%SN' + self.search_separator
         episode_string += '%ADb'
         return episode_string.strip()
 
     def _create_anime_search_string(self, title, season):
         """Create a search string used for as anime 'marked' shows."""
-        episode_string = title + self.search_separator
+        episode_string = '%SN' + self.search_separator
 
         # If the show name is a season scene exception, we want to use the episode number
         if title in get_season_scene_exceptions(
@@ -195,7 +208,7 @@ class SearchTemplates(object):
 
     def _create_default_search_string(self, title):
         """Create a default search string, used for standard type S01E01 tv series."""
-        episode_string = title + self.search_separator
+        episode_string = '%SN' + self.search_separator
 
         episode_string += 'S%0XS' if self.show_obj.is_scene else 'S%0S'
         episode_string += 'E%XE' if self.show_obj.is_scene else 'E%0E'
@@ -223,10 +236,10 @@ class SearchTemplates(object):
 
         :param title: Show's title.
         """
-        episode_string = title + self.search_separator
+        episode_string = '%SN' + self.search_separator
 
         if self.show_obj.air_by_date or self.show_obj.sports:
-            season_search_string = title + self.search_separator + '%A-D'
+            season_search_string = episode_string + '%A-D'
         elif self.show_obj.anime:
             season_search_string = episode_string + 'Season'
         else:
@@ -241,6 +254,7 @@ class SearchTemplates(object):
         Enable/Disable default templates.
         Add/Remote/Update custom templates.
         """
+        self.templates = []
         for template in templates:
             # TODO: add validation
 
@@ -249,7 +263,7 @@ class SearchTemplates(object):
 
             # Update the template in self.templates
             new_template = SearchTemplate(
-                id=template['id'],
+                id=template.get('id'),
                 template=template['template'],
                 title=template['title'],
                 series=self.show_obj,
@@ -259,11 +273,7 @@ class SearchTemplates(object):
                 season_search=template['seasonSearch']
             )
 
-            self.templates = [
-                new_template if old_template.template == new_template.template
-                else old_template
-                for old_template in self.templates
-            ]
+            self.templates.append(new_template)
 
         return self.templates
 

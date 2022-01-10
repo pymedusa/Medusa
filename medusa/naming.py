@@ -71,7 +71,7 @@ def check_force_season_folders(pattern=None, multi=None, anime_type=None):
     return valid
 
 
-def check_valid_naming(pattern=None, multi=None, anime_type=None):
+def check_valid_naming(pattern=None, multi=None, anime_type=None, season=False):
     """
     Checks if the name is can be parsed back to its original form for both single and multi episodes.
 
@@ -84,11 +84,11 @@ def check_valid_naming(pattern=None, multi=None, anime_type=None):
         anime_type = app.NAMING_ANIME
 
     logger.log(u'Checking whether the pattern ' + pattern + ' is valid for a single episode', logger.DEBUG)
-    valid = validate_name(pattern, None, anime_type)
+    valid = validate_name(pattern, None, anime_type, season=season)
 
     if multi is not None:
         logger.log(u'Checking whether the pattern ' + pattern + ' is valid for a multi episode', logger.DEBUG)
-        valid = valid and validate_name(pattern, multi, anime_type)
+        valid = valid and validate_name(pattern, multi, anime_type, season=season)
 
     return valid
 
@@ -123,7 +123,7 @@ def check_valid_sports_naming(pattern=None):
     return valid
 
 
-def validate_name(pattern, multi=None, anime_type=None, file_only=False, abd=False, sports=False):
+def validate_name(pattern, multi=None, anime_type=None, file_only=False, abd=False, sports=False, season=False):
     """
     See if we understand a name
 
@@ -169,7 +169,8 @@ def validate_name(pattern, multi=None, anime_type=None, file_only=False, abd=Fal
         if parse_result.season_number != ep.season:
             logger.log(u"Season number incorrect in parsed episode, pattern isn't valid", logger.DEBUG)
             return False
-        if parse_result.episode_numbers != [x.episode for x in [ep] + ep.related_episodes]:
+        # If the template is a season search string, we don't need to check for episode.
+        if parse_result.episode_numbers != [x.episode for x in [ep] + ep.related_episodes] and not season:
             logger.log(u"Episode numbering incorrect in parsed episode, pattern isn't valid", logger.DEBUG)
             return False
 
