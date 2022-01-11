@@ -160,18 +160,6 @@ export default {
                 });
             });
         }
-        // UpdateCustomName() {
-        //     // Store the custom naming pattern.
-        //     if (!this.presetsPatterns.includes(this.pattern)) {
-        //         this.customName = this.pattern;
-        //     }
-
-        //     // If the custom name is empty, let's use the last selected pattern.
-        //     // We'd prefer to cache the last configured custom pattern.
-        //     if (!this.customName) {
-        //         this.customName = this.lastSelectedPattern;
-        //     }
-        // }
     },
     mounted() {
         const { format, season, template } = this;

@@ -173,7 +173,6 @@ export default {
         }
     },
     created() {
-        this.debouncedIsValid = debounce(this.isValid, 500);
         this.debouncedTestNaming = debounce(this.testNaming, 500);
     },
     mounted() {
