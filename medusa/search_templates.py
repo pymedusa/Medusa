@@ -54,25 +54,21 @@ class SearchTemplates(object):
         self._clean()
         self.read_from_db()
 
+        return self.templates
+
     def _clean(self):
         """Clean up templates when there is no scene exception for it anymore."""
         # Get the default title search string for Episode and Season
-        episode_search_template = self._get_episode_search_strings(self.show_obj.name, -1)
-        season_search_template = self._get_season_search_strings(self.show_obj.name)
-        
         self.main_db_con.action("""
             DELETE from search_templates
             WHERE indexer = ?
             AND series_id = ?
             AND title not in (select title from scene_exceptions where indexer = ? and series_id = ?)
             AND title != ?
-            AND template not in (?,?)
         """, [
             self.show_obj.indexer, self.show_obj.series_id,
             self.show_obj.indexer, self.show_obj.series_id,
             self.show_obj.name,
-            episode_search_template,
-            season_search_template
         ])
 
 
@@ -116,6 +112,7 @@ class SearchTemplates(object):
             'season_search': 1
         }
         control_values = {
+            'template': template,
             'indexer': self.show_obj.indexer,
             'series_id': self.show_obj.series_id,
             'title': exception['title'],
@@ -143,6 +140,7 @@ class SearchTemplates(object):
         control_values = {
             'indexer': self.show_obj.indexer,
             'series_id': self.show_obj.series_id,
+            'title': template['title'],
             'template': template['template'],
             'season': template['season']
         }
@@ -247,6 +245,17 @@ class SearchTemplates(object):
 
         return season_search_string
 
+    def remove(self):
+        """Remove all custom templates for this show."""
+        self.main_db_con.action("""
+            DELETE from search_templates
+            WHERE indexer = ?
+            AND series_id = ?
+            AND `default` = 0
+        """, [
+            self.show_obj.indexer, self.show_obj.series_id,
+        ])
+
     def update(self, templates):
         """
         Update the search templates.
@@ -255,8 +264,19 @@ class SearchTemplates(object):
         Add/Remote/Update custom templates.
         """
         self.templates = []
+        self.remove()
         for template in templates:
             # TODO: add validation
+            # Check if the scene exception still exists in db
+            find_scene_exception = self.main_db_con.select(
+                'SELECT season, title '
+                'FROM scene_exceptions '
+                'WHERE indexer = ? AND series_id = ? '
+                'AND title = ? AND season = ?',
+                [self.show_obj.indexer, self.show_obj.series_id, template['title'], template['season']]
+            )
+            if not find_scene_exception and template['title'] != self.show_obj.name:
+                continue
 
             # Save to db
             self.save(template)

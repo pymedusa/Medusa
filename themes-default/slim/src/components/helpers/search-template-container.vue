@@ -49,7 +49,7 @@
                     <search-template-pattern
                         v-for="template in customTemplates"
                         v-bind="{ template, format: showFormat, animeType }"
-                        :key="template.template"
+                        :key="template.template" @remove="remove"
                     />
                 </div>
             </div>
@@ -407,7 +407,8 @@ export default {
     },
     methods: {
         ...mapActions([
-            'addSearchTemplate'
+            'addSearchTemplate',
+            'removeSearchTemplate'
         ]),
         getDateFormat(format) {
             return formatDate(new Date(), format);
@@ -443,6 +444,16 @@ export default {
                 default: false,
                 seasonSearch: template.seasonSearch
             } });
+
+            this.update();
+        },
+        /**
+         * Remove a "custom" search template from the shows searchTemplates array.
+         * @param {object} template - Search template object.
+         */
+        remove(template) {
+            const { show, removeSearchTemplate } = this;
+            removeSearchTemplate({ show, template });
 
             this.update();
         }

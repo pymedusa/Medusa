@@ -1486,7 +1486,7 @@ class Episode(TV):
 
         return good_name
 
-    def __replace_map(self):
+    def __replace_map(self, show_name=None):
         """Generate a replacement map for this episode.
 
         Maps all possible custom naming patterns to the correct value for this episode.
@@ -1524,10 +1524,12 @@ class Episode(TV):
                 return ''
             return parse_result.release_group.strip('.- []{}')
 
+        series_name = self.series.name
+        if show_name:
+            series_name = show_name
+
         if app.NAMING_STRIP_YEAR:
-            series_name = re.sub(r'\(\d+\)$', '', self.series.name).rstrip()
-        else:
-            series_name = self.series.name
+            series_name = re.sub(r'\(\d+\)$', '', series_name).rstrip()
 
         # try to get the release group
         rel_grp = {
@@ -1627,7 +1629,7 @@ class Episode(TV):
 
         return result_name
 
-    def _format_pattern(self, pattern=None, multi=None, anime_type=None):
+    def _format_pattern(self, pattern=None, multi=None, anime_type=None, show_name=None):
         """Manipulate an episode naming pattern and then fills the template in.
 
         :param pattern:
@@ -1651,7 +1653,7 @@ class Episode(TV):
         else:
             anime_type = 3
 
-        replace_map = self.__replace_map()
+        replace_map = self.__replace_map(show_name=show_name)
 
         result_name = pattern
 
@@ -1890,7 +1892,7 @@ class Episode(TV):
 
         return sanitize_filename(self._format_pattern(name_groups[-1], multi, anime_type))
 
-    def formatted_search_string(self, pattern=None, multi=None, anime_type=None):
+    def formatted_search_string(self, pattern=None, multi=None, anime_type=None, title=None):
         """The search template, formatted based on the tv_show's episode_search_template setting.
 
         :param pattern:
@@ -1905,7 +1907,7 @@ class Episode(TV):
         # split off the dirs only, if they exist
         name_groups = re.split(r'[\\/]', pattern)
 
-        return sanitize_filename(self._format_pattern(name_groups[-1], multi, anime_type))
+        return sanitize_filename(self._format_pattern(name_groups[-1], multi, anime_type, show_name=title))
 
     def rename(self):
         """Rename an episode file and all related files to the location and filename as specified in naming settings."""

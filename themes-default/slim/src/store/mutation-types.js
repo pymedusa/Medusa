@@ -27,6 +27,7 @@ const SET_STATS = 'SET_STATS';
 const SET_MAX_DOWNLOAD_COUNT = 'SET_MAX_DOWNLOAD_COUNT';
 const ADD_SHOW_SCENE_EXCEPTION = '📺 Add a scene exception';
 const REMOVE_SHOW_SCENE_EXCEPTION = '📺 Remove a scene exception';
+const REMOVE_SHOW_CONFIG_TEMPLATE = '📺 Remove a shows search template';
 const ADD_HISTORY = '📺 History added to store';
 const ADD_HISTORY_ROW = '📺 History row added to store';
 const ADD_SHOW_CONFIG_TEMPLATE = '📺 Search template added to shows templates';
@@ -75,6 +76,7 @@ export {
     SET_MAX_DOWNLOAD_COUNT,
     ADD_SHOW_SCENE_EXCEPTION,
     REMOVE_SHOW_SCENE_EXCEPTION,
+    REMOVE_SHOW_CONFIG_TEMPLATE,
     ADD_SHOW_HISTORY,
     ADD_SHOW_EPISODE_HISTORY,
     ADD_PROVIDER,

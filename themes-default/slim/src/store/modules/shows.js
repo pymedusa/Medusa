@@ -9,7 +9,8 @@ import {
     ADD_SHOW_EPISODE,
     ADD_SHOW_SCENE_EXCEPTION,
     REMOVE_SHOW_SCENE_EXCEPTION,
-    REMOVE_SHOW
+    REMOVE_SHOW,
+    REMOVE_SHOW_CONFIG_TEMPLATE
 } from '../mutation-types';
 
 /**
@@ -176,6 +177,21 @@ const mutations = {
         }
 
         currentShow.config.searchTemplates.push(template);
+    },
+    [REMOVE_SHOW_CONFIG_TEMPLATE](state, { show, template }) {
+        // Get current show object
+        const currentShow = Object.assign({}, state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer])));
+
+        if (template.id) {
+            currentShow.config.searchTemplates = currentShow.config.searchTemplates.filter(
+                t => t.id !== template.id
+            );
+            return;
+        }
+
+        currentShow.config.searchTemplates = currentShow.config.searchTemplates.filter(
+            t => !(t.title === template.title && t.season === template.season && t.template === template.template)
+        );
     },
     [REMOVE_SHOW](state, removedShow) {
         state.shows = state.shows.filter(existingShow => removedShow.id.slug !== existingShow.id.slug);
@@ -515,6 +531,17 @@ const actions = {
         const { commit } = context;
 
         commit(ADD_SHOW_CONFIG_TEMPLATE, { show, template });
+        const data = {
+            config: {
+                searchTemplates: context.getters.getCurrentShow.config.searchTemplates
+            }
+        };
+        return api.patch(`series/${show.indexer}${show.id[show.indexer]}`, data);
+    },
+    removeSearchTemplate(context, { show, template }) {
+        const { commit } = context;
+
+        commit(REMOVE_SHOW_CONFIG_TEMPLATE, { show, template });
         const data = {
             config: {
                 searchTemplates: context.getters.getCurrentShow.config.searchTemplates

@@ -169,7 +169,7 @@ def get_season_from_name(series_obj, exception_name):
 
 def get_all_scene_exceptions(series_obj):
     """
-    Get all scene exceptions for a show ID.
+    Get all scene exceptions for a show object using indexer and series_id.
 
     :param series_obj: series object.
     :return: dict of exceptions (e.g. exceptions_cache[season][exception_name])
@@ -239,6 +239,7 @@ def update_scene_exceptions(series_obj, scene_exceptions):
                 [series_obj.indexer, series_obj.series_id, exception['title'], exception['season'], exception['custom']]
             )
 
+    refresh_exceptions_cache(series_obj)
 
 def retrieve_exceptions(force=False, exception_type=None):
     """

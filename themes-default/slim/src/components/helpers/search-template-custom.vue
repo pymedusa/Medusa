@@ -73,7 +73,8 @@
                             name="new_pattern"
                             v-model="addPattern"
                             class="form-control-inline-max input-sm max-input350 search-pattern"
-                            :style="{'padding-left': `${inputTitleOffset}px`}"
+                            style="padding-left: 50px"
+                            :disabled="!selectedTitle"
                         >
                         <input type="checkbox" v-model="enabled">
                         <p v-if="!validated && isValidMessage">{{isValidMessage}}</p>
@@ -157,9 +158,7 @@ export default {
             enabled: true,
             separator: ' ',
             episodeOrSeason: 'episode',
-            notification: '',
-
-            inputTitleOffset: 0
+            notification: ''
         };
     },
     watch: {
@@ -171,21 +170,22 @@ export default {
                 'testing the pattern as soon as you stop typing';
             this.debouncedIsValid();
             this.debouncedTestNaming();
-        },
-        selectedTitle: {
-            deep: true,
-            handler(selectedTitle) {
-                this.$nextTick(() => {
-                    if (selectedTitle && selectedTitle.title && this.$refs.inputTitle) {
-                        this.inputTitleOffset = this.$refs.inputTitle.offsetWidth + 10;
-                    }
-                });
-            }
         }
     },
     created() {
         this.debouncedIsValid = debounce(this.isValid, 500);
         this.debouncedTestNaming = debounce(this.testNaming, 500);
+    },
+    mounted() {
+        const { show } = this;
+        const { title } = show;
+
+        this.selectedTitle = {
+            indexer: show.indexer,
+            seriesId: show.id[show.indexer],
+            season: -1,
+            title
+        };
     },
     computed: {
         selectTitles() {
@@ -263,8 +263,8 @@ export default {
                 console.warn(error);
             }
         },
-        async isValid() {
-            const { animeType, addPattern, showFormat, selectedTitle } = this;
+        isValid() {
+            const { addPattern } = this;
             if (!addPattern) {
                 return;
             }
@@ -281,48 +281,18 @@ export default {
                 return;
             }
 
-            const combinedPattern = `${selectedTitle.title}${addPattern}`;
-
-            let params = {
-                pattern: combinedPattern
-            };
-            const formatMap = new Map([
-                // eslint-disable-next-line camelcase
-                ['anime', { anime_type: animeType }],
-                ['sports', { sports: true }],
-                ['airByDate', { abd: true }]
-            ]);
-
-            if (showFormat !== '') {
-                params = { ...params, ...formatMap.get(showFormat) };
-            }
-
-            try {
-                const response = await apiRoute.get(
-                    'config/postProcessing/isNamingValid',
-                    { params, timeout: 20000 }
-                );
-                if (response.data !== 'invalid') {
-                    this.validated = true;
-                    this.isValidMessage = '';
-                    return;
-                }
-
-                this.validated = false;
-                this.isValidMessage = 'Failed to validate the template for a valid show search';
-            } catch (error) {
-                console.warn(error);
-                this.validated = false;
-                this.isValidMessage = `Something went wrong, error: ${error}`;
-            }
+            this.validated = true;
+            this.isValidMessage = '';
         },
         add() {
             const {
+                show,
                 addPattern,
                 episodeOrSeason,
                 enabled,
                 selectedTitle
             } = this;
+            const { title } = show;
 
             this.$emit('input', {
                 pattern: `%SN${addPattern}`,
@@ -331,7 +301,12 @@ export default {
                 title: selectedTitle
             });
 
-            this.selectedTitle = '';
+            this.selectedTitle = {
+                indexer: show.indexer,
+                seriesId: show.id[show.indexer],
+                season: -1,
+                title
+            };
             this.addPattern = '';
             this.episodeOrSeason = 'episode';
         }
@@ -492,6 +467,10 @@ export default {
     top: 0;
     left: 25px;
     color: black;
+    background-color: grey;
+    padding: 1px 5px;
+    opacity: 0.8;
+    border-radius: 5px;
 }
 .pattern {
     position: relative;

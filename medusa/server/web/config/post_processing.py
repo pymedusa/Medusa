@@ -134,7 +134,7 @@ class ConfigPostProcessing(Config):
         return result
 
     @staticmethod
-    def isNamingValid(pattern=None, multi=None, abd=False, sports=False, anime_type=None, season=None):
+    def isNamingValid(pattern=None, multi=None, abd=False, sports=False, anime_type=None):
         """Validate episode naming pattern."""
         if pattern is None:
             return 'invalid'
@@ -144,9 +144,6 @@ class ConfigPostProcessing(Config):
 
         if anime_type is not None:
             anime_type = int(anime_type)
-
-        if season is not None:
-            season = season == 'true'
 
         # air by date shows just need one check, we don't need to worry about season folders
         if abd:
@@ -160,7 +157,7 @@ class ConfigPostProcessing(Config):
 
         else:
             # check validity of single and multi ep cases for the whole path
-            is_valid = naming.check_valid_naming(pattern, multi, anime_type, season)
+            is_valid = naming.check_valid_naming(pattern, multi, anime_type)
 
             # check validity of single and multi ep cases for only the file name
             require_season_folders = naming.check_force_season_folders(pattern, multi, anime_type)

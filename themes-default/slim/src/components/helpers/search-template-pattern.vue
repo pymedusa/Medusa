@@ -7,16 +7,19 @@
                     v-tooltip.right="{ content: tooltipContent }"
                 >
                     <span class="template-title">{{searchTemplate.title}}</span>
+                    <img
+                        v-if="!searchTemplate.default"
+                        class="template-remove" src="images/no16.png"
+                        @click="$emit('remove', searchTemplate)"
+                    >
 
                     <div class="template-body">
                         <input
                             :class="{ invalid: !validated }"
                             type="text"
                             name="search_pattern"
-                            :disabled="searchTemplate.default"
+                            disabled="disabled"
                             v-model="searchTemplate.template"
-                            @change="updateExample"
-                            @input="update()"
                             class="form-control-inline-max input-sm max-input350 search-pattern"
                         >
 
@@ -30,8 +33,6 @@
 
                     </div>
                 </div>
-
-                
 
                 <span
                     :class="{ invalid: !validated }"
@@ -103,47 +104,12 @@ export default {
             const { searchTemplate } = this;
             return searchTemplate.default ?
                 "This template has been generated based on a scene exception / title. It's a default template and cannot be modified. It can only be enabled/disabled." :
-                'You can modify this template. On changing the template, it will be tested against the template rules. And shown red if not valid.';
+                'You can modify this template.';
         }
     },
     methods: {
         getDateFormat(format) {
             return formatDate(new Date(), format);
-        },
-        async isValid() {
-            const { animeType, searchTemplate, showFormat, template } = this;
-            const { seasonSearch } = template;
-            if (!searchTemplate.template) {
-                return;
-            }
-
-            let params = {
-                pattern: searchTemplate.template,
-                season: seasonSearch
-            };
-            const formatMap = new Map([
-                // eslint-disable-next-line camelcase
-                ['anime', { anime_type: animeType }],
-                ['sports', { sports: true }],
-                ['airByDate', { abd: true }]
-            ]);
-
-            if (showFormat !== '') {
-                params = { ...params, ...formatMap.get(showFormat) };
-            }
-
-            this.validated = false;
-            try {
-                const { data } = await apiRoute.get(
-                    'config/postProcessing/isNamingValid',
-                    { params, timeout: 20000 }
-                );
-                if (data !== 'invalid') {
-                    this.validated = true;
-                }
-            } catch (error) {
-                console.warn(error);
-            }
         },
         async testNaming() {
             const { animeType, searchTemplate, showFormat } = this;
@@ -181,10 +147,7 @@ export default {
             return response;
         },
         updateExample() {
-            const { debouncedIsValid, debouncedTestNaming } = this;
-
-            // Test naming
-            debouncedIsValid();
+            const { debouncedTestNaming } = this;
 
             // Update single
             debouncedTestNaming();
@@ -220,7 +183,6 @@ export default {
         this.updateExample();
     },
     created() {
-        this.debouncedIsValid = debounce(this.isValid, 500);
         this.debouncedTestNaming = debounce(this.testNaming, 500);
     },
     watch: {
@@ -372,7 +334,13 @@ export default {
 
 .template-title {
     padding: 0px 0 3px 5px;
-    display: block;
+    display: inline-block;
+}
+
+.template-remove {
+    float: right;
+    margin-right: 4px;
+    margin-top: 2px;
 }
 
 .template-body {
