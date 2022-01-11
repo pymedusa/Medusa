@@ -193,8 +193,7 @@ class SearchTemplates(object):
         episode_string = '%SN' + self.search_separator
 
         # If the show name is a season scene exception, we want to use the episode number
-        if title in get_season_scene_exceptions(
-                self.show_obj, season):
+        if title in [scene_exception.title for scene_exception in get_season_scene_exceptions(self.show_obj, season)]:
             # This is apparently a season exception, let's use the episode instead of absolute
             ep = '%XE'
         else:

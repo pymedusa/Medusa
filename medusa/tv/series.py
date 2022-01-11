@@ -95,7 +95,7 @@ from medusa.name_parser.parser import (
     NameParser,
 )
 from medusa.sbdatetime import sbdatetime
-from medusa.scene_exceptions import get_all_scene_exceptions, get_scene_exceptions, update_scene_exceptions
+from medusa.scene_exceptions import get_all_scene_exceptions, get_scene_exceptions, refresh_exceptions_cache, update_scene_exceptions
 from medusa.scene_numbering import (
     get_scene_absolute_numbering_for_show, get_scene_numbering_for_show,
     get_xem_absolute_numbering_for_show, get_xem_numbering_for_show,
@@ -2028,6 +2028,7 @@ class Series(TV):
 
     def init_search_templates(self):
         """Load search templates."""
+        refresh_exceptions_cache(self)
         self._search_templates = SearchTemplates(self)
         self._search_templates.generate()
 
