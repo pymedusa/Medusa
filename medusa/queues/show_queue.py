@@ -457,6 +457,10 @@ class QueueItemAdd(ShowQueueItem):
             message_step('add scene numbering')
             self.show.add_scene_numbering()
 
+            # Load search templates
+            message_step('generate search templates')
+            self.show.init_search_templates()
+
             if self.show_dir:
                 # If a show dir was passed, this was added as an existing show.
                 # For new shows we should have any files on disk.

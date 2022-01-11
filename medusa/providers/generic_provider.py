@@ -672,6 +672,9 @@ class GenericProvider(object):
                 if template.season_search or not template.enabled:
                     continue
 
+                if episode.scene_season and template.season != -1 and episode.scene_season != template.season:
+                    continue
+
                 search_string['Episode'].append(episode.formatted_search_string(template.template, title=template.title))
             return [search_string]
 
@@ -710,6 +713,9 @@ class GenericProvider(object):
         if episode.series.use_templates:
             for template in episode.series.search_templates.templates:
                 if not template.season_search or not template.enabled:
+                    continue
+
+                if episode.scene_season and template.season != -1 and episode.scene_season != template.season:
                     continue
                 
                 search_string['Season'].append(episode.formatted_search_string(template.template, title=template.title))

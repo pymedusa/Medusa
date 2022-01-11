@@ -261,6 +261,7 @@ class Series(TV):
         self.externals = {}
         self._indexer_api = None
         self._show_lists = ''
+        self._templates = None
         self._search_templates = None
 
         other_show = Show.find_by_id(app.showList, self.indexer, self.series_id)
@@ -1548,8 +1549,7 @@ class Series(TV):
             self.show_lists = sql_results[0]['show_lists'] or 'series'
 
             # Load search templates
-            self._search_templates = SearchTemplates(self)
-            self._search_templates.generate()
+            self.init_search_templates()
 
         # Get IMDb_info from database
         main_db_con = db.DBConnection()
@@ -2025,6 +2025,11 @@ class Series(TV):
                 'for show {title} you might want to consider enabling the scene option'
                 .format(title=self.name)
             )
+
+    def init_search_templates(self):
+        """Load search templates."""
+        self._search_templates = SearchTemplates(self)
+        self._search_templates.generate()
 
     def update_mapped_id_cache(self):
         """Search the show in the recommended show cache. And update the mapped_indexer and mapped_series_id fields."""
