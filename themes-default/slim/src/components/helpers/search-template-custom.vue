@@ -168,10 +168,12 @@ export default {
             }
             this.notification =
                 'testing the pattern as soon as you stop typing';
+            this.debouncedIsValid();
             this.debouncedTestNaming();
         }
     },
     created() {
+        this.debouncedIsValid = debounce(this.isValid, 500);
         this.debouncedTestNaming = debounce(this.testNaming, 500);
     },
     mounted() {
