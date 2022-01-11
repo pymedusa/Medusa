@@ -168,7 +168,6 @@ export default {
             }
             this.notification =
                 'testing the pattern as soon as you stop typing';
-            this.debouncedIsValid();
             this.debouncedTestNaming();
         }
     },
