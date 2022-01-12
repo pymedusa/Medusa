@@ -3,6 +3,7 @@
 #### New Features
 - Add support for banner and background images to indexer tvmaze ([10234](https://github.com/pymedusa/Medusa/pull/10234))
 - Add option for using ffprobe to validate postprocessed media ([10132](https://github.com/pymedusa/Medusa/pull/10132))
+- Add change indexer page to change the current indexer for shows in bulk ([9862](https://github.com/pymedusa/Medusa/pull/9862))
 
 #### Improvements
 - Add column sorting for the add new show page search results ([10217](https://github.com/pymedusa/Medusa/pull/10217))

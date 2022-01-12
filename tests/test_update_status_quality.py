@@ -77,11 +77,11 @@ def create_episode(tvshow, create_tvepisode, create_file):
         'filepath': 'Show.S01E08.1080p.HDTV.X264-GROUP.mkv',
         'expected': (SNATCHED, Quality.FULLHDTV)
     },
-    {  # p8: Previous status was Skipped
+    {  # p8: Previous status was Skipped, but we got a new file. Set to Downloaded.
         'status': SKIPPED,
         'quality': Quality.NA,
         'filepath': 'Show.S01E09.1080p.HDTV.X264-GROUP.mkv',
-        'expected': (ARCHIVED, Quality.FULLHDTV)
+        'expected': (DOWNLOADED, Quality.FULLHDTV)
     },
     {  # p9: Previous status was Unaired
         'status': UNAIRED,

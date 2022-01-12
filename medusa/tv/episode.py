@@ -2086,8 +2086,14 @@ class Episode(TV):
             new_quality = Quality.name_quality(filepath, self.series.is_anime)
 
             if old_status in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST) or (
-                    old_status == DOWNLOADED and old_location) or (
-                    old_status == WANTED and not old_location):
+                    old_status == DOWNLOADED and old_location
+            ) or (
+                old_status == WANTED and not old_location
+            ) or (
+                # For example when removing an existing show (keep files)
+                # and re-adding it. The status is SKIPPED just after adding it.
+                old_status == SKIPPED and not old_location
+            ):
                 new_status = DOWNLOADED
             else:
                 new_status = ARCHIVED

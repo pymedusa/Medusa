@@ -43,6 +43,7 @@
                         </app-link>
                         <ul class="dropdown-menu">
                             <li><app-link href="manage/"><i class="menu-icon-manage" />&nbsp;Mass Update</app-link></li>
+                            <li><app-link href="manage/changeIndexer/"><i class="menu-icon-manage-change" />&nbsp;Change Indexer</app-link></li>
                             <li><app-link href="manage/backlogOverview/"><i class="menu-icon-backlog-view" />&nbsp;Backlog Overview</app-link></li>
                             <li><app-link href="manage/manageSearches/"><i class="menu-icon-manage-searches" />&nbsp;Manage Searches</app-link></li>
                             <li><app-link href="manage/episodeStatuses/"><i class="menu-icon-manage2" />&nbsp;Episode Status Management</app-link></li>

@@ -220,6 +220,18 @@ exports[`AppHeader.test.js renders 1`] = `
              
             <li>
               <app-link-stub
+                href="manage/changeIndexer/"
+                placeholder="indexer-to-name"
+              >
+                <i
+                  class="menu-icon-manage-change"
+                />
+                 Change Indexer
+              </app-link-stub>
+            </li>
+             
+            <li>
+              <app-link-stub
                 href="manage/backlogOverview/"
                 placeholder="indexer-to-name"
               >
