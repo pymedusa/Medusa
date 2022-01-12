@@ -820,7 +820,8 @@ class ConfigMigrator(object):
             8: 'Convert Plex setting keys',
             9: 'Added setting "enable_manualsearch" for providers (dynamic setting)',
             10: 'Convert all csv config items to lists',
-            11: 'Convert provider ratio type string to int'
+            11: 'Convert provider ratio type string to int',
+            12: 'Add new metadata option overwrite_nfo'
         }
 
     def migrate_config(self):
@@ -1279,3 +1280,26 @@ class ConfigMigrator(object):
                     provider.ratio = -1
                 elif isinstance(provider.ratio, str):
                     provider.ratio = int(provider.ratio)
+
+    def _migrate_v12(self):
+        """Add new option to metadata providers."""
+        def add_new_option(metadata_prov):
+            if len(metadata_prov) == 10:
+                metadata_prov.append(0)
+            return metadata_prov
+
+        app.METADATA_KODI = check_setting_list(app.CFG, 'General', 'metadata_kodi', ['0'] * 11, transform=int)
+        app.METADATA_KODI_12PLUS = check_setting_list(app.CFG, 'General', 'metadata_kodi_12plus', ['0'] * 11, transform=int)
+        app.METADATA_MEDIABROWSER = check_setting_list(app.CFG, 'General', 'metadata_mediabrowser', ['0'] * 11, transform=int)
+        app.METADATA_PS3 = check_setting_list(app.CFG, 'General', 'metadata_ps3', ['0'] * 11, transform=int)
+        app.METADATA_WDTV = check_setting_list(app.CFG, 'General', 'metadata_wdtv', ['0'] * 11, transform=int)
+        app.METADATA_TIVO = check_setting_list(app.CFG, 'General', 'metadata_tivo', ['0'] * 11, transform=int)
+        app.METADATA_MEDE8ER = check_setting_list(app.CFG, 'General', 'metadata_mede8er', ['0'] * 11, transform=int)
+
+        app.METADATA_KODI = add_new_option(app.METADATA_KODI)
+        app.METADATA_KODI_12PLUS = add_new_option(app.METADATA_KODI_12PLUS)
+        app.METADATA_MEDIABROWSER = add_new_option(app.METADATA_MEDIABROWSER)
+        app.METADATA_PS3 = add_new_option(app.METADATA_PS3)
+        app.METADATA_WDTV = add_new_option(app.METADATA_WDTV)
+        app.METADATA_TIVO = add_new_option(app.METADATA_TIVO)
+        app.METADATA_MEDE8ER = add_new_option(app.METADATA_MEDE8ER)

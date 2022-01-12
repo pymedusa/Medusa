@@ -1836,6 +1836,17 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                         />
                          Season All Banner
                       </label>
+                       
+                      <label
+                        for="kodi_12plus_overwrite_nfo"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="kodi_12plus_overwrite_nfo"
+                          type="checkbox"
+                        />
+                         Overwrite Nfo
+                      </label>
                     </div>
                   </div>
                    
@@ -2132,6 +2143,17 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                           type="checkbox"
                         />
                          Season All Banner
+                      </label>
+                       
+                      <label
+                        for="kodi_overwrite_nfo"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="kodi_overwrite_nfo"
+                          type="checkbox"
+                        />
+                         Overwrite Nfo
                       </label>
                     </div>
                   </div>
@@ -2431,6 +2453,17 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                           type="checkbox"
                         />
                          Season All Banner
+                      </label>
+                       
+                      <label
+                        for="mediabrowser_overwrite_nfo"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="mediabrowser_overwrite_nfo"
+                          type="checkbox"
+                        />
+                         Overwrite Nfo
                       </label>
                     </div>
                   </div>
@@ -2737,6 +2770,17 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                           type="checkbox"
                         />
                          Season All Banner
+                      </label>
+                       
+                      <label
+                        for="wdtv_overwrite_nfo"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="wdtv_overwrite_nfo"
+                          type="checkbox"
+                        />
+                         Overwrite Nfo
                       </label>
                     </div>
                   </div>
@@ -3055,6 +3099,17 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                         />
                          Season All Banner
                       </label>
+                       
+                      <label
+                        for="tivo_overwrite_nfo"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="tivo_overwrite_nfo"
+                          type="checkbox"
+                        />
+                         Overwrite Nfo
+                      </label>
                     </div>
                   </div>
                    
@@ -3368,6 +3423,17 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                         />
                          Season All Banner
                       </label>
+                       
+                      <label
+                        for="mede8er_overwrite_nfo"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="mede8er_overwrite_nfo"
+                          type="checkbox"
+                        />
+                         Overwrite Nfo
+                      </label>
                     </div>
                   </div>
                    
@@ -3675,6 +3741,17 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                           type="checkbox"
                         />
                          Season All Banner
+                      </label>
+                       
+                      <label
+                        for="sony_ps3_overwrite_nfo"
+                      >
+                        <input
+                          class="float-left metadata_checkbox"
+                          id="sony_ps3_overwrite_nfo"
+                          type="checkbox"
+                        />
+                         Overwrite Nfo
                       </label>
                     </div>
                   </div>
