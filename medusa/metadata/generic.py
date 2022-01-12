@@ -65,7 +65,7 @@ class GenericMetadata(object):
 
         self.name = u'Generic'
         self._ep_nfo_extension = u'nfo'
-        self._show_metadata_filename = u'tvseason_all_bannershow.nfo'
+        self._show_metadata_filename = u'tvshow.nfo'
         self.fanart_name = u'fanart.jpg'
         self.poster_name = u'poster.jpg'
         self.banner_name = u'banner.jpg'

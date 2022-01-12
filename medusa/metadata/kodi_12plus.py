@@ -116,8 +116,25 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
         title.text = my_show['seriesname']
 
         if getattr(my_show, 'rating', None):
-            rating = etree.SubElement(tv_node, 'rating')
-            rating.text = text_type(my_show['rating'])
+            ratings = etree.SubElement(tv_node, 'ratings')
+            rating = etree.SubElement(ratings, 'rating')
+            rating.set('name', series_obj.identifier.indexer.slug)
+            rating.set('max', '10')
+            rating.set('default', 'true')
+            value = etree.SubElement(rating, 'value')
+            value.text = text_type(str(my_show['rating']))
+            votes = etree.SubElement(rating, 'votes')
+            votes.text = ''
+        
+            if series_obj.imdb_id and series_obj.imdb_rating and series_obj.imdb_votes:
+                rating_imdb = etree.SubElement(ratings, 'rating')
+                rating_imdb.set('name', 'imdb')
+                rating_imdb.set('max', '10')
+                rating_imdb.set('default', 'false')
+                value = etree.SubElement(rating_imdb, 'value')
+                value.text = series_obj.imdb_rating
+                votes = etree.SubElement(rating_imdb, 'votes')
+                votes.text = str(series_obj.imdb_votes)
 
         if getattr(my_show, 'firstaired', None):
             try:
@@ -318,8 +335,15 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
             # watched.text = 'false'
 
             if getattr(my_ep, 'rating', None):
-                rating = etree.SubElement(episode, 'rating')
-                rating.text = text_type(my_ep['rating'])
+                ratings = etree.SubElement(episode, 'ratings')
+                rating = etree.SubElement(ratings, 'rating')
+                rating.set('name', ep_obj.indexer_name)
+                rating.set('max', '10')
+                rating.set('default', 'true')
+                value = etree.SubElement(rating, 'value')
+                value.text = text_type(my_ep['rating'])
+                votes = etree.SubElement(rating, 'votes')
+                votes.text = ''
 
             if getattr(my_ep, 'writer', None) and isinstance(my_ep['writer'], string_types):
                 for writer in self._split_info(my_ep['writer']):
