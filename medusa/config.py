@@ -1287,7 +1287,7 @@ class ConfigMigrator(object):
             if len(metadata_prov) == 10:
                 metadata_prov.append(0)
             return metadata_prov
-        
+
         app.METADATA_KODI = check_setting_list(app.CFG, 'General', 'metadata_kodi', ['0'] * 11, transform=int)
         app.METADATA_KODI_12PLUS = check_setting_list(app.CFG, 'General', 'metadata_kodi_12plus', ['0'] * 11, transform=int)
         app.METADATA_MEDIABROWSER = check_setting_list(app.CFG, 'General', 'metadata_mediabrowser', ['0'] * 11, transform=int)

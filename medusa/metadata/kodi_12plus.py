@@ -125,7 +125,7 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
             value.text = text_type(str(my_show['rating']))
             votes = etree.SubElement(rating, 'votes')
             votes.text = ''
-        
+
             if series_obj.imdb_id and series_obj.imdb_rating and series_obj.imdb_votes:
                 rating_imdb = etree.SubElement(ratings, 'rating')
                 rating_imdb.set('name', 'imdb')
