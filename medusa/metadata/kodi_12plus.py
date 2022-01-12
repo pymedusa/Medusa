@@ -138,10 +138,8 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
 
         if getattr(my_show, 'firstaired', None):
             try:
-                year_text = text_type(datetime.datetime.strptime(my_show['firstaired'], dateFormat).year)
-                if year_text:
-                    year = etree.SubElement(tv_node, 'year')
-                    year.text = year_text
+                year = etree.SubElement(tv_node, 'premiered')
+                year.text = my_show['firstaired']
             except Exception:
                 pass
 
