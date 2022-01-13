@@ -351,7 +351,7 @@ const manageRoutes = [
             topMenu: 'manage',
             converted: true
         },
-        component: () => import('../components/change-indexer.vue')
+        component: () => import('../components/manage-change-indexer.vue')
     },
     {
         path: '/manage/backlogOverview',

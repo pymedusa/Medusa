@@ -36,7 +36,7 @@ import { mapState } from 'vuex';
 import { ChangeIndexerRow } from './manage';
 
 export default {
-    name: 'change-indexer',
+    name: 'manage-change-indexer',
     components: {
         ChangeIndexerRow
     },
