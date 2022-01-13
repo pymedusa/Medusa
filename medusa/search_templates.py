@@ -51,7 +51,6 @@ class SearchTemplates(object):
             self._generate_episode_search_pattern(exception)
             self._generate_season_search_pattern(exception)
 
-        self._clean()
         self.read_from_db()
 
         return self.templates
@@ -154,6 +153,10 @@ class SearchTemplates(object):
 
 
     def read_from_db(self):
+        """Read templates from db, and re-create the this.templates array."""
+        # Start with cleaning up any templates for scene_exceptions that have been removed.
+        self._clean()
+
         self.templates = []
         templates = self.main_db_con.select(
             'SELECT * '

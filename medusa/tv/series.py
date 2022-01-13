@@ -2547,7 +2547,7 @@ class Series(TV):
     @property
     def search_templates(self):
         """Return the search templates for this show."""
-        self._search_templates.generate()
+        self._search_templates.read_from_db()
         return self._search_templates
 
     @search_templates.setter
