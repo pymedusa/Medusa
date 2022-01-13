@@ -281,7 +281,7 @@ async def test_config_get_consts(http_client, create_url, auth_headers):
 @pytest.fixture
 def config_metadata(monkeypatch, app_config):
     # initialize metadata_providers
-    default_config = ['0'] * 10
+    default_config = ['0'] * 11
     providers = [
         (default_config, metadata.kodi),
         (default_config, metadata.kodi_12plus),

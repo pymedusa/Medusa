@@ -723,7 +723,7 @@ class Home(WebRoot):
     def refreshShow(self, showslug=None):
         # @TODO: Replace with status=refresh from PATCH /api/v2/show/{id}
         identifier = SeriesIdentifier.from_slug(showslug)
-        error, series_obj = Show.refresh(identifier.indexer.slug, identifier.id)
+        error, series_obj = Show.refresh(identifier.indexer.slug, identifier.id, force=True)
 
         # This is a show validation error
         if error is not None and series_obj is None:

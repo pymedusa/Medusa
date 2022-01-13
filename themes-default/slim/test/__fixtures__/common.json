@@ -878,7 +878,8 @@
                         "episodeThumbnails": true,
                         "seasonPosters": true,
                         "banner": true,
-                        "id": "kodi_12plus"
+                        "id": "kodi_12plus",
+                        "overwriteNfo": true
                     },
                     "kodi": {
                         "seasonAllBanner": false,
@@ -904,7 +905,8 @@
                         "episodeThumbnails": false,
                         "seasonPosters": false,
                         "banner": false,
-                        "id": "kodi"
+                        "id": "kodi",
+                        "overwriteNfo": false
                     },
                     "mediabrowser": {
                         "seasonAllBanner": false,
@@ -930,7 +932,8 @@
                         "episodeThumbnails": false,
                         "seasonPosters": false,
                         "banner": false,
-                        "id": "mediabrowser"
+                        "id": "mediabrowser",
+                        "overwriteNfo": false
                     },
                     "wdtv": {
                         "seasonAllBanner": false,
@@ -956,7 +959,8 @@
                         "episodeThumbnails": false,
                         "seasonPosters": false,
                         "banner": false,
-                        "id": "wdtv"
+                        "id": "wdtv",
+                        "overwriteNfo": false
                     },
                     "tivo": {
                         "seasonAllBanner": false,
@@ -982,7 +986,8 @@
                         "episodeThumbnails": false,
                         "seasonPosters": false,
                         "banner": false,
-                        "id": "tivo"
+                        "id": "tivo",
+                        "overwriteNfo": false
                     },
                     "mede8er": {
                         "seasonAllBanner": false,
@@ -1008,7 +1013,8 @@
                         "episodeThumbnails": false,
                         "seasonPosters": false,
                         "banner": false,
-                        "id": "mede8er"
+                        "id": "mede8er",
+                        "overwriteNfo": false
                     },
                     "sony_ps3": {
                         "seasonAllBanner": false,
@@ -1034,7 +1040,8 @@
                         "episodeThumbnails": false,
                         "seasonPosters": false,
                         "banner": false,
-                        "id": "sony_ps3"
+                        "id": "sony_ps3",
+                        "overwriteNfo": false
                     }
                 }
             },

@@ -450,6 +450,10 @@ inc_top.mako
     background-position: -742px 0;
 }
 
+.menu-icon-manage-change {
+    background-position: -758px 0;
+}
+
 .enable-daily-search-icon {
     background-image: url("../images/search_daily_8x8.png") !important;
     width: 8px;
