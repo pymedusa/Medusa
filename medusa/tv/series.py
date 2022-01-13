@@ -2401,7 +2401,9 @@ class Series(TV):
         data['config']['release']['requiredWordsExclude'] = bool(self.release_required_exclude)
         data['config']['airdateOffset'] = self.airdate_offset
         data['config']['showLists'] = self.show_lists
-        data['config']['searchTemplates'] = self.search_templates.to_json()
+        
+        if detailed:
+            data['config']['searchTemplates'] = self.search_templates.to_json()
 
         # Moved from detailed, as the home page, needs it to display the Xem icon.
         data['xemNumbering'] = numbering_tuple_to_dict(self.xem_numbering)
