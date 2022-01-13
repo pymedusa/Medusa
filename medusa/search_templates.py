@@ -86,7 +86,6 @@ class SearchTemplates(object):
             'season_search': 0
         }
         control_values = {
-            'template': template,
             'indexer': self.show_obj.indexer,
             'series_id': self.show_obj.series_id,
             'title': exception['title'],
@@ -94,6 +93,11 @@ class SearchTemplates(object):
             '`default`': 1,
             '`season_search`': 0
         }
+
+        logger.debug(
+            'Generating default search template for show {show}, creating template {template}, title {title}, season {season}',
+            {'show': self.show_obj.name, 'template': template, 'title': exception['title'], 'season': exception['season']}
+        )
 
         # use a custom update/insert method to get the data into the DB
         self.main_db_con.upsert('search_templates', new_values, control_values)
@@ -195,7 +199,7 @@ class SearchTemplates(object):
         # If the show name is a season scene exception, we want to use the episode number
         if title in [scene_exception.title for scene_exception in get_season_scene_exceptions(self.show_obj, season)]:
             # This is apparently a season exception, let's use the episode instead of absolute
-            ep = '%XE'
+            ep = '%0XE'
         else:
             ep = '%XAB' if self.show_obj.is_scene else '%AB'
 
@@ -208,7 +212,7 @@ class SearchTemplates(object):
         episode_string = '%SN' + self.search_separator
 
         episode_string += 'S%0XS' if self.show_obj.is_scene else 'S%0S'
-        episode_string += 'E%XE' if self.show_obj.is_scene else 'E%0E'
+        episode_string += 'E%0XE' if self.show_obj.is_scene else 'E%0E'
 
         return episode_string.strip()
 

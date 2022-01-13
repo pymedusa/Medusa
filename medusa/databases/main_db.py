@@ -1020,8 +1020,7 @@ class AddSearchTemplates(AddHistoryFDHFields):
             `season`	INTEGER,
             `enabled`	INTEGER DEFAULT 1,
             `default`	INTEGER DEFAULT 1,
-            `season_search` INTEGER DEFAULT 0,
-            UNIQUE(template, title, season));'''
+            `season_search` INTEGER DEFAULT 0);'''
         )
 
         log.info(u'Adding new templates field in the tv_shows table')
