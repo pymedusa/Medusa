@@ -2,36 +2,43 @@
     <div id="search-template-pattern">
         <div class="row">
             <div class="col-sm-12 content">
-                <div
-                    class="tooltip-wrapper"
-                    v-tooltip.right="{ content: tooltipContent }"
-                >
+                <div class="template-wrapper">
                     <span class="template-title">{{searchTemplate.title}}</span>
+                    <img src="images/info32.png" width="16" height="16" style="margin-bottom: 2px;" alt=""
+                         v-tooltip.right="{
+                             content: searchTemplate.season === -1 ? 'Show Exception' : `Season ${searchTemplate.season} Exception`
+                         }">
                     <img
                         v-if="!searchTemplate.default"
                         class="template-remove" src="images/no16.png"
                         @click="$emit('remove', searchTemplate)"
                     >
 
-                    <div class="template-body">
-                        <input
-                            :class="{ invalid: !validated }"
-                            type="text"
-                            name="search_pattern"
-                            disabled="disabled"
-                            v-model="searchTemplate.template"
-                            class="form-control-inline-max input-sm max-input350 search-pattern"
-                        >
+                    <div
+                        class="tooltip-wrapper-pattern"
+                        v-tooltip.right="{ content: tooltipContent }"
+                    >
+                        <div class="template-body">
+                            <input
+                                :class="{ invalid: !validated }"
+                                type="text"
+                                name="search_pattern"
+                                disabled="disabled"
+                                v-model="searchTemplate.template"
+                                class="form-control-inline-max input-sm max-input350 search-pattern"
+                            >
 
-                        <input type="checkbox" v-model="searchTemplate.enabled">
-                        <i
-                            class="show-template glyphicon"
-                            :class="`glyphicon-eye-${showExample ? 'close' : 'open'}`"
-                            @click="showExample = !showExample"
-                            title="Show template example"
-                        />
+                            <input type="checkbox" v-model="searchTemplate.enabled">
+                            <i
+                                class="show-template glyphicon"
+                                :class="`glyphicon-eye-${showExample ? 'close' : 'open'}`"
+                                @click="showExample = !showExample"
+                                title="Show template example"
+                            />
 
+                        </div>
                     </div>
+
                 </div>
 
                 <span
@@ -184,7 +191,7 @@ export default {
     }
 };
 </script>
-<style>
+<style scoped>
 .show-template {
     left: -8px;
     top: 4px;
@@ -202,9 +209,12 @@ export default {
     max-width: 338px;
 }
 
-.tooltip-wrapper {
-    float: left;
-    min-width: 340px;
+.template-wrapper {
+    max-width: 350px;
+}
+
+.tooltip-wrapper-pattern {
+    max-width: 350px;
 }
 
 .invalid {

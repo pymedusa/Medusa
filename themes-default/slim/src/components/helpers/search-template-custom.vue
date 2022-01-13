@@ -313,7 +313,7 @@ export default {
     }
 };
 </script>
-<style>
+<style scoped>
 .show-template {
     left: -8px;
     top: 4px;
@@ -332,7 +332,6 @@ export default {
 }
 
 .tooltip-wrapper {
-    float: left;
     min-width: 340px;
 }
 
