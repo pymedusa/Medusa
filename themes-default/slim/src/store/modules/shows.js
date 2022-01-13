@@ -249,7 +249,7 @@ const getters = {
             return show;
         });
     },
-    showsInLists: (state, getters, rootState) => {
+    showsInLists: (_, getters, rootState) => {
         const { layout, general } = rootState.config;
         const { show } = layout;
         const { showListOrder } = show;
@@ -435,25 +435,25 @@ const actions = {
                                 });
                         }));
                     }
+
+                    Promise.all(pageRequests)
+                    .then(() => {
+                        // Commit all the found shows to store.
+                        commit(ADD_SHOWS, newShows);
+
+                        // Update (namespaced) localStorage
+                        const namespace = rootState.config.system.webRoot ? `${rootState.config.system.webRoot}_` : '';
+                        try {
+                            localStorage.setItem(`${namespace}shows`, JSON.stringify(state.shows));
+                        } catch (error) {
+                            console.warn(error);
+                        }
+                        resolve();
+                    });
+
                 })
                 .catch(() => {
                     console.log('Could not retrieve a list of shows');
-                })
-                .finally(() => {
-                    Promise.all(pageRequests)
-                        .then(() => {
-                            // Commit all the found shows to store.
-                            commit(ADD_SHOWS, newShows);
-
-                            // Update (namespaced) localStorage
-                            const namespace = rootState.config.system.webRoot ? `${rootState.config.system.webRoot}_` : '';
-                            try {
-                                localStorage.setItem(`${namespace}shows`, JSON.stringify(state.shows));
-                            } catch (error) {
-                                console.warn(error);
-                            }
-                            resolve();
-                        });
                 })
             );
         });
