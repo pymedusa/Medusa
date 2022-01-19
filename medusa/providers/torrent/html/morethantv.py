@@ -191,6 +191,9 @@ class MoreThanTVProvider(TorrentProvider):
 
         # Get the login page, to retrieve the token
         response = self.session.get(self.urls['login'])
+        if not response:
+            return False
+        
         token = re.search(r'token".value="([^"]+)"', response.text)
         if not token:
             log.warning('Unable to get login token')
