@@ -11,6 +11,7 @@
 - Remove git username/password authentication. No longer supported by github. ([10144](https://github.com/pymedusa/Medusa/pull/10144))
 - Add option to allow for overwriting nfo files. ([10237](https://github.com/pymedusa/Medusa/pull/10237))
 - Improve kodi nfo file creation. ([10237](https://github.com/pymedusa/Medusa/pull/10237))
+- Add filter options to the manual search results table. ([10252](https://github.com/pymedusa/Medusa/pull/10252))
 
 #### Fixes
 - Fix displayShow search subtitle button ([10214](https://github.com/pymedusa/Medusa/pull/10214))

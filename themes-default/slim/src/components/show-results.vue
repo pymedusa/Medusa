@@ -10,23 +10,30 @@
                         <span>{{loadingMessage}}</span>
                     </template>
                 </div>
-                <vue-good-table v-show="show.id.slug"
-                                ref="vgt-show-results"
-                                :columns="columns"
-                                :rows="combinedResults"
-                                :search-options="{
-                                    enabled: false
-                                }"
-                                :sort-options="{
-                                    enabled: true,
-                                    initialSortBy: getSortBy('quality', 'desc')
-                                }"
-                                :column-filter-options="{
-                                    enabled: true
-                                }"
-                                :row-style-class="rowStyleClassFn"
-                                styleClass="vgt-table condensed"
-                                @on-sort-change="saveSorting"
+                <vue-good-table
+                    v-show="show.id.slug"
+                    ref="vgt-show-results"
+                    :columns="columns"
+                    :rows="combinedResults"
+                    :search-options="{
+                        enabled: false
+                    }"
+                    :sort-options="{
+                        enabled: true,
+                        initialSortBy: getSortBy('quality', 'desc')
+                    }"
+                    :column-filter-options="{
+                        enabled: true
+                    }"
+                    :row-style-class="rowStyleClassFn"
+                    styleClass="vgt-table condensed"
+                    :pagination-options="{
+                        enabled: true,
+                        perPage: getPaginationPerPage(),
+                        perPageDropdown
+                    }"
+                    @on-per-page-change="updatePaginationPerPage($event.currentPerPage)"
+                    @on-sort-change="saveSorting"
                 >
                     <template slot="table-row" slot-scope="props">
                         <span v-if="props.column.label === 'Provider'" class="align-center">
@@ -74,7 +81,6 @@
                     <div id="no-result" slot="emptystate">
                         No search results available
                     </div>
-
                 </vue-good-table>
             </div>
         </div>
@@ -124,27 +130,51 @@ export default {
     },
     data() {
         const { getCookie } = this;
+        const perPageDropdown = [25, 50, 100, 250, 500];
+        const getPaginationPerPage = () => {
+            const rows = getCookie('pagination-perPage');
+            if (!rows) {
+                return 50;
+            }
+
+            if (!perPageDropdown.includes(rows)) {
+                return 500;
+            }
+            return rows;
+        };
         return {
             columns: [{
                 label: 'Release',
                 field: 'release',
                 tdClass: 'release',
+                filterOptions: {
+                    enabled: true
+                },
                 hidden: getCookie('Release')
             },
             {
                 label: 'Group',
                 field: 'releaseGroup',
+                filterOptions: {
+                    enabled: true
+                },
                 hidden: getCookie('Group')
             },
             {
                 label: 'Provider',
                 field: 'provider.name',
+                filterOptions: {
+                    enabled: true
+                },
                 hidden: getCookie('Provider')
             },
             {
                 label: 'Quality',
                 field: 'quality',
                 type: 'number',
+                filterOptions: {
+                    customFilter: true
+                },
                 hidden: getCookie('Quality')
             },
             {
@@ -199,7 +229,9 @@ export default {
                 sortable: false
             }],
             loading: false,
-            loadingMessage: ''
+            loadingMessage: '',
+            perPageDropdown,
+            getPaginationPerPage
         };
     },
     async mounted() {
@@ -363,6 +395,11 @@ export default {
                 console.error(String(error));
                 evt.target.src = 'images/no16.png';
             }
+        },
+        updatePaginationPerPage(rows) {
+            const { setCookie } = this;
+            this.paginationPerPage = rows;
+            setCookie('pagination-perPage', rows);
         }
     },
     watch: {
