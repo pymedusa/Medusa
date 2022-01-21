@@ -135,6 +135,9 @@ class UTorrentAPI(GenericClient):
         """Send a 'setprop' request to uTorrent to set a label for the torrent, optionally - the show name."""
         torrent_new_label = result.series.name
 
+        # Sanitize the name so that utorrent can create the folder.
+        torrent_new_label = re.sub("[:'!~?°;$&*#@%]", '', torrent_new_label)
+
         if result.series.is_anime and app.TORRENT_LABEL_ANIME:
             label = app.TORRENT_LABEL_ANIME
         else:
