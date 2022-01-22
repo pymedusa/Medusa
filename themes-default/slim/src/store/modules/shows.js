@@ -52,6 +52,9 @@ const mutations = {
             ...show
         };
 
+        // Repair the searchTemplates
+        newShow.config.searchTemplates = show.config.searchTemplates ? show.config.searchTemplates : existingShow.config.searchTemplates;
+
         // Update state
         Vue.set(state.shows, state.shows.indexOf(existingShow), newShow);
         console.debug(`Merged ${newShow.title || newShow.indexer + String(newShow.id)}`, newShow);
@@ -68,7 +71,12 @@ const mutations = {
                     sceneNumbering,
                     ...showWithoutDetailed
                 } = newShow;
-                mergedShows.push({ ...existing, ...showWithoutDetailed });
+
+                // Repair searchTemplates.
+                const mergedShow = { ...existing, ...showWithoutDetailed };
+                mergedShow.config.searchTemplates = showWithoutDetailed.config.searchTemplates ? showWithoutDetailed.config.searchTemplates : existing.config.searchTemplates;
+
+                mergedShows.push(mergedShow);
             } else {
                 mergedShows.push(newShow);
             }

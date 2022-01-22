@@ -377,12 +377,21 @@ export default {
         defaultEpisodeTemplates() {
             const { searchTemplates } = this;
 
+            if (!searchTemplates) {
+                return [];
+            }
+
             return searchTemplates.filter(
                 template => template.default && !template.seasonSearch
             );
         },
         defaultSeasonTemplates() {
             const { searchTemplates } = this;
+
+            if (!searchTemplates) {
+                return [];
+            }
+
             return searchTemplates.filter(
                 template => template.default && template.seasonSearch
             );
@@ -390,6 +399,11 @@ export default {
 
         customTemplates() {
             const { searchTemplates } = this;
+
+            if (!searchTemplates) {
+                return [];
+            }
+
             return searchTemplates.filter(template => !template.default);
         },
         /**
