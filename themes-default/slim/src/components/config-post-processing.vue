@@ -2,13 +2,8 @@
     <div id="config">
         <div id="config-content">
             <form id="configForm" class="form-horizontal" @submit.prevent="save()">
-                <div id="config-components">
-                    <ul>
-                        <li><app-link href="#post-processing">Post-Processing</app-link></li>
-                        <li><app-link href="#episode-naming">Episode Naming</app-link></li>
-                        <li><app-link href="#metadata">Metadata</app-link></li>
-                    </ul>
-                    <div id="post-processing">
+                <vue-tabs>
+                    <v-tab key="post_processing" title="Post-Processing">
                         <div class="row component-group">
                             <div class="component-group-desc col-xs-12 col-md-2">
                                 <h3>Scheduled Post-Processing</h3>
@@ -212,9 +207,8 @@
                                 >
                             </div> <!-- /col -->
                         </div> <!-- /row -->
-                    </div><!-- /component-group1 //-->
-
-                    <div id="episode-naming">
+                    </v-tab>
+                    <v-tab key="Episode Naming" title="Episode Naming">
                         <div class="row component-group">
                             <div class="component-group-desc col-xs-12 col-md-2">
                                 <h3>Episode Naming</h3>
@@ -267,9 +261,8 @@
                                 >
                             </div>
                         </div>
-                    </div>
-
-                    <div id="metadata">
+                    </v-tab>
+                    <v-tab key="metadata" title="Metadata">
                         <div class="row component-group">
                             <div class="component-group-desc col-xs-12 col-md-2">
                                 <h3>Metadata</h3>
@@ -326,16 +319,19 @@
 
                             </div> <!-- end of col -->
                         </div> <!-- end of row -->
-                    </div> <!-- end of metatdata id -->
-
-                    <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">{{system.dataDir}}</span></b> </h6>
-                </div><!--/config-components//-->
+                    </v-tab>
+                    <v-tab key="guessit" title="Guessit">
+                        <test-guessit />
+                    </v-tab>
+                </vue-tabs>
+                <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">{{system.dataDir}}</span></b> </h6>
             </form>
         </div><!--/config-content//-->
     </div><!--/config//-->
 </template>
 <script>
 import { mapActions, mapState } from 'vuex';
+import { VueTabs, VTab } from 'vue-nav-tabs/dist/vue-tabs.js';
 import {
     AppLink,
     ConfigTextboxNumber,
@@ -343,7 +339,8 @@ import {
     ConfigTemplate,
     FileBrowser,
     NamePattern,
-    SelectList
+    SelectList,
+    TestGuessit
 } from './helpers';
 
 export default {
@@ -355,7 +352,10 @@ export default {
         ConfigTemplate,
         FileBrowser,
         NamePattern,
-        SelectList
+        SelectList,
+        TestGuessit,
+        VueTabs,
+        VTab
     },
     data() {
         return {
