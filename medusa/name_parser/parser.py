@@ -279,6 +279,12 @@ class NameParser(object):
         new_absolute_numbers = []
 
         ex_season = scene_exceptions.get_season_from_name(result.series, result.series_name) or result.season_number
+        if ex_season == None:
+            ex_season = 1
+            log.info(
+                "For the show {name} we could not parse a season number. We did match the title, so we'll asume season 1",
+                {'name': result.series.name}
+            )
 
         for episode_number in result.episode_numbers:
             season = ex_season
@@ -326,10 +332,10 @@ class NameParser(object):
         elif result.series.is_anime or result.is_anime:
             new_episode_numbers, new_season_numbers, new_absolute_numbers = self._parse_anime(result)
 
-        elif result.season_number is not None:
+        else:
             new_episode_numbers, new_season_numbers, new_absolute_numbers = self._parse_series(result)
 
-        else:
+        if not new_season_numbers and not new_episode_numbers:
             raise InvalidNameException('The result that was found ({result_name}) is not yet supported by Medusa '
                                        'and will be skipped. Sorry.'.format(result_name=result.original_name))
 
