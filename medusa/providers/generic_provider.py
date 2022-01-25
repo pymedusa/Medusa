@@ -666,6 +666,21 @@ class GenericProvider(object):
             'Episode': []
         }
 
+        # If show.use_templates is enabled, where using those instead of creating them here.
+        if episode.series.use_templates:
+            for template in episode.series.search_templates.templates:
+
+                # Only limit to episode search templates. And filter out disabled search templates.
+                if template.season_search or not template.enabled:
+                    continue
+
+                # Make sure we only use a season search template when searched for that season.
+                if episode.scene_season is not None and template.season != -1 and episode.scene_season != template.season:
+                    continue
+
+                search_string['Episode'].append(episode.formatted_search_string(template.template, title=template.title))
+            return [search_string]
+
         all_possible_show_names = episode.series.get_all_possible_names()
         if episode.scene_season is not None:
             all_possible_show_names = all_possible_show_names.union(
@@ -696,6 +711,18 @@ class GenericProvider(object):
         search_string = {
             'Season': []
         }
+
+        # If show.use_templates is enabled, where using those instead of creating them here.
+        if episode.series.use_templates:
+            for template in episode.series.search_templates.templates:
+                if not template.season_search or not template.enabled:
+                    continue
+
+                if episode.scene_season and template.season != -1 and episode.scene_season != template.season:
+                    continue
+
+                search_string['Season'].append(episode.formatted_search_string(template.template, title=template.title))
+            return [search_string]
 
         for show_name in episode.series.get_all_possible_names(season=episode.scene_season):
             episode_string = show_name + self.search_separator

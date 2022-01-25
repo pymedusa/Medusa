@@ -89,7 +89,6 @@ def build_name_cache(series_obj=None):
     """Build internal name cache.
 
     :param series_obj: Specify series to build name cache for, if None, just do all series
-    :param force: Force the build name cache. Do not depend on the scene_exception_refresh table.
     """
     def _cache_name(cache_series_obj):
         """Build the name cache for a single show."""

@@ -759,41 +759,6 @@ export default {
             return season.children;
         },
         /**
-         * Check if the season/episode combination exists in the scene numbering.
-         * @param {Object} episode - object.
-         * @returns {Object} with scene season and episodes mapped numbering.
-         */
-        getSceneNumbering(episode) {
-            const { show } = this;
-            const { sceneNumbering, xemNumbering } = show;
-
-            if (!show.config.scene) {
-                return { season: 0, episode: 0 };
-            }
-
-            // Manually configured scene numbering
-            if (sceneNumbering.length > 0) {
-                const mapped = sceneNumbering.filter(x => {
-                    return x.source.season === episode.season && x.source.episode === episode.episode;
-                });
-                if (mapped.length > 0) {
-                    return mapped[0].destination;
-                }
-            }
-
-            // Scene numbering downloaded from thexem.de.
-            if (xemNumbering.length > 0) {
-                const mapped = xemNumbering.filter(x => {
-                    return x.source.season === episode.season && x.source.episode === episode.episode;
-                });
-                if (mapped.length > 0) {
-                    return mapped[0].destination;
-                }
-            }
-
-            return { season: episode.scene.season || 0, episode: episode.scene.episode || 0 };
-        },
-        /**
          * Vue-js-modal requires a method, to pass an event to.
          * The event then can be used to assign the value of the episode.
          * @param {Object} event - vue js modal event

@@ -106,6 +106,10 @@
                                     <p style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</p>
                                 </config-toggle-slider>
 
+                                <config-toggle-slider experimental v-model="show.config.templates" label="Search templates" id="templates">
+                                    <span>enable advanced search templates<span v-if="selectedFormat"> in addition to the selected chosen format <strong>{{selectedFormat}}</strong></span></span>
+                                </config-toggle-slider>
+
                                 <config-toggle-slider v-model="show.config.seasonFolders" label="Season" id="season_folders">
                                     <span>group episodes by season folder (disable to store in a single folder)</span>
                                 </config-toggle-slider>
@@ -192,6 +196,18 @@
                             </fieldset>
                         </div>
                     </v-tab>
+                    <v-tab v-if="show.config.templates" title="Search Templates">
+                        <div class="component-group">
+                            <h3>Search Templates</h3>
+                            <p>If you would like to have more control over the searches thrown at your torrent and usenet indexers, you can enable/disable and even add search templates.</p>
+                            <fieldset class="component-group-list">
+                                <search-template-container
+                                    v-if="show.config.templates"
+                                    v-bind="{show, format: selectedFormat}"
+                                />
+                            </fieldset>
+                        </div>
+                    </v-tab>
                 </vue-tabs>
 
                 <br>
@@ -223,6 +239,7 @@ import {
     FileBrowser,
     LanguageSelect,
     QualityChooser,
+    SearchTemplateContainer,
     SelectList
 } from './helpers';
 
@@ -245,7 +262,8 @@ export default {
         QualityChooser,
         SelectList,
         VueTabs,
-        VTab
+        VTab,
+        SearchTemplateContainer
     },
     metaInfo() {
         if (!this.show || !this.show.title) {
@@ -352,6 +370,11 @@ export default {
             }
 
             return arrayUnique(globalRequired.concat(showRequired));
+        },
+        selectedFormat() {
+            const { show } = this;
+            const { config } = show;
+            return ['anime', 'sports', 'airByDate'].find(item => config[item]);
         }
     },
     created() {
@@ -414,7 +437,9 @@ export default {
                         allowed: showConfig.qualities.allowed
                     },
                     airdateOffset: showConfig.airdateOffset,
-                    showLists: showConfig.showLists
+                    showLists: showConfig.showLists,
+                    templates: showConfig.templates,
+                    searchTemplates: showConfig.searchTemplates
                 },
                 language: show.language
             };
