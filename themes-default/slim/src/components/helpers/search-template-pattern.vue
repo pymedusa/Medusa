@@ -341,6 +341,21 @@ export default {
     margin-top: 2px;
 }
 
+.template-remove:hover {
+    animation-name: spin;
+    animation-duration: 500ms;
+    animation-timing-function: ease-out;
+}
+
+@keyframes spin {
+    from {
+        transform:rotate(0deg);
+    }
+    to {
+        transform:rotate(180deg);
+    }
+}
+
 .template-body {
     display: flex;
 }
