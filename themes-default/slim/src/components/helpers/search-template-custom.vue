@@ -471,6 +471,7 @@ export default {
     opacity: 0.8;
     border-radius: 5px;
 }
+
 .pattern {
     position: relative;
 }

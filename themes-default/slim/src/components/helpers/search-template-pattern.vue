@@ -331,7 +331,7 @@ export default {
 }
 
 .template-title {
-    padding: 0px 0 3px 5px;
+    padding: 0 0 3px 5px;
     display: inline-block;
 }
 
@@ -349,10 +349,11 @@ export default {
 
 @keyframes spin {
     from {
-        transform:rotate(0deg);
+        transform: rotate(0deg);
     }
+
     to {
-        transform:rotate(180deg);
+        transform: rotate(180deg);
     }
 }
 

@@ -490,7 +490,8 @@ export default {
     z-index: 10;
     opacity: 0.6;
 }
+
 .move-down {
-    transform: translatey(10px);
+    transform: translateY(10px);
 }
 </style>
