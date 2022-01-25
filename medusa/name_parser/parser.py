@@ -321,7 +321,7 @@ class NameParser(object):
 
         # Sanitize the episode title.
         episode_title = episode_title.lower()
-        if 'special' in episode_title:
+        if episode_title.startswith('special'):
             episode_title = episode_title.split('special')[-1].strip()
 
         all_episodes = result.series.get_all_episodes(season=0)
