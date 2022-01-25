@@ -306,8 +306,8 @@ class NameParser(object):
 
         return new_episode_numbers, new_season_numbers, new_absolute_numbers
 
-
-    def _parse_special(self, result):
+    @staticmethod
+    def _parse_special(result):
         new_episode_numbers = []
         new_season_numbers = []
         
