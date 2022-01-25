@@ -251,7 +251,7 @@ class SearchTemplates(object):
 
         return season_search_string
 
-    def remove(self):
+    def remove_custom(self):
         """Remove all custom templates for this show."""
         self.main_db_con.action("""
             DELETE from search_templates
@@ -270,7 +270,7 @@ class SearchTemplates(object):
         Add/Remote/Update custom templates.
         """
         self.templates = []
-        self.remove()
+        self.remove_custom()
         for template in templates:
             # TODO: add validation
             # Check if the scene exception still exists in db
