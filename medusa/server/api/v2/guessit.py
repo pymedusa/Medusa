@@ -2,8 +2,8 @@
 """Request handler for statistics."""
 from __future__ import unicode_literals
 
-from collections import defaultdict
 import guessit
+
 from medusa.server.api.v2.base import BaseRequestHandler
 
 
@@ -27,5 +27,5 @@ class GuessitHandler(BaseRequestHandler):
             return self._bad_request('Missing release name to guess')
 
         guess = guessit.guessit(release)
-        
+
         return self._ok(data=dict(guess))

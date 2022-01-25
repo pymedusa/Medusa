@@ -1505,7 +1505,7 @@ class Series(TV):
 
         if not sql_results:
             log.debug(u'{id}: Unable to find the show in the database',
-                     {'id': self.series_id})
+                      {'id': self.series_id})
             return
         else:
             self.show_id = int(sql_results[0]['show_id'] or 0)
@@ -2401,7 +2401,7 @@ class Series(TV):
         data['config']['release']['requiredWordsExclude'] = bool(self.release_required_exclude)
         data['config']['airdateOffset'] = self.airdate_offset
         data['config']['showLists'] = self.show_lists
-        
+
         if detailed:
             data['config']['searchTemplates'] = self.search_templates.to_json()
 

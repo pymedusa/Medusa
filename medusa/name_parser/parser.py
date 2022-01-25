@@ -310,11 +310,11 @@ class NameParser(object):
     def _parse_special(result):
         new_episode_numbers = []
         new_season_numbers = []
-        
+
         episode_title = result.guess.get('episode_title')
         if not episode_title:
             log.info(
-                "{name}: This episode is marked as a special. We could not find an episode title. And we need that to map it to an episode in the library.",
+                '{name}: This episode is marked as a special. We could not find an episode title. And we need that to map it to an episode in the library.',
                 {'name': result.series.name}
             )
             return new_episode_numbers, new_season_numbers
@@ -329,7 +329,7 @@ class NameParser(object):
             if special_episode.name.lower() == episode_title:
                 new_season_numbers.append(0)
                 new_episode_numbers.append(special_episode.episode)
-                return new_episode_numbers, new_season_numbers 
+                return new_episode_numbers, new_season_numbers
 
         return [], []
 

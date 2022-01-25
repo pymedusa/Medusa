@@ -996,6 +996,7 @@ class AddHistoryFDHFields(AddCustomLogs):
 
         self.inc_minor_version()
 
+
 class AddSearchTemplates(AddHistoryFDHFields):
     """Create a new table search_templates in main.db."""
 
@@ -1008,10 +1009,10 @@ class AddSearchTemplates(AddHistoryFDHFields):
     def execute(self):
         utils.backup_database(self.connection.path, self.connection.version)
 
-        log.info(u"Creating a new table search_templates in the main.db database.")
+        log.info(u'Creating a new table search_templates in the main.db database.')
 
         self.connection.action(
-            '''CREATE TABLE "search_templates" (
+            """CREATE TABLE "search_templates" (
             `search_template_id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
             `template`	TEXT,
             `title`     TEXT,
@@ -1020,7 +1021,7 @@ class AddSearchTemplates(AddHistoryFDHFields):
             `season`	INTEGER,
             `enabled`	INTEGER DEFAULT 1,
             `default`	INTEGER DEFAULT 1,
-            `season_search` INTEGER DEFAULT 0);'''
+            `season_search` INTEGER DEFAULT 0);"""
         )
 
         log.info(u'Adding new templates field in the tv_shows table')

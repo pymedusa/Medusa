@@ -241,6 +241,7 @@ def update_scene_exceptions(series_obj, scene_exceptions):
 
     refresh_exceptions_cache(series_obj)
 
+
 def retrieve_exceptions(force=False, exception_type=None):
     """
     Look up the exceptions from all sources.

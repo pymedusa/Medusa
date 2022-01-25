@@ -106,7 +106,7 @@
                                     <p style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</p>
                                 </config-toggle-slider>
 
-                                <config-toggle-slider v-model="show.config.templates" label="Search templates" id="templates">
+                                <config-toggle-slider experimental v-model="show.config.templates" label="Search templates" id="templates">
                                     <span>enable advanced search templates<span v-if="selectedFormat"> in addition to the selected chosen format <strong>{{selectedFormat}}</strong></span></span>
                                 </config-toggle-slider>
 

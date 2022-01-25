@@ -16,7 +16,10 @@ logger.logger.addHandler(logging.NullHandler())
 
 SearchTemplate = namedtuple('Template', 'id, template, title, series, season, enabled, default, season_search')
 
+
 class SearchTemplates(object):
+    """Search template manager for a show."""
+
     def __init__(self, show_obj=None):
         """Initialize a search template object."""
         self.show_obj = show_obj
@@ -31,16 +34,15 @@ class SearchTemplates(object):
         Load existing search templates from main.db search_templates.
         Add default search templates from scene_exceptions when needed.
         """
-
         assert self.show_obj, 'You need to configure a show object before generating exceptions.'
 
         # Create the default templates. Don't add them when they are already in the list
         if not self.show_obj.aliases:
             scene_exceptions = self.main_db_con.select(
-            'SELECT season, title '
-            'FROM scene_exceptions '
-            'WHERE indexer = ? AND series_id = ? AND title IS NOT ?',
-            [self.show_obj.indexer, self.show_obj.series_id, self.show_obj.name]
+                'SELECT season, title '
+                'FROM scene_exceptions '
+                'WHERE indexer = ? AND series_id = ? AND title IS NOT ?',
+                [self.show_obj.indexer, self.show_obj.series_id, self.show_obj.name]
             ) or []
         else:
             scene_exceptions = [{'season': exception.season, 'title': exception.title} for exception in self.show_obj.aliases]
@@ -70,9 +72,8 @@ class SearchTemplates(object):
             self.show_obj.name,
         ])
 
-
     def _generate_episode_search_pattern(self, exception):
-        # Add the default search template pattern to db
+        """Insert default search template into db."""
         template = self._get_episode_search_strings(exception['title'], exception['season'])
 
         new_values = {
@@ -102,7 +103,7 @@ class SearchTemplates(object):
         self.main_db_con.upsert('search_templates', new_values, control_values)
 
     def _generate_season_search_pattern(self, exception):
-        # Add the default search template to db
+        """Add the default search template to db."""
         template = self._get_season_search_strings(exception['title'])
 
         new_values = {
@@ -129,7 +130,6 @@ class SearchTemplates(object):
 
     def save(self, template):
         """Validate template and save to db."""
-
         new_values = {
             'template': template['template'],
             'title': template['title'],
@@ -150,7 +150,6 @@ class SearchTemplates(object):
 
         # use a custom update/insert method to get the data into the DB
         self.main_db_con.upsert('search_templates', new_values, control_values)
-
 
     def read_from_db(self):
         """Read templates from db, and re-create the this.templates array."""
