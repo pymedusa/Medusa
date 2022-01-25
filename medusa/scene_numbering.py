@@ -358,7 +358,7 @@ def get_indexer_numbering(series_obj, scene_episode, scene_season=None):
     """
     # Try to get a mapping from scene_numbering.
     season, episode = get_custom_numbering_from_scene(series_obj, scene_episode, scene_season)
-    if all((season, episode)):
+    if all((season is not None, episode)):
         return season, episode
 
     if series_obj.is_scene:

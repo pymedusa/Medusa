@@ -148,6 +148,7 @@ export default {
                 });
                 if (mapped.length > 0) {
                     this.sceneSeason = mapped[0].destination.season;
+                    this.sceneEpisode = mapped[0].destination.episode;
                     this.numberingFrom = 'custom';
                 }
             } else if (xemNumbering.length > 0) {
@@ -157,6 +158,7 @@ export default {
                 });
                 if (mapped.length > 0) {
                     this.sceneSeason = mapped[0].destination.season;
+                    this.sceneEpisode = mapped[0].destination.episode;
                     this.numberingFrom = 'xem';
                 }
             }

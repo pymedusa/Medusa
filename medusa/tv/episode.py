@@ -735,7 +735,7 @@ class Episode(TV):
         scene_mapping = get_scene_numbering(
             self.series, self.season, self.episode
         )
-        if all(scene_mapping):
+        if all([scene_mapping[0] is not None, scene_mapping[1]]):
             self.scene_season = scene_mapping[0]
             self.scene_episode = scene_mapping[1]
 
