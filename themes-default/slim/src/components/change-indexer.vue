@@ -130,7 +130,7 @@ export default {
     watch: {
         queueitems(queueitems) {
             const { allShows } = this;
-            for (let show of allShows) {
+            for (const show of allShows) {
                 if (!('changeStatus' in show)) {
                     continue;
                 }
