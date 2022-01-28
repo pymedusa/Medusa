@@ -361,8 +361,12 @@ class QueueItemChangeIndexer(ShowQueueItem):
         # Small helper, to reduce code for messaging
         def message_step(new_step):
             step.append(new_step)
+
             ws.Message('QueueItemShow', dict(
-                step=step, **self.to_json
+                step=step,
+                oldShow=self.old_show.to_json() if self.old_show else {},
+                newShow=self.new_show.to_json() if self.new_show else {},
+                **self.to_json
             )).push()
 
         ShowQueueItem.run(self)

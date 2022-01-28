@@ -63,7 +63,8 @@ export default {
     },
     computed: {
         ...mapState({
-            shows: state => state.shows.shows
+            shows: state => state.shows.shows,
+            queueitems: state => state.shows.queueitems
         }),
         checkedShows() {
             const { filteredShows } = this;
@@ -122,6 +123,22 @@ export default {
                         'Error while trying to change shows indexer',
                         `Error: ${error}`
                     );
+                }
+            }
+        }
+    },
+    watch: {
+        queueitems(queueitems) {
+            const { allShows } = this;
+            for (let show of allShows) {
+                if (!('changeStatus' in show)) {
+                    continue;
+                }
+
+                const foundItem = queueitems.find(item => item.identifier === show.changeStatus.identifier);
+                if (foundItem && foundItem.oldShow.id.slug === show.id.slug && foundItem.success !== null) {
+                    // Found a queueItem for this show. Let's search for a new show. And replace it.
+                    allShows.find(s => s.id.slug === foundItem.oldShow.id.slug).id = foundItem.newShow.id;
                 }
             }
         }
