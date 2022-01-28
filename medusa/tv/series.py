@@ -1635,6 +1635,9 @@ class Series(TV):
 
         self._save_externals_to_db()
 
+        # Load search templates
+        self.init_search_templates()
+
     def load_imdb_info(self):
         """Load all required show information from IMDb with ImdbPie."""
         imdb_api = Imdb()
