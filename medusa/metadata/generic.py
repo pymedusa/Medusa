@@ -17,6 +17,7 @@ from medusa.helper.metadata import get_image
 from medusa.indexers.config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE
 from medusa.indexers.exceptions import (IndexerEpisodeNotFound, IndexerException,
                                         IndexerSeasonNotFound, IndexerShowNotFound)
+from medusa.indexers.utils import indexer_name_mapping
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.exceptions import RequestException
@@ -968,8 +969,11 @@ class GenericMetadata(object):
             with io.open(metadata_path, 'rb') as xmlFileObj:
                 showXML = etree.ElementTree(file=xmlFileObj)
 
-            if (showXML.findtext('title') is None or
-                    (showXML.findtext('tvdbid') is None and showXML.findtext('id') is None)):
+            uniqueid = showXML.find("uniqueid[@default='true']")
+            if (
+                showXML.findtext('title') is None or
+                (showXML.findtext('tvdbid') is None and showXML.findtext('id') is None and showXML.find("uniqueid[@default='true']") is None)
+            ):
                 log.debug(
                     'Invalid info in tvshow.nfo (missing name or id): {0} {1} {2}',
                     showXML.findtext('title'), showXML.findtext('tvdbid'), showXML.findtext('id'),
@@ -978,35 +982,40 @@ class GenericMetadata(object):
 
             name = showXML.findtext('title')
 
-            if showXML.findtext('tvdbid'):
-                indexer_id = int(showXML.findtext('tvdbid'))
-            elif showXML.findtext('id'):
-                indexer_id = int(showXML.findtext('id'))
+            if uniqueid is not None and uniqueid.get('type') and indexer_name_mapping.get(uniqueid.get('type')):
+                indexer = indexer_name_mapping.get(uniqueid.get('type'))
+                indexer_id = int(uniqueid.text)
             else:
-                log.warning('Empty <id> or <tvdbid> field in NFO, unable to find a ID')
-                return empty_return
+                # For legacy nfo's
+                if showXML.findtext('tvdbid'):
+                    indexer_id = int(showXML.findtext('tvdbid'))
+                elif showXML.findtext('id'):
+                    indexer_id = int(showXML.findtext('id'))
+                else:
+                    log.warning('Empty <id> or <tvdbid> field in NFO, unable to find a ID')
+                    return empty_return
 
-            if indexer_id is None:
-                log.warning('Invalid Indexer ID ({0}), not using metadata file',
-                            indexer_id)
-                return empty_return
+                if indexer_id is None:
+                    log.warning('Invalid Indexer ID ({0}), not using metadata file',
+                                indexer_id)
+                    return empty_return
 
-            indexer = None
-            if showXML.findtext('episodeguide/url'):
-                epg_url = showXML.findtext('episodeguide/url').lower()
-                if str(indexer_id) in epg_url:
-                    if 'thetvdb.com' in epg_url:
-                        indexer = INDEXER_TVDBV2
-                    elif 'tvmaze.com' in epg_url:
-                        indexer = INDEXER_TVMAZE
-                    elif 'themoviedb.org' in epg_url:
-                        indexer = INDEXER_TMDB
-                    elif 'tvrage' in epg_url:
-                        log.warning(
-                            'Invalid Indexer ID ({0}), not using metadata file because it has TVRage info',
-                            indexer_id
-                        )
-                        return empty_return
+                indexer = None
+                if showXML.findtext('episodeguide/url'):
+                    epg_url = showXML.findtext('episodeguide/url').lower()
+                    if str(indexer_id) in epg_url:
+                        if 'thetvdb.com' in epg_url:
+                            indexer = INDEXER_TVDBV2
+                        elif 'tvmaze.com' in epg_url:
+                            indexer = INDEXER_TVMAZE
+                        elif 'themoviedb.org' in epg_url:
+                            indexer = INDEXER_TMDB
+                        elif 'tvrage' in epg_url:
+                            log.warning(
+                                'Invalid Indexer ID ({0}), not using metadata file because it has TVRage info',
+                                indexer_id
+                            )
+                            return empty_return
 
         except Exception as error:
             log.warning(
