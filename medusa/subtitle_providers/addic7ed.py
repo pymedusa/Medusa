@@ -1,16 +1,20 @@
 # -*- coding: utf-8 -*-
+"""Custom subliminal addic7ed.com subtitle provider module."""
+
+import hashlib
 import logging
 import re
-import hashlib
 
-from babelfish import Language, language_converters
+from babelfish import Language
+
 from guessit import guessit
+
 from requests import Session
 
-from subliminal.providers import ParserBeautifulSoup, Provider
 from subliminal.cache import SHOW_EXPIRATION_TIME, region
-from subliminal.exceptions import AuthenticationError, ConfigurationError, DownloadLimitExceeded
+from subliminal.exceptions import ConfigurationError, DownloadLimitExceeded
 from subliminal.matches import guess_matches
+from subliminal.providers import ParserBeautifulSoup, Provider
 from subliminal.subtitle import Subtitle, fix_line_ending
 from subliminal.utils import sanitize
 from subliminal.video import Episode
@@ -28,6 +32,7 @@ series_year_re = re.compile(r'^(?P<series>[ \w\'.:(),*&!?-]+?)(?: \((?P<year>\d{
 
 class Addic7edSubtitle(Subtitle):
     """Addic7ed Subtitle."""
+
     provider_name = 'addic7ed'
 
     def __init__(self, language, hearing_impaired, page_link, series, season, episode, title, year, version,
@@ -43,10 +48,12 @@ class Addic7edSubtitle(Subtitle):
 
     @property
     def id(self):
+        """Get id."""
         return self.download_link
 
     @property
     def info(self):
+        """Get info."""
         return '{series}{yopen}{year}{yclose} s{season:02d}e{episode:02d}{topen}{title}{tclose}{version}'.format(
             series=self.series, season=self.season, episode=self.episode, title=self.title, year=self.year or '',
             version=self.version, yopen=' (' if self.year else '', yclose=')' if self.year else '',
@@ -54,6 +61,7 @@ class Addic7edSubtitle(Subtitle):
         )
 
     def get_matches(self, video):
+        """Get matches."""
         # series name
         matches = guess_matches(video, {
             'title': self.series,
@@ -76,6 +84,7 @@ class Addic7edSubtitle(Subtitle):
 
 class Addic7edProvider(Provider):
     """Addic7ed Provider."""
+
     languages = {Language('por', 'BR')} | {Language(l) for l in [
         'ara', 'aze', 'ben', 'bos', 'bul', 'cat', 'ces', 'dan', 'deu', 'ell', 'eng', 'eus', 'fas', 'fin', 'fra', 'glg',
         'heb', 'hrv', 'hun', 'hye', 'ind', 'ita', 'jpn', 'kor', 'mkd', 'msa', 'nld', 'nor', 'pol', 'por', 'ron', 'rus',
@@ -95,6 +104,7 @@ class Addic7edProvider(Provider):
         self.cookies = {'wikisubtitlesuser': self.username, 'wikisubtitlespass': self.password}
 
     def initialize(self):
+        """Initialize Addic7edProvider provider."""
         self.session = Session()
         self.session.headers['User-Agent'] = self.user_agent
 
@@ -104,14 +114,15 @@ class Addic7edProvider(Provider):
             self.logged_in = True
 
     def terminate(self):
+        """Terminate."""
         # logout
         logger.debug('Logged out')
         self.logged_in = False
 
-
     @region.cache_on_arguments(expiration_time=SHOW_EXPIRATION_TIME)
     def _get_show_ids(self):
         """Get the ``dict`` of show ids per series by querying the `shows.php` page.
+
         :return: show id per series, lower case and without quotes.
         :rtype: dict
         """
@@ -141,6 +152,7 @@ class Addic7edProvider(Provider):
     @region.cache_on_arguments(expiration_time=SHOW_EXPIRATION_TIME)
     def _search_show_id(self, series, year=None):
         """Search the show id from the `series` and `year`.
+
         :param str series: series of the episode.
         :param year: year of the series, if any.
         :type year: int
@@ -148,7 +160,7 @@ class Addic7edProvider(Provider):
         :rtype: int
         """
         # addic7ed doesn't support search with quotes
-        series = series.replace('\'', ' ')
+        series = series.replace("'", ' ')
 
         # build the params
         series_year = '%s %d' % (series, year) if year is not None else series
@@ -166,7 +178,7 @@ class Addic7edProvider(Provider):
         if not suggestion:
             logger.warning('Show id not found: no suggestion')
             return None
-        if not sanitize(suggestion[0].i.text.replace('\'', ' ')) == sanitize(series_year):
+        if not sanitize(suggestion[0].i.text.replace("'", ' ')) == sanitize(series_year):
             logger.warning('Show id not found: suggestion does not match')
             return None
         show_id = int(suggestion[0]['href'][6:])
@@ -176,6 +188,7 @@ class Addic7edProvider(Provider):
 
     def get_show_id(self, series, year=None, country_code=None):
         """Get the best matching show id for `series`, `year` and `country_code`.
+
         First search in the result of :meth:`_get_show_ids` and fallback on a search with :meth:`_search_show_id`.
         :param str series: series of the episode.
         :param year: year of the series, if any.
@@ -212,6 +225,7 @@ class Addic7edProvider(Provider):
         return show_id
 
     def query(self, show_id, series, season, year=None, country=None):
+        """Query provider to get all subitles for a specific show + season."""
         # get the page of the season of the show
         logger.info('Getting the page of show id %d, season %d', show_id, season)
         r = self.session.get(self.server_url + 'show/%d' % show_id, params={'season': season}, timeout=60, cookies=self.cookies)
@@ -257,6 +271,7 @@ class Addic7edProvider(Provider):
         return subtitles
 
     def list_subtitles(self, video, languages):
+        """List Subitles."""
         # lookup show_id
         titles = [video.series] + video.alternative_series
         show_id = None
@@ -277,6 +292,7 @@ class Addic7edProvider(Provider):
         return []
 
     def download_subtitle(self, subtitle):
+        """Download subtitles."""
         # download the subtitle
         logger.info('Downloading subtitle %r', subtitle)
         r = self.session.get(self.server_url + subtitle.download_link, headers={'Referer': subtitle.page_link},
