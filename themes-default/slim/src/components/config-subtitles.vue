@@ -130,7 +130,18 @@
 
                             <div class="col-xs-12 col-md-10">
                                 <fieldset class="component-group-list" style="margin-left: 50px; margin-top:36px;">
-                                    <config-textbox v-model="subtitles.providerLogins.addic7ed.user" label="Addic7ed User Name" id="addic7ed_username" />
+                                    <config-textbox v-model="subtitles.providerLogins.addic7ed.user" label="Addic7ed User ID" id="addic7ed_username" />
+                                    <div v-if="subtitles.providerLogins.addic7ed.user" style="margin-bottom: 4rem;">
+                                        <p style="color: red">To bypass addic7ed captcha protection we authenticate using a set cookie. The cookie requires your user id and password.</p>
+                                        <span>You can find your user id by following these steps</span>
+                                        <ul>
+                                            <li>Navigate and login on addic7ed.com</li>
+                                            <li>Click on My Profile</li>
+                                            <li>Click on your own username</li>
+                                            <li>Your user id should now be visible in the address bar</li>
+                                            <li>For example: https://www.addic7ed.com/user/12345</li>
+                                        </ul>
+                                    </div>
                                     <config-textbox type="password" v-model="subtitles.providerLogins.addic7ed.pass" label="Addic7ed Password" id="addic7ed_password" />
 
                                     <config-textbox v-model="subtitles.providerLogins.opensubtitles.user" label="Opensubtitles User Name" id="opensubtitles_username" />
