@@ -20,6 +20,7 @@
 - Fix mass update status page, start a new snatch when changing status to failed. ([10213](https://github.com/pymedusa/Medusa/pull/10213))
 - Fix changing process method in manual postprocessing. ([10220](https://github.com/pymedusa/Medusa/pull/10220))
 - Fix saving season posters / banners when using tvdb ([10251](https://github.com/pymedusa/Medusa/pull/10251))
+- Fix Addic7ed.com subtitle provider ([10312](https://github.com/pymedusa/Medusa/pull/10312))
 
 -----
 
