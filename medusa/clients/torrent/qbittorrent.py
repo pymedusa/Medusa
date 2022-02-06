@@ -420,7 +420,7 @@ class QBittorrentAPI(GenericClient):
         client_status.resource = basename(torrent['content_path'])
 
         log.info('Qbittorrent torrent: [{name}] using state: [{state}]', {
-            'name': torrent['name'], 'state': torrent['state']
+            'name': client_status.resource, 'state': torrent['state']
         })
 
         return client_status
