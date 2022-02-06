@@ -210,7 +210,7 @@ class PostProcessor(object):
         files = self._search_files(file_path, subfolders=subfolders)
 
         # file path to the video file that is being processed (without extension)
-        processed_file_name = os.path.splitext(os.path.basename(file_path))[0].lower() + '.'
+        processed_file_name = os.path.splitext(os.path.basename(file_path))[0].lower()
 
         processed_names = (processed_file_name,)
         processed_names += tuple((_f for _f in (self._rar_basename(file_path, files),) if _f))
