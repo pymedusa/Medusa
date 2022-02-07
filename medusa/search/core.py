@@ -23,6 +23,7 @@ from medusa import (
     ui,
 )
 from medusa.clients import torrent
+from medusa.clients.rss import rss
 from medusa.clients.nzb import (
     nzbget,
     sab,
@@ -140,6 +141,8 @@ def snatch_result(result):
     if result.result_type in (u'nzb', u'nzbdata'):
         if app.NZB_METHOD == u'blackhole':
             result_downloaded = _download_result(result)
+        elif app.NZB_METHOD == u'rss':
+            result_downloaded = rss().add_result_to_feed(result)
         elif app.NZB_METHOD == u'sabnzbd':
             result_downloaded = sab.send_nzb(result)
         elif app.NZB_METHOD == u'nzbget':
@@ -154,6 +157,8 @@ def snatch_result(result):
         # Handle SAVE_MAGNET_FILE
         if app.TORRENT_METHOD == u'blackhole':
             result_downloaded = _download_result(result)
+        elif app.TORRENT_METHOD == u'rss':
+            result_downloaded = rss().add_result_to_feed(result)
         else:
             if not result.content and not result.url.startswith(u'magnet:'):
                 if result.provider.login():

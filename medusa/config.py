@@ -188,6 +188,29 @@ def change_TORRENT_DIR(torrent_dir):
     return True
 
 
+def change_RSS_DIR(rss_dir):
+    """
+    Change rss directory
+
+    :param: New rss directory
+    :return: Bool representing success
+    """
+    if not rss_dir:
+        app._RSS_DIR = ''
+        return True
+
+    app_rss_dir = os.path.normpath(app._RSS_DIR) if app._RSS_DIR else None
+
+    if app_rss_dir != os.path.normpath(rss_dir):
+        if helpers.make_dir(rss_dir):
+            app._RSS_DIR = os.path.normpath(rss_dir)
+            log.info(u'Changed rss dir to {0}', rss_dir)
+        else:
+            return False
+
+    return True
+
+
 def change_TV_DOWNLOAD_DIR(tv_download_dir):
     """
     Change TV_DOWNLOAD directory (used by postprocessor)

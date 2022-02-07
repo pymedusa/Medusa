@@ -626,9 +626,9 @@ class Application(object):
             app.USE_NZBS = bool(check_setting_int(app.CFG, 'General', 'use_nzbs', 0))
             app.USE_TORRENTS = bool(check_setting_int(app.CFG, 'General', 'use_torrents', 1))
 
-            app.NZB_METHOD = check_setting_str(app.CFG, 'General', 'nzb_method', 'blackhole', valid_values=('blackhole', 'sabnzbd', 'nzbget'))
+            app.NZB_METHOD = check_setting_str(app.CFG, 'General', 'nzb_method', 'blackhole', valid_values=('blackhole', 'rss', 'sabnzbd', 'nzbget'))
             app.TORRENT_METHOD = check_setting_str(app.CFG, 'General', 'torrent_method', 'blackhole',
-                                                   valid_values=('blackhole', 'utorrent', 'transmission', 'deluge',
+                                                   valid_values=('rss', 'blackhole', 'utorrent', 'transmission', 'deluge',
                                                                  'deluged', 'downloadstation', 'rtorrent', 'qbittorrent', 'mlnet'))
             app.SAVE_MAGNET_FILE = bool(check_setting_int(app.CFG, 'General', 'save_magnet_file', 1))
             app.DOWNLOAD_PROPERS = bool(check_setting_int(app.CFG, 'General', 'download_propers', 1))
@@ -666,7 +666,8 @@ class Application(object):
 
             app.NZB_DIR = check_setting_str(app.CFG, 'Blackhole', 'nzb_dir', '')
             app.TORRENT_DIR = check_setting_str(app.CFG, 'Blackhole', 'torrent_dir', '')
-
+            app.RSS_DIR = check_setting_str(app.CFG, 'RSS', 'rss_dir', '')
+            app.RSS_MAX_ITEMS = check_setting_int(app.CFG, 'RSS', 'rss_max_items', 100)
             app.TV_DOWNLOAD_DIR = check_setting_str(app.CFG, 'General', 'tv_download_dir', '')
             app.DEFAULT_CLIENT_PATH = check_setting_str(app.CFG, 'General', 'default_client_path', '')
             app.PROCESS_AUTOMATICALLY = bool(check_setting_int(app.CFG, 'General', 'process_automatically', 0))
@@ -1839,6 +1840,10 @@ class Application(object):
         new_config['TORRENT']['torrent_rpcurl'] = app.TORRENT_RPCURL
         new_config['TORRENT']['torrent_auth_type'] = app.TORRENT_AUTH_TYPE
         new_config['TORRENT']['torrent_seed_location'] = app.TORRENT_SEED_LOCATION
+
+        new_config['RSS'] = {}
+        new_config['RSS']['rss_dir'] = app.RSS_DIR
+        new_config['RSS']['rss_max_items'] = app.RSS_MAX_ITEMS
 
         new_config['KODI'] = {}
         new_config['KODI']['use_kodi'] = int(app.USE_KODI)
