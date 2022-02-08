@@ -19,7 +19,7 @@
                                     <template v-if="subtitles.enabled">
                                         <config-template label="Subtitle Languages" labelFor="wanted_languages">
                                             <config-subtitle-languages id="wanted_languages" :languages="subtitles.wantedLanguages"
-                                                                       @change="subtitles.languages = $event.map(tag => tag.id)"
+                                                                       @change="subtitles.languages = $event.map(tag => tag.text)"
                                             />
                                         </config-template>
 
