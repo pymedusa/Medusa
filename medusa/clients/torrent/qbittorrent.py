@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 import logging
 import os
+from os.path import basename
 
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
@@ -416,10 +417,10 @@ class QBittorrentAPI(GenericClient):
         client_status.destination = torrent['save_path']
 
         # Store resource
-        client_status.resource = torrent['name']
+        client_status.resource = basename(torrent['content_path'])
 
         log.info('Qbittorrent torrent: [{name}] using state: [{state}]', {
-            'name': torrent['name'], 'state': torrent['state']
+            'name': client_status.resource, 'state': torrent['state']
         })
 
         return client_status
