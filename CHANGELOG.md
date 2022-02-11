@@ -1,4 +1,4 @@
-## Unreleased
+## 0.5.23 (11-02-2022)
 
 #### New Features
 - Add support for banner and background images to indexer tvmaze ([10234](https://github.com/pymedusa/Medusa/pull/10234))
