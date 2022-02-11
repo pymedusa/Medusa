@@ -150,7 +150,7 @@ class ShowUpdater(object):
                     # This show was marked to have an update, but it didn't get a season update. Let's fully
                     # update the show anyway.
                     logger.debug('Could not detect a season update, but an update is required. \n'
-                                'Adding the following show for full update to queue: {show}', show=show.name)
+                                 'Adding the following show for full update to queue: {show}', show=show.name)
                     refresh_shows.append(show)
 
         pi_list = []
