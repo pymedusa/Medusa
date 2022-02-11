@@ -316,20 +316,56 @@ class TVmaze(BaseIndexer):
         log.debug('Getting show banners for {0}', tvmaze_id)
 
         try:
-            image_medium = self.shows[tvmaze_id]['image_medium']
+            images = self.tvmaze_api.show_images(tvmaze_id)
+            # image_medium = self.shows[tvmaze_id]['image_medium']
         except Exception:
             log.debug('Could not parse Poster for showid: {0}', tvmaze_id)
             return False
 
         # Set the poster (using the original uploaded poster for now, as the medium formated is 210x195
-        _images = {u'poster': {u'1014x1500': {u'1': {u'rating': 1,
-                                                     u'language': u'en',
-                                                     u'ratingcount': 1,
-                                                     u'bannerpath': image_medium.split('/')[-1],
-                                                     u'bannertype': u'poster',
-                                                     u'bannertype2': u'210x195',
-                                                     u'_bannerpath': image_medium,
-                                                     u'id': u'1035106'}}}}
+        _images = {}
+        for image in images:
+            if image.type not in _images:
+                _images[image.type] = {}
+
+            if not image.resolutions:
+                continue
+
+            if image.type == 'poster' and not image.main:
+                continue
+
+            # For banner, poster and fanart use the origin size.
+            _images[image.type] = {
+                f"{image.resolutions['original']['width']}x{image.resolutions['original']['height']}": {
+                    image.id: {
+                        'rating': 1,
+                        'language': u'en',
+                        'ratingcount': 1,
+                        'bannerpath': image.resolutions['original']['url'].split('/')[-1],
+                        'bannertype': image.type,
+                        'bannertype2': f"{image.resolutions['original']['width']}x{image.resolutions['original']['height']}",
+                        '_bannerpath': image.resolutions['original']['url'],
+                        'id': image.id
+                    }
+                }
+            }
+
+            if image.type == 'poster':
+                # Save the main poster as a poster thumb.
+                _images['poster_thumb'] = {
+                    f"{image.resolutions['medium']['width']}x{image.resolutions['medium']['height']}": {
+                        image.id: {
+                            'rating': 1,
+                            'language': u'en',
+                            'ratingcount': 1,
+                            'bannerpath': image.resolutions['medium']['url'].split('/')[-1],
+                            'bannertype': 'poster_thumb',
+                            'bannertype2': f"{image.resolutions['medium']['width']}x{image.resolutions['medium']['height']}",
+                            '_bannerpath': image.resolutions['medium']['url'],
+                            'id': image.id
+                        }
+                    }
+                }
 
         season_images = self._parse_season_images(tvmaze_id)
         if season_images:

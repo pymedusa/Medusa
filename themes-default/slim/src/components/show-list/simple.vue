@@ -54,7 +54,7 @@
                         <img alt="[trakt]" height="16" width="16" src="images/trakt.png">
                     </app-link>
                     <app-link v-if="showIndexerUrl && indexerConfig[props.row.indexer].icon" :href="showIndexerUrl(props.row)" :title="showIndexerUrl(props.row)">
-                        <img :alt="indexerConfig[props.row.indexer].name" height="16" width="16" :src="'images/' + indexerConfig[props.row.indexer].icon" style="margin-top: -1px; vertical-align:middle;">
+                        <img :alt="indexerConfig[props.row.indexer].name" height="16" width="16" :src="`images/${indexerConfig[props.row.indexer].icon}`" style="margin-top: -1px; vertical-align:middle;">
                     </app-link>
                 </span>
 

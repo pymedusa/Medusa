@@ -279,6 +279,12 @@ class NameParser(object):
         new_absolute_numbers = []
 
         ex_season = scene_exceptions.get_season_from_name(result.series, result.series_name) or result.season_number
+        if ex_season is None:
+            ex_season = 1
+            log.info(
+                "For the show {name} we could not parse a season number. We did match the title, so we'll asume season 1",
+                {'name': result.series.name}
+            )
 
         for episode_number in result.episode_numbers:
             season = ex_season
@@ -300,6 +306,33 @@ class NameParser(object):
 
         return new_episode_numbers, new_season_numbers, new_absolute_numbers
 
+    @staticmethod
+    def _parse_special(result):
+        new_episode_numbers = []
+        new_season_numbers = []
+
+        episode_title = result.guess.get('episode_title')
+        if not episode_title:
+            log.info(
+                '{name}: This episode is marked as a special. We could not find an episode title. And we need that to map it to an episode in the library.',
+                {'name': result.series.name}
+            )
+            return new_episode_numbers, new_season_numbers
+
+        # Sanitize the episode title.
+        episode_title = episode_title.lower()
+        if episode_title.startswith('special'):
+            episode_title = episode_title.split('special')[-1].strip()
+
+        all_episodes = result.series.get_all_episodes(season=0)
+        for special_episode in all_episodes:
+            if special_episode.name.lower() == episode_title:
+                new_season_numbers.append(0)
+                new_episode_numbers.append(special_episode.episode)
+                return new_episode_numbers, new_season_numbers
+
+        return [], []
+
     def _parse_string(self, name):
         guess = guessit.guessit(name, dict(show_type=self.show_type))
 
@@ -318,18 +351,22 @@ class NameParser(object):
         new_season_numbers = []
         new_absolute_numbers = []
 
+        # Try to map special episodes without an episode number using the episode title.
+        if result.is_episode_special and not result.episode_numbers:
+            new_episode_numbers, new_season_numbers = self._parse_special(result)
+
         # if we have an air-by-date show and the result is air-by-date,
         # then get the real season/episode numbers
-        if result.series.air_by_date and result.is_air_by_date:
+        elif result.series.air_by_date and result.is_air_by_date:
             new_episode_numbers, new_season_numbers = self._parse_air_by_date(result)
 
         elif result.series.is_anime or result.is_anime:
             new_episode_numbers, new_season_numbers, new_absolute_numbers = self._parse_anime(result)
 
-        elif result.season_number is not None:
+        else:
             new_episode_numbers, new_season_numbers, new_absolute_numbers = self._parse_series(result)
 
-        else:
+        if not new_season_numbers and not new_episode_numbers:
             raise InvalidNameException('The result that was found ({result_name}) is not yet supported by Medusa '
                                        'and will be skipped. Sorry.'.format(result_name=result.original_name))
 
@@ -468,14 +505,15 @@ class NameParser(object):
                            episode_numbers=helpers.ensure_list(guess.get('episode')),
                            ab_episode_numbers=helpers.ensure_list(guess.get('absolute_episode')),
                            air_date=guess.get('date'), release_group=guess.get('release_group'),
-                           proper_tags=helpers.ensure_list(guess.get('proper_tag')), version=guess.get('version', -1))
+                           proper_tags=helpers.ensure_list(guess.get('proper_tag')), version=guess.get('version', -1),
+                           episode_details=helpers.ensure_list(guess.get('episode_details')))
 
 
 class ParseResult(object):
     """Represent the release information for a given name."""
 
     def __init__(self, guess, series_name=None, season_number=None, episode_numbers=None, ab_episode_numbers=None,
-                 air_date=None, release_group=None, proper_tags=None, version=None, original_name=None):
+                 air_date=None, release_group=None, proper_tags=None, version=None, original_name=None, episode_details=None):
         """Initialize the class.
 
         :param guess:
@@ -498,6 +536,8 @@ class ParseResult(object):
         :type version: int
         :param original_name:
         :type original_name: str
+        :param episode_details:
+        :type episode_details: list of str
         """
         self.original_name = original_name
         self.series_name = series_name
@@ -512,6 +552,7 @@ class ParseResult(object):
         self.proper_tags = proper_tags
         self.guess = guess
         self.total_time = None
+        self.episode_details = episode_details
 
     def __eq__(self, other):
         """Equal implementation.

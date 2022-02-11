@@ -6,6 +6,7 @@ import json
 import os
 import time
 
+
 from medusa import (
     app,
     config,
@@ -50,6 +51,7 @@ from medusa.tv.series import Series, SeriesIdentifier
 from medusa.updater.version_checker import CheckVersion
 
 from requests.compat import unquote_plus
+from requests.exceptions import RequestException
 
 from six import iteritems, text_type
 
@@ -349,7 +351,7 @@ class Home(WebRoot):
         logger.log('Start a new Oauth device authentication request. Request is valid for 60 minutes.', logger.INFO)
         try:
             app.TRAKT_DEVICE_CODE = trakt.get_device_code(app.TRAKT_API_KEY, app.TRAKT_API_SECRET)
-        except TraktException as error:
+        except (TraktException, RequestException) as error:
             logger.log('Unable to get trakt device code. Error: {error!r}'.format(error=error), logger.WARNING)
             return json.dumps({'result': False})
 
@@ -376,7 +378,7 @@ class Home(WebRoot):
             response = trakt.get_device_token(
                 app.TRAKT_DEVICE_CODE.get('device_code'), app.TRAKT_API_KEY, app.TRAKT_API_SECRET, store=True
             )
-        except TraktException as error:
+        except (TraktException, RequestException) as error:
             logger.log('Unable to get trakt device token. Error: {error!r}'.format(error=error), logger.WARNING)
             return json.dumps({'result': 'Trakt error while retrieving device token', 'error': True})
 
@@ -384,7 +386,7 @@ class Home(WebRoot):
             response_json = response.json()
             app.TRAKT_ACCESS_TOKEN, app.TRAKT_REFRESH_TOKEN = \
                 response_json.get('access_token'), response_json.get('refresh_token')
-            return json.dumps({'result': 'succesfully updated trakt access and refresh token', 'error': False})
+            return json.dumps({'result': 'successfully updated trakt access and refresh token', 'error': False})
         else:
             if response.status_code == 400:
                 return json.dumps({'result': 'device code has not been activated yet', 'error': True})
@@ -721,7 +723,7 @@ class Home(WebRoot):
     def refreshShow(self, showslug=None):
         # @TODO: Replace with status=refresh from PATCH /api/v2/show/{id}
         identifier = SeriesIdentifier.from_slug(showslug)
-        error, series_obj = Show.refresh(identifier.indexer.slug, identifier.id)
+        error, series_obj = Show.refresh(identifier.indexer.slug, identifier.id, force=True)
 
         # This is a show validation error
         if error is not None and series_obj is None:

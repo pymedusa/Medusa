@@ -1,3 +1,29 @@
+## 0.5.23 (11-02-2022)
+
+#### New Features
+- Add support for banner and background images to indexer tvmaze ([10234](https://github.com/pymedusa/Medusa/pull/10234))
+- Add option for using ffprobe to validate postprocessed media ([10132](https://github.com/pymedusa/Medusa/pull/10132))
+- Add change indexer page to change the current indexer for shows in bulk ([9862](https://github.com/pymedusa/Medusa/pull/9862))
+- Add search templates feature. ([3732](https://github.com/pymedusa/Medusa/pull/3732))
+
+#### Improvements
+- Add column sorting for the add new show page search results ([10217](https://github.com/pymedusa/Medusa/pull/10217))
+- Add series start year as a renaming option ([10183](https://github.com/pymedusa/Medusa/pull/10183))
+- Remove git username/password authentication. No longer supported by github. ([10144](https://github.com/pymedusa/Medusa/pull/10144))
+- Add option to allow for overwriting nfo files. ([10237](https://github.com/pymedusa/Medusa/pull/10237))
+- Improve kodi nfo file creation. ([10237](https://github.com/pymedusa/Medusa/pull/10237))
+- Add filter options to the manual search results table. ([10252](https://github.com/pymedusa/Medusa/pull/10252))
+
+#### Fixes
+- Fix displayShow search subtitle button ([10214](https://github.com/pymedusa/Medusa/pull/10214))
+- Prevent failedDownloads from errorring, when a provider has been deleted ([10214](https://github.com/pymedusa/Medusa/pull/10214))
+- Fix mass update status page, start a new snatch when changing status to failed. ([10213](https://github.com/pymedusa/Medusa/pull/10213))
+- Fix changing process method in manual postprocessing. ([10220](https://github.com/pymedusa/Medusa/pull/10220))
+- Fix saving season posters / banners when using tvdb ([10251](https://github.com/pymedusa/Medusa/pull/10251))
+- Fix Addic7ed.com subtitle provider ([10312](https://github.com/pymedusa/Medusa/pull/10312))
+
+-----
+
 ## 0.5.22 (23-12-2021)
 
 #### Fixes

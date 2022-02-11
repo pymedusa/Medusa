@@ -212,15 +212,16 @@ def _configure_subliminal():
     basename = __name__.split('.')[0]
 
     # Unregister
-    # for name in ('legendastv = subliminal.providers.legendastv:LegendasTVProvider',):
-    #    provider_manager.internal_extensions.remove(name)
-    #    provider_manager.registered_extensions.append(name)
-    #    provider_manager.unregister(name)
+    for name in ('addic7ed = subliminal.providers.addic7ed:Addic7edProvider',):
+        provider_manager.internal_extensions.remove(name)
+        provider_manager.registered_extensions.append(name)
+        provider_manager.unregister(name)
 
     # Register
     for name in ('napiprojekt = subliminal.providers.napiprojekt:NapiProjektProvider',
                  'subtitulamos = {basename}.subtitle_providers.subtitulamos:SubtitulamosProvider'.format(basename=basename),
-                 'wizdom = {basename}.subtitle_providers.wizdom:WizdomProvider'.format(basename=basename)):
+                 'wizdom = {basename}.subtitle_providers.wizdom:WizdomProvider'.format(basename=basename),
+                 'addic7ed = {basename}.subtitle_providers.addic7ed:Addic7edProvider'.format(basename=basename)):
         provider_manager.register(name)
 
     refiner_manager.register('release = {basename}.refiners.release:refine'.format(basename=basename))

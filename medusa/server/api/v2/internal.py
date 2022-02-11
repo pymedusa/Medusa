@@ -554,16 +554,28 @@ class InternalHandler(BaseRequestHandler):
 
         results = []
         for result in sql_results:
-            provider = providers.get_provider_class(GenericProvider.make_id(result['provider']))
+            provider = {}
+            provider_id = GenericProvider.make_id(result['provider'])
+            provider_class = providers.get_provider_class(provider_id)
+
+            if provider_class:
+                provider.update({
+                    'id': provider_class.get_id(),
+                    'name': provider_class.name,
+                    'imageName': provider_class.image_name()
+                })
+            else:
+                provider.update({
+                    'id': provider_id,
+                    'name': result['provider'],
+                    'imageName': f'{provider_id}.png'
+                })
+
             results.append({
                 'id': result['id'],
                 'release': result['release'],
                 'size': result['size'],
-                'provider': {
-                    'id': provider.get_id(),
-                    'name': provider.name,
-                    'imageName': provider.image_name()
-                }
+                'provider': provider
             })
 
         return self._ok(data=results)

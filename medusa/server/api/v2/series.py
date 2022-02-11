@@ -110,7 +110,7 @@ class SeriesHandler(BaseRequestHandler):
                 'paused': data_options.get('paused'),
                 'blacklist': data_options['release'].get('blacklist', []) if data_options.get('release') else None,
                 'whitelist': data_options['release'].get('whitelist', []) if data_options.get('release') else None,
-                'default_status_after': data_options.get('statusAfter'),
+                'default_status_after': None,
                 'root_dir': data_options.get('rootDir'),
                 'show_lists': data_options.get('showLists')
             }
@@ -167,6 +167,8 @@ class SeriesHandler(BaseRequestHandler):
             'config.qualities.combined': IntegerField(series, 'quality'),
             'config.airdateOffset': IntegerField(series, 'airdate_offset'),
             'config.showLists': ListField(Series, 'show_lists'),
+            'config.templates': BooleanField(series, 'templates'),
+            'config.searchTemplates': ListField(series, 'search_templates'),
         }
 
         for key, value in iter_nested_items(data):

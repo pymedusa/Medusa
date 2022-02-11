@@ -73,7 +73,7 @@ class MedusaApp(object):
         self.CONFIG_FILE = None
 
         # This is the version of the config we EXPECT to find
-        self.CONFIG_VERSION = 11
+        self.CONFIG_VERSION = 12
 
         # Default encryption version (0 for None)
         self.ENCRYPTION_VERSION = 0
@@ -139,9 +139,6 @@ class MedusaApp(object):
         self.GIT_REMOTE = ''
         self.GIT_REMOTE_URL = ''
         self.CUR_COMMIT_BRANCH = ''
-        self.GIT_AUTH_TYPE = 0
-        self.GIT_USERNAME = None
-        self.GIT_PASSWORD = None
         self.GIT_TOKEN = None
         self._GIT_PATH = ''
         self.DEVELOPER = False
@@ -325,6 +322,9 @@ class MedusaApp(object):
         self.UNPACK = False
         self.SKIP_REMOVED_FILES = False
         self.ALLOWED_EXTENSIONS = ['srt', 'nfo', 'sub', 'idx']
+
+        self.FFMPEG_CHECK_STREAMS = False
+        self.FFMPEG_PATH = ''
 
         self.NZBS = False
         self.NZBS_UID = None
@@ -515,6 +515,7 @@ class MedusaApp(object):
         self.TRAKT_REMOVE_SERIESLIST = False
         self.TRAKT_REMOVE_SHOW_FROM_APPLICATION = False
         self.TRAKT_SYNC_WATCHLIST = False
+        self.TRAKT_SYNC_TO_WATCHLIST = False
         self.TRAKT_METHOD_ADD = None
         self.TRAKT_START_PAUSED = False
         self.TRAKT_USE_RECOMMENDED = False

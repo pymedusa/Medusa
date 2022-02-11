@@ -342,6 +342,21 @@ class Crew(object):
         ))
 
 
+class Image(object):
+    def __init__(self, data):
+        self.id = data.get('id')
+        self.type = data.get('type')
+        self.main = data.get('main')
+        self.resolutions = data.get('resolutions')
+
+    def __repr__(self):
+        return '<Image(maze_id={id},type={type},main={main})>'.format(
+                id=self.id,
+                type=self.type,
+                main=self.main
+        )
+
+
 class Updates(object):
     def __init__(self, data):
         self.updates = dict()
@@ -1198,6 +1213,14 @@ class TVMaze(object):
             return season_dict
         else:
             raise SeasonNotFound('Couldn\'t find Season\'s for TVMaze ID {0}'.format(maze_id))
+
+    def show_images(self, maze_id):
+        url = endpoints.show_images.format(maze_id)
+        q = self._endpoint_standard_get(url)
+        if q:
+            return [Image(image) for image in q]
+        else:
+            raise ImagesNotFound('Couldn\'t find Images\'s for TVMaze ID {0}'.format(maze_id))
 
     def season_by_id(self, season_id):
         url = endpoints.season_by_id.format(season_id)

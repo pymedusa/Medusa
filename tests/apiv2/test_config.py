@@ -156,10 +156,7 @@ def config_main(monkeypatch, app_config):
     section_data['experimental'] = bool(app.EXPERIMENTAL)
 
     section_data['git'] = {}
-    section_data['git']['username'] = app.GIT_USERNAME
-    section_data['git']['password'] = app.GIT_PASSWORD
     section_data['git']['token'] = app.GIT_TOKEN
-    section_data['git']['authType'] = int(app.GIT_AUTH_TYPE)
     section_data['git']['remote'] = app.GIT_REMOTE
     section_data['git']['path'] = app.GIT_PATH
     section_data['git']['org'] = app.GIT_ORG
@@ -284,7 +281,7 @@ async def test_config_get_consts(http_client, create_url, auth_headers):
 @pytest.fixture
 def config_metadata(monkeypatch, app_config):
     # initialize metadata_providers
-    default_config = ['0'] * 10
+    default_config = ['0'] * 11
     providers = [
         (default_config, metadata.kodi),
         (default_config, metadata.kodi_12plus),
@@ -372,6 +369,7 @@ def config_system(monkeypatch):
     section_data['webRoot'] = app.WEB_ROOT
     section_data['runsInDocker'] = bool(app.RUNS_IN_DOCKER)
     section_data['newestVersionMessage'] = app.NEWEST_VERSION_STRING
+    section_data['ffprobeVersion'] = 'ffprobe not available'
     section_data['gitRemoteBranches'] = app.GIT_REMOTE_BRANCHES
     section_data['cpuPresets'] = cpu_presets
 
@@ -449,6 +447,10 @@ def config_postprocessing():
     section_data['downloadHandler']['minFrequency'] = int(app.MIN_DOWNLOAD_HANDLER_FREQUENCY)
     section_data['downloadHandler']['torrentSeedRatio'] = float(app.TORRENT_SEED_RATIO) if app.TORRENT_SEED_RATIO is not None else -1
     section_data['downloadHandler']['torrentSeedAction'] = app.TORRENT_SEED_ACTION
+
+    section_data['ffmpeg'] = {}
+    section_data['ffmpeg']['checkStreams'] = bool(app.FFMPEG_CHECK_STREAMS)
+    section_data['ffmpeg']['path'] = app.FFMPEG_PATH
 
     return section_data
 
@@ -714,6 +716,7 @@ def config_notifiers():
     section_data['trakt']['sync'] = bool(app.TRAKT_SYNC)
     section_data['trakt']['syncRemove'] = bool(app.TRAKT_SYNC_REMOVE)
     section_data['trakt']['syncWatchlist'] = bool(app.TRAKT_SYNC_WATCHLIST)
+    section_data['trakt']['syncToWatchlist'] = bool(app.TRAKT_SYNC_TO_WATCHLIST)
     section_data['trakt']['methodAdd'] = int_default(app.TRAKT_METHOD_ADD)
     section_data['trakt']['removeWatchlist'] = bool(app.TRAKT_REMOVE_WATCHLIST)
     section_data['trakt']['removeSerieslist'] = bool(app.TRAKT_REMOVE_SERIESLIST)

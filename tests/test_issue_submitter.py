@@ -25,58 +25,42 @@ sut = IssueSubmitter()
     {  # p1: debug not set
         'expected': [(IssueSubmitter.DEBUG_NOT_ENABLED, None)]
     },
-    {  # p2: username and password set, but debug not enabled
+    {  # p2: token set, but debug not enabled
         'debug': False,
-        'username': 'user',
-        'password': 'pass',
+        'token': '!@#$%',
         'expected': [(IssueSubmitter.DEBUG_NOT_ENABLED, None)]
     },
-    {  # p3: debug enabled, but no username
+    {  # p3: debug enabled, username and password set, but no errors to report
         'debug': True,
-        'password': 'pass',
-        'expected': [(IssueSubmitter.MISSING_CREDENTIALS, None)]
-    },
-    {  # p4: debug enabled, but no password
-        'debug': True,
-        'username': 'user',
-        'expected': [(IssueSubmitter.MISSING_CREDENTIALS, None)]
-    },
-    {  # p5: debug enabled, username and password set, but no errors to report
-        'debug': True,
-        'username': 'user',
-        'password': 'pass',
+        'token': '!@#$%',
         'expected': [(IssueSubmitter.NO_ISSUES, None)]
     },
-    {  # p6: debug enabled, username and password set, errors to report but update is needed
+    {  # p4: debug enabled, token set, errors to report but update is needed
         'debug': True,
-        'username': 'user',
-        'password': 'pass',
+        'token': '!@#$%',
         'errors': ['Some Error'],
         'need_update': True,
         'expected': [(IssueSubmitter.UNSUPPORTED_VERSION, None)]
     },
-    {  # p7: debug enabled, username and password set, errors to report, no update is needed, but it's already running
+    {  # p5: debug enabled, token set, errors to report, no update is needed, but it's already running
         'debug': True,
-        'username': 'user',
-        'password': 'pass',
+        'token': '!@#$%',
         'errors': ['Some Error'],
         'running': True,
         'expected': [(IssueSubmitter.ALREADY_RUNNING, None)]
     },
-    {  # p8: debug enabled, username and password set, errors to report, update is needed but I'M A DEVELOPER :-)
+    {  # p6: debug enabled, token set, errors to report, update is needed but I'M A DEVELOPER :-)
         'debug': True,
-        'username': 'user',
-        'password': 'pass',
+        'token': '!@#$%',
         'errors': ['Some Error'],
         'need_update': True,
         'developer': True,
         'exception': [BadCredentialsException, 401],
         'expected': [(IssueSubmitter.BAD_CREDENTIALS, None)]
     },
-    {  # p9: debug enabled, username and password set, errors to report, update is not needed but rate limit exception happened
+    {  # p7: debug enabled, token set, errors to report, update is not needed but rate limit exception happened
         'debug': True,
-        'username': 'user',
-        'password': 'pass',
+        'token': '!@#$%',
         'errors': ['Some Error'],
         'exception': [RateLimitExceededException, 429],
         'expected': [(IssueSubmitter.RATE_LIMIT, None)]
@@ -88,8 +72,8 @@ def test_submit_github_issue__basic_validations(monkeypatch, logger, version_che
     for error in p.get('errors', []):
         logger.error(error)
     monkeypatch.setattr(app, 'DEBUG', p.get('debug'))
-    monkeypatch.setattr(app, 'GIT_USERNAME', p.get('username'))
-    monkeypatch.setattr(app, 'GIT_PASSWORD', p.get('password'))
+    monkeypatch.setattr(app, 'GIT_TOKEN', p.get('token'))
+    
     monkeypatch.setattr(app, 'DEVELOPER', p.get('developer', False))
     monkeypatch.setattr(version_checker, 'need_update', lambda: p.get('need_update', False))
     monkeypatch.setattr(sut, 'running', p.get('running', False))

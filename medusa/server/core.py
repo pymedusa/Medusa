@@ -24,6 +24,7 @@ from medusa.server.api.v2.base import BaseRequestHandler, NotFoundHandler
 from medusa.server.api.v2.config import ConfigHandler
 from medusa.server.api.v2.episode_history import EpisodeHistoryHandler
 from medusa.server.api.v2.episodes import EpisodeHandler
+from medusa.server.api.v2.guessit import GuessitHandler
 from medusa.server.api.v2.history import HistoryHandler
 from medusa.server.api.v2.internal import InternalHandler
 from medusa.server.api.v2.log import LogHandler
@@ -35,6 +36,7 @@ from medusa.server.api.v2.schedule import ScheduleHandler
 from medusa.server.api.v2.search import SearchHandler
 from medusa.server.api.v2.series import SeriesHandler
 from medusa.server.api.v2.series_asset import SeriesAssetHandler
+from medusa.server.api.v2.series_change_indexer import SeriesChangeIndexer
 from medusa.server.api.v2.series_legacy import SeriesLegacyHandler
 from medusa.server.api.v2.series_mass_edit import SeriesMassEdit
 from medusa.server.api.v2.series_mass_operation import SeriesMassOperation
@@ -110,6 +112,9 @@ def get_apiv2_handlers(base):
         # /api/v2/search
         SearchHandler.create_app_handler(base),
 
+        # /api/v2/guessit
+        GuessitHandler.create_app_handler(base),
+
         # /api/v2/series/tvdb1234/episode
         EpisodeHandler.create_app_handler(base),
 
@@ -117,6 +122,9 @@ def get_apiv2_handlers(base):
         SeriesMassEdit.create_app_handler(base),
         # /api/v2/massupdate
         SeriesMassOperation.create_app_handler(base),
+
+        # /api/v2/series/changeindexer
+        SeriesChangeIndexer.create_app_handler(base),
         # /api/v2/series/tvdb1234/operation
         SeriesOperationHandler.create_app_handler(base),
         # /api/v2/series/tvdb1234/asset

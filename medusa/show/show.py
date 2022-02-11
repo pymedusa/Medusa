@@ -218,7 +218,7 @@ class Show(object):
         return None, show
 
     @staticmethod
-    def refresh(indexer_id, series_id):
+    def refresh(indexer_id, series_id, force=False):
         """
         Try to refresh a show.
 
@@ -233,7 +233,7 @@ class Show(object):
             return error, series_obj
 
         try:
-            app.show_queue_scheduler.action.refreshShow(series_obj)
+            app.show_queue_scheduler.action.refreshShow(series_obj, force=force)
         except CantRefreshShowException as exception:
             return ex(exception), series_obj
 

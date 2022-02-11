@@ -78,10 +78,10 @@
 
                     <template slot="table-row" slot-scope="props">
                         <span v-if="props.column.field == 'content.hasNfo'">
-                            <img :src="'images/' + (props.row.content.hasNfo ? 'nfo.gif' : 'nfo-no.gif')" :alt="(props.row.content.hasNfo ? 'Y' : 'N')" width="23" height="11">
+                            <img :src="`images/${props.row.content.hasNfo ? 'nfo.gif' : 'nfo-no.gif'}`" :alt="(props.row.content.hasNfo ? 'Y' : 'N')" width="23" height="11">
                         </span>
                         <span v-else-if="props.column.field == 'content.hasTbn'">
-                            <img :src="'images/' + (props.row.content.hasTbn ? 'tbn.gif' : 'tbn-no.gif')" :alt="(props.row.content.hasTbn ? 'Y' : 'N')" width="23" height="11">
+                            <img :src="`images/${props.row.content.hasTbn ? 'tbn.gif' : 'tbn-no.gif'}`" :alt="(props.row.content.hasTbn ? 'Y' : 'N')" width="23" height="11">
                         </span>
 
                         <span v-else-if="props.column.label == 'Episode'">
@@ -231,10 +231,10 @@
 
                     <template slot="table-row" slot-scope="props">
                         <span v-if="props.column.field == 'content.hasNfo'">
-                            <img :src="'images/' + (props.row.content.hasNfo ? 'nfo.gif' : 'nfo-no.gif')" :alt="(props.row.content.hasNfo ? 'Y' : 'N')" width="23" height="11">
+                            <img :src="`images/${props.row.content.hasNfo ? 'nfo.gif' : 'nfo-no.gif'}`" :alt="(props.row.content.hasNfo ? 'Y' : 'N')" width="23" height="11">
                         </span>
                         <span v-else-if="props.column.field == 'content.hasTbn'">
-                            <img :src="'images/' + (props.row.content.hasTbn ? 'tbn.gif' : 'tbn-no.gif')" :alt="(props.row.content.hasTbn ? 'Y' : 'N')" width="23" height="11">
+                            <img :src="`images/${props.row.content.hasTbn ? 'tbn.gif' : 'tbn-no.gif'}`" :alt="(props.row.content.hasTbn ? 'Y' : 'N')" width="23" height="11">
                         </span>
 
                         <span v-else-if="props.column.label == 'Episode'">
@@ -757,41 +757,6 @@ export default {
             }
 
             return season.children;
-        },
-        /**
-         * Check if the season/episode combination exists in the scene numbering.
-         * @param {Object} episode - object.
-         * @returns {Object} with scene season and episodes mapped numbering.
-         */
-        getSceneNumbering(episode) {
-            const { show } = this;
-            const { sceneNumbering, xemNumbering } = show;
-
-            if (!show.config.scene) {
-                return { season: 0, episode: 0 };
-            }
-
-            // Manually configured scene numbering
-            if (sceneNumbering.length > 0) {
-                const mapped = sceneNumbering.filter(x => {
-                    return x.source.season === episode.season && x.source.episode === episode.episode;
-                });
-                if (mapped.length > 0) {
-                    return mapped[0].destination;
-                }
-            }
-
-            // Scene numbering downloaded from thexem.de.
-            if (xemNumbering.length > 0) {
-                const mapped = xemNumbering.filter(x => {
-                    return x.source.season === episode.season && x.source.episode === episode.episode;
-                });
-                if (mapped.length > 0) {
-                    return mapped[0].destination;
-                }
-            }
-
-            return { season: episode.scene.season || 0, episode: episode.scene.episode || 0 };
         },
         /**
          * Vue-js-modal requires a method, to pass an event to.

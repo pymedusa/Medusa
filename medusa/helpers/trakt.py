@@ -1,10 +1,11 @@
 """Module with Trakt helper methods."""
 
-
 import logging
 
 from medusa.helpers import get_title_without_year
 from medusa.logger.adapters.style import BraceAdapter
+
+from requests.exceptions import RequestException
 
 from trakt import calendar, tv, users
 from trakt.errors import TraktException
@@ -20,7 +21,7 @@ def get_trakt_user():
         user = users.get_user_settings()
         username = user['user']['username']
         return users.User(username)
-    except TraktException as error:
+    except (TraktException, RequestException) as error:
         log.warning('Unable to get trakt user, error: {error}', {'error': error})
         raise
 
@@ -57,7 +58,7 @@ def get_trakt_show_collection(trakt_list, limit=None):
             return [tv_episode.show_data for tv_episode in calendar_items]
 
         return tv.anticipated_shows(limit=limit, extended='full,images')
-    except TraktException as error:
+    except (TraktException, RequestException) as error:
         log.warning('Unable to get trakt list {trakt_list}: {error!r}', {'trakt_list': trakt_list, 'error': error})
 
 

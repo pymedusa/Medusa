@@ -620,6 +620,7 @@ class MetadataStructureField(PatchField):
             ('seasonBanners', 'season_banners'),
             ('seasonAllPoster', 'season_all_poster'),
             ('seasonAllBanner', 'season_all_banner'),
+            ('overwriteNfo', 'overwrite_nfo'),
         ])
 
         try:
