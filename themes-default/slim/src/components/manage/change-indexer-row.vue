@@ -79,14 +79,17 @@ export default {
                 parent: this
             });
 
-            // Bind the 'added' event to the newShow vm.
+            // Bind the 'selected' event to the searchComponent vm.
             this.searchComponent.$on('selected', ({ result }) => {
                 this.searchedShow.searched = true;
                 this.searchedShow.indexer = indexerIdToName(result.indexerId);
                 this.searchedShow.id = result.showId;
+
+                // Emit the event
+                this.$emit('selected', { show, indexer: this.searchedShow.indexer, showId: this.searchedShow.id });
             });
 
-            // Bind the 'added' event to the newShow vm.
+            // Bind the 'close' event to the searchComponent vm.
             this.searchComponent.$on('close', () => {
                 this.searchComponent.$destroy();
                 // Remove the element from the DOM
