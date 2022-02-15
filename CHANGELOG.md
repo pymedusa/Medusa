@@ -3,6 +3,12 @@
 #### New Features
 
 #### Improvements
+
+#### Fixes
+
+## 0.5.24 (15-02-2022)
+
+#### Improvements
 - Improve show updates. Update the complete show when marked updated by indexer, without an indication to update a season. ([10330](https://github.com/pymedusa/Medusa/pull/10330))
 
 #### Fixes
