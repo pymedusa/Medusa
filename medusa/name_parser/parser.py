@@ -303,6 +303,9 @@ class NameParser(object):
 
             new_season_numbers.append(season)
             new_episode_numbers.append(episode)
+        else:
+            # No episode numbers. Treat it like a season pack.
+            new_season_numbers.append(ex_season)
 
         return new_episode_numbers, new_season_numbers, new_absolute_numbers
 
@@ -366,7 +369,7 @@ class NameParser(object):
         else:
             new_episode_numbers, new_season_numbers, new_absolute_numbers = self._parse_series(result)
 
-        if not new_season_numbers and not new_episode_numbers:
+        if not new_season_numbers:
             raise InvalidNameException('The result that was found ({result_name}) is not yet supported by Medusa '
                                        'and will be skipped. Sorry.'.format(result_name=result.original_name))
 
