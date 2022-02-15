@@ -269,6 +269,9 @@ class NameParser(object):
                         'Anime series {name} using using indexer numbering #{absolute}: {ep}',
                         {'name': result.series.name, 'absolute': idx_abs_ep, 'ep': episode_num(season, episode)}
                     )
+            else:
+                # Treat it as a season pack.
+                new_season_numbers.append(season_exception or result.season_number)
 
         return new_episode_numbers, new_season_numbers, new_absolute_numbers
 
@@ -369,12 +372,12 @@ class NameParser(object):
         else:
             new_episode_numbers, new_season_numbers, new_absolute_numbers = self._parse_series(result)
 
-        if not new_season_numbers:
-            raise InvalidNameException('The result that was found ({result_name}) is not yet supported by Medusa '
-                                       'and will be skipped. Sorry.'.format(result_name=result.original_name))
-
         # Remove None from the list of seasons, as we can't sort on that
         new_season_numbers = sorted({season for season in new_season_numbers if season is not None})
+
+        if not new_season_numbers: # Remove the season None.
+            raise InvalidNameException('The result that was found ({result_name}) is not yet supported by Medusa '
+                                       'and will be skipped. Sorry.'.format(result_name=result.original_name))
 
         # need to do a quick sanity check here ex. It's possible that we now have episodes
         # from more than one season (by tvdb numbering), and this is just too much
