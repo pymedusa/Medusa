@@ -303,7 +303,7 @@
                                     </config-toggle-slider>
 
                                     <config-toggle-slider v-model="general.webInterface.ipv6" label="Listen on IPv6" id="web_ipv6">
-                                        <p>enable to be notified when a new login happens in webserver</p>
+                                        <p>enable to listen for connections on IPv6</p>
                                     </config-toggle-slider>
 
                                     <config-toggle-slider v-model="general.webInterface.httpsEnable" label="Enable HTTPS" id="enable_https">
