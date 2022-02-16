@@ -234,7 +234,6 @@ class ConfigHandler(BaseRequestHandler):
         'clients.nzb.sabnzbd.password': StringField(app, 'SAB_PASSWORD'),
         'clients.nzb.sabnzbd.username': StringField(app, 'SAB_USERNAME'),
 
-
         'postProcessing.showDownloadDir': StringField(app, 'TV_DOWNLOAD_DIR'),
         'postProcessing.defaultClientPath': StringField(app, 'DEFAULT_CLIENT_PATH'),
         'postProcessing.processAutomatically': BooleanField(app, 'PROCESS_AUTOMATICALLY'),
