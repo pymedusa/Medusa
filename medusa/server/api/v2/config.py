@@ -192,8 +192,9 @@ class ConfigHandler(BaseRequestHandler):
         'recommended.cache.imdb': BooleanField(app, 'CACHE_RECOMMENDED_IMDB'),
         'recommended.cache.anidb': BooleanField(app, 'CACHE_RECOMMENDED_ANIDB'),
         'recommended.cache.anilist': BooleanField(app, 'CACHE_RECOMMENDED_ANILIST'),
+        'recommended.cache.purgeAfterDays': IntegerField(app, 'CACHE_RECOMMENDED_PURGE_AFTER_DAYS'),
         'recommended.trakt.selectedLists': ListField(app, 'CACHE_RECOMMENDED_TRAKT_LISTS'),
-
+        
         # Sections
         'clients.torrents.authType': StringField(app, 'TORRENT_AUTH_TYPE'),
         'clients.torrents.dir': StringField(app, 'TORRENT_DIR'),
@@ -709,6 +710,7 @@ class DataGenerator(object):
         section_data['recommended']['cache']['imdb'] = bool(app.CACHE_RECOMMENDED_IMDB)
         section_data['recommended']['cache']['anidb'] = bool(app.CACHE_RECOMMENDED_ANIDB)
         section_data['recommended']['cache']['anilist'] = bool(app.CACHE_RECOMMENDED_ANILIST)
+        section_data['recommended']['cache']['purgeAfterDays'] = int(app.CACHE_RECOMMENDED_PURGE_AFTER_DAYS)
         section_data['recommended']['trakt']['selectedLists'] = app.CACHE_RECOMMENDED_TRAKT_LISTS
         section_data['recommended']['trakt']['availableLists'] = TraktPopular.CATEGORIES
 
