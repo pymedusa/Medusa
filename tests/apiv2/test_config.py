@@ -432,6 +432,9 @@ def config_postprocessing():
     section_data['deleteRarContent'] = bool(app.DELRARCONTENTS)
     section_data['noDelete'] = bool(app.NO_DELETE)
     section_data['processMethod'] = app.PROCESS_METHOD
+    section_data['specificProcessMethod'] = bool(app.USE_SPECIFIC_PROCESS_METHOD)
+    section_data['processMethodTorrent'] = app.PROCESS_METHOD_TORRENT
+    section_data['processMethodNzb'] = app.PROCESS_METHOD_NZB
     section_data['reflinkAvailable'] = bool(pkgutil.find_loader('reflink'))
     section_data['autoPostprocessorFrequency'] = int(app.AUTOPOSTPROCESSOR_FREQUENCY)
     section_data['syncFiles'] = app.SYNC_FILES
@@ -695,6 +698,7 @@ def config_notifiers():
     section_data['discord']['notifyOnSubtitleDownload'] = bool(app.DISCORD_NOTIFY_ONSUBTITLEDOWNLOAD)
     section_data['discord']['webhook'] = app.DISCORD_WEBHOOK
     section_data['discord']['tts'] = bool(app.DISCORD_TTS)
+    section_data['discord']['overrideAvatar'] = bool(app.DISCORD_OVERRIDE_AVATAR)    
     section_data['discord']['name'] = app.DISCORD_NAME
 
     section_data['twitter'] = {}
@@ -910,7 +914,7 @@ def config_subtitles():
 
 
 @pytest.mark.gen_test
-async def test_config_get_postprocessing(http_client, create_url, auth_headers, config_subtitles):
+async def test_config_get_subtitles(http_client, create_url, auth_headers, config_subtitles):
     # given
     expected = config_subtitles
 

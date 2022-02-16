@@ -435,7 +435,7 @@ class MedusaApp(object):
         self.DISCORD_NAME = 'pymedusa'
         self.DISCORD_AVATAR_URL = '{base_url}/images/ico/favicon-144.png'.format(base_url=self.BASE_PYMEDUSA_URL)
         self.DISCORD_TTS = False
-        self.OVERRIDE_AVATAR = False
+        self.DISCORD_OVERRIDE_AVATAR = False
 
         self.USE_PROWL = False
         self.PROWL_NOTIFY_ONSNATCH = False

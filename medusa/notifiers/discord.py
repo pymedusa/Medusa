@@ -37,7 +37,7 @@ class Notifier(object):
         """Collect the parameters and send the message to the discord webhook."""
         webhook = app.DISCORD_WEBHOOK if webhook is None else webhook
         tts = app.DISCORD_TTS if tts is None else tts
-        override_avatar = app.DISCORD_AVATAR_URL if override_avatar is None else override_avatar
+        override_avatar = app.DISCORD_OVERRIDE_AVATAR if override_avatar is None else override_avatar
 
         log.debug('Discord in use with API webhook: {webhook}', {'webhook': webhook})
 
