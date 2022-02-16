@@ -33,10 +33,11 @@ class Notifier(object):
     https://discordapp.com
     """
 
-    def _send_discord_msg(self, title, msg, webhook=None, tts=False):
+    def _send_discord_msg(self, title, msg, webhook=None, tts=None, override_avatar=None):
         """Collect the parameters and send the message to the discord webhook."""
         webhook = app.DISCORD_WEBHOOK if webhook is None else webhook
         tts = app.DISCORD_TTS if tts is None else tts
+        override_avatar = app.DISCORD_AVATAR_URL if override_avatar is None else override_avatar
 
         log.debug('Discord in use with API webhook: {webhook}', {'webhook': webhook})
 
@@ -46,9 +47,11 @@ class Notifier(object):
         payload = {
             'content': message,
             'username': app.DISCORD_NAME,
-            'avatar_url': app.DISCORD_AVATAR_URL,
             'tts': tts
         }
+
+        if override_avatar:
+            payload['avatar_url'] = app.DISCORD_AVATAR_URL
 
         success = False
         try:
@@ -128,13 +131,16 @@ class Notifier(object):
             title = notifyStrings[NOTIFY_LOGIN]
             self._notify_discord(title, update_text.format(ipaddress))
 
-    def test_notify(self, discord_webhook=None, discord_tts=None):
+    def test_notify(self, discord_webhook=None, discord_tts=None, override_avatar=None):
         """Create the test notification."""
-        return self._notify_discord('test', 'This is a test notification from Medusa', webhook=discord_webhook, tts=discord_tts, force=True)
+        return self._notify_discord(
+            'test', 'This is a test notification from Medusa',
+            webhook=discord_webhook, tts=discord_tts, override_avatar=override_avatar, force=True
+        )
 
-    def _notify_discord(self, title='', message='', webhook=None, tts=False, force=False):
+    def _notify_discord(self, title='', message='', webhook=None, tts=None, override_avatar=None, force=False):
         """Validate if USE_DISCORD or Force is enabled and send."""
         if not app.USE_DISCORD and not force:
             return False
 
-        return self._send_discord_msg(title, message, webhook, tts)
+        return self._send_discord_msg(title, message, webhook, tts, override_avatar)

@@ -800,6 +800,7 @@ class Application(object):
                 check_setting_int(app.CFG, 'Discord', 'discord_notify_onsubtitledownload', 0))
             app.DISCORD_WEBHOOK = check_setting_str(app.CFG, 'Discord', 'discord_webhook', '', censor_log='normal')
             app.DISCORD_TTS = check_setting_bool(app.CFG, 'Discord', 'discord_tts', 0)
+            app.OVERRIDE_AVATAR = check_setting_bool(app.CFG, 'Discord', 'override_avatar', 0)
             app.DISCORD_NAME = check_setting_str(app.CFG, 'Discord', 'discord_name', '', censor_log='normal')
 
             app.USE_PROWL = bool(check_setting_int(app.CFG, 'Prowl', 'use_prowl', 0))
@@ -1907,6 +1908,7 @@ class Application(object):
         new_config['Discord']['discord_notify_onsubtitledownload'] = int(app.DISCORD_NOTIFY_ONSUBTITLEDOWNLOAD)
         new_config['Discord']['discord_webhook'] = app.DISCORD_WEBHOOK
         new_config['Discord']['discord_tts'] = int(app.DISCORD_TTS)
+        new_config['Discord']['override_avatar'] = int(app.OVERRIDE_AVATAR)
         new_config['Discord']['discord_name'] = app.DISCORD_NAME
 
         new_config['Prowl'] = {}
