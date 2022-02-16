@@ -419,6 +419,7 @@ def config_postprocessing():
     section_data['naming']['animeNamingType'] = int_default(app.NAMING_ANIME, 3)
     section_data['naming']['stripYear'] = bool(app.NAMING_STRIP_YEAR)
     section_data['showDownloadDir'] = app.TV_DOWNLOAD_DIR
+    section_data['defaultClientPath'] = app.DEFAULT_CLIENT_PATH
     section_data['processAutomatically'] = bool(app.PROCESS_AUTOMATICALLY)
     section_data['postponeIfSyncFiles'] = bool(app.POSTPONE_IF_SYNC_FILES)
     section_data['postponeIfNoSubs'] = bool(app.POSTPONE_IF_NO_SUBS)
