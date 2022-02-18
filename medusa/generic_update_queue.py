@@ -141,10 +141,10 @@ class RecommendedShowQueueItem(generic_queue.QueueItem):
         if not app.CACHE_RECOMMENDED_PURGE_AFTER_DAYS:
             return
 
-        sql ='''
+        sql = """
             DELETE FROM shows
             WHERE added < datetime('now', '-{days} days')
-        '''.format(days=app.CACHE_RECOMMENDED_PURGE_AFTER_DAYS)
+        """.format(days=app.CACHE_RECOMMENDED_PURGE_AFTER_DAYS)
         params = []
 
         if self.recommended_list != GenericQueueActions.UPDATE_RECOMMENDED_LIST_ALL:
@@ -152,7 +152,6 @@ class RecommendedShowQueueItem(generic_queue.QueueItem):
             params = [self.recommended_list]
 
         db.DBConnection('recommended.db').action(sql, params)
-
 
     def _get_trakt_shows(self):
         """Get Trakt shows."""
