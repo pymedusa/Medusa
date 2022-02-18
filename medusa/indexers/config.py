@@ -3,18 +3,22 @@
 """Indexer config module."""
 from __future__ import unicode_literals
 
-from medusa.app import BASE_PYMEDUSA_URL
+from builtins import str
+
+from medusa.app import app
 from medusa.indexers.imdb.api import Imdb
 from medusa.indexers.tmdb.api import Tmdb
 from medusa.indexers.tvdbv2.api import TVDBv2
 from medusa.indexers.tvmaze.api import TVmaze
-from medusa.session.core import MedusaSafeSession, MedusaSession
+from medusa.session.core import IndexerSession
+
+from six import iteritems
 
 
-initConfig = {
+init_config = {
     'valid_languages': [
-        "da", "fi", "nl", "de", "it", "es", "fr", "pl", "hu", "el", "tr",
-        "ru", "he", "ja", "pt", "zh", "cs", "sl", "hr", "ko", "en", "sv", "no"
+        'da', 'fi', 'nl', 'de', 'it', 'es', 'fr', 'pl', 'hu', 'el', 'tr',
+        'ru', 'he', 'ja', 'pt', 'zh', 'cs', 'sl', 'hr', 'ko', 'en', 'sv', 'no'
     ],
     'langabbv_to_id': {
         'el': 20, 'en': 7, 'zh': 27,
@@ -32,36 +36,43 @@ INDEXER_TMDB = 4
 INDEXER_IMDB = EXTERNAL_IMDB = 10
 EXTERNAL_ANIDB = 11
 EXTERNAL_TRAKT = 12
+EXTERNAL_ANILIST = 13
 
 EXTERNAL_MAPPINGS = {
     EXTERNAL_ANIDB: 'anidb_id',
     INDEXER_TVRAGE: 'tvrage_id',
-    EXTERNAL_TRAKT: 'trakt_id'
+    EXTERNAL_TRAKT: 'trakt_id',
+    EXTERNAL_ANILIST: 'anilist_id'
 }
 
 # trakt indexer name vs Medusa indexer
 TRAKT_INDEXERS = {'tvdb': INDEXER_TVDBV2, 'tmdb': INDEXER_TMDB, 'imdb': INDEXER_IMDB, 'trakt': EXTERNAL_TRAKT}
 
 STATUS_MAP = {
-    'returning series': 'Continuing',
-    'canceled/ended': 'Ended',
-    'tbd/on the bubble': 'Continuing',
-    'in development': 'Continuing',
-    'new series': 'Continuing',
-    'never aired': 'Ended',
-    'final season': 'Continuing',
-    'on hiatus': 'Continuing',
-    'pilot ordered': 'Continuing',
-    'pilot rejected': 'Ended',
-    'canceled': 'Ended',
-    'ended': 'Ended',
-    'to be determined': 'Continuing',
-    'running': 'Continuing',
-    'planned': 'Continuing',
-    'in production': 'Continuing',
-    'pilot': 'Continuing',
-    'cancelled': 'Ended',
-    'continuing': 'Continuing'
+    'Continuing': [
+        'returning series',
+        'tbd/on the bubble',
+        'in development',
+        'new series',
+        'final season',
+        'on hiatus',
+        'pilot ordered',
+        'to be determined',
+        'running',
+        'planned',
+        'in production',
+        'pilot',
+        'continuing',
+        'upcoming'
+    ],
+    'Ended': [
+        'canceled/ended',
+        'never aired',
+        'pilot rejected',
+        'canceled',
+        'ended',
+        'cancelled'
+    ]
 }
 
 indexerConfig = {
@@ -73,13 +84,13 @@ indexerConfig = {
         'api_params': {
             'language': 'en',
             'use_zip': True,
-            'session': MedusaSession(cache_control={'cache_etags': False}),
+            'session': IndexerSession(cache_control={'cache_etags': False}),
         },
         'xem_origin': 'tvdb',
         'icon': 'thetvdb16.png',
-        'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tvdb.json'.format(base_url=BASE_PYMEDUSA_URL),
+        'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tvdb.json'.format(base_url=app.BASE_PYMEDUSA_URL),
         'base_url': 'https://api.thetvdb.com/',
-        'show_url': 'http://thetvdb.com/?tab=series&id={0}',
+        'show_url': 'https://www.thetvdb.com/dereferrer/series/',
         'mapped_to': 'tvdb_id',  # The attribute to which other indexers can map there thetvdb id to
         'identifier': 'tvdb',  # Also used as key for the custom scenename exceptions. (_get_custom_exceptions())
     },
@@ -91,14 +102,14 @@ indexerConfig = {
         'api_params': {
             'language': 'en',
             'use_zip': True,
-            'session': MedusaSession(cache_control={'cache_etags': False}),
+            'session': IndexerSession(cache_control={'cache_etags': False}),
         },
         'xem_mapped_to': INDEXER_TVDBV2,
         'icon': 'tvmaze16.png',
-        'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tvmaze.json'.format(base_url=BASE_PYMEDUSA_URL),
-        'show_url': 'http://www.tvmaze.com/shows/{0}',
-        'base_url': 'http://api.tvmaze.com/',
-        'mapped_to': 'tvmaze_id',  # The attribute to which other indexers can map their tvmaze id to
+        'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tvmaze.json'.format(base_url=app.BASE_PYMEDUSA_URL),
+        'show_url': 'https://www.tvmaze.com/shows/',
+        'base_url': 'https://api.tvmaze.com/',
+        'mapped_to': 'tvmaze_id',  # The attribute to which other indexers can map there tvmaze id to
         'identifier': 'tvmaze',  # Also used as key for the custom scenename exceptions. (_get_custom_exceptions())
     },
     INDEXER_TMDB: {
@@ -109,13 +120,13 @@ indexerConfig = {
         'api_params': {
             'language': 'en',
             'use_zip': True,
-            'session': MedusaSession(cache_control={'cache_etags': False}),
+            'session': IndexerSession(cache_control={'cache_etags': False}),
         },
         'icon': 'tmdb16.png',
-        'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tmdb.json'.format(base_url=BASE_PYMEDUSA_URL),
+        'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tmdb.json'.format(base_url=app.BASE_PYMEDUSA_URL),
         'base_url': 'https://www.themoviedb.org/',
-        'show_url': 'https://www.themoviedb.org/tv/{0}',
-        'mapped_to': 'tmdb_id',  # The attribute to which other indexers can map their tmdb id to
+        'show_url': 'https://www.themoviedb.org/tv/',
+        'mapped_to': 'tmdb_id',  # The attribute to which other indexers can map there tmdb id to
         'identifier': 'tmdb',  # Also used as key for the custom scenename exceptions. (_get_custom_exceptions())
     },
     INDEXER_IMDB: {
@@ -126,14 +137,51 @@ indexerConfig = {
         'api_params': {
             'language': 'en',
             'use_zip': True,
-            'session': MedusaSession(cache_control={'cache_etags': False}),
+            'session': IndexerSession(cache_control={'cache_etags': False}),
         },
         'xem_mapped_to': INDEXER_TVDBV2,
         'icon': 'imdb16.png',
-        'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_imdb.json'.format(base_url=BASE_PYMEDUSA_URL),
+        'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_imdb.json'.format(base_url=app.BASE_PYMEDUSA_URL),
         'show_url': 'http://www.imdb.com/title/tt{0:07d}',
         'base_url': 'https://v2.sg.media-imdb.com',
         'mapped_to': 'imdb_id',  # The attribute to which other indexers can map their imdb id to
         'identifier': 'imdb',  # Also used as key for the custom scenename exceptions. (_get_custom_exceptions())
     }
 }
+
+
+def create_config_json(indexer):
+    """Create a json (pickable) compatible dict, for using as an apiv2 resource."""
+    return {
+        'enabled': indexer['enabled'],
+        'id': indexer['id'],
+        'name': indexer['name'],
+        'apiParams': {
+            'language': indexer['api_params']['language'],
+            'useZip': indexer['api_params']['use_zip'],
+        },
+        'xemOrigin': indexer.get('xem_origin'),
+        'icon': indexer.get('icon'),
+        'scene_loc': indexer.get('scene_loc'),
+        'baseUrl': indexer.get('base_url'),
+        'showUrl': indexer.get('show_url'),
+        'mappedTo': indexer.get('mapped_to'),  # The attribute to which other indexers can map there thetvdb id to
+        'identifier': indexer.get('identifier'),  # Also used as key for the custom scenename exceptions. (_get_custom_exceptions())
+    }
+
+
+def get_indexer_config():
+    """Create a per indexer and main indexer config, used by the apiv2."""
+    indexers = {
+        indexerConfig[indexer]['identifier']: create_config_json(indexerConfig[indexer]) for indexer in indexerConfig
+    }
+
+    main = {
+        'validLanguages': init_config['valid_languages'],
+        'langabbvToId': init_config['langabbv_to_id'],
+        'externalMappings': {str(k): v for k, v in iteritems(EXTERNAL_MAPPINGS)},
+        'traktIndexers': TRAKT_INDEXERS,
+        'statusMap': STATUS_MAP
+    }
+
+    return {'indexers': indexers, 'main': main}

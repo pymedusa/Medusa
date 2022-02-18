@@ -77,10 +77,8 @@ from medusa.config import (
     check_setting_list, check_setting_str,
     load_provider_setting, save_provider_setting
 )
-from medusa.indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVMAZE
 from medusa.databases import cache_db, failed_db, main_db, recommended_db
 from medusa.failed_history import trim_history
-from medusa.event_queue import Events
 from medusa.generic_update_queue import GenericQueueScheduler, RecommendedShowUpdateScheduler
 from medusa.indexers.config import INDEXER_TVDBV2, INDEXER_TVMAZE
 from medusa.init.filesystem import is_valid_encoding

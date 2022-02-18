@@ -10,7 +10,7 @@ from builtins import input
 from builtins import object
 from builtins import str
 
-from exceptions import IndexerUserAbort
+from .exceptions import IndexerUserAbort
 
 log = logging.getLogger(__name__)
 log.logger.addHandler(logging.NullHandler())

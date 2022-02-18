@@ -69,15 +69,14 @@ from medusa.imdb import Imdb
 from medusa.indexers.api import indexerApi
 from medusa.indexers.config import (
     EXTERNAL_MAPPINGS,
-    INDEXER_TVRAGE,
     INDEXER_IMDB,
+    INDEXER_TVRAGE,
     STATUS_MAP,
     indexerConfig
 )
 from medusa.indexers.exceptions import (
     IndexerAttributeNotFound, IndexerException, IndexerSeasonNotFound, IndexerShowAlreadyInLibrary
 )
-from medusa.indexers.tmdb.api import Tmdb
 from medusa.indexers.imdb.api import ImdbIdentifier
 from medusa.indexers.tmdb.api import Tmdb
 from medusa.indexers.utils import (

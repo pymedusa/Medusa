@@ -19,7 +19,6 @@ from medusa import (
     logger,
     ws,
 )
-from medusa.helper.mappings import NonEmptyDict
 from medusa.app import app
 from medusa.common import IGNORED, Quality, SKIPPED, WANTED, cpu_presets
 from medusa.helpers.ffmpeg import FfMpeg, FfprobeBinaryException
