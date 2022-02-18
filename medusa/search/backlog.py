@@ -8,10 +8,11 @@ import logging
 import threading
 from builtins import object
 from builtins import str
+from uuid import uuid4
 
-from medusa import app, common, db, scheduler, ui
-from medusa.helper.common import episode_num
+from medusa import app, db, ui, ws
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.schedulers import scheduler
 from medusa.search.queue import BacklogQueueItem
 
 from six import iteritems
@@ -50,6 +51,13 @@ class BacklogSearcher(object):
         self.amWaiting = False
         self.forced = False
         self.currentSearchInfo = {}
+
+        self._to_json = {
+            'identifier': str(uuid4()),
+            'name': 'BACKLOG',
+            'queueTime': str(datetime.datetime.utcnow()),
+            'force': self.forced
+        }
 
         self._reset_pi()
 
@@ -106,7 +114,7 @@ class BacklogSearcher(object):
             if series_obj.paused:
                 continue
 
-            segments = self._get_segments(series_obj, from_date)
+            segments = series_obj.get_wanted_segments(from_date=from_date)
 
             for season, segment in iteritems(segments):
                 self.currentSearchInfo = {'title': '{series_name} Season {season}'.format(series_name=series_obj.name,
@@ -136,57 +144,15 @@ class BacklogSearcher(object):
 
         if not sql_results:
             last_backlog = 1
-        elif sql_results[0][b'last_backlog'] is None or sql_results[0][b'last_backlog'] == '':
+        elif sql_results[0]['last_backlog'] is None or sql_results[0]['last_backlog'] == '':
             last_backlog = 1
         else:
-            last_backlog = int(sql_results[0][b'last_backlog'])
+            last_backlog = int(sql_results[0]['last_backlog'])
             if last_backlog > datetime.date.today().toordinal():
                 last_backlog = 1
 
         self._last_backlog = last_backlog
         return self._last_backlog
-
-    @staticmethod
-    def _get_segments(series_obj, from_date):
-        """Get episodes that should be backlog searched."""
-        wanted = {}
-        if series_obj.paused:
-            log.debug(u'Skipping backlog for {0} because the show is paused', series_obj.name)
-            return wanted
-
-        log.debug(u'Seeing if we need anything from {0}', series_obj.name)
-
-        con = db.DBConnection()
-        sql_results = con.select(
-            'SELECT status, season, episode, manually_searched '
-            'FROM tv_episodes '
-            'WHERE airdate > ?'
-            ' AND indexer = ? '
-            ' AND showid = ?',
-            [from_date.toordinal(), series_obj.indexer, series_obj.series_id]
-        )
-
-        # check through the list of statuses to see if we want any
-        for sql_result in sql_results:
-            should_search, shold_search_reason = common.Quality.should_search(sql_result[b'status'], series_obj,
-                                                                              sql_result[b'manually_searched'])
-            if not should_search:
-                continue
-            log.debug(
-                u'Found needed backlog episodes for: {show} {ep}. Reason: {reason}', {
-                    'show': series_obj.name,
-                    'ep': episode_num(sql_result[b'season'], sql_result[b'episode']),
-                    'reason': shold_search_reason,
-                }
-            )
-            ep_obj = series_obj.get_episode(sql_result[b'season'], sql_result[b'episode'])
-
-            if ep_obj.season not in wanted:
-                wanted[ep_obj.season] = [ep_obj]
-            else:
-                wanted[ep_obj.season].append(ep_obj)
-
-        return wanted
 
     @staticmethod
     def _set_last_backlog(when):
@@ -209,7 +175,12 @@ class BacklogSearcher(object):
         try:
             if force:
                 self.forced = True
+
+            # Push an update to any open Web UIs through the WebSocket
+            ws.Message('QueueItemUpdate', self._to_json).push()
             self.search_backlog()
+            ws.Message('QueueItemUpdate', self._to_json).push()
+
         except Exception:
             self.amActive = False
             raise

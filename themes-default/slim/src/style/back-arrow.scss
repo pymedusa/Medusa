@@ -1,0 +1,15 @@
+svg.back-arrow {
+    color: #337ab7;
+    width: 20px;
+    height: 20px;
+    float: left;
+    margin-right: 1em;
+    cursor: pointer;
+}
+
+svg.back-arrow:hover,
+svg.back-arrow:focus {
+    color: #23527c;
+    transform: translateX(-2px);
+    transition: transform ease-in-out 0.2s;
+}

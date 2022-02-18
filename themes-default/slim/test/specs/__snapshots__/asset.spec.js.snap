@@ -1,0 +1,34 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Asset.test.js renders default content for network 1`] = `
+<div
+  style="display: inherit;"
+>
+  <img
+    src="https://default_website.tld/img.png"
+  />
+</div>
+`;
+
+exports[`Asset.test.js renders image with API v2 path for network 1`] = `
+<div
+  style="display: inherit;"
+>
+  <img
+    src="/api/v2/series/tvdb1000/asset/network?api_key=1234567890ABCDEF1234567890ABCDEF"
+  />
+</div>
+`;
+
+exports[`Asset.test.js renders image with API v2 path for network with lazy loading 1`] = `
+<div
+  style="display: inherit;"
+>
+  <img
+    class="app-image show-image loaded"
+    data-loaded="true"
+    data-src="/api/v2/series/tvdb1000/asset/posterThumb?api_key=1234567890ABCDEF1234567890ABCDEF"
+    src="/api/v2/series/tvdb1000/asset/posterThumb?api_key=1234567890ABCDEF1234567890ABCDEF"
+  />
+</div>
+`;

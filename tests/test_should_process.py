@@ -1,7 +1,9 @@
 # coding=utf-8
 """Tests for medusa/test_should_process.py."""
+from __future__ import unicode_literals
 from medusa.common import Quality
 from medusa.post_processor import PostProcessor
+
 import pytest
 
 
@@ -55,12 +57,12 @@ import pytest
         'preferred_qualities': [Quality.HDTV],
         'expected': True
     },
-    {  # p7: Current quality is NONE: no
-        'cur_quality': Quality.NONE,
+    {  # p7: Current quality is NA: yes
+        'cur_quality': Quality.NA,
         'new_quality': Quality.HDTV,
         'allowed_qualities': [Quality.HDWEBDL],
         'preferred_qualities': [Quality.HDTV],
-        'expected': False
+        'expected': True
     },
 ])
 def test_should_process(p):
@@ -78,5 +80,5 @@ def test_should_process(p):
 
     # Then
     if expected != actual:
-        print msg
+        print(msg)
     assert expected == actual

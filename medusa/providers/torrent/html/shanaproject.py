@@ -22,7 +22,7 @@ log.logger.addHandler(logging.NullHandler())
 class ShanaProjectProvider(TorrentProvider):
     """ShanaProject Torrent provider."""
 
-    size_regex = re.compile('([\d.]+)(.*)')
+    size_regex = re.compile(r'([\d.]+)(.*)')
 
     def __init__(self):
         """Initialize the class."""
@@ -41,10 +41,6 @@ class ShanaProjectProvider(TorrentProvider):
         self.max_pages = 3  # Max return 150 results for 3 pages.
         self.supports_absolute_numbering = True
         self.anime_only = True
-
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
 
         # Cache
         self.cache = tv.Cache(self, min_time=20)

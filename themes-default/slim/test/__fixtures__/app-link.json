@@ -1,0 +1,151 @@
+{
+    "state": {
+        "config": {
+            "general": {
+                "anonRedirect": "http://dereferer.org/?"
+            },
+            "indexers": {
+                "indexers": {
+                    "tvdb": {
+                        "enabled": true,
+                        "id": 1,
+                        "name": "TVDBv2",
+                        "apiParams": {
+                            "language": "en",
+                            "useZip": true
+                        },
+                        "xemOrigin": "tvdb",
+                        "icon": "thetvdb16.png",
+                        "scene_loc": "https://cdn.pymedusa.com/scene_exceptions/scene_exceptions_tvdb.json",
+                        "baseUrl": "https://api.thetvdb.com/",
+                        "showUrl": "https://www.thetvdb.com/dereferrer/series/",
+                        "mappedTo": "tvdb_id",
+                        "identifier": "tvdb"
+                    },
+                    "tvmaze": {
+                        "enabled": true,
+                        "id": 3,
+                        "name": "TVmaze",
+                        "apiParams": {
+                            "language": "en",
+                            "useZip": true
+                        },
+                        "xemOrigin": null,
+                        "icon": "tvmaze16.png",
+                        "scene_loc": "https://cdn.pymedusa.com/scene_exceptions/scene_exceptions_tvmaze.json",
+                        "baseUrl": "http://api.tvmaze.com/",
+                        "showUrl": "http://www.tvmaze.com/shows/",
+                        "mappedTo": "tvmaze_id",
+                        "identifier": "tvmaze"
+                    },
+                    "tmdb": {
+                        "enabled": true,
+                        "id": 4,
+                        "name": "TMDB",
+                        "apiParams": {
+                            "language": "en",
+                            "useZip": true
+                        },
+                        "xemOrigin": null,
+                        "icon": "tmdb16.png",
+                        "scene_loc": "https://cdn.pymedusa.com/scene_exceptions/scene_exceptions_tmdb.json",
+                        "baseUrl": "https://www.themoviedb.org/",
+                        "showUrl": "https://www.themoviedb.org/tv/",
+                        "mappedTo": "tmdb_id",
+                        "identifier": "tmdb"
+                    }
+                },
+                "main": {
+                    "validLanguages": [
+                        "da",
+                        "fi",
+                        "nl",
+                        "de",
+                        "it",
+                        "es",
+                        "fr",
+                        "pl",
+                        "hu",
+                        "el",
+                        "tr",
+                        "ru",
+                        "he",
+                        "ja",
+                        "pt",
+                        "zh",
+                        "cs",
+                        "sl",
+                        "hr",
+                        "ko",
+                        "en",
+                        "sv",
+                        "no"
+                    ],
+                    "langabbvToId": {
+                        "el": 20,
+                        "en": 7,
+                        "zh": 27,
+                        "it": 15,
+                        "cs": 28,
+                        "es": 16,
+                        "ru": 22,
+                        "nl": 13,
+                        "pt": 26,
+                        "no": 9,
+                        "tr": 21,
+                        "pl": 18,
+                        "fr": 17,
+                        "hr": 31,
+                        "de": 14,
+                        "da": 10,
+                        "fi": 11,
+                        "hu": 19,
+                        "ja": 25,
+                        "he": 24,
+                        "ko": 32,
+                        "sv": 8,
+                        "sl": 30
+                    },
+                    "externalMappings": {
+                        "10": "imdb_id",
+                        "11": "anidb_id",
+                        "2": "tvrage_id",
+                        "12": "trakt_id"
+                    },
+                    "traktIndexers": {
+                        "tvdb": 1,
+                        "tmdb": 4,
+                        "imdb": 10,
+                        "trakt": 12
+                    },
+                    "statusMap": {
+                        "Continuing": [
+                            "returning series",
+                            "tbd/on the bubble",
+                            "in development",
+                            "new series",
+                            "final season",
+                            "on hiatus",
+                            "pilot ordered",
+                            "to be determined",
+                            "running",
+                            "planned",
+                            "in production",
+                            "pilot",
+                            "continuing",
+                            "upcoming"
+                        ],
+                        "Ended": [
+                            "canceled/ended",
+                            "never aired",
+                            "pilot rejected",
+                            "canceled",
+                            "ended",
+                            "cancelled"
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}

@@ -9,7 +9,7 @@ import logging
 import os
 import re
 
-from bencode import bdecode
+from bencodepy import DEFAULT as BENCODE
 
 from medusa import (
     app,
@@ -17,6 +17,7 @@ from medusa import (
     tv,
 )
 from medusa.helper.exceptions import ex
+from medusa.providers.generic_provider import GenericProvider
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 log = logging.getLogger(__name__)
@@ -26,11 +27,11 @@ log.logger.addHandler(logging.NullHandler())
 class TorrentRssProvider(TorrentProvider):
     """Torrent RSS provider."""
 
-    def __init__(self, name, url='', cookies='',
-                 title_tag='title', search_mode='eponly', search_fallback=False,
+    def __init__(self, name, url='', cookies='', title_tag=None, search_mode='eponly', search_fallback=False,
                  enable_daily=False, enable_backlog=False, enable_manualsearch=False):
         """Initialize the class."""
         super(TorrentRssProvider, self).__init__(name)
+        self.provider_sub_type = GenericProvider.TORRENTRSS
 
         # Credentials
 
@@ -49,7 +50,7 @@ class TorrentRssProvider(TorrentProvider):
         self.enable_cookies = True
         self.cookies = cookies
         self.required_cookies = ('uid', 'pass')
-        self.title_tag = title_tag
+        self.title_tag = title_tag or 'title'
 
         # Torrent Stats
 
@@ -132,7 +133,8 @@ class TorrentRssProvider(TorrentProvider):
             else:
                 torrent_file = self.session.get_content(url)
                 try:
-                    bdecode(torrent_file)
+                    # `bencodepy` is monkeypatched in `medusa.init`
+                    BENCODE.decode(torrent_file, allow_extra_data=True)
                 except Exception as error:
                     self.dump_html(torrent_file)
                     return {'result': False,

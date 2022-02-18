@@ -57,9 +57,9 @@ def todict(obj, classkey=None):
     elif hasattr(obj, '__iter__'):
         return [todict(v, classkey) for v in obj]
     elif hasattr(obj, '__dict__'):
-        data = OrderedDict([(key, todict(value, classkey))
-                            for key, value in obj.__dict__.items()
-                            if not callable(value) and not key.startswith('_')])
+        values = [(key, todict(value, classkey))
+                  for key, value in obj.__dict__.items() if not callable(value) and not key.startswith('_')]
+        data = OrderedDict([(k, v) for k, v in values if v is not None])
         if classkey is not None and hasattr(obj, '__class__'):
             data[classkey] = obj.__class__.__name__
         return data
@@ -76,9 +76,10 @@ def detect_os():
     return 'unix'
 
 
-def define_candidate(os_family, locations, names, suggested_path):
+def define_candidate(locations, names, os_family=None, suggested_path=None):
     """Generate candidate list for the given parameters."""
-    for location in [suggested_path] + locations[os_family]:
+    os_family = os_family or detect_os()
+    for location in (suggested_path, ) + locations[os_family]:
         if not location:
             continue
 

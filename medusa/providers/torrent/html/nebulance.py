@@ -6,11 +6,13 @@ from __future__ import unicode_literals
 
 import logging
 import re
-import traceback
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
-from medusa.helper.common import try_int
+from medusa.helper.common import (
+    convert_size,
+    try_int,
+)
 from medusa.helper.exceptions import AuthException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
@@ -24,6 +26,8 @@ log.logger.addHandler(logging.NullHandler())
 
 class NebulanceProvider(TorrentProvider):
     """Nebulance Torrent provider."""
+
+    IDENTIFIER_REGEX = re.compile(r'.+id=([0-9]+)&')
 
     def __init__(self):
         """Initialize the class."""
@@ -44,10 +48,6 @@ class NebulanceProvider(TorrentProvider):
 
         # Miscellaneous Options
         self.freeleech = None
-
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
 
         # Cache
         self.cache = tv.Cache(self)
@@ -147,14 +147,15 @@ class NebulanceProvider(TorrentProvider):
                     leechers = try_int(cells[6].text.strip())
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
-                                      " minimum seeders: {0}. Seeders: {1}",
+                                      ' minimum seeders: {0}. Seeders: {1}',
                                       title, seeders)
                         continue
 
-                    size = temp_anchor['data-filesize'] or -1
+                    torrent_size = cells[2].find('div').get_text(strip=True)
+                    size = convert_size(torrent_size) or -1
 
                     pubdate_raw = cells[3].find('span')['title']
                     pubdate = self.parse_pubdate(pubdate_raw)
@@ -173,8 +174,7 @@ class NebulanceProvider(TorrentProvider):
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.error('Failed parsing provider. Traceback: {0!r}',
-                              traceback.format_exc())
+                    log.exception('Failed parsing provider.')
 
         return items
 
@@ -209,6 +209,19 @@ class NebulanceProvider(TorrentProvider):
                                 ' check your config.'.format(self.name))
 
         return True
+
+    @staticmethod
+    def _get_identifier(item):
+        """
+        Return the identifier for the item.
+
+        Cut the apikey from it, as this might change over time.
+            So we'd like to prevent adding duplicates to cache.
+        """
+        url = NebulanceProvider.IDENTIFIER_REGEX.match(item.url)
+        if url:
+            return url.group(1)
+        return item.url
 
 
 provider = NebulanceProvider()

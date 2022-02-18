@@ -8,8 +8,6 @@ import os
 import string
 from builtins import str
 
-from past.builtins import cmp
-
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
@@ -22,7 +20,9 @@ def get_win_drives():
 
     drives = []
     bitmask = windll.kernel32.GetLogicalDrives()  # @UndefinedVariable
-    for letter in string.uppercase:
+
+    drive_leters = string.ascii_uppercase
+    for letter in drive_leters:
         if bitmask & 1:
             drives.append(letter)
         bitmask >>= 1
@@ -103,8 +103,7 @@ def list_folders(path, include_parent=False, include_files=False):
         log.warning('Unable to open %s: %s / %s', path, repr(e), str(e))
         file_list = get_file_list(parent_path, include_files)
 
-    file_list = sorted(file_list,
-                       lambda x, y: cmp(os.path.basename(x['name']).lower(), os.path.basename(y['path']).lower()))
+    file_list = sorted(file_list, key=lambda x: os.path.basename(x['name']).lower())
 
     entries = [{'currentPath': path}]
     if include_parent and parent_path != path:

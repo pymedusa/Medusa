@@ -81,7 +81,7 @@ class Configurable(Property):
     def _lookup(self, key, context):
         result = self.mapping.get(key)
         if result is not None:
-            result = getattr(result, context['profile'])
+            result = getattr(result, context.get('profile') or 'default')
             return result if result != '__ignored__' else False
 
     def handle(self, value, context):

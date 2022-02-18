@@ -17,6 +17,7 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
+
 from medusa import image_cache
 from medusa.media.generic import GenericMedia
 

@@ -21,10 +21,10 @@ from builtins import object
 from collections import namedtuple
 from datetime import datetime, timedelta
 
-from medusa.common import Quality
+from medusa.common import DOWNLOADED, SNATCHED
 from medusa.helper.common import try_int
 
-from six import itervalues, text_type
+from six import binary_type, itervalues, text_type
 
 
 class History(object):
@@ -44,7 +44,7 @@ class History(object):
             'WHERE 1 = 1'
         )
 
-    def get(self, limit=100, action=None):
+    def get(self, limit=100, action=None, show_obj=None):
         """
         :param limit: The maximum number of elements to return
         :param action: The type of action to filter in the history. Either 'downloaded' or 'snatched'. Anything else or
@@ -57,21 +57,28 @@ class History(object):
         # TODO: Add a date limit as well
         # TODO: Clean up history.mako
 
-        actions = History._get_actions(action)
+        parsed_action = History._get_action(action)
         limit = max(try_int(limit), 0)
 
-        common_sql = 'SELECT show_name, h.indexer_id, showid, season, episode, h.quality, ' \
-                     'action, provider, resource, date, h.proper_tags, h.manually_searched ' \
-                     'FROM history h, tv_shows s ' \
-                     'WHERE h.showid = s.indexer_id AND h.indexer_id = s.indexer '
-        filter_sql = 'AND action in (' + ','.join(['?'] * len(actions)) + ') '
+        common_sql = (
+            'SELECT show_name, h.indexer_id, showid AS show_id, season, episode, action, h.quality, '
+            'provider, resource, date, h.proper_tags, h.manually_searched '
+            'FROM history h, tv_shows s '
+            'WHERE h.showid = s.indexer_id AND h.indexer_id = s.indexer '
+        )
+        filter_sql = 'AND action = ? '
         order_sql = 'ORDER BY date DESC '
 
-        if actions:
+        show_params = []
+        if show_obj:
+            filter_sql += 'AND s.showid = ? AND s.indexer_id = ?'
+            show_params += [show_obj.series_id, show_obj.indexer]
+
+        if parsed_action:
             sql_results = self.db.select(common_sql + filter_sql + order_sql,
-                                         actions)
+                                         [parsed_action] + show_params)
         else:
-            sql_results = self.db.select(common_sql + order_sql)
+            sql_results = self.db.select(common_sql + order_sql, show_params)
 
         detailed = []
         compact = dict()
@@ -79,7 +86,7 @@ class History(object):
         # TODO: Convert to a defaultdict and compact items as needed
         # TODO: Convert to using operators to combine items
         for row in sql_results:
-            row = History.Item(*row)
+            row = History.Item(**row)
             if not limit or len(detailed) < limit:
                 detailed.append(row)
             if row.index in compact:
@@ -105,18 +112,18 @@ class History(object):
         )
 
     @staticmethod
-    def _get_actions(action):
-        action = action.lower() if isinstance(action, (str, text_type)) else ''
+    def _get_action(action):
+        if isinstance(action, (binary_type, text_type)):
+            action = action.lower()
 
-        result = None
-        if action == 'downloaded':
-            result = Quality.DOWNLOADED
-        elif action == 'snatched':
-            result = Quality.SNATCHED
+            if action == 'downloaded':
+                return DOWNLOADED
+            elif action == 'snatched':
+                return SNATCHED
 
-        return result or []
+        return None
 
-    action_fields = ('action', 'provider', 'resource', 'date', 'proper_tags', 'manually_searched')
+    action_fields = ('action', 'quality', 'provider', 'resource', 'date', 'proper_tags', 'manually_searched')
     # A specific action from history
     Action = namedtuple('Action', action_fields)
     Action.width = len(action_fields)
@@ -131,7 +138,7 @@ class History(object):
     CompactItem = namedtuple('CompactItem', compact_fields)
 
     item_fields = tuple(  # make it a tuple so its immutable
-        ['show_name'] + list(index_fields) + list(action_fields)
+        set(('show_name',) + index_fields + action_fields)  # unique only
     )
 
     class Item(namedtuple('Item', item_fields)):
@@ -163,6 +170,7 @@ class History(object):
             """
             return History.Action(
                 self.action,
+                self.quality,
                 self.provider,
                 self.resource,
                 self.date,

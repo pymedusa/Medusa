@@ -1,5 +1,6 @@
 # coding=utf-8
 """Tests for medusa/test_list_associated_files.py."""
+from __future__ import unicode_literals
 
 from medusa import helpers
 import medusa.scene_numbering

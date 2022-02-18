@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 import logging
 
 from medusa import tv
+from medusa.helper.common import convert_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
@@ -38,14 +39,9 @@ class HDBitsProvider(TorrentProvider):
         self.proper_strings = ['PROPER', 'REPACK']
 
         # Miscellaneous Options
-        self.session.hooks.update({'response': self.get_url_hook})  # Enable URL logging
-
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
 
         # Cache
-        self.cache = tv.Cache(self, min_time=10)  # Only poll HDBits every 10 minutes max
+        self.cache = tv.Cache(self)
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
@@ -58,9 +54,8 @@ class HDBitsProvider(TorrentProvider):
         """
         results = []
 
-        log.debug('Search strings {0}', search_strings)
-
-        self._check_auth()
+        if not self._check_auth():
+            return results
 
         # Search Params
         search_params = {
@@ -86,6 +81,7 @@ class HDBitsProvider(TorrentProvider):
                 if mode != 'RSS':
                     log.debug('Search string {search}', {'search': search_string})
                     search_params['search'] = search_string
+
                 response = self.session.post(self.urls['search'], json=search_params)
                 if not response or not response.content:
                     log.debug('No data returned from provider')
@@ -93,13 +89,14 @@ class HDBitsProvider(TorrentProvider):
 
                 if not self._check_auth_from_data(response):
                     return results
+
                 try:
                     jdata = response.json()
                 except ValueError:  # also catches JSONDecodeError if simplejson is installed
                     log.debug('No data returned from provider')
                     continue
 
-                results += self.parse(jdata, None)
+                results += self.parse(jdata, mode)
 
         return results
 
@@ -115,31 +112,34 @@ class HDBitsProvider(TorrentProvider):
         items = []
 
         torrent_rows = data.get('data')
-
         if not torrent_rows:
             log.debug('Data returned from provider does not contain any torrents')
             return items
 
-        # Skip column headers
         for row in torrent_rows:
             title = row.get('name', '')
             torrent_id = row.get('id', '')
-            download_url = self.urls['download'].format(urlencode({'id': torrent_id, 'passkey': self.passkey}))
+            download_url = self.urls['download'].format(
+                urlencode({'id': torrent_id, 'passkey': self.passkey}))
+
             if not all([title, download_url]):
                 continue
+
             seeders = row.get('seeders', 1)
             leechers = row.get('leechers', 0)
 
             # Filter unseeded torrent
-            if seeders < min(self.minseed, 1):
-                log.debug(
-                    "Discarding torrent because it doesn't meet the"
-                    " minimum seeders: {0}. Seeders: {1}",
-                    title, seeders)
+            if seeders < self.minseed:
+                if mode != 'RSS':
+                    log.debug("Discarding torrent because it doesn't meet the"
+                              ' minimum seeders: {0}. Seeders: {1}',
+                              title, seeders)
                 continue
 
-            size = row.get('size') or -1
-            pubdate = row.get('added', '')
+            size = convert_size(row.get('size'), default=-1)
+
+            pubdate_raw = row.get('added')
+            pubdate = self.parse_pubdate(pubdate_raw)
 
             item = {
                 'title': title,
@@ -149,21 +149,21 @@ class HDBitsProvider(TorrentProvider):
                 'leechers': leechers,
                 'pubdate': pubdate,
             }
-            log.debug(
-                'Found result: {title} with {x} seeders'
-                ' and {y} leechers', {
-                    'title': title,
-                    'x': seeders,
-                    'y': leechers
-                }
-            )
+            if mode != 'RSS':
+                log.debug(
+                    'Found result: {title} with {x} seeders'
+                    ' and {y} leechers', {
+                        'title': title,
+                        'x': seeders,
+                        'y': leechers
+                    }
+                )
 
             items.append(item)
 
         return items
 
     def _check_auth(self):
-
         if not self.username or not self.passkey:
             log.warning('Your authentication credentials for {provider} are missing,'
                         ' check your config.', {'provider': self.name})
@@ -177,6 +177,7 @@ class HDBitsProvider(TorrentProvider):
             if parsed_json.get('status') == 5:
                 log.warning('Invalid username or password. Check your settings')
                 return False
+
         return True
 
 

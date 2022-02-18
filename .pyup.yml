@@ -1,8 +1,0 @@
-# configure updates globally
-# default: all
-# allowed: all, insecure, False
-update: insecure
-
-# set the default branch
-# default: empty, the default branch on GitHub
-branch: develop

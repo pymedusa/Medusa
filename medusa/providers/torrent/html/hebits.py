@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import re
-import traceback
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -47,10 +46,6 @@ class HeBitsProvider(TorrentProvider):
 
         # Miscellaneous Options
         self.freeleech = False
-
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
 
         # Cache
         self.cache = tv.Cache(self)
@@ -112,18 +107,18 @@ class HeBitsProvider(TorrentProvider):
         """
         items = []
 
-        with BS4Parser(data, 'html5lib') as html:
+        with BS4Parser(data, 'html.parser') as html:
             torrent_table = html.find('div', class_='browse')
             torrent_rows = torrent_table('div', class_=re.compile('^line')) if torrent_table else []
 
             # Continue only if at least one release is found
-            if len(torrent_rows) < 2:
+            if len(torrent_rows) < 1:
                 log.debug('Data returned from provider does not contain any torrents')
                 return items
 
             for row in torrent_rows:
                 try:
-                    heb_eng_title = row.find('div', class_='bTitle').find(href=re.compile('details\.php')).find('b').get_text()
+                    heb_eng_title = row.find('div', class_='bTitle').find(href=re.compile(r'details\.php')).find('b').get_text()
                     if '/' in heb_eng_title:
                         title = heb_eng_title.split('/')[1].strip()
                     elif '\\' in heb_eng_title:
@@ -131,7 +126,7 @@ class HeBitsProvider(TorrentProvider):
                     else:
                         continue
 
-                    download_id = row.find('div', class_='bTitle').find(href=re.compile('download\.php'))['href']
+                    download_id = row.find('div', class_='bTitle').find(href=re.compile(r'download\.php'))['href']
 
                     if not all([title, download_id]):
                         continue
@@ -142,10 +137,10 @@ class HeBitsProvider(TorrentProvider):
                     leechers = try_int(row.find('div', class_='bDowning').get_text(strip=True))
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
-                                      " minimum seeders: {0}. Seeders: {1}",
+                                      ' minimum seeders: {0}. Seeders: {1}',
                                       title, seeders)
                         continue
 
@@ -169,8 +164,7 @@ class HeBitsProvider(TorrentProvider):
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.error('Failed parsing provider. Traceback: {0!r}',
-                              traceback.format_exc())
+                    log.exception('Failed parsing provider.')
 
         return items
 

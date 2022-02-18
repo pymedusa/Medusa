@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import re
-import traceback
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -17,6 +16,7 @@ from medusa.helper.common import (
 from medusa.helper.exceptions import AuthException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
+
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 
@@ -47,10 +47,6 @@ class HDTorrentsProvider(TorrentProvider):
 
         # Miscellaneous Options
         self.freeleech = None
-
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
 
         # Cache
         self.cache = tv.Cache(self, min_time=30)
@@ -117,6 +113,9 @@ class HDTorrentsProvider(TorrentProvider):
 
         :return: A list of items found
         """
+        # Units
+        units = ['B', 'KIB', 'MIB', 'GIB', 'TIB', 'PIB']
+
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
@@ -150,18 +149,18 @@ class HDTorrentsProvider(TorrentProvider):
                     leechers = try_int(cells[labels.index('L')].get_text(strip=True))
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
-                                      " minimum seeders: {0}. Seeders: {1}",
+                                      ' minimum seeders: {0}. Seeders: {1}',
                                       title, seeders)
                         continue
 
                     torrent_size = cells[labels.index('Size')].get_text()
-                    size = convert_size(torrent_size) or -1
+                    size = convert_size(torrent_size, units=units) or -1
 
                     pubdate_raw = cells[labels.index('Added')].get_text()
-                    pubdate = self.parse_pubdate(pubdate_raw)
+                    pubdate = self.parse_pubdate(pubdate_raw, dayfirst=True)
 
                     item = {
                         'title': title,
@@ -177,8 +176,7 @@ class HDTorrentsProvider(TorrentProvider):
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.error('Failed parsing provider. Traceback: {0!r}',
-                              traceback.format_exc())
+                    log.exception('Failed parsing provider.')
 
         return items
 

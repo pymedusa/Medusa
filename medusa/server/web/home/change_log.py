@@ -32,4 +32,4 @@ class HomeChangeLog(Home):
             changes if changes else 'The was a problem connecting to github, please refresh and try again', extras=['header-ids']
         )
 
-        return t.render(title='Changelog', header='Changelog', topmenu='system', data=data, controller='changes', action='index')
+        return t.render(title='Changelog', header='Changelog', data=data, controller='changes', action='index')

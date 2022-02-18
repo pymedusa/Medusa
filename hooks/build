@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# This is a Docker Hub build hook.
+# It is used to inject the current commit hash and branch name as build-args.
+# See https://docs.docker.com/docker-hub/builds/advanced/
+
+echo "Executing hooks/build"
+
+echo "IMAGE_NAME: $IMAGE_NAME"
+
+BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+echo "BUILD_DATE: $BUILD_DATE"
+
+# Make sure these are available, and complete them using git if not
+
+# Git Branch
+echo "SOURCE_BRANCH: $SOURCE_BRANCH"
+if [[ -z "$SOURCE_BRANCH" ]]; then
+    echo "Updating SOURCE_BRANCH from git rev-parse --abbrev-ref HEAD"
+    export SOURCE_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+    echo "SOURCE_BRANCH: $SOURCE_BRANCH"
+fi
+
+# Git Commit
+# https://github.com/docker/hub-feedback/issues/600
+echo "SOURCE_COMMIT: $SOURCE_COMMIT"
+if [[ -z "$SOURCE_COMMIT" ]]; then
+    echo "Updating SOURCE_COMMIT from git rev-parse HEAD"
+    export SOURCE_COMMIT=$(git rev-parse HEAD)
+    echo "SOURCE_COMMIT: $SOURCE_COMMIT"
+fi
+
+echo "Running docker build"
+
+docker build \
+    --build-arg "GIT_BRANCH=$SOURCE_BRANCH" \
+    --build-arg "GIT_COMMIT=$SOURCE_COMMIT" \
+    --build-arg "BUILD_DATE=$BUILD_DATE" \
+    --file "$DOCKERFILE_PATH" \
+    --tag "$IMAGE_NAME" \
+    .

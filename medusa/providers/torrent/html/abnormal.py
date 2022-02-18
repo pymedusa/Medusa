@@ -6,14 +6,10 @@ from __future__ import unicode_literals
 
 import logging
 import re
-import traceback
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
-from medusa.helper.common import (
-    convert_size,
-    try_int,
-)
+from medusa.helper.common import convert_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
@@ -36,20 +32,16 @@ class ABNormalProvider(TorrentProvider):
         self.password = None
 
         # URLs
-        self.url = 'https://abnormal.ws'
+        self.url = 'https://abn.lol'
         self.urls = {
-            'login': urljoin(self.url, 'login.php'),
-            'search': urljoin(self.url, 'torrents.php'),
+            'login': urljoin(self.url, 'Home/Login'),
+            'search': urljoin(self.url, 'Torrent'),
         }
 
         # Proper Strings
         self.proper_strings = ['PROPER']
 
         # Miscellaneous Options
-
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
 
         # Cache
         self.cache = tv.Cache(self, min_time=30)
@@ -69,18 +61,9 @@ class ABNormalProvider(TorrentProvider):
 
         # Search Params
         search_params = {
-            'cat[]': [
-                'TV|SD|VOSTFR',
-                'TV|HD|VOSTFR',
-                'TV|SD|VF',
-                'TV|HD|VF',
-                'TV|PACK|FR',
-                'TV|PACK|VOSTFR',
-                'TV|EMISSIONS',
-                'ANIME',
-            ],
-            'order': 'Time',  # Sorting: Available parameters: ReleaseName, Seeders, Leechers, Snatched, Size
-            'way': 'DESC',  # Both ASC and DESC are available for sort direction
+            'SelectedCats': '1',   # "Series" category
+            'SortOn': 'Created',  # Sorting: Available parameters: ReleaseName, Seeders, Leechers, Snatched, Size
+            'SortOrder': 'DESC',  # Both ASC and DESC are available for sort direction
         }
 
         for mode in search_strings:
@@ -118,7 +101,7 @@ class ABNormalProvider(TorrentProvider):
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
-            torrent_table = html.find(class_='torrent_table')
+            torrent_table = html.find(class_='table-rows')
             torrent_rows = torrent_table('tr') if torrent_table else []
 
             # Continue only if at least one release is found
@@ -127,7 +110,7 @@ class ABNormalProvider(TorrentProvider):
                 return items
 
             # Catégorie, Release, Date, DL, Size, C, S, L
-            labels = [label.get_text(strip=True) for label in torrent_rows[0]('td')]
+            labels = [label.get_text(strip=True) for label in torrent_rows[0]('th')]
 
             # Skip column headers
             for row in torrent_rows[1:]:
@@ -137,25 +120,25 @@ class ABNormalProvider(TorrentProvider):
 
                 try:
                     title = cells[labels.index('Release')].get_text(strip=True)
-                    download = cells[labels.index('DL')].find('a', class_='tooltip')['href']
+                    download = cells[labels.index('DL')].find('a')['href']
                     download_url = urljoin(self.url, download)
                     if not all([title, download_url]):
                         continue
 
-                    seeders = try_int(cells[labels.index('S')].get_text(strip=True))
-                    leechers = try_int(cells[labels.index('L')].get_text(strip=True))
+                    seeders = int(cells[labels.index('S')].get_text(strip=True))
+                    leechers = int(cells[labels.index('L')].get_text(strip=True))
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
-                                      " minimum seeders: {0}. Seeders: {1}",
+                                      ' minimum seeders: {0}. Seeders: {1}',
                                       title, seeders)
                         continue
 
                     size_index = labels.index('Size') if 'Size' in labels else labels.index('Taille')
                     torrent_size = cells[size_index].get_text()
-                    size = convert_size(torrent_size, units=units) or -1
+                    size = convert_size(torrent_size.replace(',', '.'), units=units) or -1
 
                     item = {
                         'title': title,
@@ -171,8 +154,7 @@ class ABNormalProvider(TorrentProvider):
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.error('Failed parsing provider. Traceback: {0!r}',
-                              traceback.format_exc())
+                    log.exception('Failed parsing provider.')
 
         return items
 
@@ -181,9 +163,16 @@ class ABNormalProvider(TorrentProvider):
         if any(dict_from_cookiejar(self.session.cookies).values()):
             return True
 
+        # Retrieve __RequestVerificationToken
+        login_html = self.session.get(self.urls['login'])
+        with BS4Parser(login_html.text, 'html5lib') as html:
+            token = html.find('input', attrs={'name': '__RequestVerificationToken'}).get('value')
+
         login_params = {
-            'username': self.username,
-            'password': self.password,
+            'Username': self.username,
+            'Password': self.password,
+            '__RequestVerificationToken': token,
+            'RememberMe': True
         }
 
         response = self.session.post(self.urls['login'], data=login_params)
@@ -191,7 +180,7 @@ class ABNormalProvider(TorrentProvider):
             log.warning('Unable to connect to provider')
             return False
 
-        if not re.search('torrents.php', response.text):
+        if 'Erreur lors du login.' in response.text:
             log.warning('Invalid username or password. Check your settings')
             return False
 

@@ -1,12 +1,13 @@
 # coding=utf-8
 
 """Unit Tests for common package."""
-
-from __future__ import print_function
+from __future__ import unicode_literals
 
 import unittest
 
 from medusa import common
+
+from six import text_type, iteritems
 
 
 class QualityStringTests(unittest.TestCase):
@@ -96,7 +97,7 @@ class QualityStringTests(unittest.TestCase):
         cur_test = 'sd_tv'
         cur_qual = common.Quality.SDTV
 
-        for name, tests in self.test_cases.items():
+        for name, tests in iteritems(self.test_cases):
             for test in tests:
                 if name == cur_test:
                     self.assertEqual(cur_qual, common.Quality.name_quality(test))
@@ -107,7 +108,7 @@ class QualityStringTests(unittest.TestCase):
         cur_test = 'sd_dvd'
         cur_qual = common.Quality.SDDVD
 
-        for name, tests in self.test_cases.items():
+        for name, tests in iteritems(self.test_cases):
             for test in tests:
                 if name == cur_test:
                     self.assertEqual(cur_qual, common.Quality.name_quality(test))
@@ -118,7 +119,7 @@ class QualityStringTests(unittest.TestCase):
         cur_test = 'hd_tv'
         cur_qual = common.Quality.HDTV
 
-        for name, tests in self.test_cases.items():
+        for name, tests in iteritems(self.test_cases):
             for test in tests:
                 if name == cur_test:
                     self.assertEqual(cur_qual, common.Quality.name_quality(test))
@@ -129,7 +130,7 @@ class QualityStringTests(unittest.TestCase):
         cur_test = 'raw_hd_tv'
         cur_qual = common.Quality.RAWHDTV
 
-        for name, tests in self.test_cases.items():
+        for name, tests in iteritems(self.test_cases):
             for test in tests:
                 if name == cur_test:
                     self.assertEqual(cur_qual, common.Quality.name_quality(test))
@@ -140,7 +141,7 @@ class QualityStringTests(unittest.TestCase):
         cur_test = 'full_hd_tv'
         cur_qual = common.Quality.FULLHDTV
 
-        for name, tests in self.test_cases.items():
+        for name, tests in iteritems(self.test_cases):
             for test in tests:
                 if name == cur_test:
                     self.assertEqual(cur_qual, common.Quality.name_quality(test))
@@ -151,7 +152,7 @@ class QualityStringTests(unittest.TestCase):
         cur_test = 'hd_web_dl'
         cur_qual = common.Quality.HDWEBDL
 
-        for name, tests in self.test_cases.items():
+        for name, tests in iteritems(self.test_cases):
             for test in tests:
                 if name == cur_test:
                     self.assertEqual(cur_qual, common.Quality.name_quality(test))
@@ -162,7 +163,7 @@ class QualityStringTests(unittest.TestCase):
         cur_test = 'full_hd_web_dl'
         cur_qual = common.Quality.FULLHDWEBDL
 
-        for name, tests in self.test_cases.items():
+        for name, tests in iteritems(self.test_cases):
             for test in tests:
                 if name == cur_test:
                     self.assertEqual(cur_qual, common.Quality.name_quality(test))
@@ -173,7 +174,7 @@ class QualityStringTests(unittest.TestCase):
         cur_test = 'hd_bluray'
         cur_qual = common.Quality.HDBLURAY
 
-        for name, tests in self.test_cases.items():
+        for name, tests in iteritems(self.test_cases):
             for test in tests:
                 if name == cur_test:
                     self.assertEqual(cur_qual, common.Quality.name_quality(test))
@@ -184,7 +185,7 @@ class QualityStringTests(unittest.TestCase):
         cur_test = 'full_hd_bluray'
         cur_qual = common.Quality.FULLHDBLURAY
 
-        for name, tests in self.test_cases.items():
+        for name, tests in iteritems(self.test_cases):
             for test in tests:
                 if name == cur_test:
                     self.assertEqual(cur_qual, common.Quality.name_quality(test))
@@ -195,7 +196,7 @@ class QualityStringTests(unittest.TestCase):
         cur_test = 'unknown'
         cur_qual = common.Quality.UNKNOWN
 
-        for name, tests in self.test_cases.items():
+        for name, tests in iteritems(self.test_cases):
             for test in tests:
                 if name == cur_test:
                     self.assertEqual(cur_qual, common.Quality.name_quality(test))
@@ -223,8 +224,8 @@ class QualityStringTests(unittest.TestCase):
             'full_hd_bluray': common.Quality.FULLHDBLURAY,
             'unknown': common.Quality.UNKNOWN,
         }
-        for cur_test, expected_qual in test_quality.items():
-            for qual, tests in test_cases.items():
+        for cur_test, expected_qual in iteritems(test_quality):
+            for qual, tests in iteritems(test_cases):
                 for name in tests:
                     if qual == cur_test:
                         self.assertEqual(expected_qual, common.Quality.name_quality(name, anime=True),
@@ -279,12 +280,12 @@ class StatusStringsTests(unittest.TestCase):
                 self.assertTrue(status_strings[i])
 
         for i in status_strings:
-            self.assertEqual(status_strings[i], status_strings[str(i)])
-            self.assertEqual(i in status_strings, str(i) in status_strings)
+            self.assertEqual(status_strings[i], status_strings[text_type(i)])
+            self.assertEqual(i in status_strings, text_type(i) in status_strings)
 
         for i in status_strings.qualities:
-            self.assertEqual(status_strings[i], status_strings[str(i)])
-            self.assertEqual(i in status_strings, str(i) in status_strings)
+            self.assertEqual(status_strings[i], status_strings[text_type(i)])
+            self.assertEqual(i in status_strings, text_type(i) in status_strings)
 
         for i in invalid:
             with self.assertRaises(TypeError):
@@ -293,10 +294,10 @@ class StatusStringsTests(unittest.TestCase):
         for i in unused:
             if i is None:
                 with self.assertRaises(TypeError):
-                    status_strings[str(i)] = 1  # 'None' is not None
-                status_strings[i] = 1  # ...but None can still be used as a key
+                    status_strings[text_type(i)] = 1
+                status_strings[i] = 1
             else:
-                status_strings[str(i)] = 1
+                status_strings[text_type(i)] = 1
             self.assertEqual(status_strings[i], 1)
 
 

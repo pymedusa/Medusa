@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import re
-import traceback
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -43,12 +42,8 @@ class Torrentz2Provider(TorrentProvider):
         # Miscellaneous Options
         # self.confirmed = True
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Cache
-        self.cache = tv.Cache(self, min_time=15)  # only poll Torrentz every 15 minutes max
+        self.cache = tv.Cache(self, min_time=15)
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
@@ -112,7 +107,7 @@ class Torrentz2Provider(TorrentProvider):
                     # Add "-" after codec and add missing "."
                     title = re.sub(r'([xh][ .]?264|xvid)( )', r'\1-', title_raw).replace(' ', '.') if title_raw else ''
                     info_hash = row.guid.text.rsplit('/', 1)[-1]
-                    download_url = "magnet:?xt=urn:btih:" + info_hash + "&dn=" + title + self._custom_trackers
+                    download_url = 'magnet:?xt=urn:btih:' + info_hash + '&dn=' + title + self._custom_trackers
                     if not all([title, download_url]):
                         continue
 
@@ -123,10 +118,10 @@ class Torrentz2Provider(TorrentProvider):
                     pubdate = self.parse_pubdate(pubdate_raw)
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
-                                      " minimum seeders: {0}. Seeders: {1}",
+                                      ' minimum seeders: {0}. Seeders: {1}',
                                       title, seeders)
                         continue
 
@@ -144,15 +139,14 @@ class Torrentz2Provider(TorrentProvider):
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.error('Failed parsing provider. Traceback: {0!r}',
-                              traceback.format_exc())
+                    log.exception('Failed parsing provider.')
 
         return items
 
     @staticmethod
     def _split_description(description):
-        match = re.findall(r'[0-9]+', description)
-        return int(match[0]) * 1024 ** 2, int(match[1]), int(match[2])
+        match = re.findall(r'(\d+|\d+ \w+)(?= \w+:)', description)
+        return match[0], int(match[1]), int(match[2])
 
 
 provider = Torrentz2Provider()

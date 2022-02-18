@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #
 # Copyright 2011 Facebook
 #
@@ -18,10 +17,8 @@
 the server into multiple processes and managing subprocesses.
 """
 
-from __future__ import absolute_import, division, print_function
-
-import errno
 import os
+import multiprocessing
 import signal
 import subprocess
 import sys
@@ -29,35 +26,26 @@ import time
 
 from binascii import hexlify
 
-from tornado.concurrent import Future
+from tornado.concurrent import (
+    Future,
+    future_set_result_unless_cancelled,
+    future_set_exception_unless_cancelled,
+)
 from tornado import ioloop
 from tornado.iostream import PipeIOStream
 from tornado.log import gen_log
-from tornado.platform.auto import set_close_exec
-from tornado import stack_context
-from tornado.util import errno_from_exception, PY3
 
-try:
-    import multiprocessing
-except ImportError:
-    # Multiprocessing is not available on Google App Engine.
-    multiprocessing = None
+import typing
+from typing import Optional, Any, Callable
 
-if PY3:
-    long = int
+if typing.TYPE_CHECKING:
+    from typing import List  # noqa: F401
 
 # Re-export this exception for convenience.
-try:
-    CalledProcessError = subprocess.CalledProcessError
-except AttributeError:
-    # The subprocess module exists in Google App Engine, but is empty.
-    # This module isn't very useful in that case, but it should
-    # at least be importable.
-    if 'APPENGINE_RUNTIME' not in os.environ:
-        raise
+CalledProcessError = subprocess.CalledProcessError
 
 
-def cpu_count():
+def cpu_count() -> int:
     """Returns the number of processors on this machine."""
     if multiprocessing is None:
         return 1
@@ -66,38 +54,34 @@ def cpu_count():
     except NotImplementedError:
         pass
     try:
-        return os.sysconf("SC_NPROCESSORS_CONF")
+        return os.sysconf("SC_NPROCESSORS_CONF")  # type: ignore
     except (AttributeError, ValueError):
         pass
     gen_log.error("Could not detect number of processors; assuming 1")
     return 1
 
 
-def _reseed_random():
-    if 'random' not in sys.modules:
+def _reseed_random() -> None:
+    if "random" not in sys.modules:
         return
     import random
+
     # If os.urandom is available, this method does the same thing as
     # random.seed (at least as of python 2.6).  If os.urandom is not
     # available, we mix in the pid in addition to a timestamp.
     try:
-        seed = long(hexlify(os.urandom(16)), 16)
+        seed = int(hexlify(os.urandom(16)), 16)
     except NotImplementedError:
         seed = int(time.time() * 1000) ^ os.getpid()
     random.seed(seed)
 
 
-def _pipe_cloexec():
-    r, w = os.pipe()
-    set_close_exec(r)
-    set_close_exec(w)
-    return r, w
-
-
 _task_id = None
 
 
-def fork_processes(num_processes, max_restarts=100):
+def fork_processes(
+    num_processes: Optional[int], max_restarts: Optional[int] = None
+) -> int:
     """Starts multiple worker processes.
 
     If ``num_processes`` is None or <= 0, we detect the number of cores
@@ -118,22 +102,28 @@ def fork_processes(num_processes, max_restarts=100):
     number between 0 and ``num_processes``.  Processes that exit
     abnormally (due to a signal or non-zero exit status) are restarted
     with the same id (up to ``max_restarts`` times).  In the parent
-    process, ``fork_processes`` returns None if all child processes
-    have exited normally, but will otherwise only exit by throwing an
-    exception.
+    process, ``fork_processes`` calls ``sys.exit(0)`` after all child
+    processes have exited normally.
+
+    max_restarts defaults to 100.
+
+    Availability: Unix
     """
+    if sys.platform == "win32":
+        # The exact form of this condition matters to mypy; it understands
+        # if but not assert in this context.
+        raise Exception("fork not available on windows")
+    if max_restarts is None:
+        max_restarts = 100
+
     global _task_id
     assert _task_id is None
     if num_processes is None or num_processes <= 0:
         num_processes = cpu_count()
-    if ioloop.IOLoop.initialized():
-        raise RuntimeError("Cannot run in multiple processes: IOLoop instance "
-                           "has already been initialized. You cannot call "
-                           "IOLoop.instance() before calling start_processes()")
     gen_log.info("Starting %d processes", num_processes)
     children = {}
 
-    def start_child(i):
+    def start_child(i: int) -> Optional[int]:
         pid = os.fork()
         if pid == 0:
             # child process
@@ -151,21 +141,24 @@ def fork_processes(num_processes, max_restarts=100):
             return id
     num_restarts = 0
     while children:
-        try:
-            pid, status = os.wait()
-        except OSError as e:
-            if errno_from_exception(e) == errno.EINTR:
-                continue
-            raise
+        pid, status = os.wait()
         if pid not in children:
             continue
         id = children.pop(pid)
         if os.WIFSIGNALED(status):
-            gen_log.warning("child %d (pid %d) killed by signal %d, restarting",
-                            id, pid, os.WTERMSIG(status))
+            gen_log.warning(
+                "child %d (pid %d) killed by signal %d, restarting",
+                id,
+                pid,
+                os.WTERMSIG(status),
+            )
         elif os.WEXITSTATUS(status) != 0:
-            gen_log.warning("child %d (pid %d) exited with status %d, restarting",
-                            id, pid, os.WEXITSTATUS(status))
+            gen_log.warning(
+                "child %d (pid %d) exited with status %d, restarting",
+                id,
+                pid,
+                os.WEXITSTATUS(status),
+            )
         else:
             gen_log.info("child %d (pid %d) exited normally", id, pid)
             continue
@@ -182,7 +175,7 @@ def fork_processes(num_processes, max_restarts=100):
     sys.exit(0)
 
 
-def task_id():
+def task_id() -> Optional[int]:
     """Returns the current task id, if any.
 
     Returns None if this process was not created by `fork_processes`.
@@ -199,47 +192,50 @@ class Subprocess(object):
 
     * ``stdin``, ``stdout``, and ``stderr`` may have the value
       ``tornado.process.Subprocess.STREAM``, which will make the corresponding
-      attribute of the resulting Subprocess a `.PipeIOStream`.
-    * A new keyword argument ``io_loop`` may be used to pass in an IOLoop.
+      attribute of the resulting Subprocess a `.PipeIOStream`. If this option
+      is used, the caller is responsible for closing the streams when done
+      with them.
 
     The ``Subprocess.STREAM`` option and the ``set_exit_callback`` and
     ``wait_for_exit`` methods do not work on Windows. There is
     therefore no reason to use this class instead of
     ``subprocess.Popen`` on that platform.
 
-    .. versionchanged:: 4.1
-       The ``io_loop`` argument is deprecated.
+    .. versionchanged:: 5.0
+       The ``io_loop`` argument (deprecated since version 4.1) has been removed.
 
     """
+
     STREAM = object()
 
     _initialized = False
     _waiting = {}  # type: ignore
+    _old_sigchld = None
 
-    def __init__(self, *args, **kwargs):
-        self.io_loop = kwargs.pop('io_loop', None) or ioloop.IOLoop.current()
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        self.io_loop = ioloop.IOLoop.current()
         # All FDs we create should be closed on error; those in to_close
         # should be closed in the parent process on success.
-        pipe_fds = []
-        to_close = []
-        if kwargs.get('stdin') is Subprocess.STREAM:
-            in_r, in_w = _pipe_cloexec()
-            kwargs['stdin'] = in_r
+        pipe_fds = []  # type: List[int]
+        to_close = []  # type: List[int]
+        if kwargs.get("stdin") is Subprocess.STREAM:
+            in_r, in_w = os.pipe()
+            kwargs["stdin"] = in_r
             pipe_fds.extend((in_r, in_w))
             to_close.append(in_r)
-            self.stdin = PipeIOStream(in_w, io_loop=self.io_loop)
-        if kwargs.get('stdout') is Subprocess.STREAM:
-            out_r, out_w = _pipe_cloexec()
-            kwargs['stdout'] = out_w
+            self.stdin = PipeIOStream(in_w)
+        if kwargs.get("stdout") is Subprocess.STREAM:
+            out_r, out_w = os.pipe()
+            kwargs["stdout"] = out_w
             pipe_fds.extend((out_r, out_w))
             to_close.append(out_w)
-            self.stdout = PipeIOStream(out_r, io_loop=self.io_loop)
-        if kwargs.get('stderr') is Subprocess.STREAM:
-            err_r, err_w = _pipe_cloexec()
-            kwargs['stderr'] = err_w
+            self.stdout = PipeIOStream(out_r)
+        if kwargs.get("stderr") is Subprocess.STREAM:
+            err_r, err_w = os.pipe()
+            kwargs["stderr"] = err_w
             pipe_fds.extend((err_r, err_w))
             to_close.append(err_w)
-            self.stderr = PipeIOStream(err_r, io_loop=self.io_loop)
+            self.stderr = PipeIOStream(err_r)
         try:
             self.proc = subprocess.Popen(*args, **kwargs)
         except:
@@ -248,13 +244,14 @@ class Subprocess(object):
             raise
         for fd in to_close:
             os.close(fd)
-        for attr in ['stdin', 'stdout', 'stderr', 'pid']:
+        self.pid = self.proc.pid
+        for attr in ["stdin", "stdout", "stderr"]:
             if not hasattr(self, attr):  # don't clobber streams set above
                 setattr(self, attr, getattr(self.proc, attr))
-        self._exit_callback = None
-        self.returncode = None
+        self._exit_callback = None  # type: Optional[Callable[[int], None]]
+        self.returncode = None  # type: Optional[int]
 
-    def set_exit_callback(self, callback):
+    def set_exit_callback(self, callback: Callable[[int], None]) -> None:
         """Runs ``callback`` when this process exits.
 
         The callback takes one argument, the return code of the process.
@@ -268,13 +265,15 @@ class Subprocess(object):
         In many cases a close callback on the stdout or stderr streams
         can be used as an alternative to an exit callback if the
         signal handler is causing a problem.
+
+        Availability: Unix
         """
-        self._exit_callback = stack_context.wrap(callback)
-        Subprocess.initialize(self.io_loop)
+        self._exit_callback = callback
+        Subprocess.initialize()
         Subprocess._waiting[self.pid] = self
         Subprocess._try_cleanup_process(self.pid)
 
-    def wait_for_exit(self, raise_error=True):
+    def wait_for_exit(self, raise_error: bool = True) -> "Future[int]":
         """Returns a `.Future` which resolves when the process exits.
 
         Usage::
@@ -289,20 +288,25 @@ class Subprocess(object):
         to suppress this behavior and return the exit status without raising.
 
         .. versionadded:: 4.2
-        """
-        future = Future()
 
-        def callback(ret):
+        Availability: Unix
+        """
+        future = Future()  # type: Future[int]
+
+        def callback(ret: int) -> None:
             if ret != 0 and raise_error:
                 # Unfortunately we don't have the original args any more.
-                future.set_exception(CalledProcessError(ret, None))
+                future_set_exception_unless_cancelled(
+                    future, CalledProcessError(ret, "unknown")
+                )
             else:
-                future.set_result(ret)
+                future_set_result_unless_cancelled(future, ret)
+
         self.set_exit_callback(callback)
         return future
 
     @classmethod
-    def initialize(cls, io_loop=None):
+    def initialize(cls) -> None:
         """Initializes the ``SIGCHLD`` handler.
 
         The signal handler is run on an `.IOLoop` to avoid locking issues.
@@ -310,20 +314,23 @@ class Subprocess(object):
         same one used by individual Subprocess objects (as long as the
         ``IOLoops`` are each running in separate threads).
 
-        .. versionchanged:: 4.1
-           The ``io_loop`` argument is deprecated.
+        .. versionchanged:: 5.0
+           The ``io_loop`` argument (deprecated since version 4.1) has been
+           removed.
+
+        Availability: Unix
         """
         if cls._initialized:
             return
-        if io_loop is None:
-            io_loop = ioloop.IOLoop.current()
+        io_loop = ioloop.IOLoop.current()
         cls._old_sigchld = signal.signal(
             signal.SIGCHLD,
-            lambda sig, frame: io_loop.add_callback_from_signal(cls._cleanup))
+            lambda sig, frame: io_loop.add_callback_from_signal(cls._cleanup),
+        )
         cls._initialized = True
 
     @classmethod
-    def uninitialize(cls):
+    def uninitialize(cls) -> None:
         """Removes the ``SIGCHLD`` handler."""
         if not cls._initialized:
             return
@@ -331,30 +338,31 @@ class Subprocess(object):
         cls._initialized = False
 
     @classmethod
-    def _cleanup(cls):
+    def _cleanup(cls) -> None:
         for pid in list(cls._waiting.keys()):  # make a copy
             cls._try_cleanup_process(pid)
 
     @classmethod
-    def _try_cleanup_process(cls, pid):
+    def _try_cleanup_process(cls, pid: int) -> None:
         try:
-            ret_pid, status = os.waitpid(pid, os.WNOHANG)
-        except OSError as e:
-            if errno_from_exception(e) == errno.ECHILD:
-                return
+            ret_pid, status = os.waitpid(pid, os.WNOHANG)  # type: ignore
+        except ChildProcessError:
+            return
         if ret_pid == 0:
             return
         assert ret_pid == pid
         subproc = cls._waiting.pop(pid)
-        subproc.io_loop.add_callback_from_signal(
-            subproc._set_returncode, status)
+        subproc.io_loop.add_callback_from_signal(subproc._set_returncode, status)
 
-    def _set_returncode(self, status):
-        if os.WIFSIGNALED(status):
-            self.returncode = -os.WTERMSIG(status)
+    def _set_returncode(self, status: int) -> None:
+        if sys.platform == "win32":
+            self.returncode = -1
         else:
-            assert os.WIFEXITED(status)
-            self.returncode = os.WEXITSTATUS(status)
+            if os.WIFSIGNALED(status):
+                self.returncode = -os.WTERMSIG(status)
+            else:
+                assert os.WIFEXITED(status)
+                self.returncode = os.WEXITSTATUS(status)
         # We've taken over wait() duty from the subprocess.Popen
         # object. If we don't inform it of the process's return code,
         # it will log a warning at destruction in python 3.6+.

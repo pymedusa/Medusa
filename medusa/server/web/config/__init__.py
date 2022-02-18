@@ -1,6 +1,7 @@
 # coding=utf-8
 
 from __future__ import unicode_literals
+
 from medusa.server.web.config.anime import ConfigAnime
 from medusa.server.web.config.backup_restore import ConfigBackupRestore
 from medusa.server.web.config.general import ConfigGeneral

@@ -5,7 +5,6 @@
 from __future__ import unicode_literals
 
 import logging
-import traceback
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -29,11 +28,6 @@ class BithdtvProvider(TorrentProvider):
         """Initialize the class."""
         super(BithdtvProvider, self).__init__('BITHDTV')
 
-        # Torrent Stats
-        self.minseed = 0
-        self.minleech = 0
-        self.freeleech = True
-
         # URLs
         self.url = 'https://www.bit-hdtv.com/'
         self.urls = {
@@ -48,10 +42,11 @@ class BithdtvProvider(TorrentProvider):
         self.cookies = ''
         self.required_cookies = ('h_sl', 'h_sp', 'h_su')
 
-        # Torrent Stats
+        # Miscellaneous Options
+        self.freeleech = False
 
         # Cache
-        self.cache = tv.Cache(self, min_time=10)  # Only poll BitHDTV every 10 minutes max
+        self.cache = tv.Cache(self)
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
@@ -133,10 +128,10 @@ class BithdtvProvider(TorrentProvider):
                     leechers = try_int(cells[9].get_text(strip=True)) if len(cells) > 9 else 0
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
-                                      " minimum seeders: {0}. Seeders: {1}",
+                                      ' minimum seeders: {0}. Seeders: {1}',
                                       title, seeders)
                         continue
 
@@ -160,8 +155,7 @@ class BithdtvProvider(TorrentProvider):
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.error('Failed parsing provider. Traceback: {0!r}',
-                              traceback.format_exc())
+                    log.exception('Failed parsing provider.')
 
         return items
 

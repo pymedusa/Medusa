@@ -8,12 +8,11 @@ from builtins import object
 
 from medusa import app, ui
 from medusa.indexers.exceptions import (
-    IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerShowIncomplete, IndexerShowNotFound,
+    IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerShowNotFound,
     IndexerShowNotFoundInLanguage, IndexerUnavailable
 )
 
 from tvdbapiv2.auth.tvdb import TVDBAuth
-from tvdbapiv2.exceptions import ApiException
 
 logger = logging.getLogger(__name__)
 
@@ -87,9 +86,9 @@ class PlexFallback(object):
 
         def fallback_notification():
             ui.notifications.error(
-                'Tvdb2.plex.tv fallback',
-                'You are currently using the tvdb2.plex.tx fallback, '
-                'as tvdb source. Moving back to thetvdb.com in {time_left} minutes.'
+                'tvdb2.plex.tv fallback',
+                'You are currently using the tvdb2.plex.tv fallback, '
+                'as TheTVDB source. Moving back to thetvdb.com in {time_left} minutes.'
                 .format(
                     time_left=divmod(((fallback_config['plex_fallback_time'] +
                                        datetime.timedelta(hours=fallback_config['fallback_plex_timeout'])) -
@@ -101,25 +100,22 @@ class PlexFallback(object):
         if fallback_config['api_base_url'] == app.FALLBACK_PLEX_API_URL:
             if (fallback_config['plex_fallback_time'] +
                     datetime.timedelta(hours=fallback_config['fallback_plex_timeout']) < datetime.datetime.now()):
-                logger.debug("Disabling Plex fallback as fallback timeout was reached")
+                logger.debug('Disabling Plex fallback as fallback timeout was reached')
                 session.api_client.host = 'https://api.thetvdb.com'
                 session.auth = TVDBAuth(api_key=app.TVDB_API_KEY)
             else:
-                logger.debug("Keeping Plex fallback enabled as fallback timeout not reached")
+                logger.debug('Keeping Plex fallback enabled as fallback timeout not reached')
 
         try:
             # Run api request
             return self.func(*args, **kwargs)
         # Valid exception, which we don't want to fall back on.
-        except (IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerShowIncomplete,
-                IndexerShowNotFound, IndexerShowNotFoundInLanguage):
+        except (IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerShowNotFound, IndexerShowNotFoundInLanguage):
             raise
-        except ApiException as e:
-            logger.warning("could not connect to TheTvdb.com, reason '%s'", e.reason)
-        except IndexerUnavailable as e:
-            logger.warning("could not connect to TheTvdb.com, with reason '%s'", e.message)
-        except Exception as e:
-            logger.warning("could not connect to TheTvdb.com, with reason '%s'", e.message)
+        except IndexerUnavailable as error:
+            logger.warning('Could not connect to TheTvdb.com, with reason: %r', error)
+        except Exception as error:
+            logger.warning('Could not connect to TheTvdb.com, with reason: %r', error)
 
         # If we got this far, it means we hit an exception, and we want to switch to the plex fallback.
         session.api_client.host = fallback_config['api_base_url'] = app.FALLBACK_PLEX_API_URL
@@ -129,7 +125,7 @@ class PlexFallback(object):
 
         # Send notification back to user.
         if fallback_config['fallback_plex_notifications']:
-            logger.warning("Enabling Plex fallback as TheTvdb.com API is having some connectivity issues")
+            logger.warning('Enabling Plex fallback as TheTvdb.com API is having some connectivity issues')
             fallback_notification()
 
         # Run api request

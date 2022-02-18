@@ -24,8 +24,12 @@ import re
 import rtorrent
 from rtorrent.common import (bool_to_int, convert_version_tuple_to_str,
                              safe_repr)
-from rtorrent.compat import xmlrpclib
 from rtorrent.err import MethodError
+
+try:
+    import xmlrpc.client as xmlrpc_client
+except ImportError:
+    import xmlrpclib as xmlrpc_client
 
 
 def get_varname(rpc_call):
@@ -53,12 +57,12 @@ def _handle_unavailable_rpc_method(method, rt_obj):
     raise MethodError(msg)
 
 
-class DummyClass:
+class DummyClass(object):
     def __init__(self):
         pass
 
 
-class Method:
+class Method(object):
     """Represents an individual RPC method."""
 
     def __init__(self, _class, method_name,
@@ -115,7 +119,7 @@ class Method:
             return(True)
 
 
-class Multicall:
+class Multicall(object):
     def __init__(self, class_obj, **kwargs):
         self.class_obj = class_obj
         if class_obj.__class__.__name__ == 'RTorrent':
@@ -159,7 +163,7 @@ class Multicall:
         @return: the results (post-processed), in the order they were added
         @rtype: tuple
         """
-        m = xmlrpclib.MultiCall(self.rt_obj._get_conn())
+        m = xmlrpc_client.MultiCall(self.rt_obj._get_conn())
         for call in self.calls:
             method, args = call
             rpc_call = getattr(method, 'rpc_call')
@@ -169,7 +173,7 @@ class Multicall:
         results = tuple(results)
         results_processed = []
 
-        for r, c in zip(results, self.calls):
+        for r, c in list(zip(results, self.calls)):
             method = c[0]  # Method instance
             result = process_result(method, r)
             results_processed.append(result)

@@ -19,22 +19,21 @@ from six import binary_type, text_type, viewitems
 
 
 fs_encoding = sys.getfilesystemencoding()
+valid_encoding = True
 
 
 def encode(value):
     """Encode to bytes."""
-    return value.encode('utf-8' if os.name != 'nt' else fs_encoding)
+    return value.encode(fs_encoding if valid_encoding else 'utf-8')
 
 
 def decode(value):
     """Decode to unicode."""
-    # on windows the returned info from fs operations needs to be decoded using fs encoding
-    return text_type(value, 'utf-8' if os.name != 'nt' else fs_encoding)
+    return text_type(value, fs_encoding if valid_encoding else 'utf-8')
 
 
 def _handle_input(arg):
     """Encode argument to utf-8 or fs encoding."""
-    # on windows the input params for fs operations needs to be encoded using fs encoding
     return encode(arg) if isinstance(arg, text_type) else arg
 
 
@@ -82,7 +81,7 @@ def _varargs(*args):
 
 
 def _varkwargs(**kwargs):
-    """Encode var keyword  arguments to utf-8."""
+    """Encode var keyword arguments to utf-8."""
     return {k: _handle_input(arg) for k, arg in viewitems(kwargs)}
 
 
@@ -114,13 +113,21 @@ def patch_output(f, handle_output=None):
     return patched_output if callable(handle_output) else f
 
 
+def is_valid_encoding(encoding):
+    """Verify that the filesystem encoding is valid."""
+    invalid_encodings = ('ansi_x3.4-1968', 'us-ascii', 'ascii', 'charmap', 'cp65001')
+    if not encoding or encoding.lower() in invalid_encodings:
+        return False
+    return True
+
+
 def initialize():
-    """Replace original functions if the fs encoding is not utf-8."""
+    """Replace original functions if the fs encoding is invalid."""
     if hasattr(sys, '_called_from_test'):
         return
 
     affected_functions = {
-        certifi: ['where', 'old_where'],
+        certifi: ['where'],
         glob: ['glob'],
         io: ['open'],
         os: ['access', 'chdir', 'listdir', 'makedirs', 'mkdir', 'remove',
@@ -143,10 +150,12 @@ def initialize():
     if os.name != 'nt':
         affected_functions[os].extend(['chmod', 'chown', 'link', 'statvfs', 'symlink'])
 
-    if not fs_encoding or fs_encoding.lower() not in ('utf-8', 'mbcs'):
-        handle_input = _handle_input
-    else:
+    if is_valid_encoding(fs_encoding):
         handle_input = None
+    else:
+        global valid_encoding
+        valid_encoding = False
+        handle_input = _handle_input
 
     for k, v in viewitems(affected_functions):
         handle_output = handle_output_map.get(k, _handle_output_u)

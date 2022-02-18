@@ -5,7 +5,6 @@
 from __future__ import unicode_literals
 
 import logging
-import traceback
 
 from medusa import tv
 from medusa.helper.common import (
@@ -16,6 +15,7 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
+
 import validators
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -33,15 +33,12 @@ class BitCannonProvider(TorrentProvider):
         self.api_key = None
 
         # URLs
+        self.url = 'http://localhost:3000/'
         self.custom_url = None
 
         # Proper Strings
 
         # Miscellaneous Options
-
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
 
         # Cache
         cache_params = {'RSS': ['tv', 'anime']}
@@ -57,13 +54,12 @@ class BitCannonProvider(TorrentProvider):
         :returns: A list of search results (structure)
         """
         results = []
-        url = 'http://localhost:3000/'
 
         if self.custom_url:
             if not validators.url(self.custom_url):
                 log.warning('Invalid custom url: {0}', self.custom_url)
                 return results
-            url = self.custom_url
+            self.url = self.custom_url
 
         # Search Params
         search_params = {
@@ -80,7 +76,7 @@ class BitCannonProvider(TorrentProvider):
                     log.debug('Search string: {search}',
                               {'search': search_string})
 
-                search_url = urljoin(url, 'api/search')
+                search_url = urljoin(self.url, 'api/search')
 
                 response = self.session.get(search_url, params=search_params)
                 if not response or not response.content:
@@ -126,14 +122,14 @@ class BitCannonProvider(TorrentProvider):
                 leechers = try_int(swarm.pop('leechers', 0))
 
                 # Filter unseeded torrent
-                if seeders < min(self.minseed, 1):
+                if seeders < self.minseed:
                     if mode != 'RSS':
                         log.debug("Discarding torrent because it doesn't meet the"
-                                  " minimum seeders: {0}. Seeders: {1}",
+                                  ' minimum seeders: {0}. Seeders: {1}',
                                   title, seeders)
                     continue
 
-                size = convert_size(row.pop('size', -1)) or -1
+                size = convert_size(row.pop('size', None), default=-1)
 
                 item = {
                     'title': title,
@@ -149,8 +145,7 @@ class BitCannonProvider(TorrentProvider):
 
                 items.append(item)
             except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                log.error('Failed parsing provider. Traceback: {0!r}',
-                          traceback.format_exc())
+                log.exception('Failed parsing provider.')
 
         return items
 

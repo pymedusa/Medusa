@@ -88,7 +88,7 @@ class BaseRegistry(meta.with_metaclass(_Meta)):
     - Parse a definition file.
     - Allow extending the definition file parser by registering @ directives.
 
-    :param filename: path of the units definition file to load.
+    :param filename: path of the units definition file to load or line iterable object.
                      Empty to load the default definition file.
                      None to leave the UnitRegistry empty.
     :type filename: str | None
@@ -267,7 +267,7 @@ class BaseRegistry(meta.with_metaclass(_Meta)):
             d, di = self._prefixes, None
 
         else:
-            raise TypeError('{0} is not a valid definition.'.format(definition))
+            raise TypeError('{} is not a valid definition.'.format(definition))
 
         # define "delta_" units for units with an offset
         if getattr(definition.converter, "offset", 0.0) != 0.0:
@@ -365,7 +365,7 @@ class BaseRegistry(meta.with_metaclass(_Meta)):
                 raise e
             except Exception as e:
                 msg = getattr(e, 'message', '') or str(e)
-                raise ValueError('While opening {0}\n{1}'.format(file, msg))
+                raise ValueError('While opening {}\n{}'.format(file, msg))
 
         ifile = SourceIterator(file)
         for no, line in ifile:
@@ -402,26 +402,29 @@ class BaseRegistry(meta.with_metaclass(_Meta)):
                         ex.lineno = no
                     raise ex
                 except Exception as ex:
-                    logger.error("In line {0}, cannot add '{1}' {2}".format(no, line, ex))
+                    logger.error("In line {}, cannot add '{}' {}".format(no, line, ex))
 
     def _build_cache(self):
         """Build a cache of dimensionality and base units.
         """
+        self._dimensional_equivalents = dict()
 
         deps = dict((name, set(definition.reference.keys() if definition.reference else {}))
                     for name, definition in self._units.items())
 
         for unit_names in solve_dependencies(deps):
             for unit_name in unit_names:
-                prefixed = False
-                for p in self._prefixes.keys():
-                    if p and unit_name.startswith(p):
-                        prefixed = True
-                        break
                 if '[' in unit_name:
                     continue
+                parsed_names = tuple(self.parse_unit_name(unit_name))
+                _prefix = None
+                if parsed_names:
+                    _prefix, base_name, _suffix = parsed_names[0]
+                else:
+                    base_name = unit_name
+                prefixed = True if _prefix else False
                 try:
-                    uc = ParserHelper.from_word(unit_name)
+                    uc = ParserHelper.from_word(base_name)
 
                     bu = self._get_root_units(uc)
                     di = self._get_dimensionality(uc)
@@ -433,7 +436,7 @@ class BaseRegistry(meta.with_metaclass(_Meta)):
                         if di not in self._dimensional_equivalents:
                             self._dimensional_equivalents[di] = set()
 
-                        self._dimensional_equivalents[di].add(self._units[unit_name]._name)
+                        self._dimensional_equivalents[di].add(self._units[base_name]._name)
 
                 except Exception as e:
                     logger.warning('Could not resolve {0}: {1!r}'.format(unit_name, e))
@@ -476,8 +479,8 @@ class BaseRegistry(meta.with_metaclass(_Meta)):
         elif len(candidates) == 1:
             prefix, unit_name, _ = candidates[0]
         else:
-            logger.warning('Parsing {0} yield multiple results. '
-                           'Options are: {1}'.format(name_or_alias, candidates))
+            logger.warning('Parsing {} yield multiple results. '
+                           'Options are: {}'.format(name_or_alias, candidates))
             prefix, unit_name, _ = candidates[0]
 
         if prefix:
@@ -557,6 +560,28 @@ class BaseRegistry(meta.with_metaclass(_Meta)):
                 reg = self._units[self.get_name(key)]
                 if reg.reference is not None:
                     self._get_dimensionality_recurse(reg.reference, exp2, accumulator)
+
+    def _get_dimensionality_ratio(self, unit1, unit2):
+        """ Get the exponential ratio between two units, i.e. solve unit2 = unit1**x for x.
+        :param unit1: first unit
+        :type unit1: UnitsContainer compatible (str, Unit, UnitsContainer, dict)
+        :param unit2: second unit
+        :type unit2: UnitsContainer compatible (str, Unit, UnitsContainer, dict)
+        :returns: exponential proportionality or None if the units cannot be converted
+        """
+        #shortcut in case of equal units
+        if unit1 == unit2:
+            return 1
+
+        dim1, dim2 = (self.get_dimensionality(unit) for unit in (unit1, unit2))
+        if not dim1 or not dim2 or dim1.keys() != dim2.keys(): #not comparable
+            return None
+
+        ratios = (dim2[key]/val for key, val in dim1.items())
+        first = next(ratios)
+        if all(r == first for r in ratios): #all are same, we're good
+            return first
+        return None
 
     def get_root_units(self, input_units, check_nonmult=True):
         """Convert unit or dict of units to the root units.
@@ -910,6 +935,33 @@ class NonMultiplicativeRegistry(BaseRegistry):
         except KeyError:
             raise UndefinedUnitError(u)
 
+    def _validate_and_extract(self, units):
+
+        nonmult_units = [(u, e) for u, e in units.items()
+                         if not self._is_multiplicative(u)]
+
+        # Let's validate source offset units
+        if len(nonmult_units) > 1:
+            # More than one src offset unit is not allowed
+            raise ValueError('more than one offset unit.')
+
+        elif len(nonmult_units) == 1:
+            # A single src offset unit is present. Extract it
+            # But check that:
+            # - the exponent is 1
+            # - is not used in multiplicative context
+            nonmult_unit, exponent = nonmult_units.pop()
+
+            if exponent != 1:
+                raise ValueError('offset units in higher order.')
+
+            if len(units) > 1 and not self.autoconvert_offset_to_baseunit:
+                raise ValueError('offset unit used in multiplicative context.')
+
+            return nonmult_unit
+
+        return None
+
     def _convert(self, value, src, dst, inplace=False):
         """Convert value from some source to destination units.
 
@@ -927,13 +979,19 @@ class NonMultiplicativeRegistry(BaseRegistry):
 
         # Conversion needs to consider if non-multiplicative (AKA offset
         # units) are involved. Conversion is only possible if src and dst
-        # have at most one offset unit per dimension.
-        src_offset_units = [(u, e) for u, e in src.items()
-                            if not self._is_multiplicative(u)]
-        dst_offset_units = [(u, e) for u, e in dst.items()
-                            if not self._is_multiplicative(u)]
+        # have at most one offset unit per dimension. Other rules are applied
+        # by validate and extract.
+        try:
+            src_offset_unit = self._validate_and_extract(src)
+        except ValueError as ex:
+            raise DimensionalityError(src, dst, extra_msg=' - In source units, %s ' % ex)
 
-        if not (src_offset_units or dst_offset_units):
+        try:
+            dst_offset_unit = self._validate_and_extract(dst)
+        except ValueError as ex:
+            raise DimensionalityError(src, dst, extra_msg=' - In destination units, %s ' % ex)
+
+        if not (src_offset_unit or dst_offset_unit):
             return super(NonMultiplicativeRegistry, self)._convert(value, src, dst, inplace)
 
         src_dim = self._get_dimensionality(src)
@@ -944,53 +1002,21 @@ class NonMultiplicativeRegistry(BaseRegistry):
         if src_dim != dst_dim:
             raise DimensionalityError(src, dst, src_dim, dst_dim)
 
-        # For offset units we need to check if the conversion is allowed.
-        if src_offset_units or dst_offset_units:
-
-            # Validate that not more than one offset unit is present
-            if len(src_offset_units) > 1 or len(dst_offset_units) > 1:
-                raise DimensionalityError(
-                    src, dst, src_dim, dst_dim,
-                    extra_msg=' - more than one offset unit.')
-
-            # validate that offset unit is not used in multiplicative context
-            if ((len(src_offset_units) == 1 and len(src) > 1)
-                    or (len(dst_offset_units) == 1 and len(dst) > 1)
-                    and not self.autoconvert_offset_to_baseunit):
-                raise DimensionalityError(
-                    src, dst, src_dim, dst_dim,
-                    extra_msg=' - offset unit used in multiplicative context.')
-
-            # Validate that order of offset unit is exactly one.
-            if src_offset_units:
-                if src_offset_units[0][1] != 1:
-                    raise DimensionalityError(
-                        src, dst, src_dim, dst_dim,
-                        extra_msg=' - offset units in higher order.')
-            else:
-                if dst_offset_units[0][1] != 1:
-                    raise DimensionalityError(
-                        src, dst, src_dim, dst_dim,
-                        extra_msg=' - offset units in higher order.')
-
-        # Here we convert only the offset quantities. Any remaining scaled
-        # quantities will be converted later.
-
-        # TODO: Shouldn't this (until factor, units) be inside the If above?
-
         # clean src from offset units by converting to reference
-        for u, e in src_offset_units:
-            value = self._units[u].converter.to_reference(value, inplace)
-        src = src.remove([u for u, e in src_offset_units])
+        if src_offset_unit:
+            value = self._units[src_offset_unit].converter.to_reference(value, inplace)
+
+        src = src.remove([src_offset_unit])
 
         # clean dst units from offset units
-        dst = dst.remove([u for u, e in dst_offset_units])
+        dst = dst.remove([dst_offset_unit])
 
+        # Convert non multiplicative units to the dst.
         value = super(NonMultiplicativeRegistry, self)._convert(value, src, dst, inplace, False)
 
         # Finally convert to offset units specified in destination
-        for u, e in dst_offset_units:
-            value = self._units[u].converter.from_reference(value, inplace)
+        if dst_offset_unit:
+            value = self._units[dst_offset_unit].converter.from_reference(value, inplace)
 
         return value
 
@@ -1027,7 +1053,7 @@ class ContextRegistry(BaseRegistry):
             self.add_context(Context.from_lines(ifile.block_iter(),
                                                 self.get_dimensionality))
         except KeyError as e:
-            raise DefinitionSyntaxError('unknown dimension {0} in context'.format(str(e)))
+            raise DefinitionSyntaxError('unknown dimension {} in context'.format(str(e)))
 
     def add_context(self, context):
         """Add a context object to the registry.
@@ -1071,8 +1097,8 @@ class ContextRegistry(BaseRegistry):
             kwargs = dict(self._active_ctx.defaults, **kwargs)
 
         # For each name, we first find the corresponding context
-        ctxs = tuple((self._contexts[name] if isinstance(name, string_types) else name)
-                     for name in names_or_contexts)
+        ctxs = list((self._contexts[name] if isinstance(name, string_types) else name)
+                    for name in names_or_contexts)
 
         # Check if the contexts have been checked first, if not we make sure
         # that dimensions are expressed in terms of base dimensions.
@@ -1093,6 +1119,7 @@ class ContextRegistry(BaseRegistry):
 
         # Finally we add them to the active context.
         self._active_ctx.insert_contexts(*ctxs)
+        self._build_cache()
 
     def disable_contexts(self, n=None):
         """Disable the last n enabled contexts.
@@ -1100,6 +1127,7 @@ class ContextRegistry(BaseRegistry):
         if n is None:
             n = len(self._contexts)
         self._active_ctx.remove_contexts(n)
+        self._build_cache()
 
     @contextmanager
     def context(self, *names, **kwargs):
@@ -1223,7 +1251,6 @@ class ContextRegistry(BaseRegistry):
 
         if self._active_ctx:
             nodes = find_connected_nodes(self._active_ctx.graph, src_dim)
-            ret = set()
             if nodes:
                 for node in nodes:
                     ret |= self._dimensional_equivalents[node]
@@ -1432,7 +1459,7 @@ class SystemRegistry(BaseRegistry):
 class UnitRegistry(SystemRegistry, ContextRegistry, NonMultiplicativeRegistry):
     """The unit registry stores the definitions and relationships between units.
 
-    :param filename: path of the units definition file to load.
+    :param filename: path of the units definition file to load or line-iterable object.
                      Empty to load the default definition file.
                      None to leave the UnitRegistry empty.
     :param force_ndarray: convert any input, scalar or not to a numpy.ndarray.
@@ -1466,6 +1493,15 @@ class UnitRegistry(SystemRegistry, ContextRegistry, NonMultiplicativeRegistry):
         :return: a list of dimensionless quantities expressed as dicts
         """
         return pi_theorem(quantities, self)
+
+    def setup_matplotlib(self, enable=True):
+        """Set up handlers for matplotlib's unit support.
+        :param enable: whether support should be enabled or disabled
+        :type enable: bool
+        """
+        # Delays importing matplotlib until it's actually requested
+        from .matplotlib import setup_matplotlib_handlers
+        setup_matplotlib_handlers(self, enable)
 
     wraps = registry_helpers.wraps
 

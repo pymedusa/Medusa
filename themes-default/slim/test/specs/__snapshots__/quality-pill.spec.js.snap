@@ -1,0 +1,277 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`QualityPill.test.js renders quality pills correctly: 720p Preset 1`] = `
+<span
+  class="quality hd720p"
+  title="Allowed Qualities:
+  720p HDTV
+  720p WEB-DL
+  720p BluRay
+
+Preferred Qualities:
+  None"
+>
+  HD720p
+</span>
+`;
+
+exports[`QualityPill.test.js renders quality pills correctly: 720p WEB-DL allowed + 1080p WEB-DL preferred, with show title 1`] = `
+<span
+  class="quality anywebdl"
+  title="Allowed Qualities:
+  720p WEB-DL
+
+Preferred Qualities:
+  1080p WEB-DL"
+>
+  WEB-DL
+</span>
+`;
+
+exports[`QualityPill.test.js renders quality pills correctly: 1080p Preset 1`] = `
+<span
+  class="quality hd1080p"
+  title="Allowed Qualities:
+  1080p HDTV
+  1080p WEB-DL
+  1080p BluRay
+
+Preferred Qualities:
+  None"
+>
+  HD1080p
+</span>
+`;
+
+exports[`QualityPill.test.js renders quality pills correctly: 1080p WEB-DL, allowed 1`] = `
+<span
+  class="quality fullhdwebdl"
+>
+  1080p WEB-DL
+</span>
+`;
+
+exports[`QualityPill.test.js renders quality pills correctly: All 4K and all 8K, allowed 1`] = `
+<span
+  class="quality uhd"
+>
+  UHD
+</span>
+`;
+
+exports[`QualityPill.test.js renders quality pills correctly: All 720p and all 1080p, allowed 1`] = `
+<span
+  class="quality hd"
+>
+  HD
+</span>
+`;
+
+exports[`QualityPill.test.js renders quality pills correctly: Both quality lists are of 4K UHD resolution, with show title 1`] = `
+<span
+  class="quality anyuhd4k"
+  title="Allowed Qualities:
+  4K UHD TV
+  4K UHD WEB-DL
+
+Preferred Qualities:
+  4K UHD BluRay"
+>
+  UHD-4K
+</span>
+`;
+
+exports[`QualityPill.test.js renders quality pills correctly: Both quality lists are of 8K UHD resolution, with show title 1`] = `
+<span
+  class="quality anyuhd8k"
+  title="Allowed Qualities:
+  8K UHD TV
+  8K UHD WEB-DL
+
+Preferred Qualities:
+  8K UHD BluRay"
+>
+  UHD-8K
+</span>
+`;
+
+exports[`QualityPill.test.js renders quality pills correctly: Both quality lists are of 720p resolution, with show title 1`] = `
+<span
+  class="quality hd720p"
+  title="Allowed Qualities:
+  720p HDTV
+  720p WEB-DL
+
+Preferred Qualities:
+  720p BluRay"
+>
+  720p
+</span>
+`;
+
+exports[`QualityPill.test.js renders quality pills correctly: Both quality lists are of 1080p resolution, with show title 1`] = `
+<span
+  class="quality hd1080p"
+  title="Allowed Qualities:
+  1080p HDTV
+  1080p WEB-DL
+
+Preferred Qualities:
+  1080p BluRay"
+>
+  1080p
+</span>
+`;
+
+exports[`QualityPill.test.js renders quality pills correctly: Both quality lists are of BluRay source, with show title 1`] = `
+<span
+  class="quality anybluray"
+  title="Allowed Qualities:
+  720p BluRay
+  1080p BluRay
+
+Preferred Qualities:
+  4K UHD BluRay
+  8K UHD BluRay"
+>
+  BluRay
+</span>
+`;
+
+exports[`QualityPill.test.js renders quality pills correctly: Both quality lists are of HDTV source, with show title 1`] = `
+<span
+  class="quality anyhdtv"
+  title="Allowed Qualities:
+  720p HDTV
+  1080p HDTV
+
+Preferred Qualities:
+  4K UHD TV"
+>
+  HDTV
+</span>
+`;
+
+exports[`QualityPill.test.js renders quality pills correctly: Both quality lists are of WEB-DL source, with show title 1`] = `
+<span
+  class="quality anywebdl"
+  title="Allowed Qualities:
+  720p WEB-DL
+  1080p WEB-DL
+
+Preferred Qualities:
+  4K UHD WEB-DL"
+>
+  WEB-DL
+</span>
+`;
+
+exports[`QualityPill.test.js renders quality pills correctly: Custom pill using overrides 1`] = `
+<span
+  class="quality Proper"
+  title="Show.Name.S03E15.720p.Proper.HDTV.x264-Group.mkv"
+>
+  Proper
+</span>
+`;
+
+exports[`QualityPill.test.js renders quality pills correctly: Custom quality lists, with show title 1`] = `
+<span
+  class="quality custom"
+  title="Allowed Qualities:
+  SDTV
+  720p HDTV
+  720p WEB-DL
+  720p BluRay
+  1080p BluRay
+
+Preferred Qualities:
+  4K UHD WEB-DL
+  4K UHD BluRay"
+>
+  Custom
+</span>
+`;
+
+exports[`QualityPill.test.js renders quality pills correctly: No qualities 1`] = `
+<span
+  class="quality na"
+>
+  N/A
+</span>
+`;
+
+exports[`QualityPill.test.js renders quality pills correctly: No qualities, with show-title 1`] = `
+<span
+  class="quality na"
+  title="Allowed Qualities:
+  None
+
+Preferred Qualities:
+  None"
+>
+  N/A
+</span>
+`;
+
+exports[`QualityPill.test.js renders quality pills correctly: Quality set: Any HDTV, with show title 1`] = `
+<span
+  class="quality anyhdtv"
+  title="Allowed Qualities:
+  720p HDTV
+  1080p HDTV
+
+Preferred Qualities:
+  None"
+>
+  HDTV
+</span>
+`;
+
+exports[`QualityPill.test.js renders quality pills correctly: RawHD, allowed 1`] = `
+<span
+  class="quality rawhdtv"
+>
+  RawHD
+</span>
+`;
+
+exports[`QualityPill.test.js renders quality pills correctly: SD (TV+DVD), allowed 1`] = `
+<span
+  class="quality sd"
+>
+  SD
+</span>
+`;
+
+exports[`QualityPill.test.js renders quality pills correctly: SD DVD, allowed 1`] = `
+<span
+  class="quality sddvd"
+>
+  SD DVD
+</span>
+`;
+
+exports[`QualityPill.test.js renders quality pills correctly: SDTV, allowed 1`] = `
+<span
+  class="quality sdtv"
+>
+  SDTV
+</span>
+`;
+
+exports[`QualityPill.test.js renders quality pills correctly: Unknown, allowed 1`] = `
+<span
+  class="quality unknown"
+>
+  Unknown
+</span>
+`;
+
+exports[`QualityPill.test.js renders quality pills correctly: WEB-DL 720p + 4K UHD WEB-DL, allowed 1`] = `
+<span
+  class="quality anywebdl"
+>
+  WEB-DL
+</span>
+`;

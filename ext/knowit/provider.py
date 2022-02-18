@@ -5,9 +5,14 @@ import os
 from logging import NullHandler, getLogger
 
 from . import OrderedDict
+from .properties import Quantity
+from .units import units
 
 logger = getLogger(__name__)
 logger.addHandler(NullHandler())
+
+
+size_property = Quantity('size', units.byte, description='media size')
 
 
 class Provider(object):
@@ -38,8 +43,8 @@ class Provider(object):
             props['path'] = video_path
         if 'container' not in props:
             props['container'] = os.path.splitext(video_path)[1][1:]
-        if 'size' not in props:
-            props['size'] = os.path.getsize(video_path)
+        if 'size' not in props and os.path.isfile(video_path):
+            props['size'] = size_property.handle(os.path.getsize(video_path), context)
 
         for track_type, tracks, in (('video', video_tracks),
                                     ('audio', audio_tracks),
@@ -95,7 +100,7 @@ class Provider(object):
 
         for name, rule in self.rules.get(track_type, {}).items():
             if props.get(name) is not None and not rule.override:
-                logger.debug('Skipping rule %s since property is already present', name)
+                logger.debug('Skipping rule %s since property is already present: %r', name, props[name])
                 continue
 
             value = rule.execute(props, pv_props, context)

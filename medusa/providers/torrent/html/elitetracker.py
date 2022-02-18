@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import re
-import traceback
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -53,10 +52,6 @@ class EliteTrackerProvider(TorrentProvider):
             'an': 'year',
             'années': 'years'
         }
-
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
 
         # Cache
         self.cache = tv.Cache(self, min_time=30)
@@ -124,7 +119,7 @@ class EliteTrackerProvider(TorrentProvider):
             torrent_rows = torrent_table('tr') if torrent_table else []
 
             # Continue only if at least one release is found
-            if torrent_rows[1].get_text(strip=True) == 'Aucun Resultat':
+            if torrent_rows[1].get_text(strip=True) == 'Aucun résultat':
                 log.debug('Data returned from provider does not contain any torrents')
                 return items
 
@@ -133,7 +128,7 @@ class EliteTrackerProvider(TorrentProvider):
             for torrent in torrent_rows[1:]:
                 try:
                     if self.freeleech and not torrent.find('img', alt=re.compile('TORRENT GRATUIT : Seulement '
-                                                                                 'l\'upload sera compter.')):
+                                                                                 "l'upload sera compter.")):
                         continue
 
                     title = torrent.find(class_='tooltip-content').div.get_text(strip=True)
@@ -151,10 +146,10 @@ class EliteTrackerProvider(TorrentProvider):
                     leechers = try_int(torrent.find(title='Leechers').get_text(strip=True))
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
-                                      " minimum seeders: {0}. Seeders: {1}",
+                                      ' minimum seeders: {0}. Seeders: {1}',
                                       title, seeders)
                         continue
 
@@ -182,8 +177,7 @@ class EliteTrackerProvider(TorrentProvider):
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.error('Failed parsing provider. Traceback: {0!r}',
-                              traceback.format_exc())
+                    log.exception('Failed parsing provider.')
 
         return items
 
@@ -205,7 +199,7 @@ class EliteTrackerProvider(TorrentProvider):
             log.warning('Unable to connect to provider')
             return False
 
-        if 'Une erreur s\'est produite!' in response.text:
+        if "Une erreur s'est produite!" in response.text:
             log.warning('Invalid username or password. Check your settings')
             return False
 

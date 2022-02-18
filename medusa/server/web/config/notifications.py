@@ -24,13 +24,12 @@ class ConfigNotifications(Config):
 
     def index(self):
         """
-        Render the notification configuration page
-        """
-        t = PageTemplate(rh=self, filename='config_notifications.mako')
+        Render the Notifications configuration page.
 
-        return t.render(submenu=self.ConfigMenu(), title='Config - Notifications',
-                        header='Notifications', topmenu='config',
-                        controller='config', action='notifications')
+        [Converted to VueRouter]
+        """
+        t = PageTemplate(rh=self, filename='index.mako')
+        return t.render()
 
     def saveNotifications(self, use_kodi=None, kodi_always_on=None, kodi_notify_onsnatch=None,
                           kodi_notify_ondownload=None,
@@ -56,9 +55,9 @@ class ConfigNotifications(Config):
                           use_boxcar2=None, boxcar2_notify_onsnatch=None, boxcar2_notify_ondownload=None,
                           boxcar2_notify_onsubtitledownload=None, boxcar2_accesstoken=None,
                           use_pushover=None, pushover_notify_onsnatch=None, pushover_notify_ondownload=None,
-                          pushover_notify_onsubtitledownload=None, pushover_userkey=None, pushover_apikey=None, pushover_device=None, pushover_sound=None,
-                          use_libnotify=None, libnotify_notify_onsnatch=None, libnotify_notify_ondownload=None,
-                          libnotify_notify_onsubtitledownload=None,
+                          pushover_notify_onsubtitledownload=None, pushover_userkey=None, pushover_apikey=None, pushover_device=None,
+                          pushover_sound=None, pushover_priority=None, use_libnotify=None, libnotify_notify_onsnatch=None,
+                          libnotify_notify_ondownload=None, libnotify_notify_onsubtitledownload=None,
                           use_nmj=None, nmj_host=None, nmj_database=None, nmj_mount=None, use_synoindex=None,
                           use_nmjv2=None, nmjv2_host=None, nmjv2_dbloc=None, nmjv2_database=None,
                           use_trakt=None, trakt_username=None, trakt_pin=None,
@@ -70,13 +69,13 @@ class ConfigNotifications(Config):
                           use_pytivo=None, pytivo_notify_onsnatch=None, pytivo_notify_ondownload=None,
                           pytivo_notify_onsubtitledownload=None, pytivo_update_library=None,
                           pytivo_host=None, pytivo_share_name=None, pytivo_tivo_name=None,
-                          use_nma=None, nma_notify_onsnatch=None, nma_notify_ondownload=None,
-                          nma_notify_onsubtitledownload=None, nma_api=None, nma_priority=0,
                           use_pushalot=None, pushalot_notify_onsnatch=None, pushalot_notify_ondownload=None,
                           pushalot_notify_onsubtitledownload=None, pushalot_authorizationtoken=None,
                           use_pushbullet=None, pushbullet_notify_onsnatch=None, pushbullet_notify_ondownload=None,
                           pushbullet_notify_onsubtitledownload=None, pushbullet_api=None, pushbullet_device=None,
                           pushbullet_device_list=None,
+                          use_join=None, join_notify_onsnatch=None, join_notify_ondownload=None,
+                          join_notify_onsubtitledownload=None, join_api=None, join_device=None,
                           use_email=None, email_notify_onsnatch=None, email_notify_ondownload=None,
                           email_notify_onsubtitledownload=None, email_host=None, email_port=25, email_from=None,
                           email_tls=None, email_user=None, email_password=None, email_list=None, email_subject=None, email_show_list=None,
@@ -174,6 +173,7 @@ class ConfigNotifications(Config):
         app.PUSHOVER_APIKEY = pushover_apikey
         app.PUSHOVER_DEVICE = [_.strip() for _ in pushover_device.split(',')]
         app.PUSHOVER_SOUND = pushover_sound
+        app.PUSHOVER_PRIORITY = pushover_priority
 
         app.USE_LIBNOTIFY = config.checkbox_to_value(use_libnotify)
         app.LIBNOTIFY_NOTIFY_ONSNATCH = config.checkbox_to_value(libnotify_notify_onsnatch)
@@ -241,13 +241,6 @@ class ConfigNotifications(Config):
         app.PYTIVO_SHARE_NAME = pytivo_share_name
         app.PYTIVO_TIVO_NAME = pytivo_tivo_name
 
-        app.USE_NMA = config.checkbox_to_value(use_nma)
-        app.NMA_NOTIFY_ONSNATCH = config.checkbox_to_value(nma_notify_onsnatch)
-        app.NMA_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(nma_notify_ondownload)
-        app.NMA_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(nma_notify_onsubtitledownload)
-        app.NMA_API = [_.strip() for _ in nma_api.split(',')]
-        app.NMA_PRIORITY = nma_priority
-
         app.USE_PUSHALOT = config.checkbox_to_value(use_pushalot)
         app.PUSHALOT_NOTIFY_ONSNATCH = config.checkbox_to_value(pushalot_notify_onsnatch)
         app.PUSHALOT_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(pushalot_notify_ondownload)
@@ -260,6 +253,13 @@ class ConfigNotifications(Config):
         app.PUSHBULLET_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(pushbullet_notify_onsubtitledownload)
         app.PUSHBULLET_API = pushbullet_api
         app.PUSHBULLET_DEVICE = pushbullet_device_list
+
+        app.USE_JOIN = config.checkbox_to_value(use_join)
+        app.JOIN_NOTIFY_ONSNATCH = config.checkbox_to_value(join_notify_onsnatch)
+        app.JOIN_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(join_notify_ondownload)
+        app.JOIN_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(join_notify_onsubtitledownload)
+        app.JOIN_API = join_api
+        app.JOIN_DEVICE = join_device
 
         app.instance.save_config()
 

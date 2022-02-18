@@ -5,7 +5,6 @@
 from __future__ import unicode_literals
 
 import logging
-import traceback
 
 from medusa import tv
 from medusa.common import USER_AGENT
@@ -43,12 +42,8 @@ class DanishbitsProvider(TorrentProvider):
         self.freeleech = True
         self.session.headers['User-Agent'] = USER_AGENT
 
-        # Torrent Stats
-        self.minseed = 0
-        self.minleech = 0
-
         # Cache
-        self.cache = tv.Cache(self, min_time=10)  # Only poll Danishbits every 10 minutes max
+        self.cache = tv.Cache(self)
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
@@ -81,7 +76,7 @@ class DanishbitsProvider(TorrentProvider):
                     search_params['search'] = search_string
 
                 response = self.session.get(self.urls['search'], params=search_params)
-                if not response:
+                if not response or not response.content:
                     log.debug('No data returned from provider')
                     continue
 
@@ -89,14 +84,17 @@ class DanishbitsProvider(TorrentProvider):
                     data = response.json()
                 except ValueError as e:
                     log.warning(
-                        u'Could not decode the response as json for the result, searching {provider} with error {err_msg}',
+                        'Could not decode the response as json for the result,'
+                        ' searching {provider} with error {err_msg}',
                         provider=self.name,
                         err_msg=e
                     )
                     continue
+
                 if 'error' in data:
                     log.warning('Provider returned an error: {0}', data['error'])
                     continue
+
                 if data['total_results'] == 0:
                     continue
 
@@ -129,10 +127,10 @@ class DanishbitsProvider(TorrentProvider):
                 leechers = row.get('leechers')
 
                 # Filter unseeded torrent
-                if seeders < min(self.minseed, 1):
+                if seeders < self.minseed:
                     if mode != 'RSS':
                         log.debug("Discarding torrent because it doesn't meet the"
-                                  " minimum seeders: {0}. Seeders: {1}",
+                                  ' minimum seeders: {0}. Seeders: {1}',
                                   title, seeders)
                     continue
 
@@ -143,7 +141,8 @@ class DanishbitsProvider(TorrentProvider):
                 torrent_size = '{0} MB'.format(row.get('size', -1))
                 size = convert_size(torrent_size) or -1
 
-                pubdate = row.get('publish_date')
+                pubdate_raw = row.get('publish_date')
+                pubdate = self.parse_pubdate(pubdate_raw, timezone='Europe/Copenhagen')
 
                 item = {
                     'title': title,
@@ -159,8 +158,7 @@ class DanishbitsProvider(TorrentProvider):
 
                 items.append(item)
             except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                log.error('Failed parsing provider. Traceback: {0!r}',
-                          traceback.format_exc())
+                log.exception('Failed parsing provider.')
 
         return items
 

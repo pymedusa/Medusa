@@ -10,17 +10,17 @@ widescreen = re.compile(r'\b(w(?:ide)?s(?:creen)?)\b', re.IGNORECASE)
 # Sources
 tv = re.compile(r'([sph]d).?tv|tv(rip|mux)', re.IGNORECASE)
 dvd = re.compile(r'(?P<hd>hd)?dvd(?P<rip>rip|mux)?', re.IGNORECASE)
-web = re.compile(r'(web(?P<type>rip|mux|hd|.?dl|\b))', re.IGNORECASE)
+web = re.compile(r'\b(web(?P<type>rip|mux|hd|.?dl)?)\b', re.IGNORECASE)
 bluray = re.compile(r'(blue?-?ray|b[rd](?:rip|mux))', re.IGNORECASE)
 sat = re.compile(r'(dsr|satrip)', re.IGNORECASE)
-itunes = re.compile(r'(itunes)', re.IGNORECASE)
-aussie = re.compile(r'\b(bf1)\b', re.IGNORECASE)  # aussie p2p release group
-netflix = re.compile(r'netflix(hd|uhd)', re.IGNORECASE)
+amazon = re.compile(r'\b(amzn|amazon)(hd|uhd)?\b', re.IGNORECASE)
+itunes = re.compile(r'\bitunes(hd|uhd)?\b', re.IGNORECASE)
+netflix = re.compile(r'\b(nf|netflix)(hd|uhd)?\b', re.IGNORECASE)
 
 # Codecs
 avc = re.compile(r'([xh].?26[45]|(?:he|a)vc)', re.IGNORECASE)
 xvid = re.compile(r'(xvid|divx)', re.IGNORECASE)
-mpeg = re.compile(r'(mpeg-?2)', re.IGNORECASE)
+mpeg = re.compile(r'mpeg(-?2)?', re.IGNORECASE)
 
 # anime
 anime_sd = re.compile(r'(848x480|480p|360p|xvid)', re.IGNORECASE)

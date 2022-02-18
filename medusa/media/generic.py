@@ -17,6 +17,7 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
+
 from builtins import object
 from mimetypes import guess_type
 from os.path import isfile, join, normpath
@@ -31,12 +32,13 @@ class GenericMedia(object):
     img_type = None
     default_media_name = ''
 
-    def __init__(self, series_obj, media_format='normal'):
+    def __init__(self, series_obj, media_format='normal', fallback=True):
         """
         Initialize media for a series.
 
         :param series_obj: The series object.
         :param media_format: The format of the media to get. Must be either 'normal' or 'thumb'
+        :param fallback: Fallback to the default media if requested media doesn't exist
         """
 
         self.series_obj = series_obj
@@ -46,6 +48,8 @@ class GenericMedia(object):
             self.media_format = media_format
         else:
             self.media_format = 'normal'
+
+        self.fallback = fallback
 
     @property
     def indexerid(self):
@@ -106,6 +110,8 @@ class GenericMedia(object):
 
             if isfile(media_path):
                 return normpath(media_path)
+            elif not self.fallback:
+                return ''
 
         image_path = join(self.get_media_root(), 'img', self.default_media_name)
 

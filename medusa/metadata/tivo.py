@@ -62,23 +62,23 @@ class TIVOMetadata(generic.GenericMetadata):
         self._ep_nfo_extension = 'txt'
 
         # web-ui metadata template
-        self.eg_show_metadata = '<i>not supported</i>'
+        # self.eg_show_metadata = '<i>not supported</i>'
         self.eg_episode_metadata = 'Season##\\.meta\\<i>filename</i>.ext.txt'
-        self.eg_fanart = '<i>not supported</i>'
-        self.eg_poster = '<i>not supported</i>'
-        self.eg_banner = '<i>not supported</i>'
-        self.eg_episode_thumbnails = '<i>not supported</i>'
-        self.eg_season_posters = '<i>not supported</i>'
-        self.eg_season_banners = '<i>not supported</i>'
-        self.eg_season_all_poster = '<i>not supported</i>'
-        self.eg_season_all_banner = '<i>not supported</i>'
+        # self.eg_fanart = '<i>not supported</i>'
+        # self.eg_poster = '<i>not supported</i>'
+        # self.eg_banner = '<i>not supported</i>'
+        # self.eg_episode_thumbnails = '<i>not supported</i>'
+        # self.eg_season_posters = '<i>not supported</i>'
+        # self.eg_season_banners = '<i>not supported</i>'
+        # self.eg_season_all_poster = '<i>not supported</i>'
+        # self.eg_season_all_banner = '<i>not supported</i>'
 
     # Override with empty methods for unsupported features
     def retrieveShowMetadata(self, folder):
         # no show metadata generated, we abort this lookup function
         return None, None, None
 
-    def create_show_metadata(self, show_obj):
+    def create_show_metadata(self, show_obj, force=False):
         pass
 
     def update_show_indexer_metadata(self, show_obj):
@@ -212,9 +212,9 @@ class TIVOMetadata(generic.GenericMetadata):
             # Micrsoft Word's smartquotes can die in a fire.
             sanitized_description = ep_to_write.description
             # Replace double curly quotes
-            sanitized_description = sanitized_description.replace(u'\u201c', '\'').replace(u'\u201d', '\'')
+            sanitized_description = sanitized_description.replace(u'\u201c', "'").replace(u'\u201d', "'")
             # Replace single curly quotes
-            sanitized_description = sanitized_description.replace(u'\u2018', '\'').replace(u'\u2019', '\'').replace(u'\u02BC', '\'')
+            sanitized_description = sanitized_description.replace(u'\u2018', "'").replace(u'\u2019', "'").replace(u'\u02BC', "'")
 
             data += ('description : {desc}\n'.format(desc=sanitized_description))
 
@@ -293,6 +293,10 @@ class TIVOMetadata(generic.GenericMetadata):
 
         nfo_file_path = self.get_episode_file_path(ep_obj)
         nfo_file_dir = os.path.dirname(nfo_file_path)
+
+        if not (nfo_file_path and nfo_file_dir):
+            log.debug(u'Unable to write episode nfo file because episode location is missing.')
+            return False
 
         try:
             if not os.path.isdir(nfo_file_dir):

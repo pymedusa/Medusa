@@ -25,52 +25,85 @@ from __future__ import unicode_literals
 import json
 import logging
 import os
+import sys
 import time
-from builtins import str
 from collections import OrderedDict
 from datetime import date, datetime
 
 from medusa import (
-    app, classes, db, helpers, image_cache, network_timezones,
-    process_tv, sbdatetime, subtitles, ui,
+    app,
+    classes,
+    db,
+    helpers,
+    image_cache,
+    network_timezones,
+    sbdatetime,
+    subtitles,
+    ui,
 )
 from medusa.common import (
-    ARCHIVED, DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_PROPER,
-    UNAIRED, UNKNOWN, WANTED, statusStrings,
+    ARCHIVED,
+    DOWNLOADED,
+    FAILED,
+    IGNORED,
+    Overview,
+    Quality,
+    SKIPPED,
+    SNATCHED,
+    SNATCHED_BEST,
+    SNATCHED_PROPER,
+    UNAIRED,
+    UNSET,
+    WANTED,
+    statusStrings,
 )
 from medusa.helper.common import (
-    dateFormat, dateTimeFormat, pretty_file_size, sanitize_filename,
-    timeFormat, try_int,
+    dateFormat,
+    dateTimeFormat,
+    pretty_file_size,
+    sanitize_filename,
+    timeFormat,
+    try_int,
 )
 from medusa.helper.exceptions import CantUpdateShowException, ShowDirectoryNotFoundException
 from medusa.helpers.quality import get_quality_string
 from medusa.indexers.api import indexerApi
-from medusa.indexers.config import INDEXER_TVDBV2
-from medusa.indexers.exceptions import IndexerError, IndexerShowIncomplete, IndexerShowNotFound
+from medusa.indexers.config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE
+from medusa.indexers.exceptions import IndexerError, IndexerShowNotFound
 from medusa.logger import LOGGING_LEVELS, filter_logline, read_loglines
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.media.banner import ShowBanner
 from medusa.media.fan_art import ShowFanArt
 from medusa.media.network_logo import ShowNetworkLogo
 from medusa.media.poster import ShowPoster
-from medusa.search.queue import BacklogQueueItem, ForcedSearchQueueItem
+from medusa.search.queue import BacklogQueueItem
 from medusa.show.coming_episodes import ComingEpisodes
 from medusa.show.history import History
 from medusa.show.show import Show
 from medusa.system.restart import Restart
 from medusa.system.shutdown import Shutdown
-from medusa.version_checker import CheckVersion
+from medusa.updater.version_checker import CheckVersion
 
 from requests.compat import unquote_plus
 
-from six import iteritems, text_type, viewitems
+from six import binary_type, iteritems, itervalues, string_types, text_type, viewitems
 
 from tornado.web import RequestHandler
+
+
+if sys.version_info[0] == 2:
+    from future import standard_library
+    standard_library.install_aliases()
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
-INDEXER_IDS = ('indexerid', 'tvdbid', 'tvmazeid', 'tmdbid')
+INDEXER_IDS = {
+    0: 'indexerid',
+    INDEXER_TVDBV2: 'tvdbid',
+    INDEXER_TVMAZE: 'tvmazeid',
+    INDEXER_TMDB: 'tmdbid'
+}
 
 # basically everything except RESULT_SUCCESS / success is bad
 RESULT_SUCCESS = 10  # only use inside the run methods
@@ -93,7 +126,7 @@ result_type_map = {
 class ApiHandler(RequestHandler):
     """Api class that returns json results."""
 
-    version = 5  # use an int since float-point is unpredictable
+    version = 7  # use an int since float-point is unpredictable
 
     def __init__(self, *args, **kwargs):
         super(ApiHandler, self).__init__(*args, **kwargs)
@@ -102,7 +135,7 @@ class ApiHandler(RequestHandler):
     #     self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
 
     def get(self, *args, **kwargs):
-        kwargs = self.request.arguments
+        kwargs = {k: self.get_arguments(k) for k in self.request.arguments}
         for arg, value in iteritems(kwargs):
             if len(value) == 1:
                 kwargs[arg] = value[0]
@@ -131,9 +164,9 @@ class ApiHandler(RequestHandler):
         try:
             out_dict = _call_dispatcher(args, kwargs)
         except Exception as error:  # real internal error oohhh nooo :(
-            log.exception(u'API :: {0!r}', error.message)
+            log.exception(u'API :: {0!r}', error)
             error_data = {
-                'error_msg': error.message,
+                'error_msg': text_type(error),
                 'args': args,
                 'kwargs': kwargs
             }
@@ -164,7 +197,7 @@ class ApiHandler(RequestHandler):
         except Exception as error:  # if we fail to generate the output fake an error
             log.exception(u'API :: Traceback')
             out = '{{"result": "{0}", "message": "error while composing output: {1!r}"}}'.format(
-                result_type_map[RESULT_ERROR], error.message
+                result_type_map[RESULT_ERROR], error
             )
         return out
 
@@ -205,7 +238,7 @@ class ApiHandler(RequestHandler):
                         else:
                             cur_out_dict = _responds(RESULT_ERROR, 'No such cmd: {0!r}'.format(cmd))
                     except ApiError as error:  # Api errors that we raised, they are harmless
-                        cur_out_dict = _responds(RESULT_ERROR, msg=error.message)
+                        cur_out_dict = _responds(RESULT_ERROR, msg=text_type(error))
                 else:  # if someone chained one of the forbidden commands they will get an error for this one cmd
                     cur_out_dict = _responds(RESULT_ERROR, msg='The cmd {0!r} is not supported while chaining'.format(cmd))
 
@@ -331,11 +364,11 @@ class ApiCall(ApiHandler):
         """
 
         # auto-select indexer
-        if key in INDEXER_IDS:
+        if key in itervalues(INDEXER_IDS):
             if 'tvdbid' in kwargs:
                 key = 'tvdbid'
 
-            self.indexer = INDEXER_IDS.index(key)
+            self.indexer = next(k for k, v in iteritems(INDEXER_IDS) if v == key)
 
         missing = True
         org_default = default
@@ -712,9 +745,9 @@ class CMD_Episode(ApiCall):
         if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
 
-        main_db_con = db.DBConnection(row_type='dict')
+        main_db_con = db.DBConnection()
         sql_results = main_db_con.select(
-            'SELECT name, description, airdate, status, location, file_size, release_name, subtitles '
+            'SELECT name, description, airdate, status, quality, location, file_size, release_name, subtitles '
             'FROM tv_episodes WHERE indexer = ? AND showid = ? AND episode = ? AND season = ?',
             [INDEXER_TVDBV2, self.indexerid, self.e, self.s])
         if not len(sql_results) == 1:
@@ -724,29 +757,29 @@ class CMD_Episode(ApiCall):
         # absolute vs relative vs broken
         show_path = None
         try:
-            show_path = show_obj.location
+            show_path = show_obj.validate_location
         except ShowDirectoryNotFoundException:
             pass
 
         if not show_path:  # show dir is broken ... episode path will be empty
-            episode[b'location'] = ''
+            episode['location'] = ''
         elif not self.full_path:
             # using the length because lstrip() removes to much
             show_path_length = len(show_path) + 1  # the / or \ yeah not that nice i know
-            episode[b'location'] = episode[b'location'][show_path_length:]
+            episode['location'] = episode['location'][show_path_length:]
 
         # convert stuff to human form
-        if try_int(episode[b'airdate'], 1) > 693595:  # 1900
-            episode[b'airdate'] = sbdatetime.sbdatetime.sbfdate(sbdatetime.sbdatetime.convert_to_setting(
-                network_timezones.parse_date_time(int(episode[b'airdate']), show_obj.airs, show_obj.network)),
+        if try_int(episode['airdate'], 1) > 693595:  # 1900
+            episode['airdate'] = sbdatetime.sbdatetime.sbfdate(sbdatetime.sbdatetime.convert_to_setting(
+                network_timezones.parse_date_time(int(episode['airdate']), show_obj.airs, show_obj.network)),
                 d_preset=dateFormat)
         else:
-            episode[b'airdate'] = 'Never'
+            episode['airdate'] = 'Never'
 
-        status, quality = Quality.split_composite_status(int(episode[b'status']))
-        episode[b'status'] = statusStrings[status]
-        episode[b'quality'] = get_quality_string(quality)
-        episode[b'file_size_human'] = pretty_file_size(episode[b'file_size'])
+        status, quality = int(episode['status']), int(episode['quality'])
+        episode['status'] = statusStrings[status]
+        episode['quality'] = get_quality_string(quality)
+        episode['file_size_human'] = pretty_file_size(episode['file_size'])
 
         return _responds(RESULT_SUCCESS, episode)
 
@@ -781,11 +814,11 @@ class CMD_EpisodeSearch(ApiCall):
 
         # retrieve the episode object and fail if we can't get one
         ep_obj = show_obj.get_episode(self.s, self.e)
-        if isinstance(ep_obj, str):
+        if isinstance(ep_obj, string_types):
             return _responds(RESULT_FAILURE, msg='Episode not found')
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = ForcedSearchQueueItem(show_obj, [ep_obj])
+        ep_queue_item = BacklogQueueItem(show_obj, [ep_obj])
         app.forced_search_queue_scheduler.action.add_item(ep_queue_item)  # @UndefinedVariable
 
         # wait until the queue item tells us whether it worked or not
@@ -794,10 +827,8 @@ class CMD_EpisodeSearch(ApiCall):
 
         # return the correct json value
         if ep_queue_item.success:
-            _, quality = Quality.split_composite_status(ep_obj.status)
-            # TODO: split quality and status?
-            return _responds(RESULT_SUCCESS, {'quality': get_quality_string(quality)},
-                             'Snatched ({0})'.format(get_quality_string(quality)))
+            return _responds(RESULT_SUCCESS, {'quality': get_quality_string(ep_obj.quality)},
+                             'Snatched ({0})'.format(get_quality_string(ep_obj.quality)))
 
         return _responds(RESULT_FAILURE, msg='Unable to find episode')
 
@@ -837,7 +868,7 @@ class CMD_EpisodeSetStatus(ApiCall):
 
         # convert the string status to a int
         for status in statusStrings:
-            if str(statusStrings[status]).lower() == str(self.status).lower():
+            if text_type(statusStrings[status]).lower() == text_type(self.status).lower():
                 self.status = status
                 break
         else:  # if we don't break out of the for loop we got here.
@@ -874,7 +905,8 @@ class CMD_EpisodeSetStatus(ApiCall):
 
                 # don't let them mess up UN-AIRED episodes
                 if ep_obj.status == UNAIRED:
-                    if self.e is not None:  # setting the status of an un-aired is only considered a failure if we directly wanted this episode, but is ignored on a season request
+                    # setting the status of an un-aired is only considered a failure if we directly wanted this episode, but is ignored on a season request
+                    if self.e is not None:
                         ep_results.append(
                             _ep_result(RESULT_FAILURE, ep_obj, 'Refusing to change status because it is UN-AIRED'))
                         failure = True
@@ -887,7 +919,7 @@ class CMD_EpisodeSetStatus(ApiCall):
                     continue
 
                 # allow the user to force setting the status for an already downloaded episode
-                if ep_obj.status in Quality.DOWNLOADED + Quality.ARCHIVED and not self.force:
+                if ep_obj.status in [DOWNLOADED, ARCHIVED] and not self.force:
                     ep_results.append(
                         _ep_result(
                             RESULT_FAILURE, ep_obj,
@@ -955,7 +987,7 @@ class CMD_SubtitleSearch(ApiCall):
 
         # retrieve the episode object and fail if we can't get one
         ep_obj = show_obj.get_episode(self.s, self.e)
-        if isinstance(ep_obj, str):
+        if isinstance(ep_obj, string_types):
             return _responds(RESULT_FAILURE, msg='Episode not found')
 
         try:
@@ -995,16 +1027,16 @@ class CMD_Exceptions(ApiCall):
 
     def run(self):
         """ Get the scene exceptions for all or a given show """
-        cache_db_con = db.DBConnection('cache.db', row_type='dict')
+        cache_db_con = db.DBConnection('cache.db')
 
         if self.indexerid is None:
             sql_results = cache_db_con.select("SELECT show_name, indexer_id AS 'indexerid' FROM scene_exceptions")
             scene_exceptions = {}
             for row in sql_results:
-                indexerid = row[b'indexerid']
+                indexerid = row['indexerid']
                 if indexerid not in scene_exceptions:
                     scene_exceptions[indexerid] = []
-                scene_exceptions[indexerid].append(row[b'show_name'])
+                scene_exceptions[indexerid].append(row['show_name'])
 
         else:
             show_obj = Show.find_by_id(app.showList, INDEXER_TVDBV2, self.indexerid)
@@ -1016,7 +1048,7 @@ class CMD_Exceptions(ApiCall):
                 [self.indexerid])
             scene_exceptions = []
             for row in sql_results:
-                scene_exceptions.append(row[b'show_name'])
+                scene_exceptions.append(row['show_name'])
 
         return _responds(RESULT_SUCCESS, scene_exceptions)
 
@@ -1035,7 +1067,7 @@ class CMD_History(ApiCall):
         # optional
         self.limit, args = self.check_params(args, kwargs, 'limit', 100, False, 'int', [])
         self.type, args = self.check_params(args, kwargs, 'type', None, False, 'string', ['downloaded', 'snatched'])
-        self.type = self.type.lower() if isinstance(self.type, str) else None
+        self.type = self.type.lower() if isinstance(self.type, string_types) else None
 
         # super, missing, help
         ApiCall.__init__(self, args, kwargs)
@@ -1061,26 +1093,23 @@ class CMD_History(ApiCall):
                 :return: a formatted date string
                 """
                 return datetime.strptime(
-                    str(history_date),
+                    text_type(history_date),
                     History.date_format
                 ).strftime(dateTimeFormat)
 
-            composite = Quality.split_composite_status(cur_item.action)
-            if cur_type in (statusStrings[composite.status].lower(), None):
+            if cur_type in (statusStrings[cur_item.action].lower(), None):
                 return {
                     'date': convert_date(cur_item.date),
                     'episode': cur_item.episode,
-                    'indexerid': cur_item.show_id,
+                    'indexer': cur_item.indexer_id,
                     'provider': cur_item.provider,
-                    'quality': get_quality_string(composite.quality),
+                    'quality': get_quality_string(cur_item.quality),
                     'resource': os.path.basename(cur_item.resource),
                     'resource_path': os.path.dirname(cur_item.resource),
                     'season': cur_item.season,
                     'show_name': cur_item.show_name,
-                    'status': statusStrings[composite.status],
-                    # Add tvdbid for backward compatibility
-                    # TODO: Make this actual tvdb id for other indexers
-                    'tvdbid': cur_item.show_id,
+                    'status': statusStrings[cur_item.action],
+                    'show_id': cur_item.show_id,
                 }
 
         results = [make_result(x, self.type) for x in history if x]
@@ -1137,7 +1166,7 @@ class CMD_Failed(ApiCall):
     def run(self):
         """ Get the failed downloads """
 
-        failed_db_con = db.DBConnection('failed.db', row_type='dict')
+        failed_db_con = db.DBConnection('failed.db')
 
         u_limit = min(int(self.limit), 100)
         if u_limit == 0:
@@ -1162,7 +1191,7 @@ class CMD_Backlog(ApiCall):
 
         shows = []
 
-        main_db_con = db.DBConnection(row_type='dict')
+        main_db_con = db.DBConnection()
         for cur_show in app.showList:
 
             show_eps = []
@@ -1177,7 +1206,9 @@ class CMD_Backlog(ApiCall):
 
             for cur_result in sql_results:
 
-                cur_ep_cat = cur_show.get_overview(cur_result[b'status'], manually_searched=cur_result[b'manually_searched'])
+                cur_ep_cat = cur_show.get_overview(
+                    cur_result['status'], cur_result['quality'], manually_searched=cur_result['manually_searched']
+                )
                 if cur_ep_cat and cur_ep_cat in (Overview.WANTED, Overview.QUAL):
                     show_eps.append(cur_result)
 
@@ -1215,7 +1246,7 @@ class CMD_Logs(ApiCall):
     def run(self):
         """ Get the logs """
         # 10 = Debug / 20 = Info / 30 = Warning / 40 = Error
-        min_level = LOGGING_LEVELS[str(self.min_level).upper()]
+        min_level = LOGGING_LEVELS[text_type(self.min_level).upper()]
         data = [line for line in read_loglines(formatter=text_type, max_lines=50,
                                                predicate=lambda l: filter_logline(l, min_level=min_level,
                                                                                   thread_name=lambda
@@ -1263,7 +1294,7 @@ class CMD_PostProcess(ApiCall):
             'return_data': {'desc': 'Returns the result of the post-process'},
             'process_method': {'desc': 'How should valid post-processed files be handled'},
             'is_priority': {'desc': 'Replace the file even if it exists in a higher quality'},
-            'delete_files': {'desc': 'Delete files and folders like auto processing'},
+            'delete_files': {'desc': 'Delete files and folders'},
             'failed': {'desc': 'Mark download as failed'},
             'type': {'desc': 'The type of post-process being requested'},
         }
@@ -1276,7 +1307,7 @@ class CMD_PostProcess(ApiCall):
         self.force_replace, args = self.check_params(args, kwargs, 'force_replace', False, False, 'bool', [])
         self.return_data, args = self.check_params(args, kwargs, 'return_data', False, False, 'bool', [])
         self.process_method, args = self.check_params(args, kwargs, 'process_method', False, False, 'string',
-                                                      ['copy', 'symlink', 'hardlink', 'move'])
+                                                      ['copy', 'symlink', 'hardlink', 'move', 'reflink'])
         self.is_priority, args = self.check_params(args, kwargs, 'is_priority', False, False, 'bool', [])
         self.delete_files, args = self.check_params(args, kwargs, 'delete_files', False, False, 'bool', [])
         self.failed, args = self.check_params(args, kwargs, 'failed', False, False, 'bool', [])
@@ -1295,9 +1326,14 @@ class CMD_PostProcess(ApiCall):
         if not self.type:
             self.type = 'manual'
 
-        data = process_tv.ProcessResult(self.path, process_method=self.process_method).process(
-            force=self.force_replace, is_priority=self.is_priority, delete_on=self.delete_files,
-            failed=self.failed, proc_type=self.type
+        data = app.post_processor_scheduler.action.run(
+            path=self.path,
+            process_method=self.process_method,
+            force=self.force_replace,
+            is_priority=self.is_priority,
+            delete_on=self.delete_files,
+            failed=self.failed,
+            proc_type=self.type
         )
 
         if not self.return_data:
@@ -1403,15 +1439,15 @@ class CMD_CheckVersion(ApiCall):
         data = {
             'current_version': {
                 'branch': check_version.get_branch(),
-                'commit': check_version.updater.get_cur_commit_hash(),
-                'version': check_version.updater.get_cur_version(),
+                'commit': check_version.updater.current_commit_hash,
+                'version': check_version.updater.current_version,
             },
             'latest_version': {
                 'branch': check_version.get_branch(),
-                'commit': check_version.updater.get_newest_commit_hash(),
-                'version': check_version.updater.get_newest_version(),
+                'commit': check_version.updater.newest_commit_hash,
+                'version': check_version.updater.newest_version,
             },
-            'commits_offset': check_version.updater.get_num_commits_behind(),
+            'commits_offset': check_version.updater.commits_behind,
             'needs_update': needs_update,
         }
 
@@ -1432,12 +1468,12 @@ class CMD_CheckScheduler(ApiCall):
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select('SELECT last_backlog FROM info')
 
-        backlog_paused = app.search_queue_scheduler.action.is_backlog_paused()  # @UndefinedVariable
-        backlog_running = app.search_queue_scheduler.action.is_backlog_in_progress()  # @UndefinedVariable
-        next_backlog = app.backlog_search_scheduler.next_run().strftime(dateFormat).decode(app.SYS_ENCODING)
+        backlog_paused = app.search_queue_scheduler.action.is_backlog_paused()
+        backlog_running = app.search_queue_scheduler.action.is_backlog_in_progress()
+        next_backlog = app.backlog_search_scheduler.next_run().strftime(dateFormat)
 
         data = {'backlog_is_paused': int(backlog_paused), 'backlog_is_running': int(backlog_running),
-                'last_backlog': _ordinal_to_date_form(sql_results[0][b'last_backlog']),
+                'last_backlog': _ordinal_to_date_form(sql_results[0]['last_backlog']),
                 'next_backlog': next_backlog}
         return _responds(RESULT_SUCCESS, data)
 
@@ -1511,8 +1547,11 @@ class CMD_GetDefaults(ApiCall):
         any_qualities, best_qualities = _map_quality(app.QUALITY_DEFAULT)
 
         data = {'status': statusStrings[app.STATUS_DEFAULT].lower(),
-                'flatten_folders': int(app.FLATTEN_FOLDERS_DEFAULT), 'initial': any_qualities,
-                'archive': best_qualities, 'future_show_paused': int(app.COMING_EPS_DISPLAY_PAUSED)}
+                'flatten_folders': int(not app.SEASON_FOLDERS_DEFAULT),
+                'season_folders': int(app.SEASON_FOLDERS_DEFAULT),
+                'initial': any_qualities,
+                'archive': best_qualities,
+                'future_show_paused': int(app.COMING_EPS_DISPLAY_PAUSED)}
         return _responds(RESULT_SUCCESS, data)
 
 
@@ -1637,6 +1676,9 @@ class CMD_SearchIndexers(ApiCall):
         results = []
         lang_id = self.valid_languages[self.lang]
 
+        if isinstance(self.name, binary_type):
+            self.name = self.name.decode('utf-8')
+
         if self.name and not self.indexerid:  # only name was given
             for _indexer in indexerApi().indexers if self.indexer == 0 else [int(self.indexer)]:
                 indexer_api_params = indexerApi(_indexer).api_params.copy()
@@ -1650,9 +1692,9 @@ class CMD_SearchIndexers(ApiCall):
                 indexer_api = indexerApi(_indexer).indexer(**indexer_api_params)
 
                 try:
-                    api_data = indexer_api[str(self.name).encode()]
-                except (IndexerShowNotFound, IndexerShowIncomplete, IndexerError):
-                    log.warning(u'API :: Unable to find show with id {0}', self.indexerid)
+                    api_data = indexer_api[self.name]
+                except (IndexerShowNotFound, IndexerError):
+                    log.warning(u'API :: Unable to find show with name {0}', self.name)
                     continue
 
                 for cur_series in api_data:
@@ -1676,7 +1718,7 @@ class CMD_SearchIndexers(ApiCall):
 
                 try:
                     my_show = indexer_api[int(self.indexerid)]
-                except (IndexerShowNotFound, IndexerShowIncomplete, IndexerError):
+                except (IndexerShowNotFound, IndexerError):
                     log.warning(u'API :: Unable to find show with id {0}', self.indexerid)
                     return _responds(RESULT_SUCCESS, {'results': [], 'langid': lang_id})
 
@@ -1744,7 +1786,7 @@ class CMD_SetDefaults(ApiCall):
             'initial': {'desc': 'The initial quality of a show'},
             'archive': {'desc': 'The archive quality of a show'},
             'future_show_paused': {'desc': 'True to list paused shows in the coming episode, False otherwise'},
-            'flatten_folders': {'desc': 'Flatten sub-folders within the show directory'},
+            'season_folders': {'desc': 'True to use season folders for the show, False otherwise'},
             'status': {'desc': 'Status of missing episodes'},
         }
     }
@@ -1756,7 +1798,10 @@ class CMD_SetDefaults(ApiCall):
         self.archive, args = self.check_params(args, kwargs, 'archive', None, False, 'list',
                                                list(quality_map).remove('unknown'))
         self.future_show_paused, args = self.check_params(args, kwargs, 'future_show_paused', None, False, 'bool', [])
-        self.flatten_folders, args = self.check_params(args, kwargs, 'flatten_folders', None, False, 'bool', [])
+        self.season_folders, args = self.check_params(args, kwargs, 'flatten_folders',
+                                                      not bool(app.SEASON_FOLDERS_DEFAULT), False, 'bool', [])
+        self.season_folders, args = self.check_params(args, kwargs, 'season_folders',
+                                                      bool(app.SEASON_FOLDERS_DEFAULT), False, 'bool', [])
         self.status, args = self.check_params(args, kwargs, 'status', None, False, 'string',
                                               ['wanted', 'skipped', 'ignored'])
         # super, missing, help
@@ -1781,7 +1826,7 @@ class CMD_SetDefaults(ApiCall):
         if self.status:
             # convert the string status to a int
             for status in statusStrings:
-                if statusStrings[status].lower() == str(self.status).lower():
+                if statusStrings[status].lower() == text_type(self.status).lower():
                     self.status = status
                     break
             # this should be obsolete because of the above
@@ -1792,8 +1837,8 @@ class CMD_SetDefaults(ApiCall):
                 raise ApiError('Status Prohibited')
             app.STATUS_DEFAULT = self.status
 
-        if self.flatten_folders is not None:
-            app.FLATTEN_FOLDERS_DEFAULT = int(self.flatten_folders)
+        if self.season_folders is not None:
+            app.SEASON_FOLDERS_DEFAULT = int(self.season_folders)
 
         if self.future_show_paused is not None:
             app.COMING_EPS_DISPLAY_PAUSED = int(self.future_show_paused)
@@ -1884,7 +1929,7 @@ class CMD_Show(ApiCall):
         show_dict['quality_details'] = {'initial': any_qualities, 'archive': best_qualities}
 
         try:
-            show_dict['location'] = show_obj.location
+            show_dict['location'] = show_obj.validate_location
         except ShowDirectoryNotFoundException:
             show_dict['location'] = ''
 
@@ -1893,21 +1938,14 @@ class CMD_Show(ApiCall):
         show_dict['paused'] = (0, 1)[show_obj.paused]
         show_dict['subtitles'] = (0, 1)[show_obj.subtitles]
         show_dict['air_by_date'] = (0, 1)[show_obj.air_by_date]
-        show_dict['flatten_folders'] = (0, 1)[show_obj.flatten_folders]
+        show_dict['season_folders'] = (0, 1)[show_obj.season_folders]
         show_dict['sports'] = (0, 1)[show_obj.sports]
         show_dict['anime'] = (0, 1)[show_obj.anime]
-        show_dict['airs'] = str(show_obj.airs).replace('am', ' AM').replace('pm', ' PM').replace('  ', ' ')
+        show_dict['airs'] = text_type(show_obj.airs).replace('am', ' AM').replace('pm', ' PM').replace('  ', ' ')
         show_dict['dvdorder'] = (0, 1)[show_obj.dvd_order]
 
-        if show_obj.rls_require_words:
-            show_dict['rls_require_words'] = show_obj.rls_require_words.split(', ')
-        else:
-            show_dict['rls_require_words'] = []
-
-        if show_obj.rls_ignore_words:
-            show_dict['rls_ignore_words'] = show_obj.rls_ignore_words.split(', ')
-        else:
-            show_dict['rls_ignore_words'] = []
+        show_dict['release_required_words'] = show_obj.release_required_words
+        show_dict['release_ignored_words'] = show_obj.release_ignored_words
 
         show_dict['scene'] = (0, 1)[show_obj.scene]
         # show_dict['archive_firstmatch'] = (0, 1)[show_obj.archive_firstmatch]
@@ -1947,7 +1985,7 @@ class CMD_ShowAddExisting(ApiCall):
             'tvdbid': {'desc': 'thetvdb.com unique ID of a show'},
             'initial': {'desc': 'The initial quality of the show'},
             'archive': {'desc': 'The archive quality of the show'},
-            'flatten_folders': {'desc': 'True to flatten the show folder, False otherwise'},
+            'season_folders': {'desc': 'True to use season folders for the show, False otherwise'},
             'subtitles': {'desc': 'True to search for subtitles, False otherwise'},
         }
     }
@@ -1960,8 +1998,10 @@ class CMD_ShowAddExisting(ApiCall):
         self.initial, args = self.check_params(args, kwargs, 'initial', None, False, 'list', list(quality_map))
         self.archive, args = self.check_params(args, kwargs, 'archive', None, False, 'list',
                                                list(quality_map).remove('unknown'))
-        self.flatten_folders, args = self.check_params(args, kwargs, 'flatten_folders',
-                                                       bool(app.FLATTEN_FOLDERS_DEFAULT), False, 'bool', [])
+        self.season_folders, args = self.check_params(args, kwargs, 'flatten_folders',
+                                                      not bool(app.SEASON_FOLDERS_DEFAULT), False, 'bool', [])
+        self.season_folders, args = self.check_params(args, kwargs, 'season_folders',
+                                                      bool(app.SEASON_FOLDERS_DEFAULT), False, 'bool', [])
         self.subtitles, args = self.check_params(args, kwargs, 'subtitles', int(app.USE_SUBTITLES),
                                                  False, 'int', [])
         # super, missing, help
@@ -1991,8 +2031,6 @@ class CMD_ShowAddExisting(ApiCall):
         # set indexer so we can pass it along when adding show to Medusa
         indexer = indexer_result['data']['results'][0]['indexer']
 
-        # use default quality as a fail-safe
-        new_quality = int(app.QUALITY_DEFAULT)
         i_quality_id = []
         a_quality_id = []
 
@@ -2003,13 +2041,13 @@ class CMD_ShowAddExisting(ApiCall):
             for quality in self.archive:
                 a_quality_id.append(quality_map[quality])
 
-        if i_quality_id or a_quality_id:
-            new_quality = Quality.combine_qualities(i_quality_id, a_quality_id)
+        if not self.initial and not self.archive:
+            i_quality_id, a_quality_id = Quality.split_quality(int(app.QUALITY_DEFAULT))
 
         app.show_queue_scheduler.action.addShow(
             int(indexer), int(self.indexerid), self.location,
-            default_status=app.STATUS_DEFAULT, quality=new_quality,
-            flatten_folders=int(self.flatten_folders), subtitles=self.subtitles,
+            default_status=app.STATUS_DEFAULT, quality={'allowed': i_quality_id, 'preferred': a_quality_id},
+            season_folders=int(self.season_folders), subtitles=self.subtitles,
             default_status_after=app.STATUS_DEFAULT_AFTER
         )
 
@@ -2027,7 +2065,7 @@ class CMD_ShowAddNew(ApiCall):
             'initial': {'desc': 'The initial quality of the show'},
             'location': {'desc': 'The path to the folder where the show should be created'},
             'archive': {'desc': 'The archive quality of the show'},
-            'flatten_folders': {'desc': 'True to flatten the show folder, False otherwise'},
+            'season_folders': {'desc': 'True to use season folders for the show, False otherwise'},
             'status': {'desc': 'The status of missing episodes'},
             'lang': {'desc': 'The 2-letter language code of the desired show'},
             'subtitles': {'desc': 'True to search for subtitles, False otherwise'},
@@ -2046,8 +2084,10 @@ class CMD_ShowAddNew(ApiCall):
         self.initial, args = self.check_params(args, kwargs, 'initial', None, False, 'list', list(quality_map))
         self.archive, args = self.check_params(args, kwargs, 'archive', None, False, 'list',
                                                list(quality_map).remove('unknown'))
-        self.flatten_folders, args = self.check_params(args, kwargs, 'flatten_folders',
-                                                       bool(app.FLATTEN_FOLDERS_DEFAULT), False, 'bool', [])
+        self.season_folders, args = self.check_params(args, kwargs, 'flatten_folders',
+                                                      not bool(app.SEASON_FOLDERS_DEFAULT), False, 'bool', [])
+        self.season_folders, args = self.check_params(args, kwargs, 'season_folders',
+                                                      bool(app.SEASON_FOLDERS_DEFAULT), False, 'bool', [])
         self.status, args = self.check_params(args, kwargs, 'status', None, False, 'string',
                                               ['wanted', 'skipped', 'ignored'])
         self.lang, args = self.check_params(args, kwargs, 'lang', app.INDEXER_DEFAULT_LANGUAGE, False, 'string',
@@ -2083,8 +2123,6 @@ class CMD_ShowAddNew(ApiCall):
         if not os.path.isdir(self.location):
             return _responds(RESULT_FAILURE, msg='{0!r} is not a valid location'.format(self.location))
 
-        # use default quality as a fail-safe
-        new_quality = int(app.QUALITY_DEFAULT)
         i_quality_id = []
         a_quality_id = []
 
@@ -2095,15 +2133,15 @@ class CMD_ShowAddNew(ApiCall):
             for quality in self.archive:
                 a_quality_id.append(quality_map[quality])
 
-        if i_quality_id or a_quality_id:
-            new_quality = Quality.combine_qualities(i_quality_id, a_quality_id)
+        if not self.initial and not self.archive:
+            i_quality_id, a_quality_id = Quality.split_quality(int(app.QUALITY_DEFAULT))
 
         # use default status as a fail-safe
         new_status = app.STATUS_DEFAULT
         if self.status:
             # convert the string status to a int
             for status in statusStrings:
-                if statusStrings[status].lower() == str(self.status).lower():
+                if statusStrings[status].lower() == text_type(self.status).lower():
                     self.status = status
                     break
 
@@ -2120,7 +2158,7 @@ class CMD_ShowAddNew(ApiCall):
         if self.future_status:
             # convert the string status to a int
             for status in statusStrings:
-                if statusStrings[status].lower() == str(self.future_status).lower():
+                if statusStrings[status].lower() == text_type(self.future_status).lower():
                     self.future_status = status
                     break
 
@@ -2164,9 +2202,9 @@ class CMD_ShowAddNew(ApiCall):
 
         app.show_queue_scheduler.action.addShow(
             int(indexer), int(self.indexerid), show_path, default_status=new_status,
-            quality=new_quality, flatten_folders=int(self.flatten_folders),
-            lang=self.lang, subtitles=self.subtitles, anime=self.anime,
-            scene=self.scene, default_status_after=default_ep_status_after
+            quality={'allowed': i_quality_id, 'preferred': a_quality_id},
+            season_folders=int(self.season_folders), lang=self.lang, subtitles=self.subtitles,
+            anime=self.anime, scene=self.scene, default_status_after=default_ep_status_after
         )
 
         return _responds(RESULT_SUCCESS, {'name': indexer_name}, indexer_name + ' has been queued to be added')
@@ -2473,7 +2511,7 @@ class CMD_ShowSeasonList(ApiCall):
         if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
 
-        main_db_con = db.DBConnection(row_type='dict')
+        main_db_con = db.DBConnection()
         if self.sort == 'asc':
             sql_results = main_db_con.select(
                 'SELECT DISTINCT season FROM tv_episodes WHERE indexer = ? AND showid = ? ORDER BY season ASC',
@@ -2484,7 +2522,7 @@ class CMD_ShowSeasonList(ApiCall):
                 [INDEXER_TVDBV2, self.indexerid])
         season_list = []  # a list with all season numbers
         for row in sql_results:
-            season_list.append(int(row[b'season']))
+            season_list.append(int(row['season']))
 
         return _responds(RESULT_SUCCESS, season_list)
 
@@ -2515,52 +2553,52 @@ class CMD_ShowSeasons(ApiCall):
         if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
 
-        main_db_con = db.DBConnection(row_type='dict')
+        main_db_con = db.DBConnection()
 
         if self.season is None:
             sql_results = main_db_con.select(
-                'SELECT name, episode, airdate, status, release_name, season, location, file_size, subtitles '
+                'SELECT name, episode, airdate, status, quality, release_name, season, location, file_size, subtitles '
                 'FROM tv_episodes WHERE indexer = ? AND showid = ?',
                 [INDEXER_TVDBV2, self.indexerid])
             seasons = {}
             for row in sql_results:
-                status, quality = Quality.split_composite_status(int(row[b'status']))
-                row[b'status'] = statusStrings[status]
-                row[b'quality'] = get_quality_string(quality)
-                if try_int(row[b'airdate'], 1) > 693595:  # 1900
+                status, quality = int(row['status']), int(row['quality'])
+                row['status'] = statusStrings[status]
+                row['quality'] = get_quality_string(quality)
+                if try_int(row['airdate'], 1) > 693595:  # 1900
                     dt_episode_airs = sbdatetime.sbdatetime.convert_to_setting(
-                        network_timezones.parse_date_time(row[b'airdate'], show_obj.airs, show_obj.network))
-                    row[b'airdate'] = sbdatetime.sbdatetime.sbfdate(dt_episode_airs, d_preset=dateFormat)
+                        network_timezones.parse_date_time(row['airdate'], show_obj.airs, show_obj.network))
+                    row['airdate'] = sbdatetime.sbdatetime.sbfdate(dt_episode_airs, d_preset=dateFormat)
                 else:
-                    row[b'airdate'] = 'Never'
-                cur_season = int(row[b'season'])
-                cur_episode = int(row[b'episode'])
-                del row[b'season']
-                del row[b'episode']
+                    row['airdate'] = 'Never'
+                cur_season = int(row['season'])
+                cur_episode = int(row['episode'])
+                del row['season']
+                del row['episode']
                 if cur_season not in seasons:
                     seasons[cur_season] = {}
                 seasons[cur_season][cur_episode] = row
 
         else:
             sql_results = main_db_con.select(
-                'SELECT name, episode, airdate, status, location, file_size, release_name, subtitles'
-                ' FROM tv_episodes WHERE indexer = ? AND showid = ? AND season = ? ',
+                'SELECT name, episode, airdate, status, quality, location, file_size, release_name, subtitles'
+                ' FROM tv_episodes WHERE indexer = ? AND showid = ? AND season = ?',
                 [INDEXER_TVDBV2, self.indexerid, self.season])
             if not sql_results:
                 return _responds(RESULT_FAILURE, msg='Season not found')
             seasons = {}
             for row in sql_results:
-                cur_episode = int(row[b'episode'])
-                del row[b'episode']
-                status, quality = Quality.split_composite_status(int(row[b'status']))
-                row[b'status'] = statusStrings[status]
-                row[b'quality'] = get_quality_string(quality)
-                if try_int(row[b'airdate'], 1) > 693595:  # 1900
+                cur_episode = int(row['episode'])
+                del row['episode']
+                status, quality = int(row['status']), int(row['quality'])
+                row['status'] = statusStrings[status]
+                row['quality'] = get_quality_string(quality)
+                if try_int(row['airdate'], 1) > 693595:  # 1900
                     dt_episode_airs = sbdatetime.sbdatetime.convert_to_setting(
-                        network_timezones.parse_date_time(row[b'airdate'], show_obj.airs, show_obj.network))
-                    row[b'airdate'] = sbdatetime.sbdatetime.sbfdate(dt_episode_airs, d_preset=dateFormat)
+                        network_timezones.parse_date_time(row['airdate'], show_obj.airs, show_obj.network))
+                    row['airdate'] = sbdatetime.sbdatetime.sbfdate(dt_episode_airs, d_preset=dateFormat)
                 else:
-                    row[b'airdate'] = 'Never'
+                    row['airdate'] = 'Never'
                 if cur_episode not in seasons:
                     seasons[cur_episode] = {}
                 seasons[cur_episode] = row
@@ -2643,81 +2681,78 @@ class CMD_ShowStats(ApiCall):
 
         # show stats
         episode_status_counts_total = {'total': 0}
-        for status in statusStrings:
-            if status in [UNKNOWN, DOWNLOADED, SNATCHED, SNATCHED_PROPER, ARCHIVED]:
-                continue
-            episode_status_counts_total[status] = 0
+        for status_code in statusStrings:
+            if status_code not in (UNSET, DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, ARCHIVED):
+                episode_status_counts_total[status_code] = 0
 
         # add all the downloaded qualities
         episode_qualities_counts_download = {'total': 0}
-        for statusCode in Quality.DOWNLOADED + Quality.ARCHIVED:
-            status, quality = Quality.split_composite_status(statusCode)
-            if quality in [Quality.NONE]:
-                continue
-            episode_qualities_counts_download[statusCode] = 0
+        for status_code in (DOWNLOADED, ARCHIVED):
+            episode_qualities_counts_download[status_code] = {}
 
         # add all snatched qualities
         episode_qualities_counts_snatch = {'total': 0}
-        for statusCode in Quality.SNATCHED + Quality.SNATCHED_PROPER:
-            status, quality = Quality.split_composite_status(statusCode)
-            if quality in [Quality.NONE]:
-                continue
-            episode_qualities_counts_snatch[statusCode] = 0
+        for status_code in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
+            episode_qualities_counts_snatch[status_code] = {}
 
-        main_db_con = db.DBConnection(row_type='dict')
-        sql_results = main_db_con.select('SELECT status, season FROM tv_episodes '
+        main_db_con = db.DBConnection()
+        sql_results = main_db_con.select('SELECT status, quality, season FROM tv_episodes '
                                          'WHERE season != 0 AND indexer = ? AND showid = ?',
                                          [INDEXER_TVDBV2, self.indexerid])
+
         # the main loop that goes through all episodes
         for row in sql_results:
-            status, quality = Quality.split_composite_status(int(row[b'status']))
+            status, quality = int(row['status']), int(row['quality'])
 
             episode_status_counts_total['total'] += 1
 
-            if status in Quality.DOWNLOADED + Quality.ARCHIVED:
+            if status in (DOWNLOADED, ARCHIVED):
                 episode_qualities_counts_download['total'] += 1
-                episode_qualities_counts_download[int(row[b'status'])] += 1
-            elif status in Quality.SNATCHED + Quality.SNATCHED_PROPER:
+                if quality not in episode_qualities_counts_download[status]:
+                    episode_qualities_counts_download[status][quality] = 1
+                else:
+                    episode_qualities_counts_download[status][quality] += 1
+            elif status in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
                 episode_qualities_counts_snatch['total'] += 1
-                episode_qualities_counts_snatch[int(row[b'status'])] += 1
-            elif status == 0:  # we don't count NONE = 0 = N/A
-                pass
-            else:
+                if quality not in episode_qualities_counts_snatch[status]:
+                    episode_qualities_counts_snatch[status][quality] = 1
+                else:
+                    episode_qualities_counts_snatch[status][quality] += 1
+            elif status not in (UNSET, ):
                 episode_status_counts_total[status] += 1
 
         # the outgoing container
         episodes_stats = {'downloaded': {}}
         # turning codes into strings
-        for statusCode in episode_qualities_counts_download:
-            if statusCode == 'total':
-                episodes_stats['downloaded']['total'] = episode_qualities_counts_download[statusCode]
+        for status in episode_qualities_counts_download:
+            if status == 'total':
+                episodes_stats['downloaded']['total'] = episode_qualities_counts_download[status]
                 continue
-            status, quality = Quality.split_composite_status(int(statusCode))
-            status_string = Quality.qualityStrings[quality].lower().replace(' ', '_').replace('(', '').replace(')', '')
-            episodes_stats['downloaded'][status_string] = episode_qualities_counts_download[statusCode]
+            for quality in episode_qualities_counts_download[status]:
+                quality_string = Quality.qualityStrings[quality].lower().replace(' ', '_')
+                if quality_string not in episodes_stats['downloaded']:
+                    episodes_stats['downloaded'][quality_string] = episode_qualities_counts_download[status][quality]
+                else:
+                    episodes_stats['downloaded'][quality_string] += episode_qualities_counts_download[status][quality]
 
         episodes_stats['snatched'] = {}
-        # turning codes into strings
-        # and combining proper and normal
-        for statusCode in episode_qualities_counts_snatch:
-            if statusCode == 'total':
-                episodes_stats['snatched']['total'] = episode_qualities_counts_snatch[statusCode]
+        for status in episode_qualities_counts_snatch:
+            if status == 'total':
+                episodes_stats['snatched']['total'] = episode_qualities_counts_snatch[status]
                 continue
-            status, quality = Quality.split_composite_status(int(statusCode))
-            status_string = Quality.qualityStrings[quality].lower().replace(' ', '_').replace('(', '').replace(')', '')
-            if Quality.qualityStrings[quality] in episodes_stats['snatched']:
-                episodes_stats['snatched'][status_string] += episode_qualities_counts_snatch[statusCode]
-            else:
-                episodes_stats['snatched'][status_string] = episode_qualities_counts_snatch[statusCode]
+            for quality in episode_qualities_counts_snatch[status]:
+                quality_string = Quality.qualityStrings[quality].lower().replace(' ', '_')
+                if quality_string not in episodes_stats['snatched']:
+                    episodes_stats['snatched'][quality_string] = episode_qualities_counts_snatch[status][quality]
+                else:
+                    episodes_stats['snatched'][quality_string] += episode_qualities_counts_snatch[status][quality]
 
-        # episodes_stats["total"] = {}
-        for statusCode in episode_status_counts_total:
-            if statusCode == 'total':
-                episodes_stats['total'] = episode_status_counts_total[statusCode]
+        for status in episode_status_counts_total:
+            if status == 'total':
+                episodes_stats['total'] = episode_status_counts_total[status]
                 continue
-            status_string = statusStrings[statusCode].lower().replace(' ', '_').replace('(', '').replace(
-                ')', '')
-            episodes_stats[status_string] = episode_status_counts_total[statusCode]
+            status_string = statusStrings[status].lower().replace(' ', '_').replace('(', '').replace(')', '')
+            episodes_stats[status_string] = episode_status_counts_total[status]
 
         return _responds(RESULT_SUCCESS, episodes_stats)
 
@@ -2750,7 +2785,7 @@ class CMD_ShowUpdate(ApiCall):
             app.show_queue_scheduler.action.updateShow(show_obj)
             return _responds(RESULT_SUCCESS, msg='{0} has queued to be updated'.format(show_obj.name))
         except CantUpdateShowException as error:
-            log.debug(u'API::Unable to update show: {0}', error.message)
+            log.debug(u'API::Unable to update show: {0!r}', error)
             return _responds(RESULT_FAILURE, msg='Unable to update {0}'.format(show_obj.name))
 
 

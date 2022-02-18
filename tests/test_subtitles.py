@@ -1,5 +1,6 @@
 # coding=utf-8
 """Tests for medusa.subtitles.py."""
+from __future__ import unicode_literals
 import os
 import subprocess
 import sys
@@ -13,11 +14,13 @@ import pytest
 from subliminal.core import ProviderPool
 from subliminal.subtitle import Subtitle
 
+from six import text_type
+
 
 def test_sorted_service_list(monkeypatch):
     # Given
-    monkeypatch.setattr(app, 'SUBTITLES_SERVICES_LIST', ['legendastv', 'trash', 'itasa', 'thesubdb', 'shooter'])
-    monkeypatch.setattr(app, 'SUBTITLES_SERVICES_ENABLED', [1, 1, 0, 1, 0])
+    monkeypatch.setattr(app, 'SUBTITLES_SERVICES_LIST', ['legendastv', 'trash', 'thesubdb', 'shooter'])
+    monkeypatch.setattr(app, 'SUBTITLES_SERVICES_ENABLED', [1, 1, 1, 0])
 
     # When
     actual = sut.sorted_service_list()
@@ -25,13 +28,15 @@ def test_sorted_service_list(monkeypatch):
     # Then
     expected = [
         {'name': 'legendastv', 'enabled': True},
-        {'name': 'itasa', 'enabled': False},
         {'name': 'thesubdb', 'enabled': True},
         {'name': 'shooter', 'enabled': False},
         {'name': 'addic7ed', 'enabled': False},
+        {'name': 'argenteam', 'enabled': False},
         {'name': 'napiprojekt', 'enabled': False},
         {'name': 'opensubtitles', 'enabled': False},
+        {'name': 'opensubtitlesvip', 'enabled': False},
         {'name': 'podnapisi', 'enabled': False},
+        {'name': 'subtitulamos', 'enabled': False},
         {'name': 'tvsubtitles', 'enabled': False},
         {'name': 'wizdom', 'enabled': False},
     ]
@@ -40,8 +45,8 @@ def test_sorted_service_list(monkeypatch):
 
 def test_enabled_service_list(monkeypatch):
     # Given
-    monkeypatch.setattr(app, 'SUBTITLES_SERVICES_LIST', ['legendastv', 'a', 'itasa', 'tvsubtitles', 'shooter'])
-    monkeypatch.setattr(app, 'SUBTITLES_SERVICES_ENABLED', [1, 1, 0, 1, 0])
+    monkeypatch.setattr(app, 'SUBTITLES_SERVICES_LIST', ['legendastv', 'a', 'tvsubtitles', 'shooter'])
+    monkeypatch.setattr(app, 'SUBTITLES_SERVICES_ENABLED', [1, 1, 1, 0])
 
     # When
     actual = sut.enabled_service_list()
@@ -370,6 +375,28 @@ def test_merge_subtitles__with_multi_disabled_and_single_new_language(monkeypatc
     assert ['eng', 'pob', 'und'] == actual
 
 
+def test_get_min_score__with_perfect_match_enabled(monkeypatch):
+    # Given
+    monkeypatch.setattr(app, 'SUBTITLES_PERFECT_MATCH', True)
+
+    # When
+    actual = sut.get_min_score()
+
+    # Then
+    assert 645 == actual
+
+
+def test_get_min_score__with_perfect_match_disabled(monkeypatch):
+    # Given
+    monkeypatch.setattr(app, 'SUBTITLES_PERFECT_MATCH', False)
+
+    # When
+    actual = sut.get_min_score()
+
+    # Then
+    assert 630 == actual
+
+
 def test_get_subtitles_dir__no_subtitles_dir(monkeypatch):
     # Given
     monkeypatch.setattr(app, 'SUBTITLES_DIR', '')
@@ -385,7 +412,7 @@ def test_get_subtitles_dir__no_subtitles_dir(monkeypatch):
 
 def test_get_subtitles_dir__absolute_subtitles_dir(monkeypatch, tmpdir):
     # Given
-    expected = str(tmpdir.ensure('subtitles'))
+    expected = text_type(tmpdir.ensure('subtitles'))
     monkeypatch.setattr(app, 'SUBTITLES_DIR', expected)
     video_path = '/somefolder/subfolder/video.mkv'
 
@@ -401,8 +428,8 @@ def test_get_subtitles_dir__relative_subtitles_dir(monkeypatch, tmpdir):
     relative_folder = 'subtitles'
     monkeypatch.setattr(app, 'SYS_ENCODING', sys.getdefaultencoding())
     monkeypatch.setattr(app, 'SUBTITLES_DIR', relative_folder)
-    video_path = str(tmpdir.ensure('video.mkv'))
-    expected = os.path.join(str(tmpdir), 'subtitles')
+    video_path = text_type(tmpdir.ensure('video.mkv'))
+    expected = os.path.join(text_type(tmpdir), 'subtitles')
 
     # When
     actual = sut.get_subtitles_dir(video_path)
@@ -417,15 +444,15 @@ def test_delete_unwanted_subtitles__existing_subtitles_in_unwanted_languages(mon
     monkeypatch.setattr(app, 'SUBTITLES_MULTI', True)
     monkeypatch.setattr(app, 'SUBTITLES_KEEP_ONLY_WANTED', True)
     monkeypatch.setattr(app, 'SUBTITLES_LANGUAGES', ['pob', 'eng'])
-    subtitle_pob = str(tmpdir.ensure('video.pt-BR.srt'))
-    subtitle_eng = str(tmpdir.ensure('video.en.srt'))
-    subtitle_fre = str(tmpdir.ensure('video.fr.srt'))
-    some_file = str(tmpdir.ensure('video.fr.nfo'))
+    subtitle_pob = text_type(tmpdir.ensure('video.pt-BR.srt'))
+    subtitle_eng = text_type(tmpdir.ensure('video.en.srt'))
+    subtitle_fre = text_type(tmpdir.ensure('video.fr.srt'))
+    some_file = text_type(tmpdir.ensure('video.fr.nfo'))
 
     # When
-    sut.delete_unwanted_subtitles(str(tmpdir), subtitle_pob)
-    sut.delete_unwanted_subtitles(str(tmpdir), subtitle_eng)
-    sut.delete_unwanted_subtitles(str(tmpdir), subtitle_fre)
+    sut.delete_unwanted_subtitles(text_type(tmpdir), subtitle_pob)
+    sut.delete_unwanted_subtitles(text_type(tmpdir), subtitle_eng)
+    sut.delete_unwanted_subtitles(text_type(tmpdir), subtitle_fre)
 
     # Then
     assert os.path.exists(subtitle_pob)
@@ -439,8 +466,8 @@ def test_delete_unwanted_subtitles__multi_disabled(monkeypatch, tmpdir):
     monkeypatch.setattr(app, 'SUBTITLES_MULTI', False)
     monkeypatch.setattr(app, 'SUBTITLES_KEEP_ONLY_WANTED', True)
     monkeypatch.setattr(app, 'SUBTITLES_LANGUAGES', ['pob', 'eng'])
-    subtitle_pob = str(tmpdir.ensure('video.pt-BR.srt'))
-    subtitle_fre = str(tmpdir.ensure('video.fr.srt'))
+    subtitle_pob = text_type(tmpdir.ensure('video.pt-BR.srt'))
+    subtitle_fre = text_type(tmpdir.ensure('video.fr.srt'))
 
     # When
     sut.delete_unwanted_subtitles(tmpdir, subtitle_pob)
@@ -456,8 +483,8 @@ def test_delete_unwanted_subtitles__keep_only_wanted_disabled(monkeypatch, tmpdi
     monkeypatch.setattr(app, 'SUBTITLES_MULTI', True)
     monkeypatch.setattr(app, 'SUBTITLES_KEEP_ONLY_WANTED', False)
     monkeypatch.setattr(app, 'SUBTITLES_LANGUAGES', ['pob', 'eng'])
-    subtitle_pob = str(tmpdir.ensure('video.pt-BR.srt'))
-    subtitle_fre = str(tmpdir.ensure('video.fr.srt'))
+    subtitle_pob = text_type(tmpdir.ensure('video.pt-BR.srt'))
+    subtitle_fre = text_type(tmpdir.ensure('video.fr.srt'))
 
     # When
     sut.delete_unwanted_subtitles(tmpdir, subtitle_pob)
@@ -476,8 +503,8 @@ def test_delete_unwanted_subtitles__keep_only_wanted_disabled(monkeypatch, tmpdi
         'external_subtitles': True,
         'embedded_subtitles': False,
         'hearing_impaired': False,
-        'pre_scripts': ['pre.sh'],
-        'post_scripts': ['post.sh'],
+        'pre_scripts': ['pre.py'],
+        'post_scripts': ['post.py'],
         'list_subtitles': [(1, 'pob', 'content'), (0, 'pob', 'poor content'), (1, 'fre', 'content')],
         'best_subtitles': [(1, 'pob', 'content'), (1, 'fre', 'content')],
         'expected': ['fre', 'pob']
@@ -489,8 +516,8 @@ def test_delete_unwanted_subtitles__keep_only_wanted_disabled(monkeypatch, tmpdi
         'external_subtitles': False,
         'embedded_subtitles': True,
         'hearing_impaired': True,
-        'pre_scripts': ['pre.sh'],
-        'post_scripts': ['post.sh'],
+        'pre_scripts': ['pre.py'],
+        'post_scripts': ['post.py', 'post2.py'],
         'list_subtitles': [(1, 'pob', 'content'), (0, 'pob', 'poor content')],
         'best_subtitles': [(1, 'pob', 'content')],
         'expected': []
@@ -502,8 +529,8 @@ def test_delete_unwanted_subtitles__keep_only_wanted_disabled(monkeypatch, tmpdi
         'external_subtitles': False,
         'embedded_subtitles': True,
         'hearing_impaired': True,
-        'pre_scripts': ['pre.sh'],
-        'post_scripts': ['post.sh'],
+        'pre_scripts': ['pre.py', 'pre2.py'],
+        'post_scripts': ['post.py', 'post2.py'],
         'list_subtitles': [(1, 'pob', None), (0, 'pob', 'poor content')],
         'best_subtitles': [(1, 'pob', None)],
         'expected': []
@@ -535,11 +562,11 @@ def test_delete_unwanted_subtitles__keep_only_wanted_disabled(monkeypatch, tmpdi
         'expected': ['eng']
     }
 ])
-def test_download_subtitles(monkeypatch, tmpdir, video, tvshow, create_sub, create_tvepisode, p):
+def test_download_subtitles(monkeypatch, tmpdir, video, tvshow, create_sub, create_file, create_tvepisode, p):
     # Given
     subtitles = [create_sub(language=code, id=sid, content=content) for sid, code, content in p['list_subtitles']]
     best_subtitles = [create_sub(language=code, id=sid, content=content) for sid, code, content in p['best_subtitles']]
-    video_path = str(tmpdir.ensure(video.name))
+    video_path = text_type(tmpdir.ensure(video.name))
     tvepisode = create_tvepisode(series=tvshow, season=3, episode=4, subtitles=p['existing_subtitles'])
     external_subtitles = p['external_subtitles']
     embedded_subtitles = p['embedded_subtitles'] if p['embedded_subtitles'] is not None else True
@@ -551,8 +578,8 @@ def test_download_subtitles(monkeypatch, tmpdir, video, tvshow, create_sub, crea
     monkeypatch.setattr(app, 'SYS_ENCODING', 'utf-8')
     monkeypatch.setattr(app, 'SUBTITLES_MULTI', p['multiple_subtitles'])
     monkeypatch.setattr(app, 'SUBTITLES_LANGUAGES', p['wanted_languages'])
-    monkeypatch.setattr(app, 'SUBTITLES_PRE_SCRIPTS', p['pre_scripts'])
-    monkeypatch.setattr(app, 'SUBTITLES_EXTRA_SCRIPTS', p['post_scripts'])
+    monkeypatch.setattr(app, 'SUBTITLES_PRE_SCRIPTS', [create_file(f, size=42) for f in p['pre_scripts']])
+    monkeypatch.setattr(app, 'SUBTITLES_EXTRA_SCRIPTS', [create_file(f, size=42) for f in p['post_scripts']])
     monkeypatch.setattr(app, 'SUBTITLES_HEARING_IMPAIRED', p['hearing_impaired'])
     monkeypatch.setattr(sut, 'refine', refine)
     monkeypatch.setattr(sut, 'compute_score', compute_score)

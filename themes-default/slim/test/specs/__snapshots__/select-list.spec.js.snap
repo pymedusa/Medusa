@@ -1,0 +1,164 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SelectList.test.js renders 1`] = `
+<div
+  class="select-list max-width"
+>
+  <i
+    class="switch-input glyphicon glyphicon-refresh"
+    title="Switch between a list and comma separated values"
+  />
+   
+  <ul>
+     
+    <div
+      class="new-item"
+    >
+      <div
+        class="input-group"
+      >
+        <input
+          class="form-control input-sm"
+          placeholder="add new values per line"
+          type="text"
+        />
+         
+        <div
+          class="input-group-btn"
+        >
+          <div
+            class="btn btn-default input-sm"
+            style="font-size: 14px;"
+          >
+            <i
+              class="glyphicon glyphicon-plus"
+              title="Add"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+     
+    <!---->
+  </ul>
+</div>
+`;
+
+exports[`SelectList.test.js renders with values 1`] = `
+<div
+  class="select-list max-width"
+>
+  <i
+    class="switch-input glyphicon glyphicon-refresh"
+    title="Switch between a list and comma separated values"
+  />
+   
+  <ul>
+    <li>
+      <div
+        class="input-group"
+      >
+        <input
+          class="form-control input-sm"
+          disabled="disabled"
+          type="text"
+        />
+         
+        <div
+          class="input-group-btn"
+        >
+          <div
+            class="btn btn-default input-sm"
+            style="font-size: 14px; background-color: rgb(238, 238, 238);"
+          >
+            <i
+              class="glyphicon glyphicon-remove"
+              title="Remove"
+            />
+          </div>
+        </div>
+      </div>
+    </li>
+    <li>
+      <div
+        class="input-group"
+      >
+        <input
+          class="form-control input-sm"
+          disabled="disabled"
+          type="text"
+        />
+         
+        <div
+          class="input-group-btn"
+        >
+          <div
+            class="btn btn-default input-sm"
+            style="font-size: 14px; background-color: rgb(238, 238, 238);"
+          >
+            <i
+              class="glyphicon glyphicon-remove"
+              title="Remove"
+            />
+          </div>
+        </div>
+      </div>
+    </li>
+    <li>
+      <div
+        class="input-group"
+      >
+        <input
+          class="form-control input-sm"
+          disabled="disabled"
+          type="text"
+        />
+         
+        <div
+          class="input-group-btn"
+        >
+          <div
+            class="btn btn-default input-sm"
+            style="font-size: 14px; background-color: rgb(238, 238, 238);"
+          >
+            <i
+              class="glyphicon glyphicon-remove"
+              title="Remove"
+            />
+          </div>
+        </div>
+      </div>
+    </li>
+     
+    <div
+      class="new-item"
+    >
+      <div
+        class="input-group"
+      >
+        <input
+          class="form-control input-sm"
+          placeholder="add new values per line"
+          type="text"
+        />
+         
+        <div
+          class="input-group-btn"
+        >
+          <div
+            class="btn btn-default input-sm"
+            style="font-size: 14px;"
+          >
+            <i
+              class="glyphicon glyphicon-plus"
+              title="Add"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+     
+    <!---->
+  </ul>
+</div>
+`;

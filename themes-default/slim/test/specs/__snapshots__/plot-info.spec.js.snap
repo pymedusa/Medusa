@@ -1,0 +1,12 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PlotInfo.test.js renders 1`] = `
+<img
+  alt=""
+  class="plotInfo has-tooltip"
+  data-original-title="null"
+  height="16"
+  src="images/info32.png"
+  width="16"
+/>
+`;

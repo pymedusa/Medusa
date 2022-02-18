@@ -1,0 +1,43 @@
+[
+  {
+    "timestamp": "2019-05-28T19:18:16",
+    "level": "WARNING",
+    "commit": "0a31350",
+    "thread": "CHECKVERSION",
+    "message": "git symbolic-ref -q HEAD returned no data"
+  },
+  {
+    "timestamp": "2019-05-28T19:01:54",
+    "level": "ERROR",
+    "commit": "fab3029",
+    "thread": "TORNADO",
+    "message": "Uncaught exception in APIv2: RuntimeError(\"generator didn't yield\")",
+    "traceback": [
+      "Request: POST /api/v2/log (127.0.0.1)",
+      "With body:",
+      "{",
+      "    \"thread\": \"\",",
+      "    \"message\": \"TEST\",",
+      "    \"level\": \"INFO\"",
+      "}",
+      "Traceback (most recent call last):",
+      "  File \"C:\\Dev\\Medusa\\ext\\tornado\\web.py\", line 1592, in _execute",
+      "    result = yield result",
+      "  File \"C:\\Dev\\Medusa\\ext\\tornado\\gen.py\", line 1133, in run",
+      "    value = future.result()",
+      "  File \"C:\\Dev\\Medusa\\ext\\tornado\\gen.py\", line 1141, in run",
+      "    yielded = self.gen.throw(*exc_info)",
+      "  File \"C:\\Dev\\Medusa\\medusa\\server\\api\\v2\\base.py\", line 64, in async_call",
+      "    content = yield IOLoop.current().run_in_executor(executor, prepared)",
+      "  File \"C:\\Dev\\Medusa\\ext\\tornado\\gen.py\", line 1133, in run",
+      "    value = future.result()",
+      "  File \"C:\\Python\\Python37\\lib\\concurrent\\futures\\thread.py\", line 57, in run",
+      "    result = self.fn(*self.args, **self.kwargs)",
+      "  File \"C:\\Dev\\Medusa\\medusa\\server\\api\\v2\\log.py\", line 159, in post",
+      "    with rename_thread(new_name=thread):",
+      "  File \"C:\\Python\\Python37\\lib\\contextlib.py\", line 114, in __enter__",
+      "    raise RuntimeError(\"generator didn't yield\") from None",
+      "RuntimeError: generator didn't yield"
+    ]
+  }
+]

@@ -4,6 +4,7 @@ from __future__ import division, unicode_literals, print_function, absolute_impo
 
 import math
 import copy
+import unittest
 
 from pint import UnitRegistry
 from pint.unit import UnitsContainer
@@ -12,7 +13,6 @@ from pint.util import ParserHelper
 from pint.compat import np, long_type
 from pint.errors import UndefinedUnitError, DimensionalityError
 from pint.testsuite import QuantityTestCase, helpers
-from pint.testsuite.compat import unittest
 
 
 class TestIssues(QuantityTestCase):
@@ -39,7 +39,6 @@ class TestIssues(QuantityTestCase):
 
     def test_issue29(self):
         ureg = UnitRegistry()
-        ureg.define('molar = mole / liter = M')
         t = 4 * ureg('mM')
         self.assertEqual(t.magnitude, 4)
         self.assertEqual(t._units, UnitsContainer(millimolar=1))
@@ -562,3 +561,119 @@ class TestIssuesNP(QuantityTestCase):
         q = [1, 2, 3] * ureg.dimensionless
         p = (q ** q).m
         np.testing.assert_array_equal(p, a ** a)
+
+    def test_issue532(self):
+        ureg = self.ureg
+
+        @ureg.check(ureg(''))
+        def f(x):
+            return 2 * x
+
+        self.assertEqual(f(ureg.Quantity(1, '')), 2)
+        self.assertRaises(DimensionalityError, f, ureg.Quantity(1, 'm'))
+
+    def test_issue625a(self):
+        try:
+            from inspect import signature
+        except ImportError:
+            # Python2 does not have the inspect library. Import the backport.
+            from funcsigs import signature
+
+        ureg = UnitRegistry()
+        Q_ = ureg.Quantity
+        from math import sqrt
+
+        @ureg.wraps(ureg.second, (ureg.meters, ureg.meters/ureg.second**2))
+        def calculate_time_to_fall(height, gravity=Q_(9.8, 'm/s^2')):
+            """Calculate time to fall from a height h with a default gravity.
+
+            By default, the gravity is assumed to be earth gravity,
+            but it can be modified.
+
+            d = .5 * g * t**2
+            t = sqrt(2 * d / g)
+            """
+            return sqrt(2 * height / gravity)
+
+        lunar_module_height = Q_(10, 'm')
+        t1 = calculate_time_to_fall(lunar_module_height)
+        print(t1)
+        self.assertAlmostEqual(t1, Q_(1.4285714285714286, 's'))
+
+        moon_gravity = Q_(1.625, 'm/s^2')
+        t2 = calculate_time_to_fall(lunar_module_height, moon_gravity)
+        self.assertAlmostEqual(t2, Q_(3.508232077228117, 's'))
+
+    def test_issue625b(self):
+        try:
+            from inspect import signature
+        except ImportError:
+            # Python2 does not have the inspect library. Import the backport.
+            from funcsigs import signature
+
+        ureg = UnitRegistry()
+        Q_ = ureg.Quantity
+
+        @ureg.wraps('=A*B', ('=A', '=B'))
+        def get_displacement(time, rate=Q_(1, 'm/s')):
+            """Calculates displacement from a duration and default rate.
+            """
+            return time * rate
+
+        d1 = get_displacement(Q_(2, 's'))
+        self.assertAlmostEqual(d1, Q_(2, 'm'))
+
+        d2 = get_displacement(Q_(2, 's'), Q_(1, 'deg/s'))
+        self.assertAlmostEqual(d2, Q_(2,' deg'))
+
+    def test_issue625c(self):        
+        try:
+            from inspect import signature
+        except ImportError:
+            # Python2 does not have the inspect library. Import the backport.
+            from funcsigs import signature
+
+        u = UnitRegistry()
+
+        @u.wraps('=A*B*C', ('=A', '=B', '=C'))
+        def get_product(a=2*u.m, b=3*u.m, c=5*u.m):
+            return a*b*c
+
+        self.assertEqual(get_product(a=3*u.m), 45*u.m**3)
+        self.assertEqual(get_product(b=2*u.m), 20*u.m**3)
+        self.assertEqual(get_product(c=1*u.dimensionless), 6*u.m**2)
+
+    def test_issue655a(self):
+        ureg = UnitRegistry()
+        distance = 1 * ureg.m
+        time = 1 * ureg.s
+        velocity = distance / time
+        self.assertEqual(distance.check('[length]'), True)
+        self.assertEqual(distance.check('[time]'), False)
+        self.assertEqual(velocity.check('[length] / [time]'), True)
+        self.assertEqual(velocity.check('1 / [time] * [length]'), True)
+
+    def test_issue(self):
+        import math
+        try:
+            from inspect import signature
+        except ImportError:
+            # Python2 does not have the inspect library. Import the backport
+            from funcsigs import signature
+
+        ureg = UnitRegistry()
+        Q_ = ureg.Quantity
+        @ureg.check('[length]', '[length]/[time]^2')
+        def pendulum_period(length, G=Q_(1, 'standard_gravity')):
+            print(length)
+            return (2*math.pi*(length/G)**.5).to('s')
+        l = 1 * ureg.m
+        # Assume earth gravity
+        t = pendulum_period(l)
+        self.assertAlmostEqual(t, Q_('2.0064092925890407 second'))
+        # Use moon gravity
+        moon_gravity = Q_(1.625, 'm/s^2')
+        t = pendulum_period(l, moon_gravity)
+        self.assertAlmostEqual(t, Q_('4.928936075204336 second'))
+
+

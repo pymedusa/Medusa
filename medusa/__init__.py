@@ -17,7 +17,7 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 
-from medusa import app
+from medusa.app import app
 from medusa.init import initialize
 
 # Initialize functions replacements

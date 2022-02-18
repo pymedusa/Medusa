@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 # coding=UTF-8
 # Author: Dennis Lutter <lad1337@gmail.com>
 #
@@ -17,8 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 """Test searches."""
-
-from __future__ import print_function
+from __future__ import unicode_literals
 
 import unittest
 
@@ -26,6 +25,8 @@ from medusa import common, providers
 from medusa.providers.generic_provider import GenericProvider
 from medusa.tv import Episode, Series
 import test_lib as test
+
+from six import iteritems
 
 TESTS = {
     "Game of Thrones": {
@@ -77,7 +78,7 @@ def generator(cur_data, cur_name, cur_provider):
             cur_string = ''
             for cur_string in season_strings, episode_strings:
                 if not all([isinstance(cur_string, list), isinstance(cur_string[0], dict)]):
-                    print(" %s is using a wrong string format!" % cur_provider.name)
+                    print("%s is using a wrong string format!" % cur_provider.name)
                     print(cur_string)
                     fail = True
                     continue
@@ -89,8 +90,8 @@ def generator(cur_data, cur_name, cur_provider):
                 assert season_strings == cur_data["s_strings"]
                 assert episode_strings == cur_data["e_strings"]
             except AssertionError:
-                print (" %s is using a wrong string format!" % cur_provider.name)
-                print (cur_string)
+                print("%s is using a wrong string format!" % cur_provider.name)
+                print(cur_string)
                 continue
 
             search_strings = episode_strings[0]
@@ -137,7 +138,7 @@ if __name__ == '__main__':
     """)
     # create the test methods
     for forceSearch in (True, False):
-        for name, data in TESTS.items():
+        for name, data in iteritems(TESTS):
             filename = name.replace(' ', '_')
 
             for provider in providers.sorted_provider_list():

@@ -3,9 +3,9 @@
 from __future__ import unicode_literals
 
 from medusa import db
-from medusa.helper.mappings import NonEmptyDict
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.tv.series import SeriesIdentifier
+
 from tornado.escape import json_decode
 
 
@@ -23,20 +23,20 @@ class AliasHandler(BaseRequestHandler):
 
     def get(self, identifier, path_param):
         """Query scene_exception information."""
-        cache_db_con = db.DBConnection('cache.db')
-        sql_base = (b'SELECT '
-                    b'  exception_id, '
-                    b'  indexer, '
-                    b'  indexer_id, '
-                    b'  show_name, '
-                    b'  season, '
-                    b'  custom '
-                    b'FROM scene_exceptions ')
+        main_db_con = db.DBConnection()
+        sql_base = ('SELECT '
+                    '  exception_id, '
+                    '  indexer, '
+                    '  series_id, '
+                    '  title, '
+                    '  season, '
+                    '  custom '
+                    'FROM scene_exceptions ')
         sql_where = []
         params = []
 
         if identifier is not None:
-            sql_where.append(b'exception_id')
+            sql_where.append('exception_id')
             params += [identifier]
         else:
             series_slug = self.get_query_argument('series', None)
@@ -47,35 +47,46 @@ class AliasHandler(BaseRequestHandler):
 
             season = self._parse(self.get_query_argument('season', None))
             exception_type = self.get_query_argument('type', None)
+            episode_search_template = self.get_query_argument('episodetemplate', None)
+            season_search_template = self.get_query_argument('episodetemplate', None)
+
             if exception_type and exception_type not in ('local', ):
                 return self._bad_request('Invalid type')
 
             if series_identifier:
-                sql_where.append(b'indexer')
-                sql_where.append(b'indexer_id')
+                sql_where.append('indexer')
+                sql_where.append('series_id')
                 params += [series_identifier.indexer.id, series_identifier.id]
 
             if season is not None:
-                sql_where.append(b'season')
+                sql_where.append('season')
                 params += [season]
 
             if exception_type == 'local':
-                sql_where.append(b'custom')
+                sql_where.append('custom')
                 params += [1]
 
-        if sql_where:
-            sql_base += b' WHERE ' + b' AND '.join([where + b' = ? ' for where in sql_where])
+            if episode_search_template is not None:
+                sql_where.append('episode_search_template')
+                params += [episode_search_template]
 
-        sql_results = cache_db_con.select(sql_base, params)
+            if season_search_template is not None:
+                sql_where.append('season_search_template')
+                params += [season_search_template]
+
+        if sql_where:
+            sql_base += ' WHERE ' + ' AND '.join([where + ' = ? ' for where in sql_where])
+
+        sql_results = main_db_con.select(sql_base, params)
 
         data = []
         for item in sql_results:
-            d = NonEmptyDict()
-            d['id'] = item[0]
-            d['series'] = SeriesIdentifier.from_id(item[1], item[2]).slug
-            d['name'] = item[3]
-            d['season'] = item[4] if item[4] >= 0 else None
-            d['type'] = 'local' if item[5] else None
+            d = {}
+            d['id'] = item['exception_id']
+            d['series'] = SeriesIdentifier.from_id(item['indexer'], item['series_id']).slug
+            d['name'] = item['title']
+            d['season'] = item['season'] if item['season'] >= 0 else None
+            d['type'] = 'local' if item['custom'] else None
             data.append(d)
 
         if not identifier:
@@ -108,22 +119,22 @@ class AliasHandler(BaseRequestHandler):
         if not series_identifier:
             return self._bad_request('Invalid series')
 
-        cache_db_con = db.DBConnection('cache.db')
-        last_changes = cache_db_con.connection.total_changes
-        cache_db_con.action(b'UPDATE scene_exceptions'
-                            b' set indexer = ?'
-                            b', indexer_id = ?'
-                            b', show_name = ?'
-                            b', season = ?'
-                            b', custom = 1'
-                            b' WHERE exception_id = ?',
-                            [series_identifier.indexer.id,
-                             series_identifier.id,
-                             data['name'],
-                             data.get('season'),
-                             identifier])
+        main_db_con = db.DBConnection()
+        last_changes = main_db_con.connection.total_changes
+        main_db_con.action('UPDATE scene_exceptions'
+                           ' set indexer = ?'
+                           ', series_id = ?'
+                           ', title = ?'
+                           ', season = ?'
+                           ', custom = 1'
+                           ' WHERE exception_id = ?',
+                           [series_identifier.indexer.id,
+                            series_identifier.id,
+                            data['name'],
+                            data.get('season'),
+                            identifier])
 
-        if cache_db_con.connection.total_changes - last_changes != 1:
+        if main_db_con.connection.total_changes - last_changes != 1:
             return self._not_found('Alias not found')
 
         return self._no_content()
@@ -143,17 +154,17 @@ class AliasHandler(BaseRequestHandler):
         if not series_identifier:
             return self._bad_request('Invalid series')
 
-        cache_db_con = db.DBConnection('cache.db')
-        last_changes = cache_db_con.connection.total_changes
-        cursor = cache_db_con.action(b'INSERT INTO scene_exceptions'
-                                     b' (indexer, indexer_id, show_name, season, custom) '
-                                     b' values (?,?,?,?,1)',
-                                     [series_identifier.indexer.id,
-                                      series_identifier.id,
-                                      data['name'],
-                                      data.get('season')])
+        main_db_con = db.DBConnection()
+        last_changes = main_db_con.connection.total_changes
+        cursor = main_db_con.action('INSERT INTO scene_exceptions'
+                                    ' (indexer, series_id, title, season, custom) '
+                                    ' values (?,?,?,?,1)',
+                                    [series_identifier.indexer.id,
+                                     series_identifier.id,
+                                     data['name'],
+                                     data.get('season', -1)])
 
-        if cache_db_con.connection.total_changes - last_changes <= 0:
+        if main_db_con.connection.total_changes - last_changes <= 0:
             return self._conflict('Unable to create alias')
 
         data['id'] = cursor.lastrowid
@@ -165,10 +176,10 @@ class AliasHandler(BaseRequestHandler):
         if not identifier:
             return self._bad_request('Invalid alias id')
 
-        cache_db_con = db.DBConnection('cache.db')
-        last_changes = cache_db_con.connection.total_changes
-        cache_db_con.action(b'DELETE FROM scene_exceptions WHERE exception_id = ?', [identifier])
-        if cache_db_con.connection.total_changes - last_changes <= 0:
+        main_db_con = db.DBConnection()
+        last_changes = main_db_con.connection.total_changes
+        main_db_con.action('DELETE FROM scene_exceptions WHERE exception_id = ?', [identifier])
+        if main_db_con.connection.total_changes - last_changes <= 0:
             return self._not_found('Alias not found')
 
         return self._no_content()

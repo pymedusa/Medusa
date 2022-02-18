@@ -1,4 +1,3 @@
-from __future__ import absolute_import, division, print_function
 from tornado.ioloop import IOLoop
 from tornado.netutil import ThreadedResolver
 
@@ -8,4 +7,4 @@ from tornado.netutil import ThreadedResolver
 # this deadlock.
 
 resolver = ThreadedResolver()
-IOLoop.current().run_sync(lambda: resolver.resolve(u'localhost', 80))
+IOLoop.current().run_sync(lambda: resolver.resolve(u"localhost", 80))

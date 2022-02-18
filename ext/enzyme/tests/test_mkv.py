@@ -21,8 +21,8 @@ def setUpModule():
 
 class MKVTestCase(unittest.TestCase):
     def test_test1(self):
-        stream = io.open(os.path.join(TEST_DIR, 'test1.mkv'), 'rb')
-        mkv = MKV(stream)
+        with io.open(os.path.join(TEST_DIR, 'test1.mkv'), 'rb') as stream:
+            mkv = MKV(stream)
         # info
         self.assertTrue(mkv.info.title is None)
         self.assertTrue(mkv.info.duration == timedelta(minutes=1, seconds=27, milliseconds=336))
@@ -44,12 +44,12 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.video_tracks[0].width == 854)
         self.assertTrue(mkv.video_tracks[0].height == 480)
         self.assertTrue(mkv.video_tracks[0].interlaced == False)
-        self.assertTrue(mkv.video_tracks[0].stereo_mode is None)
+        self.assertTrue(mkv.video_tracks[0].stereo_mode == 0)
         self.assertTrue(mkv.video_tracks[0].crop == {})
         self.assertTrue(mkv.video_tracks[0].display_width is None)
         self.assertTrue(mkv.video_tracks[0].display_height is None)
         self.assertTrue(mkv.video_tracks[0].display_unit is None)
-        self.assertTrue(mkv.video_tracks[0].aspect_ratio_type is None)
+        self.assertTrue(mkv.video_tracks[0].aspect_ratio_type == 0)
         # audio track
         self.assertTrue(len(mkv.audio_tracks) == 1)
         self.assertTrue(mkv.audio_tracks[0].type == AUDIO_TRACK)
@@ -64,7 +64,7 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.audio_tracks[0].codec_name is None)
         self.assertTrue(mkv.audio_tracks[0].sampling_frequency == 48000.0)
         self.assertTrue(mkv.audio_tracks[0].channels == 2)
-        self.assertTrue(mkv.audio_tracks[0].output_sampling_frequency is None)
+        self.assertTrue(mkv.audio_tracks[0].output_sampling_frequency == 48000.0)
         self.assertTrue(mkv.audio_tracks[0].bit_depth is None)
         # subtitle track
         self.assertTrue(len(mkv.subtitle_tracks) == 0)
@@ -90,8 +90,8 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.tags[0].simpletags[2].binary is None)
 
     def test_test2(self):
-        stream = io.open(os.path.join(TEST_DIR, 'test2.mkv'), 'rb')
-        mkv = MKV(stream)
+        with io.open(os.path.join(TEST_DIR, 'test2.mkv'), 'rb') as stream:
+            mkv = MKV(stream)
         # info
         self.assertTrue(mkv.info.title is None)
         self.assertTrue(mkv.info.duration == timedelta(seconds=47, milliseconds=509))
@@ -113,12 +113,12 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.video_tracks[0].width == 1024)
         self.assertTrue(mkv.video_tracks[0].height == 576)
         self.assertTrue(mkv.video_tracks[0].interlaced == False)
-        self.assertTrue(mkv.video_tracks[0].stereo_mode is None)
+        self.assertTrue(mkv.video_tracks[0].stereo_mode == 0)
         self.assertTrue(mkv.video_tracks[0].crop == {})
         self.assertTrue(mkv.video_tracks[0].display_width == 1354)
         self.assertTrue(mkv.video_tracks[0].display_height is None)
         self.assertTrue(mkv.video_tracks[0].display_unit is None)
-        self.assertTrue(mkv.video_tracks[0].aspect_ratio_type is None)
+        self.assertTrue(mkv.video_tracks[0].aspect_ratio_type == 0)
         # audio track
         self.assertTrue(len(mkv.audio_tracks) == 1)
         self.assertTrue(mkv.audio_tracks[0].type == AUDIO_TRACK)
@@ -133,7 +133,7 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.audio_tracks[0].codec_name is None)
         self.assertTrue(mkv.audio_tracks[0].sampling_frequency == 48000.0)
         self.assertTrue(mkv.audio_tracks[0].channels == 2)
-        self.assertTrue(mkv.audio_tracks[0].output_sampling_frequency is None)
+        self.assertTrue(mkv.audio_tracks[0].output_sampling_frequency == 48000.0)
         self.assertTrue(mkv.audio_tracks[0].bit_depth is None)
         # subtitle track
         self.assertTrue(len(mkv.subtitle_tracks) == 0)
@@ -159,8 +159,8 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.tags[0].simpletags[2].binary is None)
 
     def test_test3(self):
-        stream = io.open(os.path.join(TEST_DIR, 'test3.mkv'), 'rb')
-        mkv = MKV(stream)
+        with io.open(os.path.join(TEST_DIR, 'test3.mkv'), 'rb') as stream:
+            mkv = MKV(stream)
         # info
         self.assertTrue(mkv.info.title is None)
         self.assertTrue(mkv.info.duration == timedelta(seconds=49, milliseconds=64))
@@ -182,18 +182,18 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.video_tracks[0].width == 1024)
         self.assertTrue(mkv.video_tracks[0].height == 576)
         self.assertTrue(mkv.video_tracks[0].interlaced == False)
-        self.assertTrue(mkv.video_tracks[0].stereo_mode is None)
+        self.assertTrue(mkv.video_tracks[0].stereo_mode == 0)
         self.assertTrue(mkv.video_tracks[0].crop == {})
         self.assertTrue(mkv.video_tracks[0].display_width is None)
         self.assertTrue(mkv.video_tracks[0].display_height is None)
         self.assertTrue(mkv.video_tracks[0].display_unit is None)
-        self.assertTrue(mkv.video_tracks[0].aspect_ratio_type is None)
+        self.assertTrue(mkv.video_tracks[0].aspect_ratio_type == 0)
         # audio track
         self.assertTrue(len(mkv.audio_tracks) == 1)
         self.assertTrue(mkv.audio_tracks[0].type == AUDIO_TRACK)
         self.assertTrue(mkv.audio_tracks[0].number == 2)
         self.assertTrue(mkv.audio_tracks[0].name is None)
-        self.assertTrue(mkv.audio_tracks[0].language is None)
+        self.assertTrue(mkv.audio_tracks[0].language == 'eng')
         self.assertTrue(mkv.audio_tracks[0].enabled == True)
         self.assertTrue(mkv.audio_tracks[0].default == True)
         self.assertTrue(mkv.audio_tracks[0].forced == False)
@@ -202,7 +202,7 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.audio_tracks[0].codec_name is None)
         self.assertTrue(mkv.audio_tracks[0].sampling_frequency == 48000.0)
         self.assertTrue(mkv.audio_tracks[0].channels == 2)
-        self.assertTrue(mkv.audio_tracks[0].output_sampling_frequency is None)
+        self.assertTrue(mkv.audio_tracks[0].output_sampling_frequency == 48000.0)
         self.assertTrue(mkv.audio_tracks[0].bit_depth is None)
         # subtitle track
         self.assertTrue(len(mkv.subtitle_tracks) == 0)
@@ -228,8 +228,8 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.tags[0].simpletags[2].binary is None)
 
     def test_test5(self):
-        stream = io.open(os.path.join(TEST_DIR, 'test5.mkv'), 'rb')
-        mkv = MKV(stream)
+        with io.open(os.path.join(TEST_DIR, 'test5.mkv'), 'rb') as stream:
+            mkv = MKV(stream)
         # info
         self.assertTrue(mkv.info.title is None)
         self.assertTrue(mkv.info.duration == timedelta(seconds=46, milliseconds=665))
@@ -251,12 +251,12 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.video_tracks[0].width == 1024)
         self.assertTrue(mkv.video_tracks[0].height == 576)
         self.assertTrue(mkv.video_tracks[0].interlaced == False)
-        self.assertTrue(mkv.video_tracks[0].stereo_mode is None)
+        self.assertTrue(mkv.video_tracks[0].stereo_mode == 0)
         self.assertTrue(mkv.video_tracks[0].crop == {})
         self.assertTrue(mkv.video_tracks[0].display_width == 1024)
         self.assertTrue(mkv.video_tracks[0].display_height == 576)
         self.assertTrue(mkv.video_tracks[0].display_unit is None)
-        self.assertTrue(mkv.video_tracks[0].aspect_ratio_type is None)
+        self.assertTrue(mkv.video_tracks[0].aspect_ratio_type == 0)
         # audio tracks
         self.assertTrue(len(mkv.audio_tracks) == 2)
         self.assertTrue(mkv.audio_tracks[0].type == AUDIO_TRACK)
@@ -271,12 +271,12 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.audio_tracks[0].codec_name is None)
         self.assertTrue(mkv.audio_tracks[0].sampling_frequency == 48000.0)
         self.assertTrue(mkv.audio_tracks[0].channels == 2)
-        self.assertTrue(mkv.audio_tracks[0].output_sampling_frequency is None)
+        self.assertTrue(mkv.audio_tracks[0].output_sampling_frequency == 48000.0)
         self.assertTrue(mkv.audio_tracks[0].bit_depth is None)
         self.assertTrue(mkv.audio_tracks[1].type == AUDIO_TRACK)
         self.assertTrue(mkv.audio_tracks[1].number == 10)
         self.assertTrue(mkv.audio_tracks[1].name == 'Commentary')
-        self.assertTrue(mkv.audio_tracks[1].language is None)
+        self.assertTrue(mkv.audio_tracks[1].language == 'eng')
         self.assertTrue(mkv.audio_tracks[1].enabled == True)
         self.assertTrue(mkv.audio_tracks[1].default == False)
         self.assertTrue(mkv.audio_tracks[1].forced == False)
@@ -292,7 +292,7 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.subtitle_tracks[0].type == SUBTITLE_TRACK)
         self.assertTrue(mkv.subtitle_tracks[0].number == 3)
         self.assertTrue(mkv.subtitle_tracks[0].name is None)
-        self.assertTrue(mkv.subtitle_tracks[0].language is None)
+        self.assertTrue(mkv.subtitle_tracks[0].language == 'eng')
         self.assertTrue(mkv.subtitle_tracks[0].enabled == True)
         self.assertTrue(mkv.subtitle_tracks[0].default == True)
         self.assertTrue(mkv.subtitle_tracks[0].forced == False)
@@ -391,8 +391,8 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.tags[0].simpletags[2].binary is None)
 
     def test_test6(self):
-        stream = io.open(os.path.join(TEST_DIR, 'test6.mkv'), 'rb')
-        mkv = MKV(stream)
+        with io.open(os.path.join(TEST_DIR, 'test6.mkv'), 'rb') as stream:
+            mkv = MKV(stream)
         # info
         self.assertTrue(mkv.info.title is None)
         self.assertTrue(mkv.info.duration == timedelta(seconds=87, milliseconds=336))
@@ -414,12 +414,12 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.video_tracks[0].width == 854)
         self.assertTrue(mkv.video_tracks[0].height == 480)
         self.assertTrue(mkv.video_tracks[0].interlaced == False)
-        self.assertTrue(mkv.video_tracks[0].stereo_mode is None)
+        self.assertTrue(mkv.video_tracks[0].stereo_mode == 0)
         self.assertTrue(mkv.video_tracks[0].crop == {})
         self.assertTrue(mkv.video_tracks[0].display_width is None)
         self.assertTrue(mkv.video_tracks[0].display_height is None)
         self.assertTrue(mkv.video_tracks[0].display_unit is None)
-        self.assertTrue(mkv.video_tracks[0].aspect_ratio_type is None)
+        self.assertTrue(mkv.video_tracks[0].aspect_ratio_type == 0)
         # audio track
         self.assertTrue(len(mkv.audio_tracks) == 1)
         self.assertTrue(mkv.audio_tracks[0].type == AUDIO_TRACK)
@@ -434,7 +434,7 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.audio_tracks[0].codec_name is None)
         self.assertTrue(mkv.audio_tracks[0].sampling_frequency == 48000.0)
         self.assertTrue(mkv.audio_tracks[0].channels == 2)
-        self.assertTrue(mkv.audio_tracks[0].output_sampling_frequency is None)
+        self.assertTrue(mkv.audio_tracks[0].output_sampling_frequency == 48000.0)
         self.assertTrue(mkv.audio_tracks[0].bit_depth is None)
         # subtitle track
         self.assertTrue(len(mkv.subtitle_tracks) == 0)
@@ -460,8 +460,8 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.tags[0].simpletags[2].binary is None)
 
     def test_test7(self):
-        stream = io.open(os.path.join(TEST_DIR, 'test7.mkv'), 'rb')
-        mkv = MKV(stream)
+        with io.open(os.path.join(TEST_DIR, 'test7.mkv'), 'rb') as stream:
+            mkv = MKV(stream)
         # info
         self.assertTrue(mkv.info.title is None)
         self.assertTrue(mkv.info.duration == timedelta(seconds=37, milliseconds=43))
@@ -483,12 +483,12 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.video_tracks[0].width == 1024)
         self.assertTrue(mkv.video_tracks[0].height == 576)
         self.assertTrue(mkv.video_tracks[0].interlaced == False)
-        self.assertTrue(mkv.video_tracks[0].stereo_mode is None)
+        self.assertTrue(mkv.video_tracks[0].stereo_mode == 0)
         self.assertTrue(mkv.video_tracks[0].crop == {})
         self.assertTrue(mkv.video_tracks[0].display_width is None)
         self.assertTrue(mkv.video_tracks[0].display_height is None)
         self.assertTrue(mkv.video_tracks[0].display_unit is None)
-        self.assertTrue(mkv.video_tracks[0].aspect_ratio_type is None)
+        self.assertTrue(mkv.video_tracks[0].aspect_ratio_type == 0)
         # audio track
         self.assertTrue(len(mkv.audio_tracks) == 1)
         self.assertTrue(mkv.audio_tracks[0].type == AUDIO_TRACK)
@@ -503,7 +503,7 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.audio_tracks[0].codec_name is None)
         self.assertTrue(mkv.audio_tracks[0].sampling_frequency == 48000.0)
         self.assertTrue(mkv.audio_tracks[0].channels == 2)
-        self.assertTrue(mkv.audio_tracks[0].output_sampling_frequency is None)
+        self.assertTrue(mkv.audio_tracks[0].output_sampling_frequency == 48000.0)
         self.assertTrue(mkv.audio_tracks[0].bit_depth is None)
         # subtitle track
         self.assertTrue(len(mkv.subtitle_tracks) == 0)
@@ -529,8 +529,8 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.tags[0].simpletags[2].binary is None)
 
     def test_test8(self):
-        stream = io.open(os.path.join(TEST_DIR, 'test8.mkv'), 'rb')
-        mkv = MKV(stream)
+        with io.open(os.path.join(TEST_DIR, 'test8.mkv'), 'rb') as stream:
+            mkv = MKV(stream)
         # info
         self.assertTrue(mkv.info.title is None)
         self.assertTrue(mkv.info.duration == timedelta(seconds=47, milliseconds=341))
@@ -552,12 +552,12 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.video_tracks[0].width == 1024)
         self.assertTrue(mkv.video_tracks[0].height == 576)
         self.assertTrue(mkv.video_tracks[0].interlaced == False)
-        self.assertTrue(mkv.video_tracks[0].stereo_mode is None)
+        self.assertTrue(mkv.video_tracks[0].stereo_mode == 0)
         self.assertTrue(mkv.video_tracks[0].crop == {})
         self.assertTrue(mkv.video_tracks[0].display_width is None)
         self.assertTrue(mkv.video_tracks[0].display_height is None)
         self.assertTrue(mkv.video_tracks[0].display_unit is None)
-        self.assertTrue(mkv.video_tracks[0].aspect_ratio_type is None)
+        self.assertTrue(mkv.video_tracks[0].aspect_ratio_type == 0)
         # audio track
         self.assertTrue(len(mkv.audio_tracks) == 1)
         self.assertTrue(mkv.audio_tracks[0].type == AUDIO_TRACK)
@@ -572,7 +572,7 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.audio_tracks[0].codec_name is None)
         self.assertTrue(mkv.audio_tracks[0].sampling_frequency == 48000.0)
         self.assertTrue(mkv.audio_tracks[0].channels == 2)
-        self.assertTrue(mkv.audio_tracks[0].output_sampling_frequency is None)
+        self.assertTrue(mkv.audio_tracks[0].output_sampling_frequency == 48000.0)
         self.assertTrue(mkv.audio_tracks[0].bit_depth is None)
         # subtitle track
         self.assertTrue(len(mkv.subtitle_tracks) == 0)

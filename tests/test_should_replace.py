@@ -1,5 +1,6 @@
 # coding=utf-8
 """Tests for medusa/test_should_replace.py."""
+from __future__ import unicode_literals
 from medusa.common import ARCHIVED, DOWNLOADED, Quality, SKIPPED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, WANTED
 from medusa.search import DAILY_SEARCH, PROPER_SEARCH
 
@@ -73,7 +74,7 @@ import pytest
         'manually_searched': False,
         'expected': False
     },
-    {  # p6: Snatched Proper 720p HDTV and found 720p BluRay, and 720p BluRay is not preferred but allowed: no
+    {  # p6: Snatched Proper 720p HDTV and found 720p BluRay, and 720p BluRay is not preferred but allowed: yes
         'ep_status': SNATCHED_PROPER,
         'cur_quality': Quality.HDTV,
         'new_quality': Quality.HDBLURAY,
@@ -82,7 +83,7 @@ import pytest
         'download_current_quality': False,
         'force': False,
         'manually_searched': False,
-        'expected': False
+        'expected': True
     },
     {  # p7: Downloaded 720p HDTV and found 720p BluRay, 720p BluRay is not explicity allowed but it's preferred: yes
         'ep_status': DOWNLOADED,
@@ -205,7 +206,7 @@ import pytest
         'manually_searched': False,
         'expected': False
     },
-    {  # p18: Downloaded Unknown found 720p HDBLURAY: no
+    {  # p18: Downloaded Unknown found 720p HDBLURAY: yes
         'ep_status': DOWNLOADED,
         'cur_quality': Quality.UNKNOWN,
         'new_quality': Quality.HDBLURAY,
@@ -214,7 +215,7 @@ import pytest
         'download_current_quality': False,
         'force': False,
         'manually_searched': False,
-        'expected': False
+        'expected': True
     },
     {  # p19: Downloaded SDTV (not in quality system) and found 720p HDTV: yes
         'ep_status': DOWNLOADED,
@@ -414,9 +415,9 @@ import pytest
         'manually_searched': False,
         'expected': False
     },
-    {  # p37: Current quality is NONE: yes
+    {  # p37: Current quality is NA: yes
         'ep_status': SNATCHED,
-        'cur_quality': Quality.NONE,
+        'cur_quality': Quality.NA,
         'new_quality': Quality.HDTV,
         'allowed_qualities': [Quality.SDTV],
         'preferred_qualities': [Quality.HDTV],
@@ -505,6 +506,17 @@ import pytest
         'search_type': PROPER_SEARCH,
         'expected': False
     },
+    {  # p45: Downloaded UNKNOWN and it's Preferred: yes
+        'ep_status': DOWNLOADED,
+        'cur_quality': Quality.HDTV,
+        'new_quality': Quality.UNKNOWN,
+        'allowed_qualities': [Quality.HDTV],
+        'preferred_qualities': [Quality.UNKNOWN],
+        'download_current_quality': False,
+        'force': False,
+        'manually_searched': False,
+        'expected': True
+    },
 ])
 def test_should_replace(p):
     """Run the test."""
@@ -527,5 +539,5 @@ def test_should_replace(p):
 
     # Then
     if expected != actual:
-        print msg
+        print(msg)
     assert expected == actual

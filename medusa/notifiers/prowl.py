@@ -2,14 +2,12 @@
 
 from __future__ import unicode_literals
 
-import ast
+import json
 import logging
 import socket
-import time
 from builtins import object
 
 from medusa import app, common, db
-from medusa.helper.encoding import ss
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.compat import urlencode
@@ -32,41 +30,38 @@ class Notifier(object):
     def test_notify(self, prowl_api, prowl_priority):
         return self._send_prowl(prowl_api, prowl_priority, event='Test', message='Testing Prowl settings from Medusa', force=True)
 
-    def notify_snatch(self, ep_name, is_proper):
-        ep_name = ss(ep_name)
+    def notify_snatch(self, title, message, ep_obj):
         if app.PROWL_NOTIFY_ONSNATCH:
-            show = self._parse_episode(ep_name)
-            recipients = self._generate_recipients(show)
+            recipients = self._generate_recipients(ep_obj.series)
             if not recipients:
                 log.debug('Skipping prowl notify because there are no configured recipients')
             else:
                 for api in recipients:
-                    self._send_prowl(prowl_api=api, prowl_priority=None, event=common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]],
-                                     message=ep_name + ' :: ' + time.strftime(app.DATE_PRESET + ' ' + app.TIME_PRESET))
+                    self._send_prowl(prowl_api=api, prowl_priority=None,
+                                     event=title,
+                                     message=message)
 
-    def notify_download(self, ep_name):
-        ep_name = ss(ep_name)
+    def notify_download(self, ep_obj):
         if app.PROWL_NOTIFY_ONDOWNLOAD:
-            show = self._parse_episode(ep_name)
-            recipients = self._generate_recipients(show)
+            recipients = self._generate_recipients(ep_obj.series)
             if not recipients:
                 log.debug('Skipping prowl notify because there are no configured recipients')
             else:
                 for api in recipients:
-                    self._send_prowl(prowl_api=api, prowl_priority=None, event=common.notifyStrings[common.NOTIFY_DOWNLOAD],
-                                     message=ep_name + ' :: ' + time.strftime(app.DATE_PRESET + ' ' + app.TIME_PRESET))
+                    self._send_prowl(prowl_api=api, prowl_priority=None,
+                                     event=common.notifyStrings[common.NOTIFY_DOWNLOAD],
+                                     message=ep_obj.pretty_name_with_quality())
 
-    def notify_subtitle_download(self, ep_name, lang):
-        ep_name = ss(ep_name)
+    def notify_subtitle_download(self, ep_obj, lang):
         if app.PROWL_NOTIFY_ONSUBTITLEDOWNLOAD:
-            show = self._parse_episode(ep_name)
-            recipients = self._generate_recipients(show)
+            recipients = self._generate_recipients(ep_obj.series)
             if not recipients:
                 log.debug('Skipping prowl notify because there are no configured recipients')
             else:
                 for api in recipients:
-                    self._send_prowl(prowl_api=api, prowl_priority=None, event=common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD],
-                                     message=ep_name + ' [' + lang + '] :: ' + time.strftime(app.DATE_PRESET + ' ' + app.TIME_PRESET))
+                    self._send_prowl(prowl_api=api, prowl_priority=None,
+                                     event=common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD],
+                                     message=f'{ep_obj.pretty_name()} [{lang}]')
 
     def notify_git_update(self, new_version='??'):
         if app.USE_PROWL:
@@ -83,7 +78,13 @@ class Notifier(object):
                              event=title, message=update_text.format(ipaddress))
 
     @staticmethod
-    def _generate_recipients(show=None):
+    def _generate_recipients(show_obj=None):
+        """
+        Generate a list of prowl recipients (api keys) for a specific show.
+
+        Search the tv_shows table for entries in the notify_list field.
+        :param show_obj: Show object.
+        """
         apis = []
         mydb = db.DBConnection()
 
@@ -94,15 +95,21 @@ class Notifier(object):
                     apis.append(api)
 
         # Grab the per-show-notification recipients
-        if show is not None:
-            for value in show:
-                for subs in mydb.select('SELECT notify_list FROM tv_shows WHERE show_name = ?', (value,)):
-                    if subs[b'notify_list']:
-                        if subs[b'notify_list'][0] == '{':               # legacy format handling
-                            entries = dict(ast.literal_eval(subs[b'notify_list']))
-                            for api in entries['prowlAPIs'].split(','):
-                                if api.strip():
-                                    apis.append(api)
+        if show_obj is not None:
+            recipients = mydb.select(
+                'SELECT notify_list '
+                'FROM tv_shows '
+                'WHERE indexer_id = ? AND indexer = ? ',
+                [show_obj.series_id, show_obj.indexer]
+            )
+
+            for subs in recipients:
+                if subs['notify_list']:
+                    entries = json.loads(subs['notify_list'])
+                    if entries:
+                        for api in entries['prowlAPIs'].split(','):
+                            if api.strip():
+                                apis.append(api)
 
         apis = set(apis)
         return apis
@@ -157,10 +164,9 @@ class Notifier(object):
 
     @staticmethod
     def _parse_episode(ep_name):
-        ep_name = ss(ep_name)
-
         sep = ' - '
         titles = ep_name.split(sep)
         titles.sort(key=len, reverse=True)
         log.debug('TITLES: {0}', titles)
+
         return titles

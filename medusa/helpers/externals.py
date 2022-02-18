@@ -8,15 +8,17 @@ import logging
 from medusa import app, db
 from medusa.indexers.api import indexerApi
 from medusa.indexers.config import indexerConfig
-from medusa.indexers.exceptions import IndexerException, IndexerShowAllreadyInLibrary, IndexerUnavailable
-from medusa.indexers.utils import mappings
+from medusa.indexers.exceptions import IndexerException, IndexerShowAlreadyInLibrary, IndexerUnavailable
+from medusa.indexers.utils import mappings, reverse_mappings
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.exceptions import RequestException
 
 from six import viewitems
 
-from traktor import AuthException, TokenExpiredException, TraktApi, TraktException
+from trakt import sync
+from trakt.errors import TraktException
+
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -27,28 +29,6 @@ def get_trakt_externals(externals):
 
     :param externals: Dictionary of key/value pairs with external id's.
     """
-    def trakt_request(api, trakt_url):
-        """Perform the request and handle possible token refresh."""
-        try:
-            trakt_result = api.request(trakt_url) or []
-            if api.access_token_refreshed:
-                app.TRAKT_ACCESS_TOKEN = api.access_token
-                app.TRAKT_REFRESH_TOKEN = api.refresh_token
-                app.instance.save_config()
-        except (AuthException, TraktException, TokenExpiredException) as e:
-            log.info(u'Could not use Trakt to enrich with externals: {0}',
-                     e.message or e)
-            return []
-        else:
-            return trakt_result
-
-    trakt_settings = {'trakt_api_key': app.TRAKT_API_KEY,
-                      'trakt_api_secret': app.TRAKT_API_SECRET,
-                      'trakt_access_token': app.TRAKT_ACCESS_TOKEN,
-                      'trakt_refresh_token': app.TRAKT_REFRESH_TOKEN}
-    trakt_api = TraktApi(app.SSL_VERIFY, app.TRAKT_TIMEOUT, **trakt_settings)
-
-    id_lookup = '/search/{external_key}/{external_value}?type=show'
     trakt_mapping = {'tvdb_id': 'tvdb', 'imdb_id': 'imdb', 'tmdb_id': 'tmdb', 'trakt_id': 'trakt'}
     trakt_mapping_rev = {v: k for k, v in viewitems(trakt_mapping)}
 
@@ -56,16 +36,23 @@ def get_trakt_externals(externals):
         if not trakt_mapping.get(external_key) or not externals[external_key]:
             continue
 
-        url = id_lookup.format(external_key=trakt_mapping[external_key], external_value=externals[external_key])
         log.debug(
             u'Looking for externals using Trakt and {indexer} id {number}', {
                 'indexer': trakt_mapping[external_key],
                 'number': externals[external_key],
             }
         )
-        result = trakt_request(trakt_api, url)
-        if result and len(result) and result[0].get('show') and result[0]['show'].get('ids'):
-            ids = {trakt_mapping_rev[k]: v for k, v in viewitems(result[0]['show'].get('ids'))
+
+        try:
+            result = sync.search_by_id(externals[external_key], id_type=trakt_mapping[external_key], media_type='show')
+        except (TraktException, RequestException) as error:
+            log.warning('Error getting external key {external}, error: {error!r}', {
+                'external': trakt_mapping[external_key], 'error': error
+            })
+            return {}
+
+        if result and len(result) and result[0].ids.get('ids'):
+            ids = {trakt_mapping_rev[k]: v for k, v in result[0].ids.get('ids').items()
                    if v and trakt_mapping_rev.get(k)}
             return ids
     return {}
@@ -103,7 +90,7 @@ def get_externals(show=None, indexer=None, indexed_show=None):
         except IndexerUnavailable:
             continue
         if hasattr(t, 'get_id_by_external'):
-            log.debug(u"Trying other indexer: {indexer} get_id_by_external",
+            log.debug(u'Trying other indexer: {indexer} get_id_by_external',
                       {'indexer': indexerApi(other_indexer).name})
             # Call the get_id_by_external and pass all the externals we have,
             # except for the indexers own.
@@ -112,8 +99,8 @@ def get_externals(show=None, indexer=None, indexed_show=None):
             except (IndexerException, RequestException) as error:
                 log.warning(
                     u'Error getting external ids for other'
-                    u' indexer {name}: {reason}',
-                    {'name': indexerApi(show.indexer).name, 'reason': error.message})
+                    u' indexer {name}: {reason!r}',
+                    {'name': indexerApi(other_indexer).name, 'reason': error})
 
     # Try to update with the Trakt externals.
     if app.USE_TRAKT:
@@ -128,12 +115,13 @@ def check_existing_shows(indexed_show, indexer):
     :param indexed_show: (Indexer Show object) The indexed show from -for example- tvdb. It might already have some
     externals like imdb_id which can be used to search at tmdb, tvmaze or trakt.
     :param indexer: (int) The indexer id, which has been used to search the indexed_show with.
-    :return: Raises the exception IndexerShowAllreadyInLibrary() when the show is already in your library.
+    :return: Raises the exception IndexerShowAlreadyInLibrary() when the show is already in your library.
     """
     # For this show let's get all externals, and use them.
     mappings = {indexer: indexerConfig[indexer]['mapped_to'] for indexer in indexerConfig}
     other_indexers = [mapped_indexer for mapped_indexer in mappings if mapped_indexer != indexer]
 
+    # This will query other indexer api's.
     new_show_externals = get_externals(indexer=indexer, indexed_show=indexed_show)
 
     # Iterate through all shows in library, and see if one of our externals matches it's indexer_id
@@ -145,10 +133,10 @@ def check_existing_shows(indexed_show, indexer):
         if show.externals.get(mappings[indexer]) and indexed_show['id'] == show.externals.get(mappings[indexer]):
             log.debug(u'Show already in database. [{id}] {name}',
                       {'name': show.name, 'id': indexed_show['id']})
-            raise IndexerShowAllreadyInLibrary('The show {0} has already been added by the indexer {1}. '
-                                               'Please remove the show, before you can add it through {2}.'
-                                               .format(show.name, indexerApi(show.indexer).name,
-                                                       indexerApi(indexer).name))
+            raise IndexerShowAlreadyInLibrary('The show {0} has already been added by the indexer {1}. '
+                                              'Please remove the show, before you can add it through {2}.'
+                                              .format(show.name, indexerApi(show.indexer).name,
+                                                      indexerApi(indexer).name))
 
         for new_show_external_key in list(new_show_externals):
             if show.indexer not in other_indexers:
@@ -168,10 +156,30 @@ def check_existing_shows(indexed_show, indexer):
                         'existing': new_show_external_key,
                     }
                 )
-                raise IndexerShowAllreadyInLibrary('The show {0} has already been added by the indexer {1}. '
-                                                   'Please remove the show, before you can add it through {2}.'
-                                                   .format(show.name, indexerApi(show.indexer).name,
-                                                           indexerApi(indexer).name))
+                raise IndexerShowAlreadyInLibrary('The show {0} has already been added by the indexer {1}. '
+                                                  'Please remove the show, before you can add it through {2}.'
+                                                  .format(show.name, indexerApi(show.indexer).name,
+                                                          indexerApi(indexer).name))
+
+
+def save_externals_to_db(indexer, series_id, externals):
+    """Save the indexers external id's to the db."""
+    sql_l = []
+
+    for external in externals:
+        if external in reverse_mappings and externals[external] and reverse_mappings[external] != indexer:
+            sql_l.append(['INSERT OR IGNORE '
+                          'INTO indexer_mapping (indexer_id, indexer, mindexer_id, mindexer) '
+                          'VALUES (?,?,?,?)',
+                          [series_id,
+                           indexer,
+                           externals[external],
+                           int(reverse_mappings[external])
+                           ]])
+
+    if sql_l:
+        main_db_con = db.DBConnection()
+        main_db_con.mass_action(sql_l)
 
 
 def load_externals_from_db(indexer=None, indexer_id=None):
@@ -185,20 +193,39 @@ def load_externals_from_db(indexer=None, indexer_id=None):
     externals = {}
 
     main_db_con = db.DBConnection()
-    sql = (b'SELECT indexer, indexer_id, mindexer, mindexer_id '
-           b'FROM indexer_mapping '
-           b'WHERE (indexer = ? AND indexer_id = ?) '
-           b'OR (mindexer = ? AND mindexer_id = ?)')
+    sql = ('SELECT indexer, indexer_id, mindexer, mindexer_id '
+           'FROM indexer_mapping '
+           'WHERE (indexer = ? AND indexer_id = ?) '
+           'OR (mindexer = ? AND mindexer_id = ?)')
 
     results = main_db_con.select(sql, [indexer, indexer_id, indexer, indexer_id])
 
     for result in results:
         try:
-            if result[b'indexer'] == indexer:
-                externals[mappings[result[b'mindexer']]] = result[b'mindexer_id']
+            if result['indexer'] == indexer:
+                externals[mappings[result['mindexer']]] = result['mindexer_id']
             else:
-                externals[mappings[result[b'indexer']]] = result[b'indexer_id']
-        except KeyError as e:
-            log.error(u'Indexer not supported in current mappings: {id}', {'id': e.message})
+                externals[mappings[result['indexer']]] = result['indexer_id']
+        except KeyError as error:
+            log.error(u'Indexer not supported in current mappings: {id!r}', {'id': error})
 
     return externals
+
+
+def show_in_library(indexer=None, indexer_id=None):
+    """
+    Use the load_externals_from_db method and compare it with the app.showList (library) for existing shows.
+
+    :param indexer: Optional pass indexer id, else use the current shows indexer.
+    :type indexer: int
+    :param indexer_id: Optional pass indexer id, else use the current shows indexer.
+    :type indexer_id: int
+
+    :return: The show object from library if found.
+    """
+    externals = load_externals_from_db(indexer, indexer_id)
+    if externals:
+        for show in app.showList:
+            for indexer, series_id in viewitems(externals):
+                if reverse_mappings[indexer] == show.indexer and series_id == show.series_id:
+                    return show

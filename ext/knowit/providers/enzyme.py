@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 
+import json
+import logging
 from collections import defaultdict
 from logging import NullHandler, getLogger
 import enzyme
@@ -27,6 +29,7 @@ from ..rules import (
     LanguageRule,
     ResolutionRule,
 )
+from ..serializer import get_json_encoder
 from ..units import units
 from ..utils import todict
 
@@ -100,31 +103,51 @@ class EnzymeProvider(Provider):
         """Accept only MKV files."""
         return video_path.lower().endswith('.mkv')
 
+    @classmethod
+    def extract_info(cls, video_path):
+        """Extract info from the video."""
+        with open(video_path, 'rb') as f:
+            return todict(enzyme.MKV(f))
+
     def describe(self, video_path, context):
         """Return video metadata."""
         try:
-            with open(video_path, 'rb') as f:
-                data = defaultdict(dict)
-                ff = todict(enzyme.MKV(f))
-                data.update(ff)
-                if 'info' in data and data['info'] is None:
-                    return {}
-        except enzyme.MalformedMKVError:  # pragma: no cover
-            logger.warning('Invalid file %r', video_path)
-            if context.get('fail_on_error'):
-                raise MalformedFileError
-            return {}
+            data = defaultdict(dict)
+            ff = self.extract_info(video_path)
 
-        if context.get('raw'):
-            return data
+            def debug_data():
+                """Debug data."""
+                return json.dumps(ff, cls=get_json_encoder(context), indent=4, ensure_ascii=False)
+            context['debug_data'] = debug_data
+
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.debug('Video %r scanned using enzyme %r has raw data:\n%s',
+                             video_path, enzyme.__version__, debug_data)
+
+            data.update(ff)
+            if 'info' in data and data['info'] is None:
+                return {}
+        except enzyme.MalformedMKVError:  # pragma: no cover
+            raise MalformedFileError
+
+        if logger.level == logging.DEBUG:
+            logger.debug('Video {video_path} scanned using Enzyme {version} has raw data:\n{data}',
+                         video_path=video_path, version=enzyme.__version__, data=json.dumps(data))
 
         result = self._describe_tracks(video_path, data.get('info', {}), data.get('video_tracks'),
                                        data.get('audio_tracks'), data.get('subtitle_tracks'), context)
 
-        result['provider'] = 'Enzyme {0}'.format(enzyme.__version__)
+        if not result:
+            raise MalformedFileError
+
+        result['provider'] = {
+            'name': 'enzyme',
+            'version': self.version
+        }
+
         return result
 
     @property
     def version(self):
         """Return enzyme version information."""
-        return enzyme.__version__, None
+        return {'enzyme': enzyme.__version__}

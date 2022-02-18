@@ -1,13 +1,6 @@
 from __future__ import absolute_import, division, unicode_literals
 
-try:
-    from collections import OrderedDict
-except ImportError:
-    try:
-        from ordereddict import OrderedDict
-    except ImportError:
-        OrderedDict = dict
-
+from collections import OrderedDict
 import re
 
 from six import string_types
@@ -133,5 +126,6 @@ def getETreeBuilder(ElementTreeImplementation):
                     return parent, list(parents[-1]).index(parent), parents, None
 
     return locals()
+
 
 getETreeModule = moduleFactoryFactory(getETreeBuilder)

@@ -23,19 +23,11 @@ import struct
 import time
 import traceback
 import uuid
-import xml.etree.ElementTree as ET
 import zipfile
 from builtins import chr
-from builtins import hex
 from builtins import str
 from itertools import cycle
-
-try:
-    import itertools.izip as zip
-except ImportError:
-    pass
-
-import adba
+from xml.etree import ElementTree
 
 from cachecontrol import CacheControlAdapter
 from cachecontrol.cache import DictCache
@@ -46,13 +38,12 @@ from contextlib2 import suppress
 
 import guessit
 
-from imdbpie import imdbpie
-
 from medusa import app, db
-from medusa.common import USER_AGENT
-from medusa.helper.common import (episode_num, http_code_description, media_extensions,
+from medusa.common import DOWNLOADED, USER_AGENT
+from medusa.helper.common import (http_code_description, media_extensions,
                                   pretty_file_size, subtitle_extensions)
 from medusa.helpers.utils import generate
+from medusa.imdb import Imdb
 from medusa.indexers.exceptions import IndexerException
 from medusa.logger.adapters.style import BraceAdapter, BraceMessage
 from medusa.session.core import MedusaSafeSession
@@ -61,7 +52,7 @@ from medusa.show.show import Show
 import requests
 from requests.compat import urlparse
 
-from six import binary_type, string_types, text_type, viewitems
+from six import binary_type, ensure_binary, ensure_text, string_types, text_type, viewitems
 from six.moves import http_client
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -72,13 +63,23 @@ try:
 except ImportError:
     reflink = None
 
+try:
+    from psutil import Process
+    memory_usage_tool = 'psutil'
+except ImportError:
+    try:
+        import resource  # resource module is unix only
+        memory_usage_tool = 'resource'
+    except ImportError:
+        memory_usage_tool = None
+
 
 def indent_xml(elem, level=0):
     """Do our pretty printing and make Matt very happy."""
-    i = "\n" + level * "  "
+    i = '\n' + level * '  '
     if elem:
         if not elem.text or not elem.text.strip():
-            elem.text = i + "  "
+            elem.text = i + '  '
         if not elem.tail or not elem.tail.strip():
             elem.tail = i
         for elem in elem:
@@ -111,7 +112,7 @@ def is_media_file(filename):
         if filename.startswith('._'):
             return False
 
-        sep_file = filename.rpartition(".")
+        sep_file = filename.rpartition('.')
 
         if re.search('extras?$', sep_file[0], re.I):
             return False
@@ -293,7 +294,7 @@ def copy_file(src_file, dest_file):
     except (SpecialFileError, Error) as error:
         log.warning('Error copying file: {error}', {'error': error})
     except OSError as error:
-        msg = BraceMessage('OSError: {0}', error.message)
+        msg = BraceMessage('OSError: {0!r}', error)
         if error.errno == errno.ENOSPC:
             # Only warn if device is out of space
             log.warning(msg)
@@ -352,7 +353,7 @@ def hardlink_file(src_file, dest_file):
         link(src_file, dest_file)
         fix_set_group_id(dest_file)
     except OSError as msg:
-        if hasattr(msg, 'errno') and msg.errno == 17:
+        if msg.errno == errno.EEXIST:
             # File exists. Don't fallback to copy
             log.warning(
                 u'Failed to create hardlink of {source} at {destination}.'
@@ -405,13 +406,13 @@ def move_and_symlink_file(src_file, dest_file):
         fix_set_group_id(dest_file)
         symlink(dest_file, src_file)
     except OSError as msg:
-        if hasattr(msg, 'errno') and msg.errno == 17:
+        if msg.errno == errno.EEXIST:
             # File exists. Don't fallback to copy
             log.warning(
                 u'Failed to create symlink of {source} at {destination}.'
                 u' Error: {error!r}', {
                     'source': src_file,
-                    'dest': dest_file,
+                    'destination': dest_file,
                     'error': msg,
                 }
             )
@@ -420,7 +421,7 @@ def move_and_symlink_file(src_file, dest_file):
                 u'Failed to create symlink of {source} at {destination}.'
                 u' Error: {error!r}. Copying instead', {
                     'source': src_file,
-                    'dest': dest_file,
+                    'destination': dest_file,
                     'error': msg,
                 }
             )
@@ -438,9 +439,9 @@ def reflink_file(src_file, dest_file):
     try:
         if reflink is None:
             raise NotImplementedError()
-        reflink.reflink(src_file.encode('utf-8'), dest_file.encode('utf-8'))  # NOTE: remove when https://goo.gl/BMn8EC is merged.
-    except reflink.ReflinkImpossibleError as msg:
-        if msg.args[0] == 'EOPNOTSUPP':
+        reflink.reflink(src_file, dest_file)
+    except (reflink.ReflinkImpossibleError, IOError) as msg:
+        if msg.args and msg.args[0] == 'EOPNOTSUPP':
             log.warning(
                 u'Failed to create reference link of {source} at {destination}.'
                 u' Error: Filesystem or OS has not implemented reflink. Copying instead', {
@@ -449,7 +450,7 @@ def reflink_file(src_file, dest_file):
                 }
             )
             copy_file(src_file, dest_file)
-        elif msg.args[0] == 'EXDEV':
+        elif msg.args and msg.args[0] == 'EXDEV':
             log.warning(
                 u'Failed to create reference link of {source} at {destination}.'
                 u' Error: Can not reflink between two devices. Copying instead', {
@@ -477,16 +478,6 @@ def reflink_file(src_file, dest_file):
             }
         )
         copy_file(src_file, dest_file)
-    except IOError as msg:
-        log.warning(
-            u'Failed to create reflink of {source} at {destination}.'
-            u' Error: {error!r}. Copying instead', {
-                'source': src_file,
-                'destination': dest_file,
-                'error': msg,
-            }
-        )
-        copy_file(src_file, dest_file)
 
 
 def make_dirs(path):
@@ -505,7 +496,7 @@ def make_dirs(path):
                           {'path': path})
                 os.makedirs(path)
             except (OSError, IOError) as msg:
-                log.error(u"Failed creating {path} : {error!r}",
+                log.error(u'Failed creating {path} : {error!r}',
                           {'path': path, 'error': msg})
                 return False
 
@@ -748,53 +739,6 @@ def fix_set_group_id(child_path):
                 {'path': child_path, 'gid': parent_gid})
 
 
-def is_anime_in_show_list():
-    """Check if any shows in list contain anime.
-
-    :return: True if global showlist contains Anime, False if not
-    """
-    for show in app.showList:
-        if show.is_anime:
-            return True
-    return False
-
-
-def update_anime_support():
-    """Check if we need to support anime, and if we do, enable the feature."""
-    app.ANIMESUPPORT = is_anime_in_show_list()
-
-
-def get_absolute_number_from_season_and_episode(series_obj, season, episode):
-    """Find the absolute number for a show episode.
-
-    :param show: Show object
-    :param season: Season number
-    :param episode: Episode number
-    :return: The absolute number
-    """
-    absolute_number = None
-
-    if season and episode:
-        main_db_con = db.DBConnection()
-        sql = b'SELECT * FROM tv_episodes WHERE indexer = ? AND showid = ? AND season = ? AND episode = ?'
-        sql_results = main_db_con.select(sql, [series_obj.indexer, series_obj.series_id, season, episode])
-
-        if len(sql_results) == 1:
-            absolute_number = int(sql_results[0][b'absolute_number'])
-            log.debug(
-                u'Found absolute number {absolute} for show {show} {ep}', {
-                    'absolute': absolute_number,
-                    'show': series_obj.name,
-                    'ep': episode_num(season, episode),
-                }
-            )
-        else:
-            log.debug(u'No entries for absolute number for show {show} {ep}',
-                      {'show': series_obj.name, 'ep': episode_num(season, episode)})
-
-    return absolute_number
-
-
 def get_all_episodes_from_absolute_number(show, absolute_numbers, indexer_id=None, indexer=None):
     episodes = []
     season = None
@@ -852,24 +796,23 @@ def create_https_certificates(ssl_cert, ssl_key):
     """
     try:
         from OpenSSL import crypto
-        from certgen import createKeyPair, createCertRequest, createCertificate, TYPE_RSA
+        from medusa.helpers.certgen import create_key_pair, create_cert_request, create_certificate, TYPE_RSA
     except Exception:
-        log.warning(u'pyopenssl module missing, please install for'
-                    u' https access')
+        log.warning('pyopenssl module missing, please install for https access')
         return False
 
     # Serial number for the certificate
     serial = int(time.time())
 
     # Create the CA Certificate
-    cakey = createKeyPair(TYPE_RSA, 1024)
-    careq = createCertRequest(cakey, CN='Certificate Authority')
-    cacert = createCertificate(careq, (careq, cakey), serial, (0, 60 * 60 * 24 * 365 * 10))  # ten years
+    cakey = create_key_pair(TYPE_RSA, 2048)
+    careq = create_cert_request(cakey, CN='Certificate Authority')
+    cacert = create_certificate(careq, (careq, cakey), serial, (0, 60 * 60 * 24 * 365 * 10))  # ten years
 
     cname = 'Medusa'
-    pkey = createKeyPair(TYPE_RSA, 1024)
-    req = createCertRequest(pkey, CN=cname)
-    cert = createCertificate(req, (cacert, cakey), serial, (0, 60 * 60 * 24 * 365 * 10))  # ten years
+    pkey = create_key_pair(TYPE_RSA, 2048)
+    req = create_cert_request(pkey, CN=cname)
+    cert = create_certificate(req, (cacert, cakey), serial, (0, 60 * 60 * 24 * 365 * 10))  # ten years
 
     # Save the key and certificate to disk
     try:
@@ -906,7 +849,7 @@ def backup_versioned_file(old_file, version):
             log.debug(u'Trying to back up {old} to new',
                       {'old': old_file, 'new': new_file})
             shutil.copy(old_file, new_file)
-            log.debug(u"Backup done")
+            log.debug(u'Backup done')
             break
         except OSError as error:
             log.warning(u'Error while trying to back up {old} to {new}:'
@@ -924,71 +867,10 @@ def backup_versioned_file(old_file, version):
     return True
 
 
-def restore_versioned_file(backup_file, version):
-    """Restore a file version to original state.
-
-    For example sickbeard.db.v41 passed with version int(41), will translate back to sickbeard.db.
-    sickbeard.db.v41. passed with version tuple(41,2), will translate back to sickbeard.db.
-
-    :param backup_file: File to restore
-    :param version: Version of file to restore
-    :return: True on success, False on failure
-    """
-    num_tries = 0
-
-    with suppress(TypeError):
-        version = '.'.join([str(i) for i in version]) if not isinstance(version, str) else version
-
-    new_file, _ = backup_file[0:backup_file.find(u'v{version}'.format(version=version))]
-    restore_file = backup_file
-
-    if not os.path.isfile(new_file):
-        log.debug(u"Not restoring, {file} doesn't exist", {'file': new_file})
-        return False
-
-    try:
-        log.debug(u'Trying to backup {file} to {file}.r{version} before '
-                  u'restoring backup', {'file': new_file, 'version': version})
-
-        shutil.move(new_file, new_file + '.' + 'r' + str(version))
-    except OSError as error:
-        log.warning(u'Error while trying to backup DB file {name} before'
-                    u' proceeding with restore: {error!r}',
-                    {'name': restore_file, 'error': error})
-        return False
-
-    while not os.path.isfile(new_file):
-        if not os.path.isfile(restore_file):
-            log.debug(u'Not restoring, {file} does not exist',
-                      {'file': restore_file})
-            break
-
-        try:
-            log.debug(u'Trying to restore file {old} to {new}',
-                      {'old': restore_file, 'new': new_file})
-            shutil.copy(restore_file, new_file)
-            log.debug(u"Restore done")
-            break
-        except OSError as error:
-            log.warning(u'Error while trying to restore file {name}.'
-                        u' Error: {msg!r}',
-                        {'name': restore_file, 'msg': error})
-            num_tries += 1
-            time.sleep(1)
-            log.debug(u'Trying again. Attempt #: {0}', num_tries)
-
-        if num_tries >= 10:
-            log.warning(u'Unable to restore file {old} to {new}',
-                        {'old': restore_file, 'new': new_file})
-            return False
-
-    return True
-
-
 def get_lan_ip():
     """Return IP of system."""
     try:
-        return [ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")][0]
+        return [ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith('127.')][0]
     except Exception:
         return socket.gethostname()
 
@@ -998,8 +880,8 @@ def check_url(url):
 
     We only check the URL header.
     """
-    # see also http://stackoverflow.com/questions/2924422
-    # http://stackoverflow.com/questions/1140661
+    # see also https://stackoverflow.com/questions/2924422
+    # https://stackoverflow.com/questions/1140661
     good_codes = [http_client.OK, http_client.FOUND, http_client.MOVED_PERMANENTLY]
 
     host, path = urlparse(url)[1:3]  # elems [1] and [2]
@@ -1011,50 +893,20 @@ def check_url(url):
         return None
 
 
-def anon_url(*url):
-    """Return a URL string consisting of the Anonymous redirect URL and an arbitrary number of values appended."""
-    # normalize to byte
-    url = [u.encode('utf-8') if isinstance(u, text_type) else binary_type(u) for u in url]
-    return '' if None in url else '{0}{1}'.format(app.ANON_REDIRECT, ''.join(url)).decode('utf-8')
-
-# Encryption
-# ==========
-# By Pedro Jose Pereira Vieito <pvieito@gmail.com> (@pvieito)
-#
-# * If encryption_version==0 then return data without encryption
-# * The keys should be unique for each device
-#
-# To add a new encryption_version:
-#   1) Code your new encryption_version
-#   2) Update the last encryption_version available in server/web/config/general.py
-#   3) Remember to maintain old encryption versions and key generators for retro-compatibility
-
-
-# Key Generators
-unique_key1 = hex(uuid.getnode() ** 2)  # Used in encryption v1
-
-# Encryption Functions
-
-
 def encrypt(data, encryption_version=0, _decrypt=False):
-    # Version 1: Simple XOR encryption (this is not very secure, but works)
-    if encryption_version == 1:
-        if _decrypt:
-            return ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(base64.decodestring(data), cycle(unique_key1)))
-        else:
-            return base64.encodestring(
-                ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(data, cycle(unique_key1)))).strip()
-    # Version 2: Simple XOR encryption (this is not very secure, but works)
-    elif encryption_version == 2:
-        if _decrypt:
-            return ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(base64.decodestring(data),
-                                                                  cycle(app.ENCRYPTION_SECRET)))
-        else:
-            return base64.encodestring(
-                ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(data, cycle(app.ENCRYPTION_SECRET)))).strip()
     # Version 0: Plain text
-    else:
+    if encryption_version == 0:
         return data
+
+    # Simple XOR encryption, Base64 encoded
+    # Version 2: app.ENCRYPTION_SECRET
+    key = app.ENCRYPTION_SECRET
+    if _decrypt:
+        data = ensure_text(base64.decodebytes(ensure_binary(data)))
+        return ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(data, cycle(key)))
+    else:
+        data = ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(data, cycle(key)))
+        return ensure_text(base64.encodebytes(ensure_binary(data))).strip()
 
 
 def decrypt(data, encryption_version=0):
@@ -1099,18 +951,16 @@ def get_show(name, try_indexers=False):
 
         # try scene exceptions
         if not series:
-            series_from_name = scene_exceptions.get_scene_exceptions_by_name(series_name)[0]
-            series_id = series_from_name[0]
-            indexer_id = series_from_name[2]
-            if series_id:
-                series = Show.find_by_id(app.showList, indexer_id, series_id)
+            found_exception = scene_exceptions.get_scene_exception_by_name(series_name)
+            if found_exception:
+                series = Show.find_by_id(app.showList, found_exception.indexer, found_exception.series_id)
 
         if not series:
             match_name_only = (s.name for s in app.showList if text_type(s.imdb_year) in s.name and
                                series_name.lower() == s.name.lower().replace(' ({year})'.format(year=s.imdb_year), ''))
             for found_series in match_name_only:
-                log.warning("Consider adding '{name}' in scene exceptions for series '{series}'".format
-                            (name=series_name, series=found_series))
+                log.info("Consider adding '{name}' in scene exceptions for series '{series}'".format
+                         (name=series_name, series=found_series))
 
         # add show to cache
         if series and not from_cache:
@@ -1150,7 +1000,10 @@ def real_path(path):
 
     The resulting path will have no symbolic link, '/./' or '/../' components.
     """
-    return os.path.normpath(os.path.normpath(os.path.realpath(path)))
+    if path is None:
+        return ''
+
+    return os.path.normpath(os.path.normcase(os.path.realpath(path)))
 
 
 def validate_show(show, season=None, episode=None):
@@ -1173,41 +1026,8 @@ def validate_show(show, season=None, episode=None):
 
         return show.indexer_api[show.indexerid][season][episode]
     except (IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerShowNotFound) as error:
-        log.debug(u'Unable to validate show. Reason: {0!r}', error.message)
+        log.debug(u'Unable to validate show. Reason: {0!r}', error)
         pass
-
-
-def set_up_anidb_connection():
-    """Connect to anidb."""
-    if not app.USE_ANIDB:
-        log.debug(u'Usage of anidb disabled. Skipping')
-        return False
-
-    if not app.ANIDB_USERNAME and not app.ANIDB_PASSWORD:
-        log.debug(u'anidb username and/or password are not set.'
-                  u' Aborting anidb lookup.')
-        return False
-
-    if not app.ADBA_CONNECTION:
-        def anidb_logger(msg):
-            return log.debug(u'anidb: {0}', msg)
-
-        try:
-            app.ADBA_CONNECTION = adba.Connection(keepAlive=True, log=anidb_logger)
-        except Exception as error:
-            log.warning(u'anidb exception msg: {0!r}', error)
-            return False
-
-    try:
-        if not app.ADBA_CONNECTION.authed():
-            app.ADBA_CONNECTION.auth(app.ANIDB_USERNAME, app.ANIDB_PASSWORD)
-        else:
-            return True
-    except Exception as error:
-        log.warning(u'anidb exception msg: {0!r}', error)
-        return False
-
-    return app.ADBA_CONNECTION.authed()
 
 
 def backup_config_zip(file_list, archive, arcname=None):
@@ -1376,7 +1196,7 @@ def download_file(url, filename, session, method='GET', data=None, headers=None,
 
 
 def handle_requests_exception(requests_exception):
-    default = "Request failed: {0}"
+    default = 'Request failed: {0}'
     try:
         raise requests_exception
     except requests.exceptions.SSLError as error:
@@ -1425,8 +1245,8 @@ def get_size(start_path='.'):
 def generate_api_key():
     """Return a new randomized API_KEY."""
     log.info(u'Generating New API key')
-    secure_hash = hashlib.sha512(str(time.time()))
-    secure_hash.update(str(random.SystemRandom().getrandbits(4096)))
+    secure_hash = hashlib.sha512(str(time.time()).encode('utf-8'))
+    secure_hash.update(str(random.SystemRandom().getrandbits(4096)).encode('utf-8'))
     return secure_hash.hexdigest()[:32]
 
 
@@ -1437,7 +1257,7 @@ def remove_article(text=''):
 
 def generate_cookie_secret():
     """Generate a new cookie secret."""
-    return base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes)
+    return base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes).decode('utf-8')
 
 
 def verify_freespace(src, dest, oldfile=None):
@@ -1539,7 +1359,7 @@ def is_file_locked(check_file, write_lock_check=False):
         return True
 
     if write_lock_check:
-        lock_file = check_file + ".lckchk"
+        lock_file = check_file + '.lckchk'
         if os.path.exists(lock_file):
             os.remove(lock_file)
         try:
@@ -1572,40 +1392,65 @@ def get_disk_space_usage(disk_path=None, pretty=True):
         return False
 
 
+def memory_usage(pretty=True):
+    """
+    Get the current memory usage (if possible).
+
+    :param pretty: True for human readable size, False for bytes
+
+    :return: Current memory usage
+    """
+    usage = ''
+    if memory_usage_tool == 'resource':
+        usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        if platform.system() == 'Linux':
+            # resource.RUSAGE_SELF is in KB on Linux
+            usage *= 1024
+    elif memory_usage_tool == 'psutil':
+        usage = Process(os.getpid()).memory_info().rss
+    else:
+        return ''
+
+    if pretty:
+        usage = pretty_file_size(usage)
+
+    return usage
+
+
 def get_tvdb_from_id(indexer_id, indexer):
 
     session = MedusaSafeSession()
     tvdb_id = ''
 
     if indexer == 'IMDB':
-        url = "http://www.thetvdb.com/api/GetSeriesByRemoteID.php?imdbid=%s" % indexer_id
+        url = 'https://www.thetvdb.com/api/GetSeriesByRemoteID.php?imdbid=%s' % indexer_id
         data = session.get_content(url)
         if data is None:
             return tvdb_id
 
         with suppress(SyntaxError):
-            tree = ET.fromstring(data)
-            for show in tree.iter("Series"):
-                tvdb_id = show.findtext("seriesid")
+            tree = ElementTree.fromstring(data)
+            for show in tree.iter('Series'):
+                tvdb_id = show.findtext('seriesid')
 
         if tvdb_id:
             return tvdb_id
 
     elif indexer == 'ZAP2IT':
-        url = "http://www.thetvdb.com/api/GetSeriesByRemoteID.php?zap2it=%s" % indexer_id
+        url = 'https://www.thetvdb.com/api/GetSeriesByRemoteID.php?zap2it=%s' % indexer_id
         data = session.get_content(url)
         if data is None:
             return tvdb_id
 
         with suppress(SyntaxError):
-            tree = ET.fromstring(data)
-            for show in tree.iter("Series"):
-                tvdb_id = show.findtext("seriesid")
+            tree = ElementTree.fromstring(data)
+            for show in tree.iter('Series'):
+                tvdb_id = show.findtext('seriesid')
 
         return tvdb_id
 
     elif indexer == 'TVMAZE':
-        url = "http://api.tvmaze.com/shows/%s" % indexer_id
+        url = 'https://api.tvmaze.com/shows/%s' % indexer_id
         data = session.get_json(url)
         if data is None:
             return tvdb_id
@@ -1615,7 +1460,7 @@ def get_tvdb_from_id(indexer_id, indexer):
     # If indexer is IMDB and we've still not returned a tvdb_id,
     # let's try to use tvmaze's api, to get the tvdbid
     if indexer == 'IMDB':
-        url = 'http://api.tvmaze.com/lookup/shows?imdb={indexer_id}'.format(indexer_id=indexer_id)
+        url = 'https://api.tvmaze.com/lookup/shows?imdb={indexer_id}'.format(indexer_id=indexer_id)
         data = session.get_json(url)
         if not data:
             return tvdb_id
@@ -1652,7 +1497,7 @@ def get_showname_from_indexer(indexer, indexer_id, lang='en'):
     return data.get('seriesname')
 
 
-# http://stackoverflow.com/a/20380514
+# https://stackoverflow.com/a/20380514
 def get_image_size(image_path):
     """Determine the image type of image_path and return its size.."""
     img_ext = os.path.splitext(image_path)[1].lower().strip('.')
@@ -1707,10 +1552,10 @@ def is_ip_private(ip):
     :return:
     :rtype: bool
     """
-    priv_lo = re.compile(r"^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
-    priv_24 = re.compile(r"^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
-    priv_20 = re.compile(r"^192\.168\.\d{1,3}.\d{1,3}$")
-    priv_16 = re.compile(r"^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$")
+    priv_lo = re.compile(r'^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$')
+    priv_24 = re.compile(r'^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$')
+    priv_20 = re.compile(r'^192\.168\.\d{1,3}.\d{1,3}$')
+    priv_16 = re.compile(r'^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$')
     return bool(priv_lo.match(ip) or priv_24.match(ip) or priv_20.match(ip) or priv_16.match(ip))
 
 
@@ -1726,6 +1571,25 @@ def unicodify(value):
         return text_type(value, 'utf-8', 'replace')
 
     return value
+
+
+def to_text(s, encoding='utf-8', errors='strict'):
+    """Coerce *s* to six.text_type.
+
+    This code is part of the six library.
+    For Python 2:
+      - `unicode` -> `unicode`
+      - `str` -> `unicode`
+    For Python 3:
+      - `str` -> `str`
+      - `bytes` -> decoded to `str`
+    """
+    if isinstance(s, binary_type):
+        return s.decode(encoding, errors)
+    elif isinstance(s, text_type):
+        return s
+    else:
+        raise TypeError("not expecting type '%s'" % type(s))
 
 
 def single_or_list(value, allow_multi=False):
@@ -1755,7 +1619,11 @@ def ensure_list(value):
     :param value:
     :rtype: list
     """
-    return sorted(value) if isinstance(value, list) else [value] if value is not None else []
+    try:
+        return sorted(value) if isinstance(value, list) else [value] if value is not None else []
+    except TypeError:
+        log.debug('Could not sort list with values: {value}', {'value': value})
+        return []
 
 
 def canonical_name(obj, fmt=u'{key}:{value}', separator=u'|', ignore_list=frozenset()):
@@ -1810,9 +1678,9 @@ def is_already_processed_media(full_filename):
     """Check if resource was already processed."""
     main_db_con = db.DBConnection()
     history_result = main_db_con.select('SELECT action FROM history '
-                                        "WHERE action LIKE '%04' "
+                                        'WHERE action = ? '
                                         'AND resource LIKE ?',
-                                        ['%' + full_filename])
+                                        [DOWNLOADED, '%' + full_filename])
     return bool(history_result)
 
 
@@ -1835,36 +1703,26 @@ def is_info_hash_processed(info_hash):
                                         'd.season = s.season AND '
                                         'd.episode = s.episode AND '
                                         'd.quality = s.quality '
-                                        'WHERE d.action LIKE "%04"',
-                                        [info_hash])
+                                        'WHERE d.action = ?',
+                                        [info_hash, DOWNLOADED])
     return bool(history_result)
 
 
 def title_to_imdb(title, start_year, imdb_api=None):
     """Get the IMDb ID from a show title and its start year."""
     if imdb_api is None:
-        imdb_api = imdbpie.Imdb()
+        imdb_api = Imdb()
 
     titles = imdb_api.search_for_title(title)
 
-    if len(titles) == 1:
-        return titles[0]['imdb_id']
-
-    title = title.lower()
     # ImdbPie returns the year as string
     start_year = str(start_year)
+    title = title.lower()
 
-    title_matches = []
     for candidate in titles:
-        # This check should be made more reliable
-        if candidate['title'].lower() == title:
-            if candidate['year'] == start_year:
-                return candidate['imdb_id']
-            title_matches.append(candidate['imdb_id'])
-
-    # Return the most relevant result (can be erroneous)
-    if title_matches:
-        return title_matches[0]
+        # Only return matches by year
+        if candidate['title'].lower() == title and candidate['year'] == start_year:
+            return candidate['imdb_id']
 
 
 def get_title_without_year(title, title_year):

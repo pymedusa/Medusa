@@ -17,7 +17,7 @@ log.logger.addHandler(logging.NullHandler())
 MOVIE_ATTRIBUTES = {
     'title': 'title',
     'year': 'year',
-    'format': 'format',
+    'source': 'source',
     'release_group': 'release_group',
     'resolution': 'screen_size',
     'video_codec': 'video_codec',
@@ -29,7 +29,7 @@ EPISODE_ATTRIBUTES = {
     'episode': 'episode',
     'title': 'episode_title',
     'year': 'year',
-    'format': 'format',
+    'source': 'source',
     'release_group': 'release_group',
     'resolution': 'screen_size',
     'video_codec': 'video_codec',
@@ -55,7 +55,7 @@ def refine(video, release_name=None, release_file=None, extension='release', **k
       * :attr:`~subliminal.video.Video.season`
       * :attr:`~subliminal.video.Video.episode`
       * :attr:`~subliminal.video.Video.year`
-      * :attr:`~subliminal.video.Video.format`
+      * :attr:`~subliminal.video.Video.source`
       * :attr:`~subliminal.video.Video.release_group`
       * :attr:`~subliminal.video.Video.resolution`
       * :attr:`~subliminal.video.Video.video_codec`
@@ -76,7 +76,7 @@ def refine(video, release_name=None, release_file=None, extension='release', **k
     release_name = get_release_name(release_file) or release_name
 
     if not release_name:
-        log.debug('No release name for {video}', {'video': video.name})
+        log.debug('No release name for {video!r}', {'video': video.name})
         return
 
     release_path = os.path.join(dirpath, release_name + fileext)
@@ -90,7 +90,7 @@ def refine(video, release_name=None, release_file=None, extension='release', **k
 
         if new_value and old_value != new_value:
             setattr(video, key, new_value)
-            log.debug('Attribute {key} changed from {old} to {new}',
+            log.debug('Attribute {key} changed from {old!r} to {new!r}',
                       {'key': key, 'old': old_value, 'new': new_value})
 
 

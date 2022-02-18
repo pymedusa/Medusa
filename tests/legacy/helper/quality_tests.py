@@ -15,8 +15,7 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 """Test qualities."""
-
-from __future__ import print_function
+from __future__ import unicode_literals
 
 import unittest
 
@@ -41,7 +40,7 @@ class QualityTests(unittest.TestCase):
             Quality.HDBLURAY: '720p BluRay',
             Quality.HDTV: '720p HDTV',
             Quality.HDWEBDL: '720p WEB-DL',
-            Quality.NONE: 'N/A',
+            Quality.NA: 'N/A',
             Quality.RAWHDTV: 'RawHD',
             Quality.SDDVD: 'SD DVD',
             Quality.SDTV: 'SDTV',

@@ -10,26 +10,38 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-
-from __future__ import absolute_import, division, print_function
-
-from tornado.httputil import HTTPHeaders, HTTPMessageDelegate, HTTPServerConnectionDelegate, ResponseStartLine
-from tornado.routing import HostMatches, PathMatches, ReversibleRouter, Router, Rule, RuleRouter
+from tornado.httputil import (
+    HTTPHeaders,
+    HTTPMessageDelegate,
+    HTTPServerConnectionDelegate,
+    ResponseStartLine,
+)
+from tornado.routing import (
+    HostMatches,
+    PathMatches,
+    ReversibleRouter,
+    Router,
+    Rule,
+    RuleRouter,
+)
 from tornado.testing import AsyncHTTPTestCase
 from tornado.web import Application, HTTPError, RequestHandler
 from tornado.wsgi import WSGIContainer
 
+import typing  # noqa: F401
+
 
 class BasicRouter(Router):
     def find_handler(self, request, **kwargs):
-
         class MessageDelegate(HTTPMessageDelegate):
             def __init__(self, connection):
                 self.connection = connection
 
             def finish(self):
                 self.connection.write_headers(
-                    ResponseStartLine("HTTP/1.1", 200, "OK"), HTTPHeaders({"Content-Length": "2"}), b"OK"
+                    ResponseStartLine("HTTP/1.1", 200, "OK"),
+                    HTTPHeaders({"Content-Length": "2"}),
+                    b"OK",
                 )
                 self.connection.finish()
 
@@ -45,7 +57,7 @@ class BasicRouterTestCase(AsyncHTTPTestCase):
         self.assertEqual(response.body, b"OK")
 
 
-resources = {}
+resources = {}  # type: typing.Dict[str, bytes]
 
 
 class GetResource(RequestHandler):
@@ -103,8 +115,8 @@ SecondHandler = _get_named_handler("second_handler")
 
 class CustomRouter(ReversibleRouter):
     def __init__(self):
-        super(CustomRouter, self).__init__()
-        self.routes = {}
+        super().__init__()
+        self.routes = {}  # type: typing.Dict[str, typing.Any]
 
     def add_routes(self, routes):
         self.routes.update(routes)
@@ -115,25 +127,28 @@ class CustomRouter(ReversibleRouter):
             return app.get_handler_delegate(request, handler)
 
     def reverse_url(self, name, *args):
-        handler_path = '/' + name
+        handler_path = "/" + name
         return handler_path if handler_path in self.routes else None
 
 
 class CustomRouterTestCase(AsyncHTTPTestCase):
     def get_app(self):
+        router = CustomRouter()
+
         class CustomApplication(Application):
             def reverse_url(self, name, *args):
                 return router.reverse_url(name, *args)
 
-        router = CustomRouter()
         app1 = CustomApplication(app_name="app1")
         app2 = CustomApplication(app_name="app2")
 
-        router.add_routes({
-            "/first_handler": (app1, FirstHandler),
-            "/second_handler": (app2, SecondHandler),
-            "/first_handler_second_app": (app2, FirstHandler),
-        })
+        router.add_routes(
+            {
+                "/first_handler": (app1, FirstHandler),
+                "/second_handler": (app2, SecondHandler),
+                "/first_handler_second_app": (app2, FirstHandler),
+            }
+        )
 
         return router
 
@@ -148,7 +163,6 @@ class CustomRouterTestCase(AsyncHTTPTestCase):
 
 class ConnectionDelegate(HTTPServerConnectionDelegate):
     def start_request(self, server_conn, request_conn):
-
         class MessageDelegate(HTTPMessageDelegate):
             def __init__(self, connection):
                 self.connection = connection
@@ -157,7 +171,8 @@ class ConnectionDelegate(HTTPServerConnectionDelegate):
                 response_body = b"OK"
                 self.connection.write_headers(
                     ResponseStartLine("HTTP/1.1", 200, "OK"),
-                    HTTPHeaders({"Content-Length": str(len(response_body))}))
+                    HTTPHeaders({"Content-Length": str(len(response_body))}),
+                )
                 self.connection.write(response_body)
                 self.connection.finish()
 
@@ -169,25 +184,53 @@ class RuleRouterTest(AsyncHTTPTestCase):
         app = Application()
 
         def request_callable(request):
-            request.write(b"HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nOK")
-            request.finish()
+            request.connection.write_headers(
+                ResponseStartLine("HTTP/1.1", 200, "OK"),
+                HTTPHeaders({"Content-Length": "2"}),
+            )
+            request.connection.write(b"OK")
+            request.connection.finish()
 
-        app.add_handlers(".*", [
-            (HostMatches("www.example.com"), [
-                (PathMatches("/first_handler"), "tornado.test.routing_test.SecondHandler", {}, "second_handler")
-            ]),
-            Rule(PathMatches("/first_handler"), FirstHandler, name="first_handler"),
-            Rule(PathMatches("/request_callable"), request_callable),
-            ("/connection_delegate", ConnectionDelegate())
-        ])
+        router = CustomRouter()
+        router.add_routes(
+            {"/nested_handler": (app, _get_named_handler("nested_handler"))}
+        )
+
+        app.add_handlers(
+            ".*",
+            [
+                (
+                    HostMatches("www.example.com"),
+                    [
+                        (
+                            PathMatches("/first_handler"),
+                            "tornado.test.routing_test.SecondHandler",
+                            {},
+                            "second_handler",
+                        )
+                    ],
+                ),
+                Rule(PathMatches("/.*handler"), router),
+                Rule(PathMatches("/first_handler"), FirstHandler, name="first_handler"),
+                Rule(PathMatches("/request_callable"), request_callable),
+                ("/connection_delegate", ConnectionDelegate()),
+            ],
+        )
 
         return app
 
     def test_rule_based_router(self):
         response = self.fetch("/first_handler")
         self.assertEqual(response.body, b"first_handler: /first_handler")
-        response = self.fetch("/first_handler", headers={'Host': 'www.example.com'})
+
+        response = self.fetch("/first_handler", headers={"Host": "www.example.com"})
         self.assertEqual(response.body, b"second_handler: /first_handler")
+
+        response = self.fetch("/nested_handler")
+        self.assertEqual(response.body, b"nested_handler: /nested_handler")
+
+        response = self.fetch("/nested_not_found_handler")
+        self.assertEqual(response.code, 404)
 
         response = self.fetch("/connection_delegate")
         self.assertEqual(response.body, b"OK")
@@ -207,10 +250,15 @@ class WSGIContainerTestCase(AsyncHTTPTestCase):
             def get(self, *args, **kwargs):
                 self.finish(self.reverse_url("tornado"))
 
-        return RuleRouter([
-            (PathMatches("/tornado.*"), Application([(r"/tornado/test", Handler, {}, "tornado")])),
-            (PathMatches("/wsgi"), wsgi_app),
-        ])
+        return RuleRouter(
+            [
+                (
+                    PathMatches("/tornado.*"),
+                    Application([(r"/tornado/test", Handler, {}, "tornado")]),
+                ),
+                (PathMatches("/wsgi"), wsgi_app),
+            ]
+        )
 
     def wsgi_app(self, environ, start_response):
         start_response("200 OK", [])
@@ -222,3 +270,7 @@ class WSGIContainerTestCase(AsyncHTTPTestCase):
 
         response = self.fetch("/wsgi")
         self.assertEqual(response.body, b"WSGI")
+
+    def test_delegate_not_found(self):
+        response = self.fetch("/404")
+        self.assertEqual(response.code, 404)

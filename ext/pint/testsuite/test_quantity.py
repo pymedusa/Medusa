@@ -90,6 +90,22 @@ class TestQuantity(QuantityTestCase):
         self.assertEqual(str(x), '4.2 meter')
         self.assertEqual(repr(x), "<Quantity(4.2, 'meter')>")
 
+    def test_quantity_hash(self):
+        x = self.Q_(4.2, 'meter')
+        x2 = self.Q_(4200, 'millimeter')
+        y = self.Q_(2, 'second')
+        z = self.Q_(0.5, 'hertz')
+        self.assertEqual(hash(x), hash(x2))
+
+        # Dimensionless equality
+        self.assertEqual(hash(y * z), hash(1.0))
+
+        # Dimensionless equality from a different unit registry
+        ureg2 = UnitRegistry(force_ndarray=self.FORCE_NDARRAY)
+        y2 = ureg2.Quantity(2, 'second')
+        z2 = ureg2.Quantity(0.5, 'hertz')
+        self.assertEqual(hash(y * z), hash(y2 * z2))
+
     def test_quantity_format(self):
         x = self.Q_(4.12345678, UnitsContainer(meter=2, kilogram=1, second=-1))
         for spec, result in (('{0}', str(x)), ('{0!s}', str(x)), ('{0!r}', repr(x)),
@@ -150,6 +166,48 @@ class TestQuantity(QuantityTestCase):
             ureg.default_format = spec
             self.assertEqual('{0}'.format(x), result)
 
+    def test_exponent_formatting(self):
+        ureg = UnitRegistry()
+        x = ureg.Quantity(1e20, UnitsContainer(meter=1))
+        self.assertEqual("{:~H}".format(x), "1×10<sup>20</sup> m")
+        self.assertEqual("{:~L}".format(x), r"1\times 10^{20}\ \mathrm{m}")
+        x /= 1e40
+        self.assertEqual("{:~H}".format(x), "1×10<sup>-20</sup> m")
+        self.assertEqual("{:~L}".format(x), r"1\times 10^{-20}\ \mathrm{m}")
+
+    def test_ipython(self):
+        alltext = []
+
+        class Pretty(object):
+            @staticmethod
+            def text(text):
+                alltext.append(text)
+
+            @classmethod
+            def pretty(cls, data):
+                try:
+                    data._repr_pretty_(cls, False)
+                except AttributeError:
+                    alltext.append(str(data))
+
+        ureg = UnitRegistry()
+        x = 3.5 * ureg.Unit(UnitsContainer(meter=2, kilogram=1, second=-1))
+        self.assertEqual(x._repr_html_(),
+                         "3.5 kilogram meter<sup>2</sup>/second")
+        self.assertEqual(x._repr_latex_(),
+                         r'$3.5\ \frac{\mathrm{kilogram} \cdot '
+                         r'\mathrm{meter}^{2}}{\mathrm{second}}$')
+        x._repr_pretty_(Pretty, False)
+        self.assertEqual("".join(alltext), "3.5 kilogram·meter²/second")
+        ureg.default_format = "~"
+        self.assertEqual(x._repr_html_(), "3.5 kg m<sup>2</sup>/s")
+        self.assertEqual(x._repr_latex_(),
+                         r'$3.5\ \frac{\mathrm{kg} \cdot '
+                         r'\mathrm{m}^{2}}{\mathrm{s}}$')
+        alltext = []
+        x._repr_pretty_(Pretty, False)
+        self.assertEqual("".join(alltext), "3.5 kg·m²/s")
+
     def test_to_base_units(self):
         x = self.Q_('1*inch')
         self.assertQuantityAlmostEqual(x.to_base_units(), self.Q_(0.0254, 'meter'))
@@ -188,6 +246,26 @@ class TestQuantity(QuantityTestCase):
             self.assertQuantityAlmostEqual(qac, r)
             self.assertIsNot(r, q)
             self.assertIsNot(r._magnitude, a)
+
+    def test_convert_from(self):
+        x = self.Q_('2*inch')
+        meter = self.ureg.meter
+
+        # from quantity
+        self.assertQuantityAlmostEqual(meter.from_(x), self.Q_(2. * 0.0254, 'meter'))
+        self.assertQuantityAlmostEqual(meter.m_from(x), 2. * 0.0254)
+
+        # from unit
+        self.assertQuantityAlmostEqual(meter.from_(self.ureg.inch), self.Q_(0.0254, 'meter'))
+        self.assertQuantityAlmostEqual(meter.m_from(self.ureg.inch), 0.0254)
+
+        # from number
+        self.assertQuantityAlmostEqual(meter.from_(2, strict=False), self.Q_(2., 'meter'))
+        self.assertQuantityAlmostEqual(meter.m_from(2, strict=False), 2.)
+
+        # from number (strict mode)
+        self.assertRaises(ValueError, meter.from_, 2)
+        self.assertRaises(ValueError, meter.m_from, 2)
 
     @helpers.requires_numpy()
     def test_retain_unit(self):
@@ -306,6 +384,12 @@ class TestQuantityToCompact(QuantityTestCase):
         ureg = self.ureg
         self.compareQuantity_compact(1/ureg.m**2, 1/ureg.m**2)
         self.compareQuantity_compact(1e11/ureg.m**2, 1e5/ureg.mm**2)
+
+    def test_fractional_units(self):
+        ureg = self.ureg
+        # Typing denominator first to provoke potential error
+        self.compareQuantity_compact(20e3*ureg('hr^(-1) m'),
+            20*ureg.km/ureg.hr)
 
     def test_fractional_exponent_units(self):
         ureg = self.ureg
@@ -1207,6 +1291,10 @@ class TestDimensionReduction(QuantityTestCase):
         x = (10 * ureg.feet) / (3 * ureg.inches)
         self.assertEqual(x.units, ureg.feet / ureg.inches)
 
+    def test_nocoerce_creation(self):
+        ureg = UnitRegistry(auto_reduce_dimensions=True)
+        x = 1 * ureg.foot
+        self.assertEqual(x.units, ureg.foot)
 
 class TestTimedelta(QuantityTestCase):
     def test_add_sub(self):
@@ -1234,3 +1322,107 @@ class TestTimedelta(QuantityTestCase):
         after = 3 * self.ureg.second
         with self.assertRaises(DimensionalityError):
             after -= d
+
+
+class TestCompareZero(QuantityTestCase):
+    """This test case checks the special treatment that the zero value
+    receives in the comparisons: pint>=0.9 supports comparisons against zero
+    even for non-dimensionless quantities
+    """
+
+    def test_equal_zero(self):
+        ureg = self.ureg
+        ureg.autoconvert_offset_to_baseunit = False
+        self.assertTrue(ureg.Quantity(0, ureg.J) == 0)
+        self.assertFalse(ureg.Quantity(0, ureg.J) == ureg.Quantity(0, ''))
+        self.assertFalse(ureg.Quantity(5, ureg.J) == 0)
+
+    @helpers.requires_numpy()
+    def test_equal_zero_NP(self):
+        ureg = self.ureg
+        ureg.autoconvert_offset_to_baseunit = False
+        aeq = np.testing.assert_array_equal
+        aeq(ureg.Quantity(0, ureg.J) == np.zeros(3),
+            np.asarray([True, True, True]))
+        aeq(ureg.Quantity(5, ureg.J) == np.zeros(3),
+            np.asarray([False, False, False]))
+        aeq(ureg.Quantity(np.arange(3), ureg.J) == np.zeros(3),
+            np.asarray([True, False, False]))
+        self.assertFalse(ureg.Quantity(np.arange(4), ureg.J) == np.zeros(3))
+
+    def test_offset_equal_zero(self):
+        ureg =  self.ureg
+        ureg.autoconvert_offset_to_baseunit = False
+        q0 = ureg.Quantity(-273.15, 'degC')
+        q1 = ureg.Quantity(0, 'degC')
+        q2 = ureg.Quantity(5, 'degC')
+        self.assertRaises(OffsetUnitCalculusError, q0.__eq__, 0)
+        self.assertRaises(OffsetUnitCalculusError, q1.__eq__, 0)
+        self.assertRaises(OffsetUnitCalculusError, q2.__eq__, 0)
+        self.assertFalse(q0 == ureg.Quantity(0, ''))
+
+    def test_offset_autoconvert_equal_zero(self):
+        ureg =  self.ureg
+        ureg.autoconvert_offset_to_baseunit = True
+        q0 = ureg.Quantity(-273.15, 'degC')
+        q1 = ureg.Quantity(0, 'degC')
+        q2 = ureg.Quantity(5, 'degC')
+        self.assertTrue(q0 == 0)
+        self.assertFalse(q1 == 0)
+        self.assertFalse(q2 == 0)
+        self.assertFalse(q0 == ureg.Quantity(0, ''))
+
+    def test_gt_zero(self):
+        ureg = self.ureg
+        ureg.autoconvert_offset_to_baseunit = False
+        q0 = ureg.Quantity(0, 'J')
+        q0m = ureg.Quantity(0, 'm')
+        q0less = ureg.Quantity(0, '')
+        qpos = ureg.Quantity(5, 'J')
+        qneg = ureg.Quantity(-5, 'J')
+        self.assertTrue(qpos > q0)
+        self.assertTrue(qpos > 0)
+        self.assertFalse(qneg > 0)
+        self.assertRaises(DimensionalityError, qpos.__gt__, q0less)
+        self.assertRaises(DimensionalityError, qpos.__gt__, q0m)
+
+    @helpers.requires_numpy()
+    def test_gt_zero_NP(self):
+        ureg = self.ureg
+        ureg.autoconvert_offset_to_baseunit = False
+        qpos = ureg.Quantity(5, 'J')
+        qneg = ureg.Quantity(-5, 'J')
+        aeq = np.testing.assert_array_equal
+        aeq(qpos > np.zeros(3), np.asarray([True, True, True]))
+        aeq(qneg > np.zeros(3), np.asarray([False, False, False]))
+        aeq(ureg.Quantity(np.arange(-1, 2), ureg.J) > np.zeros(3),
+            np.asarray([False, False, True]))
+        aeq(ureg.Quantity(np.arange(-1, 2), ureg.J) > np.zeros(3),
+            np.asarray([False, False, True]))
+        self.assertRaises(ValueError,
+                          ureg.Quantity(np.arange(-1, 2), ureg.J).__gt__,
+                          np.zeros(4))
+
+    def test_offset_gt_zero(self):
+        ureg =  self.ureg
+        ureg.autoconvert_offset_to_baseunit = False
+        q0 = ureg.Quantity(-273.15, 'degC')
+        q1 = ureg.Quantity(0, 'degC')
+        q2 = ureg.Quantity(5, 'degC')
+        self.assertRaises(OffsetUnitCalculusError, q0.__gt__, 0)
+        self.assertRaises(OffsetUnitCalculusError, q1.__gt__, 0)
+        self.assertRaises(OffsetUnitCalculusError, q2.__gt__, 0)
+        self.assertRaises(DimensionalityError, q1.__gt__,
+                          ureg.Quantity(0, ''))
+
+    def test_offset_autoconvert_gt_zero(self):
+        ureg =  self.ureg
+        ureg.autoconvert_offset_to_baseunit = True
+        q0 = ureg.Quantity(-273.15, 'degC')
+        q1 = ureg.Quantity(0, 'degC')
+        q2 = ureg.Quantity(5, 'degC')
+        self.assertFalse(q0 > 0)
+        self.assertTrue(q1 > 0)
+        self.assertTrue(q2 > 0)
+        self.assertRaises(DimensionalityError, q1.__gt__,
+                          ureg.Quantity(0, ''))

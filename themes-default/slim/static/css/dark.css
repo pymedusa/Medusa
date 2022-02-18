@@ -112,25 +112,11 @@ home.mako
 ========================================================================== */
 
 .imgbanner .banner {
-    border: 1px solid rgb(17, 17, 17);
-    overflow: hidden;
-    height: 66px;
-    border-radius: 8px;
-    vertical-align: top;
-    width: 360px;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
+    border-color: rgb(17, 17, 17);
 }
 
 .imgsmallposter .small {
-    height: 66px;
-    overflow: hidden;
-    border-radius: 3px;
-    vertical-align: middle;
-    width: 45px;
-    border: 1px solid rgb(17, 17, 17);
-    margin-right: 5px;
+    border-color: rgb(17, 17, 17);
 }
 
 .progressbarText {
@@ -189,12 +175,24 @@ home.mako
     background-image: linear-gradient(to left, rgba(51, 51, 51, 1), rgba(51, 51, 51, 0));
 }
 
+/* Used by history.mako */
 td.tvShow a {
     color: rgb(255, 255, 255);
     text-decoration: none;
 }
 
 td.tvShow a:hover {
+    cursor: pointer;
+    color: rgb(9, 162, 255);
+}
+
+/* Used by home.vue, for the anchors to displayShow. */
+span.tvShow a {
+    color: rgb(255, 255, 255);
+    text-decoration: none;
+}
+
+span.tvShow a:hover {
     cursor: pointer;
     color: rgb(9, 162, 255);
 }
@@ -241,8 +239,36 @@ home_newShow.mako
     padding: 8px;
     overflow: hidden;
     font-size: 14px;
-    background-color: rgb(61, 61, 61);
-    border: 1px solid rgb(17, 17, 17);
+    background-color: rgb(95, 95, 95);
+    border: 1px solid rgb(125, 125, 125);
+}
+
+table.search-results {
+    margin-top: 15px;
+    border-collapse: collapse;
+    border: 1px solid rgb(125, 125, 125);
+}
+
+table.search-results th,
+table.search-results td {
+    border: 1px solid rgb(125, 125, 125);
+    padding: 5px;
+    vertical-align: middle;
+    text-align: left;
+    max-width: 370px;
+}
+
+table.search-results th {
+    background-color: rgb(95, 95, 95);
+}
+
+table.search-results tbody tr:hover {
+    background-color: rgb(95, 95, 95);
+}
+
+table.search-results tbody tr.selected,
+table.search-results tbody tr.selected:hover {
+    background-color: rgb(72, 84, 93);
 }
 
 /* =======================================================================
@@ -264,11 +290,8 @@ home_recommendedShows.mako
 ========================================================================== */
 
 .recommended-container {
-    margin: 12px;
-    width: 188px;
     background-color: rgb(51, 51, 51);
     border: 1px solid rgb(17, 17, 17);
-    border-radius: 6px;
 }
 
 /* =======================================================================
@@ -287,7 +310,7 @@ h1.title {
     margin-bottom: 15px;
     line-height: 30px;
     text-align: left;
-    text-rendering: optimizelegibility;
+    text-rendering: optimizeLegibility;
     border-bottom: 1px solid rgb(85, 85, 85);
 }
 
@@ -309,12 +332,8 @@ ul.tags li {
     border-radius: 5px;
 }
 
-#summaryBackground {
-    background-color: rgb(61, 61, 61);
-}
-
-#checkboxControlsBackground {
-    background-color: rgb(41, 41, 41);
+.shadow-background {
+    background-color: rgb(61, 61, 61, 0.8);
 }
 
 .defaultTable {
@@ -364,7 +383,7 @@ td.col-checkbox {
     text-align: center;
 }
 
-#showBanner {
+.show-banner {
     border: 1px solid rgba(220, 220, 220, 0.43);
 }
 
@@ -404,11 +423,11 @@ h2.network {
     color: rgb(9, 162, 255);
 }
 
-#showListTable td.tvShow a {
+#showListTable span.tvShow a {
     color: rgb(0, 0, 0);
 }
 
-#showListTable td.tvShow a:hover {
+#showListTable span.tvShow a:hover {
     cursor: pointer;
     color: rgb(9, 162, 255);
 }
@@ -436,13 +455,16 @@ config*.mako
 .component-group {
     padding: 15px 15px 25px;
     border-bottom: 1px dotted rgb(85, 85, 85);
-    min-height: 200px;
 }
 
 .component-group-desc p {
     width: 90%;
     margin: 10px 0;
     color: rgb(221, 221, 221);
+}
+
+.component-item {
+    border-bottom: 1px dotted rgb(85, 85, 85);
 }
 
 #provider_order_list li,
@@ -540,6 +562,15 @@ manage*.mako
     color: rgb(255, 255, 255);
 }
 
+/* The back image (svg) */
+.back-arrow {
+    fill: white;
+}
+
+.manage-update .title a {
+    color: white;
+}
+
 /* =======================================================================
 Global
 ========================================================================== */
@@ -563,7 +594,7 @@ body {
 
 /* navbar styling */
 .navbar-default {
-    background-color: rgb(35, 35, 35);
+    background-color: rgb(51, 51, 51);
     filter: progid:dximagetransform.microsoft.gradient(startColorstr='#333333', endColorstr='#232323');
     /* stylelint-disable declaration-block-no-shorthand-property-overrides */
     background: -webkit-gradient(linear, left top, left bottom, from(rgb(51, 51, 51)), to(rgb(35, 35, 35)));
@@ -575,11 +606,6 @@ body {
 .navbar-default .navbar-collapse,
 .navbar-default .navbar-form {
     border-color: rgb(62, 63, 58);
-}
-
-.navbar-default .navbar-nav > li > a:hover,
-.navbar-default .navbar-nav > li > a:focus {
-    background-color: rgb(35, 35, 35);
 }
 
 .navbar-default .navbar-nav > li > a:hover,
@@ -637,6 +663,84 @@ body {
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.176);
 }
 
+/* Vueified DisplayShow uses the vue component vue-good-table to display tables. */
+.dropdown-toggle a:hover,
+.dropdown-toggle a:focus {
+    color: rgb(255, 255, 255);
+    text-decoration: none;
+    background-color: rgb(119, 119, 119);
+}
+
+.dropdown-toggle {
+    color: rgb(255, 255, 255);
+}
+
+.vgt-dropdown-menu {
+    background-color: rgb(41, 41, 41);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.176);
+}
+
+.vgt-dropdown-menu > li > span:hover,
+.vgt-dropdown-menu > li > span:focus {
+    color: rgb(255, 255, 255);
+    text-decoration: none;
+    background-color: rgb(119, 119, 119);
+}
+
+.vgt-dropdown-menu > li > span {
+    padding: 4px 36px 4px 20px;
+    color: rgb(255, 255, 255);
+}
+
+/* Generic vue-good-table dark template styling */
+.vgt-table {
+    color: rgb(255, 255, 255);
+}
+
+.vgt-table th,
+.vgt-table td {
+    border-top: rgb(34, 34, 34) 1px solid;
+    border-left: rgb(34, 34, 34) 1px solid;
+}
+
+.vgt-table th {
+    color: rgb(255, 255, 255);
+    background-color: rgb(85, 85, 85);
+}
+
+.vgt-table tr:nth-child(even) {
+    background-color: rgb(46, 46, 46);
+}
+
+.vgt-table tr:nth-child(odd) {
+    background-color: rgb(51, 51, 51);
+}
+
+.vgt-table span.episode-title > a {
+    color: rgb(255, 255, 255);
+}
+
+.footer__navigation__page-btn {
+    color: rgb(255, 255, 255);
+    text-shadow: 0 1px 1px rgb(0 0 0 / 75%);
+    background-image: linear-gradient(to top, rgb(85, 85, 85), rgb(51, 51, 51));
+    border: 1px solid rgb(17, 17, 17);
+    border-color: rgb(17, 17, 17) rgb(17, 17, 17) rgb(17, 17, 17);
+    filter: progid:dximagetransform.microsoft.gradient(startColorstr='#297AB8', endColorstr='#15528F', GradientType=0);
+    filter: progid:dximagetransform.microsoft.gradient(enabled=false);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0%), 0 1px 2px rgb(0 0 0 / 5%);
+}
+
+.footer__navigation__page-btn:hover {
+    text-decoration: none;
+    background-color: rgb(30, 30, 30);
+    color: rgb(255, 255, 255);
+    background-position: 0 -150px;
+    transition: background-position 0s linear;
+    background-image: none;
+}
+
 /* submenu styling */
 #sub-menu-container {
     background-color: rgb(41, 41, 41);
@@ -648,7 +752,7 @@ body {
     border-color: rgb(62, 63, 58);
 }
 
-.btn {
+.btn-medusa {
     color: rgb(255, 255, 255);
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.75);
     background-color: rgb(97, 97, 97);
@@ -669,22 +773,16 @@ body {
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0), 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.btn:hover,
-.btn:active,
-.btn.active,
-.btn.disabled,
-.btn[disabled] {
+.btn-medusa:hover,
+.btn-medusa:active,
+.btn-medusa.active,
+.btn-medusa.disabled,
+.btn-medusa[disabled] {
     background-color: rgb(30, 30, 30);
     color: rgb(255, 255, 255);
 }
 
-.btn:active,
-.btn.active {
-    background-color: rgb(30, 30, 30);
-    color: rgb(255, 255, 255);
-}
-
-.btn:hover {
+.btn-medusa:hover {
     text-decoration: none;
     background-color: rgb(30, 30, 30);
     color: rgb(255, 255, 255);
@@ -696,15 +794,15 @@ body {
     transition: background-position 0s linear;
 }
 
-.btn:focus {
+.btn-medusa:focus {
     outline: thin dotted rgb(51, 51, 51);
     outline: 5px auto -webkit-focus-ring-color;
     outline-offset: -2px;
     color: rgb(255, 255, 255);
 }
 
-.btn.active,
-.btn:active {
+.btn-medusa.active,
+.btn-medusa:active {
     background-color: rgb(30, 30, 30);
     background-image: none;
     color: rgb(255, 255, 255);
@@ -712,8 +810,8 @@ body {
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.btn.disabled,
-.btn[disabled] {
+.btn-medusa.disabled,
+.btn-medusa[disabled] {
     cursor: default;
     background-color: rgb(97, 97, 97);
     color: rgb(255, 255, 255);
@@ -767,12 +865,16 @@ legend.legendStep {
     margin-bottom: 0;
 }
 
-div.stepsguide .step p {
+div.stepsguide .step {
     margin: 12px 0;
     border-bottom: 4px solid rgb(35, 175, 220);
 }
 
-div.stepsguide .disabledstep p {
+div.stepsguide .step p {
+    margin: 12px 0;
+}
+
+div.stepsguide .disabledstep {
     border-bottom: 4px solid rgb(17, 120, 179);
 }
 
@@ -944,23 +1046,19 @@ bootstrap modal
 ========================================================================== */
 
 .modal-content {
-    background-color: rgb(61, 61, 61);
+    background: rgb(34, 34, 34);
+    border-radius: 0;
 }
 
 .modal-body {
-    background-color: rgb(61, 61, 61);
+    background: rgb(34, 34, 34);
 }
 
 .modal-header {
     padding: 9px 15px;
-    border-bottom: 1px solid rgb(238, 238, 238);
+    border-bottom: none;
+    border-radius: 0;
     background-color: rgb(55, 55, 55);
-    -webkit-border-top-left-radius: 5px;
-    -webkit-border-top-right-radius: 5px;
-    -moz-border-radius-topleft: 5px;
-    -moz-border-radius-topright: 5px;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
 }
 
 /* =======================================================================
@@ -990,31 +1088,14 @@ new #confirmBox
     border-radius: 0;
 }
 
-.modal-content {
-    border-radius: 0;
-}
-
-.modal-header {
-    border-bottom: none;
-    border-radius: 0;
-}
-
-.modal-body,
-.modal-content {
-    background: rgb(34, 34, 34);
-}
-
 .modal-footer {
     border-top: none;
+    text-align: center;
 }
 
 .confirmation-modal {
     background: -moz-linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)) repeat-x rgba(0, 0, 0, 0.5);
     background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(0, 0, 0, 0.5)), to(rgba(0, 0, 0, 0.5))) repeat-x rgba(0, 0, 0, 0.5);
-}
-
-.modal-footer {
-    text-align: center;
 }
 
 .modal-footer button {
@@ -1059,7 +1140,68 @@ new #confirmBox
     background-color: rgb(161, 51, 49);
 }
 
-/* Christmas edition */
-.navbar-default {
-    background-color: rgb(51, 51, 51) !important;
+/* =======================================================================
+vue-nav-tabs
+========================================================================== */
+
+.vue-tabs .tab-content {
+    background-color: rgb(61, 61, 61) !important;
+    border-color: rgb(17, 17, 17) !important;
+}
+
+.nav-tabs li.tab {
+    border-color: rgb(17, 17, 17);
+}
+
+.nav-tabs li.tab.active {
+    background-color: rgb(61, 61, 61) !important;
+    border-color: rgb(17, 17, 17) !important;
+}
+
+.vue-tabs li.tab:not(.active) {
+    background: rgb(51, 51, 51);
+}
+
+.nav-tabs li.tab a,
+.nav-tabs li.tab a:hover,
+.nav-tabs li.tab a:active,
+.nav-tabs li.tab a:focus {
+    color: rgb(255, 255, 255);
+}
+
+/* End of nav tabs section */
+
+/* History.vue -> calendar layout */
+.wrap-center {
+    --background-text-grey-200: rgb(210, 210, 210);
+    --background-text-grey-400: rgb(136, 136, 136);
+    --background-text-grey-800: rgb(51, 51, 51);
+}
+
+.day-column {
+    color: rgb(0, 0, 0);
+}
+
+.calendar-show .text {
+    color: rgb(255, 255, 255);
+    background-color: var(--background-text-grey-800);
+}
+
+.day-header {
+    color: rgb(255, 255, 255);
+    text-shadow: 0 1px 1px rgb(0 0 0 / 25%);
+    background-color: var(--background-text-grey-800);
+    background-image:
+        linear-gradient(
+            rgb(85, 85, 85),
+            rgb(51, 51, 51)
+        );
+}
+
+.calendar-show .text .airtime {
+    color: rgb(255, 255, 255);
+}
+
+.calendar-show .text .episode-title {
+    color: var(--background-text-grey-200);
 }

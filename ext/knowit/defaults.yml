@@ -329,6 +329,7 @@ knowledge:
     SUBRIP:
       - SUBRIP
       - UTF8
+      - SRT
     # https://en.wikipedia.org/wiki/SubStation_Alpha
     SSA:
       - SSA
@@ -527,8 +528,6 @@ profiles:
       human: Lossless compression
 
   AudioProfile:
-    CORE:
-      default: Core
     HRA:
       default: High Resolution Audio
     MA:
@@ -548,10 +547,10 @@ profiles:
       human: 96 kHz 24 bits
       technical: 96 kHz 24 bits Upscaled
     ESDISCRETE:
-      default: ES Discrete
+      default: Extended Surround
       human: Extended Surround Discrete
     ESMATRIX:
-      default: ES Matrix
+      default: Extended Surround
       human: Extended Surround Matrix
     LAYER2:
       default: Layer 2

@@ -1,8 +1,9 @@
 # coding=utf-8
 """Tests for medusa/test_list_associated_files.py."""
+from __future__ import unicode_literals
 
 from medusa.name_parser.parser import NameParser
-from six import iteritems
+
 import guessit
 import pytest
 
@@ -60,6 +61,34 @@ import pytest
             'is_scene': True
         },
         'expected': ([1], [15], []),
+    },
+    {
+        'name': u'Universe.Possible.Worlds.S01E12.HDTV.x264-aAF',
+        'indexer_id': 1,
+        'indexer': 260586,
+        'mocks': [
+            ('medusa.scene_exceptions.get_season_from_name', 2),
+            ('medusa.scene_numbering.get_indexer_numbering', (2, 12))
+        ],
+        'series_info': {
+            'name': u'Universe (2014)',
+            'is_scene': False
+        },
+        'expected': ([12], [2], []),
+    },
+    {
+        'name': u'Universe.Possible.Worlds.S01E12.HDTV.x264-aAF',
+        'indexer_id': 1,
+        'indexer': 260586,
+        'mocks': [
+            ('medusa.scene_exceptions.get_season_from_name', 2),
+            ('medusa.scene_numbering.get_indexer_numbering', (2, 12))
+        ],
+        'series_info': {
+            'name': u'Universe (2014)',
+            'is_scene': True
+        },
+        'expected': ([12], [2], []),
     },
 ])
 def test_series_parsing(p, create_tvshow, monkeypatch_function_return):

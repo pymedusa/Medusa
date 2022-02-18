@@ -2,38 +2,38 @@ daily:
   search_strings:
     RSS: ['']
   results:
+    - seeders: 4
+      pubdate: 2017-11-12 00:00:00
+      title: Marvels.The.Punisher.2017.S02.2160p.NF.WEBRip.H.264.RUS.LF.DDP5.1-EniaHD
+      leechers: 4
+      link: magnet:?xt=urn:btih:863bcf64fd3873ed7ae62559c497b51f9f0c799c
+      size: 34603008
     - seeders: 0
       pubdate: 2017-11-12 00:00:00
-      title: Eggheads.S19E46.HDTV.x264-NORiTE
-      leechers: 26
-      link: magnet:?xt=urn:btih:18921c8b6642c77b0c218d179baacf2362767e4c
-      size: 132120576
+      title: Saturday.Night.Live.S44E13.Don.Cheadle.Gary.Clark.Jr.1080p.HULU.WEBRip.AAC2.0.H264-monkee[rarbg]
+      leechers: 0
+      link: magnet:?xt=urn:btih:2db802cc4ba5a720941454e9b09a0c4be9c8ee0b
+      size: 3027238912
     - seeders: 3
       pubdate: 2017-11-12 00:00:00
-      title: Blackstone.S04E07.720p.WEBRip.x264-aAF
-      leechers: 1
-      link: magnet:?xt=urn:btih:8a5b74b2feeca4696fe28a9fea2bf16f42600d7d
-      size: 1373634560
-    - seeders: 309
-      pubdate: 2017-11-12 00:00:00
-      title: Once.Upon.a.Time.S07E06.HDTV.x264-SVA[ettv]
-      leechers: 123
-      link: magnet:?xt=urn:btih:2b485956239344991f0a2acb09b1e821f05e6ba7
-      size: 272629760
+      title: World.Cup.2018.Semi-final.Croatia-England.HDTV.1080i.ts
+      leechers: 0
+      link: magnet:?xt=urn:btih:743015de447c2a28ecd48ec31211a9e40501f44d
+      size: 13631488
 
 backlog:
   search_strings:
-    Episode: ['Lethal Weapon S02E05']
+    Episode: ['Lethal Weapon S03E05']
   results:
-    - seeders: 12
-      pubdate: 2017-11-12 00:00:00
-      title: Lethal.Weapon.S02E05.Let.it.Ride.720p.WEBRip.2CH.x265.HEVC-PSA.mkv
-      leechers: 3
-      link: magnet:?xt=urn:btih:51d1bdcffc11b0b340e1f40023b690576a76b76e
-      size: 226492416
     - seeders: 1
       pubdate: 2017-11-12 00:00:00
-      title: Lethal.Weapon.S02.1080p.WEB-DLRip.Profix.Media
-      leechers: 1
-      link: magnet:?xt=urn:btih:9c9106941200440a4e52009244bf5b10624686e2
-      size: 10423894016
+      title: Lethal.Weapon..Season.3.(WEB-DL.l.1080p.l.Jaskier)
+      leechers: 3
+      link: magnet:?xt=urn:btih:c8a9e817db0c92018168055bb4ee565b7c148b3e
+      size: 31457280
+    - seeders: 2
+      pubdate: 2017-11-12 00:00:00
+      title: Lethal.Weapon..Season.3.(WEB-DL.l.720p.l.Jaskier)
+      leechers: 23
+      link: magnet:?xt=urn:btih:1a36685aa7468edfc2b05590bc19034d4c7c402e
+      size: 13631488

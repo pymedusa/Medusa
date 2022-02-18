@@ -142,6 +142,10 @@ def which_type(path):
         return
 
     height, width = image_dimension
+    if not width or not height:
+        log.debug('Skipping image. zero width or height {0}', path)
+        return
+
     aspect_ratio = width / height
     log.debug('Image aspect ratio: {0}', aspect_ratio)
 
@@ -301,8 +305,8 @@ def fill_cache(series_obj):
                 log.debug('Checking {provider.name} metadata for {img}',
                           {'provider': provider, 'img': IMAGE_TYPES[img_type]})
 
-                if os.path.isfile(provider.get_poster_path(series_obj)):
-                    path = provider.get_poster_path(series_obj)
+                path = provider.get_image_path(series_obj, img_type)
+                if os.path.isfile(path):
                     filename = os.path.abspath(path)
                     file_type = which_type(filename)
 
@@ -335,7 +339,7 @@ def fill_cache(series_obj):
     # download missing images from indexer
     for img_type in needed:
         log.debug('Searching for {img} for series {x}',
-                  {'img': IMAGE_TYPES[img_type], 'x': series_obj})
+                  {'img': IMAGE_TYPES[img_type], 'x': series_obj.series_id})
         _cache_image_from_indexer(series_obj, img_type)
 
     log.info('Cache check completed')

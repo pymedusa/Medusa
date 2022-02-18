@@ -1,0 +1,651 @@
+{
+    "shows": [
+        {
+            "status": "Ended",
+            "rating": {
+                "imdb": {
+                    "rating": "9.3",
+                    "votes": 9942
+                }
+            },
+            "genres": [
+                "Documentary"
+            ],
+            "showType": "series",
+            "network": "BBC One",
+            "language": "en",
+            "title": "Blue Planet II",
+            "akas": {},
+            "classification": "",
+            "plot": "World-renowned naturalist Sir David Attenborough returns to present this landmark seven-part series about our planet’s oceans. Blue Planet II explores the latest frontiers of scientific discovery, from icy-white polar seas to vibrant blues of the coral atolls, from the storm-tossed green Atlantic coastline to the black depths of the alien deep.",
+            "indexer": "tvdb",
+            "countries": [
+                "UNITED KINGDOM"
+            ],
+            "cache": {
+                "poster": "/config/cache/images/tvdb/330942.poster.jpg",
+                "banner": "/config/cache/images/tvdb/330942.poster.jpg"
+            },
+            "airs": "Sunday 8:00 PM",
+            "nextAirDate": null,
+            "year": {
+                "start": 2017
+            },
+            "config": {
+                "qualities": {
+                    "preferred": [
+                        32,
+                        128,
+                        512
+                    ],
+                    "allowed": [
+                        8,
+                        64,
+                        256
+                    ]
+                },
+                "defaultEpisodeStatus": "Wanted",
+                "dvdOrder": false,
+                "seasonFolders": true,
+                "scene": false,
+                "sports": false,
+                "paused": false,
+                "location": "/mnt/user/TV Shows/Blue Planet II",
+                "airByDate": false,
+                "release": {
+                    "ignoredWords": [],
+                    "requiredWords": []
+                },
+                "aliases": [
+                    {
+                        "season": -1,
+                        "title": "Blue Planet duex"
+                    },
+                    {
+                        "season": 2,
+                        "title": "Blue planet II second season"
+                    }
+                ],
+                "subtitlesEnabled": true,
+                "anime": false
+            },
+            "countryCodes": [
+                "gb"
+            ],
+            "runtime": 60,
+            "type": "Scripted",
+            "id": {
+                "tvdb": 330942,
+                "imdb": "tt6769208",
+                "slug": "tvdb330942"
+            }
+        },
+        {
+            "status": "Ended",
+            "rating": {},
+            "genres": [
+                "Comedy",
+                "Family"
+            ],
+            "showType": "series",
+            "network": "FOX (US)",
+            "language": "en",
+            "title": "That '70s Show",
+            "akas": {},
+            "classification": null,
+            "plot": "Set in the Wisconsin suburbs of the United States, Eric Forman lives under the authority of his parents, Red and Kitty. Next door is his girlfriend/neighbor, Donna Pinciotti and her parents Bob and Midge. The rest of the gang includes Jackie, and her sometimes boyfriend, Kelso, Hyde, a conspiracy theorist and Fez, a foreign exchange student. The gang mostly likes to spend their time in Eric's basement, pondering their lives, parents, and their futures, while getting into many funny mishaps and adventures in their teenage lives along the way.",
+            "indexer": "tvdb",
+            "countries": [],
+            "cache": {
+                "poster": "/config/cache/images/tvdb/73787.poster.jpg",
+                "banner": "/config/cache/images/tvdb/73787.poster.jpg"
+            },
+            "airs": "Thursday 8:00 PM",
+            "nextAirDate": null,
+            "year": {
+                "start": 1998
+            },
+            "config": {
+                "qualities": {
+                    "preferred": [
+                        32,
+                        128,
+                        512
+                    ],
+                    "allowed": [
+                        8,
+                        64,
+                        256
+                    ]
+                },
+                "defaultEpisodeStatus": "Skipped",
+                "dvdOrder": false,
+                "seasonFolders": true,
+                "scene": false,
+                "sports": false,
+                "paused": false,
+                "location": "/mnt/user/TV Shows/That '70s Show",
+                "airByDate": false,
+                "release": {
+                    "ignoredWords": [],
+                    "requiredWords": []
+                },
+                "aliases": [],
+                "subtitlesEnabled": true,
+                "anime": false
+            },
+            "countryCodes": [],
+            "runtime": 25,
+            "type": "Scripted",
+            "id": {
+                "tvdb": 73787,
+                "imdb": "tt0165598",
+                "slug": "tvdb73787"
+            }
+        },
+        {
+            "status": "Ended",
+            "rating": {
+                "imdb": {
+                    "rating": "8.5",
+                    "votes": 44981
+                }
+            },
+            "genres": [
+                "Comedy"
+            ],
+            "showType": "series",
+            "network": "Channel 4",
+            "language": "en",
+            "title": "Black Books",
+            "akas": {},
+            "classification": "TV-PG",
+            "plot": "Black Books is a second-hand bookshop in London run by an Irishman named Bernard Black. He is probably the planet's worst-suited person to run such an establishment: he makes no effort to sell, closes at strange hours on a whim, is in a perpetual alcoholic stupor, abhors his customers (sometimes physically abusing them) and is often comatose at his desk. Help comes in the lumpy shape of Manny Bianco, a hairy, bumbling individual who (almost by osmosis) becomes Bernard's assistant. Manny is not exactly great at the job either but he is a million times better than Bernard. Next door is Fran, an anxious, frustrated woman who runs a sort of new-age shop selling the most unlikely bits of arty junk. Fran is friends with Bernard and, through him, with Manny; together the trio become embroiled in escapades that are sometimes extreme or violent or fantastically ludicrous, and always bizarre.",
+            "indexer": "tvdb",
+            "countries": [
+                "UNITED KINGDOM"
+            ],
+            "cache": {
+                "poster": "/config/cache/images/tvdb/76924.poster.jpg",
+                "banner": "/config/cache/images/tvdb/76924.poster.jpg"
+            },
+            "airs": "",
+            "nextAirDate": null,
+            "year": {
+                "start": 2000
+            },
+            "config": {
+                "qualities": {
+                    "preferred": [
+                        32,
+                        128,
+                        512
+                    ],
+                    "allowed": [
+                        8,
+                        64,
+                        256
+                    ]
+                },
+                "defaultEpisodeStatus": "Skipped",
+                "dvdOrder": false,
+                "seasonFolders": true,
+                "scene": false,
+                "sports": false,
+                "paused": false,
+                "location": "/mnt/user/TV Shows/Black Books",
+                "airByDate": false,
+                "release": {
+                    "ignoredWords": [],
+                    "requiredWords": []
+                },
+                "aliases": [],
+                "subtitlesEnabled": true,
+                "anime": false
+            },
+            "countryCodes": [
+                "gb"
+            ],
+            "runtime": 25,
+            "type": "Scripted",
+            "id": {
+                "tvdb": 76924,
+                "imdb": "tt0262150",
+                "slug": "tvdb76924"
+            }
+        },
+        {
+            "id": {
+                "tvdb": 313867,
+                "imdb": "tt6104656",
+                "slug": "tvdb313867",
+                "trakt": 108865
+            },
+            "title": "Izetta, The Last Witch",
+            "indexer": "tvdb",
+            "network": "AT-X",
+            "type": "Scripted",
+            "status": "Ended",
+            "seasonCount": [
+                {
+                    "season": 1,
+                    "episodeCount": 12
+                }
+            ],
+            "airs": "Saturday 23:00",
+            "airsFormatValid": true,
+            "language": "en",
+            "showType": "anime",
+            "imdbInfo": {
+                "imdbInfoId": 68,
+                "indexer": 1,
+                "indexerId": 313867,
+                "imdbId": "tt6104656",
+                "title": "Shumatsu no Izetta",
+                "year": 2016,
+                "akas": "",
+                "runtimes": "",
+                "genres": "Animation|Action|Fantasy",
+                "countries": "",
+                "countryCodes": "",
+                "certificates": "",
+                "rating": "6.6",
+                "votes": 239,
+                "lastUpdate": 737260,
+                "plot": ""
+            },
+            "year": {
+                "start": 2016
+            },
+            "prevAirDate": "2016-12-17T15:00:00+01:00",
+            "nextAirDate": null,
+            "lastUpdate": "2019-07-20",
+            "runtime": 25,
+            "genres": [
+                "Fantasy",
+                "Animation",
+                "Action"
+            ],
+            "rating": {
+                "imdb": {
+                    "rating": "6.6",
+                    "votes": 239
+                }
+            },
+            "classification": "",
+            "cache": {
+                "poster": "/data/medusa/cache/images/tvdb/313867.poster.jpg",
+                "banner": "/data/medusa/cache/images/tvdb/313867.banner.jpg"
+            },
+            "countries": [],
+            "countryCodes": [],
+            "plot": "\"If I am promised to the princess, then I will fight for her sake.\"\r\n\r\nIn 1939 C.E., the imperialist nation of Germania invaded a neighboring country. All at once, the conflict spread throughout Europe, and the era was dragged into the spiral of a great war.\r\n\r\nThen, in 1940, Germania's attack turned towards the Principality of Elystadt, a small Alps country abundant with beautiful water and greenery.",
+            "config": {
+                "location": "/Anime/Izetta, The Last Witch",
+                "locationValid": false,
+                "qualities": {
+                    "allowed": [
+                        8,
+                        32,
+                        64,
+                        128,
+                        256,
+                        512
+                    ],
+                    "preferred": []
+                },
+                "paused": false,
+                "airByDate": false,
+                "subtitlesEnabled": false,
+                "dvdOrder": false,
+                "seasonFolders": true,
+                "anime": true,
+                "scene": false,
+                "sports": false,
+                "defaultEpisodeStatus": "Wanted",
+                "aliases": [
+                    {
+                        "season": -1,
+                        "title": "Shuumatsu no Izetta",
+                        "custom": false
+                    }
+                ],
+                "release": {
+                    "ignoredWords": [],
+                    "requiredWords": [],
+                    "ignoredWordsExclude": false,
+                    "requiredWordsExclude": false,
+                    "blacklist": [],
+                    "whitelist": []
+                },
+                "airdateOffset": 0,
+                "showLists": [
+                    "anime"
+                ]
+            },
+            "xemNumbering": [],
+            "sceneAbsoluteNumbering": [],
+            "xemAbsoluteNumbering": [],
+            "sceneNumbering": [],
+            "size": -1,
+            "showQueueStatus": [
+                {
+                    "action": "isBeingAdded",
+                    "active": false,
+                    "message": "This show is in the process of being downloaded - the info below is incomplete"
+                },
+                {
+                    "action": "isBeingUpdated",
+                    "active": false,
+                    "message": "The information on this page is in the process of being updated"
+                },
+                {
+                    "action": "isBeingRefreshed",
+                    "active": false,
+                    "message": "The episodes below are currently being refreshed from disk"
+                },
+                {
+                    "action": "isBeingSubtitled",
+                    "active": false,
+                    "message": "Currently downloading subtitles for this show"
+                },
+                {
+                    "action": "isInRefreshQueue",
+                    "active": false,
+                    "message": "This show is queued to be refreshed"
+                },
+                {
+                    "action": "isInUpdateQueue",
+                    "active": false,
+                    "message": "This show is queued and awaiting an update"
+                },
+                {
+                    "action": "isInSubtitleQueue",
+                    "active": false,
+                    "message": "This show is queued and awaiting subtitles download"
+                }
+            ]
+        },
+        {
+            "id": {
+                "tvdb": 360438,
+                "imdb": "tt10256918",
+                "slug": "tvdb360438",
+                "trakt": 144796
+            },
+            "title": "A Certain Scientific Accelerator",
+            "indexer": "tvdb",
+            "network": "AT-X",
+            "type": "Scripted",
+            "status": "Ended",
+            "seasonCount": [
+                {
+                    "season": 1,
+                    "episodeCount": 12
+                }
+            ],
+            "airs": "Friday 10:00 PM",
+            "airsFormatValid": true,
+            "language": "en",
+            "showType": "anime",
+            "imdbInfo": {
+                "imdbInfoId": 185,
+                "indexer": 1,
+                "indexerId": 360438,
+                "imdbId": "tt10256918",
+                "title": "Toaru Kagaku no Akuserareta",
+                "year": 2019,
+                "akas": "",
+                "runtimes": 24,
+                "genres": "Animation|Action|Comedy|Drama|Fantasy|Sci-Fi",
+                "countries": "JAPAN",
+                "countryCodes": "jp",
+                "certificates": "",
+                "rating": "7.2",
+                "votes": 142,
+                "lastUpdate": 737510,
+                "plot": ""
+            },
+            "year": {
+                "start": 2019
+            },
+            "prevAirDate": "2019-09-27T15:00:00+02:00",
+            "nextAirDate": null,
+            "lastUpdate": "2020-03-26",
+            "runtime": 24,
+            "genres": [
+                "Comedy",
+                "Fantasy",
+                "Science Fiction",
+                "Animation",
+                "Drama",
+                "Anime",
+                "Action",
+                "Science-Fiction"
+            ],
+            "rating": {
+                "imdb": {
+                    "rating": "7.2",
+                    "votes": 142
+                }
+            },
+            "classification": "",
+            "cache": {
+                "poster": "/data/medusa/cache/images/tvdb/360438.poster.jpg",
+                "banner": "/data/medusa/cache/images/tvdb/360438.banner.jpg"
+            },
+            "countries": [
+                "JAPAN"
+            ],
+            "countryCodes": [
+                "jp"
+            ],
+            "plot": "The espers of Academy City are classified into six levels, where \"Level 0\" lacks power while \"Level 5\" possesses an overwhelming amount. Of the several million espers residing in Academy City, only seven of them have attained Level 5, and ranked highest among them is the one known as Accelerator.\r\n\r\nToaru Kagaku no Accelerator focuses on the strongest Level 5 after he protects the cheerful Last Order at the price of much of his power. Recovering at the hospital, Accelerator has led a relatively quiet life until he ends up saving the life of Estelle Rosenthal, a mysterious girl carrying a photo of Last Order. Unfortunately, Accelerator now finds himself dragged into a new conflict in the form of a sinister organization called Disciplinary Action which plots to use Last Order for a dangerous mission. Now that they have set their plan into motion and are in pursuit of the young girl, it's up to the world's most powerful esper and his newfound companion to protect Last Order and defend Academy City in the process.",
+            "config": {
+                "location": "/Anime/A Certain Scientific Accelerator",
+                "locationValid": false,
+                "qualities": {
+                    "allowed": [
+                        8,
+                        32,
+                        64,
+                        128,
+                        256,
+                        512
+                    ],
+                    "preferred": []
+                },
+                "paused": false,
+                "airByDate": false,
+                "subtitlesEnabled": false,
+                "dvdOrder": false,
+                "seasonFolders": true,
+                "anime": true,
+                "scene": false,
+                "sports": false,
+                "defaultEpisodeStatus": "Wanted",
+                "aliases": [
+                    {
+                        "season": 1,
+                        "title": "Toaru Kagaku no Accelerator",
+                        "custom": false
+                    }
+                ],
+                "release": {
+                    "ignoredWords": [],
+                    "requiredWords": [],
+                    "ignoredWordsExclude": false,
+                    "requiredWordsExclude": false,
+                    "blacklist": [],
+                    "whitelist": [
+                        "HorribleSubs"
+                    ]
+                },
+                "airdateOffset": 0,
+                "showLists": [
+                    "anime"
+                ]
+            },
+            "xemNumbering": [],
+            "sceneAbsoluteNumbering": [],
+            "xemAbsoluteNumbering": [],
+            "sceneNumbering": []
+        },
+        {
+            "id": {
+                "tvdb": 300835,
+                "imdb": "tt5537534",
+                "slug": "tvdb300835",
+                "trakt": 102203
+            },
+            "title": "Ajin",
+            "indexer": "tvdb",
+            "network": "Tokyo Broadcasting System",
+            "type": "Scripted",
+            "status": "Ended",
+            "seasonCount": [
+                {
+                    "season": 0,
+                    "episodeCount": 7
+                },
+                {
+                    "season": 1,
+                    "episodeCount": 13
+                },
+                {
+                    "season": 2,
+                    "episodeCount": 13
+                }
+            ],
+            "airs": "Saturday 02:25",
+            "airsFormatValid": true,
+            "language": "en",
+            "showType": "anime",
+            "imdbInfo": {
+                "imdbInfoId": 53,
+                "indexer": 1,
+                "indexerId": 300835,
+                "imdbId": "tt5537534",
+                "title": "Ajin",
+                "year": 2016,
+                "akas": "",
+                "runtimes": 24,
+                "genres": "Animation|Action|Adventure|Drama|Fantasy|Horror|Mystery|Sci-Fi|Thriller",
+                "countries": "JAPAN",
+                "countryCodes": "jp",
+                "certificates": "",
+                "rating": "7.7",
+                "votes": 4438,
+                "lastUpdate": 737416,
+                "plot": "A high school student discovers he is an Ajin, a demi-human being. He ends up a fugitive on the run because of his powers."
+            },
+            "year": {
+                "start": 2016
+            },
+            "prevAirDate": "2017-09-29T19:25:00+02:00",
+            "nextAirDate": null,
+            "lastUpdate": "2019-12-23",
+            "runtime": 24,
+            "genres": [
+                "Thriller",
+                "Fantasy",
+                "Mystery",
+                "Adventure",
+                "Animation",
+                "Suspense",
+                "Horror",
+                "Drama",
+                "Anime",
+                "Action",
+                "Science-Fiction"
+            ],
+            "rating": {
+                "imdb": {
+                    "rating": "7.7",
+                    "votes": 4438
+                }
+            },
+            "classification": "",
+            "cache": {
+                "poster": "/data/medusa/cache/images/tvdb/300835.poster.jpg",
+                "banner": "/data/medusa/cache/images/tvdb/300835.banner.jpg"
+            },
+            "countries": [
+                "JAPAN"
+            ],
+            "countryCodes": [
+                "jp"
+            ],
+            "plot": "Mysterious immortal humans known as \"Ajin\" first appeared 17 years ago in Africa. Upon their discovery, they were labeled as a threat to mankind, as they might use their powers for evil and were incapable of being destroyed. Since then, whenever an Ajin is found within society, they are to be arrested and taken into custody immediately.\r\n\r\nStudying hard to become a doctor, Kei Nagai is a high schooler who knows very little about Ajin, only having seen them appear in the news every now and then. Students are taught that these creatures are not considered to be human, but Kei doesn't pay much attention in class. As a result, his perilously little grasp on this subject proves to be completely irrelevant when he survives an accident that was supposed to claim his life, signaling his rebirth as an Ajin and the start of his days of torment. However, as he finds himself alone on the run from the entire world, Kei soon realizes that more of his species may be a lot closer than he thinks.",
+            "config": {
+                "location": "/Anime/Ajin",
+                "locationValid": false,
+                "qualities": {
+                    "allowed": [
+                        8,
+                        32,
+                        64,
+                        128,
+                        256,
+                        512
+                    ],
+                    "preferred": []
+                },
+                "paused": false,
+                "airByDate": false,
+                "subtitlesEnabled": false,
+                "dvdOrder": false,
+                "seasonFolders": true,
+                "anime": true,
+                "scene": false,
+                "sports": false,
+                "defaultEpisodeStatus": "Wanted",
+                "aliases": [
+                    {
+                        "season": -1,
+                        "title": "Ajin - Demi-Human",
+                        "custom": false
+                    },
+                    {
+                        "season": -1,
+                        "title": "Ajin: Demi-Human",
+                        "custom": false
+                    },
+                    {
+                        "season": 2,
+                        "title": "Ajin Season 2",
+                        "custom": false
+                    },
+                    {
+                        "season": 2,
+                        "title": "Ajin Second Season",
+                        "custom": false
+                    },
+                    {
+                        "season": -1,
+                        "title": "Ajin (2016)",
+                        "custom": false
+                    }
+                ],
+                "release": {
+                    "ignoredWords": [
+                        "Raw"
+                    ],
+                    "requiredWords": [],
+                    "ignoredWordsExclude": false,
+                    "requiredWordsExclude": false,
+                    "blacklist": [],
+                    "whitelist": []
+                },
+                "airdateOffset": 0,
+                "showLists": [
+                    "anime"
+                ]
+            },
+            "xemNumbering": [],
+            "sceneAbsoluteNumbering": [],
+            "xemAbsoluteNumbering": [],
+            "sceneNumbering": []
+        }
+    ]
+}

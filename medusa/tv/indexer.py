@@ -3,6 +3,7 @@
 from __future__ import unicode_literals
 
 from builtins import str
+
 from medusa.indexers.utils import indexer_id_to_name, indexer_name_to_id
 from medusa.tv.base import Identifier
 

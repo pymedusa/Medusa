@@ -1,6 +1,6 @@
-from .compat import threading
-
 import logging
+import threading
+
 log = logging.getLogger(__name__)
 
 
@@ -23,7 +23,7 @@ class ReadWriteMutex(object):
 
     def __init__(self):
         # counts how many asynchronous methods are executing
-        self.async = 0
+        self.async_ = 0
 
         # pointer to thread that is the current sync operation
         self.current_sync_operation = None
@@ -31,7 +31,7 @@ class ReadWriteMutex(object):
         # condition object to lock on
         self.condition = threading.Condition(threading.Lock())
 
-    def acquire_read_lock(self, wait = True):
+    def acquire_read_lock(self, wait=True):
         """Acquire the 'read' lock."""
         self.condition.acquire()
         try:
@@ -45,7 +45,7 @@ class ReadWriteMutex(object):
                 if self.current_sync_operation is not None:
                     return False
 
-            self.async += 1
+            self.async_ += 1
             log.debug("%s acquired read lock", self)
         finally:
             self.condition.release()
@@ -57,23 +57,25 @@ class ReadWriteMutex(object):
         """Release the 'read' lock."""
         self.condition.acquire()
         try:
-            self.async -= 1
+            self.async_ -= 1
 
             # check if we are the last asynchronous reader thread
             # out the door.
-            if self.async == 0:
+            if self.async_ == 0:
                 # yes. so if a sync operation is waiting, notifyAll to wake
                 # it up
                 if self.current_sync_operation is not None:
                     self.condition.notifyAll()
-            elif self.async < 0:
-                raise LockError("Synchronizer error - too many "
-                                "release_read_locks called")
+            elif self.async_ < 0:
+                raise LockError(
+                    "Synchronizer error - too many "
+                    "release_read_locks called"
+                )
             log.debug("%s released read lock", self)
         finally:
             self.condition.release()
 
-    def acquire_write_lock(self, wait = True):
+    def acquire_write_lock(self, wait=True):
         """Acquire the 'write' lock."""
         self.condition.acquire()
         try:
@@ -96,7 +98,7 @@ class ReadWriteMutex(object):
             self.current_sync_operation = threading.currentThread()
 
             # now wait again for asyncs to finish
-            if self.async > 0:
+            if self.async_ > 0:
                 if wait:
                     # wait
                     self.condition.wait()
@@ -116,8 +118,10 @@ class ReadWriteMutex(object):
         self.condition.acquire()
         try:
             if self.current_sync_operation is not threading.currentThread():
-                raise LockError("Synchronizer error - current thread doesn't "
-                                "have the write lock")
+                raise LockError(
+                    "Synchronizer error - current thread doesn't "
+                    "have the write lock"
+                )
 
             # reset the current sync operation so
             # another can get it

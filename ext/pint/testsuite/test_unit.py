@@ -21,8 +21,8 @@ class TestUnit(QuantityTestCase):
         self.assertRaises(TypeError, self.U_, 1)
 
     def test_deepcopy(self):
-      x = self.U_(UnitsContainer(meter=1))
-      self.assertEqual(x, copy.deepcopy(x))
+        x = self.U_(UnitsContainer(meter=1))
+        self.assertEqual(x, copy.deepcopy(x))
 
     def test_unit_repr(self):
         x = self.U_(UnitsContainer(meter=1))
@@ -62,6 +62,29 @@ class TestUnit(QuantityTestCase):
             ureg.default_format = spec
             self.assertEqual('{0}'.format(x), result,
                              'Failed for {0}, {1}'.format(spec, result))
+
+    def test_ipython(self):
+        alltext = []
+
+        class Pretty(object):
+            @staticmethod
+            def text(text):
+                alltext.append(text)
+
+        ureg = UnitRegistry()
+        x = ureg.Unit(UnitsContainer(meter=2, kilogram=1, second=-1))
+        self.assertEqual(x._repr_html_(), "kilogram meter<sup>2</sup>/second")
+        self.assertEqual(x._repr_latex_(), r'$\frac{\mathrm{kilogram} \cdot '
+                                           r'\mathrm{meter}^{2}}{\mathrm{second}}$')
+        x._repr_pretty_(Pretty, False)
+        self.assertEqual("".join(alltext), "kilogram·meter²/second")
+        ureg.default_format = "~"
+        self.assertEqual(x._repr_html_(), "kg m<sup>2</sup>/s")
+        self.assertEqual(x._repr_latex_(),
+                         r'$\frac{\mathrm{kg} \cdot \mathrm{m}^{2}}{\mathrm{s}}$')
+        alltext = []
+        x._repr_pretty_(Pretty, False)
+        self.assertEqual("".join(alltext), "kg·m²/s")
 
     def test_unit_mul(self):
         x = self.U_('m')
@@ -205,7 +228,6 @@ class TestRegistry(QuantityTestCase):
         self.assertEqual(self.ureg.parse_expression('kilometre'), self.Q_(1, UnitsContainer(kilometer=1.)))
         self.assertEqual(self.ureg.parse_expression('kilometres'), self.Q_(1, UnitsContainer(kilometer=1.)))
 
-
     def test_str_errors(self):
         self.assertEqual(str(UndefinedUnitError('rabbits')), "'{0!s}' is not defined in the unit registry".format('rabbits'))
         self.assertEqual(str(UndefinedUnitError(('rabbits', 'horses'))), "'{0!s}' are not defined in the unit registry".format(('rabbits', 'horses')))
@@ -249,7 +271,7 @@ class TestRegistry(QuantityTestCase):
         self.assertEqual(parse('kelvin**(-1)', as_delta=False), UnitsContainer(kelvin=-1))
         self.assertEqual(parse('kelvin**2', as_delta=True), UnitsContainer(kelvin=2))
         self.assertEqual(parse('kelvin**2', as_delta=False), UnitsContainer(kelvin=2))
-        self.assertEqual(parse('kelvin*meter', as_delta=True), UnitsContainer(kelvin=1, meter= 1))
+        self.assertEqual(parse('kelvin*meter', as_delta=True), UnitsContainer(kelvin=1, meter=1))
         self.assertEqual(parse('kelvin*meter', as_delta=False), UnitsContainer(kelvin=1, meter=1))
 
     def test_name(self):
@@ -391,12 +413,12 @@ class TestRegistry(QuantityTestCase):
         ureg = self.ureg
 
         f0 = ureg.check('[length]')(func)
-        self.assertRaises(AttributeError, f0, 3.)
+        self.assertRaises(DimensionalityError, f0, 3.)
         self.assertEqual(f0(3. * ureg.centimeter), 0.03 * ureg.meter)
         self.assertRaises(DimensionalityError, f0, 3. * ureg.kilogram)
 
         f0b = ureg.check(ureg.meter)(func)
-        self.assertRaises(AttributeError, f0b, 3.)
+        self.assertRaises(DimensionalityError, f0b, 3.)
         self.assertEqual(f0b(3. * ureg.centimeter), 0.03 * ureg.meter)
         self.assertRaises(DimensionalityError, f0b, 3. * ureg.kilogram)
 
@@ -408,20 +430,20 @@ class TestRegistry(QuantityTestCase):
         self.assertEqual(g0(6 * ureg.parsec, 2), 3 * ureg.parsec)
 
         g1 = ureg.check('[speed]', '[time]')(gfunc)
-        self.assertRaises(AttributeError, g1, 3.0, 1)
+        self.assertRaises(DimensionalityError, g1, 3.0, 1)
         self.assertRaises(DimensionalityError, g1, 1 * ureg.parsec, 1 * ureg.angstrom)
         self.assertRaises(TypeError, g1, 1 * ureg.km / ureg.hour, 1 * ureg.hour, 3.0)
         self.assertEqual(g1(3.6 * ureg.km / ureg.hour, 1 * ureg.second), 1 * ureg.meter / ureg.second ** 2)
 
         g2 = ureg.check('[speed]')(gfunc)
-        self.assertRaises(AttributeError, g2, 3.0, 1)
-        self.assertRaises(DimensionalityError, g2, 2 * ureg.parsec)
+        self.assertRaises(DimensionalityError, g2, 3.0, 1)
+        self.assertRaises(TypeError, g2, 2 * ureg.parsec)
         self.assertRaises(DimensionalityError, g2, 2 * ureg.parsec, 1.0)
         self.assertEqual(g2(2.0 * ureg.km / ureg.hour, 2), 1 * ureg.km / ureg.hour)
 
         g3 = ureg.check('[speed]', '[time]', '[mass]')(gfunc)
-        self.assertRaises(DimensionalityError, g3, 1 * ureg.parsec, 1 * ureg.angstrom)
-        self.assertRaises(DimensionalityError, g3, 1 * ureg.parsec, 1 * ureg.angstrom, 1 * ureg.kilogram)
+        self.assertRaises(TypeError, g3, 1 * ureg.parsec, 1 * ureg.angstrom)
+        self.assertRaises(TypeError, g3, 1 * ureg.parsec, 1 * ureg.angstrom, 1 * ureg.kilogram)
 
     def test_to_ref_vs_to(self):
         self.ureg.autoconvert_offset_to_baseunit = True
@@ -492,8 +514,13 @@ class TestRegistry(QuantityTestCase):
 
 
 class TestCompatibleUnits(QuantityTestCase):
+    FORCE_NDARRAY = False
 
-    FORCE_NDARRAY= False
+    def setUp(self):
+        super(TestCompatibleUnits, self).setUp()
+        self.ureg = UnitRegistry(force_ndarray=self.FORCE_NDARRAY)
+        self.Q_ = self.ureg.Quantity
+        self.U_ = self.ureg.Unit
 
     def _test(self, input_units):
         gd = self.ureg.get_dimensionality

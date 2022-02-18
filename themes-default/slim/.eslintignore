@@ -1,0 +1,10 @@
+{tmp,temp}/**
+**/*.min.js
+**/bower_components/**
+**/node_modules/**
+coverage/**
+dist/**
+flow-typed/**
+static/js/lib/**
+static/js/vender.js
+!.eslintrc.js

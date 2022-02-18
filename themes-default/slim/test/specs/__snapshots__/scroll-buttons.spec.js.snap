@@ -1,0 +1,43 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ScrollButtons.test.js renders 1`] = `
+<div
+  id="scroll-buttons-wrapper"
+>
+  <div
+    class="scroll-wrapper top show"
+  >
+    <span
+      class="scroll-top-inner"
+    >
+      <i
+        class="glyphicon glyphicon-circle-arrow-up"
+      />
+    </span>
+  </div>
+   
+  <div
+    class="scroll-wrapper left show"
+  >
+    <span
+      class="scroll-left-inner"
+    >
+      <i
+        class="glyphicon glyphicon-circle-arrow-left"
+      />
+    </span>
+  </div>
+   
+  <div
+    class="scroll-wrapper right show"
+  >
+    <span
+      class="scroll-right-inner"
+    >
+      <i
+        class="glyphicon glyphicon-circle-arrow-right"
+      />
+    </span>
+  </div>
+</div>
+`;

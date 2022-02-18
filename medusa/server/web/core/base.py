@@ -2,13 +2,10 @@
 
 from __future__ import unicode_literals
 
-import datetime
-import json
 import os
 import re
-import time
+import sys
 import traceback
-from builtins import str
 from concurrent.futures import ThreadPoolExecutor
 
 from mako.exceptions import RichTraceback
@@ -18,23 +15,16 @@ from mako.template import Template as MakoTemplate
 
 from medusa import (
     app,
-    classes,
     db,
     exception_handler,
     helpers,
     logger,
-    network_timezones,
-    ui,
 )
 from medusa.server.api.v1.core import function_mapper
-from medusa.show.coming_episodes import ComingEpisodes
-
-from past.builtins import cmp
 
 from requests.compat import urljoin
 
 from six import (
-    binary_type,
     iteritems,
     text_type,
     viewitems,
@@ -43,8 +33,6 @@ from six import (
 from tornado.concurrent import run_on_executor
 from tornado.escape import utf8
 from tornado.gen import coroutine
-from tornado.ioloop import IOLoop
-from tornado.process import cpu_count
 from tornado.web import (
     HTTPError,
     RequestHandler,
@@ -54,7 +42,6 @@ from tornado.web import (
 )
 
 from tornroutes import route
-
 
 mako_lookup = None
 mako_cache = None
@@ -87,40 +74,32 @@ class PageTemplate(MakoTemplate):
         lookup = get_lookup()
         self.template = lookup.get_template(filename)
 
-        base_url = (rh.request.headers.get('X-Forwarded-Proto', rh.request.protocol) + '://' +
-                    rh.request.headers.get('X-Forwarded-Host', rh.request.host))
+        base_url = (rh.request.headers.get('X-Forwarded-Proto', rh.request.protocol) + '://'
+                    + rh.request.headers.get('X-Forwarded-Host', rh.request.host))
 
         self.arguments = {
             'sbHttpPort': app.WEB_PORT,
             'sbHttpsPort': app.WEB_PORT,
             'sbHttpsEnabled': app.ENABLE_HTTPS,
             'sbHandleReverseProxy': app.HANDLE_REVERSE_PROXY,
-            'sbThemeName': app.THEME_NAME,
             'sbDefaultPage': app.DEFAULT_PAGE,
             'loggedIn': rh.get_current_user(),
-            'sbStartTime': rh.startTime,
-            'numErrors': len(classes.ErrorViewer.errors),
-            'numWarnings': len(classes.WarningViewer.errors),
-            'sbPID': str(app.PID),
+            'sbPID': text_type(app.PID),
             'title': 'FixME',
             'header': 'FixME',
-            'topmenu': 'FixME',
-            'submenu': [],
             'controller': 'FixME',
             'action': 'FixME',
             'show': UNDEFINED,
-            'newsBadge': '',
-            'toolsBadge': '',
-            'toolsBadgeClass': '',
             'base_url': base_url + app.WEB_ROOT + '/',
             'realpage': '',
             'full_url': base_url + rh.request.uri
         }
 
-        if rh.request.headers['Host'][0] == '[':
-            self.arguments['sbHost'] = re.match(r'^\[.*\]', rh.request.headers['Host'], re.X | re.M | re.S).group(0)
-        else:
-            self.arguments['sbHost'] = re.match(r'^[^:]+', rh.request.headers['Host'], re.X | re.M | re.S).group(0)
+        if rh.request.headers.get('Host'):
+            if rh.request.headers['Host'][0] == '[':
+                self.arguments['sbHost'] = re.match(r'^\[.*\]', rh.request.headers['Host'], re.X | re.M | re.S).group(0)
+            else:
+                self.arguments['sbHost'] = re.match(r'^[^:]+', rh.request.headers['Host'], re.X | re.M | re.S).group(0)
         if 'X-Forwarded-Host' in rh.request.headers:
             self.arguments['sbHost'] = rh.request.headers['X-Forwarded-Host']
         if 'X-Forwarded-Port' in rh.request.headers:
@@ -128,33 +107,15 @@ class PageTemplate(MakoTemplate):
         if 'X-Forwarded-Proto' in rh.request.headers:
             self.arguments['sbHttpsEnabled'] = True if rh.request.headers['X-Forwarded-Proto'] == 'https' else False
 
-        error_count = len(classes.ErrorViewer.errors)
-        warning_count = len(classes.WarningViewer.errors)
-
-        if app.NEWS_UNREAD:
-            self.arguments['newsBadge'] = ' <span class="badge">{news}</span>'.format(news=app.NEWS_UNREAD)
-
-        num_combined = error_count + warning_count + app.NEWS_UNREAD
-        if num_combined:
-            if error_count:
-                self.arguments['toolsBadgeClass'] = ' btn-danger'
-            elif warning_count:
-                self.arguments['toolsBadgeClass'] = ' btn-warning'
-            self.arguments['toolsBadge'] = ' <span class="badge{type}">{number}</span>'.format(
-                type=self.arguments['toolsBadgeClass'], number=num_combined)
-
     def render(self, *args, **kwargs):
         """Render the Page template."""
         for key in self.arguments:
             if key not in kwargs:
                 kwargs[key] = self.arguments[key]
 
-        kwargs['makoStartTime'] = time.time()
         try:
             return self.template.render_unicode(*args, **kwargs)
         except Exception:
-            kwargs['title'] = '500'
-            kwargs['header'] = 'Mako Error'
             kwargs['backtrace'] = RichTraceback()
             for (filename, lineno, function, _) in kwargs['backtrace'].traceback:
                 logger.log(u'File {name}, line {line}, in {func}'.format
@@ -167,15 +128,8 @@ class PageTemplate(MakoTemplate):
 class BaseHandler(RequestHandler):
     """Base Handler for the server."""
 
-    startTime = 0.
-
-    def __init__(self, *args, **kwargs):
-        self.startTime = time.time()
-
-        super(BaseHandler, self).__init__(*args, **kwargs)
-
     def write_error(self, status_code, **kwargs):
-        """Base error Handler for 404's."""
+        """Error handler for 404's."""
         # handle 404 http errors
         if status_code == 404:
             url = self.request.uri
@@ -184,7 +138,7 @@ class BaseHandler(RequestHandler):
 
             if url[:3] != 'api':
                 t = PageTemplate(rh=self, filename='404.mako')
-                return self.finish(t.render(title='404', header='Oops'))
+                return self.finish(t.render())
             else:
                 self.finish('Wrong API key used')
 
@@ -246,25 +200,44 @@ class BaseHandler(RequestHandler):
 class WebHandler(BaseHandler):
     """Base Handler for the web server."""
 
+    # Python 3.5 doesn't support thread_name_prefix
+    if sys.version_info[:2] == (3, 5):
+        executor = ThreadPoolExecutor()
+    else:
+        executor = ThreadPoolExecutor(thread_name_prefix='Thread')
+
     def __init__(self, *args, **kwargs):
         super(WebHandler, self).__init__(*args, **kwargs)
-        self.io_loop = IOLoop.current()
-
-    executor = ThreadPoolExecutor(cpu_count())
 
     @authenticated
     @coroutine
     def get(self, route, *args, **kwargs):
         try:
             # route -> method obj
-            route = route.strip('/').replace('.', '_') or 'index'
+            route = route.strip('/').replace('.', '_').replace('-', '_') or 'index'
             method = getattr(self, route)
 
             results = yield self.async_call(method)
             self.finish(results)
 
         except Exception:
-            logger.log(u'Failed doing web ui request {route!r}: {error}'.format
+            logger.log(u'Failed doing web ui get request {route!r}: {error}'.format
+                       (route=route, error=traceback.format_exc()), logger.DEBUG)
+            raise HTTPError(404)
+
+    @authenticated
+    @coroutine
+    def post(self, route, *args, **kwargs):
+        try:
+            # route -> method obj
+            route = route.strip('/').replace('.', '_').replace('-', '_') or 'index'
+            method = getattr(self, route)
+
+            results = yield self.async_call(method)
+            self.finish(results)
+
+        except Exception:
+            logger.log(u'Failed doing web ui post request {route!r}: {error}'.format
                        (route=route, error=traceback.format_exc()), logger.DEBUG)
             raise HTTPError(404)
 
@@ -274,17 +247,12 @@ class WebHandler(BaseHandler):
             kwargs = self.request.arguments
             for arg, value in iteritems(kwargs):
                 if len(value) == 1:
-                    kwargs[arg] = value[0]
-                if isinstance(kwargs[arg], binary_type):
-                    kwargs[arg] = text_type(kwargs[arg], 'utf-8')
+                    kwargs[arg] = self.get_argument(arg)
 
             result = function(**kwargs)
             return result
         except Exception as e:
             exception_handler.handle(e)
-
-    # post uses get method
-    post = get
 
 
 @route('(.*)(/?)')
@@ -297,6 +265,24 @@ class WebRoot(WebHandler):
     def index(self):
         return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
 
+    def not_found(self, *args, **kwargs):
+        """
+        Fallback 404 route.
+
+        [Converted to VueRouter]
+        """
+        t = PageTemplate(rh=self, filename='index.mako')
+        return t.render()
+
+    def server_error(self, *args, **kwargs):
+        """
+        Fallback 500 route.
+
+        [Converted to VueRouter]
+        """
+        t = PageTemplate(rh=self, filename='index.mako')
+        return t.render()
+
     def robots_txt(self):
         """Keep web crawlers out."""
         self.set_header('Content-Type', 'text/plain')
@@ -306,24 +292,24 @@ class WebRoot(WebHandler):
         def titler(x):
             return (helpers.remove_article(x), x)[not x or app.SORT_ARTICLE]
 
-        main_db_con = db.DBConnection(row_type='dict')
-        shows = sorted(app.showList, lambda x, y: cmp(titler(x.name), titler(y.name)))
+        main_db_con = db.DBConnection()
+        shows = sorted(app.showList, key=lambda x: titler(x.name.lower()))
         episodes = {}
 
         results = main_db_con.select(
-            b'SELECT episode, season, indexer, showid '
-            b'FROM tv_episodes '
-            b'ORDER BY season ASC, episode ASC'
+            'SELECT episode, season, indexer, showid '
+            'FROM tv_episodes '
+            'ORDER BY season ASC, episode ASC'
         )
 
         for result in results:
-            if result[b'showid'] not in episodes:
-                episodes[result[b'showid']] = {}
+            if result['showid'] not in episodes:
+                episodes[result['showid']] = {}
 
-            if result[b'season'] not in episodes[result[b'showid']]:
-                episodes[result[b'showid']][result[b'season']] = []
+            if result['season'] not in episodes[result['showid']]:
+                episodes[result['showid']][result['season']] = []
 
-            episodes[result[b'showid']][result[b'season']].append(result[b'episode'])
+            episodes[result['showid']][result['season']].append(result['episode'])
 
         if len(app.API_KEY) == 32:
             apikey = app.API_KEY
@@ -348,87 +334,6 @@ class WebRoot(WebHandler):
         # @TODO: Replace this with poster.sort.dir={asc, desc} PATCH /api/v2/config/layout
         app.POSTER_SORTDIR = int(direction)
         app.instance.save_config()
-
-    def toggleScheduleDisplayPaused(self):
-        app.COMING_EPS_DISPLAY_PAUSED = not app.COMING_EPS_DISPLAY_PAUSED
-
-        return self.redirect('/schedule/')
-
-    def setScheduleSort(self, sort):
-        if sort not in ('date', 'network', 'show') or app.COMING_EPS_LAYOUT == 'calendar':
-            sort = 'date'
-
-        app.COMING_EPS_SORT = sort
-
-        return self.redirect('/schedule/')
-
-    def schedule(self):
-        next_week = datetime.date.today() + datetime.timedelta(days=7)
-        next_week1 = datetime.datetime.combine(next_week, datetime.time(tzinfo=network_timezones.app_timezone))
-        results = ComingEpisodes.get_coming_episodes(ComingEpisodes.categories, app.COMING_EPS_SORT, False)
-        today = datetime.datetime.now().replace(tzinfo=network_timezones.app_timezone)
-
-        submenu = [
-            {
-                'title': 'Sort by:',
-                'path': {
-                    'Date': 'setScheduleSort/?sort=date',
-                    'Show': 'setScheduleSort/?sort=show',
-                    'Network': 'setScheduleSort/?sort=network',
-                }
-            },
-            {
-                'title': 'Layout:',
-                'path': {
-                    'Banner': 'setScheduleLayout/?layout=banner',
-                    'Poster': 'setScheduleLayout/?layout=poster',
-                    'List': 'setScheduleLayout/?layout=list',
-                    'Calendar': 'setScheduleLayout/?layout=calendar',
-                }
-            },
-            {
-                'title': 'View Paused:',
-                'path': {
-                    'Hide': 'toggleScheduleDisplayPaused'
-                } if app.COMING_EPS_DISPLAY_PAUSED else {
-                    'Show': 'toggleScheduleDisplayPaused'
-                }
-            },
-        ]
-
-        t = PageTemplate(rh=self, filename='schedule.mako')
-        return t.render(submenu=submenu[::-1], next_week=next_week1, today=today, results=results,
-                        layout=app.COMING_EPS_LAYOUT, title='Schedule', header='Schedule',
-                        topmenu='schedule', controller='schedule', action='index')
-
-
-@route('/ui(/?.*)')
-class UI(WebRoot):
-    def __init__(self, *args, **kwargs):
-        super(UI, self).__init__(*args, **kwargs)
-
-    @staticmethod
-    def add_message():
-        ui.notifications.message('Test 1', 'This is test number 1')
-        ui.notifications.error('Test 2', 'This is test number 2')
-
-        return 'ok'
-
-    def get_messages(self):
-        self.set_header('Cache-Control', 'max-age=0,no-cache,no-store')
-        self.set_header('Content-Type', 'application/json')
-        messages = {}
-        cur_notification_num = 1
-        for cur_notification in ui.notifications.get_notifications(self.request.remote_ip):
-            messages['notification-{number}'.format(number=cur_notification_num)] = {
-                'title': '{0}'.format(cur_notification.title),
-                'message': '{0}'.format(cur_notification.message),
-                'type': '{0}'.format(cur_notification.notification_type),
-                'hash': '{0}'.format(hash(cur_notification)),
-            }
-            cur_notification_num += 1
-
-        return json.dumps(messages)
 
 
 class AuthenticatedStaticFileHandler(StaticFileHandler):

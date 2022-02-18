@@ -51,10 +51,11 @@ def unpack(stream, **kwargs):
     """
     Unpack an object from `stream`.
 
-    Raises `ExtraData` when `packed` contains extra bytes.
+    Raises `ExtraData` when `stream` contains extra bytes.
     See :class:`Unpacker` for options.
     """
-    return unpackb(stream.read(), **kwargs)
+    data = stream.read()
+    return unpackb(data, **kwargs)
 
 
 # alias for compatibility to simplejson/marshal/pickle.

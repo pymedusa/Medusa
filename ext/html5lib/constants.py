@@ -423,7 +423,7 @@ specialElements = frozenset([
 ])
 
 htmlIntegrationPointElements = frozenset([
-    (namespaces["mathml"], "annotaion-xml"),
+    (namespaces["mathml"], "annotation-xml"),
     (namespaces["svg"], "foreignObject"),
     (namespaces["svg"], "desc"),
     (namespaces["svg"], "title")
@@ -519,8 +519,8 @@ adjustForeignAttributes = {
     "xmlns:xlink": ("xmlns", "xlink", namespaces["xmlns"])
 }
 
-unadjustForeignAttributes = dict([((ns, local), qname) for qname, (prefix, local, ns) in
-                                  adjustForeignAttributes.items()])
+unadjustForeignAttributes = {(ns, local): qname for qname, (prefix, local, ns) in
+                             adjustForeignAttributes.items()}
 
 spaceCharacters = frozenset([
     "\t",
@@ -544,8 +544,7 @@ asciiLetters = frozenset(string.ascii_letters)
 digits = frozenset(string.digits)
 hexDigits = frozenset(string.hexdigits)
 
-asciiUpper2Lower = dict([(ord(c), ord(c.lower()))
-                         for c in string.ascii_uppercase])
+asciiUpper2Lower = {ord(c): ord(c.lower()) for c in string.ascii_uppercase}
 
 # Heading elements need to be ordered
 headingElements = (
@@ -588,7 +587,7 @@ rcdataElements = frozenset([
 ])
 
 booleanAttributes = {
-    "": frozenset(["irrelevant"]),
+    "": frozenset(["irrelevant", "itemscope"]),
     "style": frozenset(["scoped"]),
     "img": frozenset(["ismap"]),
     "audio": frozenset(["autoplay", "controls"]),
@@ -606,6 +605,7 @@ booleanAttributes = {
     "input": frozenset(["disabled", "readonly", "required", "autofocus", "checked", "ismap"]),
     "select": frozenset(["disabled", "readonly", "autofocus", "multiple"]),
     "output": frozenset(["disabled", "readonly"]),
+    "iframe": frozenset(["seamless"]),
 }
 
 # entitiesWindows1252 has to be _ordered_ and needs to have an index. It
@@ -2933,13 +2933,14 @@ tagTokenTypes = frozenset([tokenTypes["StartTag"], tokenTypes["EndTag"],
                            tokenTypes["EmptyTag"]])
 
 
-prefixes = dict([(v, k) for k, v in namespaces.items()])
+prefixes = {v: k for k, v in namespaces.items()}
 prefixes["http://www.w3.org/1998/Math/MathML"] = "math"
 
 
 class DataLossWarning(UserWarning):
+    """Raised when the current tree is unable to represent the input data"""
     pass
 
 
-class ReparseException(Exception):
+class _ReparseException(Exception):
     pass

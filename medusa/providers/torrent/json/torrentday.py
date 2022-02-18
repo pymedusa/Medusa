@@ -4,16 +4,43 @@
 
 from __future__ import unicode_literals
 
+import json
 import logging
 import re
+from json.decoder import JSONDecodeError
+
 from medusa import tv
 from medusa.helper.common import convert_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
+
 from requests.compat import urljoin
+
+import validators
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
+
+
+class ReplaceBackslashDecoder(json.JSONDecoder):
+    r"""
+    Decoder helper for removing backslashes.
+
+    Torrentday returns a Json with show titles like:
+        `name":"Marvel\'s Daredevil S01-S03 WEBRip 1080p DDP5 1 H265-d3g"`
+        This generates a JsonDecodeError. The backslash is not needed as json
+        already encapsulates the string in double quotes.
+    """
+
+    def decode(self, s, **kwargs):
+        """Remove backslash."""
+        regex_replacements = [
+            (re.compile(r'([^\\])\\([^\\])'), r'\1\2'),
+            (re.compile(r',(\s*])'), r'\1'),
+        ]
+        for regex, replacement in regex_replacements:
+            s = regex.sub(replacement, s)
+        return super().decode(s, **kwargs)
 
 
 class TorrentDayProvider(TorrentProvider):
@@ -24,12 +51,8 @@ class TorrentDayProvider(TorrentProvider):
         super(TorrentDayProvider, self).__init__('TorrentDay')
 
         # URLs
-        self.url = 'https://www.torrentday.com'
-        self.urls = {
-            'login': urljoin(self.url, '/torrents/'),
-            'search': urljoin(self.url, '/t.json'),
-            'download': urljoin(self.url, '/download.php/')
-        }
+        self.url = 'https://torrentday.it'
+        self.custom_url = None
 
         # Proper Strings
 
@@ -37,7 +60,7 @@ class TorrentDayProvider(TorrentProvider):
         self.freeleech = False
         self.enable_cookies = True
         self.cookies = ''
-        self.required_cookies = ('uid', 'pass')
+        self.required_cookies = ('uid', 'pass', 'cf_clearance')
 
         # TV/480p - 24
         # TV/Bluray - 32
@@ -52,16 +75,12 @@ class TorrentDayProvider(TorrentProvider):
 
         self.categories = {
             'Season': {'14': 1},
-            'Episode': {'2': 1, '26': 1, '7': 1, '24': 1, '34': 1},
-            'RSS': {'2': 1, '26': 1, '7': 1, '24': 1, '34': 1, '14': 1}
+            'Episode': {'2': 1, '26': 1, '29': 1, '7': 1, '24': 1, '34': 1},
+            'RSS': {'2': 1, '26': 1, '29': 1, '7': 1, '24': 1, '34': 1, '14': 1}
         }
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Cache
-        self.cache = tv.Cache(self, min_time=10)
+        self.cache = tv.Cache(self)
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
@@ -73,6 +92,19 @@ class TorrentDayProvider(TorrentProvider):
         :returns: A list of search results (structure)
         """
         results = []
+
+        if self.custom_url:
+            if not validators.url(self.custom_url):
+                log.warning('Invalid custom url: {0}', self.custom_url)
+                return results
+            self.url = self.custom_url
+
+        self.urls = {
+            'login': urljoin(self.url, '/torrents/'),
+            'search': urljoin(self.url, '/t.json'),
+            'download': urljoin(self.url, '/download.php/')
+        }
+
         if not self.login():
             return results
 
@@ -89,14 +121,17 @@ class TorrentDayProvider(TorrentProvider):
                 params = dict({'q': search_string}, **self.categories[mode])
 
                 response = self.session.get(self.urls['search'], params=params)
-                if not response or not response.content:
+                if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue
 
                 try:
-                    jdata = response.json()
-                except ValueError:
-                    log.debug('No data returned from provider')
+                    jdata = json.loads(response.text, cls=ReplaceBackslashDecoder)
+                except JSONDecodeError:
+                    log.error(f'Torrentday parse error with response output: \n{response.text}')
+                    continue
+                except ValueError as error:
+                    log.error("Couldn't deserialize JSON document. Error: {0!r}", error)
                     continue
 
                 results += self.parse(jdata, mode)
@@ -118,7 +153,7 @@ class TorrentDayProvider(TorrentProvider):
 
             try:
                 # Check if this is a freeleech torrent and if we've configured to only allow freeleech.
-                if self.freeleech and row['download-multiplier'] != 0:
+                if self.freeleech and row.get('download-multiplier') != 0:
                     continue
 
                 title = re.sub(r'\[.*\=.*\].*\[/.*\]', '', row['name']) if row['name'] else None
@@ -133,10 +168,11 @@ class TorrentDayProvider(TorrentProvider):
                 leechers = int(row['leechers'])
 
                 # Filter unseeded torrent
-                if seeders < self.minseed or leechers < self.minleech:
+                if seeders < self.minseed:
                     if mode != 'RSS':
                         log.debug("Discarding torrent because it doesn't meet the"
-                                  " minimum seeders: {0}. Seeders: {1}", title, seeders)
+                                  ' minimum seeders: {0}. Seeders: {1}',
+                                  title, seeders)
                     continue
 
                 torrent_size = row['size']

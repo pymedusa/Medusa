@@ -5,13 +5,13 @@ from __future__ import unicode_literals
 import datetime
 import logging
 import re
-from builtins import str
+
 
 from babelfish import Country
 
 from medusa import helpers
 from medusa.app import TVDB_API_KEY
-from medusa.helper.common import dateFormat, episode_num
+from medusa.helper.common import episode_num
 from medusa.indexers.api import indexerApi
 from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.indexers.exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
@@ -19,7 +19,7 @@ from medusa.indexers.tvdbv2.api import API_BASE_TVDB
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.metadata import generic
 
-from six import string_types
+from six import string_types, text_type
 
 try:
     import xml.etree.cElementTree as etree
@@ -116,15 +116,30 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
         title.text = my_show['seriesname']
 
         if getattr(my_show, 'rating', None):
-            rating = etree.SubElement(tv_node, 'rating')
-            rating.text = str(my_show['rating'])
+            ratings = etree.SubElement(tv_node, 'ratings')
+            rating = etree.SubElement(ratings, 'rating')
+            rating.set('name', series_obj.identifier.indexer.slug)
+            rating.set('max', '10')
+            rating.set('default', 'true')
+            value = etree.SubElement(rating, 'value')
+            value.text = text_type(str(my_show['rating']))
+            votes = etree.SubElement(rating, 'votes')
+            votes.text = ''
+
+            if series_obj.imdb_id and series_obj.imdb_rating and series_obj.imdb_votes:
+                rating_imdb = etree.SubElement(ratings, 'rating')
+                rating_imdb.set('name', 'imdb')
+                rating_imdb.set('max', '10')
+                rating_imdb.set('default', 'false')
+                value = etree.SubElement(rating_imdb, 'value')
+                value.text = series_obj.imdb_rating
+                votes = etree.SubElement(rating_imdb, 'votes')
+                votes.text = str(series_obj.imdb_votes)
 
         if getattr(my_show, 'firstaired', None):
             try:
-                year_text = str(datetime.datetime.strptime(my_show['firstaired'], dateFormat).year)
-                if year_text:
-                    year = etree.SubElement(tv_node, 'year')
-                    year.text = year_text
+                year = etree.SubElement(tv_node, 'premiered')
+                year.text = my_show['firstaired']
             except Exception:
                 pass
 
@@ -146,9 +161,24 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
             mpaa = etree.SubElement(tv_node, 'mpaa')
             mpaa.text = my_show['contentrating']
 
-        if getattr(my_show, 'id', None):
-            indexer_id = etree.SubElement(tv_node, 'id')
-            indexer_id.text = str(my_show['id'])
+        # Add main indexer
+        uniqueid = etree.SubElement(tv_node, 'uniqueid')
+        uniqueid.set('default', 'true')
+        uniqueid.set('type', series_obj.identifier.indexer.slug)
+        uniqueid.text = str(series_obj.identifier.id)
+
+        for indexer_slug in ('tvdb', 'tmdb', 'imdb', 'tvmaze', 'anidb'):
+            if indexer_slug == series_obj.identifier.indexer.slug:
+                continue
+
+            external_id = series_obj.externals.get(f'{indexer_slug}_id')
+            if not external_id:
+                continue
+
+            uniqueid = etree.SubElement(tv_node, 'uniqueid')
+            uniqueid.set('default', 'false')
+            uniqueid.set('type', indexer_slug)
+            uniqueid.text = str(external_id)
 
         if getattr(my_show, 'genre', None) and isinstance(my_show['genre'], string_types):
             for genre in self._split_info(my_show['genre']):
@@ -167,7 +197,7 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
 
         if getattr(my_show, 'firstaired', None):
             premiered = etree.SubElement(tv_node, 'premiered')
-            premiered.text = str(my_show['firstaired'])
+            premiered.text = my_show['firstaired']
 
         if getattr(my_show, 'network', None):
             studio = etree.SubElement(tv_node, 'studio')
@@ -197,7 +227,7 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
                     cur_actor_role = etree.SubElement(cur_actor, 'role')
                     cur_actor_role.text = actor['role'].strip()
 
-                if actor.get('image') and actor['image'].strip():
+                if 'image' in actor and actor['image'].strip():
                     cur_actor_thumb = etree.SubElement(cur_actor, 'thumb')
                     cur_actor_thumb.text = actor['image'].strip()
 
@@ -242,7 +272,7 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
                 return None
 
             if not getattr(my_ep, 'firstaired', None):
-                my_ep['firstaired'] = str(datetime.date.fromordinal(1))
+                my_ep['firstaired'] = text_type(datetime.date.fromordinal(1))
 
             if not getattr(my_ep, 'episodename', None):
                 log.debug(u'Not generating nfo because the ep has no title')
@@ -265,17 +295,19 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
                 showtitle.text = series_obj['seriesname']
 
             season = etree.SubElement(episode, 'season')
-            season.text = str(ep_to_write.season)
+            season.text = text_type(ep_to_write.season)
 
             episodenum = etree.SubElement(episode, 'episode')
-            episodenum.text = str(ep_to_write.episode)
+            episodenum.text = text_type(ep_to_write.episode)
 
             uniqueid = etree.SubElement(episode, 'uniqueid')
-            uniqueid.text = str(ep_to_write.indexerid)
+            uniqueid.set('type', ep_obj.indexer_name)
+            uniqueid.set('default', 'true')
+            uniqueid.text = text_type(ep_to_write.indexerid)
 
             if ep_to_write.airdate != datetime.date.fromordinal(1):
                 aired = etree.SubElement(episode, 'aired')
-                aired.text = str(ep_to_write.airdate)
+                aired.text = text_type(ep_to_write.airdate)
 
             if getattr(my_ep, 'overview', None):
                 plot = etree.SubElement(episode, 'plot')
@@ -283,7 +315,7 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
 
             if ep_to_write.season and getattr(series_obj, 'runtime', None):
                 runtime = etree.SubElement(episode, 'runtime')
-                runtime.text = str(series_obj['runtime'])
+                runtime.text = text_type(series_obj['runtime'])
 
             if getattr(my_ep, 'airsbefore_season', None):
                 displayseason = etree.SubElement(episode, 'displayseason')
@@ -301,8 +333,15 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
             # watched.text = 'false'
 
             if getattr(my_ep, 'rating', None):
-                rating = etree.SubElement(episode, 'rating')
-                rating.text = str(my_ep['rating'])
+                ratings = etree.SubElement(episode, 'ratings')
+                rating = etree.SubElement(ratings, 'rating')
+                rating.set('name', ep_obj.indexer_name)
+                rating.set('max', '10')
+                rating.set('default', 'true')
+                value = etree.SubElement(rating, 'value')
+                value.text = text_type(my_ep['rating'])
+                votes = etree.SubElement(rating, 'votes')
+                votes.text = ''
 
             if getattr(my_ep, 'writer', None) and isinstance(my_ep['writer'], string_types):
                 for writer in self._split_info(my_ep['writer']):
@@ -334,7 +373,7 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
                         cur_actor_role = etree.SubElement(cur_actor, 'role')
                         cur_actor_role.text = actor['role'].strip()
 
-                    if actor.get('image') and actor['image'].strip():
+                    if 'image' in actor and actor['image'].strip():
                         cur_actor_thumb = etree.SubElement(cur_actor, 'thumb')
                         cur_actor_thumb.text = actor['image'].strip()
 

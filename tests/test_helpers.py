@@ -1,5 +1,6 @@
 # coding=utf-8
 """Tests for medusa.helpers.py."""
+from __future__ import unicode_literals
 from collections import OrderedDict
 
 import medusa.helpers as sut

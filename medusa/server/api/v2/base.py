@@ -4,23 +4,70 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import base64
-import collections
 import json
-import operator
+import logging
+import sys
 import traceback
-from builtins import object
+from collections import OrderedDict
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime
+from functools import partial
+from types import MethodType
 
 from babelfish.language import Language
 
 import jwt
 
 from medusa import app
+from medusa.logger.adapters.style import BraceAdapter
 
-from six import string_types, text_type, viewitems
+from six import ensure_text, iteritems, string_types, text_type, viewitems
+from six.moves import collections_abc
 
-from tornado.httpclient import HTTPError
-from tornado.web import RequestHandler
+from tornado.gen import coroutine
+from tornado.httputil import url_concat
+from tornado.ioloop import IOLoop
+from tornado.web import HTTPError, RequestHandler
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
+
+# Python 3.5 doesn't support thread_name_prefix
+if sys.version_info[:2] == (3, 5):
+    executor = ThreadPoolExecutor()
+else:
+    executor = ThreadPoolExecutor(thread_name_prefix='APIv2-Thread')
+
+
+def make_async(instance, method):
+    """
+    Wrap a method with an async wrapper.
+
+    :param instance: A RequestHandler class instance.
+    :param type: instance of RequestHandler
+    :param method: The method to wrap.
+    :type method: callable
+    :return: An instance-bound async-wrapped method.
+    :rtype: callable
+    """
+    @coroutine
+    def async_call(self, *args, **kwargs):
+        """Call the actual HTTP method asynchronously."""
+        content = self._check_authentication()
+        if content is not None:
+            self.finish(content)
+            return
+
+        # Authentication check passed, run the method in a thread
+        # On Python 3+, exceptions contain their original stack trace.
+        prepared = partial(method, *args, **kwargs)
+        content = yield IOLoop.current().run_in_executor(executor, prepared)
+
+        self.finish(content)
+
+    # This creates a bound method `instance.async_call`,
+    # so that it could substitute the original method in the class instance.
+    return MethodType(async_call, instance)
 
 
 class BaseRequestHandler(RequestHandler):
@@ -39,7 +86,7 @@ class BaseRequestHandler(RequestHandler):
     #: parent resource handler
     parent_handler = None
 
-    def prepare(self):
+    def _check_authentication(self):
         """Check if JWT or API key is provided and valid."""
         if self.request.method == 'OPTIONS':
             return
@@ -61,38 +108,85 @@ class BaseRequestHandler(RequestHandler):
             except jwt.DecodeError:
                 return self._unauthorized('Invalid token.')
         elif authorization.startswith('Basic'):
-            auth_decoded = base64.decodestring(authorization[6:])
-            username, password = auth_decoded.split(':', 2)
+            auth_decoded = base64.b64decode(authorization[6:])
+            username, password = ensure_text(auth_decoded).split(':', 2)
             if username != app.WEB_USERNAME or password != app.WEB_PASSWORD:
                 return self._unauthorized('Invalid user/pass.')
         else:
             return self._unauthorized('Invalid token.')
 
-    def write_error(self, *args, **kwargs):
-        """Only send traceback if app.DEVELOPER is true."""
-        if app.DEVELOPER and 'exc_info' in kwargs:
-            self.set_header('content-type', 'text/plain')
-            self.set_status(500)
-            for line in traceback.format_exception(*kwargs['exc_info']):
-                self.write(line)
-            self.finish()
-        else:
-            self._internal_server_error()
+    def initialize(self):
+        """
+        Override the request method to use the async dispatcher.
+
+        This function is called for each request.
+        """
+        name = self.request.method.lower()
+        # Wrap the original method with the code needed to run it asynchronously
+        method = make_async(self, getattr(self, name))
+        # Bind the wrapped method to self.<name>
+        setattr(self, name, method)
 
     def options(self, *args, **kwargs):
-        """Options."""
+        """OPTIONS HTTP method."""
         self._no_content()
+
+    def write_error(self, status_code, *args, **kwargs):
+        """Only send traceback if app.DEVELOPER is true."""
+        response = None
+        exc_info = kwargs.get('exc_info', None)
+
+        if exc_info and isinstance(exc_info[1], HTTPError):
+            error = exc_info[1].log_message or exc_info[1].reason
+            response = self.api_response(status=status_code, error=error)
+        elif app.DEVELOPER and exc_info:
+            self.set_header('content-type', 'text/plain; charset=UTF-8')
+            self.set_status(500)
+            for line in traceback.format_exception(*exc_info):
+                self.write(line)
+        else:
+            response = self._internal_server_error()
+
+        self.finish(response)
+
+    def log_exception(self, typ, value, tb):
+        """
+        Customize logging of uncaught exceptions.
+
+        Only logs unhandled exceptions, as `HTTPErrors` are common for a RESTful API handler.
+        Note: If this method raises an exception, it will only be logged if `app.WEB_LOG` is enabled
+        """
+        if isinstance(value, HTTPError):
+            return
+
+        debug_info = 'Request: {0}'.format(self._request_summary())
+        if self.request.body:
+            body = ensure_text(self.request.body, errors='replace')
+            debug_info += '\nWith body:\n{0}'.format(body)
+
+        log.error('Uncaught exception in APIv2: {error!r}\n{debug}', {
+            'error': value,
+            'debug': debug_info,
+            'exc_info': (typ, value, tb),
+        })
 
     def set_default_headers(self):
         """Set default CORS headers."""
         if app.APP_VERSION:
             self.set_header('X-Medusa-Server', app.APP_VERSION)
-        self.set_header('Access-Control-Allow-Origin', '*')
-        self.set_header('Access-Control-Allow-Headers', 'Origin, Accept, Authorization, Content-Type,'
-                                                        'X-Requested-With, X-CSRF-Token, X-Api-Key, X-Medusa-Server')
-        self.set_header('Access-Control-Allow-Methods', ', '.join(self.DEFAULT_ALLOWED_METHODS + self.allowed_methods))
 
-    def api_finish(self, status=None, error=None, data=None, headers=None, stream=None, content_type=None, **kwargs):
+        self.set_header('Access-Control-Allow-Origin', '*')
+
+        allowed_headers = ('Origin', 'Accept', 'Authorization', 'Content-Type',
+                           'X-Requested-With', 'X-CSRF-Token', 'X-Api-Key', 'X-Medusa-Server')
+        self.set_header('Access-Control-Allow-Headers', ', '.join(allowed_headers))
+
+        allowed_methods = self.DEFAULT_ALLOWED_METHODS
+        if self.allowed_methods:
+            allowed_methods += self.allowed_methods
+        self.set_header('Access-Control-Allow-Methods', ', '.join(allowed_methods))
+
+    def api_response(self, status=None, error=None, data=None, headers=None, stream=None, content_type=None, **kwargs):
         """End the api request writing error or data to http response."""
         content_type = content_type or 'application/json; charset=UTF-8'
         if headers is not None:
@@ -101,21 +195,23 @@ class BaseRequestHandler(RequestHandler):
         if error is not None and status is not None:
             self.set_status(status)
             self.set_header('content-type', content_type)
-            self.finish({
+            return {
                 'error': error
-            })
+            }
         else:
             self.set_status(status or 200)
             if data is not None:
                 self.set_header('content-type', content_type)
-                self.finish(json.JSONEncoder(default=json_default_encoder).encode(data))
+                return json.JSONEncoder(default=json_default_encoder).encode(data)
             elif stream:
                 # This is mainly for assets
                 self.set_header('content-type', content_type)
-                self.finish(stream)
+                return stream
             elif kwargs and 'chunk' in kwargs:
                 self.set_header('content-type', content_type)
-                self.finish(kwargs)
+                return kwargs
+
+        return None
 
     @classmethod
     def _create_base_url(cls, prefix_url, resource_name, *args):
@@ -152,14 +248,8 @@ class BaseRequestHandler(RequestHandler):
 
         return cls.create_url(base, cls.name, *(cls.identifier, cls.path_param)), cls
 
-    def _handle_request_exception(self, e):
-        if isinstance(e, HTTPError):
-            self.api_finish(e.code, e.message)
-        else:
-            super(BaseRequestHandler, self)._handle_request_exception(e)
-
     def _ok(self, data=None, headers=None, stream=None, content_type=None):
-        self.api_finish(200, data=data, headers=headers, stream=stream, content_type=content_type)
+        return self.api_response(200, data=data, headers=headers, stream=stream, content_type=content_type)
 
     def _created(self, data=None, identifier=None):
         if identifier is not None:
@@ -168,34 +258,37 @@ class BaseRequestHandler(RequestHandler):
                 location += '/'
 
             self.set_header('Location', '{0}{1}'.format(location, identifier))
-        self.api_finish(201, data=data)
+        return self.api_response(201, data=data)
 
-    def _accepted(self):
-        self.api_finish(202)
+    def _accepted(self, data=None):
+        return self.api_response(202, data=data)
 
     def _no_content(self):
-        self.api_finish(204)
+        return self.api_response(204)
+
+    def _multi_status(self, data=None, headers=None):
+        return self.api_response(207, data=data, headers=headers)
 
     def _bad_request(self, error):
-        self.api_finish(400, error=error)
+        return self.api_response(400, error=error)
 
     def _unauthorized(self, error):
-        self.api_finish(401, error=error)
+        return self.api_response(401, error=error)
 
     def _not_found(self, error='Resource not found'):
-        self.api_finish(404, error=error)
+        return self.api_response(404, error=error)
 
     def _method_not_allowed(self, error):
-        self.api_finish(405, error=error)
+        return self.api_response(405, error=error)
 
     def _conflict(self, error):
-        self.api_finish(409, error=error)
+        return self.api_response(409, error=error)
 
     def _internal_server_error(self, error='Internal Server Error'):
-        self.api_finish(500, error=error)
+        return self.api_response(500, error=error)
 
     def _not_implemented(self):
-        self.api_finish(501)
+        return self.api_response(501)
 
     @classmethod
     def _raise_bad_request_error(cls, error):
@@ -234,14 +327,14 @@ class BaseRequestHandler(RequestHandler):
         except ValueError:
             self._raise_bad_request_error('Invalid limit parameter')
 
-    def _paginate(self, data=None, data_generator=None, sort=None):
+    def _paginate(self, data=None, data_generator=None, sort=None, headers={}):
         arg_page = self._get_page()
         arg_limit = self._get_limit()
 
-        headers = {
+        headers.update({
             'X-Pagination-Page': arg_page,
             'X-Pagination-Limit': arg_limit
-        }
+        })
 
         first_page = arg_page if arg_page > 0 else 1
         previous_page = None if arg_page <= 1 else arg_page - 1
@@ -255,9 +348,15 @@ class BaseRequestHandler(RequestHandler):
             end = start + arg_limit
             results = data
             if arg_sort:
+                # Compare to earliest datetime instead of None
+                def safe_compare(field, results):
+                    if field == 'airDate' and results[field] is None:
+                        return text_type(datetime.min)
+                    return results[field]
+
                 try:
                     for field, reverse in reversed(arg_sort):
-                        results = sorted(results, key=operator.itemgetter(field), reverse=reverse)
+                        results = sorted(results, key=partial(safe_compare, field), reverse=reverse)
                 except KeyError:
                     return self._bad_request('Invalid sort query parameter')
 
@@ -266,8 +365,20 @@ class BaseRequestHandler(RequestHandler):
             results = results[start:end]
             next_page = None if end > count else arg_page + 1
             last_page = ((count - 1) // arg_limit) + 1
+            headers['X-Pagination-Total'] = last_page
             if last_page <= arg_page:
                 last_page = None
+
+        # Reconstruct the query parameters
+        query_params = []
+        for arg, values in viewitems(self.request.query_arguments):
+            if arg in ('page', 'limit'):
+                continue
+            if not isinstance(values, list):
+                values = [values]
+            query_params += [(arg, value) for value in values]
+
+        bare_uri = url_concat(self.request.path, query_params)
 
         links = []
         for rel, page in (('next', next_page), ('last', last_page),
@@ -275,9 +386,8 @@ class BaseRequestHandler(RequestHandler):
             if page is None:
                 continue
 
-            delimiter = '&' if self.request.query_arguments else '?'
-            link = '<{uri}{delimiter}page={page}&limit={limit}>; rel="{rel}"'.format(
-                uri=self.request.uri, delimiter=delimiter, page=page, limit=arg_limit, rel=rel)
+            uri = url_concat(bare_uri, dict(page=page, limit=arg_limit))
+            link = '<{uri}>; rel="{rel}"'.format(uri=uri, rel=rel)
             links.append(link)
 
         self.set_header('Link', ', '.join(links))
@@ -327,7 +437,7 @@ class NotFoundHandler(BaseRequestHandler):
 
     def get(self, *args, **kwargs):
         """Get."""
-        self.api_finish(status=404)
+        return self.api_response(status=404)
 
     @classmethod
     def create_app_handler(cls, base):
@@ -356,7 +466,7 @@ def iter_nested_items(data, prefix=''):
     """
     for key, value in viewitems(data):
         p = prefix + key
-        if isinstance(value, collections.Mapping):
+        if isinstance(value, collections_abc.Mapping):
             for inner_key, inner_value in iter_nested_items(value, prefix=p + '.'):
                 yield inner_key, inner_value
         else:
@@ -375,18 +485,19 @@ def set_nested_value(data, key, value):
 class PatchField(object):
     """Represent a field to be patched."""
 
-    def __init__(self, target_type, attr, attr_type,
-                 validator=None, converter=None, default_value=None, post_processor=None):
+    def __init__(self, target, attr, attr_type, validator=None, converter=None,
+                 default_value=None, setter=None, post_processor=None):
         """Constructor."""
-        if not hasattr(target_type, attr):
-            raise ValueError('{0!r} has no attribute {1}'.format(target_type, attr))
+        if not hasattr(target, attr):
+            raise ValueError('{0!r} has no attribute {1}'.format(target, attr))
 
-        self.target_type = target_type
+        self.target = target
         self.attr = attr
         self.attr_type = attr_type
         self.validator = validator or (lambda v: isinstance(v, self.attr_type))
         self.converter = converter or (lambda v: v)
         self.default_value = default_value
+        self.setter = setter
         self.post_processor = post_processor
 
     def patch(self, target, value):
@@ -398,7 +509,19 @@ class PatchField(object):
             valid = True
 
         if valid:
-            setattr(target, self.attr, self.converter(value))
+            try:
+                if self.setter:
+                    self.setter(target, self.attr, self.converter(value))
+                else:
+                    setattr(target, self.attr, self.converter(value))
+            except AttributeError:
+                log.warning(
+                    'Error trying to change attribute {attr} on target {target!r}'
+                    ' are you allowed to change this attribute?',
+                    {'attr': self.attr, 'target': target}
+                )
+                return False
+
             if self.post_processor:
                 self.post_processor(value)
             return True
@@ -407,44 +530,116 @@ class PatchField(object):
 class StringField(PatchField):
     """Patch string fields."""
 
-    def __init__(self, target_type, attr, validator=None, converter=None, default_value=None, post_processor=None):
+    def __init__(self, target, attr, validator=None, converter=None, default_value=None,
+                 setter=None, post_processor=None):
         """Constructor."""
-        super(StringField, self).__init__(target_type, attr, string_types, validator=validator, converter=converter,
-                                          default_value=default_value, post_processor=post_processor)
+        super(StringField, self).__init__(target, attr, string_types, validator=validator, converter=converter,
+                                          default_value=default_value, setter=setter, post_processor=post_processor)
 
 
 class IntegerField(PatchField):
     """Patch integer fields."""
 
-    def __init__(self, target_type, attr, validator=None, converter=None, default_value=None, post_processor=None):
+    def __init__(self, target, attr, validator=None, converter=None, default_value=None,
+                 setter=None, post_processor=None):
         """Constructor."""
-        super(IntegerField, self).__init__(target_type, attr, int, validator=validator, converter=converter,
-                                           default_value=default_value, post_processor=post_processor)
+        super(IntegerField, self).__init__(target, attr, int, validator=validator, converter=converter,
+                                           default_value=default_value, setter=setter, post_processor=post_processor)
+
+
+class FloatField(PatchField):
+    """Patch float fields."""
+
+    def __init__(self, target, attr, validator=None, converter=None, default_value=None,
+                 setter=None, post_processor=None):
+        """Constructor."""
+        super(FloatField, self).__init__(target, attr, (int, float), validator=validator, converter=converter,
+                                         default_value=default_value, setter=setter, post_processor=post_processor)
 
 
 class ListField(PatchField):
     """Patch list fields."""
 
-    def __init__(self, target_type, attr, validator=None, converter=None, default_value=None, post_processor=None):
+    def __init__(self, target, attr, validator=None, converter=None, default_value=None,
+                 setter=None, post_processor=None):
         """Constructor."""
-        super(ListField, self).__init__(target_type, attr, list, validator=validator, converter=converter,
-                                        default_value=default_value, post_processor=post_processor)
+        super(ListField, self).__init__(target, attr, list, validator=validator, converter=converter,
+                                        default_value=default_value, setter=setter, post_processor=post_processor)
 
 
 class BooleanField(PatchField):
     """Patch boolean fields."""
 
-    def __init__(self, target_type, attr, validator=None, converter=int, default_value=None, post_processor=None):
+    def __init__(self, target, attr, validator=None, converter=int, default_value=None,
+                 setter=None, post_processor=None):
         """Constructor."""
-        super(BooleanField, self).__init__(target_type, attr, bool, validator=validator, converter=converter,
-                                           default_value=default_value, post_processor=post_processor)
+        super(BooleanField, self).__init__(target, attr, bool, validator=validator, converter=converter,
+                                           default_value=default_value, setter=setter, post_processor=post_processor)
 
 
 class EnumField(PatchField):
     """Patch enumeration fields."""
 
-    def __init__(self, target_type, attr, enums, attr_type=text_type,
-                 converter=None, default_value=None, post_processor=None):
+    def __init__(self, target, attr, enums, attr_type=text_type, converter=None,
+                 default_value=None, setter=None, post_processor=None):
         """Constructor."""
-        super(EnumField, self).__init__(target_type, attr, attr_type, validator=lambda v: v in enums,
-                                        converter=converter, default_value=default_value, post_processor=post_processor)
+        super(EnumField, self).__init__(target, attr, attr_type, validator=lambda v: v in enums,
+                                        converter=converter, default_value=default_value,
+                                        setter=setter, post_processor=post_processor)
+
+
+# @TODO: Make this field more dynamic (a dict patch field)
+class MetadataStructureField(PatchField):
+    """Process the metadata structure."""
+
+    def __init__(self, target, attr):
+        """Constructor."""
+        super(MetadataStructureField, self).__init__(target, attr, dict, validator=None, converter=None,
+                                                     default_value=None, setter=None, post_processor=None)
+
+    def patch(self, target, value):
+        """Patch the field with the specified value."""
+        patches = {
+            'kodi': ListField(app, 'METADATA_KODI'),
+            'kodi_12plus': ListField(app, 'METADATA_KODI_12PLUS'),
+            'mede8er': ListField(app, 'METADATA_MEDE8ER'),
+            'mediabrowser': ListField(app, 'METADATA_MEDIABROWSER'),
+            'sony_ps3': ListField(app, 'METADATA_PS3'),
+            'tivo': ListField(app, 'METADATA_TIVO'),
+            'wdtv': ListField(app, 'METADATA_WDTV'),
+        }
+
+        map_values = OrderedDict([
+            ('showMetadata', 'show_metadata'),
+            ('episodeMetadata', 'episode_metadata'),
+            ('fanart', 'fanart'),
+            ('poster', 'poster'),
+            ('banner', 'banner'),
+            ('episodeThumbnails', 'episode_thumbnails'),
+            ('seasonPosters', 'season_posters'),
+            ('seasonBanners', 'season_banners'),
+            ('seasonAllPoster', 'season_all_poster'),
+            ('seasonAllBanner', 'season_all_banner'),
+            ('overwriteNfo', 'overwrite_nfo'),
+        ])
+
+        try:
+            for name, new_provider_config in viewitems(value):
+                new_values = {}
+                for k, v in viewitems(new_provider_config):
+                    key = map_values.get(k)
+                    if key:
+                        # The order comes from map_values
+                        index = list(map_values).index(k)
+                        new_values[index] = int(v)
+                    setattr(target.metadata_provider_dict[new_provider_config['name']], key or k, v)
+
+                patch_field = patches.get(name)
+                if patch_field:
+                    sorted_values = [v for k, v in sorted(iteritems(new_values))]
+                    patch_field.patch(app, sorted_values)
+        except Exception as error:
+            log.warning('Error trying to change attribute app.metadata_provider_dict: {0!r}', error)
+            return False
+
+        return True

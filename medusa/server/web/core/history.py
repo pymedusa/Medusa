@@ -2,8 +2,7 @@
 
 from __future__ import unicode_literals
 
-from medusa import app, ui
-from medusa.helper.common import try_int
+from medusa import ui
 from medusa.server.web.core.base import PageTemplate, WebRoot
 from medusa.show.history import History as HistoryTool
 
@@ -17,30 +16,14 @@ class History(WebRoot):
 
         self.history = HistoryTool()
 
-    def index(self, limit=None):
-        if limit is None:
-            if app.HISTORY_LIMIT:
-                limit = int(app.HISTORY_LIMIT)
-            else:
-                limit = 100
-        else:
-            limit = try_int(limit, 100)
+    def index(self):
+        """
+        Render the history page.
 
-        app.HISTORY_LIMIT = limit
-
-        app.instance.save_config()
-
-        history = self.history.get(limit)
-
-        t = PageTemplate(rh=self, filename='history.mako')
-        submenu = [
-            {'title': 'Clear History', 'path': 'history/clearHistory', 'icon': 'ui-icon ui-icon-trash', 'class': 'clearhistory', 'confirm': True},
-            {'title': 'Trim History', 'path': 'history/trimHistory', 'icon': 'menu-icon-cut', 'class': 'trimhistory', 'confirm': True},
-        ]
-
-        return t.render(historyResults=history.detailed, compactResults=history.compact, limit=limit,
-                        submenu=submenu[::-1], title='History', header='History',
-                        topmenu='history', controller='history', action='index')
+        [Converted to VueRouter]
+        """
+        t = PageTemplate(rh=self, filename='index.mako')
+        return t.render()
 
     def clearHistory(self):
         # @TODO: Replace this with DELETE /api/v2/history
@@ -58,3 +41,14 @@ class History(WebRoot):
         ui.notifications.message('Removed history entries older than 30 days')
 
         return self.redirect('/history/')
+
+
+@route('/downloads(/?.*)')
+class Downloads(WebRoot):
+    def __init__(self, *args, **kwargs):
+        super(Downloads, self).__init__(*args, **kwargs)
+
+    def index(self):
+        """[Converted to VueRouter]."""
+        t = PageTemplate(rh=self, filename='index.mako')
+        return t.render()

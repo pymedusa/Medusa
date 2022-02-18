@@ -56,7 +56,7 @@ def refine(video, tv_episode=None, **kwargs):
         return
 
     if not isinstance(video, Episode):
-        log.debug('Video {name} is not an episode. Skipping refiner...',
+        log.debug('Video {name!r} is not an episode. Skipping refiner...',
                   {'name': video.name})
         return
 
@@ -69,8 +69,8 @@ def refine(video, tv_episode=None, **kwargs):
     log.debug('Refining using Episode information.')
     enrich(EPISODE_MAPPING, video, tv_episode)
     enrich(ADDITIONAL_MAPPING, video, tv_episode, overwrite=False)
-    guess = Quality.to_guessit(tv_episode.status)
-    enrich({'resolution': guess.get('screen_size'), 'format': guess.get('format')}, video, overwrite=False)
+    guess = Quality.to_guessit(tv_episode.quality)
+    enrich({'resolution': guess.get('screen_size'), 'source': guess.get('source')}, video, overwrite=False)
 
 
 def enrich(attributes, target, source=None, overwrite=True):
@@ -92,5 +92,5 @@ def enrich(attributes, target, source=None, overwrite=True):
 
         if new_value and old_value != new_value:
             setattr(target, key, new_value)
-            log.debug('Attribute {key} changed from {old} to {new}',
+            log.debug('Attribute {key} changed from {old!r} to {new!r}',
                       {'key': key, 'old': old_value, 'new': new_value})

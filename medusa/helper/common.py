@@ -120,6 +120,7 @@ media_extensions = [
     'ogm',
     'ogv',
     'rmvb',
+    'strm',
     'tp',
     'ts',
     'vob',
@@ -135,10 +136,10 @@ timeFormat = '%A %I:%M %p'
 def http_code_description(http_code):
     """
     Get the description of the provided HTTP status code.
+
     :param http_code: The HTTP status code
     :return: The description of the provided ``http_code``
     """
-
     description = http_status_code.get(try_int(http_code))
 
     if isinstance(description, list):
@@ -150,16 +151,16 @@ def http_code_description(http_code):
 def is_sync_file(filename):
     """
     Check if the provided ``filename`` is a sync file, based on its name.
+
     :param filename: The filename to check
     :return: ``True`` if the ``filename`` is a sync file, ``False`` otherwise
     """
-
     if isinstance(filename, (str, text_type)):
         extension = filename.rpartition('.')[2].lower()
 
-        return (extension in app.SYNC_FILES or
-                filename.startswith('.syncthing') or
-                any(fnmatch(filename, match) for match in app.SYNC_FILES))
+        return (extension in app.SYNC_FILES
+                or filename.startswith('.syncthing')
+                or any(fnmatch(filename, match) for match in app.SYNC_FILES))
 
     return False
 
@@ -167,10 +168,10 @@ def is_sync_file(filename):
 def is_torrent_or_nzb_file(filename):
     """
     Check if the provided ``filename`` is a NZB file or a torrent file, based on its extension.
+
     :param filename: The filename to check
     :return: ``True`` if the ``filename`` is a NZB file or a torrent file, ``False`` otherwise
     """
-
     if not isinstance(filename, (str, text_type)):
         return False
 
@@ -205,14 +206,15 @@ def pretty_file_size(size, use_decimal=False, **kwargs):
 
 def convert_size(size, default=None, use_decimal=False, **kwargs):
     """
-    Convert a file size into the number of bytes
+    Convert a file size into the number of bytes.
 
     :param size: to be converted
     :param default: value to return if conversion fails
     :param use_decimal: use decimal instead of binary prefixes (e.g. kilo = 1000 instead of 1024)
 
     :keyword sep: Separator between size and units, default is space
-    :keyword units: A list of (uppercase) unit names in ascending order. Default units: ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
+    :keyword units: A list of (uppercase) unit names in ascending order.
+                    Default units: ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
     :keyword default_units: Default unit if none is given, default is lowest unit in the scale, e.g. bytes
 
     :returns: the number of bytes, the default value, or 0
@@ -229,8 +231,8 @@ def convert_size(size, default=None, use_decimal=False, **kwargs):
             scalar, units = size_tuple[0], size_tuple[1:]
             units = units[0].upper() if units else default_units
         else:
-            regex_units = re.search(r'([0-9.]+)(\s?({scale}))'.format(scale='|'.join(scale)), size, re.IGNORECASE)
-            units = regex_units.group(2).strip() if regex_units else default_units
+            regex_units = re.search(r'([0-9.]+)\s*({scale})'.format(scale='|'.join(scale)), size, re.IGNORECASE)
+            units = regex_units.group(2).upper() if regex_units else default_units
             scalar = regex_units.group(1)
 
         scalar = float(scalar)
@@ -259,11 +261,11 @@ def convert_size(size, default=None, use_decimal=False, **kwargs):
 def remove_extension(filename):
     """
     Remove the extension of the provided ``filename``.
+
     The extension is only removed if it is in `medusa.helper.common.media_extensions` or ['nzb', 'torrent'].
     :param filename: The filename from which we want to remove the extension
     :return: The ``filename`` without its extension.
     """
-
     if isinstance(filename, (str, text_type)) and '.' in filename:
         basename, _, extension = filename.rpartition('.')
 
@@ -276,11 +278,11 @@ def remove_extension(filename):
 def replace_extension(filename, new_extension):
     """
     Replace the extension of the provided ``filename`` with a new extension.
+
     :param filename: The filename for which we want to change the extension
     :param new_extension: The new extension to apply on the ``filename``
     :return: The ``filename`` with the new extension
     """
-
     if isinstance(filename, (str, text_type)) and '.' in filename:
         basename, _, _ = filename.rpartition('.')
 
@@ -293,14 +295,23 @@ def replace_extension(filename, new_extension):
 def sanitize_filename(filename):
     """
     Remove specific characters from the provided ``filename``.
-    :param filename: The filename to clean
-    :return: The ``filename``cleaned
-    """
 
+    :param filename: The filename to clean
+    :return: The cleaned ``filename``
+    """
     if isinstance(filename, (str, text_type)):
+        # https://stackoverflow.com/a/31976060/7597273
+        remove = r''.join((
+            r':"<>|?',
+            r'™',  # Trade Mark Sign [unicode: \u2122]
+            r'\t',  # Tab
+            r'\x00-\x1f',  # Null & Control characters
+        ))
+        remove = r'[' + remove + r']'
+
         filename = re.sub(r'[\\/\*]', '-', filename)
-        filename = re.sub(r'[:"<>|?]', '', filename)
-        filename = re.sub(r'™', '', filename)  # Trade Mark Sign unicode: \u2122
+        filename = re.sub(remove, '', filename)
+        # Filenames cannot end in a space or dot on Windows systems
         filename = filename.strip(' .')
 
         return filename
@@ -311,22 +322,24 @@ def sanitize_filename(filename):
 def try_int(candidate, default_value=0):
     """
     Try to convert ``candidate`` to int, or return the ``default_value``.
+
     :param candidate: The value to convert to int
     :param default_value: The value to return if the conversion fails
     :return: ``candidate`` as int, or ``default_value`` if the conversion fails
     """
-
     try:
         return int(candidate)
     except (ValueError, TypeError):
-        if candidate and (',' in candidate or '.' in candidate):
-            log.error(u'Failed parsing provider. Traceback: %r', traceback.format_exc())
+        if candidate:
+            # Get the current stack trace (excluding the following line)
+            stack_trace = traceback.format_stack(limit=10)[:-2]
+            log.exception('Casting to int failed.\nStack trace:\n{0}'.format(''.join(stack_trace)))
         return default_value
 
 
 def episode_num(season=None, episode=None, numbering='standard'):
     """
-    Convert season and episode into string
+    Convert season and episode into string.
 
     :param season: Season number
     :type season: int or None
@@ -338,26 +351,24 @@ def episode_num(season=None, episode=None, numbering='standard'):
     """
     if numbering == 'standard':
         if season is not None and episode:
-            return 'S{0:0>2}E{1:02}'.format(season, episode)
+            return 'S{0:0>2}E{1:0>2}'.format(season, episode)
     elif numbering == 'absolute':
         if not (season and episode) and (season or episode):
             return '{0:0>3}'.format(season or episode)
 
 
 def enabled_providers(search_type):
-    """
-    Return providers based on search type: daily, backlog and manualsearch
-    """
+    """Return providers based on search type: daily, backlog and manual search."""
     from medusa import providers
     return [x for x in providers.sorted_provider_list(app.RANDOMIZE_PROVIDERS)
-            if x.is_active() and x.get_id() not in app.BROKEN_PROVIDERS and
-            hasattr(x, 'enable_{}'.format(search_type)) and
-            getattr(x, 'enable_{}'.format(search_type))]
+            if x.is_active() and x.get_id() not in app.BROKEN_PROVIDERS
+            and hasattr(x, 'enable_{}'.format(search_type))
+            and getattr(x, 'enable_{}'.format(search_type))]
 
 
 def remove_strings(old_string, unwanted_strings):
     """
-    Return string removing all unwanted strings on it
+    Return string removing all unwanted strings on it.
 
     :param old_string: String that will be cleaned
     :param unwanted_strings: List of unwanted strings
@@ -394,3 +405,101 @@ def pretty_date(d):
         return '1 hour ago'
     else:
         return '{} hours ago'.format(s // 3600)
+
+
+class ConstsBitwize(object):
+    """
+    Client status helper class.
+
+    For CONSTANTS attach an Enum().
+    For example:
+        ```
+        class ClientStatusEnum(Enum):
+            NA = 0  # 0
+            PAUSED = 1  # 1
+            DOWNLOADING = 1 << 1  # 2
+        ```
+
+    for STRINGS attach a dict Enum value -> String description.
+    For Example:
+        ```
+        STRINGS = {
+            CONSTANTS.NA: 'N/A',
+            CONSTANTS.PAUSED: 'Paused',
+            CONSTANTS.DOWNLOADING: 'Downloading'
+        }
+        ```
+    """
+
+    CONSTANTS = None
+    STRINGS = None
+
+    def __init__(self, status=0):
+        """Client status constructor."""
+        self.status = status
+        assert self.CONSTANTS is not None
+        assert self.STRINGS is not None
+        assert issubclass(type(self), ConstsBitwize)
+
+    @property
+    def strings_rev(self):
+        """Reverse the status strings."""
+        return {v: k for k, v in self.STRINGS.items()}
+
+    def add_status_string(self, status_string):
+        """Add a status using the status string."""
+        if not self.strings_rev.get(status_string):
+            raise Exception('Status {status} not a valid status'.format(status=status_string))
+
+        self.status = self.status | self.strings_rev.get(status_string).value
+
+    def set_status_string(self, status_string):
+        """Set a status using the status string."""
+        if not self.strings_rev.get(status_string):
+            raise Exception('Status {status} not a valid status'.format(status=status_string))
+
+        self.status = self.strings_rev.get(status_string).value
+
+    def add_status(self, status):
+        """Add bitwize status."""
+        self.status = self.status | status
+
+    def remove_status(self, status):
+        """Remove bitwize status."""
+        self.status = self.status ^ status
+
+    def set_status_array(self, status_array):
+        """Set the status from an array of status Consts (integers)."""
+        self.status = 0
+        for status in status_array:
+            self.status = self.status | status
+
+    def set_status_string_array(self, status_string_array):
+        """Set the status from an array of status strings (descriptions)."""
+        self.status = 0
+        for status in status_string_array:
+            self.add_status(self.strings_rev.get(status))
+
+    def status_to_array_string(self):
+        """Return array of status strings."""
+        return [self.STRINGS.get(status) for status in self]
+
+    def __str__(self):
+        """Sting repr of the class."""
+        return ', '.join(self.STRINGS.get(status) for status in self)
+
+    def __repr__(self):
+        """Repr of the class."""
+        return 'Status: {status} => {status_str}'.format(
+            status=self.status, status_str=', '.join([self.STRINGS.get(status) for status in self])
+        )
+
+    def __iter__(self):
+        """Object iterator."""
+        for cur_status in self.STRINGS.keys():
+            if cur_status.value & self.status:
+                yield cur_status
+
+    def __eq__(self, comp):
+        """Comparison method."""
+        return self.status == comp.status

@@ -22,9 +22,12 @@ class NZBProvider(GenericProvider):
         """Check if provider is active."""
         return bool(app.USE_NZBS) and self.is_enabled()
 
-    def _get_result(self, episodes):
-        """Return provider result."""
-        return NZBSearchResult(episodes, provider=self)
+    def get_result(self, series, item=None, cache=None):
+        """Get result."""
+        search_result = NZBSearchResult(provider=self, series=series,
+                                        item=item, cache=cache)
+
+        return search_result
 
     def _get_size(self, item):
         """Get result size."""

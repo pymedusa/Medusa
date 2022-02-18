@@ -4,20 +4,25 @@ from __future__ import unicode_literals
 
 import logging
 
+from medusa import app, ws
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
     BooleanField,
+    IntegerField,
+    ListField,
     StringField,
     iter_nested_items,
     set_nested_value
 )
-from medusa.tv.series import Series, SeriesIdentifier
+from medusa.tv.series import SaveSeriesException, Series, SeriesIdentifier
 
 from six import itervalues, viewitems
 
 from tornado.escape import json_decode
 
-log = logging.getLogger(__name__)
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class SeriesHandler(BaseRequestHandler):
@@ -30,7 +35,7 @@ class SeriesHandler(BaseRequestHandler):
     #: path param
     path_param = ('path_param', r'\w+')
     #: allowed HTTP methods
-    allowed_methods = ('GET', 'PATCH', 'DELETE', )
+    allowed_methods = ('GET', 'POST', 'PATCH', 'DELETE', )
 
     def get(self, series_slug, path_param=None):
         """Query series information.
@@ -45,7 +50,12 @@ class SeriesHandler(BaseRequestHandler):
 
         if not series_slug:
             detailed = self._parse_boolean(self.get_argument('detailed', default=False))
-            data = [s.to_json(detailed=detailed) for s in Series.find_series(predicate=filter_series)]
+            episodes = self._parse_boolean(self.get_argument('episodes', default=False))
+            data = [
+                s.to_json(detailed=detailed, episodes=episodes)
+                for s in Series.find_series(predicate=filter_series)
+            ]
+
             return self._paginate(data, sort='title')
 
         identifier = SeriesIdentifier.from_slug(series_slug)
@@ -56,11 +66,12 @@ class SeriesHandler(BaseRequestHandler):
         if not series:
             return self._not_found('Series not found')
 
-        detailed = self._parse_boolean(self.get_argument('detailed', default=True))
-        data = series.to_json(detailed=detailed)
+        detailed = self._parse_boolean(self.get_argument('detailed', default=False))
+        episodes = self._parse_boolean(self.get_argument('episodes', default=False))
+        data = series.to_json(detailed=detailed, episodes=episodes)
         if path_param:
             if path_param not in data:
-                return self._bad_request("Invalid path parameter'{0}'".format(path_param))
+                return self._bad_request("Invalid path parameter '{0}'".format(path_param))
             data = data[path_param]
 
         return self._ok(data)
@@ -82,15 +93,35 @@ class SeriesHandler(BaseRequestHandler):
         if not identifier:
             return self._bad_request('Invalid series identifier')
 
-        series = Series.find_by_identifier(identifier)
-        if series:
+        if Series.find_by_identifier(identifier):
             return self._conflict('Series already exist added')
 
-        series = Series.from_identifier(identifier)
-        if not Series.save_series(series):
-            return self._not_found('Series not found in the specified indexer')
+        data_options = data.get('options', {})
 
-        return self._created(series.to_json(), identifier=identifier.slug)
+        try:
+            options = {
+                'default_status': data_options.get('status'),
+                'quality': data_options.get('quality', {'preferred': [], 'allowed': []}),
+                'season_folders': data_options.get('seasonFolders'),
+                'lang': data_options.get('language'),
+                'subtitles': data_options.get('subtitles'),
+                'anime': data_options.get('anime'),
+                'scene': data_options.get('scene'),
+                'paused': data_options.get('paused'),
+                'blacklist': data_options['release'].get('blacklist', []) if data_options.get('release') else None,
+                'whitelist': data_options['release'].get('whitelist', []) if data_options.get('release') else None,
+                'default_status_after': None,
+                'root_dir': data_options.get('rootDir'),
+                'show_lists': data_options.get('showLists')
+            }
+
+            queue_item_obj = app.show_queue_scheduler.action.addShow(
+                identifier.indexer.id, identifier.id, data_options.get('showDir'), **options
+            )
+        except SaveSeriesException as error:
+            return self._not_found(error)
+
+        return self._created(data=queue_item_obj.to_json)
 
     def patch(self, series_slug, path_param=None):
         """Patch series."""
@@ -113,14 +144,33 @@ class SeriesHandler(BaseRequestHandler):
         accepted = {}
         ignored = {}
         patches = {
+            'config.aliases': ListField(series, 'aliases'),
+            'config.defaultEpisodeStatus': StringField(series, 'default_ep_status_name'),
             'config.dvdOrder': BooleanField(series, 'dvd_order'),
-            'config.flattenFolders': BooleanField(series, 'flatten_folders'),
+            'config.seasonFolders': BooleanField(series, 'season_folders'),
+            'config.anime': BooleanField(series, 'anime'),
             'config.scene': BooleanField(series, 'scene'),
+            'config.sports': BooleanField(series, 'sports'),
             'config.paused': BooleanField(series, 'paused'),
-            'config.location': StringField(series, '_location'),
+            'config.location': StringField(series, 'location'),
             'config.airByDate': BooleanField(series, 'air_by_date'),
-            'config.subtitlesEnabled': BooleanField(series, 'subtitles')
+            'config.subtitlesEnabled': BooleanField(series, 'subtitles'),
+            'config.release.requiredWords': ListField(series, 'release_required_words'),
+            'config.release.ignoredWords': ListField(series, 'release_ignored_words'),
+            'config.release.blacklist': ListField(series, 'blacklist'),
+            'config.release.whitelist': ListField(series, 'whitelist'),
+            'config.release.requiredWordsExclude': BooleanField(series, 'release_required_exclude'),
+            'config.release.ignoredWordsExclude': BooleanField(series, 'release_ignored_exclude'),
+            'language': StringField(series, 'lang'),
+            'config.qualities.allowed': ListField(series, 'qualities_allowed'),
+            'config.qualities.preferred': ListField(series, 'qualities_preferred'),
+            'config.qualities.combined': IntegerField(series, 'quality'),
+            'config.airdateOffset': IntegerField(series, 'airdate_offset'),
+            'config.showLists': ListField(Series, 'show_lists'),
+            'config.templates': BooleanField(series, 'templates'),
+            'config.searchTemplates': ListField(series, 'search_templates'),
         }
+
         for key, value in iter_nested_items(data):
             patch_field = patches.get(key)
             if patch_field and patch_field.patch(series, value):
@@ -132,9 +182,13 @@ class SeriesHandler(BaseRequestHandler):
         series.save_to_db()
 
         if ignored:
-            log.warning('Series patch ignored %r', ignored)
+            log.warning('Series patch ignored {items!r}', {'items': ignored})
 
-        self._ok(data=accepted)
+        # Push an update to any open Web UIs through the WebSocket
+        msg = ws.Message('showUpdated', series.to_json(detailed=False))
+        msg.push()
+
+        return self._ok(data=accepted)
 
     def delete(self, series_slug, path_param=None):
         """Delete the series."""

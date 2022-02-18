@@ -44,10 +44,8 @@ class CinemaZProvider(TorrentProvider):
         # Miscellaneous Options
         self.freeleech = False
 
-        # Torrent Stats
-
         # Cache
-        self.cache = tv.Cache(self)  # only poll CinemaZ every 10 minutes max
+        self.cache = tv.Cache(self)
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
@@ -147,8 +145,11 @@ class CinemaZProvider(TorrentProvider):
         if 'pass' in dict_from_cookiejar(self.session.cookies):
             return True
 
-        login_html = self.session.get(self.urls['login']).get_text()
-        with BS4Parser(login_html, 'html5lib') as html:
+        login_html = self.session.get(self.urls['login'])
+        if not login_html or not login_html.text:
+            log.warning('Unable to connect to provider')
+            return False
+        with BS4Parser(login_html.text, 'html5lib') as html:
             token = html.find('input', attrs={'name': '_token'}).get('value')
 
         login_params = {

@@ -1,0 +1,29 @@
+daily:
+  search_strings:
+    RSS: ['']
+  results:
+    - pubdate: 2017-11-08 00:00:00
+      title: '[Leeson] Kimagure Orange Road - 48'
+      link: https://anizb.org/dl/65437/
+      size: 629944360
+    - pubdate: 2017-11-08 00:00:00
+      title: '[GJM] To Aru Majutsu no Index III - 19 [6B11483D]'
+      link: https://anizb.org/dl/65439/
+      size: 1063848607
+    - pubdate: 2017-11-08 00:00:00
+      title: A Silent Voice - Koe no Katachi 1036p V1 [jhl]
+      link: https://anizb.org/dl/65440/
+      size: 2974523554
+
+backlog:
+  search_strings:
+    Episode: ['Dragon Ball Z 003']
+  results:
+    - pubdate: 2017-10-09 00:00:00
+      title: '[JasonSpidey71]Dragon Ball Z - 003 - All Right! This is the Strongest Combo in the World!'
+      link: https://anizb.org/dl/39101/
+      size: 1752494217
+    - pubdate: 2017-10-09 00:00:00
+      title: '[JasonSpidey71]Dragon Ball Z - 003 - All Right! This is the Strongest Combo in the World!'
+      link: https://anizb.org/dl/39446/
+      size: 2042351015

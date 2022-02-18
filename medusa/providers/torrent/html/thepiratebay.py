@@ -17,6 +17,7 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
+
 import validators
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -41,10 +42,6 @@ class ThePirateBayProvider(TorrentProvider):
 
         # Miscellaneous Options
         self.confirmed = True
-
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
 
         # Cache
         self.cache = tv.Cache(self, min_time=20)
@@ -107,12 +104,11 @@ class ThePirateBayProvider(TorrentProvider):
         units = ['B', 'KIB', 'MIB', 'GIB', 'TIB', 'PIB']
 
         def process_column_header(th):
-            result = ''
+            if th.find_all():
+                return th.next.get_text().split(' ')[0]
             if th.a:
-                result = th.a.get_text(strip=True)
-            if not result:
-                result = th.get_text(strip=True)
-            return result
+                return th.a.get_text(strip=True)
+            return th.get_text(strip=True)
 
         items = []
 
@@ -149,10 +145,10 @@ class ThePirateBayProvider(TorrentProvider):
                     leechers = try_int(cells[labels.index('LE')].get_text(strip=True))
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
-                                      " minimum seeders: {0}. Seeders: {1}",
+                                      ' minimum seeders: {0}. Seeders: {1}',
                                       title, seeders)
                         continue
 

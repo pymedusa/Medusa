@@ -15,8 +15,7 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 """Test ShowBanner."""
-
-from __future__ import print_function
+from __future__ import unicode_literals
 
 from medusa.media.banner import ShowBanner
 from medusa.tv import Series

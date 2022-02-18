@@ -46,10 +46,6 @@ class TokyoToshokanProvider(TorrentProvider):
         self.supports_absolute_numbering = True
         self.anime_only = True
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Cache
         self.cache = tv.Cache(self, min_time=15)  # only poll TokyoToshokan every 15 minutes max
 
@@ -125,15 +121,15 @@ class TokyoToshokanProvider(TorrentProvider):
                     leechers = try_int(sl.group('leechers')) if sl else 0
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
-                                      " minimum seeders: {0}. Seeders: {1}",
+                                      ' minimum seeders: {0}. Seeders: {1}',
                                       title, seeders)
                         continue
 
                     desc_bottom = bot.find('td', class_='desc-bot').get_text(strip=True)
-                    size = convert_size(desc_bottom.split('|')[1].strip('Size: ')) or -1
+                    size = convert_size(desc_bottom.split('|')[1].strip('Size: '), sep='') or -1
 
                     item = {
                         'title': title,

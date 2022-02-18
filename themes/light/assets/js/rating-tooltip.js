@@ -1,4 +1,5 @@
-$(() => {
+// eslint-disable-next-line no-unused-vars
+const attachImdbTooltip = function() {
     $('.imdbstars').qtip({
         content: {
             text() {
@@ -25,4 +26,4 @@ $(() => {
             classes: 'qtip-rounded qtip-shadow ui-tooltip-sb'
         }
     });
-});
+};

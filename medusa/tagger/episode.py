@@ -28,8 +28,8 @@ class EpisodeTags(object):
             'mpeg': tags.mpeg,
             'xvid': tags.xvid,
             'wide': tags.widescreen,
-            'aussie': tags.aussie,
             'netflix': tags.netflix,
+            'amazon': tags.amazon,
         }
 
     def _get_match_obj(self, attr, regex=None, flags=0):
@@ -133,9 +133,9 @@ class EpisodeTags(object):
         if 'dlmux' in self.name.lower():
             return 'dlmux'
 
-        if self.netflix:
-            return self.netflix
-
+        streaming_service = self.netflix or self.amazon or self.itunes
+        if streaming_service:
+            return streaming_service
         else:
             attr = 'web'
             match = self._get_match_obj(attr)
@@ -279,17 +279,6 @@ class EpisodeTags(object):
         return '' if not match else match.group()
 
     @property
-    def aussie(self):
-        """
-        Aussie p2p release groups.
-
-        :return: the aussie p2p release group
-        """
-        attr = 'aussie'
-        match = self._get_match_obj(attr)
-        return '' if not match else match.group()
-
-    @property
     def netflix(self):
         """
         Netflix tag found in name.
@@ -297,5 +286,16 @@ class EpisodeTags(object):
         :return: an empty string if not found
         """
         attr = 'netflix'
+        match = self._get_match_obj(attr)
+        return '' if not match else match.group()
+
+    @property
+    def amazon(self):
+        """
+        Amazon tag found in name.
+
+        :return: an empty string if not found
+        """
+        attr = 'amazon'
         match = self._get_match_obj(attr)
         return '' if not match else match.group()
