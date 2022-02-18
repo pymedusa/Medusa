@@ -324,6 +324,24 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   label="Cache AniList lists"
                   value="true"
                 />
+                 
+                <config-textbox-number-stub
+                  explanations=""
+                  id="cache_purge_days"
+                  inputclass="form-control input-sm input75"
+                  label="Purge shows from db after x days"
+                  min="0"
+                  placeholder=""
+                  step="1"
+                  value="10"
+                >
+                  <p>
+                    Number of days to keep shows in the cache (default: 180) 
+                    <b>
+                      (0 will not purge shows at all)
+                    </b>
+                  </p>
+                </config-textbox-number-stub>
               </fieldset>
             </div>
           </div>
