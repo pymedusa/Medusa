@@ -194,7 +194,7 @@ class ConfigHandler(BaseRequestHandler):
         'recommended.cache.anilist': BooleanField(app, 'CACHE_RECOMMENDED_ANILIST'),
         'recommended.cache.purgeAfterDays': IntegerField(app, 'CACHE_RECOMMENDED_PURGE_AFTER_DAYS'),
         'recommended.trakt.selectedLists': ListField(app, 'CACHE_RECOMMENDED_TRAKT_LISTS'),
-        
+
         # Sections
         'clients.torrents.authType': StringField(app, 'TORRENT_AUTH_TYPE'),
         'clients.torrents.dir': StringField(app, 'TORRENT_DIR'),
