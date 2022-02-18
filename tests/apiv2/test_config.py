@@ -108,6 +108,7 @@ def config_main(monkeypatch, app_config):
     section_data['recommended']['cache']['imdb'] = bool(app.CACHE_RECOMMENDED_IMDB)
     section_data['recommended']['cache']['anidb'] = bool(app.CACHE_RECOMMENDED_ANIDB)
     section_data['recommended']['cache']['anilist'] = bool(app.CACHE_RECOMMENDED_ANILIST)
+    section_data['recommended']['cache']['purgeAfterDays'] = int(app.CACHE_RECOMMENDED_PURGE_AFTER_DAYS)
     section_data['recommended']['trakt']['selectedLists'] = app.CACHE_RECOMMENDED_TRAKT_LISTS
     section_data['recommended']['trakt']['availableLists'] = TraktPopular.CATEGORIES
 
