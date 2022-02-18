@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 import logging
 from datetime import date, datetime, timedelta
 
-from medusa import app, ws
+from medusa import app, db, ws
 from medusa.helper.exceptions import CantUpdateRecommendedShowsException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.queues import generic_queue
@@ -136,6 +136,23 @@ class RecommendedShowQueueItem(generic_queue.QueueItem):
         self.started = False
         self.success = False
 
+    def _purge_after_days(self):
+        log.info('Purge shows that have been added more then {days} ago', {'days': app.CACHE_RECOMMENDED_PURGE_AFTER_DAYS})
+        if not app.CACHE_RECOMMENDED_PURGE_AFTER_DAYS:
+            return
+
+        sql = """
+            DELETE FROM shows
+            WHERE added < datetime('now', '-{days} days')
+        """.format(days=app.CACHE_RECOMMENDED_PURGE_AFTER_DAYS)
+        params = []
+
+        if self.recommended_list != GenericQueueActions.UPDATE_RECOMMENDED_LIST_ALL:
+            sql += ' AND source = ?'
+            params = [self.recommended_list]
+
+        db.DBConnection('recommended.db').action(sql, params)
+
     def _get_trakt_shows(self):
         """Get Trakt shows."""
         if self.recommended_list not in (
@@ -212,6 +229,8 @@ class RecommendedShowQueueItem(generic_queue.QueueItem):
         try:
             # Update recommended shows from trakt, imdb and anidb
             # recommended shows are dogpilled into cache/recommended.dbm
+
+            self._purge_after_days()
 
             log.info(u'Started caching recommended shows')
 

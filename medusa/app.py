@@ -728,6 +728,7 @@ class MedusaApp(object):
             'trending', 'popular', 'anticipated', 'collected',
             'watched', 'played', 'recommendations', 'newshow', 'newseason'
         ]
+        self.CACHE_RECOMMENDED_PURGE_AFTER_DAYS = 180
 
     def _init_scheduler(self, app_prop=None, scheduler=None, enabled=None):
         from medusa.logger.adapters.style import BraceAdapter
