@@ -4558,3 +4558,19 @@
   proper_count: 1
   proper_tag: REPACK
   type: episode
+
+
+? /1883 (2021)/Season 01/1883 (2021) (S01E03) (2021-12-26) (1080p-AVC BluRay EAC3-6ch) River.mkv
+: title: "1883"
+  year: 2021
+  season: 1
+  episode: 3
+  date: 2021-12-26
+  screen_size: 1080p
+  video_codec: H.264
+  container: mkv
+  source: 'Blu-ray'
+  audio_codec: 'Dolby Digital Plus'
+  audio_channels: '5.1'
+  video_profile: 'Advanced Video Codec High Definition'
+  type: episode
