@@ -235,6 +235,21 @@ const getters = {
     getCurrentShow: (state, _, rootState) => {
         return state.shows.find(show => show.id.slug === state.currentShow.showSlug) || rootState.defaults.show;
     },
+    getShowIndexerUrl: (state, getters, rootState) => show => {
+        // const { show, indexerConfig } = this;
+        const indexerConfig = rootState.config.indexers.indexers;
+        if (!show.indexer) {
+            return;
+        }
+
+        const id = show.id[show.indexer];
+        const indexerUrl = indexerConfig[show.indexer].showUrl;
+
+        if (show.indexer === 'imdb') {
+            return `${indexerUrl}${String(id).padStart(7, '0')}`;
+        }
+        return `${indexerUrl}${id}`;
+    },
     showsWithStats: (state, getters, rootState) => {
         if (!state.shows) {
             return [];

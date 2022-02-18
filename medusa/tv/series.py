@@ -2348,7 +2348,7 @@ class Series(TV):
         data = {}
         data['id'] = {}
         data['id'][self.indexer_name] = self.series_id
-        data['id']['imdb'] = self.imdb_id
+        data['id']['imdb_id'] = self.imdb_id
         data['id']['slug'] = self.identifier.slug
         data['id']['trakt'] = self.externals.get('trakt_id')
         data['externals'] = {k.split('_')[0]: v for k, v in self.externals.items()}

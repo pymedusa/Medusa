@@ -100,7 +100,7 @@
                                 </template>
 
                                 <div id="indexer-wrapper">
-                                    <app-link v-if="showIndexerUrl && indexerConfig[show.indexer].icon" :href="showIndexerUrl" :title="showIndexerUrl">
+                                    <app-link v-if="getShowIndexerUrl(show) && indexerConfig[show.indexer].icon" :href="getShowIndexerUrl(show)" :title="getShowIndexerUrl(show)">
                                         <img id="stored-by-indexer" src="images/star.png">
                                         <img :alt="indexerConfig[show.indexer].name" height="16" width="16" :src="`images/${indexerConfig[show.indexer].icon}`" style="margin-top: -1px; vertical-align:middle;">
                                     </app-link>
@@ -447,24 +447,14 @@ export default {
             getEpisode: 'getEpisode',
             getOverviewStatus: 'getOverviewStatus',
             getQualityPreset: 'getQualityPreset',
-            getStatus: 'getStatus'
+            getStatus: 'getStatus',
+            getShowIndexerUrl: 'getShowIndexerUrl'
         }),
         season() {
             return resolveToValue(this.showSeason, Number(this.$route.query.season));
         },
         episode() {
             return resolveToValue(this.showEpisode, Number(this.$route.query.episode));
-        },
-        showIndexerUrl() {
-            const { show, indexerConfig } = this;
-            if (!show.indexer) {
-                return;
-            }
-
-            const id = show.id[show.indexer];
-            const indexerUrl = indexerConfig[show.indexer].showUrl;
-
-            return `${indexerUrl}${id}`;
         },
         activeShowQueueStatuses() {
             const { showQueueStatus } = this.show;
