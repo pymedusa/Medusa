@@ -271,7 +271,7 @@ class InternalHandler(BaseRequestHandler):
                     (
                         indexer_api.name,
                         indexer,
-                        indexer_api.config['show_url'],
+                        indexer_api.config['show_url'].format(show_id),
                         show_id,
                         show['seriesname'],
                         show['firstaired'] or 'N/A',

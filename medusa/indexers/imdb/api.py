@@ -150,9 +150,9 @@ class Imdb(BaseIndexer):
 
     def _show_search(self, series):
         """
-        Uses the TVMaze API to search for a show
+        Uses the Imdb API to search for a show
         :param series: The series name that's searched for as a string
-        :param request_language: Language in two letter code. TVMaze fallsback to en itself.
+
         :return: A list of Show objects.
         """
 
@@ -169,7 +169,7 @@ class Imdb(BaseIndexer):
         :param series: the query for the series name
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"series": [list of shows]}
         """
-        series = series.encode('utf-8')
+        # series = series.encode('utf-8')
         log.debug('Searching for show {0}', series)
 
         try:
@@ -208,8 +208,8 @@ class Imdb(BaseIndexer):
         # Get firstaired
         releases = self.imdb_api.get_title_releases(imdb_id)
         if releases.get('releases'):
-            first_released = sorted([r for r in releases['releases']])[0]
-            mapped_results['firstaired'] = first_released['date']
+            first_released = sorted([r['date'] for r in releases['releases']])[0]
+            mapped_results['firstaired'] = first_released
 
         companies = self.imdb_api.get_title_companies(imdb_id)
 
