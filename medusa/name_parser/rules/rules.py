@@ -401,7 +401,6 @@ class FixTitlesThatExistOfNumbers(Rule):
             if not absolute_episode or not filepart.value.startswith(str(absolute_episode.value)):
                 continue
 
-            # absolute_episode = absolute_episodes[0]
             new_title = copy.copy(absolute_episode)
             new_title.name = 'title'
             new_title.value = str(absolute_episode.value)
