@@ -2,13 +2,13 @@
 """Request handler for statistics."""
 from __future__ import unicode_literals
 
-import guessit
 import logging
 
-from medusa.server.api.v2.base import BaseRequestHandler
-from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+import guessit
 
 from medusa.logger.adapters.style import CustomBraceAdapter
+from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from medusa.server.api.v2.base import BaseRequestHandler
 
 
 log = CustomBraceAdapter(logging.getLogger(__name__))
