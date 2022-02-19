@@ -83,7 +83,7 @@ class Imdb(BaseIndexer):
             ('id', 'base.id'),
             ('seriesname', 'title'),
             ('seriesname', 'base.title'),
-            ('summary', 'plot.summaries[0].text'),
+            ('summary', 'plot.outline.text'),
             ('firstaired', 'year'),
             ('poster', 'base.image.url'),
             ('show_url', 'base.id'),
@@ -197,7 +197,7 @@ class Imdb(BaseIndexer):
             log.debug('Getting all show data for {0}', imdb_id)
             results = self.imdb_api.get_title(imdb_id)
 
-        if not results:
+        if not results: 
             return
 
         mapped_results = self._map_results(results, self.series_map)
@@ -211,19 +211,21 @@ class Imdb(BaseIndexer):
             first_released = sorted([r['date'] for r in releases['releases']])[0]
             mapped_results['firstaired'] = first_released
 
-        companies = self.imdb_api.get_title_companies(imdb_id)
+        try:
+            companies = self.imdb_api.get_title_companies(imdb_id)
+            # If there was a release check if it was distributed.
+            if companies.get('distribution'):
+                origins = self.imdb_api.get_title_versions(imdb_id)['origins'][0]
+                released_in_regions = [
+                    dist for dist in companies['distribution'] if dist.get('regions') and origins in dist['regions']
+                ]
+                # Used item.get('startYear') because a startYear is not always available.
+                first_release = sorted(released_in_regions, key=lambda x: x.get('startYear'))
 
-        # If there was a release check if it was distributed.
-        if companies.get('distribution'):
-            origins = self.imdb_api.get_title_versions(imdb_id)['origins'][0]
-            released_in_regions = [
-                dist for dist in companies['distribution'] if dist.get('regions') and origins in dist['regions']
-            ]
-            # Used item.get('startYear') because a startYear is not always available.
-            first_release = sorted(released_in_regions, key=lambda x: x.get('startYear'))
-
-            if first_release:
-                mapped_results['network'] = first_release[0]['company']['name']
+                if first_release:
+                    mapped_results['network'] = first_release[0]['company']['name']
+        except LookupError:
+            log.info('No company data available for {0}, cant get a network', imdb_id)
 
         return OrderedDict({'series': mapped_results})
 
@@ -562,6 +564,9 @@ class Imdb(BaseIndexer):
 
         actors = self.imdb_api.get_title_credits(ImdbIdentifier(imdb_id).imdb_id)
 
+        if not actors.get('credits') or not actors['credits'].get('cast'):
+            return
+        
         cur_actors = Actors()
         for order, cur_actor in enumerate(actors['credits']['cast'][:25]):
             save_actor = Actor()

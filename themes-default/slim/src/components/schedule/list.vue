@@ -36,7 +36,7 @@
                 <span v-else-if="props.column.label === 'Indexers'" class="align-center indexer-image">
                     <app-link v-if="props.row.externals.imdb_id" :href="`https://www.imdb.com/title/${props.row.externals.imdb_id}`"
                               :title="`https://www.imdb.com/title/${props.row.externals.imdb_id}`">
-                        <img alt="[imdb]" height="16" width="16" src="images/imdb.png" style="margin-top: -1px; vertical-align:middle;">
+                        <img alt="[imdb]" height="16" width="16" src="images/imdb16.png" style="margin-top: -1px; vertical-align:middle;">
                     </app-link>
 
                     <app-link v-if="props.row.externals.tvdb_id" :href="`https://www.thetvdb.com/dereferrer/series/${props.row.externals.tvdb}`"

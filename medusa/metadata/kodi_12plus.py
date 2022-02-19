@@ -227,7 +227,7 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
                     cur_actor_role = etree.SubElement(cur_actor, 'role')
                     cur_actor_role.text = actor['role'].strip()
 
-                if 'image' in actor and actor['image'].strip():
+                if 'image' in actor and actor['image'] and actor['image'].strip():
                     cur_actor_thumb = etree.SubElement(cur_actor, 'thumb')
                     cur_actor_thumb.text = actor['image'].strip()
 

@@ -236,7 +236,6 @@ const getters = {
         return state.shows.find(show => show.id.slug === state.currentShow.showSlug) || rootState.defaults.show;
     },
     getShowIndexerUrl: (state, getters, rootState) => show => {
-        // const { show, indexerConfig } = this;
         const indexerConfig = rootState.config.indexers.indexers;
         if (!show.indexer) {
             return;

@@ -182,16 +182,6 @@ export default {
     },
     methods: {
         prettyBytes: bytes => pretty(bytes),
-        showIndexerUrl(show) {
-            const { indexers } = this;
-            if (!show.indexer) {
-                return;
-            }
-
-            const id = show.id[show.indexer];
-            const indexerUrl = indexers.indexers[show.indexer].showUrl;
-            return `${indexerUrl}${id}`;
-        },
         parsePrevDateFn(row) {
             const { fuzzyParseDateTime } = this;
             if (row.prevAirDate) {
