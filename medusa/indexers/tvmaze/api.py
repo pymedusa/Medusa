@@ -7,6 +7,7 @@ from collections import OrderedDict
 from time import time
 
 from medusa.indexers.base import (Actor, Actors, BaseIndexer)
+from medusa.indexers.imdb.api import ImdbIdentifier
 from medusa.indexers.exceptions import (
     IndexerError,
     IndexerException,
@@ -171,7 +172,6 @@ class TVmaze(BaseIndexer):
         :param series: the query for the series name
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"series": [list of shows]}
         """
-        series = series.encode('utf-8')
         log.debug('Searching for show {0}', series)
 
         results = self._show_search(series, request_language=self.config['language'])
@@ -474,7 +474,10 @@ class TVmaze(BaseIndexer):
         for external_id in itervalues(mapping):
             if kwargs.get(external_id):
                 try:
-                    result = self.tvmaze_api.get_show(**{external_id: kwargs.get(external_id)})
+                    external_id_value = kwargs.get(external_id)
+                    if external_id == 'imdb_id':
+                        external_id_value = ImdbIdentifier(external_id_value).imdb_id
+                    result = self.tvmaze_api.get_show(**{external_id: external_id_value})
                     if result:
                         externals = {mapping[tvmaze_external_id]: external_value
                                      for tvmaze_external_id, external_value

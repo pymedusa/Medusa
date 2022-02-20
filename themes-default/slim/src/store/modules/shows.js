@@ -237,7 +237,7 @@ const getters = {
     },
     getShowIndexerUrl: (state, getters, rootState) => show => {
         const indexerConfig = rootState.config.indexers.indexers;
-        if (!show.indexer) {
+        if (!show.indexer || !indexerConfig[show.indexer]) {
             return;
         }
 

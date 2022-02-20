@@ -14,6 +14,7 @@ from dateutil import parser
 from medusa.app import TMDB_API_KEY
 from medusa.indexers.base import (Actor, Actors, BaseIndexer)
 from medusa.indexers.exceptions import IndexerError, IndexerException, IndexerShowIncomplete, IndexerUnavailable
+from medusa.indexers.imdb.api import ImdbIdentifier
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.exceptions import RequestException
@@ -604,7 +605,10 @@ class Tmdb(BaseIndexer):
         wanted_externals = ['tvdb_id', 'imdb_id', 'tvrage_id']
         for external_id in wanted_externals:
             if kwargs.get(external_id):
-                result = self.tmdb.Find(kwargs.get(external_id)).info(**{'external_source': external_id})
+                external_id_value = kwargs.get(external_id)
+                if external_id == 'imdb_id':
+                    external_id_value = ImdbIdentifier(external_id_value).imdb_id
+                result = self.tmdb.Find(external_id_value).info(**{'external_source': external_id})
                 if result.get('tv_results') and result['tv_results'][0]:
                     # Get the external id's for the passed shows id.
                     externals = self.tmdb.TV(result['tv_results'][0]['id']).external_ids()
