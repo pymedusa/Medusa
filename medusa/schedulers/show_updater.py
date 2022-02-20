@@ -10,7 +10,7 @@ from builtins import object
 from medusa import app, db, network_timezones, ui
 from medusa.helper.exceptions import CantRefreshShowException, CantUpdateShowException
 from medusa.indexers.api import indexerApi
-from medusa.indexers.exceptions import IndexerException, IndexerUnavailable
+from medusa.indexers.exceptions import IndexerException, IndexerSeasonUpdatesNotSupported, IndexerUnavailable
 from medusa.scene_exceptions import refresh_exceptions_cache
 from medusa.session.core import MedusaSession
 
@@ -115,13 +115,7 @@ class ShowUpdater(object):
                                  indexer_name=indexer_name, weeks=update_max_weeks)
                     continue
 
-            # If indexer doesn't have season updates.
-            if not hasattr(indexer_api, 'get_last_updated_seasons'):
-                logger.debug('Adding the following show for full update to queue: {show}', show=show.name)
-                refresh_shows.append(show)
-
-            # Else fall back to per season updates.
-            elif hasattr(indexer_api, 'get_last_updated_seasons'):
+            try:
                 # Get updated seasons and add them to the season update list.
                 try:
                     updated_seasons = indexer_api.get_last_updated_seasons(
@@ -152,6 +146,9 @@ class ShowUpdater(object):
                     logger.debug('Could not detect a season update, but an update is required. \n'
                                  'Adding the following show for full update to queue: {show}', show=show.name)
                     refresh_shows.append(show)
+            except IndexerSeasonUpdatesNotSupported:
+                logger.debug('Adding the following show for full update to queue: {show}', show=show.name)
+                refresh_shows.append(show)
 
         pi_list = []
         # Full refreshes
