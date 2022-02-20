@@ -52,6 +52,7 @@ class Tmdb(BaseIndexer):
         # An api to indexer series/episode object mapping
         self.series_map = [
             ('id', 'id'),
+            ('status', 'status'),
             ('seriesname', 'name'),
             ('aliasnames', 'original_name'),
             ('overview', 'overview'),
@@ -64,7 +65,7 @@ class Tmdb(BaseIndexer):
             ('airs_dayofweek', 'last_air_date'),
             ('lastupdated', 'last_updated'),
             ('networkid', 'network_id'),
-            ('contentrating', 'vote_average'),
+            ('rating', 'vote_average'),
             ('genre', 'genres'),
             ('classification', 'type'),
             ('network', 'networks[0].name'),
@@ -82,7 +83,7 @@ class Tmdb(BaseIndexer):
             ('runtime', 'episode_run_time'),
             ('episodenumber', 'episode_number'),
             ('seasonnumber', 'season_number'),
-            ('contentrating', 'vote_average'),
+            ('rating', 'vote_average'),
             ('filename', 'still_path'),
         ]
 
@@ -196,19 +197,33 @@ class Tmdb(BaseIndexer):
         if show_info and show_info.get('origin_country'):
             return show_info['origin_country'].split('|')
 
-    def _get_show_by_id(self, tmdb_id, request_language='en'):  # pylint: disable=unused-argument
+    def _get_show_by_id(self, tmdb_id, request_language='en', extra_info=None):
         """Retrieve tmdb show information by tmdb id.
-
         :param tmdb_id: The show's tmdb id
+        :param request_language: Language to get the show in
+        :type request_language: string or unicode
+        :extra_info: Extra details of the show to get (e.g. ['content_ratings', 'external_ids'])
+        :type extra_info: list, tuple or None
         :return: An ordered dict with the show searched for.
         """
+        if extra_info and isinstance(extra_info, (list, tuple)):
+            extra_info = ','.join(extra_info)
+
         log.debug('Getting all show data for {0}', tmdb_id)
-        results = self.tmdb.TV(tmdb_id).info(language='{0},null'.format(request_language))
+        try:
+            results = self.tmdb.TV(tmdb_id).info(
+                language='{0}'.format(request_language),
+                append_to_response=extra_info
+            )
+        except RequestException as error:
+            raise IndexerUnavailable('Show info retrieval failed using indexer TMDB. Cause: {cause!r}'.format(
+                cause=error
+            ))
+
         if not results:
             return
 
         mapped_results = self._map_results(results, self.series_map, '|')
-
         return OrderedDict({'series': mapped_results})
 
     def _get_episodes(self, tmdb_id, specials=False, aired_season=None):  # pylint: disable=unused-argument
@@ -411,7 +426,7 @@ class Tmdb(BaseIndexer):
             cur_actors.append(new_actor)
         self._set_show_data(sid, '_actors', cur_actors)
 
-    def _get_show_data(self, sid, language='en'):
+    def _get_show_data(self, tmdb_id, language='en'):
         """Take a series ID, gets the epInfo URL and parses the TMDB json response.
 
         into the shows dict in layout:
@@ -428,59 +443,62 @@ class Tmdb(BaseIndexer):
             get_show_in_language = self.config['language']
 
         # Parse show information
-        log.debug('Getting all series data for {0}', sid)
+        log.debug('Getting all series data for {0}', tmdb_id)
 
         # Parse show information
-        series_info = self._get_show_by_id(sid, request_language=get_show_in_language)
+        extra_series_info = ('content_ratings', 'external_ids')
+        series_info = self._get_show_by_id(
+            tmdb_id,
+            request_language=get_show_in_language,
+            extra_info=extra_series_info
+        )
 
         if not series_info:
             log.debug('Series result returned zero')
             raise IndexerError('Series result returned zero')
 
+        # Get MPAA rating if available
+        content_ratings = series_info['series'].get('content_ratings', {}).get('results')
+        if content_ratings:
+            mpaa_rating = next((r['rating'] for r in content_ratings
+                                if r['iso_3166_1'].upper() == 'US'), None)
+            if mpaa_rating:
+                self._set_show_data(tmdb_id, 'contentrating', mpaa_rating)
+
         # get series data / add the base_url to the image urls
         # Create a key/value dict, to map the image type to a default image width.
         # possitlbe widths can also be retrieved from self.configuration.images['poster_sizes'] and
         # self.configuration.images['still_sizes']
-        image_width = {'fanart': 'w1280', 'poster_thumb': 'w500'}
+        image_width = {'fanart': 'w1280', 'poster': 'w500'}
 
         for k, v in viewitems(series_info['series']):
             if v is not None:
-                if k in ['fanart', 'banner', 'poster_thumb']:
+                if k in ['fanart', 'banner', 'poster']:
                     v = self.config['artwork_prefix'].format(base_url=self.tmdb_configuration.images['base_url'],
                                                              image_size=image_width[k],
                                                              file_path=v)
 
-            self._set_show_data(sid, k, v)
-
-        # Let's also store the poster with its original size.
-        if series_info['series'].get('poster_thumb'):
-            self._set_show_data(sid, 'poster',
-                                self.config['artwork_prefix'].format(
-                                    base_url=self.tmdb_configuration.images['base_url'],
-                                    image_size='original',
-                                    file_path=series_info['series'].get('poster_thumb')
-                                )
-)
+            self._set_show_data(tmdb_id, k, v)
 
         # Get external ids.
-        # As the external id's are not part of the shows default response, we need to make an additional call for it.
-        self._set_show_data(sid, 'externals', self.tmdb.TV(sid).external_ids())
+        external_ids = series_info['series'].get('external_ids', {})
+        self._set_show_data(tmdb_id, 'externals', external_ids)
 
         # get episode data
         if self.config['episodes_enabled']:
-            self._get_episodes(sid, specials=False, aired_season=None)
+            self._get_episodes(tmdb_id, specials=False, aired_season=None)
 
         # Parse banners
         if self.config['banners_enabled']:
-            self._parse_images(sid)
+            self._parse_images(tmdb_id)
 
         # Parse actors
         if self.config['actors_enabled']:
-            self._parse_actors(sid)
+            self._parse_actors(tmdb_id)
 
         return True
-
-    def _get_series_season_updates(self, sid, start_date=None, end_date=None):
+        
+    def _get_series_season_updates(self, tmdb_id, start_date=None, end_date=None):
         """
         Retrieve all updates (show,season,episode) from TMDB.
 
@@ -491,7 +509,7 @@ class Tmdb(BaseIndexer):
         total_pages = 1
         while page <= total_pages:
             # Requesting for the changes on a specific showid, will result in json with changes per season.
-            updates = self.tmdb.TV(sid).changes(start_date=start_date, end_date=end_date)
+            updates = self.tmdb.TV_Changes(tmdb_id).series(start_date=start_date, end_date=end_date)
             if updates and updates.get('changes'):
                 for items in [update['items'] for update in updates['changes'] if update['key'] == 'season']:
                     for season in items:
@@ -548,7 +566,7 @@ class Tmdb(BaseIndexer):
         return list(total_updates)
 
     # Public methods, usable separate from the default api's interface api['show_id']
-    def get_last_updated_seasons(self, from_time, weeks=1, filter_show_list=None, *args, **kwargs):
+    def get_last_updated_seasons(self, show_lists, from_time, weeks=1, *args, **kwargs):
         """Retrieve a list with updated shows.
 
         :param show_list: The list of shows, where seasons updates are retrieved for.
@@ -559,7 +577,7 @@ class Tmdb(BaseIndexer):
         dt_start = datetime.fromtimestamp(float(from_time))
         search_max_weeks = 2
 
-        for show in filter_show_list:
+        for show in show_lists:
             total_updates = []
             for week in range(search_max_weeks, weeks + search_max_weeks, search_max_weeks):
                 search_from = dt_start + timedelta(weeks=week - search_max_weeks)
