@@ -202,7 +202,12 @@ class TorznabProvider(TorrentProvider):
                                       title, seeders)
                         continue
 
-                    torrent_size = item.size.get_text(strip=True)
+                    torrent_size = item.find('torznab:attr', attrs={'name': 'size'})
+                    if torrent_size:
+                        torrent_size = torrent_size.get('value')
+                    
+                    if not torrent_size:
+                        torrent_size = item.size.get_text(strip=True)
                     size = convert_size(torrent_size, default=-1)
 
                     pubdate_raw = item.pubdate.get_text(strip=True)
