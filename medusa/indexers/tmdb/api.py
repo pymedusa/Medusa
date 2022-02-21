@@ -653,7 +653,7 @@ class Tmdb(BaseIndexer):
         :returns: A dict with externals, including the tvmaze id.
         """
         try:
-            wanted_externals = ['tvdb_id', 'imdb_id', 'tvrage_id']
+            wanted_externals = ['tvdb_id', 'imdb_id', 'tvrage_id', 'imdb_id']
             for external_id in wanted_externals:
                 if kwargs.get(external_id):
                     external_id_value = kwargs.get(external_id)
