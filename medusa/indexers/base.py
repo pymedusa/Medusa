@@ -2,8 +2,7 @@
 
 """Base class for indexer api's."""
 
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import division, unicode_literals
 
 import getpass
 import logging
@@ -11,8 +10,6 @@ import os
 import tempfile
 import time
 import warnings
-from builtins import object
-from builtins import str
 from operator import itemgetter
 
 from medusa import statistics as stats
@@ -26,9 +23,8 @@ from medusa.indexers.exceptions import (
 )
 from medusa.indexers.ui import BaseUI, ConsoleUI
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.session.core import IndexerSession
 from medusa.statistics import weights
-
-import requests
 
 from six import integer_types, itervalues, string_types, viewitems
 
@@ -85,7 +81,7 @@ class BaseIndexer(object):
         else:
             raise ValueError('Invalid value for Cache {0!r} (type was {1})'.format(cache, type(cache)))
 
-        self.config['session'] = session if session else requests.Session()
+        self.config['session'] = session if session else IndexerSession(cache_control={'cache_etags': False})
 
         self.config['episodes_enabled'] = episodes
         self.config['banners_enabled'] = banners
@@ -202,7 +198,7 @@ class BaseIndexer(object):
             all_series = [all_series]
 
         if self.config['custom_ui'] is not None:
-            log.debug('Using custom UI {0!r}', self.config['custom_ui'])
+            log.debug('Using custom UI: {0!r}', self.config['custom_ui'])
             custom_ui = self.config['custom_ui']
             ui = custom_ui(config=self.config)
         else:
@@ -532,6 +528,12 @@ class Show(dict):
             # If it's not numeric, it must be an attribute name, which
             # doesn't exist, so attribute error.
             raise IndexerAttributeNotFound('Cannot find attribute {0!r}'.format(key))
+
+    def __bool__(self):
+        """Magic method for returning self.data as a boolean."""
+        return bool(self.data)
+
+    __nonzero__ = __bool__
 
     def aired_on(self, date):
         """Search and return a list of episodes with the airdates."""

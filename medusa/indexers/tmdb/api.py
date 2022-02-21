@@ -13,7 +13,10 @@ from dateutil import parser
 
 from medusa.app import TMDB_API_KEY
 from medusa.indexers.base import (Actor, Actors, BaseIndexer)
-from medusa.indexers.exceptions import IndexerError, IndexerException, IndexerShowIncomplete, IndexerUnavailable
+from medusa.indexers.exceptions import (
+    IndexerError, IndexerException,
+    IndexerShowNotFound, IndexerUnavailable
+)
 from medusa.indexers.imdb.api import ImdbIdentifier
 from medusa.logger.adapters.style import BraceAdapter
 
@@ -94,7 +97,7 @@ class Tmdb(BaseIndexer):
         :type tmdb_response: object
         """
         def week_day(input_date):
-            days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+            days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
             week_day_number = parser.parse(input_date).weekday()
             return days[week_day_number]
 
@@ -161,29 +164,44 @@ class Tmdb(BaseIndexer):
                 last = search_result.get('total_pages', 0)
                 results += search_result.get('results')
                 page += 1
-        except Exception as e:
-            raise IndexerException('Show search failed in getting a result with error: {0!r}'.format(e))
+        except RequestException as error:
+            raise IndexerUnavailable('Show search failed using indexer TMDB. Cause: {cause}'.format(cause=error))
 
-        if results:
-            return results
-        else:
-            return OrderedDict({'data': None})
+        if not results:
+            raise IndexerShowNotFound('Show search failed in getting a result with reason: Not found')
 
-    # Tvdb implementation
+        return results
+
     def search(self, series):
         """Search TMDB (themoviedb.org) for the series name.
-
         :param series: The query for the series name
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"series": [list of shows]}
         """
-        series = series.encode('utf-8')
         log.debug('Searching for show: {0}', series)
 
-        results = self._show_search(series, request_language=self.config['language'])
-        if not results:
+        results = None
+        # If search term is digit's only, store it and attempt to search by id.
+        show_by_id = None
+
+        try:
+            if series.isdigit():
+                show_by_id = self._get_show_by_id(series, request_language=self.config['language'])
+            results = self._show_search(series, request_language=self.config['language'])
+        except IndexerShowNotFound:
+            pass
+
+        if not results and not show_by_id:
             return
 
-        mapped_results = self._map_results(results, self.series_map, '|')
+        mapped_results = []
+        if results:
+            mapped_results = self._map_results(results, self.series_map, '|')
+            if not isinstance(mapped_results, list):
+                mapped_results = [mapped_results]
+
+        # The search by id result, is already mapped. We can just add it to the array with results.
+        if show_by_id:
+            mapped_results.append(show_by_id['series'])
 
         return OrderedDict({'series': mapped_results})['series']
 
@@ -200,6 +218,7 @@ class Tmdb(BaseIndexer):
 
     def _get_show_by_id(self, tmdb_id, request_language='en', extra_info=None):
         """Retrieve tmdb show information by tmdb id.
+    
         :param tmdb_id: The show's tmdb id
         :param request_language: Language to get the show in
         :type request_language: string or unicode
@@ -229,6 +248,7 @@ class Tmdb(BaseIndexer):
 
     def _get_episodes(self, tmdb_id, specials=False, aired_season=None):  # pylint: disable=unused-argument
         """Get all the episodes for a show by TMDB id.
+
         :param tmdb_id: Series tmdb id.
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"episode": [list of episodes]}
         """
@@ -321,6 +341,7 @@ class Tmdb(BaseIndexer):
 
     def _parse_images(self, tmdb_id):
         """Parse images.
+
         This interface will be improved in future versions.
         """
         key_mapping = {'file_path': 'bannerpath', 'vote_count': 'ratingcount', 'vote_average': 'rating', 'id': 'id'}
@@ -397,10 +418,10 @@ class Tmdb(BaseIndexer):
         self._save_images(tmdb_id, _images)
         self._set_show_data(tmdb_id, '_banners', _images)
 
-    def _parse_season_images(self, sid):
+    def _parse_season_images(self, tmdb_id):
         """Get all season posters for a TMDB show."""
         # Let's fget the different type of images available for this series
-        season_posters = getattr(self[sid], 'seasons', None)
+        season_posters = getattr(self[tmdb_id], 'seasons', None)
         if not season_posters:
             return
 
@@ -417,12 +438,15 @@ class Tmdb(BaseIndexer):
 
         return _images
 
-    def _parse_actors(self, sid):
+    def _parse_actors(self, tmdb_id):
         """Parse actors XML."""
-        log.debug('Getting actors for {0}', sid)
+        log.debug('Getting actors for {0}', tmdb_id)
 
         # TMDB also support passing language here as a param.
-        credits = self.tmdb.TV(sid).credits(language=self.config['language'])  # pylint: disable=W0622
+        try:
+            credits = self.tmdb.TV(tmdb_id).credits(language=self.config['language'])  # pylint: disable=W0622
+        except RequestException as error:
+            raise IndexerException('Could not get actors. Cause: {cause}'.format(cause=error))
 
         if not credits or not credits.get('cast'):
             log.debug('Actors result returned zero')
@@ -440,7 +464,7 @@ class Tmdb(BaseIndexer):
             new_actor['role'] = cur_actor['character']
             new_actor['sortorder'] = cur_actor['order']
             cur_actors.append(new_actor)
-        self._set_show_data(sid, '_actors', cur_actors)
+        self._set_show_data(tmdb_id, '_actors', cur_actors)
 
     def _get_show_data(self, tmdb_id, language='en'):
         """Take a series ID, gets the epInfo URL and parses the TMDB json response.
@@ -523,15 +547,20 @@ class Tmdb(BaseIndexer):
         results = []
         page = 1
         total_pages = 1
-        while page <= total_pages:
-            # Requesting for the changes on a specific showid, will result in json with changes per season.
-            updates = self.tmdb.TV_Changes(tmdb_id).series(start_date=start_date, end_date=end_date)
-            if updates and updates.get('changes'):
-                for items in [update['items'] for update in updates['changes'] if update['key'] == 'season']:
-                    for season in items:
-                        results += [season['value']['season_number']]
-                total_pages = updates.get('total_pages', 0)
-            page += 1
+        try:
+            while page <= total_pages:
+                # Requesting for the changes on a specific showid, will result in json with changes per season.
+                updates = self.tmdb.TV_Changes(tmdb_id).series(start_date=start_date, end_date=end_date)
+                if updates and updates.get('changes'):
+                    for items in [update['items'] for update in updates['changes'] if update['key'] == 'season']:
+                        for season in items:
+                            results += [season['value']['season_number']]
+                    total_pages = updates.get('total_pages', 0)
+                page += 1
+        except RequestException as error:
+            raise IndexerException('Could not get latest series season updates for series {series}. Cause: {cause}'.format(
+                series=tmdb_id, cause=error
+            ))
 
         return set(results)
 
@@ -540,13 +569,19 @@ class Tmdb(BaseIndexer):
         results = []
         page = 1
         total_pages = 1
-        while page <= total_pages:
-            updates = self.tmdb.Changes().tv(start_date=start_date, end_date=end_date, page=page)
-            if not updates or not updates.get('results'):
-                break
-            results += [_.get('id') for _ in updates.get('results')]
-            total_pages = updates.get('total_pages')
-            page += 1
+
+        try:
+            while page <= total_pages:
+                updates = self.tmdb.Changes().tv(start_date=start_date, end_date=end_date, page=page)
+                if not updates or not updates.get('results'):
+                    break
+                results += [_.get('id') for _ in updates.get('results')]
+                total_pages = updates.get('total_pages')
+                page += 1
+        except RequestException as error:
+            raise IndexerException('Could not get latest updates. Cause: {cause}'.format(
+                cause=error
+            ))
 
         return set(results)
 
@@ -582,7 +617,7 @@ class Tmdb(BaseIndexer):
         return list(total_updates)
 
     # Public methods, usable separate from the default api's interface api['show_id']
-    def get_last_updated_seasons(self, show_lists, from_time, weeks=1, *args, **kwargs):
+    def get_last_updated_seasons(self, show_list, from_time, weeks=1, *args, **kwargs):
         """Retrieve a list with updated shows.
 
         :param show_list: The list of shows, where seasons updates are retrieved for.
@@ -593,7 +628,7 @@ class Tmdb(BaseIndexer):
         dt_start = datetime.fromtimestamp(float(from_time))
         search_max_weeks = 2
 
-        for show in show_lists:
+        for show in show_list:
             total_updates = []
             for week in range(search_max_weeks, weeks + search_max_weeks, search_max_weeks):
                 search_from = dt_start + timedelta(weeks=week - search_max_weeks)
@@ -617,20 +652,23 @@ class Tmdb(BaseIndexer):
         :param imdb_id: An imdb id (inc. tt).
         :returns: A dict with externals, including the tvmaze id.
         """
-        wanted_externals = ['tvdb_id', 'imdb_id', 'tvrage_id']
-        for external_id in wanted_externals:
-            if kwargs.get(external_id):
-                external_id_value = kwargs.get(external_id)
-                if external_id == 'imdb_id':
-                    external_id_value = ImdbIdentifier(external_id_value).imdb_id
-                result = self.tmdb.Find(external_id_value).info(**{'external_source': external_id})
-                if result.get('tv_results') and result['tv_results'][0]:
-                    # Get the external id's for the passed shows id.
-                    externals = self.tmdb.TV(result['tv_results'][0]['id']).external_ids()
-                    externals = {tmdb_external_id: external_value
-                                 for tmdb_external_id, external_value
-                                 in viewitems(externals)
-                                 if external_value and tmdb_external_id in wanted_externals}
-                    externals['tmdb_id'] = result['tv_results'][0]['id']
-                    return externals
-        return {}
+        try:
+            wanted_externals = ['tvdb_id', 'imdb_id', 'tvrage_id']
+            for external_id in wanted_externals:
+                if kwargs.get(external_id):
+                    external_id_value = kwargs.get(external_id)
+                    if external_id == 'imdb_id':
+                        external_id_value = ImdbIdentifier(external_id_value).imdb_id
+                    result = self.tmdb.Find(external_id_value).info(**{'external_source': external_id})
+                    if result.get('tv_results') and result['tv_results'][0]:
+                        # Get the external id's for the passed shows id.
+                        externals = self.tmdb.TV(result['tv_results'][0]['id']).external_ids()
+                        externals = {tmdb_external_id: external_value
+                                    for tmdb_external_id, external_value
+                                    in viewitems(externals)
+                                    if external_value and tmdb_external_id in wanted_externals}
+                        externals['tmdb_id'] = result['tv_results'][0]['id']
+                        return externals
+            return {}
+        except RequestException as error:
+            raise IndexerException("Could not get external id's. Cause: {cause}".format(cause=error))

@@ -18,11 +18,11 @@
 
 """Custom exceptions used or raised by imdb_api."""
 
-__author__ = "p0psicles"
-__version__ = "1.0"
+__author__ = 'p0psicles'
+__version__ = '1.0'
 
-__all__ = ["imdb_error", "imdb_userabort", "imdb_shownotfound", "imdb_showincomplete",
-           "imdb_seasonnotfound", "imdb_episodenotfound", "imdb_attributenotfound"]
+__all__ = ['imdb_error', 'imdb_userabort', 'imdb_shownotfound', 'imdb_showincomplete',
+           'imdb_seasonnotfound', 'imdb_episodenotfound', 'imdb_attributenotfound']
 
 
 class imdb_exception(Exception):
