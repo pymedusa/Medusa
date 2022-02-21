@@ -77,6 +77,7 @@ class Tmdb(BaseIndexer):
             ('seasons', 'seasons'),
             ('poster_thumb', 'poster_path'),
             ('fanart', 'backdrop_path'),
+            ('origin_country', 'origin_country')
         ]
 
         self.episodes_map = [
@@ -211,7 +212,7 @@ class Tmdb(BaseIndexer):
         :param tmdb_id: The show's tmdb id
         :return: A list with the show's country codes
         """
-        show_info = self._get_show_by_id(tmdb_id)['series']
+        show_info = self._get_show_by_id(tmdb_id, extra_info=['origin_country'])['series']
 
         if show_info and show_info.get('origin_country'):
             return show_info['origin_country'].split('|')
