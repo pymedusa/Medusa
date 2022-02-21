@@ -229,21 +229,3 @@ class RemoveSceneExceptionsTable(AddProviderTablesIdentifier):
     def execute(self):
         self.connection.action('DROP TABLE IF EXISTS scene_exceptions;')
         self.inc_major_version()
-
-
-class AddGenericUpdatesTable(RemoveSceneExceptionsTable):  # pylint:disable=too-many-ancestors
-    def test(self):
-        return self.hasTable("generic_updates")
-
-    def execute(self):
-        self.connection.action(
-            '''CREATE TABLE "generic_updates" ( 
-              `generic_updates_id`	INTEGER, 
-              `namespace`	INTEGER, 
-              `field_id_1`	INTEGER NOT NULL, 
-              `field_id_2`	INTEGER, 
-              `field_id_3`	INTEGER, 
-              `field_desc`	INTEGER, 
-              `last_update`	TEXT, 
-              PRIMARY KEY(generic_updates_id))'''
-        )
