@@ -88,8 +88,11 @@ class Imdb(BaseIndexer):
             ('poster', 'base.image.url'),
             ('show_url', 'base.id'),
             ('firstaired', 'base.seriesStartYear'),
-            ('contentrating', 'ratings.rating'),
+            ('rating', 'ratings.rating'),
+            ('votes', 'ratings.ratingCount'),
             ('nextepisode', 'base.nextEpisode'),
+            # Could not find contentrating in api.
+
         ]
 
         self.episode_map = [

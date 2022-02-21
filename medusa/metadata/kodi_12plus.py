@@ -15,6 +15,7 @@ from medusa.helper.common import episode_num
 from medusa.indexers.api import indexerApi
 from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.indexers.exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
+from medusa.indexers.imdb.api import ImdbIdentifier
 from medusa.indexers.tvdbv2.api import API_BASE_TVDB
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.metadata import generic
@@ -122,11 +123,11 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
             rating.set('max', '10')
             rating.set('default', 'true')
             value = etree.SubElement(rating, 'value')
-            value.text = text_type(str(my_show['rating']))
+            value.text = str(my_show['rating'])
             votes = etree.SubElement(rating, 'votes')
-            votes.text = ''
+            votes.text = str(my_show.get('votes', ''))
 
-            if series_obj.imdb_id and series_obj.imdb_rating and series_obj.imdb_votes:
+            if series_obj.identifier.indexer.slug != 'imdb' and series_obj.imdb_id and series_obj.imdb_rating and series_obj.imdb_votes:
                 rating_imdb = etree.SubElement(ratings, 'rating')
                 rating_imdb.set('name', 'imdb')
                 rating_imdb.set('max', '10')
@@ -165,7 +166,10 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
         uniqueid = etree.SubElement(tv_node, 'uniqueid')
         uniqueid.set('default', 'true')
         uniqueid.set('type', series_obj.identifier.indexer.slug)
-        uniqueid.text = str(series_obj.identifier.id)
+        show_id = series_obj.identifier.id
+        if (series_obj.identifier.indexer.slug == 'imdb'):
+            show_id = ImdbIdentifier(show_id).imdb_id
+        uniqueid.text = str(show_id)
 
         for indexer_slug in ('tvdb', 'tmdb', 'imdb', 'tvmaze', 'anidb'):
             if indexer_slug == series_obj.identifier.indexer.slug:
