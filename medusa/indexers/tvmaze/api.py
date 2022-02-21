@@ -44,10 +44,7 @@ class TVmaze(BaseIndexer):
             'ru', 'he', 'ja', 'pt', 'zh', 'cs', 'sl', 'hr', 'ko', 'en', 'sv', 'no'
         ]
 
-        # thetvdb.com should be based around numeric language codes,
-        # but to link to a series like http://thetvdb.com/?tab=series&id=79349&lid=16
-        # requires the language ID, thus this mapping is required (mainly
-        # for usage in tvdb_ui - internally tvdb_api will use the language abbreviations)
+        # for usage in the indexer UI - the api will use the language abbreviations)
         self.config['langabbv_to_id'] = {'el': 20, 'en': 7, 'zh': 27,
                                          'it': 15, 'cs': 28, 'es': 16, 'ru': 22, 'nl': 13, 'pt': 26, 'no': 9,
                                          'tr': 21, 'pl': 18, 'fr': 17, 'hr': 31, 'de': 14, 'da': 10, 'fi': 11,
@@ -155,6 +152,7 @@ class TVmaze(BaseIndexer):
         try:
             results = self.tvmaze_api.get_show_list(show)
         except ShowNotFound as error:
+            # Use error.value because TVMaze API exceptions may be utf-8 encoded when using __str__
             raise IndexerShowNotFound(
                 'Show search failed in getting a result with reason: {0}'.format(error.value)
             )
@@ -163,7 +161,6 @@ class TVmaze(BaseIndexer):
 
         return results
 
-    # Tvdb implementation
     def search(self, series):
         """Search tvmaze.com for the series name.
 
@@ -201,6 +198,7 @@ class TVmaze(BaseIndexer):
     def _get_show_by_id(self, tvmaze_id, request_language='en'):  # pylint: disable=unused-argument
         """
         Retrieve tvmaze show information by tvmaze id, or if no tvmaze id provided by passed external id.
+
         :param tvmaze_id: The shows tvmaze id
         :return: An ordered dict with the show searched for.
         """
@@ -385,11 +383,9 @@ class TVmaze(BaseIndexer):
         return _images
 
     def _parse_actors(self, tvmaze_id):
-        """Parsers actors XML, from
-        http://thetvmaze.com/api/[APIKEY]/series/[SERIES ID]/actors.xml
+        """Parsers actors XML, from http://thetvmaze.com/api/[APIKEY]/series/[SERIES ID]/actors.xml
 
         Actors are retrieved using t['show name]['_actors'], for example:
-
         >>> indexer_api = TVMaze(actors = True)
         >>> actors = indexer_api['scrubs']['_actors']
         >>> type(actors)
@@ -414,8 +410,8 @@ class TVmaze(BaseIndexer):
         except CastNotFound:
             log.debug('Actors result returned zero')
             return
-        except BaseError as e:
-            log.warning('Getting actors failed. Cause: {0}', e)
+        except (AttributeError, BaseError) as error:
+            log.warning('Getting actors failed. Cause: {0}', error)
             return
 
         cur_actors = Actors()
@@ -491,8 +487,10 @@ class TVmaze(BaseIndexer):
             updates = self.tvmaze_api.show_updates()
         except (ShowIndexError, UpdateNotFound):
             return results
-        except BaseError as e:
-            log.warning('Getting show updates failed. Cause: {0}', e)
+        except (AttributeError, BaseError) as error:
+            # Tvmaze api depends on .status_code in.., but does not catch request exceptions.
+            # Therefor the AttributeError.
+            log.warning('Getting show updates failed. Cause: {0}', error)
             return results
 
         if getattr(updates, 'updates', None):
