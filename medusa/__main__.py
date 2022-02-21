@@ -1264,9 +1264,9 @@ class Application(object):
                                          minute=random.randint(0, 59)))
 
             app.show_update_scheduler = scheduler.Scheduler(show_updater.ShowUpdater(),
-                                                            threadName='SHOWUPDATER')#,
-                                                            # start_time=datetime.time(hour=app.SHOWUPDATE_HOUR,
-                                                            #                          minute=random.randint(0, 59)))
+                                                            threadName='SHOWUPDATER',
+                                                            start_time=datetime.time(hour=app.SHOWUPDATE_HOUR,
+                                                                                     minute=random.randint(0, 59)))
 
             app.episode_update_scheduler = scheduler.Scheduler(episode_updater.EpisodeUpdater(),
                                                                cycleTime=datetime.timedelta(minutes=15),
