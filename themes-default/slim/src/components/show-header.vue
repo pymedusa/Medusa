@@ -94,7 +94,7 @@
                                     <span>
                                         {{ show.imdbInfo.runtimes || show.runtime }} minutes
                                     </span>
-                                    <app-link v-if="show.indexer != 'imdb'" :href="`https://www.imdb.com/title/${show.id.imdb}`" :title="'https://www.imdb.com/title/' + show.id.imdb">
+                                    <app-link v-if="show.indexer !== 'imdb'" :href="`https://www.imdb.com/title/${show.id.imdb}`" :title="'https://www.imdb.com/title/' + show.id.imdb">
                                         <img alt="[imdb]" height="16" width="16" src="images/imdb16.png" style="margin-top: -1px; vertical-align:middle;">
                                     </app-link>
                                 </template>

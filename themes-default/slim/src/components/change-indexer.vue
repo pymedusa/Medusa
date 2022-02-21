@@ -8,6 +8,7 @@
                     <label for="tvdb">tvdb<input type="checkbox" v-model="filter.tvdb" name="tvdb" id="tvdb"></label>
                     <label for="tvmaze">tvmaze<input type="checkbox" v-model="filter.tvmaze" name="tvmaze" id="tvmaze"></label>
                     <label for="tmdb">tmdb<input type="checkbox" v-model="filter.tmdb" name="tmdb" id="tmdb"></label>
+                    <label for="imdb">imdb<input type="checkbox" v-model="filter.imdb" name="imdb" id="imdb"></label>
                 </div>
             </div>
         </div>
@@ -46,7 +47,8 @@ export default {
             filter: {
                 tvdb: true,
                 tvmaze: true,
-                tmdb: true
+                tmdb: true,
+                imdb: true
             },
             started: false
         };
@@ -76,7 +78,8 @@ export default {
                 show =>
                     (show.indexer === 'tvdb' && filter.tvdb) ||
                     (show.indexer === 'tvmaze' && filter.tvmaze) ||
-                    (show.indexer === 'tmdb' && filter.tmdb)
+                    (show.indexer === 'tmdb' && filter.tmdb) ||
+                    (show.indexer === 'imdb' && filter.imdb)
             );
         }
     },
@@ -99,7 +102,13 @@ export default {
                 // Loop through the shows and start a ChangeIndexerQueueItem for each.
                 // Store the queueItem identifier, to keep track.
                 const oldSlug = show.id.slug;
-                const newSlug = `${show.selected.indexer}${show.selected.showId}`;
+
+                let newShowId = show.selected.showId;
+                if (show.selected.indexer === 'imdb') {
+                    newShowId = newShowId.replace(/^tt0*/g, '');
+                }
+
+                const newSlug = `${show.selected.indexer}${newShowId}`;
                 if (oldSlug === newSlug) {
                     this.$snotify.warning(
                         'Old shows indexer and new shows indexer are the same, skipping',
