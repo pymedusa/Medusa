@@ -102,13 +102,7 @@ export default {
                 // Loop through the shows and start a ChangeIndexerQueueItem for each.
                 // Store the queueItem identifier, to keep track.
                 const oldSlug = show.id.slug;
-
-                let newShowId = show.selected.showId;
-                if (show.selected.indexer === 'imdb') {
-                    newShowId = newShowId.replace(/^tt0*/g, '');
-                }
-
-                const newSlug = `${show.selected.indexer}${newShowId}`;
+                const newSlug = `${show.selected.indexer}${show.selected.showId}`;
                 if (oldSlug === newSlug) {
                     this.$snotify.warning(
                         'Old shows indexer and new shows indexer are the same, skipping',
