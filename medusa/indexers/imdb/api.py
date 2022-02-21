@@ -99,6 +99,7 @@ class Imdb(BaseIndexer):
             ('id', 'id'),
             ('episodename', 'title'),
             ('firstaired', 'year'),
+            ('absolute_number', 'absolute_number'),
         ]
 
     def _map_results(self, imdb_response, key_mappings=None, list_separator='|'):
@@ -264,6 +265,7 @@ class Imdb(BaseIndexer):
         if not results or not results.get('seasons'):
             return False
 
+        absolute_number_counter = 1
         for season in results.get('seasons'):
             for episode in season['episodes']:
                 season_no, episode_no = episode.get('season'), episode.get('episode')
@@ -272,6 +274,10 @@ class Imdb(BaseIndexer):
                     log.debug('{0}: Found incomplete episode with season: {1!r} and episode: {2!r})',
                               imdb_id, season_no, episode_no)
                     continue  # Skip to next episode
+                
+                if season_no > 0:
+                    episode['absolute_number'] = absolute_number_counter
+                    absolute_number_counter += 1
 
                 for k, config in self.episode_map:
                     v = self.get_nested_value(episode, config)

@@ -61,6 +61,7 @@ class TVmaze(BaseIndexer):
         self.series_map = [
             ('id', 'id'),
             ('id', 'maze_id'),
+            ('status', 'status'),
             ('seriesname', 'name'),
             ('overview', 'summary'),
             ('firstaired', 'premiered'),
@@ -79,12 +80,11 @@ class TVmaze(BaseIndexer):
             ('network', 'network.name'),
             ('code', 'network.code'),
             ('timezone', 'network.timezone'),
-
             ('tvrage_id', 'externals.tvrage'),
             ('tvdb_id', 'externals.thetvdb'),
             ('imdb_id', 'externals.imdb'),
-            ('contentrating', 'rating'),
-            ('contentrating', 'rating.average'),
+            # ('contentrating', 'rating'),
+            # ('contentrating', 'rating.average'),
 
         ]
 
@@ -205,7 +205,6 @@ class TVmaze(BaseIndexer):
     def _get_episodes(self, tvmaze_id, specials=False, aired_season=None):  # pylint: disable=unused-argument
         """
         Get all the episodes for a show by tvmaze id.
-
         :param tvmaze_id: Series tvmaze id.
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"episode": [list of episodes]}
         """
@@ -216,7 +215,7 @@ class TVmaze(BaseIndexer):
         except IDNotFound:
             log.debug('Episode search did not return any results.')
             return False
-        except BaseError as e:
+        except (AttributeError, BaseError) as e:
             raise IndexerException('Show episodes search failed in getting a result with error: {0!r}'.format(e))
 
         episodes = self._map_results(results, self.series_map)
@@ -226,6 +225,8 @@ class TVmaze(BaseIndexer):
 
         if not isinstance(episodes, list):
             episodes = [episodes]
+
+        absolute_number_counter = 1
 
         for cur_ep in episodes:
             if self.config['dvdorder']:
@@ -244,12 +245,16 @@ class TVmaze(BaseIndexer):
                                 'Please consider disabling DVD order for the show with TVmaze ID: {2}',
                                 seasnum, epno, tvmaze_id)
 
-            if seasnum is None or epno is None:
+            if seasnum is None or epno in (None, 0):
                 log.warning('An episode has incomplete season/episode number (season: {0!r}, episode: {1!r})', seasnum, epno)
                 continue  # Skip to next episode
 
             seas_no = int(seasnum)
             ep_no = int(epno)
+
+            if seas_no > 0:
+                cur_ep['absolute_number'] = absolute_number_counter
+                absolute_number_counter += 1
 
             for k, v in viewitems(cur_ep):
                 k = k.lower()
@@ -261,38 +266,70 @@ class TVmaze(BaseIndexer):
 
     def _parse_images(self, tvmaze_id):
         """Parse Show and Season posters.
-
         images are retrieved using t['show name]['_banners'], for example:
-
         >>> indexer_api = TVMaze(images = True)
         >>> indexer_api['scrubs']['_banners'].keys()
         ['fanart', 'poster', 'series', 'season']
         >>> t['scrubs']['_banners']['poster']['680x1000']['35308']['_bannerpath']
         u'http://thetvmaze.com/banners/posters/76156-2.jpg'
         >>>
-
         Any key starting with an underscore has been processed (not the raw
         data from the XML)
-
         This interface will be improved in future versions.
         """
         log.debug('Getting show banners for {0}', tvmaze_id)
 
         try:
-            image_medium = self.shows[tvmaze_id]['image_medium']
+            images = self.tvmaze_api.show_images(tvmaze_id)
+            # image_medium = self.shows[tvmaze_id]['image_medium']
         except Exception:
             log.debug('Could not parse Poster for showid: {0}', tvmaze_id)
             return False
 
         # Set the poster (using the original uploaded poster for now, as the medium formated is 210x195
-        _images = {u'poster': {u'1014x1500': {u'1': {u'rating': 1,
-                                                     u'language': u'en',
-                                                     u'ratingcount': 1,
-                                                     u'bannerpath': image_medium.split('/')[-1],
-                                                     u'bannertype': u'poster',
-                                                     u'bannertype2': u'210x195',
-                                                     u'_bannerpath': image_medium,
-                                                     u'id': u'1035106'}}}}
+        _images = {}
+        for image in images:
+            if image.type not in _images:
+                _images[image.type] = {}
+
+            if not image.resolutions:
+                continue
+
+            if image.type == 'poster' and not image.main:
+                continue
+
+            # For banner, poster and fanart use the origin size.
+            _images[image.type] = {
+                f"{image.resolutions['original']['width']}x{image.resolutions['original']['height']}": {
+                    image.id: {
+                        'rating': 1,
+                        'language': u'en',
+                        'ratingcount': 1,
+                        'bannerpath': image.resolutions['original']['url'].split('/')[-1],
+                        'bannertype': image.type,
+                        'bannertype2': f"{image.resolutions['original']['width']}x{image.resolutions['original']['height']}",
+                        '_bannerpath': image.resolutions['original']['url'],
+                        'id': image.id
+                    }
+                }
+            }
+
+            if image.type == 'poster':
+                # Save the main poster as a poster thumb.
+                _images['poster_thumb'] = {
+                    f"{image.resolutions['medium']['width']}x{image.resolutions['medium']['height']}": {
+                        image.id: {
+                            'rating': 1,
+                            'language': u'en',
+                            'ratingcount': 1,
+                            'bannerpath': image.resolutions['medium']['url'].split('/')[-1],
+                            'bannertype': 'poster_thumb',
+                            'bannertype2': f"{image.resolutions['medium']['width']}x{image.resolutions['medium']['height']}",
+                            '_bannerpath': image.resolutions['medium']['url'],
+                            'id': image.id
+                        }
+                    }
+                }
 
         season_images = self._parse_season_images(tvmaze_id)
         if season_images:
@@ -308,7 +345,7 @@ class TVmaze(BaseIndexer):
             log.debug('Getting all show data for {0}', tvmaze_id)
             try:
                 seasons = self.tvmaze_api.show_seasons(maze_id=tvmaze_id)
-            except BaseError as e:
+            except (AttributeError, BaseError) as e:
                 log.warning('Getting show seasons for the season images failed. Cause: {0}', e)
 
         _images = {'season': {'original': {}}}

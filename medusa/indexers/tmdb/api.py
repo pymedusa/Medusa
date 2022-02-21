@@ -229,7 +229,6 @@ class Tmdb(BaseIndexer):
 
     def _get_episodes(self, tmdb_id, specials=False, aired_season=None):  # pylint: disable=unused-argument
         """Get all the episodes for a show by TMDB id.
-
         :param tmdb_id: Series tmdb id.
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"episode": [list of episodes]}
         """
@@ -243,20 +242,27 @@ class Tmdb(BaseIndexer):
             aired_season = [season['season_number'] for season in self.shows[tmdb_id].data.get('seasons', [])]
 
         if not aired_season:
-            raise IndexerShowIncomplete('This show does not have any seasons on TMDB.')
+            log.debug('Series does not have any seasons added on indexer TMDB.')
+            return
 
         # Parse episode data
         log.debug('Getting all episodes of {0}', tmdb_id)
 
         # get episodes for each season
         for season in aired_season:
-            season_info = self.tmdb.TV_Seasons(tmdb_id, season).info(language=self.config['language'])
-            results += season_info['episodes']
+            try:
+                season_info = self.tmdb.TV_Seasons(tmdb_id, season).info(language=self.config['language'])
+                results += season_info['episodes']
+            except RequestException as error:
+                raise IndexerException(
+                    'Could not get episodes for series {series} using indexer TMDB. Cause: {cause}'.format(
+                        series=tmdb_id, cause=error
+                    )
+                )
 
         if not results:
-            log.debug('Series results incomplete')
-            raise IndexerShowIncomplete('Show search returned incomplete results '
-                                        '(cannot find complete show on TheMovieDb)')
+            log.debug('Series does not have any episodes added on indexer TMDB.')
+            return
 
         mapped_episodes = self._map_results(results, self.episodes_map, '|')
         episode_data = OrderedDict({'episode': mapped_episodes})
@@ -267,6 +273,8 @@ class Tmdb(BaseIndexer):
         episodes = episode_data['episode']
         if not isinstance(episodes, list):
             episodes = [episodes]
+
+        absolute_number_counter = 1
 
         for cur_ep in episodes:
             if self.config['dvdorder']:
@@ -287,12 +295,16 @@ class Tmdb(BaseIndexer):
                         seasnum, epno, tmdb_id
                     )
 
-            if seasnum is None or epno is None:
+            if seasnum is None or epno in (None, 0):
                 log.warning('Invalid episode numbering (season: {0!r}, episode: {1!r})', seasnum, epno)
                 continue  # Skip to next episode
 
             seas_no = int(seasnum)
             ep_no = int(epno)
+
+            if seas_no > 0:
+                cur_ep['absolute_number'] = absolute_number_counter
+                absolute_number_counter += 1
 
             image_width = {'fanart': 'w1280', 'poster': 'w780', 'filename': 'w300'}
             for k, v in viewitems(cur_ep):
@@ -307,26 +319,29 @@ class Tmdb(BaseIndexer):
                                                                  file_path=v)
                 self._set_item(tmdb_id, seas_no, ep_no, k, v)
 
-    def _parse_images(self, sid):
+    def _parse_images(self, tmdb_id):
         """Parse images.
-
         This interface will be improved in future versions.
         """
         key_mapping = {'file_path': 'bannerpath', 'vote_count': 'ratingcount', 'vote_average': 'rating', 'id': 'id'}
         image_sizes = {'fanart': 'backdrop_sizes', 'poster': 'poster_sizes'}
         typecasts = {'rating': float, 'ratingcount': int}
 
-        log.debug('Getting show banners for {0}', sid)
+        log.debug('Getting show banners for {series}', series=tmdb_id)
         _images = {}
 
         # Let's get the different type of images available for this series
-        params = {'include_image_language': '{search_language},null'.format(search_language=self.config['language'])}
+        params = {'include_image_language': '{search_language}'.format(search_language=self.config['language'])}
 
-        images = self.tmdb.TV(sid).images(params=params)
+        try:
+            images = self.tmdb.TV(tmdb_id).images(params=params)
+        except RequestException as error:
+            raise IndexerUnavailable('Error trying to get images. Cause: {cause}'.format(cause=error))
+
         bid = images['id']
         for image_type, images in viewitems({'poster': images['posters'], 'fanart': images['backdrops']}):
             try:
-                if image_type not in _images:
+                if images and image_type not in _images:
                     _images[image_type] = {}
 
                 for image in images:
@@ -372,15 +387,15 @@ class Tmdb(BaseIndexer):
                             _images[image_type][resolution][bid]['rating'] = 0
 
             except Exception as error:
-                log.warning('Could not parse Poster for show id: {0}, with exception: {1!r}', sid, error)
+                log.warning('Could not parse Poster for show id: {0}, with exception: {1!r}', tmdb_id, error)
                 return False
 
-        season_images = self._parse_season_images(sid)
+        season_images = self._parse_season_images(tmdb_id)
         if season_images:
             _images.update(season_images)
 
-        self._save_images(sid, _images)
-        self._set_show_data(sid, '_banners', _images)
+        self._save_images(tmdb_id, _images)
+        self._set_show_data(tmdb_id, '_banners', _images)
 
     def _parse_season_images(self, sid):
         """Get all season posters for a TMDB show."""
