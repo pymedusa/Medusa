@@ -19,11 +19,11 @@
 """Custom exceptions used or raised by tvdbv2_api."""
 from __future__ import unicode_literals
 
-__author__ = "p0psicles"
-__version__ = "1.0"
+__author__ = 'p0psicles'
+__version__ = '1.0'
 
-__all__ = ["Tvdb2Error", "Tvdb2UserAbort", "Tvdb2ShowNotFound", "Tvdb2ShowIncomplete",
-           "Tvdb2SeasonNotFound", "Tvdb2EpisodeNotFound", "Tvdb2AttributeNotFound"]
+__all__ = ['Tvdb2Error', 'Tvdb2UserAbort', 'Tvdb2ShowNotFound', 'Tvdb2ShowIncomplete',
+           'Tvdb2SeasonNotFound', 'Tvdb2EpisodeNotFound', 'Tvdb2AttributeNotFound']
 
 
 class Tvdb2Exception(Exception):

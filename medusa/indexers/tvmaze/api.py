@@ -12,6 +12,7 @@ from medusa.indexers.exceptions import (
     IndexerError,
     IndexerException,
     IndexerShowNotFound,
+    IndexerUnavailable,
 )
 from medusa.logger.adapters.style import BraceAdapter
 
@@ -155,15 +156,12 @@ class TVmaze(BaseIndexer):
             results = self.tvmaze_api.get_show_list(show)
         except ShowNotFound as error:
             raise IndexerShowNotFound(
-                'Show search failed in getting a result with reason: {0}'.format(error)
+                'Show search failed in getting a result with reason: {0}'.format(error.value)
             )
-        except BaseError as error:
-            raise IndexerException('Show search failed in getting a result with error: {0!r}'.format(error))
+        except (AttributeError, BaseError) as error:
+            raise IndexerUnavailable('Show search failed in getting a result with error: {0!r}'.format(error))
 
-        if results:
-            return results
-        else:
-            return None
+        return results
 
     # Tvdb implementation
     def search(self, series):
@@ -174,37 +172,62 @@ class TVmaze(BaseIndexer):
         """
         log.debug('Searching for show {0}', series)
 
-        results = self._show_search(series, request_language=self.config['language'])
+        results = None
+        # If search term is digit's only, store it and attempt to search by id.
+        show_by_id = None
 
-        if not results:
-            return
+        try:
+            if series.isdigit():
+                show_by_id = self._get_show_by_id(series, request_language=self.config['language'])
+            results = self._show_search(series, request_language=self.config['language'])
+        except IndexerShowNotFound:
+            pass
 
-        mapped_results = self._map_results(results, self.series_map, '|')
+        if not results and not show_by_id:
+            raise IndexerShowNotFound(
+                'Tvmaze show search failed in getting a result for search term {search}'.format(search=series)
+            )
+
+        mapped_results = []
+        if results:
+            mapped_results = self._map_results(results, self.series_map, '|')
+
+        # The search by id result, is already mapped. We can just add it to the array with results.
+        if show_by_id:
+            mapped_results.append(show_by_id['series'])
 
         return OrderedDict({'series': mapped_results})['series']
 
     def _get_show_by_id(self, tvmaze_id, request_language='en'):  # pylint: disable=unused-argument
         """
         Retrieve tvmaze show information by tvmaze id, or if no tvmaze id provided by passed external id.
-
         :param tvmaze_id: The shows tvmaze id
         :return: An ordered dict with the show searched for.
         """
         results = None
         if tvmaze_id:
             log.debug('Getting all show data for {0}', tvmaze_id)
-            results = self.tvmaze_api.get_show(maze_id=tvmaze_id)
+
+            try:
+                results = self.tvmaze_api.get_show(maze_id=tvmaze_id)
+            except ShowNotFound as error:
+                # Use error.value because TVMaze API exceptions may be utf-8 encoded when using __str__
+                raise IndexerShowNotFound(
+                    'Show search failed in getting a result with reason: {0}'.format(error.value)
+                )
+            except (AttributeError, BaseError) as error:
+                raise IndexerUnavailable('Show search failed in getting a result with error: {0!r}'.format(error))
 
         if not results:
             return
 
         mapped_results = self._map_results(results, self.series_map)
-
         return OrderedDict({'series': mapped_results})
 
     def _get_episodes(self, tvmaze_id, specials=False, aired_season=None):  # pylint: disable=unused-argument
         """
         Get all the episodes for a show by tvmaze id.
+
         :param tvmaze_id: Series tvmaze id.
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"episode": [list of episodes]}
         """
@@ -266,6 +289,7 @@ class TVmaze(BaseIndexer):
 
     def _parse_images(self, tvmaze_id):
         """Parse Show and Season posters.
+
         images are retrieved using t['show name]['_banners'], for example:
         >>> indexer_api = TVMaze(images = True)
         >>> indexer_api['scrubs']['_banners'].keys()
@@ -526,7 +550,7 @@ class TVmaze(BaseIndexer):
                     log.debug('Could not get tvmaze externals using external key {0} and id {1}',
                               external_id, kwargs.get(external_id))
                     continue
-                except BaseError as e:
-                    log.warning('Could not get tvmaze externals. Cause: {0}', e)
+                except (AttributeError, BaseError) as error:
+                    log.warning('Could not get tvmaze externals. Cause: {0}', error)
                     continue
         return {}

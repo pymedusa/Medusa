@@ -19,11 +19,11 @@
 """Custom exceptions used or raised by tvmaze api."""
 from __future__ import unicode_literals
 
-__author__ = "p0psicles"
-__version__ = "1.0"
+__author__ = 'p0psicles'
+__version__ = '1.0'
 
-__all__ = ["tvmaze_error", "tvmaze_userabort", "tvmaze_shownotfound", "tvmaze_showincomplete",
-           "tvmaze_seasonnotfound", "tvmaze_episodenotfound", "tvmaze_attributenotfound"]
+__all__ = ['tvdbv2_error', 'tvdbv2_userabort', 'tvdbv2_shownotfound', 'tvdbv2_showincomplete',
+           'tvdbv2_seasonnotfound', 'tvdbv2_episodenotfound', 'tvdbv2_attributenotfound']
 
 
 class tvmaze_exception(Exception):

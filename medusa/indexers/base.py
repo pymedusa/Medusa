@@ -70,7 +70,8 @@ class BaseIndexer(object):
             'select_first': select_first,
             'search_all_languages': search_all_languages,
             'use_zip': use_zip,
-            'dvdorder': dvdorder, 'proxy': proxy
+            'dvdorder': dvdorder,
+            'proxy': proxy
         }
 
         if cache is True:
@@ -108,7 +109,7 @@ class BaseIndexer(object):
         # thetvdb.com should be based around numeric language codes,
         # but to link to a series like http://thetvdb.com/?tab=series&id=79349&lid=16
         # requires the language ID, thus this mapping is required (mainly
-        # for usage in tvdb_ui - internally tvdb_api will use the language abbreviations)
+        # for usage in the indexer ui - the api will use the language abbreviations)
         self.config['langabbv_to_id'] = {'el': 20, 'en': 7, 'zh': 27,
                                          'it': 15, 'cs': 28, 'es': 16, 'ru': 22, 'nl': 13, 'pt': 26, 'no': 9,
                                          'tr': 21, 'pl': 18, 'fr': 17, 'hr': 31, 'de': 14, 'da': 10, 'fi': 11,
@@ -188,7 +189,7 @@ class BaseIndexer(object):
         BaseUI is used to select the first result.
 
         :param series: the query for the series name
-        :return: A list of series mapped to a UI (for example: a BaseUi or CustomUI).
+        :return: A list of series mapped to a UI (for example: a BaseUi or custom_ui).
         """
         all_series = self.search(series)
         if not all_series:
@@ -454,7 +455,7 @@ class BaseIndexer(object):
         :param weeks: number of weeks to get updates for.
         :param filter_show_list: Optional list of show objects, to use for filtering the returned list.
         """
-        raise IndexerSeasonUpdatesNotSupported("Method get_last_updated_series not implemented by this indexer")
+        raise IndexerSeasonUpdatesNotSupported('Method get_last_updated_series not implemented by this indexer')
 
     def get_episodes_for_season(self, show_id, *args, **kwargs):
         self._get_episodes(show_id, *args, **kwargs)
