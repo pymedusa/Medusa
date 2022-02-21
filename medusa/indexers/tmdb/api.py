@@ -617,7 +617,7 @@ class Tmdb(BaseIndexer):
         return list(total_updates)
 
     # Public methods, usable separate from the default api's interface api['show_id']
-    def get_last_updated_seasons(self, show_list, from_time, weeks=1, *args, **kwargs):
+    def get_last_updated_seasons(self, show_list, from_time=None, weeks=1, *args, **kwargs):
         """Retrieve a list with updated shows.
 
         :param show_list: The list of shows, where seasons updates are retrieved for.

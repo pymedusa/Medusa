@@ -630,7 +630,7 @@ class Imdb(BaseIndexer):
         return True
 
     @staticmethod
-    def _calc_update_interval(date_season_start, date_season_last, last_updated, season_finished=True):
+    def _calc_update_interval(date_season_last, season_finished=True):
 
         minimum_interval = 2 * 24 * 3600  # 2 days
 
@@ -644,7 +644,7 @@ class Imdb(BaseIndexer):
         return max(minimum_interval, interval)
 
     # Public methods, usable separate from the default api's interface api['show_id']
-    def get_last_updated(self, filter_show_list=None, cache=None, *args, **kwargs):
+    def get_last_updated_seasons(self, show_list=None, cache=None, *args, **kwargs):
         """Return updated seasons for shows passed, using the from_time.
 
         :param show_list[int]: The list of shows, where seasons updates are retrieved for.
@@ -654,10 +654,10 @@ class Imdb(BaseIndexer):
         show_season_updates = {}
 
         # we don't have a single api call tha we can run to check if an update is required.
-        # So we'll have to check what's there in the library, and decide based on the last epiosode's date, if a
+        # So we'll have to check what's there in the library, and decide based on the last episode's date, if a
         # season update is needed.
 
-        for series_id in filter_show_list:
+        for series_id in show_list:
             series_obj = Show.find_by_id(app.showList, self.indexer, series_id)
             all_episodes = series_obj.get_all_episodes()
 
@@ -685,21 +685,25 @@ class Imdb(BaseIndexer):
 
                 # Per season, get latest episode airdate
                 sorted_episodes = sorted(season_episodes, key=lambda x: x.airdate)
-                date_season_start = sorted_episodes[0].airdate
+                # date_season_start = sorted_episodes[0].airdate
                 date_season_last = sorted_episodes[-1].airdate
 
                 # Get date for last updated, from the cache object.
-                last_update = cache.get_last_update_season(self.name, series_id, season)
 
                 # Calculate update interval for the season
-                update_interval = self._calc_update_interval(date_season_start, date_season_last, last_update)
+                update_interval = self._calc_update_interval(
+                    # date_season_start,
+                    date_season_last,
+                    season_finished=bool(self[series_id].get(season + 1))
+                )
 
+                last_update = cache.get_last_update_season(self.indexer, series_id, season)
                 if last_update < time() - update_interval:
                     # This season should be updated.
                     total_updates.append(season)
 
                     # Update last_update for this season.
-                    cache.set_last_update_season(self.name, series_id, season)
+                    cache.set_last_update_season(self.indexer, series_id, season)
                 else:
                     log.debug(
                         '{series}: Season {season} seems to have been recently updated. Not scheduling a new refresh',

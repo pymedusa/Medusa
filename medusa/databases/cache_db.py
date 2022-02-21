@@ -229,3 +229,19 @@ class RemoveSceneExceptionsTable(AddProviderTablesIdentifier):
     def execute(self):
         self.connection.action('DROP TABLE IF EXISTS scene_exceptions;')
         self.inc_major_version()
+
+
+class AddSeasonUpdatesTable(RemoveSceneExceptionsTable):  # pylint:disable=too-many-ancestors
+    def test(self):
+        return self.hasTable("season_updates")
+
+    def execute(self):
+        self.connection.action(
+            '''CREATE TABLE "season_updates" ( 
+              `season_updates_id`	INTEGER, 
+              `indexer`	    INTEGER NOT NULL, 
+              `series_id`	INTEGER NOT NULL, 
+              `season`	    INTEGER, 
+              `time`	    INTEGER, 
+              PRIMARY KEY(season_updates_id))'''
+        )

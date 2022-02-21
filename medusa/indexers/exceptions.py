@@ -45,6 +45,10 @@ class IndexerAttributeNotFound(IndexerException):
     """Raised if an episode does not have the requested attribute (such as a episode name)."""
 
 
+class IndexerShowUpdatesNotSupported(IndexerException):
+    """Raised if an episode does not have the requested attribute (such as a episode name)."""
+
+
 class IndexerSeasonUpdatesNotSupported(IndexerException):
     """Raised if an episode does not have the requested attribute (such as a episode name)."""
 
