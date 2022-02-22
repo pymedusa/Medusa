@@ -500,6 +500,14 @@ class Imdb(BaseIndexer):
             log.warning('Could not parse Poster for show id: {0}, with exception: {1!r}', imdb_id, error)
             return
 
+        def _get_poster_thumb(thumbs):
+            for bid in thumbs.values():
+                for image in bid.values():
+                    return image.get('bannerpath')
+
+        if _images.get('poster_thumb'):
+            self._set_show_data(imdb_id, 'poster', _get_poster_thumb(_images.get('poster_thumb')))
+
         self._save_images(imdb_id, _images)
         self._set_show_data(imdb_id, '_banners', _images)
 
