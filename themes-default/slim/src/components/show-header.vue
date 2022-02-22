@@ -94,9 +94,6 @@
                                     <span>
                                         {{ show.imdbInfo.runtimes || show.runtime }} minutes
                                     </span>
-                                    <app-link v-if="show.indexer !== 'imdb'" :href="`https://www.imdb.com/title/${show.imdbInfo.imdbId}`" :title="`https://www.imdb.com/title/${show.imdbInfo.imdbId}`">
-                                        <img alt="[imdb]" height="16" width="16" src="images/imdb16.png" style="margin-top: -1px; vertical-align:middle;">
-                                    </app-link>
                                 </template>
 
                                 <div id="indexer-wrapper">
@@ -105,19 +102,7 @@
                                         <img :alt="indexerConfig[show.indexer].name" height="16" width="16" :src="`images/${indexerConfig[show.indexer].icon}`" style="margin-top: -1px; vertical-align:middle;">
                                     </app-link>
                                 </div>
-
-                                <app-link v-if="show.id.trakt" :href="`https://trakt.tv/shows/${show.id.trakt}`" :title="`https://trakt.tv/shows/${show.id.trakt}`">
-                                    <img alt="[trakt]" height="16" width="16" src="images/trakt.png">
-                                </app-link>
-
-                                <app-link v-if="show.xemNumbering && show.xemNumbering.length > 0" :href="`http://thexem.de/search?q=${show.title}`" :title="`http://thexem.de/search?q=${show.title}`">
-                                    <img alt="[xem]" height="16" width="16" src="images/xem.png" style="margin-top: -1px; vertical-align:middle;">
-                                </app-link>
-
-                                <app-link v-if="show.id.tvdb" :href="`https://fanart.tv/series/${show.id.tvdb}`" :title="`https://fanart.tv/series/${show.id[show.indexer]}`">
-                                    <img alt="[fanart.tv]" height="16" width="16" src="images/fanart.tv.png" class="fanart">
-                                </app-link>
-
+                                <externals :show="show" />
                             </div>
                             <div id="tags" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
                                 <ul class="tags" v-if="show.genres">
@@ -335,7 +320,7 @@ import { mapActions, mapState, mapGetters } from 'vuex';
 import { api } from '../api';
 import { combineQualities, humanFileSize } from '../utils/core';
 import { attachImdbTooltip } from '../utils/jquery';
-import { AppLink, Asset, QualityPill, StateSwitch } from './helpers';
+import { AppLink, Asset, Externals, QualityPill, StateSwitch } from './helpers';
 
 /**
  * Return the first item of `values` that is not `null`, `undefined` or `NaN`.
@@ -353,6 +338,7 @@ export default {
     components: {
         AppLink,
         Asset,
+        Externals,
         QualityPill,
         StateSwitch,
         Truncate
