@@ -581,7 +581,7 @@ class Imdb(BaseIndexer):
             save_actor['id'] = cur_actor['id'].split('/')[-2]
             save_actor['image'] = cur_actor.get('image', {}).get('url', None)
             save_actor['name'] = cur_actor['name']
-            save_actor['role'] = cur_actor['characters'][0]
+            save_actor['role'] = cur_actor['characters'][0] if cur_actor.get('characters') else ''
             save_actor['sortorder'] = order
             cur_actors.append(save_actor)
         self._set_show_data(imdb_id, '_actors', cur_actors)
