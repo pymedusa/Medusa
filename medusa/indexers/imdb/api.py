@@ -175,8 +175,13 @@ class Imdb(BaseIndexer):
         """
         # series = series.encode('utf-8')
         log.debug('Searching for show {0}', series)
-
+        mapped_results = []
         try:
+            if series.startswith('tt'):
+                show_by_id = self._get_show_by_id(series)
+                # The search by id result, is already mapped. We can just add it to the array with results.
+                mapped_results.append(show_by_id['series'])
+                return OrderedDict({'series': mapped_results})['series']
             results = self._show_search(series)
         except RequestException:
             results = None

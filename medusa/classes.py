@@ -382,6 +382,9 @@ class AllShowsListUI(object):  # pylint: disable=too-few-public-methods
                     if search_term.isdigit():
                         series_names.append(search_term)
 
+                    if search_term.startswith('tt'):
+                        series_names.append(search_term)
+
                     for name in series_names:
                         if search_term.lower() in name.lower():
                             if 'firstaired' not in cur_show:
