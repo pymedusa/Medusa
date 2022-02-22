@@ -29,6 +29,7 @@ from medusa.common import (
     Quality,
     SEASON_RESULT,
 )
+from medusa.helper.common import sanitize_filename
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.search import SearchType
 
@@ -386,7 +387,7 @@ class AllShowsListUI(object):  # pylint: disable=too-few-public-methods
                         series_names.append(search_term)
 
                     for name in series_names:
-                        if search_term.lower() in name.lower():
+                        if sanitize_filename(search_term.lower()) in sanitize_filename(name.lower()):
                             if 'firstaired' not in cur_show:
                                 default_date = parser.parse('1900-01-01').date()
                                 cur_show['firstaired'] = default_date.strftime(dateFormat)

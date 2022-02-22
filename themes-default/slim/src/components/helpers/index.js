@@ -14,6 +14,7 @@ export { default as ConfigProviderNzb } from './config-provider-nzb.vue';
 export { default as ConfigProviderTorrent } from './config-provider-torrent.vue';
 export { default as CustomLogs } from './custom-logs.vue';
 export { default as EditRootDirs } from './edit-root-dirs.vue';
+export { default as Externals } from './externals.vue';
 export { default as FileBrowser } from './file-browser.vue';
 export { default as LanguageSelect } from './language-select.vue';
 export { default as LoadProgressBar } from './load-progress-bar.vue';
