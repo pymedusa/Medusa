@@ -59,6 +59,7 @@ class TVmaze(BaseIndexer):
         self.series_map = [
             ('id', 'id'),
             ('id', 'maze_id'),
+            ('rating', 'rating.average'),
             ('status', 'status'),
             ('seriesname', 'name'),
             ('overview', 'summary'),
@@ -72,7 +73,6 @@ class TVmaze(BaseIndexer):
             ('filename', 'screencap'),
             ('episodenumber', 'episode_number'),
             ('seasonnumber', 'season_number'),
-            ('contentrating', 'rating'),
             ('airs_time', 'schedule.time'),
             ('airs_dayofweek', 'schedule.days[0]'),
             ('network', 'network.name'),
@@ -81,9 +81,6 @@ class TVmaze(BaseIndexer):
             ('tvrage_id', 'externals.tvrage'),
             ('tvdb_id', 'externals.thetvdb'),
             ('imdb_id', 'externals.imdb'),
-            # ('contentrating', 'rating'),
-            # ('contentrating', 'rating.average'),
-
         ]
 
     def _map_results(self, tvmaze_response, key_mappings=None, list_separator='|'):
@@ -543,6 +540,8 @@ class TVmaze(BaseIndexer):
                                      in viewitems(result.externals)
                                      if external_value and mapping.get(tvmaze_external_id)}
                         externals['tvmaze_id'] = result.maze_id
+                        if 'imdb_id' in externals:
+                            externals['imdb_id'] = ImdbIdentifier(externals['imdb_id']).series_id
                         return externals
                 except ShowNotFound:
                     log.debug('Could not get tvmaze externals using external key {0} and id {1}',

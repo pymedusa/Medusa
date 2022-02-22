@@ -12,6 +12,7 @@ from medusa.helper.common import dateTimeFormat, episode_num
 from medusa.databases import utils
 from medusa.helper.common import dateTimeFormat
 from medusa.indexers.config import STATUS_MAP
+from medusa.indexers.imdb.api import ImdbIdentifier
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import NameParser
 
@@ -37,6 +38,7 @@ class MainSanityCheck(db.DBSanityCheck):
         self.fix_show_nfo_lang()
         self.fix_subtitle_reference()
         self.clean_null_indexer_mappings()
+        self.clean_imdb_tt_ids()
 
     def clean_null_indexer_mappings(self):
         log.debug(u'Checking for null indexer mappings')
@@ -219,6 +221,52 @@ class MainSanityCheck(db.DBSanityCheck):
 
     def fix_show_nfo_lang(self):
         self.connection.action("UPDATE tv_shows SET lang = '' WHERE lang = 0 OR lang = '0';")
+
+    def clean_imdb_tt_ids(self):
+        # Get all records with 'tt'
+        self.connection.action('DELETE from indexer_mapping WHERE indexer = mindexer');
+
+
+        result = self.connection.select("select * from indexer_mapping where indexer_id like '%tt%' or mindexer_id like '%tt%'")
+        if not result:
+            return
+        
+        for row in result: 
+            exists = None
+            try:
+                exists = self.connection.select(
+                    """
+                        SELECT * FROM indexer_mapping WHERE indexer_id = ? AND indexer = ? AND mindexer_id = ? AND mindexer = ?
+                    """, [
+                        ImdbIdentifier(row['indexer_id']).series_id, row['indexer'],
+                        ImdbIdentifier(row['mindexer_id']).series_id, row['mindexer']
+                    ]
+                )
+            except ValueError:
+                self.connection.action(
+                    """DELETE FROM indexer_mapping
+                    WHERE indexer_id = ? AND indexer = ? AND mindexer_id = ? AND mindexer = ?;
+                    """, [
+                        row['indexer_id'], row['indexer'], row['mindexer_id'], row['mindexer']
+                    ]
+                )
+            if exists:
+                self.connection.action(
+                    """DELETE FROM indexer_mapping
+                    WHERE indexer_id = ? AND indexer = ? AND mindexer_id = ? AND mindexer = ?;
+                    """, [
+                        row['indexer_id'], row['indexer'], row['mindexer_id'], row['mindexer']
+                    ]
+                )
+            else:
+                self.connection.action(
+                    """UPDATE indexer_mapping SET indexer_id = ?, mindexer_id = ?
+                    WHERE indexer_id = ? AND indexer = ? AND mindexer_id = ? AND mindexer = ?;
+                    """, [
+                        ImdbIdentifier(row['indexer_id']).series_id, ImdbIdentifier(row['mindexer_id']).series_id,
+                        row['indexer_id'], row['indexer'], row['mindexer_id'], row['mindexer']
+                    ]
+                )
 
 
 # ======================

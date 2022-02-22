@@ -148,12 +148,17 @@ export default {
             }
 
             let showId = null;
+            let showSlug = '';
             if (Object.keys(show.externals).length !== 0 && show.externals[selectedAddShowOption + '_id']) {
                 showId = { [selectedAddShowOption]: show.externals[selectedAddShowOption + '_id'] };
+                showSlug = show.externals[selectedAddShowOption + '_id'];
+            } else if (show.source === this.externals.IMDB && selectedAddShowOption === 'imdb') {
+                showId = { [selectedAddShowOption]: show.seriesId };
+                showSlug = show.seriesId;
             }
 
             if (this.addShowById(showId)) {
-                show.showInLibrary = `${selectedAddShowOption}${show.externals[selectedAddShowOption + '_id']}`;
+                show.showInLibrary = `${selectedAddShowOption}${showSlug}`;
             }
         },
         /**
@@ -205,10 +210,14 @@ export default {
             options.push({ text: 'search show', value: 'search' });
 
             for (const external in externals) {
-                if (['tvdb_id', 'tmdb_id', 'tvmaze_id'].includes(external)) {
+                if (['tvdb_id', 'tmdb_id', 'tvmaze_id', 'imdb_id'].includes(external)) {
                     const externalName = external.split('_')[0];
                     options.push({ text: externalName, value: externalName });
                 }
+            }
+
+            if (show.source === this.externals.IMDB) {
+                options.push({ text: 'imdb', value: 'imdb' });
             }
 
             return options;

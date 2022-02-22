@@ -373,8 +373,8 @@ export default {
                     const slug = [indexers.indexers[indexerIdToName(indexerId)].identifier, showId].join('');
 
                     // Append showId to indexer show url
-                    if (indexerName === 'imdb') {
-                        indexerShowUrl += showId.padStart(7, '0');
+                    if (indexerName === 'IMDb') {
+                        indexerShowUrl += String(showId).padStart(7, '0');
                     } else {
                         indexerShowUrl += showId;
                     }

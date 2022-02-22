@@ -16,7 +16,7 @@ from medusa.indexers.exceptions import (
 )
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.show import Show
-from six import string_types, text_type
+from six import integer_types, string_types, text_type
 from time import time
 from requests.exceptions import RequestException
 
@@ -122,7 +122,7 @@ class Imdb(BaseIndexer):
             return_dict = {}
             try:
                 title_type = item.get('type') or item.get('base', {}).get('titleType')
-                if title_type in ('feature', 'video game', 'TV short', None):
+                if title_type in ('feature', 'video game', 'TV short', 'TV movie', None):
                     continue
 
                 return_dict['status'] = 'Ended'
@@ -157,7 +157,7 @@ class Imdb(BaseIndexer):
         Uses the Imdb API to search for a show
         :param series: The series name that's searched for as a string
 
-        :return: A list of Show objects.
+        :return: A list of Show objects.series_map
         """
 
         results = self.imdb_api.search_for_title(series)
@@ -196,10 +196,9 @@ class Imdb(BaseIndexer):
         :return: An ordered dict with the show searched for.
         """
         results = None
-        imdb_id = ImdbIdentifier(imdb_id).imdb_id
         if imdb_id:
             log.debug('Getting all show data for {0}', imdb_id)
-            results = self.imdb_api.get_title(imdb_id)
+            results = self.imdb_api.get_title(ImdbIdentifier(imdb_id).imdb_id)
 
         if not results: 
             return
@@ -210,16 +209,16 @@ class Imdb(BaseIndexer):
             return
 
         # Get firstaired
-        releases = self.imdb_api.get_title_releases(imdb_id)
+        releases = self.imdb_api.get_title_releases(ImdbIdentifier(imdb_id).imdb_id)
         if releases.get('releases'):
             first_released = sorted([r['date'] for r in releases['releases']])[0]
             mapped_results['firstaired'] = first_released
 
         try:
-            companies = self.imdb_api.get_title_companies(imdb_id)
+            companies = self.imdb_api.get_title_companies(ImdbIdentifier(imdb_id).imdb_id)
             # If there was a release check if it was distributed.
             if companies.get('distribution'):
-                origins = self.imdb_api.get_title_versions(imdb_id)['origins'][0]
+                origins = self.imdb_api.get_title_versions(ImdbIdentifier(imdb_id).imdb_id)['origins'][0]
                 released_in_regions = [
                     dist for dist in companies['distribution'] if dist.get('regions') and origins in dist['regions']
                 ]
@@ -251,7 +250,7 @@ class Imdb(BaseIndexer):
                 self._get_show_data(imdb_id)
 
             # results = self.imdb_api.get_title_episodes(imdb_id)
-            results = self.imdb_api.get_title_episodes(imdb_id)
+            results = self.imdb_api.get_title_episodes(ImdbIdentifier(imdb_id).imdb_id)
         except (LookupError, IndexerShowNotFound) as error:
             raise IndexerShowIncomplete(
                 'Show episode search exception, '
@@ -347,7 +346,7 @@ class Imdb(BaseIndexer):
 
         try:
             # results = self.imdb_api.get_title_episodes(imdb_id)
-            results = self.imdb_api.get_title_episodes_detailed(imdb_id=imdb_id, season=season)
+            results = self.imdb_api.get_title_episodes_detailed(imdb_id=ImdbIdentifier(imdb_id).imdb_id, season=season)
         except LookupError as error:
             raise IndexerShowIncomplete(
                 'Show episode search exception, '
@@ -592,7 +591,6 @@ class Imdb(BaseIndexer):
         into the shows dict in layout:
         shows[series_id][season_number][episode_number]
         """
-
         # Parse show information
         log.debug('Getting all series data for {0}', imdb_id)
 

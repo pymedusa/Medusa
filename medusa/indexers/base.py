@@ -148,7 +148,7 @@ class BaseIndexer(object):
         if check_value is None:
             return None
 
-        if isinstance(check_value, dict):
+        if isinstance(check_value, dict) and next_keys:
             return self.get_nested_value(check_value, next_keys)
         else:
             try:
@@ -427,7 +427,7 @@ class BaseIndexer(object):
             self._save_images_by_type(img_type, series_id, images_by_type)
 
     def __getitem__(self, key):
-        """Handle tvdbv2_instance['seriesname'] calls. The dict index should be the show id."""
+        """Handle indexer['seriesname'] calls. The dict index should be the show id."""
         if isinstance(key, (integer_types, int)):
             # Item is integer, treat as show id
             if key not in self.shows:

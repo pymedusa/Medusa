@@ -15,6 +15,7 @@ from medusa.indexers.exceptions import (
     IndexerShowIncomplete, IndexerShowNotFound,
     IndexerShowNotFoundInLanguage, IndexerUnavailable
 )
+from medusa.indexers.imdb.api import ImdbIdentifier
 from medusa.indexers.ui import BaseUI, ConsoleUI
 from medusa.indexers.tvdbv2.fallback import PlexFallback
 from medusa.logger.adapters.style import BraceAdapter
@@ -558,7 +559,7 @@ class TVDBv2(BaseIndexer):
             self._set_show_data(sid, k, v)
 
         # Create the externals structure
-        self._set_show_data(sid, 'externals', {'imdb_id': text_type(getattr(self[sid], 'imdb_id', ''))})
+        self._set_show_data(sid, 'externals', {'imdb_id': ImdbIdentifier(getattr(self[sid], 'imdb_id', None)).series_id})
 
         # get episode data
         if self.config['episodes_enabled']:

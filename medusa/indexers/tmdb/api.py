@@ -77,7 +77,8 @@ class Tmdb(BaseIndexer):
             ('seasons', 'seasons'),
             ('poster_thumb', 'poster_path'),
             ('fanart', 'backdrop_path'),
-            ('origin_country', 'origin_country')
+            ('origin_country', 'origin_country'),
+            ('external_ids', 'external_ids'),
         ]
 
         self.episodes_map = [
@@ -523,6 +524,8 @@ class Tmdb(BaseIndexer):
 
         # Get external ids.
         external_ids = series_info['series'].get('external_ids', {})
+        if 'imdb_id' in external_ids:
+            external_ids['imdb_id'] = ImdbIdentifier(external_ids['imdb_id']).series_id
         self._set_show_data(tmdb_id, 'externals', external_ids)
 
         # get episode data
@@ -654,7 +657,7 @@ class Tmdb(BaseIndexer):
         :returns: A dict with externals, including the tvmaze id.
         """
         try:
-            wanted_externals = ['tvdb_id', 'imdb_id', 'tvrage_id', 'imdb_id']
+            wanted_externals = ['tvdb_id', 'imdb_id', 'tvrage_id']
             for external_id in wanted_externals:
                 if kwargs.get(external_id):
                     external_id_value = kwargs.get(external_id)
@@ -669,6 +672,8 @@ class Tmdb(BaseIndexer):
                                     in viewitems(externals)
                                     if external_value and tmdb_external_id in wanted_externals}
                         externals['tmdb_id'] = result['tv_results'][0]['id']
+                        if 'imdb_id' in externals:
+                            externals['imdb_id'] = ImdbIdentifier(externals['imdb_id']).series_id
                         return externals
             return {}
         except RequestException as error:
