@@ -94,6 +94,14 @@ export default {
             Vue.set(filteredShows.find(s => s === show), 'selected', { indexer, showId });
         },
         /**
+         * Convert an Imdb Id to an id without the `tt` prefix.
+         * @param {String} value - Imdb id with tt prefix.
+         * @returns {Number} - Id without the tt prefix.
+         */
+        imdbToId(value) {
+            return Number(String(value).replace(/^tt0*/g, ''));
+        },
+        /**
          * Start changing the shows indexer.
          */
         async start() {
@@ -102,7 +110,7 @@ export default {
                 // Loop through the shows and start a ChangeIndexerQueueItem for each.
                 // Store the queueItem identifier, to keep track.
                 const oldSlug = show.id.slug;
-                const newSlug = `${show.selected.indexer}${show.selected.showId}`;
+                const newSlug = `${show.selected.indexer}${this.imdbToId(show.selected.showId)}`;
                 if (oldSlug === newSlug) {
                     this.$snotify.warning(
                         'Old shows indexer and new shows indexer are the same, skipping',
