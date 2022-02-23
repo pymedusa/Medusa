@@ -91,8 +91,8 @@ class Imdb(BaseIndexer):
             ('rating', 'ratings.rating'),
             ('votes', 'ratings.ratingCount'),
             ('nextepisode', 'base.nextEpisode'),
+            ('lastaired', 'base.seriesEndYear'),
             # Could not find contentrating in api.
-
         ]
 
         self.episode_map = [
@@ -144,6 +144,9 @@ class Imdb(BaseIndexer):
 
                 # Add static value for airs time.
                 return_dict['airs_time'] = '0:00AM'
+
+                if return_dict['firstaired']:
+                    return_dict['status'] = 'Ended' if return_dict['lastaired'] else 'Continuing'
 
             except Exception as error:
                 log.warning('Exception trying to parse attribute: {0}, with exception: {1!r}', item, error)
@@ -389,8 +392,6 @@ class Imdb(BaseIndexer):
         """
 
         episodes_url = 'http://www.imdb.com/title/{imdb_id}/episodes?season={season}'
-        series_id = ImdbIdentifier(imdb_id).series_id
-        series_status = 'Ended'
         episodes = []
 
         try:
@@ -423,14 +424,13 @@ class Imdb(BaseIndexer):
 
                     episodes.append(Episode(episode_number=episode_number, season_number=season,
                                             synopsis=synopsis, thumbnail=episode_thumbnail))
-                    self._set_show_data(series_id, 'status', series_status)
 
         except Exception as error:
-            log.exception('Error while trying to enrich imdb series {0}, {1}', series_id, error)
+            log.exception('Error while trying to enrich imdb series {0}, {1}', ImdbIdentifier(imdb_id).imdb_id, error)
 
         for episode in episodes:
-            self._set_item(series_id, episode.season_number, episode.episode_number, 'overview', episode.synopsis)
-            self._set_item(series_id, episode.season_number, episode.episode_number, 'filename', episode.thumbnail)
+            self._set_item(imdb_id, episode.season_number, episode.episode_number, 'overview', episode.synopsis)
+            self._set_item(imdb_id, episode.season_number, episode.episode_number, 'filename', episode.thumbnail)
 
     def _parse_images(self, imdb_id):
         """Parse Show and Season posters.
