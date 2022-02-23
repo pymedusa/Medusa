@@ -1201,7 +1201,8 @@ class Application(object):
             # initialize the recommended shows database
             recommended_db_con = db.DBConnection('recommended.db')
             db.upgradeDatabase(recommended_db_con, recommended_db.InitialSchema)
-
+            db.sanityCheckDatabase(recommended_db_con, recommended_db.RecommendedSanityCheck)
+            
             # Performs a vacuum on cache.db
             logger.debug(u'Performing a vacuum on the CACHE database')
             cache_db_con.action('VACUUM')

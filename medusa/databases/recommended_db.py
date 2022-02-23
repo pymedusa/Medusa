@@ -19,14 +19,7 @@ class RecommendedSanityCheck(db.DBSanityCheck):
 
     def remove_imdb_tt(self):
         log.debug(u'Remove shows added with an incorrect imdb id.')
-        query = "SELECT * from indexer_mapping WHERE mindexer_id = ''"
-
-        sql_results = self.connection.select(query)
-        if sql_results:
-            log.debug(u'Found {0} null indexer mapping. Deleting...',
-                      len(sql_results))
-            self.connection.action("DELETE FROM indexer_mapping WHERE mindexer_id = ''")
-
+        self.connection.action("DELETE FROM shows WHERE source = 10 AND series_id like '%tt%'")
 
 # Add new migrations at the bottom of the list
 # and subclass the previous migration.
