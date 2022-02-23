@@ -145,8 +145,8 @@ class Imdb(BaseIndexer):
                 # Add static value for airs time.
                 return_dict['airs_time'] = '0:00AM'
 
-                if return_dict['firstaired']:
-                    return_dict['status'] = 'Ended' if return_dict['lastaired'] else 'Continuing'
+                if return_dict.get('firstaired'):
+                    return_dict['status'] = 'Ended' if return_dict.get('lastaired') else 'Continuing'
 
             except Exception as error:
                 log.warning('Exception trying to parse attribute: {0}, with exception: {1!r}', item, error)
