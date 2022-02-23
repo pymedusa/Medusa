@@ -224,55 +224,10 @@ class MainSanityCheck(db.DBSanityCheck):
 
     def clean_imdb_tt_ids(self):
         # Get all records with 'tt'
+        log.debug(u'Cleaning indexer_mapping table, removing references to same indexer')
+        self.connection.action('DELETE from indexer_mapping WHERE indexer = mindexer')
         log.debug(u'Cleaning indexer_mapping table from tt indexer ids')
-        self.connection.action('DELETE from indexer_mapping WHERE indexer = mindexer');
-
-        result = self.connection.select("select * from indexer_mapping where indexer_id like '%tt%' or mindexer_id like '%tt%'")
-        if not result:
-            return
-
-        log.debug(u'tt: Looping through found results')
-        
-        for row in result: 
-            exists = None
-            try:
-                exists = self.connection.select(
-                    """
-                        SELECT * FROM indexer_mapping WHERE indexer_id = ? AND indexer = ? AND mindexer_id = ? AND mindexer = ?
-                    """, [
-                        ImdbIdentifier(row['indexer_id']).series_id, row['indexer'],
-                        ImdbIdentifier(row['mindexer_id']).series_id, row['mindexer']
-                    ]
-                )
-            except ValueError:
-                log.debug(u'tt: deleting duplicates')
-                self.connection.action(
-                    """DELETE FROM indexer_mapping
-                    WHERE indexer_id = ? AND indexer = ? AND mindexer_id = ? AND mindexer = ?;
-                    """, [
-                        row['indexer_id'], row['indexer'], row['mindexer_id'], row['mindexer']
-                    ]
-                )
-                
-            if exists:
-                log.debug(u'tt: It exists deleting duplicates')
-                self.connection.action(
-                    """DELETE FROM indexer_mapping
-                    WHERE indexer_id = ? AND indexer = ? AND mindexer_id = ? AND mindexer = ?;
-                    """, [
-                        row['indexer_id'], row['indexer'], row['mindexer_id'], row['mindexer']
-                    ]
-                )
-            else:
-                log.debug(u'tt: Does not exists, updating it')
-                self.connection.action(
-                    """UPDATE indexer_mapping SET indexer_id = ?, mindexer_id = ?
-                    WHERE indexer_id = ? AND indexer = ? AND mindexer_id = ? AND mindexer = ?;
-                    """, [
-                        ImdbIdentifier(row['indexer_id']).series_id, ImdbIdentifier(row['mindexer_id']).series_id,
-                        row['indexer_id'], row['indexer'], row['mindexer_id'], row['mindexer']
-                    ]
-                )
+        self.connection.action("DELETE FROM indexer_mapping where indexer_id like '%tt%' or mindexer_id like '%tt%'")
 
 
 # ======================
