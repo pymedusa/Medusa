@@ -240,7 +240,7 @@ class Imdb(BaseIndexer):
 
         return OrderedDict({'series': mapped_results})
 
-    def _get_episodes(self, imdb_id, detailed=True, *args):  # pylint: disable=unused-argument
+    def _get_episodes(self, imdb_id, detailed=True, *args, **kwargs):  # pylint: disable=unused-argument
         """
         Get all the episodes for a show by imdb id
 

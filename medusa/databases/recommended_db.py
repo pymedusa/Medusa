@@ -12,6 +12,22 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
+
+class RecommendedSanityCheck(db.DBSanityCheck):
+    def check(self):
+        self.remove_imdb_tt()
+
+    def remove_imdb_tt(self):
+        log.debug(u'Remove shows added with an incorrect imdb id.')
+        query = "SELECT * from indexer_mapping WHERE mindexer_id = ''"
+
+        sql_results = self.connection.select(query)
+        if sql_results:
+            log.debug(u'Found {0} null indexer mapping. Deleting...',
+                      len(sql_results))
+            self.connection.action("DELETE FROM indexer_mapping WHERE mindexer_id = ''")
+
+
 # Add new migrations at the bottom of the list
 # and subclass the previous migration.
 class InitialSchema(db.SchemaUpgrade):
