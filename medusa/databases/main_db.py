@@ -224,8 +224,8 @@ class MainSanityCheck(db.DBSanityCheck):
 
     def clean_imdb_tt_ids(self):
         # Get all records with 'tt'
+        log.debug(u'Cleaning indexer_mapping table from tt indexer ids')
         self.connection.action('DELETE from indexer_mapping WHERE indexer = mindexer');
-
 
         result = self.connection.select("select * from indexer_mapping where indexer_id like '%tt%' or mindexer_id like '%tt%'")
         if not result:
