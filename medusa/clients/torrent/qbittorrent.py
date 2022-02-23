@@ -416,8 +416,9 @@ class QBittorrentAPI(GenericClient):
         # Store destination
         client_status.destination = torrent['save_path']
 
-        # Store resource
-        client_status.resource = basename(torrent['content_path'])
+        if torrent.get('content_path'):
+            # Store resource
+            client_status.resource = basename(torrent['content_path'])
 
         log.info('Qbittorrent torrent: [{name}] using state: [{state}]', {
             'name': client_status.resource, 'state': torrent['state']
