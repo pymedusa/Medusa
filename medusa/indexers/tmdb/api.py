@@ -48,7 +48,7 @@ class Tmdb(BaseIndexer):
         self.tmdb_configuration = self.tmdb.Configuration()
         try:
             self.response = self.tmdb_configuration.info()
-        except RequestException as e:
+        except (AttributeError, RequestException) as e:
             raise IndexerUnavailable('Indexer TMDB is unavailable at this time. Cause: {cause}'.format(cause=e))
 
         self.config['artwork_prefix'] = '{base_url}{image_size}{file_path}'
@@ -166,7 +166,7 @@ class Tmdb(BaseIndexer):
                 last = search_result.get('total_pages', 0)
                 results += search_result.get('results')
                 page += 1
-        except RequestException as error:
+        except (AttributeError, RequestException) as error:
             raise IndexerUnavailable('Show search failed using indexer TMDB. Cause: {cause}'.format(cause=error))
 
         if not results:
@@ -237,7 +237,7 @@ class Tmdb(BaseIndexer):
                 language='{0}'.format(request_language),
                 append_to_response=extra_info
             )
-        except RequestException as error:
+        except (AttributeError, RequestException) as error:
             raise IndexerUnavailable('Show info retrieval failed using indexer TMDB. Cause: {cause!r}'.format(
                 cause=error
             ))
@@ -275,7 +275,7 @@ class Tmdb(BaseIndexer):
             try:
                 season_info = self.tmdb.TV_Seasons(tmdb_id, season).info(language=self.config['language'])
                 results += season_info['episodes']
-            except RequestException as error:
+            except (AttributeError, RequestException) as error:
                 raise IndexerException(
                     'Could not get episodes for series {series} using indexer TMDB. Cause: {cause}'.format(
                         series=tmdb_id, cause=error
@@ -358,7 +358,7 @@ class Tmdb(BaseIndexer):
 
         try:
             images = self.tmdb.TV(tmdb_id).images(params=params)
-        except RequestException as error:
+        except (AttributeError, RequestException) as error:
             raise IndexerUnavailable('Error trying to get images. Cause: {cause}'.format(cause=error))
 
         bid = images['id']
@@ -447,7 +447,7 @@ class Tmdb(BaseIndexer):
         # TMDB also support passing language here as a param.
         try:
             credits = self.tmdb.TV(tmdb_id).credits(language=self.config['language'])  # pylint: disable=W0622
-        except RequestException as error:
+        except (AttributeError, RequestException) as error:
             raise IndexerException('Could not get actors. Cause: {cause}'.format(cause=error))
 
         if not credits or not credits.get('cast'):
@@ -561,7 +561,7 @@ class Tmdb(BaseIndexer):
                             results += [season['value']['season_number']]
                     total_pages = updates.get('total_pages', 0)
                 page += 1
-        except RequestException as error:
+        except (AttributeError, RequestException) as error:
             raise IndexerException('Could not get latest series season updates for series {series}. Cause: {cause}'.format(
                 series=tmdb_id, cause=error
             ))
@@ -582,7 +582,7 @@ class Tmdb(BaseIndexer):
                 results += [_.get('id') for _ in updates.get('results')]
                 total_pages = updates.get('total_pages')
                 page += 1
-        except RequestException as error:
+        except (AttributeError, RequestException) as error:
             raise IndexerException('Could not get latest updates. Cause: {cause}'.format(
                 cause=error
             ))
@@ -676,5 +676,5 @@ class Tmdb(BaseIndexer):
                             externals['imdb_id'] = ImdbIdentifier(externals['imdb_id']).series_id
                         return externals
             return {}
-        except RequestException as error:
+        except (AttributeError, RequestException) as error:
             raise IndexerException("Could not get external id's. Cause: {cause}".format(cause=error))
