@@ -230,6 +230,8 @@ class MainSanityCheck(db.DBSanityCheck):
         result = self.connection.select("select * from indexer_mapping where indexer_id like '%tt%' or mindexer_id like '%tt%'")
         if not result:
             return
+
+        log.debug(u'tt: Looping through found results')
         
         for row in result: 
             exists = None
@@ -243,6 +245,7 @@ class MainSanityCheck(db.DBSanityCheck):
                     ]
                 )
             except ValueError:
+                log.debug(u'tt: deleting duplicates')
                 self.connection.action(
                     """DELETE FROM indexer_mapping
                     WHERE indexer_id = ? AND indexer = ? AND mindexer_id = ? AND mindexer = ?;
@@ -250,7 +253,9 @@ class MainSanityCheck(db.DBSanityCheck):
                         row['indexer_id'], row['indexer'], row['mindexer_id'], row['mindexer']
                     ]
                 )
+                
             if exists:
+                log.debug(u'tt: It exists deleting duplicates')
                 self.connection.action(
                     """DELETE FROM indexer_mapping
                     WHERE indexer_id = ? AND indexer = ? AND mindexer_id = ? AND mindexer = ?;
@@ -259,6 +264,7 @@ class MainSanityCheck(db.DBSanityCheck):
                     ]
                 )
             else:
+                log.debug(u'tt: Does not exists, updating it')
                 self.connection.action(
                     """UPDATE indexer_mapping SET indexer_id = ?, mindexer_id = ?
                     WHERE indexer_id = ? AND indexer = ? AND mindexer_id = ? AND mindexer = ?;
