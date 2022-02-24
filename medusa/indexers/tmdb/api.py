@@ -346,7 +346,15 @@ class Tmdb(BaseIndexer):
 
         This interface will be improved in future versions.
         """
-        key_mapping = {'file_path': 'bannerpath', 'vote_count': 'ratingcount', 'vote_average': 'rating', 'id': 'id'}
+        key_mapping = [
+            ('bannerpath', 'file_path'),
+            ('ratingcount', 'vote_count'),
+            ('rating', 'vote_average'),
+            ('id', 'id'),
+            ('width', 'width'),
+            ('height', 'height'),
+            ('aspect_ratio', 'aspect_ratio'),
+        ]
         image_sizes = {'fanart': 'backdrop_sizes', 'poster': 'poster_sizes'}
         typecasts = {'rating': float, 'ratingcount': int}
 
