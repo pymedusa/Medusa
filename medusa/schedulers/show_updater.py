@@ -128,6 +128,8 @@ class ShowUpdater(object):
                     updated_seasons = indexer_api.get_last_updated_seasons(
                         [show.indexerid], from_time=show.last_update_indexer, weeks=update_max_weeks, cache=self.update_cache
                     )
+                except IndexerSeasonUpdatesNotSupported:
+                    raise
                 except IndexerUnavailable:
                     logger.warning('Problem get_last_updated_seasonsrunning show_updater, Indexer {indexer_name} seems to be having '
                                    'connectivity issues while trying to look for show updates for show: {show}',
