@@ -85,7 +85,7 @@ class Imdb(BaseIndexer):
             ('seriesname', 'base.title'),
             ('summary', 'plot.outline.text'),
             ('firstaired', 'year'),
-            ('poster', 'base.image.url'),
+            # ('poster', 'base.image.url'),
             ('show_url', 'base.id'),
             ('firstaired', 'base.seriesStartYear'),
             ('rating', 'ratings.rating'),
@@ -525,53 +525,78 @@ class Imdb(BaseIndexer):
         # Get desired image types from images
         image_types = 'banner', 'fanart', 'poster'
 
-        def get_resolution(image):
+        def by_aspect_ratio(image):
             w, h = image['bannertype2'].split('x')
-            return int(w) * int(h)
-
-        # Iterate through desired image types
-        for img_type in image_types:
-
-            try:
-                image_type = images[img_type]
-            except KeyError:
-                log.debug(
-                    u'No {image}s found for {series}', {
-                        'image': img_type,
-                        'series': series_id,
-                    }
-                )
-                continue
-
+            return int(w) / int(h)
+        
+        # Parse Posters and Banners (by aspect ratio)
+        if images.get('poster'):
             # Flatten image_type[res][id].values() into list of values
             merged_images = chain.from_iterable(
                 resolution.values()
-                for resolution in image_type.values()
+                for resolution in images['poster'].values()
+            )
+
+            # Sort by aspect ratio
+            sort_images = sorted(
+                merged_images,
+                key=by_aspect_ratio
+            )
+
+            # Filter out the posters with an aspect ratio of < 0.8
+            posters = [image for image in sort_images if by_aspect_ratio(image) < 0.8]
+            banners = [image for image in sort_images if by_aspect_ratio(image) > 3]
+
+            if len(posters):
+                highest_rated = posters[0]
+                img_url = highest_rated['_bannerpath']
+                log.debug(
+                    u'Selecting poster with the lowest aspect ratio (resolution={resolution})\n'
+                     'aspect ratio of {aspect_ratio} ', {
+                        'resolution': highest_rated['bannertype2'],
+                        'aspect_ratio': by_aspect_ratio(highest_rated)
+                    }
+                )
+                self._set_show_data(series_id, 'poster', img_url)
+
+            if len(banners):
+                highest_rated = banners[-1]
+                img_url = highest_rated['_bannerpath']
+                log.debug(
+                    u'Selecting poster with the lowest aspect ratio (resolution={resolution})\n'
+                     'aspect ratio of {aspect_ratio} ', {
+                        'resolution': highest_rated['bannertype2'],
+                        'aspect_ratio': by_aspect_ratio(highest_rated)
+                    }
+                )
+                self._set_show_data(series_id, 'banner', img_url)
+        
+
+        if images.get('fanart'):
+            # Flatten image_type[res][id].values() into list of values
+            merged_images = chain.from_iterable(
+                resolution.values()
+                for resolution in images['fanart'].values()
             )
 
             # Sort by resolution
             sort_images = sorted(
                 merged_images,
-                key=get_resolution,
+                key=by_aspect_ratio,
                 reverse=True,
             )
 
-            if not sort_images:
-                continue
-
-            # Get the highest rated image
-            highest_rated = sort_images[0]
-            img_url = highest_rated['_bannerpath']
-            log.debug(
-                u'Selecting image with the highest resolution {image} (resolution={resolution}):', {
-                    'image': img_type,
-                    'resolution': highest_rated['bannertype2'],
-                }
-            )
-
-            # Save the image, but not for the poster, as we're using the poster that comes with the series data.
-            if img_type != 'poster':
-                self._set_show_data(series_id, img_type, img_url)
+            if len(sort_images):
+                highest_rated = sort_images[0]
+                img_url = highest_rated['_bannerpath']
+                log.debug(
+                    u'Selecting poster with the lowest aspect ratio (resolution={resolution})\n'
+                     'aspect ratio of {aspect_ratio} ', {
+                        'resolution': highest_rated['bannertype2'],
+                        'aspect_ratio': by_aspect_ratio(highest_rated)
+                    }
+                )
+                self._set_show_data(series_id, 'fanart', img_url)
 
     def _parse_actors(self, imdb_id):
         """Get and parse actors using the get_title_credits route.
