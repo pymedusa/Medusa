@@ -538,7 +538,7 @@ class Tmdb(BaseIndexer):
 
         # get episode data
         if self.config['episodes_enabled']:
-            self._get_episodes(tmdb_id, specials=False, aired_season=None)
+            self._get_episodes(tmdb_id, specials=False, aired_season=self.config['limit_seasons'])
 
         # Parse banners
         if self.config['banners_enabled']:

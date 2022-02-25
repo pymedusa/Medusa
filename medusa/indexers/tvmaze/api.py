@@ -219,7 +219,7 @@ class TVmaze(BaseIndexer):
         mapped_results = self._map_results(results, self.series_map)
         return OrderedDict({'series': mapped_results})
 
-    def _get_episodes(self, tvmaze_id, specials=False, aired_season=None):  # pylint: disable=unused-argument
+    def _get_episodes(self, tvmaze_id, specials=False, *args, **kwargs):  # pylint: disable=unused-argument
         """
         Get all the episodes for a show by tvmaze id.
 
@@ -465,7 +465,7 @@ class TVmaze(BaseIndexer):
 
         # get episode data
         if self.config['episodes_enabled']:
-            self._get_episodes(tvmaze_id, specials=False, aired_season=None)
+            self._get_episodes(tvmaze_id, specials=False)
 
         # Parse banners
         if self.config['banners_enabled']:
