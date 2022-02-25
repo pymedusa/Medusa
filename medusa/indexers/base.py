@@ -88,6 +88,7 @@ class BaseIndexer(object):
         self.config['banners_enabled'] = banners
         self.config['image_type'] = image_type
         self.config['actors_enabled'] = actors
+        self.config['limit_seasons'] = []
 
         if self.config['debug_enabled']:
             warnings.warn('The debug argument to tvdbv2_api.__init__ will be removed in the next version. '

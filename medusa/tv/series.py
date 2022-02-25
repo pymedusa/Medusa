@@ -1584,7 +1584,7 @@ class Series(TV):
         self.reset_dirty()
         return True
 
-    def load_from_indexer(self, tvapi=None):
+    def load_from_indexer(self, tvapi=None, limit_seasons=None):
         """Load show from indexer.
 
         :param tvapi:
@@ -1600,6 +1600,9 @@ class Series(TV):
         )
 
         indexer_api = tvapi or self.indexer_api
+        if limit_seasons:
+            self.indexer_api.config['limit_seasons'] = limit_seasons
+
         indexed_show = indexer_api[self.series_id]
 
         if getattr(indexed_show, 'firstaired', ''):

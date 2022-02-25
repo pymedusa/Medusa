@@ -85,7 +85,7 @@ class Imdb(BaseIndexer):
             ('seriesname', 'base.title'),
             ('summary', 'plot.outline.text'),
             ('firstaired', 'year'),
-            # ('poster', 'base.image.url'),
+            ('poster', 'base.image.url'),
             ('show_url', 'base.id'),
             ('firstaired', 'base.seriesStartYear'),
             ('rating', 'ratings.rating'),
@@ -240,7 +240,7 @@ class Imdb(BaseIndexer):
 
         return OrderedDict({'series': mapped_results})
 
-    def _get_episodes(self, imdb_id, detailed=True, *args, **kwargs):  # pylint: disable=unused-argument
+    def _get_episodes(self, imdb_id, detailed=True, aired_season=None, *args, **kwargs):  # pylint: disable=unused-argument
         """
         Get all the episodes for a show by imdb id
 
@@ -249,13 +249,17 @@ class Imdb(BaseIndexer):
         """
         # Parse episode data
         log.debug('Getting all episodes of {0}', imdb_id)
+        get_ep_only = kwargs.get('get_ep_only')
+
+        if aired_season:
+            aired_season = [aired_season] if not isinstance(aired_season, list) else aired_season
 
         series_id = imdb_id
         imdb_id = ImdbIdentifier(imdb_id).imdb_id
 
         try:
-            if not self[imdb_id]:
-                self._get_show_data(imdb_id)
+            # if not get_ep_only and not self[ImdbIdentifier(imdb_id).series_id]:
+            #     self._get_show_data(imdb_id)
 
             # results = self.imdb_api.get_title_episodes(imdb_id)
             results = self.imdb_api.get_title_episodes(ImdbIdentifier(imdb_id).imdb_id)
@@ -274,6 +278,9 @@ class Imdb(BaseIndexer):
 
         absolute_number_counter = 1
         for season in results.get('seasons'):
+            if aired_season and season.get('season') not in aired_season:
+                continue
+
             for episode in season['episodes']:
                 season_no, episode_no = episode.get('season'), episode.get('episode')
 
@@ -296,7 +303,7 @@ class Imdb(BaseIndexer):
 
                         self._set_item(series_id, season_no, episode_no, k, v)
 
-            if detailed and season.get('season'):
+            if detailed and season.get('season') and not get_ep_only:
                 # Enrich episode for the current season.
                 self._get_episodes_detailed(imdb_id, season['season'])
 
@@ -304,7 +311,8 @@ class Imdb(BaseIndexer):
                 self._enrich_episodes(imdb_id, season['season'])
 
         # Try to calculate the airs day of week
-        self._calc_airs_day_of_week(imdb_id)
+        if not get_ep_only:
+            self._calc_airs_day_of_week(imdb_id)
 
     def _calc_airs_day_of_week(self, imdb_id):
         series_id = ImdbIdentifier(imdb_id).series_id
@@ -659,7 +667,7 @@ class Imdb(BaseIndexer):
 
         # get episode data
         if self.config['episodes_enabled']:
-            self._get_episodes(imdb_id)
+            self._get_episodes(imdb_id, aired_season=self.config['limit_seasons'])
 
         # Parse banners
         if self.config['banners_enabled']:
@@ -709,7 +717,7 @@ class Imdb(BaseIndexer):
             total_updates = []
 
             # A small api call to get the amount of known seasons
-            self._get_episodes(series_id, detailed=False)
+            self._get_episodes(series_id, detailed=False, get_ep_only=True)
 
             # Get all the seasons
 
