@@ -432,7 +432,7 @@ class Imdb(BaseIndexer):
             self._set_item(imdb_id, episode.season_number, episode.episode_number, 'overview', episode.synopsis)
             self._set_item(imdb_id, episode.season_number, episode.episode_number, 'filename', episode.thumbnail)
 
-    def _parse_images(self, imdb_id):
+    def _parse_images(self, imdb_id, language='en'):
         """Parse Show and Season posters.
 
         Any key starting with an underscore has been processed (not the raw
@@ -488,6 +488,8 @@ class Imdb(BaseIndexer):
                 base_path['bannertype2'] = resolution
                 base_path['_bannerpath'] = image.get('url')
                 base_path['bannerpath'] = image.get('url').split('/')[-1]
+                base_path['languages'] = image.get('languages')
+                base_path['source'] = image.get('source')
                 base_path['id'] = bid
 
                 base_path_thumb['bannertype'] = image_type_thumb
@@ -508,10 +510,10 @@ class Imdb(BaseIndexer):
         if _images.get('poster_thumb'):
             self._set_show_data(imdb_id, 'poster', _get_poster_thumb(_images.get('poster_thumb')))
 
-        self._save_images(imdb_id, _images)
+        self._save_images(imdb_id, _images, language=language)
         self._set_show_data(imdb_id, '_banners', _images)
 
-    def _save_images(self, series_id, images):
+    def _save_images(self, series_id, images, language='en'):
         """
         Save the highest rated images for the show.
 
@@ -544,7 +546,11 @@ class Imdb(BaseIndexer):
             )
 
             # Filter out the posters with an aspect ratio of < 0.8
-            posters = [image for image in sort_images if by_aspect_ratio(image) < 0.8]
+            posters = [
+                image for image in sort_images if 0.6 > by_aspect_ratio(image) < 0.8
+                and image.get('languages')
+                and image['languages'] == [language]
+            ]
             banners = [image for image in sort_images if by_aspect_ratio(image) > 3]
 
             if len(posters):
@@ -657,7 +663,7 @@ class Imdb(BaseIndexer):
 
         # Parse banners
         if self.config['banners_enabled']:
-            self._parse_images(imdb_id)
+            self._parse_images(imdb_id, language=language)
 
         # Parse actors
         if self.config['actors_enabled']:

@@ -334,6 +334,8 @@ export default {
 
 .poster-overlay {
     position: absolute;
+    top: 0;
+    left: 0;
 }
 
 .show-container .ui-progressbar {
@@ -389,7 +391,8 @@ export default {
 }
 
 .overlay-container {
-    display: flex;
-    align-items: baseline;
+    display: block;
+    overflow: hidden;
+    position: relative;
 }
 </style>
