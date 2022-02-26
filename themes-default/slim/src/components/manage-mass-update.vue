@@ -96,8 +96,8 @@
                     >
                 </span>
 
-                <span v-else-if="props.column.label === 'Refresh'" class="align-center">
-                    <input :disabled="inQueueOrStarted('refresh', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateRefresh"
+                <span v-else-if="props.column.label === 'Rescan'" class="align-center">
+                    <input :disabled="inQueueOrStarted('rescan', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateRefresh"
                            :data-action="props.column.action" :data-show="props.row.id.slug" @input="updateActions($event, props.row.id.slug)"
                     >
                 </span>
@@ -300,14 +300,14 @@ export default {
                 action: 'update',
                 hidden: getCookie('Update')
             }, {
-                label: 'Refresh',
+                label: 'Rescan',
                 field: 'rescan',
                 sortable: false,
                 filterOptions: {
                     customFilter: true
                 },
-                action: 'refresh',
-                hidden: getCookie('Refresh')
+                action: 'rescan',
+                hidden: getCookie('Rescan')
             }, {
                 label: 'Rename',
                 field: 'rename',
@@ -356,7 +356,7 @@ export default {
             }],
             massUpdateActions: {
                 update: [],
-                refresh: [],
+                rescan: [],
                 rename: [],
                 subtitle: [],
                 delete: [],
@@ -415,14 +415,14 @@ export default {
         clearActions() {
             this.massUpdateActions = {
                 update: [],
-                refresh: [],
+                rescan: [],
                 rename: [],
                 subtitle: [],
                 delete: [],
                 remove: [],
                 image: []
             };
-            for (const action of ['update', 'refresh', 'rename', 'subtitle', 'delete', 'remove', 'image']) {
+            for (const action of ['update', 'rescan', 'rename', 'subtitle', 'delete', 'remove', 'image']) {
                 document.querySelectorAll(`[data-action="${action}"]`).forEach(el => {
                     el.checked = false;
                 });
@@ -433,7 +433,7 @@ export default {
             const { action } = event.currentTarget.dataset;
             this.massUpdateActions = {
                 update: [],
-                refresh: [],
+                rescan: [],
                 rename: [],
                 subtitle: [],
                 delete: [],
@@ -480,7 +480,7 @@ export default {
             const { showQueue, showQueueItems } = this;
             const queueItemNames = new Map([
                 ['update', 'UPDATE'],
-                ['refresh', 'REFRESH'],
+                ['rescan', 'REFRESH'],
                 ['rename', 'RENAME'],
                 ['subtitle', 'SUBTITLE'],
                 ['delete', 'REMOVE-SHOW'],
