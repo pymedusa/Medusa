@@ -249,7 +249,6 @@ class Imdb(BaseIndexer):
         """
         # Parse episode data
         log.debug('Getting all episodes of {0}', imdb_id)
-        get_ep_only = kwargs.get('get_ep_only')
 
         if aired_season:
             aired_season = [aired_season] if not isinstance(aired_season, list) else aired_season
@@ -258,9 +257,6 @@ class Imdb(BaseIndexer):
         imdb_id = ImdbIdentifier(imdb_id).imdb_id
 
         try:
-            # if not get_ep_only and not self[ImdbIdentifier(imdb_id).series_id]:
-            #     self._get_show_data(imdb_id)
-
             # results = self.imdb_api.get_title_episodes(imdb_id)
             results = self.imdb_api.get_title_episodes(ImdbIdentifier(imdb_id).imdb_id)
         except (LookupError, IndexerShowNotFound) as error:
@@ -303,7 +299,7 @@ class Imdb(BaseIndexer):
 
                         self._set_item(series_id, season_no, episode_no, k, v)
 
-            if detailed and season.get('season') and not get_ep_only:
+            if detailed and season.get('season'):
                 # Enrich episode for the current season.
                 self._get_episodes_detailed(imdb_id, season['season'])
 
@@ -311,8 +307,7 @@ class Imdb(BaseIndexer):
                 self._enrich_episodes(imdb_id, season['season'])
 
         # Try to calculate the airs day of week
-        if not get_ep_only:
-            self._calc_airs_day_of_week(imdb_id)
+        self._calc_airs_day_of_week(imdb_id)
 
     def _calc_airs_day_of_week(self, imdb_id):
         series_id = ImdbIdentifier(imdb_id).series_id
@@ -361,7 +356,6 @@ class Imdb(BaseIndexer):
         """
 
         try:
-            # results = self.imdb_api.get_title_episodes(imdb_id)
             results = self.imdb_api.get_title_episodes_detailed(imdb_id=ImdbIdentifier(imdb_id).imdb_id, season=season)
         except LookupError as error:
             raise IndexerShowIncomplete(
@@ -709,32 +703,48 @@ class Imdb(BaseIndexer):
 
         for series_id in show_list:
             series_obj = Show.find_by_id(app.showList, self.indexer, series_id)
-            all_episodes = series_obj.get_all_episodes()
-
-            if not all_episodes:
-                continue
+            all_episodes_local = series_obj.get_all_episodes()
 
             total_updates = []
-
+            results = None
             # A small api call to get the amount of known seasons
-            self._get_episodes(series_id, detailed=False, get_ep_only=True)
+            try:
+                results = self.imdb_api.get_title_episodes(ImdbIdentifier(series_id).imdb_id)
+            except (LookupError, IndexerShowNotFound) as error:
+                raise IndexerShowIncomplete(
+                    'Show episode search exception, '
+                    'could not get any episodes. Exception: {e!r}'.format(
+                        e=error
+                    )
+                )
+            except RequestException as error:
+                raise IndexerUnavailable('Error connecting to Imdb api. Caused by: {0!r}'.format(error))
+
+            if not results or not results.get('seasons'):
+                continue
 
             # Get all the seasons
 
             # Loop through seasons
-            for season in self[series_id]:
+            for season in results['seasons']:
+                season_number = season.get('season')
+
+                # Imdb api gives back a season without the 'season' key. This season has special episodes.
+                # Dont know what this is, but skipping it.
+                if not season_number:
+                    continue
 
                 # Check if the season is already known in our local db.
-                season_episodes = [ep for ep in all_episodes if ep.season == season]
-                if not season_episodes:
-                    if len(self[series_id][season]):
-                        total_updates.append(season)
-                        log.debug('{series}: Season {season} seems to be a new season. Adding it.',
-                                  {'series': series_obj.name, 'season': season})
-                        continue
+                local_season_episodes = [ep for ep in all_episodes_local if ep.season == season_number]
+                remote_season_episodes = season['episodes']
+                if not local_season_episodes or len(remote_season_episodes) != len(local_season_episodes):
+                    total_updates.append(season_number)
+                    log.debug('{series}: Season {season} seems to be a new season. Adding it.',
+                                {'series': series_obj.name, 'season': season_number})
+                    continue
 
                 # Per season, get latest episode airdate
-                sorted_episodes = sorted(season_episodes, key=lambda x: x.airdate)
+                sorted_episodes = sorted(local_season_episodes, key=lambda x: x.airdate)
                 # date_season_start = sorted_episodes[0].airdate
                 date_season_last = sorted_episodes[-1].airdate
 
@@ -744,20 +754,20 @@ class Imdb(BaseIndexer):
                 update_interval = self._calc_update_interval(
                     # date_season_start,
                     date_season_last,
-                    season_finished=bool(self[series_id].get(season + 1))
+                    season_finished=bool([s for s in results['seasons'] if s.get('season') == season_number +1])
                 )
 
-                last_update = cache.get_last_update_season(self.indexer, series_id, season)
+                last_update = cache.get_last_update_season(self.indexer, series_id, season_number)
                 if last_update < time() - update_interval:
                     # This season should be updated.
-                    total_updates.append(season)
+                    total_updates.append(season_number)
 
                     # Update last_update for this season.
-                    cache.set_last_update_season(self.indexer, series_id, season)
+                    cache.set_last_update_season(self.indexer, series_id, season_number)
                 else:
                     log.debug(
                         '{series}: Season {season} seems to have been recently updated. Not scheduling a new refresh',
-                        {'series': series_obj.name, 'season': season}
+                        {'series': series_obj.name, 'season': season_number}
                     )
 
             show_season_updates[series_id] = list(set(total_updates))
