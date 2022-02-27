@@ -236,7 +236,7 @@ class NameParser(object):
 
         # It's possible that we map a parsed result to an anime series,
         # but the result is not detected/parsed as an anime. In that case, we're using the result.episode_numbers.
-        else:
+        elif result.episode_numbers:
             for episode_number in result.episode_numbers:
                 season = result.season_number
                 episode = episode_number
@@ -269,6 +269,9 @@ class NameParser(object):
                         'Anime series {name} using using indexer numbering #{absolute}: {ep}',
                         {'name': result.series.name, 'absolute': idx_abs_ep, 'ep': episode_num(season, episode)}
                     )
+        else:
+            # Treat it as a season pack.
+            new_season_numbers.append(season_exception or result.season_number)
 
         return new_episode_numbers, new_season_numbers, new_absolute_numbers
 
@@ -286,23 +289,27 @@ class NameParser(object):
                 {'name': result.series.name}
             )
 
-        for episode_number in result.episode_numbers:
-            season = ex_season
-            episode = episode_number
+        if result.episode_numbers:
+            for episode_number in result.episode_numbers:
+                season = ex_season
+                episode = episode_number
 
-            (idx_season, idx_episode) = scene_numbering.get_indexer_numbering(
-                result.series,
-                episode_number,
-                ex_season
-            )
+                (idx_season, idx_episode) = scene_numbering.get_indexer_numbering(
+                    result.series,
+                    episode_number,
+                    ex_season
+                )
 
-            if idx_season is not None:
-                season = idx_season
-            if idx_episode is not None:
-                episode = idx_episode
+                if idx_season is not None:
+                    season = idx_season
+                if idx_episode is not None:
+                    episode = idx_episode
 
-            new_season_numbers.append(season)
-            new_episode_numbers.append(episode)
+                new_season_numbers.append(season)
+                new_episode_numbers.append(episode)
+        else:
+            # No episode numbers. Treat it like a season pack.
+            new_season_numbers.append(ex_season)
 
         return new_episode_numbers, new_season_numbers, new_absolute_numbers
 
@@ -366,12 +373,12 @@ class NameParser(object):
         else:
             new_episode_numbers, new_season_numbers, new_absolute_numbers = self._parse_series(result)
 
-        if not new_season_numbers and not new_episode_numbers:
-            raise InvalidNameException('The result that was found ({result_name}) is not yet supported by Medusa '
-                                       'and will be skipped. Sorry.'.format(result_name=result.original_name))
-
         # Remove None from the list of seasons, as we can't sort on that
         new_season_numbers = sorted({season for season in new_season_numbers if season is not None})
+
+        if not new_season_numbers:
+            raise InvalidNameException('The result that was found ({result_name}) is not yet supported by Medusa '
+                                       'and will be skipped. Sorry.'.format(result_name=result.original_name))
 
         # need to do a quick sanity check here ex. It's possible that we now have episodes
         # from more than one season (by tvdb numbering), and this is just too much

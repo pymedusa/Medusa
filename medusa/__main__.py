@@ -800,6 +800,7 @@ class Application(object):
                 check_setting_int(app.CFG, 'Discord', 'discord_notify_onsubtitledownload', 0))
             app.DISCORD_WEBHOOK = check_setting_str(app.CFG, 'Discord', 'discord_webhook', '', censor_log='normal')
             app.DISCORD_TTS = check_setting_bool(app.CFG, 'Discord', 'discord_tts', 0)
+            app.DISCORD_OVERRIDE_AVATAR = check_setting_bool(app.CFG, 'Discord', 'override_avatar', 0)
             app.DISCORD_NAME = check_setting_str(app.CFG, 'Discord', 'discord_name', '', censor_log='normal')
 
             app.USE_PROWL = bool(check_setting_int(app.CFG, 'Prowl', 'use_prowl', 0))
@@ -1049,6 +1050,7 @@ class Application(object):
                 0, min(23, check_setting_int(app.CFG, 'Recommended', 'recommended_show_update_hour', app.DEFAULT_RECOMMENDED_SHOW_UPDATE_HOUR))
             )
             app.CACHE_RECOMMENDED_TRAKT_LISTS = check_setting_list(app.CFG, 'Recommended', 'trakt_lists', app.CACHE_RECOMMENDED_TRAKT_LISTS)
+            app.CACHE_RECOMMENDED_PURGE_AFTER_DAYS = check_setting_int(app.CFG, 'Recommended', 'purge_after_days', 180)
 
             # Initialize trakt config path.
             trakt.core.CONFIG_PATH = os.path.join(app.CACHE_DIR, '.pytrakt.json')
@@ -1748,6 +1750,7 @@ class Application(object):
         new_config['Recommended']['cache_anilist'] = app.CACHE_RECOMMENDED_ANILIST
         new_config['Recommended']['recommended_show_update_hour'] = int(app.RECOMMENDED_SHOW_UPDATE_HOUR)
         new_config['Recommended']['trakt_lists'] = app.CACHE_RECOMMENDED_TRAKT_LISTS
+        new_config['Recommended']['purge_after_days'] = int(app.CACHE_RECOMMENDED_PURGE_AFTER_DAYS)
 
         new_config['Blackhole'] = {}
         new_config['Blackhole']['nzb_dir'] = app.NZB_DIR
@@ -1907,6 +1910,7 @@ class Application(object):
         new_config['Discord']['discord_notify_onsubtitledownload'] = int(app.DISCORD_NOTIFY_ONSUBTITLEDOWNLOAD)
         new_config['Discord']['discord_webhook'] = app.DISCORD_WEBHOOK
         new_config['Discord']['discord_tts'] = int(app.DISCORD_TTS)
+        new_config['Discord']['override_avatar'] = int(app.DISCORD_OVERRIDE_AVATAR)
         new_config['Discord']['discord_name'] = app.DISCORD_NAME
 
         new_config['Prowl'] = {}

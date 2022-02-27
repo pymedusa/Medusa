@@ -2,9 +2,17 @@
 """Request handler for statistics."""
 from __future__ import unicode_literals
 
+import logging
+
 import guessit
 
+from medusa.logger.adapters.style import CustomBraceAdapter
+from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from medusa.server.api.v2.base import BaseRequestHandler
+
+
+log = CustomBraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class GuessitHandler(BaseRequestHandler):
@@ -26,6 +34,26 @@ class GuessitHandler(BaseRequestHandler):
         if not release:
             return self._bad_request('Missing release name to guess')
 
-        guess = guessit.guessit(release)
+        result = {'error': None}
+        show = None
 
-        return self._ok(data=dict(guess))
+        try:
+            parse_result = NameParser().parse(release)
+            show = parse_result.series.to_json()
+        except InvalidNameException as error:
+            log.debug(
+                'Not enough information to parse release name into a valid show. '
+                'improve naming for: {release}',
+                {'release': release})
+            result['error'] = str(error)
+        except InvalidShowException as error:
+            log.debug(
+                'Could not match the parsed title to a show in your library for: '
+                'Consider adding scene exceptions for {release}',
+                {'release': release})
+            result['error'] = str(error)
+
+        result['guess'] = guessit.guessit(release)
+        result['show'] = show
+
+        return self._ok(data=dict(result))

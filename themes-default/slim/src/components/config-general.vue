@@ -86,6 +86,11 @@
                                         <config-toggle-slider v-model="general.recommended.cache.imdb" label="Cache Imdb lists" id="cache_rec_imdb" />
                                         <config-toggle-slider v-model="general.recommended.cache.anidb" label="Cache Anidb lists" id="cache_rec_anidb" />
                                         <config-toggle-slider v-model="general.recommended.cache.anilist" label="Cache AniList lists" id="cache_rec_anilist" />
+
+                                        <config-textbox-number v-model="general.recommended.cache.purgeAfterDays" label="Purge shows from db after x days" id="cache_purge_days" :min="0" :step="1">
+                                            <p>Number of days to keep shows in the cache (default: 180) <b>(0 will not purge shows at all)</b></p>
+                                        </config-textbox-number>
+
                                     </template>
                                 </fieldset>
                             </div>

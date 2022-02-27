@@ -435,6 +435,7 @@ class MedusaApp(object):
         self.DISCORD_NAME = 'pymedusa'
         self.DISCORD_AVATAR_URL = '{base_url}/images/ico/favicon-144.png'.format(base_url=self.BASE_PYMEDUSA_URL)
         self.DISCORD_TTS = False
+        self.DISCORD_OVERRIDE_AVATAR = False
 
         self.USE_PROWL = False
         self.PROWL_NOTIFY_ONSNATCH = False
@@ -727,6 +728,7 @@ class MedusaApp(object):
             'trending', 'popular', 'anticipated', 'collected',
             'watched', 'played', 'recommendations', 'newshow', 'newseason'
         ]
+        self.CACHE_RECOMMENDED_PURGE_AFTER_DAYS = 180
 
     def _init_scheduler(self, app_prop=None, scheduler=None, enabled=None):
         from medusa.logger.adapters.style import BraceAdapter

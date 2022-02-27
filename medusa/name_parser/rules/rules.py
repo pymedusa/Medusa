@@ -390,17 +390,17 @@ class FixTitlesThatExistOfNumbers(Rule):
         if not absolute_episodes:
             return
 
+        to_remove = []
+        to_append = []
+
         fileparts = matches.markers.named('path')
         for filepart in marker_sorted(fileparts, matches):
             old_title = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'title', index=0)
+            absolute_episode = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'absolute_episode', index=0)
 
-            if not filepart.value.startswith(str(absolute_episodes[0].value)):
+            if not absolute_episode or not filepart.value.startswith(str(absolute_episode.value)):
                 continue
 
-            to_remove = []
-            to_append = []
-
-            absolute_episode = absolute_episodes[0]
             new_title = copy.copy(absolute_episode)
             new_title.name = 'title'
             new_title.value = str(absolute_episode.value)
@@ -409,7 +409,7 @@ class FixTitlesThatExistOfNumbers(Rule):
             to_remove.append(absolute_episode)
             to_remove.append(old_title)
 
-            return to_remove, to_append
+        return to_remove, to_append
 
 
 class CreateAliasWithCountryOrYear(Rule):

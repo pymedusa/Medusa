@@ -4,7 +4,8 @@ export const state = {
     notifyOnDownload: null,
     notifyOnSubtitleDownload: null,
     webhook: null,
-    tts: null
+    tts: null,
+    overrideAvatar: null
 };
 
 export const mutations = {};
