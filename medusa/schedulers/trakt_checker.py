@@ -15,6 +15,7 @@ from medusa.helper.common import episode_num
 from medusa.helpers.externals import show_in_library
 from medusa.helpers.trakt import create_episode_structure, create_show_structure, get_trakt_user
 from medusa.indexers.config import EXTERNAL_IMDB, EXTERNAL_TRAKT, indexerConfig
+from medusa.indexers.imdb.api import ImdbIdentifier
 from medusa.indexers.utils import get_trakt_indexer
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.search.queue import BacklogQueueItem
@@ -488,7 +489,7 @@ class TraktChecker(object):
                     continue
 
                 try:
-                    trakt_show = tv.TVShow(str(trakt_id or show.imdb_id))
+                    trakt_show = tv.TVShow(str(trakt_id or ImdbIdentifier(show.imdb_id).imdb_id))
                     progress = trakt_show.progress
                 except (TraktException, RequestException) as error:
                     log.info("Unable to check if show '{show}' is ended/completed. Error: {error!r}", {
@@ -683,7 +684,7 @@ class TraktChecker(object):
             if trakt_supported_indexer and getattr(trakt_show, trakt_supported_indexer) == medusa_show.indexerid:
                 return True
             # Try to match by imdb_id
-            if getattr(trakt_show, 'imdb') == medusa_show.imdb_id:
+            if getattr(trakt_show, 'imdb') == ImdbIdentifier(medusa_show.imdb_id).imdb_id:
                 return True
             return False
 

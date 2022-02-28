@@ -3,6 +3,7 @@
 import logging
 
 from medusa.helpers import get_title_without_year
+from medusa.indexers.imdb.api import ImdbIdentifier
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.exceptions import RequestException
@@ -70,8 +71,11 @@ def create_show_structure(show_obj):
         'ids': {}
     }
     for valid_trakt_id in ['tvdb_id', 'trakt_id', 'tmdb_id', 'imdb_id']:
-        if show_obj.externals.get(valid_trakt_id):
-            show['ids'][valid_trakt_id[:-3]] = show_obj.externals.get(valid_trakt_id)
+        external = show_obj.externals.get(valid_trakt_id)
+        if external:
+            if valid_trakt_id == 'imdb_id':
+                external = ImdbIdentifier(external).imdb_id
+            show['ids'][valid_trakt_id[:-3]] = external
     return show
 
 
