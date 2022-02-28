@@ -1,4 +1,4 @@
-# coding=utf-8
+    # coding=utf-8
 
 """Provider code for MoreThanTV."""
 
@@ -191,6 +191,10 @@ class MoreThanTVProvider(TorrentProvider):
 
         # Get the login page, to retrieve the token
         response = self.session.get(self.urls['login'])
+        if not response:
+            log.warning('Unable to get login page')
+            return False
+
         token = re.search(r'token".value="([^"]+)"', response.text)
         if not token:
             log.warning('Unable to get login token')
