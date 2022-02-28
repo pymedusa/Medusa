@@ -163,7 +163,16 @@ class Imdb(BaseIndexer):
         :return: A list of Show objects.series_map
         """
 
-        results = self.imdb_api.search_for_title(series)
+        try:
+            results = self.imdb_api.search_for_title(series)
+        except LookupError as error:
+            raise IndexerShowNotFound('Could not get any results searching for {series} using indexer Imdb. Cause: {cause!r}'.format(
+                series=series, cause=error
+            ))
+        except (AttributeError, RequestException) as error:
+            raise IndexerUnavailable('Could not get any results searching for {series} using indexer Imdb. Cause: {cause!r}'.format(
+                series=series, cause=error
+            ))
 
         if results:
             return results
@@ -186,7 +195,7 @@ class Imdb(BaseIndexer):
                 mapped_results.append(show_by_id['series'])
                 return OrderedDict({'series': mapped_results})['series']
             results = self._show_search(series)
-        except RequestException:
+        except IndexerShowNotFound:
             results = None
 
         if not results:
@@ -204,9 +213,17 @@ class Imdb(BaseIndexer):
         :return: An ordered dict with the show searched for.
         """
         results = None
-        if imdb_id:
-            log.debug('Getting all show data for {0}', imdb_id)
+        log.debug('Getting all show data for {0}', imdb_id)
+        try:
             results = self.imdb_api.get_title(ImdbIdentifier(imdb_id).imdb_id)
+        except LookupError as error:
+            raise IndexerShowNotFound('Could not find show {imdb_id} using indexer Imdb. Cause: {cause!r}'.format(
+                imdb_id=imdb_id, cause=error
+            ))
+        except (AttributeError, RequestException) as error:
+            raise IndexerUnavailable('Could not find show {imdb_id} using indexer Imdb. Cause: {cause!r}'.format(
+                imdb_id=imdb_id, cause=error
+            ))
 
         if not results: 
             return
@@ -216,8 +233,19 @@ class Imdb(BaseIndexer):
         if not mapped_results:
             return
 
-        # Get firstaired
-        releases = self.imdb_api.get_title_releases(ImdbIdentifier(imdb_id).imdb_id)
+
+        try:
+            # Get firstaired
+            releases = self.imdb_api.get_title_releases(ImdbIdentifier(imdb_id).imdb_id)
+        except LookupError as error:
+            raise IndexerShowNotFound('Could not find show {imdb_id} using indexer Imdb. Cause: {cause!r}'.format(
+                imdb_id=imdb_id, cause=error
+            ))
+        except (AttributeError, RequestException) as error:
+            raise IndexerUnavailable('Could not get title releases for show {imdb_id} using indexer Imdb. Cause: {cause!r}'.format(
+                imdb_id=imdb_id, cause=error
+            ))
+
         if releases.get('releases'):
             first_released = sorted([r['date'] for r in releases['releases']])[0]
             mapped_results['firstaired'] = first_released
@@ -235,7 +263,7 @@ class Imdb(BaseIndexer):
 
                 if first_release:
                     mapped_results['network'] = first_release[0]['company']['name']
-        except LookupError:
+        except (AttributeError, LookupError, RequestException):
             log.info('No company data available for {0}, cant get a network', imdb_id)
 
         return OrderedDict({'series': mapped_results})
@@ -259,14 +287,14 @@ class Imdb(BaseIndexer):
         try:
             # results = self.imdb_api.get_title_episodes(imdb_id)
             results = self.imdb_api.get_title_episodes(ImdbIdentifier(imdb_id).imdb_id)
-        except (LookupError, IndexerShowNotFound) as error:
+        except LookupError as error:
             raise IndexerShowIncomplete(
                 'Show episode search exception, '
                 'could not get any episodes. Exception: {e!r}'.format(
                     e=error
                 )
             )
-        except RequestException as error:
+        except (AttributeError, RequestException) as error:
             raise IndexerUnavailable('Error connecting to Imdb api. Caused by: {0!r}'.format(error))
 
         if not results or not results.get('seasons'):
@@ -357,7 +385,7 @@ class Imdb(BaseIndexer):
 
         try:
             results = self.imdb_api.get_title_episodes_detailed(imdb_id=ImdbIdentifier(imdb_id).imdb_id, season=season)
-        except LookupError as error:
+        except (AttributeError, LookupError, RequestException) as error:
             raise IndexerShowIncomplete(
                 'Show episode search exception, '
                 'could not get any episodes. Exception: {e!r}'.format(
@@ -446,7 +474,17 @@ class Imdb(BaseIndexer):
         """
         log.debug('Getting show banners for {0}', imdb_id)
 
-        images = self.imdb_api.get_title_images(ImdbIdentifier(imdb_id).imdb_id)
+        try:
+            images = self.imdb_api.get_title_images(ImdbIdentifier(imdb_id).imdb_id)
+        except LookupError as error:
+            raise IndexerShowNotFound('Could not find show {imdb_id} using indexer Imdb. Cause: {cause!r}'.format(
+                imdb_id=imdb_id, cause=error
+            ))
+        except (AttributeError, RequestException) as error:
+            raise IndexerUnavailable('Could not get images for show {imdb_id} using indexer Imdb. Cause: {cause!r}'.format(
+                imdb_id=imdb_id, cause=error
+            ))
+
         image_mapping = {'poster': 'poster', 'production_art': 'fanart'}  # Removed 'still_frame': 'fanart',
         thumb_height = 640
 
@@ -616,7 +654,16 @@ class Imdb(BaseIndexer):
         """
         log.debug('Getting actors for {0}', imdb_id)
 
-        actors = self.imdb_api.get_title_credits(ImdbIdentifier(imdb_id).imdb_id)
+        try:
+            actors = self.imdb_api.get_title_credits(ImdbIdentifier(imdb_id).imdb_id)
+        except LookupError as error:
+            raise IndexerShowNotFound('Could not find show {imdb_id} using indexer Imdb. Cause: {cause!r}'.format(
+                imdb_id=imdb_id, cause=error
+            ))
+        except (AttributeError, RequestException) as error:
+            raise IndexerUnavailable('Could not get actors for show {imdb_id} using indexer Imdb. Cause: {cause!r}'.format(
+                imdb_id=imdb_id, cause=error
+            ))
 
         if not actors.get('credits') or not actors['credits'].get('cast'):
             return
@@ -710,14 +757,14 @@ class Imdb(BaseIndexer):
             # A small api call to get the amount of known seasons
             try:
                 results = self.imdb_api.get_title_episodes(ImdbIdentifier(series_id).imdb_id)
-            except (LookupError, IndexerShowNotFound) as error:
+            except LookupError as error:
                 raise IndexerShowIncomplete(
                     'Show episode search exception, '
-                    'could not get any episodes. Exception: {e!r}'.format(
-                        e=error
+                    'could not get any episodes. Exception: {error!r}'.format(
+                        error=error
                     )
                 )
-            except RequestException as error:
+            except (AttributeError, RequestException) as error:
                 raise IndexerUnavailable('Error connecting to Imdb api. Caused by: {0!r}'.format(error))
 
             if not results or not results.get('seasons'):
