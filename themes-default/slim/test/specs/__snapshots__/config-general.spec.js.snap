@@ -1020,7 +1020,7 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   value="true"
                 >
                   <p>
-                    enable to be notified when a new login happens in webserver
+                    enable to listen for connections on IPv6
                   </p>
                 </config-toggle-slider-stub>
                  
