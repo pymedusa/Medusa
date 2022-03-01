@@ -176,6 +176,7 @@ class Tmdb(BaseIndexer):
 
     def search(self, series):
         """Search TMDB (themoviedb.org) for the series name.
+
         :param series: The query for the series name
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"series": [list of shows]}
         """
@@ -220,7 +221,7 @@ class Tmdb(BaseIndexer):
 
     def _get_show_by_id(self, tmdb_id, request_language='en', extra_info=None):
         """Retrieve tmdb show information by tmdb id.
-    
+
         :param tmdb_id: The show's tmdb id
         :param request_language: Language to get the show in
         :type request_language: string or unicode
@@ -549,7 +550,7 @@ class Tmdb(BaseIndexer):
             self._parse_actors(tmdb_id)
 
         return True
-        
+
     def _get_series_season_updates(self, tmdb_id, start_date=None, end_date=None):
         """
         Retrieve all updates (show,season,episode) from TMDB.
@@ -675,10 +676,12 @@ class Tmdb(BaseIndexer):
                     if result.get('tv_results') and result['tv_results'][0]:
                         # Get the external id's for the passed shows id.
                         externals = self.tmdb.TV(result['tv_results'][0]['id']).external_ids()
-                        externals = {tmdb_external_id: external_value
-                                    for tmdb_external_id, external_value
-                                    in viewitems(externals)
-                                    if external_value and tmdb_external_id in wanted_externals}
+                        externals = {
+                            tmdb_external_id: external_value
+                            for tmdb_external_id, external_value
+                            in viewitems(externals)
+                            if external_value and tmdb_external_id in wanted_externals
+                        }
                         externals['tmdb_id'] = result['tv_results'][0]['id']
                         if 'imdb_id' in externals:
                             externals['imdb_id'] = ImdbIdentifier(externals['imdb_id']).series_id

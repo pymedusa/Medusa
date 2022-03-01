@@ -1,5 +1,4 @@
-    # coding=utf-8
-
+# coding=utf-8
 """Provider code for MoreThanTV."""
 
 from __future__ import unicode_literals

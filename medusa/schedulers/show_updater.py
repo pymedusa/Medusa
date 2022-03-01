@@ -1,4 +1,5 @@
 # coding=utf-8
+"""Show updater module."""
 
 from __future__ import unicode_literals
 
@@ -20,14 +21,17 @@ logger = logging.getLogger(__name__)
 
 
 class ShowUpdater(object):
+    """Show updater class."""
+
     def __init__(self):
+        """Show updatere constructor."""
         self.lock = threading.Lock()
         self.amActive = False
         self.session = MedusaSession()
         self.update_cache = UpdateCache()
 
     def run(self, force=False):
-
+        """Start show updater."""
         self.amActive = True
         refresh_shows = []  # A list of shows, that need to be refreshed
         season_updates = []  # A list of show seasons that have passed their next_update timestamp
@@ -81,8 +85,8 @@ class ShowUpdater(object):
                     )
                 except IndexerShowUpdatesNotSupported:
                     logger.info('Could not get a list with updated shows from indexer {indexer_name},'
-                                   ' as this is not supported. Attempting a regular update for show: {show}',
-                                   indexer_name=indexer_name, show=show.name)
+                                ' as this is not supported. Attempting a regular update for show: {show}',
+                                indexer_name=indexer_name, show=show.name)
                     show_updates_supported = False
                 except IndexerUnavailable:
                     logger.warning('Problem running show_updater, Indexer {indexer_name} seems to be having '
@@ -208,7 +212,10 @@ class ShowUpdater(object):
 
 
 class UpdateCache(db.DBConnection):
+    """Show updater update cache class."""
+
     def __init__(self):
+        """Show updater update cache constructor."""
         super(UpdateCache, self).__init__('cache.db')
 
     def get_last_indexer_update(self, indexer):

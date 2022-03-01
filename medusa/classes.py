@@ -22,7 +22,7 @@ import logging
 from datetime import datetime
 
 from dateutil import parser
-from trans import trans
+
 
 from medusa import app, ws
 from medusa.common import (
@@ -35,6 +35,8 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.search import SearchType
 
 from six import itervalues
+
+from trans import trans
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -373,16 +375,15 @@ class AllShowsListUI(object):  # pylint: disable=too-few-public-methods
 
             if norm_search_term in norm_result:
                 return True
-            
+
             # translates national characters into similar sounding latin characters
             # For ex. Физрук -> Fizruk
             search_term_alpha = trans(self.config['searchterm'])
 
             if search_term_alpha != search_term and search_term_alpha in norm_result:
                 return True
-            
-            return False
 
+            return False
 
         # get all available shows
         if all_series:

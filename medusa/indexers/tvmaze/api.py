@@ -1,4 +1,5 @@
 # coding=utf-8
+"""Tvmaze indexer api module."""
 
 from __future__ import unicode_literals
 
@@ -7,13 +8,13 @@ from collections import OrderedDict
 from time import time
 
 from medusa.indexers.base import (Actor, Actors, BaseIndexer)
-from medusa.indexers.imdb.api import ImdbIdentifier
 from medusa.indexers.exceptions import (
     IndexerError,
     IndexerException,
     IndexerShowNotFound,
     IndexerUnavailable,
 )
+from medusa.indexers.imdb.api import ImdbIdentifier
 from medusa.logger.adapters.style import BraceAdapter
 
 from pytvmaze import TVMaze
@@ -34,6 +35,7 @@ class TVmaze(BaseIndexer):
     """
 
     def __init__(self, *args, **kwargs):  # pylint: disable=too-many-locals,too-many-arguments
+        """Tvmaze api constructor."""
         super(TVmaze, self).__init__(*args, **kwargs)
 
         # List of language from http://thetvmaze.com/api/0629B785CE550C8D/languages.xml
@@ -380,7 +382,7 @@ class TVmaze(BaseIndexer):
         return _images
 
     def _parse_actors(self, tvmaze_id):
-        """Parsers actors XML, from http://thetvmaze.com/api/[APIKEY]/series/[SERIES ID]/actors.xml
+        """Parsers actors XML, from http://thetvmaze.com/api/[APIKEY]/series/[SERIES ID]/actors.xml.
 
         Actors are retrieved using t['show name]['_actors'], for example:
         >>> indexer_api = TVMaze(actors = True)
