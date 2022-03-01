@@ -12,14 +12,18 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
-
 class RecommendedSanityCheck(db.DBSanityCheck):
+    """Sanity check class."""
+
     def check(self):
+        """Check functions."""
         self.remove_imdb_tt()
 
     def remove_imdb_tt(self):
+        """Remove tt from imdb id's."""
         log.debug(u'Remove shows added with an incorrect imdb id.')
         self.connection.action("DELETE FROM shows WHERE source = 10 AND series_id like '%tt%'")
+
 
 # Add new migrations at the bottom of the list
 # and subclass the previous migration.

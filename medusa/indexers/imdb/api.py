@@ -1,13 +1,17 @@
 # coding=utf-8
+"""Imdb indexer api module."""
 
 from __future__ import unicode_literals
 
+import locale
+import logging
+from collections import OrderedDict, namedtuple
 from datetime import datetime
 from itertools import chain
-import logging
-from collections import namedtuple, OrderedDict
+from time import time
+
 from imdbpie import imdbpie
-import locale
+
 from medusa import app
 from medusa.bs4_parser import BS4Parser
 from medusa.indexers.base import (Actor, Actors, BaseIndexer)
@@ -16,9 +20,10 @@ from medusa.indexers.exceptions import (
 )
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.show import Show
-from six import integer_types, string_types, text_type
-from time import time
+
 from requests.exceptions import RequestException
+
+from six import string_types, text_type
 
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -26,8 +31,11 @@ log.logger.addHandler(logging.NullHandler())
 
 
 class ImdbIdentifier(object):
+    """Imdb identifier class."""
+
     def __init__(self, imdb_id):
         """Initialize an identifier object. Can be used to get the full textual id e.a. 'tt3986523'.
+
         Or the series_id: 3986523
         """
         self._imdb_id = None
@@ -40,18 +48,22 @@ class ImdbIdentifier(object):
 
     @property
     def series_id(self):
+        """Return series id."""
         return self._series_id
 
     @series_id.setter
     def series_id(self, value):
+        """Set series id."""
         self._series_id = value
 
     @property
     def imdb_id(self):
+        """Return imdb id."""
         return self._imdb_id
 
     @imdb_id.setter
     def imdb_id(self, value):
+        """Set imdb id."""
         if isinstance(value, string_types) and 'tt' in value:
             self._imdb_id = self._clean(value)
             self.series_id = int(self._imdb_id.split('tt')[-1])
@@ -61,13 +73,15 @@ class ImdbIdentifier(object):
 
 
 class Imdb(BaseIndexer):
-    """Create easy-to-use interface to name of season/episode name
+    """Create easy-to-use interface to name of season/episode name.
+
     >>> indexer_api = imdb()
     >>> indexer_api['Scrubs'][1][24]['episodename']
     u'My Last Day'
     """
 
     def __init__(self, *args, **kwargs):  # pylint: disable=too-many-locals,too-many-arguments
+        """Imdb constructor."""
         super(Imdb, self).__init__(*args, **kwargs)
 
         self.indexer = 10
@@ -157,12 +171,11 @@ class Imdb(BaseIndexer):
 
     def _show_search(self, series):
         """
-        Uses the Imdb API to search for a show
-        :param series: The series name that's searched for as a string
+        Use the Imdb API to search for a show.
 
+        :param series: The series name that's searched for as a string
         :return: A list of Show objects.series_map
         """
-
         try:
             results = self.imdb_api.search_for_title(series)
         except LookupError as error:
@@ -180,7 +193,7 @@ class Imdb(BaseIndexer):
             return None
 
     def search(self, series):
-        """This searches imdb.com for the series name
+        """Search imdb.com for the series name.
 
         :param series: the query for the series name
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"series": [list of shows]}
@@ -206,8 +219,7 @@ class Imdb(BaseIndexer):
         return OrderedDict({'series': mapped_results})['series']
 
     def _get_show_by_id(self, imdb_id):  # pylint: disable=unused-argument
-        """
-        Retrieve imdb show information by imdb id, or if no imdb id provided by passed external id.
+        """Retrieve imdb show information by imdb id, or if no imdb id provided by passed external id.
 
         :param imdb_id: The shows imdb id
         :return: An ordered dict with the show searched for.
@@ -225,14 +237,13 @@ class Imdb(BaseIndexer):
                 imdb_id=imdb_id, cause=error
             ))
 
-        if not results: 
+        if not results:
             return
 
         mapped_results = self._map_results(results, self.series_map)
 
         if not mapped_results:
             return
-
 
         try:
             # Get firstaired
@@ -269,8 +280,7 @@ class Imdb(BaseIndexer):
         return OrderedDict({'series': mapped_results})
 
     def _get_episodes(self, imdb_id, detailed=True, aired_season=None, *args, **kwargs):  # pylint: disable=unused-argument
-        """
-        Get all the episodes for a show by imdb id
+        """Get all the episodes for a show by imdb id.
 
         :param imdb_id: Series imdb id.
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"episode": [list of episodes]}
@@ -312,7 +322,7 @@ class Imdb(BaseIndexer):
                     log.debug('{0}: Found incomplete episode with season: {1!r} and episode: {2!r})',
                               imdb_id, season_no, episode_no)
                     continue  # Skip to next episode
-                
+
                 if season_no > 0:
                     episode['absolute_number'] = absolute_number_counter
                     absolute_number_counter += 1
@@ -376,13 +386,11 @@ class Imdb(BaseIndexer):
             locale.setlocale(locale.LC_TIME, lc)
 
     def _get_episodes_detailed(self, imdb_id, season):
-        """
-        Enrich the episodes with additional information for a specific season.
+        """Enrich the episodes with additional information for a specific season.
 
         :param imdb_id: imdb id including the `tt`.
         :param season: season passed as integer.
         """
-
         try:
             results = self.imdb_api.get_title_episodes_detailed(imdb_id=ImdbIdentifier(imdb_id).imdb_id, season=season)
         except (AttributeError, LookupError, RequestException) as error:
@@ -413,14 +421,12 @@ class Imdb(BaseIndexer):
             self._set_item(series_id, season, episode['episodeNumber'], 'votes', episode['ratingCount'])
 
     def _enrich_episodes(self, imdb_id, season):
-        """
-        Enrich the episodes with additional information for a specific season.
+        """Enrich the episodes with additional information for a specific season.
 
         For this we're making use of html scraping using beautiful soup.
         :param imdb_id: imdb id including the `tt`.
         :param season: season passed as integer.
         """
-
         episodes_url = 'http://www.imdb.com/title/{imdb_id}/episodes?season={season}'
         episodes = []
 
@@ -564,13 +570,10 @@ class Imdb(BaseIndexer):
                 res: resolution such as `1024x768`, `original`, etc
                 id: the image id
         """
-        # Get desired image types from images
-        image_types = 'banner', 'fanart', 'poster'
-
         def by_aspect_ratio(image):
             w, h = image['bannertype2'].split('x')
             return int(w) / int(h)
-        
+
         # Parse Posters and Banners (by aspect ratio)
         if images.get('poster'):
             # Flatten image_type[res][id].values() into list of values
@@ -598,7 +601,7 @@ class Imdb(BaseIndexer):
                 img_url = highest_rated['_bannerpath']
                 log.debug(
                     u'Selecting poster with the lowest aspect ratio (resolution={resolution})\n'
-                     'aspect ratio of {aspect_ratio} ', {
+                    'aspect ratio of {aspect_ratio} ', {
                         'resolution': highest_rated['bannertype2'],
                         'aspect_ratio': by_aspect_ratio(highest_rated)
                     }
@@ -610,13 +613,12 @@ class Imdb(BaseIndexer):
                 img_url = highest_rated['_bannerpath']
                 log.debug(
                     u'Selecting poster with the lowest aspect ratio (resolution={resolution})\n'
-                     'aspect ratio of {aspect_ratio} ', {
+                    'aspect ratio of {aspect_ratio} ', {
                         'resolution': highest_rated['bannertype2'],
                         'aspect_ratio': by_aspect_ratio(highest_rated)
                     }
                 )
                 self._set_show_data(series_id, 'banner', img_url)
-        
 
         if images.get('fanart'):
             # Flatten image_type[res][id].values() into list of values
@@ -637,7 +639,7 @@ class Imdb(BaseIndexer):
                 img_url = highest_rated['_bannerpath']
                 log.debug(
                     u'Selecting poster with the lowest aspect ratio (resolution={resolution})\n'
-                     'aspect ratio of {aspect_ratio} ', {
+                    'aspect ratio of {aspect_ratio} ', {
                         'resolution': highest_rated['bannertype2'],
                         'aspect_ratio': by_aspect_ratio(highest_rated)
                     }
@@ -667,7 +669,7 @@ class Imdb(BaseIndexer):
 
         if not actors.get('credits') or not actors['credits'].get('cast'):
             return
-        
+
         cur_actors = Actors()
         for order, cur_actor in enumerate(actors['credits']['cast'][:25]):
             save_actor = Actor()
@@ -680,8 +682,9 @@ class Imdb(BaseIndexer):
         self._set_show_data(imdb_id, '_actors', cur_actors)
 
     def _get_show_data(self, imdb_id, language='en'):  # pylint: disable=too-many-branches,too-many-statements,too-many-locals
-        """Takes a series ID, gets the epInfo URL and parses the imdb json response
-        into the shows dict in layout:
+        """Get show data by imdb id.
+
+        Take a series ID, gets the epInfo URL and parses the imdb json response into the shows dict in a format:
         shows[series_id][season_number][episode_number]
         """
         # Parse show information
@@ -787,7 +790,7 @@ class Imdb(BaseIndexer):
                 if not local_season_episodes or len(remote_season_episodes) != len(local_season_episodes):
                     total_updates.append(season_number)
                     log.debug('{series}: Season {season} seems to be a new season. Adding it.',
-                                {'series': series_obj.name, 'season': season_number})
+                              {'series': series_obj.name, 'season': season_number})
                     continue
 
                 # Per season, get latest episode airdate
@@ -801,7 +804,7 @@ class Imdb(BaseIndexer):
                 update_interval = self._calc_update_interval(
                     # date_season_start,
                     date_season_last,
-                    season_finished=bool([s for s in results['seasons'] if s.get('season') == season_number +1])
+                    season_finished=bool([s for s in results['seasons'] if s.get('season') == season_number + 1])
                 )
 
                 last_update = cache.get_last_update_season(self.indexer, series_id, season_number)
