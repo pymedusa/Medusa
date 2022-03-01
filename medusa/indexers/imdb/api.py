@@ -150,7 +150,7 @@ class Imdb(BaseIndexer):
                     if key == 'contentrating':
                         value = text_type(value)
                     if key == 'poster':
-                        return_dict['poster_thumb'] = value.split('V1')[0] + 'V1_SY{0}_AL_.jpg'.format('1000').split('/')[-1]
+                        return_dict['poster_thumb'] = value.split('V1')[0] + 'V1_SY{0}_AL_.jpg'.format('640').split('/')[-1]
                     if key == 'nextepisode' and value:
                         return_dict['status'] = 'Continuing'
 
@@ -554,7 +554,7 @@ class Imdb(BaseIndexer):
                     return image.get('bannerpath')
 
         if _images.get('poster_thumb'):
-            self._set_show_data(imdb_id, 'poster', _get_poster_thumb(_images.get('poster_thumb')))
+            self._set_show_data(imdb_id, 'poster_thumb', _get_poster_thumb(_images.get('poster_thumb')))
 
         self._save_images(imdb_id, _images, language=language)
         self._set_show_data(imdb_id, '_banners', _images)
@@ -588,9 +588,9 @@ class Imdb(BaseIndexer):
                 key=by_aspect_ratio
             )
 
-            # Filter out the posters with an aspect ratio of < 0.8
+            # Filter out the posters with an aspect ratio between 0.6 and 0.8
             posters = [
-                image for image in sort_images if 0.6 > by_aspect_ratio(image) < 0.8
+                image for image in sort_images if by_aspect_ratio(image) > 0.6 and by_aspect_ratio(image) < 0.8
                 and image.get('languages')
                 and image['languages'] == [language]
             ]
