@@ -20,13 +20,14 @@ from medusa.indexers.exceptions import (
     IndexerSeasonNotFound,
     IndexerSeasonUpdatesNotSupported,
     IndexerShowNotFound,
+    IndexerShowUpdatesNotSupported,
 )
 from medusa.indexers.ui import BaseUI, ConsoleUI
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import IndexerSession
 from medusa.statistics import weights
 
-from six import integer_types, itervalues, string_types, text_type, viewitems
+from six import integer_types, itervalues, string_types, viewitems
 
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -57,24 +58,18 @@ class BaseIndexer(object):
         """Pass these arguments on as args from the subclass."""
         self.shows = ShowContainer()  # Holds all Show classes
         self.corrections = {}  # Holds show-name to show_id mapping
+        self.name = None
 
-        self.config = {}
-
-        self.config['debug_enabled'] = debug  # show debugging messages
-
-        self.config['custom_ui'] = custom_ui
-
-        self.config['interactive'] = interactive  # prompt for correct series?
-
-        self.config['select_first'] = select_first
-
-        self.config['search_all_languages'] = search_all_languages
-
-        self.config['use_zip'] = use_zip
-
-        self.config['dvdorder'] = dvdorder
-
-        self.config['proxy'] = proxy
+        self.config = {
+            'debug_enabled': debug,
+            'custom_ui': custom_ui,
+            'interactive': interactive,
+            'select_first': select_first,
+            'search_all_languages': search_all_languages,
+            'use_zip': use_zip,
+            'dvdorder': dvdorder,
+            'proxy': proxy
+        }
 
         if cache is True:
             self.config['cache_enabled'] = True
@@ -93,6 +88,7 @@ class BaseIndexer(object):
         self.config['banners_enabled'] = banners
         self.config['image_type'] = image_type
         self.config['actors_enabled'] = actors
+        self.config['limit_seasons'] = []
 
         if self.config['debug_enabled']:
             warnings.warn('The debug argument to tvdbv2_api.__init__ will be removed in the next version. '
@@ -127,7 +123,46 @@ class BaseIndexer(object):
             else:
                 self.config['language'] = language
 
-    def _get_temp_dir(self):  # pylint: disable=no-self-use
+    def get_nested_value(self, value, config):
+        """
+        Get a nested value from a dictionary using a dot separated string.
+
+        For example the config 'plot.summaries[0].text' will return the value for dict['plot']['summaries'][0].
+        :param value: Dictionary you want to get a value from.
+        :param config: Dot separated string.
+        :return: The value matching the config.
+        """
+        # Remove a level
+        split_config = config.split('.')
+        check_key = split_config[0]
+
+        if check_key.endswith(']'):
+            list_index = int(check_key.split('[')[-1].rstrip(']'))
+            check_key = check_key.split('[')[0]
+            check_value = value.get(check_key)
+            if check_value and list_index < len(check_value):
+                check_value = check_value[list_index]
+        else:
+            check_value = value.get(check_key)
+        next_keys = '.'.join(split_config[1:])
+
+        if check_value is None:
+            return None
+
+        if isinstance(check_value, dict) and next_keys:
+            return self.get_nested_value(check_value, next_keys)
+        else:
+            try:
+                # Some object have a __dict__ attr. Let's try that.
+                # It shouldn't match basic types like strings, integers or floats.
+                parse_dict = check_value.__dict__
+            except AttributeError:
+                return check_value
+            else:
+                return self.get_nested_value(parse_dict, next_keys)
+
+    @staticmethod
+    def _get_temp_dir():  # pylint: disable=no-self-use
         """Return the [system temp dir]/tvdb_api-u501 (or tvdb_api-myuser)."""
         if hasattr(os, 'getuid'):
             uid = 'u{0}'.format(os.getuid())  # pylint: disable=no-member
@@ -145,19 +180,21 @@ class BaseIndexer(object):
         return None
 
     def _get_series(self, series):
-        """Search for the series name.
+        """Search indexer for the series name.
 
         If a custom_ui UI is configured, it uses this to select the correct
         series. If not, and interactive == True, ConsoleUI is used, if not
         BaseUI is used to select the first result.
 
         :param series: the query for the series name
-        :return: A list of series mapped to a UI (for example: a BaseUI or custom_ui).
+        :return: A list of series mapped to a UI (for example: a BaseUi or custom_ui).
         """
         all_series = self.search(series)
         if not all_series:
             log.debug('Series result returned zero')
-            raise IndexerShowNotFound('Show search returned zero results (cannot find show on Indexer)')
+            raise IndexerShowNotFound(
+                'Show search for {series} returned zero results (cannot find show on Indexer)'.format(series=series)
+            )
 
         if not isinstance(all_series, list):
             all_series = [all_series]
@@ -184,7 +221,7 @@ class BaseIndexer(object):
 
     def __repr__(self):
         """Indexer representation, returning representation of all shows indexed."""
-        return text_type(self.shows)
+        return str(self.shows)
 
     def _set_item(self, sid, seas, ep, attrib, value):  # pylint: disable=too-many-arguments
         """Create a new episode, creating Show(), Season() and Episode()s as required.
@@ -391,14 +428,14 @@ class BaseIndexer(object):
             self._save_images_by_type(img_type, series_id, images_by_type)
 
     def __getitem__(self, key):
-        """Handle tvdbv2_instance['seriesname'] calls. The dict index should be the show id."""
+        """Handle indexer['seriesname'] calls. The dict index should be the show id."""
         if isinstance(key, (integer_types, int)):
             # Item is integer, treat as show id
             if key not in self.shows:
                 self._get_show_data(key, self.config['language'])
             return self.shows[key]
 
-        key = text_type(key).lower()
+        key = str(key).lower()
         self.config['searchterm'] = key
         selected_series = self._get_series(key)
         if isinstance(selected_series, dict):
@@ -409,18 +446,13 @@ class BaseIndexer(object):
                 self._set_show_data(show['id'], k, v)
         return selected_series
 
-    def get_last_updated_series(self, from_time, weeks=1, filter_show_list=None):
-        """Retrieve a list with updated shows.
+    def get_last_updated_series(self, *args, **kwargs):
+        """Retrieve a list with updated shows."""
+        raise IndexerShowUpdatesNotSupported('Method get_last_updated_series not implemented by this indexer')
 
-        :param from_time: epoch timestamp, with the start date/time
-        :param weeks: number of weeks to get updates for.
-        :param filter_show_list: Optional list of show objects, to use for filtering the returned list.
-        """
+    def get_last_updated_seasons(self, *args, **kwargs):
+        """Retrieve a list with updated show seasons."""
         raise IndexerSeasonUpdatesNotSupported('Method get_last_updated_series not implemented by this indexer')
-
-    def get_episodes_for_season(self, show_id, *args, **kwargs):
-        self._get_episodes(show_id, *args, **kwargs)
-        return self.shows[show_id]
 
 
 class ShowContainer(dict):
@@ -502,7 +534,7 @@ class Show(dict):
 
     def aired_on(self, date):
         """Search and return a list of episodes with the airdates."""
-        ret = self.search(text_type(date), 'firstaired')
+        ret = self.search(str(date), 'firstaired')
         if len(ret) == 0:
             raise IndexerEpisodeNotFound('Could not find any episodes that aired on {0}'.format(date))
         return ret
@@ -631,13 +663,13 @@ class Episode(dict):
         if term is None:
             raise TypeError('must supply string to search for (contents)')
 
-        term = text_type(term).lower()
+        term = str(term).lower()
         for cur_key, cur_value in viewitems(self):
-            cur_key, cur_value = text_type(cur_key).lower(), text_type(cur_value).lower()
+            cur_key, cur_value = str(cur_key).lower(), str(cur_value).lower()
             if key is not None and cur_key != key:
                 # Do not search this key
                 continue
-            if cur_value.find(text_type(term).lower()) > -1:
+            if cur_value.find(str(term).lower()) > -1:
                 return self
 
 

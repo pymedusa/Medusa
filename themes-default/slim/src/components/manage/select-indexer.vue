@@ -26,7 +26,7 @@ export default {
             selectedIndexer: '--select--',
             searchedIndexer: null,
             searchedIndexerId: null,
-            allowedIndexers: ['tvdb', 'tmdb', 'tvmaze']
+            allowedIndexers: ['tvdb', 'tmdb', 'tvmaze', 'imdb']
         };
     },
     computed: {

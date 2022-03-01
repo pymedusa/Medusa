@@ -1052,7 +1052,7 @@ class QueueItemSeasonUpdate(ShowQueueItem):
         try:
             # Let's make sure we refresh the indexer_api object attached to the show object.
             self.show.create_indexer()
-            self.show.load_from_indexer()
+            self.show.load_from_indexer(limit_seasons=self.seasons)
         except IndexerError as error:
             log.warning(
                 '{id}: Unable to contact {indexer}. Aborting: {error_msg}',
