@@ -113,18 +113,18 @@ class ImdbPopular(BasePopular):
 
             series['genres'] = show_genres.get('genres', [])
 
-        if all([series['year'], series['name'], series['imdb_tt']]):
-            try:
-                recommended_show = self._create_recommended_show(series)
-                if recommended_show:
-                    recommended_show.save_to_db()
-                    result.append(recommended_show)
-            except RequestException:
-                log.warning(
-                    u'Could not connect to indexers to check if you already have'
-                    u' this show in your library: {show} ({year})',
-                    {'show': series['name'], 'year': series['name']}
-                )
+            if all([series['year'], series['name'], series['imdb_tt']]):
+                try:
+                    recommended_show = self._create_recommended_show(series)
+                    if recommended_show:
+                        recommended_show.save_to_db()
+                        result.append(recommended_show)
+                except RequestException:
+                    log.warning(
+                        u'Could not connect to indexers to check if you already have'
+                        u' this show in your library: {show} ({year})',
+                        {'show': series['name'], 'year': series['name']}
+                    )
 
         return result
 

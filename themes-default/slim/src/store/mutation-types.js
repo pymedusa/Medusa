@@ -22,7 +22,8 @@ const ADD_SHOW_EPISODE = '📺 Shows season with episodes added to store';
 const ADD_STATS = 'ℹ️ Statistics added to store';
 const ADD_RECOMMENDED_SHOW = '📺 Recommended Show added to store';
 const SET_RECOMMENDED_SHOWS = '📺 Recommended Shows added to store';
-const SET_RECOMMENDED_SHOWS_OPTIONS = '📺 Recommended Show Options added to store';
+const SET_RECOMMENDED_SHOWS_TRAKT_REMOVED = '📺 Recommended Show Trakt removed added to store';
+const SET_RECOMMENDED_SHOWS_CATEGORIES = '📺 Recommended Show categories added to store';
 const SET_STATS = 'SET_STATS';
 const SET_MAX_DOWNLOAD_COUNT = 'SET_MAX_DOWNLOAD_COUNT';
 const ADD_SHOW_SCENE_EXCEPTION = '📺 Add a scene exception';
@@ -68,7 +69,8 @@ export {
     ADD_SHOW_CONFIG,
     ADD_RECOMMENDED_SHOW,
     SET_RECOMMENDED_SHOWS,
-    SET_RECOMMENDED_SHOWS_OPTIONS,
+    SET_RECOMMENDED_SHOWS_TRAKT_REMOVED,
+    SET_RECOMMENDED_SHOWS_CATEGORIES,
     ADD_SHOWS,
     ADD_SHOW_EPISODE,
     ADD_REMOTE_BRANCHES,

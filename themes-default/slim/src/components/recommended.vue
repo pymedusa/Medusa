@@ -72,7 +72,9 @@
                         Search for new recommended shows from {{sourceToString[selectedSource]}}
                     </button>
                 </div>
-
+                <div v-else-if="page[selectedSource] !== -1" class="search-more">
+                    <button class="btn-medusa" @click="getMore">Get More</button>
+                </div>
             </div> <!-- End of col -->
         </div> <!-- End of row -->
     </div>
@@ -202,12 +204,14 @@ export default {
         };
     },
     async mounted() {
-        const { getRecommendedShows, sourceToString } = this;
-        const identifiers = Object.values(sourceToString);
+        const { getRecommendedShows, getRecommendedShowsOptions, sourceToString } = this;
+        const sources = Object.keys(sourceToString);
 
-        for (const identifier of identifiers) {
+        await getRecommendedShowsOptions();
+
+        for (const source of sources) {
             // eslint-disable-next-line no-await-in-loop
-            await getRecommendedShows(identifier);
+            await getRecommendedShows(source);
         }
 
         this.showsLoaded = true;
@@ -215,9 +219,9 @@ export default {
             this.isotopeLayout();
         });
 
-        this.$once('loaded', () => {
-            this.configLoaded = true;
-        });
+        // this.$once('loaded', () => {
+        //     this.configLoaded = true;
+        // });
 
         this.$watch('recommendedLists', () => {
             this.setSelectedList(this.selectedSource);
@@ -231,7 +235,8 @@ export default {
             traktConfig: state => state.recommended.trakt,
             recommendedLists: state => state.recommended.categories,
             queueitems: state => state.queue.queueitems,
-            sourceToString: state => state.recommended.sourceToString
+            sourceToString: state => state.recommended.sourceToString,
+            page: state => state.recommended.page
         }),
         filteredShowsByList() {
             const { imgLazyLoad, recommendedShows, selectedSource, selectedList } = this;
@@ -262,13 +267,18 @@ export default {
         },
         listOptions() {
             const { recommendedLists, selectedSource } = this;
+            if (!recommendedLists || !(selectedSource in recommendedLists)) {
+                return;
+            }
             const sourceLists = recommendedLists[selectedSource] || [];
             return sourceLists.map(list => ({ text: list, value: list }));
         }
     },
     methods: {
         ...mapActions({
-            getRecommendedShows: 'getRecommendedShows'
+            getRecommendedShows: 'getRecommendedShows',
+            getRecommendedShowsOptions: 'getRecommendedShowsOptions',
+            getMoreShows: 'getMoreShows'
         }),
         containerClass(show) {
             let classes = 'recommended-container default-poster show-row';
@@ -355,6 +365,9 @@ export default {
                     );
                 }
             }
+        },
+        getMore() {
+            this.getMoreShows(this.selectedSource);
         }
     },
     watch: {
@@ -410,4 +423,8 @@ span.trakt-warning {
     color: red;
 }
 
+.search-more {
+    display: flex;
+    justify-content: center;
+}
 </style>
