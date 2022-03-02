@@ -46,6 +46,11 @@ export default {
     computed: {
         externals() {
             const { show } = this;
+            if (!show || !show.externals || !Object.keys(show.externals).length === 0) {
+                return {};
+            }
+
+            delete show.externals[show.indexer];
             return show.externals;
         }
     }
