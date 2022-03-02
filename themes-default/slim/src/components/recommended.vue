@@ -72,6 +72,7 @@
                         Search for new recommended shows from {{sourceToString[selectedSource]}}
                     </button>
                 </div>
+
                 <div v-else-if="page[selectedSource] !== -1" class="load-more">
                     <state-switch v-if="loadingShows" state="loading" />
                     <button v-else class="btn-medusa" @click="getMore">Load More</button>
