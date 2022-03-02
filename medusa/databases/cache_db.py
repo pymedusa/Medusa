@@ -16,10 +16,14 @@ log.logger.addHandler(logging.NullHandler())
 # Add new migrations at the bottom of the list
 # and subclass the previous migration.
 class InitialSchema(db.SchemaUpgrade):
+    """Cache.db initial schema class."""
+
     def test(self):
+        """Test db version."""
         return self.hasTable('db_version')
 
     def execute(self):
+        """Execute."""
         queries = [
             ('CREATE TABLE lastUpdate (provider TEXT, time NUMERIC);',),
             ('CREATE TABLE lastSearch (provider TEXT, time NUMERIC);',),
@@ -229,3 +233,19 @@ class RemoveSceneExceptionsTable(AddProviderTablesIdentifier):
     def execute(self):
         self.connection.action('DROP TABLE IF EXISTS scene_exceptions;')
         self.inc_major_version()
+
+
+class AddSeasonUpdatesTable(RemoveSceneExceptionsTable):  # pylint:disable=too-many-ancestors
+    def test(self):
+        return self.hasTable('season_updates')
+
+    def execute(self):
+        self.connection.action(
+            """CREATE TABLE "season_updates" (
+              `season_updates_id`	INTEGER,
+              `indexer`	    INTEGER NOT NULL,
+              `series_id`	INTEGER NOT NULL,
+              `season`	    INTEGER,
+              `time`	    INTEGER,
+              PRIMARY KEY(season_updates_id))"""
+        )

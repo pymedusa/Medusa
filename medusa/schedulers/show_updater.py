@@ -1,4 +1,5 @@
 # coding=utf-8
+"""Show updater module."""
 
 from __future__ import unicode_literals
 
@@ -10,7 +11,7 @@ from builtins import object
 from medusa import app, db, network_timezones, ui
 from medusa.helper.exceptions import CantRefreshShowException, CantUpdateShowException
 from medusa.indexers.api import indexerApi
-from medusa.indexers.exceptions import IndexerException, IndexerUnavailable
+from medusa.indexers.exceptions import IndexerException, IndexerSeasonUpdatesNotSupported, IndexerShowUpdatesNotSupported, IndexerUnavailable
 from medusa.scene_exceptions import refresh_exceptions_cache
 from medusa.session.core import MedusaSession
 
@@ -20,14 +21,17 @@ logger = logging.getLogger(__name__)
 
 
 class ShowUpdater(object):
+    """Show updater class."""
+
     def __init__(self):
+        """Show updatere constructor."""
         self.lock = threading.Lock()
         self.amActive = False
         self.session = MedusaSession()
         self.update_cache = UpdateCache()
 
     def run(self, force=False):
-
+        """Start show updater."""
         self.amActive = True
         refresh_shows = []  # A list of shows, that need to be refreshed
         season_updates = []  # A list of show seasons that have passed their next_update timestamp
@@ -47,6 +51,8 @@ class ShowUpdater(object):
 
         # Loop through the list of shows, and per show evaluate if we can use the .get_last_updated_seasons()
         for show in app.showList:
+            show_updates_supported = True
+
             if show.paused:
                 logger.info('The show {show} is paused, not updating it.', show=show.name)
                 continue
@@ -77,6 +83,11 @@ class ShowUpdater(object):
                     indexer_updated_shows[show.indexer] = indexer_api.get_last_updated_series(
                         last_updates[indexer_name], update_max_weeks
                     )
+                except IndexerShowUpdatesNotSupported:
+                    logger.info('Could not get a list with updated shows from indexer {indexer_name},'
+                                ' as this is not supported. Attempting a regular update for show: {show}',
+                                indexer_name=indexer_name, show=show.name)
+                    show_updates_supported = False
                 except IndexerUnavailable:
                     logger.warning('Problem running show_updater, Indexer {indexer_name} seems to be having '
                                    'connectivity issues while trying to look for show updates on show: {show}',
@@ -107,7 +118,7 @@ class ShowUpdater(object):
 
             # Update shows that were updated in the last X weeks
             # or were not updated within the last X weeks
-            if show.indexerid not in indexer_updated_shows.get(show.indexer, []):
+            if show.indexerid not in indexer_updated_shows.get(show.indexer, []) and show_updates_supported:
                 if show.last_update_indexer > time.time() - 604800 * update_max_weeks:
                     logger.debug('Skipping show update for {show}. Show was not in the '
                                  'indexers {indexer_name} list with updated shows and it '
@@ -115,19 +126,16 @@ class ShowUpdater(object):
                                  indexer_name=indexer_name, weeks=update_max_weeks)
                     continue
 
-            # If indexer doesn't have season updates.
-            if not hasattr(indexer_api, 'get_last_updated_seasons'):
-                logger.debug('Adding the following show for full update to queue: {show}', show=show.name)
-                refresh_shows.append(show)
-
-            # Else fall back to per season updates.
-            elif hasattr(indexer_api, 'get_last_updated_seasons'):
+            try:
                 # Get updated seasons and add them to the season update list.
                 try:
                     updated_seasons = indexer_api.get_last_updated_seasons(
-                        [show.indexerid], show.last_update_indexer, update_max_weeks)
+                        [show.indexerid], from_time=show.last_update_indexer, weeks=update_max_weeks, cache=self.update_cache
+                    )
+                except IndexerSeasonUpdatesNotSupported:
+                    raise
                 except IndexerUnavailable:
-                    logger.warning('Problem running show_updater, Indexer {indexer_name} seems to be having '
+                    logger.warning('Problem get_last_updated_seasonsrunning show_updater, Indexer {indexer_name} seems to be having '
                                    'connectivity issues while trying to look for show updates for show: {show}',
                                    indexer_name=indexer_name, show=show.name)
                     continue
@@ -152,6 +160,9 @@ class ShowUpdater(object):
                     logger.debug('Could not detect a season update, but an update is required. \n'
                                  'Adding the following show for full update to queue: {show}', show=show.name)
                     refresh_shows.append(show)
+            except IndexerSeasonUpdatesNotSupported:
+                logger.debug('Adding the following show for full update to queue: {show}', show=show.name)
+                refresh_shows.append(show)
 
         pi_list = []
         # Full refreshes
@@ -201,7 +212,10 @@ class ShowUpdater(object):
 
 
 class UpdateCache(db.DBConnection):
+    """Show updater update cache class."""
+
     def __init__(self):
+        """Show updater update cache constructor."""
         super(UpdateCache, self).__init__('cache.db')
 
     def get_last_indexer_update(self, indexer):
@@ -231,3 +245,33 @@ class UpdateCache(db.DBConnection):
         return self.upsert('lastUpdate',
                            {'time': int(time.time())},
                            {'provider': indexer})
+
+    def get_last_update_season(self, indexer, series_id, season):
+        """Get the last update timestamp from the season_updates table.
+
+        :param indexer: Indexer id. 1 for TheTvdb.
+        :type indexer: int
+        :param series: Indexers series id.
+        :type indexer: int
+        :param season: Season
+        """
+        last_season_update = self.select(
+            'SELECT time '
+            'FROM season_updates '
+            'WHERE indexer = ? AND series_id = ? AND season = ?',
+            [indexer, series_id, season]
+        )
+        return last_season_update[0]['time'] if last_season_update else 0
+
+    def set_last_update_season(self, indexer, series_id, season):
+        """Set the last update timestamp from the season_updates table.
+
+        :param indexer: Indexer id. 1 for TheTvdb.
+        :type indexer: int
+        :param series: Indexers series id.
+        :type indexer: int
+        :param season: Season
+        """
+        return self.upsert('season_updates',
+                           {'time': int(time.time())},
+                           {'indexer': indexer, 'series_id': series_id, 'season': season})

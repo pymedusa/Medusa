@@ -78,7 +78,7 @@ class ConsoleUI(BaseUI):
         while True:  # return breaks this loop
             try:
                 print("Enter choice (first number, return for default, 'all', ? for help):")
-                ans = eval(input())
+                ans = input()
             except KeyboardInterrupt:
                 raise IndexerUserAbort('User aborted (^c keyboard interupt)')
             except EOFError:

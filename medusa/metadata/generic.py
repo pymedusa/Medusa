@@ -17,6 +17,7 @@ from medusa.helper.metadata import get_image
 from medusa.indexers.config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE
 from medusa.indexers.exceptions import (IndexerEpisodeNotFound, IndexerException,
                                         IndexerSeasonNotFound, IndexerShowNotFound)
+from medusa.indexers.imdb.api import ImdbIdentifier
 from medusa.indexers.utils import indexer_name_mapping
 from medusa.logger.adapters.style import BraceAdapter
 
@@ -984,7 +985,7 @@ class GenericMetadata(object):
 
             if uniqueid is not None and uniqueid.get('type') and indexer_name_mapping.get(uniqueid.get('type')):
                 indexer = indexer_name_mapping.get(uniqueid.get('type'))
-                indexer_id = int(uniqueid.text)
+                indexer_id = int(ImdbIdentifier(uniqueid.text).series_id)
             else:
                 # For legacy nfo's
                 if showXML.findtext('tvdbid'):

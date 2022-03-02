@@ -69,6 +69,7 @@ from medusa.imdb import Imdb
 from medusa.indexers.api import indexerApi
 from medusa.indexers.config import (
     EXTERNAL_MAPPINGS,
+    INDEXER_IMDB,
     INDEXER_TVRAGE,
     STATUS_MAP,
     indexerConfig
@@ -76,6 +77,7 @@ from medusa.indexers.config import (
 from medusa.indexers.exceptions import (
     IndexerAttributeNotFound, IndexerException, IndexerSeasonNotFound, IndexerShowAlreadyInLibrary
 )
+from medusa.indexers.imdb.api import ImdbIdentifier
 from medusa.indexers.tmdb.api import Tmdb
 from medusa.indexers.utils import (
     indexer_id_to_slug,
@@ -1582,7 +1584,7 @@ class Series(TV):
         self.reset_dirty()
         return True
 
-    def load_from_indexer(self, tvapi=None):
+    def load_from_indexer(self, tvapi=None, limit_seasons=None):
         """Load show from indexer.
 
         :param tvapi:
@@ -1598,6 +1600,9 @@ class Series(TV):
         )
 
         indexer_api = tvapi or self.indexer_api
+        if limit_seasons:
+            self.indexer_api.config['limit_seasons'] = limit_seasons
+
         indexed_show = indexer_api[self.series_id]
 
         if getattr(indexed_show, 'firstaired', ''):
@@ -1623,7 +1628,10 @@ class Series(TV):
         # Enrich the externals, using reverse lookup.
         self.externals.update(get_externals(self))
 
-        self.imdb_id = self.externals.get('imdb_id') or getattr(indexed_show, 'imdb_id', '')
+        if self.indexer_api.indexer == INDEXER_IMDB:
+            self.externals['imdb_id'] = ImdbIdentifier(getattr(indexed_show, 'id')).series_id
+
+        self.imdb_id = ImdbIdentifier(self.externals.get('imdb_id')).imdb_id or getattr(indexed_show, 'imdb_id', '')
 
         if getattr(indexed_show, 'airs_dayofweek', '') and getattr(indexed_show, 'airs_time', ''):
             self.airs = '{airs_day_of_week} {airs_time}'.format(airs_day_of_week=indexed_show['airs_dayofweek'],
@@ -2343,7 +2351,7 @@ class Series(TV):
         data = {}
         data['id'] = {}
         data['id'][self.indexer_name] = self.series_id
-        data['id']['imdb'] = self.imdb_id
+        # data['id']['imdb'] = self.imdb_id
         data['id']['slug'] = self.identifier.slug
         data['id']['trakt'] = self.externals.get('trakt_id')
         data['externals'] = {k.split('_')[0]: v for k, v in self.externals.items()}

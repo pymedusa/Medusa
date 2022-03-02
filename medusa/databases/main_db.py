@@ -36,6 +36,7 @@ class MainSanityCheck(db.DBSanityCheck):
         self.fix_show_nfo_lang()
         self.fix_subtitle_reference()
         self.clean_null_indexer_mappings()
+        self.clean_imdb_tt_ids()
 
     def clean_null_indexer_mappings(self):
         log.debug(u'Checking for null indexer mappings')
@@ -218,6 +219,13 @@ class MainSanityCheck(db.DBSanityCheck):
 
     def fix_show_nfo_lang(self):
         self.connection.action("UPDATE tv_shows SET lang = '' WHERE lang = 0 OR lang = '0';")
+
+    def clean_imdb_tt_ids(self):
+        # Get all records with 'tt'
+        log.debug(u'Cleaning indexer_mapping table, removing references to same indexer')
+        self.connection.action('DELETE from indexer_mapping WHERE indexer = mindexer')
+        log.debug(u'Cleaning indexer_mapping table from tt indexer ids')
+        self.connection.action("DELETE FROM indexer_mapping where indexer_id like '%tt%' or mindexer_id like '%tt%'")
 
 
 # ======================

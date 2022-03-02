@@ -373,7 +373,11 @@ export default {
                     const slug = [indexers.indexers[indexerIdToName(indexerId)].identifier, showId].join('');
 
                     // Append showId to indexer show url
-                    indexerShowUrl += showId;
+                    if (indexerName === 'IMDb') {
+                        indexerShowUrl += String(showId).padStart(7, '0');
+                    } else {
+                        indexerShowUrl += showId;
+                    }
 
                     // Discard 'N/A' and '1900-01-01'
                     const filter = string => ['N/A', '1900-01-01'].includes(string) ? '' : string;
