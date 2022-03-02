@@ -72,9 +72,10 @@
                         Search for new recommended shows from {{sourceToString[selectedSource]}}
                     </button>
                 </div>
-                <div v-else-if="page[selectedSource] !== -1" class="load-more">
+                <div v-else-if="page[selectedSource] !== -1 && !loadingShows" class="load-more">
                     <button class="btn-medusa" @click="getMore">Load More</button>
                 </div>
+                <state-switch v-else-if="loadingShows" state="loading" />
             </div> <!-- End of col -->
         </div> <!-- End of row -->
     </div>
@@ -88,6 +89,7 @@ import AddShowOptions from './add-show-options.vue';
 import {
     ConfigTemplate,
     ConfigToggleSlider,
+    StateSwitch,
     TraktAuthentication
 } from './helpers';
 import RecommendedPoster from './recommended-poster.vue';
@@ -101,6 +103,7 @@ export default {
         ConfigTemplate,
         ConfigToggleSlider,
         FontAwesomeIcon,
+        StateSwitch,
         RecommendedPoster,
         TraktAuthentication,
         Isotope
@@ -200,7 +203,8 @@ export default {
             showTraktAuthDialog: false,
             traktWarning: false,
             traktWarningMessage: '',
-            showsLoaded: false
+            showsLoaded: false,
+            loadingShows: false
         };
     },
     async mounted() {
@@ -210,18 +214,16 @@ export default {
         await getRecommendedShowsOptions();
 
         for (const source of sources) {
+            this.loadingShows = true;
             // eslint-disable-next-line no-await-in-loop
             await getRecommendedShows(source);
+            this.loadingShows = false;
         }
 
         this.showsLoaded = true;
         this.$nextTick(() => {
             this.isotopeLayout();
         });
-
-        // this.$once('loaded', () => {
-        //     this.configLoaded = true;
-        // });
 
         this.$watch('recommendedLists', () => {
             this.setSelectedList(this.selectedSource);
