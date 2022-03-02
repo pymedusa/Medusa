@@ -99,7 +99,7 @@ const actions = {
         }
         const identifier = source ? state.sourceToString[source] : '';
         const { page } = state;
-        return api.get(`/recommended/${identifier}?page=${page[source]}&limit=${state.limit}`, { timeout: 20000 })
+        return api.get(`/recommended/${identifier}?page=${page[source]}&limit=${state.limit}`, { timeout: 90000 })
             .then(response => {
                 commit(SET_RECOMMENDED_SHOWS, { shows: response.data, source });
             });
