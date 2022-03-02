@@ -73,6 +73,7 @@
                     </button>
                 </div>
 
+                <state-switch state="loading" />
             </div> <!-- End of col -->
         </div> <!-- End of row -->
     </div>
