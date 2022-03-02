@@ -13,7 +13,7 @@ const TRAKT = 12;
 const ANILIST = 13;
 
 const state = {
-    limit: 2000,
+    limit: 1000,
     page: {
         [IMDB]: 1,
         [ANIDB]: 1,
