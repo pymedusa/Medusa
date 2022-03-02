@@ -72,7 +72,7 @@
                         Search for new recommended shows from {{sourceToString[selectedSource]}}
                     </button>
                 </div>
-                <div v-else-if="page[selectedSource] !== -1" class="search-more">
+                <div v-else-if="page[selectedSource] !== -1" class="get-more">
                     <button class="btn-medusa" @click="getMore">Get More</button>
                 </div>
             </div> <!-- End of col -->
@@ -423,7 +423,7 @@ span.trakt-warning {
     color: red;
 }
 
-.search-more {
+.get-more {
     display: flex;
     justify-content: center;
 }
