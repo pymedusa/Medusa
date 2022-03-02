@@ -13,7 +13,7 @@ const TRAKT = 12;
 const ANILIST = 13;
 
 const state = {
-    limit: 500,
+    limit: 1000,
     page: {
         [IMDB]: 1,
         [ANIDB]: 1,
@@ -99,7 +99,7 @@ const actions = {
         }
         const identifier = source ? state.sourceToString[source] : '';
         const { page } = state;
-        return api.get(`/recommended/${identifier}?page=${page[source]}&limit=${state.limit}`, { timeout: 60000 })
+        return api.get(`/recommended/${identifier}?page=${page[source]}&limit=${state.limit}`, { timeout: 90000 })
             .then(response => {
                 commit(SET_RECOMMENDED_SHOWS, { shows: response.data, source });
             });
