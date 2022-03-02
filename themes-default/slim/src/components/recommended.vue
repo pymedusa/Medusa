@@ -72,8 +72,6 @@
                         Search for new recommended shows from {{sourceToString[selectedSource]}}
                     </button>
                 </div>
-
-                <state-switch state="loading" />
             </div> <!-- End of col -->
         </div> <!-- End of row -->
     </div>
