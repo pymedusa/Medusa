@@ -65,14 +65,6 @@ const mutations = {
         console.debug(`Merged ${newShow.title || newShow.source + String(newShow.seriesId)}`, newShow);
     },
     [SET_RECOMMENDED_SHOWS](state, { shows, source }) {
-        // if (identifier) {
-        //     // If an identifier has been passed, remove the old shows for this identifier.
-        //     const source = Number(Object.keys(state.sourceToString).find(key => state.sourceToString[key] === identifier));
-        //     state.shows = state.shows.filter(show => show.source !== source);
-        // } else {
-        //     // No identifier passed, meaning remove all shows from store.
-        //     state.shows = [];
-        // }
         if (shows.length < state.limit) {
             state.page[source] = -1;
         }
@@ -98,7 +90,7 @@ const actions = {
      * Get recommended shows from API and commit them to the store.
      *
      * @param {*} context - The store context.
-     * @param {String} identifier - Identifier for the recommended shows list.
+     * @param {String} source - Identifier for the recommended shows list.
      * @returns {(undefined|Promise)} undefined if `shows` was provided or the API response if not.
      */
     getRecommendedShows({ state, commit }, source) {
