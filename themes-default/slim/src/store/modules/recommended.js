@@ -124,7 +124,7 @@ const actions = {
     },
     getMoreShows({ commit, dispatch }, source) {
         commit('increasePage', source);
-        dispatch('getRecommendedShows', source);
+        return dispatch('getRecommendedShows', source);
     }
 };
 

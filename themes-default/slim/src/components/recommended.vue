@@ -369,7 +369,11 @@ export default {
             }
         },
         getMore() {
-            this.getMoreShows(this.selectedSource);
+            this.loadingShows = true;
+            this.getMoreShows(this.selectedSource)
+                .finally(() => {
+                    this.loadingShows = false;
+                });
         }
     },
     watch: {
