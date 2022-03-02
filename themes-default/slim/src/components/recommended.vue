@@ -214,14 +214,21 @@ export default {
 
         await getRecommendedShowsOptions();
 
+        this.loadingShows = true;
         for (const source of sources) {
-            this.loadingShows = true;
-            // eslint-disable-next-line no-await-in-loop
-            await getRecommendedShows(source);
-            this.loadingShows = false;
+            try {
+                // eslint-disable-next-line no-await-in-loop
+                await getRecommendedShows(source);
+            } catch {
+                this.$snotify.error(
+                    `Could not load recommended shows for ${sourceToString[source]}`
+                );
+            }
         }
 
         this.showsLoaded = true;
+        this.loadingShows = false;
+
         this.$nextTick(() => {
             this.isotopeLayout();
         });
