@@ -72,8 +72,8 @@
                         Search for new recommended shows from {{sourceToString[selectedSource]}}
                     </button>
                 </div>
-                <div v-else-if="page[selectedSource] !== -1" class="get-more">
-                    <button class="btn-medusa" @click="getMore">Get More</button>
+                <div v-else-if="page[selectedSource] !== -1" class="load-more">
+                    <button class="btn-medusa" @click="getMore">Load More</button>
                 </div>
             </div> <!-- End of col -->
         </div> <!-- End of row -->
@@ -423,7 +423,7 @@ span.trakt-warning {
     color: red;
 }
 
-.get-more {
+.load-more {
     display: flex;
     justify-content: center;
 }
