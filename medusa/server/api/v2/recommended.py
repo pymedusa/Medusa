@@ -39,27 +39,23 @@ class RecommendedHandler(BaseRequestHandler):
 
     def get(self, identifier, path_param=None):
         """Query available recommended show lists."""
-        if identifier and not RecommendedHandler.IDENTIFIER_TO_LIST.get(identifier):
+        if identifier and not RecommendedHandler.IDENTIFIER_TO_LIST.get(identifier) and identifier != 'categories':
             return self._bad_request("Invalid recommended list identifier '{0}'".format(identifier))
 
-        data = {'shows': [], 'trakt': {'removedFromMedusa': []}}
-
-        shows = get_recommended_shows(source=RecommendedHandler.IDENTIFIER_TO_LIST.get(identifier))
-
-        if shows:
-            data['shows'] = [show.to_json() for show in shows]
-
-        data['trakt']['removedFromMedusa'] = []
-        if app.USE_TRAKT:
+        if identifier == 'trakt' and path_param == 'removed' and app.USE_TRAKT:
+            data = {'removedFromMedusa': [], 'blacklistEnabled': None}
             try:
-                data['trakt']['removedFromMedusa'] = TraktPopular().get_removed_from_medusa()
+                data['removedFromMedusa'] = TraktPopular().get_removed_from_medusa()
             except Exception:
                 log.warning('Could not get the `removed from medusa` list')
-            data['trakt']['blacklistEnabled'] = app.TRAKT_BLACKLIST_NAME != ''
+            data['blacklistEnabled'] = app.TRAKT_BLACKLIST_NAME != ''
+            return self._ok(data)
 
-        data['categories'] = get_categories()
+        if identifier == 'categories':
+            return self._ok(get_categories())
 
-        return self._ok(data)
+        shows = get_recommended_shows(source=RecommendedHandler.IDENTIFIER_TO_LIST.get(identifier))
+        return self._paginate([show.to_json() for show in shows], sort='-rating')
 
     def post(self, identifier, path_param=None):
         """Force the start of a recommended show queue item."""

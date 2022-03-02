@@ -47,7 +47,7 @@ export const showlistTableMixin = {
                 field: 'indexer',
                 filterOptions: {
                     enabled: true,
-                    filterDropdownItems: ['tvdb', 'tvmaze', 'tmdb']
+                    filterDropdownItems: ['tvdb', 'tvmaze', 'tmdb', 'imdb']
                 },
                 hidden: getCookie('Indexer')
             }, {
