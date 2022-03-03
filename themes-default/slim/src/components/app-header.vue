@@ -340,7 +340,7 @@ export default {
     }
 
     .navbar-mobile #NAVsystem > ul {
-        transform: translateX(-5rem);
+        transform: translateX(-6rem);
     }
 }
 </style>
