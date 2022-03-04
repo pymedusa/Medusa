@@ -141,17 +141,25 @@ export default {
     watch: {
         queueitems(queueitems) {
             const { allShows } = this;
+            let changingShows = false;
             for (const show of allShows) {
                 if (!('changeStatus' in show)) {
                     continue;
                 }
 
                 const foundItem = queueitems.find(item => item.identifier === show.changeStatus.identifier);
+                if (foundItem && foundItem.success === null) {
+                    changingShows = true;
+                }
+
                 if (foundItem && foundItem.oldShow.id.slug === show.id.slug && foundItem.success !== null) {
                     // Found a queueItem for this show. Let's search for a new show. And replace it.
-                    allShows.find(s => s.id.slug === foundItem.oldShow.id.slug).id = foundItem.newShow.id;
+                    const foundShow = allShows.find(s => s.id.slug === foundItem.oldShow.id.slug);
+                    foundShow.id = foundItem.newShow.id;
+                    foundShow.checked = false;
                 }
             }
+            this.started = changingShows;
         }
     }
 };
