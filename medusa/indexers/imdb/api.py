@@ -69,7 +69,10 @@ class ImdbIdentifier(object):
             self.series_id = int(self._imdb_id.split('tt')[-1])
         else:
             self._imdb_id = 'tt{0}'.format(text_type(value).zfill(7))
-            self.series_id = int(value)
+            try:
+                self.series_id = int(value)
+            except (TypeError, ValueError):
+                self.series_id = None
 
 
 class Imdb(BaseIndexer):
