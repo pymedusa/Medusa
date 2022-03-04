@@ -161,4 +161,8 @@ export default {
 .step-container .state:hover + .stepdisplay {
     display: block;
 }
+
+tr:hover {
+    background-color: rgb(145, 145, 145);
+}
 </style>
