@@ -1,7 +1,7 @@
 ## 0.5.25 (08-03-2022)
 
 #### New Features
-- New indexer: Added support for adding shows from Imdb. ([3603](https://github.com/pymedusa/Medusa/pull/3603))
+- New indexer: Added support for adding shows from Imdb ([3603](https://github.com/pymedusa/Medusa/pull/3603))
 
 #### Improvements
 - Enhanced test guessit tool ([10357](https://github.com/pymedusa/Medusa/pull/10357))
