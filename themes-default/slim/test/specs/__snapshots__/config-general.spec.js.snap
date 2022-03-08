@@ -89,7 +89,7 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   labelfor="default_page"
                 >
                   <select
-                    class="form-control input-sm"
+                    class="form-control input-sm max-input350"
                     id="default_page"
                     name="default_page"
                   >
@@ -425,7 +425,7 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   labelfor="indexer_default"
                 >
                   <select
-                    class="form-control input-sm"
+                    class="form-control input-sm max-input350"
                     id="indexer_default"
                     name="indexer_default"
                   >
@@ -609,7 +609,7 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   labelfor="theme_name"
                 >
                   <select
-                    class="form-control input-sm"
+                    class="form-control input-sm max-input350"
                     id="theme_name"
                     name="theme_name"
                   >
@@ -742,7 +742,7 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   labelfor="date_preset"
                 >
                   <select
-                    class="form-control input-sm"
+                    class="form-control input-sm max-input350"
                     id="date_preset"
                     name="date_preset"
                   >
@@ -799,7 +799,7 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   labelfor="time_preset"
                 >
                   <select
-                    class="form-control input-sm"
+                    class="form-control input-sm max-input350"
                     id="time_preset"
                     name="time_preset"
                   >
@@ -1109,7 +1109,7 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   labelfor="cpu_presets"
                 >
                   <select
-                    class="form-control input-sm"
+                    class="form-control input-sm max-input350"
                     id="cpu_presets"
                     name="cpu_presets"
                   >
@@ -1287,7 +1287,7 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   labelfor="ep_default_deleted_status"
                 >
                   <select
-                    class="form-control input-sm margin-bottom-5"
+                    class="form-control input-sm margin-bottom-5 max-input350"
                     id="ep_default_deleted_status"
                     name="ep_default_deleted_status"
                   >
@@ -1403,7 +1403,7 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   labelfor="privacy_level"
                 >
                   <select
-                    class="form-control input-sm"
+                    class="form-control input-sm max-input350"
                     id="privacy_level"
                     name="privacy_level"
                   >
@@ -1474,7 +1474,7 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   labelfor="github_remote_branches"
                 >
                   <select
-                    class="form-control input-sm margin-bottom-10"
+                    class="form-control input-sm margin-bottom-10 max-input350"
                     id="github_remote_branches"
                     name="github_remote_branches"
                   >
@@ -1621,6 +1621,7 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   <multiselect-stub
                     allowempty="true"
                     blockkeys=""
+                    class="max-input350"
                     clearonselect="true"
                     closeonselect="true"
                     customlabel="[Function]"
