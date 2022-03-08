@@ -69,6 +69,7 @@ from medusa.imdb import Imdb
 from medusa.indexers.api import indexerApi
 from medusa.indexers.config import (
     EXTERNAL_MAPPINGS,
+    INDEXER_IMDB,
     INDEXER_TVRAGE,
     STATUS_MAP,
     indexerConfig
@@ -76,6 +77,7 @@ from medusa.indexers.config import (
 from medusa.indexers.exceptions import (
     IndexerAttributeNotFound, IndexerException, IndexerSeasonNotFound, IndexerShowAlreadyInLibrary
 )
+from medusa.indexers.imdb.api import ImdbIdentifier
 from medusa.indexers.tmdb.api import Tmdb
 from medusa.indexers.utils import (
     indexer_id_to_slug,
@@ -1582,7 +1584,7 @@ class Series(TV):
         self.reset_dirty()
         return True
 
-    def load_from_indexer(self, tvapi=None):
+    def load_from_indexer(self, tvapi=None, limit_seasons=None):
         """Load show from indexer.
 
         :param tvapi:
@@ -1598,6 +1600,9 @@ class Series(TV):
         )
 
         indexer_api = tvapi or self.indexer_api
+        if limit_seasons:
+            self.indexer_api.config['limit_seasons'] = limit_seasons
+
         indexed_show = indexer_api[self.series_id]
 
         if getattr(indexed_show, 'firstaired', ''):
@@ -1623,7 +1628,10 @@ class Series(TV):
         # Enrich the externals, using reverse lookup.
         self.externals.update(get_externals(self))
 
-        self.imdb_id = self.externals.get('imdb_id') or getattr(indexed_show, 'imdb_id', '')
+        if self.indexer_api.indexer == INDEXER_IMDB:
+            self.externals['imdb_id'] = ImdbIdentifier(getattr(indexed_show, 'id')).series_id
+
+        self.imdb_id = ImdbIdentifier(self.externals.get('imdb_id')).imdb_id or getattr(indexed_show, 'imdb_id', '')
 
         if getattr(indexed_show, 'airs_dayofweek', '') and getattr(indexed_show, 'airs_time', ''):
             self.airs = '{airs_day_of_week} {airs_time}'.format(airs_day_of_week=indexed_show['airs_dayofweek'],
@@ -1863,10 +1871,8 @@ class Series(TV):
             '  indexer = ?'
             '  AND showid = ? '
             '  AND airdate >= ? '
-            'ORDER BY'
-            '  airdate '
-            'ASC LIMIT 1',
-            [self.indexer, self.series_id, today])
+            'ORDER BY airdate ',
+            [self.indexer, self.series_id, today - 1])
 
         if sql_results is None or len(sql_results) == 0:
             log.debug(u'{id}: ({name}) Could not find a next episode', {'name': self.name, 'id': self.series_id})
@@ -1878,7 +1884,18 @@ class Series(TV):
                     'ep': episode_num(sql_results[0]['season'], sql_results[0]['episode']),
                 }
             )
-            self._next_aired = sql_results[0]['airdate']
+            next_aired_with_time = None
+            for result in sql_results:
+                if result['airdate'] > MILLIS_YEAR_1900:
+                    next_aired_with_time = sbdatetime.convert_to_setting(
+                        network_timezones.parse_date_time(result['airdate'], self.airs, self.network)
+                    )
+
+                    if next_aired_with_time < datetime.datetime.now().astimezone():
+                        continue
+
+                    self._next_aired = result['airdate']
+                    break
 
         return self._next_aired
 
@@ -2343,7 +2360,7 @@ class Series(TV):
         data = {}
         data['id'] = {}
         data['id'][self.indexer_name] = self.series_id
-        data['id']['imdb'] = self.imdb_id
+        # data['id']['imdb'] = self.imdb_id
         data['id']['slug'] = self.identifier.slug
         data['id']['trakt'] = self.externals.get('trakt_id')
         data['externals'] = {k.split('_')[0]: v for k, v in self.externals.items()}

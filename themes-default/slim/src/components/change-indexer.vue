@@ -8,6 +8,7 @@
                     <label for="tvdb">tvdb<input type="checkbox" v-model="filter.tvdb" name="tvdb" id="tvdb"></label>
                     <label for="tvmaze">tvmaze<input type="checkbox" v-model="filter.tvmaze" name="tvmaze" id="tvmaze"></label>
                     <label for="tmdb">tmdb<input type="checkbox" v-model="filter.tmdb" name="tmdb" id="tmdb"></label>
+                    <label for="imdb">imdb<input type="checkbox" v-model="filter.imdb" name="imdb" id="imdb"></label>
                 </div>
             </div>
         </div>
@@ -46,7 +47,8 @@ export default {
             filter: {
                 tvdb: true,
                 tvmaze: true,
-                tmdb: true
+                tmdb: true,
+                imdb: true
             },
             started: false
         };
@@ -76,7 +78,8 @@ export default {
                 show =>
                     (show.indexer === 'tvdb' && filter.tvdb) ||
                     (show.indexer === 'tvmaze' && filter.tvmaze) ||
-                    (show.indexer === 'tmdb' && filter.tmdb)
+                    (show.indexer === 'tmdb' && filter.tmdb) ||
+                    (show.indexer === 'imdb' && filter.imdb)
             );
         }
     },
@@ -91,6 +94,14 @@ export default {
             Vue.set(filteredShows.find(s => s === show), 'selected', { indexer, showId });
         },
         /**
+         * Convert an Imdb Id to an id without the `tt` prefix.
+         * @param {String} value - Imdb id with tt prefix.
+         * @returns {Number} - Id without the tt prefix.
+         */
+        imdbToId(value) {
+            return Number(String(value).replace(/^tt0*/g, ''));
+        },
+        /**
          * Start changing the shows indexer.
          */
         async start() {
@@ -99,7 +110,7 @@ export default {
                 // Loop through the shows and start a ChangeIndexerQueueItem for each.
                 // Store the queueItem identifier, to keep track.
                 const oldSlug = show.id.slug;
-                const newSlug = `${show.selected.indexer}${show.selected.showId}`;
+                const newSlug = `${show.selected.indexer}${this.imdbToId(show.selected.showId)}`;
                 if (oldSlug === newSlug) {
                     this.$snotify.warning(
                         'Old shows indexer and new shows indexer are the same, skipping',
@@ -130,17 +141,25 @@ export default {
     watch: {
         queueitems(queueitems) {
             const { allShows } = this;
+            let changingShows = false;
             for (const show of allShows) {
                 if (!('changeStatus' in show)) {
                     continue;
                 }
 
                 const foundItem = queueitems.find(item => item.identifier === show.changeStatus.identifier);
+                if (foundItem && foundItem.success === null) {
+                    changingShows = true;
+                }
+
                 if (foundItem && foundItem.oldShow.id.slug === show.id.slug && foundItem.success !== null) {
                     // Found a queueItem for this show. Let's search for a new show. And replace it.
-                    allShows.find(s => s.id.slug === foundItem.oldShow.id.slug).id = foundItem.newShow.id;
+                    const foundShow = allShows.find(s => s.id.slug === foundItem.oldShow.id.slug);
+                    foundShow.id = foundItem.newShow.id;
+                    foundShow.checked = false;
                 }
             }
+            this.started = changingShows;
         }
     }
 };

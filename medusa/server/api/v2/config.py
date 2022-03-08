@@ -192,6 +192,7 @@ class ConfigHandler(BaseRequestHandler):
         'recommended.cache.imdb': BooleanField(app, 'CACHE_RECOMMENDED_IMDB'),
         'recommended.cache.anidb': BooleanField(app, 'CACHE_RECOMMENDED_ANIDB'),
         'recommended.cache.anilist': BooleanField(app, 'CACHE_RECOMMENDED_ANILIST'),
+        'recommended.cache.purgeAfterDays': IntegerField(app, 'CACHE_RECOMMENDED_PURGE_AFTER_DAYS'),
         'recommended.trakt.selectedLists': ListField(app, 'CACHE_RECOMMENDED_TRAKT_LISTS'),
 
         # Sections
@@ -233,7 +234,6 @@ class ConfigHandler(BaseRequestHandler):
         'clients.nzb.sabnzbd.host': StringField(app, 'SAB_HOST'),
         'clients.nzb.sabnzbd.password': StringField(app, 'SAB_PASSWORD'),
         'clients.nzb.sabnzbd.username': StringField(app, 'SAB_USERNAME'),
-
 
         'postProcessing.showDownloadDir': StringField(app, 'TV_DOWNLOAD_DIR'),
         'postProcessing.defaultClientPath': StringField(app, 'DEFAULT_CLIENT_PATH'),
@@ -432,6 +432,7 @@ class ConfigHandler(BaseRequestHandler):
         'notifiers.discord.enabled': BooleanField(app, 'USE_DISCORD'),
         'notifiers.discord.webhook': StringField(app, 'DISCORD_WEBHOOK'),
         'notifiers.discord.tts': BooleanField(app, 'DISCORD_TTS'),
+        'notifiers.discord.overrideAvatar': BooleanField(app, 'DISCORD_OVERRIDE_AVATAR'),
         'notifiers.discord.notifyOnSnatch': BooleanField(app, 'DISCORD_NOTIFY_ONSNATCH'),
         'notifiers.discord.notifyOnDownload': BooleanField(app, 'DISCORD_NOTIFY_ONDOWNLOAD'),
         'notifiers.discord.notifyOnSubtitleDownload': BooleanField(app, 'DISCORD_NOTIFY_ONSUBTITLEDOWNLOAD'),
@@ -709,6 +710,7 @@ class DataGenerator(object):
         section_data['recommended']['cache']['imdb'] = bool(app.CACHE_RECOMMENDED_IMDB)
         section_data['recommended']['cache']['anidb'] = bool(app.CACHE_RECOMMENDED_ANIDB)
         section_data['recommended']['cache']['anilist'] = bool(app.CACHE_RECOMMENDED_ANILIST)
+        section_data['recommended']['cache']['purgeAfterDays'] = int(app.CACHE_RECOMMENDED_PURGE_AFTER_DAYS)
         section_data['recommended']['trakt']['selectedLists'] = app.CACHE_RECOMMENDED_TRAKT_LISTS
         section_data['recommended']['trakt']['availableLists'] = TraktPopular.CATEGORIES
 
@@ -1054,6 +1056,7 @@ class DataGenerator(object):
         section_data['discord']['notifyOnSubtitleDownload'] = bool(app.DISCORD_NOTIFY_ONSUBTITLEDOWNLOAD)
         section_data['discord']['webhook'] = app.DISCORD_WEBHOOK
         section_data['discord']['tts'] = bool(app.DISCORD_TTS)
+        section_data['discord']['overrideAvatar'] = bool(app.DISCORD_OVERRIDE_AVATAR)
         section_data['discord']['name'] = app.DISCORD_NAME
 
         section_data['twitter'] = {}

@@ -4,17 +4,17 @@
         <div id="recommended-shows-lists" class="row">
             <div class="col-md-12">
                 <config-template label-for="recommended-source" label="Select a Source">
-                    <select disabled="disabled" v-if="!showsLoaded" class="form-control max-width">
+                    <select disabled="disabled" v-if="!showsLoaded" class="form-control max-input350">
                         <option value="">Loading shows, please wait</option>
                     </select>
-                    <select v-else :disabled="!showsLoaded" id="recommended-source" name="recommended-source" v-model="selectedSource" class="form-control max-width">
+                    <select v-else :disabled="!showsLoaded" id="recommended-source" name="recommended-source" v-model="selectedSource" class="form-control max-input350">
                         <option v-show="showsLoaded" v-for="option in sourceOptions" :value="option.value" :key="option.value">
                             {{ option.text }}
                         </option>
                     </select>
                 </config-template>
                 <config-template label-for="recommended-list" label="Select a list">
-                    <select :disabled="!showsLoaded" id="recommended-list" name="recommended-list" v-model="selectedList" class="form-control max-width">
+                    <select :disabled="!showsLoaded" id="recommended-list" name="recommended-list" v-model="selectedList" class="form-control max-input350">
                         <option v-for="option in listOptions" :value="option.value" :key="option.value">
                             {{ option.text }}
                         </option>
@@ -73,6 +73,10 @@
                     </button>
                 </div>
 
+                <div v-else-if="page[selectedSource] !== -1" class="load-more">
+                    <state-switch v-if="loadingShows" state="loading" />
+                    <button v-else class="btn-medusa" @click="getMore">Load More</button>
+                </div>
             </div> <!-- End of col -->
         </div> <!-- End of row -->
     </div>
@@ -86,6 +90,7 @@ import AddShowOptions from './add-show-options.vue';
 import {
     ConfigTemplate,
     ConfigToggleSlider,
+    StateSwitch,
     TraktAuthentication
 } from './helpers';
 import RecommendedPoster from './recommended-poster.vue';
@@ -99,6 +104,7 @@ export default {
         ConfigTemplate,
         ConfigToggleSlider,
         FontAwesomeIcon,
+        StateSwitch,
         RecommendedPoster,
         TraktAuthentication,
         Isotope
@@ -198,25 +204,33 @@ export default {
             showTraktAuthDialog: false,
             traktWarning: false,
             traktWarningMessage: '',
-            showsLoaded: false
+            showsLoaded: false,
+            loadingShows: false
         };
     },
     async mounted() {
-        const { getRecommendedShows, sourceToString } = this;
-        const identifiers = Object.values(sourceToString);
+        const { getRecommendedShows, getRecommendedShowsOptions, sourceToString } = this;
+        const sources = Object.keys(sourceToString);
 
-        for (const identifier of identifiers) {
-            // eslint-disable-next-line no-await-in-loop
-            await getRecommendedShows(identifier);
+        await getRecommendedShowsOptions();
+
+        this.loadingShows = true;
+        for (const source of sources) {
+            try {
+                // eslint-disable-next-line no-await-in-loop
+                await getRecommendedShows(source);
+            } catch {
+                this.$snotify.error(
+                    `Could not load recommended shows for ${sourceToString[source]}`
+                );
+            }
         }
 
         this.showsLoaded = true;
+        this.loadingShows = false;
+
         this.$nextTick(() => {
             this.isotopeLayout();
-        });
-
-        this.$once('loaded', () => {
-            this.configLoaded = true;
         });
 
         this.$watch('recommendedLists', () => {
@@ -231,7 +245,8 @@ export default {
             traktConfig: state => state.recommended.trakt,
             recommendedLists: state => state.recommended.categories,
             queueitems: state => state.queue.queueitems,
-            sourceToString: state => state.recommended.sourceToString
+            sourceToString: state => state.recommended.sourceToString,
+            page: state => state.recommended.page
         }),
         filteredShowsByList() {
             const { imgLazyLoad, recommendedShows, selectedSource, selectedList } = this;
@@ -262,13 +277,18 @@ export default {
         },
         listOptions() {
             const { recommendedLists, selectedSource } = this;
+            if (!recommendedLists || !(selectedSource in recommendedLists)) {
+                return;
+            }
             const sourceLists = recommendedLists[selectedSource] || [];
             return sourceLists.map(list => ({ text: list, value: list }));
         }
     },
     methods: {
         ...mapActions({
-            getRecommendedShows: 'getRecommendedShows'
+            getRecommendedShows: 'getRecommendedShows',
+            getRecommendedShowsOptions: 'getRecommendedShowsOptions',
+            getMoreShows: 'getMoreShows'
         }),
         containerClass(show) {
             let classes = 'recommended-container default-poster show-row';
@@ -355,6 +375,13 @@ export default {
                     );
                 }
             }
+        },
+        getMore() {
+            this.loadingShows = true;
+            this.getMoreShows(this.selectedSource)
+                .finally(() => {
+                    this.loadingShows = false;
+                });
         }
     },
     watch: {
@@ -410,4 +437,8 @@ span.trakt-warning {
     color: red;
 }
 
+.load-more {
+    display: flex;
+    justify-content: center;
+}
 </style>

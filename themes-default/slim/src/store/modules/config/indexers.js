@@ -57,6 +57,22 @@ const state = {
             scene_loc: null, // eslint-disable-line camelcase
             showUrl: null,
             xemOrigin: null
+        },
+        imdb: {
+            apiParams: {
+                useZip: null,
+                language: null
+            },
+            baseUrl: null,
+            enabled: null,
+            icon: null,
+            id: null,
+            identifier: null,
+            mappedTo: null,
+            name: null,
+            scene_loc: null, // eslint-disable-line camelcase
+            showUrl: null,
+            xemOrigin: null
         }
     }
 };

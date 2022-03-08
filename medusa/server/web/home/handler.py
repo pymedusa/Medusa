@@ -155,8 +155,10 @@ class Home(WebRoot):
             return 'Error sending Telegram notification: {msg}'.format(msg=message)
 
     @staticmethod
-    def testDiscord(discord_webhook=None, discord_tts=False):
-        result, message = notifiers.discord_notifier.test_notify(discord_webhook, config.checkbox_to_value(discord_tts))
+    def testDiscord(discord_webhook=None, discord_tts=None, discord_override_avatar=None):
+        result, message = notifiers.discord_notifier.test_notify(
+            discord_webhook, config.checkbox_to_value(discord_tts), config.checkbox_to_value(discord_override_avatar)
+        )
         if result:
             return 'Discord notification succeeded. Check your Discord channels to make sure it worked'
         else:

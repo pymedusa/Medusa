@@ -62,7 +62,7 @@ exports[`AppHeader.test.js renders 1`] = `
       id="main_nav"
     >
       <ul
-        class="nav navbar-nav navbar-right"
+        class="nav navbar-nav navbar-right navbar-mobile"
       >
         <li
           class="navbar-split dropdown active"

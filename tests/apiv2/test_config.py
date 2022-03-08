@@ -108,6 +108,7 @@ def config_main(monkeypatch, app_config):
     section_data['recommended']['cache']['imdb'] = bool(app.CACHE_RECOMMENDED_IMDB)
     section_data['recommended']['cache']['anidb'] = bool(app.CACHE_RECOMMENDED_ANIDB)
     section_data['recommended']['cache']['anilist'] = bool(app.CACHE_RECOMMENDED_ANILIST)
+    section_data['recommended']['cache']['purgeAfterDays'] = int(app.CACHE_RECOMMENDED_PURGE_AFTER_DAYS)
     section_data['recommended']['trakt']['selectedLists'] = app.CACHE_RECOMMENDED_TRAKT_LISTS
     section_data['recommended']['trakt']['availableLists'] = TraktPopular.CATEGORIES
 
@@ -419,6 +420,7 @@ def config_postprocessing():
     section_data['naming']['animeNamingType'] = int_default(app.NAMING_ANIME, 3)
     section_data['naming']['stripYear'] = bool(app.NAMING_STRIP_YEAR)
     section_data['showDownloadDir'] = app.TV_DOWNLOAD_DIR
+    section_data['defaultClientPath'] = app.DEFAULT_CLIENT_PATH
     section_data['processAutomatically'] = bool(app.PROCESS_AUTOMATICALLY)
     section_data['postponeIfSyncFiles'] = bool(app.POSTPONE_IF_SYNC_FILES)
     section_data['postponeIfNoSubs'] = bool(app.POSTPONE_IF_NO_SUBS)
@@ -432,6 +434,9 @@ def config_postprocessing():
     section_data['deleteRarContent'] = bool(app.DELRARCONTENTS)
     section_data['noDelete'] = bool(app.NO_DELETE)
     section_data['processMethod'] = app.PROCESS_METHOD
+    section_data['specificProcessMethod'] = bool(app.USE_SPECIFIC_PROCESS_METHOD)
+    section_data['processMethodTorrent'] = app.PROCESS_METHOD_TORRENT
+    section_data['processMethodNzb'] = app.PROCESS_METHOD_NZB
     section_data['reflinkAvailable'] = bool(pkgutil.find_loader('reflink'))
     section_data['autoPostprocessorFrequency'] = int(app.AUTOPOSTPROCESSOR_FREQUENCY)
     section_data['syncFiles'] = app.SYNC_FILES
@@ -695,6 +700,7 @@ def config_notifiers():
     section_data['discord']['notifyOnSubtitleDownload'] = bool(app.DISCORD_NOTIFY_ONSUBTITLEDOWNLOAD)
     section_data['discord']['webhook'] = app.DISCORD_WEBHOOK
     section_data['discord']['tts'] = bool(app.DISCORD_TTS)
+    section_data['discord']['overrideAvatar'] = bool(app.DISCORD_OVERRIDE_AVATAR)    
     section_data['discord']['name'] = app.DISCORD_NAME
 
     section_data['twitter'] = {}
@@ -910,7 +916,7 @@ def config_subtitles():
 
 
 @pytest.mark.gen_test
-async def test_config_get_postprocessing(http_client, create_url, auth_headers, config_subtitles):
+async def test_config_get_subtitles(http_client, create_url, auth_headers, config_subtitles):
     # given
     expected = config_subtitles
 

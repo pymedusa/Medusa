@@ -85,7 +85,7 @@ class SeriesHandler(BaseRequestHandler):
         if not data or 'id' not in data:
             return self._bad_request('Invalid series data')
 
-        ids = {k: v for k, v in viewitems(data['id']) if k != 'imdb'}
+        ids = {k: v for k, v in viewitems(data['id'])}
         if len(ids) != 1:
             return self._bad_request('Only 1 indexer identifier should be specified')
 

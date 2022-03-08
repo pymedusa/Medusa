@@ -23,7 +23,7 @@
                                     </config-toggle-slider>
 
                                     <config-template label-for="default_page" label="Initial page">
-                                        <select id="default_page" name="default_page" v-model="general.defaultPage" class="form-control input-sm">
+                                        <select id="default_page" name="default_page" v-model="general.defaultPage" class="form-control input-sm max-input350">
                                             <option :value="option.value" v-for="option in defaultPageOptions" :key="option.value">{{ option.text }}</option>
                                         </select>
                                         <span>when launching Medusa interface</span>
@@ -86,6 +86,11 @@
                                         <config-toggle-slider v-model="general.recommended.cache.imdb" label="Cache Imdb lists" id="cache_rec_imdb" />
                                         <config-toggle-slider v-model="general.recommended.cache.anidb" label="Cache Anidb lists" id="cache_rec_anidb" />
                                         <config-toggle-slider v-model="general.recommended.cache.anilist" label="Cache AniList lists" id="cache_rec_anilist" />
+
+                                        <config-textbox-number v-model="general.recommended.cache.purgeAfterDays" label="Purge shows from db after x days" id="cache_purge_days" :min="0" :step="1">
+                                            <p>Number of days to keep shows in the cache (default: 180) <b>(0 will not purge shows at all)</b></p>
+                                        </config-textbox-number>
+
                                     </template>
                                 </fieldset>
                             </div>
@@ -116,7 +121,7 @@
                                     </config-textbox-number>
 
                                     <config-template label-for="indexer_default" label="Use initial indexer set to">
-                                        <select id="indexer_default" name="indexer_default" v-model="indexerDefault" class="form-control input-sm">
+                                        <select id="indexer_default" name="indexer_default" v-model="indexerDefault" class="form-control input-sm max-input350">
                                             <option v-for="option in indexerListOptions" :value="option.value" :key="option.value">
                                                 {{ option.text }}
                                             </option>
@@ -185,7 +190,7 @@
                                 <fieldset class="component-group-list">
 
                                     <config-template label-for="theme_name" label="Display theme">
-                                        <select id="theme_name" name="theme_name" class="form-control input-sm" v-model="layout.themeName" @change="changeTheme(layout.themeName)">
+                                        <select id="theme_name" name="theme_name" class="form-control input-sm max-input350" v-model="layout.themeName" @change="changeTheme(layout.themeName)">
                                             <option :value="option.value" v-for="option in availableThemesOptions"
                                                     :key="option.value">{{ option.text }}
                                             </option>
@@ -233,13 +238,13 @@
                                     </config-toggle-slider>
 
                                     <config-template label-for="date_preset" label="Date style">
-                                        <select id="date_preset" name="date_preset" v-model="layout.dateStyle" class="form-control input-sm">
+                                        <select id="date_preset" name="date_preset" v-model="layout.dateStyle" class="form-control input-sm max-input350">
                                             <option :value="option.value" v-for="option in datePresetOptions" :key="option.value">{{ option.text }}</option>
                                         </select>
                                     </config-template>
 
                                     <config-template label-for="time_preset" label="Time style">
-                                        <select id="time_preset" name="time_preset" v-model="layout.timeStyle" class="form-control input-sm">
+                                        <select id="time_preset" name="time_preset" v-model="layout.timeStyle" class="form-control input-sm max-input350">
                                             <option :value="option.value" v-for="option in timePresetOptions" :key="option.value">{{ option.text }}</option>
                                         </select>
                                         <span><b>Note:</b> seconds are only shown on the History page</span>
@@ -303,7 +308,7 @@
                                     </config-toggle-slider>
 
                                     <config-toggle-slider v-model="general.webInterface.ipv6" label="Listen on IPv6" id="web_ipv6">
-                                        <p>enable to be notified when a new login happens in webserver</p>
+                                        <p>enable to listen for connections on IPv6</p>
                                     </config-toggle-slider>
 
                                     <config-toggle-slider v-model="general.webInterface.httpsEnable" label="Enable HTTPS" id="enable_https">
@@ -345,7 +350,7 @@
                                 <fieldset class="component-group-list">
 
                                     <config-template label-for="cpu_presets" label="CPU throttling">
-                                        <select id="cpu_presets" name="cpu_presets" v-model="general.cpuPreset" class="form-control input-sm">
+                                        <select id="cpu_presets" name="cpu_presets" v-model="general.cpuPreset" class="form-control input-sm max-input350">
                                             <option :value="option.value" v-for="option in cpuPresetOptions" :key="option.value">{{ option.text }}</option>
                                         </select>
                                         <span>Normal (default). High is lower and Low is higher CPU use</span>
@@ -411,7 +416,7 @@
                                     </config-toggle-slider>
 
                                     <config-template label-for="ep_default_deleted_status" label="Default deleted episode status">
-                                        <select id="ep_default_deleted_status" name="ep_default_deleted_status" v-model="general.epDefaultDeletedStatus" class="form-control input-sm margin-bottom-5">
+                                        <select id="ep_default_deleted_status" name="ep_default_deleted_status" v-model="general.epDefaultDeletedStatus" class="form-control input-sm margin-bottom-5 max-input350">
                                             <option disabled value="">Please select a default status</option>
                                             <option :value="option.value" v-for="option in defaultDeletedEpOptions" :key="option.value">{{ option.text }}</option>
                                         </select>
@@ -449,7 +454,7 @@
                                     </config-toggle-slider>
 
                                     <config-template label-for="privacy_level" label="Privacy">
-                                        <select id="privacy_level" name="privacy_level" v-model="general.logs.privacyLevel" class="form-control input-sm">
+                                        <select id="privacy_level" name="privacy_level" v-model="general.logs.privacyLevel" class="form-control input-sm max-input350">
                                             <option :value="option.value" v-for="option in privacyLevelOptions" :key="option.value">{{ option.text }}</option>
                                         </select>
                                         <span>
@@ -476,7 +481,7 @@
                                 <fieldset class="component-group-list">
 
                                     <config-template label-for="github_remote_branches" label="Branch version">
-                                        <select id="github_remote_branches" name="github_remote_branches" v-model="selectedBranch" class="form-control input-sm margin-bottom-10">
+                                        <select id="github_remote_branches" name="github_remote_branches" v-model="selectedBranch" class="form-control input-sm margin-bottom-10 max-input350">
                                             <option disabled value="">Please select a branch</option>
                                             <option :value="option.value" v-for="option in githubRemoteBranchesOptions" :key="option.value">{{ option.text }}</option>
                                         </select>
@@ -548,6 +553,7 @@
                                             v-model="general.git.resetBranches"
                                             :multiple="true"
                                             :options="gitRemoteBranches"
+                                            class="max-input350"
                                         />
                                         <input class="btn-medusa btn-inline" type="button" id="branch_force_update" value="Update Branches" @click="gitRemoteBranches()">
                                         <span><b>Note:</b> Empty selection means that any branch could be reset.</span>

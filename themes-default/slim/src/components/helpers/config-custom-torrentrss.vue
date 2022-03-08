@@ -1,7 +1,7 @@
 <template>
     <div id="custom-torrentrss">
         <config-template label-for="select_torrentrss_provider" label="Select Provider">
-            <select id="select-provider" class="form-control input-sm" v-model="selectedProvider">
+            <select id="select-provider" class="form-control input-sm max-input350" v-model="selectedProvider">
                 <option value="#add">--- add new provider ---</option>
                 <option :value="option.value" v-for="option in torrentrssProviderOptions" :key="option.value">
                     {{ option.text }}

@@ -11,16 +11,17 @@ from medusa.app import TVDB_API_KEY
 from medusa.helper.metadata import needs_metadata
 from medusa.indexers.base import (Actor, Actors, BaseIndexer)
 from medusa.indexers.exceptions import (
-    IndexerAuthFailed, IndexerError, IndexerShowNotFound,
-    IndexerShowNotFoundInLanguage, IndexerUnavailable
+    IndexerAuthFailed, IndexerError,
+    IndexerShowNotFound, IndexerShowNotFoundInLanguage, IndexerUnavailable
 )
+from medusa.indexers.imdb.api import ImdbIdentifier
 from medusa.indexers.tvdbv2.fallback import PlexFallback
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.show import Show
 
 from requests.compat import urljoin
 
-from six import string_types, text_type, viewitems
+from six import string_types, viewitems
 
 from tvdbapiv2 import ApiClient, EpisodesApi, SearchApi, SeriesApi, UpdatesApi
 from tvdbapiv2.exceptions import ApiException
@@ -128,8 +129,8 @@ class TVDBv2(BaseIndexer):
     def _show_search(self, show, request_language='en'):
         """Use the pytvdbv2 API to search for a show.
 
-        @param show: The show name that's searched for as a string
-        @return: A list of Show objects.
+        :param show: The show name that's searched for as a string
+        :return: A list of Show objects.
         """
         try:
             results = self.config['session'].search_api.search_series_get(name=show, accept_language=request_language)
@@ -148,6 +149,7 @@ class TVDBv2(BaseIndexer):
 
         return results
 
+    # Tvdb implementation
     @PlexFallback
     def search(self, series):
         """Search tvdbv2.com for the series name.
@@ -340,7 +342,7 @@ class TVDBv2(BaseIndexer):
             if self.config['dvdorder'] and not flag_dvd_numbering:
                 log.warning(
                     'No DVD order available for episode (season: {0}, episode: {1}). Skipping this episode. '
-                    'If you want to have this episode visible, please change it on the TheTVDB site, '
+                    'If you want to have this episode visible, please change it on the TheTvdb site, '
                     'or consider disabling DVD order for the show: {2}({3})',
                     dvd_seas_no or seas_no, dvd_ep_no or ep_no,
                     self.shows[tvdb_id]['seriesname'], tvdb_id
@@ -378,12 +380,10 @@ class TVDBv2(BaseIndexer):
                 self._set_item(tvdb_id, seas_no, ep_no, k, v)
 
     @PlexFallback
-    def _parse_images(self, sid):
-        """Parse images XML.
+    def _parse_images(self, tvdb_id):
+        """Fetch and parse images from api.
 
-        From http://thetvdb.com/api/[APIKEY]/series/[SERIES ID]/banners.xml
         images are retrieved using t['show name]['_banners'], for example:
-
         >>> indexer_api = Tvdb(images = True)
         >>> indexer_api['scrubs']['_banners'].keys()
         ['fanart', 'poster', 'series', 'season', 'seasonwide']
@@ -394,10 +394,8 @@ class TVDBv2(BaseIndexer):
         >>> t['scrubs']['_banners']['seasonwide'][4]['680x1000']['35308']['_bannerpath']
         u'http://thetvdb.com/banners/posters/76156-4-2.jpg'
         >>>
-
         Any key starting with an underscore has been processed (not the raw
         data from the XML)
-
         This interface will be improved in future versions.
         """
         key_mapping = {'file_name': 'bannerpath', 'language_id': 'language', 'key_type': 'bannertype',
@@ -406,16 +404,16 @@ class TVDBv2(BaseIndexer):
 
         search_for_image_type = self.config['image_type']
 
-        log.debug('Getting show banners for {0}', sid)
+        log.debug('Getting show banners for {0}', tvdb_id)
         _images = {}
 
         # Let's get the different types of images available for this series
         try:
             series_images_count = self.config['session'].series_api.series_id_images_get(
-                sid, accept_language=self.config['language']
+                tvdb_id, accept_language=self.config['language']
             )
         except ApiException as error:
-            log.info('Could not get image count for show ID: {0} with reason: {1}', sid, error.reason)
+            log.info('Could not get image count for show ID: {0} with reason: {1}', tvdb_id, error.reason)
             return
 
         for image_type, image_count in viewitems(self._map_results(series_images_count)):
@@ -429,12 +427,12 @@ class TVDBv2(BaseIndexer):
 
             try:
                 images = self.config['session'].series_api.series_id_images_query_get(
-                    sid, key_type=image_type, accept_language=self.config['language']
+                    tvdb_id, key_type=image_type, accept_language=self.config['language']
                 )
             except ApiException as error:
                 log.debug(
-                    'Could not parse {image} for show ID: {sid}, with exception: {reason}',
-                    {'image': image_type, 'sid': sid, 'reason': error.reason}
+                    'Could not parse {image} for show ID: {tvdb_id}, with exception: {reason}',
+                    {'image': image_type, 'tvdb_id': tvdb_id, 'reason': error.reason}
                 )
                 continue
 
@@ -476,16 +474,14 @@ class TVDBv2(BaseIndexer):
 
                     base_path[k] = v
 
-        self._save_images(sid, _images)
-        self._set_show_data(sid, '_banners', _images)
+        self._save_images(tvdb_id, _images)
+        self._set_show_data(tvdb_id, '_banners', _images)
 
     @PlexFallback
-    def _parse_actors(self, sid):
-        """Parser actors XML.
+    def _parse_actors(self, tvdb_id):
+        """Fetch and parse actors.
 
-        From http://thetvdb.com/api/[APIKEY]/series/[SERIES ID]/actors.xml
         Actors are retrieved using t['show name]['_actors'], for example:
-
         >>> indexer_api = Tvdb(actors = True)
         >>> actors = indexer_api['scrubs']['_actors']
         >>> type(actors)
@@ -500,16 +496,15 @@ class TVDBv2(BaseIndexer):
         u'Zach Braff'
         >>> actors[0]['image']
         u'http://thetvdb.com/banners/actors/43640.jpg'
-
         Any key starting with an underscore has been processed (not the raw
         data from the XML)
         """
-        log.debug('Getting actors for {0}', sid)
+        log.debug('Getting actors for {0}', tvdb_id)
 
         try:
-            actors = self.config['session'].series_api.series_id_actors_get(sid)
+            actors = self.config['session'].series_api.series_id_actors_get(tvdb_id)
         except ApiException as error:
-            log.info('Could not get actors for show ID: {0} with reason: {1}', sid, error.reason)
+            log.info('Could not get actors for show ID: {0} with reason: {1}', tvdb_id, error.reason)
             return
 
         if not actors or not actors.data:
@@ -525,10 +520,10 @@ class TVDBv2(BaseIndexer):
             new_actor['role'] = cur_actor.role
             new_actor['sortorder'] = 0
             cur_actors.append(new_actor)
-        self._set_show_data(sid, '_actors', cur_actors)
+        self._set_show_data(tvdb_id, '_actors', cur_actors)
 
-    def _get_show_data(self, sid, language):
-        """Parse TheTVDB json response.
+    def _get_show_data(self, tvdb_id, language):
+        """Get the show data using tvdb id..
 
         Takes a series ID, gets the epInfo URL and parses the TheTVDB json response
         into the shows dict in layout:
@@ -547,10 +542,10 @@ class TVDBv2(BaseIndexer):
             get_show_in_language = self.config['language']
 
         # Parse show information
-        log.debug('Getting all series data for {0}', sid)
+        log.debug('Getting all series data for {0}', tvdb_id)
 
         # Parse show information
-        series_info = self._get_show_by_id(sid, request_language=get_show_in_language)
+        series_info = self._get_show_by_id(tvdb_id, request_language=get_show_in_language)
 
         if not series_info:
             log.debug('Series result returned zero')
@@ -561,22 +556,22 @@ class TVDBv2(BaseIndexer):
             if v is not None:
                 if v and k in ['banner', 'fanart', 'poster']:
                     v = self.config['artwork_prefix'].format(image=v)
-            self._set_show_data(sid, k, v)
+            self._set_show_data(tvdb_id, k, v)
 
         # Create the externals structure
-        self._set_show_data(sid, 'externals', {'imdb_id': text_type(getattr(self[sid], 'imdb_id', ''))})
+        self._set_show_data(tvdb_id, 'externals', {'imdb_id': ImdbIdentifier(getattr(self[tvdb_id], 'imdb_id', None)).series_id})
 
         # get episode data
         if self.config['episodes_enabled']:
-            self._get_episodes(sid, specials=False, aired_season=None)
+            self._get_episodes(tvdb_id, specials=False, aired_season=self.config['limit_seasons'])
 
         # Parse banners
         if self.config['banners_enabled']:
-            self._parse_images(sid)
+            self._parse_images(tvdb_id)
 
         # Parse actors
         if self.config['actors_enabled']:
-            self._parse_actors(sid)
+            self._parse_actors(tvdb_id)
 
         return True
 
@@ -623,7 +618,7 @@ class TVDBv2(BaseIndexer):
         return total_updates
 
     # Public methods, usable separate from the default api's interface api['show_id']
-    def get_last_updated_seasons(self, show_list, from_time, weeks=1):
+    def get_last_updated_seasons(self, show_list, from_time=None, weeks=1, *args, **kwargs):
         """Return updated seasons for shows passed, using the from_time.
 
         :param show_list[int]: The list of shows, where seasons updates are retrieved for.

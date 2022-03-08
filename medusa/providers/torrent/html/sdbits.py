@@ -13,6 +13,7 @@ from medusa.helper.common import (
     convert_size,
     try_int,
 )
+from medusa.indexers.imdb.api import ImdbIdentifier
 from medusa.indexers.utils import mappings
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
@@ -83,6 +84,7 @@ class SDBitsProvider(TorrentProvider):
                 if mode != 'RSS':
                     imdb_id = self.series.externals.get(mappings[10])
                     if imdb_id:
+                        imdb_id = ImdbIdentifier(imdb_id).imdb_id
                         search_params['imdb'] = imdb_id
                         log.debug('Search string (IMDb ID): {imdb_id}',
                                   {'imdb_id': imdb_id})
