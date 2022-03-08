@@ -7,7 +7,7 @@
             <!-- if cur_newznab_provider.default and cur_newznab_provider.needs_auth: -->
             <template v-if="editProvider.default && editProvider.needsAuth">
                 <config-template :label-for="`${editProvider.id}_url`" label="URL">
-                    <input type="text" :id="`${editProvider.id}_url`" :value="`${editProvider.url}`" class="form-control input-sm input350" disabled>
+                    <input type="text" :id="`${editProvider.id}_url`" :value="`${editProvider.url}`" class="form-control input-sm max-input350" disabled>
                 </config-template>
                 <config-textbox v-if="'apikey' in editProvider.config" v-model="editProvider.config.apikey" type="password" label="API key" :id="`${editProvider.id}_url`" input-class="newznab_api_key" />
             </template>
