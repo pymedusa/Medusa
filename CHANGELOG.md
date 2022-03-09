@@ -6,6 +6,24 @@
 
 #### Fixes
 
+## 0.5.25 (08-03-2022)
+
+#### New Features
+- New indexer: Added support for adding shows from Imdb ([3603](https://github.com/pymedusa/Medusa/pull/3603))
+
+#### Improvements
+- Enhanced test guessit tool ([10357](https://github.com/pymedusa/Medusa/pull/10357))
+- Discord notifier: added ability to override avatar ([10351](https://github.com/pymedusa/Medusa/pull/10351))
+- Purge recommended shows cache after x days ([10352](https://github.com/pymedusa/Medusa/pull/10352))
+- Added a "load more" button to recommended shows ([10380](https://github.com/pymedusa/Medusa/pull/10380))
+- Improve menu layout on mobile ([10386](https://github.com/pymedusa/Medusa/pull/10386))
+
+#### Fixes
+- Fix saving specific post-processing method ([10350](https://github.com/pymedusa/Medusa/pull/10350))
+- Fix pasing torrent size when using torznab provider that have torrent_size available in the attrs. ([10365](https://github.com/pymedusa/Medusa/pull/10365))
+- Fix provider MoreThenTv ([10391](https://github.com/pymedusa/Medusa/pull/10391))
+- Fix Manage mass-update: Starting the refresh action ([10377](https://github.com/pymedusa/Medusa/pull/10377))
+
 ## 0.5.24 (15-02-2022)
 
 #### Improvements
