@@ -94,7 +94,7 @@ export default {
                 return;
             }
 
-            const { route } = router.resolve(routerBase + computedHref);
+            const { route } = router.resolve('/' + computedHref);
             if (!route.name) {
                 return;
             }
