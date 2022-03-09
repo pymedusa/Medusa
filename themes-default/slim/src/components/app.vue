@@ -2,7 +2,9 @@
     <div id="app">
         <vue-snotify />
         <h1 v-if="$route.meta.header" class="header">{{ $route.meta.header }}</h1>
-        <router-view :key="$route.meta.nocache ? $route.fullPath : $route.name" />
+        <keep-alive>
+            <router-view :key="$route.meta.nocache ? `${$route.fullPath}#${Date.now()}` : $route.name" />
+        </keep-alive>
     </div>
 </template>
 
