@@ -161,7 +161,7 @@ class Tmdb(BaseIndexer):
             results = []
             while page <= last:
                 search_result = self.tmdb.Search().tv(query=show,
-                                                      language='request_language',
+                                                      language=request_language,
                                                       page=page)
                 last = search_result.get('total_pages', 0)
                 results += search_result.get('results')
