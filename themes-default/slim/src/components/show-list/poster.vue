@@ -287,6 +287,11 @@ export default {
                     container.classList.add('hide');
                 }
             }
+        },
+        $route(to) {
+            if (to.name === 'home') {
+                this.updateLayout();
+            }
         }
     }
 };
