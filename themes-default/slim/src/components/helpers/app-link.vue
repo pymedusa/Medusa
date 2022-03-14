@@ -14,7 +14,7 @@
 <script>
 import { mapGetters, mapState } from 'vuex';
 
-import router, { base as routerBase } from '../../router';
+import router from '../../router';
 
 export default {
     name: 'app-link',
