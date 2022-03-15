@@ -117,9 +117,12 @@ const mutations = {
         // Recreate an Array with season objects, with each season having an episodes array.
         // This format is used by vue-good-table (displayShow).
         episodes.forEach(episode => {
-            const existingSeason = newShow.seasons.find(season => season.season === episode.season);
+            let existingSeason = newShow.seasons.find(season => season.season === episode.season);
 
             if (existingSeason) {
+                // Shallow copy
+                existingSeason = { ...existingSeason };
+
                 const foundIndex = existingSeason.children.findIndex(element => element.slug === episode.slug);
                 if (foundIndex === -1) {
                     existingSeason.children.push(episode);

@@ -3,6 +3,7 @@
 #### New Features
 
 #### Improvements
+- UI now behaves as a single page app ([10408](https://github.com/pymedusa/Medusa/pull/10408))
 
 #### Fixes
 

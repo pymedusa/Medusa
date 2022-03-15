@@ -249,7 +249,8 @@ const addShowRoutes = [
             title: 'Add Existing Shows',
             header: 'Add Existing Shows',
             topMenu: 'home',
-            converted: true
+            converted: true,
+            nocache: true
         },
         component: () => import('../components/new-shows-existing.vue')
     },
@@ -260,7 +261,8 @@ const addShowRoutes = [
             title: 'Add New Show',
             header: 'Add New Show',
             topMenu: 'home',
-            converted: true
+            converted: true,
+            nocache: true
         },
         props: route => ({ ...route.params }),
         component: () => import('../components/new-show.vue')
