@@ -62,6 +62,7 @@
                                             v-model="animeShowlistDefaultAnime"
                                             :multiple="true"
                                             :options="layout.show.showListOrder"
+                                            class="max-input350"
                                         />
                                         <span>Customize the showslist when auto anime lists is enabled</span>
                                     </config-template>

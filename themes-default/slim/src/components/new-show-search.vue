@@ -507,4 +507,14 @@ export default {
     padding-right: 10px;
     line-height: 40px;
 }
+
+@media (max-width: 768px) {
+    .show-add-option {
+        float: none;
+    }
+
+    .show-add-option > input.input350 {
+        width: 100%;
+    }
+}
 </style>

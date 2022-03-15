@@ -1871,10 +1871,8 @@ class Series(TV):
             '  indexer = ?'
             '  AND showid = ? '
             '  AND airdate >= ? '
-            'ORDER BY'
-            '  airdate '
-            'ASC LIMIT 1',
-            [self.indexer, self.series_id, today])
+            'ORDER BY airdate ',
+            [self.indexer, self.series_id, today - 1])
 
         if sql_results is None or len(sql_results) == 0:
             log.debug(u'{id}: ({name}) Could not find a next episode', {'name': self.name, 'id': self.series_id})
@@ -1886,7 +1884,18 @@ class Series(TV):
                     'ep': episode_num(sql_results[0]['season'], sql_results[0]['episode']),
                 }
             )
-            self._next_aired = sql_results[0]['airdate']
+            next_aired_with_time = None
+            for result in sql_results:
+                if result['airdate'] > MILLIS_YEAR_1900:
+                    next_aired_with_time = sbdatetime.convert_to_setting(
+                        network_timezones.parse_date_time(result['airdate'], self.airs, self.network)
+                    )
+
+                    if next_aired_with_time < datetime.datetime.now().astimezone():
+                        continue
+
+                    self._next_aired = result['airdate']
+                    break
 
         return self._next_aired
 
