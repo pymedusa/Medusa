@@ -87,8 +87,8 @@
                 <h3>Force refresh recommended list:</h3>
                 <span>
                     Note! Syncing shows with a recommended list may take a while.
-                    The action will be queued. For example staring a sync with Trakt and directly after Imdb.
-                    You will won't see results for Imdb after the sync of Trakt has fully completed.
+                    The action will be queued. For example, starting syncs for Trakt and Imdb.
+                    You will not see results for Imdb until after the sync of Trakt has finished.
                 </span>
                 <ul class="simpleList recommended-list">
                     <li><span @click="searchRecommendedShows('trakt')">Trakt</span></li>

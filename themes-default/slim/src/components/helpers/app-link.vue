@@ -14,7 +14,7 @@
 <script>
 import { mapGetters, mapState } from 'vuex';
 
-import router, { base as routerBase } from '../../router';
+import router from '../../router';
 
 export default {
     name: 'app-link',
@@ -94,7 +94,7 @@ export default {
                 return;
             }
 
-            const { route } = router.resolve(routerBase + computedHref);
+            const { route } = router.resolve('/' + computedHref);
             if (!route.name) {
                 return;
             }
@@ -132,7 +132,7 @@ export default {
                         is: 'router-link',
                         to: matchingVueRoute.fullPath,
                         // Add a `href` attribute to enable native mouse navigation (middle click, ctrl+click, etc.)
-                        href: new URL(matchingVueRoute.fullPath, base).href
+                        href: new URL(matchingVueRoute.fullPath.replace(/^(\/)/, ''), base).href
                     };
                 }
             }

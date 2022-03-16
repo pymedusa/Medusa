@@ -554,7 +554,9 @@ export default {
                 return [];
             }
 
-            let sortedSeasons = show.seasons.sort((a, b) => a.season - b.season).filter(season => season.season !== 0);
+            const seasons = show.seasons.slice();
+
+            let sortedSeasons = seasons.sort((a, b) => a.season - b.season).filter(season => season.season !== 0);
 
             // Use the filterOverviewStatus to filter the data based on what's checked in the show-header.
             if (filterByOverviewStatus && filterByOverviewStatus.filter(status => status.checked).length < filterByOverviewStatus.length) {
@@ -574,7 +576,7 @@ export default {
             }
 
             if (invertTable) {
-                return sortedSeasons.reverse();
+                return sortedSeasons.slice().reverse();
             }
 
             return sortedSeasons;
