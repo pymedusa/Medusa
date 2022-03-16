@@ -53,7 +53,7 @@ def get_torrent_subfolder(result):
 class UTorrentAPI(GenericClient):
     """uTorrent API class."""
 
-    def __init__(self, host=None, username=None, password=None):
+    def __init__(self, host=None, username=None, password=None, torrent_path=None):
         """Utorrent constructor.
 
         :param host:
@@ -63,7 +63,7 @@ class UTorrentAPI(GenericClient):
         :param password:
         :type password: string
         """
-        super(UTorrentAPI, self).__init__('uTorrent', host, username, password)
+        super(UTorrentAPI, self).__init__('uTorrent', host, username, password, torrent_path)
         self.url = urljoin(self.host, 'gui/')
         self._torrents_list = []
         self._torrents_epoch = 0.0

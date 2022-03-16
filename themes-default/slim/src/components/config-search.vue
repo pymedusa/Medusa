@@ -571,7 +571,7 @@ export default {
         async testTorrentClient() {
             const { clients } = this;
             const { torrents } = clients;
-            const { method, host, username, password } = torrents;
+            const { method, host, username, password, path } = torrents;
 
             this.clientsConfig.torrent[method].testStatus = MEDUSA.config.layout.loading;
 
@@ -579,7 +579,8 @@ export default {
                 torrent_method: method, // eslint-disable-line camelcase
                 host,
                 username,
-                password
+                password,
+                torrent_path: path // eslint-disable-line camelcase
             };
             const resp = await apiRoute.get('home/testTorrent', { params });
 

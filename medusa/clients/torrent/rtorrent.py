@@ -22,7 +22,7 @@ log.logger.addHandler(logging.NullHandler())
 class RTorrentAPI(GenericClient):
     """rTorrent API class."""
 
-    def __init__(self, host=None, username=None, password=None):
+    def __init__(self, host=None, username=None, password=None, torrent_path=None):
         """Constructor.
 
         :param host:
@@ -32,7 +32,7 @@ class RTorrentAPI(GenericClient):
         :param password:
         :type password: string
         """
-        super(RTorrentAPI, self).__init__('rTorrent', host, username, password)
+        super(RTorrentAPI, self).__init__('rTorrent', host, username, password, torrent_path)
         self._get_auth()
 
     def _get_auth(self):
