@@ -198,16 +198,21 @@
                                 <td>720p_HDTV_x264</td>
                             </tr>
                             <tr class="even">
+                                <td class="align-right"><b>Show premiere year:</b></td>
+                                <td>%SY</td>
+                                <td>{{ getDateFormat('yyyy') }}</td>
+                            </tr>
+                            <tr>
                                 <td class="align-right"><i class="glyphicon glyphicon-info-sign" title="Multi-EP style is ignored" /> <b>Release Name:</b></td>
                                 <td>%RN</td>
                                 <td>Show.Name.S02E03.HDTV.x264-RLSGROUP</td>
                             </tr>
-                            <tr>
+                            <tr class="even">
                                 <td class="align-right"><i class="glyphicon glyphicon-info-sign" title="UNKNOWN_RELEASE_GROUP is used in place of RLSGROUP if it could not be properly detected" /> <b>Release Group:</b></td>
                                 <td>%RG</td>
                                 <td>RLSGROUP</td>
                             </tr>
-                            <tr class="even">
+                            <tr>
                                 <td class="align-right"><i class="glyphicon glyphicon-info-sign" title="If episode is proper/repack add 'proper' to name." /> <b>Release Type:</b></td>
                                 <td>%RT</td>
                                 <td>PROPER</td>

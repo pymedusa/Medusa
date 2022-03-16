@@ -1,5 +1,4 @@
 # coding=utf-8
-
 """Provider code for MoreThanTV."""
 
 from __future__ import unicode_literals
@@ -10,10 +9,7 @@ import time
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
-from medusa.helper.common import (
-    convert_size,
-    try_int,
-)
+from medusa.helper.common import convert_size
 from medusa.helper.exceptions import AuthException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
@@ -21,7 +17,6 @@ from medusa.providers.torrent.torrent_provider import TorrentProvider
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 
-from six.moves.urllib_parse import parse_qs
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -39,9 +34,9 @@ class MoreThanTVProvider(TorrentProvider):
         self.password = None
 
         # URLs
-        self.url = 'https://www.morethan.tv/'
+        self.url = 'https://www.morethantv.me/'
         self.urls = {
-            'login': urljoin(self.url, 'login.php'),
+            'login': urljoin(self.url, 'login'),
             'search': urljoin(self.url, 'torrents.php'),
         }
 
@@ -67,13 +62,13 @@ class MoreThanTVProvider(TorrentProvider):
 
         # Search Params
         search_params = {
-            'tags_type': 1,
             'order_by': 'time',
             'order_way': 'desc',
-            'action': 'basic',
-            'group_results': 0,
-            'searchsubmit': 1,
-            'searchstr': '',
+            'searchtext': '',
+            'filter_cat[3]': 1,
+            'filter_cat[5]': 1,
+            'filter_cat[4]': 1,
+            'filter_cat[6]': 1
         }
 
         for mode in search_strings:
@@ -91,7 +86,7 @@ class MoreThanTVProvider(TorrentProvider):
                     log.debug('Search string: {search}',
                               {'search': search_string})
 
-                search_params['searchstr'] = search_string
+                search_params['searchtext'] = search_string
 
                 response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.text:
@@ -117,6 +112,8 @@ class MoreThanTVProvider(TorrentProvider):
                 result = td.a.img.get('title', td.a.get_text(strip=True))
             if not result:
                 result = td.get_text(strip=True)
+            if not result and td.a and td.a.get('title'):
+                result = td.a['title']
             return result
 
         items = []
@@ -130,11 +127,12 @@ class MoreThanTVProvider(TorrentProvider):
                 log.debug('Data returned from provider does not contain any torrents')
                 return items
 
-            labels = [process_column_header(label) for label in torrent_rows[0]('td')]
+            # Need to only search one level deep for 'td' tags, as one of the td's also has a td.
+            labels = [process_column_header(label) for label in torrent_rows[0].find_all('td', recursive=False)]
 
             # Skip column headers
             for row in torrent_rows[1:]:
-                cells = row('td')
+                cells = row.find_all('td', recursive=False)
                 if len(cells) < len(labels):
                     continue
 
@@ -143,13 +141,9 @@ class MoreThanTVProvider(TorrentProvider):
                     if row.find('img', alt='Nuked'):
                         continue
 
-                    title = row.find('a', title='View torrent').get_text(strip=True)
-                    download_url = urljoin(self.url, row.find('span', title='Download').parent['href'])
-                    if not all([title, download_url]):
-                        continue
-
-                    seeders = try_int(cells[labels.index('Seeders')].get_text(strip=True).replace(',', ''), 1)
-                    leechers = try_int(cells[labels.index('Leechers')].get_text(strip=True).replace(',', ''))
+                    seeders = int(cells[labels.index('Seeders')].get_text(strip=True).replace(',', ''))
+                    leechers = int(cells[labels.index('Leechers')].get_text(strip=True).replace(',', ''))
+                    title = cells[labels.index('Name')].find('a').get_text(strip=True)
 
                     # Filter unseeded torrent
                     if seeders < self.minseed:
@@ -159,29 +153,34 @@ class MoreThanTVProvider(TorrentProvider):
                                       title, seeders)
                         continue
 
-                    # If it's a season search, query the torrent's detail page.
-                    if mode == 'Season':
-                        title = self._parse_season(row, download_url, title)
+                    units = ['B', 'KIB', 'MIB', 'GIB', 'TB', 'PB']
 
                     torrent_size = cells[labels.index('Size')].get_text(strip=True)
-                    size = convert_size(torrent_size) or -1
+                    size = convert_size(torrent_size, units=units) or -1
 
-                    pubdate_raw = cells[labels.index('Time')].find('span')['title']
+                    pubdate_raw = cells[4].find('span')['title']
                     pubdate = self.parse_pubdate(pubdate_raw)
 
-                    item = {
-                        'title': title,
-                        'link': download_url,
-                        'size': size,
-                        'seeders': seeders,
-                        'leechers': leechers,
-                        'pubdate': pubdate,
-                    }
-                    if mode != 'RSS':
-                        log.debug('Found result: {0} with {1} seeders and {2} leechers',
-                                  title, seeders, leechers)
+                    releases = cells[labels.index('Name')].find('table').find_all('tr')
+                    for release in releases:
+                        release_title = release.find('td').get_text(strip=True)
+                        download_url = urljoin(self.url, release.find('a')['href'])
+                        if not all([release_title, download_url]):
+                            continue
 
-                    items.append(item)
+                        item = {
+                            'title': release_title,
+                            'link': download_url,
+                            'size': size,
+                            'seeders': seeders,
+                            'leechers': leechers,
+                            'pubdate': pubdate,
+                        }
+                        if mode != 'RSS':
+                            log.debug('Found result: {0} with {1} seeders and {2} leechers',
+                                      title, seeders, leechers)
+
+                        items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
                     log.exception('Failed parsing provider.')
 
@@ -192,11 +191,25 @@ class MoreThanTVProvider(TorrentProvider):
         if any(dict_from_cookiejar(self.session.cookies).values()):
             return True
 
+        # Get the login page, to retrieve the token
+        response = self.session.get(self.urls['login'])
+        if not response:
+            log.warning('Unable to get login page')
+            return False
+
+        token = re.search(r'token".value="([^"]+)"', response.text)
+        if not token:
+            log.warning('Unable to get login token')
+            return False
+
         login_params = {
             'username': self.username,
             'password': self.password,
-            'keeplogged': '1',
-            'login': 'Log in',
+            # screen_resolution (x) | screen_resolution (y) | color depth | timezone offset.
+            'cinfo': f'1536|864|24|{int(time.timezone / 60)}',
+            'token': token.groups()[0],
+            'keeploggedin': '1',
+            'submit': 'login',
         }
 
         response = self.session.post(self.urls['login'], data=login_params)
@@ -204,7 +217,7 @@ class MoreThanTVProvider(TorrentProvider):
             log.warning('Unable to connect to provider')
             return False
 
-        if re.search('Your username or password was incorrect.', response.text):
+        if re.search('Invalid username or password', response.text):
             log.warning('Invalid username or password. Check your settings')
             return False
 
@@ -217,37 +230,6 @@ class MoreThanTVProvider(TorrentProvider):
                                 ' check your config.'.format(self.name))
 
         return True
-
-    def _parse_season(self, row, download_url, title):
-        """Parse the torrent's detail page and return the season pack title."""
-        details_url = row.find('span').find_next(title='View torrent').get('href')
-        torrent_id = parse_qs(download_url).get('id')
-        if not all([details_url, torrent_id]):
-            log.debug("Couldn't parse season pack details page for title: {0}", title)
-            return title
-
-        # Take a break before querying the provider again
-        time.sleep(0.5)
-        response = self.session.get(urljoin(self.url, details_url))
-        if not response or not response.text:
-            log.debug("Couldn't open season pack details page for title: {0}", title)
-            return title
-
-        with BS4Parser(response.text, 'html5lib') as html:
-            torrent_table = html.find('table', class_='torrent_table')
-            torrent_row = torrent_table.find(
-                'tr', id='torrent_{0}'.format(torrent_id[0])
-            ) if torrent_table else None
-            if not torrent_row:
-                log.debug("Couldn't find season pack details for title: {0}", title)
-                return title
-
-            # Strip leading and trailing slash
-            season_title = torrent_row.find('div', class_='filelist_path')
-            if not season_title or not season_title.get_text():
-                log.debug("Couldn't parse season pack title for: {0}", title)
-                return title
-            return season_title.get_text(strip=True).strip('/')
 
 
 provider = MoreThanTVProvider()

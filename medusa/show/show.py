@@ -132,12 +132,6 @@ class Show(object):
         except ValueError:
             indexer_id = indexer_name_to_id(indexer_id)
 
-        try:
-            if indexer_id != 10:  # 10 = EXTERNAL_IMDB
-                series_id = int(series_id)
-        except ValueError:
-            log.warning('Invalid series id: {series_id}', {'series_id': series_id})
-
         if series_id is None or series is None or len(series) == 0:
             return None
 
@@ -218,7 +212,7 @@ class Show(object):
         return None, show
 
     @staticmethod
-    def refresh(indexer_id, series_id):
+    def refresh(indexer_id, series_id, force=False):
         """
         Try to refresh a show.
 
@@ -233,7 +227,7 @@ class Show(object):
             return error, series_obj
 
         try:
-            app.show_queue_scheduler.action.refreshShow(series_obj)
+            app.show_queue_scheduler.action.refreshShow(series_obj, force=force)
         except CantRefreshShowException as exception:
             return ex(exception), series_obj
 

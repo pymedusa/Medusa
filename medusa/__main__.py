@@ -459,9 +459,6 @@ class Application(object):
             app.ENCRYPTION_SECRET = check_setting_str(app.CFG, 'General', 'encryption_secret', helpers.generate_cookie_secret(), censor_log='low')
 
             # git login info
-            app.GIT_AUTH_TYPE = check_setting_int(app.CFG, 'General', 'git_auth_type', 0)
-            app.GIT_USERNAME = check_setting_str(app.CFG, 'General', 'git_username', '')
-            app.GIT_PASSWORD = check_setting_str(app.CFG, 'General', 'git_password', '', censor_log='low')
             app.GIT_TOKEN = check_setting_str(app.CFG, 'General', 'git_token', '', censor_log='low', encrypted=True)
             app.DEVELOPER = bool(check_setting_int(app.CFG, 'General', 'developer', 0))
             app.PYTHON_VERSION = check_setting_list(app.CFG, 'General', 'python_version', [], transform=int)
@@ -579,7 +576,7 @@ class Application(object):
             app.DOWNLOAD_URL = check_setting_str(app.CFG, 'General', 'download_url', '')
             app.LOCALHOST_IP = check_setting_str(app.CFG, 'General', 'localhost_ip', '')
             app.CPU_PRESET = check_setting_str(app.CFG, 'General', 'cpu_preset', 'NORMAL')
-            app.ANON_REDIRECT = check_setting_str(app.CFG, 'General', 'anon_redirect', 'http://dereferer.org/?')
+            app.ANON_REDIRECT = check_setting_str(app.CFG, 'General', 'anon_redirect', 'https://anonym.to/?')
             app.PROXY_SETTING = check_setting_str(app.CFG, 'General', 'proxy_setting', '')
             app.PROXY_PROVIDERS = bool(check_setting_int(app.CFG, 'General', 'proxy_providers', 1))
             app.PROXY_INDEXERS = bool(check_setting_int(app.CFG, 'General', 'proxy_indexers', 1))
@@ -694,6 +691,9 @@ class Application(object):
             app.CREATE_MISSING_SHOW_DIRS = bool(check_setting_int(app.CFG, 'General', 'create_missing_show_dirs', 0))
             app.ADD_SHOWS_WO_DIR = bool(check_setting_int(app.CFG, 'General', 'add_shows_wo_dir', 0))
 
+            app.FFMPEG_CHECK_STREAMS = bool(check_setting_int(app.CFG, 'ffmpeg', 'ffmpeg_check_streams', 0))
+            app.FFMPEG_PATH = check_setting_str(app.CFG, 'ffmpeg', 'ffmpeg_path', '')
+
             app.PROWLARR_URL = check_setting_str(app.CFG, 'Prowlarr', 'url', '', censor_log='normal')
             app.PROWLARR_APIKEY = check_setting_str(app.CFG, 'Prowlarr', 'apikey', '', censor_log='high')
 
@@ -800,6 +800,7 @@ class Application(object):
                 check_setting_int(app.CFG, 'Discord', 'discord_notify_onsubtitledownload', 0))
             app.DISCORD_WEBHOOK = check_setting_str(app.CFG, 'Discord', 'discord_webhook', '', censor_log='normal')
             app.DISCORD_TTS = check_setting_bool(app.CFG, 'Discord', 'discord_tts', 0)
+            app.DISCORD_OVERRIDE_AVATAR = check_setting_bool(app.CFG, 'Discord', 'override_avatar', 0)
             app.DISCORD_NAME = check_setting_str(app.CFG, 'Discord', 'discord_name', '', censor_log='normal')
 
             app.USE_PROWL = bool(check_setting_int(app.CFG, 'Prowl', 'use_prowl', 0))
@@ -879,6 +880,8 @@ class Application(object):
                 app.TRAKT_REMOVE_SHOW_FROM_APPLICATION = bool(check_setting_int(app.CFG, 'Trakt', 'trakt_remove_show_from_application', 0))
 
             app.TRAKT_SYNC_WATCHLIST = bool(check_setting_int(app.CFG, 'Trakt', 'trakt_sync_watchlist', 0))
+            app.TRAKT_SYNC_TO_WATCHLIST = bool(check_setting_int(app.CFG, 'Trakt', 'trakt_sync_to_watchlist', 1))
+
             app.TRAKT_METHOD_ADD = check_setting_int(app.CFG, 'Trakt', 'trakt_method_add', 0)
             app.TRAKT_START_PAUSED = bool(check_setting_int(app.CFG, 'Trakt', 'trakt_start_paused', 0))
             app.TRAKT_USE_RECOMMENDED = bool(check_setting_int(app.CFG, 'Trakt', 'trakt_use_recommended', 0))
@@ -999,13 +1002,13 @@ class Application(object):
             app.AUTO_ANIME_TO_LIST = bool(check_setting_int(app.CFG, 'ANIME', 'auto_anime_to_list', 0))
             app.SHOWLISTS_DEFAULT_ANIME = check_setting_list(app.CFG, 'ANIME', 'showlist_default_anime', [])
 
-            app.METADATA_KODI = check_setting_list(app.CFG, 'General', 'metadata_kodi', ['0'] * 10, transform=int)
-            app.METADATA_KODI_12PLUS = check_setting_list(app.CFG, 'General', 'metadata_kodi_12plus', ['0'] * 10, transform=int)
-            app.METADATA_MEDIABROWSER = check_setting_list(app.CFG, 'General', 'metadata_mediabrowser', ['0'] * 10, transform=int)
-            app.METADATA_PS3 = check_setting_list(app.CFG, 'General', 'metadata_ps3', ['0'] * 10, transform=int)
-            app.METADATA_WDTV = check_setting_list(app.CFG, 'General', 'metadata_wdtv', ['0'] * 10, transform=int)
-            app.METADATA_TIVO = check_setting_list(app.CFG, 'General', 'metadata_tivo', ['0'] * 10, transform=int)
-            app.METADATA_MEDE8ER = check_setting_list(app.CFG, 'General', 'metadata_mede8er', ['0'] * 10, transform=int)
+            app.METADATA_KODI = check_setting_list(app.CFG, 'General', 'metadata_kodi', ['0'] * 11, transform=int)
+            app.METADATA_KODI_12PLUS = check_setting_list(app.CFG, 'General', 'metadata_kodi_12plus', ['0'] * 11, transform=int)
+            app.METADATA_MEDIABROWSER = check_setting_list(app.CFG, 'General', 'metadata_mediabrowser', ['0'] * 11, transform=int)
+            app.METADATA_PS3 = check_setting_list(app.CFG, 'General', 'metadata_ps3', ['0'] * 11, transform=int)
+            app.METADATA_WDTV = check_setting_list(app.CFG, 'General', 'metadata_wdtv', ['0'] * 11, transform=int)
+            app.METADATA_TIVO = check_setting_list(app.CFG, 'General', 'metadata_tivo', ['0'] * 11, transform=int)
+            app.METADATA_MEDE8ER = check_setting_list(app.CFG, 'General', 'metadata_mede8er', ['0'] * 11, transform=int)
 
             app.HOME_LAYOUT = check_setting_str(app.CFG, 'GUI', 'home_layout', 'poster')
             app.HISTORY_LAYOUT = check_setting_str(app.CFG, 'GUI', 'history_layout', 'detailed')
@@ -1047,6 +1050,7 @@ class Application(object):
                 0, min(23, check_setting_int(app.CFG, 'Recommended', 'recommended_show_update_hour', app.DEFAULT_RECOMMENDED_SHOW_UPDATE_HOUR))
             )
             app.CACHE_RECOMMENDED_TRAKT_LISTS = check_setting_list(app.CFG, 'Recommended', 'trakt_lists', app.CACHE_RECOMMENDED_TRAKT_LISTS)
+            app.CACHE_RECOMMENDED_PURGE_AFTER_DAYS = check_setting_int(app.CFG, 'Recommended', 'purge_after_days', 180)
 
             # Initialize trakt config path.
             trakt.core.CONFIG_PATH = os.path.join(app.CACHE_DIR, '.pytrakt.json')
@@ -1197,6 +1201,7 @@ class Application(object):
             # initialize the recommended shows database
             recommended_db_con = db.DBConnection('recommended.db')
             db.upgradeDatabase(recommended_db_con, recommended_db.InitialSchema)
+            db.sanityCheckDatabase(recommended_db_con, recommended_db.RecommendedSanityCheck)
 
             # Performs a vacuum on cache.db
             logger.debug(u'Performing a vacuum on the CACHE database')
@@ -1570,9 +1575,6 @@ class Application(object):
         # For passwords you must include the word `password` in the item_name
         # and add `helpers.encrypt(ITEM_NAME, ENCRYPTION_VERSION)` in save_config()
         new_config['General'] = {}
-        new_config['General']['git_auth_type'] = app.GIT_AUTH_TYPE
-        new_config['General']['git_username'] = app.GIT_USERNAME
-        new_config['General']['git_password'] = helpers.encrypt(app.GIT_PASSWORD, app.ENCRYPTION_VERSION)
         new_config['General']['git_token'] = helpers.encrypt(app.GIT_TOKEN, app.ENCRYPTION_VERSION)
         new_config['General']['git_reset'] = int(app.GIT_RESET)
         new_config['General']['git_reset_branches'] = app.GIT_RESET_BRANCHES
@@ -1737,6 +1739,10 @@ class Application(object):
         new_config['General']['fallback_plex_notifications'] = app.FALLBACK_PLEX_NOTIFICATIONS
         new_config['General']['fallback_plex_timeout'] = app.FALLBACK_PLEX_TIMEOUT
 
+        new_config['ffmpeg'] = {}
+        new_config['ffmpeg']['ffmpeg_check_streams'] = app.FFMPEG_CHECK_STREAMS
+        new_config['ffmpeg']['ffmpeg_path'] = app.FFMPEG_PATH
+
         new_config['Recommended'] = {}
         new_config['Recommended']['cache_shows'] = app.CACHE_RECOMMENDED_SHOWS
         new_config['Recommended']['cache_trakt'] = app.CACHE_RECOMMENDED_TRAKT
@@ -1745,6 +1751,7 @@ class Application(object):
         new_config['Recommended']['cache_anilist'] = app.CACHE_RECOMMENDED_ANILIST
         new_config['Recommended']['recommended_show_update_hour'] = int(app.RECOMMENDED_SHOW_UPDATE_HOUR)
         new_config['Recommended']['trakt_lists'] = app.CACHE_RECOMMENDED_TRAKT_LISTS
+        new_config['Recommended']['purge_after_days'] = int(app.CACHE_RECOMMENDED_PURGE_AFTER_DAYS)
 
         new_config['Blackhole'] = {}
         new_config['Blackhole']['nzb_dir'] = app.NZB_DIR
@@ -1904,6 +1911,7 @@ class Application(object):
         new_config['Discord']['discord_notify_onsubtitledownload'] = int(app.DISCORD_NOTIFY_ONSUBTITLEDOWNLOAD)
         new_config['Discord']['discord_webhook'] = app.DISCORD_WEBHOOK
         new_config['Discord']['discord_tts'] = int(app.DISCORD_TTS)
+        new_config['Discord']['override_avatar'] = int(app.DISCORD_OVERRIDE_AVATAR)
         new_config['Discord']['discord_name'] = app.DISCORD_NAME
 
         new_config['Prowl'] = {}
@@ -1988,6 +1996,7 @@ class Application(object):
         new_config['Trakt']['trakt_remove_serieslist'] = int(app.TRAKT_REMOVE_SERIESLIST)
         new_config['Trakt']['trakt_remove_show_from_application'] = int(app.TRAKT_REMOVE_SHOW_FROM_APPLICATION)
         new_config['Trakt']['trakt_sync_watchlist'] = int(app.TRAKT_SYNC_WATCHLIST)
+        new_config['Trakt']['trakt_sync_to_watchlist'] = int(app.TRAKT_SYNC_TO_WATCHLIST)
         new_config['Trakt']['trakt_method_add'] = int(app.TRAKT_METHOD_ADD)
         new_config['Trakt']['trakt_start_paused'] = int(app.TRAKT_START_PAUSED)
         new_config['Trakt']['trakt_use_recommended'] = int(app.TRAKT_USE_RECOMMENDED)

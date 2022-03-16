@@ -4,10 +4,12 @@ import {
     ADD_SHOW_QUEUE_ITEM,
     ADD_SHOW_CONFIG,
     ADD_SHOWS,
+    ADD_SHOW_CONFIG_TEMPLATE,
     ADD_SHOW_EPISODE,
     ADD_SHOW_SCENE_EXCEPTION,
     REMOVE_SHOW_SCENE_EXCEPTION,
-    REMOVE_SHOW
+    REMOVE_SHOW,
+    REMOVE_SHOW_CONFIG_TEMPLATE
 } from '../mutation-types';
 
 /**
@@ -49,6 +51,9 @@ const mutations = {
             ...show
         };
 
+        // Repair the searchTemplates
+        newShow.config.searchTemplates = show.config.searchTemplates ? show.config.searchTemplates : existingShow.config.searchTemplates;
+
         // Update state
         Vue.set(state.shows, state.shows.indexOf(existingShow), newShow);
         console.debug(`Merged ${newShow.title || newShow.indexer + String(newShow.id)}`, newShow);
@@ -59,7 +64,18 @@ const mutations = {
         for (const newShow of shows) {
             const existing = state.shows.find(stateShow => stateShow.id.slug === newShow.id.slug);
             if (existing) {
-                mergedShows.push({ ...existing, ...newShow });
+                const {
+                    sceneAbsoluteNumbering,
+                    xemAbsoluteNumbering,
+                    sceneNumbering,
+                    ...showWithoutDetailed
+                } = newShow;
+
+                // Repair searchTemplates.
+                const mergedShow = { ...existing, ...showWithoutDetailed };
+                mergedShow.config.searchTemplates = showWithoutDetailed.config.searchTemplates ? showWithoutDetailed.config.searchTemplates : existing.config.searchTemplates;
+
+                mergedShows.push(mergedShow);
             } else {
                 mergedShows.push(newShow);
             }
@@ -100,9 +116,12 @@ const mutations = {
         // Recreate an Array with season objects, with each season having an episodes array.
         // This format is used by vue-good-table (displayShow).
         episodes.forEach(episode => {
-            const existingSeason = newShow.seasons.find(season => season.season === episode.season);
+            let existingSeason = newShow.seasons.find(season => season.season === episode.season);
 
             if (existingSeason) {
+                // Shallow copy
+                existingSeason = { ...existingSeason };
+
                 const foundIndex = existingSeason.children.findIndex(element => element.slug === episode.slug);
                 if (foundIndex === -1) {
                     existingSeason.children.push(episode);
@@ -158,6 +177,32 @@ const mutations = {
             Vue.set(state.queueitems, state.queueitems.length, queueItem);
         }
     },
+    [ADD_SHOW_CONFIG_TEMPLATE](state, { show, template }) {
+        // Get current show object
+        const currentShow = Object.assign({}, state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer])));
+
+        if (currentShow.config.searchTemplates.find(t => t.template === template.pattern)) {
+            console.warn(`Can't add template (${template.pattern} to show ${currentShow.title} as it already exists.`);
+            return;
+        }
+
+        currentShow.config.searchTemplates.push(template);
+    },
+    [REMOVE_SHOW_CONFIG_TEMPLATE](state, { show, template }) {
+        // Get current show object
+        const currentShow = Object.assign({}, state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer])));
+
+        if (template.id) {
+            currentShow.config.searchTemplates = currentShow.config.searchTemplates.filter(
+                t => t.id !== template.id
+            );
+            return;
+        }
+
+        currentShow.config.searchTemplates = currentShow.config.searchTemplates.filter(
+            t => !(t.title === template.title && t.season === template.season && t.template === template.template)
+        );
+    },
     [REMOVE_SHOW](state, removedShow) {
         state.shows = state.shows.filter(existingShow => removedShow.id.slug !== existingShow.id.slug);
     },
@@ -191,6 +236,20 @@ const getters = {
     },
     getCurrentShow: (state, _, rootState) => {
         return state.shows.find(show => show.id.slug === state.currentShow.showSlug) || rootState.defaults.show;
+    },
+    getShowIndexerUrl: (state, getters, rootState) => show => {
+        const indexerConfig = rootState.config.indexers.indexers;
+        if (!show.indexer || !indexerConfig[show.indexer]) {
+            return;
+        }
+
+        const id = show.id[show.indexer];
+        const indexerUrl = indexerConfig[show.indexer].showUrl;
+
+        if (show.indexer === 'imdb') {
+            return `${indexerUrl}${String(id).padStart(7, '0')}`;
+        }
+        return `${indexerUrl}${id}`;
     },
     showsWithStats: (state, getters, rootState) => {
         if (!state.shows) {
@@ -482,6 +541,15 @@ const actions = {
         // Remove the show from store and localStorage (provided through websocket)
         commit(REMOVE_SHOW, show);
 
+        // Update recentShows.
+        rootState.config.general.recentShows = rootState.config.general.recentShows.filter(
+            recentShow => recentShow.showSlug !== show.id.slug
+        );
+        const config = {
+            recentShows: rootState.config.general.recentShows
+        };
+        api.patch('config/main', config);
+
         // Update (namespaced) localStorage
         const namespace = rootState.config.system.webRoot ? `${rootState.config.system.webRoot}_` : '';
         localStorage.setItem(`${namespace}shows`, JSON.stringify(state.shows));
@@ -490,7 +558,30 @@ const actions = {
         // Update store's search queue item. (provided through websocket)
         const { commit } = context;
         return commit(ADD_SHOW_QUEUE_ITEM, queueItem);
+    },
+    addSearchTemplate(context, { show, template }) {
+        const { commit } = context;
+
+        commit(ADD_SHOW_CONFIG_TEMPLATE, { show, template });
+        const data = {
+            config: {
+                searchTemplates: context.getters.getCurrentShow.config.searchTemplates
+            }
+        };
+        return api.patch(`series/${show.indexer}${show.id[show.indexer]}`, data);
+    },
+    removeSearchTemplate(context, { show, template }) {
+        const { commit } = context;
+
+        commit(REMOVE_SHOW_CONFIG_TEMPLATE, { show, template });
+        const data = {
+            config: {
+                searchTemplates: context.getters.getCurrentShow.config.searchTemplates
+            }
+        };
+        return api.patch(`series/${show.indexer}${show.id[show.indexer]}`, data);
     }
+
 };
 
 export default {

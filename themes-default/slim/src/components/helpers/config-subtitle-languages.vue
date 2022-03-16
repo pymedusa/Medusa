@@ -11,14 +11,14 @@
             <div slot="autocomplete-item" slot-scope="props" class="autocomplete-item"
                  @click="props.performAdd(props.item)"
             >
-                <img :src="`images/subtitles/flags/${props.item.id}.png`" onError="this.onerror=null; this.src='images/flags/unknown.png';" style="vertical-align: middle !important;">
-                {{props.item.text}}
+                <img :src="`images/subtitles/flags/${props.item.text}.png`" onError="this.onerror=null; this.src='images/flags/unknown.png';" style="vertical-align: middle !important;">
+                {{props.item.name}}
             </div>
 
             <div slot="tag-left" slot-scope="props" class="country-left"
                  @click="props.performOpenEdit(props.index)"
             >
-                <img :src="`images/subtitles/flags/${props.tag.id}.png`" onError="this.onerror=null; this.src='images/flags/unknown.png';" style="vertical-align: middle !important;">
+                <img :src="`images/subtitles/flags/${props.tag.text}.png`" onError="this.onerror=null; this.src='images/flags/unknown.png';" style="vertical-align: middle !important;">
             </div>
         </vue-tags-input>
     </div>
@@ -44,7 +44,7 @@ export default {
     },
     mounted() {
         const { languages } = this;
-        this.wantedLanguages = languages.map(code => ({ text: code.name, id: code.id }));
+        this.wantedLanguages = languages.map(code => ({ text: code.id, name: code.name }));
     },
     computed: {
         ...mapState({
@@ -52,7 +52,7 @@ export default {
         }),
         filteredItems() {
             return this.subtitleCodeFilter
-                .map(code => ({ text: code.name, id: code.id }))
+                .map(code => ({ text: code.id, name: code.name }))
                 .filter(i => {
                     return i.text.toLowerCase().includes(this.tag.toLowerCase());
                 });
@@ -70,7 +70,7 @@ export default {
     },
     watch: {
         languages(languages) {
-            this.wantedLanguages = languages.map(code => ({ text: code.name, id: code.id }));
+            this.wantedLanguages = languages.map(code => ({ text: code.id, name: code.name }));
         }
     }
 };

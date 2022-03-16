@@ -69,6 +69,7 @@ from medusa.imdb import Imdb
 from medusa.indexers.api import indexerApi
 from medusa.indexers.config import (
     EXTERNAL_MAPPINGS,
+    INDEXER_IMDB,
     INDEXER_TVRAGE,
     STATUS_MAP,
     indexerConfig
@@ -76,6 +77,7 @@ from medusa.indexers.config import (
 from medusa.indexers.exceptions import (
     IndexerAttributeNotFound, IndexerException, IndexerSeasonNotFound, IndexerShowAlreadyInLibrary
 )
+from medusa.indexers.imdb.api import ImdbIdentifier
 from medusa.indexers.tmdb.api import Tmdb
 from medusa.indexers.utils import (
     indexer_id_to_slug,
@@ -95,13 +97,14 @@ from medusa.name_parser.parser import (
     NameParser,
 )
 from medusa.sbdatetime import sbdatetime
-from medusa.scene_exceptions import get_all_scene_exceptions, get_scene_exceptions, update_scene_exceptions
+from medusa.scene_exceptions import get_all_scene_exceptions, get_scene_exceptions, refresh_exceptions_cache, update_scene_exceptions
 from medusa.scene_numbering import (
     get_scene_absolute_numbering_for_show, get_scene_numbering_for_show,
     get_xem_absolute_numbering_for_show, get_xem_numbering_for_show,
     numbering_tuple_to_dict, xem_refresh
 )
 from medusa.search import FORCED_SEARCH
+from medusa.search_templates import SearchTemplates
 from medusa.show.show import Show
 from medusa.subtitles import (
     code_from_code,
@@ -129,6 +132,10 @@ log.logger.addHandler(logging.NullHandler())
 
 class SaveSeriesException(Exception):
     """Generic exception used for adding a new series."""
+
+
+class ChangeIndexerException(Exception):
+    """Generic exception used for changing a shows indexer."""
 
 
 class SeriesIdentifier(Identifier):
@@ -260,6 +267,8 @@ class Series(TV):
         self.externals = {}
         self._indexer_api = None
         self._show_lists = ''
+        self._templates = None
+        self._search_templates = None
 
         other_show = Show.find_by_id(app.showList, self.indexer, self.series_id)
         if other_show is not None:
@@ -351,6 +360,11 @@ class Series(TV):
     def is_anime(self):
         """Check if the show is Anime."""
         return bool(self.anime)
+
+    @property
+    def use_templates(self):
+        """Check if the show uses advanced templates."""
+        return bool(self.templates)
 
     def is_location_valid(self, location=None):
         """
@@ -678,6 +692,9 @@ class Series(TV):
         """
         update_scene_exceptions(self, exceptions)
         self._aliases = set(chain(*itervalues(get_all_scene_exceptions(self))))
+
+        # If we added or removed aliases, we need to make sure these are reflected in the search templates.
+        self._search_templates.templates = self._search_templates.generate()
         build_name_cache(self)
 
     @property
@@ -1377,8 +1394,15 @@ class Series(TV):
         season_all_poster_result = metadata_provider.create_season_all_poster(self) or season_all_poster_result
         season_all_banner_result = metadata_provider.create_season_all_banner(self) or season_all_banner_result
 
-        return (fanart_result or poster_result or banner_result or season_posters_result or
-                season_banners_result or season_all_poster_result or season_all_banner_result)
+        return (
+            fanart_result
+            or poster_result
+            or banner_result
+            or season_posters_result
+            or season_banners_result
+            or season_all_poster_result
+            or season_all_banner_result
+        )
 
     def make_ep_from_file(self, filepath):
         """Make a TVEpisode object from a media file.
@@ -1482,8 +1506,8 @@ class Series(TV):
         )
 
         if not sql_results:
-            log.info(u'{id}: Unable to find the show in the database',
-                     {'id': self.series_id})
+            log.debug(u'{id}: Unable to find the show in the database',
+                      {'id': self.series_id})
             return
         else:
             self.show_id = int(sql_results[0]['show_id'] or 0)
@@ -1510,6 +1534,10 @@ class Series(TV):
             self.start_year = int(sql_results[0]['startyear'] or 0)
             self.paused = int(sql_results[0]['paused'] or 0)
             self.air_by_date = int(sql_results[0]['air_by_date'] or 0)
+            self.anime = int(sql_results[0]['anime'] or 0)
+            self.sports = int(sql_results[0]['sports'] or 0)
+            self.scene = int(sql_results[0]['scene'] or 0)
+            self.templates = int(sql_results[0]['templates'] or 0)
             self.subtitles = int(sql_results[0]['subtitles'] or 0)
             self.notify_list = json.loads(sql_results[0]['notify_list'] or '{}')
             self.dvd_order = int(sql_results[0]['dvdorder'] or 0)
@@ -1533,6 +1561,9 @@ class Series(TV):
 
             self.show_lists = sql_results[0]['show_lists'] or 'series'
 
+            # Load search templates
+            self.init_search_templates()
+
         # Get IMDb_info from database
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select(
@@ -1553,7 +1584,7 @@ class Series(TV):
         self.reset_dirty()
         return True
 
-    def load_from_indexer(self, tvapi=None):
+    def load_from_indexer(self, tvapi=None, limit_seasons=None):
         """Load show from indexer.
 
         :param tvapi:
@@ -1569,6 +1600,9 @@ class Series(TV):
         )
 
         indexer_api = tvapi or self.indexer_api
+        if limit_seasons:
+            self.indexer_api.config['limit_seasons'] = limit_seasons
+
         indexed_show = indexer_api[self.series_id]
 
         if getattr(indexed_show, 'firstaired', ''):
@@ -1594,7 +1628,10 @@ class Series(TV):
         # Enrich the externals, using reverse lookup.
         self.externals.update(get_externals(self))
 
-        self.imdb_id = self.externals.get('imdb_id') or getattr(indexed_show, 'imdb_id', '')
+        if self.indexer_api.indexer == INDEXER_IMDB:
+            self.externals['imdb_id'] = ImdbIdentifier(getattr(indexed_show, 'id')).series_id
+
+        self.imdb_id = ImdbIdentifier(self.externals.get('imdb_id')).imdb_id or getattr(indexed_show, 'imdb_id', '')
 
         if getattr(indexed_show, 'airs_dayofweek', '') and getattr(indexed_show, 'airs_time', ''):
             self.airs = '{airs_day_of_week} {airs_time}'.format(airs_day_of_week=indexed_show['airs_dayofweek'],
@@ -1605,6 +1642,9 @@ class Series(TV):
         self.plot = getattr(indexed_show, 'overview', '') or self.imdb_plot
 
         self._save_externals_to_db()
+
+        # Load search templates
+        self.init_search_templates()
 
     def load_imdb_info(self):
         """Load all required show information from IMDb with ImdbPie."""
@@ -1831,10 +1871,8 @@ class Series(TV):
             '  indexer = ?'
             '  AND showid = ? '
             '  AND airdate >= ? '
-            'ORDER BY'
-            '  airdate '
-            'ASC LIMIT 1',
-            [self.indexer, self.series_id, today])
+            'ORDER BY airdate ',
+            [self.indexer, self.series_id, today - 1])
 
         if sql_results is None or len(sql_results) == 0:
             log.debug(u'{id}: ({name}) Could not find a next episode', {'name': self.name, 'id': self.series_id})
@@ -1846,7 +1884,18 @@ class Series(TV):
                     'ep': episode_num(sql_results[0]['season'], sql_results[0]['episode']),
                 }
             )
-            self._next_aired = sql_results[0]['airdate']
+            next_aired_with_time = None
+            for result in sql_results:
+                if result['airdate'] > MILLIS_YEAR_1900:
+                    next_aired_with_time = sbdatetime.convert_to_setting(
+                        network_timezones.parse_date_time(result['airdate'], self.airs, self.network)
+                    )
+
+                    if next_aired_with_time < datetime.datetime.now().astimezone():
+                        continue
+
+                    self._next_aired = result['airdate']
+                    break
 
         return self._next_aired
 
@@ -2007,6 +2056,12 @@ class Series(TV):
                 'for show {title} you might want to consider enabling the scene option'
                 .format(title=self.name)
             )
+
+    def init_search_templates(self):
+        """Load search templates."""
+        refresh_exceptions_cache(self)
+        self._search_templates = SearchTemplates(self)
+        self._search_templates.generate()
 
     def update_mapped_id_cache(self):
         """Search the show in the recommended show cache. And update the mapped_indexer and mapped_series_id fields."""
@@ -2231,6 +2286,7 @@ class Series(TV):
                           'anime': self.anime,
                           'scene': self.scene,
                           'sports': self.sports,
+                          'templates': self.templates,
                           'subtitles': self.subtitles,
                           'notify_list': json.dumps(self.notify_list),
                           'dvdorder': self.dvd_order,
@@ -2292,6 +2348,7 @@ class Series(TV):
         to_return += f'scene: {self.is_scene}\n'
         to_return += f'sports: {self.is_sports}\n'
         to_return += f'anime: {self.is_anime}\n'
+        to_return += f'templates: {self.use_templates}\n'
         return to_return
 
     def to_json(self, detailed=False, episodes=False):
@@ -2303,9 +2360,10 @@ class Series(TV):
         data = {}
         data['id'] = {}
         data['id'][self.indexer_name] = self.series_id
-        data['id']['imdb'] = self.imdb_id
+        # data['id']['imdb'] = self.imdb_id
         data['id']['slug'] = self.identifier.slug
         data['id']['trakt'] = self.externals.get('trakt_id')
+        data['externals'] = {k.split('_')[0]: v for k, v in self.externals.items()}
         data['title'] = self.title  # Name plus (optional) year.
         data['name'] = self.name
         data['indexer'] = self.indexer_name  # e.g. tvdb
@@ -2352,6 +2410,7 @@ class Series(TV):
         data['config']['anime'] = self.is_anime
         data['config']['scene'] = self.is_scene
         data['config']['sports'] = self.is_sports
+        data['config']['templates'] = self.use_templates
         data['config']['paused'] = bool(self.paused)
         data['config']['defaultEpisodeStatus'] = self.default_ep_status_name
         data['config']['aliases'] = self.aliases_to_json
@@ -2362,6 +2421,9 @@ class Series(TV):
         data['config']['release']['requiredWordsExclude'] = bool(self.release_required_exclude)
         data['config']['airdateOffset'] = self.airdate_offset
         data['config']['showLists'] = self.show_lists
+
+        if detailed:
+            data['config']['searchTemplates'] = self.search_templates.to_json()
 
         # Moved from detailed, as the home page, needs it to display the Xem icon.
         data['xemNumbering'] = numbering_tuple_to_dict(self.xem_numbering)
@@ -2493,6 +2555,26 @@ class Series(TV):
     def __qualities_to_string(qualities=None):
         return ', '.join([Quality.qualityStrings[quality] for quality in qualities or []
                           if quality and quality in Quality.qualityStrings]) or 'None'
+
+    @property
+    def templates(self):
+        """Enable / disable search templates."""
+        return self._templates
+
+    @templates.setter
+    def templates(self, value):
+        """Set show config option templates to true / false."""
+        self._templates = bool(value)
+
+    @property
+    def search_templates(self):
+        """Return the search templates for this show."""
+        self._search_templates.read_from_db()
+        return self._search_templates
+
+    @search_templates.setter
+    def search_templates(self, templates):
+        self._search_templates.update(templates)
 
     def want_episode(self, season, episode, quality,
                      download_current_quality=False, search_type=None):

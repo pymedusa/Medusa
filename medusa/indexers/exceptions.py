@@ -29,6 +29,10 @@ class IndexerShowNotFoundInLanguage(IndexerException):
         self.language = language
 
 
+class IndexerShowIncomplete(IndexerException):
+    """Show found but incomplete in the indexer (incomplete show)."""
+
+
 class IndexerSeasonNotFound(IndexerException):
     """Season cannot be found in the indexer."""
 
@@ -38,6 +42,10 @@ class IndexerEpisodeNotFound(IndexerException):
 
 
 class IndexerAttributeNotFound(IndexerException):
+    """Raised if an episode does not have the requested attribute (such as a episode name)."""
+
+
+class IndexerShowUpdatesNotSupported(IndexerException):
     """Raised if an episode does not have the requested attribute (such as a episode name)."""
 
 

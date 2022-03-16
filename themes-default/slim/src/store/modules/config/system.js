@@ -60,7 +60,8 @@ const state = {
         lastRead: null,
         latest: null,
         unread: null
-    }
+    },
+    ffprobeVersion: null
 };
 
 const mutations = {

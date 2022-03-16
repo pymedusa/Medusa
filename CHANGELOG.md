@@ -3,8 +3,86 @@
 #### New Features
 
 #### Improvements
+- UI now behaves as a single page app ([10408](https://github.com/pymedusa/Medusa/pull/10408))
 
 #### Fixes
+
+## 0.5.25 (08-03-2022)
+
+#### New Features
+- New indexer: Added support for adding shows from Imdb ([3603](https://github.com/pymedusa/Medusa/pull/3603))
+
+#### Improvements
+- Enhanced test guessit tool ([10357](https://github.com/pymedusa/Medusa/pull/10357))
+- Discord notifier: added ability to override avatar ([10351](https://github.com/pymedusa/Medusa/pull/10351))
+- Purge recommended shows cache after x days ([10352](https://github.com/pymedusa/Medusa/pull/10352))
+- Added a "load more" button to recommended shows ([10380](https://github.com/pymedusa/Medusa/pull/10380))
+- Improve menu layout on mobile ([10386](https://github.com/pymedusa/Medusa/pull/10386))
+
+#### Fixes
+- Fix saving specific post-processing method ([10350](https://github.com/pymedusa/Medusa/pull/10350))
+- Fix pasing torrent size when using torznab provider that have torrent_size available in the attrs. ([10365](https://github.com/pymedusa/Medusa/pull/10365))
+- Fix provider MoreThenTv ([10391](https://github.com/pymedusa/Medusa/pull/10391))
+- Fix Manage mass-update: Starting the refresh action ([10377](https://github.com/pymedusa/Medusa/pull/10377))
+
+## 0.5.24 (15-02-2022)
+
+#### Improvements
+- Improve show updates. Update the complete show when marked updated by indexer, without an indication to update a season. ([10330](https://github.com/pymedusa/Medusa/pull/10330))
+
+#### Fixes
+- Fix searching for season packs. ([10345](https://github.com/pymedusa/Medusa/pull/10345))
+
+## 0.5.23 (11-02-2022)
+
+#### New Features
+- Add support for banner and background images to indexer tvmaze ([10234](https://github.com/pymedusa/Medusa/pull/10234))
+- Add option for using ffprobe to validate postprocessed media ([10132](https://github.com/pymedusa/Medusa/pull/10132))
+- Add change indexer page to change the current indexer for shows in bulk ([9862](https://github.com/pymedusa/Medusa/pull/9862))
+- Add search templates feature. ([3732](https://github.com/pymedusa/Medusa/pull/3732))
+
+#### Improvements
+- Add column sorting for the add new show page search results ([10217](https://github.com/pymedusa/Medusa/pull/10217))
+- Add series start year as a renaming option ([10183](https://github.com/pymedusa/Medusa/pull/10183))
+- Remove git username/password authentication. No longer supported by github. ([10144](https://github.com/pymedusa/Medusa/pull/10144))
+- Add option to allow for overwriting nfo files. ([10237](https://github.com/pymedusa/Medusa/pull/10237))
+- Improve kodi nfo file creation. ([10237](https://github.com/pymedusa/Medusa/pull/10237))
+- Add filter options to the manual search results table. ([10252](https://github.com/pymedusa/Medusa/pull/10252))
+
+#### Fixes
+- Fix displayShow search subtitle button ([10214](https://github.com/pymedusa/Medusa/pull/10214))
+- Prevent failedDownloads from errorring, when a provider has been deleted ([10214](https://github.com/pymedusa/Medusa/pull/10214))
+- Fix mass update status page, start a new snatch when changing status to failed. ([10213](https://github.com/pymedusa/Medusa/pull/10213))
+- Fix changing process method in manual postprocessing. ([10220](https://github.com/pymedusa/Medusa/pull/10220))
+- Fix saving season posters / banners when using tvdb ([10251](https://github.com/pymedusa/Medusa/pull/10251))
+- Fix Addic7ed.com subtitle provider ([10312](https://github.com/pymedusa/Medusa/pull/10312))
+
+-----
+
+## 0.5.22 (23-12-2021)
+
+#### Fixes
+- Fix connecting to deluge version < 2.x ([10192](https://github.com/pymedusa/Medusa/pull/10192))
+
+-----
+
+## 0.5.21 (20-12-2021)
+
+#### New Features
+- Add official Python 3.10 support
+
+#### Improvements
+- Catch AttributeError for TVMaze API
+- Separate recommended lists calls
+- Add rule for parsing shows that begin with a number as title
+- Add anime category for TorrentDay
+
+#### Fixes
+- Fix Plex Server library update from /manage/plex
+- Fix TorrentDay generating a JSONDecodeError
+- Fix update Kodi library
+- Fix provider Morethantv
+- Prevent dropdowns from closing when using touch navigation
 
 -----
 

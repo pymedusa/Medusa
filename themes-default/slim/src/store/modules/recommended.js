@@ -2,7 +2,8 @@ import Vue from 'vue';
 import {
     ADD_RECOMMENDED_SHOW,
     SET_RECOMMENDED_SHOWS,
-    SET_RECOMMENDED_SHOWS_OPTIONS
+    SET_RECOMMENDED_SHOWS_TRAKT_REMOVED,
+    SET_RECOMMENDED_SHOWS_CATEGORIES
 } from '../mutation-types';
 
 const IMDB = 10;
@@ -11,6 +12,13 @@ const TRAKT = 12;
 const ANILIST = 13;
 
 const state = {
+    limit: 1000,
+    page: {
+        [IMDB]: 1,
+        [ANIDB]: 1,
+        [TRAKT]: 1,
+        [ANILIST]: 1
+    },
     shows: [],
     trakt: {
         removedFromMedusa: [],
@@ -55,24 +63,23 @@ const mutations = {
         Vue.set(state.shows, state.shows.indexOf(existingShow), newShow);
         console.debug(`Merged ${newShow.title || newShow.source + String(newShow.seriesId)}`, newShow);
     },
-    [SET_RECOMMENDED_SHOWS](state, { shows, identifier }) {
-        if (identifier) {
-            // If an identifier has been passed, remove the old shows for this identifier.
-            const source = Number(Object.keys(state.sourceToString).find(key => state.sourceToString[key] === identifier));
-            state.shows = state.shows.filter(show => show.source !== source);
-        } else {
-            // No identifier passed, meaning remove all shows from store.
-            state.shows = [];
+    [SET_RECOMMENDED_SHOWS](state, { shows, source }) {
+        if (shows.length < state.limit) {
+            state.page[source] = -1;
         }
         state.shows = [...state.shows, ...shows];
     },
-    [SET_RECOMMENDED_SHOWS_OPTIONS](state, data) {
-        state.trakt.removedFromMedusa = data.trakt.removedFromMedusa;
-        state.trakt.blacklistEnabled = data.trakt.blacklistEnabled;
-        state.trakt.availableLists = data.trakt.availableLists;
-        state.categories = data.categories;
+    [SET_RECOMMENDED_SHOWS_TRAKT_REMOVED](state, data) {
+        state.trakt.removedFromMedusa = data.removedFromMedusa;
+        state.trakt.blacklistEnabled = data.blacklistEnabled;
+        state.trakt.availableLists = data.availableLists;
+    },
+    [SET_RECOMMENDED_SHOWS_CATEGORIES](state, data) {
+        state.categories = data;
+    },
+    increasePage(state, source) {
+        state.page[source] += 1;
     }
-
 };
 
 const getters = {};
@@ -82,16 +89,33 @@ const actions = {
      * Get recommended shows from API and commit them to the store.
      *
      * @param {*} context - The store context.
-     * @param {String} identifier - Identifier for the recommended shows list.
+     * @param {String} source - Identifier for the recommended shows list.
      * @returns {(undefined|Promise)} undefined if `shows` was provided or the API response if not.
      */
-    getRecommendedShows({ rootState, commit }, identifier) {
-        identifier = identifier ? identifier : '';
-        return rootState.auth.client.api.get(`/recommended/${identifier}`, { timeout: 60000 })
+    getRecommendedShows({ rootState, state, commit }, source) {
+        if (state.page[source] === -1) {
+            return;
+        }
+        const identifier = source ? state.sourceToString[source] : '';
+        const { page } = state;
+        return rootState.auth.client.api.get(`/recommended/${identifier}?page=${page[source]}&limit=${state.limit}`, { timeout: 90000 })
             .then(response => {
-                commit(SET_RECOMMENDED_SHOWS, { shows: response.data.shows, identifier });
-                commit(SET_RECOMMENDED_SHOWS_OPTIONS, response.data);
+                commit(SET_RECOMMENDED_SHOWS, { shows: response.data, source });
             });
+    },
+    getRecommendedShowsOptions({ commit }) {
+        api.get('/recommended/trakt/removed', { timeout: 60000 })
+            .then(response => {
+                commit(SET_RECOMMENDED_SHOWS_TRAKT_REMOVED, response.data);
+            });
+        api.get('/recommended/categories', { timeout: 60000 })
+            .then(response => {
+                commit(SET_RECOMMENDED_SHOWS_CATEGORIES, response.data);
+            });
+    },
+    getMoreShows({ commit, dispatch }, source) {
+        commit('increasePage', source);
+        return dispatch('getRecommendedShows', source);
     }
 };
 

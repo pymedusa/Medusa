@@ -83,11 +83,11 @@ def check_valid_naming(pattern=None, multi=None, anime_type=None):
     if anime_type is None:
         anime_type = app.NAMING_ANIME
 
-    logger.log(u'Checking whether the pattern ' + pattern + ' is valid for a single episode', logger.DEBUG)
+    logger.log(f'Checking whether the pattern {pattern} is valid for a single episode', logger.DEBUG)
     valid = validate_name(pattern, None, anime_type)
 
     if multi is not None:
-        logger.log(u'Checking whether the pattern ' + pattern + ' is valid for a multi episode', logger.DEBUG)
+        logger.log(f'Checking whether the pattern {pattern} is valid for a multi episode', logger.DEBUG)
         valid = valid and validate_name(pattern, multi, anime_type)
 
     return valid
@@ -169,6 +169,7 @@ def validate_name(pattern, multi=None, anime_type=None, file_only=False, abd=Fal
         if parse_result.season_number != ep.season:
             logger.log(u"Season number incorrect in parsed episode, pattern isn't valid", logger.DEBUG)
             return False
+        # If the template is a season search string, we don't need to check for episode.
         if parse_result.episode_numbers != [x.episode for x in [ep] + ep.related_episodes]:
             logger.log(u"Episode numbering incorrect in parsed episode, pattern isn't valid", logger.DEBUG)
             return False

@@ -12,7 +12,7 @@
                 <app-link class="navbar-brand" href="home/" title="Medusa"><img alt="Medusa" src="images/medusa.png" style="height: 50px;" class="img-responsive pull-left"></app-link>
             </div>
             <div v-if="isAuthenticated" class="collapse navbar-collapse" id="main_nav">
-                <ul class="nav navbar-nav navbar-right">
+                <ul class="nav navbar-nav navbar-right navbar-mobile">
                     <li id="NAVhome" class="navbar-split dropdown" :class="{ active: topMenu === 'home' }">
                         <app-link class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span>Shows</span>
                             <b class="caret" />
@@ -43,6 +43,7 @@
                         </app-link>
                         <ul class="dropdown-menu">
                             <li><app-link href="manage/"><i class="menu-icon-manage" />&nbsp;Mass Update</app-link></li>
+                            <li><app-link href="manage/changeIndexer/"><i class="menu-icon-manage-change" />&nbsp;Change Indexer</app-link></li>
                             <li><app-link href="manage/backlogOverview/"><i class="menu-icon-backlog-view" />&nbsp;Backlog Overview</app-link></li>
                             <li><app-link href="manage/manageSearches/"><i class="menu-icon-manage-searches" />&nbsp;Manage Searches</app-link></li>
                             <li><app-link href="manage/episodeStatuses/"><i class="menu-icon-manage2" />&nbsp;Episode Status Management</app-link></li>
@@ -321,5 +322,28 @@ export default {
     font-weight: bold;
     text-decoration: none;
     color: white;
+}
+
+@media (max-width: 767px) {
+    .navbar-fixed-top .navbar-collapse {
+        max-height: 100%;
+    }
+
+    .navbar-mobile > li {
+        text-align: center;
+    }
+
+    .navbar-mobile::before {
+        position: absolute;
+    }
+
+    .navbar-mobile {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .navbar-mobile #NAVsystem > ul {
+        transform: translateX(-6rem);
+    }
 }
 </style>

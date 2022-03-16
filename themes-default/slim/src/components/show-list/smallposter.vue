@@ -61,15 +61,10 @@
                 </span>
 
                 <span v-else-if="props.column.label == 'Indexer'" class="align-center indexer-image">
-                    <app-link v-if="props.row.id.imdb" :href="`http://www.imdb.com/title/${props.row.id.imdb}`" :title="`http://www.imdb.com/title/${props.row.id.imdb}`">
-                        <img alt="[imdb]" height="16" width="16" src="images/imdb.png">
+                    <app-link v-if="getShowIndexerUrl && indexerConfig[props.row.indexer].icon" :href="getShowIndexerUrl(props.row)" :title="getShowIndexerUrl(props.row)">
+                        <img :alt="indexerConfig[props.row.indexer].name" height="16" width="16" :src="`images/${indexerConfig[props.row.indexer].icon}`" style="margin-top: -1px; vertical-align:middle;">
                     </app-link>
-                    <app-link v-if="props.row.id.trakt" :href="`https://trakt.tv/shows/${props.row.id.trakt}`" :title="`https://trakt.tv/shows/${props.row.id.trakt}`">
-                        <img alt="[trakt]" height="16" width="16" src="images/trakt.png">
-                    </app-link>
-                    <app-link v-if="showIndexerUrl && indexerConfig[props.row.indexer].icon" :href="showIndexerUrl(props.row)" :title="showIndexerUrl(props.row)">
-                        <img :alt="indexerConfig[props.row.indexer].name" height="16" width="16" :src="'images/' + indexerConfig[props.row.indexer].icon" style="margin-top: -1px; vertical-align:middle;">
-                    </app-link>
+                    <externals :show="props.row" />
                 </span>
 
                 <span v-else-if="props.column.label == 'Quality'" class="align-center">
@@ -101,7 +96,7 @@
     </div> <!-- .horizontal-scroll -->
 </template>
 <script>
-import { Asset, AppLink, ProgressBar, QualityPill } from '../helpers';
+import { Asset, AppLink, Externals, ProgressBar, QualityPill } from '../helpers';
 import { VueGoodTable } from 'vue-good-table';
 import { manageCookieMixin } from '../../mixins/manage-cookie';
 import { showlistTableMixin } from '../../mixins/show-list';
@@ -111,6 +106,7 @@ export default {
     components: {
         Asset,
         AppLink,
+        Externals,
         ProgressBar,
         QualityPill,
         VueGoodTable

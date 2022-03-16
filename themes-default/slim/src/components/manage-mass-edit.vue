@@ -221,7 +221,7 @@ export default {
                     );
                 } else {
                     this.$snotify.success(
-                        'Succesfully mass edited shows',
+                        'Successfully mass edited shows',
                         'Saved',
                         { timeout: 2000 }
                     );

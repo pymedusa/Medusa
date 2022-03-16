@@ -182,16 +182,6 @@ export default {
     },
     methods: {
         prettyBytes: bytes => pretty(bytes),
-        showIndexerUrl(show) {
-            const { indexers } = this;
-            if (!show.indexer) {
-                return;
-            }
-
-            const id = show.id[show.indexer];
-            const indexerUrl = indexers.indexers[show.indexer].showUrl;
-            return `${indexerUrl}${id}`;
-        },
         parsePrevDateFn(row) {
             const { fuzzyParseDateTime } = this;
             if (row.prevAirDate) {
@@ -230,8 +220,7 @@ export default {
         updateLayout() {
             const {
                 calculateSize,
-                listTitle, posterSortBy,
-                posterSortDir
+                listTitle
             } = this;
             this.isotopeLoaded = true;
             calculateSize();
@@ -239,10 +228,13 @@ export default {
             if (this.$refs[`isotope-${listTitle}`] === undefined) {
                 return;
             }
-            // Render layout (for sizing)
-            this.$refs[`isotope-${listTitle}`].layout();
+
             // Arrange & Sort
-            this.$refs[`isotope-${listTitle}`].arrange({ sortBy: posterSortBy, sortAscending: posterSortDir });
+            this.$nextTick(() => {
+                this.$refs[`isotope-${this.listTitle}`].iso.reloadItems();
+                this.$refs[`isotope-${this.listTitle}`].iso.arrange({ sortBy: this.posterSortBy, sortAscending: this.posterSortDir });
+            });
+
             console.log('isotope Layout loaded');
         },
         dateOrStatus(show) {
@@ -258,12 +250,10 @@ export default {
     },
     watch: {
         posterSortBy(key) {
-            const { listTitle } = this;
-            this.$refs[`isotope-${listTitle}`].sort(key);
+            this.$refs[`isotope-${this.listTitle}`].iso.arrange({ sortBy: key, sortAscending: this.posterSortDir });
         },
         posterSortDir(value) {
-            const { listTitle, posterSortBy } = this;
-            this.$refs[`isotope-${listTitle}`].arrange({ sortBy: posterSortBy, sortAscending: value });
+            this.$refs[`isotope-${this.listTitle}`].iso.arrange({ sortBy: this.posterSortBy, sortAscending: value });
         },
         posterSize(oldSize, newSize) {
             const { calculateSize, isotopeLoaded, listTitle } = this;
@@ -272,7 +262,7 @@ export default {
             }
             calculateSize();
             this.$nextTick(() => {
-                this.$refs[`isotope-${listTitle}`].arrange();
+                this.$refs[`isotope-${listTitle}`].iso.arrange();
             });
         },
         currentShowTab() {
@@ -282,7 +272,7 @@ export default {
             }
 
             this.$nextTick(() => {
-                this.$refs[`isotope-${listTitle}`].arrange();
+                this.$refs[`isotope-${listTitle}`].iso.arrange();
             });
         },
         showFilterByName(value) {
@@ -296,6 +286,11 @@ export default {
                 } else {
                     container.classList.add('hide');
                 }
+            }
+        },
+        $route(to) {
+            if (to.name === 'home') {
+                this.updateLayout();
             }
         }
     }
@@ -344,6 +339,8 @@ export default {
 
 .poster-overlay {
     position: absolute;
+    top: 0;
+    left: 0;
 }
 
 .show-container .ui-progressbar {
@@ -399,7 +396,8 @@ export default {
 }
 
 .overlay-container {
-    display: flex;
-    align-items: baseline;
+    display: block;
+    overflow: hidden;
+    position: relative;
 }
 </style>

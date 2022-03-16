@@ -107,6 +107,7 @@ export const showSubMenu = vm => {
             {
                 title: 'Update show in KODI',
                 path: `home/updateKODI?showslug=${showSlug}`,
+                method: 'updatekodi',
                 requires: notifiers.kodi.enabled && notifiers.kodi.update.library,
                 icon: 'menu-icon-kodi'
             },
@@ -124,7 +125,7 @@ export const showSubMenu = vm => {
             {
                 title: 'Download Subtitles',
                 path: `home/subtitleShow?showslug=${showSlug}`,
-                requires: config.general.subtitles.enabled && !isBeingSubtitled && show.config.subtitlesEnabled,
+                requires: config.subtitles.enabled && !isBeingSubtitled && show.config.subtitlesEnabled,
                 icon: 'menu-icon-backlog'
             }
         ]);

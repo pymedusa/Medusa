@@ -96,8 +96,8 @@
                     >
                 </span>
 
-                <span v-else-if="props.column.label === 'Refresh'" class="align-center">
-                    <input :disabled="inQueueOrStarted('refresh', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateRefresh"
+                <span v-else-if="props.column.label === 'Rescan'" class="align-center">
+                    <input :disabled="inQueueOrStarted('rescan', props.row.id.slug)" type="checkbox" class="bulkCheck" id="updateRefresh"
                            :data-action="props.column.action" :data-show="props.row.id.slug" @input="updateActions($event, props.row.id.slug)"
                     >
                 </span>
@@ -275,14 +275,18 @@ export default {
                 label: 'Default Ep Status',
                 field: 'config.defaultEpisodeStatus',
                 filterOptions: {
-                    enabled: false
+                    enabled: true,
+                    placeholder: '--no filter-- ',
+                    filterDropdownItems: []
                 },
                 hidden: getCookie('Default Ep Status')
             }, {
                 label: 'Status',
                 field: 'status',
                 filterOptions: {
-                    enabled: false
+                    enabled: true,
+                    placeholder: '--no filter-- ',
+                    filterDropdownItems: []
                 },
                 hidden: getCookie('Status')
             }, {
@@ -295,14 +299,14 @@ export default {
                 action: 'update',
                 hidden: getCookie('Update')
             }, {
-                label: 'Refresh',
+                label: 'Rescan',
                 field: 'rescan',
                 sortable: false,
                 filterOptions: {
                     customFilter: true
                 },
-                action: 'refresh',
-                hidden: getCookie('Refresh')
+                action: 'rescan',
+                hidden: getCookie('Rescan')
             }, {
                 label: 'Rename',
                 field: 'rename',
@@ -351,7 +355,7 @@ export default {
             }],
             massUpdateActions: {
                 update: [],
-                refresh: [],
+                rescan: [],
                 rename: [],
                 subtitle: [],
                 delete: [],
@@ -362,7 +366,6 @@ export default {
             selectedShows: []
         };
     },
-    // TODO: Replace with Object spread (`...mapState`)
     computed: {
         ...mapState({
             general: state => state.config.general,
@@ -411,14 +414,14 @@ export default {
         clearActions() {
             this.massUpdateActions = {
                 update: [],
-                refresh: [],
+                rescan: [],
                 rename: [],
                 subtitle: [],
                 delete: [],
                 remove: [],
                 image: []
             };
-            for (const action of ['update', 'refresh', 'rename', 'subtitle', 'delete', 'remove', 'image']) {
+            for (const action of ['update', 'rescan', 'rename', 'subtitle', 'delete', 'remove', 'image']) {
                 document.querySelectorAll(`[data-action="${action}"]`).forEach(el => {
                     el.checked = false;
                 });
@@ -429,7 +432,7 @@ export default {
             const { action } = event.currentTarget.dataset;
             this.massUpdateActions = {
                 update: [],
-                refresh: [],
+                rescan: [],
                 rename: [],
                 subtitle: [],
                 delete: [],
@@ -476,7 +479,7 @@ export default {
             const { showQueue, showQueueItems } = this;
             const queueItemNames = new Map([
                 ['update', 'UPDATE'],
-                ['refresh', 'REFRESH'],
+                ['rescan', 'REFRESH'],
                 ['rename', 'RENAME'],
                 ['subtitle', 'SUBTITLE'],
                 ['delete', 'REMOVE-SHOW'],
@@ -513,6 +516,17 @@ export default {
                     'Error'
                 );
             }
+        }
+    },
+    watch: {
+        shows(shows) {
+            const defaultEpColumn = this.columns.find(column => column.field === 'config.defaultEpisodeStatus');
+            const defaultEpSet = new Set(shows.map(show => show.config.defaultEpisodeStatus));
+            defaultEpColumn.filterOptions.filterDropdownItems = [...defaultEpSet].map(status => ({ text: status, value: status }));
+
+            const statusColumn = this.columns.find(column => column.field === 'status');
+            const statusSet = new Set(shows.map(show => show.status));
+            statusColumn.filterOptions.filterDropdownItems = [...statusSet].map(status => ({ text: status, value: status }));
         }
     }
 };

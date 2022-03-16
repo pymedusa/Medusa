@@ -109,8 +109,8 @@ export default {
             ];
         },
         unique() {
-            const { items, newItem, selectedSeason } = this;
-            return !items.find(exception => exception.title === newItem && exception.season === selectedSeason);
+            const { items, newItem } = this;
+            return !items.find(exception => exception.title === newItem);
         }
     },
     mounted() {

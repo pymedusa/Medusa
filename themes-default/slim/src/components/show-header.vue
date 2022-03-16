@@ -83,7 +83,7 @@
                                 >
                                     <span :style="{ width: (Number(show.rating.imdb.rating) * 10) + '%' }" />
                                 </span>
-                                <template v-if="!show.id.imdb">
+                                <template v-if="!show.imdbInfo || !show.imdbInfo.imdbId">
                                     <span v-if="show.year.start">({{ show.year.start }}) - {{ show.runtime }} minutes - </span>
                                 </template>
                                 <template v-else>
@@ -94,30 +94,15 @@
                                     <span>
                                         {{ show.imdbInfo.runtimes || show.runtime }} minutes
                                     </span>
-                                    <app-link :href="`https://www.imdb.com/title/${show.id.imdb}`" :title="'https://www.imdb.com/title/' + show.id.imdb">
-                                        <img alt="[imdb]" height="16" width="16" src="images/imdb.png" style="margin-top: -1px; vertical-align:middle;">
-                                    </app-link>
                                 </template>
 
                                 <div id="indexer-wrapper">
-                                    <app-link v-if="showIndexerUrl && indexerConfig[show.indexer].icon" :href="showIndexerUrl" :title="showIndexerUrl">
+                                    <app-link v-if="getShowIndexerUrl(show) && indexerConfig[show.indexer].icon" :href="getShowIndexerUrl(show)" :title="getShowIndexerUrl(show)">
                                         <img id="stored-by-indexer" src="images/star.png">
                                         <img :alt="indexerConfig[show.indexer].name" height="16" width="16" :src="`images/${indexerConfig[show.indexer].icon}`" style="margin-top: -1px; vertical-align:middle;">
                                     </app-link>
                                 </div>
-
-                                <app-link v-if="show.id.trakt" :href="`https://trakt.tv/shows/${show.id.trakt}`" :title="`https://trakt.tv/shows/${show.id.trakt}`">
-                                    <img alt="[trakt]" height="16" width="16" src="images/trakt.png">
-                                </app-link>
-
-                                <app-link v-if="show.xemNumbering && show.xemNumbering.length > 0" :href="`http://thexem.de/search?q=${show.title}`" :title="`http://thexem.de/search?q=${show.title}`">
-                                    <img alt="[xem]" height="16" width="16" src="images/xem.png" style="margin-top: -1px; vertical-align:middle;">
-                                </app-link>
-
-                                <app-link v-if="show.id.tvdb" :href="`https://fanart.tv/series/${show.id.tvdb}`" :title="`https://fanart.tv/series/${show.id[show.indexer]}`">
-                                    <img alt="[fanart.tv]" height="16" width="16" src="images/fanart.tv.png" class="fanart">
-                                </app-link>
-
+                                <externals :show="show" />
                             </div>
                             <div id="tags" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
                                 <ul class="tags" v-if="show.genres">
@@ -334,7 +319,7 @@ import { scrollTo } from 'vue-scrollto';
 import { mapActions, mapState, mapGetters } from 'vuex';
 import { combineQualities, humanFileSize } from '../utils/core';
 import { attachImdbTooltip } from '../utils/jquery';
-import { AppLink, Asset, QualityPill, StateSwitch } from './helpers';
+import { AppLink, Asset, Externals, QualityPill, StateSwitch } from './helpers';
 
 /**
  * Return the first item of `values` that is not `null`, `undefined` or `NaN`.
@@ -352,6 +337,7 @@ export default {
     components: {
         AppLink,
         Asset,
+        Externals,
         QualityPill,
         StateSwitch,
         Truncate
@@ -447,24 +433,14 @@ export default {
             getEpisode: 'getEpisode',
             getOverviewStatus: 'getOverviewStatus',
             getQualityPreset: 'getQualityPreset',
-            getStatus: 'getStatus'
+            getStatus: 'getStatus',
+            getShowIndexerUrl: 'getShowIndexerUrl'
         }),
         season() {
             return resolveToValue(this.showSeason, Number(this.$route.query.season));
         },
         episode() {
             return resolveToValue(this.showEpisode, Number(this.$route.query.episode));
-        },
-        showIndexerUrl() {
-            const { show, indexerConfig } = this;
-            if (!show.indexer) {
-                return;
-            }
-
-            const id = show.id[show.indexer];
-            const indexerUrl = indexerConfig[show.indexer].showUrl;
-
-            return `${indexerUrl}${id}`;
         },
         activeShowQueueStatuses() {
             const { showQueueStatus } = this.show;

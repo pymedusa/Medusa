@@ -47,6 +47,9 @@ class AliasHandler(BaseRequestHandler):
 
             season = self._parse(self.get_query_argument('season', None))
             exception_type = self.get_query_argument('type', None)
+            episode_search_template = self.get_query_argument('episodetemplate', None)
+            season_search_template = self.get_query_argument('episodetemplate', None)
+
             if exception_type and exception_type not in ('local', ):
                 return self._bad_request('Invalid type')
 
@@ -62,6 +65,14 @@ class AliasHandler(BaseRequestHandler):
             if exception_type == 'local':
                 sql_where.append('custom')
                 params += [1]
+
+            if episode_search_template is not None:
+                sql_where.append('episode_search_template')
+                params += [episode_search_template]
+
+            if season_search_template is not None:
+                sql_where.append('season_search_template')
+                params += [season_search_template]
 
         if sql_where:
             sql_base += ' WHERE ' + ' AND '.join([where + ' = ? ' for where in sql_where])

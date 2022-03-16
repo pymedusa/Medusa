@@ -71,6 +71,9 @@ class SeasonNotFound(BaseError):
     pass
 
 
+class ImagesNotFound(BaseError):
+    pass
+
 class IllegalAirDate(BaseError):
     pass
 

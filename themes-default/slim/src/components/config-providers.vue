@@ -51,7 +51,7 @@
                     <div class="col-xs-12 col-md-10">
                         <!-- list with provider options -->
                         <config-template label-for="edit_a_provider" label="Select Provider">
-                            <select id="edit_a_provider" class="form-control input-sm" v-model="selectedProvider">
+                            <select id="edit_a_provider" class="form-control input-sm max-input350" v-model="selectedProvider">
                                 <option disabled value="">Select Provider</option>
                                 <option :value="option.value" v-for="option in enabledProviders" :key="option.value">
                                     {{ option.text }}
@@ -119,11 +119,7 @@
                     </div>
                 </div><!-- row component-group //-->
 
-                <input type="submit"
-                       class="btn-medusa config_submitter"
-                       value="Save Changes"
-                       :disabled="saving"
-                >
+                <button class="btn-medusa config_submitter" :disabled="saving" @click="save()">Save Changes</button>
             </v-tab>
 
             <v-tab key="custom_prowlarr_providers" title="Configure Custom Prowlarr Providers">
@@ -138,11 +134,7 @@
                     </div>
                 </div><!-- row component-group //-->
 
-                <input type="submit"
-                       class="btn-medusa config_submitter"
-                       value="Save Changes"
-                       :disabled="saving"
-                >
+                <button class="btn-medusa config_submitter" :disabled="saving" @click="save()">Save Changes</button>
             </v-tab>
         </vue-tabs>
     </div>

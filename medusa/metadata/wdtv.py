@@ -83,7 +83,7 @@ class WDTVMetadata(generic.GenericMetadata):
         # no show metadata generated, we abort this lookup function
         return None, None, None
 
-    def create_show_metadata(self, show_obj):
+    def create_show_metadata(self, show_obj, force=False):
         pass
 
     def update_show_indexer_metadata(self, show_obj):

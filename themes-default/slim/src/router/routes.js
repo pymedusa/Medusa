@@ -249,7 +249,8 @@ const addShowRoutes = [
             title: 'Add Existing Shows',
             header: 'Add Existing Shows',
             topMenu: 'home',
-            converted: true
+            converted: true,
+            nocache: true
         },
         component: () => import('../components/new-shows-existing.vue')
     },
@@ -260,7 +261,8 @@ const addShowRoutes = [
             title: 'Add New Show',
             header: 'Add New Show',
             topMenu: 'home',
-            converted: true
+            converted: true,
+            nocache: true
         },
         props: route => ({ ...route.params }),
         component: () => import('../components/new-show.vue')
@@ -341,6 +343,17 @@ const manageRoutes = [
         },
         component: () => import('../components/manage-mass-update.vue'),
         props: true
+    },
+    {
+        path: '/manage/changeIndexer',
+        name: 'manageChangeIndexer',
+        meta: {
+            title: 'Change show indexer',
+            header: 'Change show indexer',
+            topMenu: 'manage',
+            converted: true
+        },
+        component: () => import('../components/change-indexer.vue')
     },
     {
         path: '/manage/backlogOverview',

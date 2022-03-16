@@ -12,12 +12,16 @@ from builtins import str
 from medusa import app, db, ui
 from medusa.common import ARCHIVED, DOWNLOADED, Quality, SKIPPED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, WANTED
 from medusa.helper.common import episode_num
+from medusa.helpers.externals import show_in_library
 from medusa.helpers.trakt import create_episode_structure, create_show_structure, get_trakt_user
 from medusa.indexers.config import EXTERNAL_IMDB, EXTERNAL_TRAKT, indexerConfig
+from medusa.indexers.imdb.api import ImdbIdentifier
 from medusa.indexers.utils import get_trakt_indexer
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.search.queue import BacklogQueueItem
 from medusa.show.show import Show
+
+from requests.exceptions import RequestException
 
 from trakt import sync, tv
 from trakt.errors import TraktException
@@ -86,7 +90,7 @@ class TraktChecker(object):
             try:
                 self.sync_watchlist()
                 self.sync_library()
-            except TraktException as error:
+            except (TraktException, RequestException) as error:
                 log.exception('Trakt exception while running trakt_checker.\nError: {error}', {'error': error})
 
         self.amActive = False
@@ -96,7 +100,7 @@ class TraktChecker(object):
         trakt_library = []
         try:
             trakt_library = sync.get_collection('shows')
-        except TraktException as error:
+        except (TraktException, RequestException) as error:
             log.info('Unable to retrieve shows from Trakt collection. Error: {error!r}', {'error': error})
 
         if not trakt_library:
@@ -122,7 +126,7 @@ class TraktChecker(object):
             # Remove all episodes from the Trakt collection for this show
             try:
                 self.remove_episode_trakt_collection(filter_show=show_obj)
-            except TraktException as error:
+            except (TraktException, RequestException) as error:
                 log.info("Unable to remove all episodes from show '{show}' from Trakt library. Error: {error!r}", {
                     'show': show_obj.name,
                     'error': error
@@ -130,7 +134,7 @@ class TraktChecker(object):
 
             try:
                 sync.remove_from_collection(create_show_structure(show_obj))
-            except TraktException as error:
+            except (TraktException, RequestException) as error:
                 log.info("Unable to remove show '{show}' from Trakt library. Error: {error!r}", {
                     'show': show_obj.name,
                     'error': error
@@ -149,7 +153,7 @@ class TraktChecker(object):
 
         try:
             result = sync.add_to_collection(create_show_structure(show_obj))
-        except TraktException as error:
+        except (TraktException, RequestException) as error:
             log.info("Unable to add show '{show}' to Trakt library. Error: {error!r}", {
                 'show': show_obj.name,
                 'error': error
@@ -235,7 +239,7 @@ class TraktChecker(object):
         try:
             sync.remove_from_collection({'shows': media_object_shows})
             self._get_show_collection()
-        except TraktException as error:
+        except (TraktException, RequestException) as error:
             log.info('Unable to remove episodes from Trakt collection. Error: {error!r}', {
                 'error': error
             })
@@ -296,26 +300,31 @@ class TraktChecker(object):
         try:
             sync.add_to_collection({'shows': media_object_shows})
             self._get_show_collection()
-        except TraktException as error:
+        except (TraktException, RequestException) as error:
             log.info('Unable to add episodes to Trakt collection. Error: {error!r}', {'error': error})
 
     def sync_watchlist(self):
         """Sync Trakt watchlist."""
-        if app.TRAKT_SYNC_WATCHLIST and app.USE_TRAKT:
+        if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
             log.debug('Syncing Trakt Watchlist')
 
             self.remove_from_library()
 
             if self._get_show_watchlist():
-                log.debug('Syncing shows with Trakt watchlist')
-                self.add_show_watchlist()
+                log.debug('Syncing shows from Trakt watchlist to library')
                 self.sync_trakt_shows()
 
+            if app.TRAKT_SYNC_TO_WATCHLIST:
+                log.debug('Syncing shows from library to Trakt watchlist')
+                self.add_show_watchlist()
+
             if self._get_episode_watchlist():
-                log.debug('Syncing episodes with Trakt watchlist')
+                log.debug('Syncing episodes from Trakt watchlist to library')
                 self.remove_episode_watchlist()
-                self.add_episode_watchlist()
                 self.sync_trakt_episodes()
+
+            log.debug('Syncing episodes from library to trakt watchlist')
+            self.add_episode_watchlist()
 
             log.debug('Synced Trakt watchlist')
 
@@ -373,7 +382,7 @@ class TraktChecker(object):
         try:
             sync.remove_from_collection({'shows': media_object_shows})
             self._get_episode_watchlist()
-        except TraktException as error:
+        except (TraktException, RequestException) as error:
             log.info('Unable to remove episodes from Trakt watchlist. Error: {error!r}', {
                 'error': error
             })
@@ -432,7 +441,7 @@ class TraktChecker(object):
         try:
             sync.add_to_watchlist({'shows': media_object_shows})
             self._get_episode_watchlist()
-        except TraktException as error:
+        except (TraktException, RequestException) as error:
             log.info('Unable to add episode to Trakt watchlist. Error: {error!r}', {
                 'error': error
             })
@@ -457,7 +466,7 @@ class TraktChecker(object):
         if trakt_show_objects:
             try:
                 sync.add_to_watchlist({'shows': trakt_show_objects})
-            except TraktException as error:
+            except (TraktException, RequestException) as error:
                 log.info('Unable to add shows to Trakt watchlist. Error: {error!r}', {'error': error})
             self._get_show_watchlist()
 
@@ -480,9 +489,9 @@ class TraktChecker(object):
                     continue
 
                 try:
-                    trakt_show = tv.TVShow(str(trakt_id or show.imdb_id))
+                    trakt_show = tv.TVShow(str(trakt_id or ImdbIdentifier(show.imdb_id).imdb_id))
                     progress = trakt_show.progress
-                except TraktException as error:
+                except (TraktException, RequestException) as error:
                     log.info("Unable to check if show '{show}' is ended/completed. Error: {error!r}", {
                         'show': show.name,
                         'error': error
@@ -511,32 +520,36 @@ class TraktChecker(object):
 
             show = None
             indexer = None
+
             for i in indexerConfig:
                 trakt_indexer = get_trakt_indexer(i)
-                indexer_id = trakt_show.ids['ids'].get(trakt_indexer, -1)
+                indexer_id = trakt_show.ids['ids'].get(trakt_indexer)
+                if not indexer_id:
+                    continue
                 indexer = indexerConfig[i]['id']
-                show = Show.find_by_id(app.showList, indexer, indexer_id)
+                show = show_in_library(i, indexer_id)
+                # show = Show.find_by_id(app.showList, indexer, indexer_id)
                 if show:
                     break
             if not show:
                 # If can't find with available indexers try IMDB
                 trakt_indexer = get_trakt_indexer(EXTERNAL_IMDB)
-                indexer_id = trakt_show.ids['ids'].get(trakt_indexer, -1)
+                indexer_id = trakt_show.ids['ids'].get(trakt_indexer)
                 show = Show.find_by_id(app.showList, EXTERNAL_IMDB, indexer_id)
             if not show:
                 # If can't find with available indexers try TRAKT
                 trakt_indexer = get_trakt_indexer(EXTERNAL_TRAKT)
-                indexer_id = trakt_show.ids['ids'].get(trakt_indexer, -1)
+                indexer_id = trakt_show.ids['ids'].get(trakt_indexer)
                 show = Show.find_by_id(app.showList, EXTERNAL_TRAKT, indexer_id)
 
             if show:
                 continue
 
             # If we don't have an indexer id for the trakt default indexer, skip it.
-            indexer_id = trakt_show.ids['ids'].get(get_trakt_indexer(trakt_default_indexer), -1)
+            indexer_id = trakt_show.ids['ids'].get(get_trakt_indexer(trakt_default_indexer))
             if not indexer_id:
                 log.info(
-                    'Can not add show {show_name}, as we dont trakt does not have a {indexer} id for this show.',
+                    'Can not add show {show_name}, as trakt does not have an {indexer} id for this show.',
                     {'show_name': show_name, 'indexer': get_trakt_indexer(trakt_default_indexer)}
                 )
                 continue
@@ -578,7 +591,7 @@ class TraktChecker(object):
                 if not trakt_indexer:
                     continue
 
-                indexer_id = trakt_show['ids'].get(trakt_indexer, -1)
+                indexer_id = trakt_show['ids'].get(trakt_indexer)
                 indexer = indexerConfig[i]['id']
                 show = Show.find_by_id(app.showList, indexer, indexer_id)
                 if show:
@@ -587,18 +600,18 @@ class TraktChecker(object):
             if not show:
                 # If can't find with available indexers try IMDB
                 trakt_indexer = get_trakt_indexer(EXTERNAL_IMDB)
-                indexer_id = trakt_show['ids'].get(trakt_indexer, -1)
+                indexer_id = trakt_show['ids'].get(trakt_indexer)
                 show = Show.find_by_id(app.showList, EXTERNAL_IMDB, indexer_id)
             if not show:
                 # If can't find with available indexers try TRAKT
                 trakt_indexer = get_trakt_indexer(EXTERNAL_TRAKT)
-                indexer_id = trakt_show['ids'].get(trakt_indexer, -1)
+                indexer_id = trakt_show['ids'].get(trakt_indexer)
                 show = Show.find_by_id(app.showList, EXTERNAL_TRAKT, indexer_id)
 
             # If can't find show add with default trakt indexer
             if not show:
                 trakt_indexer = get_trakt_indexer(trakt_default_indexer)
-                indexer_id = trakt_show['ids'].get(trakt_indexer, -1)
+                indexer_id = trakt_show['ids'].get(trakt_indexer)
                 # Only add show if we didn't added it before
                 if indexer_id not in added_shows:
                     self.add_show(trakt_default_indexer, indexer_id, trakt_show['title'], SKIPPED)
@@ -671,7 +684,7 @@ class TraktChecker(object):
             if trakt_supported_indexer and getattr(trakt_show, trakt_supported_indexer) == medusa_show.indexerid:
                 return True
             # Try to match by imdb_id
-            if getattr(trakt_show, 'imdb') == medusa_show.imdb_id:
+            if getattr(trakt_show, 'imdb') == ImdbIdentifier(medusa_show.imdb_id).imdb_id:
                 return True
             return False
 
@@ -713,7 +726,7 @@ class TraktChecker(object):
         """Get episodes watchlist."""
         try:
             self.episode_watchlist = sync.get_watchlist('episodes')
-        except TraktException as error:
+        except (TraktException, RequestException) as error:
             log.info(u'Unable to retrieve episodes from Trakt watchlist. Error: {error!r}', {'error': error})
             return False
         return True
@@ -722,7 +735,7 @@ class TraktChecker(object):
         """Get show collection."""
         try:
             self.collection_list = sync.get_collection('shows')
-        except TraktException as error:
+        except (TraktException, RequestException) as error:
             log.info('Unable to retrieve shows from Trakt collection. Error: {error!r}', {'error': error})
             return False
         return True

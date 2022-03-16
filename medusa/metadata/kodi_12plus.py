@@ -11,10 +11,11 @@ from babelfish import Country
 
 from medusa import helpers
 from medusa.app import TVDB_API_KEY
-from medusa.helper.common import dateFormat, episode_num
+from medusa.helper.common import episode_num
 from medusa.indexers.api import indexerApi
 from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.indexers.exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
+from medusa.indexers.imdb.api import ImdbIdentifier
 from medusa.indexers.tvdbv2.api import API_BASE_TVDB
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.metadata import generic
@@ -116,15 +117,30 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
         title.text = my_show['seriesname']
 
         if getattr(my_show, 'rating', None):
-            rating = etree.SubElement(tv_node, 'rating')
-            rating.text = text_type(my_show['rating'])
+            ratings = etree.SubElement(tv_node, 'ratings')
+            rating = etree.SubElement(ratings, 'rating')
+            rating.set('name', series_obj.identifier.indexer.slug)
+            rating.set('max', '10')
+            rating.set('default', 'true')
+            value = etree.SubElement(rating, 'value')
+            value.text = str(my_show['rating'])
+            votes = etree.SubElement(rating, 'votes')
+            votes.text = str(my_show.get('votes', ''))
+
+            if series_obj.identifier.indexer.slug != 'imdb' and series_obj.imdb_id and series_obj.imdb_rating and series_obj.imdb_votes:
+                rating_imdb = etree.SubElement(ratings, 'rating')
+                rating_imdb.set('name', 'imdb')
+                rating_imdb.set('max', '10')
+                rating_imdb.set('default', 'false')
+                value = etree.SubElement(rating_imdb, 'value')
+                value.text = series_obj.imdb_rating
+                votes = etree.SubElement(rating_imdb, 'votes')
+                votes.text = str(series_obj.imdb_votes)
 
         if getattr(my_show, 'firstaired', None):
             try:
-                year_text = text_type(datetime.datetime.strptime(my_show['firstaired'], dateFormat).year)
-                if year_text:
-                    year = etree.SubElement(tv_node, 'year')
-                    year.text = year_text
+                year = etree.SubElement(tv_node, 'premiered')
+                year.text = my_show['firstaired']
             except Exception:
                 pass
 
@@ -150,7 +166,10 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
         uniqueid = etree.SubElement(tv_node, 'uniqueid')
         uniqueid.set('default', 'true')
         uniqueid.set('type', series_obj.identifier.indexer.slug)
-        uniqueid.text = str(series_obj.identifier.id)
+        show_id = series_obj.identifier.id
+        if (series_obj.identifier.indexer.slug == 'imdb'):
+            show_id = ImdbIdentifier(show_id).imdb_id
+        uniqueid.text = str(show_id)
 
         for indexer_slug in ('tvdb', 'tmdb', 'imdb', 'tvmaze', 'anidb'):
             if indexer_slug == series_obj.identifier.indexer.slug:
@@ -212,7 +231,7 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
                     cur_actor_role = etree.SubElement(cur_actor, 'role')
                     cur_actor_role.text = actor['role'].strip()
 
-                if 'image' in actor and actor['image'].strip():
+                if 'image' in actor and actor['image'] and actor['image'].strip():
                     cur_actor_thumb = etree.SubElement(cur_actor, 'thumb')
                     cur_actor_thumb.text = actor['image'].strip()
 
@@ -318,8 +337,15 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
             # watched.text = 'false'
 
             if getattr(my_ep, 'rating', None):
-                rating = etree.SubElement(episode, 'rating')
-                rating.text = text_type(my_ep['rating'])
+                ratings = etree.SubElement(episode, 'ratings')
+                rating = etree.SubElement(ratings, 'rating')
+                rating.set('name', ep_obj.indexer_name)
+                rating.set('max', '10')
+                rating.set('default', 'true')
+                value = etree.SubElement(rating, 'value')
+                value.text = text_type(my_ep['rating'])
+                votes = etree.SubElement(rating, 'votes')
+                votes.text = ''
 
             if getattr(my_ep, 'writer', None) and isinstance(my_ep['writer'], string_types):
                 for writer in self._split_info(my_ep['writer']):
@@ -347,11 +373,11 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
                     else:
                         continue
 
-                    if 'role' in actor and actor['role'].strip():
+                    if 'role' in actor and actor['role'] and actor['role'].strip():
                         cur_actor_role = etree.SubElement(cur_actor, 'role')
                         cur_actor_role.text = actor['role'].strip()
 
-                    if 'image' in actor and actor['image'].strip():
+                    if 'image' in actor and actor['image'] and actor['image'].strip():
                         cur_actor_thumb = etree.SubElement(cur_actor, 'thumb')
                         cur_actor_thumb.text = actor['image'].strip()
 

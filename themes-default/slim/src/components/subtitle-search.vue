@@ -212,7 +212,7 @@ export default {
             this.displayQuestion = false;
             this.loading = true;
             this.loadingMessage = 'Searching for subtitles... ';
-            this.client.apiRoute('home/manualSearchSubtitles', { params: subtitleParams })
+            this.client.apiRoute('home/manualSearchSubtitles', { params: subtitleParams, timeout: 120000 })
                 .then(response => {
                     if (response.data.result === 'success') {
                         this.subtitles.push(...response.data.subtitles);
@@ -262,7 +262,7 @@ export default {
             this.loadingMessage = 'downloading subtitle... ';
             this.loading = true;
 
-            this.client.apiRoute('home/manualSearchSubtitles', { params })
+            this.client.apiRoute('home/manualSearchSubtitles', { params, timeout: 120000 })
                 .then(response => {
                     if (response.data.result === 'success') {
                         // Update the show, as we have new information (subtitles)

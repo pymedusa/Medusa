@@ -47,7 +47,7 @@ export const showlistTableMixin = {
                 field: 'indexer',
                 filterOptions: {
                     enabled: true,
-                    filterDropdownItems: ['tvdb', 'tvmaze', 'tmdb']
+                    filterDropdownItems: ['tvdb', 'tvmaze', 'tmdb', 'imdb']
                 },
                 hidden: getCookie('Indexer')
             }, {
@@ -113,7 +113,8 @@ export const showlistTableMixin = {
         }),
         ...mapGetters({
             fuzzyParseDateTime: 'fuzzyParseDateTime',
-            showsInLists: 'showsInLists'
+            showsInLists: 'showsInLists',
+            getShowIndexerUrl: 'getShowIndexerUrl'
         }),
         maxNextAirDate() {
             const { shows } = this;
@@ -122,17 +123,6 @@ export const showlistTableMixin = {
     },
     methods: {
         prettyBytes: bytes => pretty(bytes),
-        showIndexerUrl(show) {
-            const { indexerConfig } = this;
-            if (!show.indexer) {
-                return;
-            }
-
-            const id = show.id[show.indexer];
-            const indexerUrl = indexerConfig[show.indexer].showUrl;
-
-            return `${indexerUrl}${id}`;
-        },
         parsePrevDateFn(row) {
             const { fuzzyParseDateTime } = this;
             if (row.prevAirDate) {

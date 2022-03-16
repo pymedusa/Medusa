@@ -725,6 +725,7 @@
                                             <config-toggle-slider v-model="notifiers.discord.notifyOnSubtitleDownload" label="Notify on subtitle download" id="discord_notify_onsubtitledownload" :explanations="['send a message when subtitles are downloaded?']" @change="save()" />
                                             <config-textbox v-model="notifiers.discord.webhook" label="Channel webhook" id="discord_webhook" :explanations="['Add a webhook to a channel, use the returned url here']" @change="save()" />
                                             <config-toggle-slider v-model="notifiers.discord.tts" label="Text to speech" id="discord_tts" :explanations="['Use discord text to speech feature']" @change="save()" />
+                                            <config-toggle-slider v-model="notifiers.discord.overrideAvatar" label="Override webhook avatar" id="override_avatar" :explanations="['Override Discords default avatar with a Medusa icon']" @change="save()" />
                                             <config-textbox v-model="notifiers.discord.name" label="Bot username" id="discord_name" :explanations="['Create a username for the Discord Bot to use']" @change="save()" />
 
                                             <div class="testNotification" id="testDiscord-result">Click below to test your settings.</div>
@@ -843,6 +844,7 @@
                                                     <p>method in which to download episodes for new shows.</p>
                                                 </config-template>
 
+                                                <config-toggle-slider v-model="notifiers.trakt.syncToWatchlist" label="Sync medusa shows to your trakt watchlist" id="sync_to_watchlist" :explanations="['Additionallly to adding shows from your watchlist to medusa, add shows from medusa to your watchlist']" @change="save()" />
                                                 <config-toggle-slider v-model="notifiers.trakt.removeWatchlist" label="Remove episode" id="trakt_remove_watchlist" :explanations="['remove an episode from your watchlist after it\'s downloaded.']" @change="save()" />
                                                 <config-toggle-slider v-model="notifiers.trakt.removeSerieslist" label="Remove series" id="trakt_remove_serieslist" :explanations="['remove the whole series from your watchlist after any download.']" @change="save()" />
                                                 <config-toggle-slider v-model="notifiers.trakt.removeShowFromApplication" label="Remove watched show" id="trakt_remove_show_from_application" :explanations="['remove the show from Medusa if it\'s ended and completely watched']" @change="save()" />
@@ -1601,7 +1603,8 @@ export default {
             $('#testDiscord-result').html(MEDUSA.config.layout.loading);
             $.get('home/testDiscord', {
                 discord_webhook: notifiers.discord.webhook, // eslint-disable-line camelcase
-                discord_tts: notifiers.discord.tts // eslint-disable-line camelcase
+                discord_tts: notifiers.discord.tts, // eslint-disable-line camelcase
+                discord_override_avatar: notifiers.discord.overrideAvatar // eslint-disable-line camelcase
             }).done(data => {
                 $('#testDiscord-result').html(data);
                 $('#testDiscord').prop('disabled', false);

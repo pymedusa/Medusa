@@ -24,7 +24,7 @@
 
                                     <div v-show="search.general.downloadPropers">
                                         <config-template label="Check propers every" label-for="check_propers_interval">
-                                            <select id="check_propers_interval" name="check_propers_interval" v-model="search.general.checkPropersInterval" class="form-control input-sm">
+                                            <select id="check_propers_interval" name="check_propers_interval" v-model="search.general.checkPropersInterval" class="form-control input-sm max-input350">
                                                 <option v-for="option in checkPropersIntervalLabels" :value="option.value" :key="option.value">
                                                     {{option.text}}
                                                 </option>
@@ -137,7 +137,7 @@
 
                                     <div v-show="clients.nzb.enabled">
                                         <config-template label-for="nzb_method" label="Send .nzb files to">
-                                            <select v-model="clients.nzb.method" name="nzb_method" id="nzb_method" class="form-control input-sm">
+                                            <select v-model="clients.nzb.method" name="nzb_method" id="nzb_method" class="form-control input-sm max-input350">
                                                 <option v-for="(client, name) in clientsConfig.nzb" :value="name" :key="name">{{client.title}}</option>
                                             </select>
                                         </config-template>
@@ -187,7 +187,7 @@
                                             <config-textbox v-model="clients.nzb.nzbget.categoryAnimeBacklog" label="Use NZBget category for anime (backlog episodes)" id="nzbget_category_anime_backlog" :explanations="['send anime downloads of old episodes marked this category (e.g. anime)']" />
 
                                             <config-template label-for="nzbget_priority" label="NZBget priority">
-                                                <select name="nzbget_priority" id="nzbget_priority" v-model="clients.nzb.nzbget.priority" class="form-control input-sm">
+                                                <select name="nzbget_priority" id="nzbget_priority" v-model="clients.nzb.nzbget.priority" class="form-control input-sm max-input350">
                                                     <option v-for="option in nzbGetPriorityOptions" :value="option.value" :key="option.value">{{option.text}}</option>
                                                 </select>
                                                 <span>priority for daily snatches (no backlog)</span>
@@ -224,7 +224,7 @@
                                     <div v-show="clients.torrents.enabled">
 
                                         <config-template label-for="torrent_method" label="Send .torrent files to">
-                                            <select v-model="clients.torrents.method" name="torrent_method" id="torrent_method" class="form-control input-sm">
+                                            <select v-model="clients.torrents.method" name="torrent_method" id="torrent_method" class="form-control input-sm max-input350">
                                                 <option v-for="(client, name) in clientsConfig.torrent" :value="name" :key="name">{{client.title}}</option>
                                             </select>
                                         </config-template>
@@ -261,7 +261,7 @@
                                             </config-textbox>
 
                                             <config-template v-show="!authTypeIsDisabled" label-for="torrent_auth_type" label="Http Authentication">
-                                                <select v-model="clients.torrents.authType" name="torrent_auth_type" id="torrent_auth_type" class="form-control input-sm">
+                                                <select v-model="clients.torrents.authType" name="torrent_auth_type" id="torrent_auth_type" class="form-control input-sm max-input350">
                                                     <option v-for="(title, name) in httpAuthTypes" :value="name" :key="name">{{title}}</option>
                                                 </select>
                                             </config-template>

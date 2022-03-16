@@ -60,7 +60,7 @@
                                 <div class="col-lg-4">
                                     <div class="tvshowTitleIcons">
                                         <app-link v-if="episode.externals.imdb_id" :href="`http://www.imdb.com/title/${episode.externals.imdb_id}`" :title="`http://www.imdb.com/title/${episode.externals.imdb_id}`">
-                                            <img alt="[imdb]" height="16" width="16" src="images/imdb.png">
+                                            <img alt="[imdb]" height="16" width="16" src="images/imdb16.png">
                                         </app-link>
 
                                         <app-link :href="`${getIndexer(episode.indexer).showUrl}${episode.indexerId}`"
@@ -137,7 +137,7 @@
                         <div class="col-lg-4 col-sm-12">
                             <span class="tvshowTitleIcons">
                                 <app-link v-if="episode.externals.imdb_id" :href="`http://www.imdb.com/title/${episode.externals.imdb_id}`" :title="`http://www.imdb.com/title/${episode.externals.imdb_id}`">
-                                    <img alt="[imdb]" height="16" width="16" src="images/imdb.png">
+                                    <img alt="[imdb]" height="16" width="16" src="images/imdb16.png">
                                 </app-link>
 
                                 <app-link :href="`${getIndexer(episode.indexer).showUrl}${episode.indexerId}`"

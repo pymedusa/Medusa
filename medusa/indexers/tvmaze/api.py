@@ -1,4 +1,5 @@
 # coding=utf-8
+"""Tvmaze indexer api module."""
 
 from __future__ import unicode_literals
 
@@ -11,8 +12,9 @@ from medusa.indexers.exceptions import (
     IndexerError,
     IndexerException,
     IndexerShowNotFound,
-    IndexerUnavailable
+    IndexerUnavailable,
 )
+from medusa.indexers.imdb.api import ImdbIdentifier
 from medusa.logger.adapters.style import BraceAdapter
 
 from pytvmaze import TVMaze
@@ -33,6 +35,7 @@ class TVmaze(BaseIndexer):
     """
 
     def __init__(self, *args, **kwargs):  # pylint: disable=too-many-locals,too-many-arguments
+        """Tvmaze api constructor."""
         super(TVmaze, self).__init__(*args, **kwargs)
 
         # List of language from http://thetvmaze.com/api/0629B785CE550C8D/languages.xml
@@ -55,22 +58,32 @@ class TVmaze(BaseIndexer):
         self.config['artwork_prefix'] = '{base_url}{image_size}{file_path}'
 
         # An api to indexer series/episode object mapping
-        self.series_map = {
-            'id': 'id',
-            'maze_id': 'id',
-            'name': 'seriesname',
-            'summary': 'overview',
-            'premiered': 'firstaired',
-            'image': 'fanart',
-            'url': 'show_url',
-            'genres': 'genre',
-            'epnum': 'absolute_number',
-            'title': 'episodename',
-            'airdate': 'firstaired',
-            'screencap': 'filename',
-            'episode_number': 'episodenumber',
-            'season_number': 'seasonnumber',
-        }
+        self.series_map = [
+            ('id', 'id'),
+            ('id', 'maze_id'),
+            ('rating', 'rating.average'),
+            ('status', 'status'),
+            ('seriesname', 'name'),
+            ('overview', 'summary'),
+            ('firstaired', 'premiered'),
+            ('poster_thumb', 'image'),
+            ('show_url', 'url'),
+            ('genre', 'genres'),
+            ('absolute_number', 'epnum'),
+            ('episodename', 'title'),
+            ('firstaired', 'airdate'),
+            ('filename', 'screencap'),
+            ('episodenumber', 'episode_number'),
+            ('seasonnumber', 'season_number'),
+            ('airs_time', 'schedule.time'),
+            ('airs_dayofweek', 'schedule.days[0]'),
+            ('network', 'network.name'),
+            ('code', 'network.code'),
+            ('timezone', 'network.timezone'),
+            ('tvrage_id', 'externals.tvrage'),
+            ('tvdb_id', 'externals.thetvdb'),
+            ('imdb_id', 'externals.imdb'),
+        ]
 
     def _map_results(self, tvmaze_response, key_mappings=None, list_separator='|'):
         """
@@ -96,45 +109,20 @@ class TVmaze(BaseIndexer):
         for item in tvmaze_response:
             return_dict = {}
             try:
-                for key, value in viewitems(item.__dict__):
-                    if value is None or value == []:
+
+                for key, config in self.series_map:
+                    value = self.get_nested_value(item.__dict__, config)
+                    if not value:
                         continue
 
-                    # These keys have more complex dictionaries, let's map these manually
-                    if key in ['schedule', 'network', 'image', 'externals', 'rating']:
-                        if key == 'schedule':
-                            return_dict['airs_time'] = value.get('time') or '0:00AM'
-                            return_dict['airs_dayofweek'] = value.get('days')[0] if value.get('days') else None
-                        if key == 'network':
-                            return_dict['network'] = value.name
-                            return_dict['code'] = value.code
-                            return_dict['timezone'] = value.timezone
-                        if key == 'image':
-                            if value.get('medium'):
-                                return_dict['image_medium'] = value.get('medium')
-                                return_dict['image_original'] = value.get('original')
-                                return_dict['poster'] = value.get('medium')
-                        if key == 'externals':
-                            return_dict['tvrage_id'] = value.get('tvrage')
-                            return_dict['tvdb_id'] = value.get('thetvdb')
-                            return_dict['imdb_id'] = value.get('imdb')
-                        if key == 'rating':
-                            return_dict['rating'] = value.get('average') \
-                                if isinstance(value, dict) else value
-                    else:
-                        # Do some value sanitizing
-                        if isinstance(value, list):
-                            if all(isinstance(x, (string_types, integer_types)) for x in value):
-                                value = list_separator.join(text_type(v) for v in value)
+                    # Do some value sanitizing
+                    if isinstance(value, list):
+                        if all(isinstance(x, (string_types, integer_types)) for x in value):
+                            value = list_separator.join(text_type(v) for v in value)
 
-                        # Try to map the key
-                        if key in key_mappings:
-                            key = key_mappings[key]
+                    return_dict[key] = value
 
-                        # Set value to key
-                        return_dict[key] = text_type(value) if isinstance(value, (float, integer_types)) else value
-
-                # For episodes
+                # For special episodes
                 if hasattr(item, 'season_number') and getattr(item, 'episode_number') is None:
                     return_dict['episodenumber'] = text_type(index_special_episodes)
                     return_dict['seasonnumber'] = 0
@@ -233,7 +221,7 @@ class TVmaze(BaseIndexer):
         mapped_results = self._map_results(results, self.series_map)
         return OrderedDict({'series': mapped_results})
 
-    def _get_episodes(self, tvmaze_id, specials=False, aired_season=None):  # pylint: disable=unused-argument
+    def _get_episodes(self, tvmaze_id, specials=False, *args, **kwargs):  # pylint: disable=unused-argument
         """
         Get all the episodes for a show by tvmaze id.
 
@@ -300,36 +288,69 @@ class TVmaze(BaseIndexer):
         """Parse Show and Season posters.
 
         images are retrieved using t['show name]['_banners'], for example:
-
         >>> indexer_api = TVMaze(images = True)
         >>> indexer_api['scrubs']['_banners'].keys()
         ['fanart', 'poster', 'series', 'season']
         >>> t['scrubs']['_banners']['poster']['680x1000']['35308']['_bannerpath']
         u'http://thetvmaze.com/banners/posters/76156-2.jpg'
         >>>
-
         Any key starting with an underscore has been processed (not the raw
         data from the XML)
-
         This interface will be improved in future versions.
         """
         log.debug('Getting show banners for {0}', tvmaze_id)
 
         try:
-            image_medium = self.shows[tvmaze_id]['image_medium']
+            images = self.tvmaze_api.show_images(tvmaze_id)
+            # image_medium = self.shows[tvmaze_id]['image_medium']
         except Exception:
             log.debug('Could not parse Poster for showid: {0}', tvmaze_id)
             return False
 
         # Set the poster (using the original uploaded poster for now, as the medium formated is 210x195
-        _images = {u'poster': {u'1014x1500': {u'1': {u'rating': 1,
-                                                     u'language': u'en',
-                                                     u'ratingcount': 1,
-                                                     u'bannerpath': image_medium.split('/')[-1],
-                                                     u'bannertype': u'poster',
-                                                     u'bannertype2': u'210x195',
-                                                     u'_bannerpath': image_medium,
-                                                     u'id': u'1035106'}}}}
+        _images = {}
+        for image in images:
+            if image.type not in _images:
+                _images[image.type] = {}
+
+            if not image.resolutions:
+                continue
+
+            if image.type == 'poster' and not image.main:
+                continue
+
+            # For banner, poster and fanart use the origin size.
+            _images[image.type] = {
+                f"{image.resolutions['original']['width']}x{image.resolutions['original']['height']}": {
+                    image.id: {
+                        'rating': 1,
+                        'language': u'en',
+                        'ratingcount': 1,
+                        'bannerpath': image.resolutions['original']['url'].split('/')[-1],
+                        'bannertype': image.type,
+                        'bannertype2': f"{image.resolutions['original']['width']}x{image.resolutions['original']['height']}",
+                        '_bannerpath': image.resolutions['original']['url'],
+                        'id': image.id
+                    }
+                }
+            }
+
+            if image.type == 'poster':
+                # Save the main poster as a poster thumb.
+                _images['poster_thumb'] = {
+                    f"{image.resolutions['medium']['width']}x{image.resolutions['medium']['height']}": {
+                        image.id: {
+                            'rating': 1,
+                            'language': u'en',
+                            'ratingcount': 1,
+                            'bannerpath': image.resolutions['medium']['url'].split('/')[-1],
+                            'bannertype': 'poster_thumb',
+                            'bannertype2': f"{image.resolutions['medium']['width']}x{image.resolutions['medium']['height']}",
+                            '_bannerpath': image.resolutions['medium']['url'],
+                            'id': image.id
+                        }
+                    }
+                }
 
         season_images = self._parse_season_images(tvmaze_id)
         if season_images:
@@ -361,11 +382,9 @@ class TVmaze(BaseIndexer):
         return _images
 
     def _parse_actors(self, tvmaze_id):
-        """Parsers actors XML, from
-        http://thetvmaze.com/api/[APIKEY]/series/[SERIES ID]/actors.xml
+        """Parsers actors XML, from http://thetvmaze.com/api/[APIKEY]/series/[SERIES ID]/actors.xml.
 
         Actors are retrieved using t['show name]['_actors'], for example:
-
         >>> indexer_api = TVMaze(actors = True)
         >>> actors = indexer_api['scrubs']['_actors']
         >>> type(actors)
@@ -390,8 +409,8 @@ class TVmaze(BaseIndexer):
         except CastNotFound:
             log.debug('Actors result returned zero')
             return
-        except (AttributeError, BaseError) as e:
-            log.warning('Getting actors failed. Cause: {0}', e)
+        except (AttributeError, BaseError) as error:
+            log.warning('Getting actors failed. Cause: {0}', error)
             return
 
         cur_actors = Actors()
@@ -448,7 +467,7 @@ class TVmaze(BaseIndexer):
 
         # get episode data
         if self.config['episodes_enabled']:
-            self._get_episodes(tvmaze_id, specials=False, aired_season=None)
+            self._get_episodes(tvmaze_id, specials=False)
 
         # Parse banners
         if self.config['banners_enabled']:
@@ -467,10 +486,10 @@ class TVmaze(BaseIndexer):
             updates = self.tvmaze_api.show_updates()
         except (ShowIndexError, UpdateNotFound):
             return results
-        except (AttributeError, BaseError) as e:
+        except (AttributeError, BaseError) as error:
             # Tvmaze api depends on .status_code in.., but does not catch request exceptions.
             # Therefor the AttributeError.
-            log.warning('Getting show updates failed. Cause: {0}', e)
+            log.warning('Getting show updates failed. Cause: {0}', error)
             return results
 
         if getattr(updates, 'updates', None):
@@ -481,7 +500,7 @@ class TVmaze(BaseIndexer):
         return results
 
     # Public methods, usable separate from the default api's interface api['show_id']
-    def get_last_updated_series(self, from_time, weeks=1, filter_show_list=None):
+    def get_last_updated_series(self, from_time, weeks=1, filter_show_list=None, *args, **kwargs):
         """Retrieve a list with updated shows.
 
         :param from_time: epoch timestamp, with the start date/time
@@ -513,19 +532,24 @@ class TVmaze(BaseIndexer):
         for external_id in itervalues(mapping):
             if kwargs.get(external_id):
                 try:
-                    result = self.tvmaze_api.get_show(**{external_id: kwargs.get(external_id)})
+                    external_id_value = kwargs.get(external_id)
+                    if external_id == 'imdb_id':
+                        external_id_value = ImdbIdentifier(external_id_value).imdb_id
+                    result = self.tvmaze_api.get_show(**{external_id: external_id_value})
                     if result:
                         externals = {mapping[tvmaze_external_id]: external_value
                                      for tvmaze_external_id, external_value
                                      in viewitems(result.externals)
                                      if external_value and mapping.get(tvmaze_external_id)}
                         externals['tvmaze_id'] = result.maze_id
+                        if 'imdb_id' in externals:
+                            externals['imdb_id'] = ImdbIdentifier(externals['imdb_id']).series_id
                         return externals
                 except ShowNotFound:
                     log.debug('Could not get tvmaze externals using external key {0} and id {1}',
                               external_id, kwargs.get(external_id))
                     continue
-                except (AttributeError, BaseError) as e:
-                    log.warning('Could not get tvmaze externals. Cause: {0}', e)
+                except (AttributeError, BaseError) as error:
+                    log.warning('Could not get tvmaze externals. Cause: {0}', error)
                     continue
         return {}

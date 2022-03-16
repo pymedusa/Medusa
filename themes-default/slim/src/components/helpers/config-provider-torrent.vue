@@ -61,7 +61,7 @@
             </config-toggle-slider>
 
             <config-template v-if="'sorting' in editProvider.config" label-for="sorting" label="Sorting results by">
-                <select id="sorting" class="form-control input-sm" v-model="editProvider.config.sorting">
+                <select id="sorting" class="form-control input-sm max-input350" v-model="editProvider.config.sorting">
                     <option value="last">last</option>
                     <option value="seeders">seeders</option>
                     <option value="leechers">leechers</option>

@@ -6,6 +6,7 @@ import json
 import os
 import time
 
+
 from medusa import (
     app,
     config,
@@ -50,6 +51,7 @@ from medusa.tv.series import Series, SeriesIdentifier
 from medusa.updater.version_checker import CheckVersion
 
 from requests.compat import unquote_plus
+from requests.exceptions import RequestException
 
 from six import iteritems, text_type
 
@@ -153,8 +155,10 @@ class Home(WebRoot):
             return 'Error sending Telegram notification: {msg}'.format(msg=message)
 
     @staticmethod
-    def testDiscord(discord_webhook=None, discord_tts=False):
-        result, message = notifiers.discord_notifier.test_notify(discord_webhook, config.checkbox_to_value(discord_tts))
+    def testDiscord(discord_webhook=None, discord_tts=None, discord_override_avatar=None):
+        result, message = notifiers.discord_notifier.test_notify(
+            discord_webhook, config.checkbox_to_value(discord_tts), config.checkbox_to_value(discord_override_avatar)
+        )
         if result:
             return 'Discord notification succeeded. Check your Discord channels to make sure it worked'
         else:
@@ -349,7 +353,7 @@ class Home(WebRoot):
         logger.log('Start a new Oauth device authentication request. Request is valid for 60 minutes.', logger.INFO)
         try:
             app.TRAKT_DEVICE_CODE = trakt.get_device_code(app.TRAKT_API_KEY, app.TRAKT_API_SECRET)
-        except TraktException as error:
+        except (TraktException, RequestException) as error:
             logger.log('Unable to get trakt device code. Error: {error!r}'.format(error=error), logger.WARNING)
             return json.dumps({'result': False})
 
@@ -376,7 +380,7 @@ class Home(WebRoot):
             response = trakt.get_device_token(
                 app.TRAKT_DEVICE_CODE.get('device_code'), app.TRAKT_API_KEY, app.TRAKT_API_SECRET, store=True
             )
-        except TraktException as error:
+        except (TraktException, RequestException) as error:
             logger.log('Unable to get trakt device token. Error: {error!r}'.format(error=error), logger.WARNING)
             return json.dumps({'result': 'Trakt error while retrieving device token', 'error': True})
 
@@ -384,7 +388,7 @@ class Home(WebRoot):
             response_json = response.json()
             app.TRAKT_ACCESS_TOKEN, app.TRAKT_REFRESH_TOKEN = \
                 response_json.get('access_token'), response_json.get('refresh_token')
-            return json.dumps({'result': 'succesfully updated trakt access and refresh token', 'error': False})
+            return json.dumps({'result': 'successfully updated trakt access and refresh token', 'error': False})
         else:
             if response.status_code == 400:
                 return json.dumps({'result': 'device code has not been activated yet', 'error': True})
@@ -721,7 +725,7 @@ class Home(WebRoot):
     def refreshShow(self, showslug=None):
         # @TODO: Replace with status=refresh from PATCH /api/v2/show/{id}
         identifier = SeriesIdentifier.from_slug(showslug)
-        error, series_obj = Show.refresh(identifier.indexer.slug, identifier.id)
+        error, series_obj = Show.refresh(identifier.indexer.slug, identifier.id, force=True)
 
         # This is a show validation error
         if error is not None and series_obj is None:
@@ -908,16 +912,15 @@ class Home(WebRoot):
         })
 
     # Move to apiv2 (used by display-show.vue)
-    def setSceneNumbering(self, showslug=None, forSeason=None, forEpisode=None, forAbsolute=None, sceneSeason=None,
-                          sceneEpisode=None, sceneAbsolute=None):
-
+    def setSceneNumbering(self, showslug=None, for_season=None, for_episode=None, for_absolute=None,
+                          scene_season=None, scene_episode=None, scene_absolute=None):
         # sanitize:
-        forSeason = None if forSeason in ['null', ''] else forSeason
-        forEpisode = None if forEpisode in ['null', ''] else forEpisode
-        forAbsolute = None if forAbsolute in ['null', ''] else forAbsolute
-        sceneSeason = None if sceneSeason in ['null', ''] else sceneSeason
-        sceneEpisode = None if sceneEpisode in ['null', ''] else sceneEpisode
-        sceneAbsolute = None if sceneAbsolute in ['null', ''] else sceneAbsolute
+        for_season = None if for_season in ['null', ''] else for_season
+        for_episode = None if for_episode in ['null', ''] else for_episode
+        for_absolute = None if for_absolute in ['null', ''] else for_absolute
+        scene_season = None if scene_season in ['null', ''] else scene_season
+        scene_episode = None if scene_episode in ['null', ''] else scene_episode
+        scene_absolute = None if scene_absolute in ['null', ''] else scene_absolute
 
         identifier = SeriesIdentifier.from_slug(showslug)
         series_obj = Series.find_by_identifier(identifier)
@@ -929,7 +932,7 @@ class Home(WebRoot):
             })
 
         # Check if this is an anime, because we can't set the Scene numbering for anime shows
-        if series_obj.is_anime and forAbsolute is None:
+        if series_obj.is_anime and for_absolute is None:
             return json.dumps({
                 'success': False,
                 'errorMessage': "You can't use the Scene numbering for anime shows. "
@@ -937,7 +940,7 @@ class Home(WebRoot):
                 'sceneSeason': None,
                 'sceneAbsolute': None,
             })
-        elif not series_obj.is_anime and (forSeason is None or forEpisode is None):
+        elif not series_obj.is_anime and (for_season is None or for_episode is None):
             return json.dumps({
                 'success': False,
                 'errorMessage': "You can't use the Scene Absolute for non-anime shows. "
@@ -948,20 +951,20 @@ class Home(WebRoot):
         elif series_obj.is_anime:
             result = {
                 'success': True,
-                'forAbsolute': forAbsolute,
+                'forAbsolute': for_absolute,
             }
         else:
             result = {
                 'success': True,
-                'forSeason': forSeason,
-                'forEpisode': forEpisode,
+                'forSeason': for_season,
+                'forEpisode': for_episode,
             }
 
         # retrieve the episode object and fail if we can't get one
         if series_obj.is_anime:
-            ep_obj = series_obj.get_episode(absolute_number=forAbsolute)
+            ep_obj = series_obj.get_episode(absolute_number=for_absolute)
         else:
-            ep_obj = series_obj.get_episode(forSeason, forEpisode)
+            ep_obj = series_obj.get_episode(for_season, for_episode)
 
         if not ep_obj:
             result.update({
@@ -970,36 +973,36 @@ class Home(WebRoot):
             })
         elif series_obj.is_anime:
             logger.log(u'Set absolute scene numbering for {show} from {absolute} to {scene_absolute}'.format
-                       (show=series_obj.slug, absolute=forAbsolute, scene_absolute=sceneAbsolute), logger.DEBUG)
+                       (show=series_obj.slug, absolute=for_absolute, scene_absolute=scene_absolute), logger.DEBUG)
 
-            forAbsolute = int(forAbsolute)
-            if sceneAbsolute is not None:
-                sceneAbsolute = int(sceneAbsolute)
+            for_absolute = int(for_absolute)
+            if scene_absolute is not None:
+                scene_absolute = int(scene_absolute)
 
-            set_scene_numbering(series_obj, absolute_number=forAbsolute, scene_absolute=sceneAbsolute)
+            set_scene_numbering(series_obj, absolute_number=for_absolute, scene_absolute=scene_absolute)
         else:
             logger.log(u'setEpisodeSceneNumbering for {show} from {season}x{episode} to {scene_season}x{scene_episode}'.format
-                       (show=series_obj.indexerid, season=forSeason, episode=forEpisode,
-                        scene_season=sceneSeason, scene_episode=sceneEpisode), logger.DEBUG)
+                       (show=series_obj.indexerid, season=for_season, episode=for_episode,
+                        scene_season=scene_season, scene_episode=scene_episode), logger.DEBUG)
 
-            forSeason = int(forSeason)
-            forEpisode = int(forEpisode)
-            if sceneSeason is not None:
-                sceneSeason = int(sceneSeason)
-            if sceneEpisode is not None:
-                sceneEpisode = int(sceneEpisode)
+            for_season = int(for_season)
+            for_episode = int(for_episode)
+            if scene_season is not None:
+                scene_season = int(scene_season)
+            if scene_episode is not None:
+                scene_episode = int(scene_episode)
 
             set_scene_numbering(
-                series_obj, season=forSeason, episode=forEpisode,
-                scene_season=sceneSeason, scene_episode=sceneEpisode
+                series_obj, season=for_season, episode=for_episode,
+                scene_season=scene_season, scene_episode=scene_episode
             )
 
         if series_obj.is_anime:
-            sn = get_scene_absolute_numbering(series_obj, forAbsolute)
+            sn = get_scene_absolute_numbering(series_obj, for_absolute)
             result['sceneAbsolute'] = sn
         else:
-            sn = get_scene_numbering(series_obj, forEpisode, forSeason)
-            (result['sceneSeason'], result['sceneEpisode']) = sn
+            sn = get_scene_numbering(series_obj, for_season, for_episode)
+            result['sceneSeason'], result['sceneEpisode'] = sn
 
         return json.dumps(result)
 

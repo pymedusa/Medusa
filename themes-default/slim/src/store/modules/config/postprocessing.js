@@ -17,6 +17,9 @@ const state = {
     showDownloadDir: null,
     processAutomatically: null,
     processMethod: null,
+    specificProcessMethod: null,
+    processMethodTorrent: null,
+    processMethodNzb: null,
     deleteRarContent: null,
     unpack: null,
     noDelete: null,
@@ -42,6 +45,10 @@ const state = {
         minFrequency: null,
         torrentSeedRatio: null,
         torrentSeedAction: null
+    },
+    ffmpeg: {
+        checkStreams: null,
+        path: ''
     }
 };
 
