@@ -1008,15 +1008,6 @@ export default {
         sceneObjectToString(value) {
             return `${value.season}x${value.episode}`;
         }
-    },
-    watch: {
-        'show.id.slug': function(slug) { // eslint-disable-line object-shorthand
-            // Show's slug has changed, meaning the show's page has finished loading.
-            if (slug) {
-                // This is still technically jQuery. Meaning whe're still letting jQuery do its thing on the entire dom.
-                updateSearchIcons(slug, this);
-            }
-        }
     }
 };
 </script>

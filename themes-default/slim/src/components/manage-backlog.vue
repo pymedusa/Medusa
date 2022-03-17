@@ -237,7 +237,7 @@ export default {
         },
         async setStatus(show, episode) {
             try {
-                await api.patch(`series/${show.slug}/episodes`, {
+                await this.client.api.patch(`series/${show.slug}/episodes`, {
                     [episode.slug]: { status: 6 } // 6 = Archived
                 });
                 this.getBacklog();

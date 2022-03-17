@@ -4,13 +4,14 @@ import axios from 'axios';
 // Because of this, a page reload is required.
 
 export default function() {
+    this.webRoot = document.body.getAttribute('web-root');
     this.token = null;
     this.getToken = () => {
-        return axios.get('/token')
+        return axios.get(`${this.webRoot}/token`)
             .then(response => {
                 this.token = response.data;
                 this.apiRoute = axios.create({
-                    baseURL: '/',
+                    baseURL: `${this.webRoot}/`,
                     timeout: 60000,
                     headers: {
                         Accept: 'application/json',
@@ -19,7 +20,7 @@ export default function() {
                 });
 
                 this.api = axios.create({
-                    baseURL: '/api/v2/',
+                    baseURL: `${this.webRoot}/api/v2/`,
                     timeout: 30000,
                     headers: {
                         Accept: 'application/json',

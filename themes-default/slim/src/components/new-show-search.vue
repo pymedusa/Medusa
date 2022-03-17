@@ -143,7 +143,6 @@ import { mapGetters, mapState } from 'vuex';
 import { ToggleButton } from 'vue-js-toggle-button';
 import { AppLink, LanguageSelect } from './helpers';
 import ExistingShowDialog from './modals/existing-show-dialog.vue';
-import { api } from '../api';
 import axios from 'axios';
 
 export default {
@@ -217,7 +216,8 @@ export default {
         ...mapState({
             general: state => state.config.general,
             layout: state => state.config.layout,
-            indexers: state => state.config.indexers
+            indexers: state => state.config.indexers,
+            client: state => state.auth.client
         }),
         ...mapGetters(['indexerIdToName']),
         selectedShow() {
@@ -284,7 +284,11 @@ export default {
             this.selectedShowSlug = result.slug;
         },
         async searchIndexers() {
-            const { currentSearch, general, nameToSearch, indexerLanguage, indexerId, indexerIdToName, indexers } = this;
+            const {
+                client, currentSearch, general,
+                nameToSearch, indexerLanguage,
+                indexerId, indexerIdToName, indexers
+            } = this;
             const { indexerTimeout } = general;
 
             if (!nameToSearch) {
@@ -332,7 +336,7 @@ export default {
 
             let data = null;
             try {
-                const response = await api.get('internal/searchIndexersForShowName', config);
+                const response = await client.api.get('internal/searchIndexersForShowName', config);
                 data = response.data;
             } catch (error) {
                 if (axios.isCancel(error)) {
@@ -443,7 +447,7 @@ export default {
         async checkFolder() {
             // Check if selected show already has a folder in one of the root dirs.
             // We only check this for the addNewShow route.
-            const { indexerIdToName, selectedRootDir, selectedShow } = this;
+            const { client, indexerIdToName, selectedRootDir, selectedShow } = this;
 
             if (this.$route.name === 'addExistingShows' || !selectedShow || !selectedRootDir) {
                 return;
@@ -452,7 +456,7 @@ export default {
             const { showName } = selectedShow;
 
             try {
-                const response = await api.get('internal/checkForExistingFolder', { params: {
+                const response = await client.api.get('internal/checkForExistingFolder', { params: {
                     showdir: '', rootdir: selectedRootDir, title: showName
                 } });
                 const { data } = response;

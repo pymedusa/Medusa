@@ -50,7 +50,7 @@
         <%block name="css" />
     </head>
 
-<body>
+<body web-root="${app.WEB_ROOT}">
     <div id="vue-wrap" class="container-fluid">
         <div v-if="globalLoading" class="text-center">
             <h3>Loading&hellip;</h3>

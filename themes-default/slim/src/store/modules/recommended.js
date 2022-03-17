@@ -103,12 +103,12 @@ const actions = {
                 commit(SET_RECOMMENDED_SHOWS, { shows: response.data, source });
             });
     },
-    getRecommendedShowsOptions({ commit }) {
-        api.get('/recommended/trakt/removed', { timeout: 60000 })
+    getRecommendedShowsOptions({ rootState, commit }) {
+        rootState.auth.client.api.get('/recommended/trakt/removed', { timeout: 60000 })
             .then(response => {
                 commit(SET_RECOMMENDED_SHOWS_TRAKT_REMOVED, response.data);
             });
-        api.get('/recommended/categories', { timeout: 60000 })
+        rootState.auth.client.api.get('/recommended/categories', { timeout: 60000 })
             .then(response => {
                 commit(SET_RECOMMENDED_SHOWS_CATEGORIES, response.data);
             });

@@ -12,10 +12,7 @@ import { faTimesCircle } from '@fortawesome/free-regular-svg-icons';
 
 library.add([faAlignJustify, faImages, faTimesCircle]);
 
-import {
-    App,
-    LoadProgressBar
-} from './components';
+import { App } from './components';
 import store from './store';
 import { isDevelopment } from './utils/core';
 

@@ -9,8 +9,8 @@
                 <alerts />
                 <h1 v-if="$route.meta.header" class="header">{{ $route.meta.header }}</h1>
                 <keep-alive>
-	                <router-view :key="$route.meta.nocache ? `${$route.fullPath}#${Date.now()}` : $route.name" />
-        	    </keep-alive>
+                    <router-view :key="$route.meta.nocache ? `${$route.fullPath}#${Date.now()}` : $route.name" />
+                </keep-alive>
                 <app-footer />
                 <scroll-buttons />
             </div>

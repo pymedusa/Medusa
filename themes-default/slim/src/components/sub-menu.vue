@@ -65,6 +65,7 @@ export default {
             return menuItem.confirm || menuItem.method ? 'click' : null;
         },
         async runMethod(event, menuItem) {
+            const { client } = this;
             const options = {
                 confirmButton: 'Yes',
                 cancelButton: 'Cancel',
@@ -109,7 +110,7 @@ export default {
                                 this error with debug enabled before submitting</span>`;
             } else if (menuItem.method === 'updatekodi') {
                 try {
-                    await api.post('notifications/kodi/update');
+                    await client.api.post('notifications/kodi/update');
                     this.$snotify.success(
                         'Update kodi library',
                         'Success'

@@ -548,7 +548,7 @@ const actions = {
         const config = {
             recentShows: rootState.config.general.recentShows
         };
-        api.patch('config/main', config);
+        rootState.client.api.patch('config/main', config);
 
         // Update (namespaced) localStorage
         const namespace = rootState.config.system.webRoot ? `${rootState.config.system.webRoot}_` : '';
@@ -559,27 +559,23 @@ const actions = {
         const { commit } = context;
         return commit(ADD_SHOW_QUEUE_ITEM, queueItem);
     },
-    addSearchTemplate(context, { show, template }) {
-        const { commit } = context;
-
+    addSearchTemplate({ rootState, getters, commit }, { show, template }) {
         commit(ADD_SHOW_CONFIG_TEMPLATE, { show, template });
         const data = {
             config: {
-                searchTemplates: context.getters.getCurrentShow.config.searchTemplates
+                searchTemplates: getters.getCurrentShow.config.searchTemplates
             }
         };
-        return api.patch(`series/${show.indexer}${show.id[show.indexer]}`, data);
+        return rootState.auth.client.api.patch(`series/${show.indexer}${show.id[show.indexer]}`, data);
     },
-    removeSearchTemplate(context, { show, template }) {
-        const { commit } = context;
-
+    removeSearchTemplate({ rootState, getters, commit }, { show, template }) {
         commit(REMOVE_SHOW_CONFIG_TEMPLATE, { show, template });
         const data = {
             config: {
-                searchTemplates: context.getters.getCurrentShow.config.searchTemplates
+                searchTemplates: getters.getCurrentShow.config.searchTemplates
             }
         };
-        return api.patch(`series/${show.indexer}${show.id[show.indexer]}`, data);
+        return rootState.auth.client.api.patch(`series/${show.indexer}${show.id[show.indexer]}`, data);
     }
 
 };

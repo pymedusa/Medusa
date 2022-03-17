@@ -31,7 +31,6 @@
     </div>
 </template>
 <script>
-import { api } from '../api';
 import Vue from 'vue';
 import { mapState } from 'vuex';
 import { ChangeIndexerRow } from './manage';
@@ -66,7 +65,8 @@ export default {
     computed: {
         ...mapState({
             shows: state => state.shows.shows,
-            queueitems: state => state.shows.queueitems
+            queueitems: state => state.shows.queueitems,
+            client: state => state.auth.client
         }),
         checkedShows() {
             const { filteredShows } = this;
@@ -122,7 +122,7 @@ export default {
                 try {
                     this.started = true;
                     // eslint-disable-next-line no-await-in-loop
-                    const { data } = await api.post('changeindexer', {
+                    const { data } = await this.client.api.post('changeindexer', {
                         oldSlug, newSlug
                     });
                     Vue.set(allShows.find(s => s === show), 'changeStatus', {

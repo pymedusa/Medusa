@@ -93,6 +93,7 @@
 import { mapGetters, mapState } from 'vuex';
 import RootDirs from './root-dirs.vue';
 import { AddShowOptions } from '.';
+import NewShowSearch from './new-show-search.vue';
 import { VueTabs, VTab } from 'vue-nav-tabs/dist/vue-tabs.js';
 import { FormWizard, TabContent } from 'vue-form-wizard';
 
