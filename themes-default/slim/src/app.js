@@ -5,6 +5,7 @@ import router from './router';
 import store from './store';
 import { mapActions, mapMutations } from 'vuex';
 import { isDevelopment } from './utils/core';
+import { App } from './components';
 
 Vue.config.devtools = true;
 Vue.config.performance = true;
@@ -14,14 +15,15 @@ registerPlugins();
 // @TODO: Remove this before v1.0.0
 registerGlobalComponents();
 
-const app = new Vue({
+export default new Vue({
     name: 'index',
     router,
     store,
     data() {
         return {
             globalLoading: false,
-            pageComponent: false
+            pageComponent: false,
+            isAuthenticated: false
         };
     },
     async mounted() {
@@ -31,8 +33,8 @@ const app = new Vue({
             console.log('App Mounted!');
         }
 
-        // Create the api client object.
         await this.$store.dispatch('auth');
+        this.isAuthenticated = true;
 
         if (!window.location.pathname.includes('/login')) {
             const { $store } = this;
@@ -73,7 +75,11 @@ const app = new Vue({
             'setLoadingDisplay',
             'setLoadingFinished'
         ])
+    },
+    render(h) {
+        if (this.isAuthenticated) {
+            return h(App);
+        }
     }
-}).$mount('#vue-wrap');
+}).$mount('#app');
 
-export default app;

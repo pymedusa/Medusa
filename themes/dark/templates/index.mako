@@ -51,17 +51,18 @@
     </head>
 
 <body web-root="${app.WEB_ROOT}">
-    <div id="vue-wrap" class="container-fluid">
-        <div v-if="globalLoading" class="text-center">
+    <div id="app" class="container-fluid">
+        
+        <!-- <div v-if="globalLoading" class="text-center">
             <h3>Loading&hellip;</h3>
             If this is taking too long,<br>
             <i style="cursor: pointer;" @click="globalLoading = false;">click here</i> to show the page.
-        </div>
+        </div> -->
 
-        <div v-cloak :style="globalLoading ? { opacity: '0 !important' } : undefined">
-            <app></app>
-        </div><!-- /globalLoading wrapper -->
-
+        <!-- <div v-cloak :style="globalLoading ? { opacity: '0 !important' } : undefined">
+            <!-- <app></app> -->
+        </div><!-- /globalLoading wrapper
+        -->
     </div>
 
     ## These contain all the Webpack-imported modules
