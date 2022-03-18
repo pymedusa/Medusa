@@ -1,24 +1,33 @@
 <template>
-    <div v-if="isAuthenticated" id="app">
-        <load-progress-bar v-if="showsLoading" v-bind="{display: showsLoading.display, current: showsLoading.current, total: showsLoading.total}" />
-        <div id="content-row" class="row">
-            <div id="content-col" :class="layout.wide ? 'col-lg-12 col-md-12' : 'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1'">
-                <vue-snotify />
-                <app-header />
-                <sub-menu />
-                <alerts />
-                <h1 v-if="$route.meta.header" class="header">{{ $route.meta.header }}</h1>
-                <keep-alive>
-                    <router-view :key="$route.meta.nocache ? `${$route.fullPath}#${Date.now()}` : $route.name" />
-                </keep-alive>
-                <app-footer />
-                <scroll-buttons />
+    <div id="app">
+        <div v-if="isAuthenticated">
+            <div v-if="globalLoading" class="text-center">
+                <h3>Loading&hellip;</h3>
+                If this is taking too long,<br>
+                <i style="cursor: pointer;" @click="globalLoading = false;">click here</i> to show the page.
             </div>
-        </div><!-- /content -->
-    </div>
-    <div v-else>
-        <!-- Only render for /login -->
-        <router-view />
+
+            <load-progress-bar v-if="showsLoading" v-bind="{display: showsLoading.display, current: showsLoading.current, total: showsLoading.total}" />
+            <div id="content-row" class="row">
+                <div id="content-col" :class="layout.wide ? 'col-lg-12 col-md-12' : 'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1'">
+                    <vue-snotify />
+                    <app-header />
+                    <sub-menu />
+                    <alerts />
+                    <h1 v-if="$route.meta.header" class="header">{{ $route.meta.header }}</h1>
+                    <keep-alive>
+                        <router-view :key="$route.meta.nocache ? `${$route.fullPath}#${Date.now()}` : $route.name" />
+                    </keep-alive>
+                    <app-footer />
+                    <scroll-buttons />
+                </div>
+            </div><!-- /content -->
+        </div>
+        <div v-else>
+            <!-- Only render for /login -->
+            <span>Render me!!!</span>
+            <router-view />
+        </div>
     </div>
 </template>
 
@@ -40,6 +49,11 @@ export default {
         LoadProgressBar,
         ScrollButtons,
         SubMenu
+    },
+    data() {
+        return {
+            globalLoading: false
+        };
     },
     computed: {
         ...mapState({

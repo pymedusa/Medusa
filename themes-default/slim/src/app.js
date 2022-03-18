@@ -21,8 +21,6 @@ export default new Vue({
     store,
     data() {
         return {
-            globalLoading: false,
-            pageComponent: false,
             isAuthenticated: false
         };
     },
@@ -77,9 +75,9 @@ export default new Vue({
         ])
     },
     render(h) {
-        if (this.isAuthenticated) {
+        if (this.isAuthenticated || window.location.pathname.includes('/login')) {
             return h(App);
         }
     }
-}).$mount('#app');
+}).$mount('#app-wrapper');
 

@@ -51,19 +51,7 @@
     </head>
 
 <body web-root="${app.WEB_ROOT}">
-    <div id="app" class="container-fluid">
-        
-        <!-- <div v-if="globalLoading" class="text-center">
-            <h3>Loading&hellip;</h3>
-            If this is taking too long,<br>
-            <i style="cursor: pointer;" @click="globalLoading = false;">click here</i> to show the page.
-        </div> -->
-
-        <!-- <div v-cloak :style="globalLoading ? { opacity: '0 !important' } : undefined">
-            <!-- <app></app> -->
-        </div><!-- /globalLoading wrapper
-        -->
-    </div>
+    <div id="app-wrapper" class="container-fluid"></div>
 
     ## These contain all the Webpack-imported modules
     ## When adding/removing JS files, don't forget to update `apiBuilder.mako`
