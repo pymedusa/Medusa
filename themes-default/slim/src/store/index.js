@@ -95,7 +95,7 @@ const websocketUrl = (() => {
     const { protocol, host } = window.location;
     const proto = protocol === 'https:' ? 'wss:' : 'ws:';
     const WSMessageUrl = '/ui';
-    const webRoot = document.body.getAttribute('web-root');
+    const webRoot = document.body.getAttribute('web-root') ? `/${document.body.getAttribute('web-root')}` : '';
     return `${proto}//${host}${webRoot}/ws${WSMessageUrl}`;
 })();
 
