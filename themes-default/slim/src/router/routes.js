@@ -457,8 +457,10 @@ const newsRoute = {
     meta: {
         title: 'News',
         header: 'News',
-        topMenu: 'system'
-    }
+        topMenu: 'system',
+        converted: true
+    },
+    component: () => import('../components/news.vue')
 };
 
 /** @type {import('.').Route} */
@@ -468,8 +470,10 @@ const changesRoute = {
     meta: {
         title: 'Changelog',
         header: 'Changelog',
-        topMenu: 'system'
-    }
+        topMenu: 'system',
+        converted: true
+    },
+    component: () => import('../components/changelog.vue')
 };
 
 /** @type {import('.').Route} */
