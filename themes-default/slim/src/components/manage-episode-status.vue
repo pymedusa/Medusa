@@ -50,8 +50,6 @@
 
 <script>
 import { mapGetters, mapState } from 'vuex';
-import { api } from '../api';
-
 import { AppLink } from './helpers';
 
 export default {
@@ -70,7 +68,8 @@ export default {
     computed: {
         ...mapState({
             statuses: state => state.config.consts.statuses,
-            failedDownloads: state => state.config.search.general.failedDownloads
+            failedDownloads: state => state.config.search.general.failedDownloads,
+            client: state => state.auth.client
         }),
         ...mapGetters(['getOverviewStatus']),
         availableStatus() {
@@ -102,9 +101,10 @@ export default {
     },
     methods: {
         async getEpisodes() {
+            const { client } = this;
             this.manageStatus = this.selectedStatus;
             try {
-                const { data } = await api.get('internal/getEpisodeStatus', { params: { status: this.manageStatus } });
+                const { data } = await client.api.get('internal/getEpisodeStatus', { params: { status: this.manageStatus } });
                 this.data = data.episodeStatus;
                 this.newStatus = this.availableNewStatus[0].value;
             } catch (error) {
@@ -115,7 +115,7 @@ export default {
          * Change episode statusses.
          */
         async changeEpisodes() {
-            const { data, newStatus } = this;
+            const { client, data, newStatus } = this;
             // Create episode data structure.
             const shows = [];
             // eslint-disable-next-line guard-for-in
@@ -132,7 +132,7 @@ export default {
                 shows
             };
             try {
-                const { data } = await api.post('internal/updateEpisodeStatus', postData);
+                const { data } = await client.api.post('internal/updateEpisodeStatus', postData);
                 if (data.count > 0) {
                     this.$snotify.success(
                         `Changed status for ${data.count} episodes`,

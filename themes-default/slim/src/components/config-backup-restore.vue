@@ -54,7 +54,6 @@
 <script>
 import { FileBrowser, StateSwitch } from './helpers';
 import { VueTabs, VTab } from 'vue-nav-tabs/dist/vue-tabs.js';
-import { apiRoute } from '../api';
 
 export default {
     name: 'config-backup-restore',
@@ -93,7 +92,7 @@ export default {
             backup.status = 'loading';
 
             try {
-                const { data } = await apiRoute.get('config/backuprestore/backup', {
+                const { data } = await this.client.apiRoute.get('config/backuprestore/backup', {
                     params: { backupDir: backup.dir }, timeout: 120000
                 });
                 backup.status = data;
@@ -117,7 +116,7 @@ export default {
             restore.status = 'loading';
 
             try {
-                const { data } = await apiRoute.get('config/backuprestore/restore', {
+                const { data } = await this.client.apiRoute.get('config/backuprestore/restore', {
                     params: { backupFile: restore.file }, timeout: 120000
                 });
                 restore.status = data;

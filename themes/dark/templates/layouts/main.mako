@@ -1,6 +1,4 @@
 <%!
-    import json
-
     from medusa import app
 %>
 <!DOCTYPE html>
@@ -51,9 +49,8 @@
         <link rel="stylesheet" type="text/css" href="css/country-flags.css?${sbPID}"/>
         <%block name="css" />
     </head>
-    <% attributes = 'data-controller="' + controller + '" data-action="' + action + '" api-key="' + app.API_KEY + '"' %>
 
-<body ${('', attributes)[bool(loggedIn)]} web-root="${app.WEB_ROOT}">
+<body>
     <div id="vue-wrap" class="container-fluid">
         <load-progress-bar v-if="showsLoading" v-bind="{display: showsLoading.display, current: showsLoading.current, total: showsLoading.total}"></load-progress-bar>
 
@@ -64,76 +61,43 @@
         </div>
 
         <div v-cloak :style="globalLoading ? { opacity: '0 !important' } : undefined">
-            <app-header></app-header>
-            <sub-menu></sub-menu>
+            <%block name="content" />
+        </div><!-- /globalLoading wrapper -->
 
-            <%include file="/partials/alerts.mako"/>
+    </div>
 
-            <div id="content-row" class="row">
-                <component :is="pageComponent || 'div'" id="content-col" class="${'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1' if not app.LAYOUT_WIDE else 'col-lg-12 col-md-12'} col-sm-12 col-xs-12">
-                    <%block name="content" />
-                </component>
-            </div><!-- /content -->
+    ## These contain all the Webpack-imported modules
+    ## When adding/removing JS files, don't forget to update `apiBuilder.mako`
+    <script type="text/javascript" src="js/vendors.js?${sbPID}"></script>
+    <script type="text/javascript" src="js/vendors~date-fns.js?${sbPID}"></script>
+    <script type="text/javascript" src="js/medusa-runtime.js?${sbPID}"></script>
 
-            <app-footer v-if="$store.state.auth.isAuthenticated"></app-footer>
-            <scroll-buttons></scroll-buttons>
+    <script type="text/javascript" src="js/index.js?${sbPID}"></script>
 
-          </div><!-- /globalLoading wrapper -->
+    <script type="text/javascript" src="js/vender${('.min', '')[app.DEVELOPER]}.js?${sbPID}"></script>
+    <script type="text/javascript" src="js/lib/bootstrap-formhelpers.min.js?${sbPID}"></script>
+    <script type="text/javascript" src="js/lib/formwizard.js?${sbPID}"></script>
+    <script type="text/javascript" src="js/lib/lazyload.js?${sbPID}"></script>
 
-        </div>
-        <%block name="load_main_app" />
+    <script type="text/javascript" src="js/parsers.js?${sbPID}"></script>
 
-        ## These contain all the Webpack-imported modules
-        ## When adding/removing JS files, don't forget to update `apiBuilder.mako`
-        <script type="text/javascript" src="js/vendors.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/vendors~date-fns.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/medusa-runtime.js?${sbPID}"></script>
+    <script type="text/javascript" src="js/config/init.js?${sbPID}"></script>
 
-        <script type="text/javascript" src="js/index.js?${sbPID}"></script>
+    <script type="text/javascript" src="js/common/init.js?${sbPID}"></script>
 
-        <script type="text/javascript" src="js/vender${('.min', '')[app.DEVELOPER]}.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/lib/bootstrap-formhelpers.min.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/lib/formwizard.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/lib/lazyload.js?${sbPID}"></script>
+    <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
 
-        <script type="text/javascript" src="js/parsers.js?${sbPID}"></script>
+    <script type="text/javascript" src="js/notifications.js?${sbPID}"></script>
 
-        <script type="text/javascript" src="js/config/init.js?${sbPID}"></script>
-
-        <script type="text/javascript" src="js/common/init.js?${sbPID}"></script>
-
-        <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
-
-        <script type="text/javascript" src="js/notifications.js?${sbPID}"></script>
-
-        <!-- Moved to main, as I can't add it to display-show.vue, because vue templates don't allow script tags. -->
-        <!-- <script type="text/javascript" src="js/ajax-episode-search.js?${sbPID}"></script> -->
-        <!-- <script type="text/javascript" src="js/ajax-episode-subtitles.js?${sbPID}"></script> -->
-        <script>
-            // Used to get username to the app.js and header
-            % if app.WEB_USERNAME and app.WEB_PASSWORD and '/login' not in full_url:
-            window.username = ${json.dumps(app.WEB_USERNAME)};
-            % else:
-            window.username = '';
-            % endif
-
-            // [Temporary] Used by the QualityChooser component on some pages
-            % if show is not UNDEFINED:
-                window.qualityChooserInitialQuality = ${int(show.quality)};
-            % endif
-
-            if ('${bool(app.DEVELOPER)}' === 'True') {
-                Vue.config.devtools = true;
-                Vue.config.performance = true;
-            }
-        </script>
-        ## Include Vue components using x-templates here
-        <script>
-            // @TODO: Remove this before v1.0.0
-            if (!window.loadMainApp && window.globalVueShim) {
-                window.globalVueShim();
-            }
-        </script>
-        <%block name="scripts" />
-    </body>
+    <!-- Moved to main, as I can't add it to display-show.vue, because vue templates don't allow script tags. -->
+    <!-- <script type="text/javascript" src="js/ajax-episode-search.js?${sbPID}"></script> -->
+    <!-- <script type="text/javascript" src="js/ajax-episode-subtitles.js?${sbPID}"></script> -->
+    <script>
+        if ('${bool(app.DEVELOPER)}' === 'True') {
+            Vue.config.devtools = true;
+            Vue.config.performance = true;
+        }
+    </script>
+    <%block name="scripts" />
+</body>
 </html>

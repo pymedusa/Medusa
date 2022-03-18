@@ -84,7 +84,6 @@
 
 <script>
 import LazyLoad from 'vanilla-lazyload';
-import { api, apiRoute } from '../api.js';
 import { mapState, mapActions } from 'vuex';
 import AddShowOptions from './add-show-options.vue';
 import {
@@ -246,7 +245,8 @@ export default {
             recommendedLists: state => state.recommended.categories,
             queueitems: state => state.queue.queueitems,
             sourceToString: state => state.recommended.sourceToString,
-            page: state => state.recommended.page
+            page: state => state.recommended.page,
+            client: state => state.auth.client
         }),
         filteredShowsByList() {
             const { imgLazyLoad, recommendedShows, selectedSource, selectedList } = this;
@@ -362,7 +362,7 @@ export default {
             const { sourceToString, selectedSource } = this;
             const source = sourceToString[selectedSource];
             try {
-                await api.post(`recommended/${source}`);
+                await this.client.api.post(`recommended/${source}`);
                 this.$snotify.success(
                     'Started search for new recommended shows',
                     `Searching ${source}`
@@ -394,7 +394,7 @@ export default {
                     this.traktWarningMessage = 'You havent enabled trakt yet.';
                     return;
                 }
-                apiRoute('home/testTrakt')
+                this.client.apiRoute('home/testTrakt')
                     .then(result => {
                         if (result.data !== 'Test notice sent successfully to Trakt') {
                             // Ask user if he wants to setup trakt authentication.

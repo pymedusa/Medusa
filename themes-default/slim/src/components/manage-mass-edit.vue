@@ -129,7 +129,6 @@
 </template>
 
 <script>
-import { api } from '../api';
 import { mapActions, mapState } from 'vuex';
 import { AppLink, StateSwitch, QualityChooser } from './helpers';
 import ConfigTemplate from './helpers/config-template.vue';
@@ -190,7 +189,8 @@ export default {
     computed: {
         ...mapState({
             general: state => state.config.general,
-            layout: state => state.config.layout
+            layout: state => state.config.layout,
+            client: state => state.auth.client
         }),
         setRootDirs() {
             return [...new Set(this.shows.map(show => show.config.rootDir))];
@@ -207,10 +207,10 @@ export default {
     methods: {
         ...mapActions(['getShow']),
         async save() {
-            const { shows, config } = this;
+            const { client, shows, config } = this;
             try {
                 this.saving = true;
-                const { data } = await api.post('massedit', {
+                const { data } = await client.api.post('massedit', {
                     shows: shows.map(s => s.id.slug), options: config
                 }, { timeout: 20000 });
                 if (data && data.errors > 0) {

@@ -62,7 +62,6 @@
 </template>
 
 <script>
-import { api } from '../../api';
 import { mapGetters, mapState } from 'vuex';
 import { ADD_PROVIDER, REMOVE_PROVIDER } from '../../store/mutation-types';
 import {
@@ -95,7 +94,7 @@ export default {
             this.saving = true;
 
             try {
-                await api.patch(`providers/${provider.id}`, provider.config);
+                await this.client.api.patch(`providers/${provider.id}`, provider.config);
                 this.$snotify.success(
                     `Saved provider ${provider.name}`,
                     'Saved',
@@ -117,7 +116,7 @@ export default {
             }
 
             try {
-                const response = await api.post('providers/newznab/operation', {
+                const response = await this.client.api.post('providers/newznab/operation', {
                     type: 'GETCATEGORIES',
                     apikey: currentProvider.config.apikey,
                     name: currentProvider.name,
@@ -136,7 +135,7 @@ export default {
         async addProvider() {
             const { name, apikey, url } = this;
             try {
-                const response = await api.post('providers/newznab', { apikey, name, url });
+                const response = await this.client.api.post('providers/newznab', { apikey, name, url });
                 this.$store.commit(ADD_PROVIDER, response.data.result);
                 this.$snotify.success(
                     `Saved provider ${name}`,
@@ -156,7 +155,7 @@ export default {
         async removeProvider() {
             const { currentProvider } = this;
             try {
-                await api.delete(`providers/newznab/${currentProvider.id}`);
+                await this.client.api.delete(`providers/newznab/${currentProvider.id}`);
                 this.$store.commit(REMOVE_PROVIDER, currentProvider.id);
                 this.$snotify.success(
                     `Removed provider ${currentProvider.name}`,
@@ -185,7 +184,8 @@ export default {
     },
     computed: {
         ...mapState({
-            providers: state => state.provider.providers
+            providers: state => state.provider.providers,
+            client: state => state.auth.client
         }),
         ...mapGetters(['providerNameToId']),
         newznabProviderOptions() {

@@ -1,6 +1,4 @@
 import { ADD_CONFIG, ADD_REMOTE_BRANCHES, ADD_SHOW_QUEUE_ITEM } from '../../mutation-types';
-import { api, apiRoute } from '../../../api.js';
-
 /**
  * An object representing a scheduler.
  *
@@ -91,9 +89,8 @@ const getters = {
 };
 
 const actions = {
-    getGitRemoteBranches(context) {
-        const { commit } = context;
-        return apiRoute('home/branchForceUpdate')
+    getGitRemoteBranches({ rootState, commit }) {
+        return rootState.auth.client.apiRoute('home/branchForceUpdate')
             .then(response => {
                 if (response.data && response.data.branches.length > 0) {
                     commit(ADD_REMOTE_BRANCHES, response.data.branches);
@@ -101,18 +98,16 @@ const actions = {
                 }
             });
     },
-    getShowQueue(context) {
-        const { commit } = context;
-        return api.get('/config/system/showQueue').then(res => {
+    getShowQueue({ rootState, commit }) {
+        return rootState.auth.client.api.get('/config/system/showQueue').then(res => {
             const showQueue = res.data;
             const config = { showQueue };
             commit(ADD_CONFIG, { section: 'system', config });
             return showQueue;
         });
     },
-    updateQueueItemShow(context, queueItem) {
+    updateQueueItemShow({ commit }, queueItem) {
         // Update store's show queue item. (provided through websocket)
-        const { commit } = context;
         return commit(ADD_SHOW_QUEUE_ITEM, queueItem);
     }
 

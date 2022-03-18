@@ -1,5 +1,4 @@
 import Vue from 'vue';
-import { api } from '../../api';
 import {
     ADD_RECOMMENDED_SHOW,
     SET_RECOMMENDED_SHOWS,
@@ -93,23 +92,23 @@ const actions = {
      * @param {String} source - Identifier for the recommended shows list.
      * @returns {(undefined|Promise)} undefined if `shows` was provided or the API response if not.
      */
-    getRecommendedShows({ state, commit }, source) {
+    getRecommendedShows({ rootState, state, commit }, source) {
         if (state.page[source] === -1) {
             return;
         }
         const identifier = source ? state.sourceToString[source] : '';
         const { page } = state;
-        return api.get(`/recommended/${identifier}?page=${page[source]}&limit=${state.limit}`, { timeout: 90000 })
+        return rootState.auth.client.api.get(`/recommended/${identifier}?page=${page[source]}&limit=${state.limit}`, { timeout: 90000 })
             .then(response => {
                 commit(SET_RECOMMENDED_SHOWS, { shows: response.data, source });
             });
     },
-    getRecommendedShowsOptions({ commit }) {
-        api.get('/recommended/trakt/removed', { timeout: 60000 })
+    getRecommendedShowsOptions({ rootState, commit }) {
+        rootState.auth.client.api.get('/recommended/trakt/removed', { timeout: 60000 })
             .then(response => {
                 commit(SET_RECOMMENDED_SHOWS_TRAKT_REMOVED, response.data);
             });
-        api.get('/recommended/categories', { timeout: 60000 })
+        rootState.auth.client.api.get('/recommended/categories', { timeout: 60000 })
             .then(response => {
                 commit(SET_RECOMMENDED_SHOWS_CATEGORIES, response.data);
             });

@@ -1,6 +1,4 @@
 import Vue from 'vue';
-
-import { api } from '../../api';
 import { ADD_HISTORY, ADD_HISTORY_ROW, ADD_SHOW_HISTORY, ADD_SHOW_EPISODE_HISTORY } from '../mutation-types';
 import { episodeToSlug } from '../../utils/core';
 
@@ -130,10 +128,8 @@ const actions = {
      * @param {ShowIdentifier&ShowGetParameters} parameters Request parameters.
      * @returns {Promise} The API response.
      */
-    async getShowHistory(context, { slug }) {
-        const { commit } = context;
-
-        const response = await api.get(`/history/${slug}`);
+    async getShowHistory({ rootState, commit }, { slug }) {
+        const response = await rootState.auth.client.api.get(`/history/${slug}`);
         if (response.data.length > 0) {
             commit(ADD_SHOW_HISTORY, { showSlug: slug, history: response.data });
         }
@@ -144,8 +140,7 @@ const actions = {
      * @param {*} context - The store context.
      * @param {object} args - arguments.
      */
-    async getHistory(context, args) {
-        const { commit } = context;
+    async getHistory({ rootState, commit }, args) {
         let url = '/history';
         const page = args?.page || 1;
         const limit = args?.perPage || 1000;
@@ -181,7 +176,7 @@ const actions = {
         commit('setLoading', true);
         let response = null;
         try {
-            response = await api.get(url, { params }); // eslint-disable-line no-await-in-loop
+            response = await rootState.auth.client.api.get(url, { params }); // eslint-disable-line no-await-in-loop
             if (response) {
                 commit('setRemoteTotal', { total: Number(response.headers['x-pagination-count']), compact });
                 if (showSlug) {
@@ -205,11 +200,9 @@ const actions = {
      * @param {ShowIdentifier&ShowGetParameters} parameters Request parameters.
      * @returns {Promise} The API response.
      */
-    getShowEpisodeHistory(context, { showSlug, episodeSlug }) {
+    getShowEpisodeHistory({ rootState, commit }, { showSlug, episodeSlug }) {
         return new Promise(resolve => {
-            const { commit } = context;
-
-            api.get(`/history/${showSlug}/episode/${episodeSlug}`)
+            rootState.auth.client.api.get(`/history/${showSlug}/episode/${episodeSlug}`)
                 .then(response => {
                     if (response.data.length > 0) {
                         commit(ADD_SHOW_EPISODE_HISTORY, { showSlug, episodeSlug, history: response.data });

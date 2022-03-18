@@ -21,8 +21,7 @@
     </div>
 </template>
 <script>
-import { api, apiRoute } from '../api';
-import { mapActions, mapGetters } from 'vuex';
+import { mapState, mapActions, mapGetters } from 'vuex';
 import { AppLink, ShowSelector } from './helpers';
 
 export default {
@@ -32,6 +31,9 @@ export default {
         ShowSelector
     },
     computed: {
+        ...mapState({
+            client: state => state.auth.client
+        }),
         ...mapGetters({
             getCurrentShow: 'getCurrentShow'
         }),
@@ -63,6 +65,7 @@ export default {
             return menuItem.confirm || menuItem.method ? 'click' : null;
         },
         async runMethod(event, menuItem) {
+            const { client } = this;
             const options = {
                 confirmButton: 'Yes',
                 cancelButton: 'Cancel',
@@ -89,7 +92,7 @@ export default {
                     }
 
                     // Start removal of show in backend
-                    await apiRoute.get('home/deleteShow', { params });
+                    await client.apiRoute.get('home/deleteShow', { params });
 
                     // Navigate back to /home
                     $router.push({ name: 'home', query: undefined });
@@ -107,7 +110,7 @@ export default {
                                 this error with debug enabled before submitting</span>`;
             } else if (menuItem.method === 'updatekodi') {
                 try {
-                    await api.post('notifications/kodi/update');
+                    await client.api.post('notifications/kodi/update');
                     this.$snotify.success(
                         'Update kodi library',
                         'Success'

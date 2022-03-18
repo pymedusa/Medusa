@@ -136,7 +136,6 @@
 
 <script>
 import { mapGetters, mapState } from 'vuex';
-import { api } from '../api';
 import { AppLink, QualityPill, Search } from './helpers';
 
 export default {
@@ -168,7 +167,8 @@ export default {
     },
     computed: {
         ...mapState({
-            layout: state => state.config.layout
+            layout: state => state.config.layout,
+            client: state => state.auth.client
         }),
         ...mapGetters({
             getOverviewStatus: 'getOverviewStatus',
@@ -213,9 +213,9 @@ export default {
     },
     methods: {
         async getBacklog() {
-            const { period, status } = this;
+            const { client, period, status } = this;
             try {
-                const { data } = await api.get('internal/getEpisodeBacklog', { params: { period, status } });
+                const { data } = await client.api.get('internal/getEpisodeBacklog', { params: { period, status } });
                 this.backlog = data;
             } catch (error) {
                 this.$snotify.warning('error', 'Error trying to get episode backlog');
@@ -229,7 +229,7 @@ export default {
         },
         async forceBacklog(showSlug) {
             try {
-                const { data } = await api.put('search/backlog', { showSlug });
+                const { data } = await this.client.api.put('search/backlog', { showSlug });
                 this.$snotify.success('Searched', data);
             } catch (error) {
                 this.$snotify.warning('error', `Error trying to start a backlog search for ${showSlug}`);
@@ -237,7 +237,7 @@ export default {
         },
         async setStatus(show, episode) {
             try {
-                await api.patch(`series/${show.slug}/episodes`, {
+                await this.client.api.patch(`series/${show.slug}/episodes`, {
                     [episode.slug]: { status: 6 } // 6 = Archived
                 });
                 this.getBacklog();

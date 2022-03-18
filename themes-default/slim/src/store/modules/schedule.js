@@ -1,4 +1,3 @@
-import { api } from '../../api';
 import { ADD_SCHEDULE } from '../mutation-types';
 
 const state = {
@@ -247,12 +246,12 @@ const actions = {
      * @param {ShowIdentifier&ShowGetParameters} parameters Request parameters.
      * @returns {Promise} The API response.
      */
-    async getSchedule({ commit, state }) {
+    async getSchedule({ rootState, commit, state }) {
         const params = {
             category: state.categories,
             paused: true
         };
-        const response = await api.get('/schedule', { params });
+        const response = await rootState.auth.client.api.get('/schedule', { params });
         if (response.data) {
             commit(ADD_SCHEDULE, response.data);
         }

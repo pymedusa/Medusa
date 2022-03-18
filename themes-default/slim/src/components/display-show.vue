@@ -381,7 +381,7 @@ import { mapState, mapGetters, mapActions } from 'vuex';
 import { AppLink, PlotInfo, SceneNumberInput, SceneNumberAnimeInput } from './helpers';
 import { humanFileSize } from '../utils/core';
 import { manageCookieMixin } from '../mixins/manage-cookie';
-import { addQTip, updateSearchIcons } from '../utils/jquery';
+import { addQTip } from '../utils/jquery';
 import { VueGoodTable } from 'vue-good-table';
 import Backstretch from './backstretch.vue';
 import ShowHeader from './show-header.vue';
@@ -531,7 +531,8 @@ export default {
             subtitles: state => state.config.subtitles,
             configLoaded: state => state.config.layout.fanartBackground !== null,
             layout: state => state.config.layout,
-            stateSearch: state => state.config.search
+            stateSearch: state => state.config.search,
+            client: state => state.auth.client
         }),
         ...mapGetters({
             show: 'getCurrentShow',
@@ -796,7 +797,7 @@ export default {
                 });
             }
 
-            api.put(`search/${searchType}`, data) // eslint-disable-line no-undef
+            this.client.api.put(`search/${searchType}`, data) // eslint-disable-line no-undef
                 .then(_ => {
                     if (episodes.length === 1) {
                         console.info(`started search for show: ${show.id.slug} episode: ${episodes[0].slug}`);
@@ -1006,15 +1007,6 @@ export default {
     filters: {
         sceneObjectToString(value) {
             return `${value.season}x${value.episode}`;
-        }
-    },
-    watch: {
-        'show.id.slug': function(slug) { // eslint-disable-line object-shorthand
-            // Show's slug has changed, meaning the show's page has finished loading.
-            if (slug) {
-                // This is still technically jQuery. Meaning whe're still letting jQuery do its thing on the entire dom.
-                updateSearchIcons(slug, this);
-            }
         }
     }
 };

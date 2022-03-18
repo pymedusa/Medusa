@@ -15,7 +15,7 @@ exports[`Asset.test.js renders image with API v2 path for network 1`] = `
   style="display: inherit;"
 >
   <img
-    src="/api/v2/series/tvdb1000/asset/network?api_key=1234567890ABCDEF1234567890ABCDEF"
+    src="api/v2/series/tvdb1000/asset/network?api_key=1234567890ABCDEF1234567890ABCDEF"
   />
 </div>
 `;
@@ -27,8 +27,8 @@ exports[`Asset.test.js renders image with API v2 path for network with lazy load
   <img
     class="app-image show-image loaded"
     data-loaded="true"
-    data-src="/api/v2/series/tvdb1000/asset/posterThumb?api_key=1234567890ABCDEF1234567890ABCDEF"
-    src="/api/v2/series/tvdb1000/asset/posterThumb?api_key=1234567890ABCDEF1234567890ABCDEF"
+    data-src="api/v2/series/tvdb1000/asset/posterThumb?api_key=1234567890ABCDEF1234567890ABCDEF"
+    src="api/v2/series/tvdb1000/asset/posterThumb?api_key=1234567890ABCDEF1234567890ABCDEF"
   />
 </div>
 `;

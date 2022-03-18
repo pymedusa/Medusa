@@ -27,7 +27,6 @@
 </template>
 <script>
 import { mapState } from 'vuex';
-import { api, apiRoute } from '../api.js';
 import { StateSwitch } from './helpers';
 /**
  * An object representing a restart component.
@@ -53,7 +52,8 @@ export default {
         ...mapState({
             general: state => state.config.general,
             systemPid: state => state.config.system.pid,
-            layout: state => state.config.layout
+            layout: state => state.config.layout,
+            client: state => state.auth.client
         }),
         restartState() {
             const { status } = this;
@@ -80,7 +80,7 @@ export default {
 
             const checkIsAlive = setInterval(() => {
                 // @TODO: Move to API
-                apiRoute.get('home/is_alive/')
+                this.client.apiRoute.get('home/is_alive/')
                     .then(({ data }) => {
                         const { pid } = data;
                         if (!pid) {
@@ -103,13 +103,13 @@ export default {
             }, 1000);
 
             this.startRestart = true;
-            api.post('system/operation', { type: 'RESTART', pid: systemPid });
+            this.client.api.post('system/operation', { type: 'RESTART', pid: systemPid });
         },
         shutdownMedusa() {
             const { systemPid } = this;
 
             this.startShutdown = true;
-            api.post('system/operation', { type: 'SHUTDOWN', pid: systemPid });
+            this.client.api.post('system/operation', { type: 'SHUTDOWN', pid: systemPid });
         }
     }
 };

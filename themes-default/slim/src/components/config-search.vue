@@ -371,7 +371,6 @@
 </template>
 
 <script>
-import { apiRoute } from '../api.js';
 import { mapActions, mapState } from 'vuex';
 import {
     AppLink,
@@ -581,7 +580,7 @@ export default {
                 username,
                 password
             };
-            const resp = await apiRoute.get('home/testTorrent', { params });
+            const resp = await this.client.apiRoute.get('home/testTorrent', { params });
 
             this.clientsConfig.torrent[method].testStatus = resp.data;
         },
@@ -599,7 +598,7 @@ export default {
                 password,
                 use_https: useHttps // eslint-disable-line camelcase
             };
-            const resp = await apiRoute.get('home/testNZBget', { params });
+            const resp = await this.client.apiRoute.get('home/testNZBget', { params });
 
             this.clientsConfig.nzb.nzbget.testStatus = resp.data;
         },
@@ -617,7 +616,7 @@ export default {
                 password,
                 apikey: apiKey
             };
-            const resp = await apiRoute.get('home/testSABnzbd', { params });
+            const resp = await this.client.apiRoute.get('home/testSABnzbd', { params });
 
             this.clientsConfig.nzb.sabnzbd.testStatus = resp.data;
         },

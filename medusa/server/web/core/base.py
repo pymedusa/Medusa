@@ -137,7 +137,7 @@ class BaseHandler(RequestHandler):
                 url = url[len(app.WEB_ROOT) + 1:]
 
             if url[:3] != 'api':
-                t = PageTemplate(rh=self, filename='404.mako')
+                t = PageTemplate(rh=self, filename='index.mako')
                 return self.finish(t.render())
             else:
                 self.finish('Wrong API key used')

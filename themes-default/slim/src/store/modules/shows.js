@@ -1,5 +1,4 @@
 import Vue from 'vue';
-import { api } from '../../api';
 import {
     ADD_SHOW,
     ADD_SHOW_QUEUE_ITEM,
@@ -369,9 +368,8 @@ const actions = {
      * @param {ShowIdentifier&ShowGetParameters} parameters Request parameters.
      * @returns {Promise} The API response.
      */
-    getShow(context, { showSlug, detailed, episodes }) {
+    getShow({ rootState, commit }, { showSlug, detailed, episodes }) {
         return new Promise((resolve, reject) => {
-            const { commit } = context;
             const params = {};
             let timeout = 30000;
 
@@ -386,7 +384,7 @@ const actions = {
                 timeout = 60000;
             }
 
-            api.get(`/series/${showSlug}`, { params, timeout })
+            rootState.auth.client.api.get(`/series/${showSlug}`, { params, timeout })
                 .then(res => {
                     commit(ADD_SHOW, res.data);
                     resolve(res.data);
@@ -403,7 +401,7 @@ const actions = {
      * @param {ShowParameteres} parameters - Request parameters.
      * @returns {Promise} The API response.
      */
-    getEpisodes({ commit, getters }, { showSlug, season }) {
+    getEpisodes({ rootState, commit, getters }, { showSlug, season }) {
         return new Promise((resolve, reject) => {
             const { getShowById } = getters;
             const show = getShowById(showSlug);
@@ -418,7 +416,7 @@ const actions = {
             }
 
             // Get episodes
-            api.get(`/series/${showSlug}/episodes`, { params })
+            rootState.auth.client.api.get(`/series/${showSlug}/episodes`, { params })
                 .then(response => {
                     commit(ADD_SHOW_EPISODE, { show, episodes: response.data });
                     resolve();
@@ -462,7 +460,7 @@ const actions = {
             const newShows = [];
 
             // Get first page
-            pageRequests.push(api.get('/series', { params })
+            pageRequests.push(rootState.auth.client.api.get('/series', { params })
                 .then(response => {
                     commit('setLoadingTotal', Number(response.headers['x-pagination-count']));
                     const totalPages = Number(response.headers['x-pagination-total']);
@@ -476,7 +474,7 @@ const actions = {
                         pageRequests.push(new Promise((resolve, reject) => {
                             const newPage = { page };
                             newPage.limit = params.limit;
-                            return api.get('/series', { params: newPage })
+                            return rootState.auth.client.api.get('/series', { params: newPage })
                                 .then(response => {
                                     newShows.push(...response.data);
                                     commit('updateLoadingCurrent', response.data.length);
@@ -510,9 +508,9 @@ const actions = {
             );
         });
     },
-    setShow(_, { showSlug, data }) {
+    setShow({ rootState }, { showSlug, data }) {
         // Update show, updated show will arrive over a WebSocket message
-        return api.patch(`series/${showSlug}`, data);
+        return rootState.auth.client.api.patch(`series/${showSlug}`, data);
     },
     updateShow(context, show) {
         // Update local store
@@ -550,7 +548,7 @@ const actions = {
         const config = {
             recentShows: rootState.config.general.recentShows
         };
-        api.patch('config/main', config);
+        rootState.client.api.patch('config/main', config);
 
         // Update (namespaced) localStorage
         const namespace = rootState.config.system.webRoot ? `${rootState.config.system.webRoot}_` : '';
@@ -561,27 +559,23 @@ const actions = {
         const { commit } = context;
         return commit(ADD_SHOW_QUEUE_ITEM, queueItem);
     },
-    addSearchTemplate(context, { show, template }) {
-        const { commit } = context;
-
+    addSearchTemplate({ rootState, getters, commit }, { show, template }) {
         commit(ADD_SHOW_CONFIG_TEMPLATE, { show, template });
         const data = {
             config: {
-                searchTemplates: context.getters.getCurrentShow.config.searchTemplates
+                searchTemplates: getters.getCurrentShow.config.searchTemplates
             }
         };
-        return api.patch(`series/${show.indexer}${show.id[show.indexer]}`, data);
+        return rootState.auth.client.api.patch(`series/${show.indexer}${show.id[show.indexer]}`, data);
     },
-    removeSearchTemplate(context, { show, template }) {
-        const { commit } = context;
-
+    removeSearchTemplate({ rootState, getters, commit }, { show, template }) {
         commit(REMOVE_SHOW_CONFIG_TEMPLATE, { show, template });
         const data = {
             config: {
-                searchTemplates: context.getters.getCurrentShow.config.searchTemplates
+                searchTemplates: getters.getCurrentShow.config.searchTemplates
             }
         };
-        return api.patch(`series/${show.indexer}${show.id[show.indexer]}`, data);
+        return rootState.auth.client.api.patch(`series/${show.indexer}${show.id[show.indexer]}`, data);
     }
 
 };

@@ -3,7 +3,7 @@ import Vue from 'vue';
 import { registerGlobalComponents, registerPlugins } from './global-vue-shim';
 import router from './router';
 import store from './store';
-import { mapActions, mapMutations, mapState } from 'vuex';
+import { mapActions, mapMutations } from 'vuex';
 import { isDevelopment } from './utils/core';
 
 Vue.config.devtools = true;
@@ -15,7 +15,7 @@ registerPlugins();
 registerGlobalComponents();
 
 const app = new Vue({
-    name: 'app',
+    name: 'index',
     router,
     store,
     data() {
@@ -24,25 +24,24 @@ const app = new Vue({
             pageComponent: false
         };
     },
-    computed: {
-        ...mapState({
-            showsLoading: state => state.shows.loading
-        })
-    },
-    mounted() {
+    async mounted() {
         const { getShows, setLoadingDisplay, setLoadingFinished } = this;
 
         if (isDevelopment) {
             console.log('App Mounted!');
         }
 
+        // Create the api client object.
+        await this.$store.dispatch('auth');
+
         if (!window.location.pathname.includes('/login')) {
             const { $store } = this;
+            await $store.dispatch('login');
+
             Promise.all([
-                $store.dispatch('login', { username: window.username }),
                 $store.dispatch('getConfig'),
                 $store.dispatch('getStats')
-            ]).then(([_, config]) => {
+            ]).then(([config]) => {
                 if (isDevelopment) {
                     console.log('App Loaded!');
                 }

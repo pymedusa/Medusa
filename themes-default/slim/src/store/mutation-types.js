@@ -1,3 +1,4 @@
+const AUTHENTICATE = '🔒 Authenticating';
 const LOGIN_PENDING = '🔒 Logging in';
 const LOGIN_SUCCESS = '🔒 ✅ Login Successful';
 const LOGIN_FAILED = '🔒 ❌ Login Failed';
@@ -46,6 +47,7 @@ const UPDATE_SHOWLIST_DEFAULT = '⚙️ Anime config showlist default updated';
 const ADD_SCHEDULE = '📅 Schedule information added';
 
 export {
+    AUTHENTICATE,
     LOGIN_PENDING,
     LOGIN_SUCCESS,
     LOGIN_FAILED,

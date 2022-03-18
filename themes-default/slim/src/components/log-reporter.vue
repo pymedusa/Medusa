@@ -25,7 +25,6 @@
 </template>
 
 <script>
-import { api } from '../api';
 import { mapState } from 'vuex';
 
 export default {
@@ -52,7 +51,8 @@ export default {
     },
     computed: {
         ...mapState({
-            loggingLevels: state => state.config.general.logs.loggingLevels
+            loggingLevels: state => state.config.general.logs.loggingLevels,
+            client: state => state.auth.client
         }),
         header() {
             const { logLevel, loggingLevels } = this;
@@ -67,7 +67,7 @@ export default {
     },
     methods: {
         async fetchLogs() {
-            const { logLevel, loggingLevels } = this;
+            const { client, logLevel, loggingLevels } = this;
             if (Object.keys(this.loggingLevels).length === 0) {
                 return;
             }
@@ -77,7 +77,7 @@ export default {
             ).toUpperCase();
 
             try {
-                const { data } = await api.get('log/reporter', { params: { level: logLevelString } });
+                const { data } = await client.api.get('log/reporter', { params: { level: logLevelString } });
                 this.logs = data;
                 return true;
             } catch (error) {

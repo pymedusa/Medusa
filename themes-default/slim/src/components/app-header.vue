@@ -103,7 +103,6 @@
     </nav>
 </template>
 <script>
-import { api } from '../api';
 import { mapState } from 'vuex';
 import { AppLink } from './helpers';
 
@@ -123,7 +122,8 @@ export default {
             system: state => state.config.system,
             isAuthenticated: state => state.auth.isAuthenticated,
             username: state => state.auth.user.username,
-            warningLevel: state => state.config.general.logs.loggingLevels.warning
+            warningLevel: state => state.config.general.logs.loggingLevels.warning,
+            client: state => state.auth.client
         }),
         /**
          * Moved into a computed, so it's easier to mock in Jest.
@@ -262,12 +262,12 @@ export default {
             $.confirm(options, event);
         },
         async checkForupdates(event) {
-            const { confirmDialog } = this;
+            const { client, confirmDialog } = this;
             try {
                 this.$snotify.info(
                     'Checking for a new version...'
                 );
-                await api.post('system/operation', { type: 'CHECKFORUPDATE' });
+                await client.api.post('system/operation', { type: 'CHECKFORUPDATE' });
                 confirmDialog(event, 'newversion');
             } catch (error) {
                 this.$snotify.info(
@@ -276,8 +276,9 @@ export default {
             }
         },
         async updateKodi() {
+            const { client } = this;
             try {
-                await api.post('notifications/kodi/update');
+                await client.api.post('notifications/kodi/update');
             } catch (error) {
                 this.$snotify.info(
                     'Error trying to update kodi'
@@ -285,8 +286,9 @@ export default {
             }
         },
         async updateEmby() {
+            const { client } = this;
             try {
-                await api.post('notifications/emby/update');
+                await client.api.post('notifications/emby/update');
             } catch (error) {
                 this.$snotify.info(
                     'Error trying to update emby'
@@ -294,8 +296,9 @@ export default {
             }
         },
         async updatePlex() {
+            const { client } = this;
             try {
-                await api.post('notifications/plex/update');
+                await client.api.post('notifications/plex/update');
             } catch (error) {
                 this.$snotify.info(
                     'Error trying to update plex'

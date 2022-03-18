@@ -54,7 +54,7 @@
 </template>
 
 <script>
-import { api } from '../api';
+import { mapState } from 'vuex';
 import { VueGoodTable } from 'vue-good-table';
 import { VTooltip } from 'v-tooltip';
 import { humanFileSize } from '../utils/core';
@@ -89,25 +89,30 @@ export default {
     mounted() {
         this.getFailed();
     },
+    computed: {
+        ...mapState({
+            client: state => state.auth.client
+        })
+    },
     methods: {
         humanFileSize,
         async getFailed() {
-            const { limit } = this;
+            const { client, limit } = this;
             try {
-                const { data } = await api.get('internal/getFailed', { params: { limit } });
+                const { data } = await client.api.get('internal/getFailed', { params: { limit } });
                 this.data = data;
             } catch (error) {
                 this.$snotify.warning('error', 'Could not get failed logs');
             }
         },
         async remove() {
-            const { selected } = this;
+            const { client, selected } = this;
             if (selected.length === 0) {
                 return;
             }
 
             try {
-                await api.post('internal/removeFailed', {
+                await client.api.post('internal/removeFailed', {
                     remove: selected.map(row => row.id)
                 });
                 this.$snotify.success('removed', `Removed ${selected.length} failed rows`);

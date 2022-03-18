@@ -30,7 +30,6 @@
 </template>
 <script>
 import { mapState } from 'vuex';
-import { api } from '../api.js';
 import { StateSwitch } from './helpers';
 /**
  * An object representing a restart component.
@@ -56,7 +55,8 @@ export default {
         ...mapState({
             general: state => state.config.general,
             layout: state => state.config.layout,
-            system: state => state.config.system
+            system: state => state.config.system,
+            client: state => state.auth.client
         })
     },
     methods: {
@@ -67,7 +67,7 @@ export default {
             this.startUpdate = true;
 
             try {
-                await api.post('system/operation', { type: 'NEED_UPDATE' });
+                await this.client.api.post('system/operation', { type: 'NEED_UPDATE' });
                 this.needUpdateStatus = 'yes';
             } catch (error) {
                 this.needUpdateStatus = 'no';
@@ -75,7 +75,7 @@ export default {
 
             if (this.needUpdateStatus === 'yes') {
                 try {
-                    await api.post('system/operation', { type: 'BACKUP' }, { timeout: 1200000 });
+                    await this.client.api.post('system/operation', { type: 'BACKUP' }, { timeout: 1200000 });
                     this.backupStatus = 'yes';
                 } catch (error) {
                     this.backupStatus = 'no';
@@ -84,7 +84,7 @@ export default {
 
             if (this.backupStatus === 'yes') {
                 try {
-                    await api.post('system/operation', { type: 'UPDATE' });
+                    await this.client.api.post('system/operation', { type: 'UPDATE' });
                     this.updateStatus = 'yes';
                 } catch (error) {
                     this.updateStatus = 'no';

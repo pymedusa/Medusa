@@ -265,7 +265,7 @@ exports[`Logs.test.js renders 1`] = `
       class="notepad"
     >
       <app-link-stub
-        href="/api/v2/log?level=INFO&thread=&period=one_day&query=&limit=1000&api_key=1234567890ABCDEF1234567890ABCDEF&raw=true"
+        href="api/v2/log?level=INFO&thread=&period=one_day&query=&limit=1000&api_key=undefined&raw=true"
         placeholder="indexer-to-name"
       >
         <img

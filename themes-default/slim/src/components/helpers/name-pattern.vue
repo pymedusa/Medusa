@@ -295,7 +295,7 @@
 <script>
 import formatDate from 'date-fns/format';
 import { ToggleButton } from 'vue-js-toggle-button';
-import { apiRoute } from '../../api';
+import { mapState } from 'vuex';
 
 export default {
     name: 'name-pattern',
@@ -391,7 +391,8 @@ export default {
             }
 
             try {
-                return apiRoute.get('config/postProcessing/testNaming', { params, timeout: 20000 }).then(res => res.data);
+                return this.client.apiRoute.get('config/postProcessing/testNaming', { params, timeout: 20000 })
+                    .then(res => res.data);
             } catch (error) {
                 console.warn(error);
                 return '';
@@ -464,7 +465,7 @@ export default {
             const { $el } = this;
             const el = $($el);
 
-            apiRoute.get('config/postProcessing/isNamingValid', { params, timeout: 20000 }).then(result => {
+            this.client.apiRoute.get('config/postProcessing/isNamingValid', { params, timeout: 20000 }).then(result => {
                 if (result.data === 'invalid') {
                     el.find('#naming_pattern').qtip('option', {
                         'content.text': 'This pattern is invalid.',
@@ -505,6 +506,9 @@ export default {
         }
     },
     computed: {
+        ...mapState({
+            client: state => state.auth.client
+        }),
         isCustom() {
             if (this.pattern) {
                 return !this.presetsPatterns.includes(this.pattern) || this.pattern === 'Custom...';

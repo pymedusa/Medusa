@@ -21,8 +21,6 @@
     </div>
 </template>
 <script>
-import { apiRoute } from '../../api';
-
 export default {
     name: 'file-browser',
     props: {
@@ -166,7 +164,7 @@ export default {
                 path,
                 includeFiles: Number(includeFiles)
             };
-            apiRoute.get(url, { params }).then(response => {
+            this.client.apiRoute.get(url, { params }).then(response => {
                 const { data } = response;
 
                 this.currentPath = data.shift().currentPath;

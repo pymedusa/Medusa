@@ -1,4 +1,3 @@
-import { api } from '../../api';
 import { ADD_STATS, SET_STATS, SET_MAX_DOWNLOAD_COUNT } from '../mutation-types';
 
 const state = {
@@ -35,9 +34,8 @@ const mutations = {
 const getters = {};
 
 const actions = {
-    getStats(context, type) {
-        const { commit } = context;
-        return api.get(`/stats/${(type || '')}`).then(res => {
+    getStats({ rootState, commit }, type) {
+        return rootState.auth.client.api.get(`/stats/${(type || '')}`).then(res => {
             commit(ADD_STATS, {
                 type: (type || 'overall'),
                 stats: res.data
