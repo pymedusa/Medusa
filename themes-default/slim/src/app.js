@@ -5,6 +5,7 @@ import router from './router';
 import store from './store';
 import { mapActions, mapMutations } from 'vuex';
 import { isDevelopment } from './utils/core';
+import { App } from './components';
 
 Vue.config.devtools = true;
 Vue.config.performance = true;
@@ -14,14 +15,13 @@ registerPlugins();
 // @TODO: Remove this before v1.0.0
 registerGlobalComponents();
 
-const app = new Vue({
+export default new Vue({
     name: 'index',
     router,
     store,
     data() {
         return {
-            globalLoading: false,
-            pageComponent: false
+            isAuthenticated: false
         };
     },
     async mounted() {
@@ -31,12 +31,12 @@ const app = new Vue({
             console.log('App Mounted!');
         }
 
-        // Create the api client object.
         await this.$store.dispatch('auth');
 
         if (!window.location.pathname.includes('/login')) {
             const { $store } = this;
             await $store.dispatch('login');
+            this.isAuthenticated = true;
 
             Promise.all([
                 $store.dispatch('getConfig'),
@@ -73,7 +73,12 @@ const app = new Vue({
             'setLoadingDisplay',
             'setLoadingFinished'
         ])
+    },
+    render(h) { // eslint-disable-line vue/require-render-return
+        // Do not start with rendering the app, before we're sure we authenticated.
+        if (this.isAuthenticated || window.location.pathname.includes('/login')) {
+            return h(App);
+        }
     }
-}).$mount('#vue-wrap');
+}).$mount('#app-wrapper');
 
-export default app;

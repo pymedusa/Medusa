@@ -67,7 +67,6 @@ export default () => {
             // These are only needed for the root Vue
             if (this.$root === this) {
                 return {
-                    globalLoading: true,
                     pageComponent: false,
                     showsLoading: false
                 };
@@ -93,10 +92,6 @@ export default () => {
                     alert('Unable to connect to Medusa!'); // eslint-disable-line no-alert
                 });
             }
-
-            this.$root.$once('loaded', () => {
-                this.$root.globalLoading = false;
-            });
         },
         // Make auth and config accessible to all components
         // @TODO: Remove this completely
