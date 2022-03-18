@@ -52,14 +52,13 @@ export default {
             apiKey: state => state.auth.apiKey
         }),
         src() {
-            const { defaultSrc, error, showSlug, type } = this;
+            const { apiKey, defaultSrc, error, showSlug, type } = this;
 
             if (error || !showSlug || !type) {
                 return defaultSrc;
             }
 
-            // FIXME: This needs to be tested with webRoot
-            return `api/v2/series/${showSlug}/asset/${type}?api_key=${this.apiKey}`;
+            return `api/v2/series/${showSlug}/asset/${type}?api_key=${apiKey}`;
         },
         href() {
             const { link, src } = this;
