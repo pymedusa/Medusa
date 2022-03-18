@@ -25,7 +25,7 @@ export default function() {
                     headers: {
                         Accept: 'application/json',
                         'Content-Type': 'application/json',
-                        Authorization: `Bearer ${this.token}`
+                        'x-auth': `Bearer ${this.token}`
                     }
                 });
             });
