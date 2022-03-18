@@ -63,6 +63,12 @@ export default {
 @use '../style/back-arrow.scss';
 
 #app {
-    padding-top: 75px;
+    padding-top: 4rem;
+}
+
+@media (max-width: 768px) {
+    #app {
+        padding-top: 6rem;
+    }
 }
 </style>
