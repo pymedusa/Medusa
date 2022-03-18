@@ -9,7 +9,7 @@
 
         <div v-if="system.newestVersionMessage" class="text-center">
             <div class="alert alert-success upgrade-notification hidden-print" role="alert">
-                <span>{{system.newestVersionMessage}}</span>
+                <span v-html="system.newestVersionMessage" />
             </div>
         </div>
     </div>

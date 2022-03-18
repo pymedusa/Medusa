@@ -61,4 +61,8 @@ export default {
 @use '../style/modal.scss';
 @use '../style/vue-tags.scss';
 @use '../style/back-arrow.scss';
+
+#app {
+    padding-top: 75px;
+}
 </style>

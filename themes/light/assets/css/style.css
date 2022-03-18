@@ -2695,10 +2695,6 @@ ul.simpleList li {
 bootstrap Overrides
 ========================================================================== */
 
-#vue-wrap {
-    padding-top: 75px;
-}
-
 body {
     overflow-y: scroll;
     font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
