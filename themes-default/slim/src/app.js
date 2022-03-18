@@ -34,11 +34,11 @@ export default new Vue({
         }
 
         await this.$store.dispatch('auth');
-        this.isAuthenticated = true;
 
         if (!window.location.pathname.includes('/login')) {
             const { $store } = this;
             await $store.dispatch('login');
+            this.isAuthenticated = true;
 
             Promise.all([
                 $store.dispatch('getConfig'),
