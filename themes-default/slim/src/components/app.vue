@@ -1,12 +1,6 @@
 <template>
     <div id="app">
         <div v-if="isAuthenticated">
-            <div v-if="globalLoading" class="text-center">
-                <h3>Loading&hellip;</h3>
-                If this is taking too long,<br>
-                <i style="cursor: pointer;" @click="globalLoading = false;">click here</i> to show the page.
-            </div>
-
             <load-progress-bar v-if="showsLoading" v-bind="{display: showsLoading.display, current: showsLoading.current, total: showsLoading.total}" />
             <div id="content-row" class="row">
                 <div id="content-col" :class="layout.wide ? 'col-lg-12 col-md-12' : 'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1'">
@@ -49,11 +43,6 @@ export default {
         LoadProgressBar,
         ScrollButtons,
         SubMenu
-    },
-    data() {
-        return {
-            globalLoading: false
-        };
     },
     computed: {
         ...mapState({
