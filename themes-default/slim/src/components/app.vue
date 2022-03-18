@@ -16,6 +16,10 @@
             </div>
         </div><!-- /content -->
     </div>
+    <div v-else>
+        <!-- Only render for /login -->
+        <router-view />
+    </div>
 </template>
 
 <script>
