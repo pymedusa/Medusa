@@ -74,7 +74,8 @@ export default new Vue({
             'setLoadingFinished'
         ])
     },
-    render(h) {
+    render(h) { // eslint-disable-line vue/require-render-return
+        // Do not start with rendering the app, before we're sure we authenticated.
         if (this.isAuthenticated || window.location.pathname.includes('/login')) {
             return h(App);
         }
