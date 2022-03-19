@@ -158,20 +158,6 @@ export default {
     margin-left: 4px;
 }
 
-/* @media (min-width: 1281px) {
-    #sub-menu-container {
-        width: 100%;
-        top: 51px;
-    }
-} */
-
-/* @media (max-width: 1281px) {
-    #sub-menu-container {
-        position: relative;
-        margin-top: 12px;
-    }
-} */
-
 @media (max-width: 768px) {
     #sub-menu-container {
         margin-top: -12px;

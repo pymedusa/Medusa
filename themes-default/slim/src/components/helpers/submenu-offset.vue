@@ -12,4 +12,16 @@ export default {
     .submenu-offset {
         margin-top: 45px;
     }
+
+    @media (max-width: 991px) and (min-width: 768px) {
+        .submenu-offset {
+            margin-top: 90px;
+        }
+    }
+
+    @media (max-width: 991px) {
+        .submenu-offset {
+            margin-top: 85px;
+        }
+    }
 </style>

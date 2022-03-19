@@ -2,7 +2,6 @@
 
 exports[`SubMenu.test.js renders function-based sub menu 1`] = `
 <div
-  class="row"
   id="sub-menu-wrapper"
 >
   <div
@@ -37,7 +36,6 @@ exports[`SubMenu.test.js renders function-based sub menu 1`] = `
 
 exports[`SubMenu.test.js renders simple sub menu 1`] = `
 <div
-  class="row"
   id="sub-menu-wrapper"
 >
   <div
