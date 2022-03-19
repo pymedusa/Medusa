@@ -10,7 +10,7 @@
                     <alerts />
                     <h1 v-if="$route.meta.header" class="header">{{ $route.meta.header }}</h1>
                     <keep-alive>
-                        <router-view :key="$route.meta.nocache ? `${$route.fullPath}#${Date.now()}` : $route.name" />
+                        <router-view :key="$route.meta.nocache ? `${$route.fullPath}` : $route.name" />
                     </keep-alive>
                     <app-footer />
                     <scroll-buttons />
@@ -44,12 +44,23 @@ export default {
         ScrollButtons,
         SubMenu
     },
+    data() {
+        return {
+            counter: 0
+        };
+    },
     computed: {
         ...mapState({
             isAuthenticated: state => state.auth.isAuthenticated,
             layout: state => state.config.layout,
             showsLoading: state => state.shows.loading
         })
+    },
+    methods: {
+        routerViewCounter() {
+            this.counter += 1;
+            return this.counter;
+        }
     }
 };
 </script>
