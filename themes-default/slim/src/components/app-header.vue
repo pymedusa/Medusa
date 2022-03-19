@@ -324,6 +324,10 @@ export default {
     color: white;
 }
 
+.navbar {
+    margin-bottom: 0;
+}
+
 @media (max-width: 767px) {
     .navbar-fixed-top .navbar-collapse {
         max-height: 100%;

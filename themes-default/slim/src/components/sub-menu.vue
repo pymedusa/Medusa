@@ -1,5 +1,5 @@
 <template>
-    <div v-if="subMenu.length > 0" id="sub-menu-wrapper" class="row">
+    <div v-if="subMenu.length > 0" id="sub-menu-wrapper">
         <div id="sub-menu-container" class="col-md-12 shadow">
             <div id="sub-menu" class="submenu-default hidden-print">
                 <app-link
@@ -134,9 +134,18 @@ export default {
 </script>
 <style scoped>
 /* Theme-specific styling adds the rest */
+#sub-menu-wrapper {
+    position: fixed;
+    width: 100%;
+    right: 0;
+    left: 0;
+    z-index: 1030;
+}
+
 #sub-menu-container {
     z-index: 550;
     min-height: 41px;
+    margin-top: 12px;
 }
 
 #sub-menu {
@@ -149,22 +158,25 @@ export default {
     margin-left: 4px;
 }
 
-@media (min-width: 1281px) {
+/* @media (min-width: 1281px) {
     #sub-menu-container {
-        position: fixed;
         width: 100%;
         top: 51px;
     }
-}
+} */
 
-@media (max-width: 1281px) {
+/* @media (max-width: 1281px) {
     #sub-menu-container {
         position: relative;
-        margin-top: -24px;
+        margin-top: 12px;
     }
-}
+} */
 
-@media (max-width: 767px) {
+@media (max-width: 768px) {
+    #sub-menu-container {
+        margin-top: -12px;
+    }
+
     #sub-menu-wrapper {
         display: flex;
     }
