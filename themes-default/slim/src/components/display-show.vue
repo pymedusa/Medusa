@@ -652,7 +652,7 @@ export default {
                 patchData[episode.slug] = { quality: Number.parseInt(quality, 10) };
             });
 
-            api.patch(`series/${show.id.slug}/episodes`, patchData) // eslint-disable-line no-undef
+            this.client.api.patch(`series/${show.id.slug}/episodes`, patchData) // eslint-disable-line no-undef
                 .then(_ => {
                     console.info(`patched show ${show.id.slug} with quality ${quality}`);
                     [...new Set(episodes.map(episode => episode.season))].forEach(season => {
@@ -670,7 +670,7 @@ export default {
                 patchData[episode.slug] = { status };
             });
 
-            api.patch(`series/${showSlug}/episodes`, patchData) // eslint-disable-line no-undef
+            this.client.api.patch(`series/${showSlug}/episodes`, patchData) // eslint-disable-line no-undef
                 .then(_ => {
                     console.info(`patched show ${showSlug} with status ${status}`);
                     [...new Set(episodes.map(episode => episode.season))].forEach(season => {
@@ -884,7 +884,7 @@ export default {
 
             patchData[episode.slug] = { watched };
 
-            api.patch(`series/${show.id.slug}/episodes`, patchData) // eslint-disable-line no-undef
+            this.client.api.patch(`series/${show.id.slug}/episodes`, patchData) // eslint-disable-line no-undef
                 .then(_ => {
                     console.info(`patched episode ${episode.slug} with watched set to ${watched}`);
                     getEpisodes({ showSlug, season: episode.season });
