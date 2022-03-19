@@ -46,23 +46,12 @@ export default {
         SubMenu,
         SubmenuOffset
     },
-    data() {
-        return {
-            counter: 0
-        };
-    },
     computed: {
         ...mapState({
             isAuthenticated: state => state.auth.isAuthenticated,
             layout: state => state.config.layout,
             showsLoading: state => state.shows.loading
         })
-    },
-    methods: {
-        routerViewCounter() {
-            this.counter += 1;
-            return this.counter;
-        }
     }
 };
 </script>
