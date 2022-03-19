@@ -2,15 +2,16 @@
     <div id="app">
         <div v-if="isAuthenticated">
             <load-progress-bar v-if="showsLoading" v-bind="{display: showsLoading.display, current: showsLoading.current, total: showsLoading.total}" />
+            <app-header />
+            <sub-menu />
             <div id="content-row" class="row">
+                <submenu-offset />
                 <div id="content-col" :class="layout.wide ? 'col-lg-12 col-md-12' : 'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1'">
                     <vue-snotify />
-                    <app-header />
-                    <sub-menu />
                     <alerts />
                     <h1 v-if="$route.meta.header" class="header">{{ $route.meta.header }}</h1>
                     <keep-alive>
-                        <router-view :key="$route.meta.nocache ? `${$route.fullPath}#${Date.now()}` : $route.name" />
+                        <router-view :key="$route.meta.nocache ? `${$route.fullPath}` : $route.name" />
                     </keep-alive>
                     <app-footer />
                     <scroll-buttons />
@@ -30,7 +31,7 @@ import Alerts from './alerts.vue';
 import AppHeader from './app-header.vue';
 import SubMenu from './sub-menu.vue';
 import AppFooter from './app-footer.vue';
-import { LoadProgressBar, ScrollButtons } from './helpers';
+import { LoadProgressBar, ScrollButtons, SubmenuOffset } from './helpers';
 
 import { mapState } from 'vuex';
 
@@ -42,7 +43,8 @@ export default {
         AppHeader,
         LoadProgressBar,
         ScrollButtons,
-        SubMenu
+        SubMenu,
+        SubmenuOffset
     },
     computed: {
         ...mapState({

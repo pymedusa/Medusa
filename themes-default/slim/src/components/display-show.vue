@@ -900,7 +900,9 @@ export default {
             setCookie('pagination-perPage', rows);
         },
         onPageChange(params) {
-            this.loadEpisodes(params.currentPage);
+            if (params.prevPage !== params.currentPage) {
+                this.loadEpisodes(params.currentPage);
+            }
         },
         neededSeasons(page) {
             const { layout, paginationPerPage, show } = this;
