@@ -159,7 +159,7 @@ const actions = {
                 params.page = page;
 
                 try {
-                    response = await rootState.client.api.get(`/providers/${providerId}/results`, { params }); // eslint-disable-line no-await-in-loop
+                    response = await rootState.auth.client.api.get(`/providers/${providerId}/results`, { params }); // eslint-disable-line no-await-in-loop
                 } catch (error) {
                     if (error.response && error.response.status === 404) {
                         console.debug(`No results available for provider ${provider}`);

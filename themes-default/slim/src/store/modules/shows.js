@@ -548,7 +548,7 @@ const actions = {
         const config = {
             recentShows: rootState.config.general.recentShows
         };
-        rootState.client.api.patch('config/main', config);
+        rootState.auth.client.api.patch('config/main', config);
 
         // Update (namespaced) localStorage
         const namespace = rootState.config.system.webRoot ? `${rootState.config.system.webRoot}_` : '';
