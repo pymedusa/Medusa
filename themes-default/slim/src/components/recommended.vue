@@ -299,7 +299,7 @@ export default {
                 classes += ' show-in-list';
             }
 
-            if (removedFromMedusa.includes(show.externals.tvdb_id)) {
+            if (removedFromMedusa && removedFromMedusa.includes(show.externals.tvdb_id)) {
                 classes += ' removed-from-medusa';
             }
             return classes;
