@@ -524,7 +524,8 @@ export default {
         ...mapState({
             clients: state => state.config.clients,
             search: state => state.config.search,
-            system: state => state.config.system
+            system: state => state.config.system,
+            client: state => state.auth.client
         }),
         torrentUsernameIsDisabled() {
             const { clients } = this;
