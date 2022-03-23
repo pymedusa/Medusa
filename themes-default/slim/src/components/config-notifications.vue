@@ -1063,7 +1063,8 @@ export default {
         ...mapState({
             config: state => state.config.general,
             indexers: state => state.config.indexers,
-            notifiers: state => state.config.notifiers
+            notifiers: state => state.config.notifiers,
+            client: state => state.auth.client
         }),
         traktIndexersOptions() {
             const { indexers } = this;

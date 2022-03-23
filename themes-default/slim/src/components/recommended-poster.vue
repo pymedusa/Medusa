@@ -127,7 +127,8 @@ export default {
         ...mapState({
             traktConfig: state => state.recommended.trakt,
             externals: state => state.recommended.externals,
-            queueitems: state => state.shows.queueitems
+            queueitems: state => state.shows.queueitems,
+            client: state => state.auth.client
         })
     },
     methods: {

@@ -139,11 +139,10 @@ export default {
     width: 100%;
     right: 0;
     left: 0;
-    z-index: 1030;
+    z-index: 1;
 }
 
 #sub-menu-container {
-    z-index: 550;
     min-height: 41px;
     margin-top: 12px;
 }
@@ -151,6 +150,7 @@ export default {
 #sub-menu {
     font-size: 12px;
     padding-top: 2px;
+    display: inline-block;
 }
 
 #sub-menu > a {

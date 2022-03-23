@@ -20,7 +20,6 @@
         </div>
         <div v-else>
             <!-- Only render for /login -->
-            <span>Render me!!!</span>
             <router-view />
         </div>
     </div>
