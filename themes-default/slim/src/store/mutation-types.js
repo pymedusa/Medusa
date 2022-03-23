@@ -40,6 +40,7 @@ const ADD_PROVIDERS = '⛽ Provider list added to store';
 const ADD_PROVIDER_CACHE = '⛽ Provider cache results added to store';
 const ADD_SEARCH_RESULTS = '⛽ New search results added for provider';
 const ADD_QUEUE_ITEM = '🔍 Search queue item updated';
+const SET_LAST_ITEM = '🔍 Search queue item set for last item';
 const ADD_SHOW_QUEUE_ITEM = '📺 Show queue item added to store';
 const REMOVE_SHOW = '📺 Show removed from store';
 const REMOVE_PROVIDER = '⛽ Provider removed';
@@ -88,6 +89,7 @@ export {
     ADD_PROVIDER_CACHE,
     ADD_SEARCH_RESULTS,
     ADD_QUEUE_ITEM,
+    SET_LAST_ITEM,
     ADD_SHOW_QUEUE_ITEM,
     REMOVE_SHOW,
     REMOVE_PROVIDER,

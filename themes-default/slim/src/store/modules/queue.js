@@ -1,8 +1,9 @@
 import Vue from 'vue';
-import { ADD_QUEUE_ITEM } from '../mutation-types';
+import { ADD_QUEUE_ITEM, SET_LAST_ITEM } from '../mutation-types';
 
 const state = {
-    queueitems: []
+    queueitems: [],
+    last: null
 };
 
 const mutations = {
@@ -14,6 +15,9 @@ const mutations = {
         } else {
             Vue.set(state.queueitems, state.queueitems.length, queueItem);
         }
+    },
+    [SET_LAST_ITEM](state, queueItem) {
+        state.last = queueItem;
     }
 };
 
@@ -26,6 +30,7 @@ const actions = {
     updateQueueItem(context, queueItem) {
         // Update store's search queue item. (provided through websocket)
         const { commit } = context;
+        commit(SET_LAST_ITEM, queueItem);
         return commit(ADD_QUEUE_ITEM, queueItem);
     }
 };

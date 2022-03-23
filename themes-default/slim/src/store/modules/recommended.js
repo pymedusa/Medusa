@@ -10,6 +10,7 @@ const IMDB = 10;
 const ANIDB = 11;
 const TRAKT = 12;
 const ANILIST = 13;
+const ALL = -1;
 
 const state = {
     limit: 1000,
@@ -17,7 +18,8 @@ const state = {
         [IMDB]: 1,
         [ANIDB]: 1,
         [TRAKT]: 1,
-        [ANILIST]: 1
+        [ANILIST]: 1,
+        [ALL]: 1
     },
     shows: [],
     trakt: {
@@ -79,6 +81,9 @@ const mutations = {
     },
     increasePage(state, source) {
         state.page[source] += 1;
+    },
+    resetPage(state, source) {
+        state.page[source] = 1;
     }
 };
 
@@ -113,6 +118,16 @@ const actions = {
                 commit(SET_RECOMMENDED_SHOWS_CATEGORIES, response.data);
             });
     },
+    /**
+     * Get more recommended shows from the paginated api.
+     *
+     * This method is triggered through a manual user interaction,
+     * clicking on a "Get More" button.
+     *
+     * @param {*} param - Commit and dispatch.
+     * @param {*} source - Get a specific source (imdb, trakt, all, ..)
+     * @returns {Promise} - A promise from the getRecommendedShows method.
+     */
     getMoreShows({ commit, dispatch }, source) {
         commit('increasePage', source);
         return dispatch('getRecommendedShows', source);
