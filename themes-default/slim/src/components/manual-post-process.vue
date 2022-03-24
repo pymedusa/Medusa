@@ -91,7 +91,8 @@ export default {
             general: state => state.config.general,
             postprocessing: state => state.config.postprocessing,
             search: state => state.config.search,
-            queueitems: state => state.queue.queueitems
+            queueitems: state => state.queue.queueitems,
+            client: state => state.auth.client
         }),
         availableMethods() {
             const { postprocessing } = this;
