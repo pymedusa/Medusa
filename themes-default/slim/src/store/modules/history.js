@@ -88,6 +88,7 @@ const getters = {
                     return state.episodeHistory[showSlug][episodeSlug][0].resource;
                 }
                 const filteredHistory = state.episodeHistory[showSlug][episodeSlug]
+                    .slice()
                     .sort((a, b) => (a.actionDate - b.actionDate) * -1)
                     .filter(ep => ['Snatched', 'Downloaded'].includes(ep.statusName) && ep.resource !== '');
                 if (filteredHistory.length > 0) {

@@ -160,6 +160,7 @@ export default {
         levels() {
             const { debug, dbDebug, loggingLevels } = this.config.logs;
             return Object.entries(loggingLevels)
+                .slice()
                 .sort((a, b) => a[1] - b[1]) // Sort by level in ascending order
                 .reduce((result, level) => {
                     const key = level[0];
