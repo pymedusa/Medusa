@@ -231,7 +231,8 @@ class PostProcessorRunner(object):
             process_results = ProcessResult(path, process_method, failed=failed)
             process_results.process(force=force, **kwargs)
 
-            # Only initiate failed download handling, if enabled.
+            # Only initiate failed download handling,
+            # if process result has failed and failed download handling is enabled.
             if process_results.failed:
                 process_results.process_failed(path)
 
