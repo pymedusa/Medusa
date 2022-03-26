@@ -62,7 +62,10 @@ class FailedProcessor(object):
                 segment.append(parse_result.series.get_episode(parse_result.season_number, episode))
 
         if segment:
-            self.log(logger.DEBUG, 'Adding this release to failed queue: {release}'.format(release=release_name))
+            self.log(logger.DEBUG, 'Created segment of episodes [{segment}] from release: {release}'.format(
+                segment=','.join(ep.episode for ep in segment),
+                release=release_name
+            ))
 
         return segment
 

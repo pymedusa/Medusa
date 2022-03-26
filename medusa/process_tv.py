@@ -149,8 +149,7 @@ class PostProcessQueueItem(generic_queue.QueueItem):
 
         # A user might want to use advanced post-processing, but opt-out of failed download handling.
         if (
-            app.USE_FAILED_DOWNLOADS
-            and self.process_single_resource
+            self.process_single_resource
             and (process_results.failed or not process_results.succeeded)
         ):
             process_results.process_failed(self.path)
@@ -233,7 +232,7 @@ class PostProcessorRunner(object):
             process_results.process(force=force, **kwargs)
 
             # Only initiate failed download handling, if enabled.
-            if process_results.failed and app.USE_FAILED_DOWNLOADS:
+            if process_results.failed:
                 process_results.process_failed(path)
 
             return process_results.output
@@ -927,6 +926,9 @@ class ProcessResult(object):
 
     def process_failed(self, path, resource_name=None):
         """Process a download that did not complete correctly."""
+        if not app.USE_FAILED_DOWNLOADS:
+            return
+
         try:
             processor = failed_processor.FailedProcessor(
                 path, resource_name or self.resource_name, self.episodes
