@@ -1,7 +1,7 @@
 <template>
     <div class="banner-wrapper">
         <template v-if="sort === 'show'">
-            <banner-card v-for="episode in filteredSchedule.sort((a, b) => a.showName.localeCompare(b.showName))"
+            <banner-card v-for="episode in filteredSchedule.slice().sort((a, b) => a.showName.localeCompare(b.showName))"
                          :key="`${episode.showSlug}${episode.episodeSlug}`" :episode="episode"
                          :class="`shows-${episode.class}`" layout="poster"
             />

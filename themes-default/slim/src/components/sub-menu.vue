@@ -151,6 +151,7 @@ export default {
     font-size: 12px;
     padding-top: 2px;
     display: inline-block;
+    width: 100%;
 }
 
 #sub-menu > a {
