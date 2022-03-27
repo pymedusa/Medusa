@@ -118,6 +118,7 @@ import { VueTabs, VTab } from 'vue-nav-tabs/dist/vue-tabs.js';
 import { ToggleButton } from 'vue-js-toggle-button';
 
 export default {
+    name: 'new-show-existing',
     components: {
         AddShowOptions,
         AppLink,

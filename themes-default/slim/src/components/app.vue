@@ -4,13 +4,13 @@
             <load-progress-bar v-if="showsLoading" v-bind="{display: showsLoading.display, current: showsLoading.current, total: showsLoading.total}" />
             <app-header />
             <sub-menu />
-            <div id="content-row" class="row">
+            <div id="content-row">
                 <submenu-offset />
                 <div id="content-col" :class="layout.wide ? 'col-lg-12 col-md-12' : 'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1'">
                     <vue-snotify />
                     <alerts />
                     <h1 v-if="$route.meta.header" class="header">{{ $route.meta.header }}</h1>
-                    <keep-alive>
+                    <keep-alive :exclude="excludeFromCaching">
                         <router-view :key="$route.meta.nocache ? `${$route.fullPath}` : $route.name" />
                     </keep-alive>
                     <app-footer />
@@ -50,7 +50,17 @@ export default {
             isAuthenticated: state => state.auth.isAuthenticated,
             layout: state => state.config.layout,
             showsLoading: state => state.shows.loading
-        })
+        }),
+        excludeFromCaching() {
+            // Exclude components from caching, using their `name` option.
+            return [
+                'new-show',
+                'new-show-existing',
+                'news',
+                'changelog',
+                'status'
+            ];
+        }
     }
 };
 </script>
