@@ -55,6 +55,7 @@ export default {
             // Exclude components from caching, using their `name` option.
             return [
                 'new-show',
+                'new-show-existing',
                 'news',
                 'changelog',
                 'status'
