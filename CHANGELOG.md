@@ -4,8 +4,10 @@
 
 #### Improvements
 - UI now behaves as a single page app ([10408](https://github.com/pymedusa/Medusa/pull/10408))
+- Add ability to select Xem mapped seasons for season scene exceptions ([10438](https://github.com/pymedusa/Medusa/pull/10438))
 
 #### Fixes
+- Fix postprocessing loop when not using Failed Download Handling ([10435](https://github.com/pymedusa/Medusa/pull/10435))
 
 ## 0.5.25 (08-03-2022)
 
