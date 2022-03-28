@@ -1,6 +1,4 @@
-## Unreleased
-
-#### New Features
+## 0.5.26 (28-03-2022)
 
 #### Improvements
 - UI now behaves as a single page app ([10408](https://github.com/pymedusa/Medusa/pull/10408))
