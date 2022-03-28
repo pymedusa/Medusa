@@ -1,5 +1,4 @@
 import { ADD_CONFIG, UPDATE_LAYOUT_LOCAL } from '../../mutation-types';
-import { api } from '../../../api';
 import formatDate from 'date-fns/format';
 import parseISO from 'date-fns/parseISO';
 import TimeAgo from 'javascript-time-ago';
@@ -141,66 +140,59 @@ const getters = {
 };
 
 const actions = {
-    setLayout(context, { page, layout }) {
-        const { commit } = context;
+    setLayout({ rootState, commit }, { page, layout }) {
         // Don't wait for the api, just commit to store.
         commit(ADD_CONFIG, {
             section: 'layout', config: { [page]: layout }
         });
 
-        return api.patch('config/main', { layout: { [page]: layout } });
+        return rootState.auth.client.api.patch('config/main', { layout: { [page]: layout } });
     },
-    setTheme(context, { themeName }) {
-        const { commit } = context;
-        return api.patch('config/main', { layout: { themeName } })
+    setTheme({ rootState, commit }, { themeName }) {
+        return rootState.auth.client.api.patch('config/main', { layout: { themeName } })
             .then(() => {
                 return commit(ADD_CONFIG, {
                     section: 'layout', config: { themeName }
                 });
             });
     },
-    setSpecials(context, specials) {
-        const { commit, state } = context;
+    setSpecials({ rootState, commit, state }, specials) {
         const show = Object.assign({}, state.show);
         show.specials = specials;
 
-        return api.patch('config/main', { layout: { show } })
+        return rootState.auth.client.api.patch('config/main', { layout: { show } })
             .then(() => {
                 return commit(ADD_CONFIG, {
                     section: 'layout', config: { show }
                 });
             });
     },
-    setPosterSortBy(context, { value }) {
-        const { commit } = context;
-        return api.patch('config/main', { layout: { posterSortby: value } })
+    setPosterSortBy({ rootState, commit }, { value }) {
+        return rootState.auth.client.api.patch('config/main', { layout: { posterSortby: value } })
             .then(() => {
                 return commit(ADD_CONFIG, {
                     section: 'layout', config: { posterSortby: value }
                 });
             });
     },
-    setPosterSortDir(context, { value }) {
-        const { commit } = context;
-        return api.patch('config/main', { layout: { posterSortdir: value } })
+    setPosterSortDir({ rootState, commit }, { value }) {
+        return rootState.auth.client.api.patch('config/main', { layout: { posterSortdir: value } })
             .then(() => {
                 return commit(ADD_CONFIG, {
                     section: 'layout', config: { posterSortdir: value }
                 });
             });
     },
-    setLayoutShow(context, value) {
-        const { commit } = context;
-        return api.patch('config/main', { layout: { show: value } })
+    setLayoutShow({ rootState, commit }, value) {
+        return rootState.auth.client.api.patch('config/main', { layout: { show: value } })
             .then(() => {
                 return commit(ADD_CONFIG, {
                     section: 'layout', config: { show: value }
                 });
             });
     },
-    setStoreLayout(context, { key, value }) {
-        const { commit } = context;
-        return api.patch('config/main', { layout: { [key]: value } })
+    setStoreLayout({ rootState, commit }, { key, value }) {
+        return rootState.auth.client.api.patch('config/main', { layout: { [key]: value } })
             .then(() => {
                 return commit(ADD_CONFIG, {
                     section: 'layout', config: { [key]: value }
@@ -211,14 +203,13 @@ const actions = {
         const { commit } = context;
         return commit(UPDATE_LAYOUT_LOCAL, { [key]: value });
     },
-    setBacklogOverview(context, { key, value }) {
-        const { commit, state } = context;
+    setBacklogOverview({ rootState, commit, state }, { key, value }) {
         const backlogOverview = { ...state.backlogOverview };
         backlogOverview[key] = value;
         commit(ADD_CONFIG, {
             section: 'layout', config: { backlogOverview }
         });
-        return api.patch('config/main', { layout: { backlogOverview } });
+        return rootState.auth.client.api.patch('config/main', { layout: { backlogOverview } });
     }
 };
 

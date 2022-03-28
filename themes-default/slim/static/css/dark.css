@@ -294,6 +294,16 @@ home_recommendedShows.mako
     border: 1px solid rgb(17, 17, 17);
 }
 
+.recommended-container p,
+.recommended-container i,
+.recommended-container a {
+    color: rgb(255, 255, 255);
+}
+
+.toggle-plot {
+    background-color: rgb(51, 51, 51);
+}
+
 /* =======================================================================
 displayShow.mako
 ========================================================================== */

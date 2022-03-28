@@ -94,7 +94,6 @@ import { mapGetters, mapState } from 'vuex';
 import RootDirs from './root-dirs.vue';
 import { AddShowOptions } from '.';
 import NewShowSearch from './new-show-search.vue';
-import { api } from '../api';
 import { VueTabs, VTab } from 'vue-nav-tabs/dist/vue-tabs.js';
 import { FormWizard, TabContent } from 'vue-form-wizard';
 
@@ -203,7 +202,8 @@ export default {
     computed: {
         ...mapState({
             general: state => state.config.general,
-            indexers: state => state.config.indexers
+            indexers: state => state.config.indexers,
+            client: state => state.auth.client
         }),
         ...mapGetters(['indexerIdToName']),
         addButtonDisabled() {
@@ -334,7 +334,7 @@ export default {
             let response = null;
             try {
                 const { $router } = this;
-                response = await api.post('series', { id: showId, options }, { timeout: 180000 });
+                response = await this.client.api.post('series', { id: showId, options }, { timeout: 180000 });
 
                 // If we're not using this component from addExistingShow, route to home.
                 if (this.$route.name === 'addNewShow') {

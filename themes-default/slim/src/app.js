@@ -3,8 +3,9 @@ import Vue from 'vue';
 import { registerGlobalComponents, registerPlugins } from './global-vue-shim';
 import router from './router';
 import store from './store';
-import { mapActions, mapMutations, mapState } from 'vuex';
+import { mapActions, mapMutations } from 'vuex';
 import { isDevelopment } from './utils/core';
+import { App } from './components';
 
 Vue.config.devtools = true;
 Vue.config.performance = true;
@@ -14,35 +15,33 @@ registerPlugins();
 // @TODO: Remove this before v1.0.0
 registerGlobalComponents();
 
-const app = new Vue({
-    name: 'app',
+export default new Vue({
+    name: 'index',
     router,
     store,
     data() {
         return {
-            globalLoading: false,
-            pageComponent: false
+            isAuthenticated: false
         };
     },
-    computed: {
-        ...mapState({
-            showsLoading: state => state.shows.loading
-        })
-    },
-    mounted() {
+    async mounted() {
         const { getShows, setLoadingDisplay, setLoadingFinished } = this;
 
         if (isDevelopment) {
             console.log('App Mounted!');
         }
 
+        await this.$store.dispatch('auth');
+
         if (!window.location.pathname.includes('/login')) {
             const { $store } = this;
+            await $store.dispatch('login');
+            this.isAuthenticated = true;
+
             Promise.all([
-                $store.dispatch('login', { username: window.username }),
                 $store.dispatch('getConfig'),
                 $store.dispatch('getStats')
-            ]).then(([_, config]) => {
+            ]).then(([config]) => {
                 if (isDevelopment) {
                     console.log('App Loaded!');
                 }
@@ -74,7 +73,12 @@ const app = new Vue({
             'setLoadingDisplay',
             'setLoadingFinished'
         ])
+    },
+    render(h) { // eslint-disable-line vue/require-render-return
+        // Do not start with rendering the app, before we're sure we authenticated.
+        if (this.isAuthenticated || window.location.pathname.includes('/login')) {
+            return h(App);
+        }
     }
-}).$mount('#vue-wrap');
+}).$mount('#app-wrapper');
 
-export default app;

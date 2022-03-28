@@ -112,7 +112,7 @@
 </template>
 
 <script>
-import { apiRoute } from '../../api';
+import { mapState } from 'vuex';
 import { VTooltip } from 'v-tooltip';
 import AsyncComputed from 'vue-async-computed';
 import debounce from 'lodash/debounce';
@@ -188,6 +188,9 @@ export default {
         };
     },
     computed: {
+        ...mapState({
+            client: state => state.auth.client
+        }),
         selectTitles() {
             const { show } = this;
             const { config, title } = show;
@@ -251,7 +254,7 @@ export default {
             let response = '';
 
             try {
-                response = await apiRoute.get(
+                response = await this.client.apiRoute.get(
                     'config/postProcessing/testNaming',
                     {
                         params,

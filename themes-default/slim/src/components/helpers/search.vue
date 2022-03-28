@@ -118,7 +118,7 @@ export default {
             };
             this.$refs[`search-${episode.slug}`].src = 'images/loading16-dark.gif';
 
-            api.put(`search/${searchType}`, data) // eslint-disable-line no-undef
+            this.client.api.put(`search/${searchType}`, data) // eslint-disable-line no-undef
                 .then(_ => {
                     console.info(`started search for show: ${showSlug} episode: ${episode.slug}`);
                     this.$refs[`search-${episode.slug}`].src = 'images/queued.png';

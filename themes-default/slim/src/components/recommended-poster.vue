@@ -53,10 +53,9 @@
 
             <div name="right" class="col-md-5 col-xs-12">
                 <div class="recommendedShowTitleIcons">
-                    <button v-if="traktConfig.removedFromMedusa.includes(show.mappedSeriesId)" class="btn-medusa btn-xs">
+                    <button v-if="traktConfig.removedFromMedusa && traktConfig.removedFromMedusa.includes(show.mappedSeriesId)" class="btn-medusa btn-xs">
                         <app-link :href="`home/displayShow?indexername=${show.mappedIndexerName}&seriesid=${show.mappedSeriesId}`">Watched</app-link>
                     </button>
-                    <!-- if trakt_b and not (cur_show.show_in_list or cur_show.mapped_series_id in removed_from_medusa): -->
                     <button :disabled="show.trakt.blacklisted" v-if="show.source === externals.TRAKT" :data-indexer-id="show.mappedSeriesId" class="btn-medusa btn-xs" @click="blacklistTrakt(show)">Blacklist</button>
                 </div>
             </div>
@@ -94,7 +93,6 @@
 
 <script>
 import { mapState } from 'vuex';
-import { api, apiRoute } from '../api';
 import {
     Asset,
     AppLink
@@ -128,7 +126,8 @@ export default {
         ...mapState({
             traktConfig: state => state.recommended.trakt,
             externals: state => state.recommended.externals,
-            queueitems: state => state.shows.queueitems
+            queueitems: state => state.shows.queueitems,
+            client: state => state.auth.client
         })
     },
     methods: {
@@ -175,7 +174,7 @@ export default {
             }
 
             try {
-                const response = await api.post('series', { id: showId, options });
+                const response = await this.client.api.post('series', { id: showId, options });
                 if (response && response.data && response.data.identifier) {
                     this.addingShow.identifier = response.data.identifier;
                     this.addingShow.started = true;
@@ -197,7 +196,7 @@ export default {
         },
         blacklistTrakt(show) {
             show.trakt.blacklisted = true;
-            apiRoute(`addShows/addShowToBlacklist?seriesid=${show.externals.tvdb_id}`);
+            this.client.apiRoute(`addShows/addShowToBlacklist?seriesid=${show.externals.tvdb_id}`);
         },
         addShowOptions(show) {
             const { externals } = show;
@@ -303,6 +302,7 @@ select.max-width {
     height: 100%;
     display: block;
     font-size: 11px;
+    color: white;
 }
 
 .plot-overlay::-webkit-scrollbar {
@@ -341,7 +341,6 @@ select.max-width {
     z-index: 1;
     text-decoration: underline;
     cursor: pointer;
-    background-color: rgb(51, 51, 51);
     padding: 0 2px;
 }
 

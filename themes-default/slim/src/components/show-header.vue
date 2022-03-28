@@ -317,7 +317,6 @@ import Truncate from 'vue-truncate-collapsed';
 import { getLanguage } from 'country-language';
 import { scrollTo } from 'vue-scrollto';
 import { mapActions, mapState, mapGetters } from 'vuex';
-import { api } from '../api';
 import { combineQualities, humanFileSize } from '../utils/core';
 import { attachImdbTooltip } from '../utils/jquery';
 import { AppLink, Asset, Externals, QualityPill, StateSwitch } from './helpers';
@@ -426,7 +425,8 @@ export default {
             qualities: state => state.config.consts.qualities.values,
             statuses: state => state.config.consts.statuses,
             search: state => state.config.search,
-            configLoaded: state => state.config.layout.fanartBackground !== null
+            configLoaded: state => state.config.layout.fanartBackground !== null,
+            client: state => state.auth.client
         }),
         ...mapGetters({
             show: 'getCurrentShow',
@@ -574,7 +574,7 @@ export default {
             const data = {
                 config: { [option]: config[option] }
             };
-            api.patch('series/' + show.id.slug, data).then(_ => {
+            this.client.api.patch('series/' + show.id.slug, data).then(_ => {
                 this.$snotify.success(
                     `${data.config[option] ? 'enabled' : 'disabled'} show option ${option}`,
                     'Saved',

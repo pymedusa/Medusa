@@ -84,7 +84,6 @@
 
 <script>
 import LazyLoad from 'vanilla-lazyload';
-import { api, apiRoute } from '../api.js';
 import { mapState, mapActions } from 'vuex';
 import AddShowOptions from './add-show-options.vue';
 import {
@@ -244,9 +243,10 @@ export default {
             recommendedShows: state => state.recommended.shows,
             traktConfig: state => state.recommended.trakt,
             recommendedLists: state => state.recommended.categories,
-            queueitems: state => state.queue.queueitems,
+            lastQueueItem: state => state.queue.last,
             sourceToString: state => state.recommended.sourceToString,
-            page: state => state.recommended.page
+            page: state => state.recommended.page,
+            client: state => state.auth.client
         }),
         filteredShowsByList() {
             const { imgLazyLoad, recommendedShows, selectedSource, selectedList } = this;
@@ -299,7 +299,7 @@ export default {
                 classes += ' show-in-list';
             }
 
-            if (removedFromMedusa.includes(show.externals.tvdb_id)) {
+            if (removedFromMedusa && removedFromMedusa.includes(show.externals.tvdb_id)) {
                 classes += ' removed-from-medusa';
             }
             return classes;
@@ -362,7 +362,7 @@ export default {
             const { sourceToString, selectedSource } = this;
             const source = sourceToString[selectedSource];
             try {
-                await api.post(`recommended/${source}`);
+                await this.client.api.post(`recommended/${source}`);
                 this.$snotify.success(
                     'Started search for new recommended shows',
                     `Searching ${source}`
@@ -394,7 +394,7 @@ export default {
                     this.traktWarningMessage = 'You havent enabled trakt yet.';
                     return;
                 }
-                apiRoute('home/testTrakt')
+                this.client.apiRoute('home/testTrakt')
                     .then(result => {
                         if (result.data !== 'Test notice sent successfully to Trakt') {
                             // Ask user if he wants to setup trakt authentication.
@@ -404,13 +404,20 @@ export default {
                     });
             }
         },
-        queueitems(queueItems) {
-            const filterRecommended = item => {
-                return item.name.includes('UPDATE-RECOMMENDED') && item.success;
+        lastQueueItem(item) {
+            const { externals } = this;
+            const actions = {
+                'UPDATE-RECOMMENDED-IMDB': externals.IMDB,
+                'UPDATE-RECOMMENDED-ANIDB': externals.ANIDB,
+                'UPDATE-RECOMMENDED-TRAKT': externals.TRAKT,
+                'UPDATE-RECOMMENDED-ANILIST': externals.ANILIST
             };
-            // Check for a new recommended show queue item and refresh results.
-            if (queueItems.filter(filterRecommended)) {
-                this.getRecommendedShows();
+            if (item.name.includes('UPDATE-RECOMMENDED') && item.success) {
+                // Now we're getting the first page. But if there are more then 1000 shows in lib,
+                // we won't get the updated shows. In future, we should add an option to the pagination
+                // where we can request the last page.
+                this.$store.commit('resetPage', actions[item.name]);
+                this.getRecommendedShows(actions[item.name]);
             }
         }
     }

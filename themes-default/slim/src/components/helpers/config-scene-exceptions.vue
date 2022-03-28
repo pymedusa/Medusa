@@ -101,12 +101,28 @@ export default {
                 return [];
             }
 
-            return [
-                ...[{ value: -1, description: 'Show Exception' }],
+            const seasons = [];
+            seasons.push({ value: -1, description: 'Show Exception' });
+
+            seasons.push(
                 ...show.seasonCount.filter(season => season.season !== 0).map(season => {
                     return ({ value: season.season, description: `Season ${season.season}` });
                 })
-            ];
+            );
+
+            if (show.config.scene && show.xemNumbering && show.xemNumbering.length > 0) {
+                for (const xemNum of show.xemNumbering) {
+                    if (xemNum.destination.season === 0) {
+                        continue;
+                    }
+
+                    if (!seasons.find(s => s.value === xemNum.destination.season)) {
+                        seasons.push({ value: xemNum.destination.season, description: `Season ${xemNum.destination.season} (xem)` });
+                    }
+                }
+            }
+
+            return seasons.sort((first, second) => first.value - second.value);
         },
         unique() {
             const { items, newItem } = this;

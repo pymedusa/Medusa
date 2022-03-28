@@ -1158,7 +1158,7 @@ div.recommended-image {
     font-size: 12px;
     overflow: hidden;
     text-decoration: none;
-    color: rgb(255, 255, 255);
+    color: rgb(0, 0, 0);
 }
 
 .recommended-container {
@@ -2695,10 +2695,6 @@ ul.simpleList li {
 bootstrap Overrides
 ========================================================================== */
 
-#vue-wrap {
-    padding-top: 75px;
-}
-
 body {
     overflow-y: scroll;
     font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -2793,14 +2789,6 @@ select,
 .navbar-default .navbar-nav > li.navbar-split > a {
     float: left;
     border: 1px solid rgba(0, 0, 0, 0.15);
-}
-
-.navbar-default .navbar-nav > li.navbar-split > a:first-child {
-    padding-right: 8px;
-}
-
-.navbar-default .navbar-nav > li.navbar-split > a:nth-child(2) {
-    padding-left: 8px;
 }
 
 @media (max-width: 767px) {

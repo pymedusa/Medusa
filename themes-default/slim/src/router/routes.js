@@ -249,7 +249,8 @@ const addShowRoutes = [
             title: 'Add Existing Shows',
             header: 'Add Existing Shows',
             topMenu: 'home',
-            converted: true
+            converted: true,
+            nocache: true
         },
         component: () => import('../components/new-shows-existing.vue')
     },
@@ -260,7 +261,8 @@ const addShowRoutes = [
             title: 'Add New Show',
             header: 'Add New Show',
             topMenu: 'home',
-            converted: true
+            converted: true,
+            nocache: true
         },
         props: route => ({ ...route.params }),
         component: () => import('../components/new-show.vue')
@@ -455,8 +457,10 @@ const newsRoute = {
     meta: {
         title: 'News',
         header: 'News',
-        topMenu: 'system'
-    }
+        topMenu: 'system',
+        converted: true
+    },
+    component: () => import('../components/news.vue')
 };
 
 /** @type {import('.').Route} */
@@ -466,8 +470,10 @@ const changesRoute = {
     meta: {
         title: 'Changelog',
         header: 'Changelog',
-        topMenu: 'system'
-    }
+        topMenu: 'system',
+        converted: true
+    },
+    component: () => import('../components/changelog.vue')
 };
 
 /** @type {import('.').Route} */
@@ -494,13 +500,11 @@ const notFoundRoute = {
 };
 
 // @NOTE: Redirect can only be added once all routes are vue
-/*
-/** @type {import('.').Route} *-/
+/** @type {import('.').Route} */
 const notFoundRedirect = {
     path: '*',
     redirect: '/not-found'
 };
-*/
 
 /** @type {import('.').Route[]} */
 export default [
@@ -517,5 +521,6 @@ export default [
     newsRoute,
     changesRoute,
     ircRoute,
-    notFoundRoute
+    notFoundRoute,
+    notFoundRedirect
 ];

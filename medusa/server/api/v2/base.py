@@ -96,12 +96,13 @@ class BaseRequestHandler(RequestHandler):
             return
 
         authorization = self.request.headers.get('Authorization')
-        if not authorization:
+        x_auth = self.request.headers.get('x-auth')
+        if not authorization and not x_auth:
             return self._unauthorized('No authorization token.')
 
-        if authorization.startswith('Bearer'):
+        if x_auth and x_auth.startswith('Bearer'):
             try:
-                token = authorization.replace('Bearer ', '')
+                token = x_auth.replace('Bearer ', '')
                 jwt.decode(token, app.ENCRYPTION_SECRET, algorithms=['HS256'])
             except jwt.ExpiredSignatureError:
                 return self._unauthorized('Token has expired.')

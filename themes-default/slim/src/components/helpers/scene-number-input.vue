@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import { apiRoute } from '../../api';
+import { mapState } from 'vuex';
 
 export default {
     name: 'scene-number-input',
@@ -33,6 +33,11 @@ export default {
     },
     mounted() {
         this.getSceneNumbering();
+    },
+    computed: {
+        ...mapState({
+            client: state => state.auth.client
+        })
     },
     methods: {
         changeSceneNumbering(event) {
@@ -90,7 +95,7 @@ export default {
             }
 
             try {
-                const { data } = await apiRoute.get('home/setSceneNumbering', { params: {
+                const { data } = await this.client.apiRoute.get('home/setSceneNumbering', { params: {
                     showslug: show.id.slug,
                     // eslint-disable-next-line camelcase
                     for_season: forSeason,

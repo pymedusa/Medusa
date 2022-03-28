@@ -35,7 +35,7 @@
     </div>
 </template>
 <script>
-import { api } from '../../api';
+import { mapState } from 'vuex';
 import AppLink from './app-link.vue';
 
 export default {
@@ -51,6 +51,11 @@ export default {
             error: null
         };
     },
+    computed: {
+        ...mapState({
+            client: state => state.auth.client
+        })
+    },
     methods: {
         /**
          * Send the release name to the /api/v2/guessit endpoint.
@@ -58,7 +63,7 @@ export default {
         async testReleaseName() {
             const { releaseName } = this;
             try {
-                const { data } = await api.get('guessit', { params: { release: releaseName } });
+                const { data } = await this.client.api.get('guessit', { params: { release: releaseName } });
                 this.guessitResult = data.guess;
                 this.show = data.show;
                 this.error = data.error;

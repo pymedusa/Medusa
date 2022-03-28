@@ -67,8 +67,6 @@
 <script>
 import debounce from 'lodash/debounce';
 import { mapState } from 'vuex';
-
-import { api, apiKey } from '../api';
 import { AppLink } from './helpers';
 import Backstretch from './backstretch.vue';
 
@@ -144,7 +142,9 @@ export default {
     computed: {
         ...mapState({
             config: state => state.config.general,
-            layout: state => state.config.layout
+            layout: state => state.config.layout,
+            apiKey: state => state.auth.apiKey,
+            client: state => state.auth.client
         }),
         rawViewLink() {
             const qs = new URLSearchParams();
@@ -153,13 +153,14 @@ export default {
             qs.set('period', this.periodFilter);
             qs.set('query', this.searchQuery);
             qs.set('limit', 1000);
-            qs.set('api_key', apiKey);
+            qs.set('api_key', this.apiKey);
             qs.set('raw', 'true');
-            return `${api.defaults.baseURL}log?${qs}`;
+            return `api/v2/log?${qs}`;
         },
         levels() {
             const { debug, dbDebug, loggingLevels } = this.config.logs;
             return Object.entries(loggingLevels)
+                .slice()
                 .sort((a, b) => a[1] - b[1]) // Sort by level in ascending order
                 .reduce((result, level) => {
                     const key = level[0];
@@ -195,6 +196,7 @@ export default {
     methods: {
         async fetchLogs(pushState = true, cursor = true) {
             const {
+                client,
                 minLevel,
                 threadFilter,
                 periodFilter,
@@ -212,7 +214,7 @@ export default {
                 limit: 1000
             };
             try {
-                const resp = await api.get('log', { params });
+                const resp = await client.api.get('/log', { params });
                 this.logLines = resp.data;
                 return true;
             } catch (error) {

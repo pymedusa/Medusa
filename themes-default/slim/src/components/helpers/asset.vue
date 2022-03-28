@@ -13,7 +13,7 @@
     </div>
 </template>
 <script>
-import { webRoot, apiKey } from '../../api';
+import { mapState } from 'vuex';
 import AppLink from './app-link.vue';
 import LazyImage from './lazy-image.vue';
 
@@ -48,14 +48,17 @@ export default {
         };
     },
     computed: {
+        ...mapState({
+            apiKey: state => state.auth.apiKey
+        }),
         src() {
-            const { defaultSrc, error, showSlug, type } = this;
+            const { apiKey, defaultSrc, error, showSlug, type } = this;
 
             if (error || !showSlug || !type) {
                 return defaultSrc;
             }
 
-            return `${webRoot}/api/v2/series/${showSlug}/asset/${type}?api_key=${apiKey}`;
+            return `api/v2/series/${showSlug}/asset/${type}?api_key=${apiKey}`;
         },
         href() {
             const { link, src } = this;

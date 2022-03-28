@@ -381,7 +381,7 @@ import { mapState, mapGetters, mapActions } from 'vuex';
 import { AppLink, PlotInfo, SceneNumberInput, SceneNumberAnimeInput } from './helpers';
 import { humanFileSize } from '../utils/core';
 import { manageCookieMixin } from '../mixins/manage-cookie';
-import { addQTip, updateSearchIcons } from '../utils/jquery';
+import { addQTip } from '../utils/jquery';
 import { VueGoodTable } from 'vue-good-table';
 import Backstretch from './backstretch.vue';
 import ShowHeader from './show-header.vue';
@@ -531,7 +531,8 @@ export default {
             subtitles: state => state.config.subtitles,
             configLoaded: state => state.config.layout.fanartBackground !== null,
             layout: state => state.config.layout,
-            stateSearch: state => state.config.search
+            stateSearch: state => state.config.search,
+            client: state => state.auth.client
         }),
         ...mapGetters({
             show: 'getCurrentShow',
@@ -554,7 +555,9 @@ export default {
                 return [];
             }
 
-            let sortedSeasons = show.seasons.sort((a, b) => a.season - b.season).filter(season => season.season !== 0);
+            const seasons = show.seasons.slice();
+
+            let sortedSeasons = seasons.sort((a, b) => a.season - b.season).filter(season => season.season !== 0);
 
             // Use the filterOverviewStatus to filter the data based on what's checked in the show-header.
             if (filterByOverviewStatus && filterByOverviewStatus.filter(status => status.checked).length < filterByOverviewStatus.length) {
@@ -574,7 +577,7 @@ export default {
             }
 
             if (invertTable) {
-                return sortedSeasons.reverse();
+                return sortedSeasons.slice().reverse();
             }
 
             return sortedSeasons;
@@ -649,7 +652,7 @@ export default {
                 patchData[episode.slug] = { quality: Number.parseInt(quality, 10) };
             });
 
-            api.patch(`series/${show.id.slug}/episodes`, patchData) // eslint-disable-line no-undef
+            this.client.api.patch(`series/${show.id.slug}/episodes`, patchData) // eslint-disable-line no-undef
                 .then(_ => {
                     console.info(`patched show ${show.id.slug} with quality ${quality}`);
                     [...new Set(episodes.map(episode => episode.season))].forEach(season => {
@@ -667,7 +670,7 @@ export default {
                 patchData[episode.slug] = { status };
             });
 
-            api.patch(`series/${showSlug}/episodes`, patchData) // eslint-disable-line no-undef
+            this.client.api.patch(`series/${showSlug}/episodes`, patchData) // eslint-disable-line no-undef
                 .then(_ => {
                     console.info(`patched show ${showSlug} with status ${status}`);
                     [...new Set(episodes.map(episode => episode.season))].forEach(season => {
@@ -794,7 +797,7 @@ export default {
                 });
             }
 
-            api.put(`search/${searchType}`, data) // eslint-disable-line no-undef
+            this.client.api.put(`search/${searchType}`, data) // eslint-disable-line no-undef
                 .then(_ => {
                     if (episodes.length === 1) {
                         console.info(`started search for show: ${show.id.slug} episode: ${episodes[0].slug}`);
@@ -881,7 +884,7 @@ export default {
 
             patchData[episode.slug] = { watched };
 
-            api.patch(`series/${show.id.slug}/episodes`, patchData) // eslint-disable-line no-undef
+            this.client.api.patch(`series/${show.id.slug}/episodes`, patchData) // eslint-disable-line no-undef
                 .then(_ => {
                     console.info(`patched episode ${episode.slug} with watched set to ${watched}`);
                     getEpisodes({ showSlug, season: episode.season });
@@ -897,7 +900,9 @@ export default {
             setCookie('pagination-perPage', rows);
         },
         onPageChange(params) {
-            this.loadEpisodes(params.currentPage);
+            if (params.prevPage !== params.currentPage) {
+                this.loadEpisodes(params.currentPage);
+            }
         },
         neededSeasons(page) {
             const { layout, paginationPerPage, show } = this;
@@ -1004,15 +1009,6 @@ export default {
     filters: {
         sceneObjectToString(value) {
             return `${value.season}x${value.episode}`;
-        }
-    },
-    watch: {
-        'show.id.slug': function(slug) { // eslint-disable-line object-shorthand
-            // Show's slug has changed, meaning the show's page has finished loading.
-            if (slug) {
-                // This is still technically jQuery. Meaning whe're still letting jQuery do its thing on the entire dom.
-                updateSearchIcons(slug, this);
-            }
         }
     }
 };

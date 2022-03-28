@@ -119,11 +119,7 @@
                     </div>
                 </div><!-- row component-group //-->
 
-                <input type="submit"
-                       class="btn-medusa config_submitter"
-                       value="Save Changes"
-                       :disabled="saving"
-                >
+                <button class="btn-medusa config_submitter" :disabled="saving" @click="save()">Save Changes</button>
             </v-tab>
 
             <v-tab key="custom_prowlarr_providers" title="Configure Custom Prowlarr Providers">
@@ -138,18 +134,13 @@
                     </div>
                 </div><!-- row component-group //-->
 
-                <input type="submit"
-                       class="btn-medusa config_submitter"
-                       value="Save Changes"
-                       :disabled="saving"
-                >
+                <button class="btn-medusa config_submitter" :disabled="saving" @click="save()">Save Changes</button>
             </v-tab>
         </vue-tabs>
     </div>
 </template>
 
 <script>
-import { api } from '../api.js';
 import { mapActions, mapState } from 'vuex';
 import { VueTabs, VTab } from 'vue-nav-tabs/dist/vue-tabs.js';
 import Draggable from 'vuedraggable';
@@ -194,7 +185,8 @@ export default {
             provider: state => state.provider,
             providers: state => state.provider.providers,
             clients: state => state.config.clients,
-            general: state => state.config.general
+            general: state => state.config.general,
+            client: state => state.auth.client
         }),
         providerPriorities: {
             get() {
@@ -237,14 +229,14 @@ export default {
             'getProviders'
         ]),
         async save() {
-            const { provider } = this;
+            const { client, provider } = this;
             const { providers } = provider;
 
             // Disable the save button until we're done.
             this.saving = true;
 
             try {
-                await api.post('providers', { providers });
+                await client.api.post('providers', { providers });
                 this.$snotify.success(
                     'Saved providers',
                     'Saved',

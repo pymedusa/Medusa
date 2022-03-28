@@ -54,8 +54,8 @@
 </template>
 
 <script>
+import { mapState } from 'vuex';
 import formatDate from 'date-fns/format';
-import { apiRoute } from '../../api';
 import { VTooltip } from 'v-tooltip';
 import debounce from 'lodash/debounce';
 
@@ -107,6 +107,9 @@ export default {
         };
     },
     computed: {
+        ...mapState({
+            client: state => state.auth.client
+        }),
         tooltipContent() {
             const { searchTemplate } = this;
             return searchTemplate.default ?
@@ -140,7 +143,7 @@ export default {
             let response = '';
 
             try {
-                response = await apiRoute.get(
+                response = await this.client.apiRoute.get(
                     'config/postProcessing/testNaming',
                     {
                         params,

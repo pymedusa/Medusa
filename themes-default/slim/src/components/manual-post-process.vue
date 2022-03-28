@@ -58,7 +58,6 @@
 </template>
 <script>
 import { mapState } from 'vuex';
-import { apiRoute } from '../api';
 import { AppLink, FileBrowser, ConfigTemplate, ConfigToggleSlider } from './helpers';
 
 export default {
@@ -92,7 +91,8 @@ export default {
             general: state => state.config.general,
             postprocessing: state => state.config.postprocessing,
             search: state => state.config.search,
-            queueitems: state => state.queue.queueitems
+            queueitems: state => state.queue.queueitems,
+            client: state => state.auth.client
         }),
         availableMethods() {
             const { postprocessing } = this;
@@ -133,7 +133,7 @@ export default {
 
             if (runAsync) {
                 form.set('run_async', true);
-                apiRoute.post('home/postprocess/processEpisode', form)
+                this.client.apiRoute.post('home/postprocess/processEpisode', form)
                     .then(response => {
                         if (response && response.data.status === 'success') {
                             this.logs.push(response.data.message.trim());
@@ -146,7 +146,7 @@ export default {
                     });
             } else {
                 form.set('run_sync', true);
-                apiRoute.post('home/postprocess/processEpisode', form)
+                this.client.apiRoute.post('home/postprocess/processEpisode', form)
                     .then(response => {
                         if (response && response.data.status === 'success') {
                             this.logs = [...this.logs, ...response.data.output];

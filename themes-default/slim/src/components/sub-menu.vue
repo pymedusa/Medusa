@@ -1,5 +1,5 @@
 <template>
-    <div v-if="subMenu.length > 0" id="sub-menu-wrapper" class="row">
+    <div v-if="subMenu.length > 0" id="sub-menu-wrapper">
         <div id="sub-menu-container" class="col-md-12 shadow">
             <div id="sub-menu" class="submenu-default hidden-print">
                 <app-link
@@ -21,8 +21,7 @@
     </div>
 </template>
 <script>
-import { api, apiRoute } from '../api';
-import { mapActions, mapGetters } from 'vuex';
+import { mapState, mapActions, mapGetters } from 'vuex';
 import { AppLink, ShowSelector } from './helpers';
 
 export default {
@@ -32,6 +31,9 @@ export default {
         ShowSelector
     },
     computed: {
+        ...mapState({
+            client: state => state.auth.client
+        }),
         ...mapGetters({
             getCurrentShow: 'getCurrentShow'
         }),
@@ -63,6 +65,7 @@ export default {
             return menuItem.confirm || menuItem.method ? 'click' : null;
         },
         async runMethod(event, menuItem) {
+            const { client } = this;
             const options = {
                 confirmButton: 'Yes',
                 cancelButton: 'Cancel',
@@ -89,7 +92,7 @@ export default {
                     }
 
                     // Start removal of show in backend
-                    await apiRoute.get('home/deleteShow', { params });
+                    await client.apiRoute.get('home/deleteShow', { params });
 
                     // Navigate back to /home
                     $router.push({ name: 'home', query: undefined });
@@ -107,7 +110,7 @@ export default {
                                 this error with debug enabled before submitting</span>`;
             } else if (menuItem.method === 'updatekodi') {
                 try {
-                    await api.post('notifications/kodi/update');
+                    await client.api.post('notifications/kodi/update');
                     this.$snotify.success(
                         'Update kodi library',
                         'Success'
@@ -131,14 +134,25 @@ export default {
 </script>
 <style scoped>
 /* Theme-specific styling adds the rest */
+#sub-menu-wrapper {
+    position: fixed;
+    width: 100%;
+    right: 0;
+    left: 0;
+    z-index: 1;
+    top: 40px;
+}
+
 #sub-menu-container {
-    z-index: 550;
     min-height: 41px;
+    margin-top: 12px;
 }
 
 #sub-menu {
     font-size: 12px;
     padding-top: 2px;
+    display: inline-block;
+    width: 100%;
 }
 
 #sub-menu > a {
@@ -146,24 +160,14 @@ export default {
     margin-left: 4px;
 }
 
-@media (min-width: 1281px) {
+@media (max-width: 768px) {
     #sub-menu-container {
-        position: fixed;
-        width: 100%;
-        top: 51px;
+        margin-top: -12px;
     }
-}
 
-@media (max-width: 1281px) {
-    #sub-menu-container {
-        position: relative;
-        margin-top: -24px;
-    }
-}
-
-@media (max-width: 767px) {
     #sub-menu-wrapper {
         display: flex;
+        top: 60px;
     }
 }
 </style>

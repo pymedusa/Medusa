@@ -1,5 +1,4 @@
 import Vue from 'vue';
-import { api } from '../../api';
 import {
     ADD_RECOMMENDED_SHOW,
     SET_RECOMMENDED_SHOWS,
@@ -11,6 +10,7 @@ const IMDB = 10;
 const ANIDB = 11;
 const TRAKT = 12;
 const ANILIST = 13;
+const ALL = -1;
 
 const state = {
     limit: 1000,
@@ -18,7 +18,8 @@ const state = {
         [IMDB]: 1,
         [ANIDB]: 1,
         [TRAKT]: 1,
-        [ANILIST]: 1
+        [ANILIST]: 1,
+        [ALL]: 1
     },
     shows: [],
     trakt: {
@@ -80,6 +81,9 @@ const mutations = {
     },
     increasePage(state, source) {
         state.page[source] += 1;
+    },
+    resetPage(state, source) {
+        state.page[source] = 1;
     }
 };
 
@@ -93,27 +97,37 @@ const actions = {
      * @param {String} source - Identifier for the recommended shows list.
      * @returns {(undefined|Promise)} undefined if `shows` was provided or the API response if not.
      */
-    getRecommendedShows({ state, commit }, source) {
+    getRecommendedShows({ rootState, state, commit }, source) {
         if (state.page[source] === -1) {
             return;
         }
         const identifier = source ? state.sourceToString[source] : '';
         const { page } = state;
-        return api.get(`/recommended/${identifier}?page=${page[source]}&limit=${state.limit}`, { timeout: 90000 })
+        return rootState.auth.client.api.get(`/recommended/${identifier}?page=${page[source]}&limit=${state.limit}`, { timeout: 90000 })
             .then(response => {
                 commit(SET_RECOMMENDED_SHOWS, { shows: response.data, source });
             });
     },
-    getRecommendedShowsOptions({ commit }) {
-        api.get('/recommended/trakt/removed', { timeout: 60000 })
+    getRecommendedShowsOptions({ rootState, commit }) {
+        rootState.auth.client.api.get('/recommended/trakt/removed', { timeout: 60000 })
             .then(response => {
                 commit(SET_RECOMMENDED_SHOWS_TRAKT_REMOVED, response.data);
             });
-        api.get('/recommended/categories', { timeout: 60000 })
+        rootState.auth.client.api.get('/recommended/categories', { timeout: 60000 })
             .then(response => {
                 commit(SET_RECOMMENDED_SHOWS_CATEGORIES, response.data);
             });
     },
+    /**
+     * Get more recommended shows from the paginated api.
+     *
+     * This method is triggered through a manual user interaction,
+     * clicking on a "Get More" button.
+     *
+     * @param {*} param - Commit and dispatch.
+     * @param {*} source - Get a specific source (imdb, trakt, all, ..)
+     * @returns {Promise} - A promise from the getRecommendedShows method.
+     */
     getMoreShows({ commit, dispatch }, source) {
         commit('increasePage', source);
         return dispatch('getRecommendedShows', source);

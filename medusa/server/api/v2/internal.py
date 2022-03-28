@@ -7,6 +7,8 @@ import logging
 import os
 import re
 
+import markdown2
+
 from medusa import app, classes, db, network_timezones, providers
 from medusa.common import (
     DOWNLOADED, Overview, Quality,
@@ -699,3 +701,30 @@ class InternalHandler(BaseRequestHandler):
                 episode.download_subtitles(lang=language if language != 'all' else None)
 
         return self._ok()
+
+    def resource_get_news(self):
+        """Retrieve news and convert the markdown to html."""
+        news = app.version_check_scheduler.action.check_for_new_news(force=True)
+        if not news:
+            news = 'Could not load news from the repository. [Click here for news.md]({url})'.format(url=app.NEWS_URL)
+
+        app.NEWS_LAST_READ = app.NEWS_LATEST
+        app.NEWS_UNREAD = 0
+        app.instance.save_config()
+
+        data = markdown2.markdown(news if news else 'The was a problem connecting to GitHub, please refresh and try again', extras=['header-ids'])
+        return self._ok(data)
+
+    def resource_get_changelog(self):
+        """Retrieve changelog and convert the markdown to html."""
+        # TODO: SESSION: Check if this needs some more explicit exception handling.
+        from medusa.session.core import MedusaSafeSession
+        changes = MedusaSafeSession().get_text(app.CHANGES_URL)
+
+        if not changes:
+            changes = 'Could not load changes from the repo. [Click here for CHANGES.md]({url})'.format(url=app.CHANGES_URL)
+
+        data = markdown2.markdown(
+            changes if changes else 'The was a problem connecting to github, please refresh and try again', extras=['header-ids']
+        )
+        return self._ok(data)

@@ -34,6 +34,7 @@ export { default as SelectList } from './select-list.vue';
 export { default as SelectTraktLists } from './select-trakt-lists.vue';
 export { default as ShowSelector } from './show-selector.vue';
 export { default as SortedSelectList } from './sorted-select-list.vue';
+export { default as SubmenuOffset } from './submenu-offset.vue';
 export { default as StateSwitch } from './state-switch.vue';
 export { default as TestGuessit } from './test-guessit.vue';
 export { default as TestProvider } from './test-provider.vue';
