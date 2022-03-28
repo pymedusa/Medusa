@@ -140,6 +140,7 @@ export default {
     right: 0;
     left: 0;
     z-index: 1;
+    top: 40px;
 }
 
 #sub-menu-container {
@@ -166,6 +167,7 @@ export default {
 
     #sub-menu-wrapper {
         display: flex;
+        top: 60px;
     }
 }
 </style>
