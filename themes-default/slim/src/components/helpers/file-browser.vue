@@ -21,6 +21,7 @@
     </div>
 </template>
 <script>
+import { mapState } from 'vuex';
 export default {
     name: 'file-browser',
     props: {
@@ -110,6 +111,9 @@ export default {
         }
     },
     computed: {
+        ...mapState({
+            client: state => state.auth.client
+        }),
         storedPath: {
             // Interact with localStorage, if applicable
             get() {

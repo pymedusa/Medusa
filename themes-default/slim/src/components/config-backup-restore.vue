@@ -52,6 +52,7 @@
 </template>
 
 <script>
+import { mapState } from 'vuex';
 import { FileBrowser, StateSwitch } from './helpers';
 import { VueTabs, VTab } from 'vue-nav-tabs/dist/vue-tabs.js';
 
@@ -79,6 +80,11 @@ export default {
     },
     beforeMount() {
         $('#config-components').tabs();
+    },
+    computed: {
+        ...mapState({
+            client: state => state.auth.client
+        })
     },
     methods: {
         async runBackup() {
