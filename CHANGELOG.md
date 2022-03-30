@@ -5,6 +5,7 @@
 #### Improvements
 
 #### Fixes
+- Fix Mass update page ([10447](https://github.com/pymedusa/Medusa/pull/10447))
 
 ## 0.5.27 (29-03-2022)
 
