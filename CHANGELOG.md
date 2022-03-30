@@ -5,6 +5,10 @@
 #### Improvements
 
 #### Fixes
+
+## 0.5.27 (29-03-2022)
+
+#### Fixes
 - Fix backup / restore page ([10447](https://github.com/pymedusa/Medusa/pull/10447))
 
 ## 0.5.26 (28-03-2022)
