@@ -45,10 +45,20 @@ class Notifier(object):
 
         headers = {'Content-Type': 'application/json'}
         payload = {
-            'content': message,
             'username': app.DISCORD_NAME,
-            'tts': tts
-        }
+            'content': '',
+            'tts': tts,
+            'embeds': [
+                {
+                "type": "rich",
+                "title": "",
+                "description": msg,
+                "footer": {
+                  "text": title
+                  }
+                }
+            ]
+        }   
 
         if override_avatar:
             payload['avatar_url'] = app.DISCORD_AVATAR_URL
