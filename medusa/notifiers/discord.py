@@ -41,24 +41,20 @@ class Notifier(object):
 
         log.debug('Discord in use with API webhook: {webhook}', {'webhook': webhook})
 
-        message = '{0} : {1}'.format(title, msg)
-
         headers = {'Content-Type': 'application/json'}
         payload = {
             'username': app.DISCORD_NAME,
             'content': '',
             'tts': tts,
-            'embeds': [
-                {
-                "type": "rich",
-                "title": "",
-                "description": msg,
-                "footer": {
-                  "text": title
-                  }
+            'embeds': [{
+                'type': 'rich',
+                'title': '',
+                'description': msg,
+                'footer': {
+                    'text': title
                 }
-            ]
-        }   
+            }]
+        }
 
         if override_avatar:
             payload['avatar_url'] = app.DISCORD_AVATAR_URL
