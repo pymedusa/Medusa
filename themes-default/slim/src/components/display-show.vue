@@ -960,9 +960,9 @@ export default {
 
             _getEpisodes(showSlug);
         },
-        initializeEpisodes() {
+        initializeEpisodes(force = false) {
             const { getEpisodes, showSlug, setRecentShow, show } = this;
-            if (!show.seasons && show.seasonCount) {
+            if (force || (!show.seasons && show.seasonCount)) {
                 // Load episodes for the first page.
                 this.loadEpisodes(1);
                 // Always get special episodes if available.
@@ -1010,6 +1010,15 @@ export default {
         sceneObjectToString(value) {
             return `${value.season}x${value.episode}`;
         }
+    },
+    watch: {
+        $route(to, from) {
+            if (to.name === 'show' && from.name === 'testRename') {
+                // Load all episodes if we're coming from the testRename page.
+                this.initializeEpisodes(true);
+            }
+        }
+
     }
 };
 </script>
