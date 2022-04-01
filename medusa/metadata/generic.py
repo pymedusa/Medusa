@@ -297,12 +297,12 @@ class GenericMetadata(object):
             nfo_file_path = self.get_show_file_path(show_obj)
 
             try:
-                with io.open(nfo_file_path, 'rb') as xmlFileObj:
-                    showXML = etree.ElementTree(file=xmlFileObj)
+                with io.open(nfo_file_path, 'rb') as xml_file_obj:
+                    show_xml = etree.ElementTree(file=xml_file_obj)
 
-                indexerid = showXML.find('id')
+                indexerid = show_xml.find('id')
 
-                root = showXML.getroot()
+                root = show_xml.getroot()
                 if indexerid is not None:
                     indexerid.text = str(show_obj.indexerid)
                 else:
@@ -311,7 +311,7 @@ class GenericMetadata(object):
                 # Make it purdy
                 helpers.indent_xml(root)
 
-                showXML.write(nfo_file_path, encoding='UTF-8')
+                show_xml.write(nfo_file_path, encoding='UTF-8')
                 helpers.chmod_as_parent(nfo_file_path)
 
                 return True
@@ -967,31 +967,35 @@ class GenericMetadata(object):
                   {'name': self.name, 'location': folder})
 
         try:
-            with io.open(metadata_path, 'rb') as xmlFileObj:
-                showXML = etree.ElementTree(file=xmlFileObj)
+            with io.open(metadata_path, 'rb') as xml_file_obj:
+                show_xml = etree.ElementTree(file=xml_file_obj)
 
-            uniqueid = showXML.find("uniqueid[@default='true']")
+            uniqueid = show_xml.find("uniqueid[@default='true']")
             if (
-                showXML.findtext('title') is None or
-                (showXML.findtext('tvdbid') is None and showXML.findtext('id') is None and showXML.find("uniqueid[@default='true']") is None)
+                show_xml.findtext('title') is None
+                or (
+                    show_xml.findtext('tvdbid') is None
+                    and show_xml.findtext('id') is None
+                    and show_xml.find("uniqueid[@default='true']") is None
+                )
             ):
                 log.debug(
                     'Invalid info in tvshow.nfo (missing name or id): {0} {1} {2}',
-                    showXML.findtext('title'), showXML.findtext('tvdbid'), showXML.findtext('id'),
+                    show_xml.findtext('title'), show_xml.findtext('tvdbid'), show_xml.findtext('id'),
                 )
                 return empty_return
 
-            name = showXML.findtext('title')
+            name = show_xml.findtext('title')
 
             if uniqueid is not None and uniqueid.get('type') and indexer_name_mapping.get(uniqueid.get('type')):
                 indexer = indexer_name_mapping.get(uniqueid.get('type'))
                 indexer_id = int(ImdbIdentifier(uniqueid.text).series_id)
             else:
                 # For legacy nfo's
-                if showXML.findtext('tvdbid'):
-                    indexer_id = int(showXML.findtext('tvdbid'))
-                elif showXML.findtext('id'):
-                    indexer_id = int(showXML.findtext('id'))
+                if show_xml.findtext('tvdbid'):
+                    indexer_id = int(show_xml.findtext('tvdbid'))
+                elif show_xml.findtext('id'):
+                    indexer_id = int(show_xml.findtext('id'))
                 else:
                     log.warning('Empty <id> or <tvdbid> field in NFO, unable to find a ID')
                     return empty_return
@@ -1002,8 +1006,8 @@ class GenericMetadata(object):
                     return empty_return
 
                 indexer = None
-                if showXML.findtext('episodeguide/url'):
-                    epg_url = showXML.findtext('episodeguide/url').lower()
+                if show_xml.findtext('episodeguide/url'):
+                    epg_url = show_xml.findtext('episodeguide/url').lower()
                     if str(indexer_id) in epg_url:
                         if 'thetvdb.com' in epg_url:
                             indexer = INDEXER_TVDBV2

@@ -1,16 +1,16 @@
 # coding=utf-8
-
+"""Plex metadata module."""
 
 from __future__ import unicode_literals
 
-import os
 import io
 import logging
+import os
 
 from medusa import helpers
 from medusa.indexers.imdb.api import ImdbIdentifier
-from medusa.metadata import generic
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.metadata import generic
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -108,15 +108,13 @@ class PlexMetadata(generic.GenericMetadata):
 
     def write_show_file(self, show_obj):
         """
-        Generates and writes show_obj's metadata under the given path to the
-        filename given by get_show_file_path()
+        Generate and write show_obj's metadata under the given path to the filename given by get_show_file_path().
 
         show_obj: Series object for which to create the metadata
 
         Note that this method expects that _show_data will return a string,
         which will be written to a text file.
         """
-
         data = self._show_data(show_obj)
 
         if not data:
@@ -154,7 +152,7 @@ class PlexMetadata(generic.GenericMetadata):
 
     def _ep_data(self, current_content, ep_obj):
         """
-        Creates an elementTree XML structure for an KODI-style episode.nfo and returns the resulting data object.
+        Create an elementTree XML structure for an KODI-style episode.nfo and returns the resulting data object.
 
         show_obj: a Episode instance to create the NFO for
         """
@@ -232,6 +230,7 @@ class PlexMetadata(generic.GenericMetadata):
         return True
 
     def create_show_metadata(self, show_obj):
+        """Create show metadata."""
         if self.show_metadata and show_obj and (not self._has_show_metadata(show_obj) or self.overwrite_nfo):
             log.debug(
                 'Metadata provider {name} creating series metadata for {series}',
@@ -241,6 +240,7 @@ class PlexMetadata(generic.GenericMetadata):
         return False
 
     def create_episode_metadata(self, ep_obj):
+        """Create episode metadata."""
         if self.episode_metadata and ep_obj:
             if not self._has_show_metadata(ep_obj.series):
                 self.write_show_file(ep_obj.series)
@@ -253,38 +253,8 @@ class PlexMetadata(generic.GenericMetadata):
 
     # Override with empty methods for unsupported features
     def retrieveShowMetadata(self, folder):
-        # no show metadata generated, we abort this lookup function
+        """Disable retrieve show by metadata."""
         return None, None, None
-
-    # def create_show_metadata(self, show_obj, force=False):
-    #     pass
-
-    # def update_show_indexer_metadata(self, show_obj):
-    #     pass
-
-    # def get_show_file_path(self, show_obj):
-    #     pass
-
-    # def create_episode_metadata(self, ep_obj):
-    #     pass
-
-    # def create_fanart(self, show_obj):
-    #     pass
-
-    # def create_banner(self, show_obj):
-    #     pass
-
-    # def create_season_posters(self, show_obj):
-    #     pass
-
-    # def create_season_banners(self, ep_obj):
-    #     pass
-
-    # def create_season_all_poster(self, show_obj):
-    #     pass
-
-    # def create_season_all_banner(self, show_obj):
-    #     pass
 
 
 # present a standard "interface" from the module
