@@ -608,6 +608,7 @@ class MetadataStructureField(PatchField):
             'sony_ps3': ListField(app, 'METADATA_PS3'),
             'tivo': ListField(app, 'METADATA_TIVO'),
             'wdtv': ListField(app, 'METADATA_WDTV'),
+            'plex': ListField(app, 'METADATA_PLEX'),
         }
 
         map_values = OrderedDict([
