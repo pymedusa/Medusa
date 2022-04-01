@@ -372,7 +372,8 @@ export default {
             shows: state => state.shows.shows,
             layout: state => state.config.layout,
             showQueue: state => state.config.system.showQueue,
-            showQueueItems: state => state.shows.queueitems
+            showQueueItems: state => state.shows.queueitems,
+            client: state => state.auth.client
         }),
         filteredShows() {
             const { shows, errors } = this;
