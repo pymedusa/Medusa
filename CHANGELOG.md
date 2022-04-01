@@ -1,7 +1,11 @@
 ## 0.5.28 (01-04-2022)
 
+#### Improvements
+- Send discord notification as an embed ([10464](https://github.com/pymedusa/Medusa/pull/10464))
+
 #### Fixes
 - Fix Mass update page ([10447](https://github.com/pymedusa/Medusa/pull/10447))
+- Fix re-load episodes when navigatin from testRename to displayShow ([10465](https://github.com/pymedusa/Medusa/pull/10465))
 
 ## 0.5.27 (29-03-2022)
 
