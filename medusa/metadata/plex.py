@@ -21,8 +21,7 @@ class PlexMetadata(generic.GenericMetadata):
     Metadata generation class for Plex (.plexmatch).
 
     The following file structure is used:
-
-    show_root/.plexmatch                         (series level match file)
+    show_root/.plexmatch (series level match file)
     """
 
     def __init__(self,
@@ -66,16 +65,11 @@ class PlexMetadata(generic.GenericMetadata):
 
     def _show_data(self, show_obj):
         """
-        Creates an elementTree XML structure for a MediaBrowser-style series.xml
+        Create a .plexmatch file.
+
         returns the resulting data object.
-
-        show_obj: a Series instance to create the NFO for
+        show_obj: a Series instance to create the .plexmatch for
         """
-        # my_show = self._get_show_data(show_obj)
-
-        # If by any reason it couldn't get the shows indexer data let's not go throught the rest of this method
-        # as that pretty useless.
-
         file_content = f'Title: {show_obj.title}\n'
         file_content += f'Year: {show_obj.start_year}\n'
 
@@ -120,31 +114,31 @@ class PlexMetadata(generic.GenericMetadata):
         if not data:
             return False
 
-        nfo_file_path = self.get_show_file_path(show_obj)
-        nfo_file_dir = os.path.dirname(nfo_file_path)
+        flexmatch_file_path = self.get_show_file_path(show_obj)
+        flexmatch_file_dir = os.path.dirname(flexmatch_file_path)
 
         try:
-            if not os.path.isdir(nfo_file_dir):
+            if not os.path.isdir(flexmatch_file_dir):
                 log.debug(
                     'Metadata directory did not exist, creating it at {location}',
-                    {'location': nfo_file_dir}
+                    {'location': flexmatch_file_dir}
                 )
-                os.makedirs(nfo_file_dir)
-                helpers.chmod_as_parent(nfo_file_dir)
+                os.makedirs(flexmatch_file_dir)
+                helpers.chmod_as_parent(flexmatch_file_dir)
 
             log.debug(
-                'Writing show nfo file to {location}',
-                {'location': nfo_file_dir}
+                'Writing show flexmatch file to {location}',
+                {'location': flexmatch_file_dir}
             )
 
-            nfo_file = io.open(nfo_file_path, 'wb')
-            nfo_file.write(data.encode('utf-8'))
-            nfo_file.close()
-            helpers.chmod_as_parent(nfo_file_path)
+            flexmatch_file = io.open(flexmatch_file_path, 'wb')
+            flexmatch_file.write(data.encode('utf-8'))
+            flexmatch_file.close()
+            helpers.chmod_as_parent(flexmatch_file_path)
         except IOError as error:
             log.error(
                 'Unable to write file to {location} - are you sure the folder is writable? {error}',
-                {'location': nfo_file_path, 'error': error}
+                {'location': flexmatch_file_path, 'error': error}
             )
             return False
 
@@ -152,9 +146,12 @@ class PlexMetadata(generic.GenericMetadata):
 
     def _ep_data(self, current_content, ep_obj):
         """
-        Create an elementTree XML structure for an KODI-style episode.nfo and returns the resulting data object.
+        Create an array with show plus episode info.
 
-        show_obj: a Episode instance to create the NFO for
+        All existing lines are imported. And the line with episode info for this specific
+        episode is replaced.
+
+        show_obj: a Episode instance to create the new episode / special line for.
         """
         new_data = []
         episodes = []
