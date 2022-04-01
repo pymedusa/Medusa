@@ -163,11 +163,12 @@ class PlexMetadata(generic.GenericMetadata):
 
         for line in current_content:
             line = line.strip()  # Remove the \n
-            if line.startswith('ep:'):
+            if line.lower().startswith('ep:') or line.lower().startswith('sp:'):
                 # If the episode is the same as the one we want to add, don't add it.
                 # We're going to re-add this later.
-                if line.startswith(f'ep: {ep_obj.slug}'):
+                if line.lower().startswith(f'ep: {ep_obj.slug}') or line.lower().startswith(f'sp: {ep_obj.slug}'):
                     continue
+
                 episodes.append(line)
             else:
                 new_data.append(line)
@@ -176,7 +177,10 @@ class PlexMetadata(generic.GenericMetadata):
         if ep_obj.series.location in ep_obj.location and ep_obj.location.replace(ep_obj.series.location, ''):
             location = ep_obj.location.replace(ep_obj.series.location, '')
             if location:
-                episodes.append(f'ep: {ep_obj.slug}: {location}')
+                if ep_obj.season == 0:
+                    episodes.append(f'sp: {ep_obj.episode:02d}: {location}')
+                else:
+                    episodes.append(f'ep: {ep_obj.slug}: {location}')
 
         return new_data + episodes
 
