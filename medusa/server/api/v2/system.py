@@ -147,31 +147,34 @@ class SystemHandler(BaseRequestHandler):
         """Create a backup and save to zip."""
         final_result = ''
 
-        if backup_dir:
-            source = [
-                os.path.join(app.DATA_DIR, app.APPLICATION_DB), app.CONFIG_FILE,
-                os.path.join(app.DATA_DIR, app.FAILED_DB),
-                os.path.join(app.DATA_DIR, app.CACHE_DB),
-                os.path.join(app.DATA_DIR, app.RECOMMENDED_DB)
-            ]
-            target = os.path.join(backup_dir, 'medusa-{date}.zip'.format(date=time.strftime('%Y%m%d%H%M%S')))
-            log.info(u'Starting backup to location: {location} ', {'location': target})
+        try:
+            if backup_dir:
+                source = [
+                    os.path.join(app.DATA_DIR, app.APPLICATION_DB), app.CONFIG_FILE,
+                    os.path.join(app.DATA_DIR, app.FAILED_DB),
+                    os.path.join(app.DATA_DIR, app.CACHE_DB),
+                    os.path.join(app.DATA_DIR, app.RECOMMENDED_DB)
+                ]
+                target = os.path.join(backup_dir, 'medusa-{date}.zip'.format(date=time.strftime('%Y%m%d%H%M%S')))
+                log.info(u'Starting backup to location: {location} ', {'location': target})
 
-            for (path, dirs, files) in os.walk(app.CACHE_DIR, topdown=True):
-                for dirname in dirs:
-                    if path == app.CACHE_DIR and dirname not in ['images']:
-                        dirs.remove(dirname)
-                for filename in files:
-                    source.append(os.path.join(path, filename))
+                for (path, dirs, files) in os.walk(app.CACHE_DIR, topdown=True):
+                    for dirname in dirs:
+                        if path == app.CACHE_DIR and dirname not in ['images']:
+                            dirs.remove(dirname)
+                    for filename in files:
+                        source.append(os.path.join(path, filename))
 
-            if helpers.backup_config_zip(source, target, app.DATA_DIR):
-                final_result += 'Successful backup to {location}'.format(location=target)
+                if helpers.backup_config_zip(source, target, app.DATA_DIR):
+                    final_result += 'Successful backup to {location}'.format(location=target)
+                else:
+                    final_result += 'Backup FAILED'
             else:
-                final_result += 'Backup FAILED'
-        else:
-            final_result += 'You need to choose a folder to save your backup to!'
+                final_result += 'You need to choose a folder to save your backup to!'
 
-        final_result += '<br>\n'
+            final_result += '<br>\n'
+        except Exception as error:
+            log.exception(u'Error while creating a backup. error: {error}', {'error': error})
 
         log.info(u'Finished backup to location: {location} ', {'location': target})
         return self._ok(data={'result': final_result})
