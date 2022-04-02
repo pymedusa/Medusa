@@ -98,10 +98,10 @@ export default {
             backup.status = 'loading';
 
             try {
-                const { data } = await this.client.apiRoute.get('config/backuprestore/backup', {
-                    params: { backupDir: backup.dir }, timeout: 120000
-                });
-                backup.status = data;
+                const { data } = await this.client.api.post('system/operation', {
+                    type: 'BACKUPTOZIP', backupDir: backup.dir
+                }, { timeout: 180000 });
+                backup.status = data.result;
                 backup.disabled = false;
             } catch (error) {
                 this.$snotify.error(
@@ -122,10 +122,11 @@ export default {
             restore.status = 'loading';
 
             try {
-                const { data } = await this.client.apiRoute.get('config/backuprestore/restore', {
-                    params: { backupFile: restore.file }, timeout: 120000
-                });
-                restore.status = data;
+                const { data } = await this.client.api.post('system/operation', {
+                    type: 'RESTOREFROMZIP', backupFile: restore.file
+                }, { timeout: 180000 });
+
+                restore.status = data.result;
                 restore.disabled = false;
             } catch (error) {
                 this.$snotify.error(
