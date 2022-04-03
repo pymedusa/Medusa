@@ -63,7 +63,7 @@ class FailedProcessor(object):
 
         if segment:
             self.log(logger.DEBUG, 'Created segment of episodes [{segment}] from release: {release}'.format(
-                segment=','.join(ep.episode for ep in segment),
+                segment=','.join(str(ep.episode) for ep in segment),
                 release=release_name
             ))
 
