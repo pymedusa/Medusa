@@ -1,6 +1,7 @@
 ## Unreleased
 
 #### New Features
+- Support for Plex metadata (.plexmatch) ([10466](https://github.com/pymedusa/Medusa/pull/10466)) 
 
 #### Improvements
 
