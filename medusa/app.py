@@ -229,6 +229,7 @@ class MedusaApp(object):
         self.METADATA_WDTV = []
         self.METADATA_TIVO = []
         self.METADATA_MEDE8ER = []
+        self.METADATA_PLEX = []
 
         self.QUALITY_DEFAULT = None
         self.STATUS_DEFAULT = None

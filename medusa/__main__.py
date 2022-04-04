@@ -1009,6 +1009,7 @@ class Application(object):
             app.METADATA_WDTV = check_setting_list(app.CFG, 'General', 'metadata_wdtv', ['0'] * 11, transform=int)
             app.METADATA_TIVO = check_setting_list(app.CFG, 'General', 'metadata_tivo', ['0'] * 11, transform=int)
             app.METADATA_MEDE8ER = check_setting_list(app.CFG, 'General', 'metadata_mede8er', ['0'] * 11, transform=int)
+            app.METADATA_PLEX = check_setting_list(app.CFG, 'General', 'metadata_plex', ['0'] * 11, transform=int)
 
             app.HOME_LAYOUT = check_setting_str(app.CFG, 'GUI', 'home_layout', 'poster')
             app.HISTORY_LAYOUT = check_setting_str(app.CFG, 'GUI', 'history_layout', 'detailed')
@@ -1236,7 +1237,8 @@ class Application(object):
                                        (app.METADATA_PS3, metadata.ps3),
                                        (app.METADATA_WDTV, metadata.wdtv),
                                        (app.METADATA_TIVO, metadata.tivo),
-                                       (app.METADATA_MEDE8ER, metadata.mede8er)]:
+                                       (app.METADATA_MEDE8ER, metadata.mede8er),
+                                       (app.METADATA_PLEX, metadata.plex)]:
                 (cur_metadata_config, cur_metadata_class) = cur_metadata_tuple
                 tmp_provider = cur_metadata_class.metadata_class()
                 tmp_provider.set_config(cur_metadata_config)
@@ -1687,6 +1689,7 @@ class Application(object):
         new_config['General']['metadata_wdtv'] = app.METADATA_WDTV
         new_config['General']['metadata_tivo'] = app.METADATA_TIVO
         new_config['General']['metadata_mede8er'] = app.METADATA_MEDE8ER
+        new_config['General']['metadata_plex'] = app.METADATA_PLEX
 
         new_config['General']['backlog_days'] = int(app.BACKLOG_DAYS)
 
