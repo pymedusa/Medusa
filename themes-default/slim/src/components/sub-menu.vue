@@ -135,12 +135,9 @@ export default {
 <style scoped>
 /* Theme-specific styling adds the rest */
 #sub-menu-wrapper {
-    position: fixed;
+    position: relative;
     width: 100%;
-    right: 0;
-    left: 0;
     z-index: 1;
-    top: 40px;
 }
 
 #sub-menu-container {
@@ -158,16 +155,5 @@ export default {
 #sub-menu > a {
     float: right;
     margin-left: 4px;
-}
-
-@media (max-width: 768px) {
-    #sub-menu-container {
-        margin-top: -12px;
-    }
-
-    #sub-menu-wrapper {
-        display: flex;
-        top: 60px;
-    }
 }
 </style>

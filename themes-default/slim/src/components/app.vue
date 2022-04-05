@@ -5,7 +5,7 @@
             <app-header />
             <sub-menu />
             <div id="content-row">
-                <submenu-offset />
+                <!-- <submenu-offset /> -->
                 <div id="content-col" :class="layout.wide ? 'col-lg-12 col-md-12' : 'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1'">
                     <vue-snotify />
                     <alerts />
@@ -30,7 +30,7 @@ import Alerts from './alerts.vue';
 import AppHeader from './app-header.vue';
 import SubMenu from './sub-menu.vue';
 import AppFooter from './app-footer.vue';
-import { LoadProgressBar, ScrollButtons, SubmenuOffset } from './helpers';
+import { LoadProgressBar, ScrollButtons } from './helpers';
 
 import { mapState } from 'vuex';
 
@@ -42,8 +42,7 @@ export default {
         AppHeader,
         LoadProgressBar,
         ScrollButtons,
-        SubMenu,
-        SubmenuOffset
+        SubMenu
     },
     computed: {
         ...mapState({
@@ -79,7 +78,7 @@ export default {
 
 @media (max-width: 768px) {
     #app {
-        padding-top: 6rem;
+        padding-top: 3.8rem;
     }
 }
 </style>

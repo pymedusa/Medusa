@@ -325,7 +325,7 @@ class Application(object):
 
         # Check if we need to perform a restore first
         restore_dir = os.path.join(app.DATA_DIR, 'restore')
-        if os.path.exists(restore_dir):
+        if os.path.exists(restore_dir) and os.listdir(restore_dir):
             success = self.restore_db(restore_dir, app.DATA_DIR)
             if self.console_logging:
                 sys.stdout.write('Restore: restoring DB and config.ini %s!\n' % ('FAILED', 'SUCCESSFUL')[success])
