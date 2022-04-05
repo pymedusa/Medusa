@@ -36,7 +36,7 @@ class MedusaApp(object):
         self.EXT3_FOLDER = 'ext3'
         self.STATIC_FOLDER = 'static'
         self.UNKNOWN_RELEASE_GROUP = 'Medusa'
-        
+
         # Backup related
         self.BACKUP_DIR = 'backup'
         self.BACKUP_FILENAME_PREFIX = 'backup'
