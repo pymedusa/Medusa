@@ -1052,6 +1052,9 @@ class Application(object):
             app.CACHE_RECOMMENDED_TRAKT_LISTS = check_setting_list(app.CFG, 'Recommended', 'trakt_lists', app.CACHE_RECOMMENDED_TRAKT_LISTS)
             app.CACHE_RECOMMENDED_PURGE_AFTER_DAYS = check_setting_int(app.CFG, 'Recommended', 'purge_after_days', 180)
 
+            app.BACKUP_CACHE_DB = check_setting_int(app.CFG, 'Backup', 'cache_db', 1)
+            app.BACKUP_CACHE_FILES = check_setting_int(app.CFG, 'Backup', 'cache_files', 1)
+
             # Initialize trakt config path.
             trakt.core.CONFIG_PATH = os.path.join(app.CACHE_DIR, '.pytrakt.json')
             trakt.core.load_config()
@@ -1756,6 +1759,10 @@ class Application(object):
         new_config['Blackhole'] = {}
         new_config['Blackhole']['nzb_dir'] = app.NZB_DIR
         new_config['Blackhole']['torrent_dir'] = app.TORRENT_DIR
+
+        new_config['Backup'] = {}
+        new_config['Backup']['cache_db'] = int(app.BACKUP_CACHE_DB)
+        new_config['Backup']['cache_files'] = int(app.BACKUP_CACHE_FILES)
 
         # dynamically save provider settings
         all_providers = providers.sorted_provider_list()

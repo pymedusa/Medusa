@@ -562,6 +562,28 @@
                                 </fieldset>
                             </div><!-- /col -->
                         </div>
+
+                        <div class="row component-group">
+                            <div class="component-group-desc col-xs-12 col-md-2">
+                                <h3>Backup</h3>
+                            </div>
+                            <div class="col-xs-12 col-md-10">
+                                <fieldset class="component-group-list">
+                                    <config-toggle-slider v-model="general.backup.cacheDb" label="Backup cache related databases" id="cache_db">
+                                        <p>Include cache.db, failed.db, and recommended.db to the backup.</p>
+                                        <p><span style="color: red">Note!</span> These files are not mandatory for a proper restore, but could potentially cause timeouts when backing up or trying to update medusa.</p>
+                                    </config-toggle-slider>
+
+                                    <config-toggle-slider v-model="general.backup.cacheFiles" label="Backup the cache folder (excluding the images)" id="cache_files">
+                                        <p>Include everything in the cache folder to the backup.</p>
+                                        <p><span style="color: red">Note!</span> These files are not mandatory for a proper restore, but could potentially cause timeouts when backing up or trying to update medusa.</p>
+                                    </config-toggle-slider>
+
+                                    <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
+                                </fieldset>
+                            </div><!-- /col -->
+                        </div>
+
                     </div><!-- /component-group3 //-->
                     <br>
                     <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">{{system.dataDir}}</span></b> </h6>
