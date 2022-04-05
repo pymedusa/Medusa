@@ -149,20 +149,25 @@ class SystemHandler(BaseRequestHandler):
 
         if backup_dir:
             source = [
-                os.path.join(app.DATA_DIR, app.APPLICATION_DB), app.CONFIG_FILE,
-                os.path.join(app.DATA_DIR, app.FAILED_DB),
-                os.path.join(app.DATA_DIR, app.CACHE_DB),
-                os.path.join(app.DATA_DIR, app.RECOMMENDED_DB)
+                os.path.join(app.DATA_DIR, app.APPLICATION_DB), app.CONFIG_FILE
             ]
+
+            if app.BACKUP_CACHE_DB:
+                source += [
+                    os.path.join(app.DATA_DIR, app.FAILED_DB),
+                    os.path.join(app.DATA_DIR, app.CACHE_DB),
+                    os.path.join(app.DATA_DIR, app.RECOMMENDED_DB)
+                ]
             target = os.path.join(backup_dir, 'medusa-{date}.zip'.format(date=time.strftime('%Y%m%d%H%M%S')))
             log.info(u'Starting backup to location: {location} ', {'location': target})
 
-            for (path, dirs, files) in os.walk(app.CACHE_DIR, topdown=True):
-                for dirname in dirs:
-                    if path == app.CACHE_DIR and dirname not in ['images']:
-                        dirs.remove(dirname)
-                for filename in files:
-                    source.append(os.path.join(path, filename))
+            if app.BACKUP_CACHE_FILES:
+                for (path, dirs, files) in os.walk(app.CACHE_DIR, topdown=True):
+                    for dirname in dirs:
+                        if path == app.CACHE_DIR and dirname not in ['images']:
+                            dirs.remove(dirname)
+                    for filename in files:
+                        source.append(os.path.join(path, filename))
 
             if helpers.backup_config_zip(source, target, app.DATA_DIR):
                 final_result += 'Successful backup to {location}'.format(location=target)

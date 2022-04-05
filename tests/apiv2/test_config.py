@@ -176,6 +176,10 @@ def config_main(monkeypatch, app_config):
     section_data['providers']['prowlarr']['url'] = app.PROWLARR_URL
     section_data['providers']['prowlarr']['apikey'] = app.PROWLARR_APIKEY
 
+    section_data['backup'] = {}
+    section_data['backup']['cacheDb'] = bool(app.BACKUP_CACHE_DB)
+    section_data['backup']['cacheFiles'] = bool(app.BACKUP_CACHE_FILES)
+
     return section_data
 
 

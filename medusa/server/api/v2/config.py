@@ -142,6 +142,9 @@ class ConfigHandler(BaseRequestHandler):
         'webInterface.httpsKey': StringField(app, 'HTTPS_KEY'),
         'webInterface.handleReverseProxy': BooleanField(app, 'HANDLE_REVERSE_PROXY'),
 
+        'backup.cacheDb': BooleanField(app, 'BACKUP_CACHE_DB'),
+        'backup.cacheFiles': BooleanField(app, 'BACKUP_CACHE_FILES'),
+
         'webRoot': StringField(app, 'WEB_ROOT'),
         'cpuPreset': StringField(app, 'CPU_PRESET'),
         'sslVerify': BooleanField(app, 'SSL_VERIFY'),
@@ -739,6 +742,10 @@ class DataGenerator(object):
         section_data['webInterface']['httpsCert'] = app.HTTPS_CERT
         section_data['webInterface']['httpsKey'] = app.HTTPS_KEY
         section_data['webInterface']['handleReverseProxy'] = bool(app.HANDLE_REVERSE_PROXY)
+
+        section_data['backup'] = {}
+        section_data['backup']['cacheDb'] = bool(app.BACKUP_CACHE_DB)
+        section_data['backup']['cacheFiles'] = bool(app.BACKUP_CACHE_FILES)
 
         section_data['webRoot'] = app.WEB_ROOT
         section_data['cpuPreset'] = app.CPU_PRESET
