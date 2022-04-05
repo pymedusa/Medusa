@@ -141,9 +141,13 @@ class MoreThanTVProvider(TorrentProvider):
                     if row.find('img', alt='Nuked'):
                         continue
 
+                    title = cells[labels.index('Name')].find('a', class_='overlay_torrent').get_text(strip=True)
+                    download_url = urljoin(self.url, cells[labels.index('Name')].find('a')['href'])
+                    if not all([title, download_url]):
+                        continue
+
                     seeders = int(cells[labels.index('Seeders')].get_text(strip=True).replace(',', ''))
                     leechers = int(cells[labels.index('Leechers')].get_text(strip=True).replace(',', ''))
-                    title = cells[labels.index('Name')].find('a').get_text(strip=True)
 
                     # Filter unseeded torrent
                     if seeders < self.minseed:
@@ -158,29 +162,22 @@ class MoreThanTVProvider(TorrentProvider):
                     torrent_size = cells[labels.index('Size')].get_text(strip=True)
                     size = convert_size(torrent_size, units=units) or -1
 
-                    pubdate_raw = cells[4].find('span')['title']
+                    pubdate_raw = cells[3].find('span')['title']
                     pubdate = self.parse_pubdate(pubdate_raw)
 
-                    releases = cells[labels.index('Name')].find('table').find_all('tr')
-                    for release in releases:
-                        release_title = release.find('td').get_text(strip=True)
-                        download_url = urljoin(self.url, release.find('a')['href'])
-                        if not all([release_title, download_url]):
-                            continue
+                    item = {
+                        'title': title,
+                        'link': download_url,
+                        'size': size,
+                        'seeders': seeders,
+                        'leechers': leechers,
+                        'pubdate': pubdate,
+                    }
+                    if mode != 'RSS':
+                        log.debug('Found result: {0} with {1} seeders and {2} leechers',
+                                  title, seeders, leechers)
 
-                        item = {
-                            'title': release_title,
-                            'link': download_url,
-                            'size': size,
-                            'seeders': seeders,
-                            'leechers': leechers,
-                            'pubdate': pubdate,
-                        }
-                        if mode != 'RSS':
-                            log.debug('Found result: {0} with {1} seeders and {2} leechers',
-                                      title, seeders, leechers)
-
-                        items.append(item)
+                    items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
                     log.exception('Failed parsing provider.')
 
