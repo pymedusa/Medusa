@@ -10,6 +10,11 @@ import { App } from './components';
 Vue.config.devtools = true;
 Vue.config.performance = true;
 
+if (document.body.getAttribute('developer') === 'True') {
+    Vue.config.devtools = true;
+    Vue.config.performance = true;
+}
+
 registerPlugins();
 
 // @TODO: Remove this before v1.0.0
