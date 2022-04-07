@@ -140,7 +140,8 @@ export default {
     },
     computed: {
         ...mapState({
-            general: state => state.config.general
+            general: state => state.config.general,
+            client: state => state.auth.client
         }),
         ...mapGetters({
             getLastReleaseName: 'getLastReleaseName'

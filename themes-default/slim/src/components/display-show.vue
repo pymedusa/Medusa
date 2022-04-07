@@ -377,6 +377,7 @@
 
 <script>
 import debounce from 'lodash/debounce';
+import Vue from 'vue';
 import { mapState, mapGetters, mapActions } from 'vuex';
 import { AppLink, PlotInfo, SceneNumberInput, SceneNumberAnimeInput } from './helpers';
 import { humanFileSize } from '../utils/core';
