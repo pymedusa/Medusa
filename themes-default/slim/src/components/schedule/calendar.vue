@@ -29,20 +29,17 @@
                 </ul>
             </div>
         </div>
-        <backstretch :slug="general.randomShowSlug" />
     </div>
 </template>
 <script>
 import { mapGetters, mapState } from 'vuex';
 import { AppLink, Asset } from '../helpers';
-import Backstretch from '../backstretch.vue';
 
 export default {
     name: 'calendar',
     components: {
         AppLink,
-        Asset,
-        Backstretch
+        Asset
     },
     computed: {
         ...mapState({

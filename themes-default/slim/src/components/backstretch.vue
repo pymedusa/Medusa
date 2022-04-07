@@ -10,7 +10,8 @@ export default {
     },
     data() {
         return {
-            created: false
+            created: false,
+            wrapper: null
         };
     },
     computed: {
@@ -53,21 +54,24 @@ export default {
                 $wrap.css('top', offset);
                 $wrap.css('opacity', opacity).fadeIn(500);
                 this.created = true;
+                this.wrapper = $wrap;
+            }
+        },
+        removeBackStretch() {
+            if (this.created) {
+                $.backstretch('destroy');
+                this.created = false;
             }
         }
     },
     destroyed() {
-        if (this.created) {
-            $.backstretch('destroy');
-        }
+        this.removeBackStretch();
     },
     activated() {
         this.setBackStretch();
     },
     deactivated() {
-        if (this.created) {
-            $.backstretch('destroy');
-        }
+        this.removeBackStretch();
     },
     watch: {
         opacity(newOpacity) {
