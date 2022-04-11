@@ -325,7 +325,7 @@ class Application(object):
 
         # Check if we need to perform a restore first
         restore_dir = os.path.join(app.DATA_DIR, 'restore')
-        if os.path.exists(restore_dir):
+        if os.path.exists(restore_dir) and os.listdir(restore_dir):
             success = self.restore_db(restore_dir, app.DATA_DIR)
             if self.console_logging:
                 sys.stdout.write('Restore: restoring DB and config.ini %s!\n' % ('FAILED', 'SUCCESSFUL')[success])
@@ -1009,6 +1009,7 @@ class Application(object):
             app.METADATA_WDTV = check_setting_list(app.CFG, 'General', 'metadata_wdtv', ['0'] * 11, transform=int)
             app.METADATA_TIVO = check_setting_list(app.CFG, 'General', 'metadata_tivo', ['0'] * 11, transform=int)
             app.METADATA_MEDE8ER = check_setting_list(app.CFG, 'General', 'metadata_mede8er', ['0'] * 11, transform=int)
+            app.METADATA_PLEX = check_setting_list(app.CFG, 'General', 'metadata_plex', ['0'] * 11, transform=int)
 
             app.HOME_LAYOUT = check_setting_str(app.CFG, 'GUI', 'home_layout', 'poster')
             app.HISTORY_LAYOUT = check_setting_str(app.CFG, 'GUI', 'history_layout', 'detailed')
@@ -1051,6 +1052,9 @@ class Application(object):
             )
             app.CACHE_RECOMMENDED_TRAKT_LISTS = check_setting_list(app.CFG, 'Recommended', 'trakt_lists', app.CACHE_RECOMMENDED_TRAKT_LISTS)
             app.CACHE_RECOMMENDED_PURGE_AFTER_DAYS = check_setting_int(app.CFG, 'Recommended', 'purge_after_days', 180)
+
+            app.BACKUP_CACHE_DB = check_setting_int(app.CFG, 'Backup', 'cache_db', 1)
+            app.BACKUP_CACHE_FILES = check_setting_int(app.CFG, 'Backup', 'cache_files', 1)
 
             # Initialize trakt config path.
             trakt.core.CONFIG_PATH = os.path.join(app.CACHE_DIR, '.pytrakt.json')
@@ -1236,7 +1240,8 @@ class Application(object):
                                        (app.METADATA_PS3, metadata.ps3),
                                        (app.METADATA_WDTV, metadata.wdtv),
                                        (app.METADATA_TIVO, metadata.tivo),
-                                       (app.METADATA_MEDE8ER, metadata.mede8er)]:
+                                       (app.METADATA_MEDE8ER, metadata.mede8er),
+                                       (app.METADATA_PLEX, metadata.plex)]:
                 (cur_metadata_config, cur_metadata_class) = cur_metadata_tuple
                 tmp_provider = cur_metadata_class.metadata_class()
                 tmp_provider.set_config(cur_metadata_config)
@@ -1687,6 +1692,7 @@ class Application(object):
         new_config['General']['metadata_wdtv'] = app.METADATA_WDTV
         new_config['General']['metadata_tivo'] = app.METADATA_TIVO
         new_config['General']['metadata_mede8er'] = app.METADATA_MEDE8ER
+        new_config['General']['metadata_plex'] = app.METADATA_PLEX
 
         new_config['General']['backlog_days'] = int(app.BACKLOG_DAYS)
 
@@ -1756,6 +1762,10 @@ class Application(object):
         new_config['Blackhole'] = {}
         new_config['Blackhole']['nzb_dir'] = app.NZB_DIR
         new_config['Blackhole']['torrent_dir'] = app.TORRENT_DIR
+
+        new_config['Backup'] = {}
+        new_config['Backup']['cache_db'] = int(app.BACKUP_CACHE_DB)
+        new_config['Backup']['cache_files'] = int(app.BACKUP_CACHE_FILES)
 
         # dynamically save provider settings
         all_providers = providers.sorted_provider_list()

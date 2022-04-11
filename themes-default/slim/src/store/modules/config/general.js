@@ -8,9 +8,6 @@ const state = {
     namingForceFolders: null,
     sourceUrl: null,
     rootDirs: [],
-    subtitles: {
-        enabled: null
-    },
     brokenProviders: [],
     logs: {
         debug: null,
@@ -26,7 +23,6 @@ const state = {
         custom: {}
     },
     cpuPreset: null,
-    subtitlesMulti: null,
     anonRedirect: null,
     recentShows: [],
     randomShowSlug: null, // @TODO: Recreate this in Vue when the webapp has a reliable list of shows to choose from.
@@ -126,6 +122,10 @@ const state = {
             url: null,
             apikey: null
         }
+    },
+    backup: {
+        cacheDb: null,
+        cacheFiles: null
     }
 };
 

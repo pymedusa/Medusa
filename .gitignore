@@ -1,6 +1,7 @@
 #  Medusa User Related   #
 ######################
 /cache/
+/cache-*/
 /Logs/
 /data/
 restore/

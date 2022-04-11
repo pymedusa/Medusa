@@ -36,9 +36,14 @@ class MedusaApp(object):
         self.EXT3_FOLDER = 'ext3'
         self.STATIC_FOLDER = 'static'
         self.UNKNOWN_RELEASE_GROUP = 'Medusa'
+
+        # Backup related
         self.BACKUP_DIR = 'backup'
         self.BACKUP_FILENAME_PREFIX = 'backup'
         self.BACKUP_FILENAME = self.BACKUP_FILENAME_PREFIX + '-{timestamp}.zip'
+        self.BACKUP_CACHE_DB = None
+        self.BACKUP_CACHE_FILES = None
+
         self.LEGACY_DB = 'sickbeard.db'
         self.APPLICATION_DB = 'main.db'
         self.FAILED_DB = 'failed.db'
@@ -229,6 +234,7 @@ class MedusaApp(object):
         self.METADATA_WDTV = []
         self.METADATA_TIVO = []
         self.METADATA_MEDE8ER = []
+        self.METADATA_PLEX = []
 
         self.QUALITY_DEFAULT = None
         self.STATUS_DEFAULT = None

@@ -44,13 +44,12 @@
         <link rel="stylesheet" type="text/css" href="css/lib/jquery.qtip-2.2.1.min.css?${sbPID}"/>
         <link rel="stylesheet" type="text/css" href="css/style.css?${sbPID}"/>
         <link rel="stylesheet" type="text/css" href="css/themed.css?${sbPID}" />
-        <link rel="stylesheet" type="text/css" href="css/themed.css?${sbPID}" />
         <link rel="stylesheet" type="text/css" href="css/print.css?${sbPID}" />
         <link rel="stylesheet" type="text/css" href="css/country-flags.css?${sbPID}"/>
         <%block name="css" />
     </head>
 
-<body web-root="${app.WEB_ROOT}">
+<body web-root="${app.WEB_ROOT}" developer="${app.DEVELOPER}">
     <div id="app-wrapper" class="container-fluid"></div>
 
     ## These contain all the Webpack-imported modules
@@ -65,30 +64,13 @@
 
     <!-- bfhlanguages used in language-select.vue -->
     <script type="text/javascript" src="js/lib/bootstrap-formhelpers.min.js?${sbPID}"></script>
-    
-    <!-- <script type="text/javascript" src="js/lib/formwizard.js?${sbPID}"></script>
-    <!-- <script type="text/javascript" src="js/lib/lazyload.js?${sbPID}"></script>
-
-    <!-- <script type="text/javascript" src="js/parsers.js?${sbPID}"></script>
-
-    <!-- <script type="text/javascript" src="js/config/init.js?${sbPID}"></script> -->
-
-    <!-- <script type="text/javascript" src="js/common/init.js?${sbPID}"></script> -->
 
     <!-- Used by components root-dirs.vue -->
     <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
 
+    <!-- Used by store/index -->
     <script type="text/javascript" src="js/notifications.js?${sbPID}"></script>
 
-    <!-- Moved to main, as I can't add it to display-show.vue, because vue templates don't allow script tags. -->
-    <!-- <script type="text/javascript" src="js/ajax-episode-search.js?${sbPID}"></script> -->
-    <!-- <script type="text/javascript" src="js/ajax-episode-subtitles.js?${sbPID}"></script> -->
-    <script>
-        if ('${bool(app.DEVELOPER)}' === 'True') {
-            Vue.config.devtools = true;
-            Vue.config.performance = true;
-        }
-    </script>
     <script src="js/app.js?${sbPID}"></script>
 </body>
 </html>

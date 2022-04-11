@@ -13,11 +13,7 @@
                 "wikiUrl": "https://github.com/pymedusa/Medusa/wiki",
                 "donationsUrl": "https://github.com/pymedusa/Medusa/wiki/Donations",
                 "sourceUrl": "https://github.com/pymedusa/Medusa",
-                "subtitlesMulti": true,
                 "namingForceFolders": false,
-                "subtitles": {
-                    "enabled": true
-                },
                 "recentShows": [
                     {
                         "showSlug": "tvdb253463",
@@ -228,6 +224,10 @@
                 "backlogOverview": {
                     "status": "all",
                     "period": "all"
+                },
+                "backup": {
+                    "cacheDb": true,
+                    "cacheFiles": true
                 }
             },
             "layout": {

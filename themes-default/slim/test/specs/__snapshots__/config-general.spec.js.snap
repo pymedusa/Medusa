@@ -1675,6 +1675,72 @@ exports[`ConfigGeneral.test.js renders 1`] = `
               </fieldset>
             </div>
           </div>
+           
+          <div
+            class="row component-group"
+          >
+            <div
+              class="component-group-desc col-xs-12 col-md-2"
+            >
+              <h3>
+                Backup
+              </h3>
+            </div>
+             
+            <div
+              class="col-xs-12 col-md-10"
+            >
+              <fieldset
+                class="component-group-list"
+              >
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="cache_db"
+                  label="Backup cache related databases"
+                  value="true"
+                >
+                  <p>
+                    Include cache.db, failed.db, and recommended.db to the backup.
+                  </p>
+                   
+                  <p>
+                    <span
+                      style="color: red;"
+                    >
+                      Note!
+                    </span>
+                     These files are not mandatory for a proper restore, but could potentially cause timeouts when backing up or trying to update medusa.
+                  </p>
+                </config-toggle-slider-stub>
+                 
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="cache_files"
+                  label="Backup the cache folder (excluding the images)"
+                  value="true"
+                >
+                  <p>
+                    Include everything in the cache folder to the backup.
+                  </p>
+                   
+                  <p>
+                    <span
+                      style="color: red;"
+                    >
+                      Note!
+                    </span>
+                     These files are not mandatory for a proper restore, but could potentially cause timeouts when backing up or trying to update medusa.
+                  </p>
+                </config-toggle-slider-stub>
+                 
+                <input
+                  class="btn-medusa config_submitter"
+                  type="submit"
+                  value="Save Changes"
+                />
+              </fieldset>
+            </div>
+          </div>
         </div>
          
         <br />
