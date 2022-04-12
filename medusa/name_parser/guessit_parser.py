@@ -59,7 +59,7 @@ allowed_countries = [
     'gb',
 ]
 
-series_re = re.compile(r'^(?P<series>.*?)(?: \(?(?:(?P<year>\d{4})|(?P<country>[A-Z]{2}))\)?)?$')
+series_re = re.compile(r'^(?P<series>.*?)(?: ?(?:(?P<year>\(\d{4}\))|(?P<country>[A-Z]{2}))?)?$')
 
 
 def guessit(name, options=None):
