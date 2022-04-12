@@ -735,9 +735,10 @@ class PostProcessor(object):
         self.is_proper = bool(parse_result.proper_tags)
 
         # if the result is complete set release name
-        if parse_result.series_name and ((parse_result.season_number is not None and parse_result.episode_numbers) or
-                                         parse_result.air_date) and parse_result.release_group:
-
+        if parse_result.series_name and (
+            (parse_result.season_number is not None and parse_result.episode_numbers)
+            or parse_result.air_date
+        ) and parse_result.release_group:
             if not self.release_name:
                 self.release_name = remove_extension(os.path.basename(parse_result.original_name))
 
