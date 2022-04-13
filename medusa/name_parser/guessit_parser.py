@@ -62,13 +62,15 @@ allowed_countries = [
 series_re = re.compile(r'^(?P<series>.*?)(?: ?(?:(?P<year>\(\d{4}\))|(?P<country>[A-Z]{2}))?)?$')
 
 
-def guessit(name, options=None):
+def guessit(name, options=None, cached=True):
     """Guess the episode information from a given release name.
 
     :param name: the release name
     :type name: str
     :param options:
     :type options: dict
+    :param cached:
+    :type cached: Boolean
     :return: the guessed properties
     :rtype: dict
     """
@@ -81,7 +83,9 @@ def guessit(name, options=None):
                               allowed_languages=allowed_languages,
                               allowed_countries=allowed_countries))
 
-    result = guessit_cache.get_or_invalidate(name, final_options)
+    result = None
+    if cached:
+        result = guessit_cache.get_or_invalidate(name, final_options)
     if not result:
         result = default_api.guessit(name, options=final_options)
         guessit_cache.add(name, result)
