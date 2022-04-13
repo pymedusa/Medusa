@@ -91,7 +91,7 @@ class PlexMetadata(generic.GenericMetadata):
                 continue
 
             if (indexer_slug == 'imdb'):
-                external_id = ImdbIdentifier(show_id).imdb_id
+                external_id = ImdbIdentifier(external_id).imdb_id
 
             externals[f'{indexer_slug}id'] = str(external_id)
 
