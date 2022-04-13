@@ -4,9 +4,8 @@ from __future__ import unicode_literals
 
 import logging
 
-import guessit
-
 from medusa.logger.adapters.style import CustomBraceAdapter
+from medusa.name_parser.guessit_parser import guessit
 from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from medusa.server.api.v2.base import BaseRequestHandler
 
@@ -53,7 +52,7 @@ class GuessitHandler(BaseRequestHandler):
                 {'release': release})
             result['error'] = str(error)
 
-        result['guess'] = guessit.guessit(release)
+        result['guess'] = guessit(release, cached=False)
         result['show'] = show
 
         return self._ok(data=dict(result))
