@@ -4,6 +4,7 @@
 from __future__ import unicode_literals
 
 import logging
+from json.decoder import JSONDecodeError
 
 from medusa import app, db
 from medusa.indexers.api import indexerApi
@@ -45,7 +46,7 @@ def get_trakt_externals(externals):
 
         try:
             result = sync.search_by_id(externals[external_key], id_type=trakt_mapping[external_key], media_type='show')
-        except (TraktException, RequestException) as error:
+        except (TraktException, RequestException, JSONDecodeError) as error:
             log.warning('Error getting external key {external}, error: {error!r}', {
                 'external': trakt_mapping[external_key], 'error': error
             })
