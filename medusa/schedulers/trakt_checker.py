@@ -8,6 +8,7 @@ import logging
 import time
 from builtins import object
 from builtins import str
+from json.decoder import JSONDecodeError
 
 from medusa import app, db, ui
 from medusa.common import ARCHIVED, DOWNLOADED, Quality, SKIPPED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, WANTED
@@ -90,7 +91,7 @@ class TraktChecker(object):
             try:
                 self.sync_watchlist()
                 self.sync_library()
-            except (TraktException, RequestException) as error:
+            except (TraktException, RequestException, JSONDecodeError) as error:
                 log.exception('Trakt exception while running trakt_checker.\nError: {error}', {'error': error})
 
         self.amActive = False
@@ -100,7 +101,7 @@ class TraktChecker(object):
         trakt_library = []
         try:
             trakt_library = sync.get_collection('shows')
-        except (TraktException, RequestException) as error:
+        except (TraktException, RequestException, JSONDecodeError) as error:
             log.info('Unable to retrieve shows from Trakt collection. Error: {error!r}', {'error': error})
 
         if not trakt_library:
@@ -126,7 +127,7 @@ class TraktChecker(object):
             # Remove all episodes from the Trakt collection for this show
             try:
                 self.remove_episode_trakt_collection(filter_show=show_obj)
-            except (TraktException, RequestException) as error:
+            except (TraktException, RequestException, JSONDecodeError) as error:
                 log.info("Unable to remove all episodes from show '{show}' from Trakt library. Error: {error!r}", {
                     'show': show_obj.name,
                     'error': error
@@ -134,7 +135,7 @@ class TraktChecker(object):
 
             try:
                 sync.remove_from_collection(create_show_structure(show_obj))
-            except (TraktException, RequestException) as error:
+            except (TraktException, RequestException, JSONDecodeError) as error:
                 log.info("Unable to remove show '{show}' from Trakt library. Error: {error!r}", {
                     'show': show_obj.name,
                     'error': error
@@ -153,7 +154,7 @@ class TraktChecker(object):
 
         try:
             result = sync.add_to_collection(create_show_structure(show_obj))
-        except (TraktException, RequestException) as error:
+        except (TraktException, RequestException, JSONDecodeError) as error:
             log.info("Unable to add show '{show}' to Trakt library. Error: {error!r}", {
                 'show': show_obj.name,
                 'error': error
@@ -239,7 +240,7 @@ class TraktChecker(object):
         try:
             sync.remove_from_collection({'shows': media_object_shows})
             self._get_show_collection()
-        except (TraktException, RequestException) as error:
+        except (TraktException, RequestException, JSONDecodeError) as error:
             log.info('Unable to remove episodes from Trakt collection. Error: {error!r}', {
                 'error': error
             })
@@ -300,7 +301,7 @@ class TraktChecker(object):
         try:
             sync.add_to_collection({'shows': media_object_shows})
             self._get_show_collection()
-        except (TraktException, RequestException) as error:
+        except (TraktException, RequestException, JSONDecodeError) as error:
             log.info('Unable to add episodes to Trakt collection. Error: {error!r}', {'error': error})
 
     def sync_watchlist(self):
@@ -382,7 +383,7 @@ class TraktChecker(object):
         try:
             sync.remove_from_collection({'shows': media_object_shows})
             self._get_episode_watchlist()
-        except (TraktException, RequestException) as error:
+        except (TraktException, RequestException, JSONDecodeError) as error:
             log.info('Unable to remove episodes from Trakt watchlist. Error: {error!r}', {
                 'error': error
             })
@@ -441,7 +442,7 @@ class TraktChecker(object):
         try:
             sync.add_to_watchlist({'shows': media_object_shows})
             self._get_episode_watchlist()
-        except (TraktException, RequestException) as error:
+        except (TraktException, RequestException, JSONDecodeError) as error:
             log.info('Unable to add episode to Trakt watchlist. Error: {error!r}', {
                 'error': error
             })
@@ -466,7 +467,7 @@ class TraktChecker(object):
         if trakt_show_objects:
             try:
                 sync.add_to_watchlist({'shows': trakt_show_objects})
-            except (TraktException, RequestException) as error:
+            except (TraktException, RequestException, JSONDecodeError) as error:
                 log.info('Unable to add shows to Trakt watchlist. Error: {error!r}', {'error': error})
             self._get_show_watchlist()
 
@@ -491,7 +492,7 @@ class TraktChecker(object):
                 try:
                     trakt_show = tv.TVShow(str(trakt_id or ImdbIdentifier(show.imdb_id).imdb_id))
                     progress = trakt_show.progress
-                except (TraktException, RequestException) as error:
+                except (TraktException, RequestException, JSONDecodeError) as error:
                     log.info("Unable to check if show '{show}' is ended/completed. Error: {error!r}", {
                         'show': show.name,
                         'error': error
@@ -726,7 +727,7 @@ class TraktChecker(object):
         """Get episodes watchlist."""
         try:
             self.episode_watchlist = sync.get_watchlist('episodes')
-        except (TraktException, RequestException) as error:
+        except (TraktException, RequestException, JSONDecodeError) as error:
             log.info(u'Unable to retrieve episodes from Trakt watchlist. Error: {error!r}', {'error': error})
             return False
         return True
@@ -735,7 +736,7 @@ class TraktChecker(object):
         """Get show collection."""
         try:
             self.collection_list = sync.get_collection('shows')
-        except (TraktException, RequestException) as error:
+        except (TraktException, RequestException, JSONDecodeError) as error:
             log.info('Unable to retrieve shows from Trakt collection. Error: {error!r}', {'error': error})
             return False
         return True

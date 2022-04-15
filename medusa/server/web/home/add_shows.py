@@ -3,6 +3,7 @@
 from __future__ import unicode_literals
 
 import logging
+from json.decoder import JSONDecodeError
 
 from medusa import app, ui
 from medusa.helpers import get_showname_from_indexer
@@ -86,7 +87,7 @@ class HomeAddShows(Home):
 
             ui.notifications.message('Success!',
                                      "Added show '{0}' to blacklist".format(show_name))
-        except (TraktException, RequestException) as error:
+        except (TraktException, RequestException, JSONDecodeError) as error:
             ui.notifications.error('Error!',
                                    "Unable to add show '{0}' to blacklist. Check logs.".format(show_name))
             log.warning("Error while adding show '{name}' to trakt blacklist: {error}",

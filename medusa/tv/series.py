@@ -1631,7 +1631,9 @@ class Series(TV):
         if self.indexer_api.indexer == INDEXER_IMDB:
             self.externals['imdb_id'] = ImdbIdentifier(getattr(indexed_show, 'id')).series_id
 
-        self.imdb_id = ImdbIdentifier(self.externals.get('imdb_id')).imdb_id or getattr(indexed_show, 'imdb_id', '')
+        self.imdb_id = None
+        if self.externals.get('imdb_id') or getattr(indexed_show, 'imdb_id', ''):
+            self.imdb_id = ImdbIdentifier(self.externals.get('imdb_id')).imdb_id or getattr(indexed_show, 'imdb_id', '')
 
         if getattr(indexed_show, 'airs_dayofweek', '') and getattr(indexed_show, 'airs_time', ''):
             self.airs = '{airs_day_of_week} {airs_time}'.format(airs_day_of_week=indexed_show['airs_dayofweek'],

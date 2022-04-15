@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 import logging
 import traceback
 from builtins import object
+from json.decoder import JSONDecodeError
 
 from imdbpie.exceptions import ImdbAPIError
 
@@ -1200,7 +1201,7 @@ class QueueItemRemove(ShowQueueItem):
         if app.USE_TRAKT:
             try:
                 app.trakt_checker_scheduler.action.remove_show_trakt_library(self.show)
-            except (TraktException, RequestException) as error:
+            except (TraktException, RequestException, JSONDecodeError) as error:
                 log.warning(
                     '{id}: Unable to delete show {show} from Trakt.'
                     ' Please remove manually otherwise it will be added again.'
