@@ -81,7 +81,7 @@ def guessit(name, options=None, cached=True):
                               expected_title=get_expected_titles(app.showList),
                               expected_group=expected_groups,
                               allowed_languages=allowed_languages,
-                              allowed_countries=allowed_countries))
+                              allowed_countrieNameParserCaches=allowed_countries))
 
     result = None
     if cached:
@@ -89,7 +89,8 @@ def guessit(name, options=None, cached=True):
     if not result:
         log.debug('New guessit parse for item {name}', {'name': name})
         result = default_api.guessit(name, options=final_options)
-        guessit_cache.add(name, result)
+        # We don't want to cache at this point. As this is a bare guessit result.
+        # Meaning we haven't been able to calculate any season scene exception at this point.
 
     result['parsing_time'] = time() - start_time
     return result

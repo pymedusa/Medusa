@@ -358,7 +358,7 @@ class NameParser(object):
         new_season_numbers = []
         new_absolute_numbers = []
 
-        # Try to map special episodes without an episode number using the episode title.
+        # Try to map speciacachedl episodes without an episode number using the episode title.
         if result.is_episode_special and not result.episode_numbers:
             new_episode_numbers, new_season_numbers = self._parse_special(result)
 
