@@ -3,34 +3,46 @@
         <div class="row">
             <div class="col-lg-12">
                 <p>Guessit is a library used for parsing release names. As a minimum Medusa requires a show title, season and episode (if not parsed as a season pack).</p>
-                <p>You can fill in your release name and click the `Test Release Name` button, to get the guessit response.</p>
+                <p>You can fill in your release name and click the `Test Release Name` button, to get the parse result.</p>
+                <p>Medusa uses guessit to "guess" a show title, season, episode and other information. It then uses other known info, like scene exception, season exceptions and scene numbering to enrich the result.</p>
             </div>
         </div>
         <div class="row">
             <div class="col-lg-2">
-                <span>Release name:</span>
+                <h4>Release name:</h4>
             </div>
             <div class="col-lg-10">
                 <input type="text" class="form-control input-sm" v-model="releaseName">
             </div>
         </div>
-        <div class="row">
-            <div class="col-lg-12">
-                <pre>{{JSON.stringify(guessitResult, undefined, 4)}}</pre>
+
+        <div v-if="show" class="row">
+            <div class="col-lg-12 matched-show">
+                <span style="margin-right: 0.4rem">Matched to show:</span>
+                <span><app-link :href="`home/displayShow?showslug=${show.id.slug}`">{{show.title}}</app-link></span>
             </div>
         </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <h4>Enriched parsed result</h4>
+                <pre>{{JSON.stringify(parse, undefined, 4)}}</pre>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <h4>Guessit result</h4>
+                <pre>{{JSON.stringify(guessit, undefined, 4)}}</pre>
+            </div>
+        </div>
+
         <div v-if="error" class="row">
             <div class="col-lg-12">
                 <div class="error">{{error}}</div>
             </div>
         </div>
 
-        <div v-if="show" class="row">
-            <div class="col-lg-12 matched-show">
-                <div>Matched to show:</div>
-                <div><app-link :href="`home/displayShow?showslug=${show.id.slug}`">{{show.title}}</app-link></div>
-            </div>
-        </div>
         <button class="btn-medusa config_submitter" @click.prevent="testReleaseName">Test Release Name</button>
     </div>
 </template>
@@ -46,7 +58,8 @@ export default {
     data() {
         return {
             releaseName: '',
-            guessitResult: {},
+            parse: {},
+            guessit: {},
             show: null,
             error: null
         };
@@ -64,7 +77,8 @@ export default {
             const { releaseName } = this;
             try {
                 const { data } = await this.client.api.get('guessit', { params: { release: releaseName } });
-                this.guessitResult = data.guess;
+                this.parse = data.parse;
+                this.guessit = data.vanillaGuessit;
                 this.show = data.show;
                 this.error = data.error;
             } catch (error) {
