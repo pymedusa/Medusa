@@ -596,7 +596,7 @@ class ParseResult(object):
                                              total_time=self.total_time))
         return helpers.canonical_name(obj, fmt='{key}: {value}', separator=', ')
 
-    def __dict__(self):
+    def to_dict(self):
         """Return an dict representation."""
         return OrderedDict(self.guess, **dict(season=self.season_number,
                                               episode=self.episode_numbers,

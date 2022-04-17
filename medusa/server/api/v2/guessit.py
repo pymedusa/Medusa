@@ -54,7 +54,7 @@ class GuessitHandler(BaseRequestHandler):
             result['error'] = str(error)
 
         if parse_result:
-            result['parse'] = parse_result.__dict__()
+            result['parse'] = parse_result.to_dict()
         else:
             result['parse'] = guessit(release, cached=False)
         result['vanillaGuessit'] = default_api.guessit(release)
