@@ -87,6 +87,7 @@ def guessit(name, options=None, cached=True):
     if cached:
         result = guessit_cache.get_or_invalidate(name, final_options)
     if not result:
+        log.debug('New guessit parse for item {name}', {'name': name})
         result = default_api.guessit(name, options=final_options)
         guessit_cache.add(name, result)
 
@@ -141,7 +142,7 @@ class GuessItCache(BaseCache):
             self.invalidation_object = obj
 
         if self.invalidation_object == obj:
-            log.debug('Using guessit cache item for {name}', {'name': name})
+            log.debug('Trying guessit cache for item {name}', {'name': name})
             return self.get(name)
 
         log.debug('GuessIt cache was cleared due to invalidation object change: previous={previous} new={new}',
