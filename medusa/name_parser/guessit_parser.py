@@ -81,7 +81,7 @@ def guessit(name, options=None, cached=True):
                               expected_title=get_expected_titles(app.showList),
                               expected_group=expected_groups,
                               allowed_languages=allowed_languages,
-                              allowed_countrieNameParserCaches=allowed_countries))
+                              allowed_countries=allowed_countries))
 
     result = None
     if cached:
