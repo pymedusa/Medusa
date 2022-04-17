@@ -1,7 +1,7 @@
 #!/bin/sh
 
-PUID=${PUID:-911}
-PGID=${PGID:-911}
+PUID=${PUID:0}
+PGID=${PGID:0}
 
 addgroup -g "$PGID" abc
 adduser -u "$PUID" --ingroup abc --disabled-password abc
