@@ -6,8 +6,8 @@ import logging
 
 from medusa.logger.adapters.style import CustomBraceAdapter
 from medusa.name_parser.guessit_parser import guessit
-from medusa.name_parser.rules import default_api
 from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from medusa.name_parser.rules import default_api
 from medusa.server.api.v2.base import BaseRequestHandler
 
 
