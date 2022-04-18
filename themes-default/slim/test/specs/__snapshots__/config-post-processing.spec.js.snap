@@ -3966,7 +3966,11 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                   </p>
                    
                   <p>
-                    You can fill in your release name and click the \`Test Release Name\` button, to get the guessit response.
+                    You can fill in your release name and click the \`Test Release Name\` button, to get the parse result.
+                  </p>
+                   
+                  <p>
+                    Medusa uses guessit to "guess" a show title, season, episode and other information. It then uses other known info, like scene exception, season exceptions and scene numbering to enrich the result.
                   </p>
                 </div>
               </div>
@@ -3977,9 +3981,9 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                 <div
                   class="col-lg-2"
                 >
-                  <span>
+                  <h4>
                     Release name:
-                  </span>
+                  </h4>
                 </div>
                  
                 <div
@@ -3992,19 +3996,39 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                 </div>
               </div>
                
+              <!---->
+               
               <div
                 class="row"
               >
                 <div
                   class="col-lg-12"
                 >
+                  <h4>
+                    Enriched parsed result
+                  </h4>
+                   
                   <pre>
                     {}
                   </pre>
                 </div>
               </div>
                
-              <!---->
+              <div
+                class="row"
+              >
+                <div
+                  class="col-lg-12"
+                >
+                  <h4>
+                    Guessit result
+                  </h4>
+                   
+                  <pre>
+                    {}
+                  </pre>
+                </div>
+              </div>
                
               <!---->
                
