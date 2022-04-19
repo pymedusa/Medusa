@@ -253,6 +253,10 @@ class PlexMetadata(generic.GenericMetadata):
         """Disable retrieve show by metadata."""
         return None, None, None
 
+    def update_show_indexer_metadata(self, show_obj):
+        """Disable update show metadata."""
+        return
+
 
 # present a standard "interface" from the module
 metadata_class = PlexMetadata
