@@ -114,31 +114,31 @@ class PlexMetadata(generic.GenericMetadata):
         if not data:
             return False
 
-        flexmatch_file_path = self.get_show_file_path(show_obj)
-        flexmatch_file_dir = os.path.dirname(flexmatch_file_path)
+        plexmatch_file_path = self.get_show_file_path(show_obj)
+        plexmatch_file_dir = os.path.dirname(plexmatch_file_path)
 
         try:
-            if not os.path.isdir(flexmatch_file_dir):
+            if not os.path.isdir(plexmatch_file_dir):
                 log.debug(
                     'Metadata directory did not exist, creating it at {location}',
-                    {'location': flexmatch_file_dir}
+                    {'location': plexmatch_file_dir}
                 )
-                os.makedirs(flexmatch_file_dir)
-                helpers.chmod_as_parent(flexmatch_file_dir)
+                os.makedirs(plexmatch_file_dir)
+                helpers.chmod_as_parent(plexmatch_file_dir)
 
             log.debug(
-                'Writing show flexmatch file to {location}',
-                {'location': flexmatch_file_dir}
+                'Writing show plexmatch file to {location}',
+                {'location': plexmatch_file_dir}
             )
 
-            flexmatch_file = io.open(flexmatch_file_path, 'wb')
-            flexmatch_file.write(data.encode('utf-8'))
-            flexmatch_file.close()
-            helpers.chmod_as_parent(flexmatch_file_path)
+            plexmatch_file = io.open(plexmatch_file_path, 'wb')
+            plexmatch_file.write(data.encode('utf-8'))
+            plexmatch_file.close()
+            helpers.chmod_as_parent(plexmatch_file_path)
         except IOError as error:
             log.error(
                 'Unable to write file to {location} - are you sure the folder is writable? {error}',
-                {'location': flexmatch_file_path, 'error': error}
+                {'location': plexmatch_file_path, 'error': error}
             )
             return False
 
@@ -190,11 +190,11 @@ class PlexMetadata(generic.GenericMetadata):
 
         :param ep_obj: Episode object for which to create the metadata
         """
-        # Parse existing .flexmatch data
-        flexmatch_file_path = self.get_show_file_path(ep_obj.series)
-        flexmatch_file_dir = os.path.dirname(flexmatch_file_path)
+        # Parse existing .plexmatch data
+        plexmatch_file_path = self.get_show_file_path(ep_obj.series)
+        plexmatch_file_dir = os.path.dirname(plexmatch_file_path)
 
-        with open(flexmatch_file_path) as f:
+        with open(plexmatch_file_path) as f:
             current_content = f.readlines()
 
         data = self._ep_data(current_content, ep_obj)
@@ -202,26 +202,26 @@ class PlexMetadata(generic.GenericMetadata):
         if not data:
             return False
 
-        if not (flexmatch_file_path and flexmatch_file_dir):
-            log.debug('Unable to write episode flexmatch file because episode location is missing.')
+        if not (plexmatch_file_path and plexmatch_file_dir):
+            log.debug('Unable to write episode plexmatch file because episode location is missing.')
             return False
 
         try:
-            if not os.path.isdir(flexmatch_file_dir):
+            if not os.path.isdir(plexmatch_file_dir):
                 log.debug('Metadata directory missing, creating it at {location}',
-                          {'location': flexmatch_file_dir})
-                os.makedirs(flexmatch_file_dir)
-                helpers.chmod_as_parent(flexmatch_file_dir)
+                          {'location': plexmatch_file_dir})
+                os.makedirs(plexmatch_file_dir)
+                helpers.chmod_as_parent(plexmatch_file_dir)
 
-            log.debug('Writing episode flexmatch file to {location}',
-                      {'location': flexmatch_file_path})
+            log.debug('Writing episode plexmatch file to {location}',
+                      {'location': plexmatch_file_path})
 
-            with open(flexmatch_file_path, 'w') as outfile:
+            with open(plexmatch_file_path, 'w') as outfile:
                 outfile.write('\n'.join(data))
 
-            helpers.chmod_as_parent(flexmatch_file_path)
+            helpers.chmod_as_parent(plexmatch_file_path)
         except IOError:
-            log.error('Unable to write file to {location}', {'location': flexmatch_file_path})
+            log.error('Unable to write file to {location}', {'location': plexmatch_file_path})
             return False
 
         return True
