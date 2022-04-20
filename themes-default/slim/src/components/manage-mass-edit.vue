@@ -118,6 +118,19 @@
                     </select>
                     <p>Search for subtitles.</p>
                 </config-template>
+
+                <config-toggle-slider label="Keep language" v-model="config.languageKeep" />
+                <config-template v-if="!config.languageKeep" label-for="indexerLangSelect" label="Info Language">
+                    <language-select
+                        id="indexerLangSelect"
+                        @update-language="config.language = $event"
+                        :language="config.language"
+                        :available="availableLanguages"
+                        name="indexer_lang"
+                        class="form-control form-control-inline input-sm"
+                    />
+                    <div class="clear-left"><p>This only applies to episode filenames and the contents of metadata files.</p></div>
+                </config-template>
             </fieldset>
             <button class="btn-medusa config_submitter pull-left"
                     :disabled="saving"
@@ -130,7 +143,13 @@
 
 <script>
 import { mapActions, mapState } from 'vuex';
-import { AppLink, StateSwitch, QualityChooser } from './helpers';
+import {
+    AppLink,
+    LanguageSelect,
+    ConfigToggleSlider,
+    StateSwitch,
+    QualityChooser
+} from './helpers';
 import ConfigTemplate from './helpers/config-template.vue';
 import EditRootDirs from './helpers/edit-root-dirs.vue';
 import { combineQualities } from '../utils/core';
@@ -140,7 +159,9 @@ export default {
     components: {
         AppLink,
         ConfigTemplate,
+        ConfigToggleSlider,
         EditRootDirs,
+        LanguageSelect,
         QualityChooser,
         StateSwitch
     },
@@ -164,6 +185,8 @@ export default {
                 airByDate: null,
                 dvdOrder: null,
                 subtitles: null,
+                language: null,
+                languageKeep: null,
                 rootDirs: []
             }
         };
@@ -185,12 +208,15 @@ export default {
         this.config.dvdOrder = allEqual(shows.map(show => show.config.dvdOrder)) ? shows[0].config.dvdOrder : null;
         this.config.subtitles = allEqual(shows.map(show => show.config.subtitlesEnabled)) ? shows[0].config.subtitlesEnabled : null;
         this.config.rootDirs = this.setRootDirs.map(rd => ({ old: rd, new: rd }));
+        this.config.language = shows[0].language;
+        this.config.languageKeep = !allEqual(shows.map(show => show.language));
     },
     computed: {
         ...mapState({
             general: state => state.config.general,
             layout: state => state.config.layout,
-            client: state => state.auth.client
+            client: state => state.auth.client,
+            indexers: state => state.config.indexers
         }),
         setRootDirs() {
             return [...new Set(this.shows.map(show => show.config.rootDir))];
@@ -202,6 +228,13 @@ export default {
                 return 0;
             }
             return combineQualities(qualities.allowed, qualities.preferred);
+        },
+        availableLanguages() {
+            if (this.indexers.main.validLanguages) {
+                return this.indexers.main.validLanguages.join(',');
+            }
+
+            return '';
         }
     },
     methods: {

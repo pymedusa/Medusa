@@ -36,7 +36,7 @@ class SeriesMassEdit(BaseRequestHandler):
         """Perform a mass update action."""
         required_options = (
             'paused', 'defaultEpisodeStatus', 'anime', 'sports', 'scene',
-            'airByDate', 'seasonFolders', 'subtitles', 'qualities'
+            'airByDate', 'seasonFolders', 'subtitles', 'qualities', 'language', 'languageKeep'
         )
         data = json_decode(self.request.body)
         shows = data.get('shows', [])
@@ -66,6 +66,8 @@ class SeriesMassEdit(BaseRequestHandler):
         season_folders = options.get('seasonFolders')
         subtitles = options.get('subtitles')
         qualities = options.get('qualities')
+        language = options.get('language')
+        language_keep = options.get('languageKeep')
 
         for show_slug in shows:
             identifier = SeriesIdentifier.from_slug(show_slug)
@@ -96,6 +98,7 @@ class SeriesMassEdit(BaseRequestHandler):
             new_dvd_order = show_obj.dvd_order if dvd_order is None else dvd_order
             new_season_folders = show_obj.season_folders if season_folders is None else season_folders
             new_subtitles = show_obj.subtitles if subtitles is None else subtitles
+            new_language = show_obj.lang if language_keep else language
 
             # If both are false (two empty arrays), use the shows current value.
             if not qualities['allowed'] and not qualities['preferred']:
@@ -112,7 +115,7 @@ class SeriesMassEdit(BaseRequestHandler):
                 allowed_qualities=new_quality_allowed, preferred_qualities=new_quality_preferred,
                 season_folders=new_season_folders, paused=new_paused, air_by_date=new_air_by_date, sports=new_sports,
                 dvd_order=new_dvd_order, subtitles=new_subtitles, anime=new_anime, scene=new_scene,
-                default_ep_status=new_default_ep_status,
+                default_ep_status=new_default_ep_status, language=new_language
             )
 
         return self._created(data={'errors': errors})
@@ -120,9 +123,9 @@ class SeriesMassEdit(BaseRequestHandler):
     def mass_edit_show(
         self, show_obj, location=None, allowed_qualities=None, preferred_qualities=None,
         season_folders=None, paused=None, air_by_date=None, sports=None, dvd_order=None, subtitles=None,
-        anime=None, scene=None, default_ep_status=None
+        anime=None, scene=None, default_ep_status=None, language=None
     ):
-        """A variation of the original `editShow`, where `directCall` is always true."""
+        """Variation of the original `editShow`, where `directCall` is always true."""
         allowed_qualities = allowed_qualities or []
         preferred_qualities = preferred_qualities or []
 
@@ -169,6 +172,7 @@ class SeriesMassEdit(BaseRequestHandler):
             show_obj.air_by_date = air_by_date
             show_obj.default_ep_status = int(default_ep_status)
             show_obj.dvd_order = dvd_order
+            show_obj.lang = language
 
             # if we change location clear the db of episodes, change it, write to db, and rescan
             old_location = path.normpath(show_obj._location)
