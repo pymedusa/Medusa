@@ -119,7 +119,7 @@
                     <p>Search for subtitles.</p>
                 </config-template>
 
-                <config-toggle-slider label="Keep language" v-model="config.languageKeep" />
+                <config-toggle-slider v-model="config.languageKeep" id="keep_language" label="Keep language" />
                 <config-template v-if="!config.languageKeep" label-for="indexerLangSelect" label="Info Language">
                     <language-select
                         id="indexerLangSelect"
