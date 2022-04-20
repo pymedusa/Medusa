@@ -1,16 +1,7 @@
 #!/bin/sh
 
-if [ -z "${PUID+x}" ]
-then
-    echo "Setting PUID to 0"
-    export PUID=0
-fi
-
-if [ -z "${PGID+x}" ]
-then
-    echo "Setting PGID to 0"
-    export PGID=0
-fi
+PUID=${PUID:-0}
+PGID=${PGID:-0}
 
 if [[ $PUID != "0" ]] && [[ $PGID != "0" ]]
 then
