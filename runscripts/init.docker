@@ -1,16 +1,32 @@
 #!/bin/sh
 
-PUID=${PUID:0}
-PGID=${PGID:0}
+if [ -z "${PUID+x}" ]
+then
+    echo "Setting PUID to 0"
+    export PUID=0
+fi
 
-addgroup -g "$PGID" abc
-adduser -u "$PUID" --ingroup abc --disabled-password abc
+if [ -z "${PGID+x}" ]
+then
+    echo "Setting PGID to 0"
+    export PGID=0
+fi
 
-echo "
-User uid:    $(id -u abc)
-User gid:    $(id -g abc)
--------------------------------------
-"
-chown -R abc:abc /app
-chown -R abc:abc /config
-exec su abc -s /bin/sh -c "python start.py --nolaunch --datadir /config"
+if [[ $PUID != "0" ]] && [[ $PGID != "0" ]]
+then
+  addgroup -g "$PGID" abc
+  adduser -u "$PUID" --ingroup abc --disabled-password abc
+
+  echo "
+  User uid:    $(id -u abc)
+  User gid:    $(id -g abc)
+  -------------------------------------
+  "
+  chown -R abc:abc /app
+  chown -R abc:abc /config
+
+  exec su abc -s /bin/sh -c "python start.py --nolaunch --datadir /config"
+else
+  echo "Starting medusa as root"
+  python start.py --nolaunch --datadir /config
+fi
