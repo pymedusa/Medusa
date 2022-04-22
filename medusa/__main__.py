@@ -523,10 +523,8 @@ class Application(object):
 
             if commit_branch_env and app.CUR_COMMIT_BRANCH != commit_branch_env:
                 app.CUR_COMMIT_BRANCH = commit_branch_env
-
-            if not app.BRANCH and app.CUR_COMMIT_BRANCH:
                 # Overwrite the current branch for non-git installations like docker.
-                app.BRANCH = app.CUR_COMMIT_BRANCH
+                app.BRANCH = commit_branch_env
 
             # Asume we only have these environ variables when building a docker container.
             app.RUNS_IN_DOCKER = os.environ.get('MEDUSA_COMMIT_HASH') and os.environ.get('MEDUSA_COMMIT_BRANCH')
