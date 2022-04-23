@@ -453,8 +453,10 @@ class NameParser(object):
 
         if cache_result:
             name_parser_cache.add(name, result)
+            log.debug('Parsed {name} into {result} and added to cache', {'name': name, 'result': result})
+        else:
+            log.debug('Parsed {name} into {result}', {'name': name, 'result': result})
 
-        log.debug('Parsed {name} into {result}', {'name': name, 'result': result})
         return result
 
     @staticmethod
@@ -469,8 +471,8 @@ class NameParser(object):
                                        'Parser result: {result}'.format(result=result))
 
         log.debug(
-            'Matched release {release} to a series in your database: {name}',
-            {'release': result.original_name, 'name': result.series.name}
+            'Matched release {release} to a series in your database: {name} using guessit title: {title}',
+            {'release': result.original_name, 'name': result.series.name, 'title': result.guess.get('title')}
         )
 
         if result.season_number is None and not result.episode_numbers and \
