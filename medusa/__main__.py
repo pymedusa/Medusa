@@ -527,7 +527,7 @@ class Application(object):
                 app.BRANCH = commit_branch_env
 
             # Asume we only have these environ variables when building a docker container.
-            app.RUNS_IN_DOCKER = os.environ.get('MEDUSA_COMMIT_HASH') and os.environ.get('MEDUSA_COMMIT_BRANCH')
+            app.RUNS_IN_DOCKER = CheckVersion.runs_in_docker()
 
             app.ACTUAL_CACHE_DIR = check_setting_str(app.CFG, 'General', 'cache_dir', 'cache')
 
