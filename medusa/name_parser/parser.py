@@ -432,6 +432,8 @@ class NameParser(object):
         :type name: str
         :param cache_result:
         :type cache_result: bool
+        :param use_cache:
+        :type use_cache: bool
         :return:
         :rtype: ParseResult
         """
