@@ -969,7 +969,7 @@ class ProcessResult(object):
                 continue
 
             try:
-                parse_result = NameParser().parse(name)
+                parse_result = NameParser().parse(name, use_cache=False)
                 if parse_result.series.indexerid:
                     main_db_con = db.DBConnection()
                     sql_results = main_db_con.select('SELECT subtitles FROM tv_shows WHERE indexer = ? AND indexer_id = ? LIMIT 1',

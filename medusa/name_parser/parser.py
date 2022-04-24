@@ -425,13 +425,15 @@ class NameParser(object):
         """Remove all names from given indexer and indexer_id."""
         name_parser_cache.remove_by_indexer(indexer, indexer_id)
 
-    def parse(self, name, cache_result=True):
+    def parse(self, name, cache_result=True, use_cache=True):
         """Parse the name into a ParseResult.
 
         :param name:
         :type name: str
         :param cache_result:
         :type cache_result: bool
+        :param use_cache:
+        :type use_cache: bool
         :return:
         :rtype: ParseResult
         """
@@ -440,9 +442,10 @@ class NameParser(object):
         if self.naming_pattern:
             cache_result = False
 
-        cached = name_parser_cache.get(name)
-        if cached:
-            return cached
+        if use_cache:
+            cached = name_parser_cache.get(name)
+            if cached:
+                return cached
 
         start_time = time.time()
         result = self._parse_string(name)

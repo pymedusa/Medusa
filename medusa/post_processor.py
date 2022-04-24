@@ -694,7 +694,7 @@ class PostProcessor(object):
 
         # parse the name to break it into show, season, episodes, quality and version
         try:
-            parse_result = NameParser().parse(name)
+            parse_result = NameParser().parse(name, use_cache=False)
         except (InvalidNameException, InvalidShowException) as error:
             self.log(u'{0}'.format(error), logger.DEBUG)
             return to_return
@@ -705,7 +705,7 @@ class PostProcessor(object):
                                         not parse_result.is_anime]):
             try:
                 parse_result.series.erase_cached_parse()
-                parse_result = NameParser(parse_method='anime').parse(name)
+                parse_result = NameParser(parse_method='anime').parse(name, use_cache=False)
             except (InvalidNameException, InvalidShowException) as error:
                 self.log(u'{0}'.format(error), logger.DEBUG)
                 return to_return
