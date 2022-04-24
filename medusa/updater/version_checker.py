@@ -347,4 +347,17 @@ class CheckVersion(object):
         if app.RUNS_IN_DOCKER is not None:
             return app.RUNS_IN_DOCKER
 
-        return os.environ.get('MEDUSA_COMMIT_HASH') and os.environ.get('MEDUSA_COMMIT_BRANCH')
+        try:
+            path = '/.dockerenv'
+            if os.path.isfile(path):
+                app.RUNS_IN_DOCKER = True
+                return True
+        except (EnvironmentError, OSError) as error:
+            log.info(u'Tried to check the path {path} if we are running in a docker container, '
+                     u'but an error occurred: {error}', {'path': path, 'error': error})
+
+        if os.environ.get('MEDUSA_COMMIT_HASH') and os.environ.get('MEDUSA_COMMIT_BRANCH'):
+            app.RUNS_IN_DOCKER = True
+            return True
+
+        return False
