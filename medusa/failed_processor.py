@@ -42,7 +42,7 @@ class FailedProcessor(object):
             raise FailedPostProcessingFailedException()
 
         try:
-            parse_result = NameParser().parse(release_name)
+            parse_result = NameParser().parse(release_name, use_cache=False)
         except (InvalidNameException, InvalidShowException):
             self.log(logger.WARNING, 'Not enough information to parse release name into a valid show. '
                      'Consider adding scene exceptions or improve naming for: {release}'.format
