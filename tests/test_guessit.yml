@@ -4589,3 +4589,13 @@
   release_group: "Brawl in Cell Block 9-1-1"
   container: mkv
   type: episode
+
+? "[Tsundere-Raws] Tate no Yuusha no Nariagari Season 2 - 09.mkv"
+: options: {show_type: anime}
+  title: Tate no Yuusha no Nariagari Season 2
+  absolute_episode: 9
+  episode: 9
+  release_group: Tsundere-Raws
+  container: mkv
+  mimetype: "video/x-matroska"
+  type: episode

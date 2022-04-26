@@ -771,6 +771,108 @@ class AnimeWithSeasonMultipleEpisodeNumbers(Rule):
         return to_remove, to_append
 
 
+class AnimeWithMultipleSeasons(Rule):
+    """Add season to title and remove episode for specific anime patterns.
+
+    There are animes where the title contains the format of `Title Season 2 - 01`
+    If the title can be found in expected titles, we can asume that the value after the dash (-)
+    is an episode.
+
+    Medusa rule:
+    - The title is found in expected titles.
+    - The value after the dash, is the episode.
+
+    e.g.: [Tsundere-Raws] Tate no Yuusha no Nariagari Season 2 - 03 VOSTFR (CR) [WEB 720p x264 AAC].mkv
+
+    guessit -t episode "[Tsundere-Raws] Tate no Yuusha no Nariagari Season 2 - 03 VOSTFR (CR) [WEB 720p x264 AAC].mkv"
+
+    without this rule:
+        For: [Tsundere-Raws] Tate no Yuusha no Nariagari Season 2 - 03.mkv
+        GuessIt found: {
+            "release_group": "Tsundere-Raws",
+            "title": "Tate no Yuusha no Nariagari",
+            "season": [
+                2,
+                3
+            ],
+            "container": "mkv",
+            "mimetype": "video/x-matroska",
+            "type": "episode"
+        }
+
+    with this rule:
+        For: [Tsundere-Raws] Tate no Yuusha no Nariagari Season 2 - 03.mkv
+        GuessIt found: {
+            "release_group": "Tsundere-Raws",
+            "title": "Tate no Yuusha no Nariagari Season 2",
+            "episode": 3,
+            "container": "mkv",
+            "mimetype": "video/x-matroska",
+            "type": "episode"
+        }
+    """
+
+    priority = POST_PROCESS
+    consequence = [RemoveMatch, AppendMatch]
+    ends_with_digit = re.compile(r'(_|\W)\d+$')
+
+    def when(self, matches, context):
+        """Evaluate the rule.
+
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        is_anime = context.get('show_type') == 'anime' or matches.tagged('anime')
+        if not is_anime:
+            return
+
+        titles = matches.named('title')
+        if not titles:
+            return
+
+        episodes = matches.named('episode')
+        if episodes:
+            return
+
+        seasons = matches.named('season')
+        if not seasons or len(seasons) > 1:
+            return
+
+        initiator_value = seasons[0].initiator.value
+        if '-' not in initiator_value:
+            return
+
+        if initiator_value.split('-')[0].strip() not in titles[0].value:
+            return
+
+        to_remove = []
+        to_append = []
+
+        fileparts = matches.markers.named('path')
+        for filepart in marker_sorted(fileparts, matches):
+            seasons = sorted(matches.range(filepart.start, filepart.end,
+                                           predicate=lambda match: match.name == 'season'))
+
+            title = matches.previous(seasons[0], index=-1,
+                                     predicate=lambda match: match.name == 'title' and match.end <= filepart.end)
+
+            if not title or not self.ends_with_digit.search(str(title.value)):
+                continue
+
+            season = seasons[0]
+            new_episode = copy.copy(season)
+            new_episode.name = 'episode'
+            new_episode.value = season.value
+
+            to_remove.append(season)
+            to_append.append(new_episode)
+
+        return to_remove, to_append
+
+
 class OnePreGroupAsMultiEpisode(Rule):
     """Remove last episode (one) and add the first episode as absolute.
 
@@ -1797,6 +1899,7 @@ def rules():
         FixInvalidAbsoluteReleaseGroups,
         AnimeWithSeasonAbsoluteEpisodeNumbers,
         AnimeWithSeasonMultipleEpisodeNumbers,
+        AnimeWithMultipleSeasons,
         AnimeAbsoluteEpisodeNumbers,
         AbsoluteEpisodeNumbers,
         AbsoluteEpisodeWithX26Y,
