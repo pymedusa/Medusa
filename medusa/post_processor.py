@@ -1104,9 +1104,6 @@ class PostProcessor(object):
             self.log(u'Episode has a version in it, using that: v{0}'.format(version), logger.DEBUG)
         new_ep_version = version
 
-        # check for an existing file
-        existing_file_size_comparison = self._compare_file_size(ep_obj.location)
-
         # Exempted from manual snatched downloads. If the destination episode is archived abort postprocessing.
         if not self.manually_searched and ep_obj.status == ARCHIVED:
             self.log(
@@ -1116,6 +1113,9 @@ class PostProcessor(object):
             raise EpisodePostProcessingAbortException(
                 'Destination episode has a status of Archived. Abort postprocessing.'
             )
+
+        # check for an existing file
+        existing_file_size_comparison = self._compare_file_size(ep_obj.location)
 
         if not priority_download:
             if existing_file_size_comparison == PostProcessor.EXISTS_SAME:
