@@ -896,7 +896,8 @@ class ProcessResult(object):
                 if not self.aborted:
                     self.log_and_output('Processing succeeded for {file_path}', **{'file_path': file_path})
                 else:
-                    self.log_and_output('Processing aborted for {file_path}', **{'file_path': file_path})
+                    self.log_and_output('Processing aborted for {file_path}: {process_fail_message}',
+                                        level=logging.WARNING, **{'file_path': file_path, 'process_fail_message': process_fail_message})
             else:
                 self.log_and_output('Processing failed for {file_path}: {process_fail_message}',
                                     level=logging.WARNING, **{'file_path': file_path, 'process_fail_message': process_fail_message})

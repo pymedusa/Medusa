@@ -1106,10 +1106,6 @@ class PostProcessor(object):
 
         # Exempted from manual snatched downloads. If the destination episode is archived abort postprocessing.
         if not self.manually_searched and ep_obj.status == ARCHIVED:
-            self.log(
-                'This is not a manual snatch. Destination episode has a status of Archived. Abort postprocessing.',
-                logger.INFO
-            )
             raise EpisodePostProcessingAbortException(
                 'Destination episode has a status of Archived. Abort postprocessing.'
             )
