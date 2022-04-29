@@ -94,6 +94,14 @@ class EpisodePostProcessingAbortException(ApplicationException):
     """
 
 
+class EpisodePostProcessingPostponedException(ApplicationException):
+    """
+    The episode post-processing delayed.
+
+    Meaning we abort the postprocess and not update the client status if applicable.
+    """
+
+
 class FailedPostProcessingFailedException(ApplicationException):
     """
     The failed post-processing failed
