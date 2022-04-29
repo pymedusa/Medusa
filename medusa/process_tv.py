@@ -16,7 +16,12 @@ from medusa import app, db, failed_processor, helpers, notifiers, post_processor
 from medusa.clients import torrent
 from medusa.common import DOWNLOADED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER
 from medusa.helper.common import is_sync_file
-from medusa.helper.exceptions import EpisodePostProcessingFailedException, FailedPostProcessingFailedException, ex
+from medusa.helper.exceptions import (
+    EpisodePostProcessingAbortException,
+    EpisodePostProcessingFailedException,
+    FailedPostProcessingFailedException,
+    ex
+)
 from medusa.logger.adapters.style import CustomBraceAdapter
 from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from medusa.queues import generic_queue
@@ -263,6 +268,7 @@ class ProcessResult(object):
         self.failed = failed
         self.resource_name = None
         self.result = True
+        self.aborted = False
         self.succeeded = True
         self.missed_files = []
         self.unwanted_files = []
@@ -877,12 +883,21 @@ class ProcessResult(object):
                 processor = None
                 self.result = False
                 process_fail_message = ex(error)
+            except EpisodePostProcessingAbortException as error:
+                processor = None
+                self.result = True
+                self.aborted = True
+                process_fail_message = ex(error)
 
             if processor:
                 self._output += processor._output
 
             if self.result:
-                self.log_and_output('Processing succeeded for {file_path}', **{'file_path': file_path})
+                if not self.aborted:
+                    self.log_and_output('Processing succeeded for {file_path}', **{'file_path': file_path})
+                else:
+                    self.log_and_output('Processing aborted for {file_path}: {process_fail_message}',
+                                        level=logging.WARNING, **{'file_path': file_path, 'process_fail_message': process_fail_message})
             else:
                 self.log_and_output('Processing failed for {file_path}: {process_fail_message}',
                                     level=logging.WARNING, **{'file_path': file_path, 'process_fail_message': process_fail_message})

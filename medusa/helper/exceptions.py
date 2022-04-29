@@ -86,6 +86,14 @@ class EpisodePostProcessingFailedException(ApplicationException):
     """
 
 
+class EpisodePostProcessingAbortException(ApplicationException):
+    """
+    The episode post-processing aborted.
+
+    Meaning we should not fail the postprocess and atempt to snatch a new one.
+    """
+
+
 class FailedPostProcessingFailedException(ApplicationException):
     """
     The failed post-processing failed
