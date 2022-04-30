@@ -29,12 +29,14 @@ import time
 import traceback
 from builtins import str
 
-from medusa import db, logger
+from medusa import app, db, logger
 from medusa.helper.common import episode_num
 from medusa.helper.exceptions import ex
 from medusa.indexers.api import indexerApi
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.scene_exceptions import safe_session
+
+from requests.compat import urljoin
 
 from six import viewitems
 
@@ -607,14 +609,22 @@ def xem_refresh(series_obj, force=False):
                 logger.log(u'{0} is an unsupported indexer in XEM'.format(indexerApi(indexer_id).name), logger.DEBUG)
                 return
             # XEM MAP URL
-            url = 'https://thexem.info/map/havemap?origin={0}'.format(indexerApi(indexer_id).config['xem_origin'])
+            url = urljoin(app.XEM_URL, '/map/havemap?origin={0}')
+            url = url.format(indexerApi(indexer_id).config['xem_origin'])
             parsed_json = safe_session.get_json(url)
-            if not parsed_json or 'result' not in parsed_json or 'success' not in parsed_json['result'] or 'data' not in parsed_json or str(series_id) not in parsed_json['data']:
+            if (
+                not parsed_json
+                or 'result' not in parsed_json
+                or 'success' not in parsed_json['result']
+                or 'data' not in parsed_json
+                or str(series_id) not in parsed_json['data']
+            ):
                 logger.log(u'No XEM data for show ID {0} on {1}'.format(series_id, series_obj.indexer_name), logger.DEBUG)
                 return
 
             # XEM API URL
-            url = 'https://thexem.info/map/all?id={0}&origin={1}&destination=scene'.format(series_id, indexerApi(indexer_id).config['xem_origin'])
+            url = urljoin(app.XEM_URL, '/map/all?id={0}&origin={1}&destination=scene')
+            url = url.format(series_id, indexerApi(indexer_id).config['xem_origin'])
             parsed_json = safe_session.get_json(url)
             if not parsed_json or 'result' not in parsed_json or 'success' not in parsed_json['result']:
                 logger.log(u'No XEM data for show ID {0} on {1}'.format(indexer_id, series_obj.indexer_name), logger.DEBUG)
