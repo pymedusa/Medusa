@@ -18,6 +18,8 @@ from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSafeSession
 
+from requests.compat import urljoin
+
 from six import iteritems
 
 logger = BraceAdapter(logging.getLogger(__name__))
@@ -346,7 +348,7 @@ def _get_custom_exceptions(force):
 
 def _get_xem_exceptions(force):
     xem_exceptions = defaultdict(dict)
-    url = 'https://thexem.info/map/allNames'
+    url = urljoin(app.XEM_URL, '/map/allNames')
     params = {
         'origin': None,
         'seasonNumbers': 1,
