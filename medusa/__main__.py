@@ -427,7 +427,7 @@ class Application(object):
         if app.USE_FAILED_DOWNLOADS:
             trim_history()
 
-        # # Check for metadata indexer updates for shows (Disabled until we use api)
+        # Check for metadata indexer updates for shows (Disabled until we use api)
         # app.show_update_scheduler.forceRun()
 
         # Launch browser
