@@ -262,7 +262,7 @@ class MediaInfo(object):
         lib.MediaInfo_Option(None, "Complete", "1")
         lib.MediaInfo_Option(None, "ParseSpeed", str(parse_speed))
         if lib.MediaInfo_Open(handle, filename) == 0:
-            raise RuntimeError("An eror occured while opening {0}"
+            raise RuntimeError("An error occured while opening {0}"
                     " with libmediainfo".format(filename))
         xml = lib.MediaInfo_Inform(handle, 0)
         # Delete the handle
