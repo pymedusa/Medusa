@@ -23,7 +23,7 @@ class GuessitException(Exception):
     """
 
     def __init__(self, string, options):
-        super().__init__("An internal error has occured in guessit.\n"
+        super().__init__("An internal error has occurred in guessit.\n"
                          "===================== Guessit Exception Report =====================\n"
                          f"version={__version__}\n"
                          f"string={str(string)}\n"

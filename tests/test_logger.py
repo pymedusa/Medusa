@@ -263,7 +263,7 @@ def test_read_loglines__with_traceback(logger, commit_hash, logfile):
     {  # p4: Guessit error
        # NOTE: The traceback lines are truncated, but still true to Guessit's template
         'line': (
-            '2019-06-13 16:13:15 ERROR    FINDSUBTITLES :: [c1675ff] Exception generated: An internal error has occured in guessit.'
+            '2019-06-13 16:13:15 ERROR    FINDSUBTITLES :: [c1675ff] Exception generated: An internal error has occurred in guessit.'
             '\n===================== Guessit Exception Report ====================='
             '\nversion=3.0.4.dev0'
             '\nstring=Unit,.The.3x08.Play.16.HDTV-Caph.[tvu.org.ru].srt'
@@ -296,7 +296,7 @@ def test_read_loglines__with_traceback(logger, commit_hash, logfile):
             '\n===================================================================='
         ),
         'expected': {
-            'message': 'Exception generated: An internal error has occured in guessit.',
+            'message': 'Exception generated: An internal error has occurred in guessit.',
             'issue_title': 'ValueError: list.remove(x): x not in list',
             'timestamp': datetime(year=2019, month=6, day=13, hour=16, minute=13, second=15),
             'level_name': 'ERROR',
