@@ -2,10 +2,11 @@
     <div class="search-wrapper">
         <img v-if="searchType === 'backlog'" class="epForcedSearch" :id="`${showSlug}x${episode.season}x${episode.episode}`"
              :name="`${showSlug}x${episode.season}x${episode.episode}`"
-             :ref="`search-${episode.slug}`" src="images/search16.png" height="16"
+             :ref="`search-${episode.slug}`" :src="src" height="16"
              :alt="retryDownload(episode) ? 'retry' : 'search'"
              :title="retryDownload(episode) ? 'Retry Download' : 'Forced Seach'"
              @click="queueSearch(episode)"
+             :disabled="disabled"
         >
 
         <app-link v-if="searchType === 'manual'" class="epManualSearch" :id="`${showSlug}x${episode.episode}`"
@@ -70,7 +71,7 @@ import { mapState } from 'vuex';
 import AppLink from './app-link.vue';
 
 export default {
-    name: 'select-list',
+    name: 'search',
     components: {
         AppLink
     },
@@ -94,12 +95,16 @@ export default {
         return {
             subtitleComponentInstance: null,
             failedSearchEpisodes: [],
-            backlogSearchEpisodes: []
+            backlogSearchEpisodes: [],
+            src: 'images/search16.png',
+            disabled: false
         };
     },
     computed: {
         ...mapState({
-            stateSearch: state => state.config.search
+            stateSearch: state => state.config.search,
+            client: state => state.auth.client,
+            queueitems: state => state.queue.queueitems
         })
     },
     methods: {
@@ -116,13 +121,13 @@ export default {
                 episodes: [episode.slug],
                 options: {}
             };
-            this.$refs[`search-${episode.slug}`].src = 'images/loading16-dark.gif';
+            this.src = 'images/loading16-dark.gif';
 
             this.client.api.put(`search/${searchType}`, data) // eslint-disable-line no-undef
                 .then(_ => {
-                    console.info(`started search for show: ${showSlug} episode: ${episode.slug}`);
-                    this.$refs[`search-${episode.slug}`].src = 'images/queued.png';
-                    this.$refs[`search-${episode.slug}`].disabled = true;
+                    console.info(`Queued search for show: ${showSlug} episode: ${episode.slug}`);
+                    this.src = 'images/queued.png';
+                    this.disabled = true;
                 }).catch(error => {
                     console.error(String(error));
                     this.$refs[`search-${episode.slug}`].src = 'images/no16.png';
@@ -138,9 +143,8 @@ export default {
          */
         queueSearch(episode) {
             const { $modal, search, retryDownload } = this;
-            const episodeIdentifier = episode.slug;
             if (episode) {
-                if (this.$refs[`search-${episodeIdentifier}`].disabled === true) {
+                if (this.disabled === true) {
                     return;
                 }
 
@@ -167,7 +171,32 @@ export default {
         beforeFailedSearchModalClose(event) {
             this.failedSearchEpisodes = event.params.episodes;
         }
+    },
+    watch: {
+        queueitems(queueitems) {
+            const episode = queueitems.filter(
+                q => q.name === 'BACKLOG' &&
+                q.show.id.slug === this.showSlug &&
+                q.segment.find(s => s.slug === this.episode.slug)
+            );
 
+            if (episode.length === 0) {
+                return;
+            }
+
+            const lastEp = episode.slice(-1)[0];
+            if (lastEp.inProgress && lastEp.success === null) {
+                // Search is in progress.
+                console.info(`Search runnning for show: ${this.showSlug} and episode: ${this.episode.slug}`);
+                this.src = 'images/loading16.gif';
+                this.disabled = true;
+            } else {
+                // Search finished.
+                console.log(`Search finished for ${this.episode.slug}`);
+                this.src = 'images/yes16.png';
+                this.disabled = false;
+            }
+        }
     }
 };
 </script>
