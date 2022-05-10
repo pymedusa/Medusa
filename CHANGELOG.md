@@ -3,6 +3,7 @@
 #### New Features
 
 #### Improvements
+- Bump Knowit + pymediainfo to version 0.4.0 and 5.1.0 ([10564](https://github.com/pymedusa/Medusa/pull/10564))
 
 #### Fixes
 
