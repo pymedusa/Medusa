@@ -1,5 +1,5 @@
 <template>
-    <div class="show-header-container">
+    <div v-if="slug === show.id.slug" class="show-header-container">
         <div class="row">
             <!-- @TODO: Remove data attributes -->
             <!-- @SEE: https://github.com/pymedusa/Medusa/pull/5087#discussion_r214074436 -->
@@ -63,7 +63,7 @@
                     <div class="show-poster-container">
                         <div class="row">
                             <div class="image-flex-container col-md-12">
-                                <asset v-if="show.id.slug" default-src="images/poster.png" :show-slug="show.id.slug" type="posterThumb" cls="show-image shadow" :link="true" />
+                                <asset v-if="show.id.slug" :key="show.id.slug" default-src="images/poster.png" :show-slug="show.id.slug" type="posterThumb" cls="show-image shadow" :link="true" />
                             </div>
                         </div>
                     </div>
@@ -73,7 +73,7 @@
                     <div class="show-info-container">
                         <div class="row">
                             <div class="pull-right col-lg-3 col-md-3 hidden-sm hidden-xs">
-                                <asset v-if="show.id.slug" default-src="images/banner.png" :show-slug="show.id.slug" type="banner" cls="show-banner pull-right shadow" :link="true" />
+                                <asset v-if="show.id.slug" :key="show.id.slug" default-src="images/banner.png" :show-slug="show.id.slug" type="banner" cls="show-banner pull-right shadow" :link="true" />
                             </div>
                             <div id="indexers" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
                                 <span
