@@ -6,12 +6,13 @@
         <input type="hidden" id="indexer-name" value="">
         <input type="hidden" id="series-slug" value="">
 
-        <show-header type="show"
-                     ref="show-header"
-                     @reflow="reflowLayout"
-                     :slug="showSlug"
-                     @update="statusQualityUpdate"
-                     @update-overview-status="filterByOverviewStatus = $event"
+        <show-header
+            type="show"
+            ref="show-header"
+            @reflow="reflowLayout"
+            :slug="showSlug"
+            @update="statusQualityUpdate"
+            @update-overview-status="filterByOverviewStatus = $event"
         />
 
         <div class="row">
@@ -128,29 +129,13 @@
 
                         <span v-else-if="props.column.field == 'search'">
                             <div class="full-width">
-                                <!-- <img class="epForcedSearch" :id="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`"
-                                     :name="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`"
-                                     :ref="`search-${props.row.slug}`" src="images/search16.png" height="16"
-                                     :alt="retryDownload(props.row) ? 'retry' : 'search'"
-                                     :title="retryDownload(props.row) ? 'Retry Download' : 'Forced Seach'"
-                                     @click="queueSearch(props.row)"
-                                >
-                                <app-link class="epManualSearch" :id="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`"
-                                          :name="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`"
-                                          :href="`home/snatchSelection?showslug=${show.id.slug}&season=${props.row.season}&episode=${props.row.episode}`"
-                                >
-                                    <img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search">
-                                </app-link>
-                                <img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" @click="searchSubtitle($event, props.row)"> -->
-
-                                <search :ref="`search-${props.row.slug}`" style="margin-right: 0.25rem" searchType="backlog" :showSlug="showSlug" :episode="{
+                                <search v-if="props.row.slug" :ref="`search-${props.row.slug}`" style="margin-right: 0.25rem" searchType="backlog" :showSlug="showSlug" :episode="{
                                     episode: props.row.episode, season: props.row.season, slug: props.row.slug
                                 }" />
 
-                                <search style="margin-right: 0.25rem" searchType="manual" :showSlug="showSlug" :episode="{
+                                <search v-if="props.row.slug" style="margin-right: 0.25rem" searchType="manual" :showSlug="showSlug" :episode="{
                                     episode: props.row.episode, season: props.row.season, slug: props.row.slug
                                 }" />
-
                                 <img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" @click="searchSubtitle($event, props.row)">
                             </div>
                             <div class="mobile">
@@ -287,26 +272,11 @@
 
                         <span v-else-if="props.column.field == 'search'">
                             <div class="full-width">
-                                <!-- <img class="epForcedSearch" :id="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`"
-                                     :name="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`"
-                                     :ref="`search-${props.row.slug}`" src="images/search16.png" height="16"
-                                     :alt="retryDownload(props.row) ? 'retry' : 'search'"
-                                     :title="retryDownload(props.row) ? 'Retry Download' : 'Forced Seach'"
-                                     @click="queueSearch(props.row)"
-                                >
-                                <app-link class="epManualSearch" :id="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`"
-                                          :name="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`"
-                                          :href="`home/snatchSelection?showslug=${show.id.slug}&season=${props.row.season}&episode=${props.row.episode}`"
-                                >
-                                    <img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search">
-                                </app-link>
-                                <img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" @click="searchSubtitle($event, props.row)"> -->
-
-                                <search :ref="`search-${props.row.slug}`" style="margin-right: 0.25rem" searchType="backlog" :showSlug="showSlug" :episode="{
+                                <search v-if="props.row.slug" :ref="`search-${props.row.slug}`" style="margin-right: 0.25rem" searchType="backlog" :showSlug="showSlug" :episode="{
                                     episode: props.row.episode, season: props.row.season, slug: props.row.slug
                                 }" />
 
-                                <search style="margin-right: 0.25rem" searchType="manual" :showSlug="showSlug" :episode="{
+                                <search v-if="props.row.slug" style="margin-right: 0.25rem" searchType="manual" :showSlug="showSlug" :episode="{
                                     episode: props.row.episode, season: props.row.season, slug: props.row.slug
                                 }" />
 
