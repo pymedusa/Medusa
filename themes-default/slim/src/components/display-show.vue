@@ -9,6 +9,7 @@
         <show-header
             type="show"
             ref="show-header"
+            :key="`show-header-${showSlug}`"
             @reflow="reflowLayout"
             :slug="showSlug"
             @update="statusQualityUpdate"

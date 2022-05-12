@@ -526,6 +526,10 @@ export default {
         }
     },
     mounted() {
+        if (!this.show.id.slug || this.slug !== this.show.id.slug) {
+            this.setCurrentShow(this.slug);
+        }
+
         ['load', 'resize'].map(event => {
             return window.addEventListener(event, () => {
                 this.$nextTick(() => this.reflowLayout());
@@ -541,7 +545,8 @@ export default {
     },
     methods: {
         ...mapActions([
-            'setSpecials'
+            'setSpecials',
+            'setCurrentShow'
         ]),
         combineQualities,
         humanFileSize,
