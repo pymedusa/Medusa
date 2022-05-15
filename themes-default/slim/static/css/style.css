@@ -1583,6 +1583,10 @@ span.snatched b {
     color: rgb(255, 255, 255) !important;
 }
 
+.snatchTitle:hover {
+    text-decoration: underline!important;
+}
+
 .tablesorterFanArt {
     background-color: transparent !important;
 }
