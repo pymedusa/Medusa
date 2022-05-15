@@ -157,6 +157,7 @@ export default {
                 filterOptions: {
                     enabled: true
                 },
+                width: '0',
                 hidden: getCookie('Group')
             },
             {
@@ -165,6 +166,7 @@ export default {
                 filterOptions: {
                     enabled: true
                 },
+                width: '8rem',
                 hidden: getCookie('Provider')
             },
             {
