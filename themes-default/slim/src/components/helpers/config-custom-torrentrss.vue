@@ -12,8 +12,8 @@
         <!-- Edit Provider -->
         <div v-if="currentProvider && selectedProvider !== '#add'" class="edit-provider">
             <config-textbox disabled v-model="currentProvider.name" label="Provider name" id="edit_provider_name" />
-            <config-textbox disabled v-model="currentProvider.url" label="Rss Url" id="edit_provider_url" />
-            <config-textbox v-model="currentProvider.config.cookies" label="Cookies (optional)" id="edit_provider_cookies" />
+            <config-textbox v-model="currentProvider.config.url" label="Rss Url" id="edit_provider_url" />
+            <config-textbox v-model="currentProvider.config.cookies.values" label="Cookies (optional)" id="edit_provider_cookies" />
             <config-textbox v-model="currentProvider.config.titleTag" label="Search element" id="edit_provider_search_element" />
 
             <button class="btn-medusa btn-danger torrentrss_delete" id="torrentrss_delete" @click="removeProvider">Delete</button>
@@ -87,7 +87,13 @@ export default {
         async addProvider() {
             const { name, url, cookies, searchElement } = this;
             try {
-                const response = await this.client.api.post('providers/torrentrss', { name, url, cookies, titleTag: searchElement });
+                const cookieValues = {
+                    values: cookies
+                };
+
+                const response = await this.client.api.post('providers/torrentrss', {
+                    name, url, cookies: cookieValues, titleTag: searchElement
+                });
                 this.$store.commit(ADD_PROVIDER, response.data.result);
                 this.$snotify.success(
                     `Saved provider ${name}`,

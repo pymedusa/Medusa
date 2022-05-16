@@ -12,7 +12,7 @@
         <!-- Edit Provider -->
         <div v-if="currentProvider && selectedProvider !== '#add'" class="edit-provider">
             <config-textbox disabled v-model="currentProvider.name" label="Provider name" id="edit_provider_name" />
-            <config-textbox disabled v-model="currentProvider.url" label="Site Url" id="edit_provider_url" />
+            <config-textbox v-model="currentProvider.config.url" label="Site Url" id="edit_provider_url" />
             <config-textbox type="password" v-model="currentProvider.config.apikey" label="Api key" id="edit_provider_api" />
 
             <config-template label="Categories" label-for="catids">
