@@ -176,6 +176,7 @@ export default {
         queueitems(queueitems) {
             const episode = queueitems.filter(
                 q => q.name === 'BACKLOG' &&
+                q.show &&
                 q.show.id.slug === this.showSlug &&
                 q.segment.find(s => s.slug === this.episode.slug)
             );

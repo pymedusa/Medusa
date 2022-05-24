@@ -12,7 +12,7 @@
                         </div>
                         <div class="text">
                             <span class="airtime">
-                                {{episode.airsTime}} on {{episode.network}}
+                                {{fuzzyParseTime(episode.localAirTime, false)}} on {{episode.network}}
                             </span>
                             <span class="episode-title" :title="episode.epName">
                                 {{episode.episodeSlug}} - {{episode.epName}}
@@ -47,7 +47,8 @@ export default {
             general: state => state.config.general
         }),
         ...mapGetters([
-            'groupedSchedule'
+            'groupedSchedule',
+            'fuzzyParseTime'
         ])
     }
 };
