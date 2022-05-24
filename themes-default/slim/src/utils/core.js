@@ -233,3 +233,29 @@ export const divmod = (seconds, div) => {
     const remainder = seconds % div;
     return { quotient, remainder };
 };
+
+/**
+ * Sort method for sorting a shows array with an optionally Article sorting enabled.
+ * A sort function that will sort by title, but `a`, `an` and `the` removed from the titles.
+ *
+ * @param {array} shows - Array of shows.
+ * @param {boolean} sortArticle - Include articles (the, a, an) when sorting.
+ * @returns {array} - A sorted array with shows.
+ */
+export const sortShows = (shows, sortArticle = false) => {
+    const sortShows = [...shows]; // Clone array.
+    const sortKey = title => (sortArticle ? title : title.replace(/^((?:the|a|an)\s)/i, '')).toLowerCase();
+    const sortFn = (showA, showB) => {
+        const titleA = sortKey(showA.title);
+        const titleB = sortKey(showB.title);
+        if (titleA < titleB) {
+            return -1;
+        }
+        if (titleA > titleB) {
+            return 1;
+        }
+        return 0;
+    };
+
+    return sortShows.sort(sortFn);
+};
