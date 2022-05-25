@@ -219,7 +219,7 @@ class TVmaze(BaseIndexer):
             return
 
         mapped_results = self._map_results(results, self.series_map)
-        
+
         # Sanitize the airs_time. As for some shows this might be missing.
         if not mapped_results.get('airs_time'):
             mapped_results['airs_time'] = '0:00AM'
