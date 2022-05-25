@@ -1638,6 +1638,12 @@ class Series(TV):
         if getattr(indexed_show, 'airs_dayofweek', '') and getattr(indexed_show, 'airs_time', ''):
             self.airs = '{airs_day_of_week} {airs_time}'.format(airs_day_of_week=indexed_show['airs_dayofweek'],
                                                                 airs_time=indexed_show['airs_time'])
+        else:
+            log.info(
+                '{id}: We could not determin a specific `airs_dayofweek` or `airs_time` for the show: {show}'
+                '\n We might start searching early for episodes.',
+                {'id': self.series_id, 'show': self.name}
+            )
 
         self.status = self.normalize_status(getattr(indexed_show, 'status', None))
 
