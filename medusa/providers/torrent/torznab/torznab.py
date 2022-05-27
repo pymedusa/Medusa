@@ -119,7 +119,7 @@ class TorznabProvider(TorrentProvider):
                     else:
                         search_params['season'] = ep_obj.scene_season
                         search_params['ep'] = ep_obj.scene_episode
-                elif hasattr(self, 'cap_tv_search') and 'q' in self.cap_tv_search and not force_query:
+                elif 'q' in self.cap_tv_search and not force_query:
                     search_by_q = True
                     search_params['t'] = 'tvsearch'
                     search_params['season'] = ep_obj.scene_season
