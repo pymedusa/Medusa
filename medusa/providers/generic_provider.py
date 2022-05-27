@@ -636,7 +636,7 @@ class GenericProvider(object):
 
         search_string['Episode'].append(episode_string.strip())
 
-    def _create_default_search_string(self, show_scene_name, episode, search_string, add_string=None):
+    def _create_default_search_string(self, show_scene_name, episode, add_string=None):
         """Create a default search string, used for standard type S01E01 tv series."""
         episode_string = show_scene_name + self.search_separator
 
@@ -655,7 +655,8 @@ class GenericProvider(object):
         if add_string:
             episode_string += self.search_separator + add_string
 
-        search_string['Episode'].append(episode_string.strip())
+        # search_string['Episode'].append(episode_string.strip())
+        return episode_string.strip()
 
     def _get_episode_search_strings(self, episode, add_string=''):
         """Get episode search strings."""
@@ -696,7 +697,17 @@ class GenericProvider(object):
             elif episode.series.anime:
                 self._create_anime_search_string(show_name, episode, search_string, add_string=add_string)
             else:
-                self._create_default_search_string(show_name, episode, search_string, add_string=add_string)
+                if hasattr(self, 'cap_tv_search') and not add_string and 'q' in self.cap_tv_search:
+                    # Utilize the t=tvsearch api for newznab and torznab providers, when they show that capability.
+                    # Need to modify the search string for that. As we only want to pass on the show name, without
+                    # a season / episode. We use t=search, for proper searches.
+                    search_string['Episode'].append(
+                        (show_name, self._create_default_search_string(show_name, episode, add_string=add_string))
+                    )
+                else:
+                    search_string['Episode'].append(
+                        self._create_default_search_string(show_name, episode, search_string, add_string=add_string)
+                    )
 
         return [search_string]
 
@@ -725,18 +736,32 @@ class GenericProvider(object):
             return [search_string]
 
         for show_name in episode.series.get_all_possible_names(season=episode.scene_season):
-            episode_string = show_name + self.search_separator
+            season_string = show_name + self.search_separator
 
             if episode.series.air_by_date or episode.series.sports:
-                search_string['Season'].append(episode_string + str(episode.airdate).split('-')[0])
+                search_string['Season'].append(season_string + str(episode.airdate).split('-')[0])
             elif episode.series.anime:
-                search_string['Season'].append(episode_string + 'Season')
+                search_string['Season'].append(season_string + 'Season')
             else:
-                for season_template in self.season_templates:
-                    templated_episode_string = episode_string + season_template.format(season=episode.scene_season)
-                    search_string['Season'].append(templated_episode_string.strip())
+                if hasattr(self, 'cap_tv_search') and 'q' in self.cap_tv_search:
+                    # Utilize the t=tvsearch api for newznab and torznab providers, when they show that capability.
+                    # Need to modify the search string for that. As we only want to pass on the show name, without
+                    # a season. We use t=search, for proper searches.
+                    for season_template in self.season_templates:
+                        templated_season_string = season_string + season_template.format(season=episode.scene_season)
+                        # We pass a tuple for (show_name, templated_season_string), as we need both in the provider.
+                        search_string['Season'].append((show_name, templated_season_string.strip()))
+                else:
+                    for season_template in self.season_templates:
+                        templated_season_string = season_string + season_template.format(season=episode.scene_season)
+                        search_string['Season'].append(templated_season_string.strip())
 
         return [search_string]
+
+    def _is_proper_search(self, search_string):
+        """Check if there are any proper tags in the search string."""
+        return any(proper_string in search_string
+                   for proper_string in self.proper_strings)
 
     def _get_size(self, item):
         """Return default size."""

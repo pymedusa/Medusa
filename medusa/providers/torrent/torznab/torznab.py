@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 import logging
 import os
 from collections import namedtuple
+from typing import Tuple
 
 from medusa import (
     app,
@@ -50,6 +51,7 @@ class TorznabProvider(TorrentProvider):
         self.api_key = api_key or ''
         self.cat_ids = cat_ids or ['5010', '5030', '5040', '7000']
         self.cap_tv_search = cap_tv_search or []
+        self.caps_initialized = False # Flag so we limit the amount of /t=caps calls.
         self.search_mode = search_mode
         self.search_fallback = search_fallback
         self.enable_daily = enable_daily
@@ -101,6 +103,7 @@ class TorznabProvider(TorrentProvider):
 
         for mode in search_strings:
             log.debug('Search mode: {0}', mode)
+            search_by_q = False
 
             if mode != 'RSS':
 
@@ -116,6 +119,11 @@ class TorznabProvider(TorrentProvider):
                     else:
                         search_params['season'] = ep_obj.scene_season
                         search_params['ep'] = ep_obj.scene_episode
+                elif hasattr(self, 'cap_tv_search') and 'q' in self.cap_tv_search and not force_query:
+                    search_by_q = True
+                    search_params['t'] = 'tvsearch'
+                    search_params['season'] = ep_obj.scene_season
+                    search_params['ep'] = ep_obj.scene_episode
                 else:
                     search_params['t'] = 'search'
 
@@ -123,12 +131,16 @@ class TorznabProvider(TorrentProvider):
                 search_params.pop('ep', '')
 
             for search_string in search_strings[mode]:
+                if isinstance(search_string, tuple):
+                    show_name = search_string[0]
+                    search_string = search_string[1]
+                else:
+                    show_name = search_string
 
                 if mode != 'RSS':
                     # If its a PROPER search, need to change param to 'search'
                     # so it searches using 'q' param
-                    if any(proper_string in search_string
-                           for proper_string in self.proper_strings):
+                    if self._is_proper_search(search_string):
                         search_params['t'] = 'search'
 
                     log.debug(
@@ -143,6 +155,9 @@ class TorznabProvider(TorrentProvider):
                     if search_params['t'] != 'tvsearch':
                         search_params['q'] = search_string
 
+                    if search_by_q:
+                        search_params['q'] = show_name
+                    
                 response = self.session.get(urljoin(self.url, 'api'), params=search_params)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
@@ -241,6 +256,10 @@ class TorznabProvider(TorrentProvider):
             log.warning('Invalid api key. Check your settings')
             return False
 
+        # Check if we pulled the caps.
+        if not self.caps_initialized:
+            self.get_capabilities()
+
         return True
 
     @staticmethod
@@ -326,6 +345,7 @@ class TorznabProvider(TorrentProvider):
         """
         Capabilities = namedtuple('Capabilities', 'success categories params message')
         categories = params = []
+        self.caps_initialized = True
 
         if not self._check_auth():
             message = 'Provider requires auth and your key is not set'
