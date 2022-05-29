@@ -329,9 +329,14 @@ export default {
             // Remove the element from the DOM
             this.$el.remove();
         },
-        getProviderResults() {
+        async getProviderResults() {
             const { episode, getProviderCacheResults, season, show } = this;
-            getProviderCacheResults({ showSlug: show.id.slug, season, episode });
+            this.loading = true;
+            this.loadingMessage = 'Refreshing results from cache';
+            await getProviderCacheResults({ showSlug: show.id.slug, season, episode });
+            setTimeout(() => {
+                this.loading = false;
+            }, 1000);
         },
         forceSearch() {
             const { episode, episodeSlug, season, show } = this;
