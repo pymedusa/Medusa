@@ -64,6 +64,10 @@ class ImdbIdentifier(object):
     @imdb_id.setter
     def imdb_id(self, value):
         """Set imdb id."""
+        if value is None or value == '':
+            self._imdb_id = self.series_id = None
+            return
+
         if isinstance(value, string_types) and 'tt' in value:
             self._imdb_id = self._clean(value)
             self.series_id = int(self._imdb_id.split('tt')[-1])
