@@ -1090,6 +1090,7 @@ tablesorter.css
     color: rgb(0, 0, 0);
     text-align: left;
     border-spacing: 0;
+    border-collapse: initial;
 }
 
 .displayShow >>> .vgt-table th,
