@@ -957,7 +957,8 @@ class GenericProvider(object):
                 'cookies': {
                     'enabled': self.enable_cookies,
                     'values': self.cookies
-                }
+                },
+                'url': self.custom_url or self.url if hasattr(self, 'custom_url') else self.url
             },
             'animeOnly': self.anime_only,
             'type': self.provider_type,

@@ -87,6 +87,27 @@ const getters = {
         const fdate = parseISO(airDate);
         return formatDate(fdate, convertDateFormat(`${dateStyle} ${formatTimeStyle}`));
     },
+    fuzzyParseTime: state => (airDate, showSeconds = false) => {
+        const timeAgo = new TimeAgo('en-US');
+        const { dateStyle, fuzzyDating, timeStyle } = state;
+
+        if (!airDate || !dateStyle) {
+            return '';
+        }
+
+        if (timeStyle === '%x') {
+            return new Date(airDate).toLocaleTimeString();
+        }
+
+        if (fuzzyDating) {
+            return timeAgo.format(new Date(airDate));
+        }
+
+        // Only the history page should show seconds.
+        const formatTimeStyle = showSeconds ? timeStyle : timeStyle.replace(':%S', '');
+        const fdate = parseISO(airDate);
+        return formatDate(fdate, convertDateFormat(formatTimeStyle));
+    },
     getShowFilterByName: state => {
         return state.local.showFilterByName;
     },
