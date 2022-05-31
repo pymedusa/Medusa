@@ -5,6 +5,7 @@
 #### Improvements
 
 #### Fixes
+- Fix a bug that prevents Medusa to start on Python versions older than 3.8
 
 -----
 
