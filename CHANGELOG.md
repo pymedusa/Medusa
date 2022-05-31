@@ -10,6 +10,7 @@
 - Improve anime title parsing for `Title Season 2 - 01` ([10534](https://github.com/pymedusa/Medusa/pull/10534))
 - Improve detection of commit / branch when run in docker ([10531](https://github.com/pymedusa/Medusa/pull/10531))
 - Improve guessit parsing for shows with numbers in them like `9-1-1` ([10493](https://github.com/pymedusa/Medusa/pull/10493))
+- Bump Knowit + pymediainfo to version 0.4.0 and 5.1.0 ([10564](https://github.com/pymedusa/Medusa/pull/10564))
 
 #### Fixes
 - Fix malformed imdb id's when imdb id not available ([10669](https://github.com/pymedusa/Medusa/pull/10669))

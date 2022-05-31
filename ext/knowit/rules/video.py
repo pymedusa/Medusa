@@ -1,7 +1,6 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+from decimal import Decimal
 
-from ...rule import Rule
+from knowit.core import Rule
 
 
 class ResolutionRule(Rule):
@@ -47,7 +46,7 @@ class ResolutionRule(Rule):
         except AttributeError:
             pass
 
-        dar = props.get('aspect_ratio', float(width) / height)
+        dar = props.get('aspect_ratio', Decimal(width) / height)
         par = props.get('pixel_aspect_ratio', 1)
         scan_type = props.get('scan_type', 'p')[0].lower()
 
@@ -68,8 +67,7 @@ class ResolutionRule(Rule):
             selected_resolution = r
 
         if selected_resolution:
-            return '{0}{1}'.format(selected_resolution, scan_type)
+            return f'{selected_resolution}{scan_type}'
 
-        msg = '{width}x{height} - scan_type: {scan_type}, aspect_ratio: {dar}, pixel_aspect_ratio: {par}'.format(
-            width=width, height=height, scan_type=scan_type, dar=dar, par=par)
+        msg = f'{width}x{height} - scan_type: {scan_type}, aspect_ratio: {dar}, pixel_aspect_ratio: {par}'
         self.report(msg, context)
