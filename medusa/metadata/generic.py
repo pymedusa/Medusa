@@ -795,7 +795,7 @@ class GenericMetadata(object):
                 else:
                     image_url = re.sub('posters', '_cache/posters', indexer_show_obj['poster'])
 
-            if not image_url:
+            if not image_url and show_obj.indexer != INDEXER_TMDB and show_obj.externals.get('tmdb_id'):
                 # Try and get images from TMDB
                 image_url = self._retrieve_show_images_from_tmdb(show_obj, image_type)
 
@@ -809,7 +809,7 @@ class GenericMetadata(object):
             if getattr(indexer_show_obj, image_type, None):
                 image_url = indexer_show_obj[image_type]
 
-            if not image_url and show_obj.indexer != INDEXER_TMDB:
+            if not image_url and show_obj.indexer != INDEXER_TMDB and show_obj.externals.get('tmdb_id'):
                 # Try and get images from TMDB
                 image_url = self._retrieve_show_images_from_tmdb(show_obj, image_type)
 
@@ -1039,6 +1039,9 @@ class GenericMetadata(object):
                  'poster_thumb': 'poster_path',
                  'banner_thumb': None}
 
+        if not types[img_type]:
+            return
+
         # get TMDB configuration info
         tmdb.API_KEY = app.TMDB_API_KEY
         config = tmdb.Configuration()
@@ -1057,13 +1060,17 @@ class GenericMetadata(object):
 
         max_size = max(sizes, key=size_str_to_int)
 
-        try:
-            search = tmdb.Search()
-            for show_name in show.get_all_possible_names():
-                for result in search.collection(query=show_name)['results'] + search.tv(query=show_name)['results']:
-                    if types[img_type] and result.get(types[img_type]):
-                        return '{0}{1}{2}'.format(base_url, max_size, result[types[img_type]])
+        try:            
+            result = tmdb.TV(show.externals.get('tmdb_id')).info()
+            if not result[types[img_type]]:
+                return
 
+            if img_type == 'poster_thumb':
+                return '{0}{1}{2}'.format(
+                    base_url, 'w780' if 'w780' in response['images']['poster_sizes'] else max_size, result[types[img_type]]
+                )
+
+            return '{0}{1}{2}'.format(base_url, max_size, result[types[img_type]])
         except Exception:
             pass
 
