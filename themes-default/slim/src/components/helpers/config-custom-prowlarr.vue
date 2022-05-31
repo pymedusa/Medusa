@@ -2,8 +2,8 @@
     <div id="custom-prowlarr">
         <div class="row">
             <div class="col-lg-12">
-                <config-textbox v-model="prowlarr.url" label="Prowler Url" id="prowler_url" />
-                <config-textbox v-model="prowlarr.apikey" label="Api Key" id="prowler_apikey" />
+                <config-textbox v-model="prowlarr.url" label="Prowlarr Url" id="prowlarr_url" />
+                <config-textbox v-model="prowlarr.apikey" label="Api Key" id="prowlarr_apikey" />
 
                 <button class="btn-medusa config_submitter" @click="saveConfig">Save</button>
                 <button class="btn-medusa config_submitter" @click="testConnectivity">Test</button>
