@@ -1070,7 +1070,7 @@ class GenericMetadata(object):
 
         max_size = max(sizes, key=size_str_to_int)
 
-        try:            
+        try:
             result = tmdb.TV(show.externals.get('tmdb_id')).info()
             if not result[types[img_type]]:
                 return
