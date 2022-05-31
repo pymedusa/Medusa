@@ -1,8 +1,4 @@
-## Unreleased
-
-#### New Features
-
-#### Improvements
+## 1.0.1 (31-05-2022)
 
 #### Fixes
 - Fix a bug that prevents Medusa to start on Python versions older than 3.8
