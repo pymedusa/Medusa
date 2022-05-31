@@ -5,6 +5,10 @@
 #### Improvements
 
 #### Fixes
+
+## 1.0.2 (31-05-2022)
+
+#### Fixes
 - Downgrade Typing Extensions lib to support Python 3.6
 
 -----
