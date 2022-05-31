@@ -1584,7 +1584,7 @@ span.snatched b {
 }
 
 .snatchTitle:hover {
-    text-decoration: underline!important;
+    text-decoration: underline !important;
 }
 
 .tablesorterFanArt {
