@@ -798,6 +798,11 @@ class GenericMetadata(object):
             if not image_url and show_obj.indexer != INDEXER_TMDB and show_obj.externals.get('tmdb_id'):
                 # Try and get images from TMDB
                 image_url = self._retrieve_show_images_from_tmdb(show_obj, image_type)
+                if not image_url:
+                    log.info(
+                        'Could not find any {type} images on TMDB for {series}',
+                        {'type': image_type, 'series': show_obj.name}
+                    )
 
         elif image_type == 'banner_thumb':
             if getattr(indexer_show_obj, 'banner', None):
@@ -812,6 +817,11 @@ class GenericMetadata(object):
             if not image_url and show_obj.indexer != INDEXER_TMDB and show_obj.externals.get('tmdb_id'):
                 # Try and get images from TMDB
                 image_url = self._retrieve_show_images_from_tmdb(show_obj, image_type)
+                if not image_url:
+                    log.info(
+                        'Could not find any {type} images on TMDB for {series}',
+                        {'type': image_type, 'series': show_obj.name}
+                    )
 
         if image_url:
             image_data = get_image(image_url, which)
@@ -1073,11 +1083,6 @@ class GenericMetadata(object):
             return '{0}{1}{2}'.format(base_url, max_size, result[types[img_type]])
         except Exception:
             pass
-
-        log.info(
-            'Could not find any {type} images on TMDB for {series}',
-            {'type': img_type, 'series': show.name}
-        )
 
     def to_json(self):
         """Return JSON representation."""
