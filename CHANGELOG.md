@@ -1,6 +1,16 @@
 ## Unreleased
 
 #### New Features
+
+#### Improvements
+
+#### Fixes
+
+-----
+
+## 1.0.0 (31-05-2022)
+
+#### New Features
 - Add option to mass-update the info language ([10516](https://github.com/pymedusa/Medusa/pull/10516))
 
 #### Improvements
@@ -21,7 +31,7 @@
 ## 0.5.29 (11-04-2022)
 
 #### New Features
-- Support for Plex metadata (.plexmatch) ([10466](https://github.com/pymedusa/Medusa/pull/10466)) 
+- Support for Plex metadata (.plexmatch) ([10466](https://github.com/pymedusa/Medusa/pull/10466))
 
 #### Improvements
 - Make the cache db and cache files optional for inclusion in the backup ([10475](https://github.com/pymedusa/Medusa/pull/10475))
