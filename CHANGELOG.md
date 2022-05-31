@@ -5,6 +5,7 @@
 #### Improvements
 
 #### Fixes
+- Downgrade Typing Extensions lib to support Python 3.6
 
 -----
 
