@@ -425,13 +425,15 @@ class NameParser(object):
         """Remove all names from given indexer and indexer_id."""
         name_parser_cache.remove_by_indexer(indexer, indexer_id)
 
-    def parse(self, name, cache_result=True):
+    def parse(self, name, cache_result=True, use_cache=True):
         """Parse the name into a ParseResult.
 
         :param name:
         :type name: str
         :param cache_result:
         :type cache_result: bool
+        :param use_cache:
+        :type use_cache: bool
         :return:
         :rtype: ParseResult
         """
@@ -440,9 +442,10 @@ class NameParser(object):
         if self.naming_pattern:
             cache_result = False
 
-        cached = name_parser_cache.get(name)
-        if cached:
-            return cached
+        if use_cache:
+            cached = name_parser_cache.get(name)
+            if cached:
+                return cached
 
         start_time = time.time()
         result = self._parse_string(name)
@@ -453,8 +456,10 @@ class NameParser(object):
 
         if cache_result:
             name_parser_cache.add(name, result)
+            log.debug('Parsed {name} into {result} and added to cache', {'name': name, 'result': result})
+        else:
+            log.debug('Parsed {name} into {result}', {'name': name, 'result': result})
 
-        log.debug('Parsed {name} into {result}', {'name': name, 'result': result})
         return result
 
     @staticmethod
@@ -469,8 +474,8 @@ class NameParser(object):
                                        'Parser result: {result}'.format(result=result))
 
         log.debug(
-            'Matched release {release} to a series in your database: {name}',
-            {'release': result.original_name, 'name': result.series.name}
+            'Matched release {release} to a series in your database: {name} using guessit title: {title}',
+            {'release': result.original_name, 'name': result.series.name, 'title': result.guess.get('title')}
         )
 
         if result.season_number is None and not result.episode_numbers and \
@@ -595,6 +600,14 @@ class ParseResult(object):
                                              quality=common.Quality.qualityStrings[self.quality],
                                              total_time=self.total_time))
         return helpers.canonical_name(obj, fmt='{key}: {value}', separator=', ')
+
+    def to_dict(self):
+        """Return an dict representation."""
+        return OrderedDict(self.guess, **dict(season=self.season_number,
+                                              episode=self.episode_numbers,
+                                              absolute_episode=self.ab_episode_numbers,
+                                              quality=common.Quality.qualityStrings[self.quality],
+                                              total_time=self.total_time))
 
     # Python 2 compatibility
     __unicode__ = __str__

@@ -40,6 +40,7 @@ from medusa import (
     notifiers,
 )
 from medusa.common import (
+    ARCHIVED,
     DOWNLOADED,
     Quality,
     SNATCHED,
@@ -53,6 +54,7 @@ from medusa.helper.common import (
 )
 from medusa.helper.exceptions import (
     EpisodeNotFoundException,
+    EpisodePostProcessingAbortException,
     EpisodePostProcessingFailedException,
     ShowDirectoryNotFoundException,
 )
@@ -120,7 +122,7 @@ class PostProcessor(object):
         self.is_priority = is_priority
         self._output = []
         self.version = None
-        self.anidbEpisode = None
+        self.anidb_episode = None
         self.manually_searched = False
         self.info_hash = None
         self.item_resources = OrderedDict([('file name', self.file_name),
@@ -562,12 +564,12 @@ class PostProcessor(object):
         :param file_path: file to add to mylist
         """
         if set_up_anidb_connection():
-            if not self.anidbEpisode:  # seems like we could parse the name before, now lets build the anidb object
-                self.anidbEpisode = self._build_anidb_episode(app.ADBA_CONNECTION, file_path)
+            if not self.anidb_episode:  # seems like we could parse the name before, now lets build the anidb object
+                self.anidb_episode = self._build_anidb_episode(app.ADBA_CONNECTION, file_path)
 
             self.log(u'Adding the file to the anidb mylist', logger.DEBUG)
             try:
-                self.anidbEpisode.add_to_mylist(state=1)  # state = 1 sets the state of the file to "internal HDD"
+                self.anidb_episode.add_to_mylist(state=1)  # state = 1 sets the state of the file to "internal HDD"
             except Exception as e:
                 self.log(u'Exception message: {0!r}'.format(e))
 
@@ -694,7 +696,7 @@ class PostProcessor(object):
 
         # parse the name to break it into show, season, episodes, quality and version
         try:
-            parse_result = NameParser().parse(name)
+            parse_result = NameParser().parse(name, use_cache=False)
         except (InvalidNameException, InvalidShowException) as error:
             self.log(u'{0}'.format(error), logger.DEBUG)
             return to_return
@@ -705,7 +707,7 @@ class PostProcessor(object):
                                         not parse_result.is_anime]):
             try:
                 parse_result.series.erase_cached_parse()
-                parse_result = NameParser(parse_method='anime').parse(name)
+                parse_result = NameParser(parse_method='anime').parse(name, use_cache=False)
             except (InvalidNameException, InvalidShowException) as error:
                 self.log(u'{0}'.format(error), logger.DEBUG)
                 return to_return
@@ -735,9 +737,10 @@ class PostProcessor(object):
         self.is_proper = bool(parse_result.proper_tags)
 
         # if the result is complete set release name
-        if parse_result.series_name and ((parse_result.season_number is not None and parse_result.episode_numbers) or
-                                         parse_result.air_date) and parse_result.release_group:
-
+        if parse_result.series_name and (
+            (parse_result.season_number is not None and parse_result.episode_numbers)
+            or parse_result.air_date
+        ) and parse_result.release_group:
             if not self.release_name:
                 self.release_name = remove_extension(os.path.basename(parse_result.original_name))
 
@@ -1058,7 +1061,7 @@ class PostProcessor(object):
         self.in_history = False
 
         # reset the anidb episode object
-        self.anidbEpisode = None
+        self.anidb_episode = None
 
         # try to find the file info
         (series_obj, season, episodes, quality, version) = self._find_info()
@@ -1101,15 +1104,21 @@ class PostProcessor(object):
             self.log(u'Episode has a version in it, using that: v{0}'.format(version), logger.DEBUG)
         new_ep_version = version
 
+        # Exempted from manual snatched downloads. If the destination episode is archived abort postprocessing.
+        if not self.manually_searched and ep_obj.status == ARCHIVED:
+            raise EpisodePostProcessingAbortException(
+                'Destination episode has a status of Archived. Abort postprocessing.'
+            )
+
         # check for an existing file
-        existing_file_status = self._compare_file_size(ep_obj.location)
+        existing_file_size_comparison = self._compare_file_size(ep_obj.location)
 
         if not priority_download:
-            if existing_file_status == PostProcessor.EXISTS_SAME:
+            if existing_file_size_comparison == PostProcessor.EXISTS_SAME:
                 self.log(u'File exists and the new file has the same size, aborting post-processing')
                 return True
 
-            if existing_file_status != PostProcessor.DOESNT_EXIST:
+            if existing_file_size_comparison != PostProcessor.DOESNT_EXIST:
                 if self.is_proper and new_ep_quality == old_ep_quality:
                     self.log(u'New file is a PROPER, marking it safe to replace')
                     self.flag_kodi_clean_library()
@@ -1147,7 +1156,7 @@ class PostProcessor(object):
         # if the file is priority then we're going to replace it even if it exists
         else:
             # Set to clean Kodi if file exists and it is priority_download
-            if existing_file_status != PostProcessor.DOESNT_EXIST:
+            if existing_file_size_comparison != PostProcessor.DOESNT_EXIST:
                 self.flag_kodi_clean_library()
             self.log(u"This download is marked a priority download so I'm going to replace "
                      u'an existing file if I find one')

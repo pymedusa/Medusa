@@ -792,6 +792,8 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                       Thu, 11/21/2019
                     </option>
                   </select>
+                   
+                  <!---->
                 </config-template-stub>
                  
                 <config-template-stub

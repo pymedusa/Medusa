@@ -406,7 +406,7 @@ class InternalHandler(BaseRequestHandler):
                         cur_ep_cat_string = Overview.overviewStrings[cur_ep_cat]
                         ep_cats[episode_string] = cur_ep_cat_string
                         ep_counts[cur_ep_cat_string] += 1
-                        cur_result['airdate'] = air_date.isoformat('T')
+                        cur_result['airdate'] = air_date.isoformat('T') if air_date else ''
                         cur_result['manuallySearched'] = cur_result['manually_searched']
                         del cur_result['manually_searched']
                         cur_result['statusString'] = statusStrings[cur_result['status']]

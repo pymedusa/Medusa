@@ -1,12 +1,10 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 
 import re
 from logging import NullHandler, getLogger
 
 import babelfish
 
-from ..rule import Rule
+from knowit.core import Rule
 
 logger = getLogger(__name__)
 logger.addHandler(NullHandler())

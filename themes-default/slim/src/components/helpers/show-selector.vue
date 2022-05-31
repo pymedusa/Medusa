@@ -23,6 +23,7 @@
 </template>
 <script>
 import { mapActions, mapGetters, mapState } from 'vuex';
+import { sortShows } from '../../utils/core';
 
 export default {
     name: 'show-selector',
@@ -66,21 +67,8 @@ export default {
 
             const sortedShows = [...showsInLists];
 
-            const sortKey = title => (sortArticle ? title : title.replace(/^((?:the|a|an)\s)/i, '')).toLowerCase();
-            const sortFn = (showA, showB) => {
-                const titleA = sortKey(showA.title);
-                const titleB = sortKey(showB.title);
-                if (titleA < titleB) {
-                    return -1;
-                }
-                if (titleA > titleB) {
-                    return 1;
-                }
-                return 0;
-            };
-
             sortedShows.forEach(list => {
-                list.shows.sort(sortFn);
+                list.shows = sortShows(list.shows, sortArticle);
             });
 
             return sortedShows;

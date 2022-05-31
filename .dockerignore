@@ -16,7 +16,6 @@ cache/
 Dockerfile
 dredd/
 hooks/
-runscripts/
 tests/
 themes-default/
 venv/

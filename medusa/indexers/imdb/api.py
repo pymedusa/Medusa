@@ -64,6 +64,10 @@ class ImdbIdentifier(object):
     @imdb_id.setter
     def imdb_id(self, value):
         """Set imdb id."""
+        if value is None or value == '':
+            self._imdb_id = self.series_id = None
+            return
+
         if isinstance(value, string_types) and 'tt' in value:
             self._imdb_id = self._clean(value)
             self.series_id = int(self._imdb_id.split('tt')[-1])
@@ -270,13 +274,16 @@ class Imdb(BaseIndexer):
             if companies.get('distribution'):
                 origins = self.imdb_api.get_title_versions(ImdbIdentifier(imdb_id).imdb_id)['origins'][0]
                 released_in_regions = [
-                    dist for dist in companies['distribution'] if dist.get('regions') and origins in dist['regions']
+                    dist for dist in companies['distribution']
+                    if dist.get('regions') and origins in dist['regions'] and dist['isOriginalAiring'] and dist['startYear']
                 ]
-                # Used item.get('startYear') because a startYear is not always available.
-                first_release = sorted(released_in_regions, key=lambda x: x.get('startYear'))
 
-                if first_release:
-                    mapped_results['network'] = first_release[0]['company']['name']
+                if released_in_regions:
+                    # Used item.get('startYear') because a startYear is not always available.
+                    first_release = sorted(released_in_regions, key=lambda x: x.get('startYear'))
+
+                    if first_release:
+                        mapped_results['network'] = first_release[0]['company']['name']
         except (AttributeError, LookupError, RequestException):
             log.info('No company data available for {0}, cant get a network', imdb_id)
 

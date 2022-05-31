@@ -352,7 +352,7 @@ class ProvidersHandler(BaseRequestHandler):
         if not data.get('url'):
             return self._bad_request('No provider url provided')
 
-        new_provider = TorrentRssProvider(data.get('name'), data.get('url'), data.get('cookies', ''), data.get('titleTag', 'title'))
+        new_provider = TorrentRssProvider(data.get('name'), data.get('url'), data.get('cookies', {}).get('values'), data.get('titleTag', 'title'))
         new_provider = self.provider_name_auto_numbered(new_provider)
 
         app.torrentRssProviderList.append(new_provider)
@@ -424,6 +424,12 @@ class ProvidersHandler(BaseRequestHandler):
 
     @staticmethod
     def _set_common_settings(provider, config):
+        if hasattr(provider, 'url'):
+            try:
+                provider.url = config['url']
+            except (AttributeError, KeyError):
+                pass
+
         if hasattr(provider, 'username'):
             try:
                 provider.username = config['username']

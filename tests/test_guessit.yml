@@ -4574,3 +4574,28 @@
   audio_channels: '5.1'
   video_profile: 'Advanced Video Codec High Definition'
   type: episode
+
+? /series/9-1-1 (2018)/Season 05/9-1-1 (2018) (S05E06) (2021-11-01) (1080p-h264 BluRay AAC-2ch) Brawl in Cell Block 9-1-1.mkv
+: title: '9-1-1'
+  alias: '9-1-1 2018'
+  year: 2018
+  season: 5
+  episode: 6
+  screen_size: 1080p
+  video_codec: H.264
+  source: 'Blu-ray'
+  audio_codec: AAC
+  audio_channels: '2.0'
+  release_group: "Brawl in Cell Block 9-1-1"
+  container: mkv
+  type: episode
+
+? "[Tsundere-Raws] Tate no Yuusha no Nariagari Season 2 - 09.mkv"
+: options: {show_type: anime}
+  title: Tate no Yuusha no Nariagari Season 2
+  absolute_episode: 9
+  episode: 9
+  release_group: Tsundere-Raws
+  container: mkv
+  mimetype: "video/x-matroska"
+  type: episode

@@ -113,7 +113,7 @@ def tvshow(create_tvshow):
 
 @pytest.fixture
 def parse_method(create_tvshow):
-    def parse(self, name):
+    def parse(self, name, use_cache=True):
         """Parse the string and add a TVShow object with the parsed series name."""
         result = self._parse_string(name)
         result.series = create_tvshow(name=result.series_name)

@@ -181,8 +181,8 @@
                                 </config-template>
 
                                 <config-textbox-number
-                                    :min="-168"
-                                    :max="168"
+                                    :min="-672"
+                                    :max="672"
                                     :step="1"
                                     v-model="show.config.airdateOffset"
                                     label="Airdate offset"

@@ -241,6 +241,10 @@
                                         <select id="date_preset" name="date_preset" v-model="layout.dateStyle" class="form-control input-sm max-input350">
                                             <option :value="option.value" v-for="option in datePresetOptions" :key="option.value">{{ option.text }}</option>
                                         </select>
+                                        <template v-if="layout.dateStyle === '%x'">
+                                            <span>Selecting <strong>System Default</strong> here, will also result in using the browsers default time format.</span>
+                                            <br>Meaning the <strong>Time Style</strong> config option below, will not have any effect on some pages.
+                                        </template>
                                     </config-template>
 
                                     <config-template label-for="time_preset" label="Time style">

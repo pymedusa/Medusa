@@ -166,7 +166,7 @@ class Addic7edProvider(Provider):
         series_year = '%s %d' % (series, year) if year is not None else series
         params = {'search': series_year, 'Submit': 'Search'}
 
-        r = self.session.get('http://www.addic7ed.com/srch.php', params=params, timeout=10, cookies=self.cookies)
+        r = self.session.get('http://www.addic7ed.com/srch.php', params=params, timeout=30, cookies=self.cookies)
 
         # make the search
         logger.info('Searching show ids with %r', params)
@@ -219,7 +219,7 @@ class Addic7edProvider(Provider):
 
         # search as last resort
         if not show_id:
-            logger.warning('Series %s not found in show ids', series)
+            logger.info('Series %s not found in show ids', series)
             show_id = self._search_show_id(series)
 
         return show_id

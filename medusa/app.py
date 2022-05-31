@@ -63,6 +63,7 @@ class MedusaApp(object):
         self.SUBTITLES_URL = '{0}/wiki/Subtitle%20Scripts'.format(self.APPLICATION_URL)
         self.RARBG_APPID = 'medusa'
         self.SECURE_TOKEN = 'medusa_user'
+        self.XEM_URL = 'https://thexem.info'
 
         # static configuration
         self.LOCALE = None, None

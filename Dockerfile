@@ -32,4 +32,4 @@ EXPOSE 8081
 VOLUME /config /downloads /tv /anime
 
 WORKDIR /app/medusa
-CMD [ "python", "start.py", "--nolaunch", "--datadir", "/config" ]
+CMD [ "runscripts/init.docker" ]

@@ -12,7 +12,7 @@
         <!-- Edit Provider -->
         <div v-if="currentProvider && selectedProvider !== '#add'" class="edit-provider">
             <config-textbox disabled v-model="currentProvider.name" label="Provider name" id="edit_provider_name" />
-            <config-textbox disabled v-model="currentProvider.url" label="Site Url" id="edit_provider_url" />
+            <config-textbox v-model="currentProvider.config.url" label="Site Url" id="edit_provider_url" />
             <config-textbox type="password" v-model="currentProvider.config.apikey" label="Api key" id="edit_provider_api" />
 
             <config-template label="Categories" label-for="catids">
@@ -109,7 +109,7 @@ export default {
         },
         async getCategories() {
             const { currentProvider } = this;
-            if (!currentProvider.name || !currentProvider.url || !currentProvider.config.apikey) {
+            if (!currentProvider.name || !currentProvider.config.url || !currentProvider.config.apikey) {
                 return;
             }
 
@@ -118,7 +118,7 @@ export default {
                     type: 'GETCATEGORIES',
                     apikey: currentProvider.config.apikey,
                     name: currentProvider.name,
-                    url: currentProvider.url
+                    url: currentProvider.config.url
                 });
                 if (response.data.result.success) {
                     this.availableCategories = response.data.result.categories;

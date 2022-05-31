@@ -520,8 +520,14 @@ class Application(object):
             # set current commit branch from environment variable, if needed
             # use this to inject the branch information on immutable installations (e.g. Docker containers)
             commit_branch_env = os.environ.get('MEDUSA_COMMIT_BRANCH')
+
             if commit_branch_env and app.CUR_COMMIT_BRANCH != commit_branch_env:
                 app.CUR_COMMIT_BRANCH = commit_branch_env
+                # Overwrite the current branch for non-git installations like docker.
+                app.BRANCH = commit_branch_env
+
+            # Asume we only have these environ variables when building a docker container.
+            app.RUNS_IN_DOCKER = CheckVersion.runs_in_docker()
 
             app.ACTUAL_CACHE_DIR = check_setting_str(app.CFG, 'General', 'cache_dir', 'cache')
 
@@ -582,6 +588,7 @@ class Application(object):
             app.PROXY_INDEXERS = bool(check_setting_int(app.CFG, 'General', 'proxy_indexers', 1))
             app.PROXY_CLIENTS = bool(check_setting_int(app.CFG, 'General', 'proxy_clients', 1))
             app.PROXY_OTHERS = bool(check_setting_int(app.CFG, 'General', 'proxy_others', 1))
+            app.XEM_URL = check_setting_str(app.CFG, 'General', 'xem_url', 'https://thexem.info')
 
             # attempt to help prevent users from breaking links by using a bad url
             if not app.ANON_REDIRECT.endswith('?'):
@@ -1683,6 +1690,7 @@ class Application(object):
         new_config['General']['proxy_indexers'] = int(app.PROXY_INDEXERS)
         new_config['General']['proxy_clients'] = int(app.PROXY_CLIENTS)
         new_config['General']['proxy_others'] = int(app.PROXY_OTHERS)
+        new_config['General']['xem_url'] = app.XEM_URL
 
         new_config['General']['use_listview'] = int(app.USE_LISTVIEW)
         new_config['General']['metadata_kodi'] = app.METADATA_KODI

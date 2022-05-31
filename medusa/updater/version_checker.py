@@ -347,19 +347,17 @@ class CheckVersion(object):
         if app.RUNS_IN_DOCKER is not None:
             return app.RUNS_IN_DOCKER
 
-        path = '/proc/{pid}/cgroup'.format(pid=os.getpid())
         try:
-            if not os.path.isfile(path):
-                return False
-
-            with open(path) as f:
-                for line in f:
-                    if re.match(r'\d+:[\w=]+:/docker(-[ce]e)?/\w+', line):
-                        log.debug(u'Running in a docker container')
-                        app.RUNS_IN_DOCKER = True
-                        return True
-                return False
+            path = '/.dockerenv'
+            if os.path.isfile(path):
+                app.RUNS_IN_DOCKER = True
+                return True
         except (EnvironmentError, OSError) as error:
             log.info(u'Tried to check the path {path} if we are running in a docker container, '
                      u'but an error occurred: {error}', {'path': path, 'error': error})
-            return False
+
+        if os.environ.get('MEDUSA_COMMIT_HASH') and os.environ.get('MEDUSA_COMMIT_BRANCH'):
+            app.RUNS_IN_DOCKER = True
+            return True
+
+        return False
