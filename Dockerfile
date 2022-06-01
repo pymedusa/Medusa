@@ -7,7 +7,7 @@ RUN \
     mkdir /tmp/aport && \
     cd /tmp/aport && \
     git init && \
-    git remote add origin https://git.alpinelinux.org/aports && \
+    git remote add origin https://github.com/alpinelinux/aports && \
     git config core.sparsecheckout true && \
     echo "non-free/unrar/*" >> .git/info/sparse-checkout && \
     git pull origin 3.15-stable && \
