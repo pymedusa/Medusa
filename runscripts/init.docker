@@ -2,21 +2,40 @@
 
 PUID=${PUID:-0}
 PGID=${PGID:-0}
+DEFAULT_GROUP="abc"
+DEFAULT_USER="abc"
 
 if [[ $PUID != "0" ]] && [[ $PGID != "0" ]]
 then
-  addgroup -g "$PGID" abc
-  adduser -u "$PUID" --ingroup abc --disabled-password abc
+  EXISTING_GROUP=$(getent group $PGID | awk -F ":" '{ print $1 }')
+  if [[ -z $EXISTING_GROUP ]]
+  then
+    echo "Group does not exist, adding $DEFAULT_GROUP"
+    addgroup -g "$PGID" $DEFAULT_GROUP
+  else
+    echo "Group already exists, re-using group $EXISTING_GROUP"
+    DEFAULT_GROUP=$EXISTING_GROUP
+  fi
+
+  EXISTING_USER=$(getent passwd $PUID | awk -F ":" '{ print $1 }')
+  if [[ -z $EXISTING_USER ]]
+  then
+    echo "User does not exist, adding $EXISTING_USER"
+    adduser -u "$PUID" --ingroup $DEFAULT_GROUP --disabled-password $DEFAULT_USER
+  else
+    echo "User already exists, re-using user $EXISTING_USER"
+    DEFAULT_USER=$EXISTING_USER
+  fi
 
   echo "
-  User uid:    $(id -u abc)
-  User gid:    $(id -g abc)
+  User uid:    $(id -u $DEFAULT_USER)
+  User gid:    $(id -g $DEFAULT_USER)
   -------------------------------------
   "
-  chown -R abc:abc /app
-  chown -R abc:abc /config
+  chown -R $DEFAULT_USER:$DEFAULT_GROUP /app
+  chown -R $DEFAULT_USER:$DEFAULT_GROUP /config
 
-  exec su abc -s /bin/sh -c "python start.py --nolaunch --datadir /config"
+  exec su $DEFAULT_USER -s /bin/sh -c "python start.py --nolaunch --datadir /config"
 else
   echo "Starting medusa as root"
   python start.py --nolaunch --datadir /config
