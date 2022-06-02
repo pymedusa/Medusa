@@ -36,6 +36,7 @@ class GuessitHandler(BaseRequestHandler):
 
         result = {'error': None}
         show = None
+        parse_result = None
 
         try:
             parse_result = NameParser().parse(release)
