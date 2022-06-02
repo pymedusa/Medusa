@@ -97,7 +97,7 @@ export default {
     computed: {
         ...mapState({
             postprocessing: state => state.config.postprocessing,
-            seedLocation: state => state.clients.torrents.seedLocation,
+            seedLocation: state => state.config.clients.torrents.seedLocation,
             layout: state => state.config.layout,
             client: state => state.auth.client
         }),
