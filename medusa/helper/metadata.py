@@ -32,7 +32,7 @@ def get_image(url, img_no=None):
     # TODO: SESSION: Check if this needs exception handling.
     image_data = meta_session.get(temp_url)
     if not image_data:
-        log.warning(u'There was an error trying to retrieve the image, aborting')
+        log.debug(u'There was an error trying to retrieve the image, aborting')
         return
 
     return image_data.content
