@@ -363,10 +363,8 @@ class Tmdb(BaseIndexer):
         _images = {}
 
         # Let's get the different type of images available for this series
-        image_language = '{search_language},null'.format(search_language=self.config['language'])
-
         try:
-            images = self.tmdb.TV(tmdb_id).images(include_image_language=image_language)
+            images = self.tmdb.TV(tmdb_id).images()
         except (AttributeError, RequestException) as error:
             raise IndexerUnavailable('Error trying to get images. Cause: {cause}'.format(cause=error))
 
@@ -375,6 +373,14 @@ class Tmdb(BaseIndexer):
             try:
                 if images and image_type not in _images:
                     _images[image_type] = {}
+
+                # Filter posters by language, backdrops don't have languages
+                if image_type == "poster":
+                    search_language=self.config['language']
+                    images_for_language = [image for image in images if image['iso_639_1'] == search_language]
+                    # Use the language-limited list if anything was found, otherwise use all images
+                    if images_for_language:
+                        images = images_for_language
 
                 for image in images:
                     bid += 1
