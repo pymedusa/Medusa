@@ -287,7 +287,7 @@ class Addic7edProvider(Provider):
             if subtitles:
                 return subtitles
         else:
-            logger.error('No show id found for %r (%r)', video.series, {'year': video.year})
+            logger.info('No show id found for %r (%r)', video.series, {'year': video.year})
 
         return []
 

@@ -1,3 +1,14 @@
+## 1.0.3 (10-06-2022)
+
+#### Improvements
+- Change log to debug when metadata image can't be retrieved
+- Update MediaInfo for Windows and MacOSX
+- Update Docker image to Python version 3.10
+
+#### Fixes
+- Fix NullReferenceError on testRename page when postprocessing method is symlink
+- Fix a specific guessit test
+
 ## 1.0.2 (31-05-2022)
 
 #### Fixes
