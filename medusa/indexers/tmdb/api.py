@@ -363,10 +363,10 @@ class Tmdb(BaseIndexer):
         _images = {}
 
         # Let's get the different type of images available for this series
-        params = {'include_image_language': '{search_language}'.format(search_language=self.config['language'])}
+        image_language = '{search_language},null'.format(search_language=self.config['language'])
 
         try:
-            images = self.tmdb.TV(tmdb_id).images(params=params)
+            images = self.tmdb.TV(tmdb_id).images(include_image_language=image_language)
         except (AttributeError, RequestException) as error:
             raise IndexerUnavailable('Error trying to get images. Cause: {cause}'.format(cause=error))
 
