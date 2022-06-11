@@ -375,8 +375,8 @@ class Tmdb(BaseIndexer):
                     _images[image_type] = {}
 
                 # Filter posters by language, backdrops don't have languages
-                if image_type == "poster":
-                    search_language=self.config['language']
+                if image_type == 'poster':
+                    search_language = self.config['language']
                     images_for_language = [image for image in images if image['iso_639_1'] == search_language]
                     # Use the language-limited list if anything was found, otherwise use all images
                     if images_for_language:
