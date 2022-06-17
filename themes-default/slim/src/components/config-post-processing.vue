@@ -1,6 +1,6 @@
 <template>
     <div id="config">
-        <div id="config-content">
+        <div v-if="configLoaded" id="config-content">
             <form id="configForm" class="form-horizontal" @submit.prevent="save()">
                 <vue-tabs>
                     <v-tab key="post_processing" title="Post-Processing">
