@@ -1503,7 +1503,6 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     animenamingtype="0"
                     class="component-item"
                     enabled="true"
-                    flagloaded="true"
                     multiepstyle="16"
                     multiepstyles="[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]"
                     namingpattern="Season %S/%S.N.S%0SE%0E.%RT.%SQ.N-%RG"
@@ -1514,7 +1513,6 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                   <name-pattern-stub
                     animenamingtype="0"
                     class="component-item"
-                    flagloaded="true"
                     multiepstyles=""
                     namingpattern="%SN - %A-D - %EN"
                     namingpresets="[object Object],[object Object],[object Object],[object Object],[object Object]"
@@ -1524,7 +1522,6 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                   <name-pattern-stub
                     animenamingtype="0"
                     class="component-item"
-                    flagloaded="true"
                     multiepstyles=""
                     namingpattern="%SN - %A.D - %EN"
                     namingpresets="[object Object],[object Object],[object Object],[object Object],[object Object]"
@@ -1534,7 +1531,6 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                   <name-pattern-stub
                     animenamingtype="3"
                     class="component-item"
-                    flagloaded="true"
                     multiepstyle="1"
                     multiepstyles="[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]"
                     namingpattern="%SN - S%0SE%0E - [%QN] [%RG]"

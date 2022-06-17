@@ -1588,6 +1588,7 @@ class Episode(TV):
             '%0XE': '%02d' % self.scene_episode,
             '%AB': '%(#)03d' % {'#': self.absolute_number},
             '%XAB': '%(#)03d' % {'#': self.scene_absolute_number},
+            '%ABb': str(self.airdate.strftime('%b')),
             '%RN': release_name(self.release_name),
             '%RG': rel_grp[relgrp],
             '%CRG': rel_grp[relgrp].upper(),
@@ -1598,7 +1599,8 @@ class Episode(TV):
             '%Y': str(self.airdate.year),
             '%M': str(self.airdate.month),
             '%D': str(self.airdate.day),
-            '%ADb': str(self.airdate.strftime('%b')),
+            '%Mm': str(self.airdate.strftime('%b')),
+            '%MM': str(self.airdate.strftime('%B')),
             '%CY': str(date.today().year),
             '%CM': str(date.today().month),
             '%CD': str(date.today().day),
@@ -1953,7 +1955,8 @@ class Episode(TV):
         # This is wrong. Cause of pp not moving subs.
         if self.series.subtitles and app.SUBTITLES_DIR != '':
             related_subs = post_processor.PostProcessor(
-                self.location).list_associated_files(app.SUBTITLES_DIR, subfolders=True, subtitles_only=True)
+                self.location
+            ).list_associated_files(app.SUBTITLES_DIR, subfolders=True, subtitles_only=True)
 
         log.debug(
             '{id} Files associated to {location}: {related_files}', {

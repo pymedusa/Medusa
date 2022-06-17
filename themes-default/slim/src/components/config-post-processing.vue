@@ -1,6 +1,6 @@
 <template>
     <div id="config">
-        <div id="config-content">
+        <div v-if="configLoaded" id="config-content">
             <form id="configForm" class="form-horizontal" @submit.prevent="save()">
                 <vue-tabs>
                     <v-tab key="post_processing" title="Post-Processing">
@@ -222,21 +222,21 @@
                                     <name-pattern
                                         class="component-item" :naming-pattern="postprocessing.naming.pattern"
                                         :naming-presets="presets" :multi-ep-style="postprocessing.naming.multiEp"
-                                        :multi-ep-styles="multiEpStringsSelect" @change="saveNaming" :flag-loaded="configLoaded"
+                                        :multi-ep-styles="multiEpStringsSelect" @change="saveNaming"
                                     />
 
                                     <!-- default sports name-pattern component -->
                                     <name-pattern
                                         class="component-item" :enabled="postprocessing.naming.enableCustomNamingSports"
                                         :naming-pattern="postprocessing.naming.patternSports" :naming-presets="presets" type="sports"
-                                        :enabled-naming-custom="postprocessing.naming.enableCustomNamingSports" @change="saveNamingSports" :flag-loaded="configLoaded"
+                                        @change="saveNamingSports"
                                     />
 
                                     <!-- default airs by date name-pattern component -->
                                     <name-pattern
                                         class="component-item" :enabled="postprocessing.naming.enableCustomNamingAirByDate"
                                         :naming-pattern="postprocessing.naming.patternAirByDate" :naming-presets="presets" type="airs by date"
-                                        :enabled-naming-custom="postprocessing.naming.enableCustomNamingAirByDate" @change="saveNamingAbd" :flag-loaded="configLoaded"
+                                        @change="saveNamingAbd"
                                     />
 
                                     <!-- default anime name-pattern component -->
@@ -244,7 +244,7 @@
                                         class="component-item" :enabled="postprocessing.naming.enableCustomNamingAnime"
                                         :naming-pattern="postprocessing.naming.patternAnime" :naming-presets="presets" type="anime" :multi-ep-style="postprocessing.naming.animeMultiEp"
                                         :multi-ep-styles="multiEpStringsSelect" :anime-naming-type="postprocessing.naming.animeNamingType"
-                                        :enabled-naming-custom="postprocessing.naming.enableCustomNamingAnime" @change="saveNamingAnime" :flag-loaded="configLoaded"
+                                        @change="saveNamingAnime"
                                     />
 
                                     <config-toggle-slider v-model="postprocessing.naming.stripYear" label="Strip Show Year" id="naming_strip_year" style="margin-top: 1em;">
