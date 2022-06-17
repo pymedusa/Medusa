@@ -85,13 +85,12 @@ export default {
             loading: false
         };
     },
-    created() {
+    async mounted() {
         // We need detailed info for the xem / scene exceptions, so let's get it.
         const { showSlug } = this;
-        this.getShow({ showSlug });
-        this.setCurrentShow(showSlug);
-    },
-    mounted() {
+        await this.getShow({ showSlug, detailed: true });
+        await this.setCurrentShow(showSlug);
+
         this.loadTestRename();
     },
     computed: {
@@ -140,7 +139,13 @@ export default {
             try {
                 this.loading = true;
                 const url = `series/${showSlug}/operation`;
-                const { data } = await this.client.api.post(url, { type: 'TEST_RENAME' }, { timeout: 120000 });
+                const data = [];
+                for (const { season } of this.show.seasonCount) {
+                    // eslint-disable-next-line no-await-in-loop
+                    const result = await this.client.api.post(url, { type: 'TEST_RENAME', season }, { timeout: 120000 });
+                    data.push(...result.data);
+                }
+
                 this.episodeRenameList = data;
             } catch (error) {
                 this.$snotify.error(

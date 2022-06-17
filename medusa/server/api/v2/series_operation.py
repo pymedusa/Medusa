@@ -62,7 +62,9 @@ class SeriesOperationHandler(BaseRequestHandler):
             except ShowDirectoryNotFoundException:
                 return self._bad_request("Can't rename episodes when the show dir is missing.")
 
-            ep_obj_list = series.get_all_episodes(has_location=True)
+            filter_season = data.get('season')
+
+            ep_obj_list = series.get_all_episodes(has_location=True, season=filter_season)
             ep_obj_list = [x for x in ep_obj_list if x.location]
             ep_obj_rename_list = []
             for ep_obj in ep_obj_list:
