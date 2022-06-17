@@ -37,7 +37,7 @@
                         </label>
                     </div>
                     <div class="col-sm-10 content">
-                        <input type="text" name="naming_pattern" id="naming_pattern" v-model="customName" @change="updatePatternSamples" @input="update()" class="form-control-inline-max input-sm max-input350">
+                        <input type="text" name="naming_pattern" id="naming_pattern" v-model="customName" @change="updatePatternSamples" class="form-control-inline-max input-sm max-input350">
                         <img src="images/legend16.png" width="16" height="16" alt="[Toggle Key]" id="show_naming_key" title="Toggle Naming Legend" class="legend" @click="showLegend = !showLegend">
                     </div>
                 </div>
@@ -376,7 +376,7 @@ export default {
             showLegend: false,
             namingExample: '',
             namingExampleMulti: '',
-            isEnabled: false,
+            isEnabled: this.enabled,
             selectedMultiEpStyle: 1,
             animeType: 0,
             lastSelectedPattern: ''
@@ -439,7 +439,7 @@ export default {
                 this.checkNaming(pattern, this.selectedMultiEpStyle, this.animeType);
             }
 
-            this.update();
+            this.$emit('update-pattern', this.isCustom ? this.customName : this.pattern);
         },
         update() {
             this.$emit('change', {
@@ -554,9 +554,6 @@ export default {
         this.availableMultiEpStyles = this.multiEpStyles;
         this.selectedMultiEpStyle = this.multiEpStyle;
         this.animeType = this.animeNamingType;
-
-        // If type is falsy, we asume it's the default name pattern. And thus enabled by default.
-        this.isEnabled = this.enabled;
 
         // Update the pattern samples
         this.updatePatternSamples();

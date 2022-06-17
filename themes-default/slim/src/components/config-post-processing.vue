@@ -222,21 +222,24 @@
                                     <name-pattern
                                         class="component-item" :naming-pattern="postprocessing.naming.pattern"
                                         :naming-presets="presets" :multi-ep-style="postprocessing.naming.multiEp"
-                                        :multi-ep-styles="multiEpStringsSelect" @change="saveNaming"
+                                        :multi-ep-styles="multiEpStringsSelect"
+                                        @update-pattern="postprocessing.naming.pattern = $event;" @change="saveNaming"
                                     />
 
                                     <!-- default sports name-pattern component -->
                                     <name-pattern
                                         class="component-item" :enabled="postprocessing.naming.enableCustomNamingSports"
                                         :naming-pattern="postprocessing.naming.patternSports" :naming-presets="presets" type="sports"
-                                        @change="saveNamingSports"
+                                        :enabled-naming-custom="postprocessing.naming.enableCustomNamingSports"
+                                        @update-pattern="postprocessing.naming.patternSports = $event" @change="saveNamingSports"
                                     />
 
                                     <!-- default airs by date name-pattern component -->
                                     <name-pattern
                                         class="component-item" :enabled="postprocessing.naming.enableCustomNamingAirByDate"
                                         :naming-pattern="postprocessing.naming.patternAirByDate" :naming-presets="presets" type="airs by date"
-                                        @change="saveNamingAbd"
+                                        :enabled-naming-custom="postprocessing.naming.enableCustomNamingAirByDate"
+                                        @update-pattern="postprocessing.naming.patternAirByDate = $event" @change="saveNamingAbd"
                                     />
 
                                     <!-- default anime name-pattern component -->
@@ -244,7 +247,8 @@
                                         class="component-item" :enabled="postprocessing.naming.enableCustomNamingAnime"
                                         :naming-pattern="postprocessing.naming.patternAnime" :naming-presets="presets" type="anime" :multi-ep-style="postprocessing.naming.animeMultiEp"
                                         :multi-ep-styles="multiEpStringsSelect" :anime-naming-type="postprocessing.naming.animeNamingType"
-                                        @change="saveNamingAnime"
+                                        :enabled-naming-custom="postprocessing.naming.enableCustomNamingAnime"
+                                        @update-pattern="postprocessing.naming.patternAnime = $event" @change="saveNamingAnime"
                                     />
 
                                     <config-toggle-slider v-model="postprocessing.naming.stripYear" label="Strip Show Year" id="naming_strip_year" style="margin-top: 1em;">
@@ -403,7 +407,6 @@ export default {
             if (!this.configLoaded) {
                 return;
             }
-            postprocessing.naming.pattern = values.pattern;
             postprocessing.naming.multiEp = values.multiEpStyle;
         },
         saveNamingSports(values) {
@@ -411,7 +414,6 @@ export default {
             if (!this.configLoaded) {
                 return;
             }
-            postprocessing.naming.patternSports = values.pattern;
             postprocessing.naming.enableCustomNamingSports = values.enabled;
         },
         saveNamingAbd(values) {
@@ -419,7 +421,6 @@ export default {
             if (!this.configLoaded) {
                 return;
             }
-            postprocessing.naming.patternAirByDate = values.pattern;
             postprocessing.naming.enableCustomNamingAirByDate = values.enabled;
         },
         saveNamingAnime(values) {
@@ -427,7 +428,6 @@ export default {
             if (!this.configLoaded) {
                 return;
             }
-            postprocessing.naming.patternAnime = values.pattern;
             postprocessing.naming.animeMultiEp = values.multiEpStyle;
             postprocessing.naming.animeNamingType = values.animeNamingType;
             postprocessing.naming.enableCustomNamingAnime = values.enabled;
