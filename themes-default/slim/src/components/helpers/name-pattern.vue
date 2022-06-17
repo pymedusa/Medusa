@@ -153,6 +153,17 @@
                                 <td>{{ getDateFormat('yyyy')}}</td>
                             </tr>
                             <tr>
+                                <td>&nbsp;</td>
+                                <td>%Mm</td>
+                                <td>{{ getDateFormat('MMM')}}</td>
+                            </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                                <td>%MM</td>
+                                <td>{{ getDateFormat('MMMM')}}</td>
+                            </tr>
+
+                            <tr>
                                 <td class="align-right"><b>Post-Processing Date:</b></td>
                                 <td>%CM</td>
                                 <td>{{ getDateFormat('M') }}</td>
@@ -354,10 +365,6 @@ export default {
         enabled: {
             type: Boolean,
             default: true
-        },
-        flagLoaded: {
-            type: Boolean,
-            default: false
         }
     },
     data() {
@@ -435,10 +442,6 @@ export default {
             this.update();
         },
         update() {
-            if (!this.flagLoaded) {
-                return;
-            }
-
             this.$emit('change', {
                 pattern: this.isCustom ? this.customName : this.pattern,
                 type: this.type,
@@ -553,7 +556,7 @@ export default {
         this.animeType = this.animeNamingType;
 
         // If type is falsy, we asume it's the default name pattern. And thus enabled by default.
-        this.isEnabled = this.type ? false : this.enabled;
+        this.isEnabled = this.enabled;
 
         // Update the pattern samples
         this.updatePatternSamples();
