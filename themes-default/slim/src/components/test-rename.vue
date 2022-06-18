@@ -140,7 +140,8 @@ export default {
                 this.loading = true;
                 const url = `series/${showSlug}/operation`;
                 const data = [];
-                for (const { season } of this.show.seasonCount) {
+                const reversedSeasons = this.show.seasonCount.slice().sort((a, b) => b.season - a.season);
+                for (const { season } of reversedSeasons) {
                     // eslint-disable-next-line no-await-in-loop
                     const result = await this.client.api.post(url, { type: 'TEST_RENAME', season }, { timeout: 120000 });
                     data.push(...result.data);
