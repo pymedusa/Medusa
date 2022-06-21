@@ -5,7 +5,8 @@ import hashlib
 import logging
 import re
 
-from babelfish import Language
+from babelfish import Language, language_converters
+from babelfish.exceptions import LanguageReverseError
 
 from guessit import guessit
 
@@ -21,7 +22,7 @@ from subliminal.video import Episode
 
 logger = logging.getLogger(__name__)
 
-# language_converters.register('addic7ed = subliminal.converters.addic7ed:Addic7edConverter')
+language_converters.register('addic7ed = medusa.subtitle_providers.converters.addic7ed:Addic7edConverter')
 
 # Series cell matching regex
 show_cells_re = re.compile(b'<td class="vr">.*?</td>', re.DOTALL)
@@ -131,6 +132,10 @@ class Addic7edProvider(Provider):
         r = self.session.get(self.server_url + 'shows.php', timeout=20, cookies=self.cookies)
         r.raise_for_status()
 
+        if 'Log in' in r.text:
+            logger.warning('Failed to login, check your userid, password')
+            return {}
+
         # LXML parser seems to fail when parsing Addic7ed.com HTML markup.
         # Last known version to work properly is 3.6.4 (next version, 3.7.0, fails)
         # Assuming the site's markup is bad, and stripping it down to only contain what's needed.
@@ -200,6 +205,9 @@ class Addic7edProvider(Provider):
         """
         series_sanitized = sanitize(series).lower()
         show_ids = self._get_show_ids()
+        if not show_ids:
+            show_ids = self._get_show_ids.invalidate()
+        
         show_id = None
 
         # attempt with country
@@ -254,7 +262,13 @@ class Addic7edProvider(Provider):
                 continue
 
             # read the item
-            language = Language.fromaddic7ed(cells[3].text)
+            
+            try:
+                language = Language.fromaddic7ed(cells[3].text)
+            except LanguageReverseError as error:
+                logger.debug('Error trying to reverse map the language %s with error %r', cells[3].text, error)
+                continue
+
             hearing_impaired = bool(cells[6].text)
             page_link = self.server_url + cells[2].a['href'][1:]
             season = int(cells[0].text)
