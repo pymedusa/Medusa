@@ -207,7 +207,7 @@ class Addic7edProvider(Provider):
         show_ids = self._get_show_ids()
         if not show_ids:
             show_ids = self._get_show_ids.invalidate()
-        
+
         show_id = None
 
         # attempt with country
@@ -262,7 +262,6 @@ class Addic7edProvider(Provider):
                 continue
 
             # read the item
-            
             try:
                 language = Language.fromaddic7ed(cells[3].text)
             except LanguageReverseError as error:
