@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
+"""Custom language converter for addic7ed."""
 from babelfish import LanguageReverseConverter, language_converters
 
 
 class Addic7edConverter(LanguageReverseConverter):
+    """Addic7ed Converter class."""
+
     def __init__(self):
+        """Converter constructor."""
         self.name_converter = language_converters['name']
         self.from_addic7ed = {
             'Català': ('cat',),
@@ -29,11 +33,12 @@ class Addic7edConverter(LanguageReverseConverter):
             ('msa',): 'Malay',
             ('por', 'BR'): 'Portuguese (Brazilian)',
             ('srp', None, 'Cyrl'): 'Serbian (Cyrillic)',
-            ('fra', 'CA'): 'French (Canadian)' 
+            ('fra', 'CA'): 'French (Canadian)'
         }
         self.codes = self.name_converter.codes | set(self.from_addic7ed.keys())
 
     def convert(self, alpha3, country=None, script=None):
+        """Convert method."""
         if (alpha3, country, script) in self.to_addic7ed:
             return self.to_addic7ed[(alpha3, country, script)]
         if (alpha3, country) in self.to_addic7ed:
@@ -44,6 +49,7 @@ class Addic7edConverter(LanguageReverseConverter):
         return self.name_converter.convert(alpha3, country, script)
 
     def reverse(self, addic7ed):
+        """Reverse convert method."""
         if addic7ed in self.from_addic7ed:
             return self.from_addic7ed[addic7ed]
 
