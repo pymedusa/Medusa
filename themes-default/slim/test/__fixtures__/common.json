@@ -1556,6 +1556,9 @@
                     "total": 2
                 }
             }
+        },
+        "socket": {
+            "isConnected": true
         }
     }
 }
