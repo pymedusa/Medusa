@@ -9,9 +9,9 @@
                     <span class="icon-bar" />
                     <span class="icon-bar" />
                 </button>
-                <app-link v-if="!isConnected || !socketIsConnected" class="navbar-brand" style="position: relative" title="Medusa">
+                <app-link v-if="isConnected || !socketIsConnected" class="navbar-brand" style="position: relative" title="Medusa">
                     <img alt="Medusa" src="images/medusa.png" style="height: 50px;" class="img-responsive pull-left" @click="reloadPage">
-                    <img alt="disconnected" src="images/no16.png" class="disconnected spin-hover">
+                    <img alt="disconnected" src="images/no16.png" class="disconnected spin-hover-90">
                 </app-link>
                 <app-link v-else class="navbar-brand" href="home/" title="Medusa"><img alt="Medusa" src="images/medusa.png" style="height: 50px;" class="img-responsive pull-left"></app-link>
             </div>
