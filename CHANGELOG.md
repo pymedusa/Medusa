@@ -3,6 +3,7 @@
 #### New Features
 
 #### Improvements
+- Added connection (lost) indicator on the Medusa log ([10774](https://github.com/pymedusa/Medusa/pull/10774))
 
 #### Fixes
 

@@ -71,6 +71,7 @@ export default {
 @use '../style/modal.scss';
 @use '../style/vue-tags.scss';
 @use '../style/back-arrow.scss';
+@use '../style/spin.scss';
 
 #app {
     padding-top: 4rem;
