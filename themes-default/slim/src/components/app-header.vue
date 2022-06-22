@@ -9,7 +9,7 @@
                     <span class="icon-bar" />
                     <span class="icon-bar" />
                 </button>
-                <app-link v-if="!isConnected" class="navbar-brand" style="position: relative" title="Medusa">
+                <app-link v-if="!isConnected || !socketIsConnected" class="navbar-brand" style="position: relative" title="Medusa">
                     <img alt="Medusa" src="images/medusa.png" style="height: 50px;" class="img-responsive pull-left" @click="reloadPage">
                     <img alt="disconnected" src="images/no16.png" class="disconnected spin-hover">
                 </app-link>
@@ -128,7 +128,8 @@ export default {
             username: state => state.auth.user.username,
             warningLevel: state => state.config.general.logs.loggingLevels.warning,
             client: state => state.auth.client,
-            isConnected: state => state.auth.isConnected
+            isConnected: state => state.auth.isConnected,
+            socketIsConnected: state => state.socket.isConnected
         }),
         /**
          * Moved into a computed, so it's easier to mock in Jest.
