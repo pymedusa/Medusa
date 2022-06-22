@@ -44,8 +44,8 @@ exports[`AppHeader.test.js renders 1`] = `
        
       <app-link-stub
         class="navbar-brand"
+        href="home/"
         placeholder="indexer-to-name"
-        style="position: relative;"
         title="Medusa"
       >
         <img
@@ -53,12 +53,6 @@ exports[`AppHeader.test.js renders 1`] = `
           class="img-responsive pull-left"
           src="images/medusa.png"
           style="height: 50px;"
-        />
-         
-        <img
-          alt="disconnected"
-          class="disconnected spin-hover-90"
-          src="images/no16.png"
         />
       </app-link-stub>
     </div>
