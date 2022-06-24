@@ -108,7 +108,7 @@
                         </span>
 
                         <span v-else-if="props.column.label == 'Subtitles'" class="align-center">
-                            <div class="subtitles" v-if="['Archived', 'Downloaded', 'Ignored', 'Skipped'].includes(props.row.status)">
+                            <div class="subtitles">
                                 <div v-for="flag in props.row.subtitles" :key="flag">
                                     <img v-if="flag !== 'und'" :src="`images/subtitles/flags/${flag}.png`" width="16" height="11" :alt="flag" onError="this.onerror=null;this.src='images/flags/unknown.png';" @click="searchSubtitle($event, props.row, flag)">
                                     <img v-else :src="`images/subtitles/flags/${flag}.png`" class="subtitle-flag" width="16" height="11" :alt="flag" onError="this.onerror=null;this.src='images/flags/unknown.png';">
@@ -255,7 +255,7 @@
                         </span>
 
                         <span v-else-if="props.column.label == 'Subtitles'" class="align-center">
-                            <div class="subtitles" v-if="['Archived', 'Downloaded', 'Ignored', 'Skipped'].includes(props.row.status)">
+                            <div class="subtitles">
                                 <div v-for="flag in props.row.subtitles" :key="flag">
                                     <img v-if="flag !== 'und'" :src="`images/subtitles/flags/${flag}.png`" width="16" height="11" alt="{flag}" onError="this.onerror=null;this.src='images/flags/unknown.png';" @click="searchSubtitle($event, props.row, flag)">
                                     <img v-else :src="`images/subtitles/flags/${flag}.png`" class="subtitle-flag" width="16" height="11" alt="flag" onError="this.onerror=null;this.src='images/flags/unknown.png';">
