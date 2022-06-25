@@ -9,7 +9,7 @@ export default {
     name: 'irc',
     computed: {
         ...mapState({
-            configLoaded: state => state.config.system.pythonVersion !== null,
+            configLoaded: state => state.config.system.configLoaded,
             gitUsername: state => state.config.general.git.username
         }),
         frameSrc() {

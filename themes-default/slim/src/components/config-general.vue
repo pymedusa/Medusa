@@ -724,7 +724,7 @@ export default {
     computed: {
         ...mapState({
             general: state => state.config.general,
-            configLoaded: state => state.config.consts.statuses.length > 0,
+            configLoaded: state => state.config.system.configLoaded,
             layout: state => state.config.layout,
             statuses: state => state.config.consts.statuses,
             indexers: state => state.config.indexers,

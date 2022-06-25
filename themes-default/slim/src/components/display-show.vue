@@ -522,7 +522,7 @@ export default {
         ...mapState({
             shows: state => state.shows.shows,
             subtitles: state => state.config.subtitles,
-            configLoaded: state => state.config.layout.fanartBackground !== null,
+            configLoaded: state => state.config.system.configLoaded,
             layout: state => state.config.layout,
             stateSearch: state => state.config.search,
             client: state => state.auth.client
