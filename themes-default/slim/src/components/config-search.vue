@@ -395,7 +395,6 @@ export default {
     },
     data() {
         return {
-            configLoaded: false,
             checkPropersIntervalLabels: [
                 { text: '24 hours', value: 'daily' },
                 { text: '4 hours', value: '4h' },
