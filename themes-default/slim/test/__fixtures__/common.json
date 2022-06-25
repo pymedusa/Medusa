@@ -672,6 +672,7 @@
                 }
             },
             "system": {
+                "configLoaded": true,
                 "memoryUsage": "56.85 MB",
                 "schedulers": [
                     {
