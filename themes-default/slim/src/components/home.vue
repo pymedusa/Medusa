@@ -101,7 +101,7 @@ export default {
             // Renamed because of the computed property 'layout'.
             stateLayout: state => state.config.layout,
             stats: state => state.stats,
-            configLoaded: state => state.config.general.themeName !== null
+            configLoaded: state => state.config.system.configLoaded
         }),
         ...mapGetters({
             showsWithStats: 'showsWithStats',

@@ -1121,6 +1121,7 @@ class DataGenerator(object):
         """System information."""
         section_data = {}
 
+        section_data['configLoaded'] = True # More uniform way of checking of the config has loaded in frontend.
         section_data['memoryUsage'] = helpers.memory_usage(pretty=True)
         section_data['schedulers'] = generate_schedulers()
         section_data['showQueue'] = generate_show_queue()

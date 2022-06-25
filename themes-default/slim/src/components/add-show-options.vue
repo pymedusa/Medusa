@@ -222,7 +222,7 @@ export default {
     computed: {
         ...mapState({
             showDefaults: state => state.config.general.showDefaults,
-            configLoaded: state => state.config.general.wikiUrl !== null,
+            configLoaded: state => state.config.system.configLoaded,
             layout: state => state.config.layout,
             namingForceFolders: state => state.config.general.namingForceFolders,
             subtitlesEnabled: state => state.config.subtitles.enabled,

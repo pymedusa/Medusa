@@ -491,12 +491,9 @@ export default {
             metadata: state => state.config.metadata,
             postprocessing: state => state.config.postprocessing,
             torrentMethod: state => state.config.clients.torrents.method,
-            system: state => state.config.system
+            system: state => state.config.system,
+            configLoaded: state => state.config.system.configLoaded
         }),
-        configLoaded() {
-            const { postprocessing } = this;
-            return postprocessing.processAutomatically !== null;
-        },
         multiEpStringsSelect() {
             const { postprocessing } = this;
             if (!postprocessing.multiEpStrings) {
