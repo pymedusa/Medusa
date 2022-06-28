@@ -22,7 +22,8 @@ class Addic7edConverter(LanguageReverseConverter):
             'Serbian (Latin)': ('srp',),
             'Spanish (Latin America)': ('spa',),
             'Spanish (Spain)': ('spa',),
-            'French (Canadian)': ('fra', 'CA')
+            'French (Canadian)': ('fra', 'CA'),
+            'Danish': ('dnk',),
         }
         self.to_addic7ed = {
             ('cat',): 'Català',
@@ -33,7 +34,8 @@ class Addic7edConverter(LanguageReverseConverter):
             ('msa',): 'Malay',
             ('por', 'BR'): 'Portuguese (Brazilian)',
             ('srp', None, 'Cyrl'): 'Serbian (Cyrillic)',
-            ('fra', 'CA'): 'French (Canadian)'
+            ('fra', 'CA'): 'French (Canadian)',
+            ('dnk',): 'Danish',
         }
         self.codes = self.name_converter.codes | set(self.from_addic7ed.keys())
 
