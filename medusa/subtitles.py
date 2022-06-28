@@ -53,8 +53,6 @@ from subliminal.score import episode_scores
 from subliminal.subtitle import get_subtitle_path
 
 
-language_converters.register('custom = medusa.subtitle_providers.converters.custom:CustomConverter')
-
 logger = logging.getLogger(__name__)
 
 PROVIDER_POOL_EXPIRATION_TIME = datetime.timedelta(minutes=15).total_seconds()
@@ -788,10 +786,10 @@ def search_external_subtitles(path, directory=None):
         except (ValueError, LanguageReverseError):
             logger.info('Cannot parse language code using default fromietf table %r', language_code)
 
-        # Where using the custom language converter, as it has some more language mappings available. 
         if language == Language('und'):
             try:
-                language = Language.fromcustom(language_code)
+                # Try parsing by language name. 
+                language = Language.fromname(language_code)
             except (ValueError, LanguageReverseError):
                 logger.error('Cannot parse language code %r', language_code)
 
@@ -800,8 +798,6 @@ def search_external_subtitles(path, directory=None):
     logger.debug('Found subtitles %r', subtitles)
 
     return subtitles
-
-
 
 
 def get_subtitles_dir(video_path):
