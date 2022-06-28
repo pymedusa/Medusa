@@ -48,7 +48,6 @@ from medusa.show.show import Show
 from six import binary_type, iteritems, string_types, text_type
 
 from subliminal import ProviderPool, compute_score, provider_manager, refine, save_subtitles, scan_video
-from subliminal.core import search_external_subtitles
 from subliminal.score import episode_scores
 from subliminal.subtitle import get_subtitle_path
 
@@ -788,7 +787,7 @@ def search_external_subtitles(path, directory=None):
 
         if language == Language('und'):
             try:
-                # Try parsing by language name. 
+                # Try parsing by language name.
                 language = Language.fromname(language_code)
             except (ValueError, LanguageReverseError):
                 logger.error('Cannot parse language code %r', language_code)
