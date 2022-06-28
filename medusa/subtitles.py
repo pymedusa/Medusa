@@ -788,7 +788,7 @@ def search_external_subtitles(path, directory=None):
         except (ValueError, LanguageReverseError):
             logger.info('Cannot parse language code using default fromietf table %r', language_code)
 
-        # Where using the fromaddic7ed language converter, as it has some more language mappings available. 
+        # Where using the custom language converter, as it has some more language mappings available. 
         if language == Language('und'):
             try:
                 language = Language.fromcustom(language_code)

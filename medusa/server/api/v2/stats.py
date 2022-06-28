@@ -83,12 +83,6 @@ def per_show_stats():
             SUM(
                 season > 0 AND
                 episode > 0 AND
-                airdate > 1 AND
-                tv_eps.location <> ''
-            ) AS epLocation,
-            SUM(
-                season > 0 AND
-                episode > 0 AND
                 airdate > 1 AND (
                     (airdate <= {today} AND tv_eps.status IN {status_pre_today}) OR
                     tv_eps.status IN {status_both}
