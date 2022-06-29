@@ -4,8 +4,10 @@
 
 #### Improvements
 - Added connection (lost) indicator on the Medusa log ([10774](https://github.com/pymedusa/Medusa/pull/10774))
+- Extend subtitle file parsing to allow for titles with language name. ([10782](https://github.com/pymedusa/Medusa/pull/10782))
 
 #### Fixes
+- Homepage: Fix loading shows from localCache ([10779](https://github.com/pymedusa/Medusa/pull/10779))
 
 -----
 

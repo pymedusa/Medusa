@@ -48,9 +48,9 @@ from medusa.show.show import Show
 from six import binary_type, iteritems, string_types, text_type
 
 from subliminal import ProviderPool, compute_score, provider_manager, refine, save_subtitles, scan_video
-from subliminal.core import search_external_subtitles
 from subliminal.score import episode_scores
 from subliminal.subtitle import get_subtitle_path
+
 
 logger = logging.getLogger(__name__)
 
@@ -749,6 +749,54 @@ def get_video(tv_episode, video_path, subtitles_dir=None, subtitles=True, embedd
         logger.debug(u'Video information cached under key %s', key)
 
         return video
+
+
+def search_external_subtitles(path, directory=None):
+    """Search for external subtitles from a video `path` and their associated language.
+
+    Unless `directory` is provided, search will be made in the same directory as the video file.
+
+    :param str path: path to the video.
+    :param str directory: directory to search for subtitles.
+    :return: found subtitles with their languages.
+    :rtype: dict
+
+    """
+    # split path
+    dirpath, filename = os.path.split(path)
+    dirpath = dirpath or '.'
+    fileroot, fileext = os.path.splitext(filename)
+
+    # search for subtitles
+    subtitles = {}
+    for p in os.listdir(directory or dirpath):
+        # keep only valid subtitle filenames
+        if not p.startswith(fileroot) or not any(p.lower().endswith(ext) for ext in app.ALLOWED_EXTENSIONS):
+            continue
+
+        # extract the potential language code
+        language_code = p[len(fileroot):-len(os.path.splitext(p)[1])].replace(fileext, '').replace('_', '-')[1:]
+        if not language_code:
+            continue
+
+        language = Language('und')
+        try:
+            language = Language.fromietf(language_code)
+        except (ValueError, LanguageReverseError):
+            logger.info('Cannot parse language code using default fromietf table %r', language_code)
+
+        if language == Language('und'):
+            try:
+                # Try parsing by language name.
+                language = Language.fromname(language_code)
+            except (ValueError, LanguageReverseError):
+                logger.error('Cannot parse language code %r', language_code)
+
+        subtitles[p] = language
+
+    logger.debug('Found subtitles %r', subtitles)
+
+    return subtitles
 
 
 def get_subtitles_dir(video_path):
