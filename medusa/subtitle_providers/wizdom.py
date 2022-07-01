@@ -129,7 +129,7 @@ class WizdomProvider(Provider):
     def _get_subtitles_for_episode(self, imdb_id, season, episode):
         """Search for subtitle by imdb_id, season and episode."""
         logger.debug('Using IMDB ID %r', imdb_id)
-        
+
         url = f'https://{self.server_url}/api/search?action=by_id&imdb={imdb_id}&season={season}&episode={episode}'
         results = []
         try:
