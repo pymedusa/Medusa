@@ -842,7 +842,7 @@ class AnimeWithMultipleSeasons(Rule):
             return
 
         initiator_value = seasons[0].initiator.value
-        if not 'season' in initiator_value.lower() or '-' not in initiator_value:
+        if 'season' not in initiator_value.lower() or '-' not in initiator_value:
             return
 
         if initiator_value.split('-')[0].replace('.', ' ').strip() not in titles[0].value:
