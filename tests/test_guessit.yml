@@ -4599,3 +4599,20 @@
   container: mkv
   mimetype: "video/x-matroska"
   type: episode
+
+? "[Erai-raws].Tate.no.Yuusha.no.Nariagari.Season.2.-.13.END.[1080p][HEVC][Multiple.Subtitle][1EB7B45D].mkv"
+: options: {show_type: anime}
+  title: Tate no Yuusha no Nariagari Season 2
+  absolute_episode: 13
+  episode: 13
+  episode_title: "END"
+  screen_size: "1080p"
+  video_codec: "H.265"
+  video_profile: "High Efficiency Video Coding"
+  release_group: Tsundere-Raws
+  container: mkv
+  mimetype: "video/x-matroska"
+  type: episode
+  release_group: "Erai-raws"
+  crc32: "1EB7B45D"
+  subtitle_language: "mul"

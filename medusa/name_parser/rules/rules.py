@@ -838,14 +838,14 @@ class AnimeWithMultipleSeasons(Rule):
             return
 
         seasons = matches.named('season')
-        if not seasons or len(seasons) > 1:
+        if not seasons:
             return
 
         initiator_value = seasons[0].initiator.value
-        if '-' not in initiator_value:
+        if not 'season' in initiator_value.lower() or '-' not in initiator_value:
             return
 
-        if initiator_value.split('-')[0].strip() not in titles[0].value:
+        if initiator_value.split('-')[0].replace('.', ' ').strip() not in titles[0].value:
             return
 
         to_remove = []
