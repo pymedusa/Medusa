@@ -581,8 +581,11 @@ const actions = {
     initShowsFromLocalStorage({ rootState, commit }) {
         const namespace = rootState.config.system.webRoot ? `${rootState.config.system.webRoot}_` : '';
         return commit('loadShowsFromStore', namespace);
+    },
+    updateEpisode({ state, commit }, episode) {
+        const show = state.shows.find(({ id }) => id.slug === episode.showSlug);
+        commit(ADD_SHOW_EPISODE, { show, episodes: [episode] });
     }
-
 };
 
 export default {

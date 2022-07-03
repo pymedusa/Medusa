@@ -21,6 +21,7 @@ from medusa import (
     name_cache,
     notifiers,
     ui,
+    ws
 )
 from medusa.clients import torrent
 from medusa.clients.nzb import (
@@ -224,6 +225,9 @@ def snatch_result(result):
             cur_ep_obj.manually_searched = result.manually_searched
 
             sql_l.append(cur_ep_obj.get_sql())
+
+            # Push an update with the updated episode to any open Web UIs through the WebSocket
+            ws.Message('episodeUpdated', cur_ep_obj.to_json()).push()
 
         if cur_ep_obj.status != common.DOWNLOADED:
             notifiers.notify_snatch(cur_ep_obj, result)

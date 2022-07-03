@@ -66,7 +66,7 @@ const passToStoreHandler = function(eventName, event, next) {
         } else if (event === 'showUpdated' || event === 'showAdded') {
             this.store.dispatch('updateShow', data);
         } else if (event === 'showRemoved') {
-            // We need this for the QueueItemChangeIndexer
+            // We need this for the QueueItemChangeIndexerstatus
             this.store.dispatch('removeShow', data);
         } else if (event === 'addManualSearchResult') {
             this.store.dispatch('addManualSearchResult', data);
@@ -82,6 +82,8 @@ const passToStoreHandler = function(eventName, event, next) {
             }
         } else if (event === 'historyUpdate') {
             this.store.dispatch('updateHistory', data);
+        } else if (event === 'episodeUpdated') {
+            this.store.dispatch('updateEpisode', data);
         } else {
             window.displayNotification('info', event, data);
         }

@@ -23,6 +23,7 @@ from medusa import (
     notifiers,
     post_processor,
     subtitles,
+    ws
 )
 from medusa.common import (
     ARCHIVED,
@@ -1096,6 +1097,7 @@ class Episode(TV):
         data['identifier'] = self.identifier
         data['id'] = {self.indexer_name: self.indexerid}
         data['slug'] = self.slug
+        data['showSlug'] = self.series.slug
         data['season'] = self.season
         data['episode'] = self.episode
 
@@ -1402,6 +1404,9 @@ class Episode(TV):
         # use a custom update/insert method to get the data into the DB
         main_db_con = db.DBConnection()
         main_db_con.upsert('tv_episodes', new_value_dict, control_value_dict)
+
+        # Push an update with the updated episode to any open Web UIs through the WebSocket
+        ws.Message('episodeUpdated', self.to_json()).push()
 
         self.reset_dirty()
 
@@ -2199,6 +2204,8 @@ class Episode(TV):
                     self.manually_searched = False
 
             self.status = new_status
+            # Push an update with the updated episode to any open Web UIs through the WebSocket
+            ws.Message('episodeUpdated', self.to_json()).push()
 
             # Make sure to run the collected sql through a mass action.
             return self.get_sql()
