@@ -212,6 +212,9 @@ const mutations = {
         if (localStorage.getItem('shows')) {
             Vue.set(state, 'shows', JSON.parse(localStorage.getItem(`${namespace}shows`)));
         }
+    },
+    updateEpisode(state, episode) {
+        const show = state.shows.find(({ id }) => id.slug === episode.showSlug);
     }
 };
 
@@ -581,8 +584,11 @@ const actions = {
     initShowsFromLocalStorage({ rootState, commit }) {
         const namespace = rootState.config.system.webRoot ? `${rootState.config.system.webRoot}_` : '';
         return commit('loadShowsFromStore', namespace);
+    },
+    updateEpisode({ state, commit }, episode) {
+        const show = state.shows.find(({ id }) => id.slug === episode.showSlug);
+        commit(ADD_SHOW_EPISODE, { show, episodes: [episode] });
     }
-
 };
 
 export default {

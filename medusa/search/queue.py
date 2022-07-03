@@ -15,7 +15,7 @@ from builtins import map
 from builtins import str
 
 from medusa import app, common, db, failed_history, helpers, history, ui, ws
-from medusa.common import DOWNLOADED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, SUBTITLED
+from medusa.common import DOWNLOADED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, SUBTITLED, WANTED
 from medusa.helper.common import enabled_providers
 from medusa.helper.exceptions import AuthException, ex
 from medusa.helpers import pretty_file_size
@@ -568,6 +568,18 @@ class BacklogQueueItem(generic_queue.QueueItem):
 
                 # Push an update to any open Web UIs through the WebSocket
                 ws.Message('QueueItemUpdate', self.to_json).push()
+
+                if self.segment:
+                    # Make sure the episodes status has been changed to wanted, before starting the search.
+                    ep_sql_l = []
+                    for episode in self.segment:
+                        ep_sql = episode.mass_update_episode_status(WANTED)
+                        if ep_sql:
+                            ep_sql_l.append(ep_sql)
+                    
+                    if ep_sql_l:
+                        main_db_con = db.DBConnection()
+                        main_db_con.mass_action(ep_sql_l)
 
                 search_result = search_providers(self.show, self.segment)
 
