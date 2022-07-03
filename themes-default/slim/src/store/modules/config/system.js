@@ -28,6 +28,7 @@ import { ADD_CONFIG, ADD_REMOTE_BRANCHES, ADD_SHOW_QUEUE_ITEM } from '../../muta
  */
 
 const state = {
+    configLoaded: false,
     branch: null,
     memoryUsage: null,
     schedulers: [],

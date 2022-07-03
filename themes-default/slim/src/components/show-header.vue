@@ -425,7 +425,7 @@ export default {
             qualities: state => state.config.consts.qualities.values,
             statuses: state => state.config.consts.statuses,
             search: state => state.config.search,
-            configLoaded: state => state.config.layout.fanartBackground !== null,
+            configLoaded: state => state.config.system.configLoaded,
             client: state => state.auth.client
         }),
         ...mapGetters({

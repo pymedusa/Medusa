@@ -337,6 +337,7 @@ def config_system(monkeypatch):
     monkeypatch.setattr(helpers, 'memory_usage', memory_usage_mock)
 
     section_data = {}
+    section_data['configLoaded'] = True
     section_data['memoryUsage'] = memory_usage_mock()
     section_data['schedulers'] = [{'key': scheduler[0], 'name': scheduler[1]} for scheduler in all_schedulers]
     section_data['showQueue'] = []

@@ -63,16 +63,20 @@ export default new Vue({
                             setLoadingFinished(true);
                             setLoadingDisplay(false);
                         }, 2000);
+                        this.connect(true);
                     });
             }).catch(error => {
                 console.debug(error);
                 alert('Unable to connect to Medusa!'); // eslint-disable-line no-alert
+                this.connect(false);
             });
         }
     },
     methods: {
         ...mapActions({
-            getShows: 'getShows'
+            getShows: 'getShows',
+            connect: 'connect'
+
         }),
         ...mapMutations([
             'setLoadingDisplay',

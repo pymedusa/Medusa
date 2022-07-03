@@ -1,0 +1,13 @@
+.spin-hover-90:hover {
+    animation: spin-90 0.3s linear;
+}
+
+@keyframes spin-90 {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(90deg);
+    }
+}

@@ -108,8 +108,8 @@ Vue.use(VueNativeSock, websocketUrl, {
     store,
     format: 'json',
     reconnection: true, // (Boolean) whether to reconnect automatically (false)
-    reconnectionAttempts: 2, // (Number) number of reconnection attempts before giving up (Infinity),
-    reconnectionDelay: 1000, // (Number) how long to initially wait before attempting a new (1000)
+    reconnectionAttempts: 25, // (Number) number of reconnection attempts before giving up (Infinity),
+    reconnectionDelay: 2500, // (Number) how long to initially wait before attempting a new (1000)
     passToStoreHandler, // (Function|<false-y>) Handler for events triggered by the WebSocket (false)
     mutations: {
         SOCKET_ONOPEN,

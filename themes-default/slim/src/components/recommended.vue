@@ -151,7 +151,6 @@ export default {
             sortDirectionOptionsValue: 'desc',
             filterOption: null,
             filterShows: '',
-            configLoaded: false,
             rootDirs: [],
             enableShowOptions: false,
             selectedShowOptions: {

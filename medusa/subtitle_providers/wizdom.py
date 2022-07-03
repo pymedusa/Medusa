@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import bisect
 import io
 import logging
 import os
@@ -31,8 +30,9 @@ class WizdomSubtitle(Subtitle):
     """Wizdom Subtitle."""
     provider_name = 'wizdom'
 
-    def __init__(self, language, hearing_impaired, page_link, series, season, episode, title, imdb_id, subtitle_id,
-                 releases):
+    def __init__(self, language, hearing_impaired, page_link, series,
+                 season, episode, title, imdb_id, subtitle_id, release):
+
         super(WizdomSubtitle, self).__init__(language, hearing_impaired, page_link)
         self.series = series
         self.season = season
@@ -41,7 +41,7 @@ class WizdomSubtitle(Subtitle):
         self.imdb_id = imdb_id
         self.subtitle_id = subtitle_id
         self.downloaded = 0
-        self.releases = releases
+        self.release = release
 
     @property
     def id(self):
@@ -65,13 +65,12 @@ class WizdomSubtitle(Subtitle):
             if video.series_imdb_id and self.imdb_id == video.series_imdb_id:
                 matches.add('series_imdb_id')
             # guess
-            for release in self.releases:
-                matches |= guess_matches(video, guessit(release, {'type': 'episode'}))
+            matches |= guess_matches(video, guessit(self.release, {'type': 'episode'}))
+
         # movie
         elif isinstance(video, Movie):
             # guess
-            for release in self.releases:
-                matches |= guess_matches(video, guessit(release, {'type': 'movie'}))
+            matches |= guess_matches(video, guessit(self.release, {'type': 'movie'}))
 
         # title
         if video.title and sanitize(self.title) == sanitize(video.title):
@@ -127,6 +126,22 @@ class WizdomProvider(Provider):
                 return str(r.json().get('imdb_id', '')) or None
         return None
 
+    def _get_subtitles_for_episode(self, imdb_id, season, episode):
+        """Search for subtitle by imdb_id, season and episode."""
+        logger.debug('Using IMDB ID %r', imdb_id)
+
+        url = f'https://{self.server_url}/api/search?action=by_id&imdb={imdb_id}&season={season}&episode={episode}'
+        results = []
+        try:
+            # search
+            response = self.session.get(url)
+            response.raise_for_status()
+            results = response.json()
+        except (Exception, ValueError):
+            logger.warning('Error trying to search for subtitle for imdb_id: %s, season: %s, episode: %s',
+                           imdb_id, season, episode)
+        return results
+
     def query(self, title, season=None, episode=None, year=None, filename=None, imdb_id=None):
         # search for the IMDB ID if needed.
         is_movie = not (season and episode)
@@ -134,25 +149,13 @@ class WizdomProvider(Provider):
         if not imdb_id:
             return {}
 
-        # search
-        logger.debug('Using IMDB ID %r', imdb_id)
-        url = 'http://json.{}/{}.json'.format(self.server_url, imdb_id)
-        page_link = 'http://{}/#/{}/{}'.format(self.server_url, 'movies' if is_movie else 'series', imdb_id)
+        page_link = 'https://{}/#/{}/{}'.format(self.server_url, 'movies' if is_movie else 'series', imdb_id)
 
         # get the list of subtitles
         logger.debug('Getting the list of subtitles')
-        r = self.session.get(url)
-        r.raise_for_status()
-        try:
-            results = r.json()
-        except ValueError:
-            return {}
 
-        # filter irrelevant results
-        if not is_movie:
-            results = results.get('subs', {}).get(str(season), {}).get(str(episode), [])
-        else:
-            results = results.get('subs', [])
+        # Get subtitles
+        results = self._get_subtitles_for_episode(imdb_id, season, episode)
 
         # loop over results
         subtitles = {}
@@ -160,18 +163,11 @@ class WizdomProvider(Provider):
             language = Language.fromalpha2('he')
             hearing_impaired = False
             subtitle_id = result['id']
-            release = result['version']
-
-            # add the release and increment downloaded count if we already have the subtitle
-            if subtitle_id in subtitles:
-                logger.debug('Found additional release %r for subtitle %d', release, subtitle_id)
-                bisect.insort_left(subtitles[subtitle_id].releases, release)  # deterministic order
-                subtitles[subtitle_id].downloaded += 1
-                continue
+            release = result['versioname']
 
             # otherwise create it
             subtitle = WizdomSubtitle(language, hearing_impaired, page_link, title, season, episode, title, imdb_id,
-                                      subtitle_id, [release])
+                                      subtitle_id, release)
             logger.debug('Found subtitle %r', subtitle)
             subtitles[subtitle_id] = subtitle
 
@@ -194,7 +190,7 @@ class WizdomProvider(Provider):
 
     def download_subtitle(self, subtitle):
         # download
-        url = 'http://zip.{}/{}.zip'.format(self.server_url, subtitle.subtitle_id)
+        url = f'https://{self.server_url}/api/files/sub/{subtitle.subtitle_id}'
         r = self.session.get(url, headers={'Referer': subtitle.page_link}, timeout=10)
         r.raise_for_status()
 
