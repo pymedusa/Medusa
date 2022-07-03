@@ -212,9 +212,6 @@ const mutations = {
         if (localStorage.getItem('shows')) {
             Vue.set(state, 'shows', JSON.parse(localStorage.getItem(`${namespace}shows`)));
         }
-    },
-    updateEpisode(state, episode) {
-        const show = state.shows.find(({ id }) => id.slug === episode.showSlug);
     }
 };
 

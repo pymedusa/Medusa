@@ -576,7 +576,7 @@ class BacklogQueueItem(generic_queue.QueueItem):
                         ep_sql = episode.mass_update_episode_status(WANTED)
                         if ep_sql:
                             ep_sql_l.append(ep_sql)
-                    
+
                     if ep_sql_l:
                         main_db_con = db.DBConnection()
                         main_db_con.mass_action(ep_sql_l)
