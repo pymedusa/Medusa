@@ -952,7 +952,7 @@ export default {
 
             try {
                 this.checkoutBranchMessage = 'Checking if the checkout requires a database upgrade / downgrade';
-                const result = await client.this.client.apiRoute.get('home/getDBcompare');
+                const result = await client.apiRoute.get('home/getDBcompare');
                 if (result.data.status === 'success') {
                     if (result.data.message === 'equal') {
                         // Checkout Branch
