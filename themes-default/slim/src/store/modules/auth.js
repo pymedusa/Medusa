@@ -1,5 +1,6 @@
 import {
     AUTHENTICATE,
+    CONNECT,
     LOGIN_PENDING,
     LOGIN_SUCCESS,
     LOGIN_FAILED,
@@ -12,6 +13,7 @@ import VueJwtDecode from 'vue-jwt-decode';
 
 const state = {
     isAuthenticated: false,
+    isConnected: false,
     user: {},
     tokens: {
         access: null,
@@ -48,6 +50,9 @@ const mutations = {
     [AUTHENTICATE](state, client) {
         state.client = client;
         state.tokens.access = client.token;
+    },
+    [CONNECT](state, value) {
+        state.isConnected = value;
     }
 };
 
@@ -92,6 +97,9 @@ const actions = {
                     resolve();
                 });
         });
+    },
+    connect({ commit }, connected) {
+        commit(CONNECT, connected);
     }
 };
 

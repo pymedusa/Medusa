@@ -724,7 +724,7 @@ export default {
     computed: {
         ...mapState({
             general: state => state.config.general,
-            configLoaded: state => state.config.consts.statuses.length > 0,
+            configLoaded: state => state.config.system.configLoaded,
             layout: state => state.config.layout,
             statuses: state => state.config.consts.statuses,
             indexers: state => state.config.indexers,
@@ -952,7 +952,7 @@ export default {
 
             try {
                 this.checkoutBranchMessage = 'Checking if the checkout requires a database upgrade / downgrade';
-                const result = await client.this.client.apiRoute.get('home/getDBcompare');
+                const result = await client.apiRoute.get('home/getDBcompare');
                 if (result.data.status === 'success') {
                     if (result.data.message === 'equal') {
                         // Checkout Branch

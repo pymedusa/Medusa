@@ -1,4 +1,5 @@
 const AUTHENTICATE = '🔒 Authenticating';
+const CONNECT = '🔒 🔗 Connected';
 const LOGIN_PENDING = '🔒 Logging in';
 const LOGIN_SUCCESS = '🔒 ✅ Login Successful';
 const LOGIN_FAILED = '🔒 ❌ Login Failed';
@@ -49,6 +50,7 @@ const ADD_SCHEDULE = '📅 Schedule information added';
 
 export {
     AUTHENTICATE,
+    CONNECT,
     LOGIN_PENDING,
     LOGIN_SUCCESS,
     LOGIN_FAILED,
