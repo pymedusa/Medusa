@@ -1,6 +1,4 @@
-## Unreleased
-
-#### New Features
+## 1.0.4 (05-07-2022)
 
 #### Improvements
 - Added connection (lost) indicator on the Medusa log ([10774](https://github.com/pymedusa/Medusa/pull/10774))
@@ -10,6 +8,7 @@
 #### Fixes
 - Homepage: Fix loading shows from localCache ([10779](https://github.com/pymedusa/Medusa/pull/10779))
 - Fix Erai-raws formatted anime release guessit parsing ([10791](https://github.com/pymedusa/Medusa/pull/10791))
+- Fix switching from branch ([10798](https://github.com/pymedusa/Medusa/pull/10798))
  
 -----
 
