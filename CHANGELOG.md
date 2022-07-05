@@ -8,7 +8,7 @@
 #### Fixes
 - Homepage: Fix loading shows from localCache ([10779](https://github.com/pymedusa/Medusa/pull/10779))
 - Fix Erai-raws formatted anime release guessit parsing ([10791](https://github.com/pymedusa/Medusa/pull/10791))
-- Fix switching from branch ([10798](https://github.com/pymedusa/Medusa/pull/10798))
+- Fix switching branch ([10798](https://github.com/pymedusa/Medusa/pull/10798))
  
 -----
 
