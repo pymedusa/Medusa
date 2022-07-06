@@ -3,6 +3,12 @@
 #### New Features
 
 #### Improvements
+
+#### Fixes
+
+## 1.0.4 (05-07-2022)
+
+#### Improvements
 - Added connection (lost) indicator on the Medusa log ([10774](https://github.com/pymedusa/Medusa/pull/10774))
 - Extend subtitle file parsing to allow for titles with language name. ([10782](https://github.com/pymedusa/Medusa/pull/10782))
 - Auto change status episode to Wanted, when running a forced search for the episode. [10796](https://github.com/pymedusa/Medusa/pull/10796))
@@ -10,6 +16,7 @@
 #### Fixes
 - Homepage: Fix loading shows from localCache ([10779](https://github.com/pymedusa/Medusa/pull/10779))
 - Fix Erai-raws formatted anime release guessit parsing ([10791](https://github.com/pymedusa/Medusa/pull/10791))
+- Fix switching branch ([10798](https://github.com/pymedusa/Medusa/pull/10798))
  
 -----
 
