@@ -5,6 +5,7 @@
 #### Improvements
 
 #### Fixes
+- Only auto change the status of an episode, when directly triggered through the web ui. ([10806](https://github.com/pymedusa/Medusa/pull/10806))
 
 ## 1.0.4 (05-07-2022)
 
