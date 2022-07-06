@@ -4,7 +4,8 @@ from __future__ import unicode_literals
 
 from collections import defaultdict
 
-from medusa import app
+from medusa import app, db
+from medusa.common import WANTED
 from medusa.search.manual import collect_episodes_from_search_thread
 from medusa.search.queue import (
     BacklogQueueItem,
@@ -142,7 +143,18 @@ class SearchHandler(BaseRequestHandler):
             return self._not_found('Could not find any episode for show {show}. Did you provide the correct format?'
                                    .format(show=series.name))
 
+        main_db_con = db.DBConnection()
         for segment in itervalues(episode_segments):
+            # Change the status for the searched eps to 'Wanted'
+            ep_sql_l = []
+            for episode in segment:
+                ep_sql = episode.mass_update_episode_status(WANTED)
+                if ep_sql:
+                    ep_sql_l.append(ep_sql)
+
+            if ep_sql_l:
+                main_db_con.mass_action(ep_sql_l)
+
             cur_backlog_queue_item = BacklogQueueItem(series, segment)
             app.forced_search_queue_scheduler.action.add_item(cur_backlog_queue_item)
 

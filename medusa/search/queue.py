@@ -569,18 +569,6 @@ class BacklogQueueItem(generic_queue.QueueItem):
                 # Push an update to any open Web UIs through the WebSocket
                 ws.Message('QueueItemUpdate', self.to_json).push()
 
-                if self.segment:
-                    # Make sure the episodes status has been changed to wanted, before starting the search.
-                    ep_sql_l = []
-                    for episode in self.segment:
-                        ep_sql = episode.mass_update_episode_status(WANTED)
-                        if ep_sql:
-                            ep_sql_l.append(ep_sql)
-
-                    if ep_sql_l:
-                        main_db_con = db.DBConnection()
-                        main_db_con.mass_action(ep_sql_l)
-
                 search_result = search_providers(self.show, self.segment)
 
                 if search_result:
