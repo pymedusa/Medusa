@@ -15,7 +15,7 @@ from builtins import map
 from builtins import str
 
 from medusa import app, common, db, failed_history, helpers, history, ui, ws
-from medusa.common import DOWNLOADED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, SUBTITLED, WANTED
+from medusa.common import DOWNLOADED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, SUBTITLED
 from medusa.helper.common import enabled_providers
 from medusa.helper.exceptions import AuthException, ex
 from medusa.helpers import pretty_file_size
