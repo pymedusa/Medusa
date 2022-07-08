@@ -8,7 +8,7 @@ cloudscraper==1.2.58
 configobj==5.0.6
 contextlib2==0.6.0.post1
 deluge-client==1.9.0
-dogpile.cache==1.1.2
+dogpile.cache==1.1.8
 enzyme @ https://codeload.github.com/pymedusa/enzyme/tar.gz/665cf6948aab1c249dcc99bd9624a81d17b3302a
 feedparser==6.0.2
 gntp==1.0.3
