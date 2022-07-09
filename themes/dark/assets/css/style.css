@@ -4297,7 +4297,8 @@ CSS helper classes
 
 /* This is used by multiple vue-good-table tables, for centering td content. */
 
-.align-center {
+.align-center,
+.align-center-span > span {
     display: flex;
     justify-content: center;
 }
