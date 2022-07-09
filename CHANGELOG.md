@@ -2,9 +2,11 @@
 
 #### New Features
 
-#### Fixes
-
 #### Improvements
+- Remove the `Download` field from the display-show table. Isn't used anymore. ([10813](https://github.com/pymedusa/Medusa/pull/10813))
+
+#### Fixes
+- Fixed borders in tables where diplay: flex is used on a table cell. ([10813](https://github.com/pymedusa/Medusa/pull/10813))
 
 ## 1.0.5 (06-07-2022)
 

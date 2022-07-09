@@ -212,7 +212,7 @@ export default {
         }, {
             label: 'Size',
             field: 'size',
-            tdClass: 'align-center',
+            tdClass: 'align-center-span',
             formatFn: humanFileSize,
             type: 'number',
             filterOptions: {
