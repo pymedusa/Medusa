@@ -499,11 +499,6 @@ export default {
                 sortable: false,
                 hidden: getCookie('Air date')
             }, {
-                label: 'Download',
-                field: 'download',
-                sortable: false,
-                hidden: getCookie('Download')
-            }, {
                 label: 'Subtitles',
                 field: 'subtitles',
                 sortable: false,
