@@ -85,19 +85,18 @@ export default {
             loading: false
         };
     },
-    created() {
+    async mounted() {
         // We need detailed info for the xem / scene exceptions, so let's get it.
         const { showSlug } = this;
-        this.getShow({ showSlug });
-        this.setCurrentShow(showSlug);
-    },
-    mounted() {
+        await this.getShow({ showSlug, detailed: true });
+        await this.setCurrentShow(showSlug);
+
         this.loadTestRename();
     },
     computed: {
         ...mapState({
             postprocessing: state => state.config.postprocessing,
-            seedLocation: state => state.clients.torrents.seedLocation,
+            seedLocation: state => state.config.clients.torrents.seedLocation,
             layout: state => state.config.layout,
             client: state => state.auth.client
         }),
@@ -140,7 +139,14 @@ export default {
             try {
                 this.loading = true;
                 const url = `series/${showSlug}/operation`;
-                const { data } = await this.client.api.post(url, { type: 'TEST_RENAME' }, { timeout: 120000 });
+                const data = [];
+                const reversedSeasons = this.show.seasonCount.slice().sort((a, b) => b.season - a.season);
+                for (const { season } of reversedSeasons) {
+                    // eslint-disable-next-line no-await-in-loop
+                    const result = await this.client.api.post(url, { type: 'TEST_RENAME', season }, { timeout: 120000 });
+                    data.push(...result.data);
+                }
+
                 this.episodeRenameList = data;
             } catch (error) {
                 this.$snotify.error(

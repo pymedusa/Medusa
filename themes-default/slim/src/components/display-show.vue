@@ -6,12 +6,14 @@
         <input type="hidden" id="indexer-name" value="">
         <input type="hidden" id="series-slug" value="">
 
-        <show-header type="show"
-                     ref="show-header"
-                     @reflow="reflowLayout"
-                     :slug="showSlug"
-                     @update="statusQualityUpdate"
-                     @update-overview-status="filterByOverviewStatus = $event"
+        <show-header
+            type="show"
+            ref="show-header"
+            :key="`show-header-${showSlug}`"
+            @reflow="reflowLayout"
+            :slug="showSlug"
+            @update="statusQualityUpdate"
+            @update-overview-status="filterByOverviewStatus = $event"
         />
 
         <div class="row">
@@ -88,12 +90,16 @@
                             <span :title="props.row.file.location !== '' ? props.row.file.location : ''" :class="{addQTip: props.row.file.location !== ''}">{{props.row.episode}}</span>
                         </span>
 
-                        <span v-else-if="props.column.label == 'Scene'" class="align-center">
-                            <scene-number-input :show="show" :initial-episode="props.row" />
+                        <span v-else-if="props.column.label == 'Scene'">
+                            <div class="align-center">
+                                <scene-number-input :show="show" :initial-episode="props.row" />
+                            </div>
                         </span>
 
-                        <span v-else-if="props.column.label == 'Scene Abs. #'" class="align-center">
-                            <scene-number-anime-input :show="show" :initial-episode="props.row" />
+                        <span v-else-if="props.column.label == 'Scene Abs. #'">
+                            <div class="align-center">
+                                <scene-number-anime-input :show="show" :initial-episode="props.row" />
+                            </div>
                         </span>
 
                         <span v-else-if="props.column.label == 'Title'">
@@ -105,10 +111,15 @@
                             <span :title="props.row.file.location" class="addQTip">{{props.row.file.name}}</span>
                         </span>
 
-                        <span v-else-if="props.column.label == 'Subtitles'" class="align-center">
-                            <div class="subtitles" v-if="['Archived', 'Downloaded', 'Ignored', 'Skipped'].includes(props.row.status)">
+                        <span v-else-if="props.column.label == 'Subtitles'">
+                            <div class="subtitles align-center">
                                 <div v-for="flag in props.row.subtitles" :key="flag">
-                                    <img v-if="flag !== 'und'" :src="`images/subtitles/flags/${flag}.png`" width="16" height="11" :alt="flag" onError="this.onerror=null;this.src='images/flags/unknown.png';" @click="searchSubtitle($event, props.row, flag)">
+                                    <img
+                                        v-if="flag !== 'und'" :src="`images/subtitles/flags/${flag}.png`"
+                                        width="16" height="11" :alt="flag" class="addQTip" :title="flag"
+                                        onError="this.onerror=null;this.src='images/flags/unknown.png';"
+                                        @click="searchSubtitle($event, props.row, flag)"
+                                    >
                                     <img v-else :src="`images/subtitles/flags/${flag}.png`" class="subtitle-flag" width="16" height="11" :alt="flag" onError="this.onerror=null;this.src='images/flags/unknown.png';">
                                 </div>
                             </div>
@@ -116,8 +127,8 @@
 
                         <span v-else-if="props.column.label == 'Status'">
                             <div class="pull-left">
-                                {{props.row.status}}
                                 <quality-pill v-if="props.row.quality !== 0" :quality="props.row.quality" />
+                                {{props.row.status}}
                                 <img v-if="props.row.status !== 'Unaired'"
                                      :title="props.row.watched ? 'This episode has been flagged as watched' : ''"
                                      class="addQTip" :src="`images/${props.row.watched ? '' : 'not'}watched.png`"
@@ -128,19 +139,13 @@
 
                         <span v-else-if="props.column.field == 'search'">
                             <div class="full-width">
-                                <img class="epForcedSearch" :id="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`"
-                                     :name="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`"
-                                     :ref="`search-${props.row.slug}`" src="images/search16.png" height="16"
-                                     :alt="retryDownload(props.row) ? 'retry' : 'search'"
-                                     :title="retryDownload(props.row) ? 'Retry Download' : 'Forced Seach'"
-                                     @click="queueSearch(props.row)"
-                                >
-                                <app-link class="epManualSearch" :id="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`"
-                                          :name="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`"
-                                          :href="`home/snatchSelection?showslug=${show.id.slug}&season=${props.row.season}&episode=${props.row.episode}`"
-                                >
-                                    <img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search">
-                                </app-link>
+                                <search v-if="props.row.slug" :ref="`search-${props.row.slug}`" style="margin-right: 0.25rem" searchType="backlog" :showSlug="showSlug" :episode="{
+                                    episode: props.row.episode, season: props.row.season, slug: props.row.slug
+                                }" />
+
+                                <search v-if="props.row.slug" style="margin-right: 0.25rem" searchType="manual" :showSlug="showSlug" :episode="{
+                                    episode: props.row.episode, season: props.row.season, slug: props.row.slug
+                                }" />
                                 <img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" @click="searchSubtitle($event, props.row)">
                             </div>
                             <div class="mobile">
@@ -241,12 +246,16 @@
                             <span :title="props.row.file.location !== '' ? props.row.file.location : ''" :class="{addQTip: props.row.file.location !== ''}">{{props.row.episode}}</span>
                         </span>
 
-                        <span v-else-if="props.column.label == 'Scene'" class="align-center">
-                            <scene-number-input :show="show" :initial-episode="props.row" />
+                        <span v-else-if="props.column.label == 'Scene'">
+                            <div class="align-center">
+                                <scene-number-input :show="show" :initial-episode="props.row" />
+                            </div>
                         </span>
 
-                        <span v-else-if="props.column.label == 'Scene Abs. #'" class="align-center">
-                            <scene-number-anime-input :show="show" :initial-episode="props.row" />
+                        <span v-else-if="props.column.label == 'Scene Abs. #'">
+                            <div class="align-center">
+                                <scene-number-anime-input :show="show" :initial-episode="props.row" />
+                            </div>
                         </span>
 
                         <span v-else-if="props.column.label == 'Title'">
@@ -258,17 +267,22 @@
                             <span :title="props.row.file.location" class="addQTip">{{props.row.file.name}}</span>
                         </span>
 
-                        <span v-else-if="props.column.label == 'Subtitles'" class="align-center">
-                            <div class="subtitles" v-if="['Archived', 'Downloaded', 'Ignored', 'Skipped'].includes(props.row.status)">
+                        <span v-else-if="props.column.label == 'Subtitles'">
+                            <div class="subtitles align-center">
                                 <div v-for="flag in props.row.subtitles" :key="flag">
-                                    <img v-if="flag !== 'und'" :src="`images/subtitles/flags/${flag}.png`" width="16" height="11" alt="{flag}" onError="this.onerror=null;this.src='images/flags/unknown.png';" @click="searchSubtitle($event, props.row, flag)">
+                                    <img
+                                        v-if="flag !== 'und'" :src="`images/subtitles/flags/${flag}.png`"
+                                        width="16" height="11" :alt="flag" class="addQTip" :title="flag"
+                                        onError="this.onerror=null;this.src='images/flags/unknown.png';"
+                                        @click="searchSubtitle($event, props.row, flag)"
+                                    >
                                     <img v-else :src="`images/subtitles/flags/${flag}.png`" class="subtitle-flag" width="16" height="11" alt="flag" onError="this.onerror=null;this.src='images/flags/unknown.png';">
                                 </div>
                             </div>
                         </span>
 
-                        <span v-else-if="props.column.label == 'Status'" class="align-center">
-                            <div class="pull-left">
+                        <span v-else-if="props.column.label == 'Status'">
+                            <div class="pull-left align-center">
                                 {{props.row.status}}
                                 <quality-pill v-if="props.row.quality !== 0" :quality="props.row.quality" class="quality-margins" />
                                 <img :title="props.row.watched ? 'This episode has been flagged as watched' : ''" class="addQTip" v-if="props.row.status !== 'Unaired'" :src="`images/${props.row.watched ? '' : 'not'}watched.png`" width="16" @click="updateEpisodeWatched(props.row, !props.row.watched);">
@@ -277,19 +291,14 @@
 
                         <span v-else-if="props.column.field == 'search'">
                             <div class="full-width">
-                                <img class="epForcedSearch" :id="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`"
-                                     :name="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`"
-                                     :ref="`search-${props.row.slug}`" src="images/search16.png" height="16"
-                                     :alt="retryDownload(props.row) ? 'retry' : 'search'"
-                                     :title="retryDownload(props.row) ? 'Retry Download' : 'Forced Seach'"
-                                     @click="queueSearch(props.row)"
-                                >
-                                <app-link class="epManualSearch" :id="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`"
-                                          :name="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`"
-                                          :href="`home/snatchSelection?showslug=${show.id.slug}&season=${props.row.season}&episode=${props.row.episode}`"
-                                >
-                                    <img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search">
-                                </app-link>
+                                <search v-if="props.row.slug" :ref="`search-${props.row.slug}`" style="margin-right: 0.25rem" searchType="backlog" :showSlug="showSlug" :episode="{
+                                    episode: props.row.episode, season: props.row.season, slug: props.row.slug
+                                }" />
+
+                                <search v-if="props.row.slug" style="margin-right: 0.25rem" searchType="manual" :showSlug="showSlug" :episode="{
+                                    episode: props.row.episode, season: props.row.season, slug: props.row.slug
+                                }" />
+
                                 <img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" @click="searchSubtitle($event, props.row)">
                             </div>
                             <div class="mobile">
@@ -379,7 +388,7 @@
 import debounce from 'lodash/debounce';
 import Vue from 'vue';
 import { mapState, mapGetters, mapActions } from 'vuex';
-import { AppLink, PlotInfo, SceneNumberInput, SceneNumberAnimeInput } from './helpers';
+import { AppLink, PlotInfo, Search, SceneNumberInput, SceneNumberAnimeInput } from './helpers';
 import { humanFileSize } from '../utils/core';
 import { manageCookieMixin } from '../mixins/manage-cookie';
 import { addQTip } from '../utils/jquery';
@@ -396,6 +405,7 @@ export default {
         Backstretch,
         PlotInfo,
         QualityPill,
+        Search,
         SceneNumberInput,
         SceneNumberAnimeInput,
         ShowHeader,
@@ -493,14 +503,9 @@ export default {
                 // But the goal is to have this user formatted (as configured in backend)
                 label: 'Air date',
                 field: this.parseDateFn,
-                tdClass: 'align-center',
+                tdClass: 'align-center-span',
                 sortable: false,
                 hidden: getCookie('Air date')
-            }, {
-                label: 'Download',
-                field: 'download',
-                sortable: false,
-                hidden: getCookie('Download')
             }, {
                 label: 'Subtitles',
                 field: 'subtitles',
@@ -530,7 +535,7 @@ export default {
         ...mapState({
             shows: state => state.shows.shows,
             subtitles: state => state.config.subtitles,
-            configLoaded: state => state.config.layout.fanartBackground !== null,
+            configLoaded: state => state.config.system.configLoaded,
             layout: state => state.config.layout,
             stateSearch: state => state.config.search,
             client: state => state.auth.client
@@ -794,7 +799,7 @@ export default {
                 };
                 episodes.forEach(episode => {
                     data.episodes.push(episode.slug);
-                    this.$refs[`search-${episode.slug}`].src = 'images/loading16-dark.gif';
+                    this.$refs[`search-${episode.slug}`].src = 'images/loading16.gif';
                 });
             }
 
@@ -1019,7 +1024,6 @@ export default {
                 this.initializeEpisodes(true);
             }
         }
-
     }
 };
 </script>
@@ -1099,6 +1103,7 @@ tablesorter.css
     color: rgb(0, 0, 0);
     text-align: left;
     border-spacing: 0;
+    border-collapse: initial;
 }
 
 .displayShow >>> .vgt-table th,

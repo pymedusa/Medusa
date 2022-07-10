@@ -34,6 +34,7 @@
 import Vue from 'vue';
 import { mapState } from 'vuex';
 import { ChangeIndexerRow } from './manage';
+import { sortShows } from '../utils/core';
 
 export default {
     name: 'change-indexer',
@@ -64,6 +65,7 @@ export default {
     },
     computed: {
         ...mapState({
+            layout: state => state.config.layout,
             shows: state => state.shows.shows,
             queueitems: state => state.shows.queueitems,
             client: state => state.auth.client
@@ -73,14 +75,18 @@ export default {
             return filteredShows.filter(show => show.checked);
         },
         filteredShows() {
-            const { allShows, filter } = this;
-            return allShows.filter(
+            const { allShows, filter, layout } = this;
+            const { sortArticle } = layout;
+
+            const filteredShows = allShows.filter(
                 show =>
                     (show.indexer === 'tvdb' && filter.tvdb) ||
                     (show.indexer === 'tvmaze' && filter.tvmaze) ||
                     (show.indexer === 'tmdb' && filter.tmdb) ||
                     (show.indexer === 'imdb' && filter.imdb)
             );
+
+            return sortShows(filteredShows, sortArticle);
         }
     },
     methods: {

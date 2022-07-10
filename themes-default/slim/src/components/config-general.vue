@@ -241,6 +241,10 @@
                                         <select id="date_preset" name="date_preset" v-model="layout.dateStyle" class="form-control input-sm max-input350">
                                             <option :value="option.value" v-for="option in datePresetOptions" :key="option.value">{{ option.text }}</option>
                                         </select>
+                                        <template v-if="layout.dateStyle === '%x'">
+                                            <span>Selecting <strong>System Default</strong> here, will also result in using the browsers default time format.</span>
+                                            <br>Meaning the <strong>Time Style</strong> config option below, will not have any effect on some pages.
+                                        </template>
                                     </config-template>
 
                                     <config-template label-for="time_preset" label="Time style">
@@ -720,7 +724,7 @@ export default {
     computed: {
         ...mapState({
             general: state => state.config.general,
-            configLoaded: state => state.config.consts.statuses.length > 0,
+            configLoaded: state => state.config.system.configLoaded,
             layout: state => state.config.layout,
             statuses: state => state.config.consts.statuses,
             indexers: state => state.config.indexers,
@@ -948,7 +952,7 @@ export default {
 
             try {
                 this.checkoutBranchMessage = 'Checking if the checkout requires a database upgrade / downgrade';
-                const result = await client.this.client.apiRoute.get('home/getDBcompare');
+                const result = await client.apiRoute.get('home/getDBcompare');
                 if (result.data.status === 'success') {
                     if (result.data.message === 'equal') {
                         // Checkout Branch

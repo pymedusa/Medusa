@@ -9,7 +9,11 @@
                     <span class="icon-bar" />
                     <span class="icon-bar" />
                 </button>
-                <app-link class="navbar-brand" href="home/" title="Medusa"><img alt="Medusa" src="images/medusa.png" style="height: 50px;" class="img-responsive pull-left"></app-link>
+                <app-link v-if="!isConnected || !socketIsConnected" class="navbar-brand" style="position: relative" title="Medusa">
+                    <img alt="Medusa" src="images/medusa.png" style="height: 50px;" class="img-responsive pull-left" @click="reloadPage">
+                    <img alt="disconnected" src="images/no16.png" class="disconnected spin-hover-90">
+                </app-link>
+                <app-link v-else class="navbar-brand" href="home/" title="Medusa"><img alt="Medusa" src="images/medusa.png" style="height: 50px;" class="img-responsive pull-left"></app-link>
             </div>
             <div v-if="isAuthenticated" class="collapse navbar-collapse" id="main_nav">
                 <ul class="nav navbar-nav navbar-right navbar-mobile">
@@ -123,7 +127,9 @@ export default {
             isAuthenticated: state => state.auth.isAuthenticated,
             username: state => state.auth.user.username,
             warningLevel: state => state.config.general.logs.loggingLevels.warning,
-            client: state => state.auth.client
+            client: state => state.auth.client,
+            isConnected: state => state.auth.isConnected,
+            socketIsConnected: state => state.socket.isConnected
         }),
         /**
          * Moved into a computed, so it's easier to mock in Jest.
@@ -304,6 +310,9 @@ export default {
                     'Error trying to update plex'
                 );
             }
+        },
+        reloadPage() {
+            location.reload();
         }
     }
 };
@@ -349,5 +358,11 @@ export default {
     .navbar-mobile #NAVsystem > ul {
         transform: translateX(-6rem);
     }
+}
+
+.disconnected {
+    position: absolute;
+    right: 1rem;
+    bottom: 0.5rem;
 }
 </style>

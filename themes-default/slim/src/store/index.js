@@ -66,7 +66,7 @@ const passToStoreHandler = function(eventName, event, next) {
         } else if (event === 'showUpdated' || event === 'showAdded') {
             this.store.dispatch('updateShow', data);
         } else if (event === 'showRemoved') {
-            // We need this for the QueueItemChangeIndexer
+            // We need this for the QueueItemChangeIndexerstatus
             this.store.dispatch('removeShow', data);
         } else if (event === 'addManualSearchResult') {
             this.store.dispatch('addManualSearchResult', data);
@@ -82,6 +82,8 @@ const passToStoreHandler = function(eventName, event, next) {
             }
         } else if (event === 'historyUpdate') {
             this.store.dispatch('updateHistory', data);
+        } else if (event === 'episodeUpdated') {
+            this.store.dispatch('updateEpisode', data);
         } else {
             window.displayNotification('info', event, data);
         }
@@ -108,8 +110,8 @@ Vue.use(VueNativeSock, websocketUrl, {
     store,
     format: 'json',
     reconnection: true, // (Boolean) whether to reconnect automatically (false)
-    reconnectionAttempts: 2, // (Number) number of reconnection attempts before giving up (Infinity),
-    reconnectionDelay: 1000, // (Number) how long to initially wait before attempting a new (1000)
+    reconnectionAttempts: 25, // (Number) number of reconnection attempts before giving up (Infinity),
+    reconnectionDelay: 2500, // (Number) how long to initially wait before attempting a new (1000)
     passToStoreHandler, // (Function|<false-y>) Handler for events triggered by the WebSocket (false)
     mutations: {
         SOCKET_ONOPEN,

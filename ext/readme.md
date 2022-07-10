@@ -26,9 +26,11 @@ ext | **`guessit`** | [3.4.2](https://pypi.org/project/guessit/3.4.2/) | **`medu
 ext | **`html5lib`** | [1.1](https://pypi.org/project/html5lib/1.1/) | **`medusa`** (via `beautifulsoup4`) | -
 ext | **`idna`** | [2.8](https://pypi.org/project/idna/2.8/) | `requests` | -
 ext | **`imdbpie`** | [5.6.4](https://pypi.org/project/imdbpie/5.6.4/) | **`medusa`** | -
+ext | `importlib-metadata` | [4.11.4](https://pypi.org/project/importlib-metadata/4.11.4/) | `knowit` | Module: `importlib_metadata`
 ext | `importlib-resources` | [5.4.0](https://pypi.org/project/importlib-resources/5.4.0/) | `guessit` | Module: `importlib_resources`
 ext | `jsonrpclib-pelix` | [0.4.2](https://pypi.org/project/jsonrpclib-pelix/0.4.2/) | **`medusa`** | Module: `jsonrpclib` / Used by guessit on python version < 3.9`
-ext | **`knowit`** | [eea9ac1](https://github.com/ratoaq2/knowit/tree/eea9ac18e38c930230cf81b5dca4a9af9fb10d4e) | **`medusa`** | -
+ext | **`knowit`** | [eea9ac1](https://github.com/ratoaq2/knowit/tree/0.4.0) | **`medusa`** | -
+ext | **`pymediainfo`** | [5.1.0](https://pypi.org/project/pymediainfo/5.1.0/) | `knowit` | -
 ext | `Mako` | [1.1.4](https://pypi.org/project/Mako/1.1.4/) | **`medusa`** | Module: `mako`
 ext | `markdown2` | [2.4.2](https://pypi.org/project/markdown2/2.4.2/) | **`medusa`** | File: `markdown2.py`
 ext | `MarkupSafe` | [1.1.1](https://pypi.org/project/MarkupSafe/1.1.1/) | `Mako` | Module: `markupsafe`
@@ -62,6 +64,7 @@ ext | **`trakt`** | [3.1.0](https://pypi.org/project/trakt/3.1.0/) | **`medusa`*
 ext | `trans` | [2.1.0](https://pypi.org/project/trans/2.1.0/) | `imdbpie` | File: `trans.py`
 ext | `ttl-cache` | [1.6](https://pypi.org/project/ttl-cache/1.6/) | **`medusa`**, `adba` | File: `ttl_cache.py`
 ext | **`tvdbapiv2`** | pymedusa/[d6d0e9d](https://github.com/pymedusa/tvdbv2/tree/d6d0e9d98071c2d646beb997b336edbb0e98dfb7) | **`medusa`** | -
+ext | `typing-extensions` | [4.1.1](https://pypi.org/project/typing-extensions/4.1.1/) | `importlib_metadata` | File: `typing_extensions.py`
 ext | **`urllib3`** | [1.24.1](https://pypi.org/project/urllib3/1.24.1/) | `requests` | -
 ext | **`validators`** | [0.18.2](https://pypi.org/project/validators/0.18.2/) | **`medusa`** | -
 ext | **`webencodings`** | [0.5.1](https://pypi.org/project/webencodings/0.5.1/) | `html5lib` | -

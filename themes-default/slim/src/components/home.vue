@@ -100,7 +100,8 @@ export default {
             config: state => state.config.general,
             // Renamed because of the computed property 'layout'.
             stateLayout: state => state.config.layout,
-            stats: state => state.stats
+            stats: state => state.stats,
+            configLoaded: state => state.config.system.configLoaded
         }),
         ...mapGetters({
             showsWithStats: 'showsWithStats',
@@ -146,7 +147,8 @@ export default {
             setLayoutShow: 'setLayoutShow',
             setStoreLayout: 'setStoreLayout',
             setLayoutLocal: 'setLayoutLocal',
-            getStats: 'getStats'
+            getStats: 'getStats',
+            initShowsFromLocalStorage: 'initShowsFromLocalStorage'
         }),
         async changePosterSortBy() {
             // Patch new posterSOrtBy value
@@ -172,10 +174,22 @@ export default {
     },
     mounted() {
         const { getStats } = this;
+        const { initShowsFromLocalStorage } = this;
+
+        if (this.configLoaded) {
+            // Load straigt away.
+            initShowsFromLocalStorage();
+        } else {
+            // Wait for a state change.
+            const unwatchProp = this.$watch('configLoaded', configLoaded => {
+                if (configLoaded) {
+                    initShowsFromLocalStorage();
+                    unwatchProp();
+                }
+            });
+        }
+
         getStats('show');
-    },
-    beforeCreate() {
-        this.$store.commit('initShowsFromStore');
     }
 };
 </script>

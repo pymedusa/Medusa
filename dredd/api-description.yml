@@ -14,7 +14,7 @@ securityDefinitions:
     in: query
   Bearer:
     type: apiKey
-    name: Authorization
+    name: x-auth
     in: header
 basePath: /api/v2
 consumes:

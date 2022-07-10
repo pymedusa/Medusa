@@ -1638,6 +1638,12 @@ class Series(TV):
         if getattr(indexed_show, 'airs_dayofweek', '') and getattr(indexed_show, 'airs_time', ''):
             self.airs = '{airs_day_of_week} {airs_time}'.format(airs_day_of_week=indexed_show['airs_dayofweek'],
                                                                 airs_time=indexed_show['airs_time'])
+        else:
+            log.info(
+                '{id}: We could not determin a specific `airs_dayofweek` or `airs_time` for the show: {show}'
+                '\n We might start searching early for episodes.',
+                {'id': self.series_id, 'show': self.name}
+            )
 
         self.status = self.normalize_status(getattr(indexed_show, 'status', None))
 
@@ -2049,9 +2055,9 @@ class Series(TV):
         # should go by scene numbering or indexer numbering. Warn the user.
         if not self.scene and get_xem_numbering_for_show(self):
             log.warning(
-                '{id}: while adding the show {title} we noticed thexem.info has an episode mapping available'
+                '{id}: while adding the show {title} we noticed {xem_url} has an episode mapping available'
                 '\nyou might want to consider enabling the scene option for this show.',
-                {'id': self.series_id, 'title': self.name}
+                {'id': self.series_id, 'title': self.name, 'xem_url': app.XEM_URL}
             )
             ui.notifications.message(
                 'consider enabling scene for this show',

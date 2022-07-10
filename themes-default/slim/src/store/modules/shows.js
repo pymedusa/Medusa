@@ -206,10 +206,11 @@ const mutations = {
     [REMOVE_SHOW](state, removedShow) {
         state.shows = state.shows.filter(existingShow => removedShow.id.slug !== existingShow.id.slug);
     },
-    initShowsFromStore(state) {
+    loadShowsFromStore(state, namespace) {
         // Check if the ID exists
+        // Update (namespaced) localStorage
         if (localStorage.getItem('shows')) {
-            Vue.set(state, 'shows', JSON.parse(localStorage.getItem('shows')));
+            Vue.set(state, 'shows', JSON.parse(localStorage.getItem(`${namespace}shows`)));
         }
     }
 };
@@ -576,8 +577,15 @@ const actions = {
             }
         };
         return rootState.auth.client.api.patch(`series/${show.indexer}${show.id[show.indexer]}`, data);
+    },
+    initShowsFromLocalStorage({ rootState, commit }) {
+        const namespace = rootState.config.system.webRoot ? `${rootState.config.system.webRoot}_` : '';
+        return commit('loadShowsFromStore', namespace);
+    },
+    updateEpisode({ state, commit }, episode) {
+        const show = state.shows.find(({ id }) => id.slug === episode.showSlug);
+        commit(ADD_SHOW_EPISODE, { show, episodes: [episode] });
     }
-
 };
 
 export default {
