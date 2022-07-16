@@ -483,20 +483,21 @@ class DelugeRPC(object):
         try:
             # blank is default client ratio, so we also shouldn't set ratio
             self.connect()
+            version = self.get_version()
             if float(ratio) >= 0:
-                if self.version >= (2, 0):
+                if version >= (2, 0):
                     self.client.core.set_torrent_options(torrent_id, {'stop_at_ratio': True})
                 else:
                     self.client.core.set_torrent_stop_at_ratio(torrent_id, True)
 
-                if self.version >= (2, 0):
+                if version >= (2, 0):
                     self.client.core.set_torrent_options(torrent_id, {'stop_ratio': ratio})
                 else:
                     self.client.core.set_torrent_stop_ratio(torrent_id, ratio)
 
             elif float(ratio) == -1:
                 # Disable stop at ratio to seed forever
-                if self.version >= (2, 0):
+                if version >= (2, 0):
                     self.client.core.set_torrent_options(torrent_id, {'stop_at_ratio': False})
                 else:
                     self.client.core.set_torrent_stop_at_ratio(torrent_id, False)
