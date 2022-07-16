@@ -133,7 +133,7 @@ class DelugeDAPI(GenericClient):
 
         return self.drpc.set_torrent_label(result.hash, label) if label else True
 
-    def _set_torrent_ratio(self, result):
+    def _set_torrent_ratio(self, result):        
         return self.drpc.set_torrent_ratio(result.hash, float(result.ratio)) if result.ratio else True
 
     def _set_torrent_priority(self, result):
@@ -481,14 +481,25 @@ class DelugeRPC(object):
         :rtype: bool
         """
         try:
+            # blank is default client ratio, so we also shouldn't set ratio
             self.connect()
-            if self.get_version() >= (2, 0):
-                self.client.core.set_torrent_options(torrent_id, {'stop_at_ratio': True})
-                self.client.core.set_torrent_options(torrent_id, {'stop_ratio': ratio})
-            else:
-                self.client.core.set_torrent_stop_at_ratio(torrent_id, True)
-                self.client.core.set_torrent_stop_ratio(torrent_id, ratio)
+            if float(ratio) >= 0:
+                if self.version >= (2, 0):
+                    self.client.core.set_torrent_options(torrent_id, {'stop_at_ratio': True})
+                else:
+                    self.client.core.set_torrent_stop_at_ratio(torrent_id, True)
 
+                if self.version >= (2, 0):
+                    self.client.core.set_torrent_options(torrent_id, {'stop_ratio': ratio})
+                else:
+                    self.client.core.set_torrent_stop_ratio(torrent_id, ratio)
+
+            elif float(ratio) == -1:
+                # Disable stop at ratio to seed forever
+                if self.version >= (2, 0):
+                    self.client.core.set_torrent_options(torrent_id, {'stop_at_ratio': False})
+                else:
+                    self.client.core.set_torrent_stop_at_ratio(torrent_id, False)
         except Exception:
             return False
         else:
