@@ -133,7 +133,7 @@ class DelugeDAPI(GenericClient):
 
         return self.drpc.set_torrent_label(result.hash, label) if label else True
 
-    def _set_torrent_ratio(self, result):        
+    def _set_torrent_ratio(self, result):
         return self.drpc.set_torrent_ratio(result.hash, float(result.ratio)) if result.ratio else True
 
     def _set_torrent_priority(self, result):
