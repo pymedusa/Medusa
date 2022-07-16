@@ -263,7 +263,8 @@ class DelugeDAPI(GenericClient):
         client_status.progress = int(torrent['progress'])
 
         # Store destination
-        client_status.destination = torrent['download_location']
+        if torrent.get('download_location'):
+            client_status.destination = torrent['download_location']
 
         # Store resource
         client_status.resource = torrent['name']

@@ -203,6 +203,9 @@ class DownloadHandler(object):
                 ClientStatusEnum.COMPLETED.value,
                 ClientStatusEnum.FAILED.value,
                 ClientStatusEnum.SEEDED.value,
+                ClientStatusEnum.COMPLETED.value | ClientStatusEnum.SEEDED.value,
+                ClientStatusEnum.COMPLETED.value | ClientStatusEnum.PAUSED.value,
+                ClientStatusEnum.COMPLETED.value | ClientStatusEnum.SEEDED.value | ClientStatusEnum.PAUSED.value,
             ],
         ):
             try:
