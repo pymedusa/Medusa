@@ -15,7 +15,6 @@ from medusa.show.recommendations.recommended import (
     MissingTvdbMapping,
     RecommendedShow,
     cached_aid_to_tvdb,
-    create_key_from_series,
 )
 
 from simpleanidb import Anidb, REQUEST_HOT
@@ -24,6 +23,15 @@ from simpleanidb.exceptions import GeneralError
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
+
+
+def create_key_from_anidb_series(namespace, fn, **kw):
+    """Create a key made of indexer name and show ID."""
+    def generate_key(*args, **kw):
+        show_id = args[1].aid
+        show_key = f'{namespace}_{show_id}'
+        return show_key
+    return generate_key
 
 
 class AnidbPopular(BasePopular):  # pylint: disable=too-few-public-methods
@@ -42,7 +50,7 @@ class AnidbPopular(BasePopular):  # pylint: disable=too-few-public-methods
         self.source = EXTERNAL_ANIDB
         self.base_url = 'https://anidb.net/perl-bin/animedb.pl?show=anime&aid={aid}'
 
-    @recommended_series_cache.cache_on_arguments(namespace='anidb', function_key_generator=create_key_from_series)
+    @recommended_series_cache.cache_on_arguments(namespace='anidb', function_key_generator=create_key_from_anidb_series)
     def _create_recommended_show(self, series):
         """Create the RecommendedShow object from the returned showobj."""
         try:

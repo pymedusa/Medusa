@@ -7,6 +7,7 @@
 
 #### Fixes
 - Fixed borders in tables where diplay: flex is used on a table cell. ([10813](https://github.com/pymedusa/Medusa/pull/10813))
+- Fix keys for caching recommended shows in recommended.dbm. ([10827](https://github.com/pymedusa/Medusa/pull/10827))
 
 ## 1.0.5 (06-07-2022)
 

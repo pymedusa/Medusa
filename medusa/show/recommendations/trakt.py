@@ -18,7 +18,6 @@ from medusa.show.recommendations import ExpiringList
 from medusa.show.recommendations.recommended import (
     BasePopular,
     RecommendedShow,
-    create_key_from_series,
 )
 
 from six import iteritems
@@ -34,6 +33,15 @@ log.logger.addHandler(logging.NullHandler())
 
 
 missing_posters = ExpiringList(cache_timeout=3600 * 24 * 3)  # Cache 3 days
+
+
+def create_key_from_trakt_series(namespace, fn, **kw):
+    """Create a key made of indexer name and show ID."""
+    def generate_key(*args, **kw):
+        show_id = args[1].trakt
+        show_key = f'{namespace}_{show_id}'
+        return show_key
+    return generate_key
 
 
 class TraktPopular(BasePopular):
@@ -58,7 +66,7 @@ class TraktPopular(BasePopular):
         self.default_img_src = 'trakt-default.png'
         self.tvdb_api_v2 = indexerApi(INDEXER_TVDBV2).indexer()
 
-    @recommended_series_cache.cache_on_arguments(namespace='trakt', function_key_generator=create_key_from_series)
+    @recommended_series_cache.cache_on_arguments(namespace='trakt', function_key_generator=create_key_from_trakt_series)
     def _create_recommended_show(self, show, subcat=None):
         """Create the RecommendedShow object from the returned showobj."""
         rec_show = RecommendedShow(
