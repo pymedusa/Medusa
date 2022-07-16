@@ -408,7 +408,14 @@ def cached_get_imdb_series_genres(imdb_id):
 def create_key_from_series(namespace, fn, **kw):
     """Create a key made of indexer name and show ID."""
     def generate_key(*args, **kw):
-        show_key = f'{namespace}_{args[1]}'
+        if args[1].get('imdb_tt'):
+            show_id = args[1]['imdb_tt']
+        elif args[1].get('id'):
+            show_id = args[1]['id']
+        else:
+            raise Exception('Could not get a show id for dogpile caching.')
+
+        show_key = f'{namespace}_{show_id}'
         return show_key
     return generate_key
 
