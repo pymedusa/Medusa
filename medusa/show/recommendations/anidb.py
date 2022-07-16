@@ -15,7 +15,6 @@ from medusa.show.recommendations.recommended import (
     MissingTvdbMapping,
     RecommendedShow,
     cached_aid_to_tvdb,
-    create_key_from_series,
 )
 
 from simpleanidb import Anidb, REQUEST_HOT

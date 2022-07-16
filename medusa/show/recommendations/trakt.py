@@ -18,7 +18,6 @@ from medusa.show.recommendations import ExpiringList
 from medusa.show.recommendations.recommended import (
     BasePopular,
     RecommendedShow,
-    create_key_from_series,
 )
 
 from six import iteritems
