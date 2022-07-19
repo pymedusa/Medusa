@@ -3,16 +3,22 @@
 from __future__ import unicode_literals
 
 import json
+import logging
 from os.path import basename
 
 from medusa import db
 from medusa.common import DOWNLOADED, FAILED, SNATCHED, SUBTITLED, statusStrings
 from medusa.indexers.utils import indexer_id_to_name
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers import get_provider_class
 from medusa.providers.generic_provider import GenericProvider
 from medusa.schedulers.download_handler import ClientStatus
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.tv.series import Series, SeriesIdentifier
+
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class HistoryHandler(BaseRequestHandler):
@@ -60,6 +66,7 @@ class HistoryHandler(BaseRequestHandler):
             return self._ok(data=results[0])
 
         where = []
+        where_with_ops = []
 
         if series_slug is not None:
             series_identifier = SeriesIdentifier.from_slug(series_slug)
@@ -102,23 +109,31 @@ class HistoryHandler(BaseRequestHandler):
                 where += [filter_field]
                 params += [filter_value]
 
-        if where:
-            sql_base += ' WHERE ' + ' AND '.join(f'{item} = ?' for item in where)
-
         # Add size query (with operator)
         if size_operator and size:
-            sql_base += f' {"AND" if where else "WHERE"} size {size_operator} ?'
-            params.append(int(size) * 1024 * 1024)
+            try:
+                size = int(size) * 1024 * 1024
+                where_with_ops += [f' size {size_operator} ? ']
+                params.append(size)
+            except ValueError:
+                log.info('Could not parse {size} into a valid number', {'size': size})
 
         # Add provider with like %provider%
         if provider:
-            sql_base += f' {"AND" if where else "WHERE"} provider LIKE ?'
+            where_with_ops += [' provider LIKE ? ']
             params.append(f'%%{provider}%%')
 
         # Search resource with like %resource%
         if resource:
-            sql_base += f' {"AND" if where else "WHERE"} resource LIKE ?'
+            where_with_ops += [' resource LIKE ? ']
             params.append(f'%%{resource}%%')
+
+        if where:
+            sql_base += ' WHERE ' + ' AND '.join(f'{item} = ?' for item in where)
+
+        if where_with_ops:
+            sql_base += ' WHERE ' if not where else ' AND '
+            sql_base += ' AND '.join(where_with_ops)
 
         if sort is not None and len(sort) == 1:  # Only support one sort column right now.
             field = sort[0].get('field').lower()
