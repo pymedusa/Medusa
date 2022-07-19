@@ -111,7 +111,6 @@ class HistoryHandler(BaseRequestHandler):
 
         # Add size query (with operator)
         if size_operator and size:
-            # sql_base += f' {"AND" if where else "WHERE"} size {size_operator} ?'
             try:
                 size = int(size) * 1024 * 1024
                 where_with_ops += [f' size {size_operator} ? ']
@@ -121,13 +120,11 @@ class HistoryHandler(BaseRequestHandler):
 
         # Add provider with like %provider%
         if provider:
-            # sql_base += f' {"AND" if where else "WHERE"} provider LIKE ?'
             where_with_ops += [f' provider LIKE ? ']
             params.append(f'%%{provider}%%')
 
         # Search resource with like %resource%
         if resource:
-            # sql_base += f' {"AND" if where else "WHERE"} resource LIKE ?'
             where_with_ops += [f' resource LIKE ? ']
             params.append(f'%%{resource}%%')
 
