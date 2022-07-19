@@ -120,12 +120,12 @@ class HistoryHandler(BaseRequestHandler):
 
         # Add provider with like %provider%
         if provider:
-            where_with_ops += [f' provider LIKE ? ']
+            where_with_ops += [' provider LIKE ? ']
             params.append(f'%%{provider}%%')
 
         # Search resource with like %resource%
         if resource:
-            where_with_ops += [f' resource LIKE ? ']
+            where_with_ops += [' resource LIKE ? ']
             params.append(f'%%{resource}%%')
 
         if where:
@@ -133,7 +133,7 @@ class HistoryHandler(BaseRequestHandler):
 
         if where_with_ops:
             sql_base += ' WHERE ' if not where else ' AND '
-            sql_base += ' AND '.join(where_with_ops) 
+            sql_base += ' AND '.join(where_with_ops)
 
         if sort is not None and len(sort) == 1:  # Only support one sort column right now.
             field = sort[0].get('field').lower()
