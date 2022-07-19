@@ -347,6 +347,7 @@ export default {
             // Check for valid syntax, and pass along.
             size = size.currentTarget.value;
             if (!size) {
+                this.remoteHistory.filter.columnFilters.size = size;
                 this.loadItemsDebounced();
                 return;
             }
