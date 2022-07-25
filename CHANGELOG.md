@@ -1,6 +1,4 @@
-## Unreleased
-
-#### New Features
+## 1.0.6 (25-07-2022)
 
 #### Improvements
 - Remove the `Download` field from the display-show table. Isn't used anymore. ([10813](https://github.com/pymedusa/Medusa/pull/10813))
@@ -10,6 +8,7 @@
 - Fix keys for caching recommended shows in recommended.dbm. ([10827](https://github.com/pymedusa/Medusa/pull/10827))
 - Fix using download handler with deluge / deluged. ([10828](https://github.com/pymedusa/Medusa/pull/10828))
 - History page: Fix filtering by multiple fields ([10832](https://github.com/pymedusa/Medusa/pull/10832))
+- Fix error when parsing files without subs ([10837](https://github.com/pymedusa/Medusa/pull/10837))
 
 ## 1.0.5 (06-07-2022)
 
@@ -27,7 +26,7 @@
 - Homepage: Fix loading shows from localCache ([10779](https://github.com/pymedusa/Medusa/pull/10779))
 - Fix Erai-raws formatted anime release guessit parsing ([10791](https://github.com/pymedusa/Medusa/pull/10791))
 - Fix switching branch ([10798](https://github.com/pymedusa/Medusa/pull/10798))
- 
+
 -----
 
 ## 1.0.3 (10-06-2022)
