@@ -790,7 +790,7 @@ def search_external_subtitles(path, directory=None):
                 # Try parsing by language name.
                 language = Language.fromname(language_code)
             except (ValueError, LanguageReverseError):
-                logger.error('Cannot parse language code %r', language_code)
+                logger.debug('Cannot parse language code %r', language_code)
 
         subtitles[p] = language
 
