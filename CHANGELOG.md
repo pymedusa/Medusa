@@ -10,10 +10,14 @@
 - History page: Fix filtering by multiple fields ([10832](https://github.com/pymedusa/Medusa/pull/10832))
 - Fix error when parsing files without subs ([10837](https://github.com/pymedusa/Medusa/pull/10837))
 
+-----
+
 ## 1.0.5 (06-07-2022)
 
 #### Fixes
 - Only auto change the status of an episode, when directly triggered through the web ui. ([10806](https://github.com/pymedusa/Medusa/pull/10806))
+
+-----
 
 ## 1.0.4 (05-07-2022)
 
@@ -39,6 +43,8 @@
 #### Fixes
 - Fix NullReferenceError on testRename page when postprocessing method is symlink
 - Fix a specific guessit test
+
+-----
 
 ## 1.0.2 (31-05-2022)
 
@@ -74,6 +80,8 @@
 - Disable guessit cache for postprocessing ([10532](https://github.com/pymedusa/Medusa/pull/10532))
 - Fix .plexmatch file misread as xml causing warnings ([10510](https://github.com/pymedusa/Medusa/pull/10510))
 
+-----
+
 ## 0.5.29 (11-04-2022)
 
 #### New Features
@@ -85,6 +93,8 @@
 #### Fixes
 - Fix joining segments in log for failed episodes ([10472](https://github.com/pymedusa/Medusa/pull/10472))
 
+-----
+
 ## 0.5.28 (01-04-2022)
 
 #### Improvements
@@ -94,10 +104,14 @@
 - Fix Mass update page ([10447](https://github.com/pymedusa/Medusa/pull/10447))
 - Fix re-load episodes when navigatin from testRename to displayShow ([10465](https://github.com/pymedusa/Medusa/pull/10465))
 
+-----
+
 ## 0.5.27 (29-03-2022)
 
 #### Fixes
 - Fix backup / restore page ([10447](https://github.com/pymedusa/Medusa/pull/10447))
+
+-----
 
 ## 0.5.26 (28-03-2022)
 
@@ -107,6 +121,8 @@
 
 #### Fixes
 - Fix postprocessing loop when not using Failed Download Handling ([10435](https://github.com/pymedusa/Medusa/pull/10435))
+
+-----
 
 ## 0.5.25 (08-03-2022)
 
@@ -126,6 +142,8 @@
 - Fix provider MoreThenTv ([10391](https://github.com/pymedusa/Medusa/pull/10391))
 - Fix Manage mass-update: Starting the refresh action ([10377](https://github.com/pymedusa/Medusa/pull/10377))
 
+-----
+
 ## 0.5.24 (15-02-2022)
 
 #### Improvements
@@ -133,6 +151,8 @@
 
 #### Fixes
 - Fix searching for season packs. ([10345](https://github.com/pymedusa/Medusa/pull/10345))
+
+-----
 
 ## 0.5.23 (11-02-2022)
 
@@ -228,6 +248,8 @@
 - Fix history page (compact layout) fails to load. ([9794](https://github.com/pymedusa/Medusa/pull/9794))
 - Prevent recommended shows (imdb) to cache empty responses to the api. ([9797](https://github.com/pymedusa/Medusa/pull/9797))
 - Fix download handler throwing errors connecting to NZBget. ([9801](https://github.com/pymedusa/Medusa/pull/9801))
+
+-----
 
 ## 0.5.16 (13-08-2021)
 
