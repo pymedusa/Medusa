@@ -19,6 +19,7 @@ from medusa.helper.common import is_sync_file
 from medusa.helper.exceptions import (
     EpisodePostProcessingAbortException,
     EpisodePostProcessingFailedException,
+    EpisodePostProcessingPostponedException,
     FailedPostProcessingFailedException,
     ex
 )
@@ -156,11 +157,13 @@ class PostProcessQueueItem(generic_queue.QueueItem):
         if (
             self.process_single_resource
             and (process_results.failed or not process_results.succeeded)
+            and not process_results.postpone_processing
         ):
             process_results.process_failed(self.path)
 
         # In case we have an info_hash or (nzbid), update the history table with the pp results.
-        if self.info_hash:
+        # Skip the history update when the postponed (because of missing subs) flag was enabled.
+        if self.info_hash and not process_results.postpone_processing:
             self.update_history_processed(process_results)
 
         return process_results
@@ -268,8 +271,13 @@ class ProcessResult(object):
         self.failed = failed
         self.resource_name = None
         self.result = True
+        # Processing aborted. So we don't want to trigger any failed download handling.
+        # We do want to update the history client status.
         self.aborted = False
+        # Processing succeeded. Trigger failed downlaod handling and update history client status.
         self.succeeded = True
+        # Processing postponed. Stop postprocessing and don't update history client status.
+        self.postpone_processing = False
         self.missed_files = []
         self.unwanted_files = []
         self.allowed_extensions = app.ALLOWED_EXTENSIONS
@@ -873,9 +881,11 @@ class ProcessResult(object):
                 processor = post_processor.PostProcessor(file_path, self.resource_name,
                                                          self.process_method, is_priority)
 
-                if app.POSTPONE_IF_NO_SUBS:
+                if app.POSTPONE_IF_NO_SUBS and self.process_single_resource:
                     if not self._process_postponed(processor, file_path, video, ignore_subs):
-                        continue
+                        raise EpisodePostProcessingPostponedException(
+                            f'Postponing processing for file path {file_path} and resource {self.resource_name}'
+                        )
 
                 self.result = processor.process()
                 process_fail_message = ''
@@ -888,16 +898,24 @@ class ProcessResult(object):
                 self.result = True
                 self.aborted = True
                 process_fail_message = ex(error)
+            except EpisodePostProcessingPostponedException as error:
+                processor = None
+                self.result = True
+                process_fail_message = ex(error)
 
             if processor:
                 self._output += processor._output
 
             if self.result:
-                if not self.aborted:
-                    self.log_and_output('Processing succeeded for {file_path}', **{'file_path': file_path})
-                else:
+                if self.aborted:
                     self.log_and_output('Processing aborted for {file_path}: {process_fail_message}',
                                         level=logging.WARNING, **{'file_path': file_path, 'process_fail_message': process_fail_message})
+                elif self.postpone_processing:
+                    self.log_and_output('Processing postponed for {file_path}: {process_fail_message}',
+                                        level=logging.INFO, **{'file_path': file_path, 'process_fail_message': process_fail_message})
+                else:
+                    self.log_and_output('Processing succeeded for {file_path}', **{'file_path': file_path})
+
             else:
                 self.log_and_output('Processing failed for {file_path}: {process_fail_message}',
                                     level=logging.WARNING, **{'file_path': file_path, 'process_fail_message': process_fail_message})

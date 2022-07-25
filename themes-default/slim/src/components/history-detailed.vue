@@ -212,7 +212,7 @@ export default {
         }, {
             label: 'Size',
             field: 'size',
-            tdClass: 'align-center',
+            tdClass: 'align-center-span',
             formatFn: humanFileSize,
             type: 'number',
             filterOptions: {
@@ -347,6 +347,7 @@ export default {
             // Check for valid syntax, and pass along.
             size = size.currentTarget.value;
             if (!size) {
+                this.remoteHistory.filter.columnFilters.size = size;
                 this.loadItemsDebounced();
                 return;
             }

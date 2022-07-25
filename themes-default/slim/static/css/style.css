@@ -4307,6 +4307,11 @@ CSS helper classes
     justify-content: space-evenly;
 }
 
+.align-center-span > span {
+    display: flex;
+    justify-content: center;
+}
+
 /* sub-menu */
 
 @media screen and (min-width: 0) and (max-width: 768px) {

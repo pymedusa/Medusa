@@ -416,9 +416,11 @@ class DelugeAPI(GenericClient):
     def _set_torrent_ratio(self, result):
 
         ratio = result.ratio
+        if not ratio:
+            return
 
         # blank is default client ratio, so we also shouldn't set ratio
-        if ratio and float(ratio) >= 0:
+        if float(ratio) >= 0:
             if self.version >= (2, 0):
                 post_data = json.dumps({
                     'method': 'core.set_torrent_options',
@@ -468,7 +470,7 @@ class DelugeAPI(GenericClient):
 
             return not self.response.json()['error']
 
-        elif ratio and float(ratio) == -1:
+        elif float(ratio) == -1:
             # Disable stop at ratio to seed forever
             if self.version >= (2, 0):
                 post_data = json.dumps({

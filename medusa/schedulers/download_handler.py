@@ -203,6 +203,9 @@ class DownloadHandler(object):
                 ClientStatusEnum.COMPLETED.value,
                 ClientStatusEnum.FAILED.value,
                 ClientStatusEnum.SEEDED.value,
+                ClientStatusEnum.COMPLETED.value | ClientStatusEnum.SEEDED.value,
+                ClientStatusEnum.COMPLETED.value | ClientStatusEnum.PAUSED.value,
+                ClientStatusEnum.COMPLETED.value | ClientStatusEnum.SEEDED.value | ClientStatusEnum.PAUSED.value,
             ],
         ):
             try:
@@ -328,7 +331,19 @@ class DownloadHandler(object):
             self.save_status_to_history(history_result, ClientStatus(status_string='SeededAction'))
 
     def _postprocess(self, path, info_hash, resource_name, failed=False, client_type=None):
-        """Queue a postprocess action."""
+        """Queue a postprocess action.
+
+        :param path: Path to process
+        :type path: str
+        :param info_hash: info hash
+        :type info_hash: str
+        :param resource_name: Resource name
+        :type resource_name: str
+        :param failed: Flag to determin if this was a failed download
+        :type failed: bool
+        :param client_type: Client type ('nzb', 'torrent')
+        :type client_type: str
+        """
         # Use the info hash get a segment of episodes.
         history_items = self.main_db_con.select(
             'SELECT * FROM history WHERE info_hash = ?',

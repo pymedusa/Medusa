@@ -90,12 +90,16 @@
                             <span :title="props.row.file.location !== '' ? props.row.file.location : ''" :class="{addQTip: props.row.file.location !== ''}">{{props.row.episode}}</span>
                         </span>
 
-                        <span v-else-if="props.column.label == 'Scene'" class="align-center">
-                            <scene-number-input :show="show" :initial-episode="props.row" />
+                        <span v-else-if="props.column.label == 'Scene'">
+                            <div class="align-center">
+                                <scene-number-input :show="show" :initial-episode="props.row" />
+                            </div>
                         </span>
 
-                        <span v-else-if="props.column.label == 'Scene Abs. #'" class="align-center">
-                            <scene-number-anime-input :show="show" :initial-episode="props.row" />
+                        <span v-else-if="props.column.label == 'Scene Abs. #'">
+                            <div class="align-center">
+                                <scene-number-anime-input :show="show" :initial-episode="props.row" />
+                            </div>
                         </span>
 
                         <span v-else-if="props.column.label == 'Title'">
@@ -107,8 +111,8 @@
                             <span :title="props.row.file.location" class="addQTip">{{props.row.file.name}}</span>
                         </span>
 
-                        <span v-else-if="props.column.label == 'Subtitles'" class="align-center">
-                            <div class="subtitles">
+                        <span v-else-if="props.column.label == 'Subtitles'">
+                            <div class="subtitles align-center">
                                 <div v-for="flag in props.row.subtitles" :key="flag">
                                     <img
                                         v-if="flag !== 'und'" :src="`images/subtitles/flags/${flag}.png`"
@@ -123,8 +127,8 @@
 
                         <span v-else-if="props.column.label == 'Status'">
                             <div class="pull-left">
-                                {{props.row.status}}
                                 <quality-pill v-if="props.row.quality !== 0" :quality="props.row.quality" />
+                                {{props.row.status}}
                                 <img v-if="props.row.status !== 'Unaired'"
                                      :title="props.row.watched ? 'This episode has been flagged as watched' : ''"
                                      class="addQTip" :src="`images/${props.row.watched ? '' : 'not'}watched.png`"
@@ -242,12 +246,16 @@
                             <span :title="props.row.file.location !== '' ? props.row.file.location : ''" :class="{addQTip: props.row.file.location !== ''}">{{props.row.episode}}</span>
                         </span>
 
-                        <span v-else-if="props.column.label == 'Scene'" class="align-center">
-                            <scene-number-input :show="show" :initial-episode="props.row" />
+                        <span v-else-if="props.column.label == 'Scene'">
+                            <div class="align-center">
+                                <scene-number-input :show="show" :initial-episode="props.row" />
+                            </div>
                         </span>
 
-                        <span v-else-if="props.column.label == 'Scene Abs. #'" class="align-center">
-                            <scene-number-anime-input :show="show" :initial-episode="props.row" />
+                        <span v-else-if="props.column.label == 'Scene Abs. #'">
+                            <div class="align-center">
+                                <scene-number-anime-input :show="show" :initial-episode="props.row" />
+                            </div>
                         </span>
 
                         <span v-else-if="props.column.label == 'Title'">
@@ -259,8 +267,8 @@
                             <span :title="props.row.file.location" class="addQTip">{{props.row.file.name}}</span>
                         </span>
 
-                        <span v-else-if="props.column.label == 'Subtitles'" class="align-center">
-                            <div class="subtitles">
+                        <span v-else-if="props.column.label == 'Subtitles'">
+                            <div class="subtitles align-center">
                                 <div v-for="flag in props.row.subtitles" :key="flag">
                                     <img
                                         v-if="flag !== 'und'" :src="`images/subtitles/flags/${flag}.png`"
@@ -273,8 +281,8 @@
                             </div>
                         </span>
 
-                        <span v-else-if="props.column.label == 'Status'" class="align-center">
-                            <div class="pull-left">
+                        <span v-else-if="props.column.label == 'Status'">
+                            <div class="pull-left align-center">
                                 {{props.row.status}}
                                 <quality-pill v-if="props.row.quality !== 0" :quality="props.row.quality" class="quality-margins" />
                                 <img :title="props.row.watched ? 'This episode has been flagged as watched' : ''" class="addQTip" v-if="props.row.status !== 'Unaired'" :src="`images/${props.row.watched ? '' : 'not'}watched.png`" width="16" @click="updateEpisodeWatched(props.row, !props.row.watched);">
@@ -495,14 +503,9 @@ export default {
                 // But the goal is to have this user formatted (as configured in backend)
                 label: 'Air date',
                 field: this.parseDateFn,
-                tdClass: 'align-center',
+                tdClass: 'align-center-span',
                 sortable: false,
                 hidden: getCookie('Air date')
-            }, {
-                label: 'Download',
-                field: 'download',
-                sortable: false,
-                hidden: getCookie('Download')
             }, {
                 label: 'Subtitles',
                 field: 'subtitles',
