@@ -194,7 +194,7 @@ class PlexMetadata(generic.GenericMetadata):
         plexmatch_file_path = self.get_show_file_path(ep_obj.series)
         plexmatch_file_dir = os.path.dirname(plexmatch_file_path)
 
-        with open(plexmatch_file_path) as f:
+        with open(plexmatch_file_path, 'r', encoding='utf-8') as f:
             current_content = f.readlines()
 
         data = self._ep_data(current_content, ep_obj)
@@ -216,7 +216,7 @@ class PlexMetadata(generic.GenericMetadata):
             log.debug('Writing episode plexmatch file to {location}',
                       {'location': plexmatch_file_path})
 
-            with open(plexmatch_file_path, 'w') as outfile:
+            with open(plexmatch_file_path, 'w', encoding='utf-8') as outfile:
                 outfile.write('\n'.join(data))
 
             helpers.chmod_as_parent(plexmatch_file_path)
