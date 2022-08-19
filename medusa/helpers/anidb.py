@@ -62,7 +62,7 @@ def get_release_groups_for_anime(series_name):
     return groups
 
 
-@anidb_cache.cache_on_arguments()
+@anidb_cache.cache_on_arguments(namespace='anidb', function_key_generator=create_key)
 def get_short_group_name(release_group):
     short_group_list = []
 
