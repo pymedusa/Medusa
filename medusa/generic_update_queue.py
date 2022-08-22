@@ -137,7 +137,7 @@ class RecommendedShowQueueItem(generic_queue.QueueItem):
         self.success = False
 
     def _purge_after_days(self):
-        log.info('Purge shows that have been added more then {days} ago', {'days': app.CACHE_RECOMMENDED_PURGE_AFTER_DAYS})
+        log.info('Purge shows that have been added more than {days} days ago', {'days': app.CACHE_RECOMMENDED_PURGE_AFTER_DAYS})
         if not app.CACHE_RECOMMENDED_PURGE_AFTER_DAYS:
             return
 
