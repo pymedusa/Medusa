@@ -1,10 +1,12 @@
-## Unreleased
-
-#### New Features
+## 1.0.7 (25-08-2022)
 
 #### Improvements
+- Add ffmpeg to docker build for postprocessing
 
 #### Fixes
+- Add encoding when working with plexmatch file
+- Fix anidb cache key causing exceptions
+- Various smaller fixes
 
 -----
 
