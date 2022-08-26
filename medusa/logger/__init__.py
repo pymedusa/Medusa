@@ -264,9 +264,9 @@ def reverse_readlines(file_path, skip_empty=True, append_newline=False,
         mask = slice(-1, 0, -1)
         for line in lines[mask]:
             if line or not skip_empty:
-                yield line.decode(encoding) + (newline if append_newline else empty)
+                yield line.decode(encoding, 'replace') + (newline if append_newline else empty)
     if remainder or not skip_empty:
-        yield remainder.decode(encoding) + (newline if append_newline else empty)
+        yield remainder.decode(encoding, 'replace') + (newline if append_newline else empty)
 
 
 def filter_logline(logline, min_level=None, thread_name=None, search_query=None):
@@ -562,7 +562,7 @@ class ContextFilter(logging.Filter):
             record.levelname = logging.getLevelName(record.levelno)
 
         # add exception traceback for errors
-        if record.levelno == ERROR and record.exc_info is not False:
+        if record.levelno in (WARNING, ERROR) and record.exc_info is not False:
             exc_info = sys.exc_info()
             record.exc_info = exc_info if exc_info != (None, None, None) else None
 
