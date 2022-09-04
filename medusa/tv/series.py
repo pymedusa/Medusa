@@ -1659,7 +1659,11 @@ class Series(TV):
         imdb_api = Imdb()
 
         if not self.imdb_id:
-            self.imdb_id = helpers.title_to_imdb(self.name, self.start_year, imdb_api)
+            try:
+                self.imdb_id = helpers.title_to_imdb(self.name, self.start_year, imdb_api)
+            except AttributeError as error:
+                log.info(u"{id}: Problem trying to translate a show title to an imdb id.",
+                         {'id': self.series_id})
 
             if not self.imdb_id:
                 log.info(u"{id}: Not loading show info from IMDb, because we don't know its ID.",
