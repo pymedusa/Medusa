@@ -28,7 +28,7 @@ class WebSocketUIHandler(WebSocketHandler):
         return True
 
     def get_current_user(self):
-        """Overwrite the RequestHandlers get_current_user() method."""
+        """Overwrite the RequestHandlers method."""
         if app.WEB_USERNAME and app.WEB_PASSWORD:
             return self.get_secure_cookie(app.SECURE_TOKEN)
         return True
