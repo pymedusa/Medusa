@@ -1,10 +1,8 @@
-## Unreleased
-
-#### New Features
-
-#### Improvements
+## 1.0.8 (05-09-2022)
 
 #### Fixes
+- Catch exception when we can't translate a title to imdb_id. ([10912](https://github.com/pymedusa/Medusa/pull/10912))
+- Authenticate websocket connections. ([10914](https://github.com/pymedusa/Medusa/pull/10914))
 
 -----
 
