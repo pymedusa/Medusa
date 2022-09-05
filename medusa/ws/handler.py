@@ -6,9 +6,12 @@ from __future__ import unicode_literals
 
 import logging
 
+from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
 
 from tornado.websocket import WebSocketClosedError, WebSocketHandler
+from tornado.web import authenticated
+
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -23,6 +26,15 @@ class WebSocketUIHandler(WebSocketHandler):
     def check_origin(self, origin):
         """Allow alternate origins."""
         return True
+
+    def get_current_user(self):
+        if app.WEB_USERNAME and app.WEB_PASSWORD:
+            return self.get_secure_cookie(app.SECURE_TOKEN)
+        return True
+
+    @authenticated
+    def get(self, *args, **kwargs):
+        return super(WebSocketUIHandler, self).get(*args, **kwargs)
 
     def open(self, *args, **kwargs):
         """Client connected to the WebSocket."""
