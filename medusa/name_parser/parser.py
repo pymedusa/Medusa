@@ -376,7 +376,7 @@ class NameParser(object):
         # Remove None from the list of seasons, as we can't sort on that
         new_season_numbers = sorted({season for season in new_season_numbers if season is not None})
 
-        if not new_season_numbers:
+        if not new_season_numbers and not new_absolute_numbers:
             raise InvalidNameException('The result that was found ({result_name}) is not yet supported by Medusa '
                                        'and will be skipped. Sorry.'.format(result_name=result.original_name))
 
