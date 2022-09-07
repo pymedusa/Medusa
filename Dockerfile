@@ -40,6 +40,7 @@ RUN \
 		mediainfo \
 		tzdata \
 		p7zip \
+		ffmpeg \
 	&& \
 	# Cleanup
 	rm -rf \

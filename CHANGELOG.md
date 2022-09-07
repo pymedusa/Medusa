@@ -1,3 +1,23 @@
+## 1.0.8 (05-09-2022)
+
+#### Fixes
+- Catch exception when we can't translate a title to imdb_id. ([10912](https://github.com/pymedusa/Medusa/pull/10912))
+- Authenticate websocket connections. ([10914](https://github.com/pymedusa/Medusa/pull/10914))
+
+-----
+
+## 1.0.7 (25-08-2022)
+
+#### Improvements
+- Add ffmpeg to docker build for postprocessing
+
+#### Fixes
+- Add encoding when working with plexmatch file
+- Fix anidb cache key causing exceptions
+- Various smaller fixes
+
+-----
+
 ## 1.0.6 (25-07-2022)
 
 #### Improvements
