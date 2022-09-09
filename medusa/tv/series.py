@@ -1368,6 +1368,8 @@ class Series(TV):
 
         for external in self.externals:
             if external in reverse_mappings and self.externals[external]:
+                if external == 'imdb_id':
+                    self.externals[external] = ImdbIdentifier(self.externals[external]).series_id
                 sql_l.append(['INSERT OR IGNORE '
                               'INTO indexer_mapping (indexer_id, indexer, mindexer_id, mindexer) '
                               'VALUES (?,?,?,?)',
