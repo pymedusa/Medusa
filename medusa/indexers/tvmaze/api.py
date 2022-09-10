@@ -468,8 +468,8 @@ class TVmaze(BaseIndexer):
         # Im checking for the external value. to make sure only externals with a value get in.
         externals = {
             external_id: text_type(getattr(self.shows[tvmaze_id], external_id, None))
-                                                     for external_id in ['tvdb_id', 'imdb_id', 'tvrage_id']
-                                                     if getattr(self.shows[tvmaze_id], external_id, None)
+            for external_id in ['tvdb_id', 'imdb_id', 'tvrage_id']
+            if getattr(self.shows[tvmaze_id], external_id, None)
         }
 
         # Normalize the imdb_id
