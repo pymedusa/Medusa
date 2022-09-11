@@ -1096,10 +1096,9 @@ class Application(object):
             except Exception:
                 pass
 
-            if app.VERSION_NOTIFY:
-                updater = CheckVersion().updater
-                if updater and updater.current_version:
-                    app.APP_VERSION = updater.current_version
+            updater = CheckVersion().updater
+            if updater and updater.current_version:
+                app.APP_VERSION = updater.current_version
 
             # initialize the static NZB and TORRENT providers
             app.providerList = providers.make_provider_list()
