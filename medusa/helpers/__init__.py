@@ -353,26 +353,14 @@ def hardlink_file(src_file, dest_file):
         link(src_file, dest_file)
         fix_set_group_id(dest_file)
     except OSError as msg:
-        if msg.errno == errno.EEXIST:
-            # File exists. Don't fallback to copy
-            log.warning(
-                u'Failed to create hardlink of {source} at {destination}.'
-                u' Error: {error!r}', {
-                    'source': src_file,
-                    'destination': dest_file,
-                    'error': msg
-                }
-            )
-        else:
-            log.warning(
-                u'Failed to create hardlink of {source} at {destination}.'
-                u' Error: {error!r}. Copying instead', {
-                    'source': src_file,
-                    'destination': dest_file,
-                    'error': msg,
-                }
-            )
-            copy_file(src_file, dest_file)
+        log.warning(
+            u'Failed to create hardlink of {source} at {destination}.'
+            u' Error: {error!r}.', {
+                'source': src_file,
+                'destination': dest_file,
+                'error': msg,
+            }
+        )
 
 
 def symlink(src, dst):
