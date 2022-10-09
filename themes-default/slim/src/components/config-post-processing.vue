@@ -45,7 +45,7 @@
                                                            :min="postprocessing.downloadHandler.minFrequency" :step="1"
                                                            v-model.number="postprocessing.downloadHandler.frequency"
                                                            label="Download handler frequency" id="download_handler_frequency">
-                                        <p>Frequency to check on the download clients (default: 60)</p>
+                                        <p>Time in minutes to check on the download clients (min 5, default: 60)</p>
                                     </config-textbox-number>
 
                                     <config-textbox-number
