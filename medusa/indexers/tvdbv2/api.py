@@ -340,7 +340,7 @@ class TVDBv2(BaseIndexer):
                     flag_dvd_numbering = True
 
             if self.config['dvdorder'] and not flag_dvd_numbering:
-                log.warning(
+                log.info(
                     'No DVD order available for episode (season: {0}, episode: {1}). Skipping this episode. '
                     'If you want to have this episode visible, please change it on the TheTvdb site, '
                     'or consider disabling DVD order for the show: {2}({3})',
