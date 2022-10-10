@@ -279,7 +279,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                           />
                             
                           <p>
-                            Frequency to check on the download clients (default: 60)
+                            Time in minutes to check on the download clients (min 5, default: 60)
                           </p>
                         </div>
                       </div>
