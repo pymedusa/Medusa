@@ -466,9 +466,17 @@ class TVmaze(BaseIndexer):
         # Get external ids.
         # As the external id's are not part of the shows default response, we need to make an additional call for it.
         # Im checking for the external value. to make sure only externals with a value get in.
-        self._set_show_data(tvmaze_id, 'externals', {external_id: text_type(getattr(self.shows[tvmaze_id], external_id, None))
-                                                     for external_id in ['tvdb_id', 'imdb_id', 'tvrage_id']
-                                                     if getattr(self.shows[tvmaze_id], external_id, None)})
+        externals = {
+            external_id: text_type(getattr(self.shows[tvmaze_id], external_id, None))
+            for external_id in ['tvdb_id', 'imdb_id', 'tvrage_id']
+            if getattr(self.shows[tvmaze_id], external_id, None)
+        }
+
+        # Normalize the imdb_id
+        if 'imdb_id' in externals:
+            externals['imdb_id'] = ImdbIdentifier(externals['imdb_id']).series_id
+
+        self._set_show_data(tvmaze_id, 'externals', externals)
 
         # get episode data
         if self.config['episodes_enabled']:
