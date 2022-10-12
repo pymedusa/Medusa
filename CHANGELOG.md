@@ -1,10 +1,25 @@
 ## Unreleased
 
-#### Features
+#### New Features
 
 #### Improvements
 
 #### Fixes
+
+-----
+
+## 1.0.9 (11-10-2022)
+
+#### Improvements
+- Always get current version on startup ([10925](https://github.com/pymedusa/Medusa/pull/10925))
+- Remove copy fallback when hardlink failed ([10952](https://github.com/pymedusa/Medusa/pull/10952))
+- Change log level to info for episodes not in DVD order ([10872](https://github.com/pymedusa/Medusa/pull/10872))
+- Update M-net logo ([10937](https://github.com/pymedusa/Medusa/pull/10937))
+
+#### Fixes
+- Normalize the imdb_id ([10923](https://github.com/pymedusa/Medusa/pull/10923))
+- Replace non-UTF8 chars instead of error for Plexmatch file ([10948](https://github.com/pymedusa/Medusa/pull/10948))
+- Fix Download Handler log filter ([10953](https://github.com/pymedusa/Medusa/pull/10953))
 
 -----
 
