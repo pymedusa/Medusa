@@ -35,7 +35,7 @@ class TheOldSchoolProvider(TorrentProvider):
         }
 
         # Proper Strings
-        self.proper_strings = ['{{PROPER|REPACK|REAL|RERIP}}']
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
 
         # Miscellaneous Options
         self.freeleech = False
