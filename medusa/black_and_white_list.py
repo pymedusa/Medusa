@@ -40,7 +40,7 @@ class BlackAndWhiteList(object):
         :type series_obj: Series
         """
         if not series_obj.indexerid:
-            raise BlackWhitelistNoShowIDException()
+            raise BlackWhitelistNoShowIDError()
         self.series_obj = series_obj
         self.blacklist = []
         self.whitelist = []
@@ -149,5 +149,5 @@ class BlackAndWhiteList(object):
         return white_result and black_result
 
 
-class BlackWhitelistNoShowIDException(Exception):
+class BlackWhitelistNoShowIDError(Exception):
     """No show_id was given."""
