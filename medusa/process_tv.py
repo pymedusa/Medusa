@@ -218,7 +218,7 @@ class PostProcessorRunner(object):
         process_method = kwargs.pop('process_method', app.PROCESS_METHOD)
         failed = kwargs.pop('failed', False)
 
-        if not os.path.isdir(path):
+        if path is None or not os.path.isdir(path):
             result = "Post-processing attempted but directory doesn't exist: {path}"
             log.warning(result, {'path': path})
             return result.format(path=path)
