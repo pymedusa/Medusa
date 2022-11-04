@@ -1053,7 +1053,7 @@ class PostProcessor(object):
             else:
                 if not result:
                     self.log('ffprobe reported an error while checking {file_path} for a video and audio stream. Error: {error}'.format(
-                        file_path=self.file_path, error=result['errors']), logger.WARNING
+                        file_path=self.file_path, error='No video or audio detected.'), logger.WARNING
                     )
                     raise EpisodePostProcessingFailedException(f'ffmpeg detected a corruption in this video file: {self.file_path}')
 
