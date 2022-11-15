@@ -39,3 +39,4 @@ ttl-cache==1.6
 tvdbapiv2 @ https://codeload.github.com/pymedusa/tvdbv2/tar.gz/d6d0e9d98071c2d646beb997b336edbb0e98dfb7
 validators==0.18.2
 wheel>=0.38.0 # not directly required, pinned by Snyk to avoid a vulnerability
+setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
