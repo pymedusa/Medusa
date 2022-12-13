@@ -128,7 +128,7 @@ def get_expected_titles(show_list):
 
             # Add when show name is the same as exception,
             # to allow an explicit match.
-            if show.name.casefold() == exception.casefold():
+            if show_title.casefold() == exception.casefold():
                 expected_titles.append(exception)
                 continue
 
