@@ -111,6 +111,16 @@ def get_expected_titles(show_list):
     for show in show_list:
         exceptions = {alias.title for alias in show.aliases}
         for exception in exceptions:
+            match = series_re.match(exception)
+            if not match:
+                continue
+
+            # Add when show exception has a year (without brackets),
+            # a number or '-' in its title.
+            if any(char.isdigit() or char == '-' for char in match.group(1)):
+                expected_titles.append(exception)
+                continue
+
             # Add when show name is the same as exception,
             # to allow an explicit match.
             if show.name.casefold() == exception.casefold():
