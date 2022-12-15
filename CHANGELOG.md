@@ -1,10 +1,14 @@
-## Unreleased
-
-#### New Features
+## 1.0.10 (15-12-2022)
 
 #### Improvements
+- Add TVNZ 1 logo
+- Add compatibility to Python 3.11
+- Allow to add scene exception to force exact show title match
 
 #### Fixes
+- Set english language in requests header for Addic7ed subs provider
+- Avoid error when post-processing path is None
+- Fix error log when ffmpeg doesn't detect audio or video
 
 -----
 
