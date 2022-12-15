@@ -108,6 +108,7 @@ class Addic7edProvider(Provider):
         """Initialize Addic7edProvider provider."""
         self.session = Session()
         self.session.headers['User-Agent'] = self.user_agent
+        self.session.headers['Accept-Language'] = 'en-US,en;q=1.0'
 
         # login
         if self.username and self.password:
