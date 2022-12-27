@@ -4575,6 +4575,16 @@
   video_profile: 'Advanced Video Codec High Definition'
   type: episode
 
+? /1923/Season 01/1923.S01E01.720p.WEB.h264-Group.mkv
+: title: "1923"
+  season: 1
+  episode: 1
+  screen_size: 720p
+  video_codec: H.264
+  container: mkv
+  source: 'Web'
+  type: episode
+
 ? /series/9-1-1 (2018)/Season 05/9-1-1 (2018) (S05E06) (2021-11-01) (1080p-h264 BluRay AAC-2ch) Brawl in Cell Block 9-1-1.mkv
 : title: '9-1-1'
   alias: '9-1-1 2018'

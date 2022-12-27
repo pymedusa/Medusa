@@ -339,11 +339,12 @@ class CreateAliasWithAlternativeTitles(Rule):
 
 
 class FixTitlesThatExistOfNumbers(Rule):
-    """Don't parse titles that exist out of numbers as the 'absolute number'.
+    """Don't parse titles that exist out of numbers as the 'absolute number' or 'year'.
 
     'title' - post processor to create titles for show with exlusively numbers in the titel.
 
     e.g.: 4400.S01E01.1080p.HEVC.x265-Group.mkv
+    e.g.: 1923.S01E01.720p.WEB.h264-Group.mkv
 
     guessit -t episode "4400.S01E01.1080p.HEVC.x265-Group.mkv"
 
@@ -360,6 +361,18 @@ class FixTitlesThatExistOfNumbers(Rule):
             "type": episode
         }
 
+        For: 1923.S01E01.720p.WEB.h264-Group.mkv
+        GuessIt found: {
+            "year": 1923
+            "season": 1
+            "episode": 1
+            "screen_size": 720p
+            "video_codec": H.264
+            "release_group": Group
+            "type": episode
+         }
+
+
     with this rule:
         For: 4400.S01E01.1080p.HEVC.x265-Group.mkv
         GuessIt found: {
@@ -372,6 +385,18 @@ class FixTitlesThatExistOfNumbers(Rule):
             "release_group": Group
             "type": episode
         }
+
+        For: 1923.S01E01.720p.WEB.h264-Group.mkv
+        GuessIt found: {
+            "title": 1923
+            "season": 1
+            "episode": 1
+            "screen_size": 720p
+            "video_codec": H.264
+            "release_group": Group
+            "type": episode
+}
+
     """
 
     priority = POST_PROCESS
@@ -387,7 +412,8 @@ class FixTitlesThatExistOfNumbers(Rule):
         :return:
         """
         absolute_episodes = matches.named('absolute_episode')
-        if not absolute_episodes:
+         years = matches.named('year')
+        if not absolute_episodes or years:
             return
 
         to_remove = []
@@ -398,7 +424,7 @@ class FixTitlesThatExistOfNumbers(Rule):
             old_title = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'title', index=0)
             absolute_episode = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'absolute_episode', index=0)
 
-            if not absolute_episode or not filepart.value.startswith(str(absolute_episode.value)):
+            if not absolute_episode or not year or not filepart.value.startswith(str(absolute_episode.value)) or not  filepart.value.startswith(str(year.value)):
                 continue
 
             new_title = copy.copy(absolute_episode)
