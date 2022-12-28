@@ -4601,6 +4601,8 @@
 : title: "1923"
   season: 1
   episode: 1
+  alias: '1923 2022'
+  year: 2022
   screen_size: 720p
   video_codec: H.264
   release_group: Group
@@ -4608,10 +4610,12 @@
   source: 'Web'
   type: episode
   
-  ? 1923.2022.S01E01.720p.WEB.h264-Group.mkv
+? 1923.2022.S01E01.720p.WEB.h264-Group.mkv
 : title: "1923"
   season: 1
   episode: 1
+  alias: '1923 2022"'
+  year: 2022
   screen_size: 720p
   video_codec: H.264
   release_group: Group
