@@ -1852,7 +1852,7 @@ class AvoidMultipleValuesRule(Rule):
         :return:
         """
         to_remove = []
-        for name in ('episode_title', 'source', 'release_group', 'title', 'year'):
+        for name in ('episode_title', 'source', 'release_group', 'title'):
             values = matches.named(name)
             unique_values = {v.value for v in values}
             if len(unique_values) > 1:
