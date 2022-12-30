@@ -4575,16 +4575,6 @@
   video_profile: 'Advanced Video Codec High Definition'
   type: episode
 
-? /1923/Season 01/1923.S01E01.720p.WEB.h264-Group.mkv
-: title: "1923"
-  season: 1
-  episode: 1
-  screen_size: 720p
-  video_codec: H.264
-  release_group: Group
-  container: mkv
-  source: 'Web'
-  type: episode
 
 ? 1923.S01E01.720p.WEB.h264-Group.mkv
 : title: "1923"
@@ -4597,12 +4587,46 @@
   source: 'Web'
   type: episode
 
-? /1923 (2022)/Season 01/1923.2022.S01E01.720p.WEB.h264-Group.mkv
+? 1923.2022.S01E01.720p.WEB.h264-Group.mkv
 : title: "1923"
   season: 1
   episode: 1
   year: 2022
-  alias: '1923 2022'
+  screen_size: 720p
+  video_codec: H.264
+  release_group: Group
+  container: mkv
+  source: 'Web'
+  type: episode
+
+? /1923/Season 01/1923.S01E01.720p.WEB.h264-Group.mkv
+: title: "1923"
+  season: 1
+  episode: 1
+  screen_size: 720p
+  video_codec: H.264
+  release_group: Group
+  container: mkv
+  source: 'Web'
+  type: episode
+
+? /1923 (2022)/Season 01/1923.S01E01.720p.WEB.h264-Group.mkv
+: title: "1923"
+  season: 1
+  episode: 1
+  screen_size: 720p
+  video_codec: H.264
+  release_group: Group
+  container: mkv
+  source: 'Web'
+  type: episode
+
+? /1923 (2022)/Season 01/1923.(2022).S01E01.720p.WEB.h264-Group.mkv
+: title: "1923"
+  alias: "1923 2022"
+  season: 1
+  episode: 1
+  year: 2022
   screen_size: 720p
   video_codec: H.264
   release_group: Group

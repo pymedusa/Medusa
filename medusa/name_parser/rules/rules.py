@@ -465,22 +465,50 @@ class FixTitlesThatExistOfYearNumbers(Rule):
 
         to_remove = []
         to_append = []
+        new_title = None
 
         fileparts = matches.markers.named('path')
         for filepart in marker_sorted(fileparts, matches):
             old_title = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'title', index=0)
             year = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'year', index=0)
+            episode = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'episode', index=0)
 
-            if not year or not filepart.value.startswith(str(year.value)):
+            # The parts are evaluated from the files release name to season to show title.
+            # /1923/Season 01/1923.S01E01.720p.WEB.h264-Group.mkv
+            # If we already "fixed" the title by getting it from the release name
+            # Then we don't want to use (or correct) the "year" from the folder name.
+            if not old_title and new_title and year and str(year.value) == new_title.value:
+                to_remove.append(year)
                 continue
 
-            new_title = copy.copy(year)
-            new_title.name = 'title'
-            new_title.value = str(year.value)
+            if not year or not episode:
+                continue
 
-            to_append.append(new_title)
-            to_remove.append(year)
-            to_remove.append(old_title)
+            # Try to regex the title our selves, when guessit doesn't have any.
+            fixed_year = None
+            if not old_title:
+                match = re.match(r'(\d{4})[. ](\(?\d{4}\)?).*', filepart.value)
+                if match and len(match.groups()) == 2:
+                    fixed_year = copy.copy(episode)
+                    fixed_year.name = 'title'
+                    fixed_year.value = match.group(1)
+
+            if not filepart.value.startswith(str(year.value)) and not fixed_year:
+                continue
+
+            if filepart.value.startswith(str(year.value)):
+                new_title = copy.copy(year)
+                new_title.name = 'title'
+                new_title.value = str(year.value)
+
+                to_append.append(new_title)
+                to_remove.append(year)
+                if old_title:
+                    to_remove.append(old_title)
+                continue
+            
+            if fixed_year:
+                to_append.append(fixed_year)
 
         return to_remove, to_append
 
@@ -1824,7 +1852,7 @@ class AvoidMultipleValuesRule(Rule):
         :return:
         """
         to_remove = []
-        for name in ('episode_title', 'source', 'release_group', 'title'):
+        for name in ('episode_title', 'source', 'release_group', 'title', 'year'):
             values = matches.named(name)
             unique_values = {v.value for v in values}
             if len(unique_values) > 1:
