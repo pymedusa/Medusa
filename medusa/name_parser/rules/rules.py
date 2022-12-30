@@ -506,7 +506,7 @@ class FixTitlesThatExistOfYearNumbers(Rule):
                 if old_title:
                     to_remove.append(old_title)
                 continue
-            
+
             if fixed_year:
                 to_append.append(fixed_year)
 
