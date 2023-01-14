@@ -112,6 +112,11 @@
                                     <td>
                                         <app-link :href="result.indexerShowUrl" title="Go to the show's page on the indexer site">
                                             <b>{{ result.showName }}</b>
+                                            <span v-if="String(result.showId) === currentSearch.query"
+                                                  v-tooltip.right="'This is an exact match based on the show id'"
+                                            >
+                                                *
+                                            </span>
                                         </app-link>
                                     </td>
                                     <td class="premiere">{{ result.premiereDate }}</td>
@@ -142,6 +147,7 @@
 import { mapGetters, mapState } from 'vuex';
 import { ToggleButton } from 'vue-js-toggle-button';
 import { AppLink, LanguageSelect } from './helpers';
+import { VTooltip } from 'v-tooltip';
 import ExistingShowDialog from './modals/existing-show-dialog.vue';
 import axios from 'axios';
 
@@ -151,6 +157,9 @@ export default {
         AppLink,
         ToggleButton,
         LanguageSelect
+    },
+    directives: {
+        tooltip: VTooltip
     },
     props: {
         providedInfo: {
@@ -234,6 +243,14 @@ export default {
             if (searchExact) {
                 return searchResults.filter(result => result.showName.toLowerCase().includes(nameToSearch.toLowerCase()));
             }
+
+            // Place results where the showId matches the search query on top.
+            searchResults.sort((a, _) => {
+                if (nameToSearch === String(a.showId)) {
+                    return -1;
+                }
+                return 1;
+            });
 
             return searchResults;
         },

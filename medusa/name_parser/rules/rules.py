@@ -338,10 +338,10 @@ class CreateAliasWithAlternativeTitles(Rule):
             return [alias]
 
 
-class FixTitlesThatExistOfNumbers(Rule):
+class FixTitlesThatExistOfAbsoluteEpisodeNumbers(Rule):
     """Don't parse titles that exist out of numbers as the 'absolute number'.
 
-    'title' - post processor to create titles for show with exlusively numbers in the titel.
+    'title' - post processor to create titles for show with exlusively numbers in the title.
 
     e.g.: 4400.S01E01.1080p.HEVC.x265-Group.mkv
 
@@ -408,6 +408,107 @@ class FixTitlesThatExistOfNumbers(Rule):
             to_append.append(new_title)
             to_remove.append(absolute_episode)
             to_remove.append(old_title)
+
+        return to_remove, to_append
+
+
+class FixTitlesThatExistOfYearNumbers(Rule):
+    """Don't parse titles that exist out of numbers as the 'year'.
+
+    'title' - post processor to create titles for show with exlusively numbers in the title.
+
+    e.g.: 1923.S01E01.720p.WEB.h264-Group.mkv
+
+    guessit -t episode "1923.S01E01.720p.WEB.h264-Group.mkv"
+
+    without this rule:
+        For: 1923.S01E01.720p.WEB.h264-Group.mkv
+        GuessIt found: {
+            "year": 1923
+            "season": 1
+            "episode": 1
+            "screen_size": 720p
+            "video_codec": H.264
+            "release_group": Group
+            "type": episode
+         }
+
+
+    with this rule:
+        For: 1923.S01E01.720p.WEB.h264-Group.mkv
+        GuessIt found: {
+            "title": 1923
+            "season": 1
+            "episode": 1
+            "screen_size": 720p
+            "video_codec": H.264
+            "release_group": Group
+            "type": episode
+        }
+    """
+
+    priority = POST_PROCESS
+    consequence = [RemoveMatch, AppendMatch]
+
+    def when(self, matches, context):
+        """Evaluate the rule.
+
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        years = matches.named('year')
+        if not years:
+            return
+
+        to_remove = []
+        to_append = []
+        new_title = None
+
+        fileparts = matches.markers.named('path')
+        for filepart in marker_sorted(fileparts, matches):
+            old_title = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'title', index=0)
+            year = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'year', index=0)
+            episode = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'episode', index=0)
+
+            # The parts are evaluated from the files release name to season to show title.
+            # /1923/Season 01/1923.S01E01.720p.WEB.h264-Group.mkv
+            # If we already "fixed" the title by getting it from the release name
+            # Then we don't want to use (or correct) the "year" from the folder name.
+            if not old_title and new_title and year and str(year.value) == new_title.value:
+                to_remove.append(year)
+                continue
+
+            if not year or not episode:
+                continue
+
+            # Try to regex the title our selves, when guessit doesn't have any.
+            fixed_year = None
+            if not old_title:
+                match = re.match(r'(\d{4})[. ](\(?\d{4}\)?).*', filepart.value)
+                if match and len(match.groups()) == 2:
+                    fixed_year = copy.copy(episode)
+                    fixed_year.name = 'title'
+                    fixed_year.value = match.group(1)
+
+            if not filepart.value.startswith(str(year.value)) and not fixed_year:
+                continue
+
+            if filepart.value.startswith(str(year.value)):
+                new_title = copy.copy(year)
+                new_title.name = 'title'
+                new_title.value = str(year.value)
+
+                to_append.append(new_title)
+                to_remove.append(year)
+                if old_title:
+                    to_remove.append(old_title)
+                continue
+
+            if fixed_year:
+                to_append.append(fixed_year)
 
         return to_remove, to_append
 
@@ -1909,7 +2010,8 @@ def rules():
         RemoveInvalidEpisodeSeparator,
         CreateAliasWithAlternativeTitles,
         CreateAliasWithCountryOrYear,
-        FixTitlesThatExistOfNumbers,
+        FixTitlesThatExistOfAbsoluteEpisodeNumbers,
+        FixTitlesThatExistOfYearNumbers,
         ReleaseGroupPostProcessor,
         FixParentFolderReplacingTitle,
         FixMultipleSources,

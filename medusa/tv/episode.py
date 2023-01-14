@@ -1151,8 +1151,8 @@ class Episode(TV):
     def create_meta_files(self):
         """Create episode metadata files."""
         if not self.series.is_location_valid():
-            log.warning('{id}: The series directory is missing, unable to create metadata',
-                        {'id': self.series.series_id})
+            log.debug('{id}: The series directory is missing, unable to create metadata',
+                      {'id': self.series.series_id})
             return
 
         for metadata_provider in itervalues(app.metadata_provider_dict):
