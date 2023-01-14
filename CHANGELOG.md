@@ -1,10 +1,11 @@
-## Unreleased
-
-#### New Features
+## 1.0.11 (14-01-2023)
 
 #### Improvements
+- Put showid search results on top
+- Change missing directory log level to debug
 
 #### Fixes
+- Fix parsing for shows that have year in the title
 
 -----
 
