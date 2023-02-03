@@ -303,10 +303,9 @@ class DownloadHandler(object):
                 log.debug('Action after seeding disabled')
 
             if status.ratio < desired_ratio:
-                if not action_after_seeding:
-                    log.debug('Current ratio is {ratio}. Havent reached the configured ratio of {desired_ratio} yet', {
-                        'ratio': status.ratio, 'desired_ratio': desired_ratio
-                    })
+                log.debug('Current ratio is {ratio}. Havent reached the configured ratio of {desired_ratio} yet', {
+                    'ratio': status.ratio, 'desired_ratio': desired_ratio
+                })
                 continue
 
             log.debug(
