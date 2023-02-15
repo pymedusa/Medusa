@@ -82,7 +82,7 @@ def test_authentication(host=None, username=None, password=None, use_https=False
         's' if use_https or app.NZBGET_USE_HTTPS else '',
         quote(username or app.NZBGET_USERNAME, safe=''),
         quote(password or app.NZBGET_PASSWORD, safe=''),
-        quote(host or app.NZBGET_HOST)
+        quote(host or app.NZBGET_HOST, safe='/:')
     )
 
     return nzb_connection(url)
@@ -109,7 +109,7 @@ def send_nzb(nzb, proper=False):
         's' if app.NZBGET_USE_HTTPS else '',
         quote(app.NZBGET_USERNAME, safe=''),
         quote(app.NZBGET_PASSWORD, safe=''),
-        quote(app.NZBGET_HOST)
+        quote(app.NZBGET_HOST, safe='/:')
     )
 
     if not nzb_connection(url):
@@ -205,7 +205,7 @@ def _get_nzb_queue():
         's' if app.NZBGET_USE_HTTPS else '',
         quote(app.NZBGET_USERNAME, safe=''),
         quote(app.NZBGET_PASSWORD, safe=''),
-        quote(app.NZBGET_HOST)
+        quote(app.NZBGET_HOST, safe='/:')
     )
 
     if not nzb_connection(url):
@@ -227,7 +227,7 @@ def _get_nzb_history():
         's' if app.NZBGET_USE_HTTPS else '',
         quote(app.NZBGET_USERNAME, safe=''),
         quote(app.NZBGET_PASSWORD, safe=''),
-        quote(app.NZBGET_HOST)
+        quote(app.NZBGET_HOST, safe='/:')
     )
 
     if not nzb_connection(url):
