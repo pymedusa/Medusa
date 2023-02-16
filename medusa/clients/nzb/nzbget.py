@@ -7,6 +7,7 @@ import logging
 import socket
 from base64 import standard_b64encode
 from contextlib import suppress
+from urllib.parse import quote
 from xmlrpc.client import Error, ProtocolError, ServerProxy
 
 from medusa import app
@@ -79,9 +80,9 @@ def test_authentication(host=None, username=None, password=None, use_https=False
     """
     url = 'http{}://{}:{}@{}/xmlrpc'.format(
         's' if use_https or app.NZBGET_USE_HTTPS else '',
-        username or app.NZBGET_USERNAME,
-        password or app.NZBGET_PASSWORD,
-        host or app.NZBGET_HOST
+        quote(username or app.NZBGET_USERNAME, safe=''),
+        quote(password or app.NZBGET_PASSWORD, safe=''),
+        quote(host or app.NZBGET_HOST, safe='/:')
     )
 
     return nzb_connection(url)
@@ -106,9 +107,10 @@ def send_nzb(nzb, proper=False):
 
     url = 'http{}://{}:{}@{}/xmlrpc'.format(
         's' if app.NZBGET_USE_HTTPS else '',
-        app.NZBGET_USERNAME,
-        app.NZBGET_PASSWORD,
-        app.NZBGET_HOST)
+        quote(app.NZBGET_USERNAME, safe=''),
+        quote(app.NZBGET_PASSWORD, safe=''),
+        quote(app.NZBGET_HOST, safe='/:')
+    )
 
     if not nzb_connection(url):
         return False
@@ -201,9 +203,9 @@ def _get_nzb_queue():
     """Return a list of all groups (nzbs) currently being donloaded or postprocessed."""
     url = 'http{}://{}:{}@{}/xmlrpc'.format(
         's' if app.NZBGET_USE_HTTPS else '',
-        app.NZBGET_USERNAME,
-        app.NZBGET_PASSWORD,
-        app.NZBGET_HOST
+        quote(app.NZBGET_USERNAME, safe=''),
+        quote(app.NZBGET_PASSWORD, safe=''),
+        quote(app.NZBGET_HOST, safe='/:')
     )
 
     if not nzb_connection(url):
@@ -223,9 +225,9 @@ def _get_nzb_history():
     """Return a list of all groups (nzbs) from history."""
     url = 'http{}://{}:{}@{}/xmlrpc'.format(
         's' if app.NZBGET_USE_HTTPS else '',
-        app.NZBGET_USERNAME,
-        app.NZBGET_PASSWORD,
-        app.NZBGET_HOST
+        quote(app.NZBGET_USERNAME, safe=''),
+        quote(app.NZBGET_PASSWORD, safe=''),
+        quote(app.NZBGET_HOST, safe='/:')
     )
 
     if not nzb_connection(url):
