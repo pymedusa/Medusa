@@ -2,6 +2,7 @@
 
 from __future__ import unicode_literals
 
+import os
 import logging
 import platform
 import re
@@ -72,11 +73,7 @@ class GitUpdateManager(UpdateManager):
 
     def _find_working_git(self):
         test_cmd = 'version'
-
-        if app.GIT_PATH:
-            main_git = '"' + app.GIT_PATH + '"'
-        else:
-            main_git = 'git'
+        main_git = app.GIT_PATH or 'git'
 
         log.debug(u'Checking if we can use git commands: {0} {1}', main_git, test_cmd)
         _, _, exit_status = self._run_git(main_git, test_cmd)
@@ -125,6 +122,11 @@ class GitUpdateManager(UpdateManager):
                     app.NEWEST_VERSION_STRING = ERROR_MESSAGE
                 exit_status = 1
                 return output, err, exit_status
+
+        if git_path != 'git' and not os.path.isfile(git_path):
+            log.warning(u"Invalid git specified, can't use git commands")
+            exit_status = 1
+            return output, err, exit_status
 
         # If we have a valid git remove the git warning
         # String will be updated as soon we check github
