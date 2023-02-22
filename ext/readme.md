@@ -20,7 +20,7 @@ ext | **`deprecated`** | [1.2.3](https://pypi.org/project/deprecated/1.2.3/) | `
 ext | **`diskcache`** | [5.2.1](https://pypi.org/project/diskcache/5.2.1/) | `imdbpie` | -
 ext | `dogpile.cache` | [1.1.2](https://pypi.org/project/dogpile.cache/1.1.2/) | **`medusa`**, `subliminal` | Module: `dogpile`
 ext | **`enzyme`** | pymedusa/[665cf69](https://github.com/pymedusa/enzyme/tree/665cf6948aab1c249dcc99bd9624a81d17b3302a) | `knowit`, `subliminal` | -
-ext | **`feedparser`** | [6.0.2](https://pypi.org/project/feedparser/6.0.2/) | **`medusa`** | Requires `sgmllib3k` on Python 3
+ext | **`feedparser`** | [6.0.10](https://pypi.org/project/feedparser/6.0.10/) | **`medusa`** | Requires `sgmllib3k` on Python 3
 ext | **`gntp`** | [1.0.3](https://pypi.org/project/gntp/1.0.3/) | **`medusa`** | -
 ext | **`guessit`** | [3.4.2](https://pypi.org/project/guessit/3.4.2/) | **`medusa`**, `subliminal` | -
 ext | **`html5lib`** | [1.1](https://pypi.org/project/html5lib/1.1/) | **`medusa`** (via `beautifulsoup4`) | -

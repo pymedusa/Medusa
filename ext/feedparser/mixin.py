@@ -1,4 +1,4 @@
-# Copyright 2010-2020 Kurt McKee <contactme@kurtmckee.org>
+# Copyright 2010-2022 Kurt McKee <contactme@kurtmckee.org>
 # Copyright 2002-2008 Mark Pilgrim
 # All rights reserved.
 #
@@ -193,6 +193,7 @@ class _FeedParserMixin(
         self.svgOK = 0
         self.title_depth = -1
         self.depth = 0
+        self.hasContent = 0
         if self.lang:
             self.feeddata['language'] = self.lang.replace('_', '-')
 
@@ -506,9 +507,7 @@ class _FeedParserMixin(
         if base64 and self.contentparams.get('base64', 0):
             try:
                 output = base64.decodebytes(output.encode('utf8')).decode('utf8')
-            except binascii.Error:
-                pass
-            except binascii.Incomplete:
+            except (binascii.Error, binascii.Incomplete, UnicodeDecodeError):
                 pass
 
         # resolve relative URIs
