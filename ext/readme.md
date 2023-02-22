@@ -28,7 +28,7 @@ ext | **`idna`** | [2.8](https://pypi.org/project/idna/2.8/) | `requests` | -
 ext | **`imdbpie`** | [5.6.4](https://pypi.org/project/imdbpie/5.6.4/) | **`medusa`** | -
 ext | `importlib-metadata` | [4.11.4](https://pypi.org/project/importlib-metadata/4.11.4/) | `knowit` | Module: `importlib_metadata`
 ext | `importlib-resources` | [5.4.0](https://pypi.org/project/importlib-resources/5.4.0/) | `guessit` | Module: `importlib_resources`
-ext | `jsonrpclib-pelix` | [0.4.2](https://pypi.org/project/jsonrpclib-pelix/0.4.2/) | **`medusa`** | Module: `jsonrpclib` / Used by guessit on python version < 3.9`
+ext | `jsonrpclib-pelix` | [0.4.3.2](https://pypi.org/project/jsonrpclib-pelix/0.4.3.2/) | **`medusa`** | Module: `jsonrpclib`
 ext | **`knowit`** | [0.4.0](https://github.com/ratoaq2/knowit/tree/0.4.0) | **`medusa`** | -
 ext | `Mako` | [1.2.4](https://pypi.org/project/Mako/1.2.4/) | **`medusa`** | Module: `mako`
 ext | `markdown2` | [2.4.8](https://pypi.org/project/markdown2/2.4.8/) | **`medusa`** | File: `markdown2.py`
@@ -60,7 +60,7 @@ ext | **`subliminal`** | [2.1.0](https://pypi.org/project/subliminal/2.1.0/) | *
 ext | **`tmdbsimple`** | [2.8.0](https://pypi.org/project/tmdbsimple/2.8.0/) | **`medusa`** | -
 ext | **`tornado`** | [6.1](https://pypi.org/project/tornado/6.1/) | **`medusa`**, `tornroutes` | -
 ext | **`tornroutes`** | [0.5.1](https://pypi.org/project/tornroutes/0.5.1/) | **`medusa`** | -
-ext | **`trakt`** | [3.1.0](https://pypi.org/project/trakt/3.1.0/) | **`medusa`** | -
+ext | **`trakt`** | [3.4.0](https://pypi.org/project/trakt/3.4.0/) | **`medusa`** | -
 ext | `trans` | [2.1.0](https://pypi.org/project/trans/2.1.0/) | `imdbpie` | File: `trans.py`
 ext | `ttl-cache` | [1.6](https://pypi.org/project/ttl-cache/1.6/) | **`medusa`**, `adba` | File: `ttl_cache.py`
 ext | **`tvdbapiv2`** | pymedusa/[d6d0e9d](https://github.com/pymedusa/tvdbv2/tree/d6d0e9d98071c2d646beb997b336edbb0e98dfb7) | **`medusa`** | -

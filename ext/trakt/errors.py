@@ -5,10 +5,20 @@ guaranteed to have the application/json MIME type set.
 """
 
 __author__ = 'Jon Nappi'
-__all__ = ['TraktException', 'BadRequestException', 'OAuthException',
-           'ForbiddenException', 'NotFoundException', 'ConflictException',
-           'ProcessException', 'RateLimitException', 'TraktInternalException',
-           'TraktUnavailable', 'MethodNotAllowedException']
+__all__ = [
+    'TraktException',
+    'BadRequestException',
+    'OAuthException',
+    'ForbiddenException',
+    'NotFoundException',
+    'MethodNotAllowedException',
+    'ConflictException',
+    'ProcessException',
+    'LockedUserAccountException',
+    'RateLimitException',
+    'TraktInternalException',
+    'TraktUnavailable',
+]
 
 
 class TraktException(Exception):
@@ -62,6 +72,12 @@ class ProcessException(TraktException):
     """TraktException type to be raised when a 422 return code is received"""
     http_code = 422
     message = 'Unprocessable Entity - validation errors'
+
+
+class LockedUserAccountException(TraktException):
+    """TraktException type to be raised when a 423 return code is received"""
+    http_code = 423
+    message = 'Locked User Account - have the user contact support'
 
 
 class RateLimitException(TraktException):

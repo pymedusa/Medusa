@@ -155,7 +155,7 @@ class Movie(object):
         they go by their alternate titles
         """
         if self._aliases is None:
-            data = yield (self.ext + '/aliases')
+            data = yield self.ext + '/aliases'
             self._aliases = [Alias(**alias) for alias in data]
         yield self._aliases
 
@@ -172,7 +172,7 @@ class Movie(object):
         """
         # TODO (jnappi) Pagination
         from trakt.users import User
-        data = yield (self.ext + '/comments')
+        data = yield self.ext + '/comments'
         self._comments = []
         for com in data:
             user = User(**com.get('user'))
@@ -210,7 +210,7 @@ class Movie(object):
         :class:`Movie`, including both cast and crew
         """
         if self._people is None:
-            data = yield (self.ext + '/people')
+            data = yield self.ext + '/people'
             crew = data.get('crew', {})
             cast = []
             for c in data.get('cast', []):
@@ -232,14 +232,14 @@ class Movie(object):
     def ratings(self):
         """Ratings (between 0 and 10) and distribution for a movie."""
         if self._ratings is None:
-            self._ratings = yield (self.ext + '/ratings')
+            self._ratings = yield self.ext + '/ratings'
         yield self._ratings
 
     @property
     @get
     def related(self):
         """The top 10 :class:`Movie`'s related to this :class:`Movie`"""
-        data = yield (self.ext + '/related')
+        data = yield self.ext + '/related'
         movies = []
         for movie in data:
             movies.append(Movie(**movie))
