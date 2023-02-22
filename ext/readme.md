@@ -13,7 +13,7 @@ ext | **`certifi`** | [2020.12.5](https://pypi.org/project/certifi/2020.12.5/) |
 ext | **`chardet`** | [4.0.0](https://pypi.org/project/chardet/4.0.0/) | `pysrt`, `requests`, `subliminal` | -
 ext | **`cloudscraper`** | [1.2.58](https://pypi.org/project/cloudscraper/1.2.58/) | **`medusa`** | -
 ext | `configobj` | [5.0.6](https://pypi.org/project/configobj/5.0.6/) | **`medusa`** | Modules: `configobj.py`, `validate.py`, `_version.py`
-ext | `contextlib2` | [0.6.0.post1](https://pypi.org/project/contextlib2/0.6.0.post1/) | **`medusa`** | File: `contextlib2.py`
+ext | **`contextlib2`** | [21.6.0](https://pypi.org/project/contextlib2/21.6.0/) | **`medusa`** | -
 ext | `decorator` | [4.4.0](https://pypi.org/project/decorator/4.4.0/) | `validators` | File: `decorator.py`
 ext | `deluge-client` | [1.9.0](https://pypi.org/project/deluge-client/1.9.0/) | **`medusa`** | Module: `deluge_client`
 ext | **`deprecated`** | [1.2.3](https://pypi.org/project/deprecated/1.2.3/) | `PyGithub` | -
@@ -49,7 +49,7 @@ ext | **`pytz`** | [2018.4](https://pypi.org/project/pytz/2018.4/) | `subliminal
 ext | `PyYAML` | [5.4.1](https://pypi.org/project/PyYAML/5.4.1/) | `knowit` | Modules: `_yaml`, `yaml`
 ext | `rarfile` | [3.1](https://pypi.org/project/rarfile/3.1/) | **`medusa`**, `subliminal` | File: `rarfile.py`
 ext | **`rebulk`** | [3.1.0](https://pypi.org/project/rebulk/3.1.0/) | **`medusa`**, `guessit` | -
-ext | **`requests`** | [2.25.1](https://pypi.org/project/requests/2.25.1/) | **`medusa`**, `adba`, `boto`, `CacheControl`, `cloudscraper`, `PyGithub`, `python-twitter`, `pytvmaze`, `requests-oauthlib`, `requests-toolbelt`, `rtorrent-python`, `simpleanidb`, `subliminal`, `tmdbsimple`, `trakt`, `tvdbapiv2` | -
+ext | **`requests`** | [2.28.2](https://pypi.org/project/requests/2.28.2/) | **`medusa`**, `adba`, `boto`, `CacheControl`, `cloudscraper`, `PyGithub`, `python-twitter`, `pytvmaze`, `requests-oauthlib`, `requests-toolbelt`, `rtorrent-python`, `simpleanidb`, `subliminal`, `tmdbsimple`, `trakt`, `tvdbapiv2` | -
 ext | `requests-oauthlib` | [1.3.0](https://pypi.org/project/requests-oauthlib/1.3.0/) | **`medusa`**, `python-twitter`, `trakt` | Module: `requests_oauthlib`
 ext | `requests-toolbelt` | [0.9.1](https://pypi.org/project/requests-toolbelt/0.9.1/) | `cloudscraper` | Module: `requests_toolbelt`
 **ext3** | `sgmllib3k` | [1.0.0](https://pypi.org/project/sgmllib3k/1.0.0/) | `feedparser` | File: `sgmllib.py`
