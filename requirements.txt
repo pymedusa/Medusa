@@ -4,7 +4,7 @@ beautifulsoup4==4.11.2
 bencode.py==4.0.0
 CacheControl==0.12.11
 certifi==2022.12.7
-cloudscraper==1.2.58
+cloudscraper==1.2.68
 configobj==5.0.6
 contextlib2==21.6.0
 deluge-client==1.9.0
