@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import binascii
 import json
-from collections.abc import Mapping
-from typing import Any, Dict, List, Optional, Type
+import warnings
+from typing import Any, Type
 
 from .algorithms import (
     Algorithm,
@@ -16,12 +18,13 @@ from .exceptions import (
     InvalidTokenError,
 )
 from .utils import base64url_decode, base64url_encode
+from .warnings import RemovedInPyjwt3Warning
 
 
 class PyJWS:
     header_typ = "JWT"
 
-    def __init__(self, algorithms=None, options=None):
+    def __init__(self, algorithms=None, options=None) -> None:
         self._algorithms = get_default_algorithms()
         self._valid_algs = (
             set(algorithms) if algorithms is not None else set(self._algorithms)
@@ -37,10 +40,10 @@ class PyJWS:
         self.options = {**self._get_default_options(), **options}
 
     @staticmethod
-    def _get_default_options():
+    def _get_default_options() -> dict[str, bool]:
         return {"verify_signature": True}
 
-    def register_algorithm(self, alg_id, alg_obj):
+    def register_algorithm(self, alg_id: str, alg_obj: Algorithm) -> None:
         """
         Registers a new Algorithm for use when creating and verifying tokens.
         """
@@ -53,7 +56,7 @@ class PyJWS:
         self._algorithms[alg_id] = alg_obj
         self._valid_algs.add(alg_id)
 
-    def unregister_algorithm(self, alg_id):
+    def unregister_algorithm(self, alg_id: str) -> None:
         """
         Unregisters an Algorithm for use when creating and verifying tokens
         Throws KeyError if algorithm is not registered.
@@ -67,60 +70,94 @@ class PyJWS:
         del self._algorithms[alg_id]
         self._valid_algs.remove(alg_id)
 
-    def get_algorithms(self):
+    def get_algorithms(self) -> list[str]:
         """
         Returns a list of supported values for the 'alg' parameter.
         """
         return list(self._valid_algs)
 
+    def get_algorithm_by_name(self, alg_name: str) -> Algorithm:
+        """
+        For a given string name, return the matching Algorithm object.
+
+        Example usage:
+
+        >>> jws_obj.get_algorithm_by_name("RS256")
+        """
+        try:
+            return self._algorithms[alg_name]
+        except KeyError as e:
+            if not has_crypto and alg_name in requires_cryptography:
+                raise NotImplementedError(
+                    f"Algorithm '{alg_name}' could not be found. Do you have cryptography installed?"
+                ) from e
+            raise NotImplementedError("Algorithm not supported") from e
+
     def encode(
         self,
         payload: bytes,
         key: str,
-        algorithm: str = "HS256",
-        headers: Optional[Dict] = None,
-        json_encoder: Optional[Type[json.JSONEncoder]] = None,
+        algorithm: str | None = "HS256",
+        headers: dict[str, Any] | None = None,
+        json_encoder: Type[json.JSONEncoder] | None = None,
+        is_payload_detached: bool = False,
     ) -> str:
         segments = []
 
-        if algorithm is None:
-            algorithm = "none"
+        # declare a new var to narrow the type for type checkers
+        algorithm_: str = algorithm if algorithm is not None else "none"
 
-        if algorithm not in self._valid_algs:
-            pass
+        # Prefer headers values if present to function parameters.
+        if headers:
+            headers_alg = headers.get("alg")
+            if headers_alg:
+                algorithm_ = headers["alg"]
+
+            headers_b64 = headers.get("b64")
+            if headers_b64 is False:
+                is_payload_detached = True
 
         # Header
-        header = {"typ": self.header_typ, "alg": algorithm}
+        header: dict[str, Any] = {"typ": self.header_typ, "alg": algorithm_}
 
         if headers:
             self._validate_headers(headers)
             header.update(headers)
 
+        if not header["typ"]:
+            del header["typ"]
+
+        if is_payload_detached:
+            header["b64"] = False
+        elif "b64" in header:
+            # True is the standard value for b64, so no need for it
+            del header["b64"]
+
+        # Fix for headers misorder - issue #715
         json_header = json.dumps(
-            header, separators=(",", ":"), cls=json_encoder
+            header, separators=(",", ":"), cls=json_encoder, sort_keys=True
         ).encode()
 
         segments.append(base64url_encode(json_header))
-        segments.append(base64url_encode(payload))
+
+        if is_payload_detached:
+            msg_payload = payload
+        else:
+            msg_payload = base64url_encode(payload)
+        segments.append(msg_payload)
 
         # Segments
         signing_input = b".".join(segments)
-        try:
-            alg_obj = self._algorithms[algorithm]
-            key = alg_obj.prepare_key(key)
-            signature = alg_obj.sign(signing_input, key)
 
-        except KeyError:
-            if not has_crypto and algorithm in requires_cryptography:
-                raise NotImplementedError(
-                    "Algorithm '%s' could not be found. Do you have cryptography "
-                    "installed?" % algorithm
-                )
-            else:
-                raise NotImplementedError("Algorithm not supported")
+        alg_obj = self.get_algorithm_by_name(algorithm_)
+        key = alg_obj.prepare_key(key)
+        signature = alg_obj.sign(signing_input, key)
 
         segments.append(base64url_encode(signature))
 
+        # Don't put the payload content inside the encoded token when detached
+        if is_payload_detached:
+            segments[1] = b""
         encoded_string = b".".join(segments)
 
         return encoded_string.decode("utf-8")
@@ -129,10 +166,18 @@ class PyJWS:
         self,
         jwt: str,
         key: str = "",
-        algorithms: List[str] = None,
-        options: Dict = None,
+        algorithms: list[str] | None = None,
+        options: dict[str, Any] | None = None,
+        detached_payload: bytes | None = None,
         **kwargs,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
+        if kwargs:
+            warnings.warn(
+                "passing additional kwargs to decode_complete() is deprecated "
+                "and will be removed in pyjwt version 3. "
+                f"Unsupported kwargs: {tuple(kwargs.keys())}",
+                RemovedInPyjwt3Warning,
+            )
         if options is None:
             options = {}
         merged_options = {**self.options, **options}
@@ -144,6 +189,14 @@ class PyJWS:
             )
 
         payload, signing_input, header, signature = self._load(jwt)
+
+        if header.get("b64", True) is False:
+            if detached_payload is None:
+                raise DecodeError(
+                    'It is required that you pass in a value for the "detached_payload" argument to decode a message having the b64 header set to false.'
+                )
+            payload = detached_payload
+            signing_input = b".".join([signing_input.rsplit(b".", 1)[0], payload])
 
         if verify_signature:
             self._verify_signature(signing_input, header, signature, key, algorithms)
@@ -158,14 +211,24 @@ class PyJWS:
         self,
         jwt: str,
         key: str = "",
-        algorithms: List[str] = None,
-        options: Dict = None,
+        algorithms: list[str] | None = None,
+        options: dict[str, Any] | None = None,
+        detached_payload: bytes | None = None,
         **kwargs,
     ) -> str:
-        decoded = self.decode_complete(jwt, key, algorithms, options, **kwargs)
+        if kwargs:
+            warnings.warn(
+                "passing additional kwargs to decode() is deprecated "
+                "and will be removed in pyjwt version 3. "
+                f"Unsupported kwargs: {tuple(kwargs.keys())}",
+                RemovedInPyjwt3Warning,
+            )
+        decoded = self.decode_complete(
+            jwt, key, algorithms, options, detached_payload=detached_payload
+        )
         return decoded["payload"]
 
-    def get_unverified_header(self, jwt):
+    def get_unverified_header(self, jwt: str | bytes) -> dict:
         """Returns back the JWT header parameters as a dict()
 
         Note: The signature is not verified so the header parameters
@@ -176,7 +239,7 @@ class PyJWS:
 
         return headers
 
-    def _load(self, jwt):
+    def _load(self, jwt: str | bytes) -> tuple[bytes, bytes, dict, bytes]:
         if isinstance(jwt, str):
             jwt = jwt.encode("utf-8")
 
@@ -197,9 +260,9 @@ class PyJWS:
         try:
             header = json.loads(header_data)
         except ValueError as e:
-            raise DecodeError("Invalid header string: %s" % e) from e
+            raise DecodeError(f"Invalid header string: {e}") from e
 
-        if not isinstance(header, Mapping):
+        if not isinstance(header, dict):
             raise DecodeError("Invalid header string: must be a json object")
 
         try:
@@ -216,33 +279,32 @@ class PyJWS:
 
     def _verify_signature(
         self,
-        signing_input,
-        header,
-        signature,
-        key="",
-        algorithms=None,
-    ):
+        signing_input: bytes,
+        header: dict,
+        signature: bytes,
+        key: str = "",
+        algorithms: list[str] | None = None,
+    ) -> None:
 
         alg = header.get("alg")
 
-        if algorithms is not None and alg not in algorithms:
+        if not alg or (algorithms is not None and alg not in algorithms):
             raise InvalidAlgorithmError("The specified alg value is not allowed")
 
         try:
-            alg_obj = self._algorithms[alg]
-            key = alg_obj.prepare_key(key)
+            alg_obj = self.get_algorithm_by_name(alg)
+        except NotImplementedError as e:
+            raise InvalidAlgorithmError("Algorithm not supported") from e
+        key = alg_obj.prepare_key(key)
 
-            if not alg_obj.verify(signing_input, key, signature):
-                raise InvalidSignatureError("Signature verification failed")
+        if not alg_obj.verify(signing_input, key, signature):
+            raise InvalidSignatureError("Signature verification failed")
 
-        except KeyError:
-            raise InvalidAlgorithmError("Algorithm not supported")
-
-    def _validate_headers(self, headers):
+    def _validate_headers(self, headers: dict[str, Any]) -> None:
         if "kid" in headers:
             self._validate_kid(headers["kid"])
 
-    def _validate_kid(self, kid):
+    def _validate_kid(self, kid: str) -> None:
         if not isinstance(kid, str):
             raise InvalidTokenError("Key ID header parameter must be a string")
 
@@ -253,4 +315,5 @@ decode_complete = _jws_global_obj.decode_complete
 decode = _jws_global_obj.decode
 register_algorithm = _jws_global_obj.register_algorithm
 unregister_algorithm = _jws_global_obj.unregister_algorithm
+get_algorithm_by_name = _jws_global_obj.get_algorithm_by_name
 get_unverified_header = _jws_global_obj.get_unverified_header

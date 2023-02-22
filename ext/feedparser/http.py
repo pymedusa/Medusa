@@ -1,4 +1,4 @@
-# Copyright 2010-2020 Kurt McKee <contactme@kurtmckee.org>
+# Copyright 2010-2022 Kurt McKee <contactme@kurtmckee.org>
 # Copyright 2002-2008 Mark Pilgrim
 # All rights reserved.
 #
@@ -53,6 +53,8 @@ class _FeedURLHandler(urllib.request.HTTPDigestAuthHandler, urllib.request.HTTPR
 
     def http_error_301(self, req, fp, code, msg, hdrs):
         result = urllib.request.HTTPRedirectHandler.http_error_301(self, req, fp, code, msg, hdrs)
+        if not result:
+            return fp
         result.status = code
         result.newurl = result.geturl()
         return result
@@ -78,7 +80,7 @@ class _FeedURLHandler(urllib.request.HTTPDigestAuthHandler, urllib.request.HTTPR
         host = urllib.parse.urlparse(req.get_full_url())[1]
         if 'Authorization' not in req.headers or 'WWW-Authenticate' not in headers:
             return self.http_error_default(req, fp, code, msg, headers)
-        auth = base64.decodebytes(req.headers['Authorization'].split(' ')[1].encode('utf8'))
+        auth = base64.decodebytes(req.headers['Authorization'].split(' ')[1].encode()).decode()
         user, passw = auth.split(':')
         realm = re.findall('realm="([^"]*)"', headers['WWW-Authenticate'])[0]
         self.add_password(realm, host, user, passw)
@@ -145,11 +147,22 @@ def get(url, etag=None, modified=None, agent=None, referrer=None, handlers=None,
             if url_pieces.port:
                 new_pieces[1] = f'{url_pieces.hostname}:{url_pieces.port}'
             url = urllib.parse.urlunparse(new_pieces)
-            auth = base64.standard_b64encode(f'{url_pieces.username}:{url_pieces.password}').strip()
+            auth = base64.standard_b64encode(f'{url_pieces.username}:{url_pieces.password}'.encode()).decode()
 
     # iri support
     if not isinstance(url, bytes):
         url = convert_to_idn(url)
+
+    # Prevent UnicodeEncodeErrors caused by Unicode characters in the path.
+    bits = []
+    for c in url:
+        try:
+            c.encode('ascii')
+        except UnicodeEncodeError:
+            bits.append(urllib.parse.quote(c))
+        else:
+            bits.append(c)
+    url = ''.join(bits)
 
     # try to open with urllib2 (to use optional headers)
     request = _build_urllib2_request(url, agent, ACCEPT_HEADER, etag, modified, referrer, auth, request_headers)
@@ -203,7 +216,7 @@ def get(url, etag=None, modified=None, agent=None, referrer=None, handlers=None,
         result['href'] = f.url.decode('utf-8', 'ignore')
     else:
         result['href'] = f.url
-    result['status'] = getattr(f, 'status', 200)
+    result['status'] = getattr(f, 'status', None) or 200
 
     # Stop processing if the server sent HTTP 304 Not Modified.
     if getattr(f, 'code', 0) == 304:

@@ -152,7 +152,7 @@ class CacheBackend:
 
     """
 
-    serializer: Union[None, Serializer, staticmethod] = None
+    serializer: Union[None, Serializer] = None
     """Serializer function that will be used by default if not overridden
     by the region.
 
@@ -160,7 +160,7 @@ class CacheBackend:
 
     """
 
-    deserializer: Union[None, Deserializer, staticmethod] = None
+    deserializer: Union[None, Deserializer] = None
     """deserializer function that will be used by default if not overridden
     by the region.
 
@@ -446,10 +446,10 @@ class CacheBackend:
 
 
 class DefaultSerialization:
-    serializer: Union[None, Serializer, staticmethod] = staticmethod(
+    serializer: Union[None, Serializer] = staticmethod(  # type: ignore
         pickle.dumps
     )
-    deserializer: Union[None, Deserializer, staticmethod] = staticmethod(
+    deserializer: Union[None, Deserializer] = staticmethod(  # type: ignore
         pickle.loads
     )
 

@@ -5,13 +5,13 @@ Defines a request dispatcher, a HTTP request handler, a HTTP server and a
 CGI request handler.
 
 :authors: Josh Marshall, Thomas Calmant
-:copyright: Copyright 2020, Thomas Calmant
+:copyright: Copyright 2022, Thomas Calmant
 :license: Apache License 2.0
-:version: 0.4.2
+:version: 0.4.3.2
 
 ..
 
-    Copyright 2020 Thomas Calmant
+    Copyright 2022 Thomas Calmant
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -75,15 +75,15 @@ except AttributeError:
     _AF_UNIX = -1  # type: ignore
 
 # Local modules
-from jsonrpclib import Fault
 import jsonrpclib.config
-import jsonrpclib.utils as utils
 import jsonrpclib.threadpool
+import jsonrpclib.utils as utils
+from jsonrpclib import Fault
 
 # ------------------------------------------------------------------------------
 
 # Module version
-__version_info__ = (0, 4, 2)
+__version_info__ = (0, 4, 3, 2)
 __version__ = ".".join(str(x) for x in __version_info__)
 
 # Documentation strings format
@@ -618,7 +618,7 @@ class SimpleJSONRPCServer(socketserver.TCPServer, SimpleJSONRPCDispatcher):
 # ------------------------------------------------------------------------------
 
 
-class PooledJSONRPCServer(SimpleJSONRPCServer, socketserver.ThreadingMixIn):
+class PooledJSONRPCServer(socketserver.ThreadingMixIn, SimpleJSONRPCServer):
     """
     JSON-RPC server based on a thread pool
     """

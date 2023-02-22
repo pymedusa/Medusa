@@ -36,13 +36,13 @@ appropriately.
 See https://github.com/tcalmant/jsonrpclib for more info.
 
 :authors: Josh Marshall, Thomas Calmant
-:copyright: Copyright 2020, Thomas Calmant
+:copyright: Copyright 2022, Thomas Calmant
 :license: Apache License 2.0
-:version: 0.4.2
+:version: 0.4.3.2
 
 ..
 
-    Copyright 2020 Thomas Calmant
+    Copyright 2022 Thomas Calmant
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -62,7 +62,6 @@ import contextlib
 import logging
 import os
 import socket
-import sys
 import uuid
 
 try:
@@ -94,13 +93,14 @@ except ImportError:
 
 # Library includes
 import jsonrpclib.config
+import jsonrpclib.jsonlib as jsonlib
 import jsonrpclib.jsonclass as jsonclass
 import jsonrpclib.utils as utils
 
 # ------------------------------------------------------------------------------
 
 # Module version
-__version_info__ = (0, 4, 2)
+__version_info__ = (0, 4, 3, 2)
 __version__ = ".".join(str(x) for x in __version_info__)
 
 # Documentation strings format
@@ -110,75 +110,9 @@ __docformat__ = "restructuredtext en"
 _logger = logging.getLogger(__name__)
 
 # ------------------------------------------------------------------------------
-# JSON library import
+# JSON library selection
 
-try:
-    # pylint: disable=F0401,E0611
-    # Using cjson
-    import cjson  # type: ignore
-
-    _logger.debug("Using cjson as JSON library")
-
-    # Declare cjson methods
-    def jdumps(obj, encoding="utf-8"):  # pylint: disable=unused-argument
-        """
-        Serializes ``obj`` to a JSON formatted string, using cjson.
-        """
-        return cjson.encode(obj)
-
-    def jloads(json_string):
-        """
-        Deserializes ``json_string`` (a string containing a JSON document)
-        to a Python object, using cjson.
-        """
-        return cjson.decode(json_string)
-
-
-except ImportError:
-    # pylint: disable=F0401,E0611
-    # Use json or simplejson
-    try:
-        import json
-
-        _logger.debug("Using json as JSON library")
-    except ImportError:
-        try:
-            import simplejson as json  # type: ignore
-
-            _logger.debug("Using simplejson as JSON library")
-        except ImportError:
-            _logger.error("No supported JSON library found")
-            raise ImportError(
-                "You must have the cjson, json, or simplejson "
-                "module(s) available."
-            )
-
-    # Declare json methods
-    if sys.version_info[0] < 3:
-
-        def jdumps(obj, encoding="utf-8"):
-            """
-            Serializes ``obj`` to a JSON formatted string.
-            """
-            # Python 2 (explicit encoding)
-            return json.dumps(obj, encoding=encoding)
-
-    else:
-        # Python 3
-        def jdumps(obj, encoding="utf-8"):  # pylint: disable=unused-argument
-            """
-            Serializes ``obj`` to a JSON formatted string.
-            """
-            # Python 3 (the encoding parameter has been removed)
-            return json.dumps(obj)
-
-    def jloads(json_string):
-        """
-        Deserializes ``json_string`` (a string containing a JSON document)
-        to a Python object.
-        """
-        return json.loads(json_string)
-
+jloads, jdumps = jsonlib.get_handler_methods()
 
 # ------------------------------------------------------------------------------
 # XMLRPClib re-implementations
@@ -629,6 +563,7 @@ class ServerProxy(XMLServerProxy):
         schema = su.scheme
         self.__host = su.netloc
         self.__handler = su.path
+        self.__query_string = su.query
 
         use_unix = False
         if schema.startswith("unix+"):
@@ -727,8 +662,14 @@ class ServerProxy(XMLServerProxy):
         if self.__history is not None:
             self.__history.add_request(request)
 
+        # Add the query string to the path
+        if not self.__query_string:
+            path_qs = self.__handler
+        else:
+            path_qs = "{}?{}".format(self.__handler, self.__query_string)
+
         response = self.__transport.request(
-            self.__host, self.__handler, request, verbose=self.__verbose
+            self.__host, path_qs, request, verbose=self.__verbose
         )
 
         # Here, the XMLRPC library translates a single list

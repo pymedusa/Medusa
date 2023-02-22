@@ -286,7 +286,7 @@ def search_by_id(query, id_type='imdb', media_type=None, slugify_query=False):
             from trakt.tv import TVEpisode
             show = d.pop('show')
             extract_ids(d['episode'])
-            results.append(TVEpisode(show, **d['episode']))
+            results.append(TVEpisode(show.get('title', None), **d['episode']))
         elif 'movie' in d:
             from trakt.movies import Movie
             results.append(Movie(**d.pop('movie')))
@@ -333,7 +333,7 @@ def get_watchlist(list_type=None, sort=None):
             from trakt.tv import TVEpisode
             show = d.pop('show')
             extract_ids(d['episode'])
-            results.append(TVEpisode(show, **d['episode']))
+            results.append(TVEpisode(show.get('title', None), **d['episode']))
         elif 'movie' in d:
             from trakt.movies import Movie
             results.append(Movie(**d.pop('movie')))

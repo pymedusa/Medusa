@@ -23,7 +23,6 @@ from bs4.formatter import (
 )
 
 DEFAULT_OUTPUT_ENCODING = "utf-8"
-PY3K = (sys.version_info[0] > 2)
 
 nonwhitespace_re = re.compile(r"\S+")
 
@@ -83,9 +82,9 @@ class NamespacedAttribute(str):
             # per https://www.w3.org/TR/xml-names/#defaulting
             name = None
 
-        if name is None:
+        if not name:
             obj = str.__new__(cls, prefix)
-        elif prefix is None:
+        elif not prefix:
             # Not really namespaced.
             obj = str.__new__(cls, name)
         else:
@@ -255,25 +254,67 @@ class PageElement(object):
     nextSibling = _alias("next_sibling")  # BS3
     previousSibling = _alias("previous_sibling")  # BS3
 
-    def replace_with(self, replace_with):
-        """Replace this PageElement with another one, keeping the rest of the
-        tree the same.
+    default = object()
+    def _all_strings(self, strip=False, types=default):
+        """Yield all strings of certain classes, possibly stripping them.
         
-        :param replace_with: A PageElement.
+        This is implemented differently in Tag and NavigableString.
+        """
+        raise NotImplementedError()
+   
+    @property
+    def stripped_strings(self):
+        """Yield all strings in this PageElement, stripping them first.
+
+        :yield: A sequence of stripped strings.
+        """
+        for string in self._all_strings(True):
+            yield string
+
+    def get_text(self, separator="", strip=False,
+                 types=default):
+        """Get all child strings of this PageElement, concatenated using the
+        given separator.
+
+        :param separator: Strings will be concatenated using this separator.
+
+        :param strip: If True, strings will be stripped before being
+            concatenated.
+
+        :param types: A tuple of NavigableString subclasses. Any
+            strings of a subclass not found in this list will be
+            ignored. Although there are exceptions, the default
+            behavior in most cases is to consider only NavigableString
+            and CData objects. That means no comments, processing
+            instructions, etc.
+
+        :return: A string.
+        """
+        return separator.join([s for s in self._all_strings(
+                    strip, types=types)])
+    getText = get_text
+    text = property(get_text)
+    
+    def replace_with(self, *args):
+        """Replace this PageElement with one or more PageElements, keeping the 
+        rest of the tree the same.
+        
+        :param args: One or more PageElements.
         :return: `self`, no longer part of the tree.
         """
         if self.parent is None:
             raise ValueError(
                 "Cannot replace one element with another when the "
                 "element to be replaced is not part of a tree.")
-        if replace_with is self:
+        if len(args) == 1 and args[0] is self:
             return
-        if replace_with is self.parent:
+        if any(x is self.parent for x in args):
             raise ValueError("Cannot replace a Tag with its parent.")
         old_parent = self.parent
         my_index = self.parent.index(self)
         self.extract(_self_index=my_index)
-        old_parent.insert(my_index, replace_with)
+        for idx, replace_with in enumerate(args, start=my_index):
+            old_parent.insert(idx, replace_with)
         return self
     replaceWith = replace_with  # BS3
 
@@ -455,13 +496,16 @@ class PageElement(object):
     def extend(self, tags):
         """Appends the given PageElements to this one's contents.
 
-        :param tags: A list of PageElements.
+        :param tags: A list of PageElements. If a single Tag is
+            provided instead, this PageElement's contents will be extended
+            with that Tag's contents.
         """
         if isinstance(tags, Tag):
-            # Calling self.append() on another tag's contents will change
-            # the list we're iterating over. Make a list that won't
-            # change.
-            tags = list(tags.contents)
+            tags = tags.contents
+        if isinstance(tags, list):
+            # Moving items around the tree may change their position in
+            # the original list. Make a list that won't change.
+            tags = list(tags)
         for tag in tags:
             self.append(tag)
 
@@ -513,7 +557,7 @@ class PageElement(object):
             parent.insert(index+1+offset, successor)
             offset += 1
 
-    def find_next(self, name=None, attrs={}, text=None, **kwargs):
+    def find_next(self, name=None, attrs={}, string=None, **kwargs):
         """Find the first PageElement that matches the given criteria and
         appears later in the document than this PageElement.
 
@@ -522,15 +566,15 @@ class PageElement(object):
 
         :param name: A filter on tag name.
         :param attrs: A dictionary of filters on attribute values.
-        :param text: A filter for a NavigableString with specific text.
+        :param string: A filter for a NavigableString with specific text.
         :kwargs: A dictionary of filters on attribute values.
         :return: A PageElement.
         :rtype: bs4.element.Tag | bs4.element.NavigableString
         """
-        return self._find_one(self.find_all_next, name, attrs, text, **kwargs)
+        return self._find_one(self.find_all_next, name, attrs, string, **kwargs)
     findNext = find_next  # BS3
 
-    def find_all_next(self, name=None, attrs={}, text=None, limit=None,
+    def find_all_next(self, name=None, attrs={}, string=None, limit=None,
                     **kwargs):
         """Find all PageElements that match the given criteria and appear
         later in the document than this PageElement.
@@ -540,16 +584,17 @@ class PageElement(object):
 
         :param name: A filter on tag name.
         :param attrs: A dictionary of filters on attribute values.
-        :param text: A filter for a NavigableString with specific text.
+        :param string: A filter for a NavigableString with specific text.
         :param limit: Stop looking after finding this many results.
         :kwargs: A dictionary of filters on attribute values.
         :return: A ResultSet containing PageElements.
         """
-        return self._find_all(name, attrs, text, limit, self.next_elements,
-                             **kwargs)
+        _stacklevel = kwargs.pop('_stacklevel', 2)
+        return self._find_all(name, attrs, string, limit, self.next_elements,
+                              _stacklevel=_stacklevel+1, **kwargs)
     findAllNext = find_all_next  # BS3
 
-    def find_next_sibling(self, name=None, attrs={}, text=None, **kwargs):
+    def find_next_sibling(self, name=None, attrs={}, string=None, **kwargs):
         """Find the closest sibling to this PageElement that matches the
         given criteria and appears later in the document.
 
@@ -558,16 +603,16 @@ class PageElement(object):
 
         :param name: A filter on tag name.
         :param attrs: A dictionary of filters on attribute values.
-        :param text: A filter for a NavigableString with specific text.
+        :param string: A filter for a NavigableString with specific text.
         :kwargs: A dictionary of filters on attribute values.
         :return: A PageElement.
         :rtype: bs4.element.Tag | bs4.element.NavigableString
         """
-        return self._find_one(self.find_next_siblings, name, attrs, text,
+        return self._find_one(self.find_next_siblings, name, attrs, string,
                              **kwargs)
     findNextSibling = find_next_sibling  # BS3
 
-    def find_next_siblings(self, name=None, attrs={}, text=None, limit=None,
+    def find_next_siblings(self, name=None, attrs={}, string=None, limit=None,
                            **kwargs):
         """Find all siblings of this PageElement that match the given criteria
         and appear later in the document.
@@ -577,18 +622,21 @@ class PageElement(object):
 
         :param name: A filter on tag name.
         :param attrs: A dictionary of filters on attribute values.
-        :param text: A filter for a NavigableString with specific text.
+        :param string: A filter for a NavigableString with specific text.
         :param limit: Stop looking after finding this many results.
         :kwargs: A dictionary of filters on attribute values.
         :return: A ResultSet of PageElements.
         :rtype: bs4.element.ResultSet
         """
-        return self._find_all(name, attrs, text, limit,
-                              self.next_siblings, **kwargs)
+        _stacklevel = kwargs.pop('_stacklevel', 2)
+        return self._find_all(
+            name, attrs, string, limit,
+            self.next_siblings, _stacklevel=_stacklevel+1, **kwargs
+        )
     findNextSiblings = find_next_siblings   # BS3
     fetchNextSiblings = find_next_siblings  # BS2
 
-    def find_previous(self, name=None, attrs={}, text=None, **kwargs):
+    def find_previous(self, name=None, attrs={}, string=None, **kwargs):
         """Look backwards in the document from this PageElement and find the
         first PageElement that matches the given criteria.
 
@@ -597,16 +645,16 @@ class PageElement(object):
 
         :param name: A filter on tag name.
         :param attrs: A dictionary of filters on attribute values.
-        :param text: A filter for a NavigableString with specific text.
+        :param string: A filter for a NavigableString with specific text.
         :kwargs: A dictionary of filters on attribute values.
         :return: A PageElement.
         :rtype: bs4.element.Tag | bs4.element.NavigableString
         """
         return self._find_one(
-            self.find_all_previous, name, attrs, text, **kwargs)
+            self.find_all_previous, name, attrs, string, **kwargs)
     findPrevious = find_previous  # BS3
 
-    def find_all_previous(self, name=None, attrs={}, text=None, limit=None,
+    def find_all_previous(self, name=None, attrs={}, string=None, limit=None,
                         **kwargs):
         """Look backwards in the document from this PageElement and find all
         PageElements that match the given criteria.
@@ -616,18 +664,21 @@ class PageElement(object):
 
         :param name: A filter on tag name.
         :param attrs: A dictionary of filters on attribute values.
-        :param text: A filter for a NavigableString with specific text.
+        :param string: A filter for a NavigableString with specific text.
         :param limit: Stop looking after finding this many results.
         :kwargs: A dictionary of filters on attribute values.
         :return: A ResultSet of PageElements.
         :rtype: bs4.element.ResultSet
         """
-        return self._find_all(name, attrs, text, limit, self.previous_elements,
-                           **kwargs)
+        _stacklevel = kwargs.pop('_stacklevel', 2)
+        return self._find_all(
+            name, attrs, string, limit, self.previous_elements,
+            _stacklevel=_stacklevel+1, **kwargs
+        )
     findAllPrevious = find_all_previous  # BS3
     fetchPrevious = find_all_previous    # BS2
 
-    def find_previous_sibling(self, name=None, attrs={}, text=None, **kwargs):
+    def find_previous_sibling(self, name=None, attrs={}, string=None, **kwargs):
         """Returns the closest sibling to this PageElement that matches the
         given criteria and appears earlier in the document.
 
@@ -636,16 +687,16 @@ class PageElement(object):
 
         :param name: A filter on tag name.
         :param attrs: A dictionary of filters on attribute values.
-        :param text: A filter for a NavigableString with specific text.
+        :param string: A filter for a NavigableString with specific text.
         :kwargs: A dictionary of filters on attribute values.
         :return: A PageElement.
         :rtype: bs4.element.Tag | bs4.element.NavigableString
         """
-        return self._find_one(self.find_previous_siblings, name, attrs, text,
+        return self._find_one(self.find_previous_siblings, name, attrs, string,
                              **kwargs)
     findPreviousSibling = find_previous_sibling  # BS3
 
-    def find_previous_siblings(self, name=None, attrs={}, text=None,
+    def find_previous_siblings(self, name=None, attrs={}, string=None,
                                limit=None, **kwargs):
         """Returns all siblings to this PageElement that match the
         given criteria and appear earlier in the document.
@@ -655,14 +706,17 @@ class PageElement(object):
 
         :param name: A filter on tag name.
         :param attrs: A dictionary of filters on attribute values.
-        :param text: A filter for a NavigableString with specific text.
+        :param string: A filter for a NavigableString with specific text.
         :param limit: Stop looking after finding this many results.
         :kwargs: A dictionary of filters on attribute values.
         :return: A ResultSet of PageElements.
         :rtype: bs4.element.ResultSet
         """
-        return self._find_all(name, attrs, text, limit,
-                              self.previous_siblings, **kwargs)
+        _stacklevel = kwargs.pop('_stacklevel', 2)
+        return self._find_all(
+            name, attrs, string, limit,
+            self.previous_siblings, _stacklevel=_stacklevel+1, **kwargs
+        )
     findPreviousSiblings = find_previous_siblings   # BS3
     fetchPreviousSiblings = find_previous_siblings  # BS2
 
@@ -683,7 +737,7 @@ class PageElement(object):
         # NOTE: We can't use _find_one because findParents takes a different
         # set of arguments.
         r = None
-        l = self.find_parents(name, attrs, 1, **kwargs)
+        l = self.find_parents(name, attrs, 1, _stacklevel=3, **kwargs)
         if l:
             r = l[0]
         return r
@@ -703,8 +757,9 @@ class PageElement(object):
         :return: A PageElement.
         :rtype: bs4.element.Tag | bs4.element.NavigableString
         """
+        _stacklevel = kwargs.pop('_stacklevel', 2)
         return self._find_all(name, attrs, None, limit, self.parents,
-                             **kwargs)
+                              _stacklevel=_stacklevel+1, **kwargs)
     findParents = find_parents   # BS3
     fetchParents = find_parents  # BS2
 
@@ -728,26 +783,30 @@ class PageElement(object):
 
     #These methods do the real heavy lifting.
 
-    def _find_one(self, method, name, attrs, text, **kwargs):
+    def _find_one(self, method, name, attrs, string, **kwargs):
         r = None
-        l = method(name, attrs, text, 1, **kwargs)
+        l = method(name, attrs, string, 1, _stacklevel=4, **kwargs)
         if l:
             r = l[0]
         return r
 
-    def _find_all(self, name, attrs, text, limit, generator, **kwargs):
+    def _find_all(self, name, attrs, string, limit, generator, **kwargs):
         "Iterates over a generator looking for things that match."
+        _stacklevel = kwargs.pop('_stacklevel', 3)
 
-        if text is None and 'string' in kwargs:
-            text = kwargs['string']
-            del kwargs['string']
+        if string is None and 'text' in kwargs:
+            string = kwargs.pop('text')
+            warnings.warn(
+                "The 'text' argument to find()-type methods is deprecated. Use 'string' instead.",
+                DeprecationWarning, stacklevel=_stacklevel
+            )
 
         if isinstance(name, SoupStrainer):
             strainer = name
         else:
-            strainer = SoupStrainer(name, attrs, text, **kwargs)
+            strainer = SoupStrainer(name, attrs, string, **kwargs)
 
-        if text is None and not limit and not attrs and not kwargs:
+        if string is None and not limit and not attrs and not kwargs:
             if name is True or name is None:
                 # Optimization to find all tags.
                 result = (element for element in generator
@@ -945,7 +1004,54 @@ class NavigableString(str, PageElement):
         """Prevent NavigableString.name from ever being set."""
         raise AttributeError("A NavigableString cannot be given a name.")
 
-    
+    def _all_strings(self, strip=False, types=PageElement.default):
+        """Yield all strings of certain classes, possibly stripping them.
+
+        This makes it easy for NavigableString to implement methods
+        like get_text() as conveniences, creating a consistent
+        text-extraction API across all PageElements.
+
+        :param strip: If True, all strings will be stripped before being
+            yielded.
+
+        :param types: A tuple of NavigableString subclasses. If this
+            NavigableString isn't one of those subclasses, the
+            sequence will be empty. By default, the subclasses
+            considered are NavigableString and CData objects. That
+            means no comments, processing instructions, etc.
+
+        :yield: A sequence that either contains this string, or is empty.
+
+        """
+        if types is self.default:
+            # This is kept in Tag because it's full of subclasses of
+            # this class, which aren't defined until later in the file.
+            types = Tag.DEFAULT_INTERESTING_STRING_TYPES
+
+        # Do nothing if the caller is looking for specific types of
+        # string, and we're of a different type.
+        #
+        # We check specific types instead of using isinstance(self,
+        # types) because all of these classes subclass
+        # NavigableString. Anyone who's using this feature probably
+        # wants generic NavigableStrings but not other stuff.
+        my_type = type(self)
+        if types is not None:
+            if isinstance(types, type):
+                # Looking for a single type.
+                if my_type is not types:
+                    return
+            elif my_type not in types:
+                # Looking for one of a list of types.
+                return
+
+        value = self
+        if strip:
+            value = value.strip()
+        if len(value) > 0:
+            yield value
+    strings = property(_all_strings)
+
 class PreformattedString(NavigableString):
     """A NavigableString not subject to the normal formatting rules.
 
@@ -1057,6 +1163,27 @@ class TemplateString(NavigableString):
     pass
 
 
+class RubyTextString(NavigableString):
+    """A NavigableString representing the contents of the <rt> HTML
+    element.
+
+    https://dev.w3.org/html5/spec-LC/text-level-semantics.html#the-rt-element
+
+    Can be used to distinguish such strings from the strings they're
+    annotating.
+    """
+    pass
+
+
+class RubyParenthesisString(NavigableString):
+    """A NavigableString representing the contents of the <rp> HTML
+    element.
+
+    https://dev.w3.org/html5/spec-LC/text-level-semantics.html#the-rp-element
+    """
+    pass
+
+
 class Tag(PageElement):
     """Represents an HTML or XML tag that is part of a parse tree, along
     with its attributes and contents.
@@ -1069,7 +1196,9 @@ class Tag(PageElement):
                  prefix=None, attrs=None, parent=None, previous=None,
                  is_xml=None, sourceline=None, sourcepos=None,
                  can_be_empty_element=None, cdata_list_attributes=None,
-                 preserve_whitespace_tags=None
+                 preserve_whitespace_tags=None,
+                 interesting_string_types=None,
+                 namespaces=None
     ):
         """Basic constructor.
 
@@ -1095,6 +1224,16 @@ class Tag(PageElement):
             be treated as CDATA if they ever show up on this tag.
         :param preserve_whitespace_tags: A list of tag names whose contents
             should have their whitespace preserved.
+        :param interesting_string_types: This is a NavigableString
+            subclass or a tuple of them. When iterating over this
+            Tag's strings in methods like Tag.strings or Tag.get_text,
+            these are the types of strings that are interesting enough
+            to be considered. The default is to consider
+            NavigableString and CData the only interesting string
+            subtypes.
+        :param namespaces: A dictionary mapping currently active
+            namespace prefixes to URIs. This can be used later to
+            construct CSS selectors.
         """
         if parser is None:
             self.parser_class = None
@@ -1106,6 +1245,7 @@ class Tag(PageElement):
             raise ValueError("No value provided for new tag's name.")
         self.name = name
         self.namespace = namespace
+        self._namespaces = namespaces or {}
         self.prefix = prefix
         if ((not builder or builder.store_line_numbers)
             and (sourceline is not None or sourcepos is not None)):
@@ -1140,6 +1280,7 @@ class Tag(PageElement):
             self.can_be_empty_element = can_be_empty_element
             self.cdata_list_attributes = cdata_list_attributes
             self.preserve_whitespace_tags = preserve_whitespace_tags
+            self.interesting_string_types = interesting_string_types
         else:
             # Set up any substitutions for this tag, such as the charset in a META tag.
             builder.set_up_substitutions(self)
@@ -1160,6 +1301,13 @@ class Tag(PageElement):
             # Keep track of the names that might cause this tag to be treated as a
             # whitespace-preserved tag.
             self.preserve_whitespace_tags = builder.preserve_whitespace_tags
+
+            if self.name in builder.string_containers:
+                # This sort of tag uses a special string container
+                # subclass for most of its strings. When we ask the
+                self.interesting_string_types = builder.string_containers[self.name]
+            else:
+                self.interesting_string_types = self.DEFAULT_INTERESTING_STRING_TYPES
             
     parserClass = _alias("parser_class")  # BS3
 
@@ -1173,14 +1321,15 @@ class Tag(PageElement):
             sourceline=self.sourceline, sourcepos=self.sourcepos,
             can_be_empty_element=self.can_be_empty_element,
             cdata_list_attributes=self.cdata_list_attributes,
-            preserve_whitespace_tags=self.preserve_whitespace_tags
+            preserve_whitespace_tags=self.preserve_whitespace_tags,
+            interesting_string_types=self.interesting_string_types
         )
         for attr in ('can_be_empty_element', 'hidden'):
             setattr(clone, attr, getattr(self, attr))
         for child in self.contents:
             clone.append(child.__copy__())
         return clone
-
+    
     @property
     def is_empty_element(self):
         """Is this tag an empty-element tag? (aka a self-closing tag)
@@ -1226,64 +1375,44 @@ class Tag(PageElement):
         self.clear()
         self.append(string.__class__(string))
 
-    def _all_strings(self, strip=False, types=(NavigableString, CData)):
+    DEFAULT_INTERESTING_STRING_TYPES = (NavigableString, CData)
+    def _all_strings(self, strip=False, types=PageElement.default):
         """Yield all strings of certain classes, possibly stripping them.
 
         :param strip: If True, all strings will be stripped before being
             yielded.
 
-        :types: A tuple of NavigableString subclasses. Any strings of
+        :param types: A tuple of NavigableString subclasses. Any strings of
             a subclass not found in this list will be ignored. By
-            default, this means only NavigableString and CData objects
-            will be considered. So no comments, processing instructions,
-            etc.
+            default, the subclasses considered are the ones found in
+            self.interesting_string_types. If that's not specified,
+            only NavigableString and CData objects will be
+            considered. That means no comments, processing
+            instructions, etc.
 
         :yield: A sequence of strings.
+
         """
+        if types is self.default:
+            types = self.interesting_string_types
+
         for descendant in self.descendants:
-            if (
-                (types is None and not isinstance(descendant, NavigableString))
-                or
-                (types is not None and type(descendant) not in types)):
+            if (types is None and not isinstance(descendant, NavigableString)):
+                continue
+            descendant_type = type(descendant)
+            if isinstance(types, type):
+                if descendant_type is not types:
+                    # We're not interested in strings of this type.
+                    continue
+            elif types is not None and descendant_type not in types:
+                # We're not interested in strings of this type.
                 continue
             if strip:
                 descendant = descendant.strip()
                 if len(descendant) == 0:
                     continue
             yield descendant
-
     strings = property(_all_strings)
-
-    @property
-    def stripped_strings(self):
-        """Yield all strings in the document, stripping them first.
-
-        :yield: A sequence of stripped strings.
-        """
-        for string in self._all_strings(True):
-            yield string
-
-    def get_text(self, separator="", strip=False,
-                 types=(NavigableString, CData)):
-        """Get all child strings, concatenated using the given separator.
-
-        :param separator: Strings will be concatenated using this separator.
-
-        :param strip: If True, strings will be stripped before being
-            concatenated.
-
-        :types: A tuple of NavigableString subclasses. Any strings of
-            a subclass not found in this list will be ignored. By
-            default, this means only NavigableString and CData objects
-            will be considered. So no comments, processing instructions,
-            stylesheets, etc.
-
-        :return: A string.
-        """
-        return separator.join([s for s in self._all_strings(
-                    strip, types=types)])
-    getText = get_text
-    text = property(get_text)
 
     def decompose(self):
         """Recursively destroys this PageElement and its children.
@@ -1444,7 +1573,8 @@ class Tag(PageElement):
             warnings.warn(
                 '.%(name)sTag is deprecated, use .find("%(name)s") instead. If you really were looking for a tag called %(name)sTag, use .find("%(name)sTag")' % dict(
                     name=tag_name
-                )
+                ),
+                DeprecationWarning, stacklevel=2
             )
             return self.find(tag_name)
         # We special case contents to avoid recursion.
@@ -1478,36 +1608,19 @@ class Tag(PageElement):
     def __repr__(self, encoding="unicode-escape"):
         """Renders this PageElement as a string.
 
-        :param encoding: The encoding to use (Python 2 only).
-        :return: Under Python 2, a bytestring; under Python 3,
-            a Unicode string.
+        :param encoding: The encoding to use (Python 2 only). 
+            TODO: This is now ignored and a warning should be issued
+            if a value is provided.
+        :return: A (Unicode) string.
         """
-        if PY3K:
-            # "The return value must be a string object", i.e. Unicode
-            return self.decode()
-        else:
-            # "The return value must be a string object", i.e. a bytestring.
-            # By convention, the return value of __repr__ should also be
-            # an ASCII string.
-            return self.encode(encoding)
+        # "The return value must be a string object", i.e. Unicode
+        return self.decode()
 
     def __unicode__(self):
         """Renders this PageElement as a Unicode string."""
         return self.decode()
 
-    def __str__(self):
-        """Renders this PageElement as a generic string.
-
-        :return: Under Python 2, a UTF-8 bytestring; under Python 3,
-            a Unicode string.        
-        """
-        if PY3K:
-            return self.decode()
-        else:
-            return self.encode()
-
-    if PY3K:
-        __str__ = __repr__ = __unicode__
+    __str__ = __repr__ = __unicode__
 
     def encode(self, encoding=DEFAULT_OUTPUT_ENCODING,
                indent_level=None, formatter="minimal",
@@ -1517,8 +1630,10 @@ class Tag(PageElement):
 
         :param encoding: The destination encoding.
         :param indent_level: Each line of the rendering will be
-            indented this many spaces. Used internally in
-            recursive calls while pretty-printing.
+           indented this many levels. (The formatter decides what a
+           'level' means in terms of spaces or other characters
+           output.) Used internally in recursive calls while
+           pretty-printing.
         :param formatter: A Formatter object, or a string naming one of
             the standard formatters.
         :param errors: An error handling strategy such as
@@ -1594,7 +1709,7 @@ class Tag(PageElement):
         space = ''
         indent_space = ''
         if indent_level is not None:
-            indent_space = (' ' * (indent_level - 1))
+            indent_space = (formatter.indent * (indent_level - 1))
         if pretty_print:
             space = indent_space
             indent_contents = indent_level + 1
@@ -1669,8 +1784,10 @@ class Tag(PageElement):
         """Renders the contents of this tag as a Unicode string.
 
         :param indent_level: Each line of the rendering will be
-           indented this many spaces. Used internally in
-           recursive calls while pretty-printing.
+           indented this many levels. (The formatter decides what a
+           'level' means in terms of spaces or other characters
+           output.) Used internally in recursive calls while
+           pretty-printing.
 
         :param eventual_encoding: The tag is destined to be
            encoded into this encoding. decode_contents() is _not_
@@ -1681,6 +1798,7 @@ class Tag(PageElement):
 
         :param formatter: A Formatter object, or a string naming one of
             the standard Formatters.
+
         """
         # First off, turn a string formatter into a Formatter object. This
         # will stop the lookup from happening over and over again.
@@ -1703,7 +1821,7 @@ class Tag(PageElement):
                 text = text.strip()
             if text:
                 if pretty_print and not preserve_whitespace:
-                    s.append(" " * (indent_level - 1))
+                    s.append(formatter.indent * (indent_level - 1))
                 s.append(text)
                 if pretty_print and not preserve_whitespace:
                     s.append("\n")
@@ -1715,8 +1833,10 @@ class Tag(PageElement):
         """Renders the contents of this PageElement as a bytestring.
 
         :param indent_level: Each line of the rendering will be
-           indented this many spaces. Used internally in
-           recursive calls while pretty-printing.
+           indented this many levels. (The formatter decides what a
+           'level' means in terms of spaces or other characters
+           output.) Used internally in recursive calls while
+           pretty-printing.
 
         :param eventual_encoding: The bytestring will be in this encoding.
 
@@ -1739,7 +1859,7 @@ class Tag(PageElement):
 
     #Soup methods
 
-    def find(self, name=None, attrs={}, recursive=True, text=None,
+    def find(self, name=None, attrs={}, recursive=True, string=None,
              **kwargs):
         """Look in the children of this PageElement and find the first
         PageElement that matches the given criteria.
@@ -1758,13 +1878,14 @@ class Tag(PageElement):
         :rtype: bs4.element.Tag | bs4.element.NavigableString
         """
         r = None
-        l = self.find_all(name, attrs, recursive, text, 1, **kwargs)
+        l = self.find_all(name, attrs, recursive, string, 1, _stacklevel=3,
+                          **kwargs)
         if l:
             r = l[0]
         return r
     findChild = find #BS2
 
-    def find_all(self, name=None, attrs={}, recursive=True, text=None,
+    def find_all(self, name=None, attrs={}, recursive=True, string=None,
                  limit=None, **kwargs):
         """Look in the children of this PageElement and find all
         PageElements that match the given criteria.
@@ -1785,7 +1906,9 @@ class Tag(PageElement):
         generator = self.descendants
         if not recursive:
             generator = self.children
-        return self._find_all(name, attrs, text, limit, generator, **kwargs)
+        _stacklevel = kwargs.pop('_stacklevel', 2)
+        return self._find_all(name, attrs, string, limit, generator,
+                              _stacklevel=_stacklevel+1, **kwargs)
     findAll = find_all       # BS3
     findChildren = find_all  # BS2
 
@@ -1887,8 +2010,10 @@ class Tag(PageElement):
 
         has_key() is gone in Python 3, anyway.
         """
-        warnings.warn('has_key is deprecated. Use has_attr("%s") instead.' % (
-                key))
+        warnings.warn(
+            'has_key is deprecated. Use has_attr(key) instead.',
+            DeprecationWarning, stacklevel=2
+        )
         return self.has_attr(key)
 
 # Next, a couple classes to represent queries and their results.
@@ -1902,7 +2027,7 @@ class SoupStrainer(object):
     document.
     """
 
-    def __init__(self, name=None, attrs={}, text=None, **kwargs):
+    def __init__(self, name=None, attrs={}, string=None, **kwargs):
         """Constructor.
 
         The SoupStrainer constructor takes the same arguments passed
@@ -1911,9 +2036,16 @@ class SoupStrainer(object):
 
         :param name: A filter on tag name.
         :param attrs: A dictionary of filters on attribute values.
-        :param text: A filter for a NavigableString with specific text.
+        :param string: A filter for a NavigableString with specific text.
         :kwargs: A dictionary of filters on attribute values.
         """        
+        if string is None and 'text' in kwargs:
+            string = kwargs.pop('text')
+            warnings.warn(
+                "The 'text' argument to the SoupStrainer constructor is deprecated. Use 'string' instead.",
+                DeprecationWarning, stacklevel=2
+            )
+
         self.name = self._normalize_search_value(name)
         if not isinstance(attrs, dict):
             # Treat a non-dict value for attrs as a search for the 'class'
@@ -1938,7 +2070,10 @@ class SoupStrainer(object):
             normalized_attrs[key] = self._normalize_search_value(value)
 
         self.attrs = normalized_attrs
-        self.text = self._normalize_search_value(text)
+        self.string = self._normalize_search_value(string)
+
+        # DEPRECATED but just in case someone is checking this.
+        self.text = self.string
 
     def _normalize_search_value(self, value):
         # Leave it alone if it's a Unicode string, a callable, a
@@ -1972,8 +2107,8 @@ class SoupStrainer(object):
 
     def __str__(self):
         """A human-readable representation of this SoupStrainer."""
-        if self.text:
-            return self.text
+        if self.string:
+            return self.string
         else:
             return "%s|%s" % (self.name, self.attrs)
 
@@ -2033,7 +2168,7 @@ class SoupStrainer(object):
                     found = markup
                 else:
                     found = markup_name
-        if found and self.text and not self._matches(found.string, self.text):
+        if found and self.string and not self._matches(found.string, self.string):
             found = None
         return found
 
@@ -2061,12 +2196,12 @@ class SoupStrainer(object):
         # If it's a Tag, make sure its name or attributes match.
         # Don't bother with Tags if we're searching for text.
         elif isinstance(markup, Tag):
-            if not self.text or self.name or self.attrs:
+            if not self.string or self.name or self.attrs:
                 found = self.search_tag(markup)
         # If it's text, make sure the text matches.
         elif isinstance(markup, NavigableString) or \
                  isinstance(markup, str):
-            if not self.name and not self.attrs and self._matches(markup, self.text):
+            if not self.name and not self.attrs and self._matches(markup, self.string):
                 found = markup
         else:
             raise Exception(
