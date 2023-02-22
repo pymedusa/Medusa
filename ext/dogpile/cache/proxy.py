@@ -19,6 +19,7 @@ from .api import BackendSetType
 from .api import CacheBackend
 from .api import CacheMutex
 from .api import KeyType
+from .api import SerializedReturnType
 
 
 class ProxyBackend(CacheBackend):
@@ -101,3 +102,17 @@ class ProxyBackend(CacheBackend):
 
     def get_mutex(self, key: KeyType) -> Optional[CacheMutex]:
         return self.proxied.get_mutex(key)
+
+    def get_serialized(self, key: KeyType) -> SerializedReturnType:
+        return self.proxied.get_serialized(key)
+
+    def get_serialized_multi(
+        self, keys: Sequence[KeyType]
+    ) -> Sequence[SerializedReturnType]:
+        return self.proxied.get_serialized_multi(keys)
+
+    def set_serialized(self, key: KeyType, value: bytes) -> None:
+        self.proxied.set_serialized(key, value)
+
+    def set_serialized_multi(self, mapping: Mapping[KeyType, bytes]) -> None:
+        self.proxied.set_serialized_multi(mapping)
