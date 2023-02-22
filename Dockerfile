@@ -19,7 +19,7 @@ RUN \
     mkdir /tmp/unrar-install && \
     tar xf /tmp/unrar-pkg/unrar-*.apk -C /tmp/unrar-install
 
-FROM python:3.10.4-alpine3.15
+FROM python:3.10.8-alpine3.15
 LABEL maintainer="pymedusa"
 
 ARG GIT_BRANCH
