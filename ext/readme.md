@@ -31,7 +31,7 @@ ext | `importlib-resources` | [5.4.0](https://pypi.org/project/importlib-resourc
 ext | `jsonrpclib-pelix` | [0.4.2](https://pypi.org/project/jsonrpclib-pelix/0.4.2/) | **`medusa`** | Module: `jsonrpclib` / Used by guessit on python version < 3.9`
 ext | **`knowit`** | [0.4.0](https://github.com/ratoaq2/knowit/tree/0.4.0) | **`medusa`** | -
 ext | `Mako` | [1.2.4](https://pypi.org/project/Mako/1.2.4/) | **`medusa`** | Module: `mako`
-ext | `markdown2` | [2.4.2](https://pypi.org/project/markdown2/2.4.2/) | **`medusa`** | File: `markdown2.py`
+ext | `markdown2` | [2.4.8](https://pypi.org/project/markdown2/2.4.8/) | **`medusa`** | File: `markdown2.py`
 ext | `MarkupSafe` | [1.1.1](https://pypi.org/project/MarkupSafe/1.1.1/) | `Mako` | Module: `markupsafe`
 ext | **`msgpack`** | [0.5.6](https://pypi.org/project/msgpack/0.5.6/) | `CacheControl` | -
 ext | **`oauthlib`** | [3.0.0](https://pypi.org/project/oauthlib/3.0.0/) | `requests-oauthlib` | -
