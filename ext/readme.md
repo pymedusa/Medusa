@@ -29,9 +29,8 @@ ext | **`imdbpie`** | [5.6.4](https://pypi.org/project/imdbpie/5.6.4/) | **`medu
 ext | `importlib-metadata` | [4.11.4](https://pypi.org/project/importlib-metadata/4.11.4/) | `knowit` | Module: `importlib_metadata`
 ext | `importlib-resources` | [5.4.0](https://pypi.org/project/importlib-resources/5.4.0/) | `guessit` | Module: `importlib_resources`
 ext | `jsonrpclib-pelix` | [0.4.2](https://pypi.org/project/jsonrpclib-pelix/0.4.2/) | **`medusa`** | Module: `jsonrpclib` / Used by guessit on python version < 3.9`
-ext | **`knowit`** | [eea9ac1](https://github.com/ratoaq2/knowit/tree/0.4.0) | **`medusa`** | -
-ext | **`pymediainfo`** | [5.1.0](https://pypi.org/project/pymediainfo/5.1.0/) | `knowit` | -
-ext | `Mako` | [1.1.4](https://pypi.org/project/Mako/1.1.4/) | **`medusa`** | Module: `mako`
+ext | **`knowit`** | [0.4.0](https://github.com/ratoaq2/knowit/tree/0.4.0) | **`medusa`** | -
+ext | `Mako` | [1.2.4](https://pypi.org/project/Mako/1.2.4/) | **`medusa`** | Module: `mako`
 ext | `markdown2` | [2.4.2](https://pypi.org/project/markdown2/2.4.2/) | **`medusa`** | File: `markdown2.py`
 ext | `MarkupSafe` | [1.1.1](https://pypi.org/project/MarkupSafe/1.1.1/) | `Mako` | Module: `markupsafe`
 ext | **`msgpack`** | [0.5.6](https://pypi.org/project/msgpack/0.5.6/) | `CacheControl` | -
@@ -40,6 +39,7 @@ ext | `Pint` | [0.9](https://pypi.org/project/Pint/0.9/) | `knowit` | Module: `p
 ext | `profilehooks` | [1.12.0](https://pypi.org/project/profilehooks/1.12.0/) | **`medusa`** | File: `profilehooks.py`
 ext | `PyGithub` | [1.45](https://pypi.org/project/PyGithub/1.45/) | **`medusa`** | Module: `github`
 ext | `PyJWT` | [2.0.1](https://pypi.org/project/PyJWT/2.0.1/) | **`medusa`**, `PyGithub` | Module: `jwt`
+ext | **`pymediainfo`** | [5.1.0](https://pypi.org/project/pymediainfo/5.1.0/) | `knowit` | -
 ext | `pyparsing` | [2.4.7](https://pypi.org/project/pyparsing/2.4.7/) | `cloudscraper` | File: `pyparsing.py`
 ext | **`pysrt`** | [1.1.0](https://pypi.org/project/pysrt/1.1.0/) | `subliminal` | -
 ext | `python-dateutil` | [2.8.1](https://pypi.org/project/python-dateutil/2.8.1/) | **`medusa`**, `guessit`, `imdbpie`, `tvdbapiv2` | Module: `dateutil`
