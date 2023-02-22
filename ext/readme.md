@@ -5,7 +5,7 @@ ext | **`adba`** | pymedusa/[37b0c74](https://github.com/pymedusa/adba/tree/37b0
 ext | `appdirs` | [1.4.3](https://pypi.org/project/appdirs/1.4.3/) | `simpleanidb`, `subliminal` (cli only) | File: `appdirs.py`
 ext | `attrs` | [18.2.0](https://pypi.org/project/attrs/18.2.0/) | `imdbpie` | Module: `attr`
 ext | **`babelfish`** | [0.6.0](https://pypi.org/project/babelfish/0.6.0/) | **`medusa`**, `guessit`, `knowit`, `subliminal` | -
-ext | `beautifulsoup4` | [4.9.3](https://pypi.org/project/beautifulsoup4/4.9.3/) | **`medusa`**, `subliminal` | Module: `bs4`
+ext | `beautifulsoup4` | [4.11.2](https://pypi.org/project/beautifulsoup4/4.11.2/) | **`medusa`**, `subliminal` | Module: `bs4`
 ext | `bencode.py` | [4.0.0](https://pypi.org/project/bencode.py/4.0.0/) | **`medusa`** | Modules: `bencodepy`, `bencode`<br>Monkey-patched, see `medusa/init/__init__.py`
 ext | **`boto`** | [2.48.0](https://pypi.org/project/boto/2.48.0/) | `imdbpie` | -
 ext | `CacheControl` | [0.12.11](https://pypi.org/project/CacheControl/0.12.11/) | **`medusa`** | Module: `cachecontrol`
@@ -52,7 +52,7 @@ ext | **`rebulk`** | [3.1.0](https://pypi.org/project/rebulk/3.1.0/) | **`medusa
 ext | **`requests`** | [2.28.2](https://pypi.org/project/requests/2.28.2/) | **`medusa`**, `adba`, `boto`, `CacheControl`, `cloudscraper`, `PyGithub`, `python-twitter`, `pytvmaze`, `requests-oauthlib`, `requests-toolbelt`, `rtorrent-python`, `simpleanidb`, `subliminal`, `tmdbsimple`, `trakt`, `tvdbapiv2` | -
 ext | `requests-oauthlib` | [1.3.0](https://pypi.org/project/requests-oauthlib/1.3.0/) | **`medusa`**, `python-twitter`, `trakt` | Module: `requests_oauthlib`
 ext | `requests-toolbelt` | [0.9.1](https://pypi.org/project/requests-toolbelt/0.9.1/) | `cloudscraper` | Module: `requests_toolbelt`
-**ext3** | `sgmllib3k` | [1.0.0](https://pypi.org/project/sgmllib3k/1.0.0/) | `feedparser` | File: `sgmllib.py`
+ext | `sgmllib3k` | [1.0.0](https://pypi.org/project/sgmllib3k/1.0.0/) | `feedparser` | File: `sgmllib.py`
 ext | `six` | [1.16.0](https://pypi.org/project/six/1.16.0/) | **`medusa`**, `adba`, `configobj`, `html5lib`, `imdbpie`, `knowit`, `PyGithub`, `subliminal`, `tvdbapiv2`, `validators` | File: `six.py`
 ext | **`soupsieve`** | [1.9.6](https://pypi.org/project/soupsieve/1.9.6/) | `beautifulsoup4` | -
 ext | **`stevedore`** | [1.30.1](https://pypi.org/project/stevedore/1.30.1/) | `subliminal` | -
