@@ -158,7 +158,6 @@ __all__ = (
     'is_ip_addr_list',
     'is_mixed_list',
     'is_option',
-    '__docformat__',
 )
 
 
