@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 
 import logging
 
-from cloudscraper import cloudflare as cf, CloudScraper
+from cloudscraper import CloudScraper, cloudflare as cf
 
 from medusa.logger.adapters.style import BraceAdapter
 
