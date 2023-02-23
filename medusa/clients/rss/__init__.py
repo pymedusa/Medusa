@@ -6,13 +6,13 @@ from __future__ import unicode_literals
 
 import logging
 import os
+import time
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
-import time
 
 from medusa import app
-from medusa.logger.adapters.style import BraceAdapter
 from medusa.helper.exceptions import ex
+from medusa.logger.adapters.style import BraceAdapter
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -23,11 +23,10 @@ XMLNS = {'medusa': 'https://pymedusa.com'}
 
 def add_result_to_feed(result):
     """
-    Adds search result and metadata to rss feed
+    Adds search result and metadata to rss feed.
 
     :return: bool representing success
     """
-
     for k, v in XMLNS.items():
         ET.register_namespace(k, v)
 
@@ -56,7 +55,8 @@ def add_result_to_feed(result):
 
 def __element(name, text, **attribs):
     """
-    Creates xml element with the given data
+    Creates xml element with the given data.
+
     Basically just ET.Element() but assigns text
     Example:
         <name attribK1="attribV1" attribK2="attribV2">text</name>
@@ -64,13 +64,13 @@ def __element(name, text, **attribs):
     :return: ET.Element
     """
     elem = ET.Element(name, attribs)
-    elem.text = str(text) if text is not None else ""
+    elem.text = str(text) if text is not None else ''
     return elem
 
 
 def _pubdate():
     """
-    Generates pubdate according to rss standard format eg "Mon, 02 Mar 2004 05:06:07 GMT"
+    Generates pubdate according to rss standard format eg "Mon, 02 Mar 2004 05:06:07 GMT".
 
     :return: string
     """
@@ -79,7 +79,7 @@ def _pubdate():
 
 def _result_to_item(result):
     """
-    Populates xml element 'item' with child elements using metadata from result
+    Populates xml element 'item' with child elements using metadata from result.
 
     :return: ET.Element
     """
@@ -93,7 +93,11 @@ def _result_to_item(result):
     else:
         item_root.append(__element('description', result.name))
     item_root.append(__element('enclosure', None, url=result.url, length='0', type='application/x-bittorrent' if result.result_type else 'application/x-nzb'))
-    item_root.append(__element('medusa:series', result.series.name, isAnime=str(result.series.anime), tvdb=str(result.series.tvdb_id), imdb=result.series.imdb_id))
+    item_root.append(__element('medusa:series',
+                               result.series.name,
+                               isAnime=str(result.series.anime),
+                               tvdb=str(result.series.tvdb_id),
+                               imdb=result.series.imdb_id))
     item_root.append(__element('medusa:season', result.actual_season))
     item_root.append(__element('medusa:episode', result.actual_episode))
     item_root.append(__element('medusa:provider', result.provider.name))
@@ -103,7 +107,7 @@ def _result_to_item(result):
 
 def _find_item_start_index(channel_element):
     """
-    Finds index of the last child that isn't a <item>
+    Finds index of the last child that isn't a <item>.
 
     :return: int
     """
@@ -115,7 +119,7 @@ def _find_item_start_index(channel_element):
 
 def _read_existing_xml(file_path):
     """
-    Reads xml from disk or creates a new xml from template
+    Reads xml from disk or creates a new xml from template.
 
     :return: ET.Element root
     """
@@ -140,7 +144,7 @@ def _read_existing_xml(file_path):
 
 def _make_empty_xml():
     """
-    Builds empty xml template
+    Builds empty xml template.
 
     :return: ET.Element root 'rss' element
     """
@@ -157,7 +161,7 @@ def _make_empty_xml():
 
 def _write_xml(root_element, file_path):
     """
-    Writes rss xml file to disk
+    Writes rss xml file to disk.
 
     :return: bool representing success
     """
@@ -174,7 +178,7 @@ def _write_xml(root_element, file_path):
 
 def _find_channel_element(root_element):
     """
-    Finds channel element in xml
+    Finds channel element in xml.
 
     :return: ET.Element channel
     """
