@@ -6,7 +6,8 @@ from __future__ import unicode_literals
 
 import logging
 
-from cloudscraper import CloudScraper, cloudflare as cf
+from cloudscraper import CloudScraper
+from cloudscraper.cloudflare import Cloudflare
 
 from medusa.logger.adapters.style import BraceAdapter
 
@@ -33,6 +34,7 @@ def cloudflare(session, resp, **kwargs):
     A request handler that retries a request after bypassing Cloudflare anti-bot
     protection.
     """
+    cf = Cloudflare(CloudScraper())
     if cf.is_IUAM_Challenge(resp) or cf.is_Captcha_Challenge(resp):
         log.debug('Cloudflare protection detected, trying to bypass it.')
 
@@ -40,7 +42,7 @@ def cloudflare(session, resp, **kwargs):
         original_request = resp.request
 
         # Get the Cloudflare tokens and original user-agent
-        tokens, user_agent = CloudScraper.get_tokens(original_request.url)
+        tokens, user_agent = cf.cloudscraper.get_tokens(original_request.url)
 
         # Add Cloudflare tokens to the session cookies
         session.cookies.update(tokens)
