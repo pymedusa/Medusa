@@ -991,12 +991,12 @@ class MedusaApp(object):
 
     @property
     def RSS_DIR(self):
-        """Return app.RSS_DIR"""
+        """Return app.RSS_DIR."""
         return self._RSS_DIR
 
     @RSS_DIR.setter
     def RSS_DIR(self, value):
-        """Change RSS_DIR"""
+        """Change RSS_DIR."""
         self.handle_prop('RSS_DIR', value)
 
     @property
