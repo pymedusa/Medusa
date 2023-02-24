@@ -23,8 +23,8 @@ from medusa import (
     ui,
     ws
 )
-from medusa.clients import torrent
 from medusa.clients import rss
+from medusa.clients import torrent
 from medusa.clients.nzb import (
     nzbget,
     sab,
