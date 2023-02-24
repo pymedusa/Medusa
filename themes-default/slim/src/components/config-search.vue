@@ -149,6 +149,14 @@
                                             </div>
                                         </config-template>
 
+                                        <div v-if="clients.nzb.method" v-show="clients.nzb.method === 'rss'">
+                                            <config-template label-for="rss_dir" label="Location to store RSS xml">
+                                                <file-browser name="rss_dir" title="Select RSS file location" :initial-dir="clients.rss.dir" @update="clients.rss.dir = $event" />
+                                                <p><b>medusa.rss</b> is stored at this location</p>
+                                            </config-template>
+                                            <config-textbox-number :min="1" :step="1" :max="500" v-model.number="clients.rss.max_items" label="Maximum number of items in RSS feed" id="rss_max_items" :explanations="['Oldest items will be removed to make space for new items']" />
+                                        </div>
+
                                         <div v-if="clients.nzb.method" v-show="clients.nzb.method === 'sabnzbd'" id="sabnzbd_settings">
 
                                             <config-textbox v-model="clients.nzb.sabnzbd.host" label="SABnzbd server URL" id="sab_host" validate-uri @change="save()">
@@ -241,7 +249,15 @@
                                             </config-toggle-slider>
                                         </div>
 
-                                        <div v-if="clients.torrents.method" v-show="clients.torrents.method !== 'blackhole'">
+                                        <div v-if="clients.torrents.method" v-show="clients.torrents.method === 'rss'">
+                                            <config-template label-for="rss_dir" label="Location to store RSS xml">
+                                                <file-browser name="rss_dir" title="Select RSS file location" :initial-dir="clients.rss.dir" @update="clients.rss.dir = $event" />
+                                                <p><b>medusa.rss</b> is stored at this location</p>
+                                            </config-template>
+                                            <config-textbox-number :min="1" :step="1" :max="500" v-model.number="clients.rss.max_items" label="Maximum number of items in RSS feed" id="rss_max_items" :explanations="['Oldest items will be removed to make space for new items']" />
+                                        </div>
+
+                                        <div v-if="clients.torrents.method" v-show="clients.torrents.method !== 'blackhole' && clients.torrents.method !== 'rss'">
 
                                             <config-textbox
                                                 v-model="clients.torrents.host"
@@ -418,6 +434,9 @@ export default {
                     blackhole: {
                         title: 'Black hole'
                     },
+                    rss: {
+                        title: 'RSS Feed'
+                    },
                     utorrent: {
                         title: 'uTorrent',
                         description: 'URL to your uTorrent client (e.g. http://localhost:8000)',
@@ -498,6 +517,9 @@ export default {
                 nzb: {
                     blackhole: {
                         title: 'Black hole'
+                    },
+                    rss: {
+                        title: 'RSS Feed'
                     },
                     nzbget: {
                         title: 'NZBget',

@@ -504,6 +504,10 @@ def config_clients():
     section_data['torrents']['verifySSL'] = bool(app.TORRENT_VERIFY_CERT)
     section_data['torrents']['saveMagnetFile'] = bool(app.SAVE_MAGNET_FILE)
 
+    section_data['rss'] = {}
+    section_data['rss']['dir'] = app.RSS_DIR
+    section_data['rss']['max_items'] = app.RSS_MAX_ITEMS
+
     section_data['nzb'] = {}
     section_data['nzb']['enabled'] = bool(app.USE_NZBS)
     section_data['nzb']['dir'] = app.NZB_DIR
