@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 import logging
 import os
 import time
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ElemTree
 from datetime import datetime, timedelta
 
 from medusa import app
@@ -28,7 +28,7 @@ def add_result_to_feed(result):
     :return: bool representing success
     """
     for k, v in XMLNS.items():
-        ET.register_namespace(k, v)
+        ElemTree.register_namespace(k, v)
 
     file_path = os.path.join(app.RSS_DIR, u'medusa.xml')
 
@@ -57,13 +57,13 @@ def __element(name, text, **attribs):
     """
     Creates xml element with the given data.
 
-    Basically just ET.Element() but assigns text
+    Basically just ElemTree.Element() but assigns text
     Example:
         <name attribK1="attribV1" attribK2="attribV2">text</name>
 
-    :return: ET.Element
+    :return: ElemTree.Element
     """
-    elem = ET.Element(name, attribs)
+    elem = ElemTree.Element(name, attribs)
     elem.text = str(text) if text is not None else ''
     return elem
 
@@ -81,7 +81,7 @@ def _result_to_item(result):
     """
     Populates xml element 'item' with child elements using metadata from result.
 
-    :return: ET.Element
+    :return: ElemTree.Element
     """
     item_root = __element('item', None)
     item_root.append(__element('title', result.name))
@@ -121,7 +121,7 @@ def _read_existing_xml(file_path):
     """
     Reads xml from disk or creates a new xml from template.
 
-    :return: ET.Element root
+    :return: ElemTree.Element root
     """
     if not os.path.isfile(file_path):
         root = _make_empty_xml()
@@ -135,9 +135,9 @@ def _read_existing_xml(file_path):
     except OSError as e:
         log.error(u'Error reading RSS file at {0}: {1}', file_path, ex(e))
     try:
-        root = ET.fromstring(xml_string)
+        root = ElemTree.fromstring(xml_string)
         return root
-    except ET.ParseError as e:
+    except ElemTree.ParseError as e:
         log.error(u'Error parsing RSS file at {0}: {1}', file_path, ex(e))
         return None
 
@@ -146,9 +146,9 @@ def _make_empty_xml():
     """
     Builds empty xml template.
 
-    :return: ET.Element root 'rss' element
+    :return: ElemTree.Element root 'rss' element
     """
-    root = ET.Element('rss')
+    root = ElemTree.Element('rss')
     for k, v in XMLNS.items():
         root.attrib['xmlns:' + k] = v
     root.attrib['version'] = '2.0'
@@ -166,7 +166,7 @@ def _write_xml(root_element, file_path):
     :return: bool representing success
     """
     try:
-        xml_string = ET.tostring(root_element, encoding='unicode')
+        xml_string = ElemTree.tostring(root_element, encoding='unicode')
         xml_string = xml_string.replace('\n', '')
         with open(file_path, 'w') as f:
             f.write(xml_string)
@@ -180,6 +180,6 @@ def _find_channel_element(root_element):
     """
     Finds channel element in xml.
 
-    :return: ET.Element channel
+    :return: ElemTree.Element channel
     """
     return root_element.find('channel')
