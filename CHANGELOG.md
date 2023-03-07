@@ -8,6 +8,21 @@
 
 -----
 
+## 1.0.12 (03-03-2023)
+
+#### New Features
+- Add RSS Feed Client (Thanks to @sawyersteven)
+
+#### Improvements
+- Update many Python dependencies
+
+#### Fixes
+- Ensure that git_path is a valid file (Thanks to @pizza-power)
+- Avoid exception when the filepart doesn't match a season
+- Encode NZBGet username, password and host
+
+-----
+
 ## 1.0.11 (14-01-2023)
 
 #### Improvements
