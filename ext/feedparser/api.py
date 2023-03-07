@@ -1,5 +1,5 @@
 # The public API for feedparser
-# Copyright 2010-2020 Kurt McKee <contactme@kurtmckee.org>
+# Copyright 2010-2022 Kurt McKee <contactme@kurtmckee.org>
 # Copyright 2002-2008 Mark Pilgrim
 # All rights reserved.
 #
@@ -27,6 +27,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import io
+import urllib.error
 import urllib.parse
 import xml.sax
 
@@ -211,7 +212,14 @@ def parse(url_file_stream_or_string, etag=None, modified=None, agent=None, refer
         headers={},
     )
 
-    data = _open_resource(url_file_stream_or_string, etag, modified, agent, referrer, handlers, request_headers, result)
+    try:
+        data = _open_resource(url_file_stream_or_string, etag, modified, agent, referrer, handlers, request_headers, result)
+    except urllib.error.URLError as error:
+        result.update({
+            'bozo': True,
+            'bozo_exception': error,
+        })
+        return result
 
     if not data:
         return result

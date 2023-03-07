@@ -63,7 +63,7 @@
 
 #### Dependencies
  To run Medusa from source you will need one of these Python versions:
- * **Python 3** – 3.6.0 and newer
+ * **Python 3** – 3.7.0 and newer
 
 #### Installation - direct
  Start [here](https://github.com/pymedusa/Medusa/wiki/Installation-&-Configuration-Guides) to read the installation guides for different setups.
@@ -81,14 +81,14 @@
 
 ##### [Medusa Issue Tracker](https://github.com/pymedusa/Medusa/issues)
 
-##### [FAQ](https://github.com/pymedusa/Medusa/wiki/Frequently-Asked-Questions)
+##### [FAQ](https://github.com/pymedusa/Medusa/wiki/FAQ%27s-and-Fixes)
 
 ##### [Wiki](https://github.com/pymedusa/Medusa/wiki)
 
 ##### [Discord](https://discord.gg/zMdAdUK)
 
 #### Important
-Before using this with your existing database (sickbeard.db) please make a backup copy of it and delete any other database files such as cache.db and failed.db if present<br>
+Before using this with your existing database (sickbeard.db) please make a backup copy of it and delete any other database files such as cache.db and failed.db if present.<br>
 We HIGHLY recommend starting out with no database files at all to make this a fresh start but the choice is at your own risk.
 
 #### Supported providers
@@ -96,26 +96,13 @@ We HIGHLY recommend starting out with no database files at all to make this a fr
 A partial list can be found [here](https://github.com/pymedusa/Medusa/wiki/Medusa-Search-Providers). Jackett is supported, however it must be configured [as follows](https://github.com/pymedusa/Medusa/wiki/Using-Jackett-with-Medusa).
 
 #### Special Thanks to:
-![RARBG](https://rarbg.com/favicon.ico) [RARBG](https://rarbg.to)
-&nbsp;&middot;&nbsp;
-![NZB.cat](https://nzb.cat/favicon.ico) [NZB.cat](https://nzb.cat/)
-&nbsp;&middot;&nbsp;
-![NZBGeek](https://nzbgeek.info/favicon.ico) [NZBGeek](https://nzbgeek.info)
-&nbsp;&middot;&nbsp;
-![DOGnzb](https://raw.githubusercontent.com/pymedusa/Medusa/master/themes-default/slim/static/images/providers/dognzb.png) [DOGnzb](https://dognzb.cr)
-&nbsp;&middot;&nbsp;
-![DanishBits](https://raw.githubusercontent.com/pymedusa/Medusa/master/themes-default/slim/static/images/providers/danishbits.png) [DanishBits](https://danishbits.org)
 
-#### Browsers support <sub><sub>made by <a href="https://godban.github.io">godban</a></sub></sub>
-
-| [<img src="https://raw.githubusercontent.com/godban/browsers-support-badges/master/src/images/edge.png" alt="IE / Edge" width="16px" height="16px" />](http://godban.github.io/browsers-support-badges/)</br>IE / Edge | [<img src="https://raw.githubusercontent.com/godban/browsers-support-badges/master/src/images/firefox.png" alt="Firefox" width="16px" height="16px" />](http://godban.github.io/browsers-support-badges/)</br>Firefox | [<img src="https://raw.githubusercontent.com/godban/browsers-support-badges/master/src/images/chrome.png" alt="Chrome" width="16px" height="16px" />](http://godban.github.io/browsers-support-badges/)</br>Chrome | [<img src="https://raw.githubusercontent.com/godban/browsers-support-badges/master/src/images/safari.png" alt="Safari" width="16px" height="16px" />](http://godban.github.io/browsers-support-badges/)</br>Safari |
-| --------- | --------- | --------- | --------- |
-| Edge| last 2 versions| last 2 versions| last 2 versions
+LinuxServer.io for the alternative Docker image.
 
 #### News and Changelog
 [news.md has moved to a separate repo, click here](https://github.com/pymedusa/medusa.github.io/blob/master/news/news.md)
 
-[The changelog can be found here](https://github.com/pymedusa/Medusa/blob/develop/CHANGELOG.md)
+[The changelog can be found here](https://github.com/pymedusa/Medusa/blob/develop/CHANGELOG.md),
 [The changelog for versions prior to v0.2.7 can be found here](https://github.com/pymedusa/medusa.github.io/blob/master/news/CHANGES.md)
 
 #### External dependencies

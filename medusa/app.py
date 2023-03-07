@@ -276,6 +276,8 @@ class MedusaApp(object):
         self.TORRENT_SEED_ACTION = None
         self.SAVE_MAGNET_FILE = False
         self._TORRENT_DIR = None
+        self._RSS_DIR = None
+        self.RSS_MAX_ITEMS = 100
         self._DOWNLOAD_PROPERS = False
         self._CHECK_PROPERS_INTERVAL = None
         self.PROPERS_SEARCH_DAYS = 2
@@ -986,6 +988,16 @@ class MedusaApp(object):
     def TORRENT_DIR(self, value):
         """Change TORRENT_DIR."""
         self.handle_prop('TORRENT_DIR', value)
+
+    @property
+    def RSS_DIR(self):
+        """Return app.RSS_DIR."""
+        return self._RSS_DIR
+
+    @RSS_DIR.setter
+    def RSS_DIR(self, value):
+        """Change RSS_DIR."""
+        self.handle_prop('RSS_DIR', value)
 
     @property
     def TV_DOWNLOAD_DIR(self):

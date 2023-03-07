@@ -12,22 +12,24 @@ import time
 import typing
 from typing import Any
 from typing import Mapping
+import warnings
 
 from ..api import CacheBackend
 from ..api import NO_VALUE
 from ... import util
 
+
 if typing.TYPE_CHECKING:
+    import bmemcached
     import memcache
     import pylibmc
-    import bmemcached
     import pymemcache
 else:
     # delayed import
-    memcache = None
-    pylibmc = None
-    bmemcached = None
-    pymemcache = None
+    bmemcached = None  # noqa F811
+    memcache = None  # noqa F811
+    pylibmc = None  # noqa F811
+    pymemcache = None  # noqa F811
 
 __all__ = (
     "GenericMemcachedBackend",
@@ -56,7 +58,7 @@ class MemcachedLock(object):
             elif not wait:
                 return False
             else:
-                sleep_time = (((i + 1) * random.random()) + 2 ** i) / 2.5
+                sleep_time = (((i + 1) * random.random()) + 2**i) / 2.5
                 time.sleep(sleep_time)
             if i < 15:
                 i += 1
@@ -218,7 +220,6 @@ class GenericMemcachedBackend(CacheBackend):
 class MemcacheArgs(GenericMemcachedBackend):
     """Mixin which provides support for the 'time' argument to set(),
     'min_compress_len' to other methods.
-
     """
 
     def __init__(self, arguments):
@@ -232,9 +233,6 @@ class MemcacheArgs(GenericMemcachedBackend):
                 "min_compress_len"
             ]
         super(MemcacheArgs, self).__init__(arguments)
-
-
-pylibmc = None
 
 
 class PylibmcBackend(MemcacheArgs, GenericMemcachedBackend):
@@ -286,9 +284,6 @@ class PylibmcBackend(MemcacheArgs, GenericMemcachedBackend):
         )
 
 
-memcache = None
-
-
 class MemcachedBackend(MemcacheArgs, GenericMemcachedBackend):
     """A backend using the standard
     `Python-memcached <http://www.tummy.com/Community/software/\
@@ -307,17 +302,39 @@ class MemcachedBackend(MemcacheArgs, GenericMemcachedBackend):
             }
         )
 
+    :param dead_retry: Number of seconds memcached server is considered dead
+     before it is tried again. Will be passed to ``memcache.Client``
+     as the ``dead_retry`` parameter.
+
+     .. versionchanged:: 1.1.8  Moved the ``dead_retry`` argument which was
+        erroneously added to "set_parameters" to
+        be part of the Memcached connection arguments.
+
+    :param socket_timeout: Timeout in seconds for every call to a server.
+      Will be passed to ``memcache.Client`` as the ``socket_timeout``
+      parameter.
+
+      .. versionchanged:: 1.1.8  Moved the ``socket_timeout`` argument which
+         was erroneously added to "set_parameters"
+         to be part of the Memcached connection arguments.
+
     """
+
+    def __init__(self, arguments):
+        self.dead_retry = arguments.get("dead_retry", 30)
+        self.socket_timeout = arguments.get("socket_timeout", 3)
+        super(MemcachedBackend, self).__init__(arguments)
 
     def _imports(self):
         global memcache
         import memcache  # noqa
 
     def _create_client(self):
-        return memcache.Client(self.url)
-
-
-bmemcached = None
+        return memcache.Client(
+            self.url,
+            dead_retry=self.dead_retry,
+            socket_timeout=self.socket_timeout,
+        )
 
 
 class BMemcachedBackend(GenericMemcachedBackend):
@@ -331,16 +348,6 @@ class BMemcachedBackend(GenericMemcachedBackend):
 
     SASL is a standard for adding authentication mechanisms
     to protocols in a way that is protocol independent.
-
-    SSL/TLS is a security layer on end-to-end communication.
-    It provides following benefits:
-
-    * Encryption: Data is encrypted on the wire between
-      Memcached client and server.
-    * Authentication: Optionally, both server and client
-      authenticate each other.
-    * Integrity: Data is not tampered or altered when
-      transmitted between client and server
 
     A typical configuration using username/password::
 
@@ -430,9 +437,6 @@ class BMemcachedBackend(GenericMemcachedBackend):
             self.delete(key)
 
 
-pymemcache = None
-
-
 class PyMemcacheBackend(GenericMemcachedBackend):
     """A backend for the
     `pymemcache <https://github.com/pinterest/pymemcache>`_
@@ -453,27 +457,17 @@ class PyMemcacheBackend(GenericMemcachedBackend):
       cache misses.
 
     dogpile.cache uses the ``HashClient`` from pymemcache in order to reduce
-    API differences when compared to other memcached client drivers. In short,
-    this allows the user to provide a single server or a list of memcached
+    API differences when compared to other memcached client drivers.
+    This allows the user to provide a single server or a list of memcached
     servers.
 
-    The ``serde`` param defaults to ``pymemcache.serde.pickle_serde`` as the
-    legacy ``serde`` would always convert the stored data to binary.
+    Arguments which can be passed to the ``arguments``
+    dictionary include:
 
-    The ``default_noreply`` param defaults to False, otherwise the add command
-    would always return True causing the mutex not to work.
+    :param tls_context: optional TLS context, will be used for
+     TLS connections.
 
-    SSL/TLS is a security layer on end-to-end communication.
-    It provides following benefits:
-
-    * Encryption: Data is encrypted on the wire between
-      Memcached client and server.
-    * Authentication: Optionally, both server and client
-      authenticate each other.
-    * Integrity: Data is not tampered or altered when
-      transmitted between client and server
-
-    A typical configuration using tls_context::
+     A typical configuration using tls_context::
 
         import ssl
         from dogpile.cache import make_region
@@ -489,19 +483,102 @@ class PyMemcacheBackend(GenericMemcachedBackend):
             }
         )
 
-    For advanced ways to configure TLS creating a more complex
-    tls_context visit https://docs.python.org/3/library/ssl.html
+     .. seealso::
 
-    Arguments which can be passed to the ``arguments``
-    dictionary include:
+        `<https://docs.python.org/3/library/ssl.html>`_ - additional TLS
+        documentation.
 
-    :param tls_context: optional TLS context, will be used for
-     TLS connections.
     :param serde: optional "serde". Defaults to
-     ``pymemcache.serde.pickle_serde``
-    :param default_noreply: Defaults to False
+     ``pymemcache.serde.pickle_serde``.
 
-    """
+    :param default_noreply:  defaults to False.  When set to True this flag
+     enables the pymemcache "noreply" feature.  See the pymemcache
+     documentation for further details.
+
+    :param socket_keepalive: optional socket keepalive, will be used for
+     TCP keepalive configuration.  Use of this parameter requires pymemcache
+     3.5.0 or greater.  This parameter
+     accepts a
+     `pymemcache.client.base.KeepAliveOpts
+     <https://pymemcache.readthedocs.io/en/latest/apidoc/pymemcache.client.base.html#pymemcache.client.base.KeepaliveOpts>`_
+     object.
+
+     A typical configuration using ``socket_keepalive``::
+
+        from pymemcache import KeepaliveOpts
+        from dogpile.cache import make_region
+
+        # Using the default keepalive configuration
+        socket_keepalive = KeepaliveOpts()
+
+        region = make_region().configure(
+            'dogpile.cache.pymemcache',
+            expiration_time = 3600,
+            arguments = {
+                'url':["127.0.0.1"],
+                'socket_keepalive': socket_keepalive
+            }
+        )
+
+     .. versionadded:: 1.1.4 - added support for ``socket_keepalive``.
+
+    :param enable_retry_client: optional flag to enable retry client
+     mechanisms to handle failure.  Defaults to False.  When set to ``True``,
+     the :paramref:`.PyMemcacheBackend.retry_attempts` parameter must also
+     be set, along with optional parameters
+     :paramref:`.PyMemcacheBackend.retry_delay`.
+     :paramref:`.PyMemcacheBackend.retry_for`,
+     :paramref:`.PyMemcacheBackend.do_not_retry_for`.
+
+     .. seealso::
+
+        `<https://pymemcache.readthedocs.io/en/latest/getting_started.html#using-the-built-in-retrying-mechanism>`_ -
+        in the pymemcache documentation
+
+     .. versionadded:: 1.1.4
+
+    :param retry_attempts: how many times to attempt an action with
+     pymemcache's retrying wrapper before failing. Must be 1 or above.
+     Defaults to None.
+
+     .. versionadded:: 1.1.4
+
+    :param retry_delay: optional int|float, how many seconds to sleep between
+     each attempt. Used by the retry wrapper. Defaults to None.
+
+     .. versionadded:: 1.1.4
+
+    :param retry_for: optional None|tuple|set|list, what exceptions to
+     allow retries for. Will allow retries for all exceptions if None.
+     Example: ``(MemcacheClientError, MemcacheUnexpectedCloseError)``
+     Accepts any class that is a subclass of Exception.  Defaults to None.
+
+     .. versionadded:: 1.1.4
+
+    :param do_not_retry_for: optional None|tuple|set|list, what
+     exceptions should be retried. Will not block retries for any Exception if
+     None. Example: ``(IOError, MemcacheIllegalInputError)``
+     Accepts any class that is a subclass of Exception. Defaults to None.
+
+     .. versionadded:: 1.1.4
+
+    :param hashclient_retry_attempts: Amount of times a client should be tried
+     before it is marked dead and removed from the pool in the HashClient's
+     internal mechanisms.
+
+     .. versionadded:: 1.1.5
+
+    :param hashclient_retry_timeout: Time in seconds that should pass between
+     retry attempts in the HashClient's internal mechanisms.
+
+     .. versionadded:: 1.1.5
+
+    :param dead_timeout: Time in seconds before attempting to add a node
+     back in the pool in the HashClient's internal mechanisms.
+
+     .. versionadded:: 1.1.5
+
+    """  # noqa E501
 
     def __init__(self, arguments):
         super().__init__(arguments)
@@ -509,15 +586,54 @@ class PyMemcacheBackend(GenericMemcachedBackend):
         self.serde = arguments.get("serde", pymemcache.serde.pickle_serde)
         self.default_noreply = arguments.get("default_noreply", False)
         self.tls_context = arguments.get("tls_context", None)
+        self.socket_keepalive = arguments.get("socket_keepalive", None)
+        self.enable_retry_client = arguments.get("enable_retry_client", False)
+        self.retry_attempts = arguments.get("retry_attempts", None)
+        self.retry_delay = arguments.get("retry_delay", None)
+        self.retry_for = arguments.get("retry_for", None)
+        self.do_not_retry_for = arguments.get("do_not_retry_for", None)
+        self.hashclient_retry_attempts = arguments.get(
+            "hashclient_retry_attempts", 2
+        )
+        self.hashclient_retry_timeout = arguments.get(
+            "hashclient_retry_timeout", 1
+        )
+        self.dead_timeout = arguments.get("hashclient_dead_timeout", 60)
+        if (
+            self.retry_delay is not None
+            or self.retry_attempts is not None
+            or self.retry_for is not None
+            or self.do_not_retry_for is not None
+        ) and not self.enable_retry_client:
+            warnings.warn(
+                "enable_retry_client is not set; retry options "
+                "will be ignored"
+            )
 
     def _imports(self):
         global pymemcache
         import pymemcache
 
     def _create_client(self):
-        return pymemcache.client.hash.HashClient(
-            self.url,
-            serde=self.serde,
-            default_noreply=self.default_noreply,
-            tls_context=self.tls_context,
-        )
+        _kwargs = {
+            "serde": self.serde,
+            "default_noreply": self.default_noreply,
+            "tls_context": self.tls_context,
+            "retry_attempts": self.hashclient_retry_attempts,
+            "retry_timeout": self.hashclient_retry_timeout,
+            "dead_timeout": self.dead_timeout,
+        }
+        if self.socket_keepalive is not None:
+            _kwargs.update({"socket_keepalive": self.socket_keepalive})
+
+        client = pymemcache.client.hash.HashClient(self.url, **_kwargs)
+        if self.enable_retry_client:
+            return pymemcache.client.retrying.RetryingClient(
+                client,
+                attempts=self.retry_attempts,
+                retry_delay=self.retry_delay,
+                retry_for=self.retry_for,
+                do_not_retry_for=self.do_not_retry_for,
+            )
+
+        return client

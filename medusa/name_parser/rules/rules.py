@@ -956,6 +956,8 @@ class AnimeWithMultipleSeasons(Rule):
         for filepart in marker_sorted(fileparts, matches):
             seasons = sorted(matches.range(filepart.start, filepart.end,
                                            predicate=lambda match: match.name == 'season'))
+            if not seasons:
+                continue
 
             title = matches.previous(seasons[0], index=-1,
                                      predicate=lambda match: match.name == 'title' and match.end <= filepart.end)

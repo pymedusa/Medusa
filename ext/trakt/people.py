@@ -68,6 +68,14 @@ class Person(object):
                     raise ae
 
     @property
+    def ids(self):
+        """Accessor to the trakt, imdb, and tmdb ids, as well as the trakt.tv
+        slug
+        """
+        return {'ids': {'trakt': self.trakt, 'slug': self.slug,
+                        'imdb': self.imdb, 'tmdb': self.tmdb}}
+
+    @property
     @get
     def images(self):
         """All of the artwork associated with this :class:`Person`"""

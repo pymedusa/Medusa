@@ -216,6 +216,8 @@ class ConfigHandler(BaseRequestHandler):
         'clients.torrents.seedTime': IntegerField(app, 'TORRENT_SEED_TIME'),
         'clients.torrents.username': StringField(app, 'TORRENT_USERNAME'),
         'clients.torrents.verifySSL': BooleanField(app, 'TORRENT_VERIFY_CERT'),
+        'clients.rss.dir': StringField(app, 'RSS_DIR'),
+        'clients.rss.max_items': IntegerField(app, 'RSS_MAX_ITEMS'),
         'clients.nzb.enabled': BooleanField(app, 'USE_NZBS'),
         'clients.nzb.dir': StringField(app, 'NZB_DIR'),
         'clients.nzb.method': StringField(app, 'NZB_METHOD'),
@@ -1190,6 +1192,10 @@ class DataGenerator(object):
         section_data['torrents']['username'] = app.TORRENT_USERNAME
         section_data['torrents']['password'] = app.TORRENT_PASSWORD
         section_data['torrents']['verifySSL'] = bool(app.TORRENT_VERIFY_CERT)
+
+        section_data['rss'] = {}
+        section_data['rss']['max_items'] = app.RSS_MAX_ITEMS
+        section_data['rss']['dir'] = app.RSS_DIR
 
         section_data['nzb'] = {}
         section_data['nzb']['enabled'] = bool(app.USE_NZBS)

@@ -207,12 +207,23 @@ class TVShow(object):
         self._images = self._people = self._ratings = self._translations = None
         self._seasons = None
         self._last_episode = self._next_episode = None
+        self._slug = slug
         self.title = title
-        self.slug = slug or slugify(self.title)
+
         if len(kwargs) > 0:
             self._build(kwargs)
         else:
             self._get()
+
+    @property
+    def slug(self):
+        if self._slug is not None:
+            return self._slug
+
+        if self.year is None:
+            return slugify(self.title)
+
+        return slugify(self.title + ' ' + str(self.year))
 
     @classmethod
     def search(cls, title, year=None):
@@ -259,7 +270,7 @@ class TVShow(object):
         they go by their alternate titles
         """
         if self._aliases is None:
-            data = yield (self.ext + '/aliases')
+            data = yield self.ext + '/aliases'
             self._aliases = [Alias(**alias) for alias in data]
         yield self._aliases
 
@@ -277,7 +288,7 @@ class TVShow(object):
         # TODO (jnappi) Pagination
         from .users import User
 
-        data = yield (self.ext + '/comments')
+        data = yield self.ext + '/comments'
         self._comments = []
         for com in data:
             user = User(**com.pop('user'))
@@ -327,7 +338,7 @@ class TVShow(object):
         :class:`TVShow`, including both cast and crew
         """
         if self._people is None:
-            data = yield (self.ext + '/people')
+            data = yield self.ext + '/people'
             crew = data.get('crew', {})
             cast = []
             for c in data.get('cast', []):
@@ -349,14 +360,14 @@ class TVShow(object):
     def ratings(self):
         """Ratings (between 0 and 10) and distribution for a movie."""
         if self._ratings is None:
-            self._ratings = yield (self.ext + '/ratings')
+            self._ratings = yield self.ext + '/ratings'
         yield self._ratings
 
     @property
     @get
     def related(self):
         """The top 10 :class:`TVShow`'s related to this :class:`TVShow`"""
-        data = yield (self.ext + '/related')
+        data = yield self.ext + '/related'
         shows = []
         for show in data:
             shows.append(TVShow(**show))
@@ -369,7 +380,7 @@ class TVShow(object):
         seasons
         """
         if self._seasons is None:
-            data = yield (self.ext + '/seasons?extended=full')
+            data = yield self.ext + '/seasons?extended=full'
             self._seasons = []
             for season in data:
                 extract_ids(season)
@@ -384,7 +395,7 @@ class TVShow(object):
         is found, `None` will be returned.
         """
         if self._last_episode is None:
-            data = yield (self.ext + '/last_episode?extended=full')
+            data = yield self.ext + '/last_episode?extended=full'
             self._last_episode = data and TVEpisode(show=self.title, **data)
         yield self._last_episode
 
@@ -395,7 +406,7 @@ class TVShow(object):
         is found, `None` will be returned.
         """
         if self._next_episode is None:
-            data = yield (self.ext + '/next_episode?extended=full')
+            data = yield self.ext + '/next_episode?extended=full'
             self._next_episode = data and TVEpisode(show=self.title, **data)
         yield self._next_episode
 
@@ -534,7 +545,7 @@ class TVSeason(object):
         # TODO (jnappi) Pagination
         from .users import User
 
-        data = yield (self.ext + '/comments')
+        data = yield self.ext + '/comments'
         self._comments = []
         for com in data:
             user = User(**com.pop('user'))
@@ -572,7 +583,7 @@ class TVSeason(object):
         """
         episode_extension = '/episodes/{}?extended=full'.format(episode)
         try:
-            data = yield (self.ext + episode_extension)
+            data = yield self.ext + episode_extension
             yield TVEpisode(show=self.show, **data)
         except NotFoundException:
             yield None
@@ -582,7 +593,7 @@ class TVSeason(object):
     def ratings(self):
         """Ratings (between 0 and 10) and distribution for a movie."""
         if self._ratings is None:
-            self._ratings = yield (self.ext + '/ratings')
+            self._ratings = yield self.ext + '/ratings'
         yield self._ratings
 
     @property
@@ -674,7 +685,7 @@ class TVEpisode(object):
         # TODO (jnappi) Pagination
         from .users import User
 
-        data = yield (self.ext + '/comments')
+        data = yield self.ext + '/comments'
         self._comments = []
         for com in data:
             user = User(**com.pop('user'))
@@ -761,7 +772,7 @@ class TVEpisode(object):
     def ratings(self):
         """Ratings (between 0 and 10) and distribution for a movie."""
         if self._ratings is None:
-            self._ratings = yield (self.ext + '/ratings')
+            self._ratings = yield self.ext + '/ratings'
         yield self._ratings
 
     @property

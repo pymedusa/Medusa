@@ -9,6 +9,8 @@ from .utils import (
     der_to_raw_signature,
     force_bytes,
     from_base64url_uint,
+    is_pem_format,
+    is_ssh_key,
     raw_to_der_signature,
     to_base64url_uint,
 )
@@ -21,6 +23,10 @@ try:
     from cryptography.hazmat.primitives.asymmetric.ec import (
         EllipticCurvePrivateKey,
         EllipticCurvePublicKey,
+    )
+    from cryptography.hazmat.primitives.asymmetric.ed448 import (
+        Ed448PrivateKey,
+        Ed448PublicKey,
     )
     from cryptography.hazmat.primitives.asymmetric.ed25519 import (
         Ed25519PrivateKey,
@@ -37,6 +43,10 @@ try:
         rsa_recover_prime_factors,
     )
     from cryptography.hazmat.primitives.serialization import (
+        Encoding,
+        NoEncryption,
+        PrivateFormat,
+        PublicFormat,
         load_pem_private_key,
         load_pem_public_key,
         load_ssh_public_key,
@@ -51,6 +61,7 @@ requires_cryptography = {
     "RS384",
     "RS512",
     "ES256",
+    "ES256K",
     "ES384",
     "ES521",
     "ES512",
@@ -79,6 +90,7 @@ def get_default_algorithms():
                 "RS384": RSAAlgorithm(RSAAlgorithm.SHA384),
                 "RS512": RSAAlgorithm(RSAAlgorithm.SHA512),
                 "ES256": ECAlgorithm(ECAlgorithm.SHA256),
+                "ES256K": ECAlgorithm(ECAlgorithm.SHA256),
                 "ES384": ECAlgorithm(ECAlgorithm.SHA384),
                 "ES521": ECAlgorithm(ECAlgorithm.SHA512),
                 "ES512": ECAlgorithm(
@@ -87,7 +99,7 @@ def get_default_algorithms():
                 "PS256": RSAPSSAlgorithm(RSAPSSAlgorithm.SHA256),
                 "PS384": RSAPSSAlgorithm(RSAPSSAlgorithm.SHA384),
                 "PS512": RSAPSSAlgorithm(RSAPSSAlgorithm.SHA512),
-                "EdDSA": Ed25519Algorithm(),
+                "EdDSA": OKPAlgorithm(),
             }
         )
 
@@ -173,14 +185,7 @@ class HMACAlgorithm(Algorithm):
     def prepare_key(self, key):
         key = force_bytes(key)
 
-        invalid_strings = [
-            b"-----BEGIN PUBLIC KEY-----",
-            b"-----BEGIN CERTIFICATE-----",
-            b"-----BEGIN RSA PUBLIC KEY-----",
-            b"ssh-rsa",
-        ]
-
-        if any(string_value in key for string_value in invalid_strings):
+        if is_pem_format(key) or is_ssh_key(key):
             raise InvalidKeyError(
                 "The specified key is an asymmetric key or x509 certificate and"
                 " should not be used as an HMAC secret."
@@ -237,22 +242,21 @@ if has_crypto:
             self.hash_alg = hash_alg
 
         def prepare_key(self, key):
-            if isinstance(key, RSAPrivateKey) or isinstance(key, RSAPublicKey):
+            if isinstance(key, (RSAPrivateKey, RSAPublicKey)):
                 return key
 
-            if isinstance(key, (bytes, str)):
-                key = force_bytes(key)
-
-                try:
-                    if key.startswith(b"ssh-rsa"):
-                        key = load_ssh_public_key(key)
-                    else:
-                        key = load_pem_private_key(key, password=None)
-                except ValueError:
-                    key = load_pem_public_key(key)
-            else:
+            if not isinstance(key, (bytes, str)):
                 raise TypeError("Expecting a PEM-formatted key.")
 
+            key = force_bytes(key)
+
+            try:
+                if key.startswith(b"ssh-rsa"):
+                    key = load_ssh_public_key(key)
+                else:
+                    key = load_pem_private_key(key, password=None)
+            except ValueError:
+                key = load_pem_public_key(key)
             return key
 
         @staticmethod
@@ -389,27 +393,30 @@ if has_crypto:
             self.hash_alg = hash_alg
 
         def prepare_key(self, key):
-            if isinstance(key, EllipticCurvePrivateKey) or isinstance(
-                key, EllipticCurvePublicKey
-            ):
+            if isinstance(key, (EllipticCurvePrivateKey, EllipticCurvePublicKey)):
                 return key
 
-            if isinstance(key, (bytes, str)):
-                key = force_bytes(key)
-
-                # Attempt to load key. We don't know if it's
-                # a Signing Key or a Verifying Key, so we try
-                # the Verifying Key first.
-                try:
-                    if key.startswith(b"ecdsa-sha2-"):
-                        key = load_ssh_public_key(key)
-                    else:
-                        key = load_pem_public_key(key)
-                except ValueError:
-                    key = load_pem_private_key(key, password=None)
-
-            else:
+            if not isinstance(key, (bytes, str)):
                 raise TypeError("Expecting a PEM-formatted key.")
+
+            key = force_bytes(key)
+
+            # Attempt to load key. We don't know if it's
+            # a Signing Key or a Verifying Key, so we try
+            # the Verifying Key first.
+            try:
+                if key.startswith(b"ecdsa-sha2-"):
+                    key = load_ssh_public_key(key)
+                else:
+                    key = load_pem_public_key(key)
+            except ValueError:
+                key = load_pem_private_key(key, password=None)
+
+            # Explicit check the key to prevent confusing errors from cryptography
+            if not isinstance(key, (EllipticCurvePrivateKey, EllipticCurvePublicKey)):
+                raise InvalidKeyError(
+                    "Expecting a EllipticCurvePrivateKey/EllipticCurvePublicKey. Wrong key provided for ECDSA algorithms"
+                )
 
             return key
 
@@ -425,10 +432,47 @@ if has_crypto:
                 return False
 
             try:
+                if isinstance(key, EllipticCurvePrivateKey):
+                    key = key.public_key()
                 key.verify(der_sig, msg, ec.ECDSA(self.hash_alg()))
                 return True
             except InvalidSignature:
                 return False
+
+        @staticmethod
+        def to_jwk(key_obj):
+
+            if isinstance(key_obj, EllipticCurvePrivateKey):
+                public_numbers = key_obj.public_key().public_numbers()
+            elif isinstance(key_obj, EllipticCurvePublicKey):
+                public_numbers = key_obj.public_numbers()
+            else:
+                raise InvalidKeyError("Not a public or private key")
+
+            if isinstance(key_obj.curve, ec.SECP256R1):
+                crv = "P-256"
+            elif isinstance(key_obj.curve, ec.SECP384R1):
+                crv = "P-384"
+            elif isinstance(key_obj.curve, ec.SECP521R1):
+                crv = "P-521"
+            elif isinstance(key_obj.curve, ec.SECP256K1):
+                crv = "secp256k1"
+            else:
+                raise InvalidKeyError(f"Invalid curve: {key_obj.curve}")
+
+            obj = {
+                "kty": "EC",
+                "crv": crv,
+                "x": to_base64url_uint(public_numbers.x).decode(),
+                "y": to_base64url_uint(public_numbers.y).decode(),
+            }
+
+            if isinstance(key_obj, EllipticCurvePrivateKey):
+                obj["d"] = to_base64url_uint(
+                    key_obj.private_numbers().private_value
+                ).decode()
+
+            return json.dumps(obj)
 
         @staticmethod
         def from_jwk(jwk):
@@ -467,6 +511,13 @@ if has_crypto:
                     curve_obj = ec.SECP521R1()
                 else:
                     raise InvalidKeyError("Coords should be 66 bytes for curve P-521")
+            elif curve == "secp256k1":
+                if len(x) == len(y) == 32:
+                    curve_obj = ec.SECP256K1()
+                else:
+                    raise InvalidKeyError(
+                        "Coords should be 32 bytes for curve secp256k1"
+                    )
             else:
                 raise InvalidKeyError(f"Invalid curve: {curve}")
 
@@ -519,9 +570,9 @@ if has_crypto:
             except InvalidSignature:
                 return False
 
-    class Ed25519Algorithm(Algorithm):
+    class OKPAlgorithm(Algorithm):
         """
-        Performs signing and verification operations using Ed25519
+        Performs signing and verification operations using EdDSA
 
         This class requires ``cryptography>=2.6`` to be installed.
         """
@@ -530,29 +581,35 @@ if has_crypto:
             pass
 
         def prepare_key(self, key):
-
-            if isinstance(key, (Ed25519PrivateKey, Ed25519PublicKey)):
-                return key
-
             if isinstance(key, (bytes, str)):
                 if isinstance(key, str):
                     key = key.encode("utf-8")
                 str_key = key.decode("utf-8")
 
                 if "-----BEGIN PUBLIC" in str_key:
-                    return load_pem_public_key(key)
-                if "-----BEGIN PRIVATE" in str_key:
-                    return load_pem_private_key(key, password=None)
-                if str_key[0:4] == "ssh-":
-                    return load_ssh_public_key(key)
+                    key = load_pem_public_key(key)
+                elif "-----BEGIN PRIVATE" in str_key:
+                    key = load_pem_private_key(key, password=None)
+                elif str_key[0:4] == "ssh-":
+                    key = load_ssh_public_key(key)
 
-            raise TypeError("Expecting a PEM-formatted or OpenSSH key.")
+            # Explicit check the key to prevent confusing errors from cryptography
+            if not isinstance(
+                key,
+                (Ed25519PrivateKey, Ed25519PublicKey, Ed448PrivateKey, Ed448PublicKey),
+            ):
+                raise InvalidKeyError(
+                    "Expecting a EllipticCurvePrivateKey/EllipticCurvePublicKey. Wrong key provided for EdDSA algorithms"
+                )
+
+            return key
 
         def sign(self, msg, key):
             """
-            Sign a message ``msg`` using the Ed25519 private key ``key``
+            Sign a message ``msg`` using the EdDSA private key ``key``
             :param str|bytes msg: Message to sign
-            :param Ed25519PrivateKey key: A :class:`.Ed25519PrivateKey` instance
+            :param Ed25519PrivateKey}Ed448PrivateKey key: A :class:`.Ed25519PrivateKey`
+                or :class:`.Ed448PrivateKey` isinstance
             :return bytes signature: The signature, as bytes
             """
             msg = bytes(msg, "utf-8") if type(msg) is not bytes else msg
@@ -560,20 +617,96 @@ if has_crypto:
 
         def verify(self, msg, key, sig):
             """
-            Verify a given ``msg`` against a signature ``sig`` using the Ed25519 key ``key``
+            Verify a given ``msg`` against a signature ``sig`` using the EdDSA key ``key``
 
-            :param str|bytes sig: Ed25519 signature to check ``msg`` against
+            :param str|bytes sig: EdDSA signature to check ``msg`` against
             :param str|bytes msg: Message to sign
-            :param Ed25519PrivateKey|Ed25519PublicKey key: A private or public Ed25519 key instance
+            :param Ed25519PrivateKey|Ed25519PublicKey|Ed448PrivateKey|Ed448PublicKey key:
+                A private or public EdDSA key instance
             :return bool verified: True if signature is valid, False if not.
             """
             try:
                 msg = bytes(msg, "utf-8") if type(msg) is not bytes else msg
                 sig = bytes(sig, "utf-8") if type(sig) is not bytes else sig
 
-                if isinstance(key, Ed25519PrivateKey):
+                if isinstance(key, (Ed25519PrivateKey, Ed448PrivateKey)):
                     key = key.public_key()
                 key.verify(sig, msg)
                 return True  # If no exception was raised, the signature is valid.
             except cryptography.exceptions.InvalidSignature:
                 return False
+
+        @staticmethod
+        def to_jwk(key):
+            if isinstance(key, (Ed25519PublicKey, Ed448PublicKey)):
+                x = key.public_bytes(
+                    encoding=Encoding.Raw,
+                    format=PublicFormat.Raw,
+                )
+                crv = "Ed25519" if isinstance(key, Ed25519PublicKey) else "Ed448"
+                return json.dumps(
+                    {
+                        "x": base64url_encode(force_bytes(x)).decode(),
+                        "kty": "OKP",
+                        "crv": crv,
+                    }
+                )
+
+            if isinstance(key, (Ed25519PrivateKey, Ed448PrivateKey)):
+                d = key.private_bytes(
+                    encoding=Encoding.Raw,
+                    format=PrivateFormat.Raw,
+                    encryption_algorithm=NoEncryption(),
+                )
+
+                x = key.public_key().public_bytes(
+                    encoding=Encoding.Raw,
+                    format=PublicFormat.Raw,
+                )
+
+                crv = "Ed25519" if isinstance(key, Ed25519PrivateKey) else "Ed448"
+                return json.dumps(
+                    {
+                        "x": base64url_encode(force_bytes(x)).decode(),
+                        "d": base64url_encode(force_bytes(d)).decode(),
+                        "kty": "OKP",
+                        "crv": crv,
+                    }
+                )
+
+            raise InvalidKeyError("Not a public or private key")
+
+        @staticmethod
+        def from_jwk(jwk):
+            try:
+                if isinstance(jwk, str):
+                    obj = json.loads(jwk)
+                elif isinstance(jwk, dict):
+                    obj = jwk
+                else:
+                    raise ValueError
+            except ValueError:
+                raise InvalidKeyError("Key is not valid JSON")
+
+            if obj.get("kty") != "OKP":
+                raise InvalidKeyError("Not an Octet Key Pair")
+
+            curve = obj.get("crv")
+            if curve != "Ed25519" and curve != "Ed448":
+                raise InvalidKeyError(f"Invalid curve: {curve}")
+
+            if "x" not in obj:
+                raise InvalidKeyError('OKP should have "x" parameter')
+            x = base64url_decode(obj.get("x"))
+
+            try:
+                if "d" not in obj:
+                    if curve == "Ed25519":
+                        return Ed25519PublicKey.from_public_bytes(x)
+                    return Ed448PublicKey.from_public_bytes(x)
+                d = base64url_decode(obj.get("d"))
+                if curve == "Ed25519":
+                    return Ed25519PrivateKey.from_private_bytes(d)
+                return Ed448PrivateKey.from_private_bytes(d)
+            except ValueError as err:
+                raise InvalidKeyError("Invalid key parameter") from err
