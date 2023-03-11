@@ -687,8 +687,8 @@ class Application(object):
             app.PROCESS_METHOD = check_setting_str(app.CFG, 'General', 'process_method', 'copy' if app.KEEP_PROCESSED_DIR else 'move')
 
             app.USE_SPECIFIC_PROCESS_METHOD = bool(check_setting_int(app.CFG, 'General', 'use_specific_process_method', 0))
-            app.PROCESS_METHOD_TORRENT = check_setting_str(app.CFG, 'General', 'process_method', 'copy' if app.KEEP_PROCESSED_DIR else 'move')
-            app.PROCESS_METHOD_NZB = check_setting_str(app.CFG, 'General', 'process_method', 'copy' if app.KEEP_PROCESSED_DIR else 'move')
+            app.PROCESS_METHOD_TORRENT = check_setting_str(app.CFG, 'General', 'process_method_torrent', 'copy' if app.KEEP_PROCESSED_DIR else 'move')
+            app.PROCESS_METHOD_NZB = check_setting_str(app.CFG, 'General', 'process_method_nzb', 'copy' if app.KEEP_PROCESSED_DIR else 'move')
 
             app.DELRARCONTENTS = bool(check_setting_int(app.CFG, 'General', 'del_rar_contents', 0))
             app.MOVE_ASSOCIATED_FILES = bool(check_setting_int(app.CFG, 'General', 'move_associated_files', 0))
