@@ -14,10 +14,16 @@ def slugify(value):
 
     Adapted from django.utils.text.slugify
     """
-    nfkd_form = unicodedata.normalize('NFKD', value)
-    decoded = nfkd_form.encode('ascii', 'ignore').decode('utf-8')
-    value = re.sub(r'[^\w\s-]', ' ', decoded).strip().lower()
-    return re.sub(r'[-\s]+', '-', value)
+    value = unicodedata.normalize('NFKD', value)
+    # special case, "ascii" encode would just remove it
+    value = value.replace("’", '-')
+    value = value.encode('ascii', 'ignore').decode('utf-8')
+    value = value.lower()
+    value = re.sub(r'[^\w\s-]', ' ', value)
+    value = re.sub(r'[-\s]+', '-', value)
+    value = value.strip('-')
+
+    return value
 
 
 def airs_date(airs_at):

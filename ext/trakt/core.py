@@ -5,16 +5,19 @@ trakt package
 import json
 import logging
 import os
-from urllib.parse import urljoin
-
-import requests
 import sys
 import time
 from collections import namedtuple
-from functools import wraps
-from requests_oauthlib import OAuth2Session
 from datetime import datetime, timedelta, timezone
+from functools import wraps
+from json import JSONDecodeError
+from urllib.parse import urljoin
+
+import requests
+from requests_oauthlib import OAuth2Session
+
 from trakt import errors
+from trakt.errors import BadResponseException
 
 __author__ = 'Jon Nappi'
 __all__ = ['Airs', 'Alias', 'Comment', 'Genre', 'get', 'delete', 'post', 'put',
@@ -43,7 +46,7 @@ HEADERS = {'Content-Type': 'application/json', 'trakt-api-version': '2'}
 CONFIG_PATH = os.path.join(os.path.expanduser('~'), '.pytrakt.json')
 
 #: Your personal Trakt.tv OAUTH Bearer Token
-OAUTH_TOKEN = api_key = None
+OAUTH_TOKEN = None
 
 # OAuth token validity checked
 OAUTH_TOKEN_VALID = None
@@ -441,7 +444,7 @@ def load_config():
             APPLICATION_ID = config_data.get('APPLICATION_ID', None)
 
 
-class Core(object):
+class Core:
     """This class contains all of the functionality required for interfacing
     with the Trakt.tv API
     """
@@ -476,9 +479,6 @@ class Core(object):
         if (not OAUTH_TOKEN_VALID and OAUTH_EXPIRES_AT is not None
                 and OAUTH_REFRESH is not None):
             _validate_token(self)
-        # For backwards compatibility with trakt<=2.3.0
-        if api_key is not None and OAUTH_TOKEN is None:
-            OAUTH_TOKEN = api_key
 
     @staticmethod
     def _get_first(f, *args, **kwargs):
@@ -516,7 +516,6 @@ class Core(object):
         self.logger.debug('%s: %s', method, url)
         HEADERS['trakt-api-key'] = CLIENT_ID
         HEADERS['Authorization'] = 'Bearer {0}'.format(OAUTH_TOKEN)
-        self.logger.debug('headers: %s', str(HEADERS))
         self.logger.debug('method, url :: %s, %s', method, url)
         if method == 'get':  # GETs need to pass data as params, not body
             response = session.request(method, url, headers=HEADERS,
@@ -529,7 +528,12 @@ class Core(object):
             raise self.error_map[response.status_code](response)
         elif response.status_code == 204:  # HTTP no content
             return None
-        json_data = json.loads(response.content.decode('UTF-8', 'ignore'))
+
+        try:
+            json_data = json.loads(response.content.decode('UTF-8', 'ignore'))
+        except JSONDecodeError as e:
+            raise BadResponseException(response, f"Unable to parse JSON: {e}")
+
         return json_data
 
     def get(self, f):
