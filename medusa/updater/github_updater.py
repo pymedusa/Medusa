@@ -135,8 +135,8 @@ class GitUpdateManager(UpdateManager):
 
         try:
             log.debug(u'Executing {cmd} with your shell in {dir}', {'cmd': cmd, 'dir': app.PROG_DIR})
-            p = subprocess.Popen([git_path, args], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                 stderr=subprocess.STDOUT, cwd=app.PROG_DIR)
+            p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                 shell=True, cwd=app.PROG_DIR)
             output, err = p.communicate()
             exit_status = p.returncode
 
