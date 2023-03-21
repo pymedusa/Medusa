@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 """This module contains Trakt.tv sync endpoint support functions"""
+from collections import defaultdict
 from datetime import datetime, timezone
 
-from trakt.core import get, post, delete
-from trakt.utils import slugify, extract_ids, timestamp
+from deprecated import deprecated
 
+from trakt.core import delete, get, post
+from trakt.utils import slugify, timestamp
 
 __author__ = 'Jon Nappi'
 __all__ = ['Scrobbler', 'comment', 'rate', 'add_to_history', 'get_collection',
@@ -60,16 +62,40 @@ def add_to_history(media, watched_at=None):
     """Add a :class:`Movie`, :class:`TVShow`, or :class:`TVEpisode` to your
         watched history.
 
-    :param media: The media object to add to your history
+    :param media: The media object to add to your history. But also supports passing custom json structures.
     :param watched_at: A `datetime.datetime` object indicating the time at
-        which this media item was viewed
+        which this media item was viewed. Defaults to now.
     """
-    if watched_at is None:
-        watched_at = datetime.now(tz=timezone.utc)
+    """Add a :class:`Movie`, :class:`TVShow`, or :class:`TVEpisode
+        to your collection.
+    :param media: Supports both the PyTrakt :class:`Movie`,
+        :class:`TVShow`, etc. But also supports passing custom json structures.
+    """
 
-    data = dict(watched_at=timestamp(watched_at))
-    data.update(media.ids)
-    result = yield 'sync/history', {media.media_type: [data]}
+    if isinstance(media, dict):
+        items = media
+    else:
+        items = {
+            media.media_type: [
+                dict(ids=media.ids.get("ids", {}), watched_at=watched_at),
+            ],
+        }
+
+    # Walk over items and convert watched_at to a string.
+    # Do not mutate original dict.
+    media_object = defaultdict(list)
+    now = datetime.now(tz=timezone.utc) if watched_at is None else watched_at
+    for media_type, media_items in items.items():
+        for item in media_items:
+            watched_at = item.get("watched_at") or now
+            if not isinstance(watched_at, str):
+                watched_at = timestamp(watched_at)
+            media_object[media_type].append({
+                "ids": item["ids"],
+                "watched_at": watched_at,
+            })
+
+    result = yield 'sync/history', media_object
     yield result
 
 
@@ -80,8 +106,8 @@ def add_to_watchlist(media):
     :param media: Supports both the PyTrakt :class:`Movie`,
         :class:`TVShow`, etc. But also supports passing custom json structures.
     """
-    from trakt.tv import TVEpisode, TVSeason, TVShow
     from trakt.movies import Movie
+    from trakt.tv import TVEpisode, TVSeason, TVShow
     if isinstance(media, (TVEpisode, TVSeason, TVShow, Movie)):
         media_object = media.to_json()
     else:
@@ -98,8 +124,8 @@ def remove_from_history(media):
     :param media: Supports both the PyTrakt :class:`Movie`,
         :class:`TVShow`, etc. But also supports passing custom json structures.
     """
-    from trakt.tv import TVEpisode, TVSeason, TVShow
     from trakt.movies import Movie
+    from trakt.tv import TVEpisode, TVSeason, TVShow
     if isinstance(media, (TVEpisode, TVSeason, TVShow, Movie)):
         media_object = media.to_json()
     else:
@@ -115,8 +141,8 @@ def remove_from_watchlist(media):
     :param media: Supports both the PyTrakt :class:`Movie`,
         :class:`TVShow`, etc. But also supports passing custom json structures.
     """
-    from trakt.tv import TVEpisode, TVSeason, TVShow
     from trakt.movies import Movie
+    from trakt.tv import TVEpisode, TVSeason, TVShow
     if isinstance(media, (TVEpisode, TVSeason, TVShow, Movie)):
         media_object = media.to_json()
     else:
@@ -133,8 +159,8 @@ def add_to_collection(media):
     :param media: Supports both the PyTrakt :class:`Movie`,
         :class:`TVShow`, etc. But also supports passing custom json structures.
     """
-    from trakt.tv import TVEpisode, TVSeason, TVShow
     from trakt.movies import Movie
+    from trakt.tv import TVEpisode, TVSeason, TVShow
     if isinstance(media, (TVEpisode, TVSeason, TVShow, Movie)):
         media_object = media.to_json()
     else:
@@ -150,8 +176,8 @@ def remove_from_collection(media):
     :param media: Supports both the PyTrakt :class:`Movie`,
         :class:`TVShow`, etc. But also supports passing custom json structures.
     """
-    from trakt.tv import TVEpisode, TVSeason, TVShow
     from trakt.movies import Movie
+    from trakt.tv import TVEpisode, TVSeason, TVShow
     if isinstance(media, (TVEpisode, TVSeason, TVShow, Movie)):
         media_object = media.to_json()
     else:
@@ -169,12 +195,12 @@ def search(query, search_type='movie', year=None, slugify_query=False):
         'movie', 'show', 'episode', or 'person'
     :param year: This parameter is ignored as it is no longer a part of the
         official API. It is left here as a valid arg for backwards
-        compatability.
+        compatibility.
     :param slugify_query: A boolean indicating whether or not the provided
         query should be slugified or not prior to executing the query.
     """
     # the new get_search_results expects a list of types, so handle this
-    # conversion to maintain backwards compatability
+    # conversion to maintain backwards compatibility
     if isinstance(search_type, str):
         search_type = [search_type]
     results = get_search_results(query, search_type, slugify_query)
@@ -209,7 +235,6 @@ def get_search_results(query, search_type=None, slugify_query=False):
     # need to import Scrobblers
     results = []
     for media_item in data:
-        extract_ids(media_item)
         result = SearchResult(media_item['type'], media_item['score'])
         if media_item['type'] == 'movie':
             from trakt.movies import Movie
@@ -221,6 +246,7 @@ def get_search_results(query, search_type=None, slugify_query=False):
             from trakt.tv import TVEpisode
             show = media_item.pop('show')
             result.media = TVEpisode(show.get('title', None),
+                                     show_id=show['ids'].get('trakt'),
                                      **media_item.pop('episode'))
         elif media_item['type'] == 'person':
             from trakt.people import Person
@@ -277,16 +303,14 @@ def search_by_id(query, id_type='imdb', media_type=None, slugify_query=False):
             query=query, source=source, media_type=media_type)
     data = yield uri
 
-    for media_item in data:
-        extract_ids(media_item)
-
     results = []
     for d in data:
         if 'episode' in d:
             from trakt.tv import TVEpisode
             show = d.pop('show')
-            extract_ids(d['episode'])
-            results.append(TVEpisode(show.get('title', None), **d['episode']))
+            results.append(TVEpisode(show.get('title', None),
+                                     show_id=show['ids'].get('trakt'),
+                                     **d.pop('episode')))
         elif 'movie' in d:
             from trakt.movies import Movie
             results.append(Movie(**d.pop('movie')))
@@ -302,13 +326,18 @@ def search_by_id(query, id_type='imdb', media_type=None, slugify_query=False):
 @get
 def get_watchlist(list_type=None, sort=None):
     """
-    Get a watchlist.
-
+    Returns all items in a user's watchlist filtered by type.
     optionally with a filter for a specific item type.
+
+    The watchlist should not be used as a list
+    of what the user is actively watching.
+
     :param list_type: Optional Filter by a specific type.
         Possible values: movies, shows, seasons or episodes.
     :param sort: Optional sort. Only if the type is also sent.
         Possible values: rank, added, released or title.
+
+    https://trakt.docs.apiary.io/#reference/sync/get-watchlist/get-watchlist
     """
     valid_type = ('movies', 'shows', 'seasons', 'episodes')
     valid_sort = ('rank', 'added', 'released', 'title')
@@ -332,8 +361,9 @@ def get_watchlist(list_type=None, sort=None):
         if 'episode' in d:
             from trakt.tv import TVEpisode
             show = d.pop('show')
-            extract_ids(d['episode'])
-            results.append(TVEpisode(show.get('title', None), **d['episode']))
+            results.append(TVEpisode(show.get('title', None),
+                                     show_id=show.get('trakt', None),
+                                     **d['episode']))
         elif 'movie' in d:
             from trakt.movies import Movie
             results.append(Movie(**d.pop('movie')))
@@ -344,6 +374,8 @@ def get_watchlist(list_type=None, sort=None):
     yield results
 
 
+@deprecated("This method returns watchlist, not watched list. "
+            "This will be fixed in PyTrakt 4.x to return watched list")
 @get
 def get_watched(list_type=None, extended=None):
     """Return all movies or shows a user has watched sorted by most plays.
@@ -357,7 +389,7 @@ def get_watched(list_type=None, extended=None):
     if list_type and list_type not in valid_type:
         raise ValueError('list_type must be one of {}'.format(valid_type))
 
-    uri = 'sync/watchlist'
+    uri = 'sync/watched'
     if list_type:
         uri += '/{}'.format(list_type)
 
@@ -394,7 +426,7 @@ def get_collection(list_type=None, extended=None):
     if list_type and list_type not in valid_type:
         raise ValueError('list_type must be one of {}'.format(valid_type))
 
-    uri = 'sync/watchlist'
+    uri = 'sync/collection'
     if list_type:
         uri += '/{}'.format(list_type)
 
@@ -431,7 +463,7 @@ def delete_checkin():
     yield "checkin"
 
 
-class Scrobbler(object):
+class Scrobbler:
     """Scrobbling is a seemless and automated way to track what you're watching
         in a media center. This class allows the media center to easily send
         events that correspond to starting, pausing, stopping or finishing
@@ -448,23 +480,29 @@ class Scrobbler(object):
         :param app_version: The media center application version
         :param app_date: The date that *app_version* was released
         """
-        super(Scrobbler, self).__init__()
+        super().__init__()
         self.progress, self.version = progress, app_version
         self.media, self.date = media, app_date
         if self.progress > 0:
             self.start()
 
-    def start(self):
+    def start(self, progress=None):
         """Start scrobbling this :class:`Scrobbler`'s *media* object"""
-        self._post('scrobble/start')
+        if progress is not None:
+            self.progress = progress
+        return self._post('scrobble/start')
 
-    def pause(self):
+    def pause(self, progress=None):
         """Pause the scrobbling of this :class:`Scrobbler`'s *media* object"""
-        self._post('scrobble/pause')
+        if progress is not None:
+            self.progress = progress
+        return self._post('scrobble/pause')
 
-    def stop(self):
+    def stop(self, progress=None):
         """Stop the scrobbling of this :class:`Scrobbler`'s *media* object"""
-        self._post('scrobble/stop')
+        if progress is not None:
+            self.progress = progress
+        return self._post('scrobble/stop')
 
     def finish(self):
         """Complete the scrobbling this :class:`Scrobbler`'s *media* object"""
@@ -477,7 +515,7 @@ class Scrobbler(object):
         object
         """
         self.progress = progress
-        self.start()
+        return self.start()
 
     @post
     def _post(self, uri):
@@ -488,7 +526,8 @@ class Scrobbler(object):
         payload = dict(progress=self.progress, app_version=self.version,
                        date=self.date)
         payload.update(self.media.to_json_singular())
-        yield uri, payload
+        response = yield uri, payload
+        yield response
 
     def __enter__(self):
         """Context manager support for `with Scrobbler` syntax. Begins
@@ -504,7 +543,7 @@ class Scrobbler(object):
         self.finish()
 
 
-class SearchResult(object):
+class SearchResult:
     """A SearchResult is an individual result item from the trakt.tv search
     API. It wraps a single media entity whose type is indicated by the type
     field.
