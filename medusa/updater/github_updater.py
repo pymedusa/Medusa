@@ -13,6 +13,7 @@ from medusa import app, notifiers
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.updater.update_manager import UpdateManager
 
+from pathlib import Path
 from six import text_type
 
 
@@ -73,7 +74,7 @@ class GitUpdateManager(UpdateManager):
 
     def _find_working_git(self):
         test_cmd = 'version'
-        main_git = app.GIT_PATH or 'git'
+        main_git = Path(app.GIT_PATH) if app.GIT_PATH else 'git'
 
         log.debug(u'Checking if we can use git commands: {0} {1}', main_git, test_cmd)
         _, _, exit_status = self._run_git(main_git, test_cmd)
@@ -123,7 +124,7 @@ class GitUpdateManager(UpdateManager):
                 exit_status = 1
                 return output, err, exit_status
 
-        if git_path != 'git' and not os.path.isfile(git_path):
+        if git_path != 'git' and not git_path.is_file():
             log.warning(u"Invalid git specified, can't use git commands")
             exit_status = 1
             return output, err, exit_status
@@ -131,7 +132,7 @@ class GitUpdateManager(UpdateManager):
         # If we have a valid git remove the git warning
         # String will be updated as soon we check github
         app.NEWEST_VERSION_STRING = None
-        cmd = git_path + ' ' + args
+        cmd = str(git_path) + ' ' + args
 
         try:
             log.debug(u'Executing {cmd} with your shell in {dir}', {'cmd': cmd, 'dir': app.PROG_DIR})
