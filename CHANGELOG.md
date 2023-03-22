@@ -1,10 +1,10 @@
-## Unreleased
-
-#### New Features
+## 1.0.13 (22-03-2023)
 
 #### Improvements
+- Replace trakt with pytrakt
 
 #### Fixes
+- Fix git subprocess call for Windows paths with spaces
 
 -----
 
