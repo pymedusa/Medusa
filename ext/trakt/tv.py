@@ -2,14 +2,17 @@
 """Interfaces to all of the TV objects offered by the Trakt.tv API"""
 from collections import namedtuple
 from datetime import datetime, timedelta
+from urllib.parse import urlencode
+
 from trakt.core import Airs, Alias, Comment, Genre, delete, get
 from trakt.errors import NotFoundException
-from trakt.sync import (Scrobbler, rate, comment, add_to_collection,
-                        add_to_watchlist, add_to_history, remove_from_history,
-                        remove_from_collection, remove_from_watchlist, search,
-                        checkin_media, delete_checkin)
-from trakt.utils import slugify, extract_ids, airs_date
+from trakt.mixins import IdsMixin
 from trakt.people import Person
+from trakt.sync import (Scrobbler, add_to_collection, add_to_history,
+                        add_to_watchlist, checkin_media, comment,
+                        delete_checkin, rate, remove_from_collection,
+                        remove_from_history, remove_from_watchlist, search)
+from trakt.utils import airs_date, slugify
 
 __author__ = 'Jon Nappi'
 __all__ = ['dismiss_recommendation', 'get_recommended_shows', 'genres',
@@ -195,28 +198,40 @@ def anticipated_shows(page=1, limit=10, extended=None):
     yield [TVShow(**show['show']) for show in data]
 
 
-class TVShow(object):
+class TVShow(IdsMixin):
     """A Class representing a TV Show object."""
 
-    def __init__(self, title='', slug=None, **kwargs):
-        super(TVShow, self).__init__()
+    def __init__(self, title='', slug=None, seasons=None, **kwargs):
+        super().__init__()
         self.media_type = 'shows'
-        self.top_watchers = self.top_episodes = self.year = self.tvdb = None
-        self.imdb = self.genres = self.certification = self.network = None
-        self.trakt = self.tmdb = self._aliases = self._comments = None
+        self.top_watchers = self.top_episodes = self.year = None
+        self.genres = self.certification = self.network = None
+        self._aliases = self._comments = None
         self._images = self._people = self._ratings = self._translations = None
-        self._seasons = None
         self._last_episode = self._next_episode = None
         self._slug = slug
         self.title = title
+        self._seasons = self._build_seasons(seasons) if seasons else None
 
         if len(kwargs) > 0:
             self._build(kwargs)
         else:
             self._get()
 
+    def _build_seasons(self, seasons_data):
+        seasons = []
+        show_id = self.trakt
+        for season_data in seasons_data:
+            number = season_data.pop('number')
+            season = TVSeason(show=self.title, season=number, show_id=show_id, **season_data)
+            seasons.append(season)
+        return seasons
+
     @property
     def slug(self):
+        if self._ids.get('slug', None) is not None:
+            return self._ids['slug']
+
         if self._slug is not None:
             return self._slug
 
@@ -225,8 +240,8 @@ class TVShow(object):
 
         return slugify(self.title + ' ' + str(self.year))
 
-    @classmethod
-    def search(cls, title, year=None):
+    @staticmethod
+    def search(title, year=None):
         """Perform a search for the specified *title*.
 
         :param title: The title to search for
@@ -242,7 +257,6 @@ class TVShow(object):
         self._build(data)
 
     def _build(self, data):
-        extract_ids(data)
         for key, val in data.items():
             if hasattr(self, '_' + key):
                 setattr(self, '_' + key, val)
@@ -251,7 +265,7 @@ class TVShow(object):
 
     @property
     def ext(self):
-        return 'shows/{slug}'.format(slug=self.slug)
+        return 'shows/{slug}'.format(slug=self.trakt or self.slug)
 
     @property
     def ext_full(self):
@@ -295,6 +309,24 @@ class TVShow(object):
             self._comments.append(Comment(user=user, **com))
         yield self._comments
 
+    def _progress(self, progress_type,
+                  specials=False, count_specials=False, hidden=False):
+        uri = f'{self.ext}/progress/{progress_type}'
+        params = {}
+        if specials:
+            params['specials'] = 'true'
+        if count_specials:
+            params['count_specials'] = 'true'
+        if hidden:
+            params['hidden'] = 'true'
+
+        if params:
+            uri += '?' + urlencode(params)
+
+        data = yield uri
+
+        yield data
+
     @property
     @get
     def progress(self):
@@ -305,22 +337,43 @@ class TVShow(object):
         The next_episode will be the next episode the user should collect,
         if there are no upcoming episodes it will be set to null.
         """
-        yield (self.ext + '/progress/collection')
+        return self._progress('collection')
+
+    @get
+    def collection_progress(self, **kwargs):
+        """
+        collection progress for a show including details on all aired
+        seasons and episodes.
+
+        The next_episode will be the next episode the user should collect,
+        if there are no upcoming episodes it will be set to null.
+
+        specials: include specials as season 0. Default: false.
+        count_specials: count specials in the overall stats. Default: false.
+        hidden: include any hidden seasons. Default: false.
+
+        https://trakt.docs.apiary.io/#reference/shows/collection-progress/get-show-collection-progress
+        """
+        return self._progress('collection', **kwargs)
+
+    @get
+    def watched_progress(self, **kwargs):
+        """
+        watched progress for a show including details on all aired seasons
+        and episodes.
+
+        specials: include specials as season 0. Default: false.
+        count_specials: count specials in the overall stats. Default: false.
+        hidden: include any hidden seasons. Default: false.
+
+        https://trakt.docs.apiary.io/#reference/shows/watched-progress/get-show-collection-progress
+        """
+        return self._progress('watched', **kwargs)
 
     @property
     def crew(self):
         """All of the crew members that worked on this :class:`TVShow`"""
         return [p for p in self.people if getattr(p, 'job')]
-
-    @property
-    def ids(self):
-        """Accessor to the trakt, imdb, and tmdb ids, as well as the trakt.tv
-        slug
-        """
-        return {'ids': {
-            'trakt': self.trakt, 'slug': self.slug, 'imdb': self.imdb,
-            'tmdb': self.tmdb, 'tvdb': self.tvdb
-        }}
 
     @property
     @get
@@ -377,15 +430,25 @@ class TVShow(object):
     @get
     def seasons(self):
         """A list of :class:`TVSeason` objects representing all of this show's
-        seasons
+        seasons which each contain :class:`TVEpisode` elements
         """
         if self._seasons is None:
-            data = yield self.ext + '/seasons?extended=full'
+            data = yield self.ext + '/seasons?extended=episodes'
             self._seasons = []
             for season in data:
-                extract_ids(season)
-                self._seasons.append(TVSeason(self.title,
-                                              season['number'], **season))
+                # Prepare episodes
+                episodes = []
+                for ep in season.pop('episodes', []):
+                    episode = TVEpisode(show=self.title,
+                                        show_id=self.trakt, **ep)
+                    episodes.append(episode)
+
+                number = season.pop('number')
+                season = TVSeason(self.title, number, self.slug, **season)
+                season._episodes = episodes
+
+                self._seasons.append(season)
+
         yield self._seasons
 
     @property
@@ -396,7 +459,8 @@ class TVShow(object):
         """
         if self._last_episode is None:
             data = yield self.ext + '/last_episode?extended=full'
-            self._last_episode = data and TVEpisode(show=self.title, **data)
+            self._last_episode = data and TVEpisode(show=self.title,
+                                                    show_id=self.trakt, **data)
         yield self._last_episode
 
     @property
@@ -407,7 +471,8 @@ class TVShow(object):
         """
         if self._next_episode is None:
             data = yield self.ext + '/next_episode?extended=full'
-            self._next_episode = data and TVEpisode(show=self.title, **data)
+            self._next_episode = data and TVEpisode(show=self.title,
+                                                    show_id=self.trakt, **data)
         yield self._next_episode
 
     @property
@@ -499,21 +564,31 @@ class TVShow(object):
     __repr__ = __str__
 
 
-class TVSeason(object):
+class TVSeason(IdsMixin):
     """Container for TV Seasons"""
 
-    def __init__(self, show, season=1, slug=None, **kwargs):
-        super(TVSeason, self).__init__()
+    def __init__(self, show, season=1, slug=None, episodes=None, show_id=None, **kwargs):
+        super().__init__()
         self.show = show
+        self.show_id = show_id
         self.season = season
         self.slug = slug or slugify(show)
-        self._episodes = self._comments = self._ratings = None
-        self.ext = 'shows/{id}/seasons/{season}'.format(id=self.slug,
-                                                        season=season)
-        if len(kwargs) > 0:
+        self.ext = 'shows/{id}/seasons/{season}'.format(id=self.slug, season=season)
+        self._comments = self._ratings = None
+        self._episodes = self._build_episodes(episodes) if episodes else None
+
+        if len(kwargs) > 0 or episodes:
             self._build(kwargs)
         else:
             self._get()
+
+    def _build_episodes(self, episodes_data):
+        episodes = []
+        for episode_data in episodes_data:
+            season = episode_data.get('season', self.season)
+            episode = TVEpisode(show=self.show, season=season, show_id=self.show_id, **episode_data)
+            episodes.append(episode)
+        return episodes
 
     @get
     def _get(self):
@@ -610,13 +685,13 @@ class TVSeason(object):
 
     def add_to_library(self):
         """Add this :class:`TVSeason` to your library."""
-        add_to_collection(self)
+        return add_to_collection(self)
 
     add_to_collection = add_to_library
 
     def remove_from_library(self):
         """Remove this :class:`TVSeason` from your library."""
-        remove_from_collection(self)
+        return remove_from_collection(self)
 
     remove_from_collection = remove_from_library
 
@@ -639,25 +714,25 @@ class TVSeason(object):
     __repr__ = __str__
 
 
-class TVEpisode(object):
+class TVEpisode(IdsMixin):
     """Container for TV Episodes"""
 
     def __init__(self, show, season, number=-1, **kwargs):
-        super(TVEpisode, self).__init__()
+        super().__init__()
         self.media_type = 'episodes'
         self.show = show
         self.season = season
         self.number = number
         self.overview = self.title = self.year = self.number_abs = None
         self.first_aired = self.last_updated = None
-        self.trakt = self.tmdb = self.tvdb = self.imdb = None
-        self.tvrage = self._stats = self._images = self._comments = None
+        self.runtime = None
+        self._stats = self._images = self._comments = None
         self._translations = self._ratings = None
         if len(kwargs) > 0:
             self._build(kwargs)
         else:
             self._get()
-        self.episode = self.number  # Backwards compatability
+        self.episode = self.number  # Backwards compatibility
 
     @get
     def _get(self):
@@ -669,7 +744,6 @@ class TVEpisode(object):
 
     def _build(self, data):
         """Build this :class:`TVEpisode` object with the data in *data*"""
-        extract_ids(data)
         for key, val in data.items():
             if hasattr(self, '_' + key):
                 setattr(self, '_' + key, val)
@@ -694,8 +768,11 @@ class TVEpisode(object):
 
     @property
     def ext(self):
+        show_id = getattr(self, "show_id", None)
+        if not show_id:
+            show_id = slugify(self.show)
         return 'shows/{id}/seasons/{season}/episodes/{episode}'.format(
-            id=slugify(self.show), season=self.season, episode=self.number
+            id=show_id, season=self.season, episode=self.number
         )
 
     @property
@@ -707,23 +784,14 @@ class TVEpisode(object):
         """Uri to retrieve additional image information"""
         return self.ext + '?extended=images'
 
-    @classmethod
-    def search(cls, title, year=None):
+    @staticmethod
+    def search(title, year=None):
         """Perform a search for an episode with a title matching *title*
 
         :param title: The title to search for
         :param year: Optional year to limit results to
         """
         return search(title, search_type='episode', year=year)
-
-    @property
-    def ids(self):
-        """Accessor to the trakt, imdb, and tmdb ids, as well as the trakt.tv
-        slug
-        """
-        return {'ids': {
-            'trakt': self.trakt, 'imdb': self.imdb, 'tmdb': self.tmdb
-        }}
 
     @property
     @get
@@ -798,40 +866,40 @@ class TVEpisode(object):
         settings, this may also send out social updates to facebook, twitter,
         tumblr, and path.
         """
-        rate(self, rating)
+        return rate(self, rating)
 
     def add_to_library(self):
         """Add this :class:`TVEpisode` to your Trakt.tv library"""
-        add_to_collection(self)
+        return add_to_collection(self)
 
     add_to_collection = add_to_library
 
     def add_to_watchlist(self):
         """Add this :class:`TVEpisode` to your watchlist"""
-        add_to_watchlist(self)
+        return add_to_watchlist(self)
 
     def mark_as_seen(self, watched_at=None):
         """Mark this episode as seen"""
-        add_to_history(self, watched_at)
+        return add_to_history(self, watched_at)
 
     def mark_as_unseen(self):
         """Remove this :class:`TVEpisode` from your list of watched episodes"""
-        remove_from_history(self)
+        return remove_from_history(self)
 
     def remove_from_library(self):
         """Remove this :class:`TVEpisode` from your library"""
-        remove_from_collection(self)
+        return remove_from_collection(self)
 
     remove_from_collection = remove_from_library
 
     def remove_from_watchlist(self):
         """Remove this :class:`TVEpisode` from your watchlist"""
-        remove_from_watchlist(self)
+        return remove_from_watchlist(self)
 
     def comment(self, comment_body, spoiler=False, review=False):
         """Add a comment (shout or review) to this :class:`TVEpisode` on trakt.
         """
-        comment(self, comment_body, spoiler, review)
+        return comment(self, comment_body, spoiler, review)
 
     def scrobble(self, progress, app_version, app_date):
         """Scrobble this :class:`TVEpisode` via the TraktTV Api
@@ -864,7 +932,7 @@ class TVEpisode(object):
         """
         if delete:
             delete_checkin()
-        checkin_media(self, app_version, app_date, message, sharing, venue_id,
+        return checkin_media(self, app_version, app_date, message, sharing, venue_id,
                       venue_name)
 
     def to_json_singular(self):

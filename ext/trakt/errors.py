@@ -6,7 +6,13 @@ guaranteed to have the application/json MIME type set.
 
 __author__ = 'Jon Nappi'
 __all__ = [
+    # Base Exception
     'TraktException',
+
+    # Errors for use by PyTrakt
+    'BadResponseException',
+
+    # Exceptions by HTTP status code
     'BadRequestException',
     'OAuthException',
     'ForbiddenException',
@@ -17,6 +23,7 @@ __all__ = [
     'LockedUserAccountException',
     'RateLimitException',
     'TraktInternalException',
+    'TraktBadGateway',
     'TraktUnavailable',
 ]
 
@@ -30,6 +37,16 @@ class TraktException(Exception):
 
     def __str__(self):
         return self.message
+
+
+class BadResponseException(TraktException):
+    """TraktException type to be raised when json could not be decoded"""
+    http_code = -1
+    message = "Bad Response - Response could not be parsed"
+
+    def __init__(self, response=None, details=None):
+        super().__init__(response)
+        self.details = details
 
 
 class BadRequestException(TraktException):
@@ -85,11 +102,25 @@ class RateLimitException(TraktException):
     http_code = 429
     message = 'Rate Limit Exceeded'
 
+    @property
+    def retry_after(self):
+        return int(self.response.headers.get("Retry-After", 1))
+
 
 class TraktInternalException(TraktException):
     """TraktException type to be raised when a 500 error is raised"""
     http_code = 500
     message = 'Internal Server Error'
+
+    @property
+    def error_message(self):
+        return self.response.headers.get("x-error-message", None)
+
+
+class TraktBadGateway(TraktException):
+    """TraktException type to be raised when a 502 error is raised"""
+    http_code = 502
+    message = 'Trakt Unavailable - Bad Gateway'
 
 
 class TraktUnavailable(TraktException):

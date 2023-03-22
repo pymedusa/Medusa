@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 """Interfaces to all of the Calendar objects offered by the Trakt.tv API"""
 from pprint import pformat
+
 from trakt.core import get
 from trakt.movies import Movie
 from trakt.tv import TVEpisode, TVShow
-from trakt.utils import extract_ids, now, airs_date
+from trakt.utils import airs_date, now
 
 __author__ = 'Jon Nappi'
 __all__ = ['Calendar', 'PremiereCalendar', 'MyPremiereCalendar',
@@ -12,7 +13,7 @@ __all__ = ['Calendar', 'PremiereCalendar', 'MyPremiereCalendar',
            'MySeasonCalendar', 'MovieCalendar', 'MyMovieCalendar']
 
 
-class Calendar(object):
+class Calendar:
     """Base :class:`Calendar` type serves as a foundation for other Calendar
     types
     """
@@ -26,7 +27,7 @@ class Calendar(object):
         :param days: Number of days for this :class:`Calendar`. Defaults to 7
             days
         """
-        super(Calendar, self).__init__()
+        super().__init__()
         self.date = date or now()
         self.days = days
         self._calendar = []
@@ -72,7 +73,6 @@ class Calendar(object):
             first_aired = cal_item.get('first_aired')
             season = episode.get('season')
             ep_num = episode.get('number')
-            extract_ids(show_data)
             show_data.update(show_data)
             e_data = {
                 'airs_at': airs_date(first_aired),
@@ -81,7 +81,8 @@ class Calendar(object):
                 'show_data': TVShow(**show_data)
             }
             self._calendar.append(
-                TVEpisode(show_data['title'], season, ep_num, **e_data)
+                TVEpisode(show_data['title'], season, ep_num,
+                          show_id=show_data['ids']['trakt'], **e_data)
             )
         self._calendar = sorted(self._calendar, key=lambda x: x.airs_at)
 
