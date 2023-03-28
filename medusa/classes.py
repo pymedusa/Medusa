@@ -371,7 +371,10 @@ class AllShowsListUI(object):  # pylint: disable=too-few-public-methods
 
         def searchterm_in_result(search_term, search_result):
             norm_search_term = sanitize_filename(search_term.lower())
+            norm_search_term = norm_search_term.replace("'", '') # Replace quotes
+
             norm_result = sanitize_filename(search_result.lower())
+            norm_result = norm_result.replace("'", '') # Replace quotes
 
             if norm_search_term in norm_result:
                 return True

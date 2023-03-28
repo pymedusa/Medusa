@@ -267,6 +267,12 @@ class Imdb(Auth):
             match_json_within_dirty_json = (
                 r'imdb\${}\((.+)\)'.format(query_match)
             )
+            # Replace %20 with _
+            query_match = re.match(r'(imdb.+)(\(.*)', data, re.IGNORECASE)
+            if query_match and len(query_match.groups()) == 2:
+                replaced_data = re.sub(r'%20', '_', query_match.group(1))
+                data = replaced_data + query_match.group(2)
+
         data_clean = re.match(
             match_json_within_dirty_json, data, re.IGNORECASE
         ).groups()[0]
