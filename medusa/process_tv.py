@@ -191,7 +191,7 @@ class PostProcessQueueItem(generic_queue.QueueItem):
                 if process_results._output:
                     self.to_json.update({'output': process_results._output})
 
-            log.info('Completed Postproccessing')
+            log.info('Completed Postprocessing')
 
             # Use success as a flag for a finished PP. PP it self can be succeeded or failed.
             self.success = True
