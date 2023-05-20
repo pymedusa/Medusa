@@ -52,7 +52,7 @@ ext | `rarfile` | [3.1](https://pypi.org/project/rarfile/3.1/) | **`medusa`**, `
 ext | **`rebulk`** | [3.1.0](https://pypi.org/project/rebulk/3.1.0/) | **`medusa`**, `guessit` | -
 ext | **`requests`** | [2.30.0](https://pypi.org/project/requests/2.30.0/) | **`medusa`**, `adba`, `boto`, `CacheControl`, `cloudscraper`, `PyGithub`, `python-twitter`, `pytrakt`, `pytvmaze`, `requests-oauthlib`, `requests-toolbelt`, `rtorrent-python`, `simpleanidb`, `subliminal`, `tmdbsimple`, `tvdbapiv2` | -
 ext | `requests-oauthlib` | [1.3.1](https://pypi.org/project/requests-oauthlib/1.3.1/) | **`medusa`**, `python-twitter`, `pytrakt` | Module: `requests_oauthlib`
-ext | `requests-toolbelt` | [0.10.1](https://pypi.org/project/requests-toolbelt/0.10.1/) | `cloudscraper` | Module: `requests_toolbelt`
+ext | `requests-toolbelt` | [1.0.0](https://pypi.org/project/requests-toolbelt/1.0.0/) | `cloudscraper` | Module: `requests_toolbelt`
 ext | `sgmllib3k` | [1.0.0](https://pypi.org/project/sgmllib3k/1.0.0/) | `feedparser` | File: `sgmllib.py`
 ext | `six` | [1.16.0](https://pypi.org/project/six/1.16.0/) | **`medusa`**, `adba`, `configobj`, `html5lib`, `imdbpie`, `knowit`, `PyGithub`, `subliminal`, `tvdbapiv2`, `validators` | File: `six.py`
 ext | **`soupsieve`** | [1.9.6](https://pypi.org/project/soupsieve/1.9.6/) | `beautifulsoup4` | -
@@ -65,7 +65,7 @@ ext | `trans` | [2.1.0](https://pypi.org/project/trans/2.1.0/) | `imdbpie` | Fil
 ext | `ttl-cache` | [1.6](https://pypi.org/project/ttl-cache/1.6/) | **`medusa`**, `adba` | File: `ttl_cache.py`
 ext | **`tvdbapiv2`** | pymedusa/[d6d0e9d](https://github.com/pymedusa/tvdbv2/tree/d6d0e9d98071c2d646beb997b336edbb0e98dfb7) | **`medusa`** | -
 ext | `typing-extensions` | [4.1.1](https://pypi.org/project/typing-extensions/4.1.1/) | `importlib_metadata` | File: `typing_extensions.py`
-ext | **`urllib3`** | [1.26.15](https://pypi.org/project/urllib3/1.26.15/) | `requests` | -
+ext | **`urllib3`** | [2.0.2](https://pypi.org/project/urllib3/2.0.2/) | `requests` | -
 ext | **`validators`** | [0.18.2](https://pypi.org/project/validators/0.18.2/) | **`medusa`** | -
 ext | **`webencodings`** | [0.5.1](https://pypi.org/project/webencodings/0.5.1/) | `html5lib` | -
 ext | **`wrapt`** | [1.14.1](https://pypi.org/project/wrapt/1.14.1/) | `deprecated` | -
