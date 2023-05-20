@@ -1,10 +1,13 @@
-## Unreleased
-
-#### New Features
+## 1.0.14 (20-05-2023)
 
 #### Improvements
+- Update requests dependencies
+- Update YggTorrent domain (Thanks to @cpainchaud)
+- Add new logos for networks (Thanks to @purevertigo)
+- Add missing time zone for networks (Thanks to @YogSottot)
 
 #### Fixes
+- Fix endless loop caused by malformed TVDB data (Thanks to @dotsam)
 
 -----
 
