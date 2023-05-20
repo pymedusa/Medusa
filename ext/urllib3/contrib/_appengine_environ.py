@@ -6,31 +6,25 @@ import os
 
 
 def is_appengine():
-    return is_local_appengine() or is_prod_appengine()
+    return (is_local_appengine() or
+            is_prod_appengine() or
+            is_prod_appengine_mvms())
 
 
 def is_appengine_sandbox():
-    """Reports if the app is running in the first generation sandbox.
-
-    The second generation runtimes are technically still in a sandbox, but it
-    is much less restrictive, so generally you shouldn't need to check for it.
-    see https://cloud.google.com/appengine/docs/standard/runtimes
-    """
-    return is_appengine() and os.environ["APPENGINE_RUNTIME"] == "python27"
+    return is_appengine() and not is_prod_appengine_mvms()
 
 
 def is_local_appengine():
-    return "APPENGINE_RUNTIME" in os.environ and os.environ.get(
-        "SERVER_SOFTWARE", ""
-    ).startswith("Development/")
+    return ('APPENGINE_RUNTIME' in os.environ and
+            'Development/' in os.environ['SERVER_SOFTWARE'])
 
 
 def is_prod_appengine():
-    return "APPENGINE_RUNTIME" in os.environ and os.environ.get(
-        "SERVER_SOFTWARE", ""
-    ).startswith("Google App Engine/")
+    return ('APPENGINE_RUNTIME' in os.environ and
+            'Google App Engine/' in os.environ['SERVER_SOFTWARE'] and
+            not is_prod_appengine_mvms())
 
 
 def is_prod_appengine_mvms():
-    """Deprecated."""
-    return False
+    return os.environ.get('GAE_VM', False) == 'true'

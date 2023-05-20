@@ -14,7 +14,7 @@ def is_connection_dropped(conn):  # Platform-specific
     Note: For platforms like AppEngine, this will always return ``False`` to
     let the platform handle connection recycling transparently for us.
     """
-    sock = getattr(conn, "sock", False)
+    sock = getattr(conn, 'sock', False)
     if sock is False:  # Platform-specific: AppEngine
         return False
     if sock is None:  # Connection already closed (such as by httplib).
@@ -30,12 +30,8 @@ def is_connection_dropped(conn):  # Platform-specific
 # library test suite. Added to its signature is only `socket_options`.
 # One additional modification is that we avoid binding to IPv6 servers
 # discovered in DNS if the system doesn't have IPv6 functionality.
-def create_connection(
-    address,
-    timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
-    source_address=None,
-    socket_options=None,
-):
+def create_connection(address, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
+                      source_address=None, socket_options=None):
     """Connect to *address* and return the socket object.
 
     Convenience function.  Connect to *address* (a 2-tuple ``(host,
@@ -49,8 +45,8 @@ def create_connection(
     """
 
     host, port = address
-    if host.startswith("["):
-        host = host.strip("[]")
+    if host.startswith('['):
+        host = host.strip('[]')
     err = None
 
     # Using the value from allowed_gai_family() in the context of getaddrinfo lets
@@ -121,7 +117,7 @@ def _has_ipv6(host):
         # has_ipv6 returns true if cPython was compiled with IPv6 support.
         # It does not tell us if the system has IPv6 support enabled. To
         # determine that we must bind to an IPv6 address.
-        # https://github.com/urllib3/urllib3/pull/611
+        # https://github.com/shazow/urllib3/pull/611
         # https://bugs.python.org/issue658327
         try:
             sock = socket.socket(socket.AF_INET6)
@@ -135,4 +131,4 @@ def _has_ipv6(host):
     return has_ipv6
 
 
-HAS_IPV6 = _has_ipv6("::1")
+HAS_IPV6 = _has_ipv6('::1')
