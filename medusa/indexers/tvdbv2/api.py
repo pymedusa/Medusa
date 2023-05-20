@@ -270,7 +270,8 @@ class TVDBv2(BaseIndexer):
                         )
                         if paged_episodes.data:
                             results += paged_episodes.data
-                        last = paged_episodes.links.last
+                        if paged_episodes.links:
+                            last = paged_episodes.links.last
                         page += 1
             else:
                 while page <= last:
@@ -279,7 +280,8 @@ class TVDBv2(BaseIndexer):
                     )
                     if paged_episodes.data:
                         results += paged_episodes.data
-                    last = paged_episodes.links.last
+                    if paged_episodes.links:
+                        last = paged_episodes.links.last
                     page += 1
 
             if results and full_info:
