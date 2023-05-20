@@ -5,21 +5,12 @@ Issue #10, see: http://code.google.com/p/urllib3/issues/detail?id=10
 """
 from __future__ import absolute_import
 
-import warnings
 from logging import getLogger
-
 from ntlm import ntlm
 
 from .. import HTTPSConnectionPool
 from ..packages.six.moves.http_client import HTTPSConnection
 
-warnings.warn(
-    "The 'urllib3.contrib.ntlmpool' module is deprecated and will be removed "
-    "in urllib3 v2.0 release, urllib3 is not able to support it properly due "
-    "to reasons listed in issue: https://github.com/urllib3/urllib3/issues/2282. "
-    "If you are a user of this module please comment in the mentioned issue.",
-    DeprecationWarning,
-)
 
 log = getLogger(__name__)
 
@@ -69,7 +60,7 @@ class NTLMConnectionPool(HTTPSConnectionPool):
         log.debug("Request headers: %s", headers)
         conn.request("GET", self.authurl, None, headers)
         res = conn.getresponse()
-        reshdr = dict(res.headers)
+        reshdr = dict(res.getheaders())
         log.debug("Response status: %s %s", res.status, res.reason)
         log.debug("Response headers: %s", reshdr)
         log.debug("Response data: %s [...]", res.read(100))
@@ -101,7 +92,7 @@ class NTLMConnectionPool(HTTPSConnectionPool):
         conn.request("GET", self.authurl, None, headers)
         res = conn.getresponse()
         log.debug("Response status: %s %s", res.status, res.reason)
-        log.debug("Response headers: %s", dict(res.headers))
+        log.debug("Response headers: %s", dict(res.getheaders()))
         log.debug("Response data: %s [...]", res.read()[:100])
         if res.status != 200:
             if res.status == 401:

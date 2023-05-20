@@ -1,10 +1,10 @@
 from __future__ import absolute_import
-
 import re
 from collections import namedtuple
 
 from ..exceptions import LocationParseError
 from ..packages import six
+
 
 url_attrs = ["scheme", "auth", "host", "port", "path", "query", "fragment"]
 
@@ -18,7 +18,7 @@ PERCENT_RE = re.compile(r"%[a-fA-F0-9]{2}")
 SCHEME_RE = re.compile(r"^(?:[a-zA-Z][a-zA-Z0-9+-]*:|/)")
 URI_RE = re.compile(
     r"^(?:([a-zA-Z][a-zA-Z0-9+.-]*):)?"
-    r"(?://([^\\/?#]*))?"
+    r"(?://([^/?#]*))?"
     r"([^?#]*)"
     r"(?:\?([^#]*))?"
     r"(?:#(.*))?$",
@@ -50,7 +50,7 @@ _variations = [
     "(?:(?:%(hex)s:){0,6}%(hex)s)?::",
 ]
 
-UNRESERVED_PAT = r"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._\-~"
+UNRESERVED_PAT = r"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._!\-~"
 IPV6_PAT = "(?:" + "|".join([x % _subs for x in _variations]) + ")"
 ZONE_ID_PAT = "(?:%25|%)(?:[" + UNRESERVED_PAT + "]|%[a-fA-F0-9]{2})+"
 IPV6_ADDRZ_PAT = r"\[" + IPV6_PAT + r"(?:" + ZONE_ID_PAT + r")?\]"
@@ -63,12 +63,12 @@ IPV6_ADDRZ_RE = re.compile("^" + IPV6_ADDRZ_PAT + "$")
 BRACELESS_IPV6_ADDRZ_RE = re.compile("^" + IPV6_ADDRZ_PAT[2:-2] + "$")
 ZONE_ID_RE = re.compile("(" + ZONE_ID_PAT + r")\]$")
 
-_HOST_PORT_PAT = ("^(%s|%s|%s)(?::0*?(|0|[1-9][0-9]{0,4}))?$") % (
+SUBAUTHORITY_PAT = (u"^(?:(.*)@)?(%s|%s|%s)(?::([0-9]{0,5}))?$") % (
     REG_NAME_PAT,
     IPV4_PAT,
     IPV6_ADDRZ_PAT,
 )
-_HOST_PORT_RE = re.compile(_HOST_PORT_PAT, re.UNICODE | re.DOTALL)
+SUBAUTHORITY_RE = re.compile(SUBAUTHORITY_PAT, re.UNICODE | re.DOTALL)
 
 UNRESERVED_CHARS = set(
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._-~"
@@ -279,9 +279,6 @@ def _normalize_host(host, scheme):
         if scheme in NORMALIZABLE_SCHEMES:
             is_ipv6 = IPV6_ADDRZ_RE.match(host)
             if is_ipv6:
-                # IPv6 hosts of the form 'a::b%zone' are encoded in a URL as
-                # such per RFC 6874: 'a::b%25zone'. Unquote the ZoneID
-                # separator as necessary to return a valid RFC 4007 scoped IP.
                 match = ZONE_ID_RE.search(host)
                 if match:
                     start, end = match.span(1)
@@ -303,7 +300,7 @@ def _normalize_host(host, scheme):
 
 
 def _idna_encode(name):
-    if name and any(ord(x) >= 128 for x in name):
+    if name and any([ord(x) > 128 for x in name]):
         try:
             import idna
         except ImportError:
@@ -334,7 +331,7 @@ def parse_url(url):
     """
     Given a url, return a parsed :class:`.Url` namedtuple. Best-effort is
     performed to parse incomplete urls. Fields not provided will be None.
-    This parser is RFC 3986 and RFC 6874 compliant.
+    This parser is RFC 3986 compliant.
 
     The parser logic and helper functions are based heavily on
     work done in the ``rfc3986`` module.
@@ -368,9 +365,7 @@ def parse_url(url):
             scheme = scheme.lower()
 
         if authority:
-            auth, _, host_port = authority.rpartition("@")
-            auth = auth or None
-            host, port = _HOST_PORT_RE.match(host_port).groups()
+            auth, host, port = SUBAUTHORITY_RE.match(authority).groups()
             if auth and normalize_uri:
                 auth = _encode_invalid_chars(auth, USERINFO_CHARS)
             if port == "":
