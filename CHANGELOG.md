@@ -1,10 +1,7 @@
-## Unreleased
-
-#### New Features
-
-#### Improvements
+## 1.0.15 (21-05-2023)
 
 #### Fixes
+- Fix error with malformed TVDB data missing links
 
 -----
 
