@@ -2,22 +2,22 @@
 # yarn lockfile v1
 
 
-"@apielements/apib-parser@0.20.0":
-  version "0.20.0"
-  resolved "https://registry.yarnpkg.com/@apielements/apib-parser/-/apib-parser-0.20.0.tgz#8aa71e907bfa0aae0ee09a8ea1da3fed800d600a"
-  integrity sha512-h12ogZpZmUlNO5kIrB16ND4ygSA6lmSKUvk850L3i6aHRnhTcBjMUQdxg2srhP0pMNhE52S3EWpdIAKX7AD8YQ==
+"@apielements/apib-parser@0.20.1":
+  version "0.20.1"
+  resolved "https://registry.yarnpkg.com/@apielements/apib-parser/-/apib-parser-0.20.1.tgz#acf292119960152eecb76037b35fcbbcf6923287"
+  integrity sha512-Sfx5hS+6Mn3+vxqkZ/8vC44M/K6vkL50e5cemdZeuUpFVrBH5CGaQqAyFWdqSLVn3UR2nh1x2oDy5deliZKQRw==
   dependencies:
     deckardcain "^1.0.0"
     drafter.js "^3.2.0"
   optionalDependencies:
     protagonist "^2.1.0"
 
-"@apielements/core@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@apielements/core/-/core-0.1.0.tgz#60426a84e991aef17b4f1177da6a78399cebb916"
-  integrity sha512-v/NMQrCkkxpVzEVONZ0ONQLqZfiTQSB8y2up5YqXkqFy078oDHDp7X8olbsGMQ5kXhLGyHNE4B7QfHOUaDGMGA==
+"@apielements/core@^0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@apielements/core/-/core-0.2.1.tgz#faca09f242702ef922fd7d897d6d7fe09deebd45"
+  integrity sha512-pI7hlAzXmceQjox10n+huOsYkSEunegHVMYl+7cq8WOO107CqGSuv1K8ERnKGQeAT4ZAacDnlo1Py/7WNtU+rQ==
   dependencies:
-    api-elements "^0.2.4"
+    api-elements "^0.3.0"
 
 "@apielements/openapi2-parser@0.32.4":
   version "0.32.4"
@@ -33,10 +33,10 @@
     yaml-js "^0.2.3"
     z-schema "^4.1.0"
 
-"@apielements/openapi3-parser@0.14.0":
-  version "0.14.0"
-  resolved "https://registry.yarnpkg.com/@apielements/openapi3-parser/-/openapi3-parser-0.14.0.tgz#65eab2be2db769870ad9317994ad377134f54f07"
-  integrity sha512-ujaVwxj+FdiwYB2YV2MeAraC7nx/qPH08ziRHUKL0uXJCw1CAHnWfv5S67k1ZKkhE1JACrrq/7QLT8nMzDRQaw==
+"@apielements/openapi3-parser@0.16.0":
+  version "0.16.0"
+  resolved "https://registry.yarnpkg.com/@apielements/openapi3-parser/-/openapi3-parser-0.16.0.tgz#507aa6fca135bd21c5a7e2366406cc018c40c33b"
+  integrity sha512-ZvDbp4kXz2FP7q5MIdQasks93tKsGun7kDL1De01gHKH6c43oicmELtxwqKpad8Vv0yBTceLNzXcVH+xZEuG3g==
   dependencies:
     content-type "^1.0.4"
     media-typer "^1.0.1"
@@ -92,10 +92,10 @@ api-blueprint-http-formatter@0.0.1:
   resolved "https://registry.yarnpkg.com/api-blueprint-http-formatter/-/api-blueprint-http-formatter-0.0.1.tgz#2a7eb3cf82dec17da3622fedb7ea0b2d3069c9b7"
   integrity sha1-Kn6zz4LewX2jYi/tt+oLLTBpybc=
 
-api-elements@^0.2.4:
-  version "0.2.6"
-  resolved "https://registry.yarnpkg.com/api-elements/-/api-elements-0.2.6.tgz#11723a5f731cc15ca90f0c37c49e20217cfedd73"
-  integrity sha512-XDt/qzK9a4e6W1JPa2Jmw9I57M8jIF+PH0lp7UjaJornW1hKFgWIlK+DU03F9EVwHNeotq1qBvPtQCj7RIJwwA==
+api-elements@^0.3.0:
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/api-elements/-/api-elements-0.3.2.tgz#7d2a3160100a67173f0f7bab979607e349a93c6f"
+  integrity sha512-J+XavcNXxW5Qb7lQjpFAIB0RGwntn96lsU2xLAa4GmwWY99IpPE8+GhdvzQu3NIC9mpxlCeVmVTYBzFZrtLkjA==
   dependencies:
     minim "^0.23.8"
     ramda "^0.27.0"
@@ -300,10 +300,10 @@ core-util-is@1.0.2, core-util-is@~1.0.0:
   resolved "https://registry.yarnpkg.com/core-util-is/-/core-util-is-1.0.2.tgz#b5fd54220aa2bc5ab57aab7140c940754503c1a7"
   integrity sha1-tf1UIgqivFq1eqtxQMlAdUUDwac=
 
-cross-spawn@7.0.2:
-  version "7.0.2"
-  resolved "https://registry.yarnpkg.com/cross-spawn/-/cross-spawn-7.0.2.tgz#d0d7dcfa74e89115c7619f4f721a94e1fdb716d6"
-  integrity sha512-PD6G8QG3S4FK/XCGFbEQrDqO2AnMMsy0meR7lerlIOHAAbkuavGU/pOqprrlvfTNjvowivTeBsjebAL0NSoMxw==
+cross-spawn@7.0.3:
+  version "7.0.3"
+  resolved "https://registry.yarnpkg.com/cross-spawn/-/cross-spawn-7.0.3.tgz#f73a85b9d5d41d045551c177e2882d4ac85728a6"
+  integrity sha512-iRDPJKUPVEND7dHPO8rkbOnPpyDygcDFtWjpeWNCgy8WP2rXcxXL8TskReQl6OrB2G7+UJrags1q15Fudc7G6w==
   dependencies:
     path-key "^3.1.0"
     shebang-command "^2.0.0"
@@ -376,28 +376,28 @@ drange@^1.0.2:
   resolved "https://registry.yarnpkg.com/drange/-/drange-1.1.1.tgz#b2aecec2aab82fcef11dbbd7b9e32b83f8f6c0b8"
   integrity sha512-pYxfDYpued//QpnLIm4Avk7rsNtAtQkUES2cwAYSvD/wd2pKD71gN2Ebj3e7klzXwjocvE8c5vx/1fxwpqmSxA==
 
-dredd-transactions@^10.0.0:
-  version "10.0.0"
-  resolved "https://registry.yarnpkg.com/dredd-transactions/-/dredd-transactions-10.0.0.tgz#5318c2dbaf5310b992700971ed02de21ff494d7b"
-  integrity sha512-s7MgD+ZW3qEHcVVd6b8s5Bbe7/o+J7MvRupuk10a9hEzBr8YgH1lbfcO/jnoMdEPH5SSz1A4ovZwrlPEbSDZXw==
+dredd-transactions@^10.1.0:
+  version "10.1.0"
+  resolved "https://registry.yarnpkg.com/dredd-transactions/-/dredd-transactions-10.1.0.tgz#e193d2d6c994d4dcb4a9c93aa6fb3cb8a8b57870"
+  integrity sha512-huw4YTSklY9Xt53Ql3xxVLRjtncaTXV2yIDd/iAp9tlG4QnFt0WxsC7mIWbggdhvHNm5q3W1N6HALbxTEuB89Q==
   dependencies:
-    "@apielements/apib-parser" "0.20.0"
-    "@apielements/core" "^0.1.0"
+    "@apielements/apib-parser" "0.20.1"
+    "@apielements/core" "^0.2.1"
     "@apielements/openapi2-parser" "0.32.4"
-    "@apielements/openapi3-parser" "0.14.0"
+    "@apielements/openapi3-parser" "0.16.0"
     uri-template "1.0.1"
 
-dredd@14.0.0:
-  version "14.0.0"
-  resolved "https://registry.yarnpkg.com/dredd/-/dredd-14.0.0.tgz#6667cb8f92a644f74a26868304215d1077c94044"
-  integrity sha512-M0TUjKPdU1I3t4ZfBOKf+fXVZO9qn0kWN75FviNbDffCVDwOzjkNUbGQEVxUgzM99YNdf695bs7BF98Y0VOp/Q==
+dredd@14.1.0:
+  version "14.1.0"
+  resolved "https://registry.yarnpkg.com/dredd/-/dredd-14.1.0.tgz#50aee24d2060db31fdaf37a137681abe9cbccdf7"
+  integrity sha512-sjxjwBDqYsE3+vleOAIHSt65gLmbJgX/eI2kdU8c7+FYlgjQi8jOqnHiyx+HoQMAiwqL8lZ69n+pPo3FIfXX/g==
   dependencies:
     async "3.2.0"
     caseless "0.12.0"
     chai "4.2.0"
     clone "2.1.2"
-    cross-spawn "7.0.2"
-    dredd-transactions "^10.0.0"
+    cross-spawn "7.0.3"
+    dredd-transactions "^10.1.0"
     gavel "^9.1.1"
     glob "7.1.6"
     html "1.0.0"
