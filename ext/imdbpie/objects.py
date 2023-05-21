@@ -9,12 +9,9 @@ class Image(object):
 
 
 class TitleEpisodes(object):
-
     def __init__(self, facade, imdb_id):
         self._facade = facade
-        episodes = self._facade._client.get_title_episodes(
-            imdb_id=imdb_id
-        )
+        episodes = self._facade._client.get_title_episodes(imdb_id=imdb_id)
         self._episode_imdb_ids = []
         for season in episodes['seasons']:
             for episode in season['episodes']:
