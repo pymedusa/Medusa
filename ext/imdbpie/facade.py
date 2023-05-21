@@ -7,15 +7,20 @@ from dateutil.parser import parse
 
 from .imdbpie import Imdb
 from .objects import (
-    Title, TitleEpisodes, Name, TitleName, Image, TitleRelease,
-    TitleSearchResult, NameSearchResult,
+    Title,
+    TitleEpisodes,
+    Name,
+    TitleName,
+    Image,
+    TitleRelease,
+    TitleSearchResult,
+    NameSearchResult,
 )
 
 REGEX_IMDB_ID = re.compile(r'([a-zA-Z]{2}[0-9]{7})')
 
 
 class ImdbFacade(object):
-
     def __init__(self, client=None):
         self._client = client or Imdb()
 
@@ -36,8 +41,11 @@ class ImdbFacade(object):
             season = None
             episode = None
         return Title(
-            season=season, episode=episode, episodes=episodes,
-            runtime=runtime, **title_data
+            season=season,
+            episode=episode,
+            episodes=episodes,
+            runtime=runtime,
+            **title_data
         )
 
     def get_name(self, imdb_id):
@@ -68,8 +76,13 @@ class ImdbFacade(object):
             self._parse_id(f['id']) for f in filmography_data['filmography']
         )
         return Name(
-            name=name, imdb_id=imdb_id, date_of_birth=date_of_birth,
-            gender=gender, birth_place=birth_place, bios=bios, image=image,
+            name=name,
+            imdb_id=imdb_id,
+            date_of_birth=date_of_birth,
+            gender=gender,
+            birth_place=birth_place,
+            bios=bios,
+            image=image,
             filmography=filmography,
         )
 
@@ -77,7 +90,8 @@ class ImdbFacade(object):
         results = []
         for result in self._client.search_for_name(query):
             result = NameSearchResult(
-                imdb_id=result['imdb_id'], name=result['name'],
+                imdb_id=result['imdb_id'],
+                name=result['name'],
             )
             results.append(result)
         return tuple(results)
@@ -90,8 +104,10 @@ class ImdbFacade(object):
             else:
                 year = None
             result = TitleSearchResult(
-                imdb_id=result['imdb_id'], title=result['title'],
-                type=result['type'], year=year,
+                imdb_id=result['imdb_id'],
+                title=result['title'],
+                type=result['type'],
+                year=year,
             )
             results.append(result)
         return tuple(results)
@@ -102,8 +118,9 @@ class ImdbFacade(object):
                 name=i['name'],
                 job=i.get('job'),
                 category=i.get('category'),
-                imdb_id=self._parse_id(i['id'])
-            ) for i in top_crew_data['writers']
+                imdb_id=self._parse_id(i['id']),
+            )
+            for i in top_crew_data['writers']
         )
 
     def _get_stars(self, principals_data):
@@ -113,8 +130,9 @@ class ImdbFacade(object):
                 job=i.get('job'),
                 characters=tuple(i.get('characters', ())),
                 category=i.get('category'),
-                imdb_id=self._parse_id(i['id'])
-            ) for i in principals_data
+                imdb_id=self._parse_id(i['id']),
+            )
+            for i in principals_data
         )
 
     def _get_creators(self, top_crew_data):
@@ -123,8 +141,9 @@ class ImdbFacade(object):
                 name=i['name'],
                 job=i.get('job'),
                 category=i.get('category'),
-                imdb_id=self._parse_id(i['id'])
-            ) for i in top_crew_data['writers']
+                imdb_id=self._parse_id(i['id']),
+            )
+            for i in top_crew_data['writers']
             if i.get('job') == 'creator'
         )
 
@@ -134,20 +153,23 @@ class ImdbFacade(object):
                 name=i['name'],
                 job=i.get('job'),
                 category=i.get('category'),
-                imdb_id=self._parse_id(i['id'])
-            ) for i in top_crew_data['directors']
+                imdb_id=self._parse_id(i['id']),
+            )
+            for i in top_crew_data['directors']
         )
 
     def _get_credits(self, credits_data):
         credits = []
         for category in credits_data.get('credits', ()):
             for item in credits_data['credits'][category]:
-                credits.append(TitleName(
-                    name=item['name'],
-                    category=item.get('category'),
-                    job=item.get('job'),
-                    imdb_id=self._parse_id(item['id'])
-                ))
+                credits.append(
+                    TitleName(
+                        name=item['name'],
+                        category=item.get('category'),
+                        job=item.get('job'),
+                        imdb_id=self._parse_id(item['id']),
+                    )
+                )
         return tuple(credits)
 
     def _parse_id(self, string):
@@ -212,22 +234,25 @@ class ImdbFacade(object):
             )
         except KeyError:
             image = None
-        return dict(
-            imdb_id=imdb_id,
-            title=title,
-            year=year,
-            rating=rating,
-            type=type_,
-            release_date=release_date,
-            releases=releases,
-            plot_outline=plot_outline,
-            rating_count=rating_count,
-            writers=writers,
-            directors=directors,
-            creators=creators,
-            genres=genres,
-            credits=credits,
-            certification=certification,
-            image=image,
-            stars=stars,
-        ), title_aux_data
+        return (
+            dict(
+                imdb_id=imdb_id,
+                title=title,
+                year=year,
+                rating=rating,
+                type=type_,
+                release_date=release_date,
+                releases=releases,
+                plot_outline=plot_outline,
+                rating_count=rating_count,
+                writers=writers,
+                directors=directors,
+                creators=creators,
+                genres=genres,
+                credits=credits,
+                certification=certification,
+                image=image,
+                stars=stars,
+            ),
+            title_aux_data,
+        )

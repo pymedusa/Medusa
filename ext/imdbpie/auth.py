@@ -5,6 +5,7 @@ import json
 import requests
 import tempfile
 from datetime import datetime
+
 try:
     from base64 import encodebytes
 except ImportError:
@@ -23,7 +24,6 @@ from .constants import APP_KEY, HOST, USER_AGENT, BASE_URI
 
 
 class ZuluHmacAuthV3HTTPHandler(HmacAuthV3HTTPHandler):
-
     def sign_string(self, string_to_sign):
         new_hmac = self._get_hmac()
         new_hmac.update(string_to_sign)
@@ -52,14 +52,16 @@ class ZuluHmacAuthV3HTTPHandler(HmacAuthV3HTTPHandler):
         headers_to_sign = self.headers_to_sign(http_request)
         canonical_qs = self.canonical_query_string(http_request)
         canonical_headers = self.canonical_headers(headers_to_sign)
-        string_to_sign = '\n'.join((
-            http_request.method,
-            http_request.path,
-            canonical_qs,
-            canonical_headers,
-            '',
-            http_request.body
-        ))
+        string_to_sign = '\n'.join(
+            (
+                http_request.method,
+                http_request.path,
+                canonical_qs,
+                canonical_headers,
+                '',
+                http_request.body,
+            )
+        )
         return string_to_sign, headers_to_sign
 
 
@@ -121,16 +123,22 @@ class Auth(object):
                 access_key=creds['accessKeyId'],
                 secret_key=creds['secretAccessKey'],
                 security_token=creds['sessionToken'],
-            )
+            ),
         )
         parsed_url = urlparse(url_path)
         params = {
             key: val[0] for key, val in parse_qs(parsed_url.query).items()
         }
         request = HTTPRequest(
-            method='GET', protocol='https', host=HOST,
-            port=443, path=parsed_url.path, auth_path=None, params=params,
-            headers={}, body=''
+            method='GET',
+            protocol='https',
+            host=HOST,
+            port=443,
+            path=parsed_url.path,
+            auth_path=None,
+            params=params,
+            headers={},
+            body='',
         )
         handler.add_auth(req=request)
         headers = request.headers

@@ -25,7 +25,7 @@ ext | **`gntp`** | [1.0.3](https://pypi.org/project/gntp/1.0.3/) | **`medusa`** 
 ext | **`guessit`** | [3.4.2](https://pypi.org/project/guessit/3.4.2/) | **`medusa`**, `subliminal` | -
 ext | **`html5lib`** | [1.1](https://pypi.org/project/html5lib/1.1/) | **`medusa`** (via `beautifulsoup4`) | -
 ext | **`idna`** | [2.8](https://pypi.org/project/idna/2.8/) | `requests` | -
-ext | **`imdbpie`** | [5.6.4](https://pypi.org/project/imdbpie/5.6.4/) | **`medusa`** | -
+ext | **`imdbpie`** | [5.6.5](https://pypi.org/project/imdbpie/5.6.5/) | **`medusa`** | -
 ext | `importlib-metadata` | [4.11.4](https://pypi.org/project/importlib-metadata/4.11.4/) | `knowit` | Module: `importlib_metadata`
 ext | `importlib-resources` | [5.4.0](https://pypi.org/project/importlib-resources/5.4.0/) | `guessit` | Module: `importlib_resources`
 ext | `jsonrpclib-pelix` | [0.4.3.2](https://pypi.org/project/jsonrpclib-pelix/0.4.3.2/) | **`medusa`** | Module: `jsonrpclib`
