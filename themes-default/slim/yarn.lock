@@ -12067,10 +12067,10 @@ vue-lazyload@1.3.5:
   resolved "https://registry.yarnpkg.com/vue-lazyload/-/vue-lazyload-1.3.5.tgz#eb36d299a519167d987fdf0ebfdc9c6dd1bf1ef0"
   integrity sha512-SCO/LWgCCbjaregHO4wg2buzITBdPBZRlIS104vERGpT88uxXsK26veuzZpgGAXMR8WpkaR+JDqz80OedpaLiA==
 
-vue-loader@15.9.8:
-  version "15.9.8"
-  resolved "https://registry.yarnpkg.com/vue-loader/-/vue-loader-15.9.8.tgz#4b0f602afaf66a996be1e534fb9609dc4ab10e61"
-  integrity sha512-GwSkxPrihfLR69/dSV3+5CdMQ0D+jXg8Ma1S4nQXKJAznYFX14vHdc/NetQc34Dw+rBbIJyP7JOuVb9Fhprvog==
+vue-loader@15.10.1:
+  version "15.10.1"
+  resolved "https://registry.yarnpkg.com/vue-loader/-/vue-loader-15.10.1.tgz#c451c4cd05a911aae7b5dbbbc09fb913fb3cca18"
+  integrity sha512-SaPHK1A01VrNthlix6h1hq4uJu7S/z0kdLUb6klubo738NeQoLbS6V9/d8Pv19tU0XdQKju3D1HSKuI8wJ5wMA==
   dependencies:
     "@vue/component-compiler-utils" "^3.1.0"
     hash-sum "^1.0.2"
