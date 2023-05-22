@@ -45,7 +45,7 @@
     "jquery": "3.7.0",
     "lodash": "4.17.21",
     "lozad": "1.16.0",
-    "sass": "1.43.4",
+    "sass": "1.62.1",
     "sass-loader": "12.6.0",
     "style-loader": "3.3.3",
     "stylelint-scss": "3.21.0",
