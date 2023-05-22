@@ -54,7 +54,7 @@
     "vanilla-lazyload": "12.5.1",
     "vue": "2.7.14",
     "vue-async-computed": "3.9.0",
-    "vue-cookies": "1.7.4",
+    "vue-cookies": "1.8.3",
     "vue-form-wizard": "0.8.4",
     "vue-good-table": "git+https://github.com/p0psicles/vue-good-table#7d9dbf1156679c52a2cc336ba00618ddd8248574",
     "vue-images-loaded": "1.1.2",
