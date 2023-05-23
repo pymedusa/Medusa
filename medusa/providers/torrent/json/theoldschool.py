@@ -5,7 +5,6 @@
 from __future__ import division, unicode_literals
 
 import logging
-import math
 
 from medusa import tv
 from medusa.helper.common import convert_size
@@ -135,7 +134,7 @@ class TheOldSchoolProvider(TorrentProvider):
                         continue
 
                     freeleech = row.get('attributes').get('freeleech')
-                    if self.freeleech and freeleech != "100%":
+                    if self.freeleech and freeleech != '100%':
                         continue
 
                     size = convert_size(
