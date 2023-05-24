@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Interfaces to all of the TV objects offered by the Trakt.tv API"""
-from collections import namedtuple
 from datetime import datetime, timedelta
+from typing import NamedTuple
 from urllib.parse import urlencode
 
 from trakt.core import Airs, Alias, Comment, Genre, delete, get
@@ -22,7 +22,11 @@ __all__ = ['dismiss_recommendation', 'get_recommended_shows', 'genres',
            'TVSeason', 'Translation']
 
 
-Translation = namedtuple('Translation', ['title', 'overview', 'language'])
+# FIXME: same symbol in movie module
+class Translation(NamedTuple):
+    title: str
+    overview: str
+    language: str
 
 
 @delete
