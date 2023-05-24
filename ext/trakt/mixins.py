@@ -4,6 +4,23 @@
 __author__ = 'Jon Nappi, Elan Ruusamäe'
 
 
+def data_class_factory(data_class):
+    """
+    A Mixin for inheriting @dataclass or NamedTuple, via composition rather inheritance.
+    """
+    class DataClassMixinClass:
+        def __init__(self, **kwargs):
+            self.data = data_class(**kwargs)
+
+        def __getattr__(self, item):
+            return getattr(self.data, item)
+
+    return DataClassMixinClass
+
+
+DataClassMixin = data_class_factory
+
+
 class IdsMixin:
     """
     Provides Mixin to translate "ids" array
@@ -14,8 +31,10 @@ class IdsMixin:
 
     __ids = ['imdb', 'slug', 'tmdb', 'trakt']
 
-    def __init__(self):
-        self._ids = {}
+    def __init__(self, ids=None):
+        if ids is None:
+            ids = {}
+        self._ids = ids
 
     @property
     def ids(self):
@@ -51,3 +70,11 @@ class IdsMixin:
     @property
     def tvrage(self):
         return self._ids.get('tvrage', None)
+
+    @property
+    def slug(self):
+        return self._ids.get('slug', None)
+
+    @slug.setter
+    def slug(self, value):
+        self._ids['slug'] = value
