@@ -268,20 +268,26 @@ class TVDBv2(BaseIndexer):
                         paged_episodes = self.config['session'].series_api.series_id_episodes_query_get(
                             tvdb_id, page=page, aired_season=season, accept_language=self.config['language']
                         )
-                        if paged_episodes.data:
-                            results += paged_episodes.data
-                        if paged_episodes.links:
-                            last = paged_episodes.links.last
+                        if not paged_episodes.data or not paged_episodes.links:
+                            raise IndexerError(
+                                'TVDB returned malformed data for {show}. Switch to a different indexer.'
+                                .format(show=self.shows[tvdb_id]['seriesname'])
+                            )
+                        results += paged_episodes.data
+                        last = paged_episodes.links.last
                         page += 1
             else:
                 while page <= last:
                     paged_episodes = self.config['session'].series_api.series_id_episodes_query_get(
                         tvdb_id, page=page, accept_language=self.config['language']
                     )
-                    if paged_episodes.data:
-                        results += paged_episodes.data
-                    if paged_episodes.links:
-                        last = paged_episodes.links.last
+                    if not paged_episodes.data or not paged_episodes.links:
+                        raise IndexerError(
+                            'TVDB returned malformed data for {show}. Switch to a different indexer.'
+                            .format(show=self.shows[tvdb_id]['seriesname'])
+                        )
+                    results += paged_episodes.data
+                    last = paged_episodes.links.last
                     page += 1
 
             if results and full_info:
