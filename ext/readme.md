@@ -11,7 +11,7 @@ ext | **`boto`** | [2.48.0](https://pypi.org/project/boto/2.48.0/) | `imdbpie` |
 ext | `CacheControl` | [0.12.11](https://pypi.org/project/CacheControl/0.12.11/) | **`medusa`** | Module: `cachecontrol`
 ext | **`certifi`** | [2022.12.7](https://pypi.org/project/certifi/2022.12.7/) | **`medusa`**, `requests` | -
 ext | **`chardet`** | [4.0.0](https://pypi.org/project/chardet/4.0.0/) | `pysrt`, `requests`, `subliminal` | -
-ext | **`cloudscraper`** | [1.2.69](https://pypi.org/project/cloudscraper/1.2.69/) | **`medusa`** | -
+ext | **`cloudscraper`** | [1.2.71](https://pypi.org/project/cloudscraper/1.2.71/) | **`medusa`** | -
 ext | **`configobj`** | [5.0.8](https://pypi.org/project/configobj/5.0.8/) | **`medusa`** | Modules: `configobj`, `validate`
 ext | **`contextlib2`** | [21.6.0](https://pypi.org/project/contextlib2/21.6.0/) | **`medusa`** | -
 ext | `decorator` | [4.4.0](https://pypi.org/project/decorator/4.4.0/) | `validators` | File: `decorator.py`
@@ -45,12 +45,12 @@ ext | **`pysrt`** | [1.1.0](https://pypi.org/project/pysrt/1.1.0/) | `subliminal
 ext | `python-dateutil` | [2.8.2](https://pypi.org/project/python-dateutil/2.8.2/) | **`medusa`**, `guessit`, `imdbpie`, `tvdbapiv2` | Module: `dateutil`
 ext | `python-twitter` | [3.5](https://pypi.org/project/python-twitter/3.5/) | **`medusa`** | Module: `twitter`
 ext | **`pytimeparse`** | pymedusa/[8f28325](https://github.com/pymedusa/pytimeparse/tree/8f2832597235c6ec98c44de4dab3274927f67e29) | **`medusa`** | -
-ext | **`pytrakt`** | [3.4.20](https://pypi.org/project/pytrakt/3.4.20/) | **`medusa`** | -
+ext | **`pytrakt`** | [3.4.23](https://pypi.org/project/pytrakt/3.4.23/) | **`medusa`** | -
 ext | **`pytz`** | [2018.4](https://pypi.org/project/pytz/2018.4/) | `subliminal` | -
 ext | `PyYAML` | [5.4.1](https://pypi.org/project/PyYAML/5.4.1/) | `knowit` | Modules: `_yaml`, `yaml`
 ext | `rarfile` | [3.1](https://pypi.org/project/rarfile/3.1/) | **`medusa`**, `subliminal` | File: `rarfile.py`
 ext | **`rebulk`** | [3.1.0](https://pypi.org/project/rebulk/3.1.0/) | **`medusa`**, `guessit` | -
-ext | **`requests`** | [2.30.0](https://pypi.org/project/requests/2.30.0/) | **`medusa`**, `adba`, `boto`, `CacheControl`, `cloudscraper`, `PyGithub`, `python-twitter`, `pytrakt`, `pytvmaze`, `requests-oauthlib`, `requests-toolbelt`, `rtorrent-python`, `simpleanidb`, `subliminal`, `tmdbsimple`, `tvdbapiv2` | -
+ext | **`requests`** | [2.31.0](https://pypi.org/project/requests/2.31.0/) | **`medusa`**, `adba`, `boto`, `CacheControl`, `cloudscraper`, `PyGithub`, `python-twitter`, `pytrakt`, `pytvmaze`, `requests-oauthlib`, `requests-toolbelt`, `rtorrent-python`, `simpleanidb`, `subliminal`, `tmdbsimple`, `tvdbapiv2` | -
 ext | `requests-oauthlib` | [1.3.1](https://pypi.org/project/requests-oauthlib/1.3.1/) | **`medusa`**, `python-twitter`, `pytrakt` | Module: `requests_oauthlib`
 ext | `requests-toolbelt` | [1.0.0](https://pypi.org/project/requests-toolbelt/1.0.0/) | `cloudscraper` | Module: `requests_toolbelt`
 ext | `sgmllib3k` | [1.0.0](https://pypi.org/project/sgmllib3k/1.0.0/) | `feedparser` | File: `sgmllib.py`
