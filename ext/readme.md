@@ -50,7 +50,7 @@ ext | **`pytz`** | [2018.4](https://pypi.org/project/pytz/2018.4/) | `subliminal
 ext | `PyYAML` | [5.4.1](https://pypi.org/project/PyYAML/5.4.1/) | `knowit` | Modules: `_yaml`, `yaml`
 ext | `rarfile` | [3.1](https://pypi.org/project/rarfile/3.1/) | **`medusa`**, `subliminal` | File: `rarfile.py`
 ext | **`rebulk`** | [3.1.0](https://pypi.org/project/rebulk/3.1.0/) | **`medusa`**, `guessit` | -
-ext | **`requests`** | [2.30.0](https://pypi.org/project/requests/2.30.0/) | **`medusa`**, `adba`, `boto`, `CacheControl`, `cloudscraper`, `PyGithub`, `python-twitter`, `pytrakt`, `pytvmaze`, `requests-oauthlib`, `requests-toolbelt`, `rtorrent-python`, `simpleanidb`, `subliminal`, `tmdbsimple`, `tvdbapiv2` | -
+ext | **`requests`** | [2.31.0](https://pypi.org/project/requests/2.31.0/) | **`medusa`**, `adba`, `boto`, `CacheControl`, `cloudscraper`, `PyGithub`, `python-twitter`, `pytrakt`, `pytvmaze`, `requests-oauthlib`, `requests-toolbelt`, `rtorrent-python`, `simpleanidb`, `subliminal`, `tmdbsimple`, `tvdbapiv2` | -
 ext | `requests-oauthlib` | [1.3.1](https://pypi.org/project/requests-oauthlib/1.3.1/) | **`medusa`**, `python-twitter`, `pytrakt` | Module: `requests_oauthlib`
 ext | `requests-toolbelt` | [1.0.0](https://pypi.org/project/requests-toolbelt/1.0.0/) | `cloudscraper` | Module: `requests_toolbelt`
 ext | `sgmllib3k` | [1.0.0](https://pypi.org/project/sgmllib3k/1.0.0/) | `feedparser` | File: `sgmllib.py`
