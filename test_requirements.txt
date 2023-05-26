@@ -8,7 +8,7 @@ flake8-import-order==0.18.2
 flake8-quotes==3.3.2
 pep8-naming==0.13.2
 pytest>=6.2.5
-pytest-cov==4.0.0
+pytest-cov==4.1.0
 pytest-flake8==1.1.1
 pytest-tornado==0.8.1
 PyYAML==5.4.1
