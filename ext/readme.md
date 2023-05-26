@@ -5,13 +5,13 @@ ext | **`adba`** | pymedusa/[37b0c74](https://github.com/pymedusa/adba/tree/37b0
 ext | `appdirs` | [1.4.3](https://pypi.org/project/appdirs/1.4.3/) | `simpleanidb`, `subliminal` (cli only) | File: `appdirs.py`
 ext | `attrs` | [18.2.0](https://pypi.org/project/attrs/18.2.0/) | `imdbpie` | Module: `attr`
 ext | **`babelfish`** | [0.6.0](https://pypi.org/project/babelfish/0.6.0/) | **`medusa`**, `guessit`, `knowit`, `subliminal` | -
-ext | `beautifulsoup4` | [4.11.2](https://pypi.org/project/beautifulsoup4/4.11.2/) | **`medusa`**, `subliminal` | Module: `bs4`
+ext | `beautifulsoup4` | [4.12.2](https://pypi.org/project/beautifulsoup4/4.12.2/) | **`medusa`**, `subliminal` | Module: `bs4`
 ext | `bencode.py` | [4.0.0](https://pypi.org/project/bencode.py/4.0.0/) | **`medusa`** | Modules: `bencodepy`, `bencode`<br>Monkey-patched, see `medusa/init/__init__.py`
 ext | **`boto`** | [2.48.0](https://pypi.org/project/boto/2.48.0/) | `imdbpie` | -
 ext | `CacheControl` | [0.12.11](https://pypi.org/project/CacheControl/0.12.11/) | **`medusa`** | Module: `cachecontrol`
 ext | **`certifi`** | [2022.12.7](https://pypi.org/project/certifi/2022.12.7/) | **`medusa`**, `requests` | -
 ext | **`chardet`** | [4.0.0](https://pypi.org/project/chardet/4.0.0/) | `pysrt`, `requests`, `subliminal` | -
-ext | **`cloudscraper`** | [1.2.69](https://pypi.org/project/cloudscraper/1.2.69/) | **`medusa`** | -
+ext | **`cloudscraper`** | [1.2.70](https://pypi.org/project/cloudscraper/1.2.70/) | **`medusa`** | -
 ext | **`configobj`** | [5.0.8](https://pypi.org/project/configobj/5.0.8/) | **`medusa`** | Modules: `configobj`, `validate`
 ext | **`contextlib2`** | [21.6.0](https://pypi.org/project/contextlib2/21.6.0/) | **`medusa`** | -
 ext | `decorator` | [4.4.0](https://pypi.org/project/decorator/4.4.0/) | `validators` | File: `decorator.py`
@@ -38,19 +38,19 @@ ext | **`oauthlib`** | [3.0.0](https://pypi.org/project/oauthlib/3.0.0/) | `requ
 ext | `Pint` | [0.9](https://pypi.org/project/Pint/0.9/) | `knowit` | Module: `pint`
 ext | `profilehooks` | [1.12.0](https://pypi.org/project/profilehooks/1.12.0/) | **`medusa`** | File: `profilehooks.py`
 ext | `PyGithub` | [1.45](https://pypi.org/project/PyGithub/1.45/) | **`medusa`** | Module: `github`
-ext | `PyJWT` | [2.6.0](https://pypi.org/project/PyJWT/2.6.0/) | **`medusa`**, `PyGithub` | Module: `jwt`
+ext | `PyJWT` | [2.7.0](https://pypi.org/project/PyJWT/2.7.0/) | **`medusa`**, `PyGithub` | Module: `jwt`
 ext | **`pymediainfo`** | [5.1.0](https://pypi.org/project/pymediainfo/5.1.0/) | `knowit` | -
 ext | `pyparsing` | [2.4.7](https://pypi.org/project/pyparsing/2.4.7/) | `cloudscraper` | File: `pyparsing.py`
 ext | **`pysrt`** | [1.1.0](https://pypi.org/project/pysrt/1.1.0/) | `subliminal` | -
 ext | `python-dateutil` | [2.8.2](https://pypi.org/project/python-dateutil/2.8.2/) | **`medusa`**, `guessit`, `imdbpie`, `tvdbapiv2` | Module: `dateutil`
 ext | `python-twitter` | [3.5](https://pypi.org/project/python-twitter/3.5/) | **`medusa`** | Module: `twitter`
 ext | **`pytimeparse`** | pymedusa/[8f28325](https://github.com/pymedusa/pytimeparse/tree/8f2832597235c6ec98c44de4dab3274927f67e29) | **`medusa`** | -
-ext | **`pytrakt`** | [3.4.20](https://pypi.org/project/pytrakt/3.4.20/) | **`medusa`** | -
+ext | **`pytrakt`** | [3.4.23](https://pypi.org/project/pytrakt/3.4.23/) | **`medusa`** | -
 ext | **`pytz`** | [2018.4](https://pypi.org/project/pytz/2018.4/) | `subliminal` | -
 ext | `PyYAML` | [5.4.1](https://pypi.org/project/PyYAML/5.4.1/) | `knowit` | Modules: `_yaml`, `yaml`
 ext | `rarfile` | [3.1](https://pypi.org/project/rarfile/3.1/) | **`medusa`**, `subliminal` | File: `rarfile.py`
 ext | **`rebulk`** | [3.1.0](https://pypi.org/project/rebulk/3.1.0/) | **`medusa`**, `guessit` | -
-ext | **`requests`** | [2.30.0](https://pypi.org/project/requests/2.30.0/) | **`medusa`**, `adba`, `boto`, `CacheControl`, `cloudscraper`, `PyGithub`, `python-twitter`, `pytrakt`, `pytvmaze`, `requests-oauthlib`, `requests-toolbelt`, `rtorrent-python`, `simpleanidb`, `subliminal`, `tmdbsimple`, `tvdbapiv2` | -
+ext | **`requests`** | [2.31.0](https://pypi.org/project/requests/2.31.0/) | **`medusa`**, `adba`, `boto`, `CacheControl`, `cloudscraper`, `PyGithub`, `python-twitter`, `pytrakt`, `pytvmaze`, `requests-oauthlib`, `requests-toolbelt`, `rtorrent-python`, `simpleanidb`, `subliminal`, `tmdbsimple`, `tvdbapiv2` | -
 ext | `requests-oauthlib` | [1.3.1](https://pypi.org/project/requests-oauthlib/1.3.1/) | **`medusa`**, `python-twitter`, `pytrakt` | Module: `requests_oauthlib`
 ext | `requests-toolbelt` | [1.0.0](https://pypi.org/project/requests-toolbelt/1.0.0/) | `cloudscraper` | Module: `requests_toolbelt`
 ext | `sgmllib3k` | [1.0.0](https://pypi.org/project/sgmllib3k/1.0.0/) | `feedparser` | File: `sgmllib.py`
@@ -65,7 +65,7 @@ ext | `trans` | [2.1.0](https://pypi.org/project/trans/2.1.0/) | `imdbpie` | Fil
 ext | `ttl-cache` | [1.6](https://pypi.org/project/ttl-cache/1.6/) | **`medusa`**, `adba` | File: `ttl_cache.py`
 ext | **`tvdbapiv2`** | pymedusa/[d6d0e9d](https://github.com/pymedusa/tvdbv2/tree/d6d0e9d98071c2d646beb997b336edbb0e98dfb7) | **`medusa`** | -
 ext | `typing-extensions` | [4.1.1](https://pypi.org/project/typing-extensions/4.1.1/) | `importlib_metadata` | File: `typing_extensions.py`
-ext | **`urllib3`** | [1.26.15](https://pypi.org/project/urllib3/1.26.15/) | `requests` | -
+ext | **`urllib3`** | [1.26.16](https://pypi.org/project/urllib3/1.26.16/) | `requests` | -
 ext | **`validators`** | [0.18.2](https://pypi.org/project/validators/0.18.2/) | **`medusa`** | -
 ext | **`webencodings`** | [0.5.1](https://pypi.org/project/webencodings/0.5.1/) | `html5lib` | -
 ext | **`wrapt`** | [1.14.1](https://pypi.org/project/wrapt/1.14.1/) | `deprecated` | -
