@@ -5,13 +5,13 @@ ext | **`adba`** | pymedusa/[37b0c74](https://github.com/pymedusa/adba/tree/37b0
 ext | `appdirs` | [1.4.3](https://pypi.org/project/appdirs/1.4.3/) | `simpleanidb`, `subliminal` (cli only) | File: `appdirs.py`
 ext | `attrs` | [18.2.0](https://pypi.org/project/attrs/18.2.0/) | `imdbpie` | Module: `attr`
 ext | **`babelfish`** | [0.6.0](https://pypi.org/project/babelfish/0.6.0/) | **`medusa`**, `guessit`, `knowit`, `subliminal` | -
-ext | `beautifulsoup4` | [4.11.2](https://pypi.org/project/beautifulsoup4/4.11.2/) | **`medusa`**, `subliminal` | Module: `bs4`
+ext | `beautifulsoup4` | [4.12.2](https://pypi.org/project/beautifulsoup4/4.12.2/) | **`medusa`**, `subliminal` | Module: `bs4`
 ext | `bencode.py` | [4.0.0](https://pypi.org/project/bencode.py/4.0.0/) | **`medusa`** | Modules: `bencodepy`, `bencode`<br>Monkey-patched, see `medusa/init/__init__.py`
 ext | **`boto`** | [2.48.0](https://pypi.org/project/boto/2.48.0/) | `imdbpie` | -
 ext | `CacheControl` | [0.12.11](https://pypi.org/project/CacheControl/0.12.11/) | **`medusa`** | Module: `cachecontrol`
 ext | **`certifi`** | [2022.12.7](https://pypi.org/project/certifi/2022.12.7/) | **`medusa`**, `requests` | -
 ext | **`chardet`** | [4.0.0](https://pypi.org/project/chardet/4.0.0/) | `pysrt`, `requests`, `subliminal` | -
-ext | **`cloudscraper`** | [1.2.71](https://pypi.org/project/cloudscraper/1.2.71/) | **`medusa`** | -
+ext | **`cloudscraper`** | [1.2.70](https://pypi.org/project/cloudscraper/1.2.70/) | **`medusa`** | -
 ext | **`configobj`** | [5.0.8](https://pypi.org/project/configobj/5.0.8/) | **`medusa`** | Modules: `configobj`, `validate`
 ext | **`contextlib2`** | [21.6.0](https://pypi.org/project/contextlib2/21.6.0/) | **`medusa`** | -
 ext | `decorator` | [4.4.0](https://pypi.org/project/decorator/4.4.0/) | `validators` | File: `decorator.py`
