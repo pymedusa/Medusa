@@ -8,7 +8,7 @@ functionality of tmdbsimple.
 
 Created by Celia Oakley on 2013-10-31.
 
-:copyright: (c) 2013-2020 by Celia Oakley
+:copyright: (c) 2013-2022 by Celia Oakley
 :license: GPLv3, see LICENSE for more details
 """
 
@@ -38,6 +38,7 @@ class TV(TMDB):
         'similar': '/{id}/similar',
         'translations': '/{id}/translations',
         'videos': '/{id}/videos',
+        'watch_providers': '/{id}/watch/providers',
         'rating': '/{id}/rating',
         'latest': '/latest',
         'airing_today': '/airing_today',
@@ -319,6 +320,21 @@ class TV(TMDB):
         response = self._GET(path, kwargs)
         self._set_attrs_to_values(response)
         return response
+
+    def watch_providers(self, **kwargs):
+        """
+        Get a list of the availabilities per country by provider for tv.
+
+        Args:
+            None
+
+        Returns:
+            A dict respresentation of the JSON returned from the API.
+        """
+        path = self._get_id_path('watch_providers')
+
+        response = self._GET(path, kwargs)
+        self._set_attrs_to_values(response)
 
     def rating(self, **kwargs):
         """
@@ -659,7 +675,8 @@ class TV_Episodes(TMDB):
         Returns:
             A dict respresentation of the JSON returned from the API.
         """
-        path = self._get_tv_id_season_number_episode_number_path('account_states')
+        path = self._get_tv_id_season_number_episode_number_path(
+            'account_states')
 
         response = self._GET(path, kwargs)
         self._set_attrs_to_values(response)
@@ -736,7 +753,8 @@ class TV_Episodes(TMDB):
         Returns:
             A dict respresentation of the JSON returned from the API.
         """
-        path = self._get_tv_id_season_number_episode_number_path('translations')
+        path = self._get_tv_id_season_number_episode_number_path(
+            'translations')
 
         response = self._GET(path, kwargs)
         self._set_attrs_to_values(response)
