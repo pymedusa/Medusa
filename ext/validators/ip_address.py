@@ -4,7 +4,7 @@ from .utils import validator
 @validator
 def ipv4(value):
     """
-    Return whether or not given value is a valid IP version 4 address.
+    Return whether a given value is a valid IP version 4 address.
 
     This validator is based on `WTForms IPAddress validator`_
 
@@ -23,8 +23,12 @@ def ipv4(value):
 
     :param value: IP address string to validate
     """
-    groups = value.split('.')
-    if len(groups) != 4 or any(not x.isdigit() for x in groups):
+    groups = value.split(".")
+    if (
+        len(groups) != 4
+        or any(not x.isdigit() for x in groups)
+        or any(len(x) > 3 for x in groups)
+    ):
         return False
     return all(0 <= int(part) < 256 for part in groups)
 
@@ -32,7 +36,7 @@ def ipv4(value):
 @validator
 def ipv4_cidr(value):
     """
-    Return whether or not given value is a valid CIDR-notated IP version 4
+    Return whether a given value is a valid CIDR-notated IP version 4
     address range.
 
     This validator is based on RFC4632 3.1.
@@ -57,7 +61,7 @@ def ipv4_cidr(value):
 @validator
 def ipv6(value):
     """
-    Return whether or not given value is a valid IP version 6 address
+    Return whether a given value is a valid IP version 6 address
     (including IPv4-mapped IPv6 addresses).
 
     This validator is based on `WTForms IPAddress validator`_.
@@ -95,10 +99,6 @@ def ipv6(value):
     else:
         ipv4_groups = []
 
-    max_groups = 6 if ipv4_groups else 8
-    if len(ipv6_groups) > max_groups:
-        return False
-
     count_blank = 0
     for part in ipv6_groups:
         if not part:
@@ -109,12 +109,24 @@ def ipv6(value):
         except ValueError:
             return False
         else:
-            if not 0 <= num <= 65536:
+            if not 0 <= num <= 65536 or len(part) > 4:
                 return False
 
-    if count_blank < 2:
+    max_groups = 6 if ipv4_groups else 8
+    part_count = len(ipv6_groups) - count_blank
+    if count_blank == 0 and part_count == max_groups:
+        # no :: -> must have size of max_groups
         return True
-    elif count_blank == 2 and not ipv6_groups[0] and not ipv6_groups[1]:
+    elif count_blank == 1 and ipv6_groups[-1] and ipv6_groups[0] and part_count < max_groups:
+        # one :: inside the address or prefix or suffix : -> filter least two cases
+        return True
+    elif count_blank == 2 and part_count < max_groups and (
+            ((ipv6_groups[0] and not ipv6_groups[-1]) or (not ipv6_groups[0] and ipv6_groups[-1])) or ipv4_groups):
+        # leading or trailing :: or : at end and begin -> filter last case
+        # Check if it has ipv4 groups because they get removed from the ipv6_groups
+        return True
+    elif count_blank == 3 and part_count == 0:
+        # :: is the address -> filter everything else
         return True
     return False
 
@@ -122,7 +134,7 @@ def ipv6(value):
 @validator
 def ipv6_cidr(value):
     """
-    Returns whether or not given value is a valid CIDR-notated IP version 6
+    Returns whether a given value is a valid CIDR-notated IP version 6
     address range.
 
     This validator is based on RFC4632 3.1.

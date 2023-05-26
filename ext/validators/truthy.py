@@ -1,5 +1,3 @@
-import six
-
 from .utils import validator
 
 
@@ -37,5 +35,5 @@ def truthy(value):
     """
     return (
         value and
-        (not isinstance(value, six.string_types) or value.strip())
+        (not isinstance(value, str) or value.strip())
     )

@@ -66,7 +66,7 @@ ext | `ttl-cache` | [1.6](https://pypi.org/project/ttl-cache/1.6/) | **`medusa`*
 ext | **`tvdbapiv2`** | pymedusa/[d6d0e9d](https://github.com/pymedusa/tvdbv2/tree/d6d0e9d98071c2d646beb997b336edbb0e98dfb7) | **`medusa`** | -
 ext | `typing-extensions` | [4.1.1](https://pypi.org/project/typing-extensions/4.1.1/) | `importlib_metadata` | File: `typing_extensions.py`
 ext | **`urllib3`** | [1.26.16](https://pypi.org/project/urllib3/1.26.16/) | `requests` | -
-ext | **`validators`** | [0.18.2](https://pypi.org/project/validators/0.18.2/) | **`medusa`** | -
+ext | **`validators`** | [0.20.0](https://pypi.org/project/validators/0.20.0/) | **`medusa`** | -
 ext | **`webencodings`** | [0.5.1](https://pypi.org/project/webencodings/0.5.1/) | `html5lib` | -
 ext | **`wrapt`** | [1.14.1](https://pypi.org/project/wrapt/1.14.1/) | `deprecated` | -
 ext | `zipp` | [3.6.0](https://pypi.org/project/zipp/3.6.0/) | `importlib_resources` | File: `zipp.py`
