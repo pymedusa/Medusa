@@ -27,6 +27,7 @@ from .api import BackendFormatted
 from .api import CachedValue
 from .api import CacheMutex
 from .api import CacheReturnType
+from .api import CantDeserializeException
 from .api import KeyType
 from .api import MetaDataType
 from .api import NO_VALUE
@@ -328,7 +329,17 @@ class CacheRegion:
      deserializer recommended by the backend will be used.   Typical
      deserializers include ``pickle.dumps`` and ``json.dumps``.
 
-     .. versionadded:: 1.1.0
+     Deserializers can raise a :class:`.api.CantDeserializeException` if they
+     are unable to deserialize the value from the backend, indicating
+     deserialization failed and that caching should proceed to re-generate
+     a value.  This allows an application that has been updated to gracefully
+     re-cache old items which were persisted by a previous version of the
+     application and can no longer be successfully deserialized.
+
+     .. versionadded:: 1.1.0 added "deserializer" parameter
+
+     .. versionadded:: 1.2.0 added support for
+        :class:`.api.CantDeserializeException`
 
     :param async_creation_runner:  A callable that, when specified,
      will be passed to and called by dogpile.lock when
@@ -1219,8 +1230,12 @@ class CacheRegion:
 
         bytes_metadata, _, bytes_payload = byte_value.partition(b"|")
         metadata = json.loads(bytes_metadata)
-        payload = self.deserializer(bytes_payload)
-        return CachedValue(payload, metadata)
+        try:
+            payload = self.deserializer(bytes_payload)
+        except CantDeserializeException:
+            return NO_VALUE
+        else:
+            return CachedValue(payload, metadata)
 
     def _serialize_cached_value_elements(
         self, payload: ValuePayload, metadata: MetaDataType
@@ -1247,7 +1262,8 @@ class CacheRegion:
         return self._serialize_cached_value_elements(payload, metadata)
 
     def _serialized_cached_value(self, value: CachedValue) -> BackendFormatted:
-        """Return a backend formatted representation of a :class:`.CachedValue`.
+        """Return a backend formatted representation of a
+        :class:`.CachedValue`.
 
         If a serializer is in use then this will return a string representation
         with the value formatted by the serializer.
