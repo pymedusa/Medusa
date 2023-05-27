@@ -1,14 +1,6 @@
 import re
 
-import six
-
 from .utils import validator
-
-if six.PY3:
-    text_type = str
-    unicode = str
-else:
-    text_type = unicode
 
 pattern = re.compile(
     r'^(?:[a-zA-Z0-9]'  # First character of the domain
@@ -22,7 +14,7 @@ def to_unicode(obj, charset='utf-8', errors='strict'):
     if obj is None:
         return None
     if not isinstance(obj, bytes):
-        return text_type(obj)
+        return str(obj)
     return obj.decode(charset, errors)
 
 

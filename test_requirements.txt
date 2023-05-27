@@ -3,12 +3,12 @@ pyparsing==3.0.9
 flake8<5.0.0
 importlib-metadata<4.3; python_version<"3.8"
 pycodestyle==2.8.0
-flake8-docstrings==1.6.0
+flake8-docstrings==1.7.0
 flake8-import-order==0.18.2
 flake8-quotes==3.3.2
 pep8-naming==0.13.2
 pytest>=6.2.5
-pytest-cov==4.0.0
+pytest-cov==4.1.0
 pytest-flake8==1.1.1
 pytest-tornado==0.8.1
 PyYAML==5.4.1

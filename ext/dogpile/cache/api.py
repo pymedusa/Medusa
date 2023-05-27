@@ -51,6 +51,15 @@ Serializer = Callable[[ValuePayload], bytes]
 Deserializer = Callable[[bytes], ValuePayload]
 
 
+class CantDeserializeException(Exception):
+    """Exception indicating deserialization failed, and that caching
+    should proceed to re-generate a value
+
+    .. versionadded:: 1.2.0
+
+    """
+
+
 class CacheMutex(abc.ABC):
     """Describes a mutexing object with acquire and release methods.
 

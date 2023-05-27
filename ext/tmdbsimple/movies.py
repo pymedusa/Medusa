@@ -8,7 +8,7 @@ Reviews functionality of tmdbsimple.
 
 Created by Celia Oakley on 2013-10-31.
 
-:copyright: (c) 2013-2020 by Celia Oakley
+:copyright: (c) 2013-2022 by Celia Oakley
 :license: GPLv3, see LICENSE for more details
 """
 
@@ -31,13 +31,14 @@ class Movies(TMDB):
         'external_ids': '/{id}/external_ids',
         'images': '/{id}/images',
         'keywords': '/{id}/keywords',
-        'release_dates': '/{id}/release_dates',
-        'videos': '/{id}/videos',
-        'translations': '/{id}/translations',
-        'recommendations': '/{id}/recommendations',
-        'similar_movies': '/{id}/similar_movies',
-        'reviews': '/{id}/reviews',
         'lists': '/{id}/lists',
+        'recommendations': '/{id}/recommendations',
+        'release_dates': '/{id}/release_dates',
+        'reviews': '/{id}/reviews',
+        'similar_movies': '/{id}/similar_movies',
+        'translations': '/{id}/translations',
+        'videos': '/{id}/videos',
+        'watch_providers': '/{id}/watch/providers',
         'rating': '/{id}/rating',
         'rating_delete': '/{id}/rating',
         'latest': '/latest',
@@ -208,6 +209,40 @@ class Movies(TMDB):
         self._set_attrs_to_values(response)
         return response
 
+    def lists(self, **kwargs):
+        """
+        Get a list of lists that this movie belongs to.
+
+        Args:
+            language: (optional) ISO 639-1 code.
+            page: (optional) Minimum 1, maximum 1000, default 1.
+
+        Returns:
+            A dict representation of the JSON returned from the API.
+        """
+        path = self._get_id_path('lists')
+
+        response = self._GET(path, kwargs)
+        self._set_attrs_to_values(response)
+        return response
+
+    def recommendations(self, **kwargs):
+        """
+        Get a list of recommended movies for a movie.
+
+        Args:
+            language: (optional) ISO 639-1 code.
+            page: (optional) Minimum 1, maximum 1000, default 1.
+
+        Returns:
+            A dict representation of the JSON returned from the API.
+        """
+        path = self._get_id_path('recommendations')
+
+        response = self._GET(path, kwargs)
+        self._set_attrs_to_values(response)
+        return response
+
     def release_dates(self, **kwargs):
         """
         Get the release date along with the certification for a movie.
@@ -233,41 +268,9 @@ class Movies(TMDB):
         self._set_attrs_to_values(response)
         return response
 
-    def videos(self, **kwargs):
+    def reviews(self, **kwargs):
         """
-        Get the videos that have been added to a movie.
-
-        Args:
-            language: (optional) ISO 639-1 code.
-
-        Returns:
-            A dict representation of the JSON returned from the API.
-        """
-        path = self._get_id_path('videos')
-
-        response = self._GET(path, kwargs)
-        self._set_attrs_to_values(response)
-        return response
-
-    def translations(self, **kwargs):
-        """
-        Get a list of translations that have been created for a movie.
-
-        Args:
-            None
-
-        Returns:
-            A dict representation of the JSON returned from the API.
-        """
-        path = self._get_id_path('translations')
-
-        response = self._GET(path, kwargs)
-        self._set_attrs_to_values(response)
-        return response
-
-    def recommendations(self, **kwargs):
-        """
-        Get a list of recommended movies for a movie.
+        Get the user reviews for a movie.
 
         Args:
             language: (optional) ISO 639-1 code.
@@ -276,7 +279,7 @@ class Movies(TMDB):
         Returns:
             A dict representation of the JSON returned from the API.
         """
-        path = self._get_id_path('recommendations')
+        path = self._get_id_path('reviews')
 
         response = self._GET(path, kwargs)
         self._set_attrs_to_values(response)
@@ -302,35 +305,49 @@ class Movies(TMDB):
         self._set_attrs_to_values(response)
         return response
 
-    def reviews(self, **kwargs):
+    def translations(self, **kwargs):
         """
-        Get the user reviews for a movie.
+        Get a list of translations that have been created for a movie.
 
         Args:
-            language: (optional) ISO 639-1 code.
-            page: (optional) Minimum 1, maximum 1000, default 1.
+            None
 
         Returns:
             A dict representation of the JSON returned from the API.
         """
-        path = self._get_id_path('reviews')
+        path = self._get_id_path('translations')
 
         response = self._GET(path, kwargs)
         self._set_attrs_to_values(response)
         return response
 
-    def lists(self, **kwargs):
+    def videos(self, **kwargs):
         """
-        Get a list of lists that this movie belongs to.
+        Get the videos that have been added to a movie.
 
         Args:
             language: (optional) ISO 639-1 code.
-            page: (optional) Minimum 1, maximum 1000, default 1.
 
         Returns:
             A dict representation of the JSON returned from the API.
         """
-        path = self._get_id_path('lists')
+        path = self._get_id_path('videos')
+
+        response = self._GET(path, kwargs)
+        self._set_attrs_to_values(response)
+        return response
+
+    def watch_providers(self, **kwargs):
+        """
+        Get a list of the availabilities per country by provider for movies.
+
+        Args:
+            None
+
+        Returns:
+            A dict representation of the JSON returned from the API.
+        """
+        path = self._get_id_path('watch_providers')
 
         response = self._GET(path, kwargs)
         self._set_attrs_to_values(response)

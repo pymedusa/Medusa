@@ -69,13 +69,13 @@ regex = re.compile(  # noqa: W605
     r"(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])"
     r")\]|"
     # host name
-    r"(?:(?:(?:xn--)|[a-z\u00a1-\uffff\U00010000-\U0010ffff0-9]-?)*"
+    r"(?:(?:(?:xn--[-]{0,2})|[a-z\u00a1-\uffff\U00010000-\U0010ffff0-9]-?)*"
     r"[a-z\u00a1-\uffff\U00010000-\U0010ffff0-9]+)"
     # domain name
-    r"(?:\.(?:(?:xn--)|[a-z\u00a1-\uffff\U00010000-\U0010ffff0-9]-?)*"
+    r"(?:\.(?:(?:xn--[-]{0,2})|[a-z\u00a1-\uffff\U00010000-\U0010ffff0-9]-?)*"
     r"[a-z\u00a1-\uffff\U00010000-\U0010ffff0-9]+)*"
     # TLD identifier
-    r"(?:\.(?:(?:xn--[a-z\u00a1-\uffff\U00010000-\U0010ffff0-9]{2,})|"
+    r"(?:\.(?:(?:xn--[-]{0,2}[a-z\u00a1-\uffff\U00010000-\U0010ffff0-9]{2,})|"
     r"[a-z\u00a1-\uffff\U00010000-\U0010ffff]{2,}))"
     r")"
     # port number

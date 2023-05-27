@@ -2,7 +2,6 @@ import inspect
 import itertools
 from collections import OrderedDict
 
-import six
 from decorator import decorator
 
 
@@ -37,10 +36,7 @@ def func_args_as_dict(func, args, kwargs):
     Return given function's positional and key value arguments as an ordered
     dictionary.
     """
-    if six.PY2:
-        _getargspec = inspect.getargspec
-    else:
-        _getargspec = inspect.getfullargspec
+    _getargspec = inspect.getfullargspec
 
     arg_names = list(
         OrderedDict.fromkeys(
@@ -51,7 +47,7 @@ def func_args_as_dict(func, args, kwargs):
         )
     )
     return OrderedDict(
-        list(six.moves.zip(arg_names, args)) +
+        list(zip(arg_names, args)) +
         list(kwargs.items())
     )
 
