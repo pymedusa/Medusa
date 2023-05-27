@@ -8,6 +8,14 @@
 
 -----
 
+## 1.0.16 (27-05-2023)
+
+#### Improvements
+- Raise warning when TVDB returns malformed data
+- Update many JavaScript and Python dependencies
+
+-----
+
 ## 1.0.15 (21-05-2023)
 
 #### Fixes
