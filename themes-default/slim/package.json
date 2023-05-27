@@ -100,7 +100,7 @@
     "eslint-plugin-import": "2.25.3",
     "eslint-plugin-jest": "25.2.4",
     "eslint-plugin-unicorn": "22.0.0",
-    "eslint-plugin-vue": "7.20.0",
+    "eslint-plugin-vue": "9.14.1",
     "file-loader": "6.2.0",
     "filemanager-webpack-plugin": "6.1.7",
     "glob": "7.2.3",
