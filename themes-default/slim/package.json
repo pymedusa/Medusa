@@ -102,7 +102,7 @@
     "eslint-plugin-unicorn": "22.0.0",
     "eslint-plugin-vue": "7.20.0",
     "file-loader": "6.2.0",
-    "filemanager-webpack-plugin": "6.1.7",
+    "filemanager-webpack-plugin": "8.0.0",
     "glob": "7.2.3",
     "gulp": "4.0.2",
     "gulp-changed": "4.0.3",
