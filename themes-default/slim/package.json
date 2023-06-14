@@ -46,7 +46,7 @@
     "lodash": "4.17.21",
     "lozad": "1.16.0",
     "sass": "1.62.1",
-    "sass-loader": "12.6.0",
+    "sass-loader": "13.3.2",
     "style-loader": "3.3.3",
     "stylelint-scss": "3.21.0",
     "tablesorter": "2.31.3",
