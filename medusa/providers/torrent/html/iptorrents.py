@@ -29,7 +29,7 @@ class IPTorrentsProvider(TorrentProvider):
         super(IPTorrentsProvider, self).__init__('IPTorrents')
 
         # URLs
-        self.url = 'https://iptorrents.me'
+        self.url = 'https://iptorrents.com'
 
         # Proper Strings
 
