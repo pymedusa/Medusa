@@ -12,7 +12,7 @@ export const manageCookieMixin = cookiePrefix => {
                     return JSON.parse(key);
                 }
                 try {
-                    return JSON.parse(this.$cookies.get(`${cookiePrefix}-${key}`));
+                    return this.$cookies.get(`${cookiePrefix}-${key}`);
                 } catch {
                     return null;
                 }

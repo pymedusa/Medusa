@@ -25,11 +25,6 @@
       }
     ]
   },
-  "resolutions": {
-    "**/jquery": "3.7.0",
-    "**/date-fns": "2.30.0",
-    "jest/**/@babel/core": "7.22.1"
-  },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "1.2.36",
     "@fortawesome/free-regular-svg-icons": "5.15.4",
@@ -45,8 +40,8 @@
     "jquery": "3.7.0",
     "lodash": "4.17.21",
     "lozad": "1.16.0",
-    "sass": "1.62.1",
-    "sass-loader": "12.6.0",
+    "sass": "1.63.6",
+    "sass-loader": "13.3.2",
     "style-loader": "3.3.3",
     "stylelint-scss": "3.21.0",
     "tablesorter": "2.31.3",
@@ -56,7 +51,7 @@
     "vue-async-computed": "3.9.0",
     "vue-cookies": "1.8.3",
     "vue-form-wizard": "0.8.4",
-    "vue-good-table": "git+https://github.com/p0psicles/vue-good-table#7d9dbf1156679c52a2cc336ba00618ddd8248574",
+    "vue-good-table": "git+https://github.com/medariox/vue-good-table#b8a166d25fc35f655e62dbf0235d610fc0aa298b",
     "vue-images-loaded": "1.1.2",
     "vue-js-modal": "2.0.1",
     "vue-js-toggle-button": "1.3.3",
@@ -93,6 +88,7 @@
     "copy-webpack-plugin": "11.0.0",
     "cross-env": "7.0.3",
     "css-loader": "6.7.4",
+    "css-minimizer-webpack-plugin": "5.0.1",
     "eslint": "7.32.0",
     "eslint-config-xo": "0.26.0",
     "eslint-import-resolver-webpack": "0.13.2",
@@ -112,8 +108,8 @@
     "jest-serializer-vue": "2.0.2",
     "jest-vue-matcher": "2.0.0",
     "mini-css-extract-plugin": "2.7.6",
+    "node-gyp": "9.4.0",
     "nyc": "15.1.0",
-    "optimize-css-assets-webpack-plugin": "6.0.1",
     "stylelint": "13.13.1",
     "stylelint-config-standard": "22.0.0",
     "timekeeper": "2.2.0",
@@ -121,6 +117,10 @@
     "vue-loader": "15.10.1",
     "webpack": "5.84.1",
     "webpack-cli": "4.10.0"
+  },
+  "resolutions": {
+    "jquery": "3.7.0",
+    "date-fns": "2.30.0"
   },
   "stylelint": {
     "plugins": [
