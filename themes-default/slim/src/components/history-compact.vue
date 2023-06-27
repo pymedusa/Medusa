@@ -219,7 +219,7 @@ export default {
             const sort = getCookie('sort'); // From manage-cookie.js mixin
             if (sort) {
                 if (sort[0].type === 'none') {
-                    sort[0].type = 'desc'
+                    sort[0].type = 'desc';
                 }
                 return sort;
             }
