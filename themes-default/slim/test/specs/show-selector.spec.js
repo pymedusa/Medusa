@@ -9,7 +9,6 @@ import showLists from '../__fixtures__/show-lists';
 describe('ShowSelector.test.js', () => {
     let localVue;
     let store;
-    let router;
 
     const routes = [
         {
@@ -24,7 +23,7 @@ describe('ShowSelector.test.js', () => {
         }
     ];
 
-    router = new VueRouter({
+    const router = new VueRouter({
         routes
     });
 
