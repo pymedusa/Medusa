@@ -283,6 +283,9 @@ export default {
             const { getCookie } = this;
             const sort = getCookie('sort'); // From manage-cookie.js mixin
             if (sort) {
+                if (sort[0].type === 'none') {
+                    sort[0].type = 'desc'
+                }
                 return sort;
             }
             return [{ field: 'date', type: 'desc' }];
