@@ -8,7 +8,7 @@ ext | **`babelfish`** | [0.6.0](https://pypi.org/project/babelfish/0.6.0/) | **`
 ext | `beautifulsoup4` | [4.12.2](https://pypi.org/project/beautifulsoup4/4.12.2/) | **`medusa`**, `subliminal` | Module: `bs4`
 ext | `bencode.py` | [4.0.0](https://pypi.org/project/bencode.py/4.0.0/) | **`medusa`** | Modules: `bencodepy`, `bencode`<br>Monkey-patched, see `medusa/init/__init__.py`
 ext | **`boto`** | [2.48.0](https://pypi.org/project/boto/2.48.0/) | `imdbpie` | -
-ext | `CacheControl` | [0.12.11](https://pypi.org/project/CacheControl/0.12.11/) | **`medusa`** | Module: `cachecontrol`
+ext | `CacheControl` | [0.13.1](https://pypi.org/project/CacheControl/0.13.1/) | **`medusa`** | Module: `cachecontrol`
 ext | **`certifi`** | [2022.12.7](https://pypi.org/project/certifi/2022.12.7/) | **`medusa`**, `requests` | -
 ext | **`chardet`** | [4.0.0](https://pypi.org/project/chardet/4.0.0/) | `pysrt`, `requests`, `subliminal` | -
 ext | **`cloudscraper`** | [1.2.70](https://pypi.org/project/cloudscraper/1.2.70/) | **`medusa`** | -
