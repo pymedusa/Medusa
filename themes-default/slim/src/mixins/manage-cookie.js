@@ -15,7 +15,7 @@ export const manageCookieMixin = cookiePrefix => {
                 try {
                     return JSON.parse(cookie);
                 } catch {
-                    return cookie !== 'none' ? cookie : null;
+                    return cookie === 'none' ? null : cookie;
                 }
             },
             setCookie(key, value) {
