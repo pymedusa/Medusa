@@ -99,7 +99,7 @@
     "eslint-plugin-vue": "7.20.0",
     "file-loader": "6.2.0",
     "filemanager-webpack-plugin": "8.0.0",
-    "glob": "10.2.6",
+    "glob": "10.3.0",
     "gulp": "4.0.2",
     "gulp-changed": "4.0.3",
     "gulp-imagemin": "7.1.0",
