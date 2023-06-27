@@ -11,14 +11,15 @@ export const manageCookieMixin = cookiePrefix => {
                 if (key.includes(cookiePrefix)) {
                     return key;
                 }
+                const cookie = this.$cookies.get(`${cookiePrefix}-${key}`)
                 try {
-                    return this.$cookies.get(`${cookiePrefix}-${key}`);
+                    return JSON.parse(cookie);
                 } catch {
-                    return null;
+                    return cookie;
                 }
             },
             setCookie(key, value) {
-                return this.$cookies.set(`${cookiePrefix}-${key}`, value);
+                return this.$cookies.set(`${cookiePrefix}-${key}`, JSON.stringify(value));
             },
             /**
              * Save vue-good-table sort field and sort order (desc/asc)
