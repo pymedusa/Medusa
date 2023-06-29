@@ -1,10 +1,14 @@
-## Unreleased
+## 1.0.17 (29-06-2023)
 
 #### New Features
+- Add TheOldSchool torrent provider (Thanks to @IamMika23)
 
 #### Improvements
+- Update IPTorrents default domain
+- Update many dependencies
 
 #### Fixes
+- Fix saving order of various tables
 
 -----
 
