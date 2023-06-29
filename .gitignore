@@ -86,8 +86,18 @@ pymedusa.egg-info
 .cache
 htmlcov
 xo-errors.log
-yarn-error.log
 
 # Contrib #
 ######################
 /contrib/
+
+# Yarn #
+######################
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+yarn-error.log

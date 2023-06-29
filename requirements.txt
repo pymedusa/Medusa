@@ -2,7 +2,7 @@ adba @ https://codeload.github.com/pymedusa/adba/tar.gz/37b0c74e76b40b3dbde29e71
 babelfish==0.6.0
 beautifulsoup4==4.12.2
 bencode.py==4.0.0
-CacheControl==0.12.11
+CacheControl==0.13.1
 certifi==2022.12.7
 cloudscraper==1.2.70
 configobj==5.0.8
@@ -18,7 +18,7 @@ imdbpie==5.6.5
 jsonrpclib-pelix==0.4.3.2
 knowit==0.4.0
 Mako==1.2.4
-markdown2==2.4.8
+markdown2==2.4.9
 profilehooks==1.12.0
 PyGithub==1.45
 PyJWT==2.7.0

@@ -9,7 +9,26 @@ import showLists from '../__fixtures__/show-lists';
 describe('ShowSelector.test.js', () => {
     let localVue;
     let store;
-    let router;
+
+    const routes = [
+        {
+            path: '/home/displayShow',
+            name: 'show',
+            component: () => import('../../src/components/display-show.vue')
+        },
+        {
+            path: '/home/editShow',
+            name: 'editShow',
+            component: () => import('../../src/components/edit-show.vue')
+        }
+    ];
+
+    const router = new VueRouter({
+        routes
+    });
+
+    // Let's start navigating to displayShow, which should also display the show-selector.
+    router.push({ name: 'show', query: { showslug: 'tvdb12345' } });
 
     beforeEach(() => {
         localVue = createLocalVue();
@@ -18,25 +37,6 @@ describe('ShowSelector.test.js', () => {
 
         const { state } = fixtures;
         store = new Store({ state });
-        const routes = [
-            {
-                path: '/home/displayShow',
-                name: 'show',
-                component: () => import('../../src/components/display-show.vue')
-            },
-            {
-                path: '/home/editShow',
-                name: 'editShow',
-                component: () => import('../../src/components/edit-show.vue')
-            }
-        ];
-
-        router = new VueRouter({
-            routes
-        });
-
-        // Let's start navigating to displayShow, which should also display the show-selector.
-        router.push({ name: 'show', query: { showslug: 'tvdb12345' } });
     });
 
     it('renders "loading..." with empty show array in /home/displayShow', () => {

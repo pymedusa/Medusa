@@ -9,12 +9,13 @@ export const manageCookieMixin = cookiePrefix => {
         methods: {
             getCookie(key) {
                 if (key.includes(cookiePrefix)) {
-                    return JSON.parse(key);
+                    return key;
                 }
+                const cookie = this.$cookies.get(`${cookiePrefix}-${key}`);
                 try {
-                    return JSON.parse(this.$cookies.get(`${cookiePrefix}-${key}`));
+                    return JSON.parse(cookie);
                 } catch {
-                    return null;
+                    return cookie;
                 }
             },
             setCookie(key, value) {

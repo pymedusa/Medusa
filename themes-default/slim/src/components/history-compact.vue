@@ -218,7 +218,10 @@ export default {
             const { getCookie } = this;
             const sort = getCookie('sort'); // From manage-cookie.js mixin
             if (sort) {
-                return JSON.parse(sort);
+                if (sort[0].type === 'none') {
+                    sort[0].type = 'desc';
+                }
+                return sort;
             }
             return [{ field: 'date', type: 'desc' }];
         },
@@ -253,7 +256,7 @@ export default {
             this.loadItemsDebounced();
         },
         onSortChange(params) {
-            this.setCookie('sort', JSON.stringify(params));
+            this.setCookie('sort', params);
             this.remoteHistory.sort = params.filter(item => item.type !== 'none');
             this.loadItemsDebounced();
         },
