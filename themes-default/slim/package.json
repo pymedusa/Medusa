@@ -29,7 +29,7 @@
     "@fortawesome/fontawesome-svg-core": "6.4.0",
     "@fortawesome/free-regular-svg-icons": "6.4.0",
     "@fortawesome/free-solid-svg-icons": "6.4.0",
-    "@fortawesome/vue-fontawesome": "3.0.3",
+    "@fortawesome/vue-fontawesome": "latest-2",
     "@johmun/vue-tags-input": "2.1.0",
     "axios": "0.27.2",
     "bootstrap": "3.4.1",
