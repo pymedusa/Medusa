@@ -167,7 +167,7 @@ def _write_xml(root_element, file_path):
     """
     try:
         xml_string = ElemTree.tostring(root_element, encoding='unicode')
-        xml_string = xml_string.replace('\n', '')
+        xml_string = xml_string.replace('\n', '').encode('asii', 'ignore')
         with open(file_path, 'w') as f:
             f.write(xml_string)
         return True
