@@ -25,6 +25,8 @@ RUN \
 	rm -rf \
 		/var/cache/apk/
 
+RUN pip install PySocks
+
 # Install app
 COPY . /app/medusa/
 
