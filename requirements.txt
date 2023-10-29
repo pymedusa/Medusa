@@ -3,7 +3,7 @@ babelfish==0.6.0
 beautifulsoup4==4.12.2
 bencode.py==4.0.0
 CacheControl==0.13.1
-certifi==2022.12.7
+certifi==2023.7.22
 cloudscraper==1.2.70
 configobj==5.0.8
 contextlib2==21.6.0
@@ -38,5 +38,5 @@ tornado==6.1
 tornroutes==0.5.1
 ttl-cache==1.6
 tvdbapiv2 @ https://codeload.github.com/pymedusa/tvdbv2/tar.gz/d6d0e9d98071c2d646beb997b336edbb0e98dfb7
-urllib3==1.26.16
+urllib3==1.26.17
 validators==0.20.0
