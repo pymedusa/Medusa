@@ -1,10 +1,11 @@
-## Unreleased
-
-#### New Features
+## 1.0.18 (29-10-2023)
 
 #### Improvements
+- Update some JS and Python dependencies
+- Add a few new logos (Thanks to @purevertigo)
 
 #### Fixes
+- Don't overwrite manual post-processing delete preference
 
 -----
 
