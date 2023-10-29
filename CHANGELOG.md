@@ -3,9 +3,11 @@
 #### Improvements
 - Update some JS and Python dependencies
 - Add a few new logos (Thanks to @purevertigo)
+- Update Yggtorrent domain (Thanks to @cpainchaud)
 
 #### Fixes
 - Don't overwrite manual post-processing delete preference
+- Fix color of show-header in light theme (Thanks to @cheese1)
 
 -----
 
