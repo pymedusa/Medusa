@@ -91,7 +91,7 @@ class Notifier(object):
                 else:
                     message = http_status_code.get(error.response.status_code, message)
         except Exception as error:
-            message = 'Error while sending Discord message: {0} '.format(error)
+            message = 'Error while sending Discord message: {0}'.format(error)
         finally:
             log.info(message)
         return success, message
