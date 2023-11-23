@@ -4,6 +4,7 @@
 from __future__ import unicode_literals
 
 import logging
+import re
 from builtins import object
 
 from medusa import app
@@ -33,9 +34,20 @@ class Notifier(object):
     https://discordapp.com
     """
 
+    WEBHOOK_PATTERN = r'https://discord\.com/api/webhooks/.*'
+
+    def is_valid_webhook(self, url):
+        """Determine if a given webhook URL matches the predefined pattern."""
+        return re.match(self.WEBHOOK_PATTERN, url) is not None
+
     def _send_discord_msg(self, title, msg, webhook=None, tts=None, override_avatar=None):
         """Collect the parameters and send the message to the discord webhook."""
         webhook = app.DISCORD_WEBHOOK if webhook is None else webhook
+        if not self.is_valid_webhook(webhook):
+            msg = f'The webhook URL ({webhook}) you provided is not valid'
+            log.warning(msg)
+            return False, msg
+
         tts = app.DISCORD_TTS if tts is None else tts
         override_avatar = app.DISCORD_OVERRIDE_AVATAR if override_avatar is None else override_avatar
 
@@ -79,7 +91,7 @@ class Notifier(object):
                 else:
                     message = http_status_code.get(error.response.status_code, message)
         except Exception as error:
-            message = 'Error while sending Discord message: {0} '.format(error)
+            message = 'Error while sending Discord message: {0}'.format(error)
         finally:
             log.info(message)
         return success, message
