@@ -8,6 +8,19 @@
 
 -----
 
+## 1.0.19 (12-12-2023)
+
+#### Improvements
+- Add many network timezones (Thanks to @YogSottot)
+- Add a few new logos (Thanks to @purevertigo)
+- Update some Python dependencies
+
+#### Fixes
+- Add try/catch block around localStorage.setItem call (Thanks to @dotsam)
+- Validate webhook URL for Slack and Discord (Thanks to @sylwia-budzynska)
+
+-----
+
 ## 1.0.18 (29-10-2023)
 
 #### Improvements
