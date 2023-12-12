@@ -166,7 +166,8 @@
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/src/$1",
       "^.+\\.(css|less|sass|scss)$": "<rootDir>/test/__mocks__/stylemock.js",
-      "^.+\\.(gif|ttf|eot|svg)$": "<rootDir>/test/__mocks__/filemock.js"
+      "^.+\\.(gif|ttf|eot|svg)$": "<rootDir>/test/__mocks__/filemock.js",
+      "^axios$": "<rootDir>/node_modules/axios/dist/node/axios.cjs"
     },
     "transform": {
       "^.+\\.js$": "babel-jest",
