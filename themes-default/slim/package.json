@@ -31,7 +31,7 @@
     "@fortawesome/free-solid-svg-icons": "6.4.0",
     "@fortawesome/vue-fontawesome": "latest-2",
     "@johmun/vue-tags-input": "2.1.0",
-    "axios": "1.6.0",
+    "axios": "0.27.2",
     "bootstrap": "3.4.1",
     "country-language": "0.1.7",
     "date-fns": "2.30.0",
@@ -166,8 +166,7 @@
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/src/$1",
       "^.+\\.(css|less|sass|scss)$": "<rootDir>/test/__mocks__/stylemock.js",
-      "^.+\\.(gif|ttf|eot|svg)$": "<rootDir>/test/__mocks__/filemock.js",
-      "^axios$": "<rootDir>/node_modules/axios/dist/node/axios.cjs"
+      "^.+\\.(gif|ttf|eot|svg)$": "<rootDir>/test/__mocks__/filemock.js"
     },
     "transform": {
       "^.+\\.js$": "babel-jest",
