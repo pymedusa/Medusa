@@ -31,7 +31,7 @@ ext | `importlib-resources` | [5.4.0](https://pypi.org/project/importlib-resourc
 ext | `jsonrpclib-pelix` | [0.4.3.2](https://pypi.org/project/jsonrpclib-pelix/0.4.3.2/) | **`medusa`** | Module: `jsonrpclib`
 ext | **`knowit`** | [0.4.0](https://github.com/ratoaq2/knowit/tree/0.4.0) | **`medusa`** | -
 ext | `Mako` | [1.2.4](https://pypi.org/project/Mako/1.2.4/) | **`medusa`** | Module: `mako`
-ext | `markdown2` | [2.4.9](https://pypi.org/project/markdown2/2.4.9/) | **`medusa`** | File: `markdown2.py`
+ext | `markdown2` | [2.4.11](https://pypi.org/project/markdown2/2.4.11/) | **`medusa`** | File: `markdown2.py`
 ext | `MarkupSafe` | [1.1.1](https://pypi.org/project/MarkupSafe/1.1.1/) | `Mako` | Module: `markupsafe`
 ext | **`msgpack`** | [0.5.6](https://pypi.org/project/msgpack/0.5.6/) | `CacheControl` | -
 ext | **`oauthlib`** | [3.0.0](https://pypi.org/project/oauthlib/3.0.0/) | `requests-oauthlib` | -
@@ -65,7 +65,7 @@ ext | `trans` | [2.1.0](https://pypi.org/project/trans/2.1.0/) | `imdbpie` | Fil
 ext | `ttl-cache` | [1.6](https://pypi.org/project/ttl-cache/1.6/) | **`medusa`**, `adba` | File: `ttl_cache.py`
 ext | **`tvdbapiv2`** | pymedusa/[d6d0e9d](https://github.com/pymedusa/tvdbv2/tree/d6d0e9d98071c2d646beb997b336edbb0e98dfb7) | **`medusa`** | -
 ext | `typing-extensions` | [4.1.1](https://pypi.org/project/typing-extensions/4.1.1/) | `importlib_metadata` | File: `typing_extensions.py`
-ext | **`urllib3`** | [1.26.16](https://pypi.org/project/urllib3/1.26.16/) | `requests` | -
+ext | **`urllib3`** | [1.26.18](https://pypi.org/project/urllib3/1.26.18/) | `requests` | -
 ext | **`validators`** | [0.20.0](https://pypi.org/project/validators/0.20.0/) | **`medusa`** | -
 ext | **`webencodings`** | [0.5.1](https://pypi.org/project/webencodings/0.5.1/) | `html5lib` | -
 ext | **`wrapt`** | [1.14.1](https://pypi.org/project/wrapt/1.14.1/) | `deprecated` | -

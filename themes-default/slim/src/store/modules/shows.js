@@ -553,7 +553,11 @@ const actions = {
 
         // Update (namespaced) localStorage
         const namespace = rootState.config.system.webRoot ? `${rootState.config.system.webRoot}_` : '';
-        localStorage.setItem(`${namespace}shows`, JSON.stringify(state.shows));
+        try {
+            localStorage.setItem(`${namespace}shows`, JSON.stringify(state.shows));
+        } catch (error) {
+            console.warn(error);
+        }
     },
     updateShowQueueItem(context, queueItem) {
         // Update store's search queue item. (provided through websocket)
