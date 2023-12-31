@@ -47,7 +47,7 @@
     "tablesorter": "2.31.3",
     "v-tooltip": "2.1.3",
     "vanilla-lazyload": "17.8.3",
-    "vue": "2.7.14",
+    "vue": "3.0.0",
     "vue-async-computed": "3.9.0",
     "vue-cookies": "1.8.3",
     "vue-form-wizard": "0.8.4",
