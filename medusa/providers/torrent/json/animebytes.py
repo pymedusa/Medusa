@@ -177,10 +177,14 @@ class AnimeBytes(TorrentProvider):
                                     {'properties': properties_string, 'error': error})
                         continue
 
-                    last_field = re.match(r'(.*)\((.*)\)', properties[-1])
-
-                    # subs = last_field.group(1) if last_field else ''
-                    release_group = '-{0}'.format(last_field.group(2)) if last_field else ''
+                    # the release group could be found in the last segment for finished series
+                    # or in the penultimate segment for ongoing series
+                    release_group = ''
+                    for i in [-1, -2]:
+                        last_field = re.match(r'(.*)\((.*)\)', properties[i])
+                        if last_field:
+                            release_group = '-{0}'.format(last_field.group(2))
+                            break
 
                     release_type = OTHER
                     season = None
