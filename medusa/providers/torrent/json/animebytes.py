@@ -186,8 +186,6 @@ class AnimeBytes(TorrentProvider):
                             release_group = '-{0}'.format(last_field.group(2))
                             break
 
-                    # subs = last_field.group(1) if last_field else ''
-
                     release_type = OTHER
                     season = None
                     episode = None
