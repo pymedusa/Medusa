@@ -53,8 +53,8 @@ class HistoryHandler(BaseRequestHandler):
         compact_layout = bool(self.get_argument('compact', default=False))
         return_last = bool(self.get_argument('last', default=False))
         total_rows = self.get_argument('total', default=None)
-        sort = [json.loads(item) for item in self.get_arguments('sort')]
-        filter = json.loads(self.get_argument('filter')) if self.get_arguments('filter') else None
+        sort = json.loads(self.get_argument('sort', default='null'))
+        filter = json.loads(self.get_argument('filter', default='null'))
 
         headers = {}
 
