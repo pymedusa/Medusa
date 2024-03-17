@@ -159,7 +159,7 @@ const actions = {
             if (!Array.isArray(sort)) {
                 sort = [sort];
             }
-            params.sort = sort;
+            params.sort = JSON.stringify(sort);
         }
 
         if (filter) {
