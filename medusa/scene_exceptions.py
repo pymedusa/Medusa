@@ -41,7 +41,10 @@ def refresh_exceptions_cache(series_obj=None):
     logger.info('Updating exception_cache and exception_season_cache')
 
     # Empty the module level variables
-    exceptions_cache.clear()
+    if not series_obj:
+        exceptions_cache.clear()
+    else:
+        exceptions_cache[(series_obj.indexer, series_obj.series_id)].clear()
 
     main_db_con = db.DBConnection()
     query = """
