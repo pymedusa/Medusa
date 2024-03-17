@@ -39,8 +39,8 @@
                         <img alt="[imdb]" height="16" width="16" src="images/imdb16.png" style="margin-top: -1px; vertical-align:middle;">
                     </app-link>
 
-                    <app-link v-if="props.row.externals.tvdb_id" :href="`https://www.thetvdb.com/dereferrer/series/${props.row.externals.tvdb}`"
-                              :title="`https://www.thetvdb.com/dereferrer/series/${props.row.externals.tvdb}`">
+                    <app-link v-if="props.row.externals.tvdb_id" :href="`https://www.thetvdb.com/dereferrer/series/${props.row.externals.tvdb_id}`"
+                              :title="`https://www.thetvdb.com/dereferrer/series/${props.row.externals.tvdb_id}`">
                         <img alt="[tvdb]" height="16" width="16" src="images/thetvdb16.png" style="margin-top: -1px; vertical-align:middle;">
                     </app-link>
 
@@ -55,7 +55,7 @@
                     </app-link>
 
                     <app-link v-if="props.row.externals.tvmaze_id" :href="`https://www.tvmaze.com/shows/${props.row.externals.tvmaze_id}`"
-                              :title="`https://www.thetvdb.com/dereferrer/series/${props.row.externals.tvmaze_id}`">
+                              :title="`https://www.tvmaze.com/shows/${props.row.externals.tvmaze_id}`">
                         <img alt="[tvmaze]" height="16" width="16" src="images/tvmaze16.png" style="margin-top: -1px; vertical-align:middle;">
                     </app-link>
                 </span>
