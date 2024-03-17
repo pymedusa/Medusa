@@ -28,7 +28,7 @@ __all__ = ['Airs', 'Alias', 'Comment', 'Genre', 'get', 'delete', 'post', 'put',
 
 #: The base url for the Trakt API. Can be modified to run against different
 #: Trakt.tv environments
-BASE_URL = 'https://api-v2launch.trakt.tv/'
+BASE_URL = 'https://api.trakt.tv/'
 
 #: The Trakt.tv OAuth Client ID for your OAuth Application
 CLIENT_ID = None
