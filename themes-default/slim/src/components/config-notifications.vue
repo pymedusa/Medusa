@@ -1118,7 +1118,7 @@ export default {
             }
 
             // Save the list
-            this.client.apiRoute.post('home/saveShowNotifyList', form);
+            this.client.apiRoute.postForm('home/saveShowNotifyList', form);
         },
         async prowlUpdateApiKeys(selectedShow) {
             this.prowlSelectedShow = selectedShow;
