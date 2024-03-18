@@ -81,7 +81,7 @@ class HistoryHandler(BaseRequestHandler):
             'date': 'date',
             'action': 'action',
             'statusname': 'action',
-            'provider.id': 'provider',
+            'providerId': 'provider',
             'clientstatus': 'client_status',
             'size': 'size',
             'quality': 'quality'
@@ -95,7 +95,7 @@ class HistoryHandler(BaseRequestHandler):
 
         if filter is not None and filter.get('columnFilters'):
             size = filter['columnFilters'].pop('size', None)
-            provider = filter['columnFilters'].pop('provider.id', None)
+            provider = filter['columnFilters'].pop('providerId', None)
             resource = filter['columnFilters'].pop('resource', None)
 
             if size:

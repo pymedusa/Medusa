@@ -163,7 +163,7 @@ const actions = {
         }
 
         if (filter) {
-            params.filter = filter;
+            params.filter = JSON.stringify(filter);
         }
 
         if (showSlug) {
