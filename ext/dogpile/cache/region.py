@@ -46,6 +46,7 @@ from ..util import coerce_string_conf
 from ..util import memoized_property
 from ..util import NameRegistry
 from ..util import PluginLoader
+from ..util.typing import Self
 
 value_version = 2
 """An integer placed in the :class:`.CachedValue`
@@ -426,7 +427,7 @@ class CacheRegion:
         wrap: Sequence[Union[ProxyBackend, Type[ProxyBackend]]] = (),
         replace_existing_backend: bool = False,
         region_invalidator: Optional[RegionInvalidationStrategy] = None,
-    ) -> "CacheRegion":
+    ) -> Self:
         """Configure a :class:`.CacheRegion`.
 
         The :class:`.CacheRegion` itself
