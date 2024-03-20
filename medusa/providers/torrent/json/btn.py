@@ -17,7 +17,6 @@ from medusa import (
 )
 from medusa.common import cpu_presets
 from medusa.helper.common import convert_size, episode_num
-from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
