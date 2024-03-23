@@ -196,16 +196,16 @@ DEFAULT_CHARSET = "windows-1252"
 TRY_ENCODINGS = ('utf8', 'utf-16le')
 
 #: 'unrar', 'rar' or full path to either one
-UNRAR_TOOL = "unrar"
+UNRAR_TOOL = "7z"
 
 #: Command line args to use for opening file for reading.
-OPEN_ARGS = ('p', '-inul')
+OPEN_ARGS = ('e', '-so')
 
 #: Command line args to use for extracting file to disk.
-EXTRACT_ARGS = ('x', '-y', '-idq')
+EXTRACT_ARGS = ('x', '-y')
 
 #: args for testrar()
-TEST_ARGS = ('t', '-idq')
+TEST_ARGS = ('t')
 
 #
 # Allow use of tool that is not compatible with unrar.
