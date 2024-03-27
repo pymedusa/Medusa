@@ -10,7 +10,7 @@ contextlib2==21.6.0
 deluge-client==1.9.0
 dogpile.cache==1.2.1
 enzyme @ https://codeload.github.com/pymedusa/enzyme/tar.gz/665cf6948aab1c249dcc99bd9624a81d17b3302a
-feedparser==6.0.10
+feedparser==6.0.11
 gntp==1.0.3
 guessit==3.4.2
 html5lib==1.1
