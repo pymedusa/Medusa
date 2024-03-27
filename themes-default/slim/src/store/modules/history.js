@@ -159,11 +159,11 @@ const actions = {
             if (!Array.isArray(sort)) {
                 sort = [sort];
             }
-            params.sort = sort;
+            params.sort = JSON.stringify(sort);
         }
 
         if (filter) {
-            params.filter = filter;
+            params.filter = JSON.stringify(filter);
         }
 
         if (showSlug) {

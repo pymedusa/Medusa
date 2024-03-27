@@ -133,7 +133,7 @@ export default {
 
             if (runAsync) {
                 form.set('run_async', true);
-                this.client.apiRoute.post('home/postprocess/processEpisode', form)
+                this.client.apiRoute.postForm('home/postprocess/processEpisode', form)
                     .then(response => {
                         if (response && response.data.status === 'success') {
                             this.logs.push(response.data.message.trim());
@@ -146,7 +146,7 @@ export default {
                     });
             } else {
                 form.set('run_sync', true);
-                this.client.apiRoute.post('home/postprocess/processEpisode', form)
+                this.client.apiRoute.postForm('home/postprocess/processEpisode', form)
                     .then(response => {
                         if (response && response.data.status === 'success') {
                             this.logs = [...this.logs, ...response.data.output];

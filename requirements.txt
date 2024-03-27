@@ -1,6 +1,6 @@
 adba @ https://codeload.github.com/pymedusa/adba/tar.gz/37b0c74e76b40b3dbde29e71da75a1808eb121de
 babelfish==0.6.0
-beautifulsoup4==4.12.2
+beautifulsoup4==4.12.3
 bencode.py==4.0.0
 CacheControl==0.13.1
 certifi==2023.7.22
@@ -10,7 +10,7 @@ contextlib2==21.6.0
 deluge-client==1.9.0
 dogpile.cache==1.2.1
 enzyme @ https://codeload.github.com/pymedusa/enzyme/tar.gz/665cf6948aab1c249dcc99bd9624a81d17b3302a
-feedparser==6.0.10
+feedparser==6.0.11
 gntp==1.0.3
 guessit==3.4.2
 html5lib==1.1
@@ -18,7 +18,7 @@ imdbpie==5.6.5
 jsonrpclib-pelix==0.4.3.2
 knowit==0.4.0
 Mako==1.2.4
-markdown2==2.4.11
+markdown2==2.4.13
 profilehooks==1.12.0
 PyGithub==1.45
 PyJWT==2.7.0

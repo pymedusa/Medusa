@@ -5,7 +5,7 @@ ext | **`adba`** | pymedusa/[37b0c74](https://github.com/pymedusa/adba/tree/37b0
 ext | `appdirs` | [1.4.3](https://pypi.org/project/appdirs/1.4.3/) | `simpleanidb`, `subliminal` (cli only) | File: `appdirs.py`
 ext | `attrs` | [18.2.0](https://pypi.org/project/attrs/18.2.0/) | `imdbpie` | Module: `attr`
 ext | **`babelfish`** | [0.6.0](https://pypi.org/project/babelfish/0.6.0/) | **`medusa`**, `guessit`, `knowit`, `subliminal` | -
-ext | `beautifulsoup4` | [4.12.2](https://pypi.org/project/beautifulsoup4/4.12.2/) | **`medusa`**, `subliminal` | Module: `bs4`
+ext | `beautifulsoup4` | [4.12.3](https://pypi.org/project/beautifulsoup4/4.12.3/) | **`medusa`**, `subliminal` | Module: `bs4`
 ext | `bencode.py` | [4.0.0](https://pypi.org/project/bencode.py/4.0.0/) | **`medusa`** | Modules: `bencodepy`, `bencode`<br>Monkey-patched, see `medusa/init/__init__.py`
 ext | **`boto`** | [2.48.0](https://pypi.org/project/boto/2.48.0/) | `imdbpie` | -
 ext | `CacheControl` | [0.13.1](https://pypi.org/project/CacheControl/0.13.1/) | **`medusa`** | Module: `cachecontrol`
@@ -20,7 +20,7 @@ ext | **`deprecated`** | [1.2.3](https://pypi.org/project/deprecated/1.2.3/) | `
 ext | **`diskcache`** | [5.2.1](https://pypi.org/project/diskcache/5.2.1/) | `imdbpie` | -
 ext | `dogpile.cache` | [1.2.1](https://pypi.org/project/dogpile.cache/1.2.1/) | **`medusa`**, `subliminal` | Module: `dogpile`
 ext | **`enzyme`** | pymedusa/[665cf69](https://github.com/pymedusa/enzyme/tree/665cf6948aab1c249dcc99bd9624a81d17b3302a) | `knowit`, `subliminal` | -
-ext | **`feedparser`** | [6.0.10](https://pypi.org/project/feedparser/6.0.10/) | **`medusa`** | Requires `sgmllib3k` on Python 3
+ext | **`feedparser`** | [6.0.11](https://pypi.org/project/feedparser/6.0.11/) | **`medusa`** | Requires `sgmllib3k` on Python 3
 ext | **`gntp`** | [1.0.3](https://pypi.org/project/gntp/1.0.3/) | **`medusa`** | -
 ext | **`guessit`** | [3.4.2](https://pypi.org/project/guessit/3.4.2/) | **`medusa`**, `subliminal` | -
 ext | **`html5lib`** | [1.1](https://pypi.org/project/html5lib/1.1/) | **`medusa`** (via `beautifulsoup4`) | -
@@ -31,7 +31,7 @@ ext | `importlib-resources` | [5.4.0](https://pypi.org/project/importlib-resourc
 ext | `jsonrpclib-pelix` | [0.4.3.2](https://pypi.org/project/jsonrpclib-pelix/0.4.3.2/) | **`medusa`** | Module: `jsonrpclib`
 ext | **`knowit`** | [0.4.0](https://github.com/ratoaq2/knowit/tree/0.4.0) | **`medusa`** | -
 ext | `Mako` | [1.2.4](https://pypi.org/project/Mako/1.2.4/) | **`medusa`** | Module: `mako`
-ext | `markdown2` | [2.4.11](https://pypi.org/project/markdown2/2.4.11/) | **`medusa`** | File: `markdown2.py`
+ext | `markdown2` | [2.4.13](https://pypi.org/project/markdown2/2.4.13/) | **`medusa`** | File: `markdown2.py`
 ext | `MarkupSafe` | [1.1.1](https://pypi.org/project/MarkupSafe/1.1.1/) | `Mako` | Module: `markupsafe`
 ext | **`msgpack`** | [0.5.6](https://pypi.org/project/msgpack/0.5.6/) | `CacheControl` | -
 ext | **`oauthlib`** | [3.0.0](https://pypi.org/project/oauthlib/3.0.0/) | `requests-oauthlib` | -

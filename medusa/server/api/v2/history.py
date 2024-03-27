@@ -53,8 +53,8 @@ class HistoryHandler(BaseRequestHandler):
         compact_layout = bool(self.get_argument('compact', default=False))
         return_last = bool(self.get_argument('last', default=False))
         total_rows = self.get_argument('total', default=None)
-        sort = [json.loads(item) for item in self.get_arguments('sort[]')]
-        filter = json.loads(self.get_argument('filter')) if self.get_arguments('filter') else None
+        sort = json.loads(self.get_argument('sort', default='null'))
+        filter = json.loads(self.get_argument('filter', default='null'))
 
         headers = {}
 
@@ -81,7 +81,7 @@ class HistoryHandler(BaseRequestHandler):
             'date': 'date',
             'action': 'action',
             'statusname': 'action',
-            'provider.id': 'provider',
+            'providerId': 'provider',
             'clientstatus': 'client_status',
             'size': 'size',
             'quality': 'quality'
@@ -95,7 +95,7 @@ class HistoryHandler(BaseRequestHandler):
 
         if filter is not None and filter.get('columnFilters'):
             size = filter['columnFilters'].pop('size', None)
-            provider = filter['columnFilters'].pop('provider.id', None)
+            provider = filter['columnFilters'].pop('providerId', None)
             resource = filter['columnFilters'].pop('resource', None)
 
             if size:

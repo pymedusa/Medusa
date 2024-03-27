@@ -99,6 +99,10 @@
                     <input placeholder="Resource" class="'form-control input-sm vgt-input" @input="updateResource">
                 </span>
 
+                <span v-else-if="column.field === 'providerId'">
+                    <input placeholder="Provider | Group" class="'form-control input-sm vgt-input" @input="updateProvider">
+                </span>
+
                 <span v-else-if="column.field === 'quality'">
                     <select class="form-control form-control-inline input-sm vgt-select" @input="updateQualityFilter">
                         <option value="">Filter Quality</option>
@@ -204,7 +208,7 @@ export default {
             hidden: getCookie('Quality')
         }, {
             label: 'Provider',
-            field: 'provider.id',
+            field: 'providerId',
             filterOptions: {
                 enabled: true
             },
@@ -372,6 +376,15 @@ export default {
             }
 
             this.remoteHistory.filter.columnFilters.resource = resource;
+            this.loadItemsDebounced();
+        },
+        updateProvider(provider) {
+            provider = provider.currentTarget.value;
+            if (!this.remoteHistory.filter) {
+                this.remoteHistory.filter = { columnFilters: {} };
+            }
+
+            this.remoteHistory.filter.columnFilters.providerId = provider;
             this.loadItemsDebounced();
         },
         // Load items is what brings back the rows from server
