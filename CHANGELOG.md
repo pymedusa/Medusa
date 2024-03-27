@@ -1,10 +1,13 @@
-## Unreleased
-
-#### New Features
+## 1.0.20 (27-03-2024)
 
 #### Improvements
+- Add many network timezones (Thanks to @YogSottot)
+- Update Python and JS dependencies
 
 #### Fixes
+- Correctly refresh exceptions cache (Thanks to @j-aub)
+- Update Trakt API endpoint (Thanks to @XxUnkn0wnxX and farni)
+- Fix occasional search issues with BTN provider
 
 -----
 
