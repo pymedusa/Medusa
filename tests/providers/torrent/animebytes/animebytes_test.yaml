@@ -1,0 +1,49 @@
+_meta:
+  attr:
+    # fill parameters below to record new cassette
+    username:
+    passkey:
+  vcr:
+    filter_query_parameters:
+      - username
+      - torrent_pass
+
+daily:
+  search_strings:
+    RSS: ['']
+  results:
+    - seeders: 5
+      pubdate: 2018-01-30 03:08:34
+      title: 'CODE GEASS: Lelouch of the Rebellion.S01E01-E25.Web.MKV.h264.1080p.AAC2.0-Erai-raws'
+      leechers: 0
+      link: 'https://animebytes.tv/torrent/345145/download/l40cx6g4sekgamtflpu83ij30r4fs6vo'
+      size: 23496333785
+    - seeders: 6
+      pubdate: 2019-08-08 16:48:33
+      title: 'CODE GEASS: Lelouch of the Rebellion.S01E01-E25.Web.MKV.h264.1080p.AC32.0-DragsterPS'
+      leechers: 0
+      link: 'https://animebytes.tv/torrent/420400/download/l40cx6g4sekgamtflpu83ij30r4fs6vo'
+      size: 22358845893
+    - seeders: 4
+      pubdate: 2022-05-30 17:10:39
+      title: 'CODE GEASS: Lelouch of the Rebellion.S01E01-E25.DVD9.ISO(R2Europe).16:9.720x480.AC32.0'
+      leechers: 0
+      link: 'https://animebytes.tv/torrent/991499/download/l40cx6g4sekgamtflpu83ij30r4fs6vo'
+      size: 36085825536
+
+backlog:
+  search_strings:
+    Episode: ['Higurashi no Naku Koro Ni']
+  results:
+    - seeders: 5
+      pubdate: 2017-11-18 00:00:00
+      title: 'Higurashi no Naku Koro ni.S01E01-E26.DVD9.ISO(R1).16:9.720x480.AC32.0'
+      leechers: 0
+      link: 'https://animebytes.tv/torrent/10614/download/l40cx6g4sekgamtflpu83ij30r4fs6vo'
+      size: 37879440026
+    - seeders: 6
+      pubdate: 2017-11-18 00:00:00
+      title: 'Higurashi no Naku Koro ni.S01E01-E26.Web.MKV.h264.1080p.AC32.0-DragsterPS'
+      leechers: 0
+      link: 'https://animebytes.tv/torrent/419747/download/l40cx6g4sekgamtflpu83ij30r4fs6vo'
+      size: 23522776830
