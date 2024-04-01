@@ -40,6 +40,11 @@ def get_provider_data():
         # Update provider with test data
         provider.data.update(test_data)
 
+        # Configure provider by overriding instance attributes
+        if test_data.get("_meta", {}).get("attr"):
+            for k, v in test_data["_meta"]["attr"].items():
+                setattr(provider.klass, k, v)
+
     return providers
 
 
