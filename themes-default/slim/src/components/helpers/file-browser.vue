@@ -9,9 +9,9 @@
             </div>
         </div>
 
-        <div ref="fileBrowserDialog" class="fileBrowserDialog" style="display: none;" />
+        <div ref="fileBrowserDialog" class="fileBrowserDialog" />
         <input ref="fileBrowserSearchBox" @keyup.enter="browse($event.target.value)" :value="currentPath" type="text" class="form-control" style="display: none;">
-        <ul ref="fileBrowserFileList" style="display: none;">
+        <ul ref="fileBrowserFileList">
             <li v-for="file in files" :key="file.name" class="ui-state-default ui-corner-all">
                 <a @mouseover="toggleFolder(file, $event)" @mouseout="toggleFolder(file, $event)" @click="fileClicked(file)">
                     <span :class="'ui-icon ' + (file.isFile ? 'ui-icon-blank' : 'ui-icon-folder-collapsed')" /> {{ file.name }}
@@ -202,7 +202,6 @@ export default {
                     autoOpen: false
                 });
 
-                fileBrowserSearchBox.removeAttribute('style');
                 vm.fileBrowserDialog // This is a jQuery object
                     .append(fileBrowserSearchBox);
                 fileBrowser(fileBrowserSearchBox, true)
@@ -234,7 +233,6 @@ export default {
             // Set lastPath so we can reset currentPath if we cancel dialog
             vm.lastPath = vm.currentPath;
 
-            fileBrowserFileList.removeAttribute('style');
             vm.fileBrowserDialog // This is a jQuery object
                 .append(fileBrowserFileList);
         },
