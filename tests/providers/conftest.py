@@ -14,12 +14,12 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 
 
 def get_providers():
-    from medusa.providers.torrent import (anidex, btdb, limetorrents, nyaa,
+    from medusa.providers.torrent import (anidex, animebytes, btdb, limetorrents, nyaa,
                                           rarbg, shanaproject, thepiratebay,
                                           tokyotoshokan, torrentz2, zooqle)
     from medusa.providers.nzb import anizb, binsearch
 
-    return (anidex, btdb, limetorrents, nyaa, rarbg, shanaproject,
+    return (anidex, animebytes, btdb, limetorrents, nyaa, rarbg, shanaproject,
             thepiratebay, tokyotoshokan, torrentz2, zooqle, anizb, binsearch)
 
 
@@ -39,6 +39,11 @@ def get_provider_data():
 
         # Update provider with test data
         provider.data.update(test_data)
+
+        # Configure provider by overriding instance attributes
+        if test_data.get("_meta", {}).get("attr"):
+            for k, v in test_data["_meta"]["attr"].items():
+                setattr(provider.klass, k, v)
 
     return providers
 

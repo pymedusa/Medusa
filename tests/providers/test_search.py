@@ -28,7 +28,12 @@ def search(search_type, provider):
     cassette_filename = '{0}_{1}.yaml'.format(provider.name, search_type)
     cassette_path = os.path.join(__location__, provider.type, provider.name,
                                  cassette_filename)
-    with vcr.use_cassette(cassette_path, record_mode=record_mode):
+    if provider.data.get("_meta", {}).get("vcr"):
+        vcr_config = provider.data["_meta"]["vcr"]
+    else:
+        vcr_config = {}
+
+    with vcr.use_cassette(cassette_path, record_mode=record_mode, **vcr_config):
         actual = provider.klass.search(test_case['search_strings'])
 
     # Check if we got any results

@@ -1,3 +1,14 @@
+## 1.0.21 (03-04-2024)
+
+#### Improvements
+- Add testing for providers requiring authorization (Thanks to @k0mmsussert0d)
+- Add many network timezones (Thanks to @YogSottot)
+
+#### Fixes
+- Fix file browser not displaying correctly
+
+-----
+
 ## 1.0.20 (27-03-2024)
 
 #### Improvements
