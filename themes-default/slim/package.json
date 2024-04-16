@@ -31,7 +31,7 @@
     "@fortawesome/free-solid-svg-icons": "6.4.0",
     "@fortawesome/vue-fontawesome": "latest-2",
     "@johmun/vue-tags-input": "2.1.0",
-    "axios": "0.28.0",
+    "axios": "0.28.1",
     "bootstrap": "3.4.1",
     "country-language": "0.1.7",
     "date-fns": "2.30.0",
