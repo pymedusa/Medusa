@@ -151,7 +151,7 @@ def _read_existing_xml(file_path):
         return root
 
     try:
-        with open(file_path, "r") as f:
+        with open(file_path, "r", encoding='ascii', errors='ignore') as f:
             xml_string = f.read()
     except OSError as e:
         log.error("Error reading RSS file at {0}: {1}", file_path, ex(e))
