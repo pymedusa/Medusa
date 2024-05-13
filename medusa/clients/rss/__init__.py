@@ -18,7 +18,7 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
-XMLNS = {"medusa": "https://pymedusa.com"}
+XMLNS = {'medusa': 'https://pymedusa.com'}
 
 
 def add_result_to_feed(result):
@@ -30,10 +30,10 @@ def add_result_to_feed(result):
     for k, v in XMLNS.items():
         ElemTree.register_namespace(k, v)
 
-    file_path = os.path.join(app.RSS_DIR, "medusa.xml")
+    file_path = os.path.join(app.RSS_DIR, u'medusa.xml')
 
     if result.provider is None:
-        log.error("Invalid provider name - this is a coding error, report it please")
+        log.error(u'Invalid provider name - this is a coding error, report it please')
         return False
 
     root_element = _read_existing_xml(file_path)
@@ -64,7 +64,7 @@ def __element(name, text, **attribs):
     :return: ElemTree.Element
     """
     elem = ElemTree.Element(name, attribs)
-    elem.text = str(text) if text is not None else ""
+    elem.text = str(text) if text is not None else ''
     return elem
 
 
@@ -74,9 +74,7 @@ def _pubdate():
 
     :return: string
     """
-    return (datetime.now() + timedelta(hours=time.timezone / 3600)).strftime(
-        "%a, %d %b %Y %H:%M:%S"
-    ) + " GMT"
+    return (datetime.now() + timedelta(hours=time.timezone / 3600)).strftime('%a, %d %b %Y %H:%M:%S') + ' GMT'
 
 
 def _result_to_item(result):
@@ -85,43 +83,24 @@ def _result_to_item(result):
 
     :return: ElemTree.Element
     """
-    item_root = __element("item", None)
-    item_root.append(__element("title", result.name))
-    item_root.append(__element("link", result.url))
-    item_root.append(__element("guid", result.identifier, isPermalink="false"))
-    item_root.append(__element("pubDate", _pubdate()))
+    item_root = __element('item', None)
+    item_root.append(__element('title', result.name))
+    item_root.append(__element('link', result.url))
+    item_root.append(__element('guid', result.identifier, isPermalink='false'))
+    item_root.append(__element('pubDate', _pubdate()))
     if len(result.episodes) == 1:
-        item_root.append(
-            __element(
-                "description",
-                f"{result.episodes[0].name} | {result.episodes[0].description}",
-            )
-        )
+        item_root.append(__element('description', f'{result.episodes[0].name} | {result.episodes[0].description}'))
     else:
-        item_root.append(__element("description", result.name))
-    item_root.append(
-        __element(
-            "enclosure",
-            None,
-            url=result.url,
-            length="0",
-            type="application/x-bittorrent"
-            if result.result_type
-            else "application/x-nzb",
-        )
-    )
-    item_root.append(
-        __element(
-            "medusa:series",
-            result.series.name,
-            isAnime=str(result.series.anime),
-            tvdb=str(result.series.tvdb_id),
-            imdb=result.series.imdb_id,
-        )
-    )
-    item_root.append(__element("medusa:season", result.actual_season))
-    item_root.append(__element("medusa:episode", result.actual_episode))
-    item_root.append(__element("medusa:provider", result.provider.name))
+        item_root.append(__element('description', result.name))
+    item_root.append(__element('enclosure', None, url=result.url, length='0', type='application/x-bittorrent' if result.result_type else 'application/x-nzb'))
+    item_root.append(__element('medusa:series',
+                               result.series.name,
+                               isAnime=str(result.series.anime),
+                               tvdb=str(result.series.tvdb_id),
+                               imdb=result.series.imdb_id))
+    item_root.append(__element('medusa:season', result.actual_season))
+    item_root.append(__element('medusa:episode', result.actual_episode))
+    item_root.append(__element('medusa:provider', result.provider.name))
 
     return item_root
 
@@ -133,7 +112,7 @@ def _find_item_start_index(channel_element):
     :return: int
     """
     for i, child in enumerate(channel_element):
-        if child.tag == "item":
+        if child.tag == 'item':
             return i
     return len(channel_element)
 
@@ -151,22 +130,15 @@ def _read_existing_xml(file_path):
         return root
 
     try:
-        with open(file_path, "r", encoding='ascii', errors='ignore') as f:
+        with open(file_path, 'r', encoding='ascii', errors='ignore') as f:
             xml_string = f.read()
     except OSError as e:
-        log.error("Error reading RSS file at {0}: {1}", file_path, ex(e))
-
-    if len(xml_string.strip()) == 0:
-        root = _make_empty_xml()
-        if not _write_xml(root, file_path):
-            return None
-        return root
-
+        log.error(u'Error reading RSS file at {0}: {1}', file_path, ex(e))
     try:
         root = ElemTree.fromstring(xml_string)
         return root
     except ElemTree.ParseError as e:
-        log.error("Error parsing RSS file at {0}: {1}", file_path, ex(e))
+        log.error(u'Error parsing RSS file at {0}: {1}', file_path, ex(e))
         return None
 
 
@@ -176,14 +148,14 @@ def _make_empty_xml():
 
     :return: ElemTree.Element root 'rss' element
     """
-    root = ElemTree.Element("rss")
+    root = ElemTree.Element('rss')
     for k, v in XMLNS.items():
-        root.attrib["xmlns:" + k] = v
-    root.attrib["version"] = "2.0"
-    root.append(__element("title", "Medusa RSS Feed"))
-    root.append(__element("link", "https://pymedusa.com/"))
-    root.append(__element("description", "Medusa RSS Feed"))
-    root.append(__element("channel", None))
+        root.attrib['xmlns:' + k] = v
+    root.attrib['version'] = '2.0'
+    root.append(__element('title', 'Medusa RSS Feed'))
+    root.append(__element('link', 'https://pymedusa.com/'))
+    root.append(__element('description', 'Medusa RSS Feed'))
+    root.append(__element('channel', None))
     return root
 
 
@@ -194,13 +166,13 @@ def _write_xml(root_element, file_path):
     :return: bool representing success
     """
     try:
-        xml_string = ElemTree.tostring(root_element, encoding="unicode")
-        xml_string = xml_string.replace("\n", "").encode("ascii", "ignore")
-        with open(file_path, "wb") as f:
+        xml_string = ElemTree.tostring(root_element, encoding='ascii')
+        xml_string = xml_string.replace(b'\n', b'')
+        with open(file_path, 'wb') as f:
             f.write(xml_string)
         return True
     except OSError as e:
-        log.error("Error writing RSS file at {0}: {1}", file_path, ex(e))
+        log.error(u'Error writing RSS file at {0}: {1}', file_path, ex(e))
         return False
 
 
@@ -210,4 +182,4 @@ def _find_channel_element(root_element):
 
     :return: ElemTree.Element channel
     """
-    return root_element.find("channel")
+    return root_element.find('channel')
