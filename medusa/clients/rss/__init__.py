@@ -130,7 +130,7 @@ def _read_existing_xml(file_path):
         return root
 
     try:
-        with open(file_path, 'r', encoding='ascii', errors='ignore') as f:
+        with open(file_path, 'r', encoding='utf-8') as f:
             xml_string = f.read()
     except OSError as e:
         log.error(u'Error reading RSS file at {0}: {1}', file_path, ex(e))
@@ -166,9 +166,9 @@ def _write_xml(root_element, file_path):
     :return: bool representing success
     """
     try:
-        xml_string = ElemTree.tostring(root_element, encoding='ascii')
-        xml_string = xml_string.replace(b'\n', b'')
-        with open(file_path, 'wb') as f:
+        xml_string = ElemTree.tostring(root_element, encoding='unicode')
+        xml_string = xml_string.replace('\n', '')
+        with open(file_path, 'w', encoding='utf-8') as f:
             f.write(xml_string)
         return True
     except OSError as e:
