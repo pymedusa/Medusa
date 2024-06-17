@@ -28,7 +28,7 @@ pytimeparse @ https://codeload.github.com/pymedusa/pytimeparse/tar.gz/8f28325972
 pytrakt==3.4.23
 rarfile==3.1
 rebulk==3.2.0
-requests==2.31.0
+requests==2.32.2
 requests-oauthlib==1.3.1
 requests-toolbelt==1.0.0
 six==1.16.0
