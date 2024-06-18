@@ -26,7 +26,7 @@ class CalendarHandler(BaseHandler):
         """
         Render the iCalendar
         """
-        self.add_header("Content-Type", "text/calendar")
+        self.add_header('Content-Type', 'text/calendar')
         if app.CALENDAR_UNPROTECTED:
             self.write(self.calendar())
         else:
