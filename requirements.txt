@@ -38,5 +38,5 @@ tornado==6.1
 tornroutes==0.5.1
 ttl-cache==1.6
 tvdbapiv2 @ https://codeload.github.com/pymedusa/tvdbv2/tar.gz/d6d0e9d98071c2d646beb997b336edbb0e98dfb7
-urllib3==1.26.18
+urllib3==1.26.19
 validators==0.20.0
