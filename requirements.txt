@@ -16,7 +16,7 @@ guessit==3.4.2
 html5lib==1.1
 imdbpie==5.6.5
 jsonrpclib-pelix==0.4.3.2
-knowit==0.4.0
+knowit==0.5.4
 Mako==1.2.4
 markdown2==2.4.13
 profilehooks==1.12.0
