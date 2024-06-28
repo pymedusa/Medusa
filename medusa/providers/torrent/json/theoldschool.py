@@ -91,7 +91,7 @@ class TheOldSchoolProvider(TorrentProvider):
                     )
                     continue
 
-                if len(response['data']) == 0:
+                if len(data['data']) == 0:
                     log.debug('No data returned from provider')
                     continue
 
