@@ -3,7 +3,7 @@ babelfish==0.6.0
 beautifulsoup4==4.12.3
 bencode.py==4.0.0
 CacheControl==0.13.1
-certifi==2023.7.22
+certifi==2024.7.4
 cloudscraper==1.2.70
 configobj==5.0.8
 contextlib2==21.6.0
