@@ -35,6 +35,9 @@ class EztvProvider(TorrentProvider):
             'api': urljoin(self.url, 'api/get-torrents')
         }
 
+        # Set Max number of pages to get (about 6 (x 100) pages of new torrents per day)
+        self.max_pages=6
+
         # Proper Strings
 
         # Miscellaneous Options
@@ -54,7 +57,9 @@ class EztvProvider(TorrentProvider):
         results = []
 
         # Search Params
-        search_params = {}
+        search_params = {
+            'limit': 100,
+        }
 
         for mode in search_strings:
             log.debug('Search mode: {0}', mode)
@@ -72,12 +77,44 @@ class EztvProvider(TorrentProvider):
                         continue
 
                 search_url = self.urls['api']
-                data = self.session.get_json(search_url, params=search_params)
-                if not data:
-                    log.debug('No data returned from provider')
-                    continue
+                page = 1
 
-                results += self.parse(data, mode)
+                while page and page <= self.max_pages:
+                    # log.warning('Searching page {0}', page)
+                    search_params['page'] = page
+                    response = self.session.get(search_url, params=search_params)
+                    if not response or not response.content:
+                        log.debug('No data returned from provider')
+                        page = None
+                        continue
+
+                    try:
+                        jdata = response.json()
+                    except ValueError:
+                        log.debug('No data returned from provider')
+                        page = None
+                        continue
+
+                    error = jdata.get('error')
+                    error_code = jdata.get('error_code')
+                    if error:
+                        log_level = logging.DEBUG
+                        log.log(log_level, '{msg} Code: {code}', {'msg': error, 'code': error_code})
+                        page = None
+                        continue
+
+                    # check if we actually got something, if so, then parse it
+                    torrent_rows = jdata.get('torrents', {})
+                    if torrent_rows:
+                        results += self.parse(jdata, mode)
+                        page = page + 1
+                    else:
+                        if page == 1:
+                            log.debug('Data returned from provider does not contain any torrents')
+                        else:
+                            log.debug('Page returned from provider does not contain any torrents')
+                        page = None
+                        continue
 
         return results
 
