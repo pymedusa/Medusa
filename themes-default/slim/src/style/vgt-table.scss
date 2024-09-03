@@ -1,4 +1,15 @@
 /** Use this as table styling for all table layouts */
+@use './functions.scss';
+
+$blue: 190, 222, 237;
+$pink: 35, 193, 234;
+$yellow: 55, 218, 138;
+$red: 255, 153, 153;
+$peach: 255, 221, 221;
+$lightYellow: 245, 241, 228;
+$green: 221, 255, 221;
+$opacity: 0.8;
+
 .vgt-table-styling {
     .vgt-table {
         width: 100%;
@@ -111,7 +122,7 @@
         }
 
         tr:hover {
-            opacity: 0.9;
+            background-color: rgba(var(--row-background-color), 0.8);
         }
 
         /* When using collored rows (using the episode status name, Snatched, Downloaded, Failed, etc.)
@@ -131,29 +142,35 @@
         }
 
         .skipped {
-            background-color: rgb(190, 222, 237);
+            --row-background-color: #{$blue};
+            background-color: rgb(var(--row-background-color));
         }
     
         .snatched {
-            background-color: rgb(235, 193, 234);
+            --row-background-color: #{$pink};
+            background-color: rgb(var(--row-background-color));
         }
     
         .downloaded {
-            background-color: rgb(255, 218, 138);
+            --row-background-color: #{$yellow};
+            background-color: rgb(var(--row-background-color));
         }
     
         .failed {
-            background-color: rgb(255, 153, 153);
+            --row-background-color: #{$pink};
+            background-color: rgb(var(--row-background-color));
         }
     
         .subtitled {
-            background-color: rgb(190, 222, 237);
+            --row-background-color: #{$blue};
+            background-color: rgb(var(--row-background-color));
         }
 
         .archived {
-            background-color: rgb(245, 241, 228);
+            --row-background-color: #{$lightYellow};
+            background-color: rgb(var(--row-background-color));
         }
-    }    
+    }
 
     .tablesorter-header-inner {
         padding: 0 2px;
@@ -342,19 +359,23 @@
 
     /* Schedule list layout */
     .schedule tr.today {
-        background-color: rgb(245, 241, 228);
+        --row-background-color: #{$lightYellow};
+        background-color: rgb(var(--row-background-color));
     }
 
     .schedule tr.soon {
-        background-color: rgb(221, 255, 221);
+        --row-background-color: #{$green};
+        background-color: rgb(var(--row-background-color));
     }
 
     .schedule tr.missed {
-        background-color: rgb(255, 221, 221);
+        --row-background-color: #{$peach};
+        background-color: rgb(var(--row-background-color));
     }
 
     .schedule tr.later {
-        background-color: rgb(190, 222, 237);
+        --row-background-color: #{$blue};
+        background-color: rgb(var(--row-background-color));
     }
 
     .schedule tr,

@@ -73,7 +73,7 @@
 
                     <template slot="table-footer-row" slot-scope="{headerRow}">
                         <tr colspan="9999" :id="`season-${headerRow.season}-footer`" class="seasoncols border-bottom shadow">
-                            <th class="col-footer" colspan="15" align="left">Season contains {{headerRow.children.length}} episodes with total filesize: {{addFileSize(headerRow)}}</th>
+                            <th class="col-footer" colspan="15">Season contains {{headerRow.children.length}} episodes with total filesize: {{addFileSize(headerRow)}}</th>
                         </tr>
                         <tr class="spacer" />
                     </template>
@@ -1217,7 +1217,7 @@ tablesorter.css
 }
 
 .displayShow >>> .vgt-table tr:hover {
-    opacity: 0.9;
+    opacity: 0.8;
 }
 
 .displayShow >>> .unaired {
