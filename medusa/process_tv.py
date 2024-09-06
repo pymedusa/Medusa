@@ -287,6 +287,24 @@ class ProcessResult(object):
         self.episodes = episodes
         self.process_single_resource = process_single_resource
 
+
+    def _is_tv_download_dir(self, path):
+        """Check if the path exists, combine with the tv_download_dir path if available."""
+        if not app.TV_DOWNLOAD_DIR:
+            self.log_and_output('tv_download_dir not set, not using it', level=logging.DEBUG)
+            return False
+        
+        if not os.path.isdir(app.TV_DOWNLOAD_DIR):
+            self.log_and_output('tv_download_dir set, but cant resove to a local directory', level=logging.DEBUG)
+            return False
+
+        if not helpers.real_path(path) != helpers.real_path(app.TV_DOWNLOAD_DIR):
+            self.log_and_output('real path didnt match for the path: [] but cant resove to a local directory',
+                                level=logging.DEBUG, **{'path': helpers.real_path(path), 'tv_download_dir': helpers.real_path(app.TV_DOWNLOAD_DIR)})
+            return False
+        
+        return True
+
     @property
     def directory(self):
         """Return the root directory we are going to process."""
@@ -305,13 +323,13 @@ class ProcessResult(object):
 
         # If the client and the application are not on the same machine,
         # translate the directory into a network directory
-        elif all([app.TV_DOWNLOAD_DIR, os.path.isdir(app.TV_DOWNLOAD_DIR),
-                  helpers.real_path(path) == helpers.real_path(app.TV_DOWNLOAD_DIR)]):
+        elif self._is_tv_download_dir(path):
             directory = os.path.join(
                 app.TV_DOWNLOAD_DIR,
                 os.path.abspath(path).split(os.path.sep)[-1]
             )
             self.log_and_output('Trying to use folder: {directory}', level=logging.DEBUG, **{'directory': directory})
+
         else:
             self.log_and_output(
                 'Unable to figure out what folder to process.'
