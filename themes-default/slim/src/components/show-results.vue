@@ -47,7 +47,7 @@
 
                         <span v-else-if="props.column.label === 'Group'" class="align-center release-group">
                             {{props.row.releaseGroup}}
-                            <manage-whitelist v-if="show.config.anime && props.row.releaseGroup" :show="show" :releaseGroup="props.row.releaseGroup"></manage-whitelist>                            
+                            <manage-whitelist v-if="show.config.anime && props.row.releaseGroup" :show="show" :releaseGroup="props.row.releaseGroup" />
                         </span>
 
                         <span v-else-if="props.column.label === 'Quality'" class="align-center">
@@ -108,7 +108,6 @@ export default {
         VueGoodTable,
         StateSwitch,
         QualityPill,
-        ManageWhitelist,
         ManageWhitelist
     },
     directives: {

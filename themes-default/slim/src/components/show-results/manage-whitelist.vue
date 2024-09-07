@@ -42,28 +42,28 @@ export default {
             saveShowConfig: 'saveShowConfig'
         }),
         addToWhitelist() {
-            const { releaseGroup, show, saveShowConfig } = this;
+            const { releaseGroup, show } = this;
             if (!show.config.release.whitelist.map(item => item.toLowerCase()).includes(releaseGroup.toLowerCase())) {
                 this.show.config.release.whitelist.push(releaseGroup);
                 this.save(`adding release group ${releaseGroup} from the whitelist`);
             }
         },
         removeFromWhitelist() {
-            const { releaseGroup, show, saveShowConfig } = this;
+            const { releaseGroup, show } = this;
             if (show.config.release.whitelist.map(item => item.toLowerCase()).includes(releaseGroup.toLowerCase())) {
                 this.show.config.release.whitelist = this.show.config.release.whitelist.filter(group => group.toLowerCase() !== releaseGroup.toLowerCase());
                 this.save(`removing release group ${releaseGroup} from the whitelist`);
             }
         },
         addToBlacklist() {
-            const { releaseGroup, show, saveShowConfig } = this;
+            const { releaseGroup, show } = this;
             if (!show.config.release.blacklist.map(item => item.toLowerCase()).includes(releaseGroup.toLowerCase())) {
                 this.show.config.release.blacklist.push(releaseGroup);
                 this.save(`adding release group ${releaseGroup} from the blacklist`);
             }
         },
         removeFromBlacklist() {
-            const { releaseGroup, show, saveShowConfig } = this;
+            const { releaseGroup, show } = this;
             if (show.config.release.blacklist.map(item => item.toLowerCase()).includes(releaseGroup.toLowerCase())) {
                 this.show.config.release.blacklist = this.show.config.release.blacklist.filter(group => group.toLowerCase() !== releaseGroup.toLowerCase());
                 this.save(`removing release group ${releaseGroup} from the blacklist`);
@@ -72,14 +72,13 @@ export default {
         async save(message) {
             const { saveShowConfig, show } = this;
             try {
-                await saveShowConfig({ show });                
+                await saveShowConfig({ show });
                 this.$snotify.success(
                     message,
                     'Saved',
                     { timeout: 5000 }
                 );
             } catch (error) {
-                debugger;
                 this.$snotify.error(
                     `failed ${message}`,
                     'Error'
@@ -87,7 +86,7 @@ export default {
             }
         }
     }
-}
+};
 </script>
 <style scoped>
 .manage-whitelist-control-wrapper {
