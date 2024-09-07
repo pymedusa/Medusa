@@ -1,6 +1,6 @@
 /** Use this as table styling for all table layouts */
 $blue: 190, 222, 237;
-$pink: 35, 193, 234;
+$pink: 235, 193, 234;
 $yellow: 55, 218, 138;
 $red: 255, 153, 153;
 $peach: 255, 221, 221;
@@ -155,7 +155,7 @@ $opacity: 0.8;
         }
     
         .failed {
-            --row-background-color: #{$pink};
+            --row-background-color: #{$red};
             background-color: rgb(var(--row-background-color));
         }
     
