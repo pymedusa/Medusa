@@ -287,13 +287,12 @@ class ProcessResult(object):
         self.episodes = episodes
         self.process_single_resource = process_single_resource
 
-
     def _is_tv_download_dir(self, path):
         """Check if the path exists, combine with the tv_download_dir path if available."""
         if not app.TV_DOWNLOAD_DIR:
             self.log_and_output('tv_download_dir not set, not using it', level=logging.DEBUG)
             return False
-        
+
         if not os.path.isdir(app.TV_DOWNLOAD_DIR):
             self.log_and_output('tv_download_dir set, but cant resove to a local directory', level=logging.DEBUG)
             return False
@@ -302,7 +301,7 @@ class ProcessResult(object):
             self.log_and_output('real path didnt match for the path: [] but cant resove to a local directory',
                                 level=logging.DEBUG, **{'path': helpers.real_path(path), 'tv_download_dir': helpers.real_path(app.TV_DOWNLOAD_DIR)})
             return False
-        
+
         return True
 
     @property
