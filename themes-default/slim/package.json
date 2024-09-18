@@ -40,7 +40,7 @@
     "jquery": "3.7.1",
     "lodash": "4.17.21",
     "lozad": "1.16.0",
-    "sass": "1.63.6",
+    "sass": "1.79.0",
     "sass-loader": "13.3.2",
     "style-loader": "3.3.3",
     "stylelint-scss": "3.21.0",
