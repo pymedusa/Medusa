@@ -6,6 +6,8 @@ from __future__ import unicode_literals
 
 import logging
 import re
+import json
+from requests.utils import dict_from_cookiejar
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -36,10 +38,11 @@ class YggtorrentProvider(TorrentProvider):
         self.password = None
 
         # URLs
-        self.url = 'https://yggtorrent.wtf'
+        # check URL change here : https://yggland.fr/FAQ-Tutos/#status
+        self.url = 'https://ygg.re/'
         self.urls = {
             'auth': urljoin(self.url, 'user/ajax_usermenu'),
-            'login': urljoin(self.url, 'user/login'),
+            'login': urljoin(self.url, 'auth/process_login'),
             'search': urljoin(self.url, 'engine/search'),
             'download': urljoin(self.url, 'engine/download_torrent?id={0}')
         }
@@ -55,6 +58,9 @@ class YggtorrentProvider(TorrentProvider):
 
         # Cache
         self.cache = tv.Cache(self, min_time=20)
+
+        # Required cookies to check authentification
+        self.required_cookies=('ygg_',)
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
@@ -194,8 +200,21 @@ class YggtorrentProvider(TorrentProvider):
         return True
 
     def _is_authenticated(self):
+        if not any(dict_from_cookiejar(self.session.cookies).values()) or not self.check_required_cookies():
+            return False
+
         response = self.session.get(self.urls['auth'])
-        if not response:
+        if not response or response is None or not response.status_code == 200:
+            log.debug("cannot reach account information page")
+            return False
+
+        try:
+            j = json.loads(response.text)
+        except:
+            return False
+        nickname = j.get('nickname')
+        if nickname is None or nickname == '':
+            log.debug("nickname information missing")
             return False
 
         return True
