@@ -739,6 +739,7 @@ class Application(object):
             app.TORRENT_PATH = check_setting_str(app.CFG, 'TORRENT', 'torrent_path', '')
             app.TORRENT_SEED_TIME = check_setting_int(app.CFG, 'TORRENT', 'torrent_seed_time', 0)
             app.TORRENT_PAUSED = bool(check_setting_int(app.CFG, 'TORRENT', 'torrent_paused', 0))
+            app.TORRENT_STOPPED = bool(check_setting_int(app.CFG, 'TORRENT', 'torrent_stopped', 0))
             app.TORRENT_HIGH_BANDWIDTH = bool(check_setting_int(app.CFG, 'TORRENT', 'torrent_high_bandwidth', 0))
             app.TORRENT_LABEL = check_setting_str(app.CFG, 'TORRENT', 'torrent_label', '')
             app.TORRENT_LABEL_ANIME = check_setting_str(app.CFG, 'TORRENT', 'torrent_label_anime', '')
@@ -1854,6 +1855,7 @@ class Application(object):
         new_config['TORRENT']['torrent_path'] = app.TORRENT_PATH
         new_config['TORRENT']['torrent_seed_time'] = int(app.TORRENT_SEED_TIME)
         new_config['TORRENT']['torrent_paused'] = int(app.TORRENT_PAUSED)
+        new_config['TORRENT']['torrent_stopped'] = int(app.TORRENT_STOPPED)
         new_config['TORRENT']['torrent_high_bandwidth'] = int(app.TORRENT_HIGH_BANDWIDTH)
         new_config['TORRENT']['torrent_label'] = app.TORRENT_LABEL
         new_config['TORRENT']['torrent_label_anime'] = app.TORRENT_LABEL_ANIME
