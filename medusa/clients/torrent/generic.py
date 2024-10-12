@@ -180,6 +180,16 @@ class GenericClient(object):
         """
         return True
 
+    def _set_torrent_stop(self, result):
+        """Return the True/False from the client when a torrent is set with stop.
+
+        :param result:
+        :type result: medusa.classes.SearchResult
+        :return:
+        :rtype: bool
+        """
+        return True
+
     @staticmethod
     def _get_info_hash(result):
         if result.url.startswith('magnet:'):
@@ -238,8 +248,10 @@ class GenericClient(object):
             log.warning('{name}: Unable to send Torrent', {'name': self.name})
             return False
 
-        if not self._set_torrent_pause(result):
-            log.error('{name}: Unable to set the pause for Torrent', {'name': self.name})
+        if self._set_torrent_pause(result) or self._set_torrent_stop(result):
+            log.info('{name}: Able to set the pause/stop for Torrent', {'name': self.name})
+        else:
+            log.error('{name}: Unable to set the pause/stop for Torrent', {'name': self.name})
 
         if not self._set_torrent_label(result):
             log.error('{name}: Unable to set the label for Torrent', {'name': self.name})

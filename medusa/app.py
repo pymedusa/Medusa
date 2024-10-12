@@ -372,6 +372,7 @@ class MedusaApp(object):
         self.TORRENT_PATH = ''
         self.TORRENT_SEED_TIME = None
         self.TORRENT_PAUSED = False
+        self.TORRENT_STOPPED = False
         self.TORRENT_HIGH_BANDWIDTH = False
         self.TORRENT_LABEL = ''
         self.TORRENT_LABEL_ANIME = ''
