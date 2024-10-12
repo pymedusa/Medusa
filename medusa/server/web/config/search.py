@@ -47,7 +47,7 @@ class ConfigSearch(Config):
                    randomize_providers=None, use_failed_downloads=None, delete_failed=None, propers_search_days=None,
                    torrent_dir=None, torrent_username=None, torrent_password=None, torrent_host=None,
                    torrent_label=None, torrent_label_anime=None, torrent_path=None, torrent_verify_cert=None,
-                   torrent_seed_time=None, torrent_paused=None, torrent_high_bandwidth=None,
+                   torrent_seed_time=None, torrent_paused=None, torrent_stopped=None, torrent_high_bandwidth=None,
                    torrent_rpcurl=None, torrent_auth_type=None, ignore_words=None, download_handler_frequency=None,
                    preferred_words=None, undesired_words=None, trackers_list=None, require_words=None,
                    ignored_subs_list=None, ignore_und_subs=None, cache_trimming=None, max_cache_age=None,
@@ -130,6 +130,7 @@ class ConfigSearch(Config):
         app.TORRENT_PATH = torrent_path.rstrip('/\\')
         app.TORRENT_SEED_TIME = torrent_seed_time
         app.TORRENT_PAUSED = config.checkbox_to_value(torrent_paused)
+        app.TORRENT_STOPPED = config.checkbox_to_value(torrent_stopped)
         app.TORRENT_HIGH_BANDWIDTH = config.checkbox_to_value(torrent_high_bandwidth)
         app.TORRENT_HOST = config.clean_url(torrent_host)
         app.TORRENT_RPCURL = torrent_rpcurl
