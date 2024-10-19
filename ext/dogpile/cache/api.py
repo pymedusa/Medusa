@@ -9,6 +9,8 @@ from typing import Optional
 from typing import Sequence
 from typing import Union
 
+from ..util.typing import Self
+
 
 class NoValue:
     """Describe a missing cache value.
@@ -18,7 +20,7 @@ class NoValue:
     """
 
     @property
-    def payload(self):
+    def payload(self) -> Self:
         return self
 
     def __repr__(self):
@@ -190,7 +192,9 @@ class CacheBackend:
         raise NotImplementedError()
 
     @classmethod
-    def from_config_dict(cls, config_dict, prefix):
+    def from_config_dict(
+        cls, config_dict: Mapping[str, Any], prefix: str
+    ) -> Self:
         prefix_len = len(prefix)
         return cls(
             dict(
