@@ -14,9 +14,9 @@ except ImportError:
 import diskcache
 from dateutil.tz import tzutc
 from dateutil.parser import parse
-import boto.utils
+from six import ensure_text
 from six.moves.urllib.parse import urlparse, parse_qs, quote
-from boto import provider
+from boto.provider import Provider
 from boto.connection import HTTPRequest
 from boto.auth import HmacAuthV3HTTPHandler
 
@@ -42,7 +42,7 @@ class ZuluHmacAuthV3HTTPHandler(HmacAuthV3HTTPHandler):
             return ''
         qs_parts = []
         for param in sorted(http_request.params):
-            value = boto.utils.get_utf8_value(http_request.params[param])
+            value = ensure_text(http_request.params[param])
             param_ = quote(param, safe='-_.~')
             value_ = quote(value, safe='-_.~')
             qs_parts.append('{0}={1}'.format(param_, value_))
@@ -118,7 +118,7 @@ class Auth(object):
         handler = ZuluHmacAuthV3HTTPHandler(
             host=HOST,
             config={},
-            provider=provider.Provider(
+            provider=Provider(
                 name='aws',
                 access_key=creds['accessKeyId'],
                 secret_key=creds['secretAccessKey'],

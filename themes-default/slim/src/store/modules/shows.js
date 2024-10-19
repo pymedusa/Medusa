@@ -589,6 +589,46 @@ const actions = {
     updateEpisode({ state, commit }, episode) {
         const show = state.shows.find(({ id }) => id.slug === episode.showSlug);
         commit(ADD_SHOW_EPISODE, { show, episodes: [episode] });
+    },
+    saveShowConfig({ rootState }, { show }) {
+        const showConfig = show.config;
+        const data = {
+            config: {
+                aliases: showConfig.aliases,
+                defaultEpisodeStatus: showConfig.defaultEpisodeStatus,
+                dvdOrder: showConfig.dvdOrder,
+                seasonFolders: showConfig.seasonFolders,
+                anime: showConfig.anime,
+                scene: showConfig.scene,
+                sports: showConfig.sports,
+                paused: showConfig.paused,
+                location: showConfig.location,
+                airByDate: showConfig.airByDate,
+                subtitlesEnabled: showConfig.subtitlesEnabled,
+                release: {
+                    requiredWords: showConfig.release.requiredWords,
+                    ignoredWords: showConfig.release.ignoredWords,
+                    requiredWordsExclude: showConfig.release.requiredWordsExclude,
+                    ignoredWordsExclude: showConfig.release.ignoredWordsExclude
+                },
+                qualities: {
+                    preferred: showConfig.qualities.preferred,
+                    allowed: showConfig.qualities.allowed
+                },
+                airdateOffset: showConfig.airdateOffset,
+                showLists: showConfig.showLists,
+                templates: showConfig.templates,
+                searchTemplates: showConfig.searchTemplates
+            },
+            language: show.language
+        };
+
+        if (data.config.anime) {
+            data.config.release.blacklist = showConfig.release.blacklist;
+            data.config.release.whitelist = showConfig.release.whitelist;
+        }
+
+        return rootState.auth.client.api.patch(`series/${show.id.slug}`, data);
     }
 };
 
