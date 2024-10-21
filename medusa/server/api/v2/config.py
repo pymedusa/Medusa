@@ -211,6 +211,7 @@ class ConfigHandler(BaseRequestHandler):
         'clients.torrents.password': StringField(app, 'TORRENT_PASSWORD'),
         'clients.torrents.path': StringField(app, 'TORRENT_PATH'),
         'clients.torrents.paused': BooleanField(app, 'TORRENT_PAUSED'),
+        'clients.torrents.stopped': BooleanField(app, 'TORRENT_STOPPED'),
         'clients.torrents.rpcUrl': StringField(app, 'TORRENT_RPCURL'),
         'clients.torrents.seedLocation': StringField(app, 'TORRENT_SEED_LOCATION'),
         'clients.torrents.seedTime': IntegerField(app, 'TORRENT_SEED_TIME'),
@@ -1186,6 +1187,7 @@ class DataGenerator(object):
         section_data['torrents']['saveMagnetFile'] = bool(app.SAVE_MAGNET_FILE)
         section_data['torrents']['path'] = app.TORRENT_PATH
         section_data['torrents']['paused'] = bool(app.TORRENT_PAUSED)
+        section_data['torrents']['stopped'] = bool(app.TORRENT_STOPPED)
         section_data['torrents']['rpcUrl'] = app.TORRENT_RPCURL
         section_data['torrents']['seedLocation'] = app.TORRENT_SEED_LOCATION
         section_data['torrents']['seedTime'] = app.TORRENT_SEED_TIME

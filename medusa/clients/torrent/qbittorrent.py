@@ -239,8 +239,21 @@ class QBittorrentAPI(GenericClient):
     def _set_torrent_pause(self, result):
         return self.pause_torrent(result.hash, state='pause' if app.TORRENT_PAUSED else 'resume')
 
+    def _set_torrent_stop(self, result):
+        return self.stop_torrent(result.hash, state='stop' if app.TORRENT_STOPPED else 'start')
+
     def pause_torrent(self, info_hash, state='pause'):
         """Pause torrent."""
+        command = 'api/v2/torrents' if self.api >= (2, 0, 0) else 'command'
+        hashes_key = 'hashes' if self.api >= (1, 18, 0) else 'hash'
+        self.url = urljoin(self.host, '{command}/{state}'.format(command=command, state=state))
+        data = {
+            hashes_key: info_hash.lower()
+        }
+        return self._request(method='post', data=data, cookies=self.session.cookies)
+    
+    def stop_torrent(self, info_hash, state='stop'):
+        """Stop torrent."""
         command = 'api/v2/torrents' if self.api >= (2, 0, 0) else 'command'
         hashes_key = 'hashes' if self.api >= (1, 18, 0) else 'hash'
         self.url = urljoin(self.host, '{command}/{state}'.format(command=command, state=state))
@@ -398,10 +411,13 @@ class QBittorrentAPI(GenericClient):
         if torrent['state'] in ('pausedDL', 'stalledDL'):
             client_status.set_status_string('Paused')
 
+        if torrent['state'] in ('stoppdDL'):
+            client_status.set_status_string('Stopped')
+
         if torrent['state'] == 'error':
             client_status.set_status_string('Failed')
 
-        if torrent['state'] in ('uploading', 'queuedUP', 'checkingUP', 'forcedUP', 'stalledUP', 'pausedUP'):
+        if torrent['state'] in ('uploading', 'queuedUP', 'checkingUP', 'forcedUP', 'stalledUP', 'pausedUP', 'stoppedUP'):
             client_status.set_status_string('Completed')
 
         # if torrent['ratio'] >= torrent['max_ratio']:
