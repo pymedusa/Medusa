@@ -45,7 +45,6 @@ class ClientStatusEnum(Enum):
 
     SNATCHED = 0  # 0
     PAUSED = 1  # 1
-    STOPPED = 1
     DOWNLOADING = 1 << 1  # 2
     DOWNLOADED = 1 << 2  # 4
     SEEDED = 1 << 3  # 8
@@ -64,7 +63,6 @@ class ClientStatusEnum(Enum):
 status_strings = {
     ClientStatusEnum.SNATCHED: 'Snatched',
     ClientStatusEnum.PAUSED: 'Paused',
-    ClientStatusEnum.STOPPED: 'Stopped',
     ClientStatusEnum.DOWNLOADING: 'Downloading',
     ClientStatusEnum.DOWNLOADED: 'Downloaded',
     ClientStatusEnum.SEEDED: 'Seeded',
@@ -207,9 +205,7 @@ class DownloadHandler(object):
                 ClientStatusEnum.SEEDED.value,
                 ClientStatusEnum.COMPLETED.value | ClientStatusEnum.SEEDED.value,
                 ClientStatusEnum.COMPLETED.value | ClientStatusEnum.PAUSED.value,
-                ClientStatusEnum.COMPLETED.value | ClientStatusEnum.STOPPED.value,
                 ClientStatusEnum.COMPLETED.value | ClientStatusEnum.SEEDED.value | ClientStatusEnum.PAUSED.value,
-                ClientStatusEnum.COMPLETED.value | ClientStatusEnum.SEEDED.value | ClientStatusEnum.STOPPED.value,
             ],
         ):
             try:
