@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 import logging
 import re
 import json
+import os
 from requests.utils import dict_from_cookiejar
 
 from medusa import tv
@@ -39,7 +40,7 @@ class YggtorrentProvider(TorrentProvider):
 
         # URLs
         # check URL change here : https://yggland.fr/FAQ-Tutos/#status
-        self.url = 'https://ygg.re/'
+        self.url = os.getenv('MEDUSA_YGGTORRENT_OVERRIDE_URL') or 'https://ygg.re/'        
         self.urls = {
             'auth': urljoin(self.url, 'user/ajax_usermenu'),
             'login': urljoin(self.url, 'auth/process_login'),
