@@ -98,7 +98,7 @@ class QBittorrentAPI(GenericClient):
             self.response = self.session.post(self.url, data=data, verify=app.TORRENT_VERIFY_CERT)
         except Exception as error:
             log.warning('{name}: Exception while trying to authenticate: {error}',
-                        {'name': self.name, 'error': error}, exc_info=1)
+                        {'name': self.name, 'error': error})
             return None
 
         if not self.response:
@@ -138,7 +138,7 @@ class QBittorrentAPI(GenericClient):
             self.response = self.session.post(self.url, data=data, verify=app.TORRENT_VERIFY_CERT)
         except Exception as error:
             log.warning('{name}: Exception while trying to authenticate: {error}',
-                        {'name': self.name, 'error': error}, exc_info=1)
+                        {'name': self.name, 'error': error})
             return None
 
         # API v1.0.0 (qBittorrent v3.1.x and older)
@@ -147,7 +147,7 @@ class QBittorrentAPI(GenericClient):
                 self.response = self.session.get(self.host, verify=app.TORRENT_VERIFY_CERT)
             except Exception as error:
                 log.warning('{name}: Exception while trying to authenticate: {error}',
-                            {'name': self.name, 'error': error}, exc_info=1)
+                            {'name': self.name, 'error': error})
                 return None
 
         self.session.cookies = self.response.cookies
@@ -156,6 +156,8 @@ class QBittorrentAPI(GenericClient):
         return self.auth
 
     def _add_torrent_uri(self, result):
+        if not self.api:
+            raise DownloadClientConnectionException('Could not add torrent URI. Failed to authenticate')
 
         command = 'api/v2/torrents/add' if self.api >= (2, 0, 0) else 'command/download'
         self.url = urljoin(self.host, command)
@@ -174,6 +176,8 @@ class QBittorrentAPI(GenericClient):
         return self._request(method='post', data=data, cookies=self.session.cookies)
 
     def _add_torrent_file(self, result):
+        if not self.api:
+            raise DownloadClientConnectionException('Could not add torrent file. Failed to authenticate')
 
         command = 'api/v2/torrents/add' if self.api >= (2, 0, 0) else 'command/upload'
         self.url = urljoin(self.host, command)
@@ -193,12 +197,14 @@ class QBittorrentAPI(GenericClient):
         return self._request(method='post', data=data, files=files, cookies=self.session.cookies)
 
     def _set_torrent_label(self, result):
-
         label = app.TORRENT_LABEL_ANIME if result.series.is_anime else app.TORRENT_LABEL
         if not label:
             return True
 
         api = self.api
+        if not api:
+            return False
+
         if api >= (2, 0, 0):
             self.url = urljoin(self.host, 'api/v2/torrents/setCategory')
             label_key = 'category'
@@ -220,6 +226,8 @@ class QBittorrentAPI(GenericClient):
         return ok
 
     def _set_torrent_priority(self, result):
+        if not self.api:
+            raise DownloadClientConnectionException('Could not set torrent priority. Failed to authenticate')
 
         command = 'api/v2/torrents' if self.api >= (2, 0, 0) else 'command'
         method = 'increase' if result.priority == 1 else 'decrease'
@@ -241,6 +249,9 @@ class QBittorrentAPI(GenericClient):
 
     def pause_torrent(self, info_hash, state='pause'):
         """Pause torrent."""
+        if not self.api:
+            raise DownloadClientConnectionException('Could not pause torrent. Failed to authenticate')
+
         command = 'api/v2/torrents' if self.api >= (2, 0, 0) else 'command'
         hashes_key = 'hashes' if self.api >= (1, 18, 0) else 'hash'
         self.url = urljoin(self.host, '{command}/{state}'.format(command=command, state=state))
@@ -264,6 +275,8 @@ class QBittorrentAPI(GenericClient):
         }
 
         data['deleteFiles'] = from_disk
+        if not self.api:
+            raise DownloadClientConnectionException('Could not remove torrent from client. Failed to authenticate')
 
         if self.api >= (2, 0, 0):
             self.url = urljoin(self.host, 'api/v2/torrents/delete')
@@ -297,7 +310,7 @@ class QBittorrentAPI(GenericClient):
         """Get all torrents from qbittorrent api."""
         params = {}
         if not self.api:
-            raise DownloadClientConnectionException('Error while fetching torrent. Not authenticated.')
+            raise DownloadClientConnectionException('Error while fetching torrents. Not authenticated.')
 
         if self.api >= (2, 0, 0):
             self.url = urljoin(self.host, 'api/v2/torrents/info')

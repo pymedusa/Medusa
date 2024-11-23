@@ -16,6 +16,7 @@ import certifi
 
 from medusa import app, db
 from medusa.helper.common import http_code_description
+from medusa.helper.exceptions import DownloadClientConnectionException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import ClientSession
 
@@ -218,6 +219,7 @@ class GenericClient(object):
         :return:
         :rtype: str or bool
         """
+        r_code = False
         # Sets per provider seed ratio
         result.ratio = result.provider.seed_ratio()
 
@@ -225,36 +227,46 @@ class GenericClient(object):
         if not result.hash and not self._get_info_hash(result):
             return False
 
-        if result.url.startswith('magnet:'):
-            log.info('Adding "{url}" to {name}', {'url': result.url, 'name': self.name})
-            r_code = self._add_torrent_uri(result)
-        else:
-            log.info('Adding "{result_name}" torrent to {name}', {
-                'result_name': result.name, 'name': self.name
-            })
-            r_code = self._add_torrent_file(result)
+        try:
+            if result.url.startswith('magnet:'):
+                log.info('Adding "{url}" to {name}', {'url': result.url, 'name': self.name})
+                r_code = self._add_torrent_uri(result)
+            else:
+                log.info('Adding "{result_name}" torrent to {name}', {
+                    'result_name': result.name, 'name': self.name
+                })
+                r_code = self._add_torrent_file(result)
 
-        if not r_code:
-            log.warning('{name}: Unable to send Torrent', {'name': self.name})
-            return False
+            if not r_code:
+                log.warning('{name}: Unable to send Torrent', {'name': self.name})
+                return False
 
-        if not self._set_torrent_pause(result):
-            log.error('{name}: Unable to set the pause for Torrent', {'name': self.name})
+            if not self._set_torrent_pause(result):
+                log.error('{name}: Unable to set the pause for Torrent', {'name': self.name})
 
-        if not self._set_torrent_label(result):
-            log.error('{name}: Unable to set the label for Torrent', {'name': self.name})
+            if not self._set_torrent_label(result):
+                log.error('{name}: Unable to set the label for Torrent', {'name': self.name})
 
-        if not self._set_torrent_ratio(result):
-            log.error('{name}: Unable to set the ratio for Torrent', {'name': self.name})
+            if not self._set_torrent_ratio(result):
+                log.error('{name}: Unable to set the ratio for Torrent', {'name': self.name})
 
-        if not self._set_torrent_seed_time(result):
-            log.error('{name}: Unable to set the seed time for Torrent', {'name': self.name})
+            if not self._set_torrent_seed_time(result):
+                log.error('{name}: Unable to set the seed time for Torrent', {'name': self.name})
 
-        if not self._set_torrent_path(result):
-            log.error('{name}: Unable to set the path for Torrent', {'name': self.name})
+            if not self._set_torrent_path(result):
+                log.error('{name}: Unable to set the path for Torrent', {'name': self.name})
 
-        if result.priority != 0 and not self._set_torrent_priority(result):
-            log.error('{name}: Unable to set priority for Torrent', {'name': self.name})
+            if result.priority != 0 and not self._set_torrent_priority(result):
+                log.error('{name}: Unable to set priority for Torrent', {'name': self.name})
+        except DownloadClientConnectionException as error:
+            log.warning('{name}: Failed Sending Torrent. Error: {error}',
+                        {'name': self.name, 'error': error})
+        except Exception as msg:
+            log.error('{name}: Failed Sending Torrent',
+                      {'name': self.name})
+            log.debug('{name}: Exception raised when sending torrent {result}.'
+                      ' Error: {error}',
+                      {'name': self.name, 'result': result, 'error': msg})
 
         return r_code
 
