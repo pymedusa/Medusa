@@ -55,7 +55,7 @@ class MedusaApp(object):
         self.GIT_REPO = 'Medusa'
         self.BASE_MEDUSA_URL = 'https://raw.githubusercontent.com/pymedusa/Medusa/refs/heads/master'
         self.BASE_PYMEDUSA_URL = 'https://raw.githubusercontent.com/pymedusa/medusa.github.io/refs/heads/master'
-        self.CHANGES_URL = '{base_url}/news/CHANGELOG.md'.format(base_url=self.BASE_MEDUSA_URL)
+        self.CHANGES_URL = '{base_url}/CHANGELOG.md'.format(base_url=self.BASE_MEDUSA_URL)
         self.APPLICATION_URL = 'https://github.com/{org}/{repo}'.format(org=self.GIT_ORG, repo=self.GIT_REPO)
         self.DONATIONS_URL = '{0}/wiki/Donations'.format(self.APPLICATION_URL)
         self.WIKI_URL = '{0}/wiki'.format(self.APPLICATION_URL)
