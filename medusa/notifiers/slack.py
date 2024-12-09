@@ -106,7 +106,7 @@ class Notifier(object):
         data = {
             'text': message,
             'username': 'MedusaBot',
-            'icon_url': 'https://cdn.pymedusa.com/images/ico/favicon-310.png'
+            'icon_url': '{base_url}/images/ico/favicon-310.png'.format(base_url=app.BASE_PYMEDUSA_URL)
         }
 
         try:
