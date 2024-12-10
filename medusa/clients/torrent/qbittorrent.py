@@ -251,7 +251,7 @@ class QBittorrentAPI(GenericClient):
             hashes_key: info_hash.lower()
         }
         return self._request(method='post', data=data, cookies=self.session.cookies)
-    
+
     def stop_torrent(self, info_hash, state='stop'):
         """Stop torrent."""
         command = 'api/v2/torrents' if self.api >= (2, 0, 0) else 'command'
