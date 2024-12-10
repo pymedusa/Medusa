@@ -71,7 +71,7 @@ try:
 except ImportError:
     importlib_machinery = None
 
-from pkg_resources.extern import appdirs
+import appdirs
 from pkg_resources.extern import packaging
 __import__('pkg_resources.extern.packaging.version')
 __import__('pkg_resources.extern.packaging.specifiers')
@@ -2169,7 +2169,7 @@ def resolve_egg_link(path):
     return next(dist_groups, ())
 
 
-register_finder(pkgutil.ImpImporter, find_on_path)
+register_finder(pkgutil.zipimporter, find_on_path)
 
 if hasattr(importlib_machinery, 'FileFinder'):
     register_finder(importlib_machinery.FileFinder, find_on_path)
@@ -2210,7 +2210,7 @@ def _handle_ns(packageName, path_item):
         # capture warnings due to #1111
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            loader = importer.find_module(packageName)
+            loader = importer.find_spec(packageName)
 
     if loader is None:
         return None
@@ -2324,7 +2324,7 @@ def file_ns_handler(importer, path_item, packageName, module):
         return subpath
 
 
-register_namespace_handler(pkgutil.ImpImporter, file_ns_handler)
+register_namespace_handler(pkgutil.zipimporter, file_ns_handler)
 register_namespace_handler(zipimport.zipimporter, file_ns_handler)
 
 if hasattr(importlib_machinery, 'FileFinder'):
