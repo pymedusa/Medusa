@@ -100,6 +100,7 @@ module.exports = {
                 selfClosingTag: 'always',
             },
         ],
+        'import/no-named-as-default-member': 'off',
     },
     // Please do not use root `globals` because they can't be overriden.
     globals: {},

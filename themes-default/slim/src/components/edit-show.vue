@@ -383,9 +383,9 @@ export default {
     methods: {
         ...mapActions({
             getShow: 'getShow',
-            setShow: 'setShow',
             setCurrentShow: 'setCurrentShow',
-            setShowConfig: 'setShowConfig'
+            setShowConfig: 'setShowConfig',
+            saveShowConfig: 'saveShowConfig'
         }),
         loadShow() {
             const { setCurrentShow, getShow, showSlug } = this;
@@ -398,7 +398,7 @@ export default {
             setCurrentShow(showSlug);
         },
         async saveShow(subject) {
-            const { show, showLoaded } = this;
+            const { show, showLoaded, saveShowConfig } = this;
 
             // We want to wait until the page has been fully loaded, before starting to save stuff.
             if (!showLoaded) {
@@ -412,46 +412,8 @@ export default {
             // Disable the save button until we're done.
             this.saving = true;
 
-            const showConfig = show.config;
-            const data = {
-                config: {
-                    aliases: showConfig.aliases,
-                    defaultEpisodeStatus: showConfig.defaultEpisodeStatus,
-                    dvdOrder: showConfig.dvdOrder,
-                    seasonFolders: showConfig.seasonFolders,
-                    anime: showConfig.anime,
-                    scene: showConfig.scene,
-                    sports: showConfig.sports,
-                    paused: showConfig.paused,
-                    location: showConfig.location,
-                    airByDate: showConfig.airByDate,
-                    subtitlesEnabled: showConfig.subtitlesEnabled,
-                    release: {
-                        requiredWords: showConfig.release.requiredWords,
-                        ignoredWords: showConfig.release.ignoredWords,
-                        requiredWordsExclude: showConfig.release.requiredWordsExclude,
-                        ignoredWordsExclude: showConfig.release.ignoredWordsExclude
-                    },
-                    qualities: {
-                        preferred: showConfig.qualities.preferred,
-                        allowed: showConfig.qualities.allowed
-                    },
-                    airdateOffset: showConfig.airdateOffset,
-                    showLists: showConfig.showLists,
-                    templates: showConfig.templates,
-                    searchTemplates: showConfig.searchTemplates
-                },
-                language: show.language
-            };
-
-            if (data.config.anime) {
-                data.config.release.blacklist = showConfig.release.blacklist;
-                data.config.release.whitelist = showConfig.release.whitelist;
-            }
-
-            const { showSlug, setShow } = this;
             try {
-                await setShow({ showSlug, data });
+                await saveShowConfig({ show });
                 this.$snotify.success(
                     'You may need to "Re-scan files" or "Force Full Update".',
                     'Saved',
@@ -459,7 +421,7 @@ export default {
                 );
             } catch (error) {
                 this.$snotify.error(
-                    `Error while trying to save ${this.show.title}: ${error.message || 'Unknown'}`,
+                    `Error while trying to save ${show.title}: ${error.message || 'Unknown'}`,
                     'Error'
                 );
             } finally {
