@@ -12,7 +12,10 @@ pytest-cov==4.1.0
 pytest-flake8==1.1.1
 pytest-tornado==0.8.1
 PyYAML==6.0.1
+setuptools==68.0.0
 six==1.16.0
+tox
+tox-gh-actions
 tornado==6.1
 urllib3<2.0.0
 vcrpy

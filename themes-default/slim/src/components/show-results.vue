@@ -45,6 +45,11 @@
                             >
                         </span>
 
+                        <span v-else-if="props.column.label === 'Group'" class="align-center release-group">
+                            {{props.row.releaseGroup}}
+                            <manage-whitelist v-if="show.config.anime && props.row.releaseGroup" :show="show" :releaseGroup="props.row.releaseGroup" />
+                        </span>
+
                         <span v-else-if="props.column.label === 'Quality'" class="align-center">
                             <quality-pill v-if="props.row.quality !== 0" :quality="props.row.quality" />
                         </span>
@@ -95,13 +100,15 @@ import { StateSwitch } from './helpers';
 import QualityPill from './helpers/quality-pill.vue';
 import { episodeToSlug, humanFileSize } from '../utils/core';
 import { VTooltip } from 'v-tooltip';
+import ManageWhitelist from './show-results/manage-whitelist.vue';
 
 export default {
     name: 'show-results',
     components: {
         VueGoodTable,
         StateSwitch,
-        QualityPill
+        QualityPill,
+        ManageWhitelist
     },
     directives: {
         tooltip: VTooltip
@@ -460,5 +467,9 @@ export default {
 
 #no-result {
     color: rgb(255, 255, 255);
+}
+
+.release-group {
+    position: relative;
 }
 </style>

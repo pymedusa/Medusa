@@ -350,16 +350,6 @@ export default {
     animation-timing-function: ease-out;
 }
 
-@keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(180deg);
-    }
-}
-
 .template-body {
     display: flex;
 }
