@@ -36,7 +36,7 @@ class EztvProvider(TorrentProvider):
         }
 
         # Set Max number of pages to get (about 6 (x 100) pages of new torrents per day)
-        self.max_pages=6
+        self.max_pages = 6
 
         # Proper Strings
 
