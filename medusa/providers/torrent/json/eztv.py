@@ -54,7 +54,9 @@ class EztvProvider(TorrentProvider):
         results = []
 
         # Search Params
-        search_params = {}
+        search_params = {
+            'limit': 100,
+        }
 
         for mode in search_strings:
             log.debug('Search mode: {0}', mode)
