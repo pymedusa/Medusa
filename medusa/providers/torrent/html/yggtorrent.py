@@ -212,7 +212,7 @@ class YggtorrentProvider(TorrentProvider):
             return False
 
         response = self.session.get(self.urls['auth'])
-        if not response or response is None or not response.status_code == 200:
+        if not response or response.status_code != 200:
             log.debug("cannot reach account information page")
             return False
 
