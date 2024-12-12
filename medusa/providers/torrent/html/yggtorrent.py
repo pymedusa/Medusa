@@ -50,11 +50,14 @@ class YggtorrentProvider(TorrentProvider):
             'Saison {season}',  # example: 'Series.Name.Saison 3'
         )
 
+        # Miscellaneous Options
+        self.enable_cookies = True
+        self.cookies = ''
+        self.required_cookies=('ygg_',)
+        self.custom_url = None
+
         # Cache
         self.cache = tv.Cache(self, min_time=20)
-
-        # Required cookies to check authentification
-        self.required_cookies=('ygg_',)
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
@@ -213,7 +216,7 @@ class YggtorrentProvider(TorrentProvider):
 
         response = self.session.get(self.urls['auth'])
         if not response or response.status_code != 200:
-            log.debug("cannot reach account information page")
+            log.debug("Cannot reach account information page")
             return False
 
         try:
@@ -222,7 +225,7 @@ class YggtorrentProvider(TorrentProvider):
             return False
         nickname = j.get('nickname')
         if nickname is None or nickname == '':
-            log.debug("nickname information missing")
+            log.debug("Nickname information missing")
             return False
 
         return True
