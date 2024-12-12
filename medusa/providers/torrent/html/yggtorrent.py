@@ -38,8 +38,8 @@ class YggtorrentProvider(TorrentProvider):
         self.password = None
 
         # URLs
-        # check URL change here : https://yggland.fr/FAQ-Tutos/#status
-        self.url = 'https://ygg.re/'
+        # Check URL change here : https://yggland.fr/FAQ-Tutos/#status
+        self.url = 'https://ygg.re'
 
         # Proper Strings
         self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
