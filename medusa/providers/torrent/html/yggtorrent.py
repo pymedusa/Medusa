@@ -4,10 +4,9 @@
 
 from __future__ import unicode_literals
 
+import json
 import logging
 import re
-import json
-from requests.utils import dict_from_cookiejar
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -19,6 +18,9 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
+from requests.utils import dict_from_cookiejar
+
+import validators
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -53,7 +55,7 @@ class YggtorrentProvider(TorrentProvider):
         # Miscellaneous Options
         self.enable_cookies = True
         self.cookies = ''
-        self.required_cookies=('ygg_',)
+        self.required_cookies = ('ygg_',)
         self.custom_url = None
 
         # Cache
@@ -216,16 +218,17 @@ class YggtorrentProvider(TorrentProvider):
 
         response = self.session.get(self.urls['auth'])
         if not response or response.status_code != 200:
-            log.debug("Cannot reach account information page")
+            log.debug('Cannot reach account information page')
             return False
 
         try:
             j = json.loads(response.text)
-        except:
+        except Exception:
+            log.warning('Cannot parse JSON response')
             return False
         nickname = j.get('nickname')
         if nickname is None or nickname == '':
-            log.debug("Nickname information missing")
+            log.warning('Nickname information missing')
             return False
 
         return True
