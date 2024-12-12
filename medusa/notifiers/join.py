@@ -82,7 +82,7 @@ class Notifier(object):
 
         join_api = join_api or app.JOIN_API
         join_device = join_device or app.JOIN_DEVICE
-        icon_url = 'https://cdn.pymedusa.com/images/ico/favicon-310.png'
+        icon_url = '{base_url}/images/ico/favicon-310.png'.format(base_url=app.BASE_PYMEDUSA_URL)
 
         params = {'title': title, 'text': message, 'deviceId': join_device, 'apikey': join_api, 'icon': icon_url}
 
