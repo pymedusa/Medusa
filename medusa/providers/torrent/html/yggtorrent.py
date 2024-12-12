@@ -7,7 +7,6 @@ from __future__ import unicode_literals
 import logging
 import re
 import json
-import os
 from requests.utils import dict_from_cookiejar
 
 from medusa import tv
@@ -40,13 +39,7 @@ class YggtorrentProvider(TorrentProvider):
 
         # URLs
         # check URL change here : https://yggland.fr/FAQ-Tutos/#status
-        self.url = os.getenv('MEDUSA_YGGTORRENT_OVERRIDE_URL') or 'https://ygg.re/'        
-        self.urls = {
-            'auth': urljoin(self.url, 'user/ajax_usermenu'),
-            'login': urljoin(self.url, 'auth/process_login'),
-            'search': urljoin(self.url, 'engine/search'),
-            'download': urljoin(self.url, 'engine/download_torrent?id={0}')
-        }
+        self.url = 'https://ygg.re/'
 
         # Proper Strings
         self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
@@ -73,6 +66,20 @@ class YggtorrentProvider(TorrentProvider):
         :returns: A list of search results (structure)
         """
         results = []
+
+        if self.custom_url:
+            if not validators.url(self.custom_url):
+                log.warning('Invalid custom url: {0}', self.custom_url)
+                return results
+            self.url = self.custom_url
+
+        self.urls = {
+            'auth': urljoin(self.url, 'user/ajax_usermenu'),
+            'login': urljoin(self.url, 'auth/process_login'),
+            'search': urljoin(self.url, 'engine/search'),
+            'download': urljoin(self.url, 'engine/download_torrent?id={0}')
+        }
+
         if not self.login():
             return results
 
