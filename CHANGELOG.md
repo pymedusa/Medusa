@@ -8,6 +8,25 @@
 
 -----
 
+## 1.0.22 (13-12-2024)
+
+#### New Features
+- UI component add anime white / blacklist (Thanks to @p0psicles)
+- Add support for Python 3.12 and remove support for Python 3.7
+
+#### Improvements
+- Don't replace allowed quality unless it's preferred quality (Thanks to @fredhen)
+- Calendar route should write appropriate header (Thanks to @pidario)
+- Update Theoldschool torrent provider (Thanks to @IamMika23)
+- Update YGG torrent provider (Thanks to @StudioEtrange)
+- Increase EZTV torrent provider search results (Thanks to @fawkescapacitor)
+
+#### Fixes
+- Fix error added by Qbittorrent 5.0 (Thanks to @borntohonk)
+- Fix CDN errors when updating scene exceptions
+
+-----
+
 ## 1.0.21 (03-04-2024)
 
 #### Improvements

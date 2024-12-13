@@ -30,5 +30,4 @@ jobs:
       working-directory: ./themes-default/slim
       run: yarn test
     - name: Upload coverage to Codecov
-      working-directory: ./themes-default/slim
-      run: yarn coverage
+      uses: codecov/codecov-action@v5
