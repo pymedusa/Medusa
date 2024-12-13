@@ -2,6 +2,7 @@
 
 #### New Features
 - UI component add anime white / blacklist (Thanks to @p0psicles)
+- Add support for Python 3.12
 
 #### Improvements
 - Don't replace allowed quality unless it's preferred quality (Thanks to @fredhen)
