@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 
+import json
 import logging
 import re
 
@@ -17,6 +18,9 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
+from requests.utils import dict_from_cookiejar
+
+import validators
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -36,13 +40,8 @@ class YggtorrentProvider(TorrentProvider):
         self.password = None
 
         # URLs
-        self.url = 'https://yggtorrent.wtf'
-        self.urls = {
-            'auth': urljoin(self.url, 'user/ajax_usermenu'),
-            'login': urljoin(self.url, 'user/login'),
-            'search': urljoin(self.url, 'engine/search'),
-            'download': urljoin(self.url, 'engine/download_torrent?id={0}')
-        }
+        # Check URL change here : https://yggland.fr/FAQ-Tutos/#status
+        self.url = 'https://ygg.re'
 
         # Proper Strings
         self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
@@ -52,6 +51,12 @@ class YggtorrentProvider(TorrentProvider):
             'S{season:0>2}',  # example: 'Series.Name.S03'
             'Saison {season}',  # example: 'Series.Name.Saison 3'
         )
+
+        # Miscellaneous Options
+        self.enable_cookies = True
+        self.cookies = ''
+        self.required_cookies = ('ygg_',)
+        self.custom_url = None
 
         # Cache
         self.cache = tv.Cache(self, min_time=20)
@@ -66,6 +71,20 @@ class YggtorrentProvider(TorrentProvider):
         :returns: A list of search results (structure)
         """
         results = []
+
+        if self.custom_url:
+            if not validators.url(self.custom_url):
+                log.warning('Invalid custom url: {0}', self.custom_url)
+                return results
+            self.url = self.custom_url
+
+        self.urls = {
+            'auth': urljoin(self.url, 'user/ajax_usermenu'),
+            'login': urljoin(self.url, 'auth/process_login'),
+            'search': urljoin(self.url, 'engine/search'),
+            'download': urljoin(self.url, 'engine/download_torrent?id={0}')
+        }
+
         if not self.login():
             return results
 
@@ -194,8 +213,22 @@ class YggtorrentProvider(TorrentProvider):
         return True
 
     def _is_authenticated(self):
+        if not any(dict_from_cookiejar(self.session.cookies).values()) or not self.check_required_cookies():
+            return False
+
         response = self.session.get(self.urls['auth'])
-        if not response:
+        if not response or response.status_code != 200:
+            log.debug('Cannot reach account information page')
+            return False
+
+        try:
+            j = json.loads(response.text)
+        except Exception:
+            log.warning('Cannot parse JSON response')
+            return False
+        nickname = j.get('nickname')
+        if nickname is None or nickname == '':
+            log.warning('Nickname information missing')
             return False
 
         return True

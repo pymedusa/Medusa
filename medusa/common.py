@@ -39,7 +39,7 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 INSTANCE_ID = text_type(uuid.uuid1())
-VERSION = '1.0.21'
+VERSION = '1.0.22'
 
 USER_AGENT = 'Medusa/{version} ({system}; {release}; {instance})'.format(
     version=VERSION, system=platform.system(), release=platform.release(),
@@ -615,10 +615,7 @@ class Quality(object):
             if new_quality in preferred_qualities:
                 return True, 'New quality is preferred. Accepting new quality'
 
-            if new_quality > old_quality:
-                return True, 'New quality is higher quality (and allowed). Accepting new quality'
-            else:
-                return False, 'New quality is same/lower quality (and not preferred). Ignoring new quality'
+            return False, 'Existing quality is allowed and new quality is not a preferred quality. Ignoring new quality'
 
         else:
             # Allowed quality should never be replaced
