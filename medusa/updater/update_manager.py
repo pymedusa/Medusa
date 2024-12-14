@@ -3,7 +3,7 @@
 from __future__ import unicode_literals
 
 import logging
-from distutils.version import LooseVersion
+from packaging.version import Version
 
 from github import GithubException
 
@@ -42,7 +42,7 @@ class UpdateManager(object):
     def is_latest_version(self):
         """Compare the current installed version with the remote version."""
         try:
-            if LooseVersion(self.newest_version) > LooseVersion(self.current_version):
+            if Version(self.newest_version) > Version(self.current_version):
                 return False
         except (GithubException, RequestException) as error:
             log.warning("Unable to contact GitHub, can't get latest version: {0!r}", error)
