@@ -3,12 +3,13 @@
 from __future__ import unicode_literals
 
 import logging
-from packaging.version import Version
 
 from github import GithubException
 
 from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
+
+from packaging.version import Version
 
 from requests.exceptions import RequestException
 
