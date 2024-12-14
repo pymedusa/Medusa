@@ -4,7 +4,7 @@ from __future__ import division, unicode_literals, print_function, absolute_impo
 
 
 import doctest
-from distutils.version import StrictVersion
+from packaging.utils import canonical_version
 import re
 import unittest
 
@@ -14,13 +14,13 @@ from pint.compat import HAS_NUMPY, HAS_PROPER_BABEL, HAS_UNCERTAINTIES, NUMPY_VE
 def requires_numpy18():
     if not HAS_NUMPY:
         return unittest.skip('Requires NumPy')
-    return unittest.skipUnless(StrictVersion(NUMPY_VER) >= StrictVersion('1.8'), 'Requires NumPy >= 1.8')
+    return unittest.skipUnless(canonical_version(NUMPY_VER) >= canonical_version('1.8'), 'Requires NumPy >= 1.8')
 
 
 def requires_numpy_previous_than(version):
     if not HAS_NUMPY:
         return unittest.skip('Requires NumPy')
-    return unittest.skipUnless(StrictVersion(NUMPY_VER) < StrictVersion(version), 'Requires NumPy < %s' % version)
+    return unittest.skipUnless(canonical_version(NUMPY_VER) < canonical_version(version), 'Requires NumPy < %s' % version)
 
 
 def requires_numpy():

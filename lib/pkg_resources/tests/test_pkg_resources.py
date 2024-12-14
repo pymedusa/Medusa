@@ -7,7 +7,7 @@ import time
 import subprocess
 import stat
 import distutils.dist
-import distutils.command.install_egg_info
+import setuptools.command.install_egg_info
 
 try:
     from unittest import mock
@@ -344,8 +344,8 @@ class TestDeepVersionLookupDistutils:
         """
         ld = "This package has unicode metadata! ❄"
         attrs = dict(name='foo', version=version, long_description=ld)
-        dist = distutils.dist.Distribution(attrs)
-        iei_cmd = distutils.command.install_egg_info.install_egg_info(dist)
+        dist = setuptools.dist.Distribution(attrs)
+        iei_cmd = setuptools.command.install_egg_info.install_egg_info(dist)
         iei_cmd.initialize_options()
         iei_cmd.install_dir = env.paths['lib']
         iei_cmd.finalize_options()
