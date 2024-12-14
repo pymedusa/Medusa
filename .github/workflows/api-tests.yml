@@ -25,6 +25,7 @@ jobs:
         pip install dredd_hooks
         pip install 'PyYAML>=5.1'
         pip install 'six>=1.13.0'
+        pip install packaging
     - name: Install Node.js dependencies
       run: yarn install --ignore-scripts
     - name: Test with Dredd
