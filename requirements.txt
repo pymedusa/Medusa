@@ -5,7 +5,7 @@ bencode.py==4.0.0
 CacheControl==0.13.1
 certifi==2023.7.22
 cloudscraper==1.2.70
-configobj==5.0.8
+configobj==5.0.9
 contextlib2==21.6.0
 deluge-client==1.9.0
 dogpile.cache==1.2.1
