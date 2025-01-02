@@ -559,6 +559,12 @@ class Application(object):
             except Exception:
                 app.WEB_PORT = 8081
 
+            # attempt override WEB_PORT if enviroment variable is set
+            try:
+                app.WEB_PORT = int(os.environ.get('MEDUSA_WEB_PORT'))
+            except Exception:
+                pass
+
             if not 21 < app.WEB_PORT < 65535:
                 app.WEB_PORT = 8081
 
