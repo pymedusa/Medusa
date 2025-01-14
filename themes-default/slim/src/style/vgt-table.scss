@@ -16,7 +16,7 @@ $opacity: 0.8;
         text-align: left;
         border-spacing: 0;
         border-collapse: initial;
-    
+
         th,
         td {
             padding: 4px;
@@ -132,7 +132,7 @@ $opacity: 0.8;
 
         span.episode-title > a {
             text-decoration: none;
-            
+
             &:hover,
             &:focus {
                 text-decoration: underline;
@@ -143,24 +143,24 @@ $opacity: 0.8;
             --row-background-color: #{$blue};
             background-color: rgb(var(--row-background-color));
         }
-    
+
         .snatched {
             --row-background-color: #{$pink};
             background-color: rgb(var(--row-background-color));
         }
-    
+
         .downloaded {
-            --row-background-color: #{$yellow};
+            --row-background-color: #{$green};
             background-color: rgb(var(--row-background-color));
         }
-    
+
         .failed {
             --row-background-color: #{$red};
             background-color: rgb(var(--row-background-color));
         }
-    
+
         .subtitled {
-            --row-background-color: #{$blue};
+            --row-background-color: #{$yellow};
             background-color: rgb(var(--row-background-color));
         }
 
@@ -216,7 +216,7 @@ $opacity: 0.8;
             line-height: 1.42857143;
             white-space: nowrap;
         }
-    
+
     }
 
     .align-center {
@@ -342,7 +342,7 @@ $opacity: 0.8;
         padding: 0 10px;
         margin: 0;
     }
-    
+
     .vgt-select {
         height: 23px;
         line-height: 23px;
