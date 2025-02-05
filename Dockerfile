@@ -1,24 +1,3 @@
-# Need this image for the /bin/start-build script.
-# Build unrar.  It has been moved to non-free since Alpine 3.15.
-# https://wiki.alpinelinux.org/wiki/Release_Notes_for_Alpine_3.15.0#unrar_moved_to_non-free
-FROM jlesage/alpine-abuild:3.15 AS unrar
-WORKDIR /tmp
-RUN \
-    mkdir /tmp/aport && \
-    cd /tmp/aport && \
-    git init && \
-    git remote add origin https://github.com/alpinelinux/aports && \
-    git config core.sparsecheckout true && \
-    echo "non-free/unrar/*" >> .git/info/sparse-checkout && \
-    git pull origin 3.15-stable && \
-    PKG_SRC_DIR=/tmp/aport/non-free/unrar && \
-    PKG_DST_DIR=/tmp/unrar-pkg && \
-    mkdir "$PKG_DST_DIR" && \
-    /bin/start-build -r && \
-    rm /tmp/unrar-pkg/*-doc-* && \
-    mkdir /tmp/unrar-install && \
-    tar xf /tmp/unrar-pkg/unrar-*.apk -C /tmp/unrar-install
-
 FROM python:3.10.8-alpine3.15
 LABEL maintainer="pymedusa"
 
@@ -29,6 +8,34 @@ ENV MEDUSA_COMMIT_HASH $GIT_COMMIT
 
 ARG BUILD_DATE
 LABEL build_version="Branch: $GIT_BRANCH | Commit: $GIT_COMMIT | Build-Date: $BUILD_DATE"
+
+ARG UNRAR_VERSION=7.0.9
+# Build unrar
+RUN \
+  echo "**** install build dependencies ****" && \
+  apk add --no-cache --virtual=build-dependencies \
+    build-base \
+    curl \
+    linux-headers && \
+  echo "**** install unrar from source ****" && \
+  mkdir /tmp/unrar && \
+  curl -o \
+    /tmp/unrar.tar.gz -L \
+    "https://www.rarlab.com/rar/unrarsrc-${UNRAR_VERSION}.tar.gz" && \
+  tar xf \
+    /tmp/unrar.tar.gz -C \
+    /tmp/unrar --strip-components=1 && \
+  cd /tmp/unrar && \
+  sed -i 's|LDFLAGS=-pthread|LDFLAGS=-pthread -static|' makefile && \
+  sed -i 's|CXXFLAGS=-march=native|CXXFLAGS=-mcpu=power8|' makefile && \
+  make && \
+  install -v -m755 unrar /usr/bin && \
+  echo "**** cleanup ****" && \
+  apk del --purge \
+    build-dependencies && \
+  rm -rf \
+    /root/.cache \
+    /tmp/*
 
 # Install packages
 RUN \
@@ -48,9 +55,6 @@ RUN \
 
 # Install app
 COPY . /app/medusa/
-
-# Copy unrar bin
-COPY --from=unrar /tmp/unrar-install/usr/bin/unrar /usr/bin/
 
 # Ports and Volumes
 EXPOSE 8081
