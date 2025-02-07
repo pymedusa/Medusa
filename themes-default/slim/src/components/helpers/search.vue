@@ -4,7 +4,7 @@
              :name="`${showSlug}x${episode.season}x${episode.episode}`"
              :ref="`search-${episode.slug}`" :src="src" height="16"
              :alt="retryDownload(episode) ? 'retry' : 'search'"
-             :title="retryDownload(episode) ? 'Retry Download' : 'Forced Seach'"
+             :title="retryDownload(episode) ? 'Retry Download' : 'Forced Search'"
              @click="queueSearch(episode)"
              :disabled="disabled"
         >
