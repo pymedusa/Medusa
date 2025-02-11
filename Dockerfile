@@ -34,6 +34,8 @@ RUN \
       CXXFLAGS='-march=x86-64'; \
     elif [ "$TARGETARCH"x == "arm64"x ]; then \
       CXXFLAGS='-march=armv8-a+crypto+crc'; \
+    elif [ "$TARGETARCH"x == "arm"x ]; then \
+      CXXFLAGS='-march=armv7-a -mfloat-abi=hard -mfpu=neon'; \
     fi \
   fi && \
   sed -i "s|CXXFLAGS=-march=native|CXXFLAGS=$CXXFLAGS|" makefile && \
