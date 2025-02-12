@@ -3,6 +3,8 @@ FROM python:3.10.16-alpine3.21 AS builder
 ARG TARGETARCH
 ARG CXXFLAGS
 ARG UNRAR_VERSION=7.0.9
+# Use all cores to compile, set JOBS=1 to disable
+ARG JOBS
 # Build unrar
 WORKDIR /unrar
 RUN \
@@ -30,7 +32,7 @@ RUN \
     fi \
   fi && \
   sed -i "s|CXXFLAGS=-march=native|CXXFLAGS=$CXXFLAGS|" makefile && \
-  make && \
+  make -j ${JOBS} && \
   echo "**** cleanup ****" && \
   apk del --purge \
     build-dependencies && \
