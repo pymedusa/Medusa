@@ -135,7 +135,7 @@ export default {
             }, {
                 id: 'xem',
                 name: 'XEM',
-                url: 'http://thexem.de',
+                url: 'http://thexem.info',
                 lastRefresh: ''
             }, {
                 id: 'anidb',
