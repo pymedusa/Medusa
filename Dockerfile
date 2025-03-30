@@ -23,6 +23,7 @@ RUN \
   apk add --no-cache --virtual=build-dependencies \
     build-base \
     curl \
+    tar \
     linux-headers && \
   echo "**** install unrar from source ****" && \
   mkdir -p /tmp/unrar && \
