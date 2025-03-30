@@ -76,13 +76,6 @@ RUN --mount=type=cache,target=/var/cache/apk \
 COPY --from=builder /unrar/unrar /usr/local/bin/
 COPY . /app/medusa/
 
-# Security improvements
-RUN adduser -D -u 1000 medusa && \
-    chown -R medusa:medusa /app && \
-    find /app -type d -exec chmod 755 {} \+ && \
-    find /app -type f -exec chmod 644 {} \+
-
-USER medusa
 WORKDIR /app/medusa
 EXPOSE 8081
 VOLUME /config /downloads /tv /anime
