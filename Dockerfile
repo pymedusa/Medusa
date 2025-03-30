@@ -26,9 +26,8 @@ RUN \
     linux-headers && \
   echo "**** download unrar source ****" && \
   mkdir -p /unrar && \
-  curl -o \
-    /tmp/unrar.tar.gz -L \
-    "https://www.rarlab.com/rar/unrarsrc-${UNRAR_VERSION}.tar.gz"
+  wget "https://www.rarlab.com/rar/unrarsrc-${UNRAR_VERSION}.tar.gz" \
+    -O /tmp/unrar.tar.gz
 
 # Build stage - Part 2: Extract, build, and clean up
 RUN \
