@@ -39,12 +39,6 @@ RUN --mount=type=cache,target=/var/cache/apk \
 # Final image
 FROM python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
 
-# Metadata labels for runtime image
-LABEL maintainer="pymedusa"
-LABEL version="1.0"
-LABEL description="Medusa application Docker container"
-LABEL build_version="Branch: ${GIT_BRANCH} | Commit: ${GIT_COMMIT} | Build-Date: ${BUILD_DATE}"
-
 # Runtime environment
 ENV MEDUSA_COMMIT_BRANCH=$GIT_BRANCH \
     MEDUSA_COMMIT_HASH=$GIT_COMMIT \
