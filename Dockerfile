@@ -1,13 +1,20 @@
-# Python and Alpine versions
+# Python, Alpine and Unrar versions
 ARG PYTHON_VERSION=3.11.8
 ARG ALPINE_VERSION=3.21
+ARG UNRAR_VERSION=7.1.3
 FROM python:${PYTHON_VERSION}-alpine${ALPINE_VERSION} AS builder
 
 # Build arguments
 ARG TARGETARCH
 ARG CXXFLAGS
-ARG UNRAR_VERSION=7.1.3
 ARG JOBS=${JOBS:-$(nproc)}
+ARG GIT_BRANCH
+ARG GIT_COMMIT
+ARG BUILD_DATE
+
+# Metadata labels for maintainability
+LABEL maintainer="pymedusa"
+LABEL build_version="Branch: ${GIT_BRANCH} | Commit: ${GIT_COMMIT} | Build-Date: ${BUILD_DATE}"
 
 # Build stage
 WORKDIR /unrar
@@ -31,6 +38,12 @@ RUN --mount=type=cache,target=/var/cache/apk \
 
 # Final image
 FROM python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
+
+# Metadata labels for runtime image
+LABEL maintainer="pymedusa"
+LABEL version="1.0"
+LABEL description="Medusa application Docker container"
+LABEL build_version="Branch: ${GIT_BRANCH} | Commit: ${GIT_COMMIT} | Build-Date: ${BUILD_DATE}"
 
 # Runtime environment
 ENV MEDUSA_COMMIT_BRANCH=$GIT_BRANCH \
