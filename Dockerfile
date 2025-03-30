@@ -1,7 +1,7 @@
 # Python, Alpine and Unrar versions
 ARG PYTHON_VERSION=3.11
 ARG ALPINE_VERSION=3.21
-ARG UNRAR_VERSION=7.1.3
+ARG UNRAR_VERSION=7.1.6
 FROM python:${PYTHON_VERSION}-alpine${ALPINE_VERSION} AS builder
 
 # Build arguments
