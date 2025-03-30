@@ -1,60 +1,71 @@
-# Need this image for the /bin/start-build script.
-# Build unrar.  It has been moved to non-free since Alpine 3.15.
-# https://wiki.alpinelinux.org/wiki/Release_Notes_for_Alpine_3.15.0#unrar_moved_to_non-free
-FROM jlesage/alpine-abuild:3.15 AS unrar
-WORKDIR /tmp
-RUN \
-    mkdir /tmp/aport && \
-    cd /tmp/aport && \
-    git init && \
-    git remote add origin https://github.com/alpinelinux/aports && \
-    git config core.sparsecheckout true && \
-    echo "non-free/unrar/*" >> .git/info/sparse-checkout && \
-    git pull origin 3.15-stable && \
-    PKG_SRC_DIR=/tmp/aport/non-free/unrar && \
-    PKG_DST_DIR=/tmp/unrar-pkg && \
-    mkdir "$PKG_DST_DIR" && \
-    /bin/start-build -r && \
-    rm /tmp/unrar-pkg/*-doc-* && \
-    mkdir /tmp/unrar-install && \
-    tar xf /tmp/unrar-pkg/unrar-*.apk -C /tmp/unrar-install
+# Python, Alpine and Unrar versions
+ARG PYTHON_VERSION=3.11.8
+ARG ALPINE_VERSION=3.21
+ARG UNRAR_VERSION=7.1.3
+FROM python:${PYTHON_VERSION}-alpine${ALPINE_VERSION} AS builder
 
-FROM python:3.10.8-alpine3.15
-LABEL maintainer="pymedusa"
-
+# Build arguments
+ARG TARGETARCH
+ARG CXXFLAGS
+ARG JOBS=${JOBS:-$(nproc)}
 ARG GIT_BRANCH
 ARG GIT_COMMIT
-ENV MEDUSA_COMMIT_BRANCH $GIT_BRANCH
-ENV MEDUSA_COMMIT_HASH $GIT_COMMIT
-
 ARG BUILD_DATE
-LABEL build_version="Branch: $GIT_BRANCH | Commit: $GIT_COMMIT | Build-Date: $BUILD_DATE"
 
-# Install packages
-RUN \
-	# Update
-	apk update \
-	&& \
-	# Runtime packages
-	apk add --no-cache \
-		mediainfo \
-		tzdata \
-		p7zip \
-		ffmpeg \
-	&& \
-	# Cleanup
-	rm -rf \
-		/var/cache/apk/
+# Metadata labels for maintainability
+LABEL maintainer="pymedusa"
+LABEL build_version="Branch: ${GIT_BRANCH} | Commit: ${GIT_COMMIT} | Build-Date: ${BUILD_DATE}"
 
-# Install app
+# Build stage
+WORKDIR /unrar
+RUN --mount=type=cache,target=/var/cache/apk \
+    apk add --no-cache --virtual .build-deps \
+        build-base \
+        curl \
+        linux-headers && \
+    curl -fsSL -o /tmp/unrar.tar.gz \
+        "https://www.rarlab.com/rar/unrarsrc-${UNRAR_VERSION}.tar.gz" && \
+    tar xzf /tmp/unrar.tar.gz --strip-components=1 && \
+    case "${TARGETARCH}" in \
+        "amd64") CXXFLAGS="-march=x86-64" ;; \
+        "arm64") CXXFLAGS="-march=armv8-a+crypto+crc" ;; \
+        "arm")   CXXFLAGS="-march=armv7-a -mfloat-abi=hard -mfpu=neon" ;; \
+    esac && \
+    sed -i "s/LDFLAGS=-pthread/LDFLAGS=-pthread -static/" makefile && \
+    sed -i "s/CXXFLAGS=-march=native/CXXFLAGS=${CXXFLAGS}/" makefile && \
+    make -j${JOBS} && \
+    apk del --purge .build-deps
+
+# Final image
+FROM python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
+
+# Runtime environment
+ENV MEDUSA_COMMIT_BRANCH=$GIT_BRANCH \
+    MEDUSA_COMMIT_HASH=$GIT_COMMIT \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+# Install runtime dependencies
+RUN --mount=type=cache,target=/var/cache/apk \
+    apk add --no-cache \
+        mediainfo \
+        p7zip \
+        ffmpeg \
+        libstdc++
+
+# Application setup
+COPY --from=builder /unrar/unrar /usr/local/bin/
 COPY . /app/medusa/
 
-# Copy unrar bin
-COPY --from=unrar /tmp/unrar-install/usr/bin/unrar /usr/bin/
+# Security improvements
+RUN adduser -D -u 1000 medusa && \
+    chown -R medusa:medusa /app && \
+    find /app -type d -exec chmod 755 {} \+ && \
+    find /app -type f -exec chmod 644 {} \+
 
-# Ports and Volumes
+USER medusa
+WORKDIR /app/medusa
 EXPOSE 8081
 VOLUME /config /downloads /tv /anime
 
-WORKDIR /app/medusa
-CMD [ "runscripts/init.docker" ]
+ENTRYPOINT ["runscripts/init.docker"]
