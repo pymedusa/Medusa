@@ -7,7 +7,8 @@ ARG UNRAR_VERSION=7.1.6
 # Build arguments
 ARG TARGETARCH
 ARG CXXFLAGS
-ARG JOBS=${JOBS:-$(nproc)}
+# Use all cores to compile, set JOBS=1 to disable
+ARG JOBS
 
 # Build stage - Part 1: Install dependencies and download source
 WORKDIR /unrar
