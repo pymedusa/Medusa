@@ -26,7 +26,7 @@ RUN \
     tar \
     linux-headers && \
   echo "**** install unrar from source ****" && \
-  mkdir -p /tmp/unrar && \
+  mkdir -p /unrar && \
   curl -o \
     /tmp/unrar.tar.gz -L \
     "https://www.rarlab.com/rar/unrarsrc-${UNRAR_VERSION}.tar.gz" && \
