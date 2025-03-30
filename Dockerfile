@@ -1,79 +1,64 @@
-FROM python:3.10.16-alpine3.21 AS builder
+# Python and Alpine versions
+ARG PYTHON_VERSION=3.11.8
+ARG ALPINE_VERSION=3.21
+FROM python:${PYTHON_VERSION}-alpine${ALPINE_VERSION} AS builder
 
+# Build arguments
 ARG TARGETARCH
 ARG CXXFLAGS
-ARG UNRAR_VERSION=7.0.9
-# Use all cores to compile, set JOBS=1 to disable
-ARG JOBS
-# Build unrar
+ARG UNRAR_VERSION=7.1.3
+ARG JOBS=${JOBS:-$(nproc)}
+
+# Build stage
 WORKDIR /unrar
-RUN \
-  echo "**** install build dependencies ****" && \
-  apk add --no-cache --virtual=build-dependencies \
-    build-base \
-    curl \
-    linux-headers && \
-  echo "**** install unrar from source ****" && \
-  mkdir /tmp/unrar && \
-  curl -o \
-    /tmp/unrar.tar.gz -L \
-    "https://www.rarlab.com/rar/unrarsrc-${UNRAR_VERSION}.tar.gz" && \
-  tar xf \
-    /tmp/unrar.tar.gz -C \
-    /unrar --strip-components=1 && \
-  sed -i 's|LDFLAGS=-pthread|LDFLAGS=-pthread -static|' makefile && \
-  if [ -z $CXXFLAGS ]; then \
-    if [ "$TARGETARCH"x == "amd64"x ]; then \
-      CXXFLAGS='-march=x86-64'; \
-    elif [ "$TARGETARCH"x == "arm64"x ]; then \
-      CXXFLAGS='-march=armv8-a+crypto+crc'; \
-    elif [ "$TARGETARCH"x == "arm"x ]; then \
-      CXXFLAGS='-march=armv7-a -mfloat-abi=hard -mfpu=neon'; \
-    fi \
-  fi && \
-  sed -i "s|CXXFLAGS=-march=native|CXXFLAGS=$CXXFLAGS|" makefile && \
-  make -j ${JOBS} && \
-  echo "**** cleanup ****" && \
-  apk del --purge \
-    build-dependencies && \
-  rm -rf \
-    /root/.cache \
-    /tmp/*
+RUN --mount=type=cache,target=/var/cache/apk \
+    apk add --no-cache --virtual .build-deps \
+        build-base \
+        curl \
+        linux-headers && \
+    curl -fsSL -o /tmp/unrar.tar.gz \
+        "https://www.rarlab.com/rar/unrarsrc-${UNRAR_VERSION}.tar.gz" && \
+    tar xzf /tmp/unrar.tar.gz --strip-components=1 && \
+    case "${TARGETARCH}" in \
+        "amd64") CXXFLAGS="-march=x86-64" ;; \
+        "arm64") CXXFLAGS="-march=armv8-a+crypto+crc" ;; \
+        "arm")   CXXFLAGS="-march=armv7-a -mfloat-abi=hard -mfpu=neon" ;; \
+    esac && \
+    sed -i "s/LDFLAGS=-pthread/LDFLAGS=-pthread -static/" makefile && \
+    sed -i "s/CXXFLAGS=-march=native/CXXFLAGS=${CXXFLAGS}/" makefile && \
+    make -j${JOBS} && \
+    apk del --purge .build-deps
 
-FROM python:3.10.16-alpine3.21
-LABEL maintainer="pymedusa"
+# Final image
+FROM python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
 
-ARG GIT_BRANCH
-ARG GIT_COMMIT
-ENV MEDUSA_COMMIT_BRANCH $GIT_BRANCH
-ENV MEDUSA_COMMIT_HASH $GIT_COMMIT
+# Runtime environment
+ENV MEDUSA_COMMIT_BRANCH=$GIT_BRANCH \
+    MEDUSA_COMMIT_HASH=$GIT_COMMIT \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
 
-ARG BUILD_DATE
-LABEL build_version="Branch: $GIT_BRANCH | Commit: $GIT_COMMIT | Build-Date: $BUILD_DATE"
+# Install runtime dependencies
+RUN --mount=type=cache,target=/var/cache/apk \
+    apk add --no-cache \
+        mediainfo \
+        p7zip \
+        ffmpeg \
+        libstdc++
 
-COPY --from=builder /unrar/unrar /usr/bin
-# Install packages
-RUN \
-	# Update
-	apk update \
-	&& \
-	# Runtime packages
-	apk add --no-cache \
-		mediainfo \
-		tzdata \
-		p7zip \
-		ffmpeg \
-	&& \
-	# Cleanup
-	rm -rf \
-		/var/cache/apk/
-
-# Install app
+# Application setup
+COPY --from=builder /unrar/unrar /usr/local/bin/
 COPY . /app/medusa/
 
-# Ports and Volumes
+# Security improvements
+RUN adduser -D -u 1000 medusa && \
+    chown -R medusa:medusa /app && \
+    find /app -type d -exec chmod 755 {} \+ && \
+    find /app -type f -exec chmod 644 {} \+
+
+USER medusa
+WORKDIR /app/medusa
 EXPOSE 8081
 VOLUME /config /downloads /tv /anime
 
-WORKDIR /app/medusa
-CMD [ "runscripts/init.docker" ]
+ENTRYPOINT ["runscripts/init.docker"]
