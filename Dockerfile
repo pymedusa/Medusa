@@ -1,20 +1,13 @@
+FROM python:${PYTHON_VERSION}-alpine${ALPINE_VERSION} AS builder
 # Python, Alpine and Unrar versions
 ARG PYTHON_VERSION=3.11
 ARG ALPINE_VERSION=3.21
 ARG UNRAR_VERSION=7.1.6
-FROM python:${PYTHON_VERSION}-alpine${ALPINE_VERSION} AS builder
 
 # Build arguments
 ARG TARGETARCH
 ARG CXXFLAGS
 ARG JOBS=${JOBS:-$(nproc)}
-ARG GIT_BRANCH
-ARG GIT_COMMIT
-ARG BUILD_DATE
-
-# Metadata labels for maintainability
-LABEL maintainer="pymedusa"
-LABEL build_version="Branch: ${GIT_BRANCH} | Commit: ${GIT_COMMIT} | Build-Date: ${BUILD_DATE}"
 
 # Build stage - Part 1: Install dependencies and download source
 WORKDIR /unrar
@@ -56,6 +49,13 @@ RUN \
 
 # Final image
 FROM python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
+ARG GIT_BRANCH
+ARG GIT_COMMIT
+ARG BUILD_DATE
+
+# Metadata labels for maintainability
+LABEL maintainer="pymedusa"
+LABEL build_version="Branch: ${GIT_BRANCH} | Commit: ${GIT_COMMIT} | Build-Date: ${BUILD_DATE}"
 
 # Runtime environment
 ENV MEDUSA_COMMIT_BRANCH=$GIT_BRANCH \
