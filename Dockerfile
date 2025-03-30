@@ -16,20 +16,23 @@ ARG BUILD_DATE
 LABEL maintainer="pymedusa"
 LABEL build_version="Branch: ${GIT_BRANCH} | Commit: ${GIT_COMMIT} | Build-Date: ${BUILD_DATE}"
 
-# Build stage
+# Build stage - Part 1: Install dependencies and download source
 WORKDIR /unrar
 RUN \
   echo "**** install build dependencies ****" && \
   apk add --no-cache --virtual=build-dependencies \
     build-base \
     curl \
-    tar \
     linux-headers && \
-  echo "**** install unrar from source ****" && \
+  echo "**** download unrar source ****" && \
   mkdir -p /unrar && \
   curl -o \
     /tmp/unrar.tar.gz -L \
-    "https://www.rarlab.com/rar/unrarsrc-${UNRAR_VERSION}.tar.gz" && \
+    "https://www.rarlab.com/rar/unrarsrc-${UNRAR_VERSION}.tar.gz"
+
+# Build stage - Part 2: Extract, build, and clean up
+RUN \
+  echo "**** extract and build unrar ****" && \
   tar xf \
     /tmp/unrar.tar.gz -C \
     /unrar --strip-components=1 && \
