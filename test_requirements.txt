@@ -7,6 +7,7 @@ flake8-import-order==0.18.2
 flake8-quotes==3.3.2
 packaging==24.2
 pep8-naming==0.13.2
+puremagic==1.28
 pytest>=6.2.5
 pytest-cov==4.1.0
 pytest-flake8==1.1.1
@@ -16,6 +17,7 @@ setuptools==68.0.0
 six==1.16.0
 tox
 tox-gh-actions
+telnetlib3==2.0.4
 tornado==6.1
 urllib3<2.0.0
 vcrpy

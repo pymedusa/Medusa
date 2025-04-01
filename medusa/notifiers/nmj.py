@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 
 import logging
 import re
-import telnetlib
 from builtins import object
 
 from medusa import app
@@ -14,6 +13,8 @@ from medusa.logger.adapters.style import BraceAdapter
 from requests.compat import urlencode
 
 from six.moves.urllib.request import Request, urlopen
+
+import telnetlib3
 
 try:
     import xml.etree.cElementTree as etree
@@ -35,7 +36,7 @@ class Notifier(object):
         """
         # establish a terminal session to the PC
         try:
-            terminal = telnetlib.Telnet(host)
+            terminal = telnetlib3.Telnet(host)
         except Exception:
             log.warning(u'Warning: unable to get a telnet session to {0}', host)
             return False

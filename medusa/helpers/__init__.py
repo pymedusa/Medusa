@@ -8,7 +8,6 @@ import ctypes
 import datetime
 import errno
 import hashlib
-import imghdr
 import io
 import logging
 import os
@@ -48,6 +47,8 @@ from medusa.indexers.exceptions import IndexerException
 from medusa.logger.adapters.style import BraceAdapter, BraceMessage
 from medusa.session.core import MedusaSafeSession
 from medusa.show.show import Show
+
+import puremagic
 
 import requests
 from requests.compat import urlparse
@@ -1493,14 +1494,14 @@ def get_image_size(image_path):
         head = f.read(24)
         if len(head) != 24:
             return
-        if imghdr.what(image_path) == 'png':
+        if puremagic.from_file(image_path).strip('.') == 'png':
             check = struct.unpack('>i', head[4:8])[0]
             if check != 0x0d0a1a0a:
                 return
             return struct.unpack('>ii', head[16:24])
-        elif imghdr.what(image_path) == 'gif':
+        elif puremagic.from_file(image_path).strip('.') == 'gif':
             return struct.unpack('<HH', head[6:10])
-        elif imghdr.what(image_path) == 'jpeg' or img_ext in ('jpg', 'jpeg'):
+        elif puremagic.from_file(image_path).strip('.') == 'jpeg' or img_ext in ('jpg', 'jpeg'):
             f.seek(0)  # Read 0xff next
             size = 2
             ftype = 0
