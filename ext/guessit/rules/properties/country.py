@@ -33,7 +33,7 @@ def country(config, common_words):
         return CountryFinder(allowed_countries, common_words).find(string)
 
     rebulk.functional(find_countries,
-                      #  Prefer language and any other property over country if not US or GB.
+                      #  Prefer language and any other property over country if not US or GB.
                       conflict_solver=lambda match, other: match
                       if other.name != 'language' or match.value not in (babelfish.Country('US'),
                                                                          babelfish.Country('GB'))
@@ -96,11 +96,15 @@ class CountryFinder(object):
 
     def find(self, string):
         """Return all matches for country."""
-        for word_match in iter_words(string.strip().lower()):
+        words = list(iter_words(string.strip().lower()))
+        for idx, word_match in enumerate(words):
             word = word_match.value
+            # Do not match 'us' or 'au' as country if at the beginning or alone (likely part of the title)
+            if word in ('us', 'au') and (idx == 0 or len(words) == 1):
+                # Skip matching as country, likely a title
+                continue
             if word.lower() in self.common_words:
                 continue
-
             try:
                 country_object = babelfish.Country.fromguessit(word)
                 if (country_object.name.lower() in self.allowed_countries or
