@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 import logging
 from collections import namedtuple
+import calendar
 
 from medusa import db
 from medusa.logger.adapters.style import BraceAdapter
@@ -130,6 +131,9 @@ class SearchTemplates(object):
 
     def save(self, template):
         """Validate template and save to db."""
+        # Remplacement des formats personnalisés si besoin
+        if 'template' in template:
+            template['template'] = self._replace_date_formats(template['template'])
         new_values = {
             'template': template['template'],
             'title': template['title'],
@@ -268,10 +272,17 @@ class SearchTemplates(object):
         Enable/Disable default templates.
         Add/Remote/Update custom templates.
         """
+        import logging
+        log = logging.getLogger(__name__)
         self.templates = []
         self.remove_custom()
+        required_fields = ['template', 'title', 'season', 'enabled', 'default', 'seasonSearch']
         for template in templates:
-            # TODO: add validation
+            # Validation stricte du format
+            missing = [field for field in required_fields if field not in template]
+            if missing:
+                log.error(f"Template ignoré, champs manquants: {missing} dans {template}")
+                raise ValueError(f"Template mal formé, champs manquants: {missing}")
             # Check if the scene exception still exists in db
             find_scene_exception = self.main_db_con.select(
                 'SELECT season, title '
@@ -281,6 +292,7 @@ class SearchTemplates(object):
                 [self.show_obj.indexer, self.show_obj.series_id, template['title'], template['season']]
             )
             if not find_scene_exception and template['title'] != self.show_obj.name:
+                log.warning(f"Template ignoré car l'exception de scène n'existe plus: {template}")
                 continue
 
             # Save to db
@@ -313,3 +325,87 @@ class SearchTemplates(object):
             'default': search_template.default,
             'seasonSearch': search_template.season_search} for search_template in self.templates
         ]
+
+    def _replace_date_formats(self, template, date_obj=None):
+        """
+        Replace custom date format specifiers in the template string, with month names in the correct language.
+        If the system locale is not available, fallback to an internal mapping for common languages.
+        """
+        import re
+        from datetime import datetime
+        import locale
+        if date_obj is None:
+            date_obj = datetime.now()
+        lang = getattr(self.show_obj, 'lang', None)
+        locale_set = False
+        locale_error = False
+        if lang:
+            try:
+                # Try to set the full locale (e.g. fr_FR.UTF-8), then just the language code (e.g. fr)
+                try:
+                    locale.setlocale(locale.LC_TIME, lang + '_' + lang.upper() + '.UTF-8')
+                    locale_set = True
+                except locale.Error:
+                    locale.setlocale(locale.LC_TIME, lang)
+                    locale_set = True
+            except locale.Error:
+                locale_error = True  # Locale not available, will use fallback
+        # Fallback mapping for month names if locale is not available
+        # Each entry: language code -> (full month names, abbreviated month names)
+        month_names = {
+            'fr': (['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'],
+                   ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.']),
+            'en': (['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+                   ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']),
+            'es': (['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'],
+                   ['ene.', 'feb.', 'mar.', 'abr.', 'may.', 'jun.', 'jul.', 'ago.', 'sept.', 'oct.', 'nov.', 'dic.']),
+            'de': (['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'],
+                   ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez']),
+            'it': (['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'],
+                   ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic']),
+            'pt': (['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'],
+                   ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']),
+            'nl': (['januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', 'augustus', 'september', 'oktober', 'november', 'december'],
+                   ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec']),
+            'ru': (['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'],
+                   ['янв.', 'февр.', 'март', 'апр.', 'май', 'июнь', 'июль', 'авг.', 'сент.', 'окт.', 'нояб.', 'дек.']),
+            'pl': (['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca', 'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'],
+                   ['sty', 'lut', 'mar', 'kwi', 'maj', 'cze', 'lip', 'sie', 'wrz', 'paź', 'lis', 'gru']),
+            'tr': (['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'],
+                   ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara']),
+            'ja': (['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+                   ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']),
+            'zh': (['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+                   ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']),
+        }
+        # Utility function for ordinal day (1st, 2nd, 3rd, ...)
+        def ordinal(n):
+            return "%d%s" % (n, "tsnrhtdd"[(n//10%10!=1)*(n%10<4)*n%10::4])
+        # Format mapping
+        month_idx = int(date_obj.strftime('%m')) - 1
+        lang_key = lang if lang in month_names else (lang[:2] if lang and lang[:2] in month_names else 'en')
+        use_fallback = (locale_error or not locale_set) and lang_key in month_names
+        mapping = {
+            '%Y': date_obj.strftime('%Y'),
+            '%y': date_obj.strftime('%y'),
+            '%m': date_obj.strftime('%m'),
+            '%f': str(int(date_obj.strftime('%m'))),
+            '%b': month_names[lang_key][1][month_idx] if use_fallback else date_obj.strftime('%b'),
+            '%B': month_names[lang_key][0][month_idx] if use_fallback else date_obj.strftime('%B'),
+            '%MM': month_names[lang_key][0][month_idx] if use_fallback else date_obj.strftime('%B'),
+            '%d': date_obj.strftime('%d'),
+            '%e': str(int(date_obj.strftime('%d'))),
+            '%DD': ordinal(int(date_obj.strftime('%d'))),
+            '%H': date_obj.strftime('%H'),
+            '%M': date_obj.strftime('%M'),
+            '%S': date_obj.strftime('%S'),
+        }
+        def repl(match):
+            code = match.group(0)
+            return mapping.get(code, code)
+        pattern = re.compile(r'%Y|%y|%m|%f|%b|%B|%MM|%d|%e|%DD|%H|%M|%S')
+        result = pattern.sub(repl, template)
+        # Restore system locale if it was changed
+        if locale_set:
+            locale.setlocale(locale.LC_TIME, '')
+        return result
