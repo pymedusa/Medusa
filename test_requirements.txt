@@ -1,7 +1,7 @@
 configparser
 pyparsing==3.0.9
 flake8<5.0.0
-importlib-metadata<4.3; python_version<"3.8"
+importlib-metadata<4.14; python_version<"3.8"
 pycodestyle==2.8.0
 flake8-docstrings==1.7.0
 flake8-import-order==0.18.2
