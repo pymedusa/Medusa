@@ -942,8 +942,8 @@ class Episode(TV):
                         'status': statusStrings[self.status],
                     }
                 )
-            elif self.status in (UNSET, UNAIRED):
-                # Only do UNAIRED/UNSET, it could already be snatched/ignored/skipped,
+            elif self.status == UNAIRED:
+                # Only do UNAIRED, it could already be snatched/ignored/skipped,
                 # or downloaded/archived to disconnected media
                 self.status = self.series.default_ep_status if self.season > 0 else SKIPPED  # auto-skip specials
                 log.debug(
