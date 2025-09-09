@@ -299,11 +299,14 @@ class DownloadHandler(object):
                 continue
 
             action_after_seeding = desired_ratio * 1.0 > 0.0
-            if status.ratio < desired_ratio * action_after_seeding:
-                continue
-
             if not action_after_seeding:
                 log.debug('Action after seeding disabled')
+
+            if status.ratio < desired_ratio:
+                log.debug("Current ratio is {ratio}. We haven't reached the configured ratio of {desired_ratio} yet", {
+                    'ratio': status.ratio, 'desired_ratio': desired_ratio
+                })
+                continue
 
             log.debug(
                 'Ratio of ({ratio}) reached for torrent {info_hash}, starting action: {action}.',
