@@ -1,23 +1,21 @@
-# -*- coding: utf-8 -*-
 """
 oauthlib.oauth2.rfc6749.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
-from __future__ import absolute_import, unicode_literals
-
 import logging
 from itertools import chain
 
 from oauthlib.common import add_params_to_uri
-from oauthlib.uri_validate import is_absolute_uri
 from oauthlib.oauth2.rfc6749 import errors, utils
+from oauthlib.uri_validate import is_absolute_uri
 
 from ..request_validator import RequestValidator
+from ..utils import is_secure_transport
 
 log = logging.getLogger(__name__)
 
 
-class ValidatorsContainer(object):
+class ValidatorsContainer:
     """
     Container object for holding custom validator callables to be invoked
     as part of the grant type `validate_authorization_request()` or
@@ -74,7 +72,7 @@ class ValidatorsContainer(object):
         return chain(self.post_auth, self.post_token)
 
 
-class GrantTypeBase(object):
+class GrantTypeBase:
     error_uri = None
     request_validator = None
     default_response_mode = 'fragment'
@@ -145,7 +143,7 @@ class GrantTypeBase(object):
         :type request: oauthlib.common.Request
         """
         # Only add a hybrid access token on auth step if asked for
-        if not request.response_type in ["token", "code token", "id_token token", "code id_token token"]:
+        if request.response_type not in ["token", "code token", "id_token token", "code id_token token"]:
             return token
 
         token.update(token_handler.create_token(request, refresh_token=False))
@@ -201,10 +199,7 @@ class GrantTypeBase(object):
 
         if request.response_type == 'none':
             state = token.get('state', None)
-            if state:
-                token_items = [('state', state)]
-            else:
-                token_items = []
+            token_items = [('state', state)] if state else []
 
         if request.response_mode == 'query':
             headers['Location'] = add_params_to_uri(
@@ -251,3 +246,20 @@ class GrantTypeBase(object):
                 raise errors.MissingRedirectURIError(request=request)
             if not is_absolute_uri(request.redirect_uri):
                 raise errors.InvalidRedirectURIError(request=request)
+
+    def _create_cors_headers(self, request):
+        """If CORS is allowed, create the appropriate headers."""
+        if 'origin' not in request.headers:
+            return {}
+
+        origin = request.headers['origin']
+        if not is_secure_transport(origin):
+            log.debug('Origin "%s" is not HTTPS, CORS not allowed.', origin)
+            return {}
+        elif not self.request_validator.is_origin_allowed(
+            request.client_id, origin, request):
+            log.debug('Invalid origin "%s", CORS not allowed.', origin)
+            return {}
+        else:
+            log.debug('Valid origin "%s", injecting CORS headers.', origin)
+            return {'Access-Control-Allow-Origin': origin}

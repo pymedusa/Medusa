@@ -1,15 +1,11 @@
-# -*- coding: utf-8 -*-
 """
 oauthlib.oauth2.rfc6749.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
-from __future__ import absolute_import, unicode_literals
-
 import json
 import logging
 
 from .. import errors
-from ..request_validator import RequestValidator
 from .base import GrantTypeBase
 
 log = logging.getLogger(__name__)
@@ -76,10 +72,11 @@ class ClientCredentialsGrant(GrantTypeBase):
             headers.update(e.headers)
             return headers, e.json, e.status_code
 
-        token = token_handler.create_token(request, refresh_token=False, save_token=False)
+        token = token_handler.create_token(request, refresh_token=False)
 
         for modifier in self._token_modifiers:
             token = modifier(token)
+
         self.request_validator.save_token(token, request)
 
         log.debug('Issuing token to client id %r (%r), %r.',
@@ -110,16 +107,15 @@ class ClientCredentialsGrant(GrantTypeBase):
         if not self.request_validator.authenticate_client(request):
             log.debug('Client authentication failed, %r.', request)
             raise errors.InvalidClientError(request=request)
-        else:
-            if not hasattr(request.client, 'client_id'):
-                raise NotImplementedError('Authenticate client must set the '
-                                          'request.client.client_id attribute '
-                                          'in authenticate_client.')
+        elif not hasattr(request.client, 'client_id'):
+            raise NotImplementedError('Authenticate client must set the '
+                                      'request.client.client_id attribute '
+                                      'in authenticate_client.')
         # Ensure client is authorized use of this grant type
         self.validate_grant_type(request)
 
-        log.debug('Authorizing access to user %r.', request.user)
         request.client_id = request.client_id or request.client.client_id
+        log.debug('Authorizing access to client %r.', request.client_id)
         self.validate_scopes(request)
 
         for validator in self.custom_validators.post_token:

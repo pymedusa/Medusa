@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 oauthlib.oauth2.rfc6749.errors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -6,7 +5,8 @@ oauthlib.oauth2.rfc6749.errors
 Error used both by OAuth 2 clients and providers to represent the spec
 defined error responses for all four core grant types.
 """
-from __future__ import unicode_literals
+import inspect
+import sys
 
 from oauthlib.oauth2.rfc6749.errors import FatalClientError, OAuth2Error
 
@@ -75,8 +75,8 @@ class InvalidRequestURI(OpenIDClientError):
     contains invalid data.
     """
     error = 'invalid_request_uri'
-    description = 'The request_uri in the Authorization Request returns an ' \
-                  'error or contains invalid data.'
+    description = ('The request_uri in the Authorization Request returns an '
+                  'error or contains invalid data.')
 
 
 class InvalidRequestObject(OpenIDClientError):
@@ -140,8 +140,6 @@ class InsufficientScopeError(OAuth2Error):
 
 
 def raise_from_error(error, params=None):
-    import inspect
-    import sys
     kwargs = {
         'description': params.get('error_description'),
         'uri': params.get('error_uri'),

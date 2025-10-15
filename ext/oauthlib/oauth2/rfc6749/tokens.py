@@ -7,29 +7,24 @@ This module contains methods for adding two types of access tokens to requests.
 - Bearer https://tools.ietf.org/html/rfc6750
 - MAC https://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01
 """
-from __future__ import absolute_import, unicode_literals
-
 import hashlib
 import hmac
+import warnings
 from binascii import b2a_base64
+from urllib.parse import urlparse
 
 from oauthlib import common
-from oauthlib.common import add_params_to_qs, add_params_to_uri, unicode_type
+from oauthlib.common import add_params_to_qs, add_params_to_uri
 
 from . import utils
-
-try:
-    from urlparse import urlparse
-except ImportError:
-    from urllib.parse import urlparse
 
 
 class OAuth2Token(dict):
 
     def __init__(self, params, old_scope=None):
-        super(OAuth2Token, self).__init__(params)
+        super().__init__(params)
         self._new_scope = None
-        if 'scope' in params and params['scope']:
+        if params.get('scope'):
             self._new_scope = set(utils.scope_to_list(params['scope']))
         if old_scope is not None:
             self._old_scope = set(utils.scope_to_list(old_scope))
@@ -120,7 +115,7 @@ def prepare_mac_header(token, uri, key, http_method,
         raise ValueError('unknown hash algorithm')
 
     if draft == 0:
-        nonce = nonce or '{0}:{1}'.format(utils.generate_age(issue_time),
+        nonce = nonce or '{}:{}'.format(utils.generate_age(issue_time),
                                           common.generate_nonce())
     else:
         ts = common.generate_timestamp()
@@ -128,10 +123,7 @@ def prepare_mac_header(token, uri, key, http_method,
 
     sch, net, path, par, query, fra = urlparse(uri)
 
-    if query:
-        request_uri = path + '?' + query
-    else:
-        request_uri = path
+    request_uri = path + '?' + query if query else path
 
     # Hash the body/payload
     if body is not None and draft == 0:
@@ -157,7 +149,7 @@ def prepare_mac_header(token, uri, key, http_method,
     base_string = '\n'.join(base) + '\n'
 
     # hmac struggles with unicode strings - http://bugs.python.org/issue5285
-    if isinstance(key, unicode_type):
+    if isinstance(key, str):
         key = key.encode('utf-8')
     sign = hmac.new(key, base_string.encode('utf-8'), h)
     sign = b2a_base64(sign.digest())[:-1].decode('utf-8')
@@ -253,7 +245,7 @@ def get_token_from_header(request):
 
     if 'Authorization' in request.headers:
         split_header = request.headers.get('Authorization').split()
-        if len(split_header) == 2 and split_header[0] == 'Bearer':
+        if len(split_header) == 2 and split_header[0].lower() == 'bearer':
             token = split_header[1]
     else:
         token = request.access_token
@@ -261,7 +253,8 @@ def get_token_from_header(request):
     return token
 
 
-class TokenBase(object):
+class TokenBase:
+    __slots__ = ()
 
     def __call__(self, request, refresh_token=False):
         raise NotImplementedError('Subclasses must implement this method.')
@@ -296,20 +289,20 @@ class BearerToken(TokenBase):
         )
         self.expires_in = expires_in or 3600
 
-    def create_token(self, request, refresh_token=False, save_token=True):
+    def create_token(self, request, refresh_token=False, **kwargs):
         """
         Create a BearerToken, by default without refresh token.
-        
+
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         :param refresh_token:
-        :param save_token:
         """
+        if "save_token" in kwargs:
+            warnings.warn("`save_token` has been deprecated, it was not called internally."
+                          "If you do, call `request_validator.save_token()` instead.",
+                          DeprecationWarning)
 
-        if callable(self.expires_in):
-            expires_in = self.expires_in(request)
-        else:
-            expires_in = self.expires_in
+        expires_in = self.expires_in(request) if callable(self.expires_in) else self.expires_in
 
         request.expires_in = expires_in
 
@@ -325,9 +318,6 @@ class BearerToken(TokenBase):
         if request.scopes is not None:
             token['scope'] = ' '.join(request.scopes)
 
-        if request.state is not None:
-            token['state'] = request.state
-
         if refresh_token:
             if (request.refresh_token and
                     not self.request_validator.rotate_refresh_token(request)):
@@ -336,10 +326,7 @@ class BearerToken(TokenBase):
                 token['refresh_token'] = self.refresh_token_generator(request)
 
         token.update(request.extra_credentials or {})
-        token = OAuth2Token(token)
-        if save_token:
-            self.request_validator.save_bearer_token(token, request)
-        return token
+        return OAuth2Token(token)
 
     def validate_request(self, request):
         """
@@ -355,7 +342,7 @@ class BearerToken(TokenBase):
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
         """
-        if request.headers.get('Authorization', '').split(' ')[0] == 'Bearer':
+        if request.headers.get('Authorization', '').split(' ')[0].lower() == 'bearer':
             return 9
         elif request.access_token is not None:
             return 5

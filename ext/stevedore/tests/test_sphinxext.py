@@ -12,14 +12,11 @@
 """Tests for the sphinx extension
 """
 
-from __future__ import unicode_literals
+import importlib.metadata as importlib_metadata
 
 from stevedore import extension
 from stevedore import sphinxext
 from stevedore.tests import utils
-
-import mock
-import pkg_resources
 
 
 def _make_ext(name, docstring):
@@ -27,17 +24,16 @@ def _make_ext(name, docstring):
         pass
 
     inner.__doc__ = docstring
-    m1 = mock.Mock(spec=pkg_resources.EntryPoint)
-    m1.module_name = '%s_module' % name
-    s = mock.Mock(return_value='ENTRY_POINT(%s)' % name)
-    m1.__str__ = s
+    m1 = importlib_metadata.EntryPoint(
+        name, '{}_module:{}'.format(name, name), 'group',
+    )
     return extension.Extension(name, m1, inner, None)
 
 
 class TestSphinxExt(utils.TestCase):
 
     def setUp(self):
-        super(TestSphinxExt, self).setUp()
+        super().setUp()
         self.exts = [
             _make_ext('test1', 'One-line docstring'),
             _make_ext('test2', 'Multi-line docstring\n\nAnother para'),
@@ -112,7 +108,8 @@ class TestSphinxExt(utils.TestCase):
                 ('nodoc', 'nodoc_module'),
                 ('-----', 'nodoc_module'),
                 ('\n', 'nodoc_module'),
-                ('.. warning:: No documentation found in ENTRY_POINT(nodoc)',
+                (('.. warning:: No documentation found for '
+                 'nodoc in nodoc_module:nodoc'),
                  'nodoc_module'),
                 ('\n', 'nodoc_module'),
             ],

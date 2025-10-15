@@ -8,8 +8,6 @@ OAuth 1.0 RFC 5849. It validates the correctness of request token requests,
 creates and persists tokens as well as create the proper response to be
 returned to the client.
 """
-from __future__ import absolute_import, unicode_literals
-
 import logging
 
 from oauthlib.common import urlencode
@@ -129,7 +127,7 @@ class RequestTokenEndpoint(BaseEndpoint):
                 request.client_key, request)
         if not self.request_validator.check_realms(request.realms):
             raise errors.InvalidRequestError(
-                description='Invalid realm %s. Allowed are %r.' % (
+                description='Invalid realm {}. Allowed are {!r}.'.format(
                     request.realms, self.request_validator.realms))
 
         if not request.redirect_uri:
@@ -154,7 +152,7 @@ class RequestTokenEndpoint(BaseEndpoint):
             request.client_key = self.request_validator.dummy_client
 
         # Note that `realm`_ is only used in authorization headers and how
-        # it should be interepreted is not included in the OAuth spec.
+        # it should be interpreted is not included in the OAuth spec.
         # However they could be seen as a scope or realm to which the
         # client has access and as such every client should be checked
         # to ensure it is authorized access to that scope or realm.
@@ -166,7 +164,7 @@ class RequestTokenEndpoint(BaseEndpoint):
         # workflow where a client requests access to a specific realm.
         # This first step (obtaining request token) need not require a realm
         # and can then be identified by checking the require_resource_owner
-        # flag and abscence of realm.
+        # flag and absence of realm.
         #
         # Clients obtaining an access token will not supply a realm and it will
         # not be checked. Instead the previously requested realm should be

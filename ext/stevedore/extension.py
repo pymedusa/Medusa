@@ -13,17 +13,16 @@
 """ExtensionManager
 """
 
-import operator
-import pkg_resources
-
 import logging
+import operator
 
+from . import _cache
 from .exception import NoMatches
 
 LOG = logging.getLogger(__name__)
 
 
-class Extension(object):
+class Extension:
     """Book-keeping object for tracking extensions.
 
     The arguments passed to the constructor are saved as attributes of
@@ -34,7 +33,7 @@ class Extension(object):
     :param name: The entry point name.
     :type name: str
     :param entry_point: The EntryPoint instance returned by
-        :mod:`pkg_resources`.
+        :mod:`entrypoints`.
     :type entry_point: EntryPoint
     :param plugin: The value returned by entry_point.load()
     :param obj: The object returned by ``plugin(*args, **kwds)`` if the
@@ -49,17 +48,33 @@ class Extension(object):
         self.obj = obj
 
     @property
+    def module_name(self):
+        """The name of the module from which the entry point is loaded.
+
+        :return: A string in 'dotted.module' format.
+        """
+        # NOTE: importlib_metadata from PyPI includes this but the
+        # Python 3.8 standard library does not.
+        match = self.entry_point.pattern.match(self.entry_point.value)
+        return match.group('module')
+
+    @property
+    def attr(self):
+        """The attribute of the module to be loaded."""
+        match = self.entry_point.pattern.match(self.entry_point.value)
+        return match.group('attr')
+
+    @property
     def entry_point_target(self):
         """The module and attribute referenced by this extension's entry_point.
 
         :return: A string representation of the target of the entry point in
             'dotted.module:object' format.
         """
-        return '%s:%s' % (self.entry_point.module_name,
-                          self.entry_point.attrs[0])
+        return self.entry_point.value
 
 
-class ExtensionManager(object):
+class ExtensionManager:
     """Base class for all of the other managers.
 
     :param namespace: The namespace for the entry points.
@@ -80,7 +95,7 @@ class ExtensionManager(object):
         then ignored
     :type propagate_map_exceptions: bool
     :param on_load_failure_callback: Callback function that will be called when
-        a entrypoint can not be loaded. The arguments that will be provided
+        an entrypoint can not be loaded. The arguments that will be provided
         when this is called (when an entrypoint fails to load) are
         (manager, entrypoint, exception)
     :type on_load_failure_callback: function
@@ -126,7 +141,7 @@ class ExtensionManager(object):
             are logged and then ignored
         :type propagate_map_exceptions: bool
         :param on_load_failure_callback: Callback function that will
-            be called when a entrypoint can not be loaded. The
+            be called when an entrypoint can not be loaded. The
             arguments that will be provided when this is called (when
             an entrypoint fails to load) are (manager, entrypoint,
             exception)
@@ -174,7 +189,7 @@ class ExtensionManager(object):
 
         """
         if self.namespace not in self.ENTRY_POINT_CACHE:
-            eps = list(pkg_resources.iter_entry_points(self.namespace))
+            eps = list(_cache.get_group_all(self.namespace))
             self.ENTRY_POINT_CACHE[self.namespace] = eps
         return self.ENTRY_POINT_CACHE[self.namespace]
 
@@ -222,7 +237,7 @@ class ExtensionManager(object):
                 ep.require()
             plugin = ep.resolve()
         else:
-            plugin = ep.load(require=verify_requirements)
+            plugin = ep.load()
         if invoke_on_load:
             obj = plugin(*invoke_args, **invoke_kwds)
         else:
@@ -301,8 +316,7 @@ class ExtensionManager(object):
                 LOG.exception(err)
 
     def items(self):
-        """
-        Return an iterator of tuples of the form (name, extension).
+        """Return an iterator of tuples of the form (name, extension).
 
         This is analogous to the Mapping.items() method.
         """
@@ -326,6 +340,5 @@ class ExtensionManager(object):
         return self._extensions_by_name[name]
 
     def __contains__(self, name):
-        """Return true if name is in list of enabled extensions.
-        """
+        """Return true if name is in list of enabled extensions."""
         return any(extension.name == name for extension in self.extensions)

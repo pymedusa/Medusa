@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 oauthlib.oauth2.rfc6749
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -6,23 +5,34 @@ oauthlib.oauth2.rfc6749
 This module is an implementation of various logic needed
 for consuming and providing OAuth 2.0 RFC6749.
 """
-from __future__ import absolute_import, unicode_literals
-
 import functools
 import logging
 
-from ..errors import (FatalClientError, OAuth2Error, ServerError,
-                      TemporarilyUnavailableError, InvalidRequestError,
-                      InvalidClientError, UnsupportedTokenTypeError)
+from ..errors import (
+    FatalClientError, InvalidClientError, InvalidRequestError, OAuth2Error,
+    ServerError, TemporarilyUnavailableError, UnsupportedTokenTypeError,
+)
 
 log = logging.getLogger(__name__)
 
 
-class BaseEndpoint(object):
+class BaseEndpoint:
 
     def __init__(self):
         self._available = True
         self._catch_errors = False
+        self._valid_request_methods = None
+
+    @property
+    def valid_request_methods(self):
+        return self._valid_request_methods
+
+    @valid_request_methods.setter
+    def valid_request_methods(self, valid_request_methods):
+        if valid_request_methods is not None:
+            valid_request_methods = [x.upper() for x in valid_request_methods]
+        self._valid_request_methods = valid_request_methods
+
 
     @property
     def available(self):
@@ -62,6 +72,21 @@ class BaseEndpoint(object):
             request.token_type_hint not in self.supported_token_types):
             raise UnsupportedTokenTypeError(request=request)
 
+    def _raise_on_bad_method(self, request):
+        if self.valid_request_methods is None:
+            raise ValueError('Configure "valid_request_methods" property first')
+        if request.http_method.upper() not in self.valid_request_methods:
+            raise InvalidRequestError(request=request,
+                                      description=('Unsupported request method %s' % request.http_method.upper()))
+
+    def _raise_on_bad_post_request(self, request):
+        """Raise if invalid POST request received
+        """
+        if request.http_method.upper() == 'POST':
+            query_params = request.uri_query or ""
+            if query_params:
+                raise InvalidRequestError(request=request,
+                                          description=('URL query parameters are not allowed'))
 
 def catch_errors_and_unavailability(f):
     @functools.wraps(f)

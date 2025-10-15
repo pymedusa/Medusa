@@ -7,7 +7,9 @@ Python ``@deprecated`` decorator to deprecate old python classes, functions or m
 
 """
 
-#: Module Version Number, see `PEP 396 <https://www.python.org/dev/peps/pep-0396/>`_.
-__version__ = "1.2.3"
+__version__ = "1.2.18"
+__author__ = u"Laurent LAPORTE <laurent.laporte.pro@gmail.com>"
+__date__ = "2025-01-27"
+__credits__ = "(c) Laurent LAPORTE"
 
 from deprecated.classic import deprecated

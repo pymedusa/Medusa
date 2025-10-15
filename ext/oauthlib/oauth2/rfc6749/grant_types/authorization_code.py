@@ -1,10 +1,7 @@
-# -*- coding: utf-8 -*-
 """
 oauthlib.oauth2.rfc6749.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
-from __future__ import absolute_import, unicode_literals
-
 import base64
 import hashlib
 import json
@@ -275,6 +272,8 @@ class AuthorizationCodeGrant(GrantTypeBase):
         grant = self.create_authorization_code(request)
         for modifier in self._code_modifiers:
             grant = modifier(grant, token_handler, request)
+        if 'access_token' in grant:
+            self.request_validator.save_token(grant, request)
         log.debug('Saving grant %r for %r.', grant, request)
         self.request_validator.save_authorization_code(
             request.client_id, grant, request)
@@ -305,12 +304,15 @@ class AuthorizationCodeGrant(GrantTypeBase):
             headers.update(e.headers)
             return headers, e.json, e.status_code
 
-        token = token_handler.create_token(request, refresh_token=self.refresh_token, save_token=False)
+        token = token_handler.create_token(request, refresh_token=self.refresh_token)
+
         for modifier in self._token_modifiers:
             token = modifier(token, token_handler, request)
+
         self.request_validator.save_token(token, request)
         self.request_validator.invalidate_authorization_code(
             request.client_id, request.code, request)
+        headers.update(self._create_cors_headers(request))
         return headers, json.dumps(token), 200
 
     def validate_authorization_request(self, request):
@@ -385,7 +387,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
             raise errors.MissingResponseTypeError(request=request)
         # Value MUST be set to "code" or one of the OpenID authorization code including
         # response_types "code token", "code id_token", "code token id_token"
-        elif not 'code' in request.response_type and request.response_type != 'none':
+        elif 'code' not in request.response_type and request.response_type != 'none':
             raise errors.UnsupportedResponseTypeError(request=request)
 
         if not self.request_validator.validate_response_type(request.client_id,
@@ -398,17 +400,19 @@ class AuthorizationCodeGrant(GrantTypeBase):
 
         # OPTIONAL. Validate PKCE request or reply with "error"/"invalid_request"
         # https://tools.ietf.org/html/rfc6749#section-4.4.1
-        if self.request_validator.is_pkce_required(request.client_id, request) is True:
-            if request.code_challenge is None:
-                raise errors.MissingCodeChallengeError(request=request)
+        if self.request_validator.is_pkce_required(request.client_id, request) is True and request.code_challenge is None:
+            raise errors.MissingCodeChallengeError(request=request)
 
         if request.code_challenge is not None:
+            request_info["code_challenge"] = request.code_challenge
+
             # OPTIONAL, defaults to "plain" if not present in the request.
             if request.code_challenge_method is None:
                 request.code_challenge_method = "plain"
 
             if request.code_challenge_method not in self._code_challenge_methods:
                 raise errors.UnsupportedCodeChallengeMethodError(request=request)
+            request_info["code_challenge_method"] = request.code_challenge_method
 
         # OPTIONAL. The scope of the access request as described by Section 3.3
         # https://tools.ietf.org/html/rfc6749#section-3.3
