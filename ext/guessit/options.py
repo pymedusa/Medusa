@@ -7,24 +7,12 @@ import copy
 import json
 import os
 import shlex
-import sys
 from argparse import ArgumentParser
 
-# importlib.resources.read_text() is deprecated since Python 3.11.
-# importlib.resources.files() is new in Python 3.9.
-if sys.version_info >= (3, 9, 0):
-    from importlib.resources import files
-
-    def read_text(package, filename):
-        """
-        Should behave like deprecated importlib.resources.read_text()
-        """
-        return files(package).joinpath(filename).read_text()  # pylint:disable=unspecified-encoding
-else:
-    try:
-        from importlib.resources import read_text
-    except ImportError:
-        from importlib_resources import read_text
+try:
+    from importlib.resources import read_text
+except ImportError:
+    from importlib_resources import read_text
 
 
 def build_argument_parser():

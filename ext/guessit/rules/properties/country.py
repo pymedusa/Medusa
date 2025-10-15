@@ -87,7 +87,7 @@ class GuessitCountryConverter(babelfish.CountryReverseConverter):  # pylint: dis
         raise babelfish.CountryReverseError(name)
 
 
-class CountryFinder:
+class CountryFinder(object):
     """Helper class to search and return country matches."""
 
     def __init__(self, allowed_countries, common_words):

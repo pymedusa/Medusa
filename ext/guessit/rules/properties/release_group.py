@@ -4,7 +4,6 @@
 release_group property
 """
 import copy
-import re
 
 from rebulk import Rebulk, Rule, AppendMatch, RemoveMatch
 from rebulk.match import Match
@@ -51,10 +50,7 @@ def release_group(config):
             if string.lower().endswith(forbidden) and string[-len(forbidden) - 1:-len(forbidden)] in seps:
                 string = string[:len(forbidden)]
                 string = string.strip(groupname_seps)
-
-        # Release groups that credit individual members often use a format like "Title (MediaInfo Individual) [Group]".
-        # This results in a group name of "Individual) [Group]", which should be transformed to "Individual Group".
-        return re.sub(r'(.+)\)\s?\[(.+)\]', r'\1 \2', string.strip())
+        return string.strip()
 
     rebulk = Rebulk(disabled=lambda context: is_disabled(context, 'release_group'))
 

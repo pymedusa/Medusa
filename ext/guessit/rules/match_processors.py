@@ -18,4 +18,3 @@ def strip(match, chars=seps):
         match.end -= 1
     if not match:
         return False
-    return None

@@ -68,8 +68,8 @@ def episodes(config):
                 if other.name in ('video_codec', 'audio_codec', 'container', 'date'):
                     return match
                 if (other.name == 'audio_channels' and 'weak-audio_channels' not in other.tags
-                    and not match.initiator.children.named(match.name + 'Marker')) or (
-                        other.name == 'screen_size' and not int_coercable(other.raw)):
+                        and not match.initiator.children.named(match.name + 'Marker')) or (
+                            other.name == 'screen_size' and not int_coercable(other.raw)):
                     return match
                 if other.name in ('season', 'episode') and match.initiator != other.initiator:
                     if (match.initiator.name in ('weak_episode', 'weak_duplicate')
@@ -172,7 +172,7 @@ def episodes(config):
         disabled=is_season_episode_disabled) \
         .defaults(tags=['SxxExx']) \
         .regex(build_or_pattern(season_markers, name='seasonMarker') + r'(?P<season>\d+)@?' +
-               build_or_pattern(episode_markers + disc_markers, name='episodeMarker') + r'@?(?P<episode>\d+)') \
+               build_or_pattern(episode_markers + disc_markers, name='episodeMarker') + r'@?(?P<episode>\d+)')\
         .repeater('+') \
         .regex(build_or_pattern(episode_markers + disc_markers + discrete_separators + range_separators,
                                 name='episodeSeparator',
@@ -186,7 +186,7 @@ def episodes(config):
         .defaults(tags=['SxxExx']) \
         .regex(r'(?P<season>\d+)@?' +
                build_or_pattern(season_ep_markers, name='episodeMarker') +
-               r'@?(?P<episode>\d+)').repeater('+')
+               r'@?(?P<episode>\d+)').repeater('+') \
 
     rebulk.chain(tags=['SxxExx'],
                  validate_all=True,
@@ -338,6 +338,7 @@ def episodes(config):
 
     rebulk.defaults(private_names=['episodeSeparator', 'seasonSeparator'])
 
+    # TODO: List of words
     # detached of X count (season/episode)
     rebulk.regex(r'(?P<episode>\d+)-?' + build_or_pattern(of_words) +
                  r'-?(?P<count>\d+)-?' + build_or_pattern(episode_words) + '?',
@@ -511,15 +512,13 @@ class AbstractSeparatorRange(Rule):
     """
     Remove separator matches and create matches for season range.
     """
+    priority = 128
     consequence = [RemoveMatch, AppendMatch]
 
     def __init__(self, range_separators, property_name):
         super().__init__()
         self.range_separators = range_separators
         self.property_name = property_name
-
-    def _can_start_range(self, match):  # pylint: disable=unused-argument
-        return True
 
     def when(self, matches, context):
         to_remove = []
@@ -541,10 +540,7 @@ class AbstractSeparatorRange(Rule):
             to_remove.append(separator)
 
         previous_match = None
-        sorted_matches = sorted(matches.named(self.property_name), key=lambda x: x.span[0])
-        for next_match in sorted_matches:
-            if not previous_match and not self._can_start_range(next_match):
-                continue
+        for next_match in matches.named(self.property_name):
             if previous_match:
                 separator = matches.input_string[previous_match.initiator.end:next_match.initiator.start]
                 if separator not in self.range_separators:
@@ -582,25 +578,17 @@ class RenameToAbsoluteEpisode(Rule):
     The matches in the group with higher episode values are renamed to absolute_episode.
     """
 
-    consequence = [RenameMatch('absolute_episode'), RemoveMatch]
+    consequence = RenameMatch('absolute_episode')
 
     def when(self, matches, context):  # pylint:disable=inconsistent-return-statements
         initiators = {match.initiator for match in matches.named('episode')
                       if len(match.initiator.children.named('episode')) > 1}
         if len(initiators) != 2:
-            ret = ([], [])
+            ret = []
             for filepart in matches.markers.named('path'):
-                sxxexx_episode_matches = matches.range(filepart.start + 1, filepart.end,
-                                                       predicate=lambda m: m.name == 'episode' and
-                                                                           'SxxExx' in m.tags)
                 if matches.range(filepart.start + 1, filepart.end, predicate=lambda m: m.name == 'episode'):
-                    absolute_episode_candidate = matches.starting(filepart.start,
-                                                                  predicate=lambda
-                                                                      m: m.initiator.name == 'weak_episode')
-                    if sxxexx_episode_matches:
-                        ret[1].extend(absolute_episode_candidate)
-                    else:
-                        ret[0].extend(absolute_episode_candidate)
+                    ret.extend(
+                        matches.starting(filepart.start, predicate=lambda m: m.initiator.name == 'weak_episode'))
             return ret
 
         initiators = sorted(initiators, key=lambda item: item.end)
@@ -609,29 +597,24 @@ class RenameToAbsoluteEpisode(Rule):
             second_range = matches.named('episode', predicate=lambda m: m.initiator == initiators[1])
             if len(first_range) == len(second_range):
                 if second_range[0].value > first_range[0].value:
-                    return second_range, []
+                    return second_range
                 if first_range[0].value > second_range[0].value:
-                    return first_range, []
+                    return first_range
 
 
 class EpisodeNumberSeparatorRange(AbstractSeparatorRange):
     """
     Remove separator matches and create matches for episoderNumber range.
     """
-    priority = 128
 
     def __init__(self, range_separators):
         super().__init__(range_separators, "episode")
-
-    def _can_start_range(self, match):
-        return 'weak-episode' not in match.tags
 
 
 class SeasonSeparatorRange(AbstractSeparatorRange):
     """
     Remove separator matches and create matches for season range.
     """
-    priority = 128
 
     def __init__(self, range_separators):
         super().__init__(range_separators, "season")
@@ -745,7 +728,7 @@ class RemoveInvalidSeason(Rule):
         for filepart in matches.markers.named('path'):
             strong_season = matches.range(filepart.start, filepart.end, index=0,
                                           predicate=lambda m: m.name == 'season'
-                                                              and not m.private and 'SxxExx' in m.tags)
+                                          and not m.private and 'SxxExx' in m.tags)
             if strong_season:
                 if strong_season.initiator.children.named('episode'):
                     for season in matches.range(strong_season.end, filepart.end,
@@ -773,7 +756,7 @@ class RemoveInvalidEpisode(Rule):
         for filepart in matches.markers.named('path'):
             strong_episode = matches.range(filepart.start, filepart.end, index=0,
                                            predicate=lambda m: m.name == 'episode'
-                                                               and not m.private and 'SxxExx' in m.tags)
+                                           and not m.private and 'SxxExx' in m.tags)
             if strong_episode:
                 strong_ep_marker = RemoveInvalidEpisode.get_episode_prefix(matches, strong_episode)
                 for episode in matches.range(strong_episode.end, filepart.end,
@@ -860,7 +843,7 @@ class RemoveDetachedEpisodeNumber(Rule):
                 episode_numbers[0].value < 10 and \
                 episode_numbers[1].value - episode_numbers[0].value != 1:
             parent = episode_numbers[0]
-            while parent:
+            while parent:  # TODO: Add a feature in rebulk to avoid this ...
                 ret.append(parent)
                 parent = parent.parent
         return ret

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# pylint: disable=pointless-statement, missing-docstring, invalid-name
+# pylint: disable=no-self-use, pointless-statement, missing-docstring, invalid-name
 import json
 import os
 import sys

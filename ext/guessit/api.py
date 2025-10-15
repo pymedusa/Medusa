@@ -23,7 +23,7 @@ class GuessitException(Exception):
     """
 
     def __init__(self, string, options):
-        super().__init__("An internal error has occurred in guessit.\n"
+        super().__init__("An internal error has occured in guessit.\n"
                          "===================== Guessit Exception Report =====================\n"
                          f"version={__version__}\n"
                          f"string={str(string)}\n"
@@ -98,7 +98,7 @@ def suggested_expected(titles, options=None):
     return default_api.suggested_expected(titles, options)
 
 
-class GuessItApi:
+class GuessItApi(object):
     """
     An api class that can be configured with custom Rebulk configuration.
     """
@@ -114,7 +114,7 @@ class GuessItApi:
         """
         Reset api internal state.
         """
-        self.__init__()  # pylint:disable=unnecessary-dunder-call
+        self.__init__()
 
     @classmethod
     def _fix_encoding(cls, value):
