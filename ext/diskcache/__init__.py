@@ -3,7 +3,6 @@ DiskCache API Reference
 =======================
 
 The :doc:`tutorial` provides a helpful walkthrough of most methods.
-
 """
 
 from .core import (
@@ -57,13 +56,13 @@ try:
     from .djangocache import DjangoCache  # noqa
 
     __all__.append('DjangoCache')
-except Exception:  # pylint: disable=broad-except
+except Exception:  # pylint: disable=broad-except  # pragma: no cover
     # Django not installed or not setup so ignore.
     pass
 
 __title__ = 'diskcache'
-__version__ = '5.2.1'
-__build__ = 0x050201
+__version__ = '5.6.3'
+__build__ = 0x050603
 __author__ = 'Grant Jenks'
 __license__ = 'Apache 2.0'
-__copyright__ = 'Copyright 2016-2021 Grant Jenks'
+__copyright__ = 'Copyright 2016-2023 Grant Jenks'

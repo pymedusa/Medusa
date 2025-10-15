@@ -1,4 +1,4 @@
-"Django-compatible disk and file backed cache."
+"""Django-compatible disk and file backed cache."""
 
 from functools import wraps
 
@@ -6,7 +6,7 @@ from django.core.cache.backends.base import BaseCache
 
 try:
     from django.core.cache.backends.base import DEFAULT_TIMEOUT
-except ImportError:
+except ImportError:  # pragma: no cover
     # For older versions of Django simply use 300 seconds.
     DEFAULT_TIMEOUT = 300
 
@@ -15,7 +15,7 @@ from .fanout import FanoutCache
 
 
 class DjangoCache(BaseCache):
-    "Django-compatible disk and file backed cache."
+    """Django-compatible disk and file backed cache."""
 
     def __init__(self, directory, params):
         """Initialize DjangoCache instance.
@@ -44,14 +44,15 @@ class DjangoCache(BaseCache):
         """
         return self._cache.cache(name)
 
-    def deque(self, name):
+    def deque(self, name, maxlen=None):
         """Return Deque with given `name` in subdirectory.
 
         :param str name: subdirectory name for Deque
+        :param maxlen: max length (default None, no max)
         :return: Deque with given name
 
         """
-        return self._cache.deque(name)
+        return self._cache.deque(name, maxlen=maxlen)
 
     def index(self, name):
         """Return Index with given `name` in subdirectory.
@@ -220,7 +221,7 @@ class DjangoCache(BaseCache):
         """
         # pylint: disable=arguments-differ
         key = self.make_key(key, version=version)
-        self._cache.delete(key, retry)
+        return self._cache.delete(key, retry)
 
     def incr(self, key, delta=1, version=None, default=None, retry=True):
         """Increment value by delta for item with key.
@@ -344,11 +345,11 @@ class DjangoCache(BaseCache):
         return self._cache.cull()
 
     def clear(self):
-        "Remove *all* values from the cache at once."
+        """Remove *all* values from the cache at once."""
         return self._cache.clear()
 
     def close(self, **kwargs):
-        "Close the cache connection."
+        """Close the cache connection."""
         # pylint: disable=unused-argument
         self._cache.close()
 
@@ -373,6 +374,7 @@ class DjangoCache(BaseCache):
         version=None,
         typed=False,
         tag=None,
+        ignore=(),
     ):
         """Memoizing cache decorator.
 
@@ -407,6 +409,7 @@ class DjangoCache(BaseCache):
         :param int version: key version number (default None, cache parameter)
         :param bool typed: cache different types separately (default False)
         :param str tag: text to associate with arguments (default None)
+        :param set ignore: positional or keyword args to ignore (default ())
         :return: callable decorator
 
         """
@@ -415,12 +418,12 @@ class DjangoCache(BaseCache):
             raise TypeError('name cannot be callable')
 
         def decorator(func):
-            "Decorator created by memoize() for callable `func`."
+            """Decorator created by memoize() for callable `func`."""
             base = (full_name(func),) if name is None else (name,)
 
             @wraps(func)
             def wrapper(*args, **kwargs):
-                "Wrapper for callable to cache arguments and return values."
+                """Wrapper for callable to cache arguments and return values."""
                 key = wrapper.__cache_key__(*args, **kwargs)
                 result = self.get(key, ENOVAL, version, retry=True)
 
@@ -444,8 +447,8 @@ class DjangoCache(BaseCache):
                 return result
 
             def __cache_key__(*args, **kwargs):
-                "Make key for cache given function arguments."
-                return args_to_key(base, args, kwargs, typed)
+                """Make key for cache given function arguments."""
+                return args_to_key(base, args, kwargs, typed, ignore)
 
             wrapper.__cache_key__ = __cache_key__
             return wrapper

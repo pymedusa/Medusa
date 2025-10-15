@@ -1,31 +1,20 @@
-# coding: utf-8
-from msgpack._version import version
-from msgpack.exceptions import *
-
-from collections import namedtuple
-
-
-class ExtType(namedtuple('ExtType', 'code data')):
-    """ExtType represents ext type in msgpack."""
-    def __new__(cls, code, data):
-        if not isinstance(code, int):
-            raise TypeError("code must be int")
-        if not isinstance(data, bytes):
-            raise TypeError("data must be bytes")
-        if not 0 <= code <= 127:
-            raise ValueError("code must be 0~127")
-        return super(ExtType, cls).__new__(cls, code, data)
-
-
+# ruff: noqa: F401
 import os
-if os.environ.get('MSGPACK_PUREPYTHON'):
-    from msgpack.fallback import Packer, unpackb, Unpacker
+
+from .exceptions import *  # noqa: F403
+from .ext import ExtType, Timestamp
+
+version = (1, 1, 2)
+__version__ = "1.1.2"
+
+
+if os.environ.get("MSGPACK_PUREPYTHON"):
+    from .fallback import Packer, Unpacker, unpackb
 else:
     try:
-        from msgpack._packer import Packer
-        from msgpack._unpacker import unpackb, Unpacker
+        from ._cmsgpack import Packer, Unpacker, unpackb
     except ImportError:
-        from msgpack.fallback import Packer, unpackb, Unpacker
+        from .fallback import Packer, Unpacker, unpackb
 
 
 def pack(o, stream, **kwargs):

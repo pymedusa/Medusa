@@ -12,8 +12,9 @@
 
 """Tests for failure loading callback
 """
+from unittest import mock
+
 from testtools.matchers import GreaterThan
-import mock
 
 from stevedore import extension
 from stevedore import named

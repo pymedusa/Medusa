@@ -1,4 +1,4 @@
-"Fanout cache automatically shards keys and values."
+"""Fanout cache automatically shards keys and values."""
 
 import contextlib as cl
 import functools
@@ -14,7 +14,7 @@ from .persistent import Deque, Index
 
 
 class FanoutCache:
-    "Cache that shards keys and values."
+    """Cache that shards keys and values."""
 
     def __init__(
         self, directory=None, shards=8, timeout=0.010, disk=Disk, **settings
@@ -30,6 +30,7 @@ class FanoutCache:
         """
         if directory is None:
             directory = tempfile.mkdtemp(prefix='diskcache-')
+        directory = str(directory)
         directory = op.expanduser(directory)
         directory = op.expandvars(directory)
 
@@ -45,7 +46,7 @@ class FanoutCache:
                 timeout=timeout,
                 disk=disk,
                 size_limit=size_limit,
-                **settings
+                **settings,
             )
             for num in range(shards)
         )
@@ -512,7 +513,7 @@ class FanoutCache:
         return sum(shard.volume() for shard in self._shards)
 
     def close(self):
-        "Close database connection."
+        """Close database connection."""
         for shard in self._shards:
             shard.close()
         self._caches.clear()
@@ -532,17 +533,17 @@ class FanoutCache:
         self.__init__(*state)
 
     def __iter__(self):
-        "Iterate keys in cache including expired items."
+        """Iterate keys in cache including expired items."""
         iterators = (iter(shard) for shard in self._shards)
         return it.chain.from_iterable(iterators)
 
     def __reversed__(self):
-        "Reverse iterate keys in cache including expired items."
+        """Reverse iterate keys in cache including expired items."""
         iterators = (reversed(shard) for shard in reversed(self._shards))
         return it.chain.from_iterable(iterators)
 
     def __len__(self):
-        "Count of items in cache including expired items."
+        """Count of items in cache including expired items."""
         return sum(len(shard) for shard in self._shards)
 
     def reset(self, key, value=ENOVAL):
@@ -573,8 +574,10 @@ class FanoutCache:
                     break
         return result
 
-    def cache(self, name):
+    def cache(self, name, timeout=60, disk=None, **settings):
         """Return Cache with given `name` in subdirectory.
+
+        If disk is none (default), uses the fanout cache disk.
 
         >>> fanout_cache = FanoutCache()
         >>> cache = fanout_cache.cache('test')
@@ -588,6 +591,9 @@ class FanoutCache:
         True
 
         :param str name: subdirectory name for Cache
+        :param float timeout: SQLite connection timeout
+        :param disk: Disk type or subclass for serialization
+        :param settings: any of DEFAULT_SETTINGS
         :return: Cache with given name
 
         """
@@ -598,11 +604,16 @@ class FanoutCache:
         except KeyError:
             parts = name.split('/')
             directory = op.join(self._directory, 'cache', *parts)
-            temp = Cache(directory=directory, disk=self._disk)
+            temp = Cache(
+                directory=directory,
+                timeout=timeout,
+                disk=self._disk if disk is None else Disk,
+                **settings,
+            )
             _caches[name] = temp
             return temp
 
-    def deque(self, name):
+    def deque(self, name, maxlen=None):
         """Return Deque with given `name` in subdirectory.
 
         >>> cache = FanoutCache()
@@ -616,6 +627,7 @@ class FanoutCache:
         1
 
         :param str name: subdirectory name for Deque
+        :param maxlen: max length (default None, no max)
         :return: Deque with given name
 
         """
@@ -626,8 +638,12 @@ class FanoutCache:
         except KeyError:
             parts = name.split('/')
             directory = op.join(self._directory, 'deque', *parts)
-            cache = Cache(directory=directory, disk=self._disk)
-            deque = Deque.fromcache(cache)
+            cache = Cache(
+                directory=directory,
+                disk=self._disk,
+                eviction_policy='none',
+            )
+            deque = Deque.fromcache(cache, maxlen=maxlen)
             _deques[name] = deque
             return deque
 
@@ -658,7 +674,11 @@ class FanoutCache:
         except KeyError:
             parts = name.split('/')
             directory = op.join(self._directory, 'index', *parts)
-            cache = Cache(directory=directory, disk=self._disk)
+            cache = Cache(
+                directory=directory,
+                disk=self._disk,
+                eviction_policy='none',
+            )
             index = Index.fromcache(cache)
             _indexes[name] = index
             return index

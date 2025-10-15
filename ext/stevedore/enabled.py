@@ -46,7 +46,7 @@ class EnabledExtensionManager(ExtensionManager):
         then ignored
     :type propagate_map_exceptions: bool
     :param on_load_failure_callback: Callback function that will be called when
-        a entrypoint can not be loaded. The arguments that will be provided
+        an entrypoint can not be loaded. The arguments that will be provided
         when this is called (when an entrypoint fails to load) are
         (manager, entrypoint, exception)
     :type on_load_failure_callback: function
@@ -62,7 +62,7 @@ class EnabledExtensionManager(ExtensionManager):
                  on_load_failure_callback=None,
                  verify_requirements=False,):
         self.check_func = check_func
-        super(EnabledExtensionManager, self).__init__(
+        super().__init__(
             namespace,
             invoke_on_load=invoke_on_load,
             invoke_args=invoke_args,
@@ -74,7 +74,7 @@ class EnabledExtensionManager(ExtensionManager):
 
     def _load_one_plugin(self, ep, invoke_on_load, invoke_args, invoke_kwds,
                          verify_requirements):
-        ext = super(EnabledExtensionManager, self)._load_one_plugin(
+        ext = super()._load_one_plugin(
             ep, invoke_on_load, invoke_args, invoke_kwds,
             verify_requirements,
         )

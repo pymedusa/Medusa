@@ -1,5 +1,4 @@
 """Core disk and file backed cache API.
-
 """
 
 import codecs
@@ -22,20 +21,12 @@ import zlib
 
 
 def full_name(func):
-    "Return full name of `func` by adding the module and function name."
+    """Return full name of `func` by adding the module and function name."""
     return func.__module__ + '.' + func.__qualname__
 
 
-try:
-    WindowsError
-except NameError:
-
-    class WindowsError(Exception):
-        "Windows error place-holder on platforms without support."
-
-
 class Constant(tuple):
-    "Pretty display of immutable constant."
+    """Pretty display of immutable constant."""
 
     def __new__(cls, name):
         return tuple.__new__(cls, (name,))
@@ -55,25 +46,25 @@ MODE_TEXT = 3
 MODE_PICKLE = 4
 
 DEFAULT_SETTINGS = {
-    u'statistics': 0,  # False
-    u'tag_index': 0,  # False
-    u'eviction_policy': u'least-recently-stored',
-    u'size_limit': 2 ** 30,  # 1gb
-    u'cull_limit': 10,
-    u'sqlite_auto_vacuum': 1,  # FULL
-    u'sqlite_cache_size': 2 ** 13,  # 8,192 pages
-    u'sqlite_journal_mode': u'wal',
-    u'sqlite_mmap_size': 2 ** 26,  # 64mb
-    u'sqlite_synchronous': 1,  # NORMAL
-    u'disk_min_file_size': 2 ** 15,  # 32kb
-    u'disk_pickle_protocol': pickle.HIGHEST_PROTOCOL,
+    'statistics': 0,  # False
+    'tag_index': 0,  # False
+    'eviction_policy': 'least-recently-stored',
+    'size_limit': 2**30,  # 1gb
+    'cull_limit': 10,
+    'sqlite_auto_vacuum': 1,  # FULL
+    'sqlite_cache_size': 2**13,  # 8,192 pages
+    'sqlite_journal_mode': 'wal',
+    'sqlite_mmap_size': 2**26,  # 64mb
+    'sqlite_synchronous': 1,  # NORMAL
+    'disk_min_file_size': 2**15,  # 32kb
+    'disk_pickle_protocol': pickle.HIGHEST_PROTOCOL,
 }
 
 METADATA = {
-    u'count': 0,
-    u'size': 0,
-    u'hits': 0,
-    u'misses': 0,
+    'count': 0,
+    'size': 0,
+    'hits': 0,
+    'misses': 0,
 }
 
 EVICTION_POLICY = {
@@ -110,7 +101,7 @@ EVICTION_POLICY = {
 
 
 class Disk:
-    "Cache key and value serialization for SQLite database and files."
+    """Cache key and value serialization for SQLite database and files."""
 
     def __init__(self, directory, min_file_size=0, pickle_protocol=0):
         """Initialize disk instance.
@@ -179,7 +170,7 @@ class Disk:
         :return: corresponding Python key
 
         """
-        # pylint: disable=no-self-use,unidiomatic-typecheck
+        # pylint: disable=unidiomatic-typecheck
         if raw:
             return bytes(key) if type(key) is sqlite3.Binary else key
         else:
@@ -213,29 +204,18 @@ class Disk:
                 return 0, MODE_RAW, None, sqlite3.Binary(value)
             else:
                 filename, full_path = self.filename(key, value)
-
-                with open(full_path, 'xb') as writer:
-                    writer.write(value)
-
+                self._write(full_path, io.BytesIO(value), 'xb')
                 return len(value), MODE_BINARY, filename, None
         elif type_value is str:
             filename, full_path = self.filename(key, value)
-
-            with open(full_path, 'x', encoding='UTF-8') as writer:
-                writer.write(value)
-
+            self._write(full_path, io.StringIO(value), 'x', 'UTF-8')
             size = op.getsize(full_path)
             return size, MODE_TEXT, filename, None
         elif read:
-            size = 0
-            reader = ft.partial(value.read, 2 ** 22)
+            reader = ft.partial(value.read, 2**22)
             filename, full_path = self.filename(key, value)
-
-            with open(full_path, 'xb') as writer:
-                for chunk in iter(reader, b''):
-                    size += len(chunk)
-                    writer.write(chunk)
-
+            iterator = iter(reader, b'')
+            size = self._write(full_path, iterator, 'xb')
             return size, MODE_BINARY, filename, None
         else:
             result = pickle.dumps(value, protocol=self.pickle_protocol)
@@ -244,11 +224,32 @@ class Disk:
                 return 0, MODE_PICKLE, None, sqlite3.Binary(result)
             else:
                 filename, full_path = self.filename(key, value)
-
-                with open(full_path, 'xb') as writer:
-                    writer.write(result)
-
+                self._write(full_path, io.BytesIO(result), 'xb')
                 return len(result), MODE_PICKLE, filename, None
+
+    def _write(self, full_path, iterator, mode, encoding=None):
+        full_dir, _ = op.split(full_path)
+
+        for count in range(1, 11):
+            with cl.suppress(OSError):
+                os.makedirs(full_dir)
+
+            try:
+                # Another cache may have deleted the directory before
+                # the file could be opened.
+                writer = open(full_path, mode, encoding=encoding)
+            except OSError:
+                if count == 10:
+                    # Give up after 10 tries to open the file.
+                    raise
+                continue
+
+            with writer:
+                size = 0
+                for chunk in iterator:
+                    size += len(chunk)
+                    writer.write(chunk)
+                return size
 
     def fetch(self, mode, filename, value, read):
         """Convert fields `mode`, `filename`, and `value` from Cache table to
@@ -259,9 +260,10 @@ class Disk:
         :param value: database value
         :param bool read: when True, return an open file handle
         :return: corresponding Python value
+        :raises: IOError if the value cannot be read
 
         """
-        # pylint: disable=no-self-use,unidiomatic-typecheck
+        # pylint: disable=unidiomatic-typecheck,consider-using-with
         if mode == MODE_RAW:
             return bytes(value) if type(value) is sqlite3.Binary else value
         elif mode == MODE_BINARY:
@@ -303,42 +305,34 @@ class Disk:
         hex_name = codecs.encode(os.urandom(16), 'hex').decode('utf-8')
         sub_dir = op.join(hex_name[:2], hex_name[2:4])
         name = hex_name[4:] + '.val'
-        directory = op.join(self._directory, sub_dir)
-
-        try:
-            os.makedirs(directory)
-        except OSError as error:
-            if error.errno != errno.EEXIST:
-                raise
-
         filename = op.join(sub_dir, name)
         full_path = op.join(self._directory, filename)
         return filename, full_path
 
-    def remove(self, filename):
-        """Remove a file given by `filename`.
+    def remove(self, file_path):
+        """Remove a file given by `file_path`.
 
-        This method is cross-thread and cross-process safe. If an "error no
-        entry" occurs, it is suppressed.
+        This method is cross-thread and cross-process safe. If an OSError
+        occurs, it is suppressed.
 
-        :param str filename: relative path to file
+        :param str file_path: relative path to file
 
         """
-        full_path = op.join(self._directory, filename)
+        full_path = op.join(self._directory, file_path)
+        full_dir, _ = op.split(full_path)
 
-        try:
+        # Suppress OSError that may occur if two caches attempt to delete the
+        # same file or directory at the same time.
+
+        with cl.suppress(OSError):
             os.remove(full_path)
-        except WindowsError:
-            pass
-        except OSError as error:
-            if error.errno != errno.ENOENT:
-                # ENOENT may occur if two caches attempt to delete the same
-                # file at the same time.
-                raise
+
+        with cl.suppress(OSError):
+            os.removedirs(full_dir)
 
 
 class JSONDisk(Disk):
-    "Cache key and value using JSON serialization with zlib compression."
+    """Cache key and value using JSON serialization with zlib compression."""
 
     def __init__(self, directory, compress_level=1, **kwargs):
         """Initialize JSON disk instance.
@@ -379,31 +373,33 @@ class JSONDisk(Disk):
 
 
 class Timeout(Exception):
-    "Database timeout expired."
+    """Database timeout expired."""
 
 
 class UnknownFileWarning(UserWarning):
-    "Warning used by Cache.check for unknown files."
+    """Warning used by Cache.check for unknown files."""
 
 
 class EmptyDirWarning(UserWarning):
-    "Warning used by Cache.check for empty directories."
+    """Warning used by Cache.check for empty directories."""
 
 
-def args_to_key(base, args, kwargs, typed):
+def args_to_key(base, args, kwargs, typed, ignore):
     """Create cache key out of function arguments.
 
     :param tuple base: base of key
     :param tuple args: function arguments
     :param dict kwargs: function keyword arguments
     :param bool typed: include types in cache key
+    :param set ignore: positional or keyword args to ignore
     :return: cache key tuple
 
     """
-    key = base + args
+    args = tuple(arg for index, arg in enumerate(args) if index not in ignore)
+    key = base + args + (None,)
 
     if kwargs:
-        key += (ENOVAL,)
+        kwargs = {key: val for key, val in kwargs.items() if key not in ignore}
         sorted_items = sorted(kwargs.items())
 
         for item in sorted_items:
@@ -419,7 +415,7 @@ def args_to_key(base, args, kwargs, typed):
 
 
 class Cache:
-    "Disk and file backed cache."
+    """Disk and file backed cache."""
 
     def __init__(self, directory=None, timeout=60, disk=Disk, **settings):
         """Initialize cache instance.
@@ -437,6 +433,7 @@ class Cache:
 
         if directory is None:
             directory = tempfile.mkdtemp(prefix='diskcache-')
+        directory = str(directory)
         directory = op.expanduser(directory)
         directory = op.expandvars(directory)
 
@@ -1200,14 +1197,11 @@ class Cache:
 
                 try:
                     value = self._disk.fetch(mode, filename, db_value, read)
-                except IOError as error:
-                    if error.errno == errno.ENOENT:
-                        # Key was deleted before we could retrieve result.
-                        if self.statistics:
-                            sql(cache_miss)
-                        return default
-                    else:
-                        raise
+                except IOError:
+                    # Key was deleted before we could retrieve result.
+                    if self.statistics:
+                        sql(cache_miss)
+                    return default
 
                 if self.statistics:
                     sql(cache_hit)
@@ -1323,12 +1317,9 @@ class Cache:
 
         try:
             value = self._disk.fetch(mode, filename, db_value, False)
-        except IOError as error:
-            if error.errno == errno.ENOENT:
-                # Key was deleted before we could retrieve result.
-                return default
-            else:
-                raise
+        except IOError:
+            # Key was deleted before we could retrieve result.
+            return default
         finally:
             if filename is not None:
                 self._disk.remove(filename)
@@ -1387,6 +1378,7 @@ class Cache:
         :raises Timeout: if database timeout occurs
 
         """
+        # pylint: disable=unnecessary-dunder-call
         try:
             return self.__delitem__(key, retry=retry)
         except KeyError:
@@ -1594,11 +1586,9 @@ class Cache:
 
             try:
                 value = self._disk.fetch(mode, name, db_value, False)
-            except IOError as error:
-                if error.errno == errno.ENOENT:
-                    # Key was deleted before we could retrieve result.
-                    continue
-                raise
+            except IOError:
+                # Key was deleted before we could retrieve result.
+                continue
             finally:
                 if name is not None:
                     self._disk.remove(name)
@@ -1710,14 +1700,9 @@ class Cache:
 
             try:
                 value = self._disk.fetch(mode, name, db_value, False)
-            except IOError as error:
-                if error.errno == errno.ENOENT:
-                    # Key was deleted before we could retrieve result.
-                    continue
-                raise
-            finally:
-                if name is not None:
-                    self._disk.remove(name)
+            except IOError:
+                # Key was deleted before we could retrieve result.
+                continue
             break
 
         if expire_time and tag:
@@ -1793,11 +1778,9 @@ class Cache:
 
             try:
                 value = self._disk.fetch(mode, name, db_value, False)
-            except IOError as error:
-                if error.errno == errno.ENOENT:
-                    # Key was deleted before we could retrieve result.
-                    continue
-                raise
+            except IOError:
+                # Key was deleted before we could retrieve result.
+                continue
             break
 
         if expire_time and tag:
@@ -1809,7 +1792,9 @@ class Cache:
         else:
             return key, value
 
-    def memoize(self, name=None, typed=False, expire=None, tag=None):
+    def memoize(
+        self, name=None, typed=False, expire=None, tag=None, ignore=()
+    ):
         """Memoizing cache decorator.
 
         Decorator to wrap callable with memoizing function using cache.
@@ -1868,6 +1853,7 @@ class Cache:
         :param float expire: seconds until arguments expire
             (default None, no expiry)
         :param str tag: text to associate with arguments (default None)
+        :param set ignore: positional or keyword args to ignore (default ())
         :return: callable decorator
 
         """
@@ -1876,12 +1862,12 @@ class Cache:
             raise TypeError('name cannot be callable')
 
         def decorator(func):
-            "Decorator created by memoize() for callable `func`."
+            """Decorator created by memoize() for callable `func`."""
             base = (full_name(func),) if name is None else (name,)
 
             @ft.wraps(func)
             def wrapper(*args, **kwargs):
-                "Wrapper for callable to cache arguments and return values."
+                """Wrapper for callable to cache arguments and return values."""
                 key = wrapper.__cache_key__(*args, **kwargs)
                 result = self.get(key, default=ENOVAL, retry=True)
 
@@ -1893,8 +1879,8 @@ class Cache:
                 return result
 
             def __cache_key__(*args, **kwargs):
-                "Make key for cache given function arguments."
-                return args_to_key(base, args, kwargs, typed)
+                """Make key for cache given function arguments."""
+                return args_to_key(base, args, kwargs, typed, ignore)
 
             wrapper.__cache_key__ = __cache_key__
             return wrapper
@@ -1929,7 +1915,7 @@ class Cache:
 
             rows = sql('PRAGMA integrity_check').fetchall()
 
-            if len(rows) != 1 or rows[0][0] != u'ok':
+            if len(rows) != 1 or rows[0][0] != 'ok':
                 for (message,) in rows:
                     warnings.warn(message)
 
@@ -2308,13 +2294,13 @@ class Cache:
                 yield _disk_get(key, raw)
 
     def __iter__(self):
-        "Iterate keys in cache including expired items."
+        """Iterate keys in cache including expired items."""
         iterator = self._iter()
         next(iterator)
         return iterator
 
     def __reversed__(self):
-        "Reverse iterate keys in cache including expired items."
+        """Reverse iterate keys in cache including expired items."""
         iterator = self._iter(ascending=False)
         next(iterator)
         return iterator
@@ -2372,7 +2358,7 @@ class Cache:
         self.close()
 
     def __len__(self):
-        "Count of items in cache including expired items."
+        """Count of items in cache including expired items."""
         return self.reset('count')
 
     def __getstate__(self):

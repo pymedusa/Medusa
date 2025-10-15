@@ -142,7 +142,7 @@ class NameDispatchExtensionManager(DispatchExtensionManager):
         then ignored
     :type invoke_on_load: bool
     :param on_load_failure_callback: Callback function that will be called when
-        a entrypoint can not be loaded. The arguments that will be provided
+        an entrypoint can not be loaded. The arguments that will be provided
         when this is called (when an entrypoint fails to load) are
         (manager, entrypoint, exception)
     :type on_load_failure_callback: function
@@ -157,7 +157,7 @@ class NameDispatchExtensionManager(DispatchExtensionManager):
                  propagate_map_exceptions=False,
                  on_load_failure_callback=None,
                  verify_requirements=False):
-        super(NameDispatchExtensionManager, self).__init__(
+        super().__init__(
             namespace=namespace,
             check_func=check_func,
             invoke_on_load=invoke_on_load,
@@ -169,8 +169,8 @@ class NameDispatchExtensionManager(DispatchExtensionManager):
         )
 
     def _init_plugins(self, extensions):
-        super(NameDispatchExtensionManager, self)._init_plugins(extensions)
-        self.by_name = dict((e.name, e) for e in self.extensions)
+        super()._init_plugins(extensions)
+        self.by_name = {e.name: e for e in self.extensions}
 
     def map(self, names, func, *args, **kwds):
         """Iterate over the extensions invoking func() for any where

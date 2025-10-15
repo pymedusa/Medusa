@@ -1,5 +1,7 @@
-adba @ https://codeload.github.com/pymedusa/adba/tar.gz/37b0c74e76b40b3dbde29e71da75a1808eb121de
-babelfish==0.6.0
+adba @ https://github.com/pymedusa/adba/archive/37b0c74e76b40b3dbde29e71da75a1808eb121de.zip
+appdirs==1.4.4
+attrs==25.4.0
+babelfish==0.6.1
 beautifulsoup4==4.12.3
 bencode.py==4.0.0
 CacheControl==0.13.1
@@ -8,36 +10,37 @@ cloudscraper==1.2.70
 configobj==5.0.8
 contextlib2==21.6.0
 deluge-client==1.9.0
+diskcache==5.6.3
 dogpile.cache==1.2.1
-enzyme @ https://codeload.github.com/pymedusa/enzyme/tar.gz/665cf6948aab1c249dcc99bd9624a81d17b3302a
 feedparser==6.0.11
 gntp==1.0.3
 guessit==3.4.2
 html5lib==1.1
-imdbpie==5.6.5
 jsonrpclib-pelix==0.4.3.2
-knowit==0.4.0
 Mako==1.2.4
 markdown2==2.4.13
 packaging==24.2
 profilehooks==1.12.0
 PyGithub==1.45
 PyJWT==2.7.0
+pymediainfo==7.0.1
 python-dateutil==2.8.2
 python-twitter==3.5
-pytimeparse @ https://codeload.github.com/pymedusa/pytimeparse/tar.gz/8f2832597235c6ec98c44de4dab3274927f67e29
+pytimeparse @ https://github.com/pymedusa/pytimeparse/archive/8f2832597235c6ec98c44de4dab3274927f67e29.zip
 pytrakt==3.4.23
+PyYAML==6.0.3
 rarfile==3.1
 rebulk==3.2.0
 requests==2.31.0
 requests-oauthlib==1.3.1
 requests-toolbelt==1.0.0
 six==1.16.0
-subliminal==2.1.0
+subliminal==2.2.1
 tmdbsimple==2.9.1
 tornado==6.1
 tornroutes==0.5.1
+trans==2.1.0
 ttl-cache==1.6
-tvdbapiv2 @ https://codeload.github.com/pymedusa/tvdbv2/tar.gz/d6d0e9d98071c2d646beb997b336edbb0e98dfb7
+tvdbapiv2 @ https://github.com/pymedusa/tvdbv2/archive/d6d0e9d98071c2d646beb997b336edbb0e98dfb7.zip
 urllib3==1.26.18
 validators==0.20.0

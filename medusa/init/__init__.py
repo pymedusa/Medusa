@@ -218,10 +218,9 @@ def _configure_subliminal():
         provider_manager.unregister(name)
 
     # Register
-    for name in ('napiprojekt = subliminal.providers.napiprojekt:NapiProjektProvider',
-                 'subtitulamos = {basename}.subtitle_providers.subtitulamos:SubtitulamosProvider'.format(basename=basename),
+    for name in ('subtitulamos = {basename}.subtitle_providers.subtitulamos:SubtitulamosProvider'.format(basename=basename),
                  'wizdom = {basename}.subtitle_providers.wizdom:WizdomProvider'.format(basename=basename),
-                 'addic7ed = {basename}.subtitle_providers.addic7ed:Addic7edProvider'.format(basename=basename)):
+                 'addic7ed = subliminal.providers.addic7ed:Addic7edProvider'):
         provider_manager.register(name)
 
     refiner_manager.register('release = {basename}.refiners.release:refine'.format(basename=basename))
