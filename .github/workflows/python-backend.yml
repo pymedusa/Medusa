@@ -23,6 +23,6 @@ jobs:
         uv add -r requirements.txt
         uv add -r test_requirements.txt
     - name: Test with tox
-      run: uv run tox
+      run: uv run python setup.py test -a 'tests -vv --cov=medusa --cov-report=xml'
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5
