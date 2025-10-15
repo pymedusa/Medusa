@@ -1,5 +1,4 @@
 configparser==7.2.0
-dogpile.cache==1.2.1
 pyparsing==3.0.9
 flake8<5.0.0
 pycodestyle==2.8.0
@@ -22,4 +21,3 @@ urllib3<2.0.0
 vcrpy
 mock
 requests-mock
-tvdbapiv2 @ https://github.com/pymedusa/tvdbv2/archive/d6d0e9d98071c2d646beb997b336edbb0e98dfb7.zip

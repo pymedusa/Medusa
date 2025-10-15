@@ -20,6 +20,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install uv
+        uv add -r requirements.txt
         uv add -r test_requirements.txt
     - name: Test with tox
       run: uv run tox
