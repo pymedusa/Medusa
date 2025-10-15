@@ -21,3 +21,4 @@ urllib3<2.0.0
 vcrpy
 mock
 requests-mock
+tvdbapiv2 @ https://github.com/pymedusa/tvdbv2/archive/d6d0e9d98071c2d646beb997b336edbb0e98dfb7.zip
