@@ -19,21 +19,20 @@ from six import text_type
 
 def test_sorted_service_list(monkeypatch):
     # Given
-    monkeypatch.setattr(app, 'SUBTITLES_SERVICES_LIST', ['legendastv', 'trash', 'thesubdb', 'shooter'])
-    monkeypatch.setattr(app, 'SUBTITLES_SERVICES_ENABLED', [1, 1, 1, 0])
+    monkeypatch.setattr(app, 'SUBTITLES_SERVICES_LIST', ['trash', 'napiprojekt', 'shooter', 'addic7ed'])
+    monkeypatch.setattr(app, 'SUBTITLES_SERVICES_ENABLED', [1, 1, 0, 1])
 
     # When
     actual = sut.sorted_service_list()
 
     # Then
     expected = [
-        {'name': 'legendastv', 'enabled': True},
-        {'name': 'thesubdb', 'enabled': True},
-        {'name': 'shooter', 'enabled': False},
-        {'name': 'addic7ed', 'enabled': False},
-        {'name': 'argenteam', 'enabled': False},
-        {'name': 'napiprojekt', 'enabled': False},
+        {'name': 'napiprojekt', 'enabled': True},
+        {'name': 'addic7ed', 'enabled': True},
+        {'name': 'gestdown', 'enabled': False},
         {'name': 'opensubtitles', 'enabled': False},
+        {'name': 'opensubtitlescom', 'enabled': False},
+        {'name': 'opensubtitlescomvip', 'enabled': False},
         {'name': 'opensubtitlesvip', 'enabled': False},
         {'name': 'podnapisi', 'enabled': False},
         {'name': 'subtitulamos', 'enabled': False},
@@ -45,14 +44,14 @@ def test_sorted_service_list(monkeypatch):
 
 def test_enabled_service_list(monkeypatch):
     # Given
-    monkeypatch.setattr(app, 'SUBTITLES_SERVICES_LIST', ['legendastv', 'a', 'tvsubtitles', 'shooter'])
-    monkeypatch.setattr(app, 'SUBTITLES_SERVICES_ENABLED', [1, 1, 1, 0])
+    monkeypatch.setattr(app, 'SUBTITLES_SERVICES_LIST', ['a', 'tvsubtitles', 'shooter', 'addic7ed'])
+    monkeypatch.setattr(app, 'SUBTITLES_SERVICES_ENABLED', [1, 1, 0, 1])
 
     # When
     actual = sut.enabled_service_list()
 
     # Then
-    expected = ['legendastv', 'tvsubtitles']
+    expected = ['tvsubtitles', 'addic7ed']
     assert expected == actual
 
 

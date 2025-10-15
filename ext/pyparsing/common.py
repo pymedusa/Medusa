@@ -1,6 +1,6 @@
 # common.py
 from .core import *
-from .helpers import DelimitedList, any_open_tag, any_close_tag
+from .helpers import delimited_list, any_open_tag, any_close_tag
 from datetime import datetime
 
 
@@ -22,19 +22,17 @@ class pyparsing_common:
 
     Parse actions:
 
-    - :class:`convert_to_integer`
-    - :class:`convert_to_float`
-    - :class:`convert_to_date`
-    - :class:`convert_to_datetime`
-    - :class:`strip_html_tags`
-    - :class:`upcase_tokens`
-    - :class:`downcase_tokens`
+    - :class:`convertToInteger`
+    - :class:`convertToFloat`
+    - :class:`convertToDate`
+    - :class:`convertToDatetime`
+    - :class:`stripHTMLTags`
+    - :class:`upcaseTokens`
+    - :class:`downcaseTokens`
 
-    Examples:
+    Example::
 
-    .. testcode::
-
-        pyparsing_common.number.run_tests('''
+        pyparsing_common.number.runTests('''
             # any int or real number, returned as the appropriate type
             100
             -100
@@ -44,9 +42,44 @@ class pyparsing_common:
             1e-12
             ''')
 
-    .. testoutput::
-        :options: +NORMALIZE_WHITESPACE
+        pyparsing_common.fnumber.runTests('''
+            # any int or real number, returned as float
+            100
+            -100
+            +100
+            3.14159
+            6.02e23
+            1e-12
+            ''')
 
+        pyparsing_common.hex_integer.runTests('''
+            # hex numbers
+            100
+            FF
+            ''')
+
+        pyparsing_common.fraction.runTests('''
+            # fractions
+            1/2
+            -3/4
+            ''')
+
+        pyparsing_common.mixed_integer.runTests('''
+            # mixed fractions
+            1
+            1/2
+            -3/4
+            1-3/4
+            ''')
+
+        import uuid
+        pyparsing_common.uuid.setParseAction(tokenMap(uuid.UUID))
+        pyparsing_common.uuid.runTests('''
+            # uuid
+            12345678-1234-5678-1234-567812345678
+            ''')
+
+    prints::
 
         # any int or real number, returned as the appropriate type
         100
@@ -67,22 +100,6 @@ class pyparsing_common:
         1e-12
         [1e-12]
 
-    .. testcode::
-
-        pyparsing_common.fnumber.run_tests('''
-            # any int or real number, returned as float
-            100
-            -100
-            +100
-            3.14159
-            6.02e23
-            1e-12
-            ''')
-
-    .. testoutput::
-        :options: +NORMALIZE_WHITESPACE
-
-
         # any int or real number, returned as float
         100
         [100.0]
@@ -102,18 +119,6 @@ class pyparsing_common:
         1e-12
         [1e-12]
 
-    .. testcode::
-
-        pyparsing_common.hex_integer.run_tests('''
-            # hex numbers
-            100
-            FF
-            ''')
-
-    .. testoutput::
-        :options: +NORMALIZE_WHITESPACE
-
-
         # hex numbers
         100
         [256]
@@ -121,38 +126,12 @@ class pyparsing_common:
         FF
         [255]
 
-    .. testcode::
-
-        pyparsing_common.fraction.run_tests('''
-            # fractions
-            1/2
-            -3/4
-            ''')
-
-    .. testoutput::
-        :options: +NORMALIZE_WHITESPACE
-
-
         # fractions
         1/2
         [0.5]
 
         -3/4
         [-0.75]
-
-    .. testcode::
-
-        pyparsing_common.mixed_integer.run_tests('''
-            # mixed fractions
-            1
-            1/2
-            -3/4
-            1-3/4
-            ''')
-
-    .. testoutput::
-        :options: +NORMALIZE_WHITESPACE
-
 
         # mixed fractions
         1
@@ -166,18 +145,6 @@ class pyparsing_common:
 
         1-3/4
         [1.75]
-    .. testcode::
-
-        import uuid
-        pyparsing_common.uuid.set_parse_action(token_map(uuid.UUID))
-        pyparsing_common.uuid.run_tests('''
-            # uuid
-            12345678-1234-5678-1234-567812345678
-            ''')
-
-    .. testoutput::
-        :options: +NORMALIZE_WHITESPACE
-
 
         # uuid
         12345678-1234-5678-1234-567812345678
@@ -239,22 +206,15 @@ class pyparsing_common:
     scientific notation and returns a float"""
 
     # streamlining this expression makes the docs nicer-looking
-    number = (sci_real | real | signed_integer).set_name("number").streamline()
+    number = (sci_real | real | signed_integer).setName("number").streamline()
     """any numeric expression, returns the corresponding Python type"""
 
     fnumber = (
-        Regex(r"[+-]?\d+\.?\d*(?:[eE][+-]?\d+)?")
+        Regex(r"[+-]?\d+\.?\d*([eE][+-]?\d+)?")
         .set_name("fnumber")
         .set_parse_action(convert_to_float)
     )
     """any int or real number, returned as float"""
-
-    ieee_float = (
-        Regex(r"(?i:[+-]?(?:(?:\d+\.?\d*(?:e[+-]?\d+)?)|nan|inf(?:inity)?))")
-        .set_name("ieee_float")
-        .set_parse_action(convert_to_float)
-    )
-    """any floating-point literal (int, real number, infinity, or NaN), returned as float"""
 
     identifier = Word(identchars, identbodychars).set_name("identifier")
     """typical code identifier (leading alpha or '_', followed by 0 or more alphas, nums, or '_')"""
@@ -297,17 +257,13 @@ class pyparsing_common:
         Params -
         - fmt - format to be passed to datetime.strptime (default= ``"%Y-%m-%d"``)
 
-        Example:
-
-        .. testcode::
+        Example::
 
             date_expr = pyparsing_common.iso8601_date.copy()
-            date_expr.set_parse_action(pyparsing_common.convert_to_date())
-            print(date_expr.parse_string("1999-12-31"))
+            date_expr.setParseAction(pyparsing_common.convertToDate())
+            print(date_expr.parseString("1999-12-31"))
 
-        prints:
-
-        .. testoutput::
+        prints::
 
             [datetime.date(1999, 12, 31)]
         """
@@ -328,17 +284,13 @@ class pyparsing_common:
         Params -
         - fmt - format to be passed to datetime.strptime (default= ``"%Y-%m-%dT%H:%M:%S.%f"``)
 
-        Example:
-
-        .. testcode::
+        Example::
 
             dt_expr = pyparsing_common.iso8601_datetime.copy()
-            dt_expr.set_parse_action(pyparsing_common.convert_to_datetime())
-            print(dt_expr.parse_string("1999-12-31T23:59:59.999"))
+            dt_expr.setParseAction(pyparsing_common.convertToDatetime())
+            print(dt_expr.parseString("1999-12-31T23:59:59.999"))
 
-        prints:
-
-        .. testoutput::
+        prints::
 
             [datetime.datetime(1999, 12, 31, 23, 59, 59, 999000)]
         """
@@ -370,20 +322,15 @@ class pyparsing_common:
     def strip_html_tags(s: str, l: int, tokens: ParseResults):
         """Parse action to remove HTML tags from web page HTML source
 
-        Example:
-
-        .. testcode::
+        Example::
 
             # strip HTML links from normal text
             text = '<td>More info at the <a href="https://github.com/pyparsing/pyparsing/wiki">pyparsing</a> wiki page</td>'
-            td, td_end = make_html_tags("TD")
-            table_text = td + SkipTo(td_end).set_parse_action(
-                pyparsing_common.strip_html_tags)("body") + td_end
-            print(table_text.parse_string(text).body)
+            td, td_end = makeHTMLTags("TD")
+            table_text = td + SkipTo(td_end).setParseAction(pyparsing_common.stripHTMLTags)("body") + td_end
+            print(table_text.parseString(text).body)
 
-        Prints:
-
-        .. testoutput::
+        Prints::
 
             More info at the pyparsing wiki page
         """
@@ -401,7 +348,7 @@ class pyparsing_common:
         .streamline()
         .set_name("commaItem")
     )
-    comma_separated_list = DelimitedList(
+    comma_separated_list = delimited_list(
         Opt(quoted_string.copy() | _commasepitem, default="")
     ).set_name("comma separated list")
     """Predefined expression of 1 or more printable words or quoted strings, separated by commas."""
@@ -416,7 +363,7 @@ class pyparsing_common:
     url = Regex(
         # https://mathiasbynens.be/demo/url-regex
         # https://gist.github.com/dperini/729294
-        r"(?P<url>" +
+        r"^" +
         # protocol identifier (optional)
         # short syntax // still required
         r"(?:(?:(?P<scheme>https?|ftp):)?\/\/)" +
@@ -458,26 +405,18 @@ class pyparsing_common:
         r"(\?(?P<query>[^#]*))?" +
         # fragment (optional)
         r"(#(?P<fragment>\S*))?" +
-        r")"
+        r"$"
     ).set_name("url")
-    """
-    URL (http/https/ftp scheme)
-    
-    .. versionchanged:: 3.1.0
-       ``url`` named group added
-    """
     # fmt: on
 
     # pre-PEP8 compatibility names
-    # fmt: off
-    convertToInteger = staticmethod(replaced_by_pep8("convertToInteger", convert_to_integer))
-    convertToFloat = staticmethod(replaced_by_pep8("convertToFloat", convert_to_float))
-    convertToDate = staticmethod(replaced_by_pep8("convertToDate", convert_to_date))
-    convertToDatetime = staticmethod(replaced_by_pep8("convertToDatetime", convert_to_datetime))
-    stripHTMLTags = staticmethod(replaced_by_pep8("stripHTMLTags", strip_html_tags))
-    upcaseTokens = staticmethod(replaced_by_pep8("upcaseTokens", upcase_tokens))
-    downcaseTokens = staticmethod(replaced_by_pep8("downcaseTokens", downcase_tokens))
-    # fmt: on
+    convertToInteger = convert_to_integer
+    convertToFloat = convert_to_float
+    convertToDate = convert_to_date
+    convertToDatetime = convert_to_datetime
+    stripHTMLTags = strip_html_tags
+    upcaseTokens = upcase_tokens
+    downcaseTokens = downcase_tokens
 
 
 _builtin_exprs = [
