@@ -10,8 +10,8 @@
 #  License for the specific language governing permissions and limitations
 #  under the License.
 
-from stevedore.tests import utils
 from stevedore import dispatch
+from stevedore.tests import utils
 
 
 def check_dispatch(ep, *args, **kwds):
@@ -34,7 +34,7 @@ class TestDispatch(utils.TestCase):
                                                invoke_kwds={'b': 'B'},
                                                )
         self.assertEqual(len(em.extensions), 2)
-        self.assertEqual(set(em.names()), set(['t1', 't2']))
+        self.assertEqual(set(em.names()), {'t1', 't2'})
 
         results = em.map(check_dispatch,
                          invoke,
@@ -67,7 +67,7 @@ class TestDispatch(utils.TestCase):
                                                    invoke_kwds={'b': 'B'},
                                                    )
         self.assertEqual(len(em.extensions), 2)
-        self.assertEqual(set(em.names()), set(['t1', 't2']))
+        self.assertEqual(set(em.names()), {'t1', 't2'})
 
         results = em.map(['t2'], invoke, 'first', named='named value',)
         expected = [('t2', ('first',), {'named': 'named value'})]

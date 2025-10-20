@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 oauthlib.oauth2.rfc6749.endpoint.metadata
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -7,20 +6,16 @@ An implementation of the `OAuth 2.0 Authorization Server Metadata`.
 
 .. _`OAuth 2.0 Authorization Server Metadata`: https://tools.ietf.org/html/rfc8414
 """
-from __future__ import absolute_import, unicode_literals
-
 import copy
 import json
 import logging
 
-from ....common import unicode_type
-from .base import BaseEndpoint, catch_errors_and_unavailability
+from .. import grant_types, utils
 from .authorization import AuthorizationEndpoint
+from .base import BaseEndpoint, catch_errors_and_unavailability
 from .introspect import IntrospectEndpoint
-from .token import TokenEndpoint
 from .revocation import RevocationEndpoint
-from .. import grant_types
-
+from .token import TokenEndpoint
 
 log = logging.getLogger(__name__)
 
@@ -43,9 +38,9 @@ class MetadataEndpoint(BaseEndpoint):
    """
 
     def __init__(self, endpoints, claims={}, raise_errors=True):
-        assert isinstance(claims, dict)
+        assert isinstance(claims, dict)  # noqa: S101
         for endpoint in endpoints:
-            assert isinstance(endpoint, BaseEndpoint)
+            assert isinstance(endpoint, BaseEndpoint)  # noqa: S101
 
         BaseEndpoint.__init__(self)
         self.raise_errors = raise_errors
@@ -59,7 +54,8 @@ class MetadataEndpoint(BaseEndpoint):
         """Create metadata response
         """
         headers = {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
         }
         return headers, json.dumps(self.claims), 200
 
@@ -72,7 +68,7 @@ class MetadataEndpoint(BaseEndpoint):
                 raise ValueError("key {} is a mandatory metadata.".format(key))
 
         elif is_issuer:
-            if not array[key].startswith("https"):
+            if not utils.is_secure_transport(array[key]):
                 raise ValueError("key {}: {} must be an HTTPS URL".format(key, array[key]))
             if "?" in array[key] or "&" in array[key] or "#" in array[key]:
                 raise ValueError("key {}: {} must not contain query or fragment components".format(key, array[key]))
@@ -85,7 +81,7 @@ class MetadataEndpoint(BaseEndpoint):
             if not isinstance(array[key], list):
                 raise ValueError("key {}: {} must be an Array".format(key, array[key]))
             for elem in array[key]:
-                if not isinstance(elem, unicode_type):
+                if not isinstance(elem, str):
                     raise ValueError("array {}: {} must contains only string (not {})".format(key, array[key], elem))
 
     def validate_metadata_token(self, claims, endpoint):
@@ -166,10 +162,10 @@ class MetadataEndpoint(BaseEndpoint):
        response_types_supported
           REQUIRED.
 
-       * Other OPTIONAL fields:
-       jwks_uri
-       registration_endpoint
-       response_modes_supported
+       Other OPTIONAL fields:
+          jwks_uri,
+          registration_endpoint,
+          response_modes_supported
 
        grant_types_supported
           OPTIONAL.  JSON array containing a list of the OAuth 2.0 grant

@@ -6,8 +6,6 @@ oauthlib.oauth1.rfc5849.endpoints.resource
 This module is an implementation of the resource protection provider logic of
 OAuth 1.0 RFC 5849.
 """
-from __future__ import absolute_import, unicode_literals
-
 import logging
 
 from .. import errors
@@ -115,7 +113,7 @@ class ResourceEndpoint(BaseEndpoint):
             request.resource_owner_key = self.request_validator.dummy_access_token
 
         # Note that `realm`_ is only used in authorization headers and how
-        # it should be interepreted is not included in the OAuth spec.
+        # it should be interpreted is not included in the OAuth spec.
         # However they could be seen as a scope or realm to which the
         # client has access and as such every client should be checked
         # to ensure it is authorized access to that scope or realm.
@@ -127,7 +125,7 @@ class ResourceEndpoint(BaseEndpoint):
         # workflow where a client requests access to a specific realm.
         # This first step (obtaining request token) need not require a realm
         # and can then be identified by checking the require_resource_owner
-        # flag and abscence of realm.
+        # flag and absence of realm.
         #
         # Clients obtaining an access token will not supply a realm and it will
         # not be checked. Instead the previously requested realm should be

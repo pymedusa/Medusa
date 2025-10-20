@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
     Implements signals based on blinker if available, otherwise
     falls silently back to a noop. Shamelessly stolen from flask.signals:
@@ -8,12 +7,12 @@ signals_available = False
 try:
     from blinker import Namespace
     signals_available = True
-except ImportError:  # noqa
-    class Namespace(object):
+except ImportError:
+    class Namespace:
         def signal(self, name, doc=None):
             return _FakeSignal(name, doc)
 
-    class _FakeSignal(object):
+    class _FakeSignal:
         """If blinker is unavailable, create a fake class with the same
         interface that allows sending of signals but will fail with an
         error on anything else.  Instead of doing anything on send, it
@@ -27,7 +26,8 @@ except ImportError:  # noqa
             raise RuntimeError('signalling support is unavailable '
                                'because the blinker library is '
                                'not installed.')
-        send = lambda *a, **kw: None
+        def send(*a, **kw):
+            return None
         connect = disconnect = has_receivers_for = receivers_for = \
             temporarily_connected_to = connected_to = _fail
         del _fail

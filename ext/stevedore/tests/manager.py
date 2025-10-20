@@ -53,11 +53,11 @@ class TestExtensionManager(extension.ExtensionManager):
                  invoke_on_load=False,
                  invoke_args=(),
                  invoke_kwds={}):
-        super(TestExtensionManager, self).__init__(namespace,
-                                                   invoke_on_load,
-                                                   invoke_args,
-                                                   invoke_kwds,
-                                                   )
+        super().__init__(namespace,
+                         invoke_on_load,
+                         invoke_args,
+                         invoke_kwds,
+                         )
         self.extensions = extensions
         warnings.warn(
             'TestExtesionManager has been replaced by make_test_instance()',

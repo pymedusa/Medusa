@@ -32,7 +32,7 @@ class HookManager(NamedExtensionManager):
         is True.
     :type invoke_kwds: dict
     :param on_load_failure_callback: Callback function that will be called when
-        a entrypoint can not be loaded. The arguments that will be provided
+        an entrypoint can not be loaded. The arguments that will be provided
         when this is called (when an entrypoint fails to load) are
         (manager, entrypoint, exception)
     :type on_load_failure_callback: function
@@ -40,8 +40,6 @@ class HookManager(NamedExtensionManager):
         dependencies of the plugin(s) being loaded. Defaults to False.
     :type verify_requirements: bool
     :type on_missing_entrypoints_callback: function
-    :param verify_requirements: Use setuptools to enforce the
-        dependencies of the plugin(s) being loaded. Defaults to False.
     :param warn_on_missing_entrypoint: Flag to control whether failing
         to load a plugin is reported via a log mess. Only applies if
         on_missing_entrypoints_callback is None.
@@ -58,7 +56,7 @@ class HookManager(NamedExtensionManager):
                  # base class because for hooks it is less likely to
                  # be an error to have no entry points present.
                  warn_on_missing_entrypoint=False):
-        super(HookManager, self).__init__(
+        super().__init__(
             namespace,
             [name],
             invoke_on_load=invoke_on_load,
@@ -73,7 +71,7 @@ class HookManager(NamedExtensionManager):
     def _init_attributes(self, namespace, names, name_order=False,
                          propagate_map_exceptions=False,
                          on_load_failure_callback=None):
-        super(HookManager, self)._init_attributes(
+        super()._init_attributes(
             namespace, names,
             propagate_map_exceptions=propagate_map_exceptions,
             on_load_failure_callback=on_load_failure_callback)

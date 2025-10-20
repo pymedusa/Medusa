@@ -29,6 +29,7 @@ from medusa.common import (
     ARCHIVED,
     DOWNLOADED,
     FAILED,
+    INVALID,
     NAMING_DUPLICATE,
     NAMING_EXTEND,
     NAMING_LIMITED_EXTEND,
@@ -691,7 +692,7 @@ class Episode(TV):
             self.subtitles_searchcount = sql_results[0]['subtitles_searchcount']
             self.subtitles_lastsearch = sql_results[0]['subtitles_lastsearch']
             self.airdate = date.fromordinal(int(sql_results[0]['airdate']))
-            self.status = int(sql_results[0]['status'] or UNSET)
+            self.status = int(sql_results[0]['status'] or INVALID)
             self.quality = int(sql_results[0]['quality'] or Quality.NA)
             self.file_size = int(sql_results[0]['file_size'] or 0)
 
@@ -979,14 +980,14 @@ class Episode(TV):
         # shouldn't get here probably
         else:
             log.warning(
-                '{id}: {series} {ep} status changed from {old_status} to UNSET', {
+                '{id}: {series} {ep} status changed from {old_status} to INVALID', {
                     'id': self.series.series_id,
                     'series': self.series.name,
                     'ep': episode_num(season, episode),
                     'old_status': statusStrings[self.status],
                 }
             )
-            self.status = UNSET
+            self.status = INVALID
 
         self.save_to_db()
 
@@ -1004,7 +1005,7 @@ class Episode(TV):
 
         if self.location != '':
 
-            if self.status == UNSET and helpers.is_media_file(self.location):
+            if self.status in (UNSET, INVALID) and helpers.is_media_file(self.location):
                 self.update_status_quality(self.location)
 
             nfo_file = replace_extension(self.location, 'nfo')

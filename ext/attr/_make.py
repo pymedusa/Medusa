@@ -1,225 +1,268 @@
-from __future__ import absolute_import, division, print_function
+# SPDX-License-Identifier: MIT
 
+from __future__ import annotations
+
+import abc
+import contextlib
 import copy
-import hashlib
+import enum
+import inspect
+import itertools
 import linecache
 import sys
-import threading
-import warnings
+import types
+import unicodedata
+import weakref
 
-from operator import itemgetter
+from collections.abc import Callable, Mapping
+from functools import cached_property
+from typing import Any, NamedTuple, TypeVar
 
-from . import _config
+# We need to import _compat itself in addition to the _compat members to avoid
+# having the thread-local in the globals here.
+from . import _compat, _config, setters
 from ._compat import (
-    PY2,
-    isclass,
-    iteritems,
-    metadata_proxy,
-    ordered_dict,
-    set_closure_cell,
+    PY_3_10_PLUS,
+    PY_3_11_PLUS,
+    PY_3_13_PLUS,
+    _AnnotationExtractor,
+    _get_annotations,
+    get_generic_base,
 )
 from .exceptions import (
     DefaultAlreadySetError,
     FrozenInstanceError,
     NotAnAttrsClassError,
-    PythonTooOldError,
     UnannotatedAttributeError,
 )
 
 
 # This is used at least twice, so cache it here.
-_obj_setattr = object.__setattr__
-_init_converter_pat = "__attr_converter_{}"
-_init_factory_pat = "__attr_factory_{}"
-_tuple_property_pat = (
-    "    {attr_name} = _attrs_property(_attrs_itemgetter({index}))"
+_OBJ_SETATTR = object.__setattr__
+_INIT_FACTORY_PAT = "__attr_factory_%s"
+_CLASSVAR_PREFIXES = (
+    "typing.ClassVar",
+    "t.ClassVar",
+    "ClassVar",
+    "typing_extensions.ClassVar",
 )
-_classvar_prefixes = ("typing.ClassVar", "t.ClassVar", "ClassVar")
 # we don't use a double-underscore prefix because that triggers
 # name mangling when trying to create a slot for the field
 # (when slots=True)
-_hash_cache_field = "_attrs_cached_hash"
+_HASH_CACHE_FIELD = "_attrs_cached_hash"
 
-_empty_metadata_singleton = metadata_proxy({})
+_EMPTY_METADATA_SINGLETON = types.MappingProxyType({})
+
+# Unique object for unequivocal getattr() defaults.
+_SENTINEL = object()
+
+_DEFAULT_ON_SETATTR = setters.pipe(setters.convert, setters.validate)
 
 
-class _Nothing(object):
+class _Nothing(enum.Enum):
     """
-    Sentinel class to indicate the lack of a value when ``None`` is ambiguous.
+    Sentinel to indicate the lack of a value when `None` is ambiguous.
 
-    ``_Nothing`` is a singleton. There is only ever one of it.
+    If extending attrs, you can use ``typing.Literal[NOTHING]`` to show
+    that a value may be ``NOTHING``.
+
+    .. versionchanged:: 21.1.0 ``bool(NOTHING)`` is now False.
+    .. versionchanged:: 22.2.0 ``NOTHING`` is now an ``enum.Enum`` variant.
     """
 
-    _singleton = None
-
-    def __new__(cls):
-        if _Nothing._singleton is None:
-            _Nothing._singleton = super(_Nothing, cls).__new__(cls)
-        return _Nothing._singleton
+    NOTHING = enum.auto()
 
     def __repr__(self):
         return "NOTHING"
 
+    def __bool__(self):
+        return False
 
-NOTHING = _Nothing()
+
+NOTHING = _Nothing.NOTHING
 """
-Sentinel to indicate the lack of a value when ``None`` is ambiguous.
+Sentinel to indicate the lack of a value when `None` is ambiguous.
+
+When using in 3rd party code, use `attrs.NothingType` for type annotations.
 """
+
+
+class _CacheHashWrapper(int):
+    """
+    An integer subclass that pickles / copies as None
+
+    This is used for non-slots classes with ``cache_hash=True``, to avoid
+    serializing a potentially (even likely) invalid hash value. Since `None`
+    is the default value for uncalculated hashes, whenever this is copied,
+    the copy's value for the hash should automatically reset.
+
+    See GH #613 for more details.
+    """
+
+    def __reduce__(self, _none_constructor=type(None), _args=()):  # noqa: B008
+        return _none_constructor, _args
 
 
 def attrib(
     default=NOTHING,
     validator=None,
     repr=True,
-    cmp=True,
+    cmp=None,
     hash=None,
     init=True,
-    convert=None,
     metadata=None,
     type=None,
     converter=None,
     factory=None,
-    kw_only=False,
+    kw_only=None,
+    eq=None,
+    order=None,
+    on_setattr=None,
+    alias=None,
 ):
     """
-    Create a new attribute on a class.
+    Create a new field / attribute on a class.
+
+    Identical to `attrs.field`, except it's not keyword-only.
+
+    Consider using `attrs.field` in new code (``attr.ib`` will *never* go away,
+    though).
 
     ..  warning::
 
-        Does *not* do anything unless the class is also decorated with
-        :func:`attr.s`!
+        Does **nothing** unless the class is also decorated with
+        `attr.s` (or similar)!
 
-    :param default: A value that is used if an ``attrs``-generated ``__init__``
-        is used and no value is passed while instantiating or the attribute is
-        excluded using ``init=False``.
-
-        If the value is an instance of :class:`Factory`, its callable will be
-        used to construct a new value (useful for mutable data types like lists
-        or dicts).
-
-        If a default is not set (or set manually to ``attr.NOTHING``), a value
-        *must* be supplied when instantiating; otherwise a :exc:`TypeError`
-        will be raised.
-
-        The default can also be set using decorator notation as shown below.
-
-    :type default: Any value.
-
-    :param callable factory: Syntactic sugar for
-        ``default=attr.Factory(callable)``.
-
-    :param validator: :func:`callable` that is called by ``attrs``-generated
-        ``__init__`` methods after the instance has been initialized.  They
-        receive the initialized instance, the :class:`Attribute`, and the
-        passed value.
-
-        The return value is *not* inspected so the validator has to throw an
-        exception itself.
-
-        If a ``list`` is passed, its items are treated as validators and must
-        all pass.
-
-        Validators can be globally disabled and re-enabled using
-        :func:`get_run_validators`.
-
-        The validator can also be set using decorator notation as shown below.
-
-    :type validator: ``callable`` or a ``list`` of ``callable``\\ s.
-
-    :param bool repr: Include this attribute in the generated ``__repr__``
-        method.
-    :param bool cmp: Include this attribute in the generated comparison methods
-        (``__eq__`` et al).
-    :param hash: Include this attribute in the generated ``__hash__``
-        method.  If ``None`` (default), mirror *cmp*'s value.  This is the
-        correct behavior according the Python spec.  Setting this value to
-        anything else than ``None`` is *discouraged*.
-    :type hash: ``bool`` or ``None``
-    :param bool init: Include this attribute in the generated ``__init__``
-        method.  It is possible to set this to ``False`` and set a default
-        value.  In that case this attributed is unconditionally initialized
-        with the specified default value or factory.
-    :param callable converter: :func:`callable` that is called by
-        ``attrs``-generated ``__init__`` methods to converter attribute's value
-        to the desired format.  It is given the passed-in value, and the
-        returned value will be used as the new value of the attribute.  The
-        value is converted before being passed to the validator, if any.
-    :param metadata: An arbitrary mapping, to be used by third-party
-        components.  See :ref:`extending_metadata`.
-    :param type: The type of the attribute.  In Python 3.6 or greater, the
-        preferred method to specify the type is using a variable annotation
-        (see `PEP 526 <https://www.python.org/dev/peps/pep-0526/>`_).
-        This argument is provided for backward compatibility.
-        Regardless of the approach used, the type will be stored on
-        ``Attribute.type``.
-
-        Please note that ``attrs`` doesn't do anything with this metadata by
-        itself. You can use it as part of your own code or for
-        :doc:`static type checking <types>`.
-    :param kw_only: Make this attribute keyword-only (Python 3+)
-        in the generated ``__init__`` (if ``init`` is ``False``, this
-        parameter is ignored).
 
     .. versionadded:: 15.2.0 *convert*
     .. versionadded:: 16.3.0 *metadata*
     .. versionchanged:: 17.1.0 *validator* can be a ``list`` now.
     .. versionchanged:: 17.1.0
-       *hash* is ``None`` and therefore mirrors *cmp* by default.
+       *hash* is `None` and therefore mirrors *eq* by default.
     .. versionadded:: 17.3.0 *type*
     .. deprecated:: 17.4.0 *convert*
-    .. versionadded:: 17.4.0 *converter* as a replacement for the deprecated
-       *convert* to achieve consistency with other noun-based arguments.
+    .. versionadded:: 17.4.0
+       *converter* as a replacement for the deprecated *convert* to achieve
+       consistency with other noun-based arguments.
     .. versionadded:: 18.1.0
        ``factory=f`` is syntactic sugar for ``default=attr.Factory(f)``.
     .. versionadded:: 18.2.0 *kw_only*
+    .. versionchanged:: 19.2.0 *convert* keyword argument removed.
+    .. versionchanged:: 19.2.0 *repr* also accepts a custom callable.
+    .. deprecated:: 19.2.0 *cmp* Removal on or after 2021-06-01.
+    .. versionadded:: 19.2.0 *eq* and *order*
+    .. versionadded:: 20.1.0 *on_setattr*
+    .. versionchanged:: 20.3.0 *kw_only* backported to Python 2
+    .. versionchanged:: 21.1.0
+       *eq*, *order*, and *cmp* also accept a custom callable
+    .. versionchanged:: 21.1.0 *cmp* undeprecated
+    .. versionadded:: 22.2.0 *alias*
+    .. versionchanged:: 25.4.0
+       *kw_only* can now be None, and its default is also changed from False to
+       None.
     """
-    if hash is not None and hash is not True and hash is not False:
-        raise TypeError(
-            "Invalid value for hash.  Must be True, False, or None."
-        )
+    eq, eq_key, order, order_key = _determine_attrib_eq_order(
+        cmp, eq, order, True
+    )
 
-    if convert is not None:
-        if converter is not None:
-            raise RuntimeError(
-                "Can't pass both `convert` and `converter`.  "
-                "Please use `converter` only."
-            )
-        warnings.warn(
-            "The `convert` argument is deprecated in favor of `converter`.  "
-            "It will be removed after 2019/01.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        converter = convert
+    if hash is not None and hash is not True and hash is not False:
+        msg = "Invalid value for hash.  Must be True, False, or None."
+        raise TypeError(msg)
 
     if factory is not None:
         if default is not NOTHING:
-            raise ValueError(
-                "The `default` and `factory` arguments are mutually "
-                "exclusive."
+            msg = (
+                "The `default` and `factory` arguments are mutually exclusive."
             )
+            raise ValueError(msg)
         if not callable(factory):
-            raise ValueError("The `factory` argument must be a callable.")
+            msg = "The `factory` argument must be a callable."
+            raise ValueError(msg)
         default = Factory(factory)
 
     if metadata is None:
         metadata = {}
 
+    # Apply syntactic sugar by auto-wrapping.
+    if isinstance(on_setattr, (list, tuple)):
+        on_setattr = setters.pipe(*on_setattr)
+
+    if validator and isinstance(validator, (list, tuple)):
+        validator = and_(*validator)
+
+    if converter and isinstance(converter, (list, tuple)):
+        converter = pipe(*converter)
+
     return _CountingAttr(
         default=default,
         validator=validator,
         repr=repr,
-        cmp=cmp,
+        cmp=None,
         hash=hash,
         init=init,
         converter=converter,
         metadata=metadata,
         type=type,
         kw_only=kw_only,
+        eq=eq,
+        eq_key=eq_key,
+        order=order,
+        order_key=order_key,
+        on_setattr=on_setattr,
+        alias=alias,
     )
 
 
-def _make_attr_tuple_class(cls_name, attr_names):
+def _compile_and_eval(
+    script: str,
+    globs: dict[str, Any] | None,
+    locs: Mapping[str, object] | None = None,
+    filename: str = "",
+) -> None:
+    """
+    Evaluate the script with the given global (globs) and local (locs)
+    variables.
+    """
+    bytecode = compile(script, filename, "exec")
+    eval(bytecode, globs, locs)
+
+
+def _linecache_and_compile(
+    script: str,
+    filename: str,
+    globs: dict[str, Any] | None,
+    locals: Mapping[str, object] | None = None,
+) -> dict[str, Any]:
+    """
+    Cache the script with _linecache_, compile it and return the _locals_.
+    """
+
+    locs = {} if locals is None else locals
+
+    # In order of debuggers like PDB being able to step through the code,
+    # we add a fake linecache entry.
+    count = 1
+    base_filename = filename
+    while True:
+        linecache_tuple = (
+            len(script),
+            None,
+            script.splitlines(True),
+            filename,
+        )
+        old_val = linecache.cache.setdefault(filename, linecache_tuple)
+        if old_val == linecache_tuple:
+            break
+
+        filename = f"{base_filename[:-1]}-{count}>"
+        count += 1
+
+    _compile_and_eval(script, globs, locs, filename)
+
+    return locs
+
+
+def _make_attr_tuple_class(cls_name: str, attr_names: list[str]) -> type:
     """
     Create a tuple subclass to hold `Attribute`s for an `attrs` class.
 
@@ -229,37 +272,23 @@ def _make_attr_tuple_class(cls_name, attr_names):
         __slots__ = ()
         x = property(itemgetter(0))
     """
-    attr_class_name = "{}Attributes".format(cls_name)
-    attr_class_template = [
-        "class {}(tuple):".format(attr_class_name),
-        "    __slots__ = ()",
-    ]
-    if attr_names:
-        for i, attr_name in enumerate(attr_names):
-            attr_class_template.append(
-                _tuple_property_pat.format(index=i, attr_name=attr_name)
-            )
-    else:
-        attr_class_template.append("    pass")
-    globs = {"_attrs_itemgetter": itemgetter, "_attrs_property": property}
-    eval(compile("\n".join(attr_class_template), "", "exec"), globs)
+    attr_class_name = f"{cls_name}Attributes"
+    body = {}
+    for i, attr_name in enumerate(attr_names):
 
-    return globs[attr_class_name]
+        def getter(self, i=i):
+            return self[i]
+
+        body[attr_name] = property(getter)
+    return type(attr_class_name, (tuple,), body)
 
 
 # Tuple class for extracted attributes from a class definition.
 # `base_attrs` is a subset of `attrs`.
-_Attributes = _make_attr_tuple_class(
-    "_Attributes",
-    [
-        # all attributes to build dunder methods for
-        "attrs",
-        # attributes that have been inherited
-        "base_attrs",
-        # map inherited attributes to their originating classes
-        "base_attrs_map",
-    ],
-)
+class _Attributes(NamedTuple):
+    attrs: type
+    base_attrs: list[Attribute]
+    base_attrs_map: dict[str, type]
 
 
 def _is_class_var(annot):
@@ -270,37 +299,98 @@ def _is_class_var(annot):
     annotations which would put attrs-based classes at a performance
     disadvantage compared to plain old classes.
     """
-    return str(annot).startswith(_classvar_prefixes)
+    annot = str(annot)
+
+    # Annotation can be quoted.
+    if annot.startswith(("'", '"')) and annot.endswith(("'", '"')):
+        annot = annot[1:-1]
+
+    return annot.startswith(_CLASSVAR_PREFIXES)
 
 
-def _get_annotations(cls):
+def _has_own_attribute(cls, attrib_name):
     """
-    Get annotations for *cls*.
+    Check whether *cls* defines *attrib_name* (and doesn't just inherit it).
     """
-    anns = getattr(cls, "__annotations__", None)
-    if anns is None:
-        return {}
-
-    # Verify that the annotations aren't merely inherited.
-    for base_cls in cls.__mro__[1:]:
-        if anns is getattr(base_cls, "__annotations__", None):
-            return {}
-
-    return anns
+    return attrib_name in cls.__dict__
 
 
-def _counter_getter(e):
+def _collect_base_attrs(
+    cls, taken_attr_names
+) -> tuple[list[Attribute], dict[str, type]]:
     """
-    Key function for sorting to avoid re-creating a lambda for every class.
+    Collect attr.ibs from base classes of *cls*, except *taken_attr_names*.
     """
-    return e[1].counter
+    base_attrs = []
+    base_attr_map = {}  # A dictionary of base attrs to their classes.
+
+    # Traverse the MRO and collect attributes.
+    for base_cls in reversed(cls.__mro__[1:-1]):
+        for a in getattr(base_cls, "__attrs_attrs__", []):
+            if a.inherited or a.name in taken_attr_names:
+                continue
+
+            a = a.evolve(inherited=True)  # noqa: PLW2901
+            base_attrs.append(a)
+            base_attr_map[a.name] = base_cls
+
+    # For each name, only keep the freshest definition i.e. the furthest at the
+    # back.  base_attr_map is fine because it gets overwritten with every new
+    # instance.
+    filtered = []
+    seen = set()
+    for a in reversed(base_attrs):
+        if a.name in seen:
+            continue
+        filtered.insert(0, a)
+        seen.add(a.name)
+
+    return filtered, base_attr_map
 
 
-def _transform_attrs(cls, these, auto_attribs, kw_only):
+def _collect_base_attrs_broken(cls, taken_attr_names):
+    """
+    Collect attr.ibs from base classes of *cls*, except *taken_attr_names*.
+
+    N.B. *taken_attr_names* will be mutated.
+
+    Adhere to the old incorrect behavior.
+
+    Notably it collects from the front and considers inherited attributes which
+    leads to the buggy behavior reported in #428.
+    """
+    base_attrs = []
+    base_attr_map = {}  # A dictionary of base attrs to their classes.
+
+    # Traverse the MRO and collect attributes.
+    for base_cls in cls.__mro__[1:-1]:
+        for a in getattr(base_cls, "__attrs_attrs__", []):
+            if a.name in taken_attr_names:
+                continue
+
+            a = a.evolve(inherited=True)  # noqa: PLW2901
+            taken_attr_names.add(a.name)
+            base_attrs.append(a)
+            base_attr_map[a.name] = base_cls
+
+    return base_attrs, base_attr_map
+
+
+def _transform_attrs(
+    cls,
+    these,
+    auto_attribs,
+    kw_only,
+    collect_by_mro,
+    field_transformer,
+) -> _Attributes:
     """
     Transform all `_CountingAttr`s on a class into `Attribute`s.
 
     If *these* is passed, use that and don't look for them on the class.
+
+    If *collect_by_mro* is True, collect them in the correct MRO order,
+    otherwise use the old -- incorrect -- order.  See #428.
 
     Return an `_Attributes`.
     """
@@ -308,15 +398,12 @@ def _transform_attrs(cls, these, auto_attribs, kw_only):
     anns = _get_annotations(cls)
 
     if these is not None:
-        ca_list = [(name, ca) for name, ca in iteritems(these)]
-
-        if not isinstance(these, ordered_dict):
-            ca_list.sort(key=_counter_getter)
+        ca_list = list(these.items())
     elif auto_attribs is True:
         ca_names = {
             name
             for name, attr in cd.items()
-            if isinstance(attr, _CountingAttr)
+            if attr.__class__ is _CountingAttr
         }
         ca_list = []
         annot_names = set()
@@ -325,15 +412,13 @@ def _transform_attrs(cls, these, auto_attribs, kw_only):
                 continue
             annot_names.add(attr_name)
             a = cd.get(attr_name, NOTHING)
-            if not isinstance(a, _CountingAttr):
-                if a is NOTHING:
-                    a = attrib()
-                else:
-                    a = attrib(default=a)
+
+            if a.__class__ is not _CountingAttr:
+                a = attrib(a)
             ca_list.append((attr_name, a))
 
         unannotated = ca_names - annot_names
-        if len(unannotated) > 0:
+        if unannotated:
             raise UnannotatedAttributeError(
                 "The following `attr.ib`s lack a type annotation: "
                 + ", ".join(
@@ -346,152 +431,359 @@ def _transform_attrs(cls, these, auto_attribs, kw_only):
             (
                 (name, attr)
                 for name, attr in cd.items()
-                if isinstance(attr, _CountingAttr)
+                if attr.__class__ is _CountingAttr
             ),
             key=lambda e: e[1].counter,
         )
 
+    fca = Attribute.from_counting_attr
+    no = ClassProps.KeywordOnly.NO
     own_attrs = [
-        Attribute.from_counting_attr(
-            name=attr_name, ca=ca, type=anns.get(attr_name)
+        fca(
+            attr_name,
+            ca,
+            kw_only is not no,
+            anns.get(attr_name),
         )
         for attr_name, ca in ca_list
     ]
 
-    base_attrs = []
-    base_attr_map = {}  # A dictionary of base attrs to their classes.
-    taken_attr_names = {a.name: a for a in own_attrs}
+    if collect_by_mro:
+        base_attrs, base_attr_map = _collect_base_attrs(
+            cls, {a.name for a in own_attrs}
+        )
+    else:
+        base_attrs, base_attr_map = _collect_base_attrs_broken(
+            cls, {a.name for a in own_attrs}
+        )
 
-    # Traverse the MRO and collect attributes.
-    for base_cls in cls.__mro__[1:-1]:
-        sub_attrs = getattr(base_cls, "__attrs_attrs__", None)
-        if sub_attrs is not None:
-            for a in sub_attrs:
-                prev_a = taken_attr_names.get(a.name)
-                # Only add an attribute if it hasn't been defined before.  This
-                # allows for overwriting attribute definitions by subclassing.
-                if prev_a is None:
-                    base_attrs.append(a)
-                    taken_attr_names[a.name] = a
-                    base_attr_map[a.name] = base_cls
+    if kw_only is ClassProps.KeywordOnly.FORCE:
+        own_attrs = [a.evolve(kw_only=True) for a in own_attrs]
+        base_attrs = [a.evolve(kw_only=True) for a in base_attrs]
 
-    attr_names = [a.name for a in base_attrs + own_attrs]
+    attrs = base_attrs + own_attrs
 
+    if field_transformer is not None:
+        attrs = tuple(field_transformer(cls, attrs))
+
+    # Check attr order after executing the field_transformer.
+    # Mandatory vs non-mandatory attr order only matters when they are part of
+    # the __init__ signature and when they aren't kw_only (which are moved to
+    # the end and can be mandatory or non-mandatory in any order, as they will
+    # be specified as keyword args anyway). Check the order of those attrs:
+    had_default = False
+    for a in (a for a in attrs if a.init is not False and a.kw_only is False):
+        if had_default is True and a.default is NOTHING:
+            msg = f"No mandatory attributes allowed after an attribute with a default value or factory.  Attribute in question: {a!r}"
+            raise ValueError(msg)
+
+        if had_default is False and a.default is not NOTHING:
+            had_default = True
+
+    # Resolve default field alias after executing field_transformer.
+    # This allows field_transformer to differentiate between explicit vs
+    # default aliases and supply their own defaults.
+    for a in attrs:
+        if not a.alias:
+            # Evolve is very slow, so we hold our nose and do it dirty.
+            _OBJ_SETATTR.__get__(a)("alias", _default_init_alias_for(a.name))
+
+    # Create AttrsClass *after* applying the field_transformer since it may
+    # add or remove attributes!
+    attr_names = [a.name for a in attrs]
     AttrsClass = _make_attr_tuple_class(cls.__name__, attr_names)
 
-    if kw_only:
-        own_attrs = [a._assoc(kw_only=True) for a in own_attrs]
-        base_attrs = [a._assoc(kw_only=True) for a in base_attrs]
+    return _Attributes(AttrsClass(attrs), base_attrs, base_attr_map)
 
-    attrs = AttrsClass(base_attrs + own_attrs)
 
-    had_default = False
-    was_kw_only = False
-    for a in attrs:
-        if (
-            was_kw_only is False
-            and had_default is True
-            and a.default is NOTHING
-            and a.init is True
-            and a.kw_only is False
-        ):
-            raise ValueError(
-                "No mandatory attributes allowed after an attribute with a "
-                "default value or factory.  Attribute in question: %r" % (a,)
-            )
-        elif (
-            had_default is False
-            and a.default is not NOTHING
-            and a.init is not False
-            and
-            # Keyword-only attributes without defaults can be specified
-            # after keyword-only attributes with defaults.
-            a.kw_only is False
-        ):
-            had_default = True
-        if was_kw_only is True and a.kw_only is False:
-            raise ValueError(
-                "Non keyword-only attributes are not allowed after a "
-                "keyword-only attribute.  Attribute in question: {a!r}".format(
-                    a=a
-                )
-            )
-        if was_kw_only is False and a.init is True and a.kw_only is True:
-            was_kw_only = True
+def _make_cached_property_getattr(cached_properties, original_getattr, cls):
+    lines = [
+        # Wrapped to get `__class__` into closure cell for super()
+        # (It will be replaced with the newly constructed class after construction).
+        "def wrapper(_cls):",
+        "    __class__ = _cls",
+        "    def __getattr__(self, item, cached_properties=cached_properties, original_getattr=original_getattr, _cached_setattr_get=_cached_setattr_get):",
+        "         func = cached_properties.get(item)",
+        "         if func is not None:",
+        "              result = func(self)",
+        "              _setter = _cached_setattr_get(self)",
+        "              _setter(item, result)",
+        "              return result",
+    ]
+    if original_getattr is not None:
+        lines.append(
+            "         return original_getattr(self, item)",
+        )
+    else:
+        lines.extend(
+            [
+                "         try:",
+                "             return super().__getattribute__(item)",
+                "         except AttributeError:",
+                "             if not hasattr(super(), '__getattr__'):",
+                "                 raise",
+                "             return super().__getattr__(item)",
+                "         original_error = f\"'{self.__class__.__name__}' object has no attribute '{item}'\"",
+                "         raise AttributeError(original_error)",
+            ]
+        )
 
-    return _Attributes((attrs, base_attrs, base_attr_map))
+    lines.extend(
+        [
+            "    return __getattr__",
+            "__getattr__ = wrapper(_cls)",
+        ]
+    )
+
+    unique_filename = _generate_unique_filename(cls, "getattr")
+
+    glob = {
+        "cached_properties": cached_properties,
+        "_cached_setattr_get": _OBJ_SETATTR.__get__,
+        "original_getattr": original_getattr,
+    }
+
+    return _linecache_and_compile(
+        "\n".join(lines), unique_filename, glob, locals={"_cls": cls}
+    )["__getattr__"]
 
 
 def _frozen_setattrs(self, name, value):
     """
     Attached to frozen classes as __setattr__.
     """
-    raise FrozenInstanceError()
+    if isinstance(self, BaseException) and name in (
+        "__cause__",
+        "__context__",
+        "__traceback__",
+        "__suppress_context__",
+        "__notes__",
+    ):
+        BaseException.__setattr__(self, name, value)
+        return
+
+    raise FrozenInstanceError
 
 
 def _frozen_delattrs(self, name):
     """
     Attached to frozen classes as __delattr__.
     """
-    raise FrozenInstanceError()
+    if isinstance(self, BaseException) and name in ("__notes__",):
+        BaseException.__delattr__(self, name)
+        return
+
+    raise FrozenInstanceError
 
 
-class _ClassBuilder(object):
+def evolve(*args, **changes):
+    """
+    Create a new instance, based on the first positional argument with
+    *changes* applied.
+
+    .. tip::
+
+       On Python 3.13 and later, you can also use `copy.replace` instead.
+
+    Args:
+
+        inst:
+            Instance of a class with *attrs* attributes. *inst* must be passed
+            as a positional argument.
+
+        changes:
+            Keyword changes in the new copy.
+
+    Returns:
+        A copy of inst with *changes* incorporated.
+
+    Raises:
+        TypeError:
+            If *attr_name* couldn't be found in the class ``__init__``.
+
+        attrs.exceptions.NotAnAttrsClassError:
+            If *cls* is not an *attrs* class.
+
+    .. versionadded:: 17.1.0
+    .. deprecated:: 23.1.0
+       It is now deprecated to pass the instance using the keyword argument
+       *inst*. It will raise a warning until at least April 2024, after which
+       it will become an error. Always pass the instance as a positional
+       argument.
+    .. versionchanged:: 24.1.0
+       *inst* can't be passed as a keyword argument anymore.
+    """
+    try:
+        (inst,) = args
+    except ValueError:
+        msg = (
+            f"evolve() takes 1 positional argument, but {len(args)} were given"
+        )
+        raise TypeError(msg) from None
+
+    cls = inst.__class__
+    attrs = fields(cls)
+    for a in attrs:
+        if not a.init:
+            continue
+        attr_name = a.name  # To deal with private attributes.
+        init_name = a.alias
+        if init_name not in changes:
+            changes[init_name] = getattr(inst, attr_name)
+
+    return cls(**changes)
+
+
+class _ClassBuilder:
     """
     Iteratively build *one* class.
     """
 
     __slots__ = (
+        "_add_method_dunders",
+        "_attr_names",
+        "_attrs",
+        "_base_attr_map",
+        "_base_names",
+        "_cache_hash",
         "_cls",
         "_cls_dict",
-        "_attrs",
-        "_base_names",
-        "_attr_names",
-        "_slots",
-        "_frozen",
-        "_weakref_slot",
-        "_cache_hash",
-        "_has_post_init",
         "_delete_attribs",
-        "_base_attr_map",
+        "_frozen",
+        "_has_custom_setattr",
+        "_has_post_init",
+        "_has_pre_init",
+        "_is_exc",
+        "_on_setattr",
+        "_pre_init_has_args",
+        "_repr_added",
+        "_script_snippets",
+        "_slots",
+        "_weakref_slot",
+        "_wrote_own_setattr",
     )
 
     def __init__(
         self,
-        cls,
+        cls: type,
         these,
-        slots,
-        frozen,
-        weakref_slot,
-        auto_attribs,
-        kw_only,
-        cache_hash,
+        auto_attribs: bool,
+        props: ClassProps,
+        has_custom_setattr: bool,
     ):
         attrs, base_attrs, base_map = _transform_attrs(
-            cls, these, auto_attribs, kw_only
+            cls,
+            these,
+            auto_attribs,
+            props.kw_only,
+            props.collected_fields_by_mro,
+            props.field_transformer,
         )
 
         self._cls = cls
-        self._cls_dict = dict(cls.__dict__) if slots else {}
+        self._cls_dict = dict(cls.__dict__) if props.is_slotted else {}
         self._attrs = attrs
-        self._base_names = set(a.name for a in base_attrs)
+        self._base_names = {a.name for a in base_attrs}
         self._base_attr_map = base_map
         self._attr_names = tuple(a.name for a in attrs)
-        self._slots = slots
-        self._frozen = frozen or _has_frozen_base_class(cls)
-        self._weakref_slot = weakref_slot
-        self._cache_hash = cache_hash
+        self._slots = props.is_slotted
+        self._frozen = props.is_frozen
+        self._weakref_slot = props.has_weakref_slot
+        self._cache_hash = (
+            props.hashability is ClassProps.Hashability.HASHABLE_CACHED
+        )
+        self._has_pre_init = bool(getattr(cls, "__attrs_pre_init__", False))
+        self._pre_init_has_args = False
+        if self._has_pre_init:
+            # Check if the pre init method has more arguments than just `self`
+            # We want to pass arguments if pre init expects arguments
+            pre_init_func = cls.__attrs_pre_init__
+            pre_init_signature = inspect.signature(pre_init_func)
+            self._pre_init_has_args = len(pre_init_signature.parameters) > 1
         self._has_post_init = bool(getattr(cls, "__attrs_post_init__", False))
         self._delete_attribs = not bool(these)
+        self._is_exc = props.is_exception
+        self._on_setattr = props.on_setattr_hook
+
+        self._has_custom_setattr = has_custom_setattr
+        self._wrote_own_setattr = False
 
         self._cls_dict["__attrs_attrs__"] = self._attrs
+        self._cls_dict["__attrs_props__"] = props
 
-        if frozen:
+        if props.is_frozen:
             self._cls_dict["__setattr__"] = _frozen_setattrs
             self._cls_dict["__delattr__"] = _frozen_delattrs
 
+            self._wrote_own_setattr = True
+        elif self._on_setattr in (
+            _DEFAULT_ON_SETATTR,
+            setters.validate,
+            setters.convert,
+        ):
+            has_validator = has_converter = False
+            for a in attrs:
+                if a.validator is not None:
+                    has_validator = True
+                if a.converter is not None:
+                    has_converter = True
+
+                if has_validator and has_converter:
+                    break
+            if (
+                (
+                    self._on_setattr == _DEFAULT_ON_SETATTR
+                    and not (has_validator or has_converter)
+                )
+                or (self._on_setattr == setters.validate and not has_validator)
+                or (self._on_setattr == setters.convert and not has_converter)
+            ):
+                # If class-level on_setattr is set to convert + validate, but
+                # there's no field to convert or validate, pretend like there's
+                # no on_setattr.
+                self._on_setattr = None
+
+        if props.added_pickling:
+            (
+                self._cls_dict["__getstate__"],
+                self._cls_dict["__setstate__"],
+            ) = self._make_getstate_setstate()
+
+        # tuples of script, globs, hook
+        self._script_snippets: list[
+            tuple[str, dict, Callable[[dict, dict], Any]]
+        ] = []
+        self._repr_added = False
+
+        # We want to only do this check once; in 99.9% of cases these
+        # exist.
+        if not hasattr(self._cls, "__module__") or not hasattr(
+            self._cls, "__qualname__"
+        ):
+            self._add_method_dunders = self._add_method_dunders_safe
+        else:
+            self._add_method_dunders = self._add_method_dunders_unsafe
+
     def __repr__(self):
-        return "<_ClassBuilder(cls={cls})>".format(cls=self._cls.__name__)
+        return f"<_ClassBuilder(cls={self._cls.__name__})>"
+
+    def _eval_snippets(self) -> None:
+        """
+        Evaluate any registered snippets in one go.
+        """
+        script = "\n".join([snippet[0] for snippet in self._script_snippets])
+        globs = {}
+        for _, snippet_globs, _ in self._script_snippets:
+            globs.update(snippet_globs)
+
+        locs = _linecache_and_compile(
+            script,
+            _generate_unique_filename(self._cls, "methods"),
+            globs,
+        )
+
+        for _, _, hook in self._script_snippets:
+            hook(self._cls_dict, locs)
 
     def build_class(self):
         """
@@ -499,10 +791,24 @@ class _ClassBuilder(object):
 
         Builder cannot be used after calling this method.
         """
+        self._eval_snippets()
         if self._slots is True:
-            return self._create_slots_class()
+            cls = self._create_slots_class()
+            self._cls.__attrs_base_of_slotted__ = weakref.ref(cls)
         else:
-            return self._patch_original_class()
+            cls = self._patch_original_class()
+            if PY_3_10_PLUS:
+                cls = abc.update_abstractmethods(cls)
+
+        # The method gets only called if it's not inherited from a base class.
+        # _has_own_attribute does NOT work properly for classmethods.
+        if (
+            getattr(cls, "__attrs_init_subclass__", None)
+            and "__attrs_init_subclass__" not in cls.__dict__
+        ):
+            cls.__attrs_init_subclass__()
+
+        return cls
 
     def _patch_original_class(self):
         """
@@ -516,19 +822,27 @@ class _ClassBuilder(object):
             for name in self._attr_names:
                 if (
                     name not in base_names
-                    and getattr(cls, name, None) is not None
+                    and getattr(cls, name, _SENTINEL) is not _SENTINEL
                 ):
-                    try:
+                    # An AttributeError can happen if a base class defines a
+                    # class variable and we want to set an attribute with the
+                    # same name by using only a type annotation.
+                    with contextlib.suppress(AttributeError):
                         delattr(cls, name)
-                    except AttributeError:
-                        # This can happen if a base class defines a class
-                        # variable and we want to set an attribute with the
-                        # same name by using only a type annotation.
-                        pass
 
         # Attach our dunder methods.
         for name, value in self._cls_dict.items():
             setattr(cls, name, value)
+
+        # If we've inherited an attrs __setattr__ and don't write our own,
+        # reset it to object's.
+        if not self._wrote_own_setattr and getattr(
+            cls, "__attrs_own_setattr__", False
+        ):
+            cls.__attrs_own_setattr__ = False
+
+            if not self._has_custom_setattr:
+                cls.__setattr__ = _OBJ_SETATTR
 
         return cls
 
@@ -536,20 +850,48 @@ class _ClassBuilder(object):
         """
         Build and return a new class with a `__slots__` attribute.
         """
-        base_names = self._base_names
         cd = {
             k: v
-            for k, v in iteritems(self._cls_dict)
-            if k not in tuple(self._attr_names) + ("__dict__", "__weakref__")
+            for k, v in self._cls_dict.items()
+            if k not in (*tuple(self._attr_names), "__dict__", "__weakref__")
         }
 
-        weakref_inherited = False
+        # 3.14.0rc2+
+        if hasattr(sys, "_clear_type_descriptors"):
+            sys._clear_type_descriptors(self._cls)
 
-        # Traverse the MRO to check for an existing __weakref__.
+        # If our class doesn't have its own implementation of __setattr__
+        # (either from the user or by us), check the bases, if one of them has
+        # an attrs-made __setattr__, that needs to be reset. We don't walk the
+        # MRO because we only care about our immediate base classes.
+        # XXX: This can be confused by subclassing a slotted attrs class with
+        # XXX: a non-attrs class and subclass the resulting class with an attrs
+        # XXX: class.  See `test_slotted_confused` for details.  For now that's
+        # XXX: OK with us.
+        if not self._wrote_own_setattr:
+            cd["__attrs_own_setattr__"] = False
+
+            if not self._has_custom_setattr:
+                for base_cls in self._cls.__bases__:
+                    if base_cls.__dict__.get("__attrs_own_setattr__", False):
+                        cd["__setattr__"] = _OBJ_SETATTR
+                        break
+
+        # Traverse the MRO to collect existing slots
+        # and check for an existing __weakref__.
+        existing_slots = {}
+        weakref_inherited = False
         for base_cls in self._cls.__mro__[1:-1]:
-            if "__weakref__" in getattr(base_cls, "__dict__", ()):
+            if base_cls.__dict__.get("__weakref__", None) is not None:
                 weakref_inherited = True
-                break
+            existing_slots.update(
+                {
+                    name: getattr(base_cls, name)
+                    for name in getattr(base_cls, "__slots__", [])
+                }
+            )
+
+        base_names = set(self._base_names)
 
         names = self._attr_names
         if (
@@ -560,17 +902,118 @@ class _ClassBuilder(object):
         ):
             names += ("__weakref__",)
 
+        cached_properties = {
+            name: cached_prop.func
+            for name, cached_prop in cd.items()
+            if isinstance(cached_prop, cached_property)
+        }
+
+        # Collect methods with a `__class__` reference that are shadowed in the new class.
+        # To know to update them.
+        additional_closure_functions_to_update = []
+        if cached_properties:
+            class_annotations = _get_annotations(self._cls)
+            for name, func in cached_properties.items():
+                # Add cached properties to names for slotting.
+                names += (name,)
+                # Clear out function from class to avoid clashing.
+                del cd[name]
+                additional_closure_functions_to_update.append(func)
+                annotation = inspect.signature(func).return_annotation
+                if annotation is not inspect.Parameter.empty:
+                    class_annotations[name] = annotation
+
+            original_getattr = cd.get("__getattr__")
+            if original_getattr is not None:
+                additional_closure_functions_to_update.append(original_getattr)
+
+            cd["__getattr__"] = _make_cached_property_getattr(
+                cached_properties, original_getattr, self._cls
+            )
+
         # We only add the names of attributes that aren't inherited.
-        # Settings __slots__ to inherited attributes wastes memory.
+        # Setting __slots__ to inherited attributes wastes memory.
         slot_names = [name for name in names if name not in base_names]
+
+        # There are slots for attributes from current class
+        # that are defined in parent classes.
+        # As their descriptors may be overridden by a child class,
+        # we collect them here and update the class dict
+        reused_slots = {
+            slot: slot_descriptor
+            for slot, slot_descriptor in existing_slots.items()
+            if slot in slot_names
+        }
+        slot_names = [name for name in slot_names if name not in reused_slots]
+        cd.update(reused_slots)
         if self._cache_hash:
-            slot_names.append(_hash_cache_field)
+            slot_names.append(_HASH_CACHE_FIELD)
+
         cd["__slots__"] = tuple(slot_names)
 
-        qualname = getattr(self._cls, "__qualname__", None)
-        if qualname is not None:
-            cd["__qualname__"] = qualname
+        cd["__qualname__"] = self._cls.__qualname__
 
+        # Create new class based on old class and our methods.
+        cls = type(self._cls)(self._cls.__name__, self._cls.__bases__, cd)
+
+        # The following is a fix for
+        # <https://github.com/python-attrs/attrs/issues/102>.
+        # If a method mentions `__class__` or uses the no-arg super(), the
+        # compiler will bake a reference to the class in the method itself
+        # as `method.__closure__`.  Since we replace the class with a
+        # clone, we rewrite these references so it keeps working.
+        for item in itertools.chain(
+            cls.__dict__.values(), additional_closure_functions_to_update
+        ):
+            if isinstance(item, (classmethod, staticmethod)):
+                # Class- and staticmethods hide their functions inside.
+                # These might need to be rewritten as well.
+                closure_cells = getattr(item.__func__, "__closure__", None)
+            elif isinstance(item, property):
+                # Workaround for property `super()` shortcut (PY3-only).
+                # There is no universal way for other descriptors.
+                closure_cells = getattr(item.fget, "__closure__", None)
+            else:
+                closure_cells = getattr(item, "__closure__", None)
+
+            if not closure_cells:  # Catch None or the empty list.
+                continue
+            for cell in closure_cells:
+                try:
+                    match = cell.cell_contents is self._cls
+                except ValueError:  # noqa: PERF203
+                    # ValueError: Cell is empty
+                    pass
+                else:
+                    if match:
+                        cell.cell_contents = cls
+        return cls
+
+    def add_repr(self, ns):
+        script, globs = _make_repr_script(self._attrs, ns)
+
+        def _attach_repr(cls_dict, globs):
+            cls_dict["__repr__"] = self._add_method_dunders(globs["__repr__"])
+
+        self._script_snippets.append((script, globs, _attach_repr))
+        self._repr_added = True
+        return self
+
+    def add_str(self):
+        if not self._repr_added:
+            msg = "__str__ can only be generated if a __repr__ exists."
+            raise ValueError(msg)
+
+        def __str__(self):
+            return self.__repr__()
+
+        self._cls_dict["__str__"] = self._add_method_dunders(__str__)
+        return self
+
+    def _make_getstate_setstate(self):
+        """
+        Create custom __setstate__ and __getstate__ methods.
+        """
         # __weakref__ is not writable.
         state_attr_names = tuple(
             an for an in self._attr_names if an != "__weakref__"
@@ -580,129 +1023,307 @@ class _ClassBuilder(object):
             """
             Automatically created by attrs.
             """
-            return tuple(getattr(self, name) for name in state_attr_names)
+            return {name: getattr(self, name) for name in state_attr_names}
+
+        hash_caching_enabled = self._cache_hash
 
         def slots_setstate(self, state):
             """
             Automatically created by attrs.
             """
-            __bound_setattr = _obj_setattr.__get__(self, Attribute)
-            for name, value in zip(state_attr_names, state):
-                __bound_setattr(name, value)
-
-        # slots and frozen require __getstate__/__setstate__ to work
-        cd["__getstate__"] = slots_getstate
-        cd["__setstate__"] = slots_setstate
-
-        # Create new class based on old class and our methods.
-        cls = type(self._cls)(self._cls.__name__, self._cls.__bases__, cd)
-
-        # The following is a fix for
-        # https://github.com/python-attrs/attrs/issues/102.  On Python 3,
-        # if a method mentions `__class__` or uses the no-arg super(), the
-        # compiler will bake a reference to the class in the method itself
-        # as `method.__closure__`.  Since we replace the class with a
-        # clone, we rewrite these references so it keeps working.
-        for item in cls.__dict__.values():
-            if isinstance(item, (classmethod, staticmethod)):
-                # Class- and staticmethods hide their functions inside.
-                # These might need to be rewritten as well.
-                closure_cells = getattr(item.__func__, "__closure__", None)
+            __bound_setattr = _OBJ_SETATTR.__get__(self)
+            if isinstance(state, tuple):
+                # Backward compatibility with attrs instances pickled with
+                # attrs versions before v22.2.0 which stored tuples.
+                for name, value in zip(state_attr_names, state):
+                    __bound_setattr(name, value)
             else:
-                closure_cells = getattr(item, "__closure__", None)
+                for name in state_attr_names:
+                    if name in state:
+                        __bound_setattr(name, state[name])
 
-            if not closure_cells:  # Catch None or the empty list.
-                continue
-            for cell in closure_cells:
-                if cell.cell_contents is self._cls:
-                    set_closure_cell(cell, cls)
+            # The hash code cache is not included when the object is
+            # serialized, but it still needs to be initialized to None to
+            # indicate that the first call to __hash__ should be a cache
+            # miss.
+            if hash_caching_enabled:
+                __bound_setattr(_HASH_CACHE_FIELD, None)
 
-        return cls
-
-    def add_repr(self, ns):
-        self._cls_dict["__repr__"] = self._add_method_dunders(
-            _make_repr(self._attrs, ns=ns)
-        )
-        return self
-
-    def add_str(self):
-        repr = self._cls_dict.get("__repr__")
-        if repr is None:
-            raise ValueError(
-                "__str__ can only be generated if a __repr__ exists."
-            )
-
-        def __str__(self):
-            return self.__repr__()
-
-        self._cls_dict["__str__"] = self._add_method_dunders(__str__)
-        return self
+        return slots_getstate, slots_setstate
 
     def make_unhashable(self):
         self._cls_dict["__hash__"] = None
         return self
 
     def add_hash(self):
-        self._cls_dict["__hash__"] = self._add_method_dunders(
-            _make_hash(
-                self._attrs, frozen=self._frozen, cache_hash=self._cache_hash
-            )
+        script, globs = _make_hash_script(
+            self._cls,
+            self._attrs,
+            frozen=self._frozen,
+            cache_hash=self._cache_hash,
         )
+
+        def attach_hash(cls_dict: dict, locs: dict) -> None:
+            cls_dict["__hash__"] = self._add_method_dunders(locs["__hash__"])
+
+        self._script_snippets.append((script, globs, attach_hash))
 
         return self
 
     def add_init(self):
-        self._cls_dict["__init__"] = self._add_method_dunders(
-            _make_init(
-                self._attrs,
-                self._has_post_init,
-                self._frozen,
-                self._slots,
-                self._cache_hash,
-                self._base_attr_map,
-            )
+        script, globs, annotations = _make_init_script(
+            self._cls,
+            self._attrs,
+            self._has_pre_init,
+            self._pre_init_has_args,
+            self._has_post_init,
+            self._frozen,
+            self._slots,
+            self._cache_hash,
+            self._base_attr_map,
+            self._is_exc,
+            self._on_setattr,
+            attrs_init=False,
         )
+
+        def _attach_init(cls_dict, globs):
+            init = globs["__init__"]
+            init.__annotations__ = annotations
+            cls_dict["__init__"] = self._add_method_dunders(init)
+
+        self._script_snippets.append((script, globs, _attach_init))
 
         return self
 
-    def add_cmp(self):
+    def add_replace(self):
+        self._cls_dict["__replace__"] = self._add_method_dunders(
+            lambda self, **changes: evolve(self, **changes)
+        )
+        return self
+
+    def add_match_args(self):
+        self._cls_dict["__match_args__"] = tuple(
+            field.name
+            for field in self._attrs
+            if field.init and not field.kw_only
+        )
+
+    def add_attrs_init(self):
+        script, globs, annotations = _make_init_script(
+            self._cls,
+            self._attrs,
+            self._has_pre_init,
+            self._pre_init_has_args,
+            self._has_post_init,
+            self._frozen,
+            self._slots,
+            self._cache_hash,
+            self._base_attr_map,
+            self._is_exc,
+            self._on_setattr,
+            attrs_init=True,
+        )
+
+        def _attach_attrs_init(cls_dict, globs):
+            init = globs["__attrs_init__"]
+            init.__annotations__ = annotations
+            cls_dict["__attrs_init__"] = self._add_method_dunders(init)
+
+        self._script_snippets.append((script, globs, _attach_attrs_init))
+
+        return self
+
+    def add_eq(self):
         cd = self._cls_dict
 
-        cd["__eq__"], cd["__ne__"], cd["__lt__"], cd["__le__"], cd[
-            "__gt__"
-        ], cd["__ge__"] = (
-            self._add_method_dunders(meth) for meth in _make_cmp(self._attrs)
+        script, globs = _make_eq_script(self._attrs)
+
+        def _attach_eq(cls_dict, globs):
+            cls_dict["__eq__"] = self._add_method_dunders(globs["__eq__"])
+
+        self._script_snippets.append((script, globs, _attach_eq))
+
+        cd["__ne__"] = __ne__
+
+        return self
+
+    def add_order(self):
+        cd = self._cls_dict
+
+        cd["__lt__"], cd["__le__"], cd["__gt__"], cd["__ge__"] = (
+            self._add_method_dunders(meth)
+            for meth in _make_order(self._cls, self._attrs)
         )
 
         return self
 
-    def _add_method_dunders(self, method):
+    def add_setattr(self):
+        sa_attrs = {}
+        for a in self._attrs:
+            on_setattr = a.on_setattr or self._on_setattr
+            if on_setattr and on_setattr is not setters.NO_OP:
+                sa_attrs[a.name] = a, on_setattr
+
+        if not sa_attrs:
+            return self
+
+        if self._has_custom_setattr:
+            # We need to write a __setattr__ but there already is one!
+            msg = "Can't combine custom __setattr__ with on_setattr hooks."
+            raise ValueError(msg)
+
+        # docstring comes from _add_method_dunders
+        def __setattr__(self, name, val):
+            try:
+                a, hook = sa_attrs[name]
+            except KeyError:
+                nval = val
+            else:
+                nval = hook(self, a, val)
+
+            _OBJ_SETATTR(self, name, nval)
+
+        self._cls_dict["__attrs_own_setattr__"] = True
+        self._cls_dict["__setattr__"] = self._add_method_dunders(__setattr__)
+        self._wrote_own_setattr = True
+
+        return self
+
+    def _add_method_dunders_unsafe(self, method: Callable) -> Callable:
+        """
+        Add __module__ and __qualname__ to a *method*.
+        """
+        method.__module__ = self._cls.__module__
+
+        method.__qualname__ = f"{self._cls.__qualname__}.{method.__name__}"
+
+        method.__doc__ = (
+            f"Method generated by attrs for class {self._cls.__qualname__}."
+        )
+
+        return method
+
+    def _add_method_dunders_safe(self, method: Callable) -> Callable:
         """
         Add __module__ and __qualname__ to a *method* if possible.
         """
-        try:
+        with contextlib.suppress(AttributeError):
             method.__module__ = self._cls.__module__
-        except AttributeError:
-            pass
 
-        try:
-            method.__qualname__ = ".".join(
-                (self._cls.__qualname__, method.__name__)
-            )
-        except AttributeError:
-            pass
+        with contextlib.suppress(AttributeError):
+            method.__qualname__ = f"{self._cls.__qualname__}.{method.__name__}"
+
+        with contextlib.suppress(AttributeError):
+            method.__doc__ = f"Method generated by attrs for class {self._cls.__qualname__}."
 
         return method
+
+
+def _determine_attrs_eq_order(cmp, eq, order, default_eq):
+    """
+    Validate the combination of *cmp*, *eq*, and *order*. Derive the effective
+    values of eq and order.  If *eq* is None, set it to *default_eq*.
+    """
+    if cmp is not None and any((eq is not None, order is not None)):
+        msg = "Don't mix `cmp` with `eq' and `order`."
+        raise ValueError(msg)
+
+    # cmp takes precedence due to bw-compatibility.
+    if cmp is not None:
+        return cmp, cmp
+
+    # If left None, equality is set to the specified default and ordering
+    # mirrors equality.
+    if eq is None:
+        eq = default_eq
+
+    if order is None:
+        order = eq
+
+    if eq is False and order is True:
+        msg = "`order` can only be True if `eq` is True too."
+        raise ValueError(msg)
+
+    return eq, order
+
+
+def _determine_attrib_eq_order(cmp, eq, order, default_eq):
+    """
+    Validate the combination of *cmp*, *eq*, and *order*. Derive the effective
+    values of eq and order.  If *eq* is None, set it to *default_eq*.
+    """
+    if cmp is not None and any((eq is not None, order is not None)):
+        msg = "Don't mix `cmp` with `eq' and `order`."
+        raise ValueError(msg)
+
+    def decide_callable_or_boolean(value):
+        """
+        Decide whether a key function is used.
+        """
+        if callable(value):
+            value, key = True, value
+        else:
+            key = None
+        return value, key
+
+    # cmp takes precedence due to bw-compatibility.
+    if cmp is not None:
+        cmp, cmp_key = decide_callable_or_boolean(cmp)
+        return cmp, cmp_key, cmp, cmp_key
+
+    # If left None, equality is set to the specified default and ordering
+    # mirrors equality.
+    if eq is None:
+        eq, eq_key = default_eq, None
+    else:
+        eq, eq_key = decide_callable_or_boolean(eq)
+
+    if order is None:
+        order, order_key = eq, eq_key
+    else:
+        order, order_key = decide_callable_or_boolean(order)
+
+    if eq is False and order is True:
+        msg = "`order` can only be True if `eq` is True too."
+        raise ValueError(msg)
+
+    return eq, eq_key, order, order_key
+
+
+def _determine_whether_to_implement(
+    cls, flag, auto_detect, dunders, default=True
+):
+    """
+    Check whether we should implement a set of methods for *cls*.
+
+    *flag* is the argument passed into @attr.s like 'init', *auto_detect* the
+    same as passed into @attr.s and *dunders* is a tuple of attribute names
+    whose presence signal that the user has implemented it themselves.
+
+    Return *default* if no reason for either for or against is found.
+    """
+    if flag is True or flag is False:
+        return flag
+
+    if flag is None and auto_detect is False:
+        return default
+
+    # Logically, flag is None and auto_detect is True here.
+    for dunder in dunders:
+        if _has_own_attribute(cls, dunder):
+            return False
+
+    return default
 
 
 def attrs(
     maybe_cls=None,
     these=None,
     repr_ns=None,
-    repr=True,
-    cmp=True,
+    repr=None,
+    cmp=None,
     hash=None,
-    init=True,
+    init=None,
     slots=False,
     frozen=False,
     weakref_slot=True,
@@ -710,122 +1331,44 @@ def attrs(
     auto_attribs=False,
     kw_only=False,
     cache_hash=False,
+    auto_exc=False,
+    eq=None,
+    order=None,
+    auto_detect=False,
+    collect_by_mro=False,
+    getstate_setstate=None,
+    on_setattr=None,
+    field_transformer=None,
+    match_args=True,
+    unsafe_hash=None,
+    force_kw_only=True,
 ):
     r"""
-    A class decorator that adds `dunder
-    <https://wiki.python.org/moin/DunderAlias>`_\ -methods according to the
-    specified attributes using :func:`attr.ib` or the *these* argument.
+    A class decorator that adds :term:`dunder methods` according to the
+    specified attributes using `attr.ib` or the *these* argument.
 
-    :param these: A dictionary of name to :func:`attr.ib` mappings.  This is
-        useful to avoid the definition of your attributes within the class body
-        because you can't (e.g. if you want to add ``__repr__`` methods to
-        Django models) or don't want to.
+    Consider using `attrs.define` / `attrs.frozen` in new code (``attr.s`` will
+    *never* go away, though).
 
-        If *these* is not ``None``, ``attrs`` will *not* search the class body
-        for attributes and will *not* remove any attributes from it.
+    Args:
+        repr_ns (str):
+            When using nested classes, there was no way in Python 2 to
+            automatically detect that.  This argument allows to set a custom
+            name for a more meaningful ``repr`` output.  This argument is
+            pointless in Python 3 and is therefore deprecated.
 
-        If *these* is an ordered dict (:class:`dict` on Python 3.6+,
-        :class:`collections.OrderedDict` otherwise), the order is deduced from
-        the order of the attributes inside *these*.  Otherwise the order
-        of the definition of the attributes is used.
+    .. caution::
+        Refer to `attrs.define` for the rest of the parameters, but note that they
+        can have different defaults.
 
-    :type these: :class:`dict` of :class:`str` to :func:`attr.ib`
-
-    :param str repr_ns: When using nested classes, there's no way in Python 2
-        to automatically detect that.  Therefore it's possible to set the
-        namespace explicitly for a more meaningful ``repr`` output.
-    :param bool repr: Create a ``__repr__`` method with a human readable
-        representation of ``attrs`` attributes..
-    :param bool str: Create a ``__str__`` method that is identical to
-        ``__repr__``.  This is usually not necessary except for
-        :class:`Exception`\ s.
-    :param bool cmp: Create ``__eq__``, ``__ne__``, ``__lt__``, ``__le__``,
-        ``__gt__``, and ``__ge__`` methods that compare the class as if it were
-        a tuple of its ``attrs`` attributes.  But the attributes are *only*
-        compared, if the types of both classes are *identical*!
-    :param hash: If ``None`` (default), the ``__hash__`` method is generated
-        according how *cmp* and *frozen* are set.
-
-        1. If *both* are True, ``attrs`` will generate a ``__hash__`` for you.
-        2. If *cmp* is True and *frozen* is False, ``__hash__`` will be set to
-           None, marking it unhashable (which it is).
-        3. If *cmp* is False, ``__hash__`` will be left untouched meaning the
-           ``__hash__`` method of the base class will be used (if base class is
-           ``object``, this means it will fall back to id-based hashing.).
-
-        Although not recommended, you can decide for yourself and force
-        ``attrs`` to create one (e.g. if the class is immutable even though you
-        didn't freeze it programmatically) by passing ``True`` or not.  Both of
-        these cases are rather special and should be used carefully.
-
-        See the `Python documentation \
-        <https://docs.python.org/3/reference/datamodel.html#object.__hash__>`_
-        and the `GitHub issue that led to the default behavior \
-        <https://github.com/python-attrs/attrs/issues/136>`_ for more details.
-    :type hash: ``bool`` or ``None``
-    :param bool init: Create a ``__init__`` method that initializes the
-        ``attrs`` attributes.  Leading underscores are stripped for the
-        argument name.  If a ``__attrs_post_init__`` method exists on the
-        class, it will be called after the class is fully initialized.
-    :param bool slots: Create a slots_-style class that's more
-        memory-efficient.  See :ref:`slots` for further ramifications.
-    :param bool frozen: Make instances immutable after initialization.  If
-        someone attempts to modify a frozen instance,
-        :exc:`attr.exceptions.FrozenInstanceError` is raised.
-
-        Please note:
-
-            1. This is achieved by installing a custom ``__setattr__`` method
-               on your class so you can't implement an own one.
-
-            2. True immutability is impossible in Python.
-
-            3. This *does* have a minor a runtime performance :ref:`impact
-               <how-frozen>` when initializing new instances.  In other words:
-               ``__init__`` is slightly slower with ``frozen=True``.
-
-            4. If a class is frozen, you cannot modify ``self`` in
-               ``__attrs_post_init__`` or a self-written ``__init__``. You can
-               circumvent that limitation by using
-               ``object.__setattr__(self, "attribute_name", value)``.
-
-        ..  _slots: https://docs.python.org/3/reference/datamodel.html#slots
-    :param bool weakref_slot: Make instances weak-referenceable.  This has no
-        effect unless ``slots`` is also enabled.
-    :param bool auto_attribs: If True, collect `PEP 526`_-annotated attributes
-        (Python 3.6 and later only) from the class body.
-
-        In this case, you **must** annotate every field.  If ``attrs``
-        encounters a field that is set to an :func:`attr.ib` but lacks a type
-        annotation, an :exc:`attr.exceptions.UnannotatedAttributeError` is
-        raised.  Use ``field_name: typing.Any = attr.ib(...)`` if you don't
-        want to set a type.
-
-        If you assign a value to those attributes (e.g. ``x: int = 42``), that
-        value becomes the default value like if it were passed using
-        ``attr.ib(default=42)``.  Passing an instance of :class:`Factory` also
-        works as expected.
-
-        Attributes annotated as :data:`typing.ClassVar` are **ignored**.
-
-        .. _`PEP 526`: https://www.python.org/dev/peps/pep-0526/
-    :param bool kw_only: Make all attributes keyword-only (Python 3+)
-        in the generated ``__init__`` (if ``init`` is ``False``, this
-        parameter is ignored).
-    :param bool cache_hash: Ensure that the object's hash code is computed
-        only once and stored on the object.  If this is set to ``True``,
-        hashing must be either explicitly or implicitly enabled for this
-        class.  If the hash code is cached, then no attributes of this
-        class which participate in hash code computation may be mutated
-        after object creation.
-
+        Notably, leaving *on_setattr* as `None` will **not** add any hooks.
 
     .. versionadded:: 16.0.0 *slots*
     .. versionadded:: 16.1.0 *frozen*
     .. versionadded:: 16.3.0 *str*
     .. versionadded:: 16.3.0 Support for ``__attrs_post_init__``.
     .. versionchanged:: 17.1.0
-       *hash* supports ``None`` as value which is also the default now.
+       *hash* supports `None` as value which is also the default now.
     .. versionadded:: 17.3.0 *auto_attribs*
     .. versionchanged:: 18.1.0
        If *these* is passed, no attributes are deleted from the class body.
@@ -833,75 +1376,205 @@ def attrs(
     .. versionadded:: 18.2.0 *weakref_slot*
     .. deprecated:: 18.2.0
        ``__lt__``, ``__le__``, ``__gt__``, and ``__ge__`` now raise a
-       :class:`DeprecationWarning` if the classes compared are subclasses of
+       `DeprecationWarning` if the classes compared are subclasses of
        each other. ``__eq`` and ``__ne__`` never tried to compared subclasses
        to each other.
+    .. versionchanged:: 19.2.0
+       ``__lt__``, ``__le__``, ``__gt__``, and ``__ge__`` now do not consider
+       subclasses comparable anymore.
     .. versionadded:: 18.2.0 *kw_only*
     .. versionadded:: 18.2.0 *cache_hash*
+    .. versionadded:: 19.1.0 *auto_exc*
+    .. deprecated:: 19.2.0 *cmp* Removal on or after 2021-06-01.
+    .. versionadded:: 19.2.0 *eq* and *order*
+    .. versionadded:: 20.1.0 *auto_detect*
+    .. versionadded:: 20.1.0 *collect_by_mro*
+    .. versionadded:: 20.1.0 *getstate_setstate*
+    .. versionadded:: 20.1.0 *on_setattr*
+    .. versionadded:: 20.3.0 *field_transformer*
+    .. versionchanged:: 21.1.0
+       ``init=False`` injects ``__attrs_init__``
+    .. versionchanged:: 21.1.0 Support for ``__attrs_pre_init__``
+    .. versionchanged:: 21.1.0 *cmp* undeprecated
+    .. versionadded:: 21.3.0 *match_args*
+    .. versionadded:: 22.2.0
+       *unsafe_hash* as an alias for *hash* (for :pep:`681` compliance).
+    .. deprecated:: 24.1.0 *repr_ns*
+    .. versionchanged:: 24.1.0
+       Instances are not compared as tuples of attributes anymore, but using a
+       big ``and`` condition. This is faster and has more correct behavior for
+       uncomparable values like `math.nan`.
+    .. versionadded:: 24.1.0
+       If a class has an *inherited* classmethod called
+       ``__attrs_init_subclass__``, it is executed after the class is created.
+    .. deprecated:: 24.1.0 *hash* is deprecated in favor of *unsafe_hash*.
+    .. versionchanged:: 25.4.0
+       *kw_only* now only applies to attributes defined in the current class,
+       and respects attribute-level ``kw_only=False`` settings.
+    .. versionadded:: 25.4.0 *force_kw_only*
     """
+    if repr_ns is not None:
+        import warnings
+
+        warnings.warn(
+            DeprecationWarning(
+                "The `repr_ns` argument is deprecated and will be removed in or after August 2025."
+            ),
+            stacklevel=2,
+        )
+
+    eq_, order_ = _determine_attrs_eq_order(cmp, eq, order, None)
+
+    #  unsafe_hash takes precedence due to PEP 681.
+    if unsafe_hash is not None:
+        hash = unsafe_hash
+
+    if isinstance(on_setattr, (list, tuple)):
+        on_setattr = setters.pipe(*on_setattr)
 
     def wrap(cls):
-        if getattr(cls, "__class__", None) is None:
-            raise TypeError("attrs only works with new-style classes.")
+        nonlocal hash
+        is_frozen = frozen or _has_frozen_base_class(cls)
+        is_exc = auto_exc is True and issubclass(cls, BaseException)
+        has_own_setattr = auto_detect and _has_own_attribute(
+            cls, "__setattr__"
+        )
+
+        if has_own_setattr and is_frozen:
+            msg = "Can't freeze a class with a custom __setattr__."
+            raise ValueError(msg)
+
+        eq = not is_exc and _determine_whether_to_implement(
+            cls, eq_, auto_detect, ("__eq__", "__ne__")
+        )
+
+        Hashability = ClassProps.Hashability
+
+        if is_exc:
+            hashability = Hashability.LEAVE_ALONE
+        elif hash is True:
+            hashability = (
+                Hashability.HASHABLE_CACHED
+                if cache_hash
+                else Hashability.HASHABLE
+            )
+        elif hash is False:
+            hashability = Hashability.LEAVE_ALONE
+        elif hash is None:
+            if auto_detect is True and _has_own_attribute(cls, "__hash__"):
+                hashability = Hashability.LEAVE_ALONE
+            elif eq is True and is_frozen is True:
+                hashability = (
+                    Hashability.HASHABLE_CACHED
+                    if cache_hash
+                    else Hashability.HASHABLE
+                )
+            elif eq is False:
+                hashability = Hashability.LEAVE_ALONE
+            else:
+                hashability = Hashability.UNHASHABLE
+        else:
+            msg = "Invalid value for hash.  Must be True, False, or None."
+            raise TypeError(msg)
+
+        KeywordOnly = ClassProps.KeywordOnly
+        if kw_only:
+            kwo = KeywordOnly.FORCE if force_kw_only else KeywordOnly.YES
+        else:
+            kwo = KeywordOnly.NO
+
+        props = ClassProps(
+            is_exception=is_exc,
+            is_frozen=is_frozen,
+            is_slotted=slots,
+            collected_fields_by_mro=collect_by_mro,
+            added_init=_determine_whether_to_implement(
+                cls, init, auto_detect, ("__init__",)
+            ),
+            added_repr=_determine_whether_to_implement(
+                cls, repr, auto_detect, ("__repr__",)
+            ),
+            added_eq=eq,
+            added_ordering=not is_exc
+            and _determine_whether_to_implement(
+                cls,
+                order_,
+                auto_detect,
+                ("__lt__", "__le__", "__gt__", "__ge__"),
+            ),
+            hashability=hashability,
+            added_match_args=match_args,
+            kw_only=kwo,
+            has_weakref_slot=weakref_slot,
+            added_str=str,
+            added_pickling=_determine_whether_to_implement(
+                cls,
+                getstate_setstate,
+                auto_detect,
+                ("__getstate__", "__setstate__"),
+                default=slots,
+            ),
+            on_setattr_hook=on_setattr,
+            field_transformer=field_transformer,
+        )
+
+        if not props.is_hashable and cache_hash:
+            msg = "Invalid value for cache_hash.  To use hash caching, hashing must be either explicitly or implicitly enabled."
+            raise TypeError(msg)
 
         builder = _ClassBuilder(
             cls,
             these,
-            slots,
-            frozen,
-            weakref_slot,
-            auto_attribs,
-            kw_only,
-            cache_hash,
+            auto_attribs=auto_attribs,
+            props=props,
+            has_custom_setattr=has_own_setattr,
         )
 
-        if repr is True:
+        if props.added_repr:
             builder.add_repr(repr_ns)
-        if str is True:
-            builder.add_str()
-        if cmp is True:
-            builder.add_cmp()
 
-        if hash is not True and hash is not False and hash is not None:
-            # Can't use `hash in` because 1 == True for example.
-            raise TypeError(
-                "Invalid value for hash.  Must be True, False, or None."
-            )
-        elif hash is False or (hash is None and cmp is False):
-            if cache_hash:
-                raise TypeError(
-                    "Invalid value for cache_hash.  To use hash caching,"
-                    " hashing must be either explicitly or implicitly "
-                    "enabled."
-                )
-        elif hash is True or (hash is None and cmp is True and frozen is True):
+        if props.added_str:
+            builder.add_str()
+
+        if props.added_eq:
+            builder.add_eq()
+        if props.added_ordering:
+            builder.add_order()
+
+        if not frozen:
+            builder.add_setattr()
+
+        if props.is_hashable:
             builder.add_hash()
-        else:
-            if cache_hash:
-                raise TypeError(
-                    "Invalid value for cache_hash.  To use hash caching,"
-                    " hashing must be either explicitly or implicitly "
-                    "enabled."
-                )
+        elif props.hashability is Hashability.UNHASHABLE:
             builder.make_unhashable()
 
-        if init is True:
+        if props.added_init:
             builder.add_init()
         else:
+            builder.add_attrs_init()
             if cache_hash:
-                raise TypeError(
-                    "Invalid value for cache_hash.  To use hash caching,"
-                    " init must be True."
-                )
+                msg = "Invalid value for cache_hash.  To use hash caching, init must be True."
+                raise TypeError(msg)
+
+        if PY_3_13_PLUS and not _has_own_attribute(cls, "__replace__"):
+            builder.add_replace()
+
+        if (
+            PY_3_10_PLUS
+            and match_args
+            and not _has_own_attribute(cls, "__match_args__")
+        ):
+            builder.add_match_args()
 
         return builder.build_class()
 
     # maybe_cls's type depends on the usage of the decorator.  It's a class
-    # if it's used as `@attrs` but ``None`` if used as `@attrs()`.
+    # if it's used as `@attrs` but `None` if used as `@attrs()`.
     if maybe_cls is None:
         return wrap
-    else:
-        return wrap(maybe_cls)
+
+    return wrap(maybe_cls)
 
 
 _attrs = attrs
@@ -911,53 +1584,50 @@ Internal alias so we can use it in functions that take an argument called
 """
 
 
-if PY2:
-
-    def _has_frozen_base_class(cls):
-        """
-        Check whether *cls* has a frozen ancestor by looking at its
-        __setattr__.
-        """
-        return (
-            getattr(cls.__setattr__, "__module__", None)
-            == _frozen_setattrs.__module__
-            and cls.__setattr__.__name__ == _frozen_setattrs.__name__
-        )
-
-
-else:
-
-    def _has_frozen_base_class(cls):
-        """
-        Check whether *cls* has a frozen ancestor by looking at its
-        __setattr__.
-        """
-        return cls.__setattr__ == _frozen_setattrs
-
-
-def _attrs_to_tuple(obj, attrs):
+def _has_frozen_base_class(cls):
     """
-    Create a tuple of all values of *obj*'s *attrs*.
+    Check whether *cls* has a frozen ancestor by looking at its
+    __setattr__.
     """
-    return tuple(getattr(obj, a.name) for a in attrs)
+    return cls.__setattr__ is _frozen_setattrs
 
 
-def _make_hash(attrs, frozen, cache_hash):
+def _generate_unique_filename(cls: type, func_name: str) -> str:
+    """
+    Create a "filename" suitable for a function being generated.
+    """
+    return (
+        f"<attrs generated {func_name} {cls.__module__}."
+        f"{getattr(cls, '__qualname__', cls.__name__)}>"
+    )
+
+
+def _make_hash_script(
+    cls: type, attrs: list[Attribute], frozen: bool, cache_hash: bool
+) -> tuple[str, dict]:
     attrs = tuple(
-        a
-        for a in attrs
-        if a.hash is True or (a.hash is None and a.cmp is True)
+        a for a in attrs if a.hash is True or (a.hash is None and a.eq is True)
     )
 
     tab = "        "
 
-    # We cache the generated hash methods for the same kinds of attributes.
-    sha1 = hashlib.sha1()
-    sha1.update(repr(attrs).encode("utf-8"))
-    unique_filename = "<attrs generated hash %s>" % (sha1.hexdigest(),)
-    type_hash = hash(unique_filename)
+    type_hash = hash(_generate_unique_filename(cls, "hash"))
+    # If eq is custom generated, we need to include the functions in globs
+    globs = {}
 
-    method_lines = ["def __hash__(self):"]
+    hash_def = "def __hash__(self"
+    hash_func = "hash(("
+    closing_braces = "))"
+    if not cache_hash:
+        hash_def += "):"
+    else:
+        hash_def += ", *"
+
+        hash_def += ", _cache_wrapper=__import__('attr._make')._make._CacheHashWrapper):"
+        hash_func = "_cache_wrapper(" + hash_func
+        closing_braces += ")"
+
+    method_lines = [hash_def]
 
     def append_hash_computation_lines(prefix, indent):
         """
@@ -965,60 +1635,63 @@ def _make_hash(attrs, frozen, cache_hash):
         Below this will either be returned directly or used to compute
         a value which is then cached, depending on the value of cache_hash
         """
+
         method_lines.extend(
-            [indent + prefix + "hash((", indent + "        %d," % (type_hash,)]
+            [
+                indent + prefix + hash_func,
+                indent + f"        {type_hash},",
+            ]
         )
 
         for a in attrs:
-            method_lines.append(indent + "        self.%s," % a.name)
+            if a.eq_key:
+                cmp_name = f"_{a.name}_key"
+                globs[cmp_name] = a.eq_key
+                method_lines.append(
+                    indent + f"        {cmp_name}(self.{a.name}),"
+                )
+            else:
+                method_lines.append(indent + f"        self.{a.name},")
 
-        method_lines.append(indent + "    ))")
+        method_lines.append(indent + "    " + closing_braces)
 
     if cache_hash:
-        method_lines.append(tab + "if self.%s is None:" % _hash_cache_field)
+        method_lines.append(tab + f"if self.{_HASH_CACHE_FIELD} is None:")
         if frozen:
             append_hash_computation_lines(
-                "object.__setattr__(self, '%s', " % _hash_cache_field, tab * 2
+                f"object.__setattr__(self, '{_HASH_CACHE_FIELD}', ", tab * 2
             )
             method_lines.append(tab * 2 + ")")  # close __setattr__
         else:
             append_hash_computation_lines(
-                "self.%s = " % _hash_cache_field, tab * 2
+                f"self.{_HASH_CACHE_FIELD} = ", tab * 2
             )
-        method_lines.append(tab + "return self.%s" % _hash_cache_field)
+        method_lines.append(tab + f"return self.{_HASH_CACHE_FIELD}")
     else:
         append_hash_computation_lines("return ", tab)
 
     script = "\n".join(method_lines)
-    globs = {}
-    locs = {}
-    bytecode = compile(script, unique_filename, "exec")
-    eval(bytecode, globs, locs)
-
-    # In order of debuggers like PDB being able to step through the code,
-    # we add a fake linecache entry.
-    linecache.cache[unique_filename] = (
-        len(script),
-        None,
-        script.splitlines(True),
-        unique_filename,
-    )
-
-    return locs["__hash__"]
+    return script, globs
 
 
-def _add_hash(cls, attrs):
+def _add_hash(cls: type, attrs: list[Attribute]):
     """
     Add a hash method to *cls*.
     """
-    cls.__hash__ = _make_hash(attrs, frozen=False, cache_hash=False)
+    script, globs = _make_hash_script(
+        cls, attrs, frozen=False, cache_hash=False
+    )
+    _compile_and_eval(
+        script, globs, filename=_generate_unique_filename(cls, "__hash__")
+    )
+    cls.__hash__ = globs["__hash__"]
     return cls
 
 
 def __ne__(self, other):
     """
-    Check equality and either forward a NotImplemented or return the result
-    negated.
+    Check equality and either forward a NotImplemented or
+    return the result negated.
     """
     result = self.__eq__(other)
     if result is NotImplemented:
@@ -1027,179 +1700,171 @@ def __ne__(self, other):
     return not result
 
 
-WARNING_CMP_ISINSTANCE = (
-    "Comparision of subclasses using __%s__ is deprecated and will be removed "
-    "in 2019."
-)
+def _make_eq_script(attrs: list) -> tuple[str, dict]:
+    """
+    Create __eq__ method for *cls* with *attrs*.
+    """
+    attrs = [a for a in attrs if a.eq]
 
-
-def _make_cmp(attrs):
-    attrs = [a for a in attrs if a.cmp]
-
-    # We cache the generated eq methods for the same kinds of attributes.
-    sha1 = hashlib.sha1()
-    sha1.update(repr(attrs).encode("utf-8"))
-    unique_filename = "<attrs generated eq %s>" % (sha1.hexdigest(),)
     lines = [
         "def __eq__(self, other):",
         "    if other.__class__ is not self.__class__:",
         "        return NotImplemented",
     ]
-    # We can't just do a big self.x = other.x and... clause due to
-    # irregularities like nan == nan is false but (nan,) == (nan,) is true.
+
+    globs = {}
     if attrs:
         lines.append("    return  (")
-        others = ["    ) == ("]
         for a in attrs:
-            lines.append("        self.%s," % (a.name,))
-            others.append("        other.%s," % (a.name,))
-
-        lines += others + ["    )"]
+            if a.eq_key:
+                cmp_name = f"_{a.name}_key"
+                # Add the key function to the global namespace
+                # of the evaluated function.
+                globs[cmp_name] = a.eq_key
+                lines.append(
+                    f"        {cmp_name}(self.{a.name}) == {cmp_name}(other.{a.name})"
+                )
+            else:
+                lines.append(f"        self.{a.name} == other.{a.name}")
+            if a is not attrs[-1]:
+                lines[-1] = f"{lines[-1]} and"
+        lines.append("    )")
     else:
         lines.append("    return True")
 
     script = "\n".join(lines)
-    globs = {}
-    locs = {}
-    bytecode = compile(script, unique_filename, "exec")
-    eval(bytecode, globs, locs)
 
-    # In order of debuggers like PDB being able to step through the code,
-    # we add a fake linecache entry.
-    linecache.cache[unique_filename] = (
-        len(script),
-        None,
-        script.splitlines(True),
-        unique_filename,
-    )
-    eq = locs["__eq__"]
-    ne = __ne__
+    return script, globs
+
+
+def _make_order(cls, attrs):
+    """
+    Create ordering methods for *cls* with *attrs*.
+    """
+    attrs = [a for a in attrs if a.order]
 
     def attrs_to_tuple(obj):
         """
         Save us some typing.
         """
-        return _attrs_to_tuple(obj, attrs)
+        return tuple(
+            key(value) if key else value
+            for value, key in (
+                (getattr(obj, a.name), a.order_key) for a in attrs
+            )
+        )
 
     def __lt__(self, other):
         """
         Automatically created by attrs.
         """
-        if isinstance(other, self.__class__):
-            if other.__class__ is not self.__class__:
-                warnings.warn(
-                    WARNING_CMP_ISINSTANCE % ("lt",), DeprecationWarning
-                )
+        if other.__class__ is self.__class__:
             return attrs_to_tuple(self) < attrs_to_tuple(other)
-        else:
-            return NotImplemented
+
+        return NotImplemented
 
     def __le__(self, other):
         """
         Automatically created by attrs.
         """
-        if isinstance(other, self.__class__):
-            if other.__class__ is not self.__class__:
-                warnings.warn(
-                    WARNING_CMP_ISINSTANCE % ("le",), DeprecationWarning
-                )
+        if other.__class__ is self.__class__:
             return attrs_to_tuple(self) <= attrs_to_tuple(other)
-        else:
-            return NotImplemented
+
+        return NotImplemented
 
     def __gt__(self, other):
         """
         Automatically created by attrs.
         """
-        if isinstance(other, self.__class__):
-            if other.__class__ is not self.__class__:
-                warnings.warn(
-                    WARNING_CMP_ISINSTANCE % ("gt",), DeprecationWarning
-                )
+        if other.__class__ is self.__class__:
             return attrs_to_tuple(self) > attrs_to_tuple(other)
-        else:
-            return NotImplemented
+
+        return NotImplemented
 
     def __ge__(self, other):
         """
         Automatically created by attrs.
         """
-        if isinstance(other, self.__class__):
-            if other.__class__ is not self.__class__:
-                warnings.warn(
-                    WARNING_CMP_ISINSTANCE % ("ge",), DeprecationWarning
-                )
+        if other.__class__ is self.__class__:
             return attrs_to_tuple(self) >= attrs_to_tuple(other)
-        else:
-            return NotImplemented
 
-    return eq, ne, __lt__, __le__, __gt__, __ge__
+        return NotImplemented
+
+    return __lt__, __le__, __gt__, __ge__
 
 
-def _add_cmp(cls, attrs=None):
+def _add_eq(cls, attrs=None):
     """
-    Add comparison methods to *cls*.
+    Add equality methods to *cls* with *attrs*.
     """
     if attrs is None:
         attrs = cls.__attrs_attrs__
 
-    cls.__eq__, cls.__ne__, cls.__lt__, cls.__le__, cls.__gt__, cls.__ge__ = _make_cmp(  # noqa
-        attrs
+    script, globs = _make_eq_script(attrs)
+    _compile_and_eval(
+        script, globs, filename=_generate_unique_filename(cls, "__eq__")
     )
+    cls.__eq__ = globs["__eq__"]
+    cls.__ne__ = __ne__
 
     return cls
 
 
-_already_repring = threading.local()
-
-
-def _make_repr(attrs, ns):
+def _make_repr_script(attrs, ns) -> tuple[str, dict]:
     """
-    Make a repr method for *attr_names* adding *ns* to the full name.
+    Create the source and globs for a __repr__ and return it.
     """
-    attr_names = tuple(a.name for a in attrs if a.repr)
+    # Figure out which attributes to include, and which function to use to
+    # format them. The a.repr value can be either bool or a custom
+    # callable.
+    attr_names_with_reprs = tuple(
+        (a.name, (repr if a.repr is True else a.repr), a.init)
+        for a in attrs
+        if a.repr is not False
+    )
+    globs = {
+        name + "_repr": r for name, r, _ in attr_names_with_reprs if r != repr
+    }
+    globs["_compat"] = _compat
+    globs["AttributeError"] = AttributeError
+    globs["NOTHING"] = NOTHING
+    attribute_fragments = []
+    for name, r, i in attr_names_with_reprs:
+        accessor = (
+            "self." + name if i else 'getattr(self, "' + name + '", NOTHING)'
+        )
+        fragment = (
+            "%s={%s!r}" % (name, accessor)
+            if r == repr
+            else "%s={%s_repr(%s)}" % (name, name, accessor)
+        )
+        attribute_fragments.append(fragment)
+    repr_fragment = ", ".join(attribute_fragments)
 
-    def __repr__(self):
-        """
-        Automatically created by attrs.
-        """
-        try:
-            working_set = _already_repring.working_set
-        except AttributeError:
-            working_set = set()
-            _already_repring.working_set = working_set
+    if ns is None:
+        cls_name_fragment = '{self.__class__.__qualname__.rsplit(">.", 1)[-1]}'
+    else:
+        cls_name_fragment = ns + ".{self.__class__.__name__}"
 
-        if id(self) in working_set:
-            return "..."
-        real_cls = self.__class__
-        if ns is None:
-            qualname = getattr(real_cls, "__qualname__", None)
-            if qualname is not None:
-                class_name = qualname.rsplit(">.", 1)[-1]
-            else:
-                class_name = real_cls.__name__
-        else:
-            class_name = ns + "." + real_cls.__name__
+    lines = [
+        "def __repr__(self):",
+        "  try:",
+        "    already_repring = _compat.repr_context.already_repring",
+        "  except AttributeError:",
+        "    already_repring = {id(self),}",
+        "    _compat.repr_context.already_repring = already_repring",
+        "  else:",
+        "    if id(self) in already_repring:",
+        "      return '...'",
+        "    else:",
+        "      already_repring.add(id(self))",
+        "  try:",
+        f"    return f'{cls_name_fragment}({repr_fragment})'",
+        "  finally:",
+        "    already_repring.remove(id(self))",
+    ]
 
-        # Since 'self' remains on the stack (i.e.: strongly referenced) for the
-        # duration of this call, it's safe to depend on id(...) stability, and
-        # not need to track the instance and therefore worry about properties
-        # like weakref- or hash-ability.
-        working_set.add(id(self))
-        try:
-            result = [class_name, "("]
-            first = True
-            for name in attr_names:
-                if first:
-                    first = False
-                else:
-                    result.append(", ")
-                result.extend((name, "=", repr(getattr(self, name, NOTHING))))
-            return "".join(result) + ")"
-        finally:
-            working_set.remove(id(self))
-
-    return __repr__
+    return "\n".join(lines), globs
 
 
 def _add_repr(cls, ns=None, attrs=None):
@@ -1209,114 +1874,87 @@ def _add_repr(cls, ns=None, attrs=None):
     if attrs is None:
         attrs = cls.__attrs_attrs__
 
-    cls.__repr__ = _make_repr(attrs, ns)
-    return cls
-
-
-def _make_init(attrs, post_init, frozen, slots, cache_hash, base_attr_map):
-    attrs = [a for a in attrs if a.init or a.default is not NOTHING]
-
-    # We cache the generated init methods for the same kinds of attributes.
-    sha1 = hashlib.sha1()
-    sha1.update(repr(attrs).encode("utf-8"))
-    unique_filename = "<attrs generated init {0}>".format(sha1.hexdigest())
-
-    script, globs, annotations = _attrs_to_init_script(
-        attrs, frozen, slots, post_init, cache_hash, base_attr_map
+    script, globs = _make_repr_script(attrs, ns)
+    _compile_and_eval(
+        script, globs, filename=_generate_unique_filename(cls, "__repr__")
     )
-    locs = {}
-    bytecode = compile(script, unique_filename, "exec")
-    attr_dict = dict((a.name, a) for a in attrs)
-    globs.update({"NOTHING": NOTHING, "attr_dict": attr_dict})
-    if frozen is True:
-        # Save the lookup overhead in __init__ if we need to circumvent
-        # immutability.
-        globs["_cached_setattr"] = _obj_setattr
-    eval(bytecode, globs, locs)
-
-    # In order of debuggers like PDB being able to step through the code,
-    # we add a fake linecache entry.
-    linecache.cache[unique_filename] = (
-        len(script),
-        None,
-        script.splitlines(True),
-        unique_filename,
-    )
-
-    __init__ = locs["__init__"]
-    __init__.__annotations__ = annotations
-    return __init__
-
-
-def _add_init(cls, frozen):
-    """
-    Add a __init__ method to *cls*.  If *frozen* is True, make it immutable.
-    """
-    cls.__init__ = _make_init(
-        cls.__attrs_attrs__,
-        getattr(cls, "__attrs_post_init__", False),
-        frozen,
-        _is_slot_cls(cls),
-        cache_hash=False,
-        base_attr_map={},
-    )
+    cls.__repr__ = globs["__repr__"]
     return cls
 
 
 def fields(cls):
     """
-    Return the tuple of ``attrs`` attributes for a class.
+    Return the tuple of *attrs* attributes for a class.
 
     The tuple also allows accessing the fields by their names (see below for
     examples).
 
-    :param type cls: Class to introspect.
+    Args:
+        cls (type): Class to introspect.
 
-    :raise TypeError: If *cls* is not a class.
-    :raise attr.exceptions.NotAnAttrsClassError: If *cls* is not an ``attrs``
-        class.
+    Raises:
+        TypeError: If *cls* is not a class.
 
-    :rtype: tuple (with name accessors) of :class:`attr.Attribute`
+        attrs.exceptions.NotAnAttrsClassError:
+            If *cls* is not an *attrs* class.
 
-    ..  versionchanged:: 16.2.0 Returned tuple allows accessing the fields
-        by name.
+    Returns:
+        tuple (with name accessors) of `attrs.Attribute`
+
+    .. versionchanged:: 16.2.0 Returned tuple allows accessing the fields
+       by name.
+    .. versionchanged:: 23.1.0 Add support for generic classes.
     """
-    if not isclass(cls):
-        raise TypeError("Passed object must be a class.")
+    generic_base = get_generic_base(cls)
+
+    if generic_base is None and not isinstance(cls, type):
+        msg = "Passed object must be a class."
+        raise TypeError(msg)
+
     attrs = getattr(cls, "__attrs_attrs__", None)
+
     if attrs is None:
-        raise NotAnAttrsClassError(
-            "{cls!r} is not an attrs-decorated class.".format(cls=cls)
-        )
+        if generic_base is not None:
+            attrs = getattr(generic_base, "__attrs_attrs__", None)
+            if attrs is not None:
+                # Even though this is global state, stick it on here to speed
+                # it up. We rely on `cls` being cached for this to be
+                # efficient.
+                cls.__attrs_attrs__ = attrs
+                return attrs
+        msg = f"{cls!r} is not an attrs-decorated class."
+        raise NotAnAttrsClassError(msg)
+
     return attrs
 
 
 def fields_dict(cls):
     """
-    Return an ordered dictionary of ``attrs`` attributes for a class, whose
-    keys are the attribute names.
+    Return an ordered dictionary of *attrs* attributes for a class, whose keys
+    are the attribute names.
 
-    :param type cls: Class to introspect.
+    Args:
+        cls (type): Class to introspect.
 
-    :raise TypeError: If *cls* is not a class.
-    :raise attr.exceptions.NotAnAttrsClassError: If *cls* is not an ``attrs``
-        class.
+    Raises:
+        TypeError: If *cls* is not a class.
 
-    :rtype: an ordered dict where keys are attribute names and values are
-        :class:`attr.Attribute`\\ s. This will be a :class:`dict` if it's
-        naturally ordered like on Python 3.6+ or an
-        :class:`~collections.OrderedDict` otherwise.
+        attrs.exceptions.NotAnAttrsClassError:
+            If *cls* is not an *attrs* class.
+
+    Returns:
+        dict[str, attrs.Attribute]: Dict of attribute name to definition
 
     .. versionadded:: 18.1.0
     """
-    if not isclass(cls):
-        raise TypeError("Passed object must be a class.")
+    if not isinstance(cls, type):
+        msg = "Passed object must be a class."
+        raise TypeError(msg)
     attrs = getattr(cls, "__attrs_attrs__", None)
     if attrs is None:
-        raise NotAnAttrsClassError(
-            "{cls!r} is not an attrs-decorated class.".format(cls=cls)
-        )
-    return ordered_dict(((a.name, a) for a in attrs))
+        msg = f"{cls!r} is not an attrs-decorated class."
+        raise NotAnAttrsClassError(msg)
+    return {a.name: a for a in attrs}
 
 
 def validate(inst):
@@ -1325,7 +1963,8 @@ def validate(inst):
 
     Leaves all exceptions through.
 
-    :param inst: Instance of a class with ``attrs`` attributes.
+    Args:
+        inst: Instance of a class with *attrs* attributes.
     """
     if _config._run_validators is False:
         return
@@ -1336,111 +1975,209 @@ def validate(inst):
             v(inst, a, getattr(inst, a.name))
 
 
-def _is_slot_cls(cls):
-    return "__slots__" in cls.__dict__
-
-
 def _is_slot_attr(a_name, base_attr_map):
     """
     Check if the attribute name comes from a slot class.
     """
-    return a_name in base_attr_map and _is_slot_cls(base_attr_map[a_name])
+    cls = base_attr_map.get(a_name)
+    return cls and "__slots__" in cls.__dict__
+
+
+def _make_init_script(
+    cls,
+    attrs,
+    pre_init,
+    pre_init_has_args,
+    post_init,
+    frozen,
+    slots,
+    cache_hash,
+    base_attr_map,
+    is_exc,
+    cls_on_setattr,
+    attrs_init,
+) -> tuple[str, dict, dict]:
+    has_cls_on_setattr = (
+        cls_on_setattr is not None and cls_on_setattr is not setters.NO_OP
+    )
+
+    if frozen and has_cls_on_setattr:
+        msg = "Frozen classes can't use on_setattr."
+        raise ValueError(msg)
+
+    needs_cached_setattr = cache_hash or frozen
+    filtered_attrs = []
+    attr_dict = {}
+    for a in attrs:
+        if not a.init and a.default is NOTHING:
+            continue
+
+        filtered_attrs.append(a)
+        attr_dict[a.name] = a
+
+        if a.on_setattr is not None:
+            if frozen is True:
+                msg = "Frozen classes can't use on_setattr."
+                raise ValueError(msg)
+
+            needs_cached_setattr = True
+        elif has_cls_on_setattr and a.on_setattr is not setters.NO_OP:
+            needs_cached_setattr = True
+
+    script, globs, annotations = _attrs_to_init_script(
+        filtered_attrs,
+        frozen,
+        slots,
+        pre_init,
+        pre_init_has_args,
+        post_init,
+        cache_hash,
+        base_attr_map,
+        is_exc,
+        needs_cached_setattr,
+        has_cls_on_setattr,
+        "__attrs_init__" if attrs_init else "__init__",
+    )
+    if cls.__module__ in sys.modules:
+        # This makes typing.get_type_hints(CLS.__init__) resolve string types.
+        globs.update(sys.modules[cls.__module__].__dict__)
+
+    globs.update({"NOTHING": NOTHING, "attr_dict": attr_dict})
+
+    if needs_cached_setattr:
+        # Save the lookup overhead in __init__ if we need to circumvent
+        # setattr hooks.
+        globs["_cached_setattr_get"] = _OBJ_SETATTR.__get__
+
+    return script, globs, annotations
+
+
+def _setattr(attr_name: str, value_var: str, has_on_setattr: bool) -> str:
+    """
+    Use the cached object.setattr to set *attr_name* to *value_var*.
+    """
+    return f"_setattr('{attr_name}', {value_var})"
+
+
+def _setattr_with_converter(
+    attr_name: str, value_var: str, has_on_setattr: bool, converter: Converter
+) -> str:
+    """
+    Use the cached object.setattr to set *attr_name* to *value_var*, but run
+    its converter first.
+    """
+    return f"_setattr('{attr_name}', {converter._fmt_converter_call(attr_name, value_var)})"
+
+
+def _assign(attr_name: str, value: str, has_on_setattr: bool) -> str:
+    """
+    Unless *attr_name* has an on_setattr hook, use normal assignment. Otherwise
+    relegate to _setattr.
+    """
+    if has_on_setattr:
+        return _setattr(attr_name, value, True)
+
+    return f"self.{attr_name} = {value}"
+
+
+def _assign_with_converter(
+    attr_name: str, value_var: str, has_on_setattr: bool, converter: Converter
+) -> str:
+    """
+    Unless *attr_name* has an on_setattr hook, use normal assignment after
+    conversion. Otherwise relegate to _setattr_with_converter.
+    """
+    if has_on_setattr:
+        return _setattr_with_converter(attr_name, value_var, True, converter)
+
+    return f"self.{attr_name} = {converter._fmt_converter_call(attr_name, value_var)}"
+
+
+def _determine_setters(
+    frozen: bool, slots: bool, base_attr_map: dict[str, type]
+):
+    """
+    Determine the correct setter functions based on whether a class is frozen
+    and/or slotted.
+    """
+    if frozen is True:
+        if slots is True:
+            return (), _setattr, _setattr_with_converter
+
+        # Dict frozen classes assign directly to __dict__.
+        # But only if the attribute doesn't come from an ancestor slot
+        # class.
+        # Note _inst_dict will be used again below if cache_hash is True
+
+        def fmt_setter(
+            attr_name: str, value_var: str, has_on_setattr: bool
+        ) -> str:
+            if _is_slot_attr(attr_name, base_attr_map):
+                return _setattr(attr_name, value_var, has_on_setattr)
+
+            return f"_inst_dict['{attr_name}'] = {value_var}"
+
+        def fmt_setter_with_converter(
+            attr_name: str,
+            value_var: str,
+            has_on_setattr: bool,
+            converter: Converter,
+        ) -> str:
+            if has_on_setattr or _is_slot_attr(attr_name, base_attr_map):
+                return _setattr_with_converter(
+                    attr_name, value_var, has_on_setattr, converter
+                )
+
+            return f"_inst_dict['{attr_name}'] = {converter._fmt_converter_call(attr_name, value_var)}"
+
+        return (
+            ("_inst_dict = self.__dict__",),
+            fmt_setter,
+            fmt_setter_with_converter,
+        )
+
+    # Not frozen -- we can just assign directly.
+    return (), _assign, _assign_with_converter
 
 
 def _attrs_to_init_script(
-    attrs, frozen, slots, post_init, cache_hash, base_attr_map
-):
+    attrs: list[Attribute],
+    is_frozen: bool,
+    is_slotted: bool,
+    call_pre_init: bool,
+    pre_init_has_args: bool,
+    call_post_init: bool,
+    does_cache_hash: bool,
+    base_attr_map: dict[str, type],
+    is_exc: bool,
+    needs_cached_setattr: bool,
+    has_cls_on_setattr: bool,
+    method_name: str,
+) -> tuple[str, dict, dict]:
     """
-    Return a script of an initializer for *attrs* and a dict of globals.
+    Return a script of an initializer for *attrs*, a dict of globals, and
+    annotations for the initializer.
 
-    The globals are expected by the generated script.
-
-    If *frozen* is True, we cannot set the attributes directly so we use
-    a cached ``object.__setattr__``.
+    The globals are required by the generated script.
     """
-    lines = []
-    any_slot_ancestors = any(
-        _is_slot_attr(a.name, base_attr_map) for a in attrs
+    lines = ["self.__attrs_pre_init__()"] if call_pre_init else []
+
+    if needs_cached_setattr:
+        lines.append(
+            # Circumvent the __setattr__ descriptor to save one lookup per
+            # assignment. Note _setattr will be used again below if
+            # does_cache_hash is True.
+            "_setattr = _cached_setattr_get(self)"
+        )
+
+    extra_lines, fmt_setter, fmt_setter_with_converter = _determine_setters(
+        is_frozen, is_slotted, base_attr_map
     )
-    if frozen is True:
-        if slots is True:
-            lines.append(
-                # Circumvent the __setattr__ descriptor to save one lookup per
-                # assignment.
-                # Note _setattr will be used again below if cache_hash is True
-                "_setattr = _cached_setattr.__get__(self, self.__class__)"
-            )
+    lines.extend(extra_lines)
 
-            def fmt_setter(attr_name, value_var):
-                return "_setattr('%(attr_name)s', %(value_var)s)" % {
-                    "attr_name": attr_name,
-                    "value_var": value_var,
-                }
-
-            def fmt_setter_with_converter(attr_name, value_var):
-                conv_name = _init_converter_pat.format(attr_name)
-                return "_setattr('%(attr_name)s', %(conv)s(%(value_var)s))" % {
-                    "attr_name": attr_name,
-                    "value_var": value_var,
-                    "conv": conv_name,
-                }
-
-        else:
-            # Dict frozen classes assign directly to __dict__.
-            # But only if the attribute doesn't come from an ancestor slot
-            # class.
-            # Note _inst_dict will be used again below if cache_hash is True
-            lines.append("_inst_dict = self.__dict__")
-            if any_slot_ancestors:
-                lines.append(
-                    # Circumvent the __setattr__ descriptor to save one lookup
-                    # per assignment.
-                    "_setattr = _cached_setattr.__get__(self, self.__class__)"
-                )
-
-            def fmt_setter(attr_name, value_var):
-                if _is_slot_attr(attr_name, base_attr_map):
-                    res = "_setattr('%(attr_name)s', %(value_var)s)" % {
-                        "attr_name": attr_name,
-                        "value_var": value_var,
-                    }
-                else:
-                    res = "_inst_dict['%(attr_name)s'] = %(value_var)s" % {
-                        "attr_name": attr_name,
-                        "value_var": value_var,
-                    }
-                return res
-
-            def fmt_setter_with_converter(attr_name, value_var):
-                conv_name = _init_converter_pat.format(attr_name)
-                if _is_slot_attr(attr_name, base_attr_map):
-                    tmpl = "_setattr('%(attr_name)s', %(c)s(%(value_var)s))"
-                else:
-                    tmpl = "_inst_dict['%(attr_name)s'] = %(c)s(%(value_var)s)"
-                return tmpl % {
-                    "attr_name": attr_name,
-                    "value_var": value_var,
-                    "c": conv_name,
-                }
-
-    else:
-        # Not frozen.
-        def fmt_setter(attr_name, value):
-            return "self.%(attr_name)s = %(value)s" % {
-                "attr_name": attr_name,
-                "value": value,
-            }
-
-        def fmt_setter_with_converter(attr_name, value_var):
-            conv_name = _init_converter_pat.format(attr_name)
-            return "self.%(attr_name)s = %(conv)s(%(value_var)s)" % {
-                "attr_name": attr_name,
-                "value_var": value_var,
-                "conv": conv_name,
-            }
-
-    args = []
-    kw_only_args = []
+    args = []  # Parameters in the definition of __init__
+    pre_init_args = []  # Parameters in the call to __attrs_pre_init__
+    kw_only_args = []  # Used for both 'args' and 'pre_init_args' above
     attrs_to_validate = []
 
     # This is a dictionary of names to validator and converter callables.
@@ -1451,102 +2188,128 @@ def _attrs_to_init_script(
     for a in attrs:
         if a.validator:
             attrs_to_validate.append(a)
+
         attr_name = a.name
-        arg_name = a.name.lstrip("_")
+        has_on_setattr = a.on_setattr is not None or (
+            a.on_setattr is not setters.NO_OP and has_cls_on_setattr
+        )
+        # a.alias is set to maybe-mangled attr_name in _ClassBuilder if not
+        # explicitly provided
+        arg_name = a.alias
+
         has_factory = isinstance(a.default, Factory)
-        if has_factory and a.default.takes_self:
-            maybe_self = "self"
+        maybe_self = "self" if has_factory and a.default.takes_self else ""
+
+        if a.converter is not None and not isinstance(a.converter, Converter):
+            converter = Converter(a.converter)
         else:
-            maybe_self = ""
+            converter = a.converter
+
         if a.init is False:
             if has_factory:
-                init_factory_name = _init_factory_pat.format(a.name)
-                if a.converter is not None:
+                init_factory_name = _INIT_FACTORY_PAT % (a.name,)
+                if converter is not None:
                     lines.append(
                         fmt_setter_with_converter(
                             attr_name,
-                            init_factory_name + "({0})".format(maybe_self),
+                            init_factory_name + f"({maybe_self})",
+                            has_on_setattr,
+                            converter,
                         )
                     )
-                    conv_name = _init_converter_pat.format(a.name)
-                    names_for_globals[conv_name] = a.converter
+                    names_for_globals[converter._get_global_name(a.name)] = (
+                        converter.converter
+                    )
                 else:
                     lines.append(
                         fmt_setter(
                             attr_name,
-                            init_factory_name + "({0})".format(maybe_self),
+                            init_factory_name + f"({maybe_self})",
+                            has_on_setattr,
                         )
                     )
                 names_for_globals[init_factory_name] = a.default.factory
-            else:
-                if a.converter is not None:
-                    lines.append(
-                        fmt_setter_with_converter(
-                            attr_name,
-                            "attr_dict['{attr_name}'].default".format(
-                                attr_name=attr_name
-                            ),
-                        )
-                    )
-                    conv_name = _init_converter_pat.format(a.name)
-                    names_for_globals[conv_name] = a.converter
-                else:
-                    lines.append(
-                        fmt_setter(
-                            attr_name,
-                            "attr_dict['{attr_name}'].default".format(
-                                attr_name=attr_name
-                            ),
-                        )
-                    )
-        elif a.default is not NOTHING and not has_factory:
-            arg = "{arg_name}=attr_dict['{attr_name}'].default".format(
-                arg_name=arg_name, attr_name=attr_name
-            )
-            if a.kw_only:
-                kw_only_args.append(arg)
-            else:
-                args.append(arg)
-            if a.converter is not None:
-                lines.append(fmt_setter_with_converter(attr_name, arg_name))
-                names_for_globals[
-                    _init_converter_pat.format(a.name)
-                ] = a.converter
-            else:
-                lines.append(fmt_setter(attr_name, arg_name))
-        elif has_factory:
-            arg = "{arg_name}=NOTHING".format(arg_name=arg_name)
-            if a.kw_only:
-                kw_only_args.append(arg)
-            else:
-                args.append(arg)
-            lines.append(
-                "if {arg_name} is not NOTHING:".format(arg_name=arg_name)
-            )
-            init_factory_name = _init_factory_pat.format(a.name)
-            if a.converter is not None:
+            elif converter is not None:
                 lines.append(
-                    "    " + fmt_setter_with_converter(attr_name, arg_name)
+                    fmt_setter_with_converter(
+                        attr_name,
+                        f"attr_dict['{attr_name}'].default",
+                        has_on_setattr,
+                        converter,
+                    )
+                )
+                names_for_globals[converter._get_global_name(a.name)] = (
+                    converter.converter
+                )
+            else:
+                lines.append(
+                    fmt_setter(
+                        attr_name,
+                        f"attr_dict['{attr_name}'].default",
+                        has_on_setattr,
+                    )
+                )
+        elif a.default is not NOTHING and not has_factory:
+            arg = f"{arg_name}=attr_dict['{attr_name}'].default"
+            if a.kw_only:
+                kw_only_args.append(arg)
+            else:
+                args.append(arg)
+                pre_init_args.append(arg_name)
+
+            if converter is not None:
+                lines.append(
+                    fmt_setter_with_converter(
+                        attr_name, arg_name, has_on_setattr, converter
+                    )
+                )
+                names_for_globals[converter._get_global_name(a.name)] = (
+                    converter.converter
+                )
+            else:
+                lines.append(fmt_setter(attr_name, arg_name, has_on_setattr))
+
+        elif has_factory:
+            arg = f"{arg_name}=NOTHING"
+            if a.kw_only:
+                kw_only_args.append(arg)
+            else:
+                args.append(arg)
+                pre_init_args.append(arg_name)
+            lines.append(f"if {arg_name} is not NOTHING:")
+
+            init_factory_name = _INIT_FACTORY_PAT % (a.name,)
+            if converter is not None:
+                lines.append(
+                    "    "
+                    + fmt_setter_with_converter(
+                        attr_name, arg_name, has_on_setattr, converter
+                    )
                 )
                 lines.append("else:")
                 lines.append(
                     "    "
                     + fmt_setter_with_converter(
                         attr_name,
-                        init_factory_name + "({0})".format(maybe_self),
+                        init_factory_name + "(" + maybe_self + ")",
+                        has_on_setattr,
+                        converter,
                     )
                 )
-                names_for_globals[
-                    _init_converter_pat.format(a.name)
-                ] = a.converter
+                names_for_globals[converter._get_global_name(a.name)] = (
+                    converter.converter
+                )
             else:
-                lines.append("    " + fmt_setter(attr_name, arg_name))
+                lines.append(
+                    "    " + fmt_setter(attr_name, arg_name, has_on_setattr)
+                )
                 lines.append("else:")
                 lines.append(
                     "    "
                     + fmt_setter(
                         attr_name,
-                        init_factory_name + "({0})".format(maybe_self),
+                        init_factory_name + "(" + maybe_self + ")",
+                        has_on_setattr,
                     )
                 )
             names_for_globals[init_factory_name] = a.default.factory
@@ -1555,94 +2318,166 @@ def _attrs_to_init_script(
                 kw_only_args.append(arg_name)
             else:
                 args.append(arg_name)
-            if a.converter is not None:
-                lines.append(fmt_setter_with_converter(attr_name, arg_name))
-                names_for_globals[
-                    _init_converter_pat.format(a.name)
-                ] = a.converter
-            else:
-                lines.append(fmt_setter(attr_name, arg_name))
+                pre_init_args.append(arg_name)
 
-        if a.init is True and a.converter is None and a.type is not None:
-            annotations[arg_name] = a.type
+            if converter is not None:
+                lines.append(
+                    fmt_setter_with_converter(
+                        attr_name, arg_name, has_on_setattr, converter
+                    )
+                )
+                names_for_globals[converter._get_global_name(a.name)] = (
+                    converter.converter
+                )
+            else:
+                lines.append(fmt_setter(attr_name, arg_name, has_on_setattr))
+
+        if a.init is True:
+            if a.type is not None and converter is None:
+                annotations[arg_name] = a.type
+            elif converter is not None and converter._first_param_type:
+                # Use the type from the converter if present.
+                annotations[arg_name] = converter._first_param_type
 
     if attrs_to_validate:  # we can skip this if there are no validators.
         names_for_globals["_config"] = _config
         lines.append("if _config._run_validators is True:")
         for a in attrs_to_validate:
-            val_name = "__attr_validator_{}".format(a.name)
-            attr_name = "__attr_{}".format(a.name)
-            lines.append(
-                "    {}(self, {}, self.{})".format(val_name, attr_name, a.name)
-            )
+            val_name = "__attr_validator_" + a.name
+            attr_name = "__attr_" + a.name
+            lines.append(f"    {val_name}(self, {attr_name}, self.{a.name})")
             names_for_globals[val_name] = a.validator
             names_for_globals[attr_name] = a
-    if post_init:
+
+    if call_post_init:
         lines.append("self.__attrs_post_init__()")
 
-    # because this is set only after __attrs_post_init is called, a crash
+    # Because this is set only after __attrs_post_init__ is called, a crash
     # will result if post-init tries to access the hash code.  This seemed
-    # preferable to setting this beforehand, in which case alteration to
-    # field values during post-init combined with post-init accessing the
-    # hash code would result in silent bugs.
-    if cache_hash:
-        if frozen:
-            if slots:
-                # if frozen and slots, then _setattr defined above
-                init_hash_cache = "_setattr('%s', %s)"
+    # preferable to setting this beforehand, in which case alteration to field
+    # values during post-init combined with post-init accessing the hash code
+    # would result in silent bugs.
+    if does_cache_hash:
+        if is_frozen:
+            if is_slotted:
+                init_hash_cache = f"_setattr('{_HASH_CACHE_FIELD}', None)"
             else:
-                # if frozen and not slots, then _inst_dict defined above
-                init_hash_cache = "_inst_dict['%s'] = %s"
+                init_hash_cache = f"_inst_dict['{_HASH_CACHE_FIELD}'] = None"
         else:
-            init_hash_cache = "self.%s = %s"
-        lines.append(init_hash_cache % (_hash_cache_field, "None"))
+            init_hash_cache = f"self.{_HASH_CACHE_FIELD} = None"
+        lines.append(init_hash_cache)
+
+    # For exceptions we rely on BaseException.__init__ for proper
+    # initialization.
+    if is_exc:
+        vals = ",".join(f"self.{a.name}" for a in attrs if a.init)
+
+        lines.append(f"BaseException.__init__(self, {vals})")
 
     args = ", ".join(args)
+    pre_init_args = ", ".join(pre_init_args)
     if kw_only_args:
-        if PY2:
-            raise PythonTooOldError(
-                "Keyword-only arguments only work on Python 3 and later."
-            )
-
-        args += "{leading_comma}*, {kw_only_args}".format(
-            leading_comma=", " if args else "",
-            kw_only_args=", ".join(kw_only_args),
+        # leading comma & kw_only args
+        args += f"{', ' if args else ''}*, {', '.join(kw_only_args)}"
+        pre_init_kw_only_args = ", ".join(
+            [
+                f"{kw_arg_name}={kw_arg_name}"
+                # We need to remove the defaults from the kw_only_args.
+                for kw_arg_name in (kwa.split("=")[0] for kwa in kw_only_args)
+            ]
         )
+        pre_init_args += ", " if pre_init_args else ""
+        pre_init_args += pre_init_kw_only_args
+
+    if call_pre_init and pre_init_has_args:
+        # If pre init method has arguments, pass the values given to __init__.
+        lines[0] = f"self.__attrs_pre_init__({pre_init_args})"
+
+    # Python <3.12 doesn't allow backslashes in f-strings.
+    NL = "\n    "
     return (
-        """\
-def __init__(self, {args}):
-    {lines}
-""".format(
-            args=args, lines="\n    ".join(lines) if lines else "pass"
-        ),
+        f"""def {method_name}(self, {args}):
+    {NL.join(lines) if lines else "pass"}
+""",
         names_for_globals,
         annotations,
     )
 
 
-class Attribute(object):
+def _default_init_alias_for(name: str) -> str:
+    """
+    The default __init__ parameter name for a field.
+
+    This performs private-name adjustment via leading-unscore stripping,
+    and is the default value of Attribute.alias if not provided.
+    """
+
+    return name.lstrip("_")
+
+
+class Attribute:
     """
     *Read-only* representation of an attribute.
 
-    :attribute name: The name of the attribute.
+    .. warning::
 
-    Plus *all* arguments of :func:`attr.ib`.
+       You should never instantiate this class yourself.
 
-    For the version history of the fields, see :func:`attr.ib`.
+    The class has *all* arguments of `attr.ib` (except for ``factory`` which is
+    only syntactic sugar for ``default=Factory(...)`` plus the following:
+
+    - ``name`` (`str`): The name of the attribute.
+    - ``alias`` (`str`): The __init__ parameter name of the attribute, after
+      any explicit overrides and default private-attribute-name handling.
+    - ``inherited`` (`bool`): Whether or not that attribute has been inherited
+      from a base class.
+    - ``eq_key`` and ``order_key`` (`typing.Callable` or `None`): The
+      callables that are used for comparing and ordering objects by this
+      attribute, respectively. These are set by passing a callable to
+      `attr.ib`'s ``eq``, ``order``, or ``cmp`` arguments. See also
+      :ref:`comparison customization <custom-comparison>`.
+
+    Instances of this class are frequently used for introspection purposes
+    like:
+
+    - `fields` returns a tuple of them.
+    - Validators get them passed as the first argument.
+    - The :ref:`field transformer <transform-fields>` hook receives a list of
+      them.
+    - The ``alias`` property exposes the __init__ parameter name of the field,
+      with any overrides and default private-attribute handling applied.
+
+
+    .. versionadded:: 20.1.0 *inherited*
+    .. versionadded:: 20.1.0 *on_setattr*
+    .. versionchanged:: 20.2.0 *inherited* is not taken into account for
+        equality checks and hashing anymore.
+    .. versionadded:: 21.1.0 *eq_key* and *order_key*
+    .. versionadded:: 22.2.0 *alias*
+
+    For the full version history of the fields, see `attr.ib`.
     """
 
-    __slots__ = (
+    # These slots must NOT be reordered because we use them later for
+    # instantiation.
+    __slots__ = (  # noqa: RUF023
         "name",
         "default",
         "validator",
         "repr",
-        "cmp",
+        "eq",
+        "eq_key",
+        "order",
+        "order_key",
         "hash",
         "init",
         "metadata",
         "type",
         "converter",
         "kw_only",
+        "inherited",
+        "on_setattr",
+        "alias",
     )
 
     def __init__(
@@ -1651,99 +2486,102 @@ class Attribute(object):
         default,
         validator,
         repr,
-        cmp,
+        cmp,  # XXX: unused, remove along with other cmp code.
         hash,
         init,
-        convert=None,
+        inherited,
         metadata=None,
         type=None,
         converter=None,
         kw_only=False,
+        eq=None,
+        eq_key=None,
+        order=None,
+        order_key=None,
+        on_setattr=None,
+        alias=None,
     ):
+        eq, eq_key, order, order_key = _determine_attrib_eq_order(
+            cmp, eq_key or eq, order_key or order, True
+        )
+
         # Cache this descriptor here to speed things up later.
-        bound_setattr = _obj_setattr.__get__(self, Attribute)
+        bound_setattr = _OBJ_SETATTR.__get__(self)
 
         # Despite the big red warning, people *do* instantiate `Attribute`
         # themselves.
-        if convert is not None:
-            if converter is not None:
-                raise RuntimeError(
-                    "Can't pass both `convert` and `converter`.  "
-                    "Please use `converter` only."
-                )
-            warnings.warn(
-                "The `convert` argument is deprecated in favor of `converter`."
-                "  It will be removed after 2019/01.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            converter = convert
-
         bound_setattr("name", name)
         bound_setattr("default", default)
         bound_setattr("validator", validator)
         bound_setattr("repr", repr)
-        bound_setattr("cmp", cmp)
+        bound_setattr("eq", eq)
+        bound_setattr("eq_key", eq_key)
+        bound_setattr("order", order)
+        bound_setattr("order_key", order_key)
         bound_setattr("hash", hash)
         bound_setattr("init", init)
         bound_setattr("converter", converter)
         bound_setattr(
             "metadata",
             (
-                metadata_proxy(metadata)
+                types.MappingProxyType(dict(metadata))  # Shallow copy
                 if metadata
-                else _empty_metadata_singleton
+                else _EMPTY_METADATA_SINGLETON
             ),
         )
         bound_setattr("type", type)
         bound_setattr("kw_only", kw_only)
+        bound_setattr("inherited", inherited)
+        bound_setattr("on_setattr", on_setattr)
+        bound_setattr("alias", alias)
 
     def __setattr__(self, name, value):
-        raise FrozenInstanceError()
-
-    @property
-    def convert(self):
-        warnings.warn(
-            "The `convert` attribute is deprecated in favor of `converter`.  "
-            "It will be removed after 2019/01.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.converter
+        raise FrozenInstanceError
 
     @classmethod
-    def from_counting_attr(cls, name, ca, type=None):
+    def from_counting_attr(
+        cls, name: str, ca: _CountingAttr, kw_only: bool, type=None
+    ):
+        # The 'kw_only' argument is the class-level setting, and is used if the
+        # attribute itself does not explicitly set 'kw_only'.
         # type holds the annotated value. deal with conflicts:
         if type is None:
             type = ca.type
         elif ca.type is not None:
-            raise ValueError(
-                "Type annotation and type argument cannot both be present"
-            )
-        inst_dict = {
-            k: getattr(ca, k)
-            for k in Attribute.__slots__
-            if k
-            not in (
-                "name",
-                "validator",
-                "default",
-                "type",
-                "convert",
-            )  # exclude methods and deprecated alias
-        }
+            msg = f"Type annotation and type argument cannot both be present for '{name}'."
+            raise ValueError(msg)
         return cls(
-            name=name,
-            validator=ca._validator,
-            default=ca._default,
-            type=type,
-            **inst_dict
+            name,
+            ca._default,
+            ca._validator,
+            ca.repr,
+            None,
+            ca.hash,
+            ca.init,
+            False,
+            ca.metadata,
+            type,
+            ca.converter,
+            kw_only if ca.kw_only is None else ca.kw_only,
+            ca.eq,
+            ca.eq_key,
+            ca.order,
+            ca.order_key,
+            ca.on_setattr,
+            ca.alias,
         )
 
-    # Don't use attr.assoc since fields(Attribute) doesn't work
-    def _assoc(self, **changes):
+    # Don't use attrs.evolve since fields(Attribute) doesn't work
+    def evolve(self, **changes):
         """
         Copy *self* and apply *changes*.
+
+        This works similarly to `attrs.evolve` but that function does not work
+        with :class:`attrs.Attribute`.
+
+        It is mainly meant to be used for `transform-fields`.
+
+        .. versionadded:: 20.3.0
         """
         new = copy.copy(self)
 
@@ -1768,16 +2606,18 @@ class Attribute(object):
         self._setattrs(zip(self.__slots__, state))
 
     def _setattrs(self, name_values_pairs):
-        bound_setattr = _obj_setattr.__get__(self, Attribute)
+        bound_setattr = _OBJ_SETATTR.__get__(self)
         for name, value in name_values_pairs:
             if name != "metadata":
                 bound_setattr(name, value)
             else:
                 bound_setattr(
                     name,
-                    metadata_proxy(value)
-                    if value
-                    else _empty_metadata_singleton,
+                    (
+                        types.MappingProxyType(dict(value))
+                        if value
+                        else _EMPTY_METADATA_SINGLETON
+                    ),
                 )
 
 
@@ -1787,21 +2627,27 @@ _a = [
         default=NOTHING,
         validator=None,
         repr=True,
-        cmp=True,
+        cmp=None,
+        eq=True,
+        order=False,
         hash=(name != "metadata"),
         init=True,
+        inherited=False,
+        alias=_default_init_alias_for(name),
     )
     for name in Attribute.__slots__
-    if name != "convert"  # XXX: remove once `convert` is gone
 ]
 
 Attribute = _add_hash(
-    _add_cmp(_add_repr(Attribute, attrs=_a), attrs=_a),
-    attrs=[a for a in _a if a.hash],
+    _add_eq(
+        _add_repr(Attribute, attrs=_a),
+        attrs=[a for a in _a if a.name != "inherited"],
+    ),
+    attrs=[a for a in _a if a.hash and a.name != "inherited"],
 )
 
 
-class _CountingAttr(object):
+class _CountingAttr:
     """
     Intermediate representation of attributes that uses a counter to preserve
     the order in which the attributes have been defined.
@@ -1811,40 +2657,70 @@ class _CountingAttr(object):
     """
 
     __slots__ = (
-        "counter",
         "_default",
-        "repr",
-        "cmp",
+        "_validator",
+        "alias",
+        "converter",
+        "counter",
+        "eq",
+        "eq_key",
         "hash",
         "init",
-        "metadata",
-        "_validator",
-        "converter",
-        "type",
         "kw_only",
+        "metadata",
+        "on_setattr",
+        "order",
+        "order_key",
+        "repr",
+        "type",
     )
-    __attrs_attrs__ = tuple(
-        Attribute(
-            name=name,
-            default=NOTHING,
-            validator=None,
-            repr=True,
-            cmp=True,
-            hash=True,
-            init=True,
-            kw_only=False,
-        )
-        for name in ("counter", "_default", "repr", "cmp", "hash", "init")
-    ) + (
+    __attrs_attrs__ = (
+        *tuple(
+            Attribute(
+                name=name,
+                alias=_default_init_alias_for(name),
+                default=NOTHING,
+                validator=None,
+                repr=True,
+                cmp=None,
+                hash=True,
+                init=True,
+                kw_only=False,
+                eq=True,
+                eq_key=None,
+                order=False,
+                order_key=None,
+                inherited=False,
+                on_setattr=None,
+            )
+            for name in (
+                "counter",
+                "_default",
+                "repr",
+                "eq",
+                "order",
+                "hash",
+                "init",
+                "on_setattr",
+                "alias",
+            )
+        ),
         Attribute(
             name="metadata",
+            alias="metadata",
             default=None,
             validator=None,
             repr=True,
-            cmp=True,
+            cmp=None,
             hash=False,
             init=True,
             kw_only=False,
+            eq=True,
+            eq_key=None,
+            order=False,
+            order_key=None,
+            inherited=False,
+            on_setattr=None,
         ),
     )
     cls_counter = 0
@@ -1861,23 +2737,30 @@ class _CountingAttr(object):
         metadata,
         type,
         kw_only,
+        eq,
+        eq_key,
+        order,
+        order_key,
+        on_setattr,
+        alias,
     ):
         _CountingAttr.cls_counter += 1
         self.counter = _CountingAttr.cls_counter
         self._default = default
-        # If validator is a list/tuple, wrap it using helper validator.
-        if validator and isinstance(validator, (list, tuple)):
-            self._validator = and_(*validator)
-        else:
-            self._validator = validator
+        self._validator = validator
+        self.converter = converter
         self.repr = repr
-        self.cmp = cmp
+        self.eq = eq
+        self.eq_key = eq_key
+        self.order = order
+        self.order_key = order_key
         self.hash = hash
         self.init = init
-        self.converter = converter
         self.metadata = metadata
         self.type = type
         self.kw_only = kw_only
+        self.on_setattr = on_setattr
+        self.alias = alias
 
     def validator(self, meth):
         """
@@ -1899,108 +2782,492 @@ class _CountingAttr(object):
 
         Returns *meth* unchanged.
 
-        :raises DefaultAlreadySetError: If default has been set before.
+        Raises:
+            DefaultAlreadySetError: If default has been set before.
 
         .. versionadded:: 17.1.0
         """
         if self._default is not NOTHING:
-            raise DefaultAlreadySetError()
+            raise DefaultAlreadySetError
 
         self._default = Factory(meth, takes_self=True)
 
         return meth
 
 
-_CountingAttr = _add_cmp(_add_repr(_CountingAttr))
+_CountingAttr = _add_eq(_add_repr(_CountingAttr))
 
 
-@attrs(slots=True, init=False, hash=True)
-class Factory(object):
+class ClassProps:
+    """
+    Effective class properties as derived from parameters to `attr.s()` or
+    `define()` decorators.
+
+    This is the same data structure that *attrs* uses internally to decide how
+    to construct the final class.
+
+    Warning:
+
+        This feature is currently **experimental** and is not covered by our
+        strict backwards-compatibility guarantees.
+
+
+    Attributes:
+        is_exception (bool):
+            Whether the class is treated as an exception class.
+
+        is_slotted (bool):
+            Whether the class is `slotted <slotted classes>`.
+
+        has_weakref_slot (bool):
+            Whether the class has a slot for weak references.
+
+        is_frozen (bool):
+            Whether the class is frozen.
+
+        kw_only (KeywordOnly):
+            Whether / how the class enforces keyword-only arguments on the
+            ``__init__`` method.
+
+        collected_fields_by_mro (bool):
+            Whether the class fields were collected by method resolution order.
+            That is, correctly but unlike `dataclasses`.
+
+        added_init (bool):
+            Whether the class has an *attrs*-generated ``__init__`` method.
+
+        added_repr (bool):
+            Whether the class has an *attrs*-generated ``__repr__`` method.
+
+        added_eq (bool):
+            Whether the class has *attrs*-generated equality methods.
+
+        added_ordering (bool):
+            Whether the class has *attrs*-generated ordering methods.
+
+        hashability (Hashability): How `hashable <hashing>` the class is.
+
+        added_match_args (bool):
+            Whether the class supports positional `match <match>` over its
+            fields.
+
+        added_str (bool):
+            Whether the class has an *attrs*-generated ``__str__`` method.
+
+        added_pickling (bool):
+            Whether the class has *attrs*-generated ``__getstate__`` and
+            ``__setstate__`` methods for `pickle`.
+
+        on_setattr_hook (Callable[[Any, Attribute[Any], Any], Any] | None):
+            The class's ``__setattr__`` hook.
+
+        field_transformer (Callable[[Attribute[Any]], Attribute[Any]] | None):
+            The class's `field transformers <transform-fields>`.
+
+    .. versionadded:: 25.4.0
+    """
+
+    class Hashability(enum.Enum):
+        """
+        The hashability of a class.
+
+        .. versionadded:: 25.4.0
+        """
+
+        HASHABLE = "hashable"
+        """Write a ``__hash__``."""
+        HASHABLE_CACHED = "hashable_cache"
+        """Write a ``__hash__`` and cache the hash."""
+        UNHASHABLE = "unhashable"
+        """Set ``__hash__`` to ``None``."""
+        LEAVE_ALONE = "leave_alone"
+        """Don't touch ``__hash__``."""
+
+    class KeywordOnly(enum.Enum):
+        """
+        How attributes should be treated regarding keyword-only parameters.
+
+        .. versionadded:: 25.4.0
+        """
+
+        NO = "no"
+        """Attributes are not keyword-only."""
+        YES = "yes"
+        """Attributes in current class without kw_only=False are keyword-only."""
+        FORCE = "force"
+        """All attributes are keyword-only."""
+
+    __slots__ = (  # noqa: RUF023 -- order matters for __init__
+        "is_exception",
+        "is_slotted",
+        "has_weakref_slot",
+        "is_frozen",
+        "kw_only",
+        "collected_fields_by_mro",
+        "added_init",
+        "added_repr",
+        "added_eq",
+        "added_ordering",
+        "hashability",
+        "added_match_args",
+        "added_str",
+        "added_pickling",
+        "on_setattr_hook",
+        "field_transformer",
+    )
+
+    def __init__(
+        self,
+        is_exception,
+        is_slotted,
+        has_weakref_slot,
+        is_frozen,
+        kw_only,
+        collected_fields_by_mro,
+        added_init,
+        added_repr,
+        added_eq,
+        added_ordering,
+        hashability,
+        added_match_args,
+        added_str,
+        added_pickling,
+        on_setattr_hook,
+        field_transformer,
+    ):
+        self.is_exception = is_exception
+        self.is_slotted = is_slotted
+        self.has_weakref_slot = has_weakref_slot
+        self.is_frozen = is_frozen
+        self.kw_only = kw_only
+        self.collected_fields_by_mro = collected_fields_by_mro
+        self.added_init = added_init
+        self.added_repr = added_repr
+        self.added_eq = added_eq
+        self.added_ordering = added_ordering
+        self.hashability = hashability
+        self.added_match_args = added_match_args
+        self.added_str = added_str
+        self.added_pickling = added_pickling
+        self.on_setattr_hook = on_setattr_hook
+        self.field_transformer = field_transformer
+
+    @property
+    def is_hashable(self):
+        return (
+            self.hashability is ClassProps.Hashability.HASHABLE
+            or self.hashability is ClassProps.Hashability.HASHABLE_CACHED
+        )
+
+
+_cas = [
+    Attribute(
+        name=name,
+        default=NOTHING,
+        validator=None,
+        repr=True,
+        cmp=None,
+        eq=True,
+        order=False,
+        hash=True,
+        init=True,
+        inherited=False,
+        alias=_default_init_alias_for(name),
+    )
+    for name in ClassProps.__slots__
+]
+
+ClassProps = _add_eq(_add_repr(ClassProps, attrs=_cas), attrs=_cas)
+
+
+class Factory:
     """
     Stores a factory callable.
 
-    If passed as the default value to :func:`attr.ib`, the factory is used to
+    If passed as the default value to `attrs.field`, the factory is used to
     generate a new value.
 
-    :param callable factory: A callable that takes either none or exactly one
-        mandatory positional argument depending on *takes_self*.
-    :param bool takes_self: Pass the partially initialized instance that is
-        being initialized as a positional argument.
+    Args:
+        factory (typing.Callable):
+            A callable that takes either none or exactly one mandatory
+            positional argument depending on *takes_self*.
+
+        takes_self (bool):
+            Pass the partially initialized instance that is being initialized
+            as a positional argument.
 
     .. versionadded:: 17.1.0  *takes_self*
     """
 
-    factory = attrib()
-    takes_self = attrib()
+    __slots__ = ("factory", "takes_self")
 
     def __init__(self, factory, takes_self=False):
-        """
-        `Factory` is part of the default machinery so if we want a default
-        value here, we have to implement it ourselves.
-        """
         self.factory = factory
         self.takes_self = takes_self
 
+    def __getstate__(self):
+        """
+        Play nice with pickle.
+        """
+        return tuple(getattr(self, name) for name in self.__slots__)
 
-def make_class(name, attrs, bases=(object,), **attributes_arguments):
+    def __setstate__(self, state):
+        """
+        Play nice with pickle.
+        """
+        for name, value in zip(self.__slots__, state):
+            setattr(self, name, value)
+
+
+_f = [
+    Attribute(
+        name=name,
+        default=NOTHING,
+        validator=None,
+        repr=True,
+        cmp=None,
+        eq=True,
+        order=False,
+        hash=True,
+        init=True,
+        inherited=False,
+    )
+    for name in Factory.__slots__
+]
+
+Factory = _add_hash(_add_eq(_add_repr(Factory, attrs=_f), attrs=_f), attrs=_f)
+
+
+class Converter:
     """
+    Stores a converter callable.
+
+    Allows for the wrapped converter to take additional arguments. The
+    arguments are passed in the order they are documented.
+
+    Args:
+        converter (Callable): A callable that converts the passed value.
+
+        takes_self (bool):
+            Pass the partially initialized instance that is being initialized
+            as a positional argument. (default: `False`)
+
+        takes_field (bool):
+            Pass the field definition (an :class:`Attribute`) into the
+            converter as a positional argument. (default: `False`)
+
+    .. versionadded:: 24.1.0
+    """
+
+    __slots__ = (
+        "__call__",
+        "_first_param_type",
+        "_global_name",
+        "converter",
+        "takes_field",
+        "takes_self",
+    )
+
+    def __init__(self, converter, *, takes_self=False, takes_field=False):
+        self.converter = converter
+        self.takes_self = takes_self
+        self.takes_field = takes_field
+
+        ex = _AnnotationExtractor(converter)
+        self._first_param_type = ex.get_first_param_type()
+
+        if not (self.takes_self or self.takes_field):
+            self.__call__ = lambda value, _, __: self.converter(value)
+        elif self.takes_self and not self.takes_field:
+            self.__call__ = lambda value, instance, __: self.converter(
+                value, instance
+            )
+        elif not self.takes_self and self.takes_field:
+            self.__call__ = lambda value, __, field: self.converter(
+                value, field
+            )
+        else:
+            self.__call__ = lambda value, instance, field: self.converter(
+                value, instance, field
+            )
+
+        rt = ex.get_return_type()
+        if rt is not None:
+            self.__call__.__annotations__["return"] = rt
+
+    @staticmethod
+    def _get_global_name(attr_name: str) -> str:
+        """
+        Return the name that a converter for an attribute name *attr_name*
+        would have.
+        """
+        return f"__attr_converter_{attr_name}"
+
+    def _fmt_converter_call(self, attr_name: str, value_var: str) -> str:
+        """
+        Return a string that calls the converter for an attribute name
+        *attr_name* and the value in variable named *value_var* according to
+        `self.takes_self` and `self.takes_field`.
+        """
+        if not (self.takes_self or self.takes_field):
+            return f"{self._get_global_name(attr_name)}({value_var})"
+
+        if self.takes_self and self.takes_field:
+            return f"{self._get_global_name(attr_name)}({value_var}, self, attr_dict['{attr_name}'])"
+
+        if self.takes_self:
+            return f"{self._get_global_name(attr_name)}({value_var}, self)"
+
+        return f"{self._get_global_name(attr_name)}({value_var}, attr_dict['{attr_name}'])"
+
+    def __getstate__(self):
+        """
+        Return a dict containing only converter and takes_self -- the rest gets
+        computed when loading.
+        """
+        return {
+            "converter": self.converter,
+            "takes_self": self.takes_self,
+            "takes_field": self.takes_field,
+        }
+
+    def __setstate__(self, state):
+        """
+        Load instance from state.
+        """
+        self.__init__(**state)
+
+
+_f = [
+    Attribute(
+        name=name,
+        default=NOTHING,
+        validator=None,
+        repr=True,
+        cmp=None,
+        eq=True,
+        order=False,
+        hash=True,
+        init=True,
+        inherited=False,
+    )
+    for name in ("converter", "takes_self", "takes_field")
+]
+
+Converter = _add_hash(
+    _add_eq(_add_repr(Converter, attrs=_f), attrs=_f), attrs=_f
+)
+
+
+def make_class(
+    name, attrs, bases=(object,), class_body=None, **attributes_arguments
+):
+    r"""
     A quick way to create a new class called *name* with *attrs*.
 
-    :param name: The name for the new class.
-    :type name: str
+    .. note::
 
-    :param attrs: A list of names or a dictionary of mappings of names to
-        attributes.
+        ``make_class()`` is a thin wrapper around `attr.s`, not `attrs.define`
+        which means that it doesn't come with some of the improved defaults.
 
-        If *attrs* is a list or an ordered dict (:class:`dict` on Python 3.6+,
-        :class:`collections.OrderedDict` otherwise), the order is deduced from
-        the order of the names or attributes inside *attrs*.  Otherwise the
-        order of the definition of the attributes is used.
-    :type attrs: :class:`list` or :class:`dict`
+        For example, if you want the same ``on_setattr`` behavior as in
+        `attrs.define`, you have to pass the hooks yourself: ``make_class(...,
+        on_setattr=setters.pipe(setters.convert, setters.validate)``
 
-    :param tuple bases: Classes that the new class will subclass.
+    .. warning::
 
-    :param attributes_arguments: Passed unmodified to :func:`attr.s`.
+        It is *your* duty to ensure that the class name and the attribute names
+        are valid identifiers. ``make_class()`` will *not* validate them for
+        you.
 
-    :return: A new class with *attrs*.
-    :rtype: type
+    Args:
+        name (str): The name for the new class.
+
+        attrs (list | dict):
+            A list of names or a dictionary of mappings of names to `attr.ib`\
+            s / `attrs.field`\ s.
+
+            The order is deduced from the order of the names or attributes
+            inside *attrs*.  Otherwise the order of the definition of the
+            attributes is used.
+
+        bases (tuple[type, ...]): Classes that the new class will subclass.
+
+        class_body (dict):
+            An optional dictionary of class attributes for the new class.
+
+        attributes_arguments: Passed unmodified to `attr.s`.
+
+    Returns:
+        type: A new class with *attrs*.
 
     .. versionadded:: 17.1.0 *bases*
     .. versionchanged:: 18.1.0 If *attrs* is ordered, the order is retained.
+    .. versionchanged:: 23.2.0 *class_body*
+    .. versionchanged:: 25.2.0 Class names can now be unicode.
     """
+    # Class identifiers are converted into the normal form NFKC while parsing
+    name = unicodedata.normalize("NFKC", name)
+
     if isinstance(attrs, dict):
         cls_dict = attrs
     elif isinstance(attrs, (list, tuple)):
-        cls_dict = dict((a, attrib()) for a in attrs)
+        cls_dict = {a: attrib() for a in attrs}
     else:
-        raise TypeError("attrs argument must be a dict or a list.")
+        msg = "attrs argument must be a dict or a list."
+        raise TypeError(msg)
 
+    pre_init = cls_dict.pop("__attrs_pre_init__", None)
     post_init = cls_dict.pop("__attrs_post_init__", None)
-    type_ = type(
-        name,
-        bases,
-        {} if post_init is None else {"__attrs_post_init__": post_init},
-    )
+    user_init = cls_dict.pop("__init__", None)
+
+    body = {}
+    if class_body is not None:
+        body.update(class_body)
+    if pre_init is not None:
+        body["__attrs_pre_init__"] = pre_init
+    if post_init is not None:
+        body["__attrs_post_init__"] = post_init
+    if user_init is not None:
+        body["__init__"] = user_init
+
+    type_ = types.new_class(name, bases, {}, lambda ns: ns.update(body))
+
     # For pickling to work, the __module__ variable needs to be set to the
     # frame where the class is created.  Bypass this step in environments where
     # sys._getframe is not defined (Jython for example) or sys._getframe is not
     # defined for arguments greater than 0 (IronPython).
-    try:
+    with contextlib.suppress(AttributeError, ValueError):
         type_.__module__ = sys._getframe(1).f_globals.get(
             "__name__", "__main__"
         )
-    except (AttributeError, ValueError):
-        pass
 
-    return _attrs(these=cls_dict, **attributes_arguments)(type_)
+    # We do it here for proper warnings with meaningful stacklevel.
+    cmp = attributes_arguments.pop("cmp", None)
+    (
+        attributes_arguments["eq"],
+        attributes_arguments["order"],
+    ) = _determine_attrs_eq_order(
+        cmp,
+        attributes_arguments.get("eq"),
+        attributes_arguments.get("order"),
+        True,
+    )
+
+    cls = _attrs(these=cls_dict, **attributes_arguments)(type_)
+    # Only add type annotations now or "_attrs()" will complain:
+    cls.__annotations__ = {
+        k: v.type for k, v in cls_dict.items() if v.type is not None
+    }
+    return cls
 
 
 # These are required by within this module so we define them here and merely
-# import into .validators.
+# import into .validators / .converters.
 
 
-@attrs(slots=True, hash=True)
-class _AndValidator(object):
+@attrs(slots=True, unsafe_hash=True)
+class _AndValidator:
     """
     Compose many validators to a single one.
     """
@@ -2018,8 +3285,9 @@ def and_(*validators):
 
     When called on a value, it runs all wrapped validators.
 
-    :param validators: Arbitrary number of validators.
-    :type validators: callables
+    Args:
+        validators (~collections.abc.Iterable[typing.Callable]):
+            Arbitrary number of validators.
 
     .. versionadded:: 17.1.0
     """
@@ -2032,3 +3300,63 @@ def and_(*validators):
         )
 
     return _AndValidator(tuple(vals))
+
+
+def pipe(*converters):
+    """
+    A converter that composes multiple converters into one.
+
+    When called on a value, it runs all wrapped converters, returning the
+    *last* value.
+
+    Type annotations will be inferred from the wrapped converters', if they
+    have any.
+
+        converters (~collections.abc.Iterable[typing.Callable]):
+            Arbitrary number of converters.
+
+    .. versionadded:: 20.1.0
+    """
+
+    return_instance = any(isinstance(c, Converter) for c in converters)
+
+    if return_instance:
+
+        def pipe_converter(val, inst, field):
+            for c in converters:
+                val = (
+                    c(val, inst, field) if isinstance(c, Converter) else c(val)
+                )
+
+            return val
+
+    else:
+
+        def pipe_converter(val):
+            for c in converters:
+                val = c(val)
+
+            return val
+
+    if not converters:
+        # If the converter list is empty, pipe_converter is the identity.
+        A = TypeVar("A")
+        pipe_converter.__annotations__.update({"val": A, "return": A})
+    else:
+        # Get parameter type from first converter.
+        t = _AnnotationExtractor(converters[0]).get_first_param_type()
+        if t:
+            pipe_converter.__annotations__["val"] = t
+
+        last = converters[-1]
+        if not PY_3_11_PLUS and isinstance(last, Converter):
+            last = last.__call__
+
+        # Get return type from last converter.
+        rt = _AnnotationExtractor(last).get_return_type()
+        if rt:
+            pipe_converter.__annotations__["return"] = rt
+
+    if return_instance:
+        return Converter(pipe_converter, takes_self=True, takes_field=True)
+    return pipe_converter

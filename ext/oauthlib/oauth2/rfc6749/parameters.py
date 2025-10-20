@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 oauthlib.oauth2.rfc6749.parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -7,29 +6,24 @@ This module contains methods related to `Section 4`_ of the OAuth 2 RFC.
 
 .. _`Section 4`: https://tools.ietf.org/html/rfc6749#section-4
 """
-from __future__ import absolute_import, unicode_literals
-
 import json
 import os
 import time
+import urllib.parse as urlparse
 
-from oauthlib.common import add_params_to_qs, add_params_to_uri, unicode_type
+from oauthlib.common import add_params_to_qs, add_params_to_uri
 from oauthlib.signals import scope_changed
 
-from .errors import (InsecureTransportError, MismatchingStateError,
-                     MissingCodeError, MissingTokenError,
-                     MissingTokenTypeError, raise_from_error)
+from .errors import (
+    InsecureTransportError, MismatchingStateError, MissingCodeError,
+    MissingTokenError, MissingTokenTypeError, raise_from_error,
+)
 from .tokens import OAuth2Token
 from .utils import is_secure_transport, list_to_scope, scope_to_list
 
-try:
-    import urlparse
-except ImportError:
-    import urllib.parse as urlparse
-
 
 def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
-                      scope=None, state=None, **kwargs):
+                      scope=None, state=None, code_challenge=None, code_challenge_method='plain', **kwargs):
     """Prepare the authorization grant request URI.
 
     The client constructs the request URI by adding the following
@@ -51,6 +45,11 @@ def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
                   back to the client.  The parameter SHOULD be used for
                   preventing cross-site request forgery as described in
                   `Section 10.12`_.
+    :param code_challenge: PKCE parameter. A challenge derived from the
+                           code_verifier that is sent in the authorization
+                           request, to be verified against later.
+    :param code_challenge_method: PKCE parameter. A method that was used to derive the
+                                  code_challenge. Defaults to "plain" if not present in the request.
     :param kwargs: Extra arguments to embed in the grant/authorization URL.
 
     An example of an authorization code grant authorization URL:
@@ -58,6 +57,7 @@ def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
     .. code-block:: http
 
         GET /authorize?response_type=code&client_id=s6BhdRkqt3&state=xyz
+            &code_challenge=kjasBS523KdkAILD2k78NdcJSk2k3KHG6&code_challenge_method=S256
             &redirect_uri=https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb HTTP/1.1
         Host: server.example.com
 
@@ -79,15 +79,18 @@ def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
         params.append(('scope', list_to_scope(scope)))
     if state:
         params.append(('state', state))
+    if code_challenge is not None:
+        params.append(('code_challenge', code_challenge))
+        params.append(('code_challenge_method', code_challenge_method))
 
     for k in kwargs:
         if kwargs[k]:
-            params.append((unicode_type(k), kwargs[k]))
+            params.append((str(k), kwargs[k]))
 
     return add_params_to_uri(uri, params)
 
 
-def prepare_token_request(grant_type, body='', include_client_id=True, **kwargs):
+def prepare_token_request(grant_type, body='', include_client_id=True, code_verifier=None, **kwargs):
     """Prepare the access token request.
 
     The client makes a request to the token endpoint by adding the
@@ -98,7 +101,7 @@ def prepare_token_request(grant_type, body='', include_client_id=True, **kwargs)
                        "authorization_code" or "client_credentials".
 
     :param body: Existing request body (URL encoded string) to embed parameters
-                 into. This may contain extra paramters. Default ''.
+                 into. This may contain extra parameters. Default ''.
 
     :param include_client_id: `True` (default) to send the `client_id` in the
                               body of the upstream request. This is required
@@ -122,6 +125,9 @@ def prepare_token_request(grant_type, body='', include_client_id=True, **kwargs)
                          authorization request as described in
                          `Section 4.1.1`_, and their values MUST be identical. *
 
+    :param code_verifier: PKCE parameter. A cryptographically random string that is used to correlate the
+                          authorization request to the token request.
+
     :param kwargs: Extra arguments to embed in the request body.
 
     Parameters marked with a `*` above are not explicit arguments in the
@@ -142,22 +148,25 @@ def prepare_token_request(grant_type, body='', include_client_id=True, **kwargs)
     if 'scope' in kwargs:
         kwargs['scope'] = list_to_scope(kwargs['scope'])
 
-    # pull the `client_id` out of the kwargs. 
+    # pull the `client_id` out of the kwargs.
     client_id = kwargs.pop('client_id', None)
-    if include_client_id:
-        if client_id is not None:
-            params.append((unicode_type('client_id'), client_id))
+    if include_client_id and client_id is not None:
+        params.append(('client_id', client_id))
+
+    # use code_verifier if code_challenge was passed in the authorization request
+    if code_verifier is not None:
+        params.append(('code_verifier', code_verifier))
 
     # the kwargs iteration below only supports including boolean truth (truthy)
     # values, but some servers may require an empty string for `client_secret`
     client_secret = kwargs.pop('client_secret', None)
     if client_secret is not None:
-        params.append((unicode_type('client_secret'), client_secret))
+        params.append(('client_secret', client_secret))
 
     # this handles: `code`, `redirect_uri`, and other undocumented params
     for k in kwargs:
         if kwargs[k]:
-            params.append((unicode_type(k), kwargs[k]))
+            params.append((str(k), kwargs[k]))
 
     return add_params_to_qs(body, params)
 
@@ -167,7 +176,7 @@ def prepare_token_revocation_request(url, token, token_type_hint="access_token",
     """Prepare a token revocation request.
 
     The client constructs the request by including the following parameters
-    using the "application/x-www-form-urlencoded" format in the HTTP request
+    using the ``application/x-www-form-urlencoded`` format in the HTTP request
     entity-body:
 
     :param token: REQUIRED.  The token that the client wants to get revoked.
@@ -209,7 +218,7 @@ def prepare_token_revocation_request(url, token, token_type_hint="access_token",
 
     for k in kwargs:
         if kwargs[k]:
-            params.append((unicode_type(k), kwargs[k]))
+            params.append((str(k), kwargs[k]))
 
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
 
@@ -264,11 +273,14 @@ def parse_authorization_code_response(uri, state=None):
     query = urlparse.urlparse(uri).query
     params = dict(urlparse.parse_qsl(query))
 
-    if not 'code' in params:
-        raise MissingCodeError("Missing code parameter in response.")
-
-    if state and params.get('state', None) != state:
+    if state and params.get('state') != state:
         raise MismatchingStateError()
+
+    if 'error' in params:
+        raise_from_error(params.get('error'), params)
+
+    if 'code' not in params:
+        raise MissingCodeError("Missing code parameter in response.")
 
     return params
 
@@ -324,17 +336,20 @@ def parse_implicit_response(uri, state=None, scope=None):
     fragment = urlparse.urlparse(uri).fragment
     params = dict(urlparse.parse_qsl(fragment, keep_blank_values=True))
 
-    for key in ('expires_in',):
-        if key in params:  # cast things to int
-            params[key] = int(params[key])
-
     if 'scope' in params:
         params['scope'] = scope_to_list(params['scope'])
 
-    if 'expires_in' in params:
-        params['expires_at'] = time.time() + int(params['expires_in'])
+    vin, vat, v_at = parse_expires(params)
+    if vin:
+        params['expires_in'] = vin
+    elif 'expires_in' in params:
+        params.pop('expires_in')
+    if vat:
+        params['expires_at'] = vat
+    elif 'expires_at' in params:
+        params.pop('expires_at')
 
-    if state and params.get('state', None) != state:
+    if state and params.get('state') != state:
         raise ValueError("Mismatching or missing state in params.")
 
     params = OAuth2Token(params, old_scope=scope)
@@ -411,15 +426,19 @@ def parse_token_response(body, scope=None):
         #   https://github.com/oauthlib/oauthlib/issues/267
 
         params = dict(urlparse.parse_qsl(body))
-        for key in ('expires_in',):
-            if key in params:  # cast things to int
-                params[key] = int(params[key])
 
     if 'scope' in params:
         params['scope'] = scope_to_list(params['scope'])
 
-    if 'expires_in' in params:
-        params['expires_at'] = time.time() + int(params['expires_in'])
+    vin, vat, v_at = parse_expires(params)
+    if vin:
+        params['expires_in'] = vin
+    elif 'expires_in' in params:
+        params.pop('expires_in')
+    if vat:
+        params['expires_at'] = vat
+    elif 'expires_at' in params:
+        params.pop('expires_at')
 
     params = OAuth2Token(params, old_scope=scope)
     validate_token_parameters(params)
@@ -427,16 +446,15 @@ def parse_token_response(body, scope=None):
 
 
 def validate_token_parameters(params):
-    """Ensures token precence, token type, expiration and scope in params."""
+    """Ensures token presence, token type, expiration and scope in params."""
     if 'error' in params:
         raise_from_error(params.get('error'), params)
 
-    if not 'access_token' in params:
+    if 'access_token' not in params:
         raise MissingTokenError(description="Missing access token parameter.")
 
-    if not 'token_type' in params:
-        if os.environ.get('OAUTHLIB_STRICT_TOKEN_TYPE'):
-            raise MissingTokenTypeError()
+    if 'token_type' not in params and os.environ.get('OAUTHLIB_STRICT_TOKEN_TYPE'):
+        raise MissingTokenTypeError()
 
     # If the issued access token scope is different from the one requested by
     # the client, the authorization server MUST include the "scope" response
@@ -453,3 +471,58 @@ def validate_token_parameters(params):
             w.old_scope = params.old_scopes
             w.new_scope = params.scopes
             raise w
+
+def parse_expires(params):
+    """Parse `expires_in`, `expires_at` fields from params
+
+    Parse following these rules:
+    - `expires_in` must be either integer, float or None. If a float, it is converted into an integer.
+    - `expires_at` is not in specification so it does its best to:
+      - convert into a int, else
+      - convert into a float, else
+      - reuse the same type as-is (usually string)
+    - `_expires_at` is a special internal value returned to be always an `int`, based
+    either on the presence of `expires_at`, or reuse the current time plus
+    `expires_in`. This is typically used to validate token expiry.
+
+    :param params: Dict with expires_in and expires_at optionally set
+    :return: Tuple of `expires_in`, `expires_at`, and `_expires_at`. None if not set.
+    """
+    expires_in = None
+    expires_at = None
+    _expires_at = None
+
+    if 'expires_in' in params:
+        if isinstance(params.get('expires_in'), int):
+            expires_in = params.get('expires_in')
+        elif isinstance(params.get('expires_in'), float):
+            expires_in = int(params.get('expires_in'))
+        elif isinstance(params.get('expires_in'), str):
+            try:
+                # Attempt to convert to int
+                expires_in = int(params.get('expires_in'))
+            except ValueError:
+                raise ValueError("expires_in must be an int")
+        elif params.get('expires_in') is not None:
+            raise ValueError("expires_in must be an int")
+
+    if 'expires_at' in params:
+        if isinstance(params.get('expires_at'), (float, int)):
+            expires_at = params.get('expires_at')
+            _expires_at = expires_at
+        elif isinstance(params.get('expires_at'), str):
+            try:
+                # Attempt to convert to int first, then float if int fails
+                expires_at = int(params.get('expires_at'))
+                _expires_at = expires_at
+            except ValueError:
+                try:
+                    expires_at = float(params.get('expires_at'))
+                    _expires_at = expires_at
+                except ValueError:
+                    # no change from str
+                    expires_at = params.get('expires_at')
+    if _expires_at is None and expires_in:
+        expires_at = round(time.time()) + expires_in
+        _expires_at = expires_at
+    return expires_in, expires_at, _expires_at

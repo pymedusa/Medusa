@@ -10,7 +10,8 @@
 #  License for the specific language governing permissions and limitations
 #  under the License.
 
-from .exception import NoMatches, MultipleMatches
+from .exception import MultipleMatches
+from .exception import NoMatches
 from .named import NamedExtensionManager
 
 
@@ -33,7 +34,7 @@ class DriverManager(NamedExtensionManager):
         is True.
     :type invoke_kwds: dict
     :param on_load_failure_callback: Callback function that will be called when
-        a entrypoint can not be loaded. The arguments that will be provided
+        an entrypoint can not be loaded. The arguments that will be provided
         when this is called (when an entrypoint fails to load) are
         (manager, entrypoint, exception)
     :type on_load_failure_callback: function
@@ -50,7 +51,7 @@ class DriverManager(NamedExtensionManager):
                  warn_on_missing_entrypoint=True):
         on_load_failure_callback = on_load_failure_callback \
             or self._default_on_load_failure
-        super(DriverManager, self).__init__(
+        super().__init__(
             namespace=namespace,
             names=[name],
             invoke_on_load=invoke_on_load,
@@ -85,7 +86,7 @@ class DriverManager(NamedExtensionManager):
             and then ignored
         :type propagate_map_exceptions: bool
         :param on_load_failure_callback: Callback function that will
-            be called when a entrypoint can not be loaded. The
+            be called when an entrypoint can not be loaded. The
             arguments that will be provided when this is called (when
             an entrypoint fails to load) are (manager, entrypoint,
             exception)
@@ -97,7 +98,7 @@ class DriverManager(NamedExtensionManager):
 
         """
 
-        o = super(DriverManager, cls).make_test_instance(
+        o = super().make_test_instance(
             [extension], namespace=namespace,
             propagate_map_exceptions=propagate_map_exceptions,
             on_load_failure_callback=on_load_failure_callback,
@@ -105,7 +106,7 @@ class DriverManager(NamedExtensionManager):
         return o
 
     def _init_plugins(self, extensions):
-        super(DriverManager, self)._init_plugins(extensions)
+        super()._init_plugins(extensions)
 
         if not self.extensions:
             name = self._names[0]
@@ -142,7 +143,6 @@ class DriverManager(NamedExtensionManager):
 
     @property
     def driver(self):
-        """Returns the driver being used by this manager.
-        """
+        """Returns the driver being used by this manager."""
         ext = self.extensions[0]
         return ext.obj if ext.obj else ext.plugin

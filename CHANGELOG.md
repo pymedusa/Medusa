@@ -1,3 +1,24 @@
+## 1.0.23 (20-10-2025)
+
+#### New Features
+- Add support for Python 3.12 and remove support for Python 3.7 and 3.8
+- Add invalid episode status
+
+#### Improvements
+- Update many Python libs
+- Update thexem tld from .de to .info (Thanks to @borntohonk)
+- Improve colors for history table
+- Removed dependency on unmaintained docker container (Thanks to @bobpaul)
+- Set the WEB_PORT by enviroment variable if enviroment variable is set (Thanks to @borntohonk)
+
+#### Fixes
+- Fix rare mass download of unset episodes
+- Fix Python 3.12 support on some systems (Thanks to @borntohonk)
+- Fix Forced Search typo (Thanks to @cheese1)
+- Fix trakt episodes sync
+
+-----
+
 ## 1.0.22 (13-12-2024)
 
 #### New Features

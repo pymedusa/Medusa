@@ -844,8 +844,8 @@ class DataGenerator(object):
             in map(
                 lambda key: (getattr(common, key), key),
                 # Sorted by value
-                ('UNSET', 'UNAIRED', 'SNATCHED', 'WANTED', 'DOWNLOADED', 'SKIPPED', 'ARCHIVED',
-                 'IGNORED', 'SNATCHED_PROPER', 'SUBTITLED', 'FAILED', 'SNATCHED_BEST')
+                ('INVALID', 'UNSET', 'UNAIRED', 'SNATCHED', 'WANTED', 'DOWNLOADED', 'SKIPPED',
+                 'ARCHIVED', 'IGNORED', 'SNATCHED_PROPER', 'SUBTITLED', 'FAILED', 'SNATCHED_BEST')
             )
         ]
 

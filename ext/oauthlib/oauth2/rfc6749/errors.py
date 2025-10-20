@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 oauthlib.oauth2.rfc6749.errors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -6,9 +5,9 @@ oauthlib.oauth2.rfc6749.errors
 Error used both by OAuth 2 clients and providers to represent the spec
 defined error responses for all four core grant types.
 """
-from __future__ import unicode_literals
-
 import json
+import inspect
+import sys
 
 from oauthlib.common import add_params_to_uri, urlencode
 
@@ -45,10 +44,10 @@ class OAuth2Error(Exception):
         if description is not None:
             self.description = description
 
-        message = '(%s) %s' % (self.error, self.description)
+        message = '({}) {}'.format(self.error, self.description)
         if request:
             message += ' ' + repr(request)
-        super(OAuth2Error, self).__init__(message)
+        super().__init__(message)
 
         self.uri = uri
         self.state = state
@@ -63,7 +62,7 @@ class OAuth2Error(Exception):
             self.response_type = request.response_type
             self.response_mode = request.response_mode
             self.grant_type = request.grant_type
-            if not state:
+            if state is None:
                 self.state = request.state
         else:
             self.redirect_uri = None
@@ -106,15 +105,12 @@ class OAuth2Error(Exception):
             value "Bearer".  This scheme MUST be followed by one or more
             auth-param values.
             """
-            authvalues = [
-                "Bearer",
-                'error="{}"'.format(self.error)
-            ]
+            authvalues = ['error="{}"'.format(self.error)]
             if self.description:
                 authvalues.append('error_description="{}"'.format(self.description))
             if self.uri:
                 authvalues.append('error_uri="{}"'.format(self.uri))
-            return {"WWW-Authenticate": ", ".join(authvalues)}
+            return {"WWW-Authenticate": "Bearer " + ", ".join(authvalues)}
         return {}
 
 
@@ -156,7 +152,6 @@ class FatalClientError(OAuth2Error):
 
     Instead the user should be informed of the error by the provider itself.
     """
-    pass
 
 
 class InvalidRequestFatalError(FatalClientError):
@@ -389,12 +384,10 @@ class CustomOAuth2Error(OAuth2Error):
     """
     def __init__(self, error, *args, **kwargs):
         self.error = error
-        super(CustomOAuth2Error, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
 
 def raise_from_error(error, params=None):
-    import inspect
-    import sys
     kwargs = {
         'description': params.get('error_description'),
         'uri': params.get('error_uri'),

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 oauthlib.oauth1.rfc5849
 ~~~~~~~~~~~~~~
@@ -6,14 +5,10 @@ oauthlib.oauth1.rfc5849
 This module is an implementation of various logic needed
 for signing and checking OAuth 1.0 RFC 5849 requests.
 """
-from __future__ import absolute_import, unicode_literals
-
-import sys
-
 from . import SIGNATURE_METHODS, utils
 
 
-class RequestValidator(object):
+class RequestValidator:
 
     """A validator/datastore interaction base class for OAuth 1 providers.
 
@@ -24,7 +19,7 @@ class RequestValidator(object):
     Methods used to check the format of input parameters. Common tests include
     length, character set, membership, range or pattern. These tests are
     referred to as `whitelisting or blacklisting`_. Whitelisting is better
-    but blacklisting can be usefull to spot malicious activity.
+    but blacklisting can be useful to spot malicious activity.
     The following have methods a default implementation:
 
     - check_client_key
@@ -197,7 +192,7 @@ class RequestValidator(object):
 
     def check_realms(self, realms):
         """Check that the realm is one of a set allowed realms."""
-        return all((r in self.realms for r in realms))
+        return all(r in self.realms for r in realms)
 
     def _subclass_must_implement(self, fn):
         """
@@ -448,7 +443,7 @@ class RequestValidator(object):
         :type request: oauthlib.common.Request
         :returns: None
 
-        Per `Section 2.3`__ of the spec:
+        Per `Section 2.3`_ of the spec:
 
         "The server MUST (...) ensure that the temporary
         credentials have not expired or been used before."
@@ -836,7 +831,7 @@ class RequestValidator(object):
         """Associate an authorization verifier with a request token.
 
         :param token: A request token string.
-        :param verifier A dictionary containing the oauth_verifier and
+        :param verifier: A dictionary containing the oauth_verifier and
                         oauth_token
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request

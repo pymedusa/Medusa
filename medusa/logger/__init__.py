@@ -28,7 +28,7 @@ import re
 import sys
 from builtins import object
 from builtins import range
-from collections import OrderedDict
+from collections import deque, OrderedDict
 from logging import (
     CRITICAL,
     DEBUG,
@@ -130,8 +130,18 @@ def get_loggers(package):
     return [standard_logger(modname) for modname in list_modules(package)]
 
 
-def read_loglines(log_file=None, modification_time=None, start_index=0, max_lines=None, max_traceback_depth=100,
-                  predicate=lambda logline: True, formatter=lambda logline: logline):
+def _default_predicate(logline):
+    return True
+
+
+def _default_formatter(logline):
+    return logline
+
+
+def read_loglines(log_file=None, modification_time=None, start_index=0, max_lines=None,
+                  max_traceback_depth=100,
+                  predicate=_default_predicate,
+                  formatter=_default_formatter):
     """A generator that returns the lines of all consolidated log files in descending order.
 
     :param log_file:
@@ -151,56 +161,67 @@ def read_loglines(log_file=None, modification_time=None, start_index=0, max_line
     :rtype: collections_abc.Iterable of LogLine
     """
     log_file = log_file or instance.log_file
-    log_files = [log_file] + ['{file}.{index}'.format(file=log_file, index=i) for i in range(1, int(app.LOG_NR))]
-    traceback_lines = []
+    nr = int(app.LOG_NR)
+    log_files = [log_file] + [f'{log_file}.{i}' for i in range(1, nr)]
+    traceback_lines = deque(maxlen=max_traceback_depth)
     counter = 0
+
+    isfile = os.path.isfile
+    getmtime = os.path.getmtime
+    from_timestamp = datetime.datetime.fromtimestamp
+    from_line = LogLine.from_line
+
     for f in log_files:
-        if not f or not os.path.isfile(f):
+        if not f or not isfile(f):
             continue
 
         if modification_time:
-            log_mtime = os.path.getmtime(f)
-            if log_mtime and datetime.datetime.fromtimestamp(log_mtime) < modification_time:
+            log_mtime = getmtime(f)
+            if log_mtime and from_timestamp(log_mtime) < modification_time:
                 continue
 
         for line in reverse_readlines(f):
-            if not line or not line.strip():
+            if not line:
                 continue
 
-            logline = LogLine.from_line(line)
+            line = line.rstrip()
+            if not line:
+                continue
+
+            logline = from_line(line)
             if logline:
                 if logline.timestamp and modification_time and logline.timestamp < modification_time:
                     return
-                if traceback_lines:
-                    logline.traceback_lines = list(reversed(traceback_lines))
-                    del traceback_lines[:]
-                if predicate(logline):
-                    counter += 1
-                    if counter >= start_index:
-                        yield formatter(logline)
-                    if max_lines is not None and counter >= max_lines:
-                        return
 
-            elif len(traceback_lines) > max_traceback_depth:
-                message = traceback_lines[-1]
-                logline = LogLine(line, message=message, traceback_lines=list(reversed(traceback_lines[:-1])))
-                del traceback_lines[:]
-                if predicate(logline):
-                    counter += 1
-                    if counter >= start_index:
-                        yield formatter(logline)
-                    if max_lines is not None and counter >= max_lines:
-                        return
+                if traceback_lines:
+                    logline.traceback_lines = tuple(reversed(traceback_lines))
+                    traceback_lines.clear()
+
+                if not predicate(logline):
+                    continue
+
+                counter += 1
+                if counter < start_index:
+                    continue
+
+                yield formatter(logline)
+
+                if max_lines is not None and counter >= start_index + max_lines:
+                    return
             else:
                 traceback_lines.append(line)
 
     if traceback_lines:
         message = traceback_lines[-1]
-        logline = LogLine(message, message=message, traceback_lines=list(reversed(traceback_lines[:-1])))
-        if predicate(logline):
-            counter += 1
-            if counter >= start_index:
-                yield formatter(logline)
+        logline = LogLine(message, message=message,
+                         traceback_lines=tuple(reversed(list(traceback_lines)[:-1])))
+
+        if not predicate(logline):
+            return
+
+        counter += 1
+        if counter >= start_index:
+            yield formatter(logline)
 
 
 def blocks_r(file_path, size=64 * 1024):

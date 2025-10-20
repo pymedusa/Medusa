@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 oauthlib.common
 ~~~~~~~~~~~~~~
@@ -6,33 +5,22 @@ oauthlib.common
 This module provides data structures and utilities common
 to all implementations of OAuth.
 """
-from __future__ import absolute_import, unicode_literals
-
 import collections
 import datetime
 import logging
 import re
-import sys
 import time
+import urllib.parse as urlparse
+from urllib.parse import (
+    quote as _quote, unquote as _unquote, urlencode as _urlencode,
+)
+
+from . import get_debug
 
 try:
-    from secrets import randbits
-    from secrets import SystemRandom
+    from secrets import SystemRandom, randbits
 except ImportError:
-    from random import getrandbits as randbits
-    from random import SystemRandom
-try:
-    from urllib import quote as _quote
-    from urllib import unquote as _unquote
-    from urllib import urlencode as _urlencode
-except ImportError:
-    from urllib.parse import quote as _quote
-    from urllib.parse import unquote as _unquote
-    from urllib.parse import urlencode as _urlencode
-try:
-    import urlparse
-except ImportError:
-    import urllib.parse as urlparse
+    from random import SystemRandom, getrandbits as randbits
 
 UNICODE_ASCII_CHARACTER_SET = ('abcdefghijklmnopqrstuvwxyz'
                                'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -46,21 +34,14 @@ INVALID_HEX_PATTERN = re.compile(r'%[^0-9A-Fa-f]|%[0-9A-Fa-f][^0-9A-Fa-f]')
 
 always_safe = ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'
                'abcdefghijklmnopqrstuvwxyz'
-               '0123456789' '_.-')
+               '0123456789_.-')
 
 log = logging.getLogger('oauthlib')
-
-PY3 = sys.version_info[0] == 3
-
-if PY3:
-    unicode_type = str
-else:
-    unicode_type = unicode
 
 
 # 'safe' must be bytes (Python 2.6 requires bytes, other versions allow either)
 def quote(s, safe=b'/'):
-    s = s.encode('utf-8') if isinstance(s, unicode_type) else s
+    s = s.encode('utf-8') if isinstance(s, str) else s
     s = _quote(s, safe)
     # PY3 always returns unicode.  PY2 may return either, depending on whether
     # it had to modify the string.
@@ -82,7 +63,7 @@ def unquote(s):
 def urlencode(params):
     utf8_params = encode_params_utf8(params)
     urlencoded = _urlencode(utf8_params)
-    if isinstance(urlencoded, unicode_type):  # PY3 returns unicode
+    if isinstance(urlencoded, str):
         return urlencoded
     else:
         return urlencoded.decode("utf-8")
@@ -95,8 +76,8 @@ def encode_params_utf8(params):
     encoded = []
     for k, v in params:
         encoded.append((
-            k.encode('utf-8') if isinstance(k, unicode_type) else k,
-            v.encode('utf-8') if isinstance(v, unicode_type) else v))
+            k.encode('utf-8') if isinstance(k, str) else k,
+            v.encode('utf-8') if isinstance(v, str) else v))
     return encoded
 
 
@@ -140,22 +121,6 @@ def urldecode(query):
     if INVALID_HEX_PATTERN.search(query):
         raise ValueError('Invalid hex encoding in query string.')
 
-    # We encode to utf-8 prior to parsing because parse_qsl behaves
-    # differently on unicode input in python 2 and 3.
-    # Python 2.7
-    # >>> urlparse.parse_qsl(u'%E5%95%A6%E5%95%A6')
-    # u'\xe5\x95\xa6\xe5\x95\xa6'
-    # Python 2.7, non unicode input gives the same
-    # >>> urlparse.parse_qsl('%E5%95%A6%E5%95%A6')
-    # '\xe5\x95\xa6\xe5\x95\xa6'
-    # but now we can decode it to unicode
-    # >>> urlparse.parse_qsl('%E5%95%A6%E5%95%A6').decode('utf-8')
-    # u'\u5566\u5566'
-    # Python 3.3 however
-    # >>> urllib.parse.parse_qsl(u'%E5%95%A6%E5%95%A6')
-    # u'\u5566\u5566'
-    query = query.encode(
-        'utf-8') if not PY3 and isinstance(query, unicode_type) else query
     # We want to allow queries such as "c2" whereas urlparse.parse_qsl
     # with the strict_parsing flag will not.
     params = urlparse.parse_qsl(query, keep_blank_values=True)
@@ -172,7 +137,7 @@ def extract_params(raw):
     empty list of parameters. Any other input will result in a return
     value of None.
     """
-    if isinstance(raw, bytes) or isinstance(raw, unicode_type):
+    if isinstance(raw, (bytes, str)):
         try:
             params = urldecode(raw)
         except ValueError:
@@ -205,7 +170,7 @@ def generate_nonce():
     .. _`section 3.2.1`: https://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01#section-3.2.1
     .. _`section 3.3`: https://tools.ietf.org/html/rfc5849#section-3.3
     """
-    return unicode_type(unicode_type(randbits(64)) + generate_timestamp())
+    return str(str(randbits(64)) + generate_timestamp())
 
 
 def generate_timestamp():
@@ -217,7 +182,7 @@ def generate_timestamp():
     .. _`section 3.2.1`: https://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01#section-3.2.1
     .. _`section 3.3`: https://tools.ietf.org/html/rfc5849#section-3.3
     """
-    return unicode_type(int(time.time()))
+    return str(int(time.time()))
 
 
 def generate_token(length=30, chars=UNICODE_ASCII_CHARACTER_SET):
@@ -233,7 +198,7 @@ def generate_token(length=30, chars=UNICODE_ASCII_CHARACTER_SET):
 
 
 def generate_signed_token(private_pem, request):
-    import jwt
+    import jwt  # noqa: PLC0415
 
     now = datetime.datetime.utcnow()
 
@@ -251,7 +216,7 @@ def generate_signed_token(private_pem, request):
 
 
 def verify_signed_token(public_pem, token):
-    import jwt
+    import jwt  # noqa: PLC0415
 
     return jwt.decode(token, public_pem, algorithms=['RS256'])
 
@@ -304,11 +269,11 @@ def safe_string_equals(a, b):
 
 def to_unicode(data, encoding='UTF-8'):
     """Convert a number of different types of objects to unicode."""
-    if isinstance(data, unicode_type):
+    if isinstance(data, str):
         return data
 
     if isinstance(data, bytes):
-        return unicode_type(data, encoding=encoding)
+        return str(data, encoding=encoding)
 
     if hasattr(data, '__iter__'):
         try:
@@ -322,7 +287,7 @@ def to_unicode(data, encoding='UTF-8'):
             # We support 2.6 which lacks dict comprehensions
             if hasattr(data, 'items'):
                 data = data.items()
-            return dict(((to_unicode(k, encoding), to_unicode(v, encoding)) for k, v in data))
+            return {to_unicode(k, encoding): to_unicode(v, encoding) for k, v in data}
 
     return data
 
@@ -334,7 +299,7 @@ class CaseInsensitiveDict(dict):
     proxy = {}
 
     def __init__(self, data):
-        self.proxy = dict((k.lower(), k) for k in data)
+        self.proxy = {k.lower(): k for k in data}
         for k in data:
             self[k] = data[k]
 
@@ -343,27 +308,27 @@ class CaseInsensitiveDict(dict):
 
     def __delitem__(self, k):
         key = self.proxy[k.lower()]
-        super(CaseInsensitiveDict, self).__delitem__(key)
+        super().__delitem__(key)
         del self.proxy[k.lower()]
 
     def __getitem__(self, k):
         key = self.proxy[k.lower()]
-        return super(CaseInsensitiveDict, self).__getitem__(key)
+        return super().__getitem__(key)
 
     def get(self, k, default=None):
-        return self[k] if k in self else default
+        return self[k] if k in self else default  # noqa: SIM401
 
     def __setitem__(self, k, v):
-        super(CaseInsensitiveDict, self).__setitem__(k, v)
+        super().__setitem__(k, v)
         self.proxy[k.lower()] = k
 
     def update(self, *args, **kwargs):
-        super(CaseInsensitiveDict, self).update(*args, **kwargs)
+        super().update(*args, **kwargs)
         for k in dict(*args, **kwargs):
             self.proxy[k.lower()] = k
 
 
-class Request(object):
+class Request:
 
     """A malleable representation of a signable HTTP request.
 
@@ -381,7 +346,8 @@ class Request(object):
     def __init__(self, uri, http_method='GET', body=None, headers=None,
                  encoding='utf-8'):
         # Convert to unicode using encoding if given, else assume unicode
-        encode = lambda x: to_unicode(x, encoding) if encoding else x
+        def encode(x):
+            return to_unicode(x, encoding) if encoding else x
 
         self.uri = encode(uri)
         self.http_method = encode(http_method)
@@ -435,13 +401,15 @@ class Request(object):
             raise AttributeError(name)
 
     def __repr__(self):
+        if not get_debug():
+            return "<oauthlib.Request SANITIZED>"
         body = self.body
         headers = self.headers.copy()
         if body:
             body = SANITIZE_PATTERN.sub('\1<SANITIZED>', str(body))
         if 'Authorization' in headers:
             headers['Authorization'] = '<SANITIZED>'
-        return '<oauthlib.Request url="%s", http_method="%s", headers="%s", body="%s">' % (
+        return '<oauthlib.Request url="{}", http_method="{}", headers="{}", body="{}">'.format(
             self.uri, self.http_method, headers, body)
 
     @property

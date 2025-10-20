@@ -1,15 +1,11 @@
-# -*- coding: utf-8 -*-
 """
 oauthlib.oauth2.rfc6749.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
-from __future__ import absolute_import, unicode_literals
-
 import json
 import logging
 
 from .. import errors
-from ..request_validator import RequestValidator
 from .base import GrantTypeBase
 
 log = logging.getLogger(__name__)
@@ -104,10 +100,11 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
             headers.update(e.headers)
             return headers, e.json, e.status_code
 
-        token = token_handler.create_token(request, self.refresh_token, save_token=False)
+        token = token_handler.create_token(request, self.refresh_token)
 
         for modifier in self._token_modifiers:
             token = modifier(token)
+
         self.request_validator.save_token(token, request)
 
         log.debug('Issuing token %r to client id %r (%r) and username %s.',
@@ -183,12 +180,11 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
                                                     request.password, request.client, request):
             raise errors.InvalidGrantError(
                 'Invalid credentials given.', request=request)
-        else:
-            if not hasattr(request.client, 'client_id'):
-                raise NotImplementedError(
-                    'Validate user must set the '
-                    'request.client.client_id attribute '
-                    'in authenticate_client.')
+        elif not hasattr(request.client, 'client_id'):
+            raise NotImplementedError(
+                'Validate user must set the '
+                'request.client.client_id attribute '
+                'in authenticate_client.')
         log.debug('Authorizing access to user %r.', request.user)
 
         # Ensure client is authorized use of this grant type

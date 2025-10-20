@@ -1,60 +1,83 @@
-# Need this image for the /bin/start-build script.
-# Build unrar.  It has been moved to non-free since Alpine 3.15.
-# https://wiki.alpinelinux.org/wiki/Release_Notes_for_Alpine_3.15.0#unrar_moved_to_non-free
-FROM jlesage/alpine-abuild:3.15 AS unrar
-WORKDIR /tmp
+# Python, Alpine and Unrar versions
+ARG PYTHON_VERSION=3.11
+ARG ALPINE_VERSION=3.21
+FROM python:${PYTHON_VERSION}-alpine${ALPINE_VERSION} AS builder
+ARG UNRAR_VERSION=7.1.6
+
+# Build arguments
+ARG TARGETARCH
+ARG CXXFLAGS
+# Use all cores to compile, set JOBS=1 to disable
+ARG JOBS
+
+# Build stage - Part 1: Install dependencies and download source
+WORKDIR /unrar
 RUN \
-    mkdir /tmp/aport && \
-    cd /tmp/aport && \
-    git init && \
-    git remote add origin https://github.com/alpinelinux/aports && \
-    git config core.sparsecheckout true && \
-    echo "non-free/unrar/*" >> .git/info/sparse-checkout && \
-    git pull origin 3.15-stable && \
-    PKG_SRC_DIR=/tmp/aport/non-free/unrar && \
-    PKG_DST_DIR=/tmp/unrar-pkg && \
-    mkdir "$PKG_DST_DIR" && \
-    /bin/start-build -r && \
-    rm /tmp/unrar-pkg/*-doc-* && \
-    mkdir /tmp/unrar-install && \
-    tar xf /tmp/unrar-pkg/unrar-*.apk -C /tmp/unrar-install
+  echo "**** install build dependencies ****" && \
+  apk add --no-cache --virtual=build-dependencies \
+    build-base \
+    curl \
+    linux-headers && \
+  echo "**** download unrar source ****" && \
+  mkdir -p /unrar && \
+  wget "https://www.rarlab.com/rar/unrarsrc-${UNRAR_VERSION}.tar.gz" \
+    -O /tmp/unrar.tar.gz
 
-FROM python:3.10.8-alpine3.15
-LABEL maintainer="pymedusa"
+# Build stage - Part 2: Extract, build, and clean up
+RUN \
+  echo "**** extract and build unrar ****" && \
+  tar xf \
+    /tmp/unrar.tar.gz -C \
+    /unrar --strip-components=1 && \
+  sed -i 's|LDFLAGS=-pthread|LDFLAGS=-pthread -static|' makefile && \
+  if [ -z "$CXXFLAGS" ]; then \
+    if [ "$TARGETARCH"x = "amd64"x ]; then \
+      CXXFLAGS='-march=x86-64'; \
+    elif [ "$TARGETARCH"x = "arm64"x ]; then \
+      CXXFLAGS='-march=armv8-a+crypto+crc'; \
+    elif [ "$TARGETARCH"x = "arm"x ]; then \
+      CXXFLAGS='-march=armv7-a -mfloat-abi=hard -mfpu=neon'; \
+    fi; \
+  fi && \
+  sed -i "s|CXXFLAGS=-march=native|CXXFLAGS=$CXXFLAGS|" makefile && \
+  make -j ${JOBS} && \
+  echo "**** cleanup ****" && \
+  apk del --purge \
+    build-dependencies && \
+  rm -rf \
+    /root/.cache \
+    /tmp/*
 
+# Final image
+FROM python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
 ARG GIT_BRANCH
 ARG GIT_COMMIT
-ENV MEDUSA_COMMIT_BRANCH $GIT_BRANCH
-ENV MEDUSA_COMMIT_HASH $GIT_COMMIT
-
 ARG BUILD_DATE
-LABEL build_version="Branch: $GIT_BRANCH | Commit: $GIT_COMMIT | Build-Date: $BUILD_DATE"
 
-# Install packages
-RUN \
-	# Update
-	apk update \
-	&& \
-	# Runtime packages
-	apk add --no-cache \
-		mediainfo \
-		tzdata \
-		p7zip \
-		ffmpeg \
-	&& \
-	# Cleanup
-	rm -rf \
-		/var/cache/apk/
+# Metadata labels for maintainability
+LABEL maintainer="pymedusa"
+LABEL build_version="Branch: ${GIT_BRANCH} | Commit: ${GIT_COMMIT} | Build-Date: ${BUILD_DATE}"
 
-# Install app
+# Runtime environment
+ENV MEDUSA_COMMIT_BRANCH=$GIT_BRANCH \
+    MEDUSA_COMMIT_HASH=$GIT_COMMIT \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+# Install runtime dependencies
+RUN --mount=type=cache,target=/var/cache/apk \
+    apk add --no-cache \
+        mediainfo \
+        p7zip \
+        ffmpeg \
+        libstdc++
+
+# Application setup
+COPY --from=builder /unrar/unrar /usr/local/bin/
 COPY . /app/medusa/
 
-# Copy unrar bin
-COPY --from=unrar /tmp/unrar-install/usr/bin/unrar /usr/bin/
-
-# Ports and Volumes
+WORKDIR /app/medusa
 EXPOSE 8081
 VOLUME /config /downloads /tv /anime
 
-WORKDIR /app/medusa
-CMD [ "runscripts/init.docker" ]
+ENTRYPOINT ["runscripts/init.docker"]

@@ -39,7 +39,7 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 INSTANCE_ID = text_type(uuid.uuid1())
-VERSION = '1.0.22'
+VERSION = '1.0.23'
 
 USER_AGENT = 'Medusa/{version} ({system}; {release}; {instance})'.format(
     version=VERSION, system=platform.system(), release=platform.release(),
@@ -88,6 +88,7 @@ notifyStrings = {
 }
 
 # Episode statuses
+INVALID = -2
 UNSET = -1  # default episode status
 UNAIRED = 1  # episodes that haven't aired yet
 SNATCHED = 2  # qualified with quality
@@ -125,6 +126,7 @@ statusStrings = {
     DOWNLOADED: 'Downloaded',
     FAILED: 'Failed',
     IGNORED: 'Ignored',
+    INVALID: 'Invalid',
     SKIPPED: 'Skipped',
     SNATCHED: 'Snatched',
     SNATCHED_BEST: 'Snatched (Best)',

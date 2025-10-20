@@ -1,15 +1,11 @@
-# -*- coding: utf-8 -*-
 """
 oauthlib.oauth2.rfc6749.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
-from __future__ import absolute_import, unicode_literals
-
 import json
 import logging
 
 from .. import errors, utils
-from ..request_validator import RequestValidator
 from .base import GrantTypeBase
 
 log = logging.getLogger(__name__)
@@ -25,7 +21,7 @@ class RefreshTokenGrant(GrantTypeBase):
     def __init__(self, request_validator=None,
                  issue_new_refresh_tokens=True,
                  **kwargs):
-        super(RefreshTokenGrant, self).__init__(
+        super().__init__(
             request_validator,
             issue_new_refresh_tokens=issue_new_refresh_tokens,
             **kwargs)
@@ -64,14 +60,16 @@ class RefreshTokenGrant(GrantTypeBase):
             return headers, e.json, e.status_code
 
         token = token_handler.create_token(request,
-                                           refresh_token=self.issue_new_refresh_tokens, save_token=False)
+                                           refresh_token=self.issue_new_refresh_tokens)
 
         for modifier in self._token_modifiers:
-            token = modifier(token)
+            token = modifier(token, token_handler, request)
+
         self.request_validator.save_token(token, request)
 
         log.debug('Issuing new token to client id %r (%r), %r.',
                   request.client_id, request.client, token)
+        headers.update(self._create_cors_headers(request))
         return headers, json.dumps(token), 200
 
     def validate_token_request(self, request):
@@ -103,6 +101,9 @@ class RefreshTokenGrant(GrantTypeBase):
             if not self.request_validator.authenticate_client(request):
                 log.debug('Invalid client (%r), denying access.', request)
                 raise errors.InvalidClientError(request=request)
+            # Ensure that request.client_id is set.
+            if request.client_id is None and request.client is not None:
+                request.client_id = request.client.client_id
         elif not self.request_validator.authenticate_client_id(request.client_id, request):
             log.debug('Client authentication failed, %r.', request)
             raise errors.InvalidClientError(request=request)
@@ -125,7 +126,7 @@ class RefreshTokenGrant(GrantTypeBase):
 
         if request.scope:
             request.scopes = utils.scope_to_list(request.scope)
-            if (not all((s in original_scopes for s in request.scopes))
+            if (not all(s in original_scopes for s in request.scopes)
                 and not self.request_validator.is_within_original_scope(
                     request.scopes, request.refresh_token, request)):
                 log.debug('Refresh token %s lack requested scopes, %r.',
