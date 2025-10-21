@@ -34,7 +34,7 @@ dependencies = [
     "python-dateutil==2.8.2",
     "python-twitter==3.5",
     "pytimeparse",
-    "pytrakt==3.4.23",
+    "pytrakt==3.4.35",
     "pyyaml==6.0.3",
     "rarfile==3.1",
     "rebulk==3.2.0",
