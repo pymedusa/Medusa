@@ -21,7 +21,7 @@ dependencies = [
     "dogpile-cache==1.2.1",
     "feedparser==6.0.11",
     "gntp==1.0.3",
-    "guessit==3.4.2",
+    "guessit==3.8.0",
     "html5lib==1.1",
     "jsonrpclib-pelix==0.4.3.2",
     "mako==1.2.4",
