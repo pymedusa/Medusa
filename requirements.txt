@@ -37,7 +37,7 @@ requests-toolbelt==1.0.0
 six==1.16.0
 subliminal==2.2.1
 tmdbsimple==2.9.1
-tornado==6.1
+tornado==6.5
 tornroutes==0.5.1
 trans==2.1.0
 ttl-cache==1.6
