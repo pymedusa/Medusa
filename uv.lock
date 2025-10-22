@@ -667,7 +667,7 @@ requires-dist = [
     { name = "trans", specifier = "==2.1.0" },
     { name = "ttl-cache", specifier = "==1.6" },
     { name = "tvdbapiv2", url = "https://github.com/pymedusa/tvdbv2/archive/d6d0e9d98071c2d646beb997b336edbb0e98dfb7.zip" },
-    { name = "urllib3", specifier = "==1.26.18" },
+    { name = "urllib3", specifier = "==1.26.19" },
     { name = "validators", specifier = "==0.20.0" },
 ]
 
@@ -1204,11 +1204,11 @@ requires-dist = [
 
 [[package]]
 name = "urllib3"
-version = "1.26.18"
+version = "1.26.19"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/0c/39/64487bf07df2ed854cc06078c27c0d0abc59bd27b32232876e403c333a08/urllib3-1.26.18.tar.gz", hash = "sha256:f8ecc1bba5667413457c529ab955bf8c67b45db799d159066261719e328580a0", size = 305687, upload-time = "2023-10-17T17:47:03.986Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c8/93/65e479b023bbc46dab3e092bda6b0005424ea3217d711964ccdede3f9b1b/urllib3-1.26.19.tar.gz", hash = "sha256:3e3d753a8618b86d7de333b4223005f68720bcd6a7d2bcb9fbd2229ec7c1e429", size = 306068, upload-time = "2024-06-17T14:53:34.424Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b0/53/aa91e163dcfd1e5b82d8a890ecf13314e3e149c05270cc644581f77f17fd/urllib3-1.26.18-py2.py3-none-any.whl", hash = "sha256:34b97092d7e0a3a8cf7cd10e386f401b3737364026c45e622aa02903dffe0f07", size = 143835, upload-time = "2023-10-17T17:47:01.725Z" },
+    { url = "https://files.pythonhosted.org/packages/ae/6a/99eaaeae8becaa17a29aeb334a18e5d582d873b6f084c11f02581b8d7f7f/urllib3-1.26.19-py2.py3-none-any.whl", hash = "sha256:37a0344459b199fce0e80b0d3569837ec6b6937435c5244e7fd73fa6006830f3", size = 143933, upload-time = "2024-06-17T14:53:31.589Z" },
 ]
 
 [[package]]
