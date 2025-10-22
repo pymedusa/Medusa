@@ -27,9 +27,9 @@ class XthorProvider(TorrentProvider):
         self.passkey = None
 
         # URLs
-        self.url = 'https://xthor.tk'
+        self.url = 'https://xthor.help'
         self.urls = {
-            'search': 'https://api.xthor.tk',
+            'search': 'https://api.xthor.help',
         }
 
         # Proper Strings
