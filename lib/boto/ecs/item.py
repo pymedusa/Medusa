@@ -21,7 +21,7 @@
 
 
 import xml.sax
-import cgi
+import html
 from boto.compat import six, StringIO
 
 class ResponseGroup(xml.sax.ContentHandler):
@@ -67,7 +67,7 @@ class ResponseGroup(xml.sax.ContentHandler):
         return None
 
     def endElement(self, name, value, connection):
-        self._xml.write("%s</%s>" % (cgi.escape(value).replace("&amp;amp;", "&amp;"), name))
+        self._xml.write("%s</%s>" % (html.escape(value).replace("&amp;amp;", "&amp;"), name))
         if len(self._nodepath) == 0:
             return
         obj = None

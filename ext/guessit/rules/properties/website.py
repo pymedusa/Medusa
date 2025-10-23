@@ -4,9 +4,9 @@
 Website property.
 """
 try:
-    from importlib.resources import files  # @UnresolvedImport
+    from importlib.resources import files, read_text # @UnresolvedImport
 except ImportError:
-    from importlib_resources import files  # @UnresolvedImport
+    from importlib_resources import files, read_text # @UnresolvedImport
 
 from rebulk.remodule import re
 
@@ -16,7 +16,6 @@ from ..common.formatters import cleanup
 from ..common.pattern import is_disabled
 from ..common.validators import seps_surround
 from ...reutils import build_or_pattern
-
 
 def website(config):
     """
@@ -31,8 +30,21 @@ def website(config):
     rebulk = rebulk.regex_defaults(flags=re.IGNORECASE).string_defaults(ignore_case=True)
     rebulk.defaults(name="website")
 
-    with files('guessit.data') as data_files:
-        tld_file = data_files.joinpath('tlds-alpha-by-domain.txt').read_text(encoding='utf-8')
+
+    #python 3.13+
+    try:
+        tld_file = read_text('guessit', 'data', 'tlds-alpha-by-domain.txt', encoding='utf-8')
+    except (TypeError, NameError):
+        pass
+
+    #python 3.12 and below
+    try:
+        with files('guessit.data') as data_files:
+            tld_file = data_files.joinpath('tlds-alpha-by-domain.txt').read_text(encoding='utf-8')
+    except (TypeError, NameError):
+        pass
+
+    finally:
         tlds = [
             tld.strip()
             for tld in tld_file.split('\n')
