@@ -44,3 +44,4 @@ ttl-cache==1.6
 tvdbapiv2 @ https://github.com/pymedusa/tvdbv2/archive/d6d0e9d98071c2d646beb997b336edbb0e98dfb7.zip
 urllib3==1.26.18
 validators==0.20.0
+setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
