@@ -49,6 +49,7 @@ After=network.target
 [Service]
 User=medusa
 Group=medusa
+ReadWritePaths=/opt/medusa
 
 Type=simple
 ExecStart=/usr/bin/python3 /opt/medusa/start.py -q --nolaunch --datadir=/opt/medusa
