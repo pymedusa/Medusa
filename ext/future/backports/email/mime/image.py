@@ -9,11 +9,24 @@ from __future__ import absolute_import
 
 __all__ = ['MIMEImage']
 
-import imghdr
-
 from future.backports.email import encoders
 from future.backports.email.mime.nonmultipart import MIMENonMultipart
 
+def _guess_image_type(data):
+    """Return the image type (png, gif, jpeg) based on the first bytes of data."""
+    if not data or len(data) < 10:
+        return None
+    # PNG: 89 50 4E 47 0D 0A 1A 0A
+    if data[:8] == b'\x89PNG\r\n\x1a\n':
+        return 'png'
+    # GIF: 'GIF87a' or 'GIF89a'
+    if data[:6] in (b'GIF87a', b'GIF89a'):
+        return 'gif'
+    # JPEG: starts with FF D8
+    if data[:2] == b'\xff\xd8':
+        return 'jpeg'
+    # Could add more formats (BMP, WebP, TIFF) if needed
+    return None
 
 class MIMEImage(MIMENonMultipart):
     """Class for generating image/* type MIME documents."""
@@ -40,7 +53,7 @@ class MIMEImage(MIMENonMultipart):
         header.
         """
         if _subtype is None:
-            _subtype = imghdr.what(None, _imagedata)
+            _subtype = _guess_image_type(_imagedata)
         if _subtype is None:
             raise TypeError('Could not guess image MIME subtype')
         MIMENonMultipart.__init__(self, 'image', _subtype, **_params)
