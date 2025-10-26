@@ -437,7 +437,10 @@ class Quality(object):
         if not height:
             return Quality.UNKNOWN
 
-        height = int(height.magnitude)
+        try:
+            height = int(height.magnitude)
+        except AttributeError:
+            pass
 
         # TODO: Use knowledge information like 'resolution'
         base_filename = os.path.basename(file_path)
