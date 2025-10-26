@@ -309,7 +309,7 @@ class MediaInfoProvider(Provider):
         # if executor is None, print a warning and set to False to not repeat the warning
         if isinstance(self.executor, NotFoundExecutor):
             if not self.executor.warned:
-                logger.warning(WARN_MSG)
+                logger.debug(WARN_MSG)
                 self.executor.warned = True
         # check if loaded
         return bool(self.executor)
