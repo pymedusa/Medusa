@@ -8,7 +8,6 @@ import ctypes
 import datetime
 import errno
 import hashlib
-import imghdr
 import io
 import logging
 import os
@@ -1487,33 +1486,49 @@ def get_showname_from_indexer(indexer, indexer_id, lang='en'):
 
 # https://stackoverflow.com/a/20380514
 def get_image_size(image_path):
-    """Determine the image type of image_path and return its size.."""
+    """Determine the image type of image_path and return its (width, height)."""
     img_ext = os.path.splitext(image_path)[1].lower().strip('.')
     with open(image_path, 'rb') as f:
         head = f.read(24)
         if len(head) != 24:
-            return
-        if imghdr.what(image_path) == 'png':
+            return None  # file too small
+        # PNG check
+        if head.startswith(b'\x89PNG\r\n\x1a\n'):
+            # Verify PNG signature
             check = struct.unpack('>i', head[4:8])[0]
             if check != 0x0d0a1a0a:
-                return
-            return struct.unpack('>ii', head[16:24])
-        elif imghdr.what(image_path) == 'gif':
-            return struct.unpack('<HH', head[6:10])
-        elif imghdr.what(image_path) == 'jpeg' or img_ext in ('jpg', 'jpeg'):
-            f.seek(0)  # Read 0xff next
+                return None
+            width, height = struct.unpack('>ii', head[16:24])
+            return width, height
+        # GIF check
+        elif head[:6] in (b'GIF87a', b'GIF89a'):
+            width, height = struct.unpack('<HH', head[6:10])
+            return width, height
+        # JPEG check
+        elif head.startswith(b'\xff\xd8') or img_ext in ('jpg', 'jpeg'):
+            f.seek(0)
             size = 2
             ftype = 0
-            while not 0xc0 <= ftype <= 0xcf:
+            while True:
                 f.seek(size, 1)
                 byte = f.read(1)
+                if not byte:
+                    return None  # EOF reached unexpectedly
                 while ord(byte) == 0xff:
                     byte = f.read(1)
                 ftype = ord(byte)
-                size = struct.unpack('>H', f.read(2))[0] - 2
-            # We are at a SOFn block
-            f.seek(1, 1)  # Skip `precision' byte.
-            return struct.unpack('>HH', f.read(4))
+                if 0xc0 <= ftype <= 0xcf and ftype != 0xc4 and ftype != 0xc8 and ftype != 0xcc:
+                    break
+                size_bytes = f.read(2)
+                if len(size_bytes) != 2:
+                    return None
+                size = struct.unpack('>H', size_bytes)[0] - 2
+            f.seek(1, 1)  # skip precision byte
+            height, width = struct.unpack('>HH', f.read(4))
+            return width, height
+        else:
+            # Unknown or unsupported format
+            return None
 
 
 def remove_folder(folder_path, level=logging.WARNING):
