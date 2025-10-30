@@ -18,9 +18,6 @@
   <a href="https://github.com/sindresorhus/xo" title="">
     <img src="https://img.shields.io/badge/code_style-XO-5ed9c7.svg" alt="XO code style"/>
   </a>
-  <a href="https://codecov.io/gh/pymedusa/Medusa" title="">
-    <img src="https://codecov.io/gh/pymedusa/Medusa/branch/develop/graph/badge.svg" alt="codecov"/>
-  </a>
 </p>
 
 
@@ -63,7 +60,7 @@
 
 #### Dependencies
  To run Medusa from source you will need one of these Python versions:
- * **Python 3** – 3.9.0 and newer
+ * **Python 3.9 to Python 3.12**
 
 #### Installation - direct
  Start [here](https://github.com/pymedusa/Medusa/wiki/Installation-&-Configuration-Guides) to read the installation guides for different setups.
