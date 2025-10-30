@@ -1,3 +1,13 @@
+## 1.0.24 (30-10-2025)
+
+#### Improvements
+- Change xthor provider URL from .tk to .help (Thanks to @IamMika23)
+
+#### Fixes
+- Fix parsing of some video files
+
+-----
+
 ## 1.0.23 (20-10-2025)
 
 #### New Features
