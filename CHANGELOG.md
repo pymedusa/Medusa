@@ -1,3 +1,13 @@
+## Unreleased
+
+#### New Features
+
+#### Improvements
+
+#### Fixes
+
+-----
+
 ## 1.0.24 (30-10-2025)
 
 #### Improvements
