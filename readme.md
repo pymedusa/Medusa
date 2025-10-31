@@ -12,9 +12,6 @@
     <img src="http://isitmaintained.com/badge/open/pymedusa/Medusa.svg" alt="Percentage of issues still open"/>
   </a>
   <br>
-  <a href="https://codebeat.co/projects/github-com-pymedusa-medusa-develop" title="">
-    <img src="https://codebeat.co/badges/4b801428-c8b3-47aa-83aa-1d82677c52c0" alt="codebeat badge"/>
-  </a>
   <a href="https://github.com/sindresorhus/xo" title="">
     <img src="https://img.shields.io/badge/code_style-XO-5ed9c7.svg" alt="XO code style"/>
   </a>
@@ -27,7 +24,7 @@
 ### Automatic Video Library Manager for TV Shows. It watches for new episodes of your favorite shows, and when they are posted it does its magic.
 
 #### Exclusive features
- - Supports TVMaze and TMDB indexers
+ - Supports TVDB, TVMaze and TMDB indexers
  - Manual search episodes (you choose what to snatch based on all kind of info: provider, seeds, release group)
  - Manual search for subtitles (useful when subtitle has low score because of typo in filename or alternative title)
  - Support for Python 3
@@ -63,7 +60,7 @@
 
 #### Dependencies
  To run Medusa from source you will need one of these Python versions:
- * **Python 3** – 3.9.0 and newer
+ * **Python 3.9 to Python 3.12**
 
 #### Installation - direct
  Start [here](https://github.com/pymedusa/Medusa/wiki/Installation-&-Configuration-Guides) to read the installation guides for different setups.
