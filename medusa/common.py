@@ -39,7 +39,7 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 INSTANCE_ID = text_type(uuid.uuid1())
-VERSION = '1.0.23'
+VERSION = '1.0.24'
 
 USER_AGENT = 'Medusa/{version} ({system}; {release}; {instance})'.format(
     version=VERSION, system=platform.system(), release=platform.release(),
@@ -437,7 +437,10 @@ class Quality(object):
         if not height:
             return Quality.UNKNOWN
 
-        height = int(height.magnitude)
+        try:
+            height = int(height.magnitude)
+        except AttributeError:
+            pass
 
         # TODO: Use knowledge information like 'resolution'
         base_filename = os.path.basename(file_path)
