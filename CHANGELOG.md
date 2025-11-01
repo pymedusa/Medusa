@@ -1,4 +1,4 @@
-## 1.0.24 (TBD)
+## 1.0.25 (TBD)
 
 ([@butlergroup](https://github.com/butlergroup) did a bunch of homework for y'all!)
 #### New Features
