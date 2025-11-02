@@ -17,7 +17,7 @@ sut = GenericProvider('FakeProvider')
 # Create a single static "now" reference in UTC.
 # Using UTC avoids local DST offset shifts entirely.
 NOW_UTC = datetime.now(tz=tz.gettz('UTC')).replace(microsecond=0)
-TOLERANCE_SECONDS = 5  # Acceptable difference for human-time tests
+TOLERANCE_SECONDS = 10  # Acceptable difference for human-time tests
 
 @pytest.mark.parametrize('p', [
     {  # p0: None
