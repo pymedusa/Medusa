@@ -17,6 +17,7 @@ sut = GenericProvider('FakeProvider')
 # Create a single static "now" reference in UTC.
 # Using UTC avoids local DST offset shifts entirely.
 NOW_UTC = datetime.now(tz=tz.gettz('UTC')).replace(microsecond=0)
+TOLERANCE_SECONDS = 5  # Acceptable difference for human-time tests
 
 @pytest.mark.parametrize('p', [
     {  # p0: None
@@ -162,7 +163,12 @@ def test_parse_pubdate(p):
         actual = int((NOW_UTC - actual).total_seconds())
 
     # Then
-    assert expected == actual
+    if ht and isinstance(expected, (int, float)):
+        # Allow up to a few seconds difference due to test execution time
+        assert abs(expected - actual) <= TOLERANCE_SECONDS, \
+            f"Expected ~{expected}s, got {actual}s (diff {expected - actual}s)"
+    else:
+        assert expected == actual
 
 
 @pytest.mark.parametrize('p', [
