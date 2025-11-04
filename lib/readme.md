@@ -12,3 +12,4 @@ lib | **`imdbpie`** | 5.6.5 | **`medusa`** | **Custom**
 lib | **`boto`** | 2.48.0 | **`imdbpie`** | **Custom**
 lib | **`knowit`** | 0.5.11 | **`medusa`** | **Custom**
 lib | **`trakit`** | 0.2.5 | **`knowit`** | **Custom**
+lib | **`guessit`** | 3.8.0 | **`medusa`** | **Custom**
