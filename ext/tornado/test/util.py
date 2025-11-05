@@ -3,21 +3,18 @@ import os
 import platform
 import socket
 import sys
+import sysconfig
 import textwrap
-import typing  # noqa: F401
+import typing
 import unittest
 import warnings
 
 from tornado.testing import bind_unused_port
 
+_TestCaseType = typing.TypeVar("_TestCaseType", bound=typing.Type[unittest.TestCase])
+
 skipIfNonUnix = unittest.skipIf(
     os.name != "posix" or sys.platform == "cygwin", "non-unix platform"
-)
-
-# travis-ci.org runs our tests in an overworked virtual machine, which makes
-# timing-related tests unreliable.
-skipOnTravis = unittest.skipIf(
-    "TRAVIS" in os.environ, "timing tests unreliable on travis"
 )
 
 # Set the environment variable NO_NETWORK=1 to disable any tests that
@@ -25,17 +22,11 @@ skipOnTravis = unittest.skipIf(
 skipIfNoNetwork = unittest.skipIf("NO_NETWORK" in os.environ, "network access disabled")
 
 skipNotCPython = unittest.skipIf(
-    platform.python_implementation() != "CPython", "Not CPython implementation"
-)
-
-# Used for tests affected by
-# https://bitbucket.org/pypy/pypy/issues/2616/incomplete-error-handling-in
-# TODO: remove this after pypy3 5.8 is obsolete.
-skipPypy3V58 = unittest.skipIf(
-    platform.python_implementation() == "PyPy"
-    and sys.version_info > (3,)
-    and sys.pypy_version_info < (5, 9),  # type: ignore
-    "pypy3 5.8 has buggy ssl module",
+    # "CPython" here essentially refers to the traditional synchronous refcounting GC,
+    # so we skip these tests in free-threading builds of cpython too.
+    platform.python_implementation() != "CPython"
+    or sysconfig.get_config_var("Py_GIL_DISABLED"),
+    "Not CPython implementation",
 )
 
 
@@ -48,7 +39,7 @@ def _detect_ipv6():
     try:
         sock = socket.socket(socket.AF_INET6)
         sock.bind(("::1", 0))
-    except socket.error:
+    except OSError:
         return False
     finally:
         if sock is not None:
@@ -65,7 +56,7 @@ def refusing_port():
     Return value is (cleanup_func, port); the cleanup function
     must be called to free the port to be reused.
     """
-    # On travis-ci, port numbers are reassigned frequently. To avoid
+    # On travis-ci port numbers are reassigned frequently. To avoid
     # collisions with other tests, we use an open client-side socket's
     # ephemeral port number to ensure that nothing can listen on that
     # port.
@@ -94,21 +85,42 @@ def exec_test(caller_globals, caller_locals, s):
     return local_namespace
 
 
-def subTest(test, *args, **kwargs):
-    """Compatibility shim for unittest.TestCase.subTest.
-
-    Usage: ``with tornado.test.util.subTest(self, x=x):``
-    """
-    try:
-        subTest = test.subTest  # py34+
-    except AttributeError:
-        subTest = contextlib.contextmanager(lambda *a, **kw: (yield))
-    return subTest(*args, **kwargs)
-
-
 @contextlib.contextmanager
 def ignore_deprecation():
     """Context manager to ignore deprecation warnings."""
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", DeprecationWarning)
         yield
+
+
+ABT_SKIP_MESSAGE = "abstract base class"
+
+
+def abstract_base_test(cls: _TestCaseType) -> _TestCaseType:
+    """Decorator to mark a test class as an "abstract" base class.
+
+    This is different from a regular abstract base class because
+    we do not limit instantiation of the class. (If we did, it would
+    interfere with test discovery). Instead, we prevent the tests from
+    being run.
+
+    Subclasses of an abstract base test are run as normal. There is
+    no support for the ``@abstractmethod`` decorator so there is no runtime
+    check that all such methods are implemented.
+
+    Note that while it is semantically cleaner to modify the test loader
+    to exclude abstract base tests, this is more complicated and would
+    interfere with third-party test runners. This approach degrades
+    gracefully to other tools such as editor-integrated testing.
+    """
+
+    # Type-checking fails due to https://github.com/python/mypy/issues/14458
+    # @functools.wraps(cls)
+    class AbstractBaseWrapper(cls):  # type: ignore
+        @classmethod
+        def setUpClass(cls):
+            if cls is AbstractBaseWrapper:
+                raise unittest.SkipTest(ABT_SKIP_MESSAGE)
+            super(AbstractBaseWrapper, cls).setUpClass()
+
+    return AbstractBaseWrapper  # type: ignore

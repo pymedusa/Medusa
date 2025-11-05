@@ -12,7 +12,7 @@ from tornado.httputil import (
 )
 from tornado.escape import utf8, native_str
 from tornado.log import gen_log
-from tornado.testing import ExpectLog
+from tornado.test.util import ignore_deprecation
 
 import copy
 import datetime
@@ -155,7 +155,7 @@ Foo
             self.assertEqual(file["filename"], filename)
             self.assertEqual(file["body"], b"Foo")
 
-    def test_non_ascii_filename(self):
+    def test_non_ascii_filename_rfc5987(self):
         data = b"""\
 --1234
 Content-Disposition: form-data; name="files"; filename="ab.txt"; filename*=UTF-8''%C3%A1b.txt
@@ -167,7 +167,24 @@ Foo
         args, files = form_data_args()
         parse_multipart_form_data(b"1234", data, args, files)
         file = files["files"][0]
-        self.assertEqual(file["filename"], u"áb.txt")
+        self.assertEqual(file["filename"], "áb.txt")
+        self.assertEqual(file["body"], b"Foo")
+
+    def test_non_ascii_filename_raw(self):
+        data = """\
+--1234
+Content-Disposition: form-data; name="files"; filename="测试.txt"
+
+Foo
+--1234--""".encode(
+            "utf-8"
+        ).replace(
+            b"\n", b"\r\n"
+        )
+        args, files = form_data_args()
+        parse_multipart_form_data(b"1234", data, args, files)
+        file = files["files"][0]
+        self.assertEqual(file["filename"], "测试.txt")
         self.assertEqual(file["body"], b"Foo")
 
     def test_boundary_starts_and_ends_with_quotes(self):
@@ -194,7 +211,9 @@ Foo
             b"\n", b"\r\n"
         )
         args, files = form_data_args()
-        with ExpectLog(gen_log, "multipart/form-data missing headers"):
+        with self.assertRaises(
+            HTTPInputError, msg="multipart/form-data missing headers"
+        ):
             parse_multipart_form_data(b"1234", data, args, files)
         self.assertEqual(files, {})
 
@@ -208,7 +227,7 @@ Foo
             b"\n", b"\r\n"
         )
         args, files = form_data_args()
-        with ExpectLog(gen_log, "Invalid multipart/form-data"):
+        with self.assertRaises(HTTPInputError, msg="Invalid multipart/form-data"):
             parse_multipart_form_data(b"1234", data, args, files)
         self.assertEqual(files, {})
 
@@ -221,7 +240,7 @@ Foo--1234--""".replace(
             b"\n", b"\r\n"
         )
         args, files = form_data_args()
-        with ExpectLog(gen_log, "Invalid multipart/form-data"):
+        with self.assertRaises(HTTPInputError, msg="Invalid multipart/form-data"):
             parse_multipart_form_data(b"1234", data, args, files)
         self.assertEqual(files, {})
 
@@ -235,7 +254,9 @@ Foo
             b"\n", b"\r\n"
         )
         args, files = form_data_args()
-        with ExpectLog(gen_log, "multipart/form-data value missing name"):
+        with self.assertRaises(
+            HTTPInputError, msg="multipart/form-data value missing name"
+        ):
             parse_multipart_form_data(b"1234", data, args, files)
         self.assertEqual(files, {})
 
@@ -286,12 +307,32 @@ Foo: even
             [("Asdf", "qwer zxcv"), ("Foo", "bar baz"), ("Foo", "even more lines")],
         )
 
-    def test_malformed_continuation(self):
+    def test_continuation(self):
+        data = "Foo: bar\r\n\tasdf"
+        headers = HTTPHeaders.parse(data)
+        self.assertEqual(headers["Foo"], "bar asdf")
+
         # If the first line starts with whitespace, it's a
         # continuation line with nothing to continue, so reject it
         # (with a proper error).
         data = " Foo: bar"
         self.assertRaises(HTTPInputError, HTTPHeaders.parse, data)
+
+        # \f (formfeed) is whitespace according to str.isspace, but
+        # not according to the HTTP spec.
+        data = "Foo: bar\r\n\fasdf"
+        self.assertRaises(HTTPInputError, HTTPHeaders.parse, data)
+
+    def test_forbidden_ascii_characters(self):
+        # Control characters and ASCII whitespace other than space, tab, and CRLF are not allowed in
+        # headers.
+        for c in range(0xFF):
+            data = f"Foo: bar{chr(c)}baz\r\n"
+            if c == 0x09 or (c >= 0x20 and c != 0x7F):
+                headers = HTTPHeaders.parse(data)
+                self.assertEqual(headers["Foo"], f"bar{chr(c)}baz")
+            else:
+                self.assertRaises(HTTPInputError, HTTPHeaders.parse, data)
 
     def test_unicode_newlines(self):
         # Ensure that only \r\n is recognized as a header separator, and not
@@ -301,13 +342,16 @@ Foo: even
         # and cpython's unicodeobject.c (which defines the implementation
         # of unicode_type.splitlines(), and uses a different list than TR13).
         newlines = [
-            u"\u001b",  # VERTICAL TAB
-            u"\u001c",  # FILE SEPARATOR
-            u"\u001d",  # GROUP SEPARATOR
-            u"\u001e",  # RECORD SEPARATOR
-            u"\u0085",  # NEXT LINE
-            u"\u2028",  # LINE SEPARATOR
-            u"\u2029",  # PARAGRAPH SEPARATOR
+            # The following ascii characters are sometimes treated as newline-like,
+            # but they're disallowed in HTTP headers. This test covers unicode
+            # characters that are permitted in headers (under the obs-text rule).
+            # "\u001b",  # VERTICAL TAB
+            # "\u001c",  # FILE SEPARATOR
+            # "\u001d",  # GROUP SEPARATOR
+            # "\u001e",  # RECORD SEPARATOR
+            "\u0085",  # NEXT LINE
+            "\u2028",  # LINE SEPARATOR
+            "\u2029",  # PARAGRAPH SEPARATOR
         ]
         for newline in newlines:
             # Try the utf8 and latin1 representations of each newline
@@ -333,14 +377,36 @@ Foo: even
                     gen_log.warning("failed while trying %r in %s", newline, encoding)
                     raise
 
+    def test_unicode_whitespace(self):
+        # Only tabs and spaces are to be stripped according to the HTTP standard.
+        # Other unicode whitespace is to be left as-is. In the context of headers,
+        # this specifically means the whitespace characters falling within the
+        # latin1 charset.
+        whitespace = [
+            (" ", True),  # SPACE
+            ("\t", True),  # TAB
+            ("\u00a0", False),  # NON-BREAKING SPACE
+            ("\u0085", False),  # NEXT LINE
+        ]
+        for c, stripped in whitespace:
+            headers = HTTPHeaders.parse("Transfer-Encoding: %schunked" % c)
+            if stripped:
+                expected = [("Transfer-Encoding", "chunked")]
+            else:
+                expected = [("Transfer-Encoding", "%schunked" % c)]
+            self.assertEqual(expected, list(headers.get_all()))
+
     def test_optional_cr(self):
+        # Bare CR is  not a valid line separator
+        with self.assertRaises(HTTPInputError):
+            HTTPHeaders.parse("CRLF: crlf\r\nLF: lf\nCR: cr\rMore: more\r\n")
+
         # Both CRLF and LF should be accepted as separators. CR should not be
-        # part of the data when followed by LF, but it is a normal char
-        # otherwise (or should bare CR be an error?)
-        headers = HTTPHeaders.parse("CRLF: crlf\r\nLF: lf\nCR: cr\rMore: more\r\n")
+        # part of the data when followed by LF.
+        headers = HTTPHeaders.parse("CRLF: crlf\r\nLF: lf\nMore: more\r\n")
         self.assertEqual(
             sorted(headers.get_all()),
-            [("Cr", "cr\rMore: more"), ("Crlf", "crlf"), ("Lf", "lf")],
+            [("Crlf", "crlf"), ("Lf", "lf"), ("More", "more")],
         )
 
     def test_copy(self):
@@ -389,6 +455,22 @@ Foo: even
         headers2 = HTTPHeaders.parse(str(headers))
         self.assertEqual(headers, headers2)
 
+    def test_invalid_header_names(self):
+        invalid_names = [
+            "",
+            "foo bar",
+            "foo\tbar",
+            "foo\nbar",
+            "foo\x00bar",
+            "foo ",
+            " foo",
+            "é",
+        ]
+        for name in invalid_names:
+            headers = HTTPHeaders()
+            with self.assertRaises(HTTPInputError):
+                headers.add(name, "bar")
+
 
 class FormatTimestampTest(unittest.TestCase):
     # Make sure that all the input types are supported.
@@ -412,8 +494,29 @@ class FormatTimestampTest(unittest.TestCase):
         self.assertEqual(9, len(tup))
         self.check(tup)
 
-    def test_datetime(self):
-        self.check(datetime.datetime.utcfromtimestamp(self.TIMESTAMP))
+    def test_utc_naive_datetime(self):
+        self.check(
+            datetime.datetime.fromtimestamp(
+                self.TIMESTAMP, datetime.timezone.utc
+            ).replace(tzinfo=None)
+        )
+
+    def test_utc_naive_datetime_deprecated(self):
+        with ignore_deprecation():
+            self.check(datetime.datetime.utcfromtimestamp(self.TIMESTAMP))
+
+    def test_utc_aware_datetime(self):
+        self.check(
+            datetime.datetime.fromtimestamp(self.TIMESTAMP, datetime.timezone.utc)
+        )
+
+    def test_other_aware_datetime(self):
+        # Other timezones are ignored; the timezone is always printed as GMT
+        self.check(
+            datetime.datetime.fromtimestamp(
+                self.TIMESTAMP, datetime.timezone(datetime.timedelta(hours=-4))
+            )
+        )
 
 
 # HTTPServerRequest is mainly tested incidentally to the server itself,
@@ -426,14 +529,14 @@ class HTTPServerRequestTest(unittest.TestCase):
         HTTPServerRequest(uri="/")
 
     def test_body_is_a_byte_string(self):
-        requets = HTTPServerRequest(uri="/")
-        self.assertIsInstance(requets.body, bytes)
+        request = HTTPServerRequest(uri="/")
+        self.assertIsInstance(request.body, bytes)
 
     def test_repr_does_not_contain_headers(self):
         request = HTTPServerRequest(
             uri="/", headers=HTTPHeaders({"Canary": ["Coal Mine"]})
         )
-        self.assertTrue("Canary" not in repr(request))
+        self.assertNotIn("Canary", repr(request))
 
 
 class ParseRequestStartLineTest(unittest.TestCase):
@@ -519,3 +622,49 @@ class ParseCookieTest(unittest.TestCase):
         self.assertEqual(
             parse_cookie("  =  b  ;  ;  =  ;   c  =  ;  "), {"": "b", "c": ""}
         )
+
+    def test_unquote(self):
+        # Copied from
+        # https://github.com/python/cpython/blob/dc7a2b6522ec7af41282bc34f405bee9b306d611/Lib/test/test_http_cookies.py#L62
+        cases = [
+            (r'a="b=\""', 'b="'),
+            (r'a="b=\\"', "b=\\"),
+            (r'a="b=\="', "b=="),
+            (r'a="b=\n"', "b=n"),
+            (r'a="b=\042"', 'b="'),
+            (r'a="b=\134"', "b=\\"),
+            (r'a="b=\377"', "b=\xff"),
+            (r'a="b=\400"', "b=400"),
+            (r'a="b=\42"', "b=42"),
+            (r'a="b=\\042"', "b=\\042"),
+            (r'a="b=\\134"', "b=\\134"),
+            (r'a="b=\\\""', 'b=\\"'),
+            (r'a="b=\\\042"', 'b=\\"'),
+            (r'a="b=\134\""', 'b=\\"'),
+            (r'a="b=\134\042"', 'b=\\"'),
+        ]
+        for encoded, decoded in cases:
+            with self.subTest(encoded):
+                c = parse_cookie(encoded)
+                self.assertEqual(c["a"], decoded)
+
+    def test_unquote_large(self):
+        # Adapted from
+        # https://github.com/python/cpython/blob/dc7a2b6522ec7af41282bc34f405bee9b306d611/Lib/test/test_http_cookies.py#L87
+        # Modified from that test because we handle semicolons differently from the stdlib.
+        #
+        # This is a performance regression test: prior to improvements in Tornado 6.4.2, this test
+        # would take over a minute with n= 100k. Now it runs in tens of milliseconds.
+        n = 100000
+        for encoded in r"\\", r"\134":
+            with self.subTest(encoded):
+                start = time.time()
+                data = 'a="b=' + encoded * n + '"'
+                value = parse_cookie(data)["a"]
+                end = time.time()
+                self.assertEqual(value[:3], "b=\\")
+                self.assertEqual(value[-3:], "\\\\\\")
+                self.assertEqual(len(value), n + 2)
+
+                # Very loose performance check to avoid false positives
+                self.assertLess(end - start, 1, "Test took too long")

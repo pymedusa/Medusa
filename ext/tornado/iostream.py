@@ -111,11 +111,10 @@ class UnsatisfiableReadError(Exception):
 
 
 class StreamBufferFullError(Exception):
-    """Exception raised by `IOStream` methods when the buffer is full.
-    """
+    """Exception raised by `IOStream` methods when the buffer is full."""
 
 
-class _StreamBuffer(object):
+class _StreamBuffer:
     """
     A specialized buffer that tries to avoid copies when large pieces
     of data are encountered.
@@ -196,18 +195,16 @@ class _StreamBuffer(object):
                 pos += size
                 size = 0
             else:
-                # Amortized O(1) shrink for Python 2
                 pos += size
-                if len(b) <= 2 * pos:
-                    del typing.cast(bytearray, b)[:pos]
-                    pos = 0
+                del typing.cast(bytearray, b)[:pos]
+                pos = 0
                 size = 0
 
         assert size == 0
         self._first_pos = pos
 
 
-class BaseIOStream(object):
+class BaseIOStream:
     """A utility class to write to and read from a non-blocking file or socket.
 
     We support a non-blocking ``write()`` and a family of ``read_*()``
@@ -255,7 +252,6 @@ class BaseIOStream(object):
         self.max_write_buffer_size = max_write_buffer_size
         self.error = None  # type: Optional[BaseException]
         self._read_buffer = bytearray()
-        self._read_buffer_pos = 0
         self._read_buffer_size = 0
         self._user_read_buffer = False
         self._after_user_read_buffer = None  # type: Optional[bytearray]
@@ -452,21 +448,17 @@ class BaseIOStream(object):
         available_bytes = self._read_buffer_size
         n = len(buf)
         if available_bytes >= n:
-            end = self._read_buffer_pos + n
-            buf[:] = memoryview(self._read_buffer)[self._read_buffer_pos : end]
-            del self._read_buffer[:end]
+            buf[:] = memoryview(self._read_buffer)[:n]
+            del self._read_buffer[:n]
             self._after_user_read_buffer = self._read_buffer
         elif available_bytes > 0:
-            buf[:available_bytes] = memoryview(self._read_buffer)[
-                self._read_buffer_pos :
-            ]
+            buf[:available_bytes] = memoryview(self._read_buffer)[:]
 
         # Set up the supplied buffer as our temporary read buffer.
         # The original (if it had any data remaining) has been
         # saved for later.
         self._user_read_buffer = True
         self._read_buffer = buf
-        self._read_buffer_pos = 0
         self._read_buffer_size = available_bytes
         self._read_bytes = n
         self._read_partial = partial
@@ -498,7 +490,7 @@ class BaseIOStream(object):
         """
         future = self._start_read()
         if self.closed():
-            self._finish_read(self._read_buffer_size, False)
+            self._finish_read(self._read_buffer_size)
             return future
         self._read_until_close = True
         try:
@@ -530,6 +522,9 @@ class BaseIOStream(object):
         """
         self._check_closed()
         if data:
+            if isinstance(data, memoryview):
+                # Make sure that ``len(data) == data.nbytes``
+                data = memoryview(data).cast("B")
             if (
                 self.max_write_buffer_size is not None
                 and len(self._write_buffer) + len(data) > self.max_write_buffer_size
@@ -593,7 +588,7 @@ class BaseIOStream(object):
                         self.error = exc_info[1]
             if self._read_until_close:
                 self._read_until_close = False
-                self._finish_read(self._read_buffer_size, False)
+                self._finish_read(self._read_buffer_size)
             elif self._read_future is not None:
                 # resolve reads that are pending and ready to complete
                 try:
@@ -810,11 +805,10 @@ class BaseIOStream(object):
         self._read_future = Future()
         return self._read_future
 
-    def _finish_read(self, size: int, streaming: bool) -> None:
+    def _finish_read(self, size: int) -> None:
         if self._user_read_buffer:
             self._read_buffer = self._after_user_read_buffer or bytearray()
             self._after_user_read_buffer = None
-            self._read_buffer_pos = 0
             self._read_buffer_size = len(self._read_buffer)
             self._user_read_buffer = False
             result = size  # type: Union[int, bytes]
@@ -865,7 +859,7 @@ class BaseIOStream(object):
                     else:
                         buf = bytearray(self.read_chunk_size)
                     bytes_read = self.read_from_fd(buf)
-                except (socket.error, IOError, OSError) as e:
+                except OSError as e:
                     # ssl.SSLError is a subclass of socket.error
                     if self._is_connreset(e):
                         # Treat ECONNRESET as a connection close rather than
@@ -902,7 +896,7 @@ class BaseIOStream(object):
         """
         self._read_bytes = self._read_delimiter = self._read_regex = None
         self._read_partial = False
-        self._finish_read(pos, False)
+        self._finish_read(pos)
 
     def _find_read_pos(self) -> Optional[int]:
         """Attempts to find a position in the read buffer that satisfies
@@ -927,20 +921,17 @@ class BaseIOStream(object):
             # since large merges are relatively expensive and get undone in
             # _consume().
             if self._read_buffer:
-                loc = self._read_buffer.find(
-                    self._read_delimiter, self._read_buffer_pos
-                )
+                loc = self._read_buffer.find(self._read_delimiter)
                 if loc != -1:
-                    loc -= self._read_buffer_pos
                     delimiter_len = len(self._read_delimiter)
                     self._check_max_bytes(self._read_delimiter, loc + delimiter_len)
                     return loc + delimiter_len
                 self._check_max_bytes(self._read_delimiter, self._read_buffer_size)
         elif self._read_regex is not None:
             if self._read_buffer:
-                m = self._read_regex.search(self._read_buffer, self._read_buffer_pos)
+                m = self._read_regex.search(self._read_buffer)
                 if m is not None:
-                    loc = m.end() - self._read_buffer_pos
+                    loc = m.end()
                     self._check_max_bytes(self._read_regex, loc)
                     return loc
                 self._check_max_bytes(self._read_regex, self._read_buffer_size)
@@ -975,7 +966,7 @@ class BaseIOStream(object):
                 self._total_write_done_index += num_bytes
             except BlockingIOError:
                 break
-            except (socket.error, IOError, OSError) as e:
+            except OSError as e:
                 if not self._is_connreset(e):
                     # Broken pipe errors are usually caused by connection
                     # reset, and its better to not log EPIPE errors to
@@ -997,19 +988,9 @@ class BaseIOStream(object):
             return b""
         assert loc <= self._read_buffer_size
         # Slice the bytearray buffer into bytes, without intermediate copying
-        b = (
-            memoryview(self._read_buffer)[
-                self._read_buffer_pos : self._read_buffer_pos + loc
-            ]
-        ).tobytes()
-        self._read_buffer_pos += loc
+        b = (memoryview(self._read_buffer)[:loc]).tobytes()
         self._read_buffer_size -= loc
-        # Amortized O(1) shrink
-        # (this heuristic is implemented natively in Python 3.4+
-        #  but is replicated here for Python 2)
-        if self._read_buffer_pos > self._read_buffer_size:
-            del self._read_buffer[: self._read_buffer_pos]
-            self._read_buffer_pos = 0
+        del self._read_buffer[:loc]
         return b
 
     def _check_closed(self) -> None:
@@ -1088,9 +1069,8 @@ class IOStream(BaseIOStream):
 
     .. testcode::
 
-        import tornado.ioloop
-        import tornado.iostream
         import socket
+        import tornado
 
         async def main():
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
@@ -1108,14 +1088,7 @@ class IOStream(BaseIOStream):
             stream.close()
 
         if __name__ == '__main__':
-            tornado.ioloop.IOLoop.current().run_sync(main)
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
-            stream = tornado.iostream.IOStream(s)
-            stream.connect(("friendfeed.com", 80), send_request)
-            tornado.ioloop.IOLoop.current().start()
-
-    .. testoutput::
-       :hide:
+            asyncio.run(main())
 
     """
 
@@ -1174,8 +1147,7 @@ class IOStream(BaseIOStream):
 
         In SSL mode, the ``server_hostname`` parameter will be used
         for certificate validation (unless disabled in the
-        ``ssl_options``) and SNI (if supported; requires Python
-        2.7.9+).
+        ``ssl_options``) and SNI.
 
         Note that it is safe to call `IOStream.write
         <BaseIOStream.write>` while the connection is pending, in
@@ -1207,7 +1179,7 @@ class IOStream(BaseIOStream):
             # In non-blocking mode we expect connect() to raise an
             # exception with EINPROGRESS or EWOULDBLOCK.
             pass
-        except socket.error as e:
+        except OSError as e:
             # On freebsd, other errors such as ECONNREFUSED may be
             # returned immediately when attempting to connect to
             # localhost, so handle them the same way as an error
@@ -1241,7 +1213,7 @@ class IOStream(BaseIOStream):
 
         The ``ssl_options`` argument may be either an `ssl.SSLContext`
         object or a dictionary of keyword arguments for the
-        `ssl.wrap_socket` function.  The ``server_hostname`` argument
+        `ssl.SSLContext.wrap_socket` function.  The ``server_hostname`` argument
         will be used for certificate validation unless disabled
         in the ``ssl_options``.
 
@@ -1298,7 +1270,7 @@ class IOStream(BaseIOStream):
     def _handle_connect(self) -> None:
         try:
             err = self.socket.getsockopt(socket.SOL_SOCKET, socket.SO_ERROR)
-        except socket.error as e:
+        except OSError as e:
             # Hurd doesn't allow SO_ERROR for loopback sockets because all
             # errors for such sockets are reported synchronously.
             if errno_from_exception(e) == errno.ENOPROTOOPT:
@@ -1332,7 +1304,7 @@ class IOStream(BaseIOStream):
                 self.socket.setsockopt(
                     socket.IPPROTO_TCP, socket.TCP_NODELAY, 1 if value else 0
                 )
-            except socket.error as e:
+            except OSError as e:
                 # Sometimes setsockopt will fail if the socket is closed
                 # at the wrong time.  This can happen with HTTPServer
                 # resetting the value to ``False`` between requests.
@@ -1346,7 +1318,7 @@ class SSLIOStream(IOStream):
     If the socket passed to the constructor is already connected,
     it should be wrapped with::
 
-        ssl.wrap_socket(sock, do_handshake_on_connect=False, **kwargs)
+        ssl.SSLContext(...).wrap_socket(sock, do_handshake_on_connect=False, **kwargs)
 
     before constructing the `SSLIOStream`.  Unconnected sockets will be
     wrapped when `IOStream.connect` is finished.
@@ -1357,7 +1329,7 @@ class SSLIOStream(IOStream):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """The ``ssl_options`` keyword argument may either be an
         `ssl.SSLContext` object or a dictionary of keywords arguments
-        for `ssl.wrap_socket`
+        for `ssl.SSLContext.wrap_socket`
         """
         self._ssl_options = kwargs.pop("ssl_options", _client_ssl_defaults)
         super().__init__(*args, **kwargs)
@@ -1369,7 +1341,7 @@ class SSLIOStream(IOStream):
         # If the socket is already connected, attempt to start the handshake.
         try:
             self.socket.getpeername()
-        except socket.error:
+        except OSError:
             pass
         else:
             # Indirectly start the handshake, which will run on the next
@@ -1398,7 +1370,7 @@ class SSLIOStream(IOStream):
                 return
             elif err.args[0] in (ssl.SSL_ERROR_EOF, ssl.SSL_ERROR_ZERO_RETURN):
                 return self.close(exc_info=err)
-            elif err.args[0] == ssl.SSL_ERROR_SSL:
+            elif err.args[0] in (ssl.SSL_ERROR_SSL, ssl.SSL_ERROR_SYSCALL):
                 try:
                     peer = self.socket.getpeername()
                 except Exception:
@@ -1408,13 +1380,7 @@ class SSLIOStream(IOStream):
                 )
                 return self.close(exc_info=err)
             raise
-        except ssl.CertificateError as err:
-            # CertificateError can happen during handshake (hostname
-            # verification) and should be passed to user. Starting
-            # in Python 3.7, this error is a subclass of SSLError
-            # and will be handled by the previous block instead.
-            return self.close(exc_info=err)
-        except socket.error as err:
+        except OSError as err:
             # Some port scans (e.g. nmap in -sT mode) have been known
             # to cause do_handshake to raise EBADF and ENOTCONN, so make
             # those errors quiet as well.
@@ -1435,9 +1401,9 @@ class SSLIOStream(IOStream):
             return self.close(exc_info=err)
         else:
             self._ssl_accepting = False
-            if not self._verify_cert(self.socket.getpeercert()):
-                self.close()
-                return
+            # Prior to the introduction of SNI, this is where we would check
+            # the server's claimed hostname.
+            assert ssl.HAS_SNI
             self._finish_ssl_connect()
 
     def _finish_ssl_connect(self) -> None:
@@ -1445,33 +1411,6 @@ class SSLIOStream(IOStream):
             future = self._ssl_connect_future
             self._ssl_connect_future = None
             future_set_result_unless_cancelled(future, self)
-
-    def _verify_cert(self, peercert: Any) -> bool:
-        """Returns ``True`` if peercert is valid according to the configured
-        validation mode and hostname.
-
-        The ssl handshake already tested the certificate for a valid
-        CA signature; the only thing that remains is to check
-        the hostname.
-        """
-        if isinstance(self._ssl_options, dict):
-            verify_mode = self._ssl_options.get("cert_reqs", ssl.CERT_NONE)
-        elif isinstance(self._ssl_options, ssl.SSLContext):
-            verify_mode = self._ssl_options.verify_mode
-        assert verify_mode in (ssl.CERT_NONE, ssl.CERT_REQUIRED, ssl.CERT_OPTIONAL)
-        if verify_mode == ssl.CERT_NONE or self._server_hostname is None:
-            return True
-        cert = self.socket.getpeercert()
-        if cert is None and verify_mode == ssl.CERT_REQUIRED:
-            gen_log.warning("No SSL certificate given")
-            return False
-        try:
-            ssl.match_hostname(peercert, self._server_hostname)
-        except ssl.CertificateError as e:
-            gen_log.warning("Invalid SSL certificate: %s" % e)
-            return False
-        else:
-            return True
 
     def _handle_read(self) -> None:
         if self._ssl_accepting:
@@ -1528,6 +1467,7 @@ class SSLIOStream(IOStream):
             self._ssl_options,
             server_hostname=self._server_hostname,
             do_handshake_on_connect=False,
+            server_side=False,
         )
         self._add_io_state(old_state)
 
@@ -1564,6 +1504,11 @@ class SSLIOStream(IOStream):
         return future
 
     def write_to_fd(self, data: memoryview) -> int:
+        # clip buffer size at 1GB since SSL sockets only support upto 2GB
+        # this change in behaviour is transparent, since the function is
+        # already expected to (possibly) write less than the provided buffer
+        if len(data) >> 30:
+            data = memoryview(data)[: 1 << 30]
         try:
             return self.socket.send(data)  # type: ignore
         except ssl.SSLError as e:
@@ -1588,6 +1533,11 @@ class SSLIOStream(IOStream):
                 # to read (attempting to read may or may not raise an exception
                 # depending on the SSL version)
                 return None
+            # clip buffer size at 1GB since SSL sockets only support upto 2GB
+            # this change in behaviour is transparent, since the function is
+            # already expected to (possibly) read less than the provided buffer
+            if len(buf) >> 30:
+                buf = memoryview(buf)[: 1 << 30]
             try:
                 return self.socket.recv_into(buf, len(buf))
             except ssl.SSLError as e:
@@ -1622,6 +1572,13 @@ class PipeIOStream(BaseIOStream):
     def __init__(self, fd: int, *args: Any, **kwargs: Any) -> None:
         self.fd = fd
         self._fio = io.FileIO(self.fd, "r+")
+        if sys.platform == "win32":
+            # The form and placement of this assertion is important to mypy.
+            # A plain assert statement isn't recognized here. If the assertion
+            # were earlier it would worry that the attributes of self aren't
+            # set on windows. If it were missing it would complain about
+            # the absence of the set_blocking function.
+            raise AssertionError("PipeIOStream is not supported on Windows")
         os.set_blocking(fd, False)
         super().__init__(*args, **kwargs)
 
@@ -1642,7 +1599,7 @@ class PipeIOStream(BaseIOStream):
     def read_from_fd(self, buf: Union[bytearray, memoryview]) -> Optional[int]:
         try:
             return self._fio.readinto(buf)  # type: ignore
-        except (IOError, OSError) as e:
+        except OSError as e:
             if errno_from_exception(e) == errno.EBADF:
                 # If the writing half of a pipe is closed, select will
                 # report it as readable but reads will fail with EBADF.

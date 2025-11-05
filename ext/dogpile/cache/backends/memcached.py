@@ -41,25 +41,27 @@ __all__ = (
 )
 
 
-class MemcachedLock(object):
+class MemcachedLock:
     """Simple distributed lock using memcached."""
 
     def __init__(self, client_fn, key, timeout=0):
         self.client_fn = client_fn
         self.key = "_lock" + key
         self.timeout = timeout
+        self._mutex = threading.Lock()
 
     def acquire(self, wait=True):
         client = self.client_fn()
         i = 0
         while True:
-            if client.add(self.key, 1, self.timeout):
-                return True
-            elif not wait:
-                return False
-            else:
-                sleep_time = (((i + 1) * random.random()) + 2**i) / 2.5
-                time.sleep(sleep_time)
+            with self._mutex:
+                if client.add(self.key, 1, self.timeout):
+                    return True
+                elif not wait:
+                    return False
+
+            sleep_time = (((i + 1) * random.random()) + 2**i) / 2.5
+            time.sleep(sleep_time)
             if i < 15:
                 i += 1
 
@@ -93,26 +95,6 @@ class GenericMemcachedBackend(CacheBackend):
 
      .. versionadded:: 0.5.7
 
-    :param memcached_expire_time: integer, when present will
-     be passed as the ``time`` parameter to ``pylibmc.Client.set``.
-     This is used to set the memcached expiry time for a value.
-
-     .. note::
-
-         This parameter is **different** from Dogpile's own
-         ``expiration_time``, which is the number of seconds after
-         which Dogpile will consider the value to be expired.
-         When Dogpile considers a value to be expired,
-         it **continues to use the value** until generation
-         of a new value is complete, when using
-         :meth:`.CacheRegion.get_or_create`.
-         Therefore, if you are setting ``memcached_expire_time``, you'll
-         want to make sure it is greater than ``expiration_time``
-         by at least enough seconds for new values to be generated,
-         else the value won't be available during a regeneration,
-         forcing all threads to wait for a regeneration each time
-         a value expires.
-
     The :class:`.GenericMemachedBackend` uses a ``threading.local()``
     object to store individual client objects per thread,
     as most modern memcached clients do not appear to be inherently
@@ -145,7 +127,6 @@ class GenericMemcachedBackend(CacheBackend):
         self.url = util.to_list(arguments["url"])
         self.distributed_lock = arguments.get("distributed_lock", False)
         self.lock_timeout = arguments.get("lock_timeout", 0)
-        self.memcached_expire_time = arguments.get("memcached_expire_time", 0)
 
     def has_lock_timeout(self):
         return self.lock_timeout != 0
@@ -220,6 +201,29 @@ class GenericMemcachedBackend(CacheBackend):
 class MemcacheArgs(GenericMemcachedBackend):
     """Mixin which provides support for the 'time' argument to set(),
     'min_compress_len' to other methods.
+
+    :param memcached_expire_time: integer, when present will
+     be passed as the ``time`` parameter to the ``set`` method.
+     This is used to set the memcached expiry time for a value.
+
+     .. note::
+
+         This parameter is **different** from Dogpile's own
+         ``expiration_time``, which is the number of seconds after
+         which Dogpile will consider the value to be expired.
+         When Dogpile considers a value to be expired,
+         it **continues to use the value** until generation
+         of a new value is complete, when using
+         :meth:`.CacheRegion.get_or_create`.
+         Therefore, if you are setting ``memcached_expire_time``, you'll
+         want to make sure it is greater than ``expiration_time``
+         by at least enough seconds for new values to be generated,
+         else the value won't be available during a regeneration,
+         forcing all threads to wait for a regeneration each time
+         a value expires.
+
+    :param min_compress_len: Threshold length to kick in auto-compression
+     of the value using the compressor
     """
 
     def __init__(self, arguments):
@@ -406,25 +410,8 @@ class BMemcachedBackend(GenericMemcachedBackend):
         global bmemcached
         import bmemcached
 
-        class RepairBMemcachedAPI(bmemcached.Client):
-            """Repairs BMemcached's non-standard method
-            signatures, which was fixed in BMemcached
-            ef206ed4473fec3b639e.
-
-            """
-
-            def add(self, key, value, timeout=0):
-                try:
-                    return super(RepairBMemcachedAPI, self).add(
-                        key, value, timeout
-                    )
-                except ValueError:
-                    return False
-
-        self.Client = RepairBMemcachedAPI
-
     def _create_client(self):
-        return self.Client(
+        return bmemcached.Client(
             self.url,
             username=self.username,
             password=self.password,
@@ -578,6 +565,28 @@ class PyMemcacheBackend(GenericMemcachedBackend):
 
      .. versionadded:: 1.1.5
 
+    :param memcached_expire_time: integer, when present will
+     be passed as the ``time`` parameter to the ``set`` method.
+     This is used to set the memcached expiry time for a value.
+
+     .. note::
+
+         This parameter is **different** from Dogpile's own
+         ``expiration_time``, which is the number of seconds after
+         which Dogpile will consider the value to be expired.
+         When Dogpile considers a value to be expired,
+         it **continues to use the value** until generation
+         of a new value is complete, when using
+         :meth:`.CacheRegion.get_or_create`.
+         Therefore, if you are setting ``memcached_expire_time``, you'll
+         want to make sure it is greater than ``expiration_time``
+         by at least enough seconds for new values to be generated,
+         else the value won't be available during a regeneration,
+         forcing all threads to wait for a regeneration each time
+         a value expires.
+
+     .. versionadded:: 1.3.3
+
     """  # noqa E501
 
     def __init__(self, arguments):
@@ -609,6 +618,9 @@ class PyMemcacheBackend(GenericMemcachedBackend):
                 "enable_retry_client is not set; retry options "
                 "will be ignored"
             )
+        self.set_arguments = {}
+        if "memcached_expire_time" in arguments:
+            self.set_arguments["expire"] = arguments["memcached_expire_time"]
 
     def _imports(self):
         global pymemcache

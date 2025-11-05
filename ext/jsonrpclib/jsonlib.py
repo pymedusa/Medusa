@@ -5,13 +5,13 @@ Loads the "best" Python library available for the current interpreter and
 provides a single interface for all
 
 :authors: Thomas Calmant
-:copyright: Copyright 2022, Thomas Calmant
+:copyright: Copyright 2025, Thomas Calmant
 :license: Apache License 2.0
-:version: 0.4.3.2
+:version: 0.4.3.4
 
 ..
 
-    Copyright 2022 Thomas Calmant
+    Copyright 2025 Thomas Calmant
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import sys
 # ------------------------------------------------------------------------------
 
 # Module version
-__version_info__ = (0, 4, 3, 2)
+__version_info__ = (0, 4, 3, 4)
 __version__ = ".".join(str(x) for x in __version_info__)
 
 # Documentation strings format
@@ -103,12 +103,31 @@ class UJsonHandler(JsonHandler):
         return ujson.loads, dumps_ujson
 
 
+class OrJsonHandler(JsonHandler):
+    """
+    Handler based on orjson
+    """
+
+    def get_methods(self):
+        import orjson
+
+        def dumps_orjson(obj, encoding="utf-8"):
+            return orjson.dumps(obj).decode(encoding)
+
+        return orjson.loads, dumps_orjson
+
+
 def get_handler():
     # type: () -> JsonHandler
     """
     Returns the best available Json parser
     """
-    for handler_class in (UJsonHandler, SimpleJsonHandler, CJsonHandler):
+    for handler_class in (
+        OrJsonHandler,
+        UJsonHandler,
+        SimpleJsonHandler,
+        CJsonHandler,
+    ):
         handler = handler_class()
         try:
             loader, dumper = handler.get_methods()

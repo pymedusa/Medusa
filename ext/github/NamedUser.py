@@ -37,11 +37,7 @@
 #                                                                              #
 ################################################################################
 
-from __future__ import absolute_import
-
 import datetime
-
-import six
 
 import github.Event
 import github.Gist
@@ -52,6 +48,8 @@ import github.PaginatedList
 import github.Permissions
 import github.Plan
 import github.Repository
+
+from . import Consts
 
 
 class NamedUser(github.GithubObject.CompletableGithubObject):
@@ -69,6 +67,14 @@ class NamedUser(github.GithubObject.CompletableGithubObject):
         """
         self._completeIfNotSet(self._node_id)
         return self._node_id.value
+
+    @property
+    def twitter_username(self):
+        """
+        :type: string
+        """
+        self._completeIfNotSet(self._twitter_username)
+        return self._twitter_username.value
 
     def __hash__(self):
         return hash((self.id, self.login))
@@ -485,6 +491,22 @@ class NamedUser(github.GithubObject.CompletableGithubObject):
             github.Organization.Organization, self._requester, self.url + "/orgs", None
         )
 
+    def get_projects(self, state="open"):
+        """
+        :calls: `GET /users/:user/projects <https://developer.github.com/v3/projects/#list-user-projects>`_
+        :param state: string
+        :rtype: :class:`github.PaginatedList.PaginatedList` of :class:`github.Project.Project`
+        """
+        assert isinstance(state, str), state
+        url_parameters = {"state": state}
+        return github.PaginatedList.PaginatedList(
+            github.Project.Project,
+            self._requester,
+            self.url + "/projects",
+            url_parameters,
+            headers={"Accept": Consts.mediaTypeProjectsPreview},
+        )
+
     def get_public_events(self):
         """
         :calls: `GET /users/:user/events/public <http://developer.github.com/v3/activity/events>`_
@@ -521,7 +543,7 @@ class NamedUser(github.GithubObject.CompletableGithubObject):
         :param name: string
         :rtype: :class:`github.Repository.Repository`
         """
-        assert isinstance(name, (str, six.text_type)), name
+        assert isinstance(name, str), name
         headers, data = self._requester.requestJsonAndCheck(
             "GET", "/repos/" + self.login + "/" + name
         )
@@ -542,14 +564,10 @@ class NamedUser(github.GithubObject.CompletableGithubObject):
         :param direction: string
         :rtype: :class:`github.PaginatedList.PaginatedList` of :class:`github.Repository.Repository`
         """
-        assert type is github.GithubObject.NotSet or isinstance(
-            type, (str, six.text_type)
-        ), type
-        assert sort is github.GithubObject.NotSet or isinstance(
-            sort, (str, six.text_type)
-        ), sort
+        assert type is github.GithubObject.NotSet or isinstance(type, str), type
+        assert sort is github.GithubObject.NotSet or isinstance(sort, str), sort
         assert direction is github.GithubObject.NotSet or isinstance(
-            direction, (str, six.text_type)
+            direction, str
         ), direction
         url_parameters = dict()
         if type is not github.GithubObject.NotSet:
@@ -617,7 +635,7 @@ class NamedUser(github.GithubObject.CompletableGithubObject):
         :param org: string or :class:`github.Organization.Organization`
         :rtype: :class:`github.Membership.Membership`
         """
-        assert isinstance(org, (str, six.text_type)) or isinstance(
+        assert isinstance(org, str) or isinstance(
             org, github.Organization.Organization
         ), org
         if isinstance(org, github.Organization.Organization):
@@ -671,6 +689,7 @@ class NamedUser(github.GithubObject.CompletableGithubObject):
         self._suspended_at = github.GithubObject.NotSet
         self._team_count = github.GithubObject.NotSet
         self._total_private_repos = github.GithubObject.NotSet
+        self._twitter_username = github.GithubObject.NotSet
         self._type = github.GithubObject.NotSet
         self._updated_at = github.GithubObject.NotSet
         self._url = github.GithubObject.NotSet
@@ -773,6 +792,10 @@ class NamedUser(github.GithubObject.CompletableGithubObject):
         if "total_private_repos" in attributes:  # pragma no branch
             self._total_private_repos = self._makeIntAttribute(
                 attributes["total_private_repos"]
+            )
+        if "twitter_username" in attributes:  # pragma no branch
+            self._twitter_username = self._makeStringAttribute(
+                attributes["twitter_username"]
             )
         if "type" in attributes:  # pragma no branch
             self._type = self._makeStringAttribute(attributes["type"])

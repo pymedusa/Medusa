@@ -165,21 +165,6 @@ import re
 import sys
 from pprint import pprint
 
-#TODO - #21 - six is part of the repo now, but we didn't switch over to it here
-# this could be replaced if six is used for compatibility, or there are no
-# more assertions about items being a string
-if sys.version_info < (3,):
-    string_type = basestring
-else:
-    string_type = str
-    # so tests that care about unicode on 2.x can specify unicode, and the same
-    # tests when run on 3.x won't complain about a undefined name "unicode"
-    # since all strings are unicode on 3.x we just want to pass it through
-    # unchanged
-    unicode = lambda x: x
-    # in python 3, all ints are equivalent to python 2 longs, and they'll
-    # never show "L" in the repr
-    long = int
 
 _list_arg = re.compile(r'''
     (?:
@@ -258,17 +243,6 @@ _paramstring = r'''
 
 _matchstring = '^%s*' % _paramstring
 
-# Python pre 2.2.1 doesn't have bool
-try:
-    bool
-except NameError:
-    def bool(val):
-        """Simple boolean equivalent function. """
-        if val:
-            return 1
-        else:
-            return 0
-
 
 def dottedQuadToNum(ip):
     """
@@ -304,20 +278,20 @@ def numToDottedQuad(num):
     """
     Convert int or long int to dotted quad string
     
-    >>> numToDottedQuad(long(-1))
+    >>> numToDottedQuad(int(-1))
     Traceback (most recent call last):
     ValueError: Not a good numeric IP: -1
-    >>> numToDottedQuad(long(1))
+    >>> numToDottedQuad(int(1))
     '0.0.0.1'
-    >>> numToDottedQuad(long(16777218))
+    >>> numToDottedQuad(int(16777218))
     '1.0.0.2'
-    >>> numToDottedQuad(long(16908291))
+    >>> numToDottedQuad(int(16908291))
     '1.2.0.3'
-    >>> numToDottedQuad(long(16909060))
+    >>> numToDottedQuad(int(16909060))
     '1.2.3.4'
-    >>> numToDottedQuad(long(4294967295))
+    >>> numToDottedQuad(int(4294967295))
     '255.255.255.255'
-    >>> numToDottedQuad(long(4294967296))
+    >>> numToDottedQuad(int(4294967296))
     Traceback (most recent call last):
     ValueError: Not a good numeric IP: 4294967296
     >>> numToDottedQuad(-1)
@@ -343,11 +317,11 @@ def numToDottedQuad(num):
     import socket, struct
     
     # no need to intercept here, 4294967295L is fine
-    if num > long(4294967295) or num < 0:
+    if num > int(4294967295) or num < 0:
         raise ValueError('Not a good numeric IP: %s' % num)
     try:
         return socket.inet_ntoa(
-            struct.pack('!L', long(num)))
+            struct.pack('!L', int(num)))
     except (socket.error, struct.error, OverflowError):
         raise ValueError('Not a good numeric IP: %s' % num)
 
@@ -491,9 +465,9 @@ class Validator(object):
     ...     # check that value is of the correct type.
     ...     # possible valid inputs are integers or strings
     ...     # that represent integers
-    ...     if not isinstance(value, (int, long, string_type)):
+    ...     if not isinstance(value, (int, str)):
     ...         raise VdtTypeError(value)
-    ...     elif isinstance(value, string_type):
+    ...     elif isinstance(value, str):
     ...         # if we are given a string
     ...         # attempt to convert to an integer
     ...         try:
@@ -541,7 +515,7 @@ class Validator(object):
     """
 
     # this regex does the initial parsing of the checks
-    _func_re = re.compile(r'(.+?)\((.*)\)', re.DOTALL)
+    _func_re = re.compile(r'([^\(\)]+?)\((.*)\)', re.DOTALL)
 
     # this regex takes apart keyword arguments
     _key_arg = re.compile(r'^([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(.*)$',  re.DOTALL)
@@ -763,7 +737,7 @@ def _is_num_param(names, values, to_float=False):
     for (name, val) in zip(names, values):
         if val is None:
             out_params.append(val)
-        elif isinstance(val, (int, long, float, string_type)):
+        elif isinstance(val, (int, float, str)):
             try:
                 out_params.append(fun(val))
             except ValueError as e:
@@ -781,7 +755,7 @@ def _is_num_param(names, values, to_float=False):
 
 def is_integer(value, min=None, max=None):
     """
-    A check that tests that a given value is an integer (int, or long)
+    A check that tests that a given value is an integer (int)
     and optionally, between bounds. A negative value is accepted, while
     a float will fail.
     
@@ -820,9 +794,9 @@ def is_integer(value, min=None, max=None):
     0
     """
     (min_val, max_val) = _is_num_param(('min', 'max'), (min, max))
-    if not isinstance(value, (int, long, string_type)):
+    if not isinstance(value, (int, str)):
         raise VdtTypeError(value)
-    if isinstance(value, string_type):
+    if isinstance(value, str):
         # if it's a string - does it represent an integer ?
         try:
             value = int(value)
@@ -872,7 +846,7 @@ def is_float(value, min=None, max=None):
     """
     (min_val, max_val) = _is_num_param(
         ('min', 'max'), (min, max), to_float=True)
-    if not isinstance(value, (int, long, float, string_type)):
+    if not isinstance(value, (int, float, str)):
         raise VdtTypeError(value)
     if not isinstance(value, float):
         # if it's a string - does it represent a float ?
@@ -937,7 +911,7 @@ def is_boolean(value):
     VdtTypeError: the value "up" is of the wrong type.
     
     """
-    if isinstance(value, string_type):
+    if isinstance(value, str):
         try:
             return bool_dict[value.lower()]
         except KeyError:
@@ -980,7 +954,7 @@ def is_ip_addr(value):
     Traceback (most recent call last):
     VdtTypeError: the value "0" is of the wrong type.
     """
-    if not isinstance(value, string_type):
+    if not isinstance(value, str):
         raise VdtTypeError(value)
     value = value.strip()
     try:
@@ -1022,7 +996,7 @@ def is_list(value, min=None, max=None):
     VdtTypeError: the value "12" is of the wrong type.
     """
     (min_len, max_len) = _is_num_param(('min', 'max'), (min, max))
-    if isinstance(value, string_type):
+    if isinstance(value, str):
         raise VdtTypeError(value)
     try:
         num_members = len(value)
@@ -1091,7 +1065,7 @@ def is_string(value, min=None, max=None):
     Traceback (most recent call last):
     VdtValueTooLongError: the value "1234" is too long.
     """
-    if not isinstance(value, string_type):
+    if not isinstance(value, str):
         raise VdtTypeError(value)
     (min_len, max_len) = _is_num_param(('min', 'max'), (min, max))
     try:
@@ -1197,7 +1171,7 @@ def is_string_list(value, min=None, max=None):
     Traceback (most recent call last):
     VdtTypeError: the value "hello" is of the wrong type.
     """
-    if isinstance(value, string_type):
+    if isinstance(value, str):
         raise VdtTypeError(value)
     return [is_string(mem) for mem in is_list(value, min, max)]
 
@@ -1325,7 +1299,7 @@ def is_option(value, *options):
     Traceback (most recent call last):
     VdtTypeError: the value "0" is of the wrong type.
     """
-    if not isinstance(value, string_type):
+    if not isinstance(value, str):
         raise VdtTypeError(value)
     if not value in options:
         raise VdtValueError(value)
@@ -1399,13 +1373,13 @@ def _test(value, *args, **keywargs):
     
     Bug test for unicode arguments
     >>> v = Validator()
-    >>> v.check(unicode('string(min=4)'), unicode('test')) == unicode('test')
+    >>> v.check('string(min=4)', 'test') == 'test'
     True
     
     >>> v = Validator()
-    >>> v.get_default_value(unicode('string(min=4, default="1234")')) == unicode('1234')
+    >>> v.get_default_value('string(min=4, default="1234")') == '1234'
     True
-    >>> v.check(unicode('string(min=4, default="1234")'), unicode('test')) == unicode('test')
+    >>> v.check('string(min=4, default="1234")', 'test') == 'test'
     True
     
     >>> v = Validator()

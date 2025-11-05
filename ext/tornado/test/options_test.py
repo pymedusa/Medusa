@@ -7,7 +7,6 @@ import unittest
 
 from tornado.options import OptionParser, Error
 from tornado.util import basestring_type
-from tornado.test.util import subTest
 
 import typing
 
@@ -15,7 +14,7 @@ if typing.TYPE_CHECKING:
     from typing import List  # noqa: F401
 
 
-class Email(object):
+class Email:
     def __init__(self, value):
         if isinstance(value, str) and "@" in value:
             self._value = value
@@ -135,7 +134,7 @@ class OptionsTest(unittest.TestCase):
     def test_iter(self):
         options = self._sample_options()
         # OptionParsers always define 'help'.
-        self.assertEqual(set(["a", "b", "help"]), set(iter(options)))
+        self.assertEqual({"a", "b", "help"}, set(iter(options)))
 
     def test_getitem(self):
         options = self._sample_options()
@@ -166,7 +165,7 @@ class OptionsTest(unittest.TestCase):
 
         frame = sys._getframe(0)
         this_file = frame.f_code.co_filename
-        self.assertEqual(set(["b_group", "", this_file]), options.groups())
+        self.assertEqual({"b_group", "", this_file}, options.groups())
 
         b_group_dict = options.group_dict("b_group")
         self.assertEqual({"b": 2}, b_group_dict)
@@ -204,6 +203,7 @@ class OptionsTest(unittest.TestCase):
         options.define("timedelta", type=datetime.timedelta)
         options.define("email", type=Email)
         options.define("list-of-int", type=int, multiple=True)
+        options.define("list-of-str", type=str, multiple=True)
         return options
 
     def _check_options_values(self, options):
@@ -216,6 +216,7 @@ class OptionsTest(unittest.TestCase):
         self.assertEqual(options.email.value, "tornado@web.com")
         self.assertTrue(isinstance(options.email, Email))
         self.assertEqual(options.list_of_int, [1, 2, 3])
+        self.assertEqual(options.list_of_str, ["a", "b", "c"])
 
     def test_types(self):
         options = self._define_options()
@@ -230,6 +231,7 @@ class OptionsTest(unittest.TestCase):
                 "--timedelta=45s",
                 "--email=tornado@web.com",
                 "--list-of-int=1,2,3",
+                "--list-of-str=a,b,c",
             ]
         )
         self._check_options_values(options)
@@ -262,7 +264,7 @@ class OptionsTest(unittest.TestCase):
         options.define("foo")
         with self.assertRaises(Error) as cm:
             options.define("foo")
-        self.assertRegexpMatches(str(cm.exception), "Option.*foo.*already defined")
+        self.assertRegex(str(cm.exception), "Option.*foo.*already defined")
 
     def test_error_redefine_underscore(self):
         # Ensure that the dash/underscore normalization doesn't
@@ -274,14 +276,12 @@ class OptionsTest(unittest.TestCase):
             ("foo_bar", "foo-bar"),
         ]
         for a, b in tests:
-            with subTest(self, a=a, b=b):
+            with self.subTest(self, a=a, b=b):
                 options = OptionParser()
                 options.define(a)
                 with self.assertRaises(Error) as cm:
                     options.define(b)
-                self.assertRegexpMatches(
-                    str(cm.exception), "Option.*foo.bar.*already defined"
-                )
+                self.assertRegex(str(cm.exception), "Option.*foo.bar.*already defined")
 
     def test_dash_underscore_cli(self):
         # Dashes and underscores should be interchangeable.

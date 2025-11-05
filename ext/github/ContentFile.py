@@ -31,8 +31,6 @@
 #                                                                              #
 ################################################################################
 
-from __future__ import absolute_import
-
 import base64
 
 import github.GithubObject
@@ -57,6 +55,9 @@ class ContentFile(github.GithubObject.CompletableGithubObject):
 
     @property
     def decoded_content(self):
+        """
+        :type: bytes
+        """
         assert self.encoding == "base64", "unsupported encoding: %s" % self.encoding
         return base64.b64decode(bytearray(self.content, "utf-8"))
 

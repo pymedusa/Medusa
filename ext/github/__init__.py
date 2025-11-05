@@ -30,14 +30,28 @@
 ################################################################################
 
 """
-The primary class you will instanciate is :class:`github.MainClass.Github`.
+The primary class you will instantiate is :class:`github.MainClass.Github`.
 From its ``get_``, ``create_`` methods, you will obtain instances of all Github objects
 like :class:`github.NamedUser.NamedUser` or :class:`github.Repository.Repository`.
 
 All classes inherit from :class:`github.GithubObject.GithubObject`.
 """
-
-from __future__ import absolute_import
+__all__ = [
+    "BadAttributeException",
+    "BadCredentialsException",
+    "BadUserAgentException",
+    "enable_console_debug_logging",
+    "Github",
+    "GithubException",
+    "GithubIntegration",
+    "IncompletableObject",
+    "InputFileContent",
+    "InputGitAuthor",
+    "InputGitTreeElement",
+    "RateLimitExceededException",
+    "TwoFactorException",
+    "UnknownObjectException",
+]
 
 import logging
 
@@ -48,6 +62,7 @@ from .GithubException import (
     BadCredentialsException,
     BadUserAgentException,
     GithubException,
+    IncompletableObject,
     RateLimitExceededException,
     TwoFactorException,
     UnknownObjectException,
@@ -65,20 +80,3 @@ def enable_console_debug_logging():  # pragma no cover (Function useful only out
     logger = logging.getLogger("github")
     logger.setLevel(logging.DEBUG)
     logger.addHandler(logging.StreamHandler())
-
-
-__all__ = [
-    BadAttributeException,
-    BadCredentialsException,
-    BadUserAgentException,
-    enable_console_debug_logging,
-    Github,
-    GithubException,
-    GithubIntegration,
-    InputFileContent,
-    InputGitAuthor,
-    InputGitTreeElement,
-    RateLimitExceededException,
-    TwoFactorException,
-    UnknownObjectException,
-]

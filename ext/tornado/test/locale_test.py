@@ -33,7 +33,7 @@ class TranslationLoaderTest(unittest.TestCase):
         )
         locale = tornado.locale.get("fr_FR")
         self.assertTrue(isinstance(locale, tornado.locale.CSVLocale))
-        self.assertEqual(locale.translate("school"), u"\u00e9cole")
+        self.assertEqual(locale.translate("school"), "\u00e9cole")
 
     def test_csv_bom(self):
         with open(
@@ -53,7 +53,7 @@ class TranslationLoaderTest(unittest.TestCase):
                 tornado.locale.load_translations(tmpdir)
                 locale = tornado.locale.get("fr_FR")
                 self.assertIsInstance(locale, tornado.locale.CSVLocale)
-                self.assertEqual(locale.translate("school"), u"\u00e9cole")
+                self.assertEqual(locale.translate("school"), "\u00e9cole")
             finally:
                 shutil.rmtree(tmpdir)
 
@@ -64,24 +64,22 @@ class TranslationLoaderTest(unittest.TestCase):
         )
         locale = tornado.locale.get("fr_FR")
         self.assertTrue(isinstance(locale, tornado.locale.GettextLocale))
-        self.assertEqual(locale.translate("school"), u"\u00e9cole")
-        self.assertEqual(locale.pgettext("law", "right"), u"le droit")
-        self.assertEqual(locale.pgettext("good", "right"), u"le bien")
+        self.assertEqual(locale.translate("school"), "\u00e9cole")
+        self.assertEqual(locale.pgettext("law", "right"), "le droit")
+        self.assertEqual(locale.pgettext("good", "right"), "le bien")
+        self.assertEqual(locale.pgettext("organization", "club", "clubs", 1), "le club")
         self.assertEqual(
-            locale.pgettext("organization", "club", "clubs", 1), u"le club"
+            locale.pgettext("organization", "club", "clubs", 2), "les clubs"
         )
-        self.assertEqual(
-            locale.pgettext("organization", "club", "clubs", 2), u"les clubs"
-        )
-        self.assertEqual(locale.pgettext("stick", "club", "clubs", 1), u"le b\xe2ton")
-        self.assertEqual(locale.pgettext("stick", "club", "clubs", 2), u"les b\xe2tons")
+        self.assertEqual(locale.pgettext("stick", "club", "clubs", 1), "le b\xe2ton")
+        self.assertEqual(locale.pgettext("stick", "club", "clubs", 2), "les b\xe2tons")
 
 
 class LocaleDataTest(unittest.TestCase):
     def test_non_ascii_name(self):
         name = tornado.locale.LOCALE_NAMES["es_LA"]["name"]
         self.assertTrue(isinstance(name, unicode_type))
-        self.assertEqual(name, u"Espa\u00f1ol")
+        self.assertEqual(name, "Espa\u00f1ol")
         self.assertEqual(utf8(name), b"Espa\xc3\xb1ol")
 
 
@@ -93,45 +91,55 @@ class EnglishTest(unittest.TestCase):
             locale.format_date(date, full_format=True), "April 28, 2013 at 6:35 pm"
         )
 
-        now = datetime.datetime.utcnow()
+        aware_dt = datetime.datetime.now(datetime.timezone.utc)
+        naive_dt = aware_dt.replace(tzinfo=None)
+        for name, now in {"aware": aware_dt, "naive": naive_dt}.items():
+            with self.subTest(dt=name):
+                self.assertEqual(
+                    locale.format_date(
+                        now - datetime.timedelta(seconds=2), full_format=False
+                    ),
+                    "2 seconds ago",
+                )
+                self.assertEqual(
+                    locale.format_date(
+                        now - datetime.timedelta(minutes=2), full_format=False
+                    ),
+                    "2 minutes ago",
+                )
+                self.assertEqual(
+                    locale.format_date(
+                        now - datetime.timedelta(hours=2), full_format=False
+                    ),
+                    "2 hours ago",
+                )
 
-        self.assertEqual(
-            locale.format_date(now - datetime.timedelta(seconds=2), full_format=False),
-            "2 seconds ago",
-        )
-        self.assertEqual(
-            locale.format_date(now - datetime.timedelta(minutes=2), full_format=False),
-            "2 minutes ago",
-        )
-        self.assertEqual(
-            locale.format_date(now - datetime.timedelta(hours=2), full_format=False),
-            "2 hours ago",
-        )
+                self.assertEqual(
+                    locale.format_date(
+                        now - datetime.timedelta(days=1),
+                        full_format=False,
+                        shorter=True,
+                    ),
+                    "yesterday",
+                )
 
-        self.assertEqual(
-            locale.format_date(
-                now - datetime.timedelta(days=1), full_format=False, shorter=True
-            ),
-            "yesterday",
-        )
+                date = now - datetime.timedelta(days=2)
+                self.assertEqual(
+                    locale.format_date(date, full_format=False, shorter=True),
+                    locale._weekdays[date.weekday()],
+                )
 
-        date = now - datetime.timedelta(days=2)
-        self.assertEqual(
-            locale.format_date(date, full_format=False, shorter=True),
-            locale._weekdays[date.weekday()],
-        )
+                date = now - datetime.timedelta(days=300)
+                self.assertEqual(
+                    locale.format_date(date, full_format=False, shorter=True),
+                    "%s %d" % (locale._months[date.month - 1], date.day),
+                )
 
-        date = now - datetime.timedelta(days=300)
-        self.assertEqual(
-            locale.format_date(date, full_format=False, shorter=True),
-            "%s %d" % (locale._months[date.month - 1], date.day),
-        )
-
-        date = now - datetime.timedelta(days=500)
-        self.assertEqual(
-            locale.format_date(date, full_format=False, shorter=True),
-            "%s %d, %d" % (locale._months[date.month - 1], date.day, date.year),
-        )
+                date = now - datetime.timedelta(days=500)
+                self.assertEqual(
+                    locale.format_date(date, full_format=False, shorter=True),
+                    "%s %d, %d" % (locale._months[date.month - 1], date.day, date.year),
+                )
 
     def test_friendly_number(self):
         locale = tornado.locale.get("en_US")

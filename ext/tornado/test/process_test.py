@@ -9,7 +9,6 @@ import unittest
 
 from tornado.httpclient import HTTPClient, HTTPError
 from tornado.httpserver import HTTPServer
-from tornado.ioloop import IOLoop
 from tornado.log import gen_log
 from tornado.process import fork_processes, task_id, Subprocess
 from tornado.simple_httpclient import SimpleAsyncHTTPClient
@@ -66,25 +65,25 @@ class ProcessTest(unittest.TestCase):
             signal.alarm(5)  # master process
             try:
                 id = fork_processes(3, max_restarts=3)
-                self.assertTrue(id is not None)
+                self.assertIsNotNone(id)
                 signal.alarm(5)  # child processes
             except SystemExit as e:
                 # if we exit cleanly from fork_processes, all the child processes
                 # finished with status 0
                 self.assertEqual(e.code, 0)
-                self.assertTrue(task_id() is None)
+                self.assertIsNone(task_id())
                 sock.close()
                 return
             try:
-                if asyncio is not None:
-                    # Reset the global asyncio event loop, which was put into
-                    # a broken state by the fork.
-                    asyncio.set_event_loop(asyncio.new_event_loop())
                 if id in (0, 1):
                     self.assertEqual(id, task_id())
-                    server = HTTPServer(self.get_app())
-                    server.add_sockets([sock])
-                    IOLoop.current().start()
+
+                    async def f():
+                        server = HTTPServer(self.get_app())
+                        server.add_sockets([sock])
+                        await asyncio.Event().wait()
+
+                    asyncio.run(f())
                 elif id == 2:
                     self.assertEqual(id, task_id())
                     sock.close()
@@ -141,15 +140,6 @@ class SubprocessTest(AsyncTestCase):
 
     @gen_test
     def test_subprocess(self):
-        if IOLoop.configured_class().__name__.endswith("LayeredTwistedIOLoop"):
-            # This test fails non-deterministically with LayeredTwistedIOLoop.
-            # (the read_until('\n') returns '\n' instead of 'hello\n')
-            # This probably indicates a problem with either TornadoReactor
-            # or TwistedIOLoop, but I haven't been able to track it down
-            # and for now this is just causing spurious travis-ci failures.
-            raise unittest.SkipTest(
-                "Subprocess tests not compatible with " "LayeredTwistedIOLoop"
-            )
         subproc = Subprocess(
             [sys.executable, "-u", "-i"],
             stdin=Subprocess.STREAM,

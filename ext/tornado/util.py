@@ -11,7 +11,7 @@ and `.Resolver`.
 """
 
 import array
-import atexit
+import asyncio
 from inspect import getfullargspec
 import os
 import re
@@ -46,36 +46,14 @@ bytes_type = bytes
 unicode_type = str
 basestring_type = str
 
-try:
-    from sys import is_finalizing
-except ImportError:
-    # Emulate it
-    def _get_emulated_is_finalizing() -> Callable[[], bool]:
-        L = []  # type: List[None]
-        atexit.register(lambda: L.append(None))
 
-        def is_finalizing() -> bool:
-            # Not referencing any globals here
-            return L != []
-
-        return is_finalizing
-
-    is_finalizing = _get_emulated_is_finalizing()
-
-
-class TimeoutError(Exception):
-    """Exception raised by `.with_timeout` and `.IOLoop.run_sync`.
-
-    .. versionchanged:: 5.0:
-       Unified ``tornado.gen.TimeoutError`` and
-       ``tornado.ioloop.TimeoutError`` as ``tornado.util.TimeoutError``.
-       Both former names remain as aliases.
-    """
+# versionchanged:: 6.2
+# no longer our own TimeoutError, use standard asyncio class
+TimeoutError = asyncio.TimeoutError
 
 
 class ObjectDict(Dict[str, Any]):
-    """Makes a dictionary behave like an object, with attribute-style access.
-    """
+    """Makes a dictionary behave like an object, with attribute-style access."""
 
     def __getattr__(self, name: str) -> Any:
         try:
@@ -87,7 +65,7 @@ class ObjectDict(Dict[str, Any]):
         self[name] = value
 
 
-class GzipDecompressor(object):
+class GzipDecompressor:
     """Streaming gzip decompressor.
 
     The interface is like that of `zlib.decompressobj` (without some of the
@@ -115,8 +93,7 @@ class GzipDecompressor(object):
 
     @property
     def unconsumed_tail(self) -> bytes:
-        """Returns the unconsumed portion left over
-        """
+        """Returns the unconsumed portion left over"""
         return self.decompressobj.unconsumed_tail
 
     def flush(self) -> bytes:
@@ -168,14 +145,8 @@ def exec_in(
 
 
 def raise_exc_info(
-    exc_info,  # type: Tuple[Optional[type], Optional[BaseException], Optional[TracebackType]]
-):
-    # type: (...) -> typing.NoReturn
-    #
-    # This function's type annotation must use comments instead of
-    # real annotations because typing.NoReturn does not exist in
-    # python 3.5's typing module. The formatting is funky because this
-    # is apparently what flake8 wants.
+    exc_info: Tuple[Optional[type], Optional[BaseException], Optional["TracebackType"]]
+) -> typing.NoReturn:
     try:
         if exc_info[1] is not None:
             raise exc_info[1].with_traceback(exc_info[2])
@@ -230,7 +201,7 @@ def re_unescape(s: str) -> str:
     return _re_unescape_pattern.sub(_re_unescape_replacement, s)
 
 
-class Configurable(object):
+class Configurable:
     """Base class for configurable interfaces.
 
     A configurable interface is an (abstract) class whose constructor
@@ -281,7 +252,7 @@ class Configurable(object):
         if impl.configurable_base() is not base:
             # The impl class is itself configurable, so recurse.
             return impl(*args, **init_kwargs)
-        instance = super(Configurable, cls).__new__(impl)
+        instance = super().__new__(impl)
         # initialize vs __init__ chosen for compatibility with AsyncHTTPClient
         # singleton magic.  If we get rid of that we can switch to __init__
         # here too.
@@ -365,7 +336,7 @@ class Configurable(object):
         base.__impl_kwargs = saved[1]
 
 
-class ArgReplacer(object):
+class ArgReplacer:
     """Replaces one value in an ``args, kwargs`` pair.
 
     Inspects the function signature to find an argument by name

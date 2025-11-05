@@ -31,6 +31,7 @@
     "@fortawesome/free-solid-svg-icons": "7.1.0",
     "@fortawesome/vue-fontawesome": "3.1.2",
     "@johmun/vue-tags-input": "2.1.0",
+    "@popperjs/core": "2.11.8",
     "axios": "0.30.2",
     "bootstrap": "5.3.8",
     "country-language": "0.1.7",
@@ -128,7 +129,9 @@
     "vue-template-compiler": "^2.7.16",
     "tough-cookie": "^6.0.0",
     "postcss": "^8.5.6",
-    "braces": "^3.0.3"
+    "braces": "^3.0.3",
+    "strip-ansi": "6.0.1",
+    "string-width": "4.2.2"
   },
   "stylelint": {
     "plugins": [

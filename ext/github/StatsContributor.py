@@ -26,8 +26,6 @@
 #                                                                              #
 ################################################################################
 
-from __future__ import absolute_import
-
 import github.GithubObject
 import github.NamedUser
 
@@ -39,7 +37,7 @@ class StatsContributor(github.GithubObject.NonCompletableGithubObject):
 
     class Week(github.GithubObject.NonCompletableGithubObject):
         """
-        This class represents weekly statistics of a contibutor.
+        This class represents weekly statistics of a contributor.
         """
 
         @property

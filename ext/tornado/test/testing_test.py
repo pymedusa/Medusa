@@ -8,6 +8,7 @@ import contextlib
 import gc
 import os
 import platform
+import sys
 import traceback
 import unittest
 import warnings
@@ -106,7 +107,7 @@ class AsyncHTTPTestCaseTest(AsyncHTTPTestCase):
     def test_fetch_full_http_url(self):
         # Ensure that self.fetch() recognizes absolute urls and does
         # not transform them into references to our main test server.
-        path = "http://localhost:%d/path" % self.second_port
+        path = "http://127.0.0.1:%d/path" % self.second_port
 
         response = self.fetch(path)
         self.assertEqual(response.request.url, path)
@@ -116,7 +117,11 @@ class AsyncHTTPTestCaseTest(AsyncHTTPTestCase):
         super().tearDown()
 
 
-class AsyncTestCaseWrapperTest(unittest.TestCase):
+class AsyncTestCaseReturnAssertionsTest(unittest.TestCase):
+    # These tests verify that tests that return non-None values (without being decorated with
+    # @gen_test) raise errors instead of incorrectly succeeding. These tests should be removed or
+    # updated when the _callTestMethod method is removed from AsyncTestCase (the same checks will
+    # still happen, but they'll be performed in the stdlib as DeprecationWarnings)
     def test_undecorated_generator(self):
         class Test(AsyncTestCase):
             def test_gen(self):
@@ -131,6 +136,12 @@ class AsyncTestCaseWrapperTest(unittest.TestCase):
     @unittest.skipIf(
         platform.python_implementation() == "PyPy",
         "pypy destructor warnings cannot be silenced",
+    )
+    @unittest.skipIf(
+        # This check actually exists in 3.11 but it changed in 3.12 in a way that breaks
+        # this test.
+        sys.version_info >= (3, 12),
+        "py312 has its own check for test case returns",
     )
     def test_undecorated_coroutine(self):
         class Test(AsyncTestCase):
@@ -323,30 +334,6 @@ class GenTest(AsyncTestCase):
             self.fail("did not get expected exception")
         except ioloop.TimeoutError:
             self.finished = True
-
-
-class GetNewIOLoopTest(AsyncTestCase):
-    def get_new_ioloop(self):
-        # Use the current loop instead of creating a new one here.
-        return ioloop.IOLoop.current()
-
-    def setUp(self):
-        # This simulates the effect of an asyncio test harness like
-        # pytest-asyncio.
-        self.orig_loop = asyncio.get_event_loop()
-        self.new_loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(self.new_loop)
-        super().setUp()
-
-    def tearDown(self):
-        super().tearDown()
-        # AsyncTestCase must not affect the existing asyncio loop.
-        self.assertFalse(asyncio.get_event_loop().is_closed())
-        asyncio.set_event_loop(self.orig_loop)
-        self.new_loop.close()
-
-    def test_loop(self):
-        self.assertIs(self.io_loop.asyncio_loop, self.new_loop)  # type: ignore
 
 
 if __name__ == "__main__":

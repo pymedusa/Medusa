@@ -60,7 +60,7 @@
 
 #### Dependencies
  To run Medusa from source you will need one of these Python versions:
- * **Python 3.9 to Python 3.12**
+ * **Python 3.9 to Python 3.13**
 
 #### Installation - direct
  Start [here](https://github.com/pymedusa/Medusa/wiki/Installation-&-Configuration-Guides) to read the installation guides for different setups.
