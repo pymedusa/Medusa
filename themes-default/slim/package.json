@@ -129,7 +129,8 @@
     "vue-template-compiler": "^2.7.16",
     "tough-cookie": "^6.0.0",
     "postcss": "^8.5.6",
-    "braces": "^3.0.3"
+    "braces": "^3.0.3",
+    "strip-ansi": "6.0.1"
   },
   "stylelint": {
     "plugins": [
