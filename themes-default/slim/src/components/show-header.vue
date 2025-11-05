@@ -314,7 +314,7 @@
 
 <script>
 import Truncate from 'vue-truncate-collapsed';
-import { getLanguage } from 'country-language';
+import { getLanguage } from '@ladjs/country-language';
 import { scrollTo } from 'vue-scrollto';
 import { mapActions, mapState, mapGetters } from 'vuex';
 import { combineQualities, humanFileSize } from '../utils/core';

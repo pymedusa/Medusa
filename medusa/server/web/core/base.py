@@ -223,7 +223,8 @@ class WebHandler(BaseHandler):
         except Exception:
             logger.log(u'Failed doing web ui get request {route!r}: {error}'.format
                        (route=route, error=traceback.format_exc()), logger.DEBUG)
-            raise HTTPError(404)
+            t = PageTemplate(rh=self, filename='index.mako')
+            return self.finish(t.render())
 
     @authenticated
     @coroutine
@@ -239,7 +240,8 @@ class WebHandler(BaseHandler):
         except Exception:
             logger.log(u'Failed doing web ui post request {route!r}: {error}'.format
                        (route=route, error=traceback.format_exc()), logger.DEBUG)
-            raise HTTPError(404)
+            t = PageTemplate(rh=self, filename='index.mako')
+            return self.finish(t.render())
 
     @run_on_executor
     def async_call(self, function):
