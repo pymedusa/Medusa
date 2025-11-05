@@ -1375,6 +1375,11 @@
   resolved "https://registry.yarnpkg.com/@jsep-plugin/regex/-/regex-1.0.4.tgz#cb2fc423220fa71c609323b9ba7f7d344a755fcc"
   integrity sha512-q7qL4Mgjs1vByCaTnDFcBnV9HS7GVPJX5vyVoCgZHNSC9rjwIlmbXG5sUuorR5ndfHAIlJ8pVStxvjXHbNvtUg==
 
+"@ladjs/country-language@1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@ladjs/country-language/-/country-language-1.0.3.tgz#1131b524c6242567dfc4ce61401ff7a62e91b155"
+  integrity sha512-FJROu9/hh4eqVAGDyfL8vpv6Vb0qKHX1ozYLRZ+beUzD5xFf+3r0J+SVIWKviEa7W524Qvqou+ta1WrsRgzxGw==
+
 "@mapbox/stylelint-processor-arbitrary-tags@0.4.0":
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/@mapbox/stylelint-processor-arbitrary-tags/-/stylelint-processor-arbitrary-tags-0.4.0.tgz#da45723d8ce75140d08efe3bddd284eba3a3fe53"
@@ -2947,10 +2952,10 @@ boolbase@^1.0.0, boolbase@~1.0.0:
   resolved "https://registry.yarnpkg.com/boolbase/-/boolbase-1.0.0.tgz#68dff5fbe60c51eb37725ea9e3ed310dcc1e776e"
   integrity sha512-JZOSA7Mo9sNGB8+UjSgzdLtokWAky1zbztM3WRLCbZ70/3cTANmQmOdR7y2g+J0e2WXywy1yS468tY+IruqEww==
 
-bootstrap@5.3.8:
-  version "5.3.8"
-  resolved "https://registry.yarnpkg.com/bootstrap/-/bootstrap-5.3.8.tgz#6401a10057a22752d21f4e19055508980656aeed"
-  integrity sha512-HP1SZDqaLDPwsNiqRqi5NcP0SSXciX2s9E+RyqJIIqGo+vJeN5AJVM98CXmW/Wux0nQ5L7jeWUdplCEf0Ee+tg==
+bootstrap@3.4.1:
+  version "3.4.1"
+  resolved "https://registry.yarnpkg.com/bootstrap/-/bootstrap-3.4.1.tgz#c3a347d419e289ad11f4033e3c4132b87c081d72"
+  integrity sha512-yN5oZVmRCwe5aKwzRj6736nSmKDX7pLYwsXiCj/EYmo16hODaBiT4En5btW/jhBF/seV+XMx3aYwukYC3A49DA==
 
 brace-expansion@^1.1.7:
   version "1.1.12"
@@ -3631,14 +3636,6 @@ cosmiconfig@^7.0.0:
     parse-json "^5.0.0"
     path-type "^4.0.0"
     yaml "^1.10.0"
-
-country-language@0.1.7:
-  version "0.1.7"
-  resolved "https://registry.yarnpkg.com/country-language/-/country-language-0.1.7.tgz#7870f4ba125db9a6071f19737bd9ef9343ae35db"
-  integrity sha512-QH8GvZehR0IsFSR8ZPzteaCq/JjsLKk+tHWSQciXVpredI/2Xaf1VAdCuo/XPFWSrRCkSLaZNqnOcot4zceAIw==
-  dependencies:
-    underscore "~1.7.0"
-    underscore.deep "~0.5.1"
 
 crc-32@^1.2.0:
   version "1.2.2"
@@ -11810,12 +11807,7 @@ unc-path-regex@^0.1.2:
   resolved "https://registry.yarnpkg.com/unc-path-regex/-/unc-path-regex-0.1.2.tgz#e73dd3d7b0d7c5ed86fbac6b0ae7d8c6a69d50fa"
   integrity sha512-eXL4nmJT7oCpkZsHZUOJo8hcX3GbsiDOa0Qu9F646fi8dT3XuSVopVqAcEiVzSKKH7UoDti23wNX3qGFxcW5Qg==
 
-underscore.deep@~0.5.1:
-  version "0.5.3"
-  resolved "https://registry.yarnpkg.com/underscore.deep/-/underscore.deep-0.5.3.tgz#210969d58025339cecabd2a2ad8c3e8925e5c095"
-  integrity sha512-4OuSOlFNkiVFVc3khkeG112Pdu1gbitMj7t9B9ENb61uFmN70Jq7Iluhi3oflcSgexkKfDdJ5XAJET2gEq6ikA==
-
-underscore@^1.13.7, underscore@~1.7.0:
+underscore@^1.13.7:
   version "1.13.7"
   resolved "https://registry.yarnpkg.com/underscore/-/underscore-1.13.7.tgz#970e33963af9a7dda228f17ebe8399e5fbe63a10"
   integrity sha512-GMXzWtsc57XAtguZgaQViUOzs0KTkk8ojr3/xAxXLITqf/3EMwxC0inyETfDFjH/Krbhuep0HNbbjI9i/q3F3g==
