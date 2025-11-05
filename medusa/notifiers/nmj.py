@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 
 import logging
 import re
-import telnetlib
+import socket
 from builtins import object
 
 from medusa import app
@@ -23,6 +23,37 @@ except ImportError:
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
+class SimpleTelnet:
+    """Minimal Telnet implementation for Medusa NMJ commands."""
+    def __init__(self, host, port=23, timeout=10):
+        self.sock = socket.create_connection((host, port), timeout=timeout)
+        self.buffer = b""
+    def read_until(self, expected=b'# ', timeout=10):
+        """Read until expected prompt appears."""
+        import time
+        start = time.time()
+        while expected not in self.buffer:
+            if time.time() - start > timeout:
+                raise TimeoutError("Timed out waiting for prompt")
+            data = self.sock.recv(1024)
+            if not data:
+                break
+            self.buffer += data
+        return self.buffer.decode('utf-8', errors='ignore')
+    def write(self, cmd):
+        """Send a command with CRLF."""
+        self.sock.sendall(cmd.encode('utf-8') + b'\n')
+    def read_all(self):
+        """Read everything remaining on the socket."""
+        chunks = []
+        while True:
+            data = self.sock.recv(4096)
+            if not data:
+                break
+            chunks.append(data)
+        return b''.join(chunks).decode('utf-8', errors='ignore')
+    def close(self):
+        self.sock.close()
 
 class Notifier(object):
     def notify_settings(self, host):
@@ -35,43 +66,43 @@ class Notifier(object):
         """
         # establish a terminal session to the PC
         try:
-            terminal = telnetlib.Telnet(host)
+            terminal = SimpleTelnet(host)
         except Exception:
-            log.warning(u'Warning: unable to get a telnet session to {0}', host)
+            log.warning('Warning: unable to get a telnet session to %s', host)
             return False
-
-        # tell the terminal to output the necessary info to the screen so we can search it later
-        log.debug(u'Connected to {0} via telnet', host)
-        terminal.read_until('sh-3.00# ')
-        terminal.write('cat /tmp/source\n')
-        terminal.write('cat /tmp/netshare\n')
-        terminal.write('exit\n')
-        tnoutput = terminal.read_all()
-
+        try:
+            log.debug('Connected to %s via telnet', host)
+            # Wait for prompt and send commands
+            terminal.read_until(b'sh-3.00# ')
+            terminal.write('cat /tmp/source')
+            terminal.write('cat /tmp/netshare')
+            terminal.write('exit')
+            tnoutput = terminal.read_all()
+        except Exception as e:
+            log.warning('Error during Telnet session to %s: %s', host, e)
+            return False
+        finally:
+            terminal.close()  # ensure socket is closed
+        # parse database and device
         match = re.search(r'(.+\.db)\r\n?(.+)(?=sh-3.00# cat /tmp/netshare)', tnoutput)
-
-        # if we found the database in the terminal output then save that database to the config
         if match:
             database = match.group(1)
             device = match.group(2)
-            log.debug(u'Found NMJ database {0} on device {1}', database, device)
+            log.debug('Found NMJ database %s on device %s', database, device)
             app.NMJ_DATABASE = database
         else:
-            log.warning(u'Could not get current NMJ database on {0}, NMJ is probably not running!', host)
+            log.warning('Could not get current NMJ database on %s, NMJ is probably not running!', host)
             return False
-
-        # if the device is a remote host then try to parse the mounting URL and save it to the config
+        # parse mount URL if remote
         if device.startswith('NETWORK_SHARE/'):
             match = re.search('.*(?=\r\n?%s)' % (re.escape(device[14:])), tnoutput)
-
             if match:
                 mount = match.group().replace('127.0.0.1', host)
-                log.debug(u'Found mounting url on the Popcorn Hour in configuration: {0}', mount)
+                log.debug('Found mounting URL on the Popcorn Hour: %s', mount)
                 app.NMJ_MOUNT = mount
             else:
-                log.warning(u'Detected a network share on the Popcorn Hour, but could not get the mounting url')
+                log.warning('Detected a network share on the Popcorn Hour, but could not get the mounting URL')
                 return False
-
         return True
 
     def notify_snatch(self, title, message, **kwargs):

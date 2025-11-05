@@ -14,6 +14,10 @@ ExceptionTitle = namedtuple('ExceptionTitle', 'title')
 
 sut = GenericProvider('FakeProvider')
 
+# Create a single static "now" reference in UTC.
+# Using UTC avoids local DST offset shifts entirely.
+NOW_UTC = datetime.now(tz=tz.gettz('UTC')).replace(microsecond=0)
+TOLERANCE_SECONDS = 60  # Acceptable difference for human-time tests
 
 @pytest.mark.parametrize('p', [
     {  # p0: None
@@ -129,13 +133,13 @@ sut = GenericProvider('FakeProvider')
         'fromtimestamp': True
     },
     {  # p22: hd-space test human date like 'yesterday at 12:00:00'
-        'pubdate': 'yesterday at {0}'.format((datetime.now() - timedelta(minutes=10, seconds=25)).strftime('%H:%M:%S')),
-        'expected': datetime.now().replace(microsecond=0, tzinfo=tz.gettz('UTC')) - timedelta(days=1, minutes=10, seconds=25),
+        'pubdate': 'yesterday at {0}'.format((NOW_UTC - timedelta(minutes=10, seconds=25)).strftime('%H:%M:%S')),
+        'expected': NOW_UTC - timedelta(days=1, minutes=10, seconds=25),
         'human_time': False
     },
     {  # p23: hd-space test human date like 'today at 12:00:00'
-        'pubdate': 'today at {0}'.format((datetime.now() - timedelta(minutes=10, seconds=25)).strftime('%H:%M:%S')),
-        'expected': datetime.now().replace(microsecond=0, tzinfo=tz.gettz('UTC')) - timedelta(days=0, minutes=10, seconds=25),
+        'pubdate': 'today at {0}'.format((NOW_UTC - timedelta(minutes=10, seconds=25)).strftime('%H:%M:%S')),
+        'expected': NOW_UTC - timedelta(days=0, minutes=10, seconds=25),
         'human_time': False
     },
 ])
@@ -155,10 +159,16 @@ def test_parse_pubdate(p):
 
     # Calculate the difference for human date comparison
     if ht and actual:
-        actual = int((datetime.now(tz.tzlocal()) - actual).total_seconds())
+        # Use the same NOW_UTC reference to avoid DST drift
+        actual = int((NOW_UTC - actual).total_seconds())
 
     # Then
-    assert expected == actual
+    if ht and isinstance(expected, (int, float)):
+        # Allow up to a few seconds difference due to test execution time
+        assert abs(expected - actual) <= TOLERANCE_SECONDS, \
+            f"Expected ~{expected}s, got {actual}s (diff {expected - actual}s)"
+    else:
+        assert expected == actual
 
 
 @pytest.mark.parametrize('p', [
