@@ -544,7 +544,7 @@ class LogLine(object):
 
     def __str__(self):
         """String representation."""
-        return '\n'.join([self.line] + (self.traceback_lines or []))
+        return '\n'.join([self.line] + list(self.traceback_lines or []))
 
 
 class ContextFilter(logging.Filter):
