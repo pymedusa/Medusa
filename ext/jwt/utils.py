@@ -1,7 +1,7 @@
 import base64
 import binascii
 import re
-from typing import Union
+from typing import Optional, Union
 
 try:
     from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurve
@@ -37,11 +37,11 @@ def base64url_encode(input: bytes) -> bytes:
     return base64.urlsafe_b64encode(input).replace(b"=", b"")
 
 
-def to_base64url_uint(val: int) -> bytes:
+def to_base64url_uint(val: int, *, bit_length: Optional[int] = None) -> bytes:
     if val < 0:
         raise ValueError("Must be a positive integer")
 
-    int_bytes = bytes_from_int(val)
+    int_bytes = bytes_from_int(val, bit_length=bit_length)
 
     if len(int_bytes) == 0:
         int_bytes = b"\x00"
@@ -63,13 +63,10 @@ def bytes_to_number(string: bytes) -> int:
     return int(binascii.b2a_hex(string), 16)
 
 
-def bytes_from_int(val: int) -> bytes:
-    remaining = val
-    byte_length = 0
-
-    while remaining != 0:
-        remaining >>= 8
-        byte_length += 1
+def bytes_from_int(val: int, *, bit_length: Optional[int] = None) -> bytes:
+    if bit_length is None:
+        bit_length = val.bit_length()
+    byte_length = (bit_length + 7) // 8
 
     return val.to_bytes(byte_length, "big", signed=False)
 
@@ -131,26 +128,15 @@ def is_pem_format(key: bytes) -> bool:
 
 
 # Based on https://github.com/pyca/cryptography/blob/bcb70852d577b3f490f015378c75cba74986297b/src/cryptography/hazmat/primitives/serialization/ssh.py#L40-L46
-_CERT_SUFFIX = b"-cert-v01@openssh.com"
-_SSH_PUBKEY_RC = re.compile(rb"\A(\S+)[ \t]+(\S+)")
-_SSH_KEY_FORMATS = [
+_SSH_KEY_FORMATS = (
     b"ssh-ed25519",
     b"ssh-rsa",
     b"ssh-dss",
     b"ecdsa-sha2-nistp256",
     b"ecdsa-sha2-nistp384",
     b"ecdsa-sha2-nistp521",
-]
+)
 
 
 def is_ssh_key(key: bytes) -> bool:
-    if any(string_value in key for string_value in _SSH_KEY_FORMATS):
-        return True
-
-    ssh_pubkey_match = _SSH_PUBKEY_RC.match(key)
-    if ssh_pubkey_match:
-        key_type = ssh_pubkey_match.group(1)
-        if _CERT_SUFFIX == key_type[-len(_CERT_SUFFIX) :]:
-            return True
-
-    return False
+    return key.startswith(_SSH_KEY_FORMATS)

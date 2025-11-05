@@ -56,7 +56,7 @@ Your ``main()`` method can parse the command line or parse a config file with
 either `parse_command_line` or `parse_config_file`::
 
     import myapp.db, myapp.server
-    import tornado.options
+    import tornado
 
     if __name__ == '__main__':
         tornado.options.parse_command_line()
@@ -85,6 +85,12 @@ instances to define isolated sets of options, such as for subcommands.
        from tornado.options import options, parse_command_line
        options.logging = None
        parse_command_line()
+
+.. note::
+
+   `parse_command_line` or `parse_config_file` function should called after
+   logging configuration and user-defined command line flags using the
+   ``callback`` option definition, or these configurations will not take effect.
 
 .. versionchanged:: 4.3
    Dashes and underscores are fully interchangeable in option names;
@@ -124,7 +130,7 @@ class Error(Exception):
     pass
 
 
-class OptionParser(object):
+class OptionParser:
     """A collection of options, a dictionary with object-like access.
 
     Normally accessed via static functions in the `tornado.options` module,
@@ -182,7 +188,7 @@ class OptionParser(object):
 
         .. versionadded:: 3.1
         """
-        return set(opt.group_name for opt in self._options.values())
+        return {opt.group_name for opt in self._options.values()}
 
     def group_dict(self, group: str) -> Dict[str, Any]:
         """The names and values of options in a group.
@@ -201,18 +207,18 @@ class OptionParser(object):
 
         .. versionadded:: 3.1
         """
-        return dict(
-            (opt.name, opt.value())
+        return {
+            opt.name: opt.value()
             for name, opt in self._options.items()
             if not group or group == opt.group_name
-        )
+        }
 
     def as_dict(self) -> Dict[str, Any]:
         """The names and values of all options.
 
         .. versionadded:: 3.1
         """
-        return dict((opt.name, opt.value()) for name, opt in self._options.items())
+        return {opt.name: opt.value() for name, opt in self._options.items()}
 
     def define(
         self,
@@ -266,17 +272,22 @@ class OptionParser(object):
                 % (normalized, self._options[normalized].file_name)
             )
         frame = sys._getframe(0)
-        options_file = frame.f_code.co_filename
+        if frame is not None:
+            options_file = frame.f_code.co_filename
 
-        # Can be called directly, or through top level define() fn, in which
-        # case, step up above that frame to look for real caller.
-        if (
-            frame.f_back.f_code.co_filename == options_file
-            and frame.f_back.f_code.co_name == "define"
-        ):
-            frame = frame.f_back
+            # Can be called directly, or through top level define() fn, in which
+            # case, step up above that frame to look for real caller.
+            if (
+                frame.f_back is not None
+                and frame.f_back.f_code.co_filename == options_file
+                and frame.f_back.f_code.co_name == "define"
+            ):
+                frame = frame.f_back
 
-        file_name = frame.f_back.f_code.co_filename
+            assert frame.f_back is not None
+            file_name = frame.f_back.f_code.co_filename
+        else:
+            file_name = "<unknown>"
         if file_name == options_file:
             file_name = ""
         if type is None:
@@ -416,7 +427,9 @@ class OptionParser(object):
                             % (option.name, option.type.__name__)
                         )
 
-                if type(config[name]) == str and option.type != str:
+                if type(config[name]) is str and (
+                    option.type is not str or option.multiple
+                ):
                     option.parse(config[name])
                 else:
                     option.set(config[name])
@@ -469,15 +482,11 @@ class OptionParser(object):
 
     def mockable(self) -> "_Mockable":
         """Returns a wrapper around self that is compatible with
-        `mock.patch <unittest.mock.patch>`.
+        `unittest.mock.patch`.
 
-        The `mock.patch <unittest.mock.patch>` function (included in
-        the standard library `unittest.mock` package since Python 3.3,
-        or in the third-party ``mock`` package for older versions of
-        Python) is incompatible with objects like ``options`` that
-        override ``__getattr__`` and ``__setattr__``.  This function
-        returns an object that can be used with `mock.patch.object
-        <unittest.mock.patch.object>` to modify option values::
+        The `unittest.mock.patch` function is incompatible with objects like ``options`` that
+        override ``__getattr__`` and ``__setattr__``.  This function returns an object that can be
+        used with `mock.patch.object <unittest.mock.patch.object>` to modify option values::
 
             with mock.patch.object(options.mockable(), 'name', value):
                 assert options.name == value
@@ -485,7 +494,7 @@ class OptionParser(object):
         return _Mockable(self)
 
 
-class _Mockable(object):
+class _Mockable:
     """`mock.patch` compatible wrapper for `OptionParser`.
 
     As of ``mock`` version 1.0.1, when an object uses ``__getattr__``
@@ -515,7 +524,7 @@ class _Mockable(object):
         setattr(self._options, name, self._originals.pop(name))
 
 
-class _Option(object):
+class _Option:
     # This class could almost be made generic, but the way the types
     # interact with the multiple argument makes this tricky. (default
     # and the callback use List[T], but type is still Type[T]).
@@ -651,6 +660,7 @@ class _Option(object):
                 num = float(m.group(1))
                 units = m.group(2) or "seconds"
                 units = self._TIMEDELTA_ABBREV_DICT.get(units, units)
+
                 sum += datetime.timedelta(**{units: num})
                 start = m.end()
             return sum

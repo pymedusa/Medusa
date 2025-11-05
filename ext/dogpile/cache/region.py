@@ -1,4 +1,4 @@
-from __future__ import with_statement
+from __future__ import annotations
 
 import contextlib
 import datetime
@@ -17,6 +17,7 @@ from typing import Optional
 from typing import Sequence
 from typing import Tuple
 from typing import Type
+from typing import TYPE_CHECKING
 from typing import Union
 
 from decorator import decorate
@@ -31,6 +32,7 @@ from .api import CantDeserializeException
 from .api import KeyType
 from .api import MetaDataType
 from .api import NO_VALUE
+from .api import NoValueType
 from .api import SerializedReturnType
 from .api import Serializer
 from .api import ValuePayload
@@ -46,6 +48,7 @@ from ..util import coerce_string_conf
 from ..util import memoized_property
 from ..util import NameRegistry
 from ..util import PluginLoader
+from ..util.typing import Self
 
 value_version = 2
 """An integer placed in the :class:`.CachedValue`
@@ -426,7 +429,7 @@ class CacheRegion:
         wrap: Sequence[Union[ProxyBackend, Type[ProxyBackend]]] = (),
         replace_existing_backend: bool = False,
         region_invalidator: Optional[RegionInvalidationStrategy] = None,
-    ) -> "CacheRegion":
+    ) -> Self:
         """Configure a :class:`.CacheRegion`.
 
         The :class:`.CacheRegion` itself
@@ -699,19 +702,25 @@ class CacheRegion:
         """
         return "backend" in self.__dict__
 
-    def get(self, key, expiration_time=None, ignore_expiration=False):
+    def get(
+        self,
+        key: KeyType,
+        expiration_time: Optional[float] = None,
+        ignore_expiration: bool = False,
+    ) -> Union[ValuePayload, NoValueType]:
         """Return a value from the cache, based on the given key.
 
         If the value is not present, the method returns the token
-        ``NO_VALUE``. ``NO_VALUE`` evaluates to False, but is separate from
-        ``None`` to distinguish between a cached value of ``None``.
+        :data:`.api.NO_VALUE`. :data:`.api.NO_VALUE` evaluates to False, but is
+        separate from ``None`` to distinguish between a cached value of
+        ``None``.
 
         By default, the configured expiration time of the
         :class:`.CacheRegion`, or alternatively the expiration
         time supplied by the ``expiration_time`` argument,
         is tested against the creation time of the retrieved
         value versus the current time (as reported by ``time.time()``).
-        If stale, the cached value is ignored and the ``NO_VALUE``
+        If stale, the cached value is ignored and the :data:`.api.NO_VALUE`
         token is returned.  Passing the flag ``ignore_expiration=True``
         bypasses the expiration time check.
 
@@ -724,7 +733,7 @@ class CacheRegion:
         of the current "invalidation" time as set by
         the :meth:`.invalidate` method.   If a value is present,
         but its creation time is older than the current
-        invalidation time, the ``NO_VALUE`` token is returned.
+        invalidation time, the :data:`.api.NO_VALUE` token is returned.
         Passing the flag ``ignore_expiration=True`` bypasses
         the invalidation time check.
 
@@ -770,15 +779,49 @@ class CacheRegion:
 
 
         """
+        value = self._get_cache_value(key, expiration_time, ignore_expiration)
+        return value.payload
 
+    def get_value_metadata(
+        self,
+        key: KeyType,
+        expiration_time: Optional[float] = None,
+        ignore_expiration: bool = False,
+    ) -> Optional[CachedValue]:
+        """Return the :class:`.CachedValue` object directly from the cache.
+
+        This is the enclosing datastructure that includes the value as well as
+        the metadata, including the timestamp when the value was cached.
+        Convenience accessors on :class:`.CachedValue` also provide for common
+        data such as :attr:`.CachedValue.cached_time` and
+        :attr:`.CachedValue.age`.
+
+
+        .. versionadded:: 1.3. Added :meth:`.CacheRegion.get_value_metadata`
+        """
+        cache_value = self._get_cache_value(
+            key, expiration_time, ignore_expiration
+        )
+        if cache_value is NO_VALUE:
+            return None
+        else:
+            if TYPE_CHECKING:
+                assert isinstance(cache_value, CachedValue)
+            return cache_value
+
+    def _get_cache_value(
+        self,
+        key: KeyType,
+        expiration_time: Optional[float] = None,
+        ignore_expiration: bool = False,
+    ) -> CacheReturnType:
         if self.key_mangler:
             key = self.key_mangler(key)
         value = self._get_from_backend(key)
         value = self._unexpired_value_fn(expiration_time, ignore_expiration)(
             value
         )
-
-        return value.payload
+        return value
 
     def _unexpired_value_fn(self, expiration_time, ignore_expiration):
         if ignore_expiration:
@@ -898,7 +941,6 @@ class CacheRegion:
         should_cache_fn: Optional[Callable[[ValuePayload], bool]] = None,
         creator_args: Optional[Tuple[Any, Mapping[str, Any]]] = None,
     ) -> ValuePayload:
-
         """Return a cached value based on the given key.
 
         If the value does not exist or is considered to be expired
@@ -1036,7 +1078,6 @@ class CacheRegion:
 
             def async_creator(mutex):
                 if creator_args:
-
                     ca = creator_args
 
                     @wraps(creator)
@@ -1044,7 +1085,7 @@ class CacheRegion:
                         return creator(*ca[0], **ca[1])
 
                 else:
-                    go = creator
+                    go = creator  # type: ignore
                 return acr(self, orig_key, go, mutex)
 
         else:

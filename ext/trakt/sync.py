@@ -1,19 +1,37 @@
 # -*- coding: utf-8 -*-
 """This module contains Trakt.tv sync endpoint support functions"""
 from collections import defaultdict
+from dataclasses import dataclass
 from datetime import datetime, timezone
+from typing import Any
 
 from deprecated import deprecated
 
 from trakt.core import delete, get, post
+from trakt.mixins import IdsMixin
 from trakt.utils import slugify, timestamp
 
 __author__ = 'Jon Nappi'
 __all__ = ['Scrobbler', 'comment', 'rate', 'add_to_history', 'get_collection',
+           'PlaybackEntry', 'get_playback',
            'get_watchlist', 'add_to_watchlist', 'remove_from_history',
            'remove_from_watchlist', 'add_to_collection',
            'remove_from_collection', 'search', 'search_by_id', 'checkin_media',
            'delete_checkin']
+
+
+@dataclass(frozen=True)
+class PlaybackEntry(IdsMixin):
+    progress: float
+    paused_at: str
+    id: int
+    type: str
+    # data for "type" structure
+    data: Any
+
+    @property
+    def _ids(self):
+        return self.data["ids"]
 
 
 @post
@@ -45,13 +63,15 @@ def rate(media, rating, rated_at=None):
 
     :param media: The media object to post a rating to
     :param rating: A rating from 1 to 10 for the media item
-    :param rated_at: A `datetime.datetime` object indicating the time at which
+    :param rated_at: A `datetime.datetime` object or `str` indicating the time at which
         this rating was created
     """
     if rated_at is None:
         rated_at = datetime.now(tz=timezone.utc)
+    if not isinstance(rated_at, str):
+        rated_at = timestamp(rated_at)
 
-    data = dict(rating=rating, rated_at=timestamp(rated_at))
+    data = dict(rating=rating, rated_at=rated_at)
     data.update(media.ids)
     result = yield 'sync/ratings', {media.media_type: [data]}
     yield result
@@ -320,6 +340,49 @@ def search_by_id(query, id_type='imdb', media_type=None, slugify_query=False):
         elif 'person' in d:
             from trakt.people import Person
             results.append(Person(**d.pop('person')))
+    yield results
+
+
+@get
+def get_playback(list_type=None):
+    """
+    Get playback progress.
+
+    Whenever a scrobble is paused, the playback progress is saved. Use this
+    progress to sync up playback across different media centers or apps.
+
+    For example, you can start watching a movie in a media center, stop it,
+    then resume on your tablet from the same spot. Each item will have the
+    progress percentage between 0 and 100.
+
+    You can optionally specify a type to only get movies or episodes.
+
+    By default, all results will be returned.
+
+    Pagination is optional and can be used for something like an "on deck"
+    feature, or if you only need a limited data set.
+
+    https://trakt.docs.apiary.io/#reference/sync/playback/get-playback-progress
+    """
+    valid_type = ("movies", "episodes")
+
+    if list_type and list_type not in valid_type:
+        raise ValueError(f"Invalid list_type: {list_type}. Must be one of {valid_type}")
+
+    uri = "sync/playback"
+    if list_type:
+        uri += f"/{list_type}"
+
+    items = yield uri
+    results = []
+    for item in items:
+        if "type" not in item:
+            continue
+        data = item.pop(item["type"])
+        if "show" in item:
+            data["show"] = item.pop("show")
+        results.append(PlaybackEntry(**item, data=data))
+
     yield results
 
 

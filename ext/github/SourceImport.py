@@ -22,8 +22,6 @@
 #                                                                              #
 ################################################################################
 
-from __future__ import absolute_import
-
 import github.GithubObject
 from github import Consts
 
@@ -149,7 +147,7 @@ class SourceImport(github.GithubObject.CompletableGithubObject):
 
     def update(self):
         import_header = {"Accept": Consts.mediaTypeImportPreview}
-        return super(SourceImport, self).update(additional_headers=import_header)
+        return super().update(additional_headers=import_header)
 
     def _initAttributes(self):
         self._authors_count = github.GithubObject.NotSet

@@ -20,8 +20,6 @@
 #### Fixes
 - Dependency resolutions added to package.json, themes-default/slim/package.json, and .build/package.json to fix as many security vulnerabilities with dependencies as possible without build/test errors
 
-Recommendation: enable CodeQL (code scanning) and Dependabot alerts on the repo to reveal security vulnerabilities (some are rated critical)
-
 -----
 
 ## 1.0.24 (30-10-2025)

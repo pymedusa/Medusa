@@ -28,7 +28,7 @@ from tornado.iostream import IOStream
 from tornado.log import gen_log, app_log
 from tornado import netutil
 from tornado.testing import AsyncHTTPTestCase, bind_unused_port, gen_test, ExpectLog
-from tornado.test.util import skipOnTravis
+from tornado.test.util import ignore_deprecation
 from tornado.web import Application, RequestHandler, url
 from tornado.httputil import format_timestamp, HTTPHeaders
 
@@ -139,16 +139,21 @@ class SetHeaderHandler(RequestHandler):
 
 
 class InvalidGzipHandler(RequestHandler):
-    def get(self):
+    def get(self) -> None:
         # set Content-Encoding manually to avoid automatic gzip encoding
         self.set_header("Content-Type", "text/plain")
         self.set_header("Content-Encoding", "gzip")
         # Triggering the potential bug seems to depend on input length.
         # This length is taken from the bad-response example reported in
         # https://github.com/tornadoweb/tornado/pull/2875 (uncompressed).
-        body = "".join("Hello World {}\n".format(i) for i in range(9000))[:149051]
-        body = gzip.compress(body.encode(), compresslevel=6) + b"\00"
+        text = "".join(f"Hello World {i}\n" for i in range(9000))[:149051]
+        body = gzip.compress(text.encode(), compresslevel=6) + b"\00"
         self.write(body)
+
+
+class HeaderEncodingHandler(RequestHandler):
+    def get(self):
+        self.finish(self.request.headers["Foo"].encode("ISO8859-1"))
 
 
 # These tests end up getting run redundantly: once here with the default
@@ -175,6 +180,7 @@ class HTTPClientCommonTestCase(AsyncHTTPTestCase):
                 url("/patch", PatchHandler),
                 url("/set_header", SetHeaderHandler),
                 url("/invalid_gzip", InvalidGzipHandler),
+                url("/header-encoding", HeaderEncodingHandler),
             ],
             gzip=True,
         )
@@ -185,7 +191,6 @@ class HTTPClientCommonTestCase(AsyncHTTPTestCase):
         self.assertEqual(response.code, 200)
         self.assertEqual(response.body, body)
 
-    @skipOnTravis
     def test_hello_world(self):
         response = self.fetch("/hello")
         self.assertEqual(response.code, 200)
@@ -285,7 +290,7 @@ Transfer-Encoding: chunked
 
         # The standard mandates NFC. Give it a decomposed username
         # and ensure it is normalized to composed form.
-        username = unicodedata.normalize("NFD", u"josé")
+        username = unicodedata.normalize("NFD", "josé")
         self.assertEqual(
             self.fetch("/auth", auth_username=username, auth_password="səcrət").body,
             b"Basic am9zw6k6c8mZY3LJmXQ=",
@@ -374,7 +379,7 @@ Transfer-Encoding: chunked
         self.assertEqual(b"Basic " + base64.b64encode(b"me:secret"), response.body)
 
     def test_body_encoding(self):
-        unicode_body = u"\xe9"
+        unicode_body = "\xe9"
         byte_body = binascii.a2b_hex(b"e9")
 
         # unicode string in body gets converted to utf8
@@ -404,7 +409,7 @@ Transfer-Encoding: chunked
             method="POST",
             body=byte_body,
             headers={"Content-Type": "application/blah"},
-            user_agent=u"foo",
+            user_agent="foo",
         )
         self.assertEqual(response.headers["Content-Length"], "1")
         self.assertEqual(response.body, byte_body)
@@ -437,7 +442,7 @@ Transfer-Encoding: chunked
         # test if client hangs on tricky invalid gzip
         # curl/simple httpclient have different behavior (exception, logging)
         with ExpectLog(
-            app_log, "(Uncaught exception|Exception in callback)", required=False
+            gen_log, ".*Malformed HTTP message.*unconsumed gzip data", required=False
         ):
             try:
                 response = self.fetch("/invalid_gzip")
@@ -474,8 +479,25 @@ Transfer-Encoding: chunked
             streaming_callback=streaming_callback,
         )
         self.assertEqual(len(first_line), 1, first_line)
-        self.assertRegexpMatches(first_line[0], "HTTP/[0-9]\\.[0-9] 200.*\r\n")
+        self.assertRegex(first_line[0], "HTTP/[0-9]\\.[0-9] 200.*\r\n")
         self.assertEqual(chunks, [b"asdf", b"qwer"])
+
+    def test_header_callback_to_parse_line(self):
+        # Make a request with header_callback and feed the headers to HTTPHeaders.parse_line.
+        # (Instead of HTTPHeaders.parse which is used in normal cases). Ensure that the resulting
+        # headers are as expected, and in particular do not have trailing whitespace added
+        # due to the final CRLF line.
+        headers = HTTPHeaders()
+
+        def header_callback(line):
+            if line.startswith("HTTP/"):
+                # Ignore the first status line
+                return
+            headers.parse_line(line)
+
+        self.fetch("/hello", header_callback=header_callback)
+        for k, v in headers.get_all():
+            self.assertTrue(v == v.strip(), (k, v))
 
     @gen_test
     def test_configure_defaults(self):
@@ -493,7 +515,7 @@ Transfer-Encoding: chunked
         # in a plain dictionary or an HTTPHeaders object.
         # Keys must always be the native str type.
         # All combinations should have the same results on the wire.
-        for value in [u"MyUserAgent", b"MyUserAgent"]:
+        for value in ["MyUserAgent", b"MyUserAgent"]:
             for container in [dict, HTTPHeaders]:
                 headers = container()
                 headers["User-Agent"] = value
@@ -536,6 +558,16 @@ X-XSS-Protection: 1;
                 self.assertEqual(resp.headers["X-XSS-Protection"], "1; mode=block")
             finally:
                 self.io_loop.remove_handler(sock.fileno())
+
+    @gen_test
+    def test_header_encoding(self):
+        response = yield self.http_client.fetch(
+            self.get_url("/header-encoding"),
+            headers={
+                "Foo": "b\xe4r",
+            },
+        )
+        self.assertEqual(response.body, "b\xe4r".encode("ISO8859-1"))
 
     def test_304_with_content_length(self):
         # According to the spec 304 responses SHOULD NOT include
@@ -665,7 +697,7 @@ X-XSS-Protection: 1;
         # Non-ascii headers are sent as latin1.
         response = self.fetch("/set_header?k=foo&v=%E9")
         response.rethrow()
-        self.assertEqual(response.headers["Foo"], native_str(u"\u00e9"))
+        self.assertEqual(response.headers["Foo"], native_str("\u00e9"))
 
     def test_response_times(self):
         # A few simple sanity checks of the response time fields to
@@ -674,15 +706,18 @@ X-XSS-Protection: 1;
         start_time = time.time()
         response = self.fetch("/hello")
         response.rethrow()
+        self.assertIsNotNone(response.request_time)
+        assert response.request_time is not None  # for mypy
         self.assertGreaterEqual(response.request_time, 0)
         self.assertLess(response.request_time, 1.0)
         # A very crude check to make sure that start_time is based on
         # wall time and not the monotonic clock.
-        assert response.start_time is not None
+        self.assertIsNotNone(response.start_time)
+        assert response.start_time is not None  # for mypy
         self.assertLess(abs(response.start_time - start_time), 1.0)
 
         for k, v in response.time_info.items():
-            self.assertTrue(0 <= v < 1.0, "time_info[%s] out of bounds: %s" % (k, v))
+            self.assertTrue(0 <= v < 1.0, f"time_info[{k}] out of bounds: {v}")
 
     def test_zero_timeout(self):
         response = self.fetch("/hello", connect_timeout=0)
@@ -708,6 +743,22 @@ X-XSS-Protection: 1;
                 if el.logged_stack:
                     break
 
+    def test_header_crlf(self):
+        # Ensure that the client doesn't allow CRLF injection in headers. RFC 9112 section 2.2
+        # prohibits a bare CR specifically and "a recipient MAY recognize a single LF as a line
+        # terminator" so we check each character separately as well as the (redundant) CRLF pair.
+        for header, name in [
+            ("foo\rbar:", "cr"),
+            ("foo\nbar:", "lf"),
+            ("foo\r\nbar:", "crlf"),
+        ]:
+            with self.subTest(name=name, position="value"):
+                with self.assertRaises(ValueError):
+                    self.fetch("/hello", headers={"foo": header})
+            with self.subTest(name=name, position="key"):
+                with self.assertRaises(ValueError):
+                    self.fetch("/hello", headers={header: "foo"})
+
 
 class RequestProxyTest(unittest.TestCase):
     def test_request_set(self):
@@ -730,7 +781,7 @@ class RequestProxyTest(unittest.TestCase):
 
     def test_neither_set(self):
         proxy = _RequestProxy(HTTPRequest("http://example.com/"), dict())
-        self.assertIs(proxy.auth_username, None)
+        self.assertIsNone(proxy.auth_username)
 
     def test_bad_attribute(self):
         proxy = _RequestProxy(HTTPRequest("http://example.com/"), dict())
@@ -739,7 +790,7 @@ class RequestProxyTest(unittest.TestCase):
 
     def test_defaults_none(self):
         proxy = _RequestProxy(HTTPRequest("http://example.com/"), None)
-        self.assertIs(proxy.auth_username, None)
+        self.assertIsNone(proxy.auth_username)
 
 
 class HTTPResponseTestCase(unittest.TestCase):
@@ -754,7 +805,7 @@ class HTTPResponseTestCase(unittest.TestCase):
 
 class SyncHTTPClientTest(unittest.TestCase):
     def setUp(self):
-        self.server_ioloop = IOLoop()
+        self.server_ioloop = IOLoop(make_current=False)
         event = threading.Event()
 
         @gen.coroutine
@@ -836,7 +887,7 @@ class SyncHTTPClientSubprocessTest(unittest.TestCase):
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             check=True,
-            timeout=5,
+            timeout=15,
         )
         if proc.stdout:
             print("STDOUT:")
@@ -870,7 +921,15 @@ class HTTPRequestTestCase(unittest.TestCase):
         self.assertEqual(request.body, utf8("foo"))
 
     def test_if_modified_since(self):
-        http_date = datetime.datetime.utcnow()
+        http_date = datetime.datetime.now(datetime.timezone.utc)
+        request = HTTPRequest("http://example.com", if_modified_since=http_date)
+        self.assertEqual(
+            request.headers, {"If-Modified-Since": format_timestamp(http_date)}
+        )
+
+    def test_if_modified_since_naive_deprecated(self):
+        with ignore_deprecation():
+            http_date = datetime.datetime.utcnow()
         request = HTTPRequest("http://example.com", if_modified_since=http_date)
         self.assertEqual(
             request.headers, {"If-Modified-Since": format_timestamp(http_date)}

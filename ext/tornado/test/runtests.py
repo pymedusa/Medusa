@@ -13,6 +13,7 @@ from tornado.httpclient import AsyncHTTPClient
 from tornado.httpserver import HTTPServer
 from tornado.netutil import Resolver
 from tornado.options import define, add_parse_callback, options
+from tornado.test.util import ABT_SKIP_MESSAGE
 
 
 TEST_MODULES = [
@@ -22,6 +23,7 @@ TEST_MODULES = [
     "tornado.test.asyncio_test",
     "tornado.test.auth_test",
     "tornado.test.autoreload_test",
+    "tornado.test.circlerefs_test",
     "tornado.test.concurrent_test",
     "tornado.test.curl_httpclient_test",
     "tornado.test.escape_test",
@@ -59,15 +61,26 @@ def all():
 
 
 def test_runner_factory(stderr):
+
+    class TornadoTextTestResult(unittest.TextTestResult):
+        def addSkip(self, test, reason):
+            if reason == ABT_SKIP_MESSAGE:
+                # Don't report abstract base tests as skips in our own tooling.
+                #
+                # See tornado.test.util.abstract_base_test.
+                return
+            super().addSkip(test, reason)
+
     class TornadoTextTestRunner(unittest.TextTestRunner):
         def __init__(self, *args, **kwargs):
             kwargs["stream"] = stderr
+            kwargs["resultclass"] = TornadoTextTestResult
             super().__init__(*args, **kwargs)
 
         def run(self, test):
             result = super().run(test)
             if result.skipped:
-                skip_reasons = set(reason for (test, reason) in result.skipped)
+                skip_reasons = {reason for (test, reason) in result.skipped}
                 self.stream.write(  # type: ignore
                     textwrap.fill(
                         "Some tests were skipped because: %s"
@@ -127,37 +140,6 @@ def main():
     warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
     warnings.filterwarnings(
         "error", category=PendingDeprecationWarning, module=r"tornado\..*"
-    )
-    # The unittest module is aggressive about deprecating redundant methods,
-    # leaving some without non-deprecated spellings that work on both
-    # 2.7 and 3.2
-    warnings.filterwarnings(
-        "ignore", category=DeprecationWarning, message="Please use assert.* instead"
-    )
-    warnings.filterwarnings(
-        "ignore",
-        category=PendingDeprecationWarning,
-        message="Please use assert.* instead",
-    )
-    # Twisted 15.0.0 triggers some warnings on py3 with -bb.
-    warnings.filterwarnings("ignore", category=BytesWarning, module=r"twisted\..*")
-    if (3,) < sys.version_info < (3, 6):
-        # Prior to 3.6, async ResourceWarnings were rather noisy
-        # and even
-        # `python3.4 -W error -c 'import asyncio; asyncio.get_event_loop()'`
-        # would generate a warning.
-        warnings.filterwarnings(
-            "ignore", category=ResourceWarning, module=r"asyncio\..*"
-        )
-    # This deprecation warning is introduced in Python 3.8 and is
-    # triggered by pycurl. Unforunately, because it is raised in the C
-    # layer it can't be filtered by module and we must match the
-    # message text instead (Tornado's C module uses PY_SSIZE_T_CLEAN
-    # so it's not at risk of running into this issue).
-    warnings.filterwarnings(
-        "ignore",
-        category=DeprecationWarning,
-        message="PY_SSIZE_T_CLEAN will be required",
     )
 
     logging.getLogger("tornado.access").setLevel(logging.CRITICAL)

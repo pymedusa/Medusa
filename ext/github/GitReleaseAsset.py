@@ -25,10 +25,6 @@
 #                                                                              #
 ################################################################################
 
-from __future__ import absolute_import
-
-import six
-
 import github.GithubObject
 
 
@@ -64,14 +60,6 @@ class GitReleaseAsset(github.GithubObject.CompletableGithubObject):
         self._completeIfNotSet(self._name)
         return self._name.value
 
-    @name.setter
-    def name(self, value):
-        """
-        :type: string
-        """
-        self._completeIfNotSet(self._name)
-        self._name.value = value
-
     @property
     def label(self):
         """
@@ -79,14 +67,6 @@ class GitReleaseAsset(github.GithubObject.CompletableGithubObject):
         """
         self._completeIfNotSet(self._label)
         return self._label.value
-
-    @label.setter
-    def label(self, value):
-        """
-        :type: string
-        """
-        self._completeIfNotSet(self._label)
-        self._label.value = value
 
     @property
     def content_type(self):
@@ -165,8 +145,8 @@ class GitReleaseAsset(github.GithubObject.CompletableGithubObject):
         Update asset metadata.
         :rtype: github.GitReleaseAsset.GitReleaseAsset
         """
-        assert isinstance(name, (str, six.text_type)), name
-        assert isinstance(label, (str, six.text_type)), label
+        assert isinstance(name, str), name
+        assert isinstance(label, str), label
         post_parameters = {"name": name, "label": label}
         headers, data = self._requester.requestJsonAndCheck(
             "PATCH", self.url, input=post_parameters

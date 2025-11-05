@@ -4,13 +4,13 @@
 The serialization module
 
 :authors: Josh Marshall, Thomas Calmant
-:copyright: Copyright 2022, Thomas Calmant
+:copyright: Copyright 2025, Thomas Calmant
 :license: Apache License 2.0
-:version: 0.4.3.2
+:version: 0.4.3.4
 
 ..
 
-    Copyright 2022 Thomas Calmant
+    Copyright 2025 Thomas Calmant
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import jsonrpclib.utils as utils
 # ------------------------------------------------------------------------------
 
 # Module version
-__version_info__ = (0, 4, 3, 2)
+__version_info__ = (0, 4, 3, 4)
 __version__ = ".".join(str(x) for x in __version_info__)
 
 # Documentation strings format
@@ -176,6 +176,9 @@ def dump(
         params, attrs = serialize()
         return_obj["__jsonclass__"].append(params)
         return_obj.update(attrs)
+    elif utils.is_decimal(obj):
+        # Add parameter for Decimal that works with JSON
+        return_obj["__jsonclass__"].append([str(obj)])
     elif utils.is_enum(obj):
         # Add parameters for enumerations
         return_obj["__jsonclass__"].append([obj.value])

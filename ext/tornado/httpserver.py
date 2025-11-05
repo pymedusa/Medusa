@@ -74,7 +74,7 @@ class HTTPServer(TCPServer, Configurable, httputil.HTTPServerConnectionDelegate)
     To make this server serve SSL traffic, send the ``ssl_options`` keyword
     argument with an `ssl.SSLContext` object. For compatibility with older
     versions of Python ``ssl_options`` may also be a dictionary of keyword
-    arguments for the `ssl.wrap_socket` method.::
+    arguments for the `ssl.SSLContext.wrap_socket` method.::
 
        ssl_ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
        ssl_ctx.load_cert_chain(os.path.join(data_dir, "mydomain.crt"),
@@ -84,41 +84,53 @@ class HTTPServer(TCPServer, Configurable, httputil.HTTPServerConnectionDelegate)
     `HTTPServer` initialization follows one of three patterns (the
     initialization methods are defined on `tornado.tcpserver.TCPServer`):
 
-    1. `~tornado.tcpserver.TCPServer.listen`: simple single-process::
+    1. `~tornado.tcpserver.TCPServer.listen`: single-process::
 
-            server = HTTPServer(app)
-            server.listen(8888)
-            IOLoop.current().start()
+            async def main():
+                server = HTTPServer()
+                server.listen(8888)
+                await asyncio.Event().wait()
+
+            asyncio.run(main())
 
        In many cases, `tornado.web.Application.listen` can be used to avoid
        the need to explicitly create the `HTTPServer`.
 
-    2. `~tornado.tcpserver.TCPServer.bind`/`~tornado.tcpserver.TCPServer.start`:
-       simple multi-process::
+       While this example does not create multiple processes on its own, when
+       the ``reuse_port=True`` argument is passed to ``listen()`` you can run
+       the program multiple times to create a multi-process service.
 
-            server = HTTPServer(app)
+    2. `~tornado.tcpserver.TCPServer.add_sockets`: multi-process::
+
+            sockets = bind_sockets(8888)
+            tornado.process.fork_processes(0)
+            async def post_fork_main():
+                server = HTTPServer()
+                server.add_sockets(sockets)
+                await asyncio.Event().wait()
+            asyncio.run(post_fork_main())
+
+       The ``add_sockets`` interface is more complicated, but it can be used with
+       `tornado.process.fork_processes` to run a multi-process service with all
+       worker processes forked from a single parent.  ``add_sockets`` can also be
+       used in single-process servers if you want to create your listening
+       sockets in some way other than `~tornado.netutil.bind_sockets`.
+
+       Note that when using this pattern, nothing that touches the event loop
+       can be run before ``fork_processes``.
+
+    3. `~tornado.tcpserver.TCPServer.bind`/`~tornado.tcpserver.TCPServer.start`:
+       simple **deprecated** multi-process::
+
+            server = HTTPServer()
             server.bind(8888)
             server.start(0)  # Forks multiple sub-processes
             IOLoop.current().start()
 
-       When using this interface, an `.IOLoop` must *not* be passed
-       to the `HTTPServer` constructor.  `~.TCPServer.start` will always start
-       the server on the default singleton `.IOLoop`.
-
-    3. `~tornado.tcpserver.TCPServer.add_sockets`: advanced multi-process::
-
-            sockets = tornado.netutil.bind_sockets(8888)
-            tornado.process.fork_processes(0)
-            server = HTTPServer(app)
-            server.add_sockets(sockets)
-            IOLoop.current().start()
-
-       The `~.TCPServer.add_sockets` interface is more complicated,
-       but it can be used with `tornado.process.fork_processes` to
-       give you more flexibility in when the fork happens.
-       `~.TCPServer.add_sockets` can also be used in single-process
-       servers if you want to create your listening sockets in some
-       way other than `tornado.netutil.bind_sockets`.
+       This pattern is deprecated because it requires interfaces in the
+       `asyncio` module that have been deprecated since Python 3.10. Support for
+       creating multiple processes in the ``start`` method will be removed in a
+       future version of Tornado.
 
     .. versionchanged:: 4.0
        Added ``decompress_request``, ``chunk_size``, ``max_header_size``,
@@ -283,7 +295,7 @@ class _CallableAdapter(httputil.HTTPMessageDelegate):
         del self._chunks
 
 
-class _HTTPRequestContext(object):
+class _HTTPRequestContext:
     def __init__(
         self,
         stream: iostream.IOStream,

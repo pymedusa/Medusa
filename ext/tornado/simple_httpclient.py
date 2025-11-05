@@ -84,6 +84,35 @@ class SimpleAsyncHTTPClient(AsyncHTTPClient):
     supported.  In particular, proxies are not supported, connections
     are not reused, and callers cannot select the network interface to be
     used.
+
+    This implementation supports the following arguments, which can be passed
+    to ``configure()`` to control the global singleton, or to the constructor
+    when ``force_instance=True``.
+
+    ``max_clients`` is the number of concurrent requests that can be
+    in progress; when this limit is reached additional requests will be
+    queued. Note that time spent waiting in this queue still counts
+    against the ``request_timeout``.
+
+    ``defaults`` is a dict of parameters that will be used as defaults on all
+    `.HTTPRequest` objects submitted to this client.
+
+    ``hostname_mapping`` is a dictionary mapping hostnames to IP addresses.
+    It can be used to make local DNS changes when modifying system-wide
+    settings like ``/etc/hosts`` is not possible or desirable (e.g. in
+    unittests). ``resolver`` is similar, but using the `.Resolver` interface
+    instead of a simple mapping.
+
+    ``max_buffer_size`` (default 100MB) is the number of bytes
+    that can be read into memory at once. ``max_body_size``
+    (defaults to ``max_buffer_size``) is the largest response body
+    that the client will accept.  Without a
+    ``streaming_callback``, the smaller of these two limits
+    applies; with a ``streaming_callback`` only ``max_body_size``
+    does.
+
+    .. versionchanged:: 4.2
+        Added the ``max_body_size`` argument.
     """
 
     def initialize(  # type: ignore
@@ -96,38 +125,6 @@ class SimpleAsyncHTTPClient(AsyncHTTPClient):
         max_header_size: Optional[int] = None,
         max_body_size: Optional[int] = None,
     ) -> None:
-        """Creates a AsyncHTTPClient.
-
-        Only a single AsyncHTTPClient instance exists per IOLoop
-        in order to provide limitations on the number of pending connections.
-        ``force_instance=True`` may be used to suppress this behavior.
-
-        Note that because of this implicit reuse, unless ``force_instance``
-        is used, only the first call to the constructor actually uses
-        its arguments. It is recommended to use the ``configure`` method
-        instead of the constructor to ensure that arguments take effect.
-
-        ``max_clients`` is the number of concurrent requests that can be
-        in progress; when this limit is reached additional requests will be
-        queued. Note that time spent waiting in this queue still counts
-        against the ``request_timeout``.
-
-        ``hostname_mapping`` is a dictionary mapping hostnames to IP addresses.
-        It can be used to make local DNS changes when modifying system-wide
-        settings like ``/etc/hosts`` is not possible or desirable (e.g. in
-        unittests).
-
-        ``max_buffer_size`` (default 100MB) is the number of bytes
-        that can be read into memory at once. ``max_body_size``
-        (defaults to ``max_buffer_size``) is the largest response body
-        that the client will accept.  Without a
-        ``streaming_callback``, the smaller of these two limits
-        applies; with a ``streaming_callback`` only ``max_body_size``
-        does.
-
-        .. versionchanged:: 4.2
-           Added the ``max_body_size`` argument.
-        """
         super().initialize(defaults=defaults)
         self.max_clients = max_clients
         self.queue = (
@@ -241,7 +238,7 @@ class SimpleAsyncHTTPClient(AsyncHTTPClient):
         request, callback, timeout_handle = self.waiting[key]
         self.queue.remove((key, request, callback))
 
-        error_message = "Timeout {0}".format(info) if info else "Timeout"
+        error_message = f"Timeout {info}" if info else "Timeout"
         timeout_response = HTTPResponse(
             request,
             599,
@@ -253,9 +250,7 @@ class SimpleAsyncHTTPClient(AsyncHTTPClient):
 
 
 class _HTTPConnection(httputil.HTTPMessageDelegate):
-    _SUPPORTED_METHODS = set(
-        ["GET", "HEAD", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
-    )
+    _SUPPORTED_METHODS = {"GET", "HEAD", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"}
 
     def __init__(
         self,
@@ -325,11 +320,16 @@ class _HTTPConnection(httputil.HTTPMessageDelegate):
                         % (self.request.network_interface,)
                     )
 
-            timeout = (
-                min(self.request.connect_timeout, self.request.request_timeout)
-                or self.request.connect_timeout
-                or self.request.request_timeout
-            )  # min but skip zero
+            if self.request.connect_timeout and self.request.request_timeout:
+                timeout = min(
+                    self.request.connect_timeout, self.request.request_timeout
+                )
+            elif self.request.connect_timeout:
+                timeout = self.request.connect_timeout
+            elif self.request.request_timeout:
+                timeout = self.request.request_timeout
+            else:
+                timeout = 0
             if timeout:
                 self._timeout = self.io_loop.add_timeout(
                     self.start_time + timeout,
@@ -399,7 +399,7 @@ class _HTTPConnection(httputil.HTTPMessageDelegate):
             if self.request.user_agent:
                 self.request.headers["User-Agent"] = self.request.user_agent
             elif self.request.headers.get("User-Agent") is None:
-                self.request.headers["User-Agent"] = "Tornado/{}".format(version)
+                self.request.headers["User-Agent"] = f"Tornado/{version}"
             if not self.request.allow_nonstandard_methods:
                 # Some HTTP methods nearly always have bodies while others
                 # almost never do. Fail in this case unless the user has
@@ -427,9 +427,9 @@ class _HTTPConnection(httputil.HTTPMessageDelegate):
                 self.request.method == "POST"
                 and "Content-Type" not in self.request.headers
             ):
-                self.request.headers[
-                    "Content-Type"
-                ] = "application/x-www-form-urlencoded"
+                self.request.headers["Content-Type"] = (
+                    "application/x-www-form-urlencoded"
+                )
             if self.request.decompress_response:
                 self.request.headers["Accept-Encoding"] = "gzip"
             req_path = (self.parsed.path or "/") + (
@@ -485,7 +485,7 @@ class _HTTPConnection(httputil.HTTPMessageDelegate):
         :info string key: More detailed timeout information.
         """
         self._timeout = None
-        error_message = "Timeout {0}".format(info) if info else "Timeout"
+        error_message = f"Timeout {info}" if info else "Timeout"
         if self.final_callback is not None:
             self._handle_exception(
                 HTTPTimeoutError, HTTPTimeoutError(error_message), None
@@ -545,7 +545,7 @@ class _HTTPConnection(httputil.HTTPMessageDelegate):
         value: Optional[BaseException],
         tb: Optional[TracebackType],
     ) -> bool:
-        if self.final_callback:
+        if self.final_callback is not None:
             self._remove_timeout()
             if isinstance(value, StreamClosedError):
                 if value.real_error is None:
@@ -605,7 +605,7 @@ class _HTTPConnection(httputil.HTTPMessageDelegate):
             # Reassemble the start line.
             self.request.header_callback("%s %s %s\r\n" % first_line)
             for k, v in self.headers.get_all():
-                self.request.header_callback("%s: %s\r\n" % (k, v))
+                self.request.header_callback(f"{k}: {v}\r\n")
             self.request.header_callback("\r\n")
 
     def _should_follow_redirect(self) -> bool:
@@ -626,10 +626,12 @@ class _HTTPConnection(httputil.HTTPMessageDelegate):
         original_request = getattr(self.request, "original_request", self.request)
         if self._should_follow_redirect():
             assert isinstance(self.request, _RequestProxy)
+            assert self.headers is not None
             new_request = copy.copy(self.request.request)
             new_request.url = urllib.parse.urljoin(
                 self.request.url, self.headers["Location"]
             )
+            assert self.request.max_redirects is not None
             new_request.max_redirects = self.request.max_redirects - 1
             del new_request.headers["Host"]
             # https://tools.ietf.org/html/rfc7231#section-6.4
@@ -645,7 +647,7 @@ class _HTTPConnection(httputil.HTTPMessageDelegate):
                 self.code in (301, 302) and self.request.method == "POST"
             ):
                 new_request.method = "GET"
-                new_request.body = None
+                new_request.body = None  # type: ignore
                 for h in [
                     "Content-Length",
                     "Content-Type",
@@ -656,10 +658,11 @@ class _HTTPConnection(httputil.HTTPMessageDelegate):
                         del self.request.headers[h]
                     except KeyError:
                         pass
-            new_request.original_request = original_request
+            new_request.original_request = original_request  # type: ignore
             final_callback = self.final_callback
-            self.final_callback = None
+            self.final_callback = None  # type: ignore
             self._release()
+            assert self.client is not None
             fut = self.client.fetch(new_request, raise_error=False)
             fut.add_done_callback(lambda f: final_callback(f.result()))
             self._on_end_request()

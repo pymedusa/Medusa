@@ -1,28 +1,30 @@
+"""Slug."""
+
+# standard
 import re
 
+# local
 from .utils import validator
-
-slug_regex = re.compile(r'^[-a-zA-Z0-9_]+$')
 
 
 @validator
-def slug(value):
-    """
-    Validate whether or not given value is valid slug.
+def slug(value: str, /):
+    """Validate whether or not given value is valid slug.
 
-    Valid slug can contain only alphanumeric characters, hyphens and
-    underscores.
+    Valid slug can contain only lowercase alphanumeric characters and hyphens.
+    It starts and ends with these lowercase alphanumeric characters.
 
-    Examples::
-
-        >>> slug('my.slug')
-        ValidationFailure(func=slug, args={'value': 'my.slug'})
-
+    Examples:
         >>> slug('my-slug-2134')
         True
+        >>> slug('my.slug')
+        ValidationError(func=slug, args={'value': 'my.slug'})
 
-    .. versionadded:: 0.6
+    Args:
+        value: Slug string to validate.
 
-    :param value: value to validate
+    Returns:
+        (Literal[True]): If `value` is a valid slug.
+        (ValidationError): If `value` is an invalid slug.
     """
-    return slug_regex.match(value)
+    return re.match(r"^[a-z0-9]+(?:-[a-z0-9]+)*$", value) if value else False

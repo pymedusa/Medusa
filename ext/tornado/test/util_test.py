@@ -1,10 +1,10 @@
-from io import StringIO
 import re
 import sys
 import datetime
+import textwrap
 import unittest
 
-import tornado.escape
+import tornado
 from tornado.escape import utf8
 from tornado.util import (
     raise_exc_info,
@@ -14,14 +14,9 @@ from tornado.util import (
     timedelta_to_seconds,
     import_object,
     re_unescape,
-    is_finalizing,
 )
 
-import typing
-from typing import cast
-
-if typing.TYPE_CHECKING:
-    from typing import Dict, Any  # noqa: F401
+from typing import cast, Dict, Any
 
 
 class RaiseExcInfoTest(unittest.TestCase):
@@ -114,7 +109,7 @@ class ConfigurableTest(unittest.TestCase):
         # let us access attributes of the base class.
         obj = cast(TestConfig1, TestConfigurable())
         self.assertIsInstance(obj, TestConfig1)
-        self.assertIs(obj.a, None)
+        self.assertIsNone(obj.a)
 
         obj = cast(TestConfig1, TestConfigurable(a=1))
         self.assertIsInstance(obj, TestConfig1)
@@ -126,7 +121,7 @@ class ConfigurableTest(unittest.TestCase):
         TestConfigurable.configure(TestConfig2)
         obj = cast(TestConfig2, TestConfigurable())
         self.assertIsInstance(obj, TestConfig2)
-        self.assertIs(obj.b, None)
+        self.assertIsNone(obj.b)
 
         obj = cast(TestConfig2, TestConfigurable(b=2))
         self.assertIsInstance(obj, TestConfig2)
@@ -138,7 +133,7 @@ class ConfigurableTest(unittest.TestCase):
         TestConfigurable.configure("tornado.test.util_test.TestConfig2")
         obj = cast(TestConfig2, TestConfigurable())
         self.assertIsInstance(obj, TestConfig2)
-        self.assertIs(obj.b, None)
+        self.assertIsNone(obj.b)
 
         obj = cast(TestConfig2, TestConfigurable(b=2))
         self.assertIsInstance(obj, TestConfig2)
@@ -160,7 +155,7 @@ class ConfigurableTest(unittest.TestCase):
         self.checkSubclasses()
         # args bound in configure don't apply when using the subclass directly
         obj = TestConfig1()
-        self.assertIs(obj.a, None)
+        self.assertIsNone(obj.a)
 
     def test_config_class_args(self):
         TestConfigurable.configure(TestConfig2, b=5)
@@ -176,7 +171,7 @@ class ConfigurableTest(unittest.TestCase):
         self.checkSubclasses()
         # args bound in configure don't apply when using the subclass directly
         obj = TestConfig2()
-        self.assertIs(obj.b, None)
+        self.assertIsNone(obj.b)
 
     def test_config_multi_level(self):
         TestConfigurable.configure(TestConfig3, a=1)
@@ -214,20 +209,39 @@ class ConfigurableTest(unittest.TestCase):
 
 class UnicodeLiteralTest(unittest.TestCase):
     def test_unicode_escapes(self):
-        self.assertEqual(utf8(u"\u00e9"), b"\xc3\xa9")
+        self.assertEqual(utf8("\u00e9"), b"\xc3\xa9")
 
 
 class ExecInTest(unittest.TestCase):
-    # TODO(bdarnell): make a version of this test for one of the new
-    # future imports available in python 3.
-    @unittest.skip("no testable future imports")
     def test_no_inherit_future(self):
-        # This file has from __future__ import print_function...
-        f = StringIO()
-        print("hello", file=f)
-        # ...but the template doesn't
-        exec_in('print >> f, "world"', dict(f=f))
-        self.assertEqual(f.getvalue(), "hello\nworld\n")
+        # Two files: the first has "from __future__ import annotations", and it executes the second
+        # which doesn't. The second file should not be affected by the first's __future__ imports.
+        #
+        # The annotations future became available in python 3.7 but has been replaced by PEP 649, so
+        # it should remain supported but off-by-default for the foreseeable future.
+        code1 = textwrap.dedent(
+            """
+            from __future__ import annotations
+            from tornado.util import exec_in
+
+            exec_in(code2, globals())
+            """
+        )
+
+        code2 = textwrap.dedent(
+            """
+            def f(x: int) -> int:
+                return x + 1
+            output[0] = f.__annotations__
+            """
+        )
+
+        # Make a mutable container to pass the result back to the caller
+        output = [None]
+        exec_in(code1, dict(code2=code2, output=output))
+        # If the annotations future were in effect, these would be strings instead of the int type
+        # object.
+        self.assertEqual(output[0], {"x": int, "return": int})
 
 
 class ArgReplacerTest(unittest.TestCase):
@@ -239,8 +253,8 @@ class ArgReplacerTest(unittest.TestCase):
 
     def test_omitted(self):
         args = (1, 2)
-        kwargs = dict()  # type: Dict[str, Any]
-        self.assertIs(self.replacer.get_old_value(args, kwargs), None)
+        kwargs: Dict[str, Any] = dict()
+        self.assertIsNone(self.replacer.get_old_value(args, kwargs))
         self.assertEqual(
             self.replacer.replace("new", args, kwargs),
             (None, (1, 2), dict(callback="new")),
@@ -248,7 +262,7 @@ class ArgReplacerTest(unittest.TestCase):
 
     def test_position(self):
         args = (1, 2, "old", 3)
-        kwargs = dict()  # type: Dict[str, Any]
+        kwargs: Dict[str, Any] = dict()
         self.assertEqual(self.replacer.get_old_value(args, kwargs), "old")
         self.assertEqual(
             self.replacer.replace("new", args, kwargs),
@@ -276,7 +290,7 @@ class ImportObjectTest(unittest.TestCase):
         self.assertIs(import_object("tornado.escape.utf8"), utf8)
 
     def test_import_member_unicode(self):
-        self.assertIs(import_object(u"tornado.escape.utf8"), utf8)
+        self.assertIs(import_object("tornado.escape.utf8"), utf8)
 
     def test_import_module(self):
         self.assertIs(import_object("tornado.escape"), tornado.escape)
@@ -285,7 +299,7 @@ class ImportObjectTest(unittest.TestCase):
         # The internal implementation of __import__ differs depending on
         # whether the thing being imported is a module or not.
         # This variant requires a byte string in python 2.
-        self.assertIs(import_object(u"tornado.escape"), tornado.escape)
+        self.assertIs(import_object("tornado.escape"), tornado.escape)
 
 
 class ReUnescapeTest(unittest.TestCase):
@@ -303,6 +317,57 @@ class ReUnescapeTest(unittest.TestCase):
             re_unescape("\\Z")
 
 
-class IsFinalizingTest(unittest.TestCase):
-    def test_basic(self):
-        self.assertFalse(is_finalizing())
+class VersionInfoTest(unittest.TestCase):
+    def assert_version_info_compatible(self, version, version_info):
+        # We map our version identifier string (a subset of
+        # https://packaging.python.org/en/latest/specifications/version-specifiers/#public-version-identifiers)
+        # to a 4-tuple of integers for easy comparisons. The last component is
+        # 0 for a final release, negative for a pre-release, and would be positive for a
+        # post-release if we did any of those. This test is not a promise that these are the
+        # only formats we will ever use, but it does catch accidents like
+        # https://github.com/tornadoweb/tornado/issues/3406.
+        major = minor = patch = "0"
+        is_pre = False
+        if m := re.fullmatch(r"(\d+)\.(\d+)\.(\d+)", version):
+            # Regular 3-component version number
+            major, minor, patch = m.groups()
+        elif m := re.fullmatch(r"(\d+)\.(\d+)", version):
+            # Two-component version number, equivalent to major.minor.0
+            major, minor = m.groups()
+        elif m := re.fullmatch(r"(\d+)\.(\d+)\.(\d+)(?:\.dev|a|b|rc)\d+", version):
+            # Pre-release 3-component version number.
+            major, minor, patch = m.groups()
+            is_pre = True
+        elif m := re.fullmatch(r"(\d+)\.(\d+)(?:\.dev|a|b|rc)\d+", version):
+            # Pre-release 2-component version number.
+            major, minor = m.groups()
+            is_pre = True
+        else:
+            self.fail(f"Unrecognized version format: {version}")
+
+        self.assertEqual(version_info[:3], (int(major), int(minor), int(patch)))
+        if is_pre:
+            self.assertLess(int(version_info[3]), 0)
+        else:
+            self.assertEqual(int(version_info[3]), 0)
+
+    def test_version_info_compatible(self):
+        self.assert_version_info_compatible("6.5.0", (6, 5, 0, 0))
+        self.assert_version_info_compatible("6.5", (6, 5, 0, 0))
+        self.assert_version_info_compatible("6.5.1", (6, 5, 1, 0))
+        self.assert_version_info_compatible("6.6.dev1", (6, 6, 0, -100))
+        self.assert_version_info_compatible("6.6a1", (6, 6, 0, -100))
+        self.assert_version_info_compatible("6.6b1", (6, 6, 0, -100))
+        self.assert_version_info_compatible("6.6rc1", (6, 6, 0, -100))
+        self.assertRaises(
+            AssertionError, self.assert_version_info_compatible, "6.5.0", (6, 5, 0, 1)
+        )
+        self.assertRaises(
+            AssertionError, self.assert_version_info_compatible, "6.5.0", (6, 4, 0, 0)
+        )
+        self.assertRaises(
+            AssertionError, self.assert_version_info_compatible, "6.5.1", (6, 5, 0, 1)
+        )
+
+    def test_current_version(self):
+        self.assert_version_info_compatible(tornado.version, tornado.version_info)
