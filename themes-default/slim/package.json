@@ -91,7 +91,7 @@
     "css-loader": "7.1.2",
     "css-minimizer-webpack-plugin": "7.0.2",
     "eslint": "7.32.0",
-    "eslint-config-xo": "0.26.0",
+    "eslint-config-xo": "0.49.0",
     "eslint-import-resolver-webpack": "0.13.10",
     "eslint-plugin-eslint-comments": "3.2.0",
     "eslint-plugin-import": "2.32.0",
