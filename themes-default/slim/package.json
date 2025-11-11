@@ -130,8 +130,8 @@
     "tough-cookie": "^6.0.0",
     "postcss": "^8.5.6",
     "braces": "^3.0.3",
-    "strip-ansi": "6.0.1",
-    "string-width": "4.2.3"
+    "strip-ansi": "^6.0.1",
+    "string-width": "^4.2.3"
   },
   "stylelint": {
     "plugins": [
