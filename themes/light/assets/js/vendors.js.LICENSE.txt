@@ -11,6 +11,12 @@
   */
 
 /*!
+ * Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com
+ * License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
+ * Copyright 2025 Fonticons, Inc.
+ */
+
+/*!
  * Isotope v3.0.6
  *
  * Licensed GPLv3 for open source use
@@ -41,12 +47,6 @@
  */
 
 /*!
- * Vue.js v2.7.14
- * (c) 2014-2022 Evan You
- * Released under the MIT License.
- */
-
-/*!
  * Vue.js v2.7.16
  * (c) 2014-2023 Evan You
  * Released under the MIT License.
@@ -56,17 +56,6 @@
  * getSize v2.0.3
  * measure size of elements
  * MIT license
- */
-
-/*!
- * jQuery JavaScript Library v3.7.0
- * https://jquery.com/
- *
- * Copyright OpenJS Foundation and other contributors
- * Released under the MIT license
- * https://jquery.org/license
- *
- * Date: 2023-05-11T18:29Z
  */
 
 /*!
