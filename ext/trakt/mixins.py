@@ -3,14 +3,20 @@
 
 __author__ = 'Jon Nappi, Elan Ruusamäe'
 
+from dataclasses import fields
+
 
 def data_class_factory(data_class):
     """
     A Mixin for inheriting @dataclass or NamedTuple, via composition rather inheritance.
     """
+    field_names = set(f.name for f in fields(data_class))
+
     class DataClassMixinClass:
         def __init__(self, **kwargs):
-            self.data = data_class(**kwargs)
+            # https://stackoverflow.com/questions/54678337/how-does-one-ignore-extra-arguments-passed-to-a-dataclass/54678706#54678706
+            values = {k: v for k, v in kwargs.items() if k in field_names}
+            self.data = data_class(**values)
 
         def __getattr__(self, item):
             return getattr(self.data, item)

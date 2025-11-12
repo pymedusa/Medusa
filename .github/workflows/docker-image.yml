@@ -1,8 +1,15 @@
 name: Docker Image CI
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [ master, develop ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   PLATFORMS: linux/amd64,linux/arm/v7,linux/arm64

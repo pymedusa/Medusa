@@ -28,7 +28,7 @@ if typing.TYPE_CHECKING:
 __all__ = ["Condition", "Event", "Semaphore", "BoundedSemaphore", "Lock"]
 
 
-class _TimeoutGarbageCollector(object):
+class _TimeoutGarbageCollector:
     """Base class for objects that periodically clean up timed-out waiters.
 
     Avoids memory leak in a common pattern like:
@@ -60,8 +60,8 @@ class Condition(_TimeoutGarbageCollector):
 
     .. testcode::
 
+        import asyncio
         from tornado import gen
-        from tornado.ioloop import IOLoop
         from tornado.locks import Condition
 
         condition = Condition()
@@ -80,7 +80,7 @@ class Condition(_TimeoutGarbageCollector):
             # Wait for waiter() and notifier() in parallel
             await gen.multi([waiter(), notifier()])
 
-        IOLoop.current().run_sync(runner)
+        asyncio.run(runner())
 
     .. testoutput::
 
@@ -110,12 +110,8 @@ class Condition(_TimeoutGarbageCollector):
        next iteration of the `.IOLoop`.
     """
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.io_loop = ioloop.IOLoop.current()
-
     def __repr__(self) -> str:
-        result = "<%s" % (self.__class__.__name__,)
+        result = f"<{self.__class__.__name__}"
         if self._waiters:
             result += " waiters[%s]" % len(self._waiters)
         return result + ">"
@@ -159,7 +155,7 @@ class Condition(_TimeoutGarbageCollector):
         self.notify(len(self._waiters))
 
 
-class Event(object):
+class Event:
     """An event blocks coroutines until its internal flag is set to True.
 
     Similar to `threading.Event`.
@@ -169,8 +165,8 @@ class Event(object):
 
     .. testcode::
 
+        import asyncio
         from tornado import gen
-        from tornado.ioloop import IOLoop
         from tornado.locks import Event
 
         event = Event()
@@ -189,7 +185,7 @@ class Event(object):
         async def runner():
             await gen.multi([waiter(), setter()])
 
-        IOLoop.current().run_sync(runner)
+        asyncio.run(runner())
 
     .. testoutput::
 
@@ -204,7 +200,7 @@ class Event(object):
         self._waiters = set()  # type: Set[Future[None]]
 
     def __repr__(self) -> str:
-        return "<%s %s>" % (
+        return "<{} {}>".format(
             self.__class__.__name__,
             "set" if self.is_set() else "clear",
         )
@@ -259,13 +255,13 @@ class Event(object):
             return timeout_fut
 
 
-class _ReleasingContextManager(object):
+class _ReleasingContextManager:
     """Releases a Lock or Semaphore at the end of a "with" statement.
 
-        with (yield semaphore.acquire()):
-            pass
+    with (yield semaphore.acquire()):
+        pass
 
-        # Now semaphore.release() has been called.
+    # Now semaphore.release() has been called.
     """
 
     def __init__(self, obj: Any) -> None:
@@ -302,8 +298,7 @@ class Semaphore(_TimeoutGarbageCollector):
        from tornado.ioloop import IOLoop
        from tornado.concurrent import Future
 
-       # Ensure reliable doctest output: resolve Futures one at a time.
-       futures_q = deque([Future() for _ in range(3)])
+       inited = False
 
        async def simulator(futures):
            for f in futures:
@@ -312,15 +307,21 @@ class Semaphore(_TimeoutGarbageCollector):
                await gen.sleep(0)
                f.set_result(None)
 
-       IOLoop.current().add_callback(simulator, list(futures_q))
-
        def use_some_resource():
+           global inited
+           global futures_q
+           if not inited:
+               inited = True
+               # Ensure reliable doctest output: resolve Futures one at a time.
+               futures_q = deque([Future() for _ in range(3)])
+               IOLoop.current().add_callback(simulator, list(futures_q))
+
            return futures_q.popleft()
 
     .. testcode:: semaphore
 
+        import asyncio
         from tornado import gen
-        from tornado.ioloop import IOLoop
         from tornado.locks import Semaphore
 
         sem = Semaphore(2)
@@ -338,7 +339,7 @@ class Semaphore(_TimeoutGarbageCollector):
             # Join all workers.
             await gen.multi([worker(i) for i in range(3)])
 
-        IOLoop.current().run_sync(runner)
+        asyncio.run(runner())
 
     .. testoutput:: semaphore
 
@@ -388,12 +389,10 @@ class Semaphore(_TimeoutGarbageCollector):
 
     def __repr__(self) -> str:
         res = super().__repr__()
-        extra = (
-            "locked" if self._value == 0 else "unlocked,value:{0}".format(self._value)
-        )
+        extra = "locked" if self._value == 0 else f"unlocked,value:{self._value}"
         if self._waiters:
-            extra = "{0},waiters:{1}".format(extra, len(self._waiters))
-        return "<{0} [{1}]>".format(res[1:-1], extra)
+            extra = f"{extra},waiters:{len(self._waiters)}"
+        return f"<{res[1:-1]} [{extra}]>"
 
     def release(self) -> None:
         """Increment the counter and wake one waiter."""
@@ -483,7 +482,7 @@ class BoundedSemaphore(Semaphore):
         super().release()
 
 
-class Lock(object):
+class Lock:
     """A lock for coroutines.
 
     A Lock begins unlocked, and `acquire` locks it immediately. While it is
@@ -524,7 +523,7 @@ class Lock(object):
         self._block = BoundedSemaphore(value=1)
 
     def __repr__(self) -> str:
-        return "<%s _block=%s>" % (self.__class__.__name__, self._block)
+        return f"<{self.__class__.__name__} _block={self._block}>"
 
     def acquire(
         self, timeout: Optional[Union[float, datetime.timedelta]] = None

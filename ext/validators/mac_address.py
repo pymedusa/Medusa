@@ -1,33 +1,32 @@
+"""MAC Address."""
+
+# standard
 import re
 
+# local
 from .utils import validator
-
-pattern = re.compile(r'^(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$')
 
 
 @validator
-def mac_address(value):
-    """
-    Return whether or not given value is a valid MAC address.
+def mac_address(value: str, /):
+    """Return whether or not given value is a valid MAC address.
 
-    If the value is valid MAC address this function returns ``True``,
-    otherwise :class:`~validators.utils.ValidationFailure`.
+    This validator is based on [WTForms MacAddress validator][1].
 
-    This validator is based on `WTForms MacAddress validator`_.
+    [1]: https://github.com/wtforms/wtforms/blob/master/src/wtforms/validators.py#L482
 
-    .. _WTForms MacAddress validator:
-       https://github.com/wtforms/wtforms/blob/master/wtforms/validators.py
-
-    Examples::
-
+    Examples:
         >>> mac_address('01:23:45:67:ab:CD')
         True
-
         >>> mac_address('00:00:00:00:00')
-        ValidationFailure(func=mac_address, args={'value': '00:00:00:00:00'})
+        ValidationError(func=mac_address, args={'value': '00:00:00:00:00'})
 
-    .. versionadded:: 0.2
+    Args:
+        value:
+            MAC address string to validate.
 
-    :param value: Mac address string to validate
+    Returns:
+        (Literal[True]): If `value` is a valid MAC address.
+        (ValidationError): If `value` is an invalid MAC address.
     """
-    return pattern.match(value)
+    return re.match(r"^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$", value) if value else False

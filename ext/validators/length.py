@@ -1,37 +1,45 @@
+"""Length."""
+
+# standard
+from typing import Union
+
+# local
 from .between import between
 from .utils import validator
 
 
 @validator
-def length(value, min=None, max=None):
-    """
-    Return whether or not the length of given string is within a specified
-    range.
+def length(value: str, /, *, min_val: Union[int, None] = None, max_val: Union[int, None] = None):
+    """Return whether or not the length of given string is within a specified range.
 
-    Examples::
-
-        >>> length('something', min=2)
+    Examples:
+        >>> length('something', min_val=2)
         True
-
-        >>> length('something', min=9, max=9)
+        >>> length('something', min_val=9, max_val=9)
         True
+        >>> length('something', max_val=5)
+        ValidationError(func=length, args={'value': 'something', 'max_val': 5})
 
-        >>> length('something', max=5)
-        ValidationFailure(func=length, ...)
+    Args:
+        value:
+            The string to validate.
+        min_val:
+            The minimum required length of the string. If not provided,
+            minimum length will not be checked.
+        max_val:
+            The maximum length of the string. If not provided,
+            maximum length will not be checked.
 
-    :param value:
-        The string to validate.
-    :param min:
-        The minimum required length of the string. If not provided, minimum
-        length will not be checked.
-    :param max:
-        The maximum length of the string. If not provided, maximum length
-        will not be checked.
+    Returns:
+        (Literal[True]): If `len(value)` is in between the given conditions.
+        (ValidationError): If `len(value)` is not in between the given conditions.
 
-    .. versionadded:: 0.2
+    Raises:
+        (ValueError): If either `min_val` or `max_val` is negative.
     """
-    if (min is not None and min < 0) or (max is not None and max < 0):
-        raise AssertionError(
-            '`min` and `max` need to be greater than zero.'
-        )
-    return between(len(value), min=min, max=max)
+    if min_val is not None and min_val < 0:
+        raise ValueError("Length cannot be negative. `min_val` is less than zero.")
+    if max_val is not None and max_val < 0:
+        raise ValueError("Length cannot be negative. `max_val` is less than zero.")
+
+    return bool(between(len(value), min_val=min_val, max_val=max_val))

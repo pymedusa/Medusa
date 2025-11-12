@@ -1,3 +1,27 @@
+## 1.0.25 (12-11-2025)
+
+([@butlergroup](https://github.com/butlergroup) did a bunch of homework for y'all!)
+#### New Features
+- Add code-of-conduct.md
+- Add supply chain security scorecard Github action
+- Add support for Python 3.13
+- Add support for Node.js 20, 22, 24, and 25 and remove support for Node.js 14 and 16
+
+#### Improvements
+- All dependencies in pyproject.toml, requirements.txt, and test_requirements.txt have been updated to the latest possible version without build/test errors
+- uv.lock file updated
+- All dependencies in package.json, themes-default/slim/package.json, and .build/package.json have been updated to the latest possible version without build/test errors
+- All yarn.lock files updated
+- runscripts/init.systemd was modified for compatibility across Ubuntu versions (24.04, 25.04, and 25.10)
+- Existing Github actions modified for better security, autorun on push/pull, and autoterminate previous instances of running actions
+- Existing Github actions for backend and frontend tests have been enhanced to run on multiple OS platforms and toolchains (Python 3.9-3.13 and Node.js 20, 22, 24, & 25)
+- pyproject.toml now includes current application version
+
+#### Fixes
+- Dependency resolutions added to package.json, themes-default/slim/package.json, and .build/package.json to fix as many security vulnerabilities with dependencies as possible without build/test errors
+
+-----
+
 ## 1.0.24 (30-10-2025)
 
 #### Improvements

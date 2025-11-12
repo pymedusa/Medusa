@@ -24,11 +24,12 @@ __all__ = ['Airs', 'Alias', 'Comment', 'Genre', 'get', 'delete', 'post', 'put',
            'init', 'BASE_URL', 'CLIENT_ID', 'CLIENT_SECRET', 'DEVICE_AUTH',
            'REDIRECT_URI', 'HEADERS', 'CONFIG_PATH', 'OAUTH_TOKEN',
            'OAUTH_REFRESH', 'PIN_AUTH', 'OAUTH_AUTH', 'AUTH_METHOD',
+           'TIMEOUT',
            'APPLICATION_ID', 'get_device_code', 'get_device_token']
 
 #: The base url for the Trakt API. Can be modified to run against different
 #: Trakt.tv environments
-BASE_URL = 'https://api-v2launch.trakt.tv/'
+BASE_URL = 'https://api.trakt.tv/'
 
 #: The Trakt.tv OAuth Client ID for your OAuth Application
 CLIENT_ID = None
@@ -71,6 +72,9 @@ AUTH_METHOD = PIN_AUTH
 
 #: The ID of the application to register with, when using PIN authentication
 APPLICATION_ID = None
+
+#: Timeout in seconds for all requests
+TIMEOUT = 30
 
 #: Global session to make requests with
 session = requests.Session()
@@ -141,7 +145,7 @@ def pin_auth(pin=None, client_id=None, client_secret=None, store=False):
             'client_id': CLIENT_ID,
             'client_secret': CLIENT_SECRET}
 
-    response = session.post(''.join([BASE_URL, '/oauth/token']), data=args)
+    response = session.post(''.join([BASE_URL, '/oauth/token']), data=args, timeout=TIMEOUT)
     OAUTH_TOKEN = response.json().get('access_token', None)
 
     if store:
@@ -179,7 +183,7 @@ def oauth_auth(username, client_id=None, client_secret=None, store=False,
         PIN. Default function `_terminal_oauth_pin` for terminal auth
     :return: Your OAuth access token
     """
-    global CLIENT_ID, CLIENT_SECRET, OAUTH_TOKEN
+    global CLIENT_ID, CLIENT_SECRET, OAUTH_TOKEN, OAUTH_REFRESH, OAUTH_EXPIRES_AT
     if client_id is None and client_secret is None:
         client_id, client_secret = _get_client_info()
     CLIENT_ID, CLIENT_SECRET = client_id, client_secret
@@ -231,7 +235,7 @@ def get_device_code(client_id=None, client_secret=None):
     data = {"client_id": CLIENT_ID}
 
     device_response = session.post(device_code_url,
-                                   json=data, headers=headers).json()
+                                   json=data, headers=headers, timeout=TIMEOUT).json()
     print('Your user code is: {user_code}, please navigate to '
           '{verification_url} to authenticate'.format(
             user_code=device_response.get('user_code'),
@@ -259,7 +263,7 @@ def get_device_token(device_code, client_id=None, client_secret=None,
     :return: Information regarding the authentication polling.
     :return type: dict
     """
-    global CLIENT_ID, CLIENT_SECRET, OAUTH_TOKEN, OAUTH_REFRESH
+    global CLIENT_ID, CLIENT_SECRET, OAUTH_TOKEN, OAUTH_REFRESH, OAUTH_EXPIRES_AT
     if client_id is None and client_secret is None:
         client_id, client_secret = _get_client_info()
     CLIENT_ID, CLIENT_SECRET = client_id, client_secret
@@ -272,7 +276,7 @@ def get_device_token(device_code, client_id=None, client_secret=None,
     }
 
     response = session.post(
-        urljoin(BASE_URL, '/oauth/device/token'), json=data
+        urljoin(BASE_URL, '/oauth/device/token'), json=data, timeout=TIMEOUT
     )
 
     # We only get json on success.
@@ -415,8 +419,8 @@ def _refresh_token(s):
                 'redirect_uri': REDIRECT_URI,
                 'grant_type': 'refresh_token'
             }
-    response = session.post(url, json=data, headers=HEADERS)
-    s.logger.debug('RESPONSE [post] (%s): %s', url, str(response))
+    response = session.post(url, json=data, headers=HEADERS, timeout=TIMEOUT)
+    s.logger.debug('RESPONSE [post] (%s): %s - %s', url, str(response), response.content)
     if response.status_code == 200:
         data = response.json()
         OAUTH_TOKEN = data.get("access_token")
@@ -433,13 +437,14 @@ def _refresh_token(s):
             OAUTH_TOKEN=OAUTH_TOKEN, OAUTH_REFRESH=OAUTH_REFRESH,
             OAUTH_EXPIRES_AT=OAUTH_EXPIRES_AT
         )
-    elif response.status_code == 401:
-        s.logger.debug(
-            "Rejected - Unable to refresh expired OAuth token, "
-            "refresh_token is invalid"
-        )
+    elif response.status_code in (401, 400):
+        from .errors import OAuthRefreshException
+        raise OAuthRefreshException(response)
     elif response.status_code in s.error_map:
         raise s.error_map[response.status_code](response)
+    else:
+        from .errors import BadRequestException
+        raise BadRequestException(response)
 
 
 def load_config():
@@ -541,10 +546,10 @@ class Core:
         self.logger.debug('method, url :: %s, %s', method, url)
         if method == 'get':  # GETs need to pass data as params, not body
             response = session.request(method, url, headers=HEADERS,
-                                       params=data)
+                                       params=data, timeout=TIMEOUT)
         else:
             response = session.request(method, url, headers=HEADERS,
-                                       data=json.dumps(data))
+                                       data=json.dumps(data), timeout=TIMEOUT)
         self.logger.debug('RESPONSE [%s] (%s): %s', method, url, str(response))
         if response.status_code in self.error_map:
             raise self.error_map[response.status_code](response)

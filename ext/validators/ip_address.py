@@ -1,156 +1,139 @@
+"""IP Address."""
+
+# standard
+from ipaddress import (
+    AddressValueError,
+    IPv4Address,
+    IPv4Network,
+    IPv6Address,
+    IPv6Network,
+    NetmaskValueError,
+)
+import re
+from typing import Optional
+
+# local
 from .utils import validator
 
 
+def _check_private_ip(value: str, is_private: Optional[bool]):
+    if is_private is None:
+        return True
+    if (
+        any(
+            value.startswith(l_bit)
+            for l_bit in {
+                "10.",  # private
+                "192.168.",  # private
+                "169.254.",  # link-local
+                "127.",  # localhost
+                "0.0.0.0",  # loopback #nosec
+            }
+        )
+        or re.match(r"^172\.(?:1[6-9]|2\d|3[0-1])\.", value)  # private
+        or re.match(r"^(?:22[4-9]|23[0-9]|24[0-9]|25[0-5])\.", value)  # broadcast
+    ):
+        return is_private
+
+    return not is_private
+
+
 @validator
-def ipv4(value):
-    """
-    Return whether a given value is a valid IP version 4 address.
+def ipv4(
+    value: str,
+    /,
+    *,
+    cidr: bool = True,
+    strict: bool = False,
+    private: Optional[bool] = None,
+    host_bit: bool = True,
+):
+    """Returns whether a given value is a valid IPv4 address.
 
-    This validator is based on `WTForms IPAddress validator`_
+    From Python version 3.9.5 leading zeros are no longer tolerated
+    and are treated as an error. The initial version of ipv4 validator
+    was inspired from [WTForms IPAddress validator][1].
 
-    .. _WTForms IPAddress validator:
-       https://github.com/wtforms/wtforms/blob/master/wtforms/validators.py
+    [1]: https://github.com/wtforms/wtforms/blob/master/src/wtforms/validators.py
 
-    Examples::
-
+    Examples:
         >>> ipv4('123.0.0.7')
         True
-
+        >>> ipv4('1.1.1.1/8')
+        True
         >>> ipv4('900.80.70.11')
-        ValidationFailure(func=ipv4, args={'value': '900.80.70.11'})
+        ValidationError(func=ipv4, args={'value': '900.80.70.11'})
 
-    .. versionadded:: 0.2
+    Args:
+        value:
+            IP address string to validate.
+        cidr:
+            IP address string may contain CIDR notation.
+        strict:
+            IP address string is strictly in CIDR notation.
+        private:
+            IP address is public if `False`, private/local/loopback/broadcast if `True`.
+        host_bit:
+            If `False` and host bits (along with network bits) _are_ set in the supplied
+            address, this function raises a validation error. ref [IPv4Network][2].
+            [2]: https://docs.python.org/3/library/ipaddress.html#ipaddress.IPv4Network
 
-    :param value: IP address string to validate
+    Returns:
+        (Literal[True]): If `value` is a valid IPv4 address.
+        (ValidationError): If `value` is an invalid IPv4 address.
     """
-    groups = value.split(".")
-    if (
-        len(groups) != 4
-        or any(not x.isdigit() for x in groups)
-        or any(len(x) > 3 for x in groups)
-    ):
+    if not value:
         return False
-    return all(0 <= int(part) < 256 for part in groups)
-
-
-@validator
-def ipv4_cidr(value):
-    """
-    Return whether a given value is a valid CIDR-notated IP version 4
-    address range.
-
-    This validator is based on RFC4632 3.1.
-
-    Examples::
-
-        >>> ipv4_cidr('1.1.1.1/8')
-        True
-
-        >>> ipv4_cidr('1.1.1.1')
-        ValidationFailure(func=ipv4_cidr, args={'value': '1.1.1.1'})
-    """
     try:
-        prefix, suffix = value.split('/', 2)
-    except ValueError:
+        if cidr:
+            if strict and value.count("/") != 1:
+                raise ValueError("IPv4 address was expected in CIDR notation")
+            return IPv4Network(value, strict=not host_bit) and _check_private_ip(value, private)
+        return IPv4Address(value) and _check_private_ip(value, private)
+    except (ValueError, AddressValueError, NetmaskValueError):
         return False
-    if not ipv4(prefix) or not suffix.isdigit():
-        return False
-    return 0 <= int(suffix) <= 32
 
 
 @validator
-def ipv6(value):
-    """
-    Return whether a given value is a valid IP version 6 address
-    (including IPv4-mapped IPv6 addresses).
+def ipv6(value: str, /, *, cidr: bool = True, strict: bool = False, host_bit: bool = True):
+    """Returns if a given value is a valid IPv6 address.
 
-    This validator is based on `WTForms IPAddress validator`_.
+    Including IPv4-mapped IPv6 addresses. The initial version of ipv6 validator
+    was inspired from [WTForms IPAddress validator][1].
 
-    .. _WTForms IPAddress validator:
-       https://github.com/wtforms/wtforms/blob/master/wtforms/validators.py
+    [1]: https://github.com/wtforms/wtforms/blob/master/src/wtforms/validators.py
 
-    Examples::
-
-        >>> ipv6('abcd:ef::42:1')
-        True
-
+    Examples:
         >>> ipv6('::ffff:192.0.2.128')
         True
-
-        >>> ipv6('::192.0.2.128')
+        >>> ipv6('::1/128')
         True
-
         >>> ipv6('abc.0.0.1')
-        ValidationFailure(func=ipv6, args={'value': 'abc.0.0.1'})
+        ValidationError(func=ipv6, args={'value': 'abc.0.0.1'})
 
-    .. versionadded:: 0.2
+    Args:
+        value:
+            IP address string to validate.
+        cidr:
+            IP address string may contain CIDR annotation.
+        strict:
+            IP address string is strictly in CIDR notation.
+        host_bit:
+            If `False` and host bits (along with network bits) _are_ set in the supplied
+            address, this function raises a validation error. ref [IPv6Network][2].
+            [2]: https://docs.python.org/3/library/ipaddress.html#ipaddress.IPv6Network
 
-    :param value: IP address string to validate
+    Returns:
+        (Literal[True]): If `value` is a valid IPv6 address.
+        (ValidationError): If `value` is an invalid IPv6 address.
     """
-    ipv6_groups = value.split(':')
-    if len(ipv6_groups) == 1:
+    if not value:
         return False
-    ipv4_groups = ipv6_groups[-1].split('.')
-
-    if len(ipv4_groups) > 1:
-        if not ipv4(ipv6_groups[-1]):
-            return False
-        ipv6_groups = ipv6_groups[:-1]
-    else:
-        ipv4_groups = []
-
-    count_blank = 0
-    for part in ipv6_groups:
-        if not part:
-            count_blank += 1
-            continue
-        try:
-            num = int(part, 16)
-        except ValueError:
-            return False
-        else:
-            if not 0 <= num <= 65536 or len(part) > 4:
-                return False
-
-    max_groups = 6 if ipv4_groups else 8
-    part_count = len(ipv6_groups) - count_blank
-    if count_blank == 0 and part_count == max_groups:
-        # no :: -> must have size of max_groups
-        return True
-    elif count_blank == 1 and ipv6_groups[-1] and ipv6_groups[0] and part_count < max_groups:
-        # one :: inside the address or prefix or suffix : -> filter least two cases
-        return True
-    elif count_blank == 2 and part_count < max_groups and (
-            ((ipv6_groups[0] and not ipv6_groups[-1]) or (not ipv6_groups[0] and ipv6_groups[-1])) or ipv4_groups):
-        # leading or trailing :: or : at end and begin -> filter last case
-        # Check if it has ipv4 groups because they get removed from the ipv6_groups
-        return True
-    elif count_blank == 3 and part_count == 0:
-        # :: is the address -> filter everything else
-        return True
-    return False
-
-
-@validator
-def ipv6_cidr(value):
-    """
-    Returns whether a given value is a valid CIDR-notated IP version 6
-    address range.
-
-    This validator is based on RFC4632 3.1.
-
-    Examples::
-
-        >>> ipv6_cidr('::1/128')
-        True
-
-        >>> ipv6_cidr('::1')
-        ValidationFailure(func=ipv6_cidr, args={'value': '::1'})
-    """
     try:
-        prefix, suffix = value.split('/', 2)
-    except ValueError:
+        if cidr:
+            if strict and value.count("/") != 1:
+                raise ValueError("IPv6 address was expected in CIDR notation")
+            return IPv6Network(value, strict=not host_bit)
+        return IPv6Address(value)
+    except (ValueError, AddressValueError, NetmaskValueError):
         return False
-    if not ipv6(prefix) or not suffix.isdigit():
-        return False
-    return 0 <= int(suffix) <= 128

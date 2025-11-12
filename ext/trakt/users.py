@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Interfaces to all of the User objects offered by the Trakt.tv API"""
-from typing import Any, NamedTuple
+from dataclasses import dataclass
+from typing import Any, NamedTuple, Optional, Union
 
 from trakt.core import delete, get, post
 from trakt.mixins import DataClassMixin, IdsMixin
@@ -10,7 +11,7 @@ from trakt.tv import TVEpisode, TVSeason, TVShow
 from trakt.utils import slugify
 
 __author__ = 'Jon Nappi'
-__all__ = ['User', 'UserList', 'Request', 'follow', 'get_all_requests',
+__all__ = ['User', 'UserList', 'PublicList', 'Request', 'follow', 'get_all_requests',
            'get_user_settings', 'unfollow']
 
 
@@ -64,7 +65,64 @@ def unfollow(user_name):
     yield 'users/{username}/follow'.format(username=slugify(user_name))
 
 
-class UserListTuple(NamedTuple):
+@dataclass(frozen=True)
+class ListEntry:
+    id: int
+    rank: int
+    listed_at: str
+    type: str
+    # data for "type" structure
+    data: Any
+    notes: Optional[str] = None
+
+    @property
+    def item(self):
+        # Poor man's cached_property
+        if self.type not in self.__dict__:
+            # Avoid recursion
+            error = object()
+            self.__dict__[self.type] = error
+            value = getattr(self, self.type, None)
+            if value is error:
+                raise RuntimeError(f"Invalid type: {self.type}")
+            self.__dict__[self.type] = value
+
+        return self.__dict__[self.type]
+
+    @property
+    def movie(self):
+        data = self.data.copy()
+        title = data.pop("title")
+        return Movie(title, **data)
+
+    @property
+    def show(self):
+        return TVShow(**self.data)
+
+    @property
+    def season(self):
+        data = self.data.copy()
+        show = data.pop("show")
+        season = data.pop("number")
+        ids = show["ids"]
+        return TVSeason(show=show["title"], season=season, slug=ids["slug"], **data)
+
+    @property
+    def episode(self):
+        data = self.data.copy()
+        show = data.pop("show")
+        ids = show["ids"]
+        return TVEpisode(show=show["title"], show_id=ids["trakt"], **data)
+
+    def __getattr__(self, name):
+        """
+        Delegate everything missing to sub-item
+        """
+        return self.item.__getattribute__(name)
+
+
+@dataclass(frozen=True)
+class ListDescription:
     name: str
     description: str
     privacy: str
@@ -80,10 +138,59 @@ class UserListTuple(NamedTuple):
     comment_count: int
     likes: int
     user: Any
-    creator: str
+    creator: Optional[str] = None
 
 
-class UserList(DataClassMixin(UserListTuple), IdsMixin):
+class PublicList(DataClassMixin(ListDescription), IdsMixin):
+    """A record for public lists """
+
+    def __init__(self, ids=None, **kwargs):
+        super().__init__(**kwargs)
+        self._ids = ids
+        self._items = None
+
+    def __iter__(self):
+        return iter(self.items)
+
+    def __len__(self):
+        return len(self.items)
+
+    @classmethod
+    @get
+    def load(cls, id: int) -> Union[ListEntry, "PublicList"]:
+        """
+        https://trakt.docs.apiary.io/#reference/lists/list/get-list
+        """
+        data = yield f"lists/{id}"
+        yield cls(**data)
+
+    @property
+    def items(self):
+        if self._items is None:
+            self._load_items()
+        return self._items
+
+    @get
+    def _load_items(self):
+        """
+        https://trakt.docs.apiary.io/#reference/lists/list-items
+        """
+        data = yield f"lists/{self.trakt}/items"
+        self._items = list(self._process_items(data))
+        yield self._items
+
+    @staticmethod
+    def _process_items(items):
+        for item in items:
+            if "type" not in item:
+                continue
+            data = item.pop(item["type"])
+            if "show" in item:
+                data["show"] = item.pop("show")
+            yield ListEntry(**item, data=data)
+
+
+class UserList(DataClassMixin(ListDescription), IdsMixin):
     """A list created by a Trakt.tv :class:`User`"""
 
     def __init__(self, ids=None, **kwargs):

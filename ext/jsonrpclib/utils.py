@@ -4,13 +4,13 @@
 Utility methods, for compatibility between Python version
 
 :author: Thomas Calmant
-:copyright: Copyright 2022, Thomas Calmant
+:copyright: Copyright 2025, Thomas Calmant
 :license: Apache License 2.0
-:version: 0.4.3.2
+:version: 0.4.3.4
 
 ..
 
-    Copyright 2022 Thomas Calmant
+    Copyright 2025 Thomas Calmant
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import sys
 # ------------------------------------------------------------------------------
 
 # Module version
-__version_info__ = (0, 4, 3, 2)
+__version_info__ = (0, 4, 3, 4)
 __version__ = ".".join(str(x) for x in __version_info__)
 
 # Documentation strings format
@@ -114,6 +114,34 @@ except ImportError:
     def is_enum(obj):  # pylint: disable=unused-argument
         """
         Before Python 3.4, enumerations didn't exist.
+
+        :param obj: Object to test
+        :return: Always False
+        """
+        return False
+
+
+# ------------------------------------------------------------------------------
+# Decimal
+
+try:
+    import decimal
+
+    def is_decimal(obj):
+        """
+        Checks if an object is a decimal.Decimal
+
+        :param obj: Object to test
+        :return: True if the object is a Decimal
+        """
+        return isinstance(obj, decimal.Decimal)
+
+
+except ImportError:
+    # Decimal introduced in Python 2.4
+    def is_decimal(obj):  # pylint: disable=unused-argument
+        """
+        Before Python 2.4, Decimal did not exist.
 
         :param obj: Object to test
         :return: Always False

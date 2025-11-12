@@ -41,16 +41,13 @@
 #                                                                              #
 ################################################################################
 
-from __future__ import absolute_import
-
-import six
-
 import github.GithubObject
 import github.NamedUser
 import github.Organization
 import github.PaginatedList
 import github.Repository
 import github.TeamDiscussion
+from github.GithubException import UnknownObjectException
 
 from . import Consts
 
@@ -159,6 +156,14 @@ class Team(github.GithubObject.CompletableGithubObject):
         self._completeIfNotSet(self._privacy)
         return self._privacy.value
 
+    @property
+    def parent(self):
+        """
+        :type: string
+        """
+        self._completeIfNotSet(self._parent)
+        return self._parent.value
+
     def add_to_members(self, member):
         """
         This API call is deprecated. Use `add_membership` instead.
@@ -181,9 +186,7 @@ class Team(github.GithubObject.CompletableGithubObject):
         :rtype: None
         """
         assert isinstance(member, github.NamedUser.NamedUser), member
-        assert role is github.GithubObject.NotSet or isinstance(
-            role, (str, six.text_type)
-        ), role
+        assert role is github.GithubObject.NotSet or isinstance(role, str), role
         if role is not github.GithubObject.NotSet:
             assert role in ["member", "maintainer"]
             put_parameters = {
@@ -197,6 +200,24 @@ class Team(github.GithubObject.CompletableGithubObject):
             "PUT", self.url + "/memberships/" + member._identity, input=put_parameters
         )
 
+    def get_team_membership(self, member):
+        """
+        :calls: `GET /orgs/:org/memberships/team/:team_id/:username <https://docs.github.com/en/rest/reference/teams#get-team-membership-for-a-user>`_
+        :param member: string or :class:`github.NamedUser.NamedUser`
+        :rtype: :class:`github.Membership.Membership`
+        """
+        assert isinstance(member, str) or isinstance(
+            member, github.NamedUser.NamedUser
+        ), member
+        if isinstance(member, github.NamedUser.NamedUser):
+            member = member._identity
+        headers, data = self._requester.requestJsonAndCheck(
+            "GET", self.url + "/memberships/" + member
+        )
+        return github.Membership.Membership(
+            self._requester, headers, data, completed=True
+        )
+
     def add_to_repos(self, repo):
         """
         :calls: `PUT /teams/:id/repos/:org/:repo <http://developer.github.com/v3/orgs/teams>`_
@@ -207,6 +228,29 @@ class Team(github.GithubObject.CompletableGithubObject):
         headers, data = self._requester.requestJsonAndCheck(
             "PUT", self.url + "/repos/" + repo._identity
         )
+
+    def get_repo_permission(self, repo):
+        """
+        :calls: `GET /teams/:id/repos/:org/:repo <http://developer.github.com/v3/orgs/teams>`_
+        :param repo: string or :class:`github.Repository.Repository`
+        :rtype: None or :class:`github.Permissions.Permissions`
+        """
+        assert isinstance(repo, github.Repository.Repository) or isinstance(
+            repo, str
+        ), repo
+        if isinstance(repo, github.Repository.Repository):
+            repo = repo._identity
+        try:
+            headers, data = self._requester.requestJsonAndCheck(
+                "GET",
+                self.url + "/repos/" + repo,
+                headers={"Accept": Consts.teamRepositoryPermissions},
+            )
+            return github.Permissions.Permissions(
+                self._requester, headers, data["permissions"], completed=True
+            )
+        except UnknownObjectException:
+            return None
 
     def set_repo_permission(self, repo, permission):
         """
@@ -245,15 +289,15 @@ class Team(github.GithubObject.CompletableGithubObject):
         :param privacy: string
         :rtype: None
         """
-        assert isinstance(name, (str, six.text_type)), name
+        assert isinstance(name, str), name
         assert description is github.GithubObject.NotSet or isinstance(
-            description, (str, six.text_type)
+            description, str
         ), description
         assert permission is github.GithubObject.NotSet or isinstance(
-            permission, (str, six.text_type)
+            permission, str
         ), permission
         assert privacy is github.GithubObject.NotSet or isinstance(
-            privacy, (str, six.text_type)
+            privacy, str
         ), privacy
         post_parameters = {
             "name": name,
@@ -268,6 +312,15 @@ class Team(github.GithubObject.CompletableGithubObject):
             "PATCH", self.url, input=post_parameters
         )
         self._useAttributes(data)
+
+    def get_teams(self):
+        """
+        :calls: `GET /teams/:id/teams <https://developer.github.com/v3/teams/#list-child-teams>`_
+        :rtype: :class:`github.PaginatedList.PaginatedList` of :class:`github.Team.Team`
+        """
+        return github.PaginatedList.PaginatedList(
+            github.Team.Team, self._requester, self.url + "/teams", None,
+        )
 
     def get_discussions(self):
         """
@@ -288,9 +341,7 @@ class Team(github.GithubObject.CompletableGithubObject):
         :param role: string
         :rtype: :class:`github.PaginatedList.PaginatedList` of :class:`github.NamedUser.NamedUser`
         """
-        assert role is github.GithubObject.NotSet or isinstance(
-            role, (str, six.text_type)
-        ), role
+        assert role is github.GithubObject.NotSet or isinstance(role, str), role
         url_parameters = dict()
         if role is not github.GithubObject.NotSet:
             assert role in ["member", "maintainer", "all"]
@@ -401,6 +452,7 @@ class Team(github.GithubObject.CompletableGithubObject):
         self._url = github.GithubObject.NotSet
         self._organization = github.GithubObject.NotSet
         self._privacy = github.GithubObject.NotSet
+        self._parent = github.GithubObject.NotSet
 
     def _useAttributes(self, attributes):
         if "id" in attributes:  # pragma no branch
@@ -431,3 +483,7 @@ class Team(github.GithubObject.CompletableGithubObject):
             )
         if "privacy" in attributes:  # pragma no branch
             self._privacy = self._makeStringAttribute(attributes["privacy"])
+        if "parent" in attributes:  # pragma no branch
+            self._parent = self._makeClassAttribute(
+                github.Team.Team, attributes["parent"]
+            )

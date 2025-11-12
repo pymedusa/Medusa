@@ -341,7 +341,7 @@ class AuthTest(AsyncHTTPTestCase):
     def test_openid_redirect(self):
         response = self.fetch("/openid/client/login", follow_redirects=False)
         self.assertEqual(response.code, 302)
-        self.assertTrue("/openid/server/authenticate?" in response.headers["Location"])
+        self.assertIn("/openid/server/authenticate?", response.headers["Location"])
 
     def test_openid_get_user(self):
         response = self.fetch(
@@ -363,9 +363,9 @@ class AuthTest(AsyncHTTPTestCase):
             )
         )
         # the cookie is base64('zxcv')|base64('1234')
-        self.assertTrue(
-            '_oauth_request_token="enhjdg==|MTIzNA=="'
-            in response.headers["Set-Cookie"],
+        self.assertIn(
+            '_oauth_request_token="enhjdg==|MTIzNA=="',
+            response.headers["Set-Cookie"],
             response.headers["Set-Cookie"],
         )
 
@@ -385,8 +385,8 @@ class AuthTest(AsyncHTTPTestCase):
         parsed = json_decode(response.body)
         self.assertEqual(parsed["oauth_consumer_key"], "asdf")
         self.assertEqual(parsed["oauth_token"], "uiop")
-        self.assertTrue("oauth_nonce" in parsed)
-        self.assertTrue("oauth_signature" in parsed)
+        self.assertIn("oauth_nonce", parsed)
+        self.assertIn("oauth_signature", parsed)
 
     def test_oauth10a_redirect(self):
         response = self.fetch("/oauth10a/client/login", follow_redirects=False)
@@ -427,8 +427,8 @@ class AuthTest(AsyncHTTPTestCase):
         parsed = json_decode(response.body)
         self.assertEqual(parsed["oauth_consumer_key"], "asdf")
         self.assertEqual(parsed["oauth_token"], "uiop")
-        self.assertTrue("oauth_nonce" in parsed)
-        self.assertTrue("oauth_signature" in parsed)
+        self.assertIn("oauth_nonce", parsed)
+        self.assertIn("oauth_signature", parsed)
 
     def test_oauth10a_get_user_coroutine_exception(self):
         response = self.fetch(
@@ -440,7 +440,7 @@ class AuthTest(AsyncHTTPTestCase):
     def test_oauth2_redirect(self):
         response = self.fetch("/oauth2/client/login", follow_redirects=False)
         self.assertEqual(response.code, 302)
-        self.assertTrue("/oauth2/server/authorize?" in response.headers["Location"])
+        self.assertIn("/oauth2/server/authorize?", response.headers["Location"])
 
     def test_facebook_login(self):
         response = self.fetch("/facebook/client/login", follow_redirects=False)
@@ -464,9 +464,9 @@ class AuthTest(AsyncHTTPTestCase):
             )
         )
         # the cookie is base64('zxcv')|base64('1234')
-        self.assertTrue(
-            '_oauth_request_token="enhjdg==|MTIzNA=="'
-            in response.headers["Set-Cookie"],
+        self.assertIn(
+            '_oauth_request_token="enhjdg==|MTIzNA=="',
+            response.headers["Set-Cookie"],
             response.headers["Set-Cookie"],
         )
 
@@ -486,9 +486,9 @@ class AuthTest(AsyncHTTPTestCase):
             response.headers["Location"],
         )
         # the cookie is base64('zxcv')|base64('1234')
-        self.assertTrue(
-            '_oauth_request_token="enhjdg==|MTIzNA=="'
-            in response.headers["Set-Cookie"],
+        self.assertIn(
+            '_oauth_request_token="enhjdg==|MTIzNA=="',
+            response.headers["Set-Cookie"],
             response.headers["Set-Cookie"],
         )
 
@@ -502,14 +502,14 @@ class AuthTest(AsyncHTTPTestCase):
         self.assertEqual(
             parsed,
             {
-                u"access_token": {
-                    u"key": u"hjkl",
-                    u"screen_name": u"foo",
-                    u"secret": u"vbnm",
+                "access_token": {
+                    "key": "hjkl",
+                    "screen_name": "foo",
+                    "secret": "vbnm",
                 },
-                u"name": u"Foo",
-                u"screen_name": u"foo",
-                u"username": u"foo",
+                "name": "Foo",
+                "screen_name": "foo",
+                "username": "foo",
             },
         )
 
@@ -550,7 +550,6 @@ class GoogleLoginHandler(RequestHandler, GoogleOAuth2Mixin):
             self.authorize_redirect(
                 redirect_uri=self._OAUTH_REDIRECT_URI,
                 client_id=self.settings["google_oauth"]["key"],
-                client_secret=self.settings["google_oauth"]["secret"],
                 scope=["profile", "email"],
                 response_type="code",
                 extra_params={"prompt": "select_account"},
@@ -601,9 +600,9 @@ class GoogleOAuth2Test(AsyncHTTPTestCase):
         response = self.fetch("/client/login")
         self.assertDictEqual(
             {
-                u"name": u"Foo",
-                u"email": u"foo@example.com",
-                u"access_token": u"fake-access-token",
+                "name": "Foo",
+                "email": "foo@example.com",
+                "access_token": "fake-access-token",
             },
             json_decode(response.body),
         )

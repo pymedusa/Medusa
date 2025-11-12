@@ -26,15 +26,11 @@
 #                                                                              #
 ################################################################################
 
-from __future__ import absolute_import
-
-import six
-
 import github.GithubObject
 import github.NamedUser
 
 
-class PullRequestReview(github.GithubObject.CompletableGithubObject):
+class PullRequestReview(github.GithubObject.NonCompletableGithubObject):
     """
     This class represents PullRequestReviews. The reference can be found here https://developer.github.com/v3/pulls/reviews/
     """
@@ -47,7 +43,6 @@ class PullRequestReview(github.GithubObject.CompletableGithubObject):
         """
         :type: integer
         """
-        self._completeIfNotSet(self._id)
         return self._id.value
 
     @property
@@ -55,7 +50,6 @@ class PullRequestReview(github.GithubObject.CompletableGithubObject):
         """
         :type: :class:`github.NamedUser.NamedUser`
         """
-        self._completeIfNotSet(self._user)
         return self._user.value
 
     @property
@@ -63,7 +57,6 @@ class PullRequestReview(github.GithubObject.CompletableGithubObject):
         """
         :type: string
         """
-        self._completeIfNotSet(self._body)
         return self._body.value
 
     @property
@@ -71,7 +64,6 @@ class PullRequestReview(github.GithubObject.CompletableGithubObject):
         """
         :type: string
         """
-        self._completeIfNotSet(self._commit_id)
         return self._commit_id.value
 
     @property
@@ -79,23 +71,13 @@ class PullRequestReview(github.GithubObject.CompletableGithubObject):
         """
         :type: string
         """
-        self._completeIfNotSet(self._state)
         return self._state.value
-
-    @property
-    def url(self):
-        """
-        :type: string
-        """
-        self._completeIfNotSet(self._url)
-        return self._url.value
 
     @property
     def html_url(self):
         """
         :type: string
         """
-        self._completeIfNotSet(self._html_url)
         return self._html_url.value
 
     @property
@@ -103,7 +85,6 @@ class PullRequestReview(github.GithubObject.CompletableGithubObject):
         """
         :type: string
         """
-        self._completeIfNotSet(self._pull_request_url)
         return self._pull_request_url.value
 
     @property
@@ -111,7 +92,6 @@ class PullRequestReview(github.GithubObject.CompletableGithubObject):
         """
         :type: datetime.datetime
         """
-        self._completeIfNotSet(self._submitted_at)
         return self._submitted_at.value
 
     def dismiss(self, message):
@@ -119,7 +99,7 @@ class PullRequestReview(github.GithubObject.CompletableGithubObject):
         :calls: `PUT /repos/:owner/:repo/pulls/:number/reviews/:review_id/dismissals <https://developer.github.com/v3/pulls/reviews/>`_
         :rtype: None
         """
-        assert isinstance(message, (str, six.text_type)), message
+        assert isinstance(message, str), message
         post_parameters = {"message": message}
         headers, data = self._requester.requestJsonAndCheck(
             "PUT",
@@ -133,7 +113,6 @@ class PullRequestReview(github.GithubObject.CompletableGithubObject):
         self._body = github.GithubObject.NotSet
         self._commit_id = github.GithubObject.NotSet
         self._state = github.GithubObject.NotSet
-        self._url = github.GithubObject.NotSet
         self._html_url = github.GithubObject.NotSet
         self._pull_request_url = github.GithubObject.NotSet
         self._submitted_at = github.GithubObject.NotSet
@@ -151,8 +130,6 @@ class PullRequestReview(github.GithubObject.CompletableGithubObject):
             self._commit_id = self._makeStringAttribute(attributes["commit_id"])
         if "state" in attributes:  # pragma no branch
             self._state = self._makeStringAttribute(attributes["state"])
-        if "url" in attributes:  # pragma no branch
-            self._url = self._makeStringAttribute(attributes["url"])
         if "html_url" in attributes:  # pragma no branch
             self._html_url = self._makeStringAttribute(attributes["html_url"])
         if "pull_request_url" in attributes:  # pragma no branch

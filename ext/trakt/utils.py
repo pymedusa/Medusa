@@ -46,7 +46,7 @@ def now():
 
 def timestamp(date_object):
     """Generate a trakt formatted timestamp from the given date object"""
-    fmt = '%Y-%m-%d:T%H:%M:%S.000Z'
+    fmt = '%Y-%m-%dT%H:%M:%S.000Z'
     return date_object.strftime(fmt)
 
 

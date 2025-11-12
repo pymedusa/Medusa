@@ -151,7 +151,11 @@ class LogFormatter(logging.Formatter):
                     self._colors[levelno] = unicode_type(
                         curses.tparm(fg_color, code), "ascii"
                     )
-                self._normal = unicode_type(curses.tigetstr("sgr0"), "ascii")
+                normal = curses.tigetstr("sgr0")
+                if normal is not None:
+                    self._normal = unicode_type(normal, "ascii")
+                else:
+                    self._normal = ""
             else:
                 # If curses is not present (currently we'll only get here for
                 # colorama on windows), assume hard-coded ANSI color codes.
@@ -183,7 +187,7 @@ class LogFormatter(logging.Formatter):
             # byte strings wherever possible).
             record.message = _safe_unicode(message)
         except Exception as e:
-            record.message = "Bad message (%r): %r" % (e, record.__dict__)
+            record.message = f"Bad message ({e!r}): {record.__dict__!r}"
 
         record.asctime = self.formatTime(record, cast(str, self.datefmt))
 

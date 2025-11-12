@@ -35,15 +35,13 @@
 #                                                                              #
 ################################################################################
 
-from __future__ import absolute_import
-
 from os.path import basename
-
-import six
 
 import github.GithubObject
 import github.GitReleaseAsset
 import github.NamedUser
+
+from . import Consts
 
 
 class GitRelease(github.GithubObject.CompletableGithubObject):
@@ -192,16 +190,22 @@ class GitRelease(github.GithubObject.CompletableGithubObject):
     ):
         """
         :calls: `PATCH /repos/:owner/:repo/releases/:release_id <https://developer.github.com/v3/repos/releases/#edit-a-release>`_
+        :param name: string
+        :param message: string
+        :param draft: bool
+        :param prerelease: bool
+        :param tag_name: string
+        :param target_commitish: string
         :rtype: :class:`github.GitRelease.GitRelease`
         """
         assert tag_name is github.GithubObject.NotSet or isinstance(
-            tag_name, (str, six.text_type)
+            tag_name, str
         ), "tag_name must be a str/unicode object"
         assert target_commitish is github.GithubObject.NotSet or isinstance(
-            target_commitish, (str, six.text_type)
+            target_commitish, str
         ), "target_commitish must be a str/unicode object"
-        assert isinstance(name, (str, six.text_type)), name
-        assert isinstance(message, (str, six.text_type)), message
+        assert isinstance(name, str), name
+        assert isinstance(message, str), message
         assert isinstance(draft, bool), draft
         assert isinstance(prerelease, bool), prerelease
         if tag_name is github.GithubObject.NotSet:
@@ -213,8 +217,8 @@ class GitRelease(github.GithubObject.CompletableGithubObject):
             "draft": draft,
             "prerelease": prerelease,
         }
-        # Do not set target_commitish to self.target_commitish when ommited, just don't send it
-        # alltogether in that case, in order to match the Github API behaviour. Only send it when set.
+        # Do not set target_commitish to self.target_commitish when omitted, just don't send it
+        # altogether in that case, in order to match the Github API behaviour. Only send it when set.
         if target_commitish is not github.GithubObject.NotSet:
             post_parameters["target_commitish"] = target_commitish
         headers, data = self._requester.requestJsonAndCheck(
@@ -233,13 +237,15 @@ class GitRelease(github.GithubObject.CompletableGithubObject):
     ):
         """
         :calls: `POST https://<upload_url>/repos/:owner/:repo/releases/:release_id/assets <https://developer.github.com/v3/repos/releases/#upload-a-release-asset>`_
+        :param path: string
+        :param label: string
+        :param content_type: string
+        :param name: string
         :rtype: :class:`github.GitReleaseAsset.GitReleaseAsset`
         """
-        assert isinstance(path, (str, six.text_type)), path
-        assert isinstance(label, (str, six.text_type)), label
-        assert name is github.GithubObject.NotSet or isinstance(
-            name, (str, six.text_type)
-        ), name
+        assert isinstance(path, str), path
+        assert isinstance(label, str), label
+        assert name is github.GithubObject.NotSet or isinstance(name, str), name
 
         post_parameters = {"label": label}
         if name is github.GithubObject.NotSet:
@@ -255,6 +261,47 @@ class GitRelease(github.GithubObject.CompletableGithubObject):
             parameters=post_parameters,
             headers=headers,
             input=path,
+        )
+        return github.GitReleaseAsset.GitReleaseAsset(
+            self._requester, resp_headers, data, completed=True
+        )
+
+    def upload_asset_from_memory(
+        self,
+        file_like,
+        file_size,
+        name,
+        content_type=github.GithubObject.NotSet,
+        label="",
+    ):
+        """Uploads an asset. Unlike ``upload_asset()`` this method allows you to pass in a file-like object to upload.
+        Note that this method is more strict and requires you to specify the ``name``, since there's no file name to infer these from.
+        :calls: `POST https://<upload_url>/repos/:owner/:repo/releases/:release_id/assets <https://developer.github.com/v3/repos/releases/#upload-a-release-asset>`_
+        :param file_like: binary file-like object, such as those returned by ``open("file_name", "rb")``. At the very minimum, this object must implement ``read()``.
+        :param file_size: int, size in bytes of ``file_like``
+        :param content_type: string
+        :param name: string
+        :param label: string
+        :rtype: :class:`github.GitReleaseAsset.GitReleaseAsset`
+        """
+        assert isinstance(name, str), name
+        assert isinstance(file_size, int), file_size
+        assert isinstance(label, str), label
+
+        post_parameters = {"label": label, "name": name}
+        content_type = (
+            content_type
+            if content_type is not github.GithubObject.NotSet
+            else Consts.defaultMediaType
+        )
+        headers = {"Content-Type": content_type, "Content-Length": str(file_size)}
+
+        resp_headers, data = self._requester.requestMemoryBlobAndCheck(
+            "POST",
+            self.upload_url.split("{?")[0],
+            parameters=post_parameters,
+            headers=headers,
+            file_like=file_like,
         )
         return github.GitReleaseAsset.GitReleaseAsset(
             self._requester, resp_headers, data, completed=True

@@ -30,10 +30,6 @@
 #                                                                              #
 ################################################################################
 
-from __future__ import absolute_import
-
-import six
-
 import github.GithubObject
 import github.GitObject
 
@@ -84,7 +80,7 @@ class GitRef(github.GithubObject.CompletableGithubObject):
         :param force: bool
         :rtype: None
         """
-        assert isinstance(sha, (str, six.text_type)), sha
+        assert isinstance(sha, str), sha
         assert force is github.GithubObject.NotSet or isinstance(force, bool), force
         post_parameters = {
             "sha": sha,
@@ -95,22 +91,6 @@ class GitRef(github.GithubObject.CompletableGithubObject):
             "PATCH", self.url, input=post_parameters
         )
         self._useAttributes(data)
-
-    def get_statuses(self):
-        """
-        https://developer.github.com/v3/repos/statuses/#list-statuses-for-a-specific-ref
-        :calls: `GET /repos/:owner/:repo/commits/:ref/statuses`
-        :return:
-        """
-        pass
-
-    def get_status(self):
-        """
-        https://developer.github.com/v3/repos/statuses/#get-the-combined-status-for-a-specific-ref
-        :calls: `GET /repos/:owner/:repo/commits/:ref/status`
-        :return:
-        """
-        pass
 
     def _initAttributes(self):
         self._object = github.GithubObject.NotSet

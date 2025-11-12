@@ -32,10 +32,6 @@
 #                                                                              #
 ################################################################################
 
-from __future__ import absolute_import
-
-import six
-
 import github.CommitCombinedStatus
 import github.CommitComment
 import github.CommitStats
@@ -150,15 +146,11 @@ class Commit(github.GithubObject.CompletableGithubObject):
         :param position: integer
         :rtype: :class:`github.CommitComment.CommitComment`
         """
-        assert isinstance(body, (str, six.text_type)), body
-        assert line is github.GithubObject.NotSet or isinstance(
-            line, six.integer_types
-        ), line
-        assert path is github.GithubObject.NotSet or isinstance(
-            path, (str, six.text_type)
-        ), path
+        assert isinstance(body, str), body
+        assert line is github.GithubObject.NotSet or isinstance(line, int), line
+        assert path is github.GithubObject.NotSet or isinstance(path, str), path
         assert position is github.GithubObject.NotSet or isinstance(
-            position, six.integer_types
+            position, int
         ), position
         post_parameters = {
             "body": body,
@@ -191,15 +183,15 @@ class Commit(github.GithubObject.CompletableGithubObject):
         :param context: string
         :rtype: :class:`github.CommitStatus.CommitStatus`
         """
-        assert isinstance(state, (str, six.text_type)), state
+        assert isinstance(state, str), state
         assert target_url is github.GithubObject.NotSet or isinstance(
-            target_url, (str, six.text_type)
+            target_url, str
         ), target_url
         assert description is github.GithubObject.NotSet or isinstance(
-            description, (str, six.text_type)
+            description, str
         ), description
         assert context is github.GithubObject.NotSet or isinstance(
-            context, (str, six.text_type)
+            context, str
         ), context
         post_parameters = {
             "state": state,
@@ -251,6 +243,19 @@ class Commit(github.GithubObject.CompletableGithubObject):
         headers, data = self._requester.requestJsonAndCheck("GET", self.url + "/status")
         return github.CommitCombinedStatus.CommitCombinedStatus(
             self._requester, headers, data, completed=True
+        )
+
+    def get_pulls(self):
+        """
+        :calls: `GET /repos/:owner/:repo/commits/:sha/pulls <https://developer.github.com/v3/repos/commits/#list-pull-requests-associated-with-commit>`_
+        :rtype: :class:`github.PaginatedList.PaginatedList` of :class:`github.PullRequest.PullRequest`
+        """
+        return github.PaginatedList.PaginatedList(
+            github.PullRequest.PullRequest,
+            self._requester,
+            self.url + "/pulls",
+            None,
+            headers={"Accept": "application/vnd.github.groot-preview+json"},
         )
 
     @property
