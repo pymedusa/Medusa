@@ -1983,6 +1983,334 @@ class ReleaseGroupPostProcessor(Rule):
         return to_remove, to_append
 
 
+class FixIncorrectCountryParsing(Rule):
+    """Fix incorrect country parsing when country code is mistakenly parsed from title start.
+    
+    e.g.: Au bout c'est la mer - 1x01 - Le Danube (Fr.2018)[720p]_Fr5.2018-07-24_clo2--eMulerr.mkv
+    
+    guessit -t episode "Au bout c'est la mer - 1x01 - Le Danube (Fr.2018)[720p]_Fr5.2018-07-24_clo2--eMulerr.mkv"
+    
+    without this rule:
+        For: Au bout c'est la mer - 1x01 - Le Danube (Fr.2018)[720p]_Fr5.2018-07-24_clo2--eMulerr.mkv
+        GuessIt found: {
+            "country": "AU",
+            "title": "bout c'est la mer",
+            "season": 1,
+            "episode": 1,
+            ...
+        }
+    
+    with this rule:
+        For: Au bout c'est la mer - 1x01 - Le Danube (Fr.2018)[720p]_Fr5.2018-07-24_clo2--eMulerr.mkv
+        GuessIt found: {
+            "title": "Au bout c'est la mer",
+            "season": 1,
+            "episode": 1,
+            ...
+        }
+    """
+    
+    priority = POST_PROCESS
+    consequence = [RemoveMatch, AppendMatch]
+    
+    def when(self, matches, context):
+        """Evaluate the rule.
+        
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        to_remove = []
+        to_append = []
+        
+        fileparts = matches.markers.named('path')
+        for filepart in marker_sorted(fileparts, matches):
+            countries = matches.range(filepart.start, filepart.end, 
+                                     predicate=lambda match: match.name == 'country')
+            titles = matches.range(filepart.start, filepart.end,
+                                  predicate=lambda match: match.name == 'title')
+            
+            if not countries or not titles:
+                continue
+            
+            for country_match in countries:
+                next_titles = matches.next(country_match, 
+                                          predicate=lambda match: match.name == 'title')
+                
+                if not next_titles:
+                    continue
+                
+                title_match = next_titles[0]
+                
+                # Check if country code matches the start of the title (case-insensitive)
+                try:
+                    country_code = str(country_match.value)
+                    if len(country_code) == 2:
+                        country_code_lower = country_code.lower()
+                        
+                        # Check if country code appears at the start of the title in the original string
+                        # This handles cases where guessit incorrectly splits "Au bout" into country "AU" + title "bout"
+                        # Allow for small gap (whitespace/punctuation) between country and title
+                        gap = title_match.start - country_match.end
+                        if gap >= 0 and gap <= 3:  # Allow up to 3 chars gap (for spaces, dots, etc.)
+                            # Get the text from original string at the country position
+                            original_at_country = matches.input_string[country_match.start:country_match.end].lower()
+                            
+                            # Get the text after country code (skipping whitespace/punctuation) to check if it matches title start
+                            text_after_country = matches.input_string[country_match.end:country_match.end + gap + len(country_code_lower)].lower() if country_match.end + gap + len(country_code_lower) <= len(matches.input_string) else ''
+                            text_after_country_clean = text_after_country.lstrip(' .-_')
+                            
+                            # Check if country code matches what's in the original string at that position
+                            # and if the text after country (after cleaning) would form the country code + title start
+                            country_matches_original = original_at_country == country_code_lower
+                            # Check if after the gap, we have the same letters that would continue the title
+                            # (e.g., "Au" -> " bout" -> "bout" starts with what would be "u" but we're checking differently)
+                            
+                            # Simpler check: if country matches original and there's a title right after (with small gap),
+                            # and the original string shows the country code letters, check if fixing would make sense
+                            if country_matches_original:
+                                
+                                # Check for language indicators that contradict the country (for additional confirmation)
+                                raw_string_lower = matches.input_string.lower()
+                                has_french_indicator = (
+                                    'fr.' in raw_string_lower or
+                                    'fr5' in raw_string_lower or
+                                    'french' in raw_string_lower
+                                )
+                                
+                                languages = matches.named('language')
+                                has_french_language = False
+                                if languages:
+                                    for lang in languages:
+                                        if 'fr' in str(lang.value).lower():
+                                            has_french_language = True
+                                            break
+                                
+                                # Additional check: check the original string after the country code
+                                # If it continues with lowercase (after whitespace/punctuation), it's likely part of the title
+                                # (e.g., "Au bout" not "AU bout")
+                                original_after_country = matches.input_string[country_match.end:min(country_match.end + 10, title_match.end)] if country_match.end < len(matches.input_string) else ''
+                                # Skip whitespace and punctuation, then check if next char is lowercase
+                                original_after_clean = original_after_country.lstrip(' .-_')
+                                starts_with_lowercase_after = original_after_clean and original_after_clean[0].islower()
+                                
+                                # Remove incorrect country match and fix title if:
+                                # 1. French indicators contradict the country, OR
+                                # 2. Original string continues with lowercase after country code (strong signal it's part of the title)
+                                if has_french_indicator or has_french_language or starts_with_lowercase_after:
+                                    to_remove.append(country_match)
+                                    
+                                    # Fix the title to include the country code letters
+                                    fixed_title = copy.copy(title_match)
+                                    # Get original text from country start to title end
+                                    original_text = matches.input_string[country_match.start:title_match.end]
+                                    fixed_title.value = cleanup(original_text)
+                                    fixed_title.start = country_match.start
+                                    fixed_title.raw_start = country_match.raw_start
+                                    to_remove.append(title_match)
+                                    to_append.append(fixed_title)
+                                    break
+                except (AttributeError, ValueError):
+                    continue
+        
+        return to_remove, to_append
+
+
+class FixIncorrectTitleFromPrefix(Rule):
+    """Fix incorrect title when a prefix is parsed as the title and actual show name is in alternative titles.
+    
+    e.g.: !NFO.·.World.View.-.Le.Magdalena.-.Colombie.-.Honda.-.Mompox.-.Au.bout.c'est.la.mer...
+    
+    without this rule:
+        title: "!NFO · World View"
+        alternative_title: ["Au bout c'est la mer", ...]
+    
+    with this rule:
+        title: "Au bout c'est la mer"
+        alternative_title: ["!NFO · World View", ...]
+    """
+    
+    priority = POST_PROCESS
+    consequence = [RemoveMatch, AppendMatch]
+    
+    # Common prefixes that might be incorrectly parsed as titles
+    prefix_patterns = [
+        re.compile(r'^!NFO', re.IGNORECASE),
+        re.compile(r'^World\s+View', re.IGNORECASE),
+        re.compile(r'^Documentaire', re.IGNORECASE),
+    ]
+    
+    def when(self, matches, context):
+        """Evaluate the rule.
+        
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        to_remove = []
+        to_append = []
+        
+        # Get expected titles from context (known shows in database)
+        expected_titles = context.get('expected_title', [])
+        
+        # Normalize expected titles for comparison (empty set if no expected titles)
+        expected_titles_normalized = {self._normalize_title(title) for title in expected_titles} if expected_titles else set()
+        
+        # Common words that are unlikely to be show names (used as fallback when expected_titles is empty)
+        common_words = {'complete', 'complet', 'hd', 'sbs', 'documentaire', 'decouverte', 'voyage', 'emulerr'}
+        
+        fileparts = matches.markers.named('path')
+        for filepart in marker_sorted(fileparts, matches):
+            titles = matches.range(filepart.start, filepart.end,
+                                  predicate=lambda match: match.name == 'title')
+            alternative_titles = matches.range(filepart.start, filepart.end,
+                                              predicate=lambda match: match.name == 'alternative_title')
+            
+            if not titles or not alternative_titles:
+                continue
+            
+            primary_title = titles[0]
+            primary_title_normalized = self._normalize_title(primary_title.value)
+            
+            # Check if primary title matches a prefix pattern
+            is_prefix = any(pattern.search(primary_title.value) for pattern in self.prefix_patterns)
+            
+            # Check if we have episode information (episode number, season, episode title) and year
+            # This indicates a valid episode file, so we should be more lenient about title matching
+            has_episode_info = bool(matches.range(filepart.start, filepart.end,
+                                                  predicate=lambda match: match.name in ('episode', 'season', 'episode_title')))
+            has_year = bool(matches.range(filepart.start, filepart.end,
+                                         predicate=lambda match: match.name == 'year'))
+            has_date = bool(matches.range(filepart.start, filepart.end,
+                                         predicate=lambda match: match.name == 'date'))
+            has_complete_info = has_episode_info and has_year
+            
+            # First, identify episode-related matches (episode, season, episode_title, date, year)
+            # Order: Show name FIRST, then episode title, then episode date/number
+            episode_related_matches = matches.range(filepart.start, filepart.end,
+                                                   predicate=lambda match: match.name in ('episode', 'season', 'episode_title', 'date', 'year'))
+            
+            # Find the earliest position of episode-related information
+            # Show name should appear BEFORE this position
+            earliest_episode_pos = None
+            if episode_related_matches:
+                earliest_episode_pos = min(ep_match.start for ep_match in episode_related_matches)
+            
+            # If it's a prefix or doesn't match expected titles, check alternative titles
+            if is_prefix or primary_title_normalized not in expected_titles_normalized:
+                # Sort alternative titles by their position in the filename (search in order)
+                sorted_alt_titles = sorted(alternative_titles, key=lambda m: m.start)
+                
+                # Filter alternative titles: prioritize those that appear BEFORE episode-related information
+                # Order: Show name FIRST, then episode title, then episode date/number
+                # But if we have complete episode info, be lenient about order (all elements present = good file)
+                show_candidate_titles_preferred = []  # Before episode info (preferred order)
+                show_candidate_titles_lenient = []    # After episode info (lenient mode when complete info present)
+                
+                for alt_title_match in sorted_alt_titles:
+                    # Preferred: alternative titles that appear BEFORE episode-related information
+                    if earliest_episode_pos is None or alt_title_match.end < earliest_episode_pos:
+                        show_candidate_titles_preferred.append(alt_title_match)
+                    # Lenient: if we have complete episode info (episode + year/date), also consider titles after episode info
+                    # This handles cases where all elements are present but in wrong order
+                    elif has_complete_info or (has_episode_info and has_date):
+                        show_candidate_titles_lenient.append(alt_title_match)
+                    # If no episode info yet, consider all alternative titles (can't filter yet)
+                    elif not episode_related_matches:
+                        show_candidate_titles_preferred.append(alt_title_match)
+                
+                # First, try to find alternative titles that match expected_titles (prioritize these)
+                matching_alt_title = None
+                fallback_alt_title = None
+                
+                # First search in preferred order (before episode info)
+                for alt_title_match in show_candidate_titles_preferred:
+                    alt_title_normalized = self._normalize_title(alt_title_match.value)
+                    
+                    # Check if alternative title looks like a real show name (has multiple words, not just common words)
+                    alt_words = alt_title_normalized.split()
+                    looks_like_show = len(alt_words) >= 2 and not all(word in common_words for word in alt_words)
+                    
+                    # Prioritize alternative titles that match expected_titles (in filename order)
+                    if alt_title_normalized in expected_titles_normalized:
+                        if is_prefix:
+                            # If primary title is a known prefix pattern, use the first matching alternative title
+                            # This handles cases like "!NFO · World View" where the actual show is in alternative titles
+                            # We search in order to find the show name that appears first in the filename
+                            matching_alt_title = alt_title_match
+                            break  # Found a match, use it immediately (first match in order)
+                        elif alt_title_match.start > primary_title.end:
+                            # Normal case: alternative title appears after primary title
+                            matching_alt_title = alt_title_match
+                            break
+                        elif has_complete_info:
+                            # Lenient case: if we have episode info and year, prioritize matching show name
+                            # even if it appears before the primary title (elements are out of order)
+                            matching_alt_title = alt_title_match
+                            break
+                    elif is_prefix and looks_like_show and not fallback_alt_title:
+                        # Fallback: if we detect a prefix pattern and alternative title looks like a show name,
+                        # remember the first one but continue searching for expected_titles matches first
+                        # Only use fallback if it appears before episode info (show name comes first)
+                        if earliest_episode_pos is None or alt_title_match.end < earliest_episode_pos:
+                            fallback_alt_title = alt_title_match
+                
+                # If no match found in preferred order, try lenient mode (after episode info)
+                # This handles cases where all elements are present but in wrong order
+                if not matching_alt_title and show_candidate_titles_lenient:
+                    for alt_title_match in show_candidate_titles_lenient:
+                        alt_title_normalized = self._normalize_title(alt_title_match.value)
+                        
+                        # Check if alternative title looks like a real show name
+                        alt_words = alt_title_normalized.split()
+                        looks_like_show = len(alt_words) >= 2 and not all(word in common_words for word in alt_words)
+                        
+                        # If alternative title matches expected_titles, use it (lenient mode - wrong order but complete info)
+                        if alt_title_normalized in expected_titles_normalized:
+                            if is_prefix:
+                                # Prefix detected + complete episode info + matching show name = use it despite wrong order
+                                matching_alt_title = alt_title_match
+                                break
+                        elif is_prefix and looks_like_show and not fallback_alt_title:
+                            # Fallback for lenient mode
+                            fallback_alt_title = alt_title_match
+                
+                # Use matching title if found, otherwise use fallback
+                alt_title_to_swap = matching_alt_title or fallback_alt_title
+                
+                if alt_title_to_swap:
+                    # Swap: remove primary title and alternative title, add alternative as title
+                    to_remove.append(primary_title)
+                    to_remove.append(alt_title_to_swap)
+                    
+                    # Create new title from alternative title
+                    new_title = copy.copy(alt_title_to_swap)
+                    new_title.name = 'title'
+                    new_title.value = alt_title_to_swap.value
+                    to_append.append(new_title)
+                    
+                    # Create new alternative title from old primary title
+                    new_alt_title = copy.copy(primary_title)
+                    new_alt_title.name = 'alternative_title'
+                    new_alt_title.value = primary_title.value
+                    to_append.append(new_alt_title)
+        
+        return to_remove, to_append
+    
+    @staticmethod
+    def _normalize_title(title):
+        """Normalize title for comparison (lowercase, remove special chars)."""
+        if not title:
+            return ''
+        # Remove common separators and normalize
+        normalized = re.sub(r'[.\-_·\s]+', ' ', str(title).lower()).strip()
+        return normalized
+
+
 def rules():
     """Return all custom rules to be applied to guessit default api.
 
@@ -2011,6 +2339,7 @@ def rules():
         PartsAsEpisodeNumbers,
         RemoveInvalidEpisodeSeparator,
         CreateAliasWithAlternativeTitles,
+        FixIncorrectTitleFromPrefix,
         CreateAliasWithCountryOrYear,
         FixTitlesThatExistOfAbsoluteEpisodeNumbers,
         FixTitlesThatExistOfYearNumbers,
@@ -2021,5 +2350,6 @@ def rules():
         SourceStandardizer,
         VideoEncoderRule,
         CreateProperTags,
+        FixIncorrectCountryParsing,
         AvoidMultipleValuesRule,
     )
