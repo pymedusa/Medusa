@@ -39,7 +39,7 @@
     "is-visible": "2.2.0",
     "javascript-time-ago": "2.5.12",
     "jquery": "3.7.1",
-    "lodash": "4.17.21",
+    "lodash": "4.17.23",
     "lozad": "1.16.0",
     "sass": "1.93.2",
     "sass-loader": "16.0.6",
