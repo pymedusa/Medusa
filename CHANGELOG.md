@@ -1,3 +1,13 @@
+## Unreleased
+
+#### New Features
+
+#### Improvements
+
+#### Fixes
+
+-----
+
 ## 1.0.25 (12-11-2025)
 
 ([@butlergroup](https://github.com/butlergroup) did a bunch of homework for y'all!)
