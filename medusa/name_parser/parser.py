@@ -345,6 +345,26 @@ class NameParser(object):
 
         result = self.to_parse_result(name, guess)
         search_series = helpers.get_show(result.series_name, self.try_indexers) if not self.naming_pattern else None
+        
+        # Check if we have complete episode information (episode number, season, episode title, year)
+        # If all elements are present, be more lenient about title matching even if order is wrong
+        has_episode_info = bool(result.episode_numbers or result.ab_episode_numbers)
+        has_season = result.season_number is not None
+        has_episode_title = bool(guess.get('episode_title') or result.episode_details)
+        has_year = bool(guess.get('year') or result.air_date)
+        has_complete_info = has_episode_info and has_season and has_year
+        
+        # If primary title doesn't match, try alternative titles
+        # Be more aggressive if we have complete episode info (all elements present)
+        if not search_series and not self.naming_pattern:
+            alternative_titles = helpers.ensure_list(guess.get('alternative_title'))
+            for alt_title in alternative_titles:
+                if alt_title:
+                    search_series = helpers.get_show(alt_title, self.try_indexers)
+                    if search_series:
+                        # Update series_name to the matched alternative title
+                        result.series_name = alt_title
+                        break
 
         # confirm passed in show object indexer id matches result show object indexer id
         series_obj = None if search_series and self.series and search_series.indexerid != self.series.indexerid else search_series
