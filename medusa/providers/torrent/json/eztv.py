@@ -30,12 +30,16 @@ class EztvProvider(TorrentProvider):
         self.public = True
 
         # URLs
-        self.url = 'https://eztv.re'
+        self.url = 'https://eztvx.to'
         self.urls = {
             'api': urljoin(self.url, 'api/get-torrents')
         }
 
+        # Set Max number of pages to get (about 6-10 (x 100) pages of new torrents per day)
+        self.max_pages = 10
+
         # Proper Strings
+        self.proper_strings = ['{{PROPER|REPACK|REAL|RERIP}}']
 
         # Miscellaneous Options
 
@@ -74,12 +78,28 @@ class EztvProvider(TorrentProvider):
                         continue
 
                 search_url = self.urls['api']
-                data = self.session.get_json(search_url, params=search_params)
-                if not data:
-                    log.debug('No data returned from provider')
-                    continue
+                page = 1
 
-                results += self.parse(data, mode)
+                while page and page <= self.max_pages:
+                    search_params['page'] = page
+                    data = self.session.get_json(search_url, params=search_params)
+                    if not data:
+                        log.debug('No data returned from provider')
+                        page = None
+                        continue
+
+                    # check if we actually got something, if so, then parse it
+                    torrent_rows = data.get('torrents', {})
+                    if torrent_rows:
+                        results += self.parse(data, mode)
+                        page = page + 1
+                    else:
+                        if page == 1:
+                            log.debug('Data returned from provider does not contain any torrents')
+                        else:
+                            log.debug('Page returned from provider does not contain any torrents')
+                        page = None
+                        continue
 
         return results
 
@@ -101,7 +121,7 @@ class EztvProvider(TorrentProvider):
         for row in torrent_rows:
             try:
                 title = row.pop('title', None)
-                download_url = row.pop('torrent_url', None)
+                download_url = row.pop('magnet_url', None)
                 if not all([title, download_url]):
                     continue
 
