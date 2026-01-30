@@ -549,15 +549,46 @@ class TVDBv2(BaseIndexer):
             )
             get_show_in_language = self.config['language']
 
-        # Parse show information
-        log.debug('Getting all series data for {0}', tvdb_id)
+        # Build fallback order: preferred first, then 'en' as common fallback, then rest
+        languages_to_try = [get_show_in_language]
+        if get_show_in_language != 'en':
+            languages_to_try.append('en')
+        languages_to_try += [
+            lang for lang in self.config['valid_languages']
+            if lang not in languages_to_try
+        ]
 
-        # Parse show information
-        series_info = self._get_show_by_id(tvdb_id, request_language=get_show_in_language)
+        # Try each language until one returns valid data
+        series_info = None
+        last_error = None
+        effective_language = None
+
+        log.debug('Getting all series data for {0}', tvdb_id)
+        for try_language in languages_to_try:
+            try:
+                series_info = self._get_show_by_id(tvdb_id, request_language=try_language)
+                if series_info:
+                    effective_language = try_language
+                    if try_language != get_show_in_language:
+                        log.info(
+                            'Show not available in {requested}, using {fallback}',
+                            {'requested': get_show_in_language, 'fallback': try_language}
+                        )
+                    break
+            except IndexerShowNotFoundInLanguage as error:
+                last_error = error
+                log.debug('Show not found in language {0}, trying next', try_language)
+                continue
 
         if not series_info:
+            if last_error:
+                raise last_error
             log.debug('Series result returned zero')
             raise IndexerError('Series result returned zero')
+
+        # Use effective language for subsequent fetches (episodes, images, actors)
+        if effective_language:
+            self.config['language'] = effective_language
 
         # get series data / add the base_url to the image urls
         for k, v in viewitems(series_info['series']):
