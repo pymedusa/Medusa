@@ -583,8 +583,19 @@ class TVDBv2(BaseIndexer):
         if not series_info:
             if last_error:
                 raise last_error
-            log.debug('Series result returned zero')
-            raise IndexerError('Series result returned zero')
+            if languages_to_try:
+                attempted_languages = ', '.join(languages_to_try)
+                log.debug(
+                    'Series result returned zero for all attempted languages: {0}',
+                    attempted_languages
+                )
+                raise IndexerError(
+                    'Series result returned zero for all attempted languages: {0}'.format(
+                        attempted_languages
+                    )
+                )
+            log.debug('Series result returned zero and no languages were attempted')
+            raise IndexerError('Series result returned zero and no languages were attempted')
 
         # Use effective language for subsequent fetches (episodes, images, actors)
         if effective_language:
