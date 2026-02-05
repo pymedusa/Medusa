@@ -4,7 +4,41 @@
 from medusa.search_templates import SearchTemplates
 
 
-def test_clean_preserves_custom_templates(monkeypatch, create_tvshow, monkeypatch_function_return):
+def _create_mock_functions(series, scene_exceptions, initial_templates, deleted_ids):
+    """Create mock database functions for testing _clean() behavior.
+    
+    Args:
+        series: The show object being tested
+        scene_exceptions: List of scene exception dicts for this show
+        initial_templates: List of template dicts in the database
+        deleted_ids: List to track which template IDs are deleted
+    
+    Returns:
+        Tuple of (mock_action, mock_select) functions
+    """
+    def mock_action(query, params):
+        """Mock the database action method to track deletions."""
+        if 'DELETE from search_templates' in query:
+            for template in initial_templates:
+                if (template['indexer'] == params[0] and
+                    template['series_id'] == params[1] and
+                    template['default'] == 1 and
+                    template['title'] not in [e['title'] for e in scene_exceptions] and
+                    template['title'] != series.name):
+                    deleted_ids.append(template['search_template_id'])
+    
+    def mock_select(query, params):
+        """Mock the database select method."""
+        if 'FROM search_templates' in query:
+            return [t for t in initial_templates if t['search_template_id'] not in deleted_ids]
+        elif 'FROM scene_exceptions' in query:
+            return scene_exceptions
+        return []
+    
+    return mock_action, mock_select
+
+
+def test_clean_preserves_custom_templates(monkeypatch, create_tvshow):
     """Test that _clean() preserves custom templates (default=0) even when titles don't match scene exceptions."""
     # Create a test show
     series = create_tvshow(indexer=1, indexerid=1, name='Test Show')
@@ -81,31 +115,9 @@ def test_clean_preserves_custom_templates(monkeypatch, create_tvshow, monkeypatc
     
     deleted_ids = []
     
-    def mock_action(query, params):
-        """Mock the database action method to track deletions."""
-        # Parse the DELETE query to understand what would be deleted
-        if 'DELETE from search_templates' in query:
-            # Simulate the deletion by tracking which templates would be deleted
-            for template in initial_templates:
-                if (template['indexer'] == params[0] and
-                    template['series_id'] == params[1] and
-                    template['default'] == 1 and  # Only default templates
-                    template['title'] not in [e['title'] for e in scene_exceptions] and
-                    template['title'] != series.name):
-                    deleted_ids.append(template['search_template_id'])
-    
-    def mock_select(query, params):
-        """Mock the database select method."""
-        if 'FROM search_templates' in query:
-            # Return templates that weren't deleted
-            return [t for t in initial_templates if t['search_template_id'] not in deleted_ids]
-        elif 'FROM scene_exceptions' in query:
-            # Return scene exceptions
-            return scene_exceptions
-        return []
-    
     # Apply mocks
     search_templates = SearchTemplates(series)
+    mock_action, mock_select = _create_mock_functions(series, scene_exceptions, initial_templates, deleted_ids)
     monkeypatch.setattr(search_templates.main_db_con, 'action', mock_action)
     monkeypatch.setattr(search_templates.main_db_con, 'select', mock_select)
     
@@ -180,27 +192,9 @@ def test_clean_removes_default_templates_without_exceptions(monkeypatch, create_
     
     deleted_ids = []
     
-    def mock_action(query, params):
-        """Mock the database action method to track deletions."""
-        if 'DELETE from search_templates' in query:
-            for template in initial_templates:
-                if (template['indexer'] == params[0] and
-                    template['series_id'] == params[1] and
-                    template['default'] == 1 and
-                    template['title'] not in [e['title'] for e in scene_exceptions] and
-                    template['title'] != series.name):
-                    deleted_ids.append(template['search_template_id'])
-    
-    def mock_select(query, params):
-        """Mock the database select method."""
-        if 'FROM search_templates' in query:
-            return [t for t in initial_templates if t['search_template_id'] not in deleted_ids]
-        elif 'FROM scene_exceptions' in query:
-            return scene_exceptions
-        return []
-    
     # Apply mocks
     search_templates = SearchTemplates(series)
+    mock_action, mock_select = _create_mock_functions(series, scene_exceptions, initial_templates, deleted_ids)
     monkeypatch.setattr(search_templates.main_db_con, 'action', mock_action)
     monkeypatch.setattr(search_templates.main_db_con, 'select', mock_select)
     
@@ -286,36 +280,23 @@ def test_clean_with_multiple_shows(monkeypatch, create_tvshow):
     
     deleted_ids = []
     
-    def create_mock_action(series):
-        def mock_action(query, params):
-            """Mock the database action method to track deletions."""
-            if 'DELETE from search_templates' in query:
-                exceptions = scene_exceptions_map.get(series.series_id, [])
-                for template in all_templates:
-                    if (template['indexer'] == params[0] and
-                        template['series_id'] == params[1] and
-                        template['default'] == 1 and
-                        template['title'] not in [e['title'] for e in exceptions] and
-                        template['title'] != series.name):
-                        deleted_ids.append(template['search_template_id'])
-        return mock_action
-    
-    def create_mock_select(series):
-        def mock_select(query, params):
-            """Mock the database select method."""
-            if 'FROM search_templates' in query:
-                return [t for t in all_templates 
-                        if t['series_id'] == series.series_id and 
-                        t['search_template_id'] not in deleted_ids]
-            elif 'FROM scene_exceptions' in query:
-                return scene_exceptions_map.get(series.series_id, [])
-            return []
-        return mock_select
-    
     # Test cleaning for series1
     search_templates1 = SearchTemplates(series1)
-    monkeypatch.setattr(search_templates1.main_db_con, 'action', create_mock_action(series1))
-    monkeypatch.setattr(search_templates1.main_db_con, 'select', create_mock_select(series1))
+    exceptions1 = scene_exceptions_map.get(series1.series_id, [])
+    mock_action1, mock_select1 = _create_mock_functions(series1, exceptions1, all_templates, deleted_ids)
+    
+    # Wrap mock_select to filter by series_id for multi-show scenario
+    original_select = mock_select1
+    def filtered_select(query, params):
+        """Filter templates by series_id for multi-show tests."""
+        if 'FROM search_templates' in query:
+            return [t for t in all_templates 
+                    if t['series_id'] == series1.series_id and 
+                    t['search_template_id'] not in deleted_ids]
+        return original_select(query, params)
+    
+    monkeypatch.setattr(search_templates1.main_db_con, 'action', mock_action1)
+    monkeypatch.setattr(search_templates1.main_db_con, 'select', filtered_select)
     
     search_templates1.read_from_db()
     
