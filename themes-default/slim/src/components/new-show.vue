@@ -279,7 +279,6 @@ export default {
             // Collect all the needed form data.
             const {
                 indexerIdToName,
-                indexerLanguage,
                 presetShowOptions,
                 providedInfo,
                 selectedRootDir,
@@ -294,7 +293,9 @@ export default {
                 options.language = providedInfo.indexerLanguage;
                 showId[indexerIdToName(providedInfo.indexerId)] = providedInfo.showId;
             } else {
-                options.language = indexerLanguage;
+                // Use language selected in search component (Add New Show flow)
+                const searchComponent = this.$refs.newShowSearch;
+                options.language = searchComponent?.indexerLanguage ?? this.general?.indexerDefaultLanguage ?? 'en';
                 showId[indexerIdToName(selectedShow.indexerId)] = selectedShow.showId;
             }
 

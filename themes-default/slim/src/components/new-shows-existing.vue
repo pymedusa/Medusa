@@ -161,6 +161,7 @@ export default {
     computed: {
         ...mapState({
             indexers: state => state.config.indexers,
+            general: state => state.config.general,
             indexerDefault: state => state.config.general.indexerDefault,
             queueitems: state => state.shows.queueitems,
             client: state => state.auth.client
@@ -354,7 +355,7 @@ export default {
                 showName: '',
                 showDir: curDir.path,
                 indexerId: 0,
-                indexerLanguage: 'en',
+                indexerLanguage: this.general?.indexerDefaultLanguage ?? undefined,
                 curDirIndex, // Add so we can return it with the matching queueitem. This allows us to keep track.
                 // If promptForSettings is enabled, negate out the unattended flag if enabled.
                 unattended: unattended && !promptForSettings // Passed as a flag, to auto add the show if enabled.

@@ -14,6 +14,14 @@
             <span v-else>
                 <b>{{ providedInfo.showName }}</b>
             </span>
+            <div class="show-add-option" style="margin-top: 10px;">
+                <language-select @update-language="providedInfo.indexerLanguage = $event"
+                                 :language="providedInfo.indexerLanguage || general.indexerDefaultLanguage || 'en'"
+                                 :available="indexers.main.validLanguages.join(',')"
+                                 class="form-control form-control-inline input-sm"
+                />
+                <label> Info language</label>
+            </div>
         </div>
         <div v-else>
             <div class="row">
