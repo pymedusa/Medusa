@@ -272,7 +272,7 @@ class SearchTemplates(object):
         self.remove_custom()
         for template in templates:
             # Custom templates are user-defined; always save them
-            is_custom = not template.get('default', True)
+            is_custom = not template.get('default', False)
             if not is_custom:
                 # For default templates only, verify scene exception exists
                 find_scene_exception = self.main_db_con.select(
