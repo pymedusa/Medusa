@@ -398,3 +398,233 @@ def test_create_search_string_anime(p, create_tvshow, create_tvepisode, monkeypa
     actual = search_string['Episode']
 
     assert expected == actual
+
+
+@pytest.mark.parametrize('p', [
+    {  # p0: Episode search with default template (year should be preserved)
+        'series_name': 'My Series',
+        'start_year': 2020,
+        'templates': [
+            # Default template - year should NOT be stripped
+            {'id': 1, 'template': '{title} S{season:02d}E{episode:02d}', 'title': 'My Series (2020)',
+             'series': 1, 'season': -1, 'enabled': 1, 'default': 1, 'season_search': 0},
+        ],
+        'expected': ['My Series (2020) S01E05']
+    },
+    {  # p1: Episode search with custom template (year should be stripped)
+        'series_name': 'My Series',
+        'start_year': 2020,
+        'templates': [
+            # Custom template - year SHOULD be stripped
+            {'id': 2, 'template': '{title} S{season:02d}E{episode:02d}', 'title': 'My Series (2020)',
+             'series': 1, 'season': -1, 'enabled': 1, 'default': 0, 'season_search': 0},
+        ],
+        'expected': ['My Series S01E05']
+    },
+    {  # p2: Episode search with mixed templates (default and custom)
+        'series_name': 'My Series',
+        'start_year': 2020,
+        'templates': [
+            # Default template - year should NOT be stripped
+            {'id': 1, 'template': '{title} S{season:02d}E{episode:02d}', 'title': 'My Series (2020)',
+             'series': 1, 'season': -1, 'enabled': 1, 'default': 1, 'season_search': 0},
+            # Custom template - year SHOULD be stripped
+            {'id': 2, 'template': '{title}.{season:02d}x{episode:02d}', 'title': 'My Series (2020)',
+             'series': 1, 'season': -1, 'enabled': 1, 'default': 0, 'season_search': 0},
+        ],
+        'expected': ['My Series (2020) S01E05', 'My Series.01x05']
+    },
+    {  # p3: Episode search with custom template without year
+        'series_name': 'My Series',
+        'start_year': 2020,
+        'templates': [
+            # Custom template without year - title should remain unchanged
+            {'id': 3, 'template': '{title} S{season:02d}E{episode:02d}', 'title': 'My Series',
+             'series': 1, 'season': -1, 'enabled': 1, 'default': 0, 'season_search': 0},
+        ],
+        'expected': ['My Series S01E05']
+    },
+    {  # p4: Episode search filtering by season
+        'series_name': 'My Series',
+        'start_year': 2020,
+        'templates': [
+            # Season 1 template - should be included
+            {'id': 1, 'template': '{title} S{season:02d}E{episode:02d}', 'title': 'My Series (2020)',
+             'series': 1, 'season': 1, 'enabled': 1, 'default': 0, 'season_search': 0},
+            # Season 2 template - should be excluded
+            {'id': 2, 'template': '{title} S{season:02d}E{episode:02d}', 'title': 'Other Title',
+             'series': 1, 'season': 2, 'enabled': 1, 'default': 0, 'season_search': 0},
+        ],
+        'expected': ['My Series S01E05']
+    },
+    {  # p5: Episode search with disabled templates excluded
+        'series_name': 'My Series',
+        'start_year': 2020,
+        'templates': [
+            # Enabled template
+            {'id': 1, 'template': '{title} S{season:02d}E{episode:02d}', 'title': 'My Series (2020)',
+             'series': 1, 'season': -1, 'enabled': 1, 'default': 0, 'season_search': 0},
+            # Disabled template - should be excluded
+            {'id': 2, 'template': '{title}.{season:02d}x{episode:02d}', 'title': 'My Series (2020)',
+             'series': 1, 'season': -1, 'enabled': 0, 'default': 0, 'season_search': 0},
+        ],
+        'expected': ['My Series S01E05']
+    },
+])
+def test_create_search_string_with_templates_episode(p, create_tvshow, create_tvepisode, monkeypatch):
+    from collections import namedtuple
+    from medusa.search_templates import SearchTemplate
+
+    series_name = p['series_name']
+    start_year = p['start_year']
+    templates_data = p['templates']
+    expected = p['expected']
+
+    # Create mock series
+    mock_series = create_tvshow(indexer=1, name=series_name, start_year=start_year)
+    
+    # Create SearchTemplate namedtuples
+    templates = [SearchTemplate(**t) for t in templates_data]
+    
+    # Mock search_templates object with a templates list
+    mock_search_templates = type('obj', (object,), {'templates': templates})()
+    
+    # Mock the search_templates property getter instead of setting it
+    monkeypatch.setattr(type(mock_series), 'search_templates', 
+                        property(lambda self: mock_search_templates), raising=False)
+    mock_series.templates = True  # Enable use_templates
+    
+    # Create provider and episode
+    provider = GenericProvider('mock_provider')
+    provider.series = mock_series
+    
+    episode = create_tvepisode(mock_series, 1, 5)
+    episode.scene_season = 1
+    episode.scene_episode = 5
+    
+    # Mock formatted_search_string to return predictable output
+    def mock_formatted_search_string(template, title=None):
+        return template.format(title=title or series_name, season=1, episode=5)
+    
+    monkeypatch.setattr(episode, 'formatted_search_string', mock_formatted_search_string)
+    
+    # Call _get_episode_search_strings
+    result = provider._get_episode_search_strings(episode)
+    actual = result[0]['Episode']
+    
+    assert expected == actual
+
+
+@pytest.mark.parametrize('p', [
+    {  # p0: Season search with default template (year should be preserved)
+        'series_name': 'My Series',
+        'start_year': 2020,
+        'templates': [
+            # Default template - year should NOT be stripped
+            {'id': 1, 'template': '{title} S{season:02d}', 'title': 'My Series (2020)',
+             'series': 1, 'season': -1, 'enabled': 1, 'default': 1, 'season_search': 1},
+        ],
+        'expected': ['My Series (2020) S01']
+    },
+    {  # p1: Season search with custom template (year should be stripped)
+        'series_name': 'My Series',
+        'start_year': 2020,
+        'templates': [
+            # Custom template - year SHOULD be stripped
+            {'id': 2, 'template': '{title} S{season:02d}', 'title': 'My Series (2020)',
+             'series': 1, 'season': -1, 'enabled': 1, 'default': 0, 'season_search': 1},
+        ],
+        'expected': ['My Series S01']
+    },
+    {  # p2: Season search with mixed templates (default and custom)
+        'series_name': 'My Series',
+        'start_year': 2020,
+        'templates': [
+            # Default template - year should NOT be stripped
+            {'id': 1, 'template': '{title} S{season:02d}', 'title': 'My Series (2020)',
+             'series': 1, 'season': -1, 'enabled': 1, 'default': 1, 'season_search': 1},
+            # Custom template - year SHOULD be stripped
+            {'id': 2, 'template': '{title} Season {season}', 'title': 'My Series (2020)',
+             'series': 1, 'season': -1, 'enabled': 1, 'default': 0, 'season_search': 1},
+        ],
+        'expected': ['My Series (2020) S01', 'My Series Season 1']
+    },
+    {  # p3: Season search with custom template without year
+        'series_name': 'My Series',
+        'start_year': 2020,
+        'templates': [
+            # Custom template without year - title should remain unchanged
+            {'id': 3, 'template': '{title} S{season:02d}', 'title': 'My Series',
+             'series': 1, 'season': -1, 'enabled': 1, 'default': 0, 'season_search': 1},
+        ],
+        'expected': ['My Series S01']
+    },
+    {  # p4: Season search filtering by season
+        'series_name': 'My Series',
+        'start_year': 2020,
+        'templates': [
+            # Season 1 template - should be included
+            {'id': 1, 'template': '{title} S{season:02d}', 'title': 'My Series (2020)',
+             'series': 1, 'season': 1, 'enabled': 1, 'default': 0, 'season_search': 1},
+            # Season 2 template - should be excluded
+            {'id': 2, 'template': '{title} S{season:02d}', 'title': 'Other Title',
+             'series': 1, 'season': 2, 'enabled': 1, 'default': 0, 'season_search': 1},
+        ],
+        'expected': ['My Series S01']
+    },
+    {  # p5: Season search with disabled templates excluded
+        'series_name': 'My Series',
+        'start_year': 2020,
+        'templates': [
+            # Enabled template
+            {'id': 1, 'template': '{title} S{season:02d}', 'title': 'My Series (2020)',
+             'series': 1, 'season': -1, 'enabled': 1, 'default': 0, 'season_search': 1},
+            # Disabled template - should be excluded
+            {'id': 2, 'template': '{title} Season {season}', 'title': 'My Series (2020)',
+             'series': 1, 'season': -1, 'enabled': 0, 'default': 0, 'season_search': 1},
+        ],
+        'expected': ['My Series S01']
+    },
+])
+def test_create_search_string_with_templates_season(p, create_tvshow, create_tvepisode, monkeypatch):
+    from collections import namedtuple
+    from medusa.search_templates import SearchTemplate
+
+    series_name = p['series_name']
+    start_year = p['start_year']
+    templates_data = p['templates']
+    expected = p['expected']
+
+    # Create mock series
+    mock_series = create_tvshow(indexer=1, name=series_name, start_year=start_year)
+    
+    # Create SearchTemplate namedtuples
+    templates = [SearchTemplate(**t) for t in templates_data]
+    
+    # Mock search_templates object with a templates list
+    mock_search_templates = type('obj', (object,), {'templates': templates})()
+    
+    # Mock the search_templates property getter instead of setting it
+    monkeypatch.setattr(type(mock_series), 'search_templates', 
+                        property(lambda self: mock_search_templates), raising=False)
+    mock_series.templates = True  # Enable use_templates
+    
+    # Create provider and episode
+    provider = GenericProvider('mock_provider')
+    provider.series = mock_series
+    
+    episode = create_tvepisode(mock_series, 1, 5)
+    episode.scene_season = 1
+    episode.scene_episode = 5
+    
+    # Mock formatted_search_string to return predictable output
+    def mock_formatted_search_string(template, title=None):
+        return template.format(title=title or series_name, season=1)
+    
+    monkeypatch.setattr(episode, 'formatted_search_string', mock_formatted_search_string)
+    
+    # Call _get_season_search_strings
+    result = provider._get_season_search_strings(episode)
+    actual = result[0]['Season']
+    
+    assert expected == actual
