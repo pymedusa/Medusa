@@ -15,7 +15,7 @@
                 <b>{{ providedInfo.showName }}</b>
             </span>
             <div class="show-add-option" style="margin-top: 10px;">
-                <language-select @update-language="providedInfo.indexerLanguage = $event"
+                <language-select @update-language="$emit('update-provided-info-language', $event)"
                                  :language="providedInfo.indexerLanguage || general.indexerDefaultLanguage || 'en'"
                                  :available="indexers.main.validLanguages.join(',')"
                                  class="form-control form-control-inline input-sm"
