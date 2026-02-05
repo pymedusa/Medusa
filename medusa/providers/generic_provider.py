@@ -35,6 +35,7 @@ from medusa.helper.common import (
 )
 from medusa.helpers import (
     chmod_as_parent, download_file,
+    get_title_without_year,
 )
 from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
@@ -678,7 +679,9 @@ class GenericProvider(object):
                 if episode.scene_season is not None and template.season != -1 and episode.scene_season != template.season:
                     continue
 
-                search_string['Episode'].append(episode.formatted_search_string(template.template, title=template.title))
+                # Custom templates may have title with year from UI; strip for search queries
+                search_title = template.title if template.default else get_title_without_year(template.title, episode.series.start_year)
+                search_string['Episode'].append(episode.formatted_search_string(template.template, title=search_title))
             return [search_string]
 
         all_possible_show_names = episode.series.get_all_possible_names()
@@ -721,7 +724,9 @@ class GenericProvider(object):
                 if episode.scene_season and template.season != -1 and episode.scene_season != template.season:
                     continue
 
-                search_string['Season'].append(episode.formatted_search_string(template.template, title=template.title))
+                # Custom templates may have title with year from UI; strip for search queries
+                search_title = template.title if template.default else get_title_without_year(template.title, episode.series.start_year)
+                search_string['Season'].append(episode.formatted_search_string(template.template, title=search_title))
             return [search_string]
 
         for show_name in episode.series.get_all_possible_names(season=episode.scene_season):

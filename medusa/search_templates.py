@@ -58,12 +58,12 @@ class SearchTemplates(object):
         return self.templates
 
     def _clean(self):
-        """Clean up templates when there is no scene exception for it anymore."""
-        # Get the default title search string for Episode and Season
+        """Clean up default templates when scene exception was removed. Preserve custom templates."""
         self.main_db_con.action("""
             DELETE from search_templates
             WHERE indexer = ?
             AND series_id = ?
+            AND `default` = 1
             AND title not in (select title from scene_exceptions where indexer = ? and series_id = ?)
             AND title != ?
         """, [
@@ -271,17 +271,19 @@ class SearchTemplates(object):
         self.templates = []
         self.remove_custom()
         for template in templates:
-            # TODO: add validation
-            # Check if the scene exception still exists in db
-            find_scene_exception = self.main_db_con.select(
-                'SELECT season, title '
-                'FROM scene_exceptions '
-                'WHERE indexer = ? AND series_id = ? '
-                'AND title = ? AND season = ?',
-                [self.show_obj.indexer, self.show_obj.series_id, template['title'], template['season']]
-            )
-            if not find_scene_exception and template['title'] != self.show_obj.name:
-                continue
+            # Custom templates are user-defined; always save them
+            is_custom = not template.get('default', True)
+            if not is_custom:
+                # For default templates only, verify scene exception exists
+                find_scene_exception = self.main_db_con.select(
+                    'SELECT season, title '
+                    'FROM scene_exceptions '
+                    'WHERE indexer = ? AND series_id = ? '
+                    'AND title = ? AND season = ?',
+                    [self.show_obj.indexer, self.show_obj.series_id, template['title'], template['season']]
+                )
+                if not find_scene_exception and template['title'] != self.show_obj.name:
+                    continue
 
             # Save to db
             self.save(template)
