@@ -472,7 +472,6 @@ def test_create_search_string_anime(p, create_tvshow, create_tvepisode, monkeypa
     },
 ])
 def test_create_search_string_with_templates_episode(p, create_tvshow, create_tvepisode, monkeypatch):
-    from collections import namedtuple
     from medusa.search_templates import SearchTemplate
 
     series_name = p['series_name']
@@ -587,7 +586,6 @@ def test_create_search_string_with_templates_episode(p, create_tvshow, create_tv
     },
 ])
 def test_create_search_string_with_templates_season(p, create_tvshow, create_tvepisode, monkeypatch):
-    from collections import namedtuple
     from medusa.search_templates import SearchTemplate
 
     series_name = p['series_name']
