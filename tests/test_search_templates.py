@@ -1,5 +1,6 @@
 # coding=utf-8
 """Tests for medusa.search_templates module."""
+from __future__ import unicode_literals
 
 from medusa.search_templates import SearchTemplates
 
@@ -310,3 +311,123 @@ def test_clean_with_multiple_shows(monkeypatch, create_tvshow):
     assert 102 not in template_ids1, "Show 1's orphaned template should not be in results"
     assert 201 not in template_ids1, "Show 2's templates should not appear for show 1"
     assert 202 not in template_ids1, "Show 2's templates should not appear for show 1"
+
+
+def test_update_saves_custom_template_without_scene_exception(monkeypatch, create_tvshow):
+    """Test that update() saves custom templates even when no matching scene exception exists."""
+    # Create a test show
+    series = create_tvshow(indexer=1, indexerid=1, name='Test Show')
+    
+    # Mock the database to return NO scene exceptions
+    scene_exceptions = []
+    
+    # Track what gets saved via upsert
+    saved_templates = []
+    
+    def mock_upsert(table, new_values, control_values):
+        """Mock the database upsert method to track what gets saved."""
+        if table == 'search_templates':
+            saved_templates.append({
+                'title': new_values['title'],
+                'template': new_values['template'],
+                'default': new_values['`default`'],
+                'season': new_values['season'],
+                'enabled': new_values['enabled']
+            })
+    
+    def mock_action(query, params):
+        """Mock the database action method."""
+        pass  # Don't actually delete anything
+    
+    def mock_select(query, params):
+        """Mock the database select method."""
+        if 'FROM scene_exceptions' in query:
+            return scene_exceptions
+        return []
+    
+    # Create SearchTemplates instance and apply mocks
+    search_templates = SearchTemplates(series)
+    monkeypatch.setattr(search_templates.main_db_con, 'upsert', mock_upsert)
+    monkeypatch.setattr(search_templates.main_db_con, 'action', mock_action)
+    monkeypatch.setattr(search_templates.main_db_con, 'select', mock_select)
+    
+    # Create a custom template with a title that doesn't match any scene exception
+    custom_template = {
+        'id': None,
+        'template': '%SN S%0SE%0E custom',
+        'title': 'My Custom Title',  # This doesn't match any scene exception
+        'season': 1,
+        'enabled': True,
+        'default': 0,  # Custom template (default=0)
+        'seasonSearch': False
+    }
+    
+    # Call update with the custom template
+    result = search_templates.update([custom_template])
+    
+    # Verify the custom template was saved
+    assert len(saved_templates) == 1, "Custom template should be saved"
+    assert saved_templates[0]['title'] == 'My Custom Title', "Custom template title should match"
+    assert saved_templates[0]['default'] == 0, "Template should be marked as custom (default=0)"
+    
+    # Verify the template appears in self.templates
+    assert len(result) == 1, "Custom template should be in results"
+    assert result[0].title == 'My Custom Title', "Result template title should match"
+    assert not result[0].default, "Result template should be custom (default=False)"
+
+
+def test_update_skips_default_template_without_scene_exception(monkeypatch, create_tvshow):
+    """Test that update() skips default templates when no matching scene exception exists."""
+    # Create a test show
+    series = create_tvshow(indexer=1, indexerid=1, name='Test Show')
+    
+    # Mock the database to return NO scene exceptions
+    scene_exceptions = []
+    
+    # Track what gets saved via upsert
+    saved_templates = []
+    
+    def mock_upsert(table, new_values, control_values):
+        """Mock the database upsert method to track what gets saved."""
+        if table == 'search_templates':
+            saved_templates.append({
+                'title': new_values['title'],
+                'template': new_values['template'],
+                'default': new_values['`default`'],
+            })
+    
+    def mock_action(query, params):
+        """Mock the database action method."""
+        pass  # Don't actually delete anything
+    
+    def mock_select(query, params):
+        """Mock the database select method."""
+        if 'FROM scene_exceptions' in query:
+            return scene_exceptions
+        return []
+    
+    # Create SearchTemplates instance and apply mocks
+    search_templates = SearchTemplates(series)
+    monkeypatch.setattr(search_templates.main_db_con, 'upsert', mock_upsert)
+    monkeypatch.setattr(search_templates.main_db_con, 'action', mock_action)
+    monkeypatch.setattr(search_templates.main_db_con, 'select', mock_select)
+    
+    # Create a default template with a title that doesn't match any scene exception or show name
+    default_template = {
+        'id': None,
+        'template': '%SN S%0SE%0E',
+        'title': 'Some Exception',  # This doesn't match any scene exception or show name
+        'season': 1,
+        'enabled': True,
+        'default': 1,  # Default template (default=1)
+        'seasonSearch': False
+    }
+    
+    # Call update with the default template
+    result = search_templates.update([default_template])
+    
+    # Verify the default template was NOT saved (because it has no matching scene exception)
+    assert len(saved_templates) == 0, "Default template without scene exception should not be saved"
+    
+    # Verify the template does NOT appear in self.templates
+    assert len(result) == 0, "Default template without scene exception should not be in results"
