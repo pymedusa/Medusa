@@ -441,7 +441,12 @@ export default {
              * Add new template to the array of searchTemplates.
              */
             const { show, addSearchTemplate } = this;
-            if (this.searchTemplates.find(t => t.template === template.pattern && t.title === template.title)) {
+            if (this.searchTemplates.find(t => (
+                t.template === template.pattern &&
+                t.title === template.title.title &&
+                t.season === template.title.season &&
+                Boolean(t.seasonSearch) === Boolean(template.seasonSearch)
+            ))) {
                 this.$snotify.error(
                     'Error while trying to add the template',
                     "Can't add a pattern that already exists!"

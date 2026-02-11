@@ -181,8 +181,13 @@ const mutations = {
         // Get current show object
         const currentShow = Object.assign({}, state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer])));
 
-        if (currentShow.config.searchTemplates.find(t => t.template === template.pattern)) {
-            console.warn(`Can't add template (${template.pattern} to show ${currentShow.title} as it already exists.`);
+        if (currentShow.config.searchTemplates.find(t => (
+            t.template === template.template &&
+            t.title === template.title &&
+            t.season === template.season &&
+            Boolean(t.seasonSearch) === Boolean(template.seasonSearch)
+        ))) {
+            console.warn(`Can't add template (${template.template}) to show ${currentShow.title} as it already exists.`);
             return;
         }
 
