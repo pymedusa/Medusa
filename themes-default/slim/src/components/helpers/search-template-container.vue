@@ -436,11 +436,17 @@ export default {
                 });
             });
         },
+        /**
+         * Add new template to the array of searchTemplates.
+         * @param {Object} template - Template object from search-template-custom component
+         * @param {string} template.pattern - The search pattern string
+         * @param {Object} template.title - The selected title object containing title, season, indexer, seriesId
+         * @param {boolean} template.seasonSearch - Whether this is a season search template
+         * @param {boolean} template.enabled - Whether the template is enabled
+         */
         add(template) {
-            /**
-             * Add new template to the array of searchTemplates.
-             */
             const { show, addSearchTemplate } = this;
+            // Check for duplicate: compare pattern, title string, season, and seasonSearch flag
             if (this.searchTemplates.find(t => (
                 t.template === template.pattern &&
                 t.title === template.title.title &&

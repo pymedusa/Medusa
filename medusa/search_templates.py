@@ -273,8 +273,9 @@ class SearchTemplates(object):
         for template in templates:
             # Normalize UI title variants (e.g. "Show Name (2020)") to the canonical show name.
             template = dict(template)
-            if template.get('title') == self.show_obj.title and self.show_obj.title != self.show_obj.name:
-                template['title'] = self.show_obj.name
+            if self.show_obj.title != self.show_obj.name:
+                if template.get('title') in (self.show_obj.title, self.show_obj.name):
+                    template['title'] = self.show_obj.name
 
             # TODO: add validation
             # Check if the scene exception still exists in db
