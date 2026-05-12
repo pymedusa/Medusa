@@ -57,6 +57,7 @@ def test_auth_v2_401_response_is_invalid_credentials(requests_mock):
     assert client.auth is None
     assert client.api is None
 
+
 def test_auth_v2_404_falls_back_to_legacy_api(requests_mock):
     # Given
     requests_mock.post('http://localhost/api/v2/auth/login', status_code=404)
@@ -69,6 +70,7 @@ def test_auth_v2_404_falls_back_to_legacy_api(requests_mock):
     # Then
     assert client.auth is True
     assert client.api == (1, 17, 0)
+
 
 def test_add_torrent_uri_accepts_async_response(requests_mock, monkeypatch):
     # Given
