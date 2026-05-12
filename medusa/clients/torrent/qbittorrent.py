@@ -101,21 +101,27 @@ class QBittorrentAPI(GenericClient):
                         {'name': self.name, 'error': error}, exc_info=1)
             return None
 
-        if not self.response:
+        if self.response is None:
             log.warning('{name}: Could not connect, check your config',
                         {'name': self.name})
             return None
 
-        if self.response.status_code == 200:
+        if self.response.status_code in (200, 204):
             if self.response.text == 'Fails.':
                 log.warning('{name}: Invalid Username or Password, check your config',
                             {'name': self.name})
                 return None
 
-            # Successful log in
-            self.auth = self.response.text
+            # Successful log in. qBittorrent WebAPI 2.14.0 no longer returns
+            # "Ok."; preserve the legacy auth value when it exists.
+            self.auth = self.response.text or True
 
             return self.auth
+
+        if self.response.status_code == 401:
+            log.warning('{name}: Invalid Username or Password, check your config',
+                        {'name': self.name})
+            return None
 
         if self.response.status_code == 404:
             # API v2 is not available
