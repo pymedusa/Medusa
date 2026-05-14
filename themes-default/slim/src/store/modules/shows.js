@@ -205,7 +205,12 @@ const mutations = {
         }
 
         currentShow.config.searchTemplates = currentShow.config.searchTemplates.filter(
-            t => !(t.title === template.title && t.season === template.season && t.template === template.template)
+            t => !(
+                t.template === template.template &&
+                t.title === template.title &&
+                t.season === template.season &&
+                Boolean(t.seasonSearch) === Boolean(template.seasonSearch)
+            )
         );
     },
     [REMOVE_SHOW](state, removedShow) {

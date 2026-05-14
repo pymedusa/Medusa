@@ -145,7 +145,8 @@ class SearchTemplates(object):
             'series_id': self.show_obj.series_id,
             'title': template['title'],
             'template': template['template'],
-            'season': template['season']
+            'season': template['season'],
+            'season_search': template['seasonSearch']
         }
 
         # use a custom update/insert method to get the data into the DB

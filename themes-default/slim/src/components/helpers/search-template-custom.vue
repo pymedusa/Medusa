@@ -206,13 +206,14 @@ export default {
             return [...[titleOption], ...aliases];
         },
         templateExists() {
-            const { addPattern, selectedTitle, show } = this;
+            const { addPattern, selectedTitle, show, episodeOrSeason } = this;
             const { config } = show;
             const combinedPattern = `%SN${addPattern}`;
             return config.searchTemplates.find(
-                template => template.title === selectedTitle.title &&
+                template => template.template === combinedPattern &&
+                template.title === selectedTitle.title &&
                 template.season === selectedTitle.season &&
-                template.template === combinedPattern
+                Boolean(template.seasonSearch) === Boolean(episodeOrSeason === 'season')
             );
         }
     },
