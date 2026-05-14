@@ -178,13 +178,13 @@ export default {
     },
     mounted() {
         const { show } = this;
-        const { title } = show;
+        const { name } = show;
 
         this.selectedTitle = {
             indexer: show.indexer,
             seriesId: show.id[show.indexer],
             season: -1,
-            title
+            title: name
         };
     },
     computed: {
@@ -193,26 +193,27 @@ export default {
         }),
         selectTitles() {
             const { show } = this;
-            const { config, title } = show;
+            const { config, name } = show;
             const { aliases } = config;
 
             const titleOption = {
                 indexer: show.indexer,
                 seriesId: show.id[show.indexer],
                 season: -1,
-                title
+                title: name
             };
 
             return [...[titleOption], ...aliases];
         },
         templateExists() {
-            const { addPattern, selectedTitle, show } = this;
+            const { addPattern, selectedTitle, show, episodeOrSeason } = this;
             const { config } = show;
             const combinedPattern = `%SN${addPattern}`;
             return config.searchTemplates.find(
-                template => template.title === selectedTitle.title &&
+                template => template.template === combinedPattern &&
+                template.title === selectedTitle.title &&
                 template.season === selectedTitle.season &&
-                template.template === combinedPattern
+                Boolean(template.seasonSearch) === Boolean(episodeOrSeason === 'season')
             );
         }
     },
@@ -295,7 +296,7 @@ export default {
                 enabled,
                 selectedTitle
             } = this;
-            const { title } = show;
+            const { name } = show;
 
             this.$emit('input', {
                 pattern: `%SN${addPattern}`,
@@ -308,7 +309,7 @@ export default {
                 indexer: show.indexer,
                 seriesId: show.id[show.indexer],
                 season: -1,
-                title
+                title: name
             };
             this.addPattern = '';
             this.episodeOrSeason = 'episode';
