@@ -355,10 +355,11 @@ def start():
         original_load_shows_from_db()
         try:
             _seed_test_data()
-        except Exception as error:  # pragma: no cover - test seed best-effort
+        except Exception as error:  # pragma: no cover - fail fast on required seed errors
             import traceback
             print('Failed to seed test data: {0!r}'.format(error))
             print(traceback.format_exc())
+            raise
 
     Application.load_shows_from_db = staticmethod(load_shows_from_db_with_seed)
 
