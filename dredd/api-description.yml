@@ -230,7 +230,6 @@ paths:
           required: false
           description: The episode season
           type: integer
-          format: int32
         - $ref: '#/parameters/detailed'
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/limit'
@@ -266,7 +265,6 @@ paths:
           required: false
           description: The episode season
           type: integer
-          format: int32
       responses:
         207:
           description: Response with the status of the single patches
@@ -490,7 +488,6 @@ paths:
           required: false
           description: The season number
           type: integer
-          format: int32
         - name: type
           in: query
           required: false
@@ -1095,12 +1092,10 @@ definitions:
         properties:
           tvdb:
             type: integer
-            format: int32
             minimum: 1
             description: This is the ID from thetvdb.com
           tvmaze:
             type: integer
-            format: int32
             minimum: 1
             description: This is the ID from tvmaze.com
           imdb:
@@ -1198,13 +1193,11 @@ definitions:
         properties:
           start:
             type: integer
-            format: int32
             minimum: 1900
             maximum: 2200
             description: Starting year
           end:
             type: integer
-            format: int32
             minimum: 1900
             maximum: 2200
             description: End year. Available in detailed view
@@ -1216,7 +1209,6 @@ definitions:
       runtime:
         type: integer
         minimum: 1
-        format: int32
         description: Episodes runtime in minutes
       genres:
         type: array
@@ -1234,7 +1226,6 @@ definitions:
                 description: "IMDB's star rating from 0 to 10"
               votes:
                 type: integer
-                format: int32
                 minimum: 1
                 description: "Total number of votes"
         example:
@@ -1279,12 +1270,10 @@ definitions:
                 type: array
                 items:
                   type: integer
-                  format: int32
               preferred:
                 type: array
                 items:
                   type: integer
-                  format: int32
           paused:
             type: boolean
             description: Whether series is paused
@@ -1350,7 +1339,6 @@ definitions:
           properties:
             season:
               type: integer
-              format: int32
               description: Season number
             episodes:
               type: array
@@ -1384,11 +1372,9 @@ definitions:
           properties:
             absolute:
               type: integer
-              format: int32
               description: Absolute episode number.
             sceneAbsolute:
               type: integer
-              format: int32
               description: Scene absolute episode number.
       xemAbsoluteNumbering:
         type: array
@@ -1400,11 +1386,9 @@ definitions:
           properties:
             absolute:
               type: integer
-              format: int32
               description: Absolute episode number.
             sceneAbsolute:
               type: integer
-              format: int32
               description: Scene absolute episode number.
       sceneNumbering:
         type: array
@@ -1422,11 +1406,9 @@ definitions:
         properties:
           tvdb:
             type: integer
-            format: int32
             description: This is the ID from thetvdb.com
           tvmaze:
             type: integer
-            format: int32
             description: This is the ID from tvmaze.com
           imdb:
             type: string
@@ -1437,17 +1419,14 @@ definitions:
           imdb: tt0123
       season:
         type: integer
-        format: int32
         minimum: 0
         maximum: 1000
       episode:
         type: integer
-        format: int32
         minimum: 0
         maximum: 10000
       absoluteNumber:
         type: integer
-        format: int32
         minimum: 1
         maximum: 10000
       airDate:
@@ -1493,7 +1472,6 @@ definitions:
             description: Whether the release is proper
           version:
             type: integer
-            format: int32
             minimum: 0
             maximum: 10
             description: Episode version (common in animes)
@@ -1502,17 +1480,14 @@ definitions:
         properties:
           season:
             type: integer
-            format: int32
             minimum: 0
             maximum: 1000
           episode:
             type: integer
-            format: int32
             minimum: 0
             maximum: 10000
           absoluteNumber:
             type: integer
-            format: int32
             minimum: 1
             maximum: 10000
       file:
@@ -1525,7 +1500,6 @@ definitions:
             example: '/library/My Series/Season 10/My Series - S03E07 - Super Episode.avi'
           size:
             type: integer
-            format: int64
             minimum: 1
             description: The file size in bytes
       statistics:
@@ -1542,7 +1516,6 @@ definitions:
                 description: Last subtitle search timestamp
               count:
                 type: integer
-                format: int32
                 minimum: 0
                 description: search count
       relatedEpisodes:
@@ -1576,7 +1549,6 @@ definitions:
     properties:
       code:
         type: integer
-        format: int32
       message:
         type: string
       fields:
@@ -2478,12 +2450,10 @@ definitions:
         example: '0:19:39.208000'
       size:
         type: integer
-        format: int64
         minimum: 0
         description: Video file size in bytes
       overall_bit_rate:
         type: integer
-        format: int32
         minimum: 0
         description: Video overall bitrate
       video:
@@ -2493,7 +2463,6 @@ definitions:
           properties:
             number:
               type: integer
-              format: int32
               minimum: 0
               description: Track number
             name:
@@ -2507,17 +2476,14 @@ definitions:
               description: Track duration
             size:
               type: integer
-              format: int64
               minimum: 0
               description: Video stream size in bytes
             width:
               type: integer
-              format: int32
               minimum: 0
               description: Video width size (pixels)
             height:
               type: integer
-              format: int32
               minimum: 0
               description: Video height size (pixels)
             scan_type:
@@ -2560,12 +2526,10 @@ definitions:
               description: Video frame rate (frames per second)
             bit_depth:
               type: integer
-              format: int32
               minimum: 0
               description: Video bit depth
             bit_rate:
               type: integer
-              format: int32
               minimum: 0
               description: Video bit rate
             codec:
@@ -2613,7 +2577,6 @@ definitions:
           properties:
             number:
               type: integer
-              format: int32
               minimum: 0
               description: Track number
             name:
@@ -2627,7 +2590,6 @@ definitions:
               description: Track duration
             size:
               type: integer
-              format: int64
               minimum: 0
               description: Audio stream size in bytes
             codec:
@@ -2658,7 +2620,6 @@ definitions:
                 - LC
             channels_count:
               type: integer
-              format: int32
               minimum: 0
               description: Number of channels
             channel_positions:
@@ -2674,12 +2635,10 @@ definitions:
                 - "7.1"
             bit_depth:
               type: integer
-              format: int32
               minimum: 0
               description: Audio bit depth
             bit_rate:
               type: integer
-              format: int32
               minimum: 0
               description: Audio bit rate
             bit_rate_mode:
@@ -2687,7 +2646,6 @@ definitions:
               enum: [Constant, Variable]
             sampling_rate:
               type: integer
-              format: int32
               description: Audio sampling rate
             compression:
               type: string
@@ -2706,7 +2664,6 @@ definitions:
           properties:
             number:
               type: integer
-              format: int32
               minimum: 0
               description: Track number
             name:
@@ -2750,12 +2707,10 @@ definitions:
         properties:
           season:
             type: integer
-            format: int32
             minimum: 0
             maximum: 1000
           episode:
             type: integer
-            format: int32
             minimum: 0
             maximum: 10000
       destination:
@@ -2763,12 +2718,10 @@ definitions:
         properties:
           season:
             type: integer
-            format: int32
             minimum: 0
             maximum: 1000
           episode:
             type: integer
-            format: int32
             minimum: 0
             maximum: 10000
   SearchedEpisode:
@@ -2776,23 +2729,18 @@ definitions:
     properties:
       indexer:
         type: integer
-        format: int32
         description: Internal id for the shows indexer
       series_id:
         type: integer
-        format: int32
         description: Unique id for the show from a shows indexer
       episode:
         type: integer
-        format: int32
         description: Episode number
       season:
         type: integer
-        format: int32
         description: Season number
       episodeindexerid:
         type: integer
-        format: int32
         description: Unique id for the episode from a shows indexer
       searchstatus:
         enum:
@@ -2816,21 +2764,18 @@ definitions:
     properties:
       id:
         type: integer
-        format: int32
         description: Internal id for the history row
       series:
         type: string
         description: Series slug (if available)
       status:
         type: integer
-        format: int32
         description: Status (numberic)
       statusName:
         type: string
         description: Status description
       actionDate:
         type: integer
-        format: int32
         description: Date of when the history entrie was stored
       resource:
         type: string
@@ -2873,14 +2818,12 @@ parameters:
     required: false
     description: The page to be returned. Default value is 1
     type: integer
-    format: int32
   limit:
     name: limit
     in: query
     required: false
     description: Maximum number of items per page. Default value is 20. Max value is 1000
     type: integer
-    format: int32
   sort:
     name: sort
     in: query
@@ -2915,7 +2858,6 @@ parameters:
     description: The alias id to retrieve
     x-example: 123456
     type: integer
-    format: int32
   alias-source-id:
     name: alias-source-id
     in: path
@@ -3027,15 +2969,12 @@ responses:
     headers:
       X-Pagination-Page:
         type: integer
-        format: int32
         description: The page number
       X-Pagination-Limit:
         type: integer
-        format: int32
         description: The pagination limit
       X-Pagination-Count:
         type: integer
-        format: int32
         description: The total items count
       Link:
         type: string
@@ -3045,11 +2984,9 @@ responses:
     headers:
       X-Pagination-Page:
         type: integer
-        format: int32
         description: The page number
       X-Pagination-Limit:
         type: integer
-        format: int32
         description: The pagination limit
       Link:
         type: string
@@ -3063,15 +3000,12 @@ responses:
     headers:
       X-Pagination-Page:
         type: integer
-        format: int32
         description: The page number
       X-Pagination-Limit:
         type: integer
-        format: int32
         description: The pagination limit
       X-Pagination-Count:
         type: integer
-        format: int32
         description: The total items count
       Link:
         type: string

@@ -59,8 +59,17 @@ def order_and_load_api_description(transactions):
     """Load api description."""
     global api_description
 
-    # Set DELETE transactions last, keep the rest unchanged
-    transactions.sort(key=lambda x: (x['request']['method'] == 'DELETE', True))
+    def _sort_key(transaction):
+        # DELETE transactions go last so the rest of the suite has the fixture
+        # to query against. Among DELETEs we want the most-specific paths first
+        # (e.g. DELETE /series/{id}/episodes/{id} BEFORE DELETE /series/{id})
+        # so that child resources are removed before their parent — otherwise
+        # the parent delete makes subsequent child DELETEs return 404.
+        is_delete = transaction['request']['method'] == 'DELETE'
+        depth = -len(transaction['origin']['resourceName'].split('/')) if is_delete else 0
+        return (is_delete, depth)
+
+    transactions.sort(key=_sort_key)
 
     with io.open(transactions[0]['origin']['filename'], 'rb') as stream:
         api_description = yaml.safe_load(stream)
@@ -270,6 +279,40 @@ def _seed_test_data():
         '(indexer, series_id, title, season, custom) VALUES (?, ?, ?, ?, ?)',
         [TEST_SERIES_INDEXER, TEST_SERIES_ID, 'Dredd Test Alias', -1, 1],
     )
+
+    # Drop a placeholder banner into the image cache so
+    # GET /api/v2/series/{id}/asset/banner returns 200 instead of 404 (the
+    # asset handler reads <CACHE_DIR>/images/<indexer>/<id>.banner.jpg).
+    cache_image_dir = os.path.join(app.CACHE_DIR, 'images', 'tvdb')
+    try:
+        os.makedirs(cache_image_dir)
+    except OSError:
+        pass
+    banner_path = os.path.join(cache_image_dir, '{0}.banner.jpg'.format(TEST_SERIES_ID))
+    if not os.path.isfile(banner_path):
+        with open(banner_path, 'wb') as fh:
+            # 1x1 JPEG so the handler streams a non-empty body with a real
+            # image MIME type derived from the filename.
+            fh.write(
+                b'\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x00\x00\x01\x00\x01'
+                b'\x00\x00\xff\xdb\x00C\x00\x08\x06\x06\x07\x06\x05\x08\x07\x07'
+                b'\x07\t\t\x08\n\x0c\x14\r\x0c\x0b\x0b\x0c\x19\x12\x13\x0f\x14'
+                b'\x1d\x1a\x1f\x1e\x1d\x1a\x1c\x1c $.\' ",#\x1c\x1c(7),01444'
+                b'\x1f\'9=82<.342\xff\xc0\x00\x0b\x08\x00\x01\x00\x01\x01\x01'
+                b'\x11\x00\xff\xc4\x00\x1f\x00\x00\x01\x05\x01\x01\x01\x01\x01'
+                b'\x01\x00\x00\x00\x00\x00\x00\x00\x00\x01\x02\x03\x04\x05\x06'
+                b'\x07\x08\t\n\x0b\xff\xc4\x00\xb5\x10\x00\x02\x01\x03\x03\x02'
+                b'\x04\x03\x05\x05\x04\x04\x00\x00\x01}\x01\x02\x03\x00\x04\x11'
+                b'\x05\x12!1A\x06\x13Qa\x07"q\x142\x81\x91\xa1\x08#B\xb1\xc1\x15'
+                b'R\xd1\xf0$3br\x82\t\n\x16\x17\x18\x19\x1a%&\'()*456789:CDEFG'
+                b'HIJSTUVWXYZcdefghijstuvwxyz\x83\x84\x85\x86\x87\x88\x89\x8a'
+                b'\x92\x93\x94\x95\x96\x97\x98\x99\x9a\xa2\xa3\xa4\xa5\xa6\xa7'
+                b'\xa8\xa9\xaa\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xba\xc2\xc3\xc4'
+                b'\xc5\xc6\xc7\xc8\xc9\xca\xd2\xd3\xd4\xd5\xd6\xd7\xd8\xd9\xda'
+                b'\xe1\xe2\xe3\xe4\xe5\xe6\xe7\xe8\xe9\xea\xf1\xf2\xf3\xf4\xf5'
+                b'\xf6\xf7\xf8\xf9\xfa\xff\xda\x00\x08\x01\x01\x00\x00?\x00\xfb'
+                b'\xd0\xff\xd9'
+            )
 
     series_obj = Series(TEST_SERIES_INDEXER, TEST_SERIES_ID)
     app.showList.append(series_obj)
