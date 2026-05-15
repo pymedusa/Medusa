@@ -185,6 +185,97 @@ def evaluate(expression, context=None):
     return expression
 
 
+# The slug that the Dredd transactions assume already exists. POST /api/v2/series
+# only enqueues an asynchronous indexer fetch, which never resolves in CI, so we
+# seed the database (and the in-memory show list) ourselves before the web
+# server begins accepting requests.
+TEST_SERIES_INDEXER = 1  # tvdb
+TEST_SERIES_ID = 301824
+TEST_SERIES_EPISODES = ((1, 1), (1, 2))
+
+
+def _seed_test_data():
+    """Insert the tvdb301824 fixture into the database and showList."""
+    from medusa import app, db
+    from medusa.common import SKIPPED
+    from medusa.tv.series import Series
+
+    show_dir = os.path.join(os.getcwd(), 'tvdb{0}'.format(TEST_SERIES_ID))
+    try:
+        os.makedirs(show_dir)
+    except OSError:
+        pass
+
+    main_db_con = db.DBConnection()
+
+    main_db_con.upsert('tv_shows', {
+        'show_name': 'Dredd Test Show',
+        'location': show_dir,
+        'network': '',
+        'genre': '',
+        'classification': '',
+        'runtime': 30,
+        'quality': 4,
+        'airs': '',
+        'status': 'Continuing',
+        'flatten_folders': 0,
+        'paused': 0,
+        'startyear': 2017,
+        'air_by_date': 0,
+        'anime': 0,
+        'scene': 0,
+        'sports': 0,
+        'subtitles': 0,
+        'notify_list': '{}',
+        'dvdorder': 0,
+        'lang': 'en',
+        'imdb_id': '',
+        'last_update_indexer': 1,
+        'rls_ignore_words': '',
+        'rls_require_words': '',
+        'default_ep_status': SKIPPED,
+    }, {'indexer': TEST_SERIES_INDEXER, 'indexer_id': TEST_SERIES_ID})
+
+    for season, episode in TEST_SERIES_EPISODES:
+        main_db_con.upsert('tv_episodes', {
+            'indexerid': TEST_SERIES_ID * 100 + episode,
+            'name': 'Test Episode S{0:02d}E{1:02d}'.format(season, episode),
+            'description': '',
+            'subtitles': '',
+            'subtitles_searchcount': 0,
+            'subtitles_lastsearch': '0001-01-01 00:00:00',
+            'airdate': 736000,
+            'hasnfo': 0,
+            'hastbn': 0,
+            'status': SKIPPED,
+            'location': '',
+            'file_size': 0,
+            'release_name': '',
+            'is_proper': 0,
+            'absolute_number': episode,
+            'version': -1,
+            'release_group': '',
+        }, {
+            'indexer': TEST_SERIES_INDEXER,
+            'showid': TEST_SERIES_ID,
+            'season': season,
+            'episode': episode,
+        })
+
+    # Give the alias endpoints something to query against. The GET /alias
+    # handler reads scene_exceptions directly so it does not require the
+    # series to be present in app.showList.
+    main_db_con.action(
+        'INSERT OR IGNORE INTO scene_exceptions '
+        '(indexer, series_id, title, season, custom) VALUES (?, ?, ?, ?, ?)',
+        [TEST_SERIES_INDEXER, TEST_SERIES_ID, 'Dredd Test Alias', -1, 1],
+    )
+
+    series_obj = Series(TEST_SERIES_INDEXER, TEST_SERIES_ID)
+    app.showList.append(series_obj)
+    print('Seeded test fixture tvdb{0} at {1}'.format(TEST_SERIES_ID, show_dir))
+
+
 def start():
     """Start application."""
     import shutil
@@ -211,6 +302,23 @@ def start():
     sys.path.insert(1, root_dir)
 
     from medusa.__main__ import Application
+
+    # Hook into load_shows_from_db so the fixture is in place before the web
+    # server starts accepting requests; otherwise dependent transactions race
+    # against the seed and fail with "Series not found".
+    original_load_shows_from_db = Application.load_shows_from_db
+
+    def load_shows_from_db_with_seed():
+        original_load_shows_from_db()
+        try:
+            _seed_test_data()
+        except Exception as error:  # pragma: no cover - test seed best-effort
+            import traceback
+            print('Failed to seed test data: {0!r}'.format(error))
+            print(traceback.format_exc())
+
+    Application.load_shows_from_db = staticmethod(load_shows_from_db_with_seed)
+
     application = Application()
     application.start(args)
 

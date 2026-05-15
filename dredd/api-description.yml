@@ -48,6 +48,10 @@ paths:
               description: The location of the newly added series
           schema:
             $ref: '#/definitions/Series'
+          x-request:
+            body:
+              id:
+                tvdb: 80379
         400:
           $ref: '#/responses/error'
           description: Invalid request
@@ -902,18 +906,18 @@ paths:
           x-request:
             body:
               showSlug: tvdb301824
-              episodes: [s01e01", "s01e02"]
+              episodes: ["s01e01", "s01e02"]
         400:
           $ref: '#/responses/error'
           x-request:
             body:
-              episodes: [s01e01", "s01e02"]
+              episodes: ["s01e01", "s01e02"]
         404:
           $ref: '#/responses/error'
           x-request:
             body:
               showSlug: tvdb12345
-              episodes: [s01e01", "s01e02"]
+              episodes: ["s01e01", "s01e02"]
   /search/failed:
     put:
       summary: Search providers for results
@@ -930,18 +934,18 @@ paths:
           x-request:
             body:
               showSlug: tvdb301824
-              episodes: [s01e01", "s01e02"]
+              episodes: ["s01e01", "s01e02"]
         400:
           $ref: '#/responses/error'
           x-request:
             body:
-              episodes: [s01e01", "s01e02"]
+              episodes: ["s01e01", "s01e02"]
         404:
           $ref: '#/responses/error'
           x-request:
             body:
               showSlug: tvdb12345
-              episodes: [s01e01", "s01e02"]
+              episodes: ["s01e01", "s01e02"]
   /search/manual:
     put:
       summary: Search providers for results
@@ -956,18 +960,18 @@ paths:
           x-request:
             body:
               showSlug: tvdb301824
-              episodes: [s01e01", "s01e02"]
+              episodes: ["s01e01", "s01e02"]
         400:
           $ref: '#/responses/error'
           x-request:
             body:
-              episodes: [s01e01", "s01e02"]
+              episodes: ["s01e01", "s01e02"]
         404:
           $ref: '#/responses/error'
           x-request:
             body:
               showSlug: tvdb12345
-              episodes: [s01e01", "s01e02"]
+              episodes: ["s01e01", "s01e02"]
   /search/daily:
     put:
       summary: Queue a forced daily search
