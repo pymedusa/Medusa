@@ -908,6 +908,7 @@ paths:
           $ref: '#/responses/error'
           x-request:
             body:
+              showSlug: invalid-slug
               episodes: ["s01e01", "s01e02"]
         404:
           $ref: '#/responses/error'
