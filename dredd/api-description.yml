@@ -190,6 +190,7 @@ paths:
         409:
           $ref: '#/responses/error'
           description: Unable to delete series
+          x-disabled: true
   /series/{id}/{field}:
     get:
       summary: Return a specific field from a given series
