@@ -245,6 +245,25 @@ def _seed_test_data():
         'default_ep_status': SKIPPED,
     }, {'indexer': TEST_SERIES_INDEXER, 'indexer_id': TEST_SERIES_ID})
 
+    # Seed a matching imdb_info row so Series.to_json doesn't emit null fields
+    # (e.g. `classification` is read from imdb_info.certificates and would
+    # otherwise fail the Series schema's `type: string` check).
+    main_db_con.upsert('imdb_info', {
+        'imdb_id': '',
+        'title': 'Dredd Test Show',
+        'year': 2017,
+        'akas': '',
+        'runtimes': 30,
+        'genres': '',
+        'countries': '',
+        'country_codes': '',
+        'certificates': '',
+        'rating': '',
+        'votes': 0,
+        'last_update': 1,
+        'plot': '',
+    }, {'indexer': TEST_SERIES_INDEXER, 'indexer_id': TEST_SERIES_ID})
+
     for season, episode in TEST_SERIES_EPISODES:
         main_db_con.upsert('tv_episodes', {
             'indexerid': TEST_SERIES_ID * 100 + episode,
@@ -262,7 +281,9 @@ def _seed_test_data():
             'release_name': '',
             'is_proper': 0,
             'absolute_number': episode,
-            'version': -1,
+            # Episode schema requires release.version >= 0; the column default
+            # of -1 would fail the JSON schema check on GET episodes.
+            'version': 0,
             'release_group': '',
         }, {
             'indexer': TEST_SERIES_INDEXER,

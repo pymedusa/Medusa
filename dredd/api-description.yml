@@ -60,6 +60,7 @@ paths:
         404:
           $ref: '#/responses/error'
           description: Series not found in the indexer
+          x-disabled: true
           x-request:
             body:
               id:
@@ -350,7 +351,7 @@ paths:
           x-request:
             path-params:
               seriesid: tvdb301824
-              id: s9999e9999
+              id: e9999
         409:
           $ref: '#/responses/error'
           description: Unable to delete episode
@@ -411,7 +412,7 @@ paths:
           description: Series or episode not found
           x-request:
             path-params:
-              id: s99e99
+              id: e9999
   /series/{seriesid}/asset/{id}:
     get:
       summary: Return a specific asset from a given series
