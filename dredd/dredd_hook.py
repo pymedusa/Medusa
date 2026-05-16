@@ -271,7 +271,7 @@ def _seed_test_data():
             'description': '',
             'subtitles': '',
             'subtitles_searchcount': 0,
-            'subtitles_lastsearch': '0001-01-01 00:00:00',
+            'subtitles_lastsearch': '0001-01-01T00:00:00',
             'airdate': 736000,
             'hasnfo': 0,
             'hastbn': 0,
@@ -301,39 +301,42 @@ def _seed_test_data():
         [TEST_SERIES_INDEXER, TEST_SERIES_ID, 'Dredd Test Alias', -1, 1],
     )
 
-    # Drop a placeholder banner into the image cache so
-    # GET /api/v2/series/{id}/asset/banner returns 200 instead of 404 (the
-    # asset handler reads <CACHE_DIR>/images/<indexer>/<id>.banner.jpg).
+    # Drop placeholder images into the image cache so
+    # GET /api/v2/series/{id}/asset/{kind} returns 200 instead of 404 and
+    # Series.to_json's `cache.banner` / `cache.poster` resolve to a real path
+    # instead of null (the Series schema requires `type: string`).
     cache_image_dir = os.path.join(app.CACHE_DIR, 'images', 'tvdb')
     try:
         os.makedirs(cache_image_dir)
     except OSError:
         pass
-    banner_path = os.path.join(cache_image_dir, '{0}.banner.jpg'.format(TEST_SERIES_ID))
-    if not os.path.isfile(banner_path):
-        with open(banner_path, 'wb') as fh:
-            # 1x1 JPEG so the handler streams a non-empty body with a real
-            # image MIME type derived from the filename.
-            fh.write(
-                b'\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x00\x00\x01\x00\x01'
-                b'\x00\x00\xff\xdb\x00C\x00\x08\x06\x06\x07\x06\x05\x08\x07\x07'
-                b'\x07\t\t\x08\n\x0c\x14\r\x0c\x0b\x0b\x0c\x19\x12\x13\x0f\x14'
-                b'\x1d\x1a\x1f\x1e\x1d\x1a\x1c\x1c $.\' ",#\x1c\x1c(7),01444'
-                b'\x1f\'9=82<.342\xff\xc0\x00\x0b\x08\x00\x01\x00\x01\x01\x01'
-                b'\x11\x00\xff\xc4\x00\x1f\x00\x00\x01\x05\x01\x01\x01\x01\x01'
-                b'\x01\x00\x00\x00\x00\x00\x00\x00\x00\x01\x02\x03\x04\x05\x06'
-                b'\x07\x08\t\n\x0b\xff\xc4\x00\xb5\x10\x00\x02\x01\x03\x03\x02'
-                b'\x04\x03\x05\x05\x04\x04\x00\x00\x01}\x01\x02\x03\x00\x04\x11'
-                b'\x05\x12!1A\x06\x13Qa\x07"q\x142\x81\x91\xa1\x08#B\xb1\xc1\x15'
-                b'R\xd1\xf0$3br\x82\t\n\x16\x17\x18\x19\x1a%&\'()*456789:CDEFG'
-                b'HIJSTUVWXYZcdefghijstuvwxyz\x83\x84\x85\x86\x87\x88\x89\x8a'
-                b'\x92\x93\x94\x95\x96\x97\x98\x99\x9a\xa2\xa3\xa4\xa5\xa6\xa7'
-                b'\xa8\xa9\xaa\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xba\xc2\xc3\xc4'
-                b'\xc5\xc6\xc7\xc8\xc9\xca\xd2\xd3\xd4\xd5\xd6\xd7\xd8\xd9\xda'
-                b'\xe1\xe2\xe3\xe4\xe5\xe6\xe7\xe8\xe9\xea\xf1\xf2\xf3\xf4\xf5'
-                b'\xf6\xf7\xf8\xf9\xfa\xff\xda\x00\x08\x01\x01\x00\x00?\x00\xfb'
-                b'\xd0\xff\xd9'
-            )
+    # 1x1 JPEG so the handler streams a non-empty body with a real
+    # image MIME type derived from the filename.
+    minimal_jpeg = (
+        b'\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x00\x00\x01\x00\x01'
+        b'\x00\x00\xff\xdb\x00C\x00\x08\x06\x06\x07\x06\x05\x08\x07\x07'
+        b'\x07\t\t\x08\n\x0c\x14\r\x0c\x0b\x0b\x0c\x19\x12\x13\x0f\x14'
+        b'\x1d\x1a\x1f\x1e\x1d\x1a\x1c\x1c $.\' ",#\x1c\x1c(7),01444'
+        b'\x1f\'9=82<.342\xff\xc0\x00\x0b\x08\x00\x01\x00\x01\x01\x01'
+        b'\x11\x00\xff\xc4\x00\x1f\x00\x00\x01\x05\x01\x01\x01\x01\x01'
+        b'\x01\x00\x00\x00\x00\x00\x00\x00\x00\x01\x02\x03\x04\x05\x06'
+        b'\x07\x08\t\n\x0b\xff\xc4\x00\xb5\x10\x00\x02\x01\x03\x03\x02'
+        b'\x04\x03\x05\x05\x04\x04\x00\x00\x01}\x01\x02\x03\x00\x04\x11'
+        b'\x05\x12!1A\x06\x13Qa\x07"q\x142\x81\x91\xa1\x08#B\xb1\xc1\x15'
+        b'R\xd1\xf0$3br\x82\t\n\x16\x17\x18\x19\x1a%&\'()*456789:CDEFG'
+        b'HIJSTUVWXYZcdefghijstuvwxyz\x83\x84\x85\x86\x87\x88\x89\x8a'
+        b'\x92\x93\x94\x95\x96\x97\x98\x99\x9a\xa2\xa3\xa4\xa5\xa6\xa7'
+        b'\xa8\xa9\xaa\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xba\xc2\xc3\xc4'
+        b'\xc5\xc6\xc7\xc8\xc9\xca\xd2\xd3\xd4\xd5\xd6\xd7\xd8\xd9\xda'
+        b'\xe1\xe2\xe3\xe4\xe5\xe6\xe7\xe8\xe9\xea\xf1\xf2\xf3\xf4\xf5'
+        b'\xf6\xf7\xf8\xf9\xfa\xff\xda\x00\x08\x01\x01\x00\x00?\x00\xfb'
+        b'\xd0\xff\xd9'
+    )
+    for kind in ('banner', 'poster'):
+        image_path = os.path.join(cache_image_dir, '{0}.{1}.jpg'.format(TEST_SERIES_ID, kind))
+        if not os.path.isfile(image_path):
+            with open(image_path, 'wb') as fh:
+                fh.write(minimal_jpeg)
 
     series_obj = Series(TEST_SERIES_INDEXER, TEST_SERIES_ID)
     app.showList.append(series_obj)
