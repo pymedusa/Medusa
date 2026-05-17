@@ -64,6 +64,7 @@ class SearchTemplates(object):
             DELETE from search_templates
             WHERE indexer = ?
             AND series_id = ?
+            AND `default` = 1
             AND title not in (select title from scene_exceptions where indexer = ? and series_id = ?)
             AND title != ?
         """, [
@@ -130,23 +131,43 @@ class SearchTemplates(object):
 
     def save(self, template):
         """Validate template and save to db."""
-        new_values = {
-            'template': template['template'],
-            'title': template['title'],
-            'indexer': self.show_obj.indexer,
-            'series_id': self.show_obj.series_id,
-            'season': template['season'],
-            '`default`': template['default'],
-            'enabled': template['enabled'],
-            'season_search': template['seasonSearch']
-        }
-        control_values = {
-            'indexer': self.show_obj.indexer,
-            'series_id': self.show_obj.series_id,
-            'title': template['title'],
-            'template': template['template'],
-            'season': template['season']
-        }
+        default_raw = template.get('default', 0)
+        season_search_raw = template.get('seasonSearch', 0)
+        try:
+            template_default = int(default_raw or 0)
+        except (TypeError, ValueError):
+            template_default = 1 if default_raw else 0
+        try:
+            season_search = int(season_search_raw or 0)
+        except (TypeError, ValueError):
+            season_search = 1 if season_search_raw else 0
+        if template.get('id') is not None:
+            new_values = {
+                'template': template['template'],
+                'title': template['title'],
+                'season': template['season'],
+                '`default`': template_default,
+                'enabled': template['enabled'],
+                'season_search': season_search
+            }
+            control_values = {
+                'indexer': self.show_obj.indexer,
+                'series_id': self.show_obj.series_id,
+                'search_template_id': template['id'],
+            }
+        else:
+            new_values = {
+                'template': template['template'],
+                'enabled': template['enabled'],
+            }
+            control_values = {
+                'indexer': self.show_obj.indexer,
+                'series_id': self.show_obj.series_id,
+                'title': template['title'],
+                'season': template['season'],
+                '`default`': template_default,
+                'season_search': season_search,
+            }
 
         # use a custom update/insert method to get the data into the DB
         self.main_db_con.upsert('search_templates', new_values, control_values)
@@ -271,17 +292,28 @@ class SearchTemplates(object):
         self.templates = []
         self.remove_custom()
         for template in templates:
+            default_raw = template.get('default', 0)
+            try:
+                is_default = bool(int(default_raw or 0))
+            except (TypeError, ValueError):
+                is_default = bool(default_raw)
+            season_search_raw = template.get('seasonSearch', 0)
+            try:
+                is_season_search = bool(int(season_search_raw or 0))
+            except (TypeError, ValueError):
+                is_season_search = bool(season_search_raw)
             # TODO: add validation
             # Check if the scene exception still exists in db
-            find_scene_exception = self.main_db_con.select(
-                'SELECT season, title '
-                'FROM scene_exceptions '
-                'WHERE indexer = ? AND series_id = ? '
-                'AND title = ? AND season = ?',
-                [self.show_obj.indexer, self.show_obj.series_id, template['title'], template['season']]
-            )
-            if not find_scene_exception and template['title'] != self.show_obj.name:
-                continue
+            if is_default:
+                find_scene_exception = self.main_db_con.select(
+                    'SELECT season, title '
+                    'FROM scene_exceptions '
+                    'WHERE indexer = ? AND series_id = ? '
+                    'AND title = ? AND season = ?',
+                    [self.show_obj.indexer, self.show_obj.series_id, template['title'], template['season']]
+                )
+                if not find_scene_exception and template['title'] != self.show_obj.name:
+                    continue
 
             # Save to db
             self.save(template)
@@ -294,8 +326,8 @@ class SearchTemplates(object):
                 series=self.show_obj,
                 season=template['season'],
                 enabled=template['enabled'],
-                default=template['default'],
-                season_search=template['seasonSearch']
+                default=is_default,
+                season_search=is_season_search
             )
 
             self.templates.append(new_template)

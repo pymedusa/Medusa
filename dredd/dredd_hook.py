@@ -59,8 +59,17 @@ def order_and_load_api_description(transactions):
     """Load api description."""
     global api_description
 
-    # Set DELETE transactions last, keep the rest unchanged
-    transactions.sort(key=lambda x: (x['request']['method'] == 'DELETE', True))
+    def _sort_key(transaction):
+        # DELETE transactions go last so the rest of the suite has the fixture
+        # to query against. Among DELETEs we want the most-specific paths first
+        # (e.g. DELETE /series/{id}/episodes/{id} BEFORE DELETE /series/{id})
+        # so that child resources are removed before their parent — otherwise
+        # the parent delete makes subsequent child DELETEs return 404.
+        is_delete = transaction['request']['method'] == 'DELETE'
+        depth = -len(transaction['origin']['resourceName'].split('/')) if is_delete else 0
+        return (is_delete, depth)
+
+    transactions.sort(key=_sort_key)
 
     with io.open(transactions[0]['origin']['filename'], 'rb') as stream:
         api_description = yaml.safe_load(stream)
@@ -185,6 +194,155 @@ def evaluate(expression, context=None):
     return expression
 
 
+# The slug that the Dredd transactions assume already exists. POST /api/v2/series
+# only enqueues an asynchronous indexer fetch, which never resolves in CI, so we
+# seed the database (and the in-memory show list) ourselves before the web
+# server begins accepting requests.
+TEST_SERIES_INDEXER = 1  # tvdb
+TEST_SERIES_ID = 301824
+TEST_SERIES_EPISODES = ((1, 1), (1, 2))
+
+
+def _seed_test_data():
+    """Insert the tvdb301824 fixture into the database and showList."""
+    from medusa import app, db
+    from medusa.common import SKIPPED
+    from medusa.tv.series import Series
+
+    show_dir = os.path.join(os.getcwd(), 'tvdb{0}'.format(TEST_SERIES_ID))
+    try:
+        os.makedirs(show_dir)
+    except OSError:
+        pass
+
+    main_db_con = db.DBConnection()
+
+    main_db_con.upsert('tv_shows', {
+        'show_name': 'Dredd Test Show',
+        'location': show_dir,
+        'network': '',
+        'genre': '',
+        'classification': '',
+        'runtime': 30,
+        'quality': 4,
+        'airs': '',
+        'status': 'Continuing',
+        'flatten_folders': 0,
+        'paused': 0,
+        'startyear': 2017,
+        'air_by_date': 0,
+        'anime': 0,
+        'scene': 0,
+        'sports': 0,
+        'subtitles': 0,
+        'notify_list': '{}',
+        'dvdorder': 0,
+        'lang': 'en',
+        'imdb_id': '',
+        'last_update_indexer': 1,
+        'rls_ignore_words': '',
+        'rls_require_words': '',
+        'default_ep_status': SKIPPED,
+    }, {'indexer': TEST_SERIES_INDEXER, 'indexer_id': TEST_SERIES_ID})
+
+    # Seed a matching imdb_info row so Series.to_json doesn't emit null fields
+    # (e.g. `classification` is read from imdb_info.certificates and would
+    # otherwise fail the Series schema's `type: string` check).
+    main_db_con.upsert('imdb_info', {
+        'imdb_id': '',
+        'title': 'Dredd Test Show',
+        'year': 2017,
+        'akas': '',
+        'runtimes': 30,
+        'genres': '',
+        'countries': '',
+        'country_codes': '',
+        'certificates': '',
+        'rating': '',
+        'votes': 0,
+        'last_update': 1,
+        'plot': '',
+    }, {'indexer': TEST_SERIES_INDEXER, 'indexer_id': TEST_SERIES_ID})
+
+    for season, episode in TEST_SERIES_EPISODES:
+        main_db_con.upsert('tv_episodes', {
+            'indexerid': TEST_SERIES_ID * 100 + episode,
+            'name': 'Test Episode S{0:02d}E{1:02d}'.format(season, episode),
+            'description': '',
+            'subtitles': '',
+            'subtitles_searchcount': 0,
+            'subtitles_lastsearch': '0001-01-01T00:00:00Z',
+            'airdate': 736000,
+            'hasnfo': 0,
+            'hastbn': 0,
+            'status': SKIPPED,
+            'location': '',
+            'file_size': 0,
+            'release_name': '',
+            'is_proper': 0,
+            'absolute_number': episode,
+            # Episode schema requires release.version >= 0; the column default
+            # of -1 would fail the JSON schema check on GET episodes.
+            'version': 0,
+            'release_group': '',
+        }, {
+            'indexer': TEST_SERIES_INDEXER,
+            'showid': TEST_SERIES_ID,
+            'season': season,
+            'episode': episode,
+        })
+
+    # Give the alias endpoints something to query against. The GET /alias
+    # handler reads scene_exceptions directly so it does not require the
+    # series to be present in app.showList.
+    main_db_con.action(
+        'INSERT OR IGNORE INTO scene_exceptions '
+        '(indexer, series_id, title, season, custom) VALUES (?, ?, ?, ?, ?)',
+        [TEST_SERIES_INDEXER, TEST_SERIES_ID, 'Dredd Test Alias', -1, 1],
+    )
+
+    # Drop placeholder images into the image cache so
+    # GET /api/v2/series/{id}/asset/{kind} returns 200 instead of 404 and
+    # Series.to_json's `cache.banner` / `cache.poster` resolve to a real path
+    # instead of null (the Series schema requires `type: string`).
+    cache_image_dir = os.path.join(app.CACHE_DIR, 'images', 'tvdb')
+    try:
+        os.makedirs(cache_image_dir)
+    except OSError:
+        pass
+    # 1x1 JPEG so the handler streams a non-empty body with a real
+    # image MIME type derived from the filename.
+    minimal_jpeg = (
+        b'\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x00\x00\x01\x00\x01'
+        b'\x00\x00\xff\xdb\x00C\x00\x08\x06\x06\x07\x06\x05\x08\x07\x07'
+        b'\x07\t\t\x08\n\x0c\x14\r\x0c\x0b\x0b\x0c\x19\x12\x13\x0f\x14'
+        b'\x1d\x1a\x1f\x1e\x1d\x1a\x1c\x1c $.\' ",#\x1c\x1c(7),01444'
+        b'\x1f\'9=82<.342\xff\xc0\x00\x0b\x08\x00\x01\x00\x01\x01\x01'
+        b'\x11\x00\xff\xc4\x00\x1f\x00\x00\x01\x05\x01\x01\x01\x01\x01'
+        b'\x01\x00\x00\x00\x00\x00\x00\x00\x00\x01\x02\x03\x04\x05\x06'
+        b'\x07\x08\t\n\x0b\xff\xc4\x00\xb5\x10\x00\x02\x01\x03\x03\x02'
+        b'\x04\x03\x05\x05\x04\x04\x00\x00\x01}\x01\x02\x03\x00\x04\x11'
+        b'\x05\x12!1A\x06\x13Qa\x07"q\x142\x81\x91\xa1\x08#B\xb1\xc1\x15'
+        b'R\xd1\xf0$3br\x82\t\n\x16\x17\x18\x19\x1a%&\'()*456789:CDEFG'
+        b'HIJSTUVWXYZcdefghijstuvwxyz\x83\x84\x85\x86\x87\x88\x89\x8a'
+        b'\x92\x93\x94\x95\x96\x97\x98\x99\x9a\xa2\xa3\xa4\xa5\xa6\xa7'
+        b'\xa8\xa9\xaa\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xba\xc2\xc3\xc4'
+        b'\xc5\xc6\xc7\xc8\xc9\xca\xd2\xd3\xd4\xd5\xd6\xd7\xd8\xd9\xda'
+        b'\xe1\xe2\xe3\xe4\xe5\xe6\xe7\xe8\xe9\xea\xf1\xf2\xf3\xf4\xf5'
+        b'\xf6\xf7\xf8\xf9\xfa\xff\xda\x00\x08\x01\x01\x00\x00?\x00\xfb'
+        b'\xd0\xff\xd9'
+    )
+    for kind in ('banner', 'poster'):
+        image_path = os.path.join(cache_image_dir, '{0}.{1}.jpg'.format(TEST_SERIES_ID, kind))
+        if not os.path.isfile(image_path):
+            with open(image_path, 'wb') as fh:
+                fh.write(minimal_jpeg)
+
+    series_obj = Series(TEST_SERIES_INDEXER, TEST_SERIES_ID)
+    app.showList.append(series_obj)
+    print('Seeded test fixture tvdb{0} at {1}'.format(TEST_SERIES_ID, show_dir))
+
+
 def start():
     """Start application."""
     import shutil
@@ -211,6 +369,24 @@ def start():
     sys.path.insert(1, root_dir)
 
     from medusa.__main__ import Application
+
+    # Hook into load_shows_from_db so the fixture is in place before the web
+    # server starts accepting requests; otherwise dependent transactions race
+    # against the seed and fail with "Series not found".
+    original_load_shows_from_db = Application.load_shows_from_db
+
+    def load_shows_from_db_with_seed():
+        original_load_shows_from_db()
+        try:
+            _seed_test_data()
+        except Exception as error:  # pragma: no cover - fail fast on required seed errors
+            import traceback
+            print('Failed to seed test data: {0!r}'.format(error))
+            print(traceback.format_exc())
+            raise
+
+    Application.load_shows_from_db = staticmethod(load_shows_from_db_with_seed)
+
     application = Application()
     application.start(args)
 
