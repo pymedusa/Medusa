@@ -57,14 +57,6 @@ paths:
           description: Invalid request
           x-request:
             body: {}
-        404:
-          $ref: '#/responses/error'
-          description: Series not found in the indexer
-          x-disabled: true
-          x-request:
-            body:
-              id:
-                tvdb: 99999999
         409:
           $ref: '#/responses/error'
           description: Series already added
@@ -190,7 +182,6 @@ paths:
         409:
           $ref: '#/responses/error'
           description: Unable to delete series
-          x-disabled: true
   /series/{id}/{field}:
     get:
       summary: Return a specific field from a given series

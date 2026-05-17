@@ -213,7 +213,8 @@ def _seed_test_data():
     try:
         os.makedirs(show_dir)
     except OSError:
-        pass
+        if not os.path.isdir(show_dir):
+            raise
 
     main_db_con = db.DBConnection()
 
@@ -309,7 +310,8 @@ def _seed_test_data():
     try:
         os.makedirs(cache_image_dir)
     except OSError:
-        pass
+        if not os.path.isdir(cache_image_dir):
+            raise
     # 1x1 JPEG so the handler streams a non-empty body with a real
     # image MIME type derived from the filename.
     minimal_jpeg = (
