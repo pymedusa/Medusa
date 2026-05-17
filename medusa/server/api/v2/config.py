@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 import datetime
 import inspect
 import logging
-import pkgutil
+import importlib.util
 import platform
 import sys
 from random import choice
@@ -1262,7 +1262,7 @@ class DataGenerator(object):
         section_data['specificProcessMethod'] = bool(app.USE_SPECIFIC_PROCESS_METHOD)
         section_data['processMethodTorrent'] = app.PROCESS_METHOD_TORRENT
         section_data['processMethodNzb'] = app.PROCESS_METHOD_NZB
-        section_data['reflinkAvailable'] = bool(pkgutil.find_loader('reflink'))
+        section_data['reflinkAvailable'] = importlib.util.find_spec('reflink') is not None
         section_data['autoPostprocessorFrequency'] = int(app.AUTOPOSTPROCESSOR_FREQUENCY)
         section_data['syncFiles'] = app.SYNC_FILES
         section_data['fileTimestampTimezone'] = app.FILE_TIMESTAMP_TIMEZONE
