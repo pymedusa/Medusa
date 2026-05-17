@@ -162,6 +162,7 @@ export default {
         ...mapState({
             indexers: state => state.config.indexers,
             indexerDefault: state => state.config.general.indexerDefault,
+            indexerDefaultLanguage: state => state.config.general.indexerDefaultLanguage,
             queueitems: state => state.shows.queueitems,
             client: state => state.auth.client
         }),
@@ -345,7 +346,7 @@ export default {
          * @param {boolean} unattended - true if shows should be added without prompting for show options.
          */
         openAddNewShow(curDirIndex, unattended = false) {
-            const { addShowComponents, filteredDirList, presetShowOptions, promptForSettings } = this;
+            const { addShowComponents, filteredDirList, indexerDefaultLanguage, presetShowOptions, promptForSettings } = this;
 
             const curDir = filteredDirList[curDirIndex];
             const providedInfo = {
@@ -354,7 +355,7 @@ export default {
                 showName: '',
                 showDir: curDir.path,
                 indexerId: 0,
-                indexerLanguage: 'en',
+                indexerLanguage: indexerDefaultLanguage,
                 curDirIndex, // Add so we can return it with the matching queueitem. This allows us to keep track.
                 // If promptForSettings is enabled, negate out the unattended flag if enabled.
                 unattended: unattended && !promptForSettings // Passed as a flag, to auto add the show if enabled.
