@@ -249,11 +249,16 @@ class NewznabProvider(NZBProvider):
                     pubdate_raw = item.pubdate.get_text(strip=True)
                     pubdate = self.parse_pubdate(pubdate_raw)
 
+                    info_url = ''
+                    if item.comments:
+                        info_url = item.comments.get_text(strip=True)
+
                     item = {
                         'title': title,
                         'link': download_url,
                         'size': size,
                         'pubdate': pubdate,
+                        'info_url': info_url,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0}', title)
