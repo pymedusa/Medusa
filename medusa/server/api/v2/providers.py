@@ -89,6 +89,7 @@ class ProvidersHandler(BaseRequestHandler):
                         'seriesId': item['indexerid'],
                         'showSlug': show_slug,
                         'url': item['url'],
+                        'infoUrl': item['info_url'] or None,
                         'time': datetime.fromtimestamp(item['time']),
                         'quality': item['quality'],
                         'releaseGroup': item['release_group'],
