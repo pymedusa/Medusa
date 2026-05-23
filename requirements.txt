@@ -31,7 +31,7 @@ pytrakt==3.4.35
 PyYAML==6.0.3
 rarfile==4.2
 rebulk==3.2.0
-requests==2.32.5
+requests==2.33.0
 requests-oauthlib==2.0.0
 requests-toolbelt==1.0.0
 six==1.17.0
