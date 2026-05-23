@@ -22,7 +22,7 @@ markdown2==2.5.4
 packaging==25.0
 profilehooks==1.13.0
 PyGithub==1.53
-PyJWT==2.10.1
+PyJWT==2.12.0
 pymediainfo==7.0.1
 python-dateutil==2.9.0.post0
 python-twitter==3.5
