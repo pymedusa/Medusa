@@ -49,7 +49,7 @@ dependencies = [
     "trans==2.1.0",
     "ttl-cache==1.6",
     "tvdbapiv2",
-    "urllib3==2.5.0",
+    "urllib3==2.6.3",
     "validators==0.35.0",
 ]
 
