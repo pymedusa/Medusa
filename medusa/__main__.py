@@ -32,6 +32,9 @@ Options:
        --pidfile=[FILE]  Combined with --daemon creates a pid file
 
   -p,  --port=[PORT]     Override default/configured port to listen on
+       --unix-socket=[PATH]
+                         Listen on a Unix domain socket at PATH instead of a
+                         TCP port. When set, --port is ignored.
        --datadir=[PATH]  Override folder (full path) as location for
                          storing database, config file, cache, and log files
                          Default Medusa directory
@@ -123,6 +126,7 @@ class Application(object):
         # web server constants
         self.web_server = None
         self.forced_port = None
+        self.forced_unix_socket = None
         self.no_launch = False
 
         self.web_host = '0.0.0.0'
@@ -223,7 +227,8 @@ class Application(object):
         try:
             opts, _ = getopt.getopt(
                 args, 'hqdp::',
-                ['help', 'quiet', 'nolaunch', 'daemon', 'pidfile=', 'port=', 'datadir=', 'config=', 'noresize']
+                ['help', 'quiet', 'nolaunch', 'daemon', 'pidfile=', 'port=', 'unix-socket=',
+                 'datadir=', 'config=', 'noresize']
             )
         except getopt.GetoptError:
             sys.exit(self.help_message())
@@ -249,6 +254,10 @@ class Application(object):
                     self.forced_port = int(value)
                 except ValueError:
                     sys.exit('Port: %s is not a number. Exiting.' % value)
+
+            # Listen on a unix socket instead of a TCP port
+            if option in ('--unix-socket',):
+                self.forced_unix_socket = os.path.abspath(value)
 
             # Run as a double forked daemon
             if option in ('-d', '--daemon'):
@@ -393,10 +402,17 @@ class Application(object):
         else:
             self.web_host = '' if app.WEB_IPV6 else '0.0.0.0'
 
+        unix_socket = self.forced_unix_socket or app.WEB_UNIX_SOCKET
+
+        # When listening on a unix socket, browser auto-launch can't reach it.
+        if unix_socket:
+            self.no_launch = True
+
         # web server options
         self.web_options = {
             'port': int(self.start_port),
             'host': self.web_host,
+            'unix_socket': unix_socket,
             'data_root': app.DATA_ROOT,
             'vue_root': os.path.join(app.PROG_DIR, 'vue'),
             'web_root': app.WEB_ROOT,
@@ -570,6 +586,12 @@ class Application(object):
 
             app.WEB_HOST = check_setting_str(app.CFG, 'General', 'web_host', '0.0.0.0')
             app.WEB_IPV6 = bool(check_setting_int(app.CFG, 'General', 'web_ipv6', 0))
+            app.WEB_UNIX_SOCKET = check_setting_str(app.CFG, 'General', 'web_unix_socket', '')
+
+            # Allow overriding the unix socket path via environment variable
+            env_unix_socket = os.environ.get('MEDUSA_WEB_UNIX_SOCKET')
+            if env_unix_socket:
+                app.WEB_UNIX_SOCKET = env_unix_socket
             app.WEB_ROOT = check_setting_str(app.CFG, 'General', 'web_root', '').rstrip('/')
             app.WEB_LOG = bool(check_setting_int(app.CFG, 'General', 'web_log', 0))
             app.WEB_USERNAME = check_setting_str(app.CFG, 'General', 'web_username', '', censor_log='normal')
