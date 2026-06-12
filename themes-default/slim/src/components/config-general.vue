@@ -303,14 +303,15 @@
                                         <p>blank = no authentication</p>
                                     </config-textbox>
 
-                                    <config-textbox-number v-model="general.webInterface.port" label="HTTP port" id="web_port" :min="1" :step="1">
+                                    <config-textbox-number v-model="general.webInterface.port" label="HTTP port" id="web_port" :min="0" :step="1">
                                         <p>web port to browse and access Medusa (default:8081)</p>
+                                        <p>set to 0 to disable the TCP listener</p>
                                     </config-textbox-number>
 
                                     <config-textbox v-model="general.webInterface.unixSocket" label="Unix socket" id="web_unix_socket" autocomplete="no">
-                                        <p>listen on a Unix domain socket at this path instead of a TCP port</p>
+                                        <p>listen on a Unix domain socket at this path</p>
                                         <p>blank = disabled (listen on the HTTP port above)</p>
-                                        <p><b>Note:</b> When set, the HTTP port is ignored. Must restart to have effect.</p>
+                                        <p><b>Note:</b> Set the HTTP port to 0 to serve only on the Unix socket. Must restart to have effect.</p>
                                     </config-textbox>
 
                                     <config-toggle-slider v-model="general.webInterface.notifyOnLogin" label="Notify on login" id="notify_on_login">
