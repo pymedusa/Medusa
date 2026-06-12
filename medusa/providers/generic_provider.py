@@ -15,6 +15,8 @@ from os.path import join
 
 from dateutil import parser, tz
 
+import guessit
+
 from medusa import (
     app,
     config,
@@ -44,6 +46,11 @@ from medusa.name_parser.parser import (
     NameParser,
 )
 from medusa.search import FORCED_SEARCH, PROPER_SEARCH
+from medusa.search.release_matcher import (
+    ReleaseMatcher,
+    extract_strong_numbering,
+    has_explicit_non_video_extension,
+)
 from medusa.session.core import ProviderSession
 from medusa.show.show import Show
 
@@ -245,6 +252,103 @@ class GenericProvider(object):
         """
         return self.cache.find_episodes(episodes)
 
+    @staticmethod
+    def _use_contextual_matching(manual_search, episodes, search_mode, manual_search_type):
+        return (
+            manual_search
+            and len(episodes) == 1
+            and search_mode == 'eponly'
+            and manual_search_type == 'episode'
+        )
+
+    @staticmethod
+    def _apply_parsed_result_to_search_result(search_result, parsed_result):
+        search_result.parsed_result = parsed_result
+        search_result.series = parsed_result.series
+        search_result.quality = parsed_result.quality
+        search_result.release_group = parsed_result.release_group
+        search_result.version = parsed_result.version
+        search_result.actual_season = parsed_result.season_number
+        search_result.actual_episodes = parsed_result.episode_numbers
+
+    @staticmethod
+    def _build_minimal_parse_result(release_name, series):
+        guess = guessit.guessit(
+            release_name,
+            dict(show_type='anime' if series.is_anime else 'normal')
+        )
+        parser = NameParser(series=series)
+        result = parser.to_parse_result(release_name, guess)
+        result.series = series
+        return result
+
+    def _apply_contextual_manual_parse(self, search_result, series, target_episode):
+        """Parse and match a release for a single-episode manual search."""
+        parse_method = ('normal', 'anime')[series.is_anime]
+        release_name = search_result.name
+
+        if has_explicit_non_video_extension(release_name):
+            log.debug(
+                'Rejected release because the filename extension is not a supported video type: {release_name}',
+                {'release_name': release_name}
+            )
+            search_result.add_cache_entry = False
+            search_result.result_wanted = False
+            return False
+
+        parsed_result = None
+        strict_succeeded = False
+        try:
+            parsed_result = NameParser(parse_method=parse_method).parse(release_name)
+            strict_succeeded = True
+        except (InvalidNameException, InvalidShowException) as error:
+            log.debug(
+                'Strict release parsing failed: {release_name}, with error: {error}',
+                {'release_name': release_name, 'error': error}
+            )
+
+        reliable = extract_strong_numbering(release_name)
+        if strict_succeeded and reliable:
+            strong_season, strong_episodes = reliable
+            if strong_season == target_episode.season and target_episode.episode in strong_episodes:
+                self._apply_parsed_result_to_search_result(search_result, parsed_result)
+                return True
+
+            log.debug(
+                'Rejected release because explicit numbering conflicts with the requested episode: {release_name}',
+                {'release_name': release_name}
+            )
+            search_result.add_cache_entry = False
+            search_result.result_wanted = False
+            return False
+
+        advisory_parsed = None
+        try:
+            advisory_parsed = NameParser(
+                series=series,
+                parse_method=parse_method,
+            ).parse(
+                release_name,
+                cache_result=False,
+                use_cache=False,
+            )
+        except (InvalidNameException, InvalidShowException):
+            advisory_parsed = self._build_minimal_parse_result(release_name, series)
+
+        matcher = ReleaseMatcher(series, [target_episode])
+        match = matcher.match(release_name, advisory_parsed)
+
+        if not match.matched:
+            search_result.add_cache_entry = False
+            search_result.result_wanted = False
+            return False
+
+        advisory_parsed.series = series
+        advisory_parsed.season_number = match.season
+        advisory_parsed.episode_numbers = match.episodes
+        self._apply_parsed_result_to_search_result(search_result, advisory_parsed)
+        return True
+
     def find_search_results(self, series, episodes, search_mode, forced_search=False, download_current_quality=False,
                             manual_search=False, manual_search_type='episode'):
         """
@@ -293,6 +397,10 @@ class GenericProvider(object):
         # sort qualities in descending order
         results.sort(key=operator.attrgetter('quality'), reverse=True)
 
+        use_contextual_matching = self._use_contextual_matching(
+            manual_search, episodes, search_mode, manual_search_type
+        )
+
         # Move through each item and parse with NameParser()
         for search_result in results:
 
@@ -301,25 +409,25 @@ class GenericProvider(object):
             search_result.download_current_quality = download_current_quality
             search_result.result_wanted = True
 
-            try:
-                search_result.parsed_result = NameParser(
-                    parse_method=('normal', 'anime')[series.is_anime]).parse(
-                        search_result.name)
-            except (InvalidNameException, InvalidShowException) as error:
-                log.debug('Error during parsing of release name: {release_name}, with error: {error}',
-                          {'release_name': search_result.name, 'error': error})
-                search_result.add_cache_entry = False
-                search_result.result_wanted = False
-                continue
+            if use_contextual_matching:
+                if not self._apply_contextual_manual_parse(
+                        search_result, series, episodes[0]):
+                    continue
+            else:
+                try:
+                    search_result.parsed_result = NameParser(
+                        parse_method=('normal', 'anime')[series.is_anime]
+                    ).parse(search_result.name)
+                except (InvalidNameException, InvalidShowException) as error:
+                    log.debug(
+                        'Error during parsing of release name: {release_name}, with error: {error}',
+                        {'release_name': search_result.name, 'error': error}
+                    )
+                    search_result.add_cache_entry = False
+                    search_result.result_wanted = False
+                    continue
 
-            # I don't know why i'm doing this. Maybe remove it later on all together, now i've added the parsed_result
-            # to the search_result.
-            search_result.series = search_result.parsed_result.series
-            search_result.quality = search_result.parsed_result.quality
-            search_result.release_group = search_result.parsed_result.release_group
-            search_result.version = search_result.parsed_result.version
-            search_result.actual_season = search_result.parsed_result.season_number
-            search_result.actual_episodes = search_result.parsed_result.episode_numbers
+                self._apply_parsed_result_to_search_result(search_result, search_result.parsed_result)
 
             if not manual_search:
                 if not (search_result.series.air_by_date or search_result.series.sports):
