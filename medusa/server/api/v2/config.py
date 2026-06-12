@@ -593,6 +593,21 @@ class ConfigHandler(BaseRequestHandler):
             return self._not_found('Config not found')
 
         data = json_decode(self.request.body)
+
+        # Refuse a configuration with no listener: a web port of 0 disables the
+        # TCP listener, so a unix socket must be configured in that case.
+        web_interface = data.get('webInterface') or {}
+        prospective_port = web_interface.get('port', app.WEB_PORT)
+        prospective_unix_socket = web_interface.get('unixSocket', app.WEB_UNIX_SOCKET)
+        try:
+            prospective_port = int(prospective_port)
+        except (TypeError, ValueError):
+            prospective_port = app.WEB_PORT
+        if prospective_port == 0 and not prospective_unix_socket:
+            return self._bad_request(
+                'A web port of 0 disables the TCP listener and requires a unix socket to be configured.'
+            )
+
         accepted = {}
         ignored = {}
 

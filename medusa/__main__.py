@@ -33,8 +33,8 @@ Options:
 
   -p,  --port=[PORT]     Override default/configured port to listen on
        --unix-socket=[PATH]
-                         Listen on a Unix domain socket at PATH instead of a
-                         TCP port. When set, --port is ignored.
+                         Listen on a Unix domain socket at PATH. Combine with
+                         --port=0 to serve only on the Unix socket.
        --datadir=[PATH]  Override folder (full path) as location for
                          storing database, config file, cache, and log files
                          Default Medusa directory
@@ -384,7 +384,7 @@ class Application(object):
         self.migrate_images()
         self.initialize_custom_logging()
 
-        if self.forced_port:
+        if self.forced_port is not None:
             logger.info('Forcing web server to port {port}', port=self.forced_port)
             self.start_port = self.forced_port
         else:
@@ -404,8 +404,9 @@ class Application(object):
 
         unix_socket = self.forced_unix_socket or app.WEB_UNIX_SOCKET
 
-        # When listening on a unix socket, browser auto-launch can't reach it.
-        if unix_socket:
+        # A TCP port of 0 disables the TCP listener. Only launch the browser
+        # if a TCP listener is active.
+        if int(self.start_port) == 0:
             self.no_launch = True
 
         # web server options
@@ -581,7 +582,8 @@ class Application(object):
             except Exception:
                 pass
 
-            if not 21 < app.WEB_PORT < 65535:
+            # A port of 0 disables the TCP listener.
+            if app.WEB_PORT != 0 and not 21 < app.WEB_PORT < 65535:
                 app.WEB_PORT = 8081
 
             app.WEB_HOST = check_setting_str(app.CFG, 'General', 'web_host', '0.0.0.0')
