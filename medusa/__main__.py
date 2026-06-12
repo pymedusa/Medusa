@@ -1634,6 +1634,7 @@ class Application(object):
         new_config['General']['web_port'] = app.WEB_PORT
         new_config['General']['web_host'] = app.WEB_HOST
         new_config['General']['web_ipv6'] = int(app.WEB_IPV6)
+        new_config['General']['web_unix_socket'] = app.WEB_UNIX_SOCKET
         new_config['General']['web_log'] = int(app.WEB_LOG)
         new_config['General']['web_root'] = app.WEB_ROOT
         new_config['General']['web_username'] = app.WEB_USERNAME

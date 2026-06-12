@@ -76,6 +76,7 @@ const state = {
         password: null,
         port: null,
         host: null,
+        unixSocket: null,
         notifyOnLogin: null,
         ipv6: null,
         httpsEnable: null,

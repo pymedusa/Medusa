@@ -135,6 +135,7 @@ class ConfigHandler(BaseRequestHandler):
         'webInterface.password': StringField(app, 'WEB_PASSWORD'),
         'webInterface.port': IntegerField(app, 'WEB_PORT'),
         'webInterface.host': StringField(app, 'WEB_HOST'),
+        'webInterface.unixSocket': StringField(app, 'WEB_UNIX_SOCKET'),
         'webInterface.notifyOnLogin': BooleanField(app, 'NOTIFY_ON_LOGIN'),
         'webInterface.ipv6': BooleanField(app, 'WEB_IPV6'),
         'webInterface.httpsEnable': BooleanField(app, 'ENABLE_HTTPS'),
@@ -739,6 +740,7 @@ class DataGenerator(object):
         section_data['webInterface']['password'] = app.WEB_PASSWORD
         section_data['webInterface']['port'] = int_default(app.WEB_PORT, 8081)
         section_data['webInterface']['host'] = app.WEB_HOST
+        section_data['webInterface']['unixSocket'] = app.WEB_UNIX_SOCKET
         section_data['webInterface']['notifyOnLogin'] = bool(app.NOTIFY_ON_LOGIN)
         section_data['webInterface']['ipv6'] = bool(app.WEB_IPV6)
         section_data['webInterface']['httpsEnable'] = bool(app.ENABLE_HTTPS)

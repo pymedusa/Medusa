@@ -307,6 +307,12 @@
                                         <p>web port to browse and access Medusa (default:8081)</p>
                                     </config-textbox-number>
 
+                                    <config-textbox v-model="general.webInterface.unixSocket" label="Unix socket" id="web_unix_socket" autocomplete="no">
+                                        <p>listen on a Unix domain socket at this path instead of a TCP port</p>
+                                        <p>blank = disabled (listen on the HTTP port above)</p>
+                                        <p><b>Note:</b> When set, the HTTP port is ignored. Must restart to have effect.</p>
+                                    </config-textbox>
+
                                     <config-toggle-slider v-model="general.webInterface.notifyOnLogin" label="Notify on login" id="notify_on_login">
                                         <p>enable to be notified when a new login happens in webserver</p>
                                     </config-toggle-slider>
