@@ -594,8 +594,7 @@ class ConfigHandler(BaseRequestHandler):
 
         data = json_decode(self.request.body)
 
-        # Refuse a configuration with no listener: a web port of 0 disables the
-        # TCP listener, so a unix socket must be configured in that case.
+        # Refuse a configuration with no listeners
         web_interface = data.get('webInterface') or {}
         prospective_port = web_interface.get('port', app.WEB_PORT)
         prospective_unix_socket = web_interface.get('unixSocket', app.WEB_UNIX_SOCKET)

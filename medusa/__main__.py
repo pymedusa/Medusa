@@ -404,8 +404,7 @@ class Application(object):
 
         unix_socket = self.forced_unix_socket or app.WEB_UNIX_SOCKET
 
-        # A TCP port of 0 disables the TCP listener. Only launch the browser
-        # if a TCP listener is active.
+        # Only launch the browser if a TCP listener is active.
         if int(self.start_port) == 0:
             self.no_launch = True
 

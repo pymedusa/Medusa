@@ -349,11 +349,9 @@ class AppWebServer(threading.Thread):
             self.server = HTTPServer(self.app)
 
         unix_socket = self.options.get('unix_socket')
-        # A TCP port of 0 disables the TCP listener.
         tcp_enabled = self.options['port'] != 0
 
-        # At least one of the TCP listener or the unix socket must be active,
-        # otherwise there is nothing to serve on.
+        # At least one of the TCP listener or the unix socket must be active
         if not tcp_enabled and not unix_socket:
             log.error('Cannot start the web server: the TCP listener is disabled '
                       '(port 0) and no unix socket is configured.')
