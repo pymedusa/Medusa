@@ -23,6 +23,9 @@ import ttl_cache
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
+# qBittorrent 5.0 reports Web API 2.11.2 and replaces pause/resume with stop/start.
+QBITTORRENT_START_STOP_API = (2, 11, 2)
+
 
 class APIUnavailableError(Exception):
     """Raised when the API version is not available."""
@@ -242,14 +245,40 @@ class QBittorrentAPI(GenericClient):
 
         return ok
 
-    def _set_torrent_pause(self, result):
-        return self.pause_torrent(result.hash, state='pause' if app.TORRENT_PAUSED else 'resume')
+    def _uses_start_stop_api(self):
+        """Return whether the connected qBittorrent Web API uses start/stop endpoints."""
+        return bool(self.api) and self.api >= QBITTORRENT_START_STOP_API
 
-    def _set_torrent_stop(self, result):
-        return self.stop_torrent(result.hash, state='stop' if app.TORRENT_STOPPED else 'start')
+    def _torrent_state_endpoint(self, active):
+        """Return the torrent-state endpoint for the reported Web API version."""
+        if self._uses_start_stop_api():
+            return 'start' if active else 'stop'
+        return 'resume' if active else 'pause'
+
+    def _normalize_torrent_state(self, state):
+        """Translate state names to the API generation reported by the client."""
+        if self._uses_start_stop_api():
+            if state == 'resume':
+                return 'start'
+            if state == 'pause':
+                return 'stop'
+            return state
+
+        if state == 'start':
+            return 'resume'
+        if state == 'stop':
+            return 'pause'
+        return state
+
+    def _set_torrent_state(self, result):
+        """Set torrent active or suspended state using a single API request."""
+        suspended = app.TORRENT_PAUSED or app.TORRENT_STOPPED
+        state = self._torrent_state_endpoint(active=not suspended)
+        return self.pause_torrent(result.hash, state=state)
 
     def pause_torrent(self, info_hash, state='pause'):
-        """Pause torrent."""
+        """Pause or resume/start torrent depending on the connected Web API version."""
+        state = self._normalize_torrent_state(state)
         command = 'api/v2/torrents' if self.api >= (2, 0, 0) else 'command'
         hashes_key = 'hashes' if self.api >= (1, 18, 0) else 'hash'
         self.url = urljoin(self.host, '{command}/{state}'.format(command=command, state=state))
@@ -259,14 +288,8 @@ class QBittorrentAPI(GenericClient):
         return self._request(method='post', data=data, cookies=self.session.cookies)
 
     def stop_torrent(self, info_hash, state='stop'):
-        """Stop torrent."""
-        command = 'api/v2/torrents' if self.api >= (2, 0, 0) else 'command'
-        hashes_key = 'hashes' if self.api >= (1, 18, 0) else 'hash'
-        self.url = urljoin(self.host, '{command}/{state}'.format(command=command, state=state))
-        data = {
-            hashes_key: info_hash.lower()
-        }
-        return self._request(method='post', data=data, cookies=self.session.cookies)
+        """Stop or start torrent depending on the connected Web API version."""
+        return self.pause_torrent(info_hash, state=state)
 
     def _remove(self, info_hash, from_disk=False):
         """Remove torrent from client using given info_hash.
@@ -414,11 +437,9 @@ class QBittorrentAPI(GenericClient):
             client_status.set_status_string('Downloading')
 
         # Might want to separate these into a PausedDl and PausedUl in future.
-        if torrent['state'] in ('pausedDL', 'stalledDL'):
+        # qBittorrent 5.0+ reports stoppedDL instead of pausedDL.
+        if torrent['state'] in ('pausedDL', 'stalledDL', 'stoppedDL'):
             client_status.set_status_string('Paused')
-
-        if torrent['state'] in ('stoppdDL'):
-            client_status.set_status_string('Stopped')
 
         if torrent['state'] == 'error':
             client_status.set_status_string('Failed')
