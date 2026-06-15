@@ -7,8 +7,54 @@ from medusa.clients.torrent import (
     deluge, deluged, downloadstation, mlnet,
     qbittorrent, rtorrent, transmission, utorrent
 )
+from medusa.clients.torrent.generic import GenericClient
 
 import pytest
+
+
+class GenericClientStub(GenericClient):
+    """Minimal GenericClient stub for torrent-state hook tests."""
+
+    def __init__(self, pause_result=True):
+        self.pause_result = pause_result
+        self.pause_calls = 0
+        self.stop_calls = 0
+
+    def _set_torrent_pause(self, result):
+        self.pause_calls += 1
+        return self.pause_result
+
+    def _set_torrent_stop(self, result):
+        self.stop_calls += 1
+        raise AssertionError('_set_torrent_stop should not be called')
+
+
+def test_set_torrent_state_calls_pause_only_success():
+    # Given
+    client = GenericClientStub(pause_result=True)
+    result = object()
+
+    # When
+    actual = client._set_torrent_state(result)
+
+    # Then
+    assert actual is True
+    assert client.pause_calls == 1
+    assert client.stop_calls == 0
+
+
+def test_set_torrent_state_calls_pause_only_failure():
+    # Given
+    client = GenericClientStub(pause_result=False)
+    result = object()
+
+    # When
+    actual = client._set_torrent_state(result)
+
+    # Then
+    assert actual is False
+    assert client.pause_calls == 1
+    assert client.stop_calls == 0
 
 
 @pytest.mark.parametrize('p', [
