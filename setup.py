@@ -43,8 +43,8 @@ def get_app_version():
     raise ValueError('Failed to get the app version!')
 
 
-with open(os.path.join(here, 'readme.md'), 'r') as r:
-    long_description = r.read()
+with open(os.path.join(here, 'README.md'), encoding='utf-8') as readme_file:
+    long_description = readme_file.read()
 
 
 def test_install_requires():
