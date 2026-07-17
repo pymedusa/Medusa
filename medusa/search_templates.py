@@ -178,7 +178,6 @@ class SearchTemplates(object):
             }
         else:
             new_values = {
-                'template': template['template'],
                 'enabled': template['enabled'],
             }
             control_values = {
@@ -188,6 +187,7 @@ class SearchTemplates(object):
                 'season': template['season'],
                 '`default`': template_default,
                 'season_search': season_search,
+                'template': template['template'],
             }
 
         # use a custom update/insert method to get the data into the DB
