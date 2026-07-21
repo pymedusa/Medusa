@@ -183,7 +183,7 @@ def get_expected_titles(show_list):
                 for alias in show.aliases
                 if alias and alias.title
             },
-            key=str.casefold,
+            key=lambda title: (title.casefold(), title),
         )
         for exception in exceptions:
             # Do not add only numbers to expected titles.

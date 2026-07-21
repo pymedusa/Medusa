@@ -225,8 +225,10 @@ def test_alias_order_is_deterministic(create_tvshow):
         name='Show Name',
         _aliases=[
             TitleException(title='Zeta 99 Alias', season=-1, indexer=1, series_id=30, custom=True),
+            TitleException(title='delta 5 Alias', season=-1, indexer=1, series_id=30, custom=True),
             TitleException(title='Alpha 12 Alias', season=-1, indexer=1, series_id=30, custom=True),
             TitleException(title='Alpha 12 Alias', season=-1, indexer=1, series_id=30, custom=True),
+            TitleException(title='Delta 5 Alias', season=-1, indexer=1, series_id=30, custom=True),
             TitleException(title='beta 7 Alias', season=-1, indexer=1, series_id=30, custom=True),
             None,
             TitleException(title='', season=-1, indexer=1, series_id=30, custom=True),
@@ -238,7 +240,14 @@ def test_alias_order_is_deterministic(create_tvshow):
     numbered_aliases = [title for title in first if 'Alias' in title]
 
     assert first == second
-    assert numbered_aliases == ['Alpha 12 Alias', 'beta 7 Alias', 'Zeta 99 Alias']
+    # casefold ties break on the original title so "Delta" precedes "delta".
+    assert numbered_aliases == [
+        'Alpha 12 Alias',
+        'beta 7 Alias',
+        'Delta 5 Alias',
+        'delta 5 Alias',
+        'Zeta 99 Alias',
+    ]
     assert len(numbered_aliases) == len(set(numbered_aliases))
     assert first == list(dict.fromkeys(first))
 
