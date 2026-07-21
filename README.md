@@ -95,7 +95,7 @@ Docker is the recommended installation method for most server and NAS deployment
 | Method | Recommended for | Notes |
 | --- | --- | --- |
 | Docker | Most server and NAS installations | Recommended for most users |
-| From source | Developers and unsupported platforms | Requires Python 3.9 or later |
+| From source | Developers and unsupported platforms | Requires Python 3.10 or later |
 | Windows setup | Windows users | Source quick start below and platform-specific wiki guidance |
 | Community packages | Synology, QNAP, Asustor, and other NAS platforms | Maintained outside the main Medusa repository |
 
@@ -174,7 +174,7 @@ A community-maintained alternative is available from [LinuxServer.io](https://hu
 
 ### From source
 
-Python 3.9 or later is required. Python 3.9 through 3.13 is currently tested in CI.
+Python 3.10 or later is required. Python 3.10 through 3.13 is currently tested in CI.
 
 You also need Git. [MediaInfo](https://mediaarea.net/en/MediaInfo) is recommended for richer video metadata extraction. UnRAR (or a compatible RAR extractor) is recommended when processing archived downloads. Using a virtual environment is strongly recommended.
 

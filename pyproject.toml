@@ -3,7 +3,7 @@ name = "medusa"
 version = "1.0.25"
 description = "Automatic Video Library Manager for TV Shows"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "adba",
     "appdirs==1.4.4",
@@ -37,7 +37,7 @@ dependencies = [
     "pytrakt==3.4.35",
     "pyyaml==6.0.3",
     "rarfile==4.2",
-    "rebulk==3.2.0",
+    "rebulk==6.0.1",
     "requests==2.32.5",
     "requests-oauthlib==2.0.0",
     "requests-toolbelt==1.0.0",
