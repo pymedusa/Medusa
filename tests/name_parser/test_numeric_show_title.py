@@ -164,8 +164,9 @@ def test_real_folder_variant_with_double_space_and_year(numeric_series, monkeypa
     """Folder names often differ in punctuation from the official indexer title."""
     monkeypatch.setattr(app, 'showList', [numeric_series])
     release_name = (
-        r"E:\media\tv\39-45  L'Europe en Guerre (2019)\39-45  L'Europe en guerre S01\\"
-        r"39-45  L'Europe en guerre - S01E07 - La bataille des Ardennes.mkv"
+        r"E:\media\tv\39-45  L'Europe en Guerre (2019)"
+        r"\39-45  L'Europe en guerre S01"
+        r"\39-45  L'Europe en guerre - S01E07 - La bataille des Ardennes.mkv"
     )
 
     actual = guessit.guessit(release_name, cached=False)
