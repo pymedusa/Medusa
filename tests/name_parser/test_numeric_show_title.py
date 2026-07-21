@@ -158,3 +158,18 @@ def test_classic_range_and_multi_episode_unchanged(release_name, expected_episod
     assert actual.get('title') == 'Show Name'
     assert actual.get('season') == 1
     assert actual.get('episode') == expected_episode
+
+
+def test_real_folder_variant_with_double_space_and_year(numeric_series, monkeypatch):
+    """Folder names often differ in punctuation from the official indexer title."""
+    monkeypatch.setattr(app, 'showList', [numeric_series])
+    release_name = (
+        r"E:\media\tv\39-45  L'Europe en Guerre (2019)\39-45  L'Europe en guerre S01\\"
+        r"39-45  L'Europe en guerre - S01E07 - La bataille des Ardennes.mkv"
+    )
+
+    actual = guessit.guessit(release_name, cached=False)
+
+    assert actual.get('season') == 1
+    assert actual.get('episode') == 7
+    assert actual.get('episode') != [39, 40, 41, 42, 43, 44, 45]

@@ -62,6 +62,44 @@ allowed_countries = [
 
 series_re = re.compile(r'^(?P<series>.*?)(?: ?(?:(?P<year>\(\d{4}\))|(?P<country>[A-Z]{2}))?)?$')
 
+# Aligned with GuessIt separators so punctuation variants of a known title still match.
+_EXPECTED_TITLE_SEPS = r' [](){}+*|=-_~#/\\.,;:'
+
+
+def _flexible_expected_title(title):
+    """Build a GuessIt expected_title regex that allows flexible separators.
+
+    GuessIt's plain expected_title matching replaces each separator with a single
+    space and then requires an exact substring. Titles like ``39-45 : Name`` and
+    folder names like ``39-45  Name`` therefore fail to match. A ``re:`` pattern
+    with ``-+`` between tokens lets GuessIt's dash abbreviation consume one or
+    more separators.
+    """
+    tokens = []
+    current = []
+    for char in title:
+        if char in _EXPECTED_TITLE_SEPS:
+            if current:
+                tokens.append(''.join(current))
+                current = []
+        else:
+            current.append(char)
+    if current:
+        tokens.append(''.join(current))
+
+    if len(tokens) < 2:
+        return None
+
+    return 're:' + '-+'.join(re.escape(token) for token in tokens)
+
+
+def _append_expected_title(expected_titles, title):
+    """Append a title and, when useful, its flexible regex variant."""
+    expected_titles.append(title)
+    flexible_title = _flexible_expected_title(title)
+    if flexible_title:
+        expected_titles.append(flexible_title)
+
 
 def guessit(name, options=None, cached=True):
     """Guess the episode information from a given release name.
@@ -141,13 +179,13 @@ def get_expected_titles(show_list):
             # Add when show exception has a year (without brackets),
             # a number or '-' in its title.
             if any(char.isdigit() or char == '-' for char in match.group(1)):
-                expected_titles.append(exception)
+                _append_expected_title(expected_titles, exception)
                 continue
 
             # Add when show name is the same as exception,
             # to allow an explicit match.
             if show_title.casefold() == exception.casefold():
-                expected_titles.append(exception)
+                _append_expected_title(expected_titles, exception)
                 continue
 
         # Do not add only numbers to expected titles.
@@ -158,11 +196,10 @@ def get_expected_titles(show_list):
         if not match:
             continue
 
-        # Add when show exception has a year (without brackets),
+        # Add when show title has a year (without brackets),
         # a number or '-' in its title.
         if any(char.isdigit() or char == '-' for char in match.group(1)):
-            expected_titles.append(show_title)
-            continue
+            _append_expected_title(expected_titles, show_title)
 
     # Deterministic and de-duplicated while preserving insertion order.
     return list(OrderedDict.fromkeys(expected_titles))
