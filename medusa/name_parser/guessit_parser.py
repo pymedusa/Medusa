@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 
 import logging
 import re
+from collections import OrderedDict
 from datetime import timedelta
 from time import time
 
@@ -76,9 +77,23 @@ def guessit(name, options=None, cached=True):
     """
     start_time = time()
     final_options = dict(options) if options else dict(show_type='normal')
+    # NameParser may pass the known series so numeric titles are protected even
+    # when the show is not (yet) present in app.showList.
+    series = final_options.pop('series', None)
+    shows = list(app.showList or [])
+    if series is not None:
+        indexer = getattr(series, 'indexer', None)
+        series_id = getattr(series, 'indexerid', None)
+        if series_id is None:
+            series_id = getattr(series, 'series_id', None)
+        if not any(getattr(show, 'indexer', None) == indexer and
+                   getattr(show, 'indexerid', None) == series_id
+                   for show in shows):
+            shows.append(series)
+
     final_options.update(dict(type='episode', implicit=True,
                               episode_prefer_number=final_options.get('show_type') == 'anime',
-                              expected_title=get_expected_titles(app.showList),
+                              expected_title=get_expected_titles(shows),
                               expected_group=expected_groups,
                               allowed_languages=allowed_languages,
                               allowed_countries=allowed_countries))
@@ -108,9 +123,12 @@ def get_expected_titles(show_list):
     :rtype: list of str
     """
     expected_titles = []
-    for show in show_list:
+    for show in show_list or []:
         show_title = show.name
-        exceptions = {alias.title for alias in show.aliases}
+        if not show_title:
+            continue
+
+        exceptions = {alias.title for alias in show.aliases if alias and alias.title}
         for exception in exceptions:
             # Do not add only numbers to expected titles.
             if exception.isdigit():
@@ -146,7 +164,8 @@ def get_expected_titles(show_list):
             expected_titles.append(show_title)
             continue
 
-    return expected_titles
+    # Deterministic and de-duplicated while preserving insertion order.
+    return list(OrderedDict.fromkeys(expected_titles))
 
 
 class GuessItCache(BaseCache):

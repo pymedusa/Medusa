@@ -50,6 +50,7 @@ def show_list(create_tvshow):
         create_tvshow(indexerid=18, name='24'),  # expected titles shouldn't contain numbers
         create_tvshow(indexerid=19, name='9-1-1'),  # The dash in the title makes it an expected title
         create_tvshow(indexerid=20, name='Tate no Yuusha no Nariagari Season 2'),  # The number 2 will qualify this as an expected title
+        create_tvshow(indexerid=21, name="39-45 : L'Europe en guerre"),
     ]
 
 
