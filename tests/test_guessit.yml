@@ -1768,6 +1768,7 @@
   video_codec: H.264
   video_encoder: x264
   release_group: GROUP
+  container: rar
   mimetype: application/rar
   type: episode
 
@@ -1878,6 +1879,7 @@
   season: 2
   episode: 5
   other: Formula One
+  episode_title: Special
   episode_details: Special
   screen_size: 720p
   source: HDTV
@@ -1949,11 +1951,21 @@
 
 # CreateAliasWithAlternativeTitles (separated by +)
 ? - "[SuperGroup].Show.Name.-.Still+Name.-.11.[1080p]"
-  - /Shows/Show Name - Still+Name/[SuperGroup].Show.Name.-.Still+Name.-.11.[1080p]
   - /Shows/Show Name/[SuperGroup].Show.Name.-.Still+Name.-.11.[1080p]
 : title: Show Name
   alternative_title: [Still, Name]
   alias: "Show Name - Still+Name"
+  absolute_episode: 11
+  episode: 11
+  screen_size: 1080p
+  release_group: SuperGroup
+  type: episode
+
+? /Shows/Show Name - Still+Name/[SuperGroup].Show.Name.-.Still+Name.-.11.[1080p]
+: title: Show Name
+  alternative_title: [Still, Name]
+  alias: "Show Name - Still+Name"
+  episode_title: Still Name
   absolute_episode: 11
   episode: 11
   screen_size: 1080p
@@ -2176,6 +2188,7 @@
   video_encoder: x264
   release_group: C4TV
   language: en
+  episode_title: Special
   episode_details: Special
   type: episode
 
@@ -4551,7 +4564,7 @@
   screen_size: 1080p
   video_codec: H.265
   video_encoder: x265
-  release_group: eztv
+  release_group: MeGusta
   container: mkv
   video_profile: 'High Efficiency Video Coding'
   other: Proper
@@ -4563,6 +4576,7 @@
 ? /1883 (2021)/Season 01/1883 (2021) (S01E03) (2021-12-26) (1080p-AVC BluRay EAC3-6ch) River.mkv
 : title: "1883"
   year: 2021
+  alias: "1883 2021"
   season: 1
   episode: 3
   date: 2021-12-26
@@ -4573,6 +4587,7 @@
   audio_codec: 'Dolby Digital Plus'
   audio_channels: '5.1'
   video_profile: 'Advanced Video Codec High Definition'
+  episode_title: River
   type: episode
 
 
@@ -4592,6 +4607,7 @@
   season: 1
   episode: 1
   year: 2022
+  alias: "1923 2022"
   screen_size: 720p
   video_codec: H.264
   release_group: Group
