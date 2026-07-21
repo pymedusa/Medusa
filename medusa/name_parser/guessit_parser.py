@@ -65,6 +65,11 @@ series_re = re.compile(r'^(?P<series>.*?)(?: ?(?:(?P<year>\(\d{4}\))|(?P<country
 # Aligned with GuessIt separators so punctuation variants of a known title still match.
 _EXPECTED_TITLE_SEPS = r' [](){}+*|=-_~#/\\.,;:'
 
+# Only titles that start with a numeric range (e.g. ``39-45 : Name``) get a
+# flexible expected_title. Broader matching would alter historical GuessIt
+# results for shows like ``11.22.63``, ``12 Monkeys`` or ``The 100``.
+_NUMERIC_RANGE_TITLE_RE = re.compile(r'^\s*\d+\s*-\s*\d+(?:\s*[:.-]\s*|\s+)')
+
 
 def _flexible_expected_title(title):
     """Build a GuessIt expected_title regex that allows flexible separators.
@@ -74,7 +79,13 @@ def _flexible_expected_title(title):
     folder names like ``39-45  Name`` therefore fail to match. A ``re:`` pattern
     with ``-+`` between tokens lets GuessIt's dash abbreviation consume one or
     more separators.
+
+    Restricted to numeric-range show titles so other numbered titles keep their
+    historical expected_title behaviour.
     """
+    if not title or not _NUMERIC_RANGE_TITLE_RE.match(title):
+        return None
+
     tokens = []
     current = []
     for char in title:
@@ -166,7 +177,14 @@ def get_expected_titles(show_list):
         if not show_title:
             continue
 
-        exceptions = {alias.title for alias in show.aliases if alias and alias.title}
+        exceptions = sorted(
+            {
+                alias.title
+                for alias in show.aliases
+                if alias and alias.title
+            },
+            key=str.casefold,
+        )
         for exception in exceptions:
             # Do not add only numbers to expected titles.
             if exception.isdigit():

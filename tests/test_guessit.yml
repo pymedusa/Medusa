@@ -909,26 +909,6 @@
   release_group: Group
   type: episode
 
-# expected_title - numeric show title in filename must keep SxxExx
-? "39-45 L'Europe en guerre - S01E07 - La bataille des Ardennes.mkv"
-: title: "39-45 L'Europe en guerre"
-  season: 1
-  episode: 7
-  episode_title: La bataille des Ardennes
-  container: mkv
-  mimetype: video/x-matroska
-  type: episode
-
-# expected_title - numeric parent folder must not become an episode range
-? "/tv/39-45 : L'Europe en guerre/Season 1/39-45 L'Europe en guerre - S01E07 - La bataille des Ardennes.mkv"
-: title: "39-45 : L'Europe en guerre"
-  season: 1
-  episode: 7
-  language: en
-  container: mkv
-  mimetype: video/x-matroska
-  type: episode
-
 # expected_group
 ? Show.Name.x264-byEMP
 : title: Show Name

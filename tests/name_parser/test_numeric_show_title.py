@@ -173,3 +173,80 @@ def test_real_folder_variant_with_double_space_and_year(numeric_series, monkeypa
     assert actual.get('season') == 1
     assert actual.get('episode') == 7
     assert actual.get('episode') != [39, 40, 41, 42, 43, 44, 45]
+
+
+@pytest.mark.parametrize('title', [
+    '11.22.63',
+    '12 Monkeys',
+    'The 100',
+])
+def test_flexible_expected_title_not_used_for_common_numeric_titles(title):
+    from medusa.name_parser import guessit_parser as gp
+
+    assert gp._flexible_expected_title(title) is None
+
+
+def test_flexible_expected_title_used_for_numeric_range_title():
+    from medusa.name_parser import guessit_parser as gp
+
+    flexible = gp._flexible_expected_title(NUMERIC_SHOW)
+
+    assert flexible == "re:39-+45-+L'Europe-+en-+guerre"
+
+
+def test_get_expected_titles_keeps_plain_titles_for_common_shows(create_tvshow):
+    from medusa.name_parser import guessit_parser as gp
+
+    shows = [
+        create_tvshow(indexerid=2, name='11.22.63'),
+        create_tvshow(indexerid=3, name='12 Monkeys'),
+        create_tvshow(indexerid=12, name='The 100'),
+        create_tvshow(indexerid=21, name=NUMERIC_SHOW),
+    ]
+
+    expected = gp.get_expected_titles(shows)
+
+    assert '11.22.63' in expected
+    assert '12 Monkeys' in expected
+    assert 'The 100' in expected
+    assert NUMERIC_SHOW in expected
+    assert "re:11-+22-+63" not in expected
+    assert "re:12-+Monkeys" not in expected
+    assert "re:The-+100" not in expected
+    assert "re:39-+45-+L'Europe-+en-+guerre" in expected
+
+
+def test_alias_order_is_deterministic(create_tvshow):
+    from medusa.name_parser import guessit_parser as gp
+
+    series = create_tvshow(
+        indexerid=30,
+        name='Show Name',
+        _aliases=[
+            TitleException(title='Zeta 99 Alias', season=-1, indexer=1, series_id=30, custom=True),
+            TitleException(title='Alpha 12 Alias', season=-1, indexer=1, series_id=30, custom=True),
+            TitleException(title='Alpha 12 Alias', season=-1, indexer=1, series_id=30, custom=True),
+            TitleException(title='beta 7 Alias', season=-1, indexer=1, series_id=30, custom=True),
+            None,
+            TitleException(title='', season=-1, indexer=1, series_id=30, custom=True),
+        ],
+    )
+
+    first = gp.get_expected_titles([series])
+    second = gp.get_expected_titles([series])
+    numbered_aliases = [title for title in first if 'Alias' in title]
+
+    assert first == second
+    assert numbered_aliases == ['Alpha 12 Alias', 'beta 7 Alias', 'Zeta 99 Alias']
+    assert len(numbered_aliases) == len(set(numbered_aliases))
+    assert first == list(dict.fromkeys(first))
+
+
+def test_guessit_does_not_mutate_show_list(numeric_series, monkeypatch):
+    show_list = [numeric_series]
+    monkeypatch.setattr(app, 'showList', show_list)
+
+    guessit.guessit(FULL_PATH, {'series': numeric_series}, cached=False)
+
+    assert app.showList is show_list
+    assert app.showList == [numeric_series]
