@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 """
 Monkeypatch initialisation functions
+
+Medusa downstream patches that must survive GuessIt renewals are documented in
+``lib/readme.md``. Prefer applying GuessIt behavior fixes from
+``medusa.name_parser.rules`` when import-order allows; keep only patches that
+must run during ``import guessit`` here.
 """
 
 from __future__ import annotations

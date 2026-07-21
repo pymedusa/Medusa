@@ -12,5 +12,5 @@ lib | **`imdbpie`** | 5.6.5 | **`medusa`** | **Custom**
 lib | **`boto`** | 2.48.0 | **`imdbpie`** | **Custom**
 lib | **`knowit`** | 0.5.11 | **`medusa`** | **Custom**
 lib | **`trakit`** | 0.2.5 | **`knowit`** | **Custom**
-lib | **`guessit`** | 4.1.0 | **`medusa`** | **Custom**
+lib | **`guessit`** | 4.1.0 | **`medusa`** | **Custom**<br>Downstream patches:<br>- `monkeypatch.py`: Match.value list-copy guard ([guessit#822](https://github.com/guessit-io/guessit/issues/822))<br>- `medusa/name_parser/rules/expected_patch.py`: `expected_title` / `expected_group` keep original punctuation (GuessIt 3.x value semantics; GuessIt 4.1.0 otherwise space-collapses values like `11.22.63` → `11 22 63`). Applied before `default_api.configure`. Prefer proposing upstream rather than editing vendored `rules/common/expected.py` on renewals.
 lib | **`future`** | 1.0.0 | **`medusa`** | **Custom**
