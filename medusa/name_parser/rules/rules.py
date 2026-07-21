@@ -1128,9 +1128,6 @@ class OnePreGroupAsMultiEpisode(Rule):
             return
 
         is_anime = context.get('show_type') == 'anime' or matches.tagged('anime')
-        if is_anime or matches.named('season'):
-            # Still allow stripping numeric release-group prefixes without season
-            pass
 
         episodes = matches.named('episode')
         release_groups = matches.named('release_group')
@@ -1533,64 +1530,116 @@ class FixLeadingDashEpisodeTitle(Rule):
         if not x_episodes:
             return
 
+        x_start = getattr(x_episodes[0].initiator, 'start', None)
+        if x_start is None:
+            x_start = x_episodes[0].start
+        series_title = None
+        series_start = None
+        series_end = None
+        for filepart in matches.markers.named('path'):
+            prefix = matches.input_string[filepart.start:x_start]
+            slash = max(prefix.rfind('/'), prefix.rfind('\\'))
+            segment_offset = slash + 1 if slash >= 0 else 0
+            segment = prefix[segment_offset:]
+            # Keep only the series name; drop separators immediately before NNxNN.
+            trimmed = re.sub(r'[\s._-]+$', '', segment).strip(' ._-\t')
+            if not trimmed:
+                continue
+
+            local_start = segment.find(trimmed)
+            if local_start < 0:
+                local_start = segment.lower().find(trimmed.lower())
+            if local_start < 0:
+                continue
+
+            candidate_start = filepart.start + segment_offset + local_start
+            candidate_end = candidate_start + len(trimmed)
+            if candidate_start > candidate_end or candidate_end > x_start:
+                continue
+
+            series_title = trimmed
+            series_start = candidate_start
+            series_end = candidate_end
+            break
+
+        if not series_title or series_start is None or series_end is None:
+            return
+        if series_start > series_end:
+            return
+
+        # Use GuessIt's title cleanup so "Show.Name" becomes "Show Name".
+        series_value = cleanup(series_title)
+
+        def _is_episode_like(title_match):
+            raw = title_match.raw or ''
+            if self.leading_dash.match(raw):
+                return True
+            if title_match.start >= x_episodes[0].end:
+                return True
+            return False
+
+        episode_like_titles = [
+            title for title in titles
+            if _is_episode_like(title) and str(title.value) != series_value
+        ]
+        span_fix_titles = [
+            title for title in titles
+            if str(title.value) == series_value
+            and (title.start != series_start or title.end != series_end)
+        ]
+        # Title hole absorbed the NNxNN token (e.g. value "Rugrats 01x01").
+        overreaching_titles = [
+            title for title in titles
+            if title.end > series_end
+            and str(title.value).lower().startswith(series_value.lower())
+            and str(title.value) != series_value
+        ]
+        # Do not rewrite ordinary Sxx/NNxNN releases that already have a clean title.
+        if not episode_like_titles and not span_fix_titles and not overreaching_titles:
+            return
+
         to_remove = []
         to_append = []
-        for title in titles:
-            raw = title.raw or ''
-            ep_title = None
-            if episode_titles:
-                for candidate in episode_titles:
-                    if self.leading_dash.match(candidate.raw or ''):
-                        ep_title = candidate
-                        break
-                    if candidate.value == title.value and candidate.start >= title.start:
-                        ep_title = candidate
-                        break
 
-            # Title itself may still carry the leading dash in raw.
-            title_is_episode = bool(self.leading_dash.match(raw))
-            if not title_is_episode and not ep_title:
-                # Title sits after the Xx pattern: treat it as episode title.
-                if title.start < x_episodes[0].end:
-                    continue
-                title_is_episode = True
-
-            if not title_is_episode and ep_title and str(ep_title.value) != str(title.value):
-                continue
-
-            series_title = None
-            for filepart in matches.markers.named('path'):
-                # Prefer text before the Xx pattern in this filepart.
-                prefix = matches.input_string[filepart.start:x_episodes[0].start]
-                segment = prefix.replace('\\', '/').rstrip('/').split('/')[-1]
-                segment = re.sub(r'[\s._-]+$', '', segment)
-                segment = segment.strip(' ._-\t')
-                if segment and segment.lower() != str(title.value).lower():
-                    series_title = segment
-                    break
-
-            if not series_title:
-                continue
-
-            if not ep_title:
+        # Demote misdetected titles that are actually episode titles.
+        for title in episode_like_titles:
+            already_has_ep = any(
+                str(ep.value) == self.leading_dash.sub('', str(title.value)).strip()
+                for ep in episode_titles
+            )
+            if not already_has_ep and not episode_titles:
                 episode_title = copy.copy(title)
                 episode_title.name = 'episode_title'
                 episode_title.value = self.leading_dash.sub('', str(title.value)).strip()
                 to_append.append(episode_title)
-            elif self.leading_dash.match(ep_title.raw or ''):
-                fixed_ep = copy.copy(ep_title)
-                fixed_ep.value = self.leading_dash.sub('', str(ep_title.value)).strip()
-                to_remove.append(ep_title)
-                to_append.append(fixed_ep)
+            elif episode_titles:
+                for candidate in episode_titles:
+                    if self.leading_dash.match(candidate.raw or ''):
+                        fixed_ep = copy.copy(candidate)
+                        fixed_ep.value = self.leading_dash.sub('', str(candidate.value)).strip()
+                        to_remove.append(candidate)
+                        to_append.append(fixed_ep)
+                        break
 
-            if str(title.value) != series_title:
-                to_remove.append(title)
-                new_title = copy.copy(title)
-                new_title.name = 'title'
-                new_title.value = series_title
-                new_title.end = min(title.start, x_episodes[0].start)
-                to_append.append(new_title)
-            break
+            to_remove.append(title)
+
+        for title in span_fix_titles + overreaching_titles:
+            to_remove.append(title)
+
+        precise_exists = any(
+            str(title.value) == series_value
+            and title.start == series_start
+            and title.end == series_end
+            for title in titles
+            if title not in to_remove
+        )
+        if not precise_exists:
+            new_title = copy.copy(titles[0])
+            new_title.name = 'title'
+            new_title.value = series_value
+            new_title.start = series_start
+            new_title.end = series_end
+            to_append.append(new_title)
 
         if to_remove or to_append:
             return to_remove, to_append
