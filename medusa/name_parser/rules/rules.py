@@ -729,14 +729,26 @@ class AnimeWithSeasonAbsoluteEpisodeNumbers(Rule):
 
                 title = matches.previous(season, index=-1,
                                          predicate=lambda match: match.name == 'title' and match.end <= filepart.end)
-                episode_title = matches.next(season, index=0,
-                                             predicate=lambda match: (match.name == 'episode_title' and
-                                                                      match.end <= filepart.end and
-                                                                      match.value.isdigit()))
+                # GuessIt 3 often left the absolute number as episode_title; GuessIt 4
+                # may already classify it as episode. Accept either when it is numeric.
+                absolute_candidate = matches.next(
+                    season,
+                    index=0,
+                    predicate=lambda match: (
+                        match.end <= filepart.end
+                        # Keep regular SxxExx pairs intact; only absorb a separate
+                        # numeric token after a title-season marker like ``S2.-.19``.
+                        and match.parent is not season.parent
+                        and (
+                            (match.name == 'episode_title' and str(match.value).isdigit())
+                            or (match.name == 'episode' and isinstance(match.value, int))
+                        )
+                    ),
+                )
 
                 # the previous match before the season is the series name and
-                # the match after season is episode title and episode title is a number
-                if not title or not episode_title:
+                # the match after season is a numeric absolute episode
+                if not title or not absolute_candidate:
                     continue
 
                 to_remove = []
@@ -754,16 +766,28 @@ class AnimeWithSeasonAbsoluteEpisodeNumbers(Rule):
                 to_remove.append(title)
                 to_append.append(new_title)
 
-                # move episode_title to absolute_episode
-                absolute_episode = copy.copy(episode_title)
+                # move absolute candidate to absolute_episode
+                absolute_episode = copy.copy(absolute_candidate)
                 absolute_episode.name = 'absolute_episode'
-                absolute_episode.value = int(episode_title.value)
+                absolute_episode.value = int(absolute_candidate.value)
 
                 # always keep episode (subliminal needs it)
                 episode = copy.copy(absolute_episode)
                 episode.name = 'episode'
 
-                to_remove.append(episode_title)
+                to_remove.append(absolute_candidate)
+                # Drop duplicate episode matches for the same absolute number in this filepart
+                to_remove.extend(
+                    matches.range(
+                        filepart.start,
+                        filepart.end,
+                        predicate=lambda match: (
+                            match.name == 'episode'
+                            and match is not absolute_candidate
+                            and match.value == absolute_episode.value
+                        ),
+                    )
+                )
                 to_append.append(absolute_episode)
                 to_append.append(episode)
                 return to_remove, to_append
@@ -853,7 +877,46 @@ class AnimeWithSeasonMultipleEpisodeNumbers(Rule):
 
             title = matches.previous(episodes[0], index=-1,
                                      predicate=lambda match: match.name == 'title' and match.end <= filepart.end)
-            if not title or self.ends_with_digit.search(str(title.value)):
+            if not title:
+                continue
+
+            # GuessIt 4 may already fold the season digit into the title
+            # (e.g. path "High Score Girl 2" + filename "... Girl 2 - 01").
+            # In that case drop the weak episode that duplicates the title suffix.
+            if self.ends_with_digit.search(str(title.value)):
+                title_suffix = str(title.value).rstrip()
+                suffix_digits = re.search(r'(\d+)$', title_suffix)
+                if not suffix_digits:
+                    continue
+                absorbed = int(suffix_digits.group(1))
+                other_episodes = [episode for episode in episodes if episode.value != absorbed]
+                if not other_episodes:
+                    continue
+                # Drop weak episodes that duplicate the season digit already in the title.
+                to_remove.extend(
+                    episode for episode in episodes
+                    if episode.value == absorbed
+                )
+                to_remove.extend(
+                    matches.range(
+                        filepart.start,
+                        filepart.end,
+                        predicate=lambda match: (
+                            match.name == 'absolute_episode' and match.value == absorbed
+                        ),
+                    )
+                )
+                # Path titles like "High Score Girl 2" can leave a truncated episode_title.
+                to_remove.extend(
+                    matches.range(
+                        filepart.start,
+                        filepart.end,
+                        predicate=lambda match: (
+                            match.name == 'episode_title'
+                            and str(title.value).startswith(str(match.value))
+                        ),
+                    )
+                )
                 continue
 
             for i, episode in enumerate(episodes):
@@ -868,6 +931,28 @@ class AnimeWithSeasonMultipleEpisodeNumbers(Rule):
 
                 if i == 1 and len(episodes) in (3, 4):
                     to_remove.append(episode)
+
+        # Global cleanup when the retained title already contains the season digit.
+        for title in matches.named('title'):
+            suffix_digits = re.search(r'(\d+)$', str(title.value).rstrip())
+            if not suffix_digits:
+                continue
+            absorbed = int(suffix_digits.group(1))
+            episodes = matches.named('episode')
+            if not episodes:
+                continue
+            if any(episode.value != absorbed for episode in episodes):
+                to_remove.extend(
+                    episode for episode in episodes if episode.value == absorbed
+                )
+                to_remove.extend(
+                    match for match in matches.named('absolute_episode')
+                    if match.value == absorbed
+                )
+                to_remove.extend(
+                    match for match in matches.named('episode_title')
+                    if str(title.value).startswith(str(match.value))
+                )
 
         return to_remove, to_append
 
@@ -987,6 +1072,9 @@ class OnePreGroupAsMultiEpisode(Rule):
     - The last episode should be removed
     - Episode title should be release group
 
+    GuessIt 4 may instead fold the numeric prefix into release_group
+    (e.g. ``1-URANiME``). Strip that prefix and keep absolute numbering.
+
     e.g.: Kemono.Michi.Rise.Up.E03.1080p.WEB.x264.1-URANiME-Obfuscated
 
     guessit -t episode "Kemono.Michi.Rise.Up.E03.1080p.WEB.x264.1-URANiME-Obfuscated"
@@ -1024,6 +1112,7 @@ class OnePreGroupAsMultiEpisode(Rule):
 
     priority = POST_PROCESS
     consequence = [RemoveMatch, AppendMatch]
+    numeric_group_prefix = re.compile(r'^\W*\d+-')
 
     def when(self, matches, context):
         """Evaluate the rule.
@@ -1038,11 +1127,43 @@ class OnePreGroupAsMultiEpisode(Rule):
         if not titles:
             return
 
+        is_anime = context.get('show_type') == 'anime' or matches.tagged('anime')
+        if is_anime or matches.named('season'):
+            # Still allow stripping numeric release-group prefixes without season
+            pass
+
         episodes = matches.named('episode')
+        release_groups = matches.named('release_group')
+
+        # GuessIt 4 path: single episode + release_group like "1-URANiME"
+        if (
+            episodes
+            and len(episodes) == 1
+            and not matches.named('season')
+            and release_groups
+            and not matches.named('absolute_episode')
+        ):
+            release_group = release_groups[0]
+            raw_group = release_group.raw or release_group.value or ''
+            if self.numeric_group_prefix.match(str(raw_group)) or self.numeric_group_prefix.match(
+                str(release_group.value)
+            ):
+                to_remove = [release_group]
+                to_append = []
+
+                cleaned = copy.copy(release_group)
+                cleaned.value = self.numeric_group_prefix.sub('', str(release_group.value)).strip()
+                if cleaned.value:
+                    to_append.append(cleaned)
+
+                absolute_episode = copy.copy(episodes[0])
+                absolute_episode.name = 'absolute_episode'
+                to_append.append(absolute_episode)
+                return to_remove, to_append
+
         if not episodes or len(episodes) != 2:
             return
 
-        is_anime = context.get('show_type') == 'anime' or matches.tagged('anime')
         if is_anime or matches.named('season'):
             return
 
@@ -1211,6 +1332,7 @@ class AbsoluteEpisodeNumbers(Rule):
     consequence = [RemoveMatch, AppendMatch]
     non_words_re = re.compile(r'\W')
     episode_words = ('e', 'episode', 'ep')
+    season_x_episode = re.compile(r'^\d+x\d+$', flags=re.IGNORECASE)
 
     def when(self, matches, context):
         """Evaluate the rule.
@@ -1227,6 +1349,13 @@ class AbsoluteEpisodeNumbers(Rule):
             to_remove = []
             to_append = []
             for episode in episodes:
+                # GuessIt 4 may keep only the episode child of an ``01x01`` pattern.
+                # That is still seasonal numbering, not an absolute anime episode.
+                initiator_value = str(getattr(episode.initiator, 'value', '') or '')
+                initiator_raw = str(getattr(episode.initiator, 'raw', '') or '')
+                if self.season_x_episode.match(initiator_value) or self.season_x_episode.match(initiator_raw):
+                    continue
+
                 # And there's no episode count
                 if matches.named('episode_count'):
                     # Some.Show.1of8..Title.x264.AAC.Group
@@ -1257,6 +1386,317 @@ class AbsoluteEpisodeNumbers(Rule):
                 to_append.append(absolute_episode)
 
             return to_remove, to_append
+
+
+class RestoreSeasonFromXPattern(Rule):
+    """Restore season when GuessIt keeps only the episode half of an ``NNxNN`` pattern.
+
+    e.g.: Rugrats - 01x01 - Title.avi
+    """
+
+    priority = POST_PROCESS
+    consequence = [RemoveMatch, AppendMatch]
+    season_x_episode = re.compile(
+        r'^(?P<season>\d+)x(?P<episode>\d+)$',
+        flags=re.IGNORECASE,
+    )
+
+    def when(self, matches, context):
+        """Evaluate the rule."""
+        if matches.named('season'):
+            return
+
+        to_remove = []
+        to_append = []
+        for episode in matches.named('episode'):
+            initiator_value = str(getattr(episode.initiator, 'value', '') or '')
+            initiator_raw = str(getattr(episode.initiator, 'raw', '') or '')
+            matched = (
+                self.season_x_episode.match(initiator_value)
+                or self.season_x_episode.match(initiator_raw)
+            )
+            if not matched:
+                continue
+
+            season = copy.copy(episode)
+            season.name = 'season'
+            season.value = int(matched.group('season'))
+            to_append.append(season)
+
+            expected_episode = int(matched.group('episode'))
+            if episode.value != expected_episode:
+                fixed_episode = copy.copy(episode)
+                fixed_episode.value = expected_episode
+                to_remove.append(episode)
+                to_append.append(fixed_episode)
+
+            to_remove.extend(
+                matches.named(
+                    'absolute_episode',
+                    predicate=lambda match: match.initiator is episode.initiator,
+                )
+            )
+            break
+
+        if to_remove or to_append:
+            return to_remove, to_append
+
+
+class ExtractSeasonFromTitleSeasonWord(Rule):
+    """Pull ``Season N`` out of a title when ``Episode M`` is already present.
+
+    GuessIt 4 may fold ``Season.2`` into the title for patterns like
+    ``Ajin.Season.2.Episode.13``, leaving only an absolute-style episode.
+    """
+
+    priority = POST_PROCESS
+    consequence = [RemoveMatch, AppendMatch]
+    title_season = re.compile(
+        r'^(?P<title>.+?)[\s._-]+Season[\s._-]*(?P<season>\d+)\.?$',
+        re.IGNORECASE,
+    )
+    episode_word = re.compile(r'^Episode[\s._-]*\d+$', re.IGNORECASE)
+
+    def when(self, matches, context):
+        """Evaluate the rule."""
+        if matches.named('season'):
+            return
+
+        titles = matches.named('title')
+        episodes = matches.named('episode')
+        if not titles or not episodes:
+            return
+
+        to_remove = []
+        to_append = []
+        for title in titles:
+            matched = self.title_season.match(str(title.value).strip())
+            if not matched:
+                continue
+
+            episode = episodes[0]
+            initiator = str(getattr(episode.initiator, 'value', '') or '')
+            initiator_raw = str(getattr(episode.initiator, 'raw', '') or '')
+            has_episode_word = (
+                self.episode_word.match(initiator)
+                or self.episode_word.match(initiator_raw)
+                or 'episode' in initiator.lower()
+            )
+            # Only rewrite when the release uses an explicit ``Episode`` token.
+            # Titles like ``Show Season 2 - 09`` are handled by other anime rules.
+            if not has_episode_word:
+                continue
+
+            new_title = copy.copy(title)
+            new_title.value = matched.group('title').strip(' ._-\t')
+            to_remove.append(title)
+            to_append.append(new_title)
+
+            season = copy.copy(title)
+            season.name = 'season'
+            season.value = int(matched.group('season'))
+            to_append.append(season)
+
+            # Explicit Season + Episode numbering is not absolute-only.
+            to_remove.extend(matches.named('absolute_episode'))
+            break
+
+        if to_remove or to_append:
+            return to_remove, to_append
+
+
+class FixLeadingDashEpisodeTitle(Rule):
+    """Fix titles that are actually episode titles after an ``NNxNN`` pattern.
+
+    GuessIt 4 may assign ``Tommy's First Birthday`` as title when the series
+    name sits before an ``01x01`` token, while the episode title raw still
+    starts with a dash (`` - Tommy's First Birthday``).
+    """
+
+    priority = POST_PROCESS
+    consequence = [RemoveMatch, AppendMatch]
+    leading_dash = re.compile(r'^\s*-+')
+    season_x_episode = re.compile(r'^\d+x\d+$', flags=re.IGNORECASE)
+
+    def when(self, matches, context):
+        """Evaluate the rule."""
+        titles = matches.named('title')
+        if not titles:
+            return
+
+        episode_titles = matches.named('episode_title')
+        x_episodes = [
+            episode for episode in matches.named('episode')
+            if self.season_x_episode.match(str(getattr(episode.initiator, 'value', '') or ''))
+            or self.season_x_episode.match(str(getattr(episode.initiator, 'raw', '') or ''))
+        ]
+        if not x_episodes:
+            return
+
+        to_remove = []
+        to_append = []
+        for title in titles:
+            raw = title.raw or ''
+            ep_title = None
+            if episode_titles:
+                for candidate in episode_titles:
+                    if self.leading_dash.match(candidate.raw or ''):
+                        ep_title = candidate
+                        break
+                    if candidate.value == title.value and candidate.start >= title.start:
+                        ep_title = candidate
+                        break
+
+            # Title itself may still carry the leading dash in raw.
+            title_is_episode = bool(self.leading_dash.match(raw))
+            if not title_is_episode and not ep_title:
+                # Title sits after the Xx pattern: treat it as episode title.
+                if title.start < x_episodes[0].end:
+                    continue
+                title_is_episode = True
+
+            if not title_is_episode and ep_title and str(ep_title.value) != str(title.value):
+                continue
+
+            series_title = None
+            for filepart in matches.markers.named('path'):
+                # Prefer text before the Xx pattern in this filepart.
+                prefix = matches.input_string[filepart.start:x_episodes[0].start]
+                segment = prefix.replace('\\', '/').rstrip('/').split('/')[-1]
+                segment = re.sub(r'[\s._-]+$', '', segment)
+                segment = segment.strip(' ._-\t')
+                if segment and segment.lower() != str(title.value).lower():
+                    series_title = segment
+                    break
+
+            if not series_title:
+                continue
+
+            if not ep_title:
+                episode_title = copy.copy(title)
+                episode_title.name = 'episode_title'
+                episode_title.value = self.leading_dash.sub('', str(title.value)).strip()
+                to_append.append(episode_title)
+            elif self.leading_dash.match(ep_title.raw or ''):
+                fixed_ep = copy.copy(ep_title)
+                fixed_ep.value = self.leading_dash.sub('', str(ep_title.value)).strip()
+                to_remove.append(ep_title)
+                to_append.append(fixed_ep)
+
+            if str(title.value) != series_title:
+                to_remove.append(title)
+                new_title = copy.copy(title)
+                new_title.name = 'title'
+                new_title.value = series_title
+                new_title.end = min(title.start, x_episodes[0].start)
+                to_append.append(new_title)
+            break
+
+        if to_remove or to_append:
+            return to_remove, to_append
+
+
+class DemoteOrphanReleaseGroupToEpisodeTitle(Rule):
+    """Demote a trailing bare release_group to episode_title when appropriate.
+
+    GuessIt 4 may classify an episode title after technical tags as a scene
+    release group (e.g. ``... EAC3-6ch) River.mkv``).
+
+    Only demote when the group is a single token immediately after a closing
+    parenthesis that follows technical properties. Regular scene groups must
+    remain untouched.
+    """
+
+    priority = POST_PROCESS
+    consequence = [RemoveMatch, AppendMatch]
+    tech_names = {
+        'screen_size',
+        'source',
+        'video_codec',
+        'video_profile',
+        'video_encoder',
+        'audio_codec',
+        'audio_channels',
+        'other',
+        'date',
+    }
+
+    def when(self, matches, context):
+        """Evaluate the rule."""
+        if matches.named('episode_title'):
+            return
+
+        release_groups = matches.named('release_group')
+        if not release_groups or len(release_groups) != 1:
+            return
+
+        release_group = release_groups[0]
+        value = str(release_group.value or '').strip()
+        if not value or '-' in value or '[' in value or ' ' in value:
+            return
+        if not value[0].isupper():
+            return
+
+        previous = matches.previous(
+            release_group,
+            index=-1,
+            predicate=lambda match: match.name in self.tech_names,
+        )
+        if not previous:
+            return
+
+        # GuessIt may absorb ``)`` into the previous tech match, leaving no hole.
+        lookbehind = matches.input_string[max(0, release_group.start - 3):release_group.start]
+        hole = matches.holes(start=previous.end, end=release_group.start, index=0)
+        between = matches.input_string[previous.end:release_group.start]
+        if ')' not in lookbehind and ')' not in between and not (hole and ')' in hole.value):
+            return
+
+        episode_title = copy.copy(release_group)
+        episode_title.name = 'episode_title'
+        return [release_group], [episode_title]
+
+
+class RemoveTechBrandEpisodeTitle(Rule):
+    """Remove all-caps tech brands misdetected as episode_title.
+
+    GuessIt 4 may treat tokens like ``VISIONPLUS`` between a title and an
+    absolute episode number as an episode title. Those brands are not titles.
+    """
+
+    priority = POST_PROCESS
+    consequence = RemoveMatch
+    all_caps_token = re.compile(r'^[A-Z][A-Z0-9+]{2,}$')
+
+    def when(self, matches, context):
+        """Evaluate the rule."""
+        if matches.named('season'):
+            return
+
+        episode_titles = matches.named('episode_title')
+        if not episode_titles or not matches.named('absolute_episode'):
+            return
+
+        to_remove = []
+        for episode_title in episode_titles:
+            if not self.all_caps_token.match(str(episode_title.value)):
+                continue
+            previous_title = matches.range(
+                0,
+                episode_title.start,
+                predicate=lambda match: match.name == 'title',
+                index=-1,
+            )
+            next_episode = matches.range(
+                episode_title.end,
+                len(matches.input_string),
+                predicate=lambda match: match.name in ('episode', 'absolute_episode'),
+                index=0,
+            )
+            if previous_title and next_episode:
+                to_remove.append(episode_title)
+
+        return to_remove
 
 
 class AbsoluteEpisodeWithX26Y(Rule):
@@ -1390,13 +1830,34 @@ class FixEpisodeTitleAsMultiSeason(Rule):
             return
 
         seasons = matches.named('season')
-        if not seasons or len(seasons) not in [2, 3]:
+        if not seasons or len(seasons) < 2:
             return
 
-        if len(seasons) == 2:
-            season = seasons[-1]
+        episodes = matches.named('episode')
+        # Prefer seasons that appear after an explicit episode and are not part of
+        # the same SxxExx initiator (GuessIt 4 may tag "1.x265" / ".3.x265" as
+        # SxxExx, which wrongly looks like a strong season marker).
+        weak_seasons = []
+        if episodes:
+            for episode in episodes:
+                weak_seasons.extend(
+                    season for season in seasons
+                    if season.start >= episode.end
+                    and season.parent is not episode.parent
+                )
+        if not weak_seasons:
+            weak_seasons = [
+                season for season in seasons
+                if 'SxxExx' not in season.tags
+            ]
+        if not weak_seasons:
+            # Fallback for the GuessIt 3 shape: exactly 2-3 seasons, take the last
+            # weak-looking one from the historical selection rules.
+            if len(seasons) not in [2, 3]:
+                return
+            season = seasons[-1] if len(seasons) == 2 else seasons[len(seasons) - 2]
         else:
-            season = seasons[len(seasons) - 2]
+            season = weak_seasons[-1]
 
         next_episode = matches.next(season, predicate=lambda match: match.name == 'episode')
         if next_episode:
@@ -1411,7 +1872,7 @@ class FixEpisodeTitleAsMultiSeason(Rule):
                 return
 
             episode_title = episode_titles[0]
-            if not episode_title.value[0].isdigit():
+            if not str(episode_title.value)[0].isdigit():
                 episode_title.value = episode_title.value + ' ' + str(season.value)
             to_remove.append(season)
         else:
@@ -1611,6 +2072,18 @@ class FixParentFolderReplacingTitle(Rule):
                     to_append = episode_title
                     to_remove = None
                     return to_remove, to_append
+
+                # Parent folder like "Rugrats Season 1" already matches the title,
+                # and the filename also contains that series title. Keep it.
+                folder_series = re.sub(
+                    r'[\s._-]*[Ss]eason[\s._-]*\d+$',
+                    '',
+                    second_part,
+                ).strip(' ._-\t')
+                if folder_series and folder_series.lower() == str(title[0].value).lower():
+                    filename = fileparts[parts_len - 1].value.replace('.', ' ').lower()
+                    if str(title[0].value).lower() in filename:
+                        return
 
                 if second_part.startswith(title[0].value):
                     season = matches.named('season')
@@ -2004,6 +2477,9 @@ def rules():
         AnimeWithSeasonMultipleEpisodeNumbers,
         AnimeWithMultipleSeasons,
         AnimeAbsoluteEpisodeNumbers,
+        RestoreSeasonFromXPattern,
+        ExtractSeasonFromTitleSeasonWord,
+        FixLeadingDashEpisodeTitle,
         AbsoluteEpisodeNumbers,
         AbsoluteEpisodeWithX26Y,
         FixEpisodeTitleAsMultiSeason,
@@ -2015,6 +2491,8 @@ def rules():
         FixTitlesThatExistOfAbsoluteEpisodeNumbers,
         FixTitlesThatExistOfYearNumbers,
         ReleaseGroupPostProcessor,
+        DemoteOrphanReleaseGroupToEpisodeTitle,
+        RemoveTechBrandEpisodeTitle,
         FixParentFolderReplacingTitle,
         FixMultipleSources,
         AudioCodecStandardizer,

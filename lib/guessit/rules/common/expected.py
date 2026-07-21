@@ -49,13 +49,18 @@ def build_expected_function(context_key: str) -> Callable[[str, dict[str, Any]],
                 for match in matches:
                     ret.append(match.span)
             else:
+                # Preserve the original expected value (e.g. "11.22.63", "R-15",
+                # "20-40"). GuessIt 4.x used the separator-normalized substring as
+                # value, which replaced punctuation with spaces and broke Medusa's
+                # expected_title / expected_group matching. Restore the GuessIt 3.x
+                # behavior: match on a normalized copy, keep the original search
+                # string as Match.value (Rebulk skips formatters when value is set).
+                value = search
                 for sep in seps:
                     input_string = input_string.replace(sep, " ")
                     search = search.replace(sep, " ")
                 for start in find_all(input_string, search, ignore_case=True):
-                    end = start + len(search)
-                    value = input_string[start:end]
-                    ret.append({"start": start, "end": end, "value": value})
+                    ret.append({"start": start, "end": start + len(search), "value": value})
         return ret
 
     return expected
