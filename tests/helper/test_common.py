@@ -221,11 +221,18 @@ def test_replace_extension(p):
     ('', ''),
     ('filename', 'filename'),
     ('fi\\le/na*me', 'fi-le-na-me'),
-    ('fi:le"na<me', 'filename'),
+    ('fi:le"na<me', 'fi-lename'),
     ('fi>le|na?me', 'filename'),
     (' . file\u2122name. .', 'filename'),
     (' . file\tname. .', 'filename'),
     (' . file\x00as\x08df\x1fname. .', 'fileasdfname'),
+    # smart colon / whitespace (#12244)
+    ('Alien theory : Les preuves ultimes', 'Alien theory - Les preuves ultimes'),
+    ('Star Trek:Voyager', 'Star Trek-Voyager'),
+    ('dictature du futur\u00a0?', 'dictature du futur'),
+    ('Au bout de l\'enquete, la fin du crime parfait ?',
+     'Au bout de l\'enquete, la fin du crime parfait'),
+    ('Title  with   spaces', 'Title with spaces'),
 ])
 def test_sanitize_filename(value, expected):
     # Given

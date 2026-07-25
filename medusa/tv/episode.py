@@ -1503,6 +1503,11 @@ class Episode(TV):
         ep_name = self.__ep_name()
 
         def dot(name):
+            # Replace apostrophes with a separator before scene sanitization so
+            # French elisions stay readable (L'émission -> L.émission) without
+            # changing sanitize_scene_name used by search/name cache (#12244).
+            if name:
+                name = name.replace("'", '.').replace(u'\u2019', '.')
             return helpers.sanitize_scene_name(name)
 
         def us(name):

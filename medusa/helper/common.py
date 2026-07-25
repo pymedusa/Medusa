@@ -300,9 +300,18 @@ def sanitize_filename(filename):
     :return: The cleaned ``filename``
     """
     if isinstance(filename, (str, text_type)):
+        # Treat non-breaking spaces like regular spaces so strip/collapse work.
+        filename = filename.replace(u'\u00a0', ' ')
+
+        # Smart colon replacement (Sonarr-style): avoid "Title  Subtitle" when
+        # removing "Title : Subtitle". See pymedusa/Medusa#12244.
+        filename = filename.replace(': ', ' - ')
+        filename = filename.replace(':', '-')
+
         # https://stackoverflow.com/a/31976060/7597273
+        # Colon is handled above; keep the remaining Windows-forbidden set here.
         remove = r''.join((
-            r':"<>|?',
+            r'"<>|?',
             r'™',  # Trade Mark Sign [unicode: \u2122]
             r'\t',  # Tab
             r'\x00-\x1f',  # Null & Control characters
@@ -311,6 +320,8 @@ def sanitize_filename(filename):
 
         filename = re.sub(r'[\\/\*]', '-', filename)
         filename = re.sub(remove, '', filename)
+        # Collapse spaces left behind by removed punctuation (e.g. trailing '?').
+        filename = re.sub(r' +', ' ', filename)
         # Filenames cannot end in a space or dot on Windows systems
         filename = filename.strip(' .')
 
