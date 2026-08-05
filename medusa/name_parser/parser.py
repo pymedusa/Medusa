@@ -346,6 +346,12 @@ class NameParser(object):
         result = self.to_parse_result(name, guess)
         search_series = helpers.get_show(result.series_name, self.try_indexers) if not self.naming_pattern else None
 
+        # guessit prefers the alias (e.g. "Lucky 2026") over the bare title ("Lucky") for
+        # single-word titles it treats as ambiguous. The alias won't match a known series
+        # until a matching scene exception exists, so fall back to the bare title.
+        if not search_series and not self.naming_pattern and guess.get('alias') and guess.get('title') != guess.get('alias'):
+            search_series = helpers.get_show(guess.get('title'), self.try_indexers)
+
         # confirm passed in show object indexer id matches result show object indexer id
         series_obj = None if search_series and self.series and search_series.indexerid != self.series.indexerid else search_series
         result.series = series_obj or self.series
