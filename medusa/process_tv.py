@@ -397,6 +397,19 @@ class ProcessResult(object):
         processed_items = False
         for path in self.paths:
 
+            if os.path.isfile(path) and not (helpers.is_media_file(path) or helpers.is_rar_file(path)):
+                # A single-file resource (e.g. handed to us directly by a torrent client's
+                # AutoRun hook) that isn't a recognized video/rar file. Accepting this as a
+                # completed episode would let a malicious non-video file (padded to look like
+                # a real download) get treated as if the episode were successfully grabbed.
+                self.log_and_output(
+                    'Resource is not a recognized video file, refusing to accept it as a '
+                    'completed download: {path}', level=logging.WARNING, **{'path': path})
+                self.missed_files.append('{0}: Not a valid video file'.format(path))
+                self.succeeded = False
+                self.result = False
+                continue
+
             if not self.should_process(path):
                 continue
 
