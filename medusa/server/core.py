@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 import logging
 import os
+import socket
 import threading
 from posixpath import join
 
@@ -57,6 +58,7 @@ import six
 
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
+from tornado.netutil import bind_unix_socket
 from tornado.web import (
     Application,
     RedirectHandler,
@@ -178,6 +180,7 @@ class AppWebServer(threading.Thread):
         self.options = options or {}
         self.options.setdefault('port', 8081)
         self.options.setdefault('host', '0.0.0.0')
+        self.options.setdefault('unix_socket', None)
         self.options.setdefault('log_dir', None)
         self.options.setdefault('username', '')
         self.options.setdefault('password', '')
@@ -345,19 +348,49 @@ class AppWebServer(threading.Thread):
             protocol = 'http'
             self.server = HTTPServer(self.app)
 
-        log.info('Starting Medusa on {scheme}://{host}:{port}{web_root}/', {
-            'scheme': protocol, 'host': self.options['host'],
-            'port': self.options['port'], 'web_root': self.options['theme_path']
-        })
+        unix_socket = self.options.get('unix_socket')
+        tcp_enabled = self.options['port'] != 0
+
+        # At least one of the TCP listener or the unix socket must be active
+        if not tcp_enabled and not unix_socket:
+            log.error('Cannot start the web server: the TCP listener is disabled '
+                      '(port 0) and no unix socket is configured.')
+            os._exit(1)  # pylint: disable=protected-access
+
+        if tcp_enabled:
+            log.info('Starting Medusa on {scheme}://{host}:{port}{web_root}/', {
+                'scheme': protocol, 'host': self.options['host'],
+                'port': self.options['port'], 'web_root': self.options['theme_path']
+            })
+        if unix_socket:
+            log.info('Starting Medusa on unix://{path}{web_root}/', {
+                'path': unix_socket, 'web_root': self.options['theme_path']
+            })
 
         try:
-            self.server.listen(self.options['port'], self.options['host'])
+            if unix_socket:
+                if os.path.exists(unix_socket):
+                    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as probe:
+                        probe.settimeout(1)
+                        try:
+                            probe.connect(unix_socket)
+                        except OSError:
+                            log.error('Removing stale unix socket.')
+                        else:
+                            log.error('Could not listen on unix socket, another process is using it: {path}', {'path': unix_socket})
+                            os._exit(1)  # pylint: disable=protected-access
+                    os.unlink(unix_socket)
+                sock = bind_unix_socket(unix_socket, mode=0o660)
+                self.server.add_sockets([sock])
+            if tcp_enabled:
+                self.server.listen(self.options['port'], self.options['host'])
         except Exception as ex:
-            if app.LAUNCH_BROWSER and not self.daemon:
+            if tcp_enabled and app.LAUNCH_BROWSER and not self.daemon:
                 app.instance.launch_browser('https' if app.ENABLE_HTTPS else 'http', self.options['port'], app.WEB_ROOT)
                 log.info('Launching browser and exiting')
-            log.info('Could not start the web server on port {port}. Exception: {ex}', {
-                'port': self.options['port'],
+            log.info('Could not start the web server (port: {port}, unix socket: {path}). Exception: {ex}', {
+                'port': self.options['port'] if tcp_enabled else None,
+                'path': unix_socket or None,
                 'ex': ex
             })
             os._exit(1)  # pylint: disable=protected-access
@@ -372,6 +405,13 @@ class AppWebServer(threading.Thread):
     def shutDown(self):
         self.alive = False
         self.io_loop.stop()
+        unix_socket = self.options.get('unix_socket')
+        if unix_socket and os.path.exists(unix_socket):
+            try:
+                os.unlink(unix_socket)
+            except OSError as ex:
+                log.warning('Failed to remove unix socket {path}: {ex}',
+                            {'path': unix_socket, 'ex': ex})
 
     def log_request(self, handler):
         """
