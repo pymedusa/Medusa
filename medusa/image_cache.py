@@ -141,7 +141,7 @@ def which_type(path):
         log.debug('Skipping image. Unable to get metadata from {0}', path)
         return
 
-    height, width = image_dimension
+    width, height = image_dimension
     if not width or not height:
         log.debug('Skipping image. zero width or height {0}', path)
         return

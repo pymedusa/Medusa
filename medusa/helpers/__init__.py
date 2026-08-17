@@ -1523,7 +1523,7 @@ def get_image_size(image_path):
                 if len(size_bytes) != 2:
                     return None
                 size = struct.unpack('>H', size_bytes)[0] - 2
-            f.seek(1, 1)  # skip precision byte
+            f.seek(3, 1)  # skip 2-byte length and 1-byte precision
             height, width = struct.unpack('>HH', f.read(4))
             return width, height
         else:
