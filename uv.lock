@@ -223,7 +223,7 @@ resolution-markers = [
     "python_full_version < '3.10'",
 ]
 dependencies = [
-    { name = "colorama", marker = "python_full_version < '3.10' and sys_platform == 'win32'" },
+    { name = "colorama", marker = "sys_platform == 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/b9/2e/0090cbf739cee7d23781ad4b89a9894a41538e4fcf4c31dcdd705b78eb8b/click-8.1.8.tar.gz", hash = "sha256:ed53c9d8990d83c2a27deae68e4ee337473f6330c040a31d4225c9574d16096a", size = 226593, upload-time = "2024-12-21T18:38:44.339Z" }
 wheels = [
@@ -240,7 +240,7 @@ resolution-markers = [
     "python_full_version >= '3.10' and platform_python_implementation == 'PyPy'",
 ]
 dependencies = [
-    { name = "colorama", marker = "python_full_version >= '3.10' and sys_platform == 'win32'" },
+    { name = "colorama", marker = "sys_platform == 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/46/61/de6cd827efad202d7057d93e0fed9294b96952e188f7384832791c7b2254/click-8.3.0.tar.gz", hash = "sha256:e7b8232224eba16f4ebe410c25ced9f7875cb5f3263ffc93cc3e8da705e229c4", size = 276943, upload-time = "2025-09-18T17:32:23.696Z" }
 wheels = [
@@ -434,7 +434,7 @@ name = "importlib-metadata"
 version = "4.13.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "zipp", marker = "python_full_version < '3.10'" },
+    { name = "zipp" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/55/12/ab288357b884ebc807e3f4eff63ce5ba6b941ba61499071bf19f1bbc7f7f/importlib_metadata-4.13.0.tar.gz", hash = "sha256:dd0173e8f150d6815e098fd354f6414b0f079af4644ddfe90c71e2fc6174346d", size = 50445, upload-time = "2022-10-01T17:09:15.698Z" }
 wheels = [
@@ -613,7 +613,6 @@ dependencies = [
     { name = "tmdbsimple" },
     { name = "tornado" },
     { name = "tornroutes" },
-    { name = "trans" },
     { name = "ttl-cache" },
     { name = "tvdbapiv2" },
     { name = "urllib3" },
@@ -663,7 +662,6 @@ requires-dist = [
     { name = "tmdbsimple", specifier = "==2.9.1" },
     { name = "tornado", specifier = "==6.5.2" },
     { name = "tornroutes", specifier = "==0.5.1" },
-    { name = "trans", specifier = "==2.1.0" },
     { name = "ttl-cache", specifier = "==1.6" },
     { name = "tvdbapiv2", url = "https://github.com/pymedusa/tvdbv2/archive/d6d0e9d98071c2d646beb997b336edbb0e98dfb7.zip" },
     { name = "urllib3", specifier = "==2.5.0" },
@@ -1175,12 +1173,6 @@ name = "tornroutes"
 version = "0.5.1"
 source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/ec/11/02feb23757ce075a2ba4a37548dacdfd863115c76cfd27c39cb448da8ec7/tornroutes-0.5.1.tar.gz", hash = "sha256:65e17f23c22642a9481a2adbd0129be6ce67b4d3db3ec23aecd2c5f34606815e", size = 1882, upload-time = "2015-03-01T05:40:35.856Z" }
-
-[[package]]
-name = "trans"
-version = "2.1.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/3e/c1/368daee29d1c9b081c8c1eeda2335879c484021d795b12bd116bd134d98f/trans-2.1.0.tar.bz2", hash = "sha256:417d8f7862a4a01470bdf0ab2a96b60983e459d202c1b12e8df3fa563146b71f", size = 6864, upload-time = "2016-08-19T15:28:32.162Z" }
 
 [[package]]
 name = "ttl-cache"
