@@ -343,6 +343,30 @@ def test_get_status_uses_progress_field_when_present():
     assert status.progress == 42
 
 
+def test_get_status_coerces_string_progress():
+    # Given
+    info_hash = 'aabbccdd'
+    torrent = {
+        'hash': info_hash,
+        'state': 'downloading',
+        'ratio': '0.6',
+        'progress': '0.43',
+        'downloaded': 'unused',
+        'size': 'unused',
+        'save_path': '/downloads',
+        'content_path': '/downloads/show.mkv',
+    }
+
+    client = _make_qbittorrent_client()
+    client._get_torrents = lambda **kwargs: [torrent]
+
+    # When
+    status = client.get_status(info_hash)
+
+    # Then
+    assert status.progress == 43
+
+
 def test_torrent_completed(requests_mock):
     # Given
     requests_mock.post(
