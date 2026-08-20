@@ -46,7 +46,6 @@ dependencies = [
     "tmdbsimple==2.9.1",
     "tornado==6.5.2",
     "tornroutes==0.5.1",
-    "trans==2.1.0",
     "ttl-cache==1.6",
     "tvdbapiv2",
     "urllib3==2.5.0",
