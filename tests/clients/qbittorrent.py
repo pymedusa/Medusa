@@ -294,6 +294,79 @@ def test_get_status_unknown_state_does_not_raise():
     assert status.progress == 0
 
 
+def test_get_status_coerces_string_numeric_fields():
+    # Given — some qBittorrent setups return numeric fields as strings
+    info_hash = 'aabbccdd'
+    torrent = {
+        'hash': info_hash,
+        'state': 'downloading',
+        'ratio': '1.5',
+        'downloaded': '250',
+        'size': '1000',
+        'save_path': '/downloads',
+        'content_path': '/downloads/show.mkv',
+    }
+
+    client = _make_qbittorrent_client()
+    client._get_torrents = lambda **kwargs: [torrent]
+
+    # When
+    status = client.get_status(info_hash)
+
+    # Then
+    assert str(status) == 'Downloading'
+    assert status.ratio == 1.5
+    assert status.progress == 25
+
+
+def test_get_status_uses_progress_field_when_present():
+    # Given
+    info_hash = 'aabbccdd'
+    torrent = {
+        'hash': info_hash,
+        'state': 'downloading',
+        'ratio': 0.5,
+        'progress': 0.42,
+        'downloaded': 'unused',
+        'size': 'unused',
+        'save_path': '/downloads',
+        'content_path': '/downloads/show.mkv',
+    }
+
+    client = _make_qbittorrent_client()
+    client._get_torrents = lambda **kwargs: [torrent]
+
+    # When
+    status = client.get_status(info_hash)
+
+    # Then
+    assert status.progress == 42
+
+
+def test_get_status_coerces_string_progress():
+    # Given
+    info_hash = 'aabbccdd'
+    torrent = {
+        'hash': info_hash,
+        'state': 'downloading',
+        'ratio': '0.6',
+        'progress': '0.43',
+        'downloaded': 'unused',
+        'size': 'unused',
+        'save_path': '/downloads',
+        'content_path': '/downloads/show.mkv',
+    }
+
+    client = _make_qbittorrent_client()
+    client._get_torrents = lambda **kwargs: [torrent]
+
+    # When
+    status = client.get_status(info_hash)
+
+    # Then
+    assert status.progress == 43
+
+
 def test_torrent_completed(requests_mock):
     # Given
     requests_mock.post(
