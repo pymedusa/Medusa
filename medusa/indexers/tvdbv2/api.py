@@ -6,6 +6,8 @@ from __future__ import unicode_literals
 import logging
 from collections import OrderedDict
 
+from babelfish import Language
+
 from medusa import app
 from medusa.app import TVDB_API_KEY
 from medusa.helper.metadata import needs_metadata
@@ -17,19 +19,21 @@ from medusa.indexers.exceptions import (
 from medusa.indexers.imdb.api import ImdbIdentifier
 from medusa.indexers.tvdbv2.fallback import PlexFallback
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.session.core import IndexerSession
 from medusa.show.show import Show
 
 from requests.compat import urljoin
 
-from six import string_types, viewitems
+from six import string_types, text_type, viewitems
 
-from tvdbapiv2 import ApiClient, EpisodesApi, SearchApi, SeriesApi, UpdatesApi
+from tvdbapiv2 import ApiClient, EpisodesApi, SeriesApi, UpdatesApi
 from tvdbapiv2.exceptions import ApiException
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 API_BASE_TVDB = 'https://api.thetvdb.com'
+TVDB_WEB_SEARCH_URL = 'https://api4.thetvdb.com/web/search/queries'
 
 
 class TVDBv2(BaseIndexer):
@@ -55,7 +59,6 @@ class TVDBv2(BaseIndexer):
         if not hasattr(self.config['session'], 'api_client'):
             tvdb_client = ApiClient(self.config['api_base_url'], session=self.config['session'], api_key=TVDB_API_KEY)
             self.config['session'].api_client = tvdb_client
-            self.config['session'].search_api = SearchApi(tvdb_client)
             self.config['session'].series_api = SeriesApi(tvdb_client)
             self.config['session'].episodes_api = EpisodesApi(tvdb_client)
             self.config['session'].updates_api = UpdatesApi(tvdb_client)
@@ -126,33 +129,104 @@ class TVDBv2(BaseIndexer):
 
         return parsed_response if len(parsed_response) != 1 else parsed_response[0]
 
+    def _get_web_search_session(self):
+        """Return an unauthenticated session for TVDB's website search endpoint."""
+        session = self.config['session']
+        if not hasattr(session, 'tvdb_web_search_session'):
+            session.tvdb_web_search_session = IndexerSession(cache_control={'cache_etags': False})
+        return session.tvdb_web_search_session
+
+    def _request_web_search(self, show):
+        """Search TVDB using the same unauthenticated endpoint as its website."""
+        response = self._get_web_search_session().post(
+            TVDB_WEB_SEARCH_URL,
+            json={
+                'requests': [{
+                    'indexName': 'TVDB',
+                    'params': {
+                        'query': show,
+                        'filters': 'type:series AND NOT is_official=0',
+                    },
+                }],
+            },
+        )
+
+        if response is None:
+            raise IndexerUnavailable('TVDB web show search failed without a response')
+        log.debug('TVDB web show search returned status: {0}', response.status_code)
+        if response.status_code != 200:
+            raise IndexerUnavailable(
+                'TVDB web show search failed with status {status}'.format(status=response.status_code)
+            )
+
+        try:
+            hits = response.json()['results'][0]['hits']
+        except (IndexError, KeyError, TypeError, ValueError):
+            raise IndexerUnavailable('TVDB web show search returned an invalid response')
+        if not isinstance(hits, list):
+            raise IndexerUnavailable('TVDB web show search returned invalid results')
+        return hits
+
+    @staticmethod
+    def _map_web_search_results(results, request_language='en'):
+        """Map TVDB website search results to Medusa's existing series format."""
+        language = Language.fromalpha2(request_language).alpha3
+        mapped_results = []
+        for result in results:
+            tvdb_id = result.get('id')
+            translations = result.get('translations') or {}
+            series_name = translations.get(language) or translations.get(request_language) or result.get('name')
+            if not tvdb_id or not series_name:
+                continue
+
+            try:
+                tvdb_id = int(tvdb_id)
+            except (TypeError, ValueError):
+                continue
+
+            mapped_result = {
+                'id': tvdb_id,
+                'seriesname': series_name,
+            }
+
+            first_aired = result.get('first_air_date') or result.get('year')
+            if first_aired:
+                mapped_result['firstaired'] = text_type(first_aired).split('T', 1)[0]
+
+            aliases = result.get('aliases')
+            if isinstance(aliases, dict):
+                aliases = aliases.values()
+            if aliases:
+                mapped_result['aliases'] = '|'.join(text_type(alias) for alias in aliases if alias)
+
+            network = result.get('network') or result.get('latest_network')
+            if network:
+                mapped_result['network'] = network
+
+            overviews = result.get('overviews') or {}
+            overview = overviews.get(language) or overviews.get(request_language) or result.get('overview')
+            if overview:
+                mapped_result['overview'] = overview
+
+            image = result.get('image_url') or result.get('poster') or result.get('thumbnail')
+            if image:
+                mapped_result['poster_thumb'] = image
+
+            mapped_results.append(mapped_result)
+
+        return mapped_results
+
     def _show_search(self, show, request_language='en'):
-        """Use the pytvdbv2 API to search for a show.
+        """Use TVDB's website to search while the remaining indexer stays on the legacy API.
 
         :param show: The show name that's searched for as a string
         :return: A list of Show objects.
         """
-        try:
-            results = self.config['session'].search_api.search_series_get(name=show, accept_language=request_language)
-        except ApiException as error:
-            if error.status == 401:
-                raise IndexerAuthFailed(
-                    'Authentication failed, possible bad API key. Reason: {reason} ({status})'
-                    .format(reason=error.reason, status=error.status)
-                )
-            if error.status == 404:
-                raise IndexerShowNotFound(
-                    'Show search failed in getting a result with reason: {reason} ({status})'
-                    .format(reason=error.reason, status=error.status)
-                )
-            raise IndexerUnavailable(error.reason)
-
-        return results
+        return self._map_web_search_results(self._request_web_search(show), request_language)
 
     # Tvdb implementation
-    @PlexFallback
     def search(self, series):
-        """Search tvdbv2.com for the series name.
+        """Search TVDB's website for the series name.
 
         :param series: the query for the series name
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"series": [list of shows]}
@@ -163,12 +237,9 @@ class TVDBv2(BaseIndexer):
         if not results:
             return
 
-        mapped_results = self._map_results(results, self.series_map, '|')
-        mapped_results = [mapped_results] if not isinstance(mapped_results, list) else mapped_results
-
         # Remove results with an empty series_name.
         # Skip shows when they do not have a series_name in the searched language. example: '24 h berlin' in 'en'
-        cleaned_results = [show for show in mapped_results if show.get('seriesname')]
+        cleaned_results = [show for show in results if show.get('seriesname')]
 
         return OrderedDict({'series': cleaned_results})['series']
 
