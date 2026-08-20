@@ -311,6 +311,7 @@ structure: Use a tuple to create test files. Pass a dict in the tuple to create 
         'structure': (
             'show.name.101.hdtv.x264-lol.mkv',
             'show.name.102.hdtv.x264-lol.mkv',
+            'show.name.103.hdtv.x264-lol.nzb',
             'show.name.103.hdtv.x264-lol.en.srt',
         )
     },
@@ -374,6 +375,36 @@ def test__process(monkeypatch, p, create_structure):
 
     # Then
     assert p['expected'] == sut.video_files
+
+
+def test_process_rejects_direct_non_media_file(create_file):
+    """Reject a non-media resource supplied directly as the processing path."""
+    path = create_file('show.name.s01e01.exe', size=1024)
+    sut = ProcessResult(path, process_single_resource=True)
+
+    sut.process(resource_name=os.path.basename(path))
+
+    assert sut.result is False
+    assert sut.succeeded is False
+    assert sut.missed_files == ['{0}: Not a valid video or RAR file'.format(path)]
+
+
+def test_process_rejects_directory_non_media_resource(create_structure):
+    """Reject a non-media resource even when its directory contains valid media."""
+    resource_name = 'show.name.s01e01.exe'
+    test_path = create_structure(
+        'media/postprocess/complete',
+        structure=(resource_name, 'unrelated.video.mkv')
+    )
+    path = os.path.join(test_path, os.path.normcase('media/postprocess/complete'))
+    resource_path = os.path.join(path, resource_name)
+    sut = ProcessResult(path, process_single_resource=True)
+
+    sut.process(resource_name=resource_name)
+
+    assert sut.result is False
+    assert sut.succeeded is False
+    assert sut.missed_files == ['{0}: Not a valid video or RAR file'.format(resource_path)]
 
 
 @pytest.mark.parametrize('p', [

@@ -346,6 +346,18 @@ class NameParser(object):
         result = self.to_parse_result(name, guess)
         search_series = helpers.get_show(result.series_name, self.try_indexers) if not self.naming_pattern else None
 
+        if not search_series and not self.naming_pattern:
+            title = guess.get('title')
+            alias = guess.get('alias')
+            year = guess.get('year')
+
+            # Only fall back for the exact year alias produced by CreateAliasWithCountryOrYear.
+            if title and year and alias == '{title} {year}'.format(title=title, year=year):
+                candidate = helpers.get_show(title, self.try_indexers)
+                candidate_year = candidate and (candidate.imdb_year or candidate.start_year)
+                if candidate_year == year:
+                    search_series = candidate
+
         # confirm passed in show object indexer id matches result show object indexer id
         series_obj = None if search_series and self.series and search_series.indexerid != self.series.indexerid else search_series
         result.series = series_obj or self.series
