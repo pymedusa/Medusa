@@ -343,7 +343,11 @@ class Imdb(BaseIndexer):
                         if k == 'id':
                             v = ImdbIdentifier(v).series_id
                         if k == 'firstaired':
-                            v = '{year}-01-01'.format(year=v)
+                            # `year` is only a rough estimate IMDb provides for
+                            # unaired episodes, not a confirmed air date. Skip it
+                            # here; _get_episodes_detailed() sets a precise date
+                            # from `releaseDate` if/when IMDb actually has one.
+                            continue
 
                         self._set_item(series_id, season_no, episode_no, k, v)
 

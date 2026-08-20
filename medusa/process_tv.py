@@ -372,6 +372,19 @@ class ProcessResult(object):
         log.log(level, message, kwargs)
         self._output.append(message.format(**kwargs))
 
+    def _get_single_file_resource(self, path):
+        """Return a directly supplied file resource, if one exists."""
+        if os.path.isfile(path):
+            return path
+
+        # An NZB resource name identifies a download directory, not a file to process directly.
+        if self.resource_name and not self.resource_name.endswith('.nzb'):
+            resource_path = os.path.join(path, self.resource_name)
+            if os.path.isfile(resource_path):
+                return resource_path
+
+        return None
+
     def process(self, resource_name=None, force=False, is_priority=None, delete_on=False,
                 proc_type='auto', ignore_subs=False):
         """
@@ -396,6 +409,16 @@ class ProcessResult(object):
 
         processed_items = False
         for path in self.paths:
+
+            resource_path = self._get_single_file_resource(path)
+            if resource_path and not (helpers.is_media_file(resource_path) or helpers.is_rar_file(resource_path)):
+                self.log_and_output(
+                    'Resource is not a recognized video or RAR file: {path}',
+                    level=logging.WARNING, **{'path': resource_path})
+                self.missed_files.append('{0}: Not a valid video or RAR file'.format(resource_path))
+                self.succeeded = False
+                self.result = False
+                continue
 
             if not self.should_process(path):
                 continue
