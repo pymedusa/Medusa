@@ -450,11 +450,16 @@ class QBittorrentAPI(GenericClient):
         # if torrent['ratio'] >= torrent['max_ratio']:
         #     client_status.set_status_string('Seeded')
 
-        # Store ratio
-        client_status.ratio = torrent['ratio'] * 1.0
+        # Store ratio (API may return numbers as strings depending on client/proxy)
+        client_status.ratio = float(torrent['ratio'])
 
-        # Store progress
-        client_status.progress = int(torrent['downloaded'] / torrent['size'] * 100) if torrent['size'] else 0
+        # Store progress. Prefer the API progress field (0.0-1.0); fall back to downloaded/size.
+        # Coerce to float: some qBittorrent setups return these fields as strings.
+        if torrent.get('progress') is not None:
+            client_status.progress = int(float(torrent['progress']) * 100)
+        else:
+            size = float(torrent['size'] or 0)
+            client_status.progress = int(float(torrent['downloaded']) / size * 100) if size else 0
 
         # Store destination
         client_status.destination = torrent['save_path']
