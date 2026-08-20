@@ -165,6 +165,10 @@ def revert_episode(ep_obj):
                            u'to revert. Setting it back to WANTED',
                            logger.DEBUG)
                 ep_obj.status = WANTED
+            # The snatch that failed may have been a manual/forced search. Clear the flag so
+            # automatic backlog/daily search (Quality.should_search) doesn't skip this episode
+            # forever after a bad manual pick turns out to be a failed download.
+            ep_obj.manually_searched = False
             ep_obj.save_to_db()
 
     except EpisodeNotFoundException as error:
