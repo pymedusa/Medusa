@@ -106,6 +106,9 @@ class EpisodeHandler(BaseRequestHandler):
 
         accepted = self._patch_episode(episode, data)
 
+        # Save patched attributes in db.
+        episode.save_to_db()
+
         return self._ok(data=accepted)
 
     def _patch_multi(self, series, request_data):

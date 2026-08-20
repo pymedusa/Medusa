@@ -302,6 +302,11 @@ class TVDBv2(BaseIndexer):
                 )
 
             if error.status == 404:
+                if self.config['session'].api_client.host != app.FALLBACK_PLEX_API_URL:
+                    raise IndexerUnavailable(
+                        'Legacy TVDB API returned not found while retrieving episodes. Retrying through Plex.'
+                    )
+
                 show_data = self.shows.get(tvdb_id)
                 if show_data and not show_data['firstaired']:
                     log.info('Show {name} does not have any episodes yet.',
