@@ -103,7 +103,7 @@ export default {
                 { value: 'SEARCHQUEUE-RETRY', title: 'Search Queue (Retry/Failed)' },
                 { value: 'SEARCHQUEUE-RSS', title: 'Search Queue (RSS)' },
                 { value: 'SHOWQUEUE', title: 'Show Queue (All)' },
-                { value: 'SHOWQUEUE-REFRESH', title: 'Show Queue (Refresh)' },
+                { value: 'SHOWQUEUE-REFRESH', title: 'Show Queue (Rescan)' },
                 { value: 'SHOWQUEUE-SEASON-UPDATE', title: 'Show Season Queue (Update)' },
                 { value: 'SHOWQUEUE-UPDATE', title: 'Show Queue (Update)' },
                 { value: 'SHOWUPDATER', title: 'Show Updater' },
