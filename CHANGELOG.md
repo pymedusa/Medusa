@@ -1,3 +1,45 @@
+## 1.0.26 (2026-08-21)
+
+Special thanks to @DavidHunterJS and @Mika3578 for the great contributions to this release!
+#### Improvements
+- Update the vendored future library metadata to version 1.0.0 ([12115](https://github.com/pymedusa/Medusa/pull/12115))
+- Update the checkout workflow action to version 4.3.1 ([12090](https://github.com/pymedusa/Medusa/pull/12090))
+- Make the Dredd API contract tests deterministic ([12215](https://github.com/pymedusa/Medusa/pull/12215))
+- Modernize and correct the project README ([12225](https://github.com/pymedusa/Medusa/pull/12225))
+- Add the A-TV network logo ([12281](https://github.com/pymedusa/Medusa/pull/12281))
+
+#### Fixes
+- Fix JPEG image type detection ([12113](https://github.com/pymedusa/Medusa/pull/12113))
+- Ensure parsed video details always include the streams key ([12128](https://github.com/pymedusa/Medusa/pull/12128))
+- Restore compatibility with qBittorrent 5.2 ([12198](https://github.com/pymedusa/Medusa/pull/12198))
+- Respect the default indexer language when importing existing shows ([12202](https://github.com/pymedusa/Medusa/pull/12202))
+- Fix EZTV search URLs, pagination, and magnet links ([12150](https://github.com/pymedusa/Medusa/pull/12150))
+- Generate relative episode paths in Plex `.plexmatch` files ([12204](https://github.com/pymedusa/Medusa/pull/12204))
+- Preserve custom search templates during cleanup ([12214](https://github.com/pymedusa/Medusa/pull/12214))
+- Evict expired TTL cache entries on access ([12222](https://github.com/pymedusa/Medusa/pull/12222))
+- Select compatible qBittorrent state endpoints by Web API version ([12224](https://github.com/pymedusa/Medusa/pull/12224))
+- Address Mako security advisories by updating to version 1.3.12 ([12185](https://github.com/pymedusa/Medusa/pull/12185))
+- Allow multiple custom search templates for the same title ([12218](https://github.com/pymedusa/Medusa/pull/12218))
+- Clear the manual-search flag when reverting failed downloads ([12269](https://github.com/pymedusa/Medusa/pull/12269))
+- Use the vendored trans module during uv installs ([12275](https://github.com/pymedusa/Medusa/pull/12275))
+- Prevent network-less shows from becoming wanted before their airdate ([12271](https://github.com/pymedusa/Medusa/pull/12271))
+- Exclude season-zero specials from next and previous episode lookups ([12251](https://github.com/pymedusa/Medusa/pull/12251))
+- Validate directly supplied and named post-processing resources ([12276](https://github.com/pymedusa/Medusa/pull/12276))
+- Persist single-episode API updates to the database ([12261](https://github.com/pymedusa/Medusa/pull/12261))
+- Handle string-valued qBittorrent progress fields ([12237](https://github.com/pymedusa/Medusa/pull/12237))
+- Stop IMDb from assigning placeholder airdates to unannounced episodes ([12259](https://github.com/pymedusa/Medusa/pull/12259))
+- Apply the configured timeout while retrieving Cloudflare tokens ([12255](https://github.com/pymedusa/Medusa/pull/12255))
+- Fall back to matching series titles for year-based aliases ([12277](https://github.com/pymedusa/Medusa/pull/12277))
+- Fall back to Plex when legacy TVDB requests return 404 responses ([12278](https://github.com/pymedusa/Medusa/pull/12278))
+- Fall back to per-show updates when an indexer batch update list is unavailable ([12262](https://github.com/pymedusa/Medusa/pull/12262))
+- Fix TVDB endpoint for show title searches ([12279](https://github.com/pymedusa/Medusa/pull/12279))
+- Surface an actionable error when TMDB requests fail ([12263](https://github.com/pymedusa/Medusa/pull/12263))
+- Adapt the Torrenting provider to its new site layout and empty results ([12258](https://github.com/pymedusa/Medusa/pull/12258))
+- Use a browser User-Agent for ThePirateBay requests ([12260](https://github.com/pymedusa/Medusa/pull/12260))
+- Stop log polling after leaving log pages ([12280](https://github.com/pymedusa/Medusa/pull/12280))
+
+-----
+
 ## 1.0.25 (12-11-2025)
 
 ([@butlergroup](https://github.com/butlergroup) did a bunch of homework for y'all!)

@@ -110,6 +110,12 @@ class EpisodeUpdater(object):
                 # filter out any episodes that haven't finished airing yet
                 if end_time + timedelta(hours=series_obj.airdate_offset) > cur_time:
                     continue
+            else:
+                # Without airs/network info (e.g. IMDb-indexed shows) we can't compute a precise
+                # air time, so fall back to a plain calendar-date check instead of relying solely
+                # on the (intentionally forward-looking) cur_date window used for the DB query.
+                if db_episode['airdate'] > date.today().toordinal():
+                    continue
 
             with cur_ep.lock:
                 cur_ep.status = series_obj.default_ep_status if cur_ep.season else common.SKIPPED

@@ -23,6 +23,9 @@ import ttl_cache
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
+# qBittorrent 5.0 reports Web API 2.11.2 and replaces pause/resume with stop/start.
+QBITTORRENT_START_STOP_API = (2, 11, 2)
+
 
 class APIUnavailableError(Exception):
     """Raised when the API version is not available."""
@@ -101,21 +104,27 @@ class QBittorrentAPI(GenericClient):
                         {'name': self.name, 'error': error}, exc_info=1)
             return None
 
-        if not self.response:
+        if self.response is None:
             log.warning('{name}: Could not connect, check your config',
                         {'name': self.name})
             return None
 
-        if self.response.status_code == 200:
+        if self.response.status_code in (200, 204):
             if self.response.text == 'Fails.':
                 log.warning('{name}: Invalid Username or Password, check your config',
                             {'name': self.name})
                 return None
 
-            # Successful log in
-            self.auth = self.response.text
+            # Successful log in. qBittorrent WebAPI 2.14.0 no longer returns
+            # "Ok."; preserve the legacy auth value when it exists.
+            self.auth = self.response.text or True
 
             return self.auth
+
+        if self.response.status_code == 401:
+            log.warning('{name}: Invalid Username or Password, check your config',
+                        {'name': self.name})
+            return None
 
         if self.response.status_code == 404:
             # API v2 is not available
@@ -236,14 +245,40 @@ class QBittorrentAPI(GenericClient):
 
         return ok
 
-    def _set_torrent_pause(self, result):
-        return self.pause_torrent(result.hash, state='pause' if app.TORRENT_PAUSED else 'resume')
+    def _uses_start_stop_api(self):
+        """Return whether the connected qBittorrent Web API uses start/stop endpoints."""
+        return bool(self.api) and self.api >= QBITTORRENT_START_STOP_API
 
-    def _set_torrent_stop(self, result):
-        return self.stop_torrent(result.hash, state='stop' if app.TORRENT_STOPPED else 'start')
+    def _torrent_state_endpoint(self, active):
+        """Return the torrent-state endpoint for the reported Web API version."""
+        if self._uses_start_stop_api():
+            return 'start' if active else 'stop'
+        return 'resume' if active else 'pause'
+
+    def _normalize_torrent_state(self, state):
+        """Translate state names to the API generation reported by the client."""
+        if self._uses_start_stop_api():
+            if state == 'resume':
+                return 'start'
+            if state == 'pause':
+                return 'stop'
+            return state
+
+        if state == 'start':
+            return 'resume'
+        if state == 'stop':
+            return 'pause'
+        return state
+
+    def _set_torrent_state(self, result):
+        """Set torrent active or suspended state using a single API request."""
+        suspended = app.TORRENT_PAUSED or app.TORRENT_STOPPED
+        state = self._torrent_state_endpoint(active=not suspended)
+        return self.pause_torrent(result.hash, state=state)
 
     def pause_torrent(self, info_hash, state='pause'):
-        """Pause torrent."""
+        """Pause or resume/start torrent depending on the connected Web API version."""
+        state = self._normalize_torrent_state(state)
         command = 'api/v2/torrents' if self.api >= (2, 0, 0) else 'command'
         hashes_key = 'hashes' if self.api >= (1, 18, 0) else 'hash'
         self.url = urljoin(self.host, '{command}/{state}'.format(command=command, state=state))
@@ -253,14 +288,8 @@ class QBittorrentAPI(GenericClient):
         return self._request(method='post', data=data, cookies=self.session.cookies)
 
     def stop_torrent(self, info_hash, state='stop'):
-        """Stop torrent."""
-        command = 'api/v2/torrents' if self.api >= (2, 0, 0) else 'command'
-        hashes_key = 'hashes' if self.api >= (1, 18, 0) else 'hash'
-        self.url = urljoin(self.host, '{command}/{state}'.format(command=command, state=state))
-        data = {
-            hashes_key: info_hash.lower()
-        }
-        return self._request(method='post', data=data, cookies=self.session.cookies)
+        """Stop or start torrent depending on the connected Web API version."""
+        return self.pause_torrent(info_hash, state=state)
 
     def _remove(self, info_hash, from_disk=False):
         """Remove torrent from client using given info_hash.
@@ -408,11 +437,9 @@ class QBittorrentAPI(GenericClient):
             client_status.set_status_string('Downloading')
 
         # Might want to separate these into a PausedDl and PausedUl in future.
-        if torrent['state'] in ('pausedDL', 'stalledDL'):
+        # qBittorrent 5.0+ reports stoppedDL instead of pausedDL.
+        if torrent['state'] in ('pausedDL', 'stalledDL', 'stoppedDL'):
             client_status.set_status_string('Paused')
-
-        if torrent['state'] in ('stoppdDL'):
-            client_status.set_status_string('Stopped')
 
         if torrent['state'] == 'error':
             client_status.set_status_string('Failed')
@@ -423,11 +450,16 @@ class QBittorrentAPI(GenericClient):
         # if torrent['ratio'] >= torrent['max_ratio']:
         #     client_status.set_status_string('Seeded')
 
-        # Store ratio
-        client_status.ratio = torrent['ratio'] * 1.0
+        # Store ratio (API may return numbers as strings depending on client/proxy)
+        client_status.ratio = float(torrent['ratio'])
 
-        # Store progress
-        client_status.progress = int(torrent['downloaded'] / torrent['size'] * 100) if torrent['size'] else 0
+        # Store progress. Prefer the API progress field (0.0-1.0); fall back to downloaded/size.
+        # Coerce to float: some qBittorrent setups return these fields as strings.
+        if torrent.get('progress') is not None:
+            client_status.progress = int(float(torrent['progress']) * 100)
+        else:
+            size = float(torrent['size'] or 0)
+            client_status.progress = int(float(torrent['downloaded']) / size * 100) if size else 0
 
         # Store destination
         client_status.destination = torrent['save_path']

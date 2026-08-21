@@ -32,7 +32,7 @@ class TorrentingProvider(TorrentProvider):
         self.url = 'https://www.torrenting.com/'
         self.urls = {
             'login': urljoin(self.url, 'login.php'),
-            'search': urljoin(self.url, 'browse.php'),
+            'search': urljoin(self.url, 't'),
         }
 
         # Proper Strings
@@ -61,11 +61,7 @@ class TorrentingProvider(TorrentProvider):
 
         # Search Params
         search_params = {
-            'c4': 1,  # TV/SD-x264
-            'c5': 1,  # TV/X264 HD
-            'c18': 1,  # TV/Packs
-            'c49': 1,  # x265 (HEVC)
-            'search': '',
+            'q': '',
         }
 
         for mode in search_strings:
@@ -76,7 +72,7 @@ class TorrentingProvider(TorrentProvider):
                 if mode != 'RSS':
                     log.debug('Search string: {search}',
                               {'search': search_string})
-                    search_params['search'] = search_string
+                    search_params['q'] = search_string
 
                 response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.text:
@@ -99,7 +95,7 @@ class TorrentingProvider(TorrentProvider):
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
-            torrent_table = html.find('table', {'id': 'torrentsTable'})
+            torrent_table = html.find('table', {'class': 't1'})
             torrent_rows = torrent_table.find_all('tr') if torrent_table else []
 
             # Continue only if at least one release is found
@@ -111,14 +107,18 @@ class TorrentingProvider(TorrentProvider):
             for row in torrent_rows[1:]:
                 try:
                     torrent_items = row.find_all('td')
+                    if len(torrent_items) < 8:
+                        # Row doesn't contain a torrent, e.g. the
+                        # "No Torrents Found!" placeholder row.
+                        continue
                     title = torrent_items[1].find('a').get_text(strip=True)
-                    download_url = torrent_items[2].find('a')['href']
+                    download_url = torrent_items[3].find('a')['href']
                     if not all([title, download_url]):
                         continue
                     download_url = urljoin(self.url, download_url)
 
-                    seeders = try_int(torrent_items[5].get_text(strip=True))
-                    leechers = try_int(torrent_items[6].get_text(strip=True))
+                    seeders = try_int(torrent_items[6].get_text(strip=True))
+                    leechers = try_int(torrent_items[7].get_text(strip=True))
 
                     # Filter unseeded torrent
                     if seeders < self.minseed:
@@ -128,10 +128,12 @@ class TorrentingProvider(TorrentProvider):
                                       title, seeders)
                         continue
 
-                    torrent_size = torrent_items[4].get_text()
+                    torrent_size = torrent_items[5].get_text()
                     size = convert_size(torrent_size) or -1
 
-                    pubdate_raw = torrent_items[1].find('div').get_text()
+                    pubdate_div = torrent_items[1].find('div')
+                    pubdate_text = pubdate_div.get_text() if pubdate_div else ''
+                    pubdate_raw = pubdate_text.split('|')[-1].strip() if '|' in pubdate_text else pubdate_text
                     pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
 
                     item = {

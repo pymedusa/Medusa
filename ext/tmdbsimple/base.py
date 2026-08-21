@@ -102,6 +102,14 @@ class TMDB(object):
                 headers=self.headers, timeout=self.timeout
             )
 
+        if response is None:
+            # The configured session swallowed the underlying exception and
+            # returned None instead of raising or returning a Response - surface
+            # a real, catchable error instead of an opaque AttributeError below.
+            raise requests.exceptions.RequestException(
+                'No response received for {method} {url}'.format(method=method, url=url)
+            )
+
         response.raise_for_status()
         response.encoding = 'utf-8'
         return response.json()

@@ -59,6 +59,9 @@ class FfMpeg(object):
     def check_for_video_and_audio_streams(self, video_file):
         """Read media info and check for a video and audio stream."""
         video_details = self.get_video_details(video_file)
+        if 'streams' not in video_details:
+            return False
+        
         video_streams = [item for item in video_details['streams'] if item['codec_type'] == 'video']
         audio_streams = [item for item in video_details['streams'] if item['codec_type'] == 'audio']
         if len(video_streams) > 0 and len(audio_streams) > 0:

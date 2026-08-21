@@ -1518,12 +1518,15 @@ def get_image_size(image_path):
                     byte = f.read(1)
                 ftype = ord(byte)
                 if 0xc0 <= ftype <= 0xcf and ftype != 0xc4 and ftype != 0xc8 and ftype != 0xcc:
-                    break
+                    break # Found SOF marker
                 size_bytes = f.read(2)
                 if len(size_bytes) != 2:
                     return None
                 size = struct.unpack('>H', size_bytes)[0] - 2
-            f.seek(1, 1)  # skip precision byte
+            # Cursor is positioned after the SOF marker.
+            # Need to skip 3 bytes: segment length (2 bytes) + sample precision (1 byte)
+            f.seek(3, 1)
+            # Read Image Height (2 bytes) and Image Width (2 bytes)
             height, width = struct.unpack('>HH', f.read(4))
             return width, height
         else:

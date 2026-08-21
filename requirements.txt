@@ -17,7 +17,7 @@ feedparser==6.0.12
 gntp==1.0.3
 html5lib==1.1
 jsonrpclib-pelix==0.4.3.4
-Mako==1.3.10
+Mako==1.3.12
 markdown2==2.5.4
 packaging==25.0
 profilehooks==1.13.0
@@ -39,7 +39,6 @@ subliminal==2.2.1
 tmdbsimple==2.9.1
 tornado==6.5.2
 tornroutes==0.5.1
-trans==2.1.0
 ttl-cache==1.6
 tvdbapiv2 @ https://github.com/pymedusa/tvdbv2/archive/d6d0e9d98071c2d646beb997b336edbb0e98dfb7.zip
 urllib3==2.5.0

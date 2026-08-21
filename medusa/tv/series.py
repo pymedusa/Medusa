@@ -1846,6 +1846,7 @@ class Series(TV):
             '  AND showid = ? '
             '  AND airdate < ? '
             '  AND status <> ? '
+            '  AND season > 0 '
             'ORDER BY'
             '  airdate '
             'DESC LIMIT 1',
@@ -1885,6 +1886,7 @@ class Series(TV):
             '  indexer = ?'
             '  AND showid = ? '
             '  AND airdate >= ? '
+            '  AND season > 0 '
             'ORDER BY airdate ',
             [self.indexer, self.series_id, today - 1])
 
