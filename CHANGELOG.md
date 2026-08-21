@@ -1,3 +1,13 @@
+## Unreleased
+
+#### New Features
+
+#### Improvements
+
+#### Fixes
+
+-----
+
 ## 1.0.26 (2026-08-21)
 
 Special thanks to @DavidHunterJS and @Mika3578 for the great contributions to this release!
