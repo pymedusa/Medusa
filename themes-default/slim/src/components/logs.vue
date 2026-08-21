@@ -189,6 +189,7 @@ export default {
         this.fetchLogsDebounced = debounce(this.fetchLogs, 500);
     },
     destroyed() {
+        this.autoUpdate = false;
         if (this.autoUpdateTimer) {
             clearTimeout(this.autoUpdateTimer);
         }
@@ -239,6 +240,9 @@ export default {
         async autoUpdateTask(errors = 0) {
             if (this.autoUpdate) {
                 const result = await this.fetchLogs(false, false);
+                if (!this.autoUpdate) {
+                    return;
+                }
                 // Increment if false
                 errors += Number(!result);
                 // Stop after 5 network errors
