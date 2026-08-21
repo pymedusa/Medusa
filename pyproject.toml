@@ -1,6 +1,6 @@
 [project]
 name = "medusa"
-version = "1.0.25"
+version = "1.0.26"
 description = "Automatic Video Library Manager for TV Shows"
 readme = "README.md"
 requires-python = ">=3.9"

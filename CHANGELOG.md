@@ -1,10 +1,4 @@
-## Unreleased
-
-#### New Features
-
-#### Improvements
-
-#### Fixes
+## 1.0.26 (2026-08-21)
 
 -----
 
