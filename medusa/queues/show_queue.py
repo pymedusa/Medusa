@@ -96,13 +96,13 @@ class ShowQueue(generic_queue.GenericQueue):
         ShowQueueActions.ADD: 'This show is in the process of being downloaded - the info below is incomplete.',
         ShowQueueActions.UPDATE: 'The information on this page is in the process of being updated.',
         ShowQueueActions.SEASON_UPDATE: 'The information on this page is in the process of being updated.',
-        ShowQueueActions.REFRESH: 'The episodes below are currently being refreshed from disk',
+        ShowQueueActions.REFRESH: 'The episodes below are currently being rescanned from disk',
         ShowQueueActions.SUBTITLE: 'Currently downloading subtitles for this show',
         ShowQueueActions.CHANGE: "This show is in the process of changing it's indexer",
     }
 
     queue_mappings = {
-        ShowQueueActions.REFRESH: 'This show is queued to be refreshed.',
+        ShowQueueActions.REFRESH: 'This show is queued to be rescanned.',
         ShowQueueActions.UPDATE: 'This show is queued and awaiting an update.',
         ShowQueueActions.SEASON_UPDATE: 'This show is queued and awaiting a season update.',
         ShowQueueActions.SUBTITLE: 'This show is queued and awaiting subtitles download.',
@@ -202,16 +202,16 @@ class ShowQueue(generic_queue.GenericQueue):
     def refreshShow(self, show, force=False):
 
         if self.isBeingRefreshed(show) and not force:
-            raise CantRefreshShowException('This show is already being refreshed, not refreshing again.')
+            raise CantRefreshShowException('This show is already being rescanned, not rescanning again.')
 
         if (self.isBeingUpdated(show) or self.isInUpdateQueue(show)) and not force:
-            log.debug('A refresh was attempted but there is already an update queued or in progress.'
-                      " Since updates do a refresh at the end anyway I'm skipping this request.")
+            log.debug('A rescan was attempted but there is already an update queued or in progress.'
+                      " Since updates do a rescan at the end anyway I'm skipping this request.")
             return
 
         queue_item_obj = QueueItemRefresh(show, force=force)
 
-        log.debug('{id}: Queueing show refresh for {show}', {'id': show.series_id, 'show': show.name})
+        log.debug('{id}: Queueing show rescan for {show}', {'id': show.series_id, 'show': show.name})
 
         self.add_item(queue_item_obj)
 
@@ -512,7 +512,7 @@ class QueueItemChangeIndexer(ShowQueueItem):
             if self.show_dir:
                 # If a show dir was passed, this was added as an existing show.
                 # For new shows we shouldn't have any files on disk.
-                message_step('refresh episodes from disk')
+                message_step('rescan episodes from disk')
                 try:
                     app.show_queue_scheduler.action.refreshShow(self.new_show)
                 except CantRefreshShowException as error:
@@ -701,7 +701,7 @@ class QueueItemAdd(ShowQueueItem):
             if self.show_dir:
                 # If a show dir was passed, this was added as an existing show.
                 # For new shows we should have any files on disk.
-                message_step('refresh episodes from disk')
+                message_step('rescan episodes from disk')
                 try:
                     app.show_queue_scheduler.action.refreshShow(self.show)
                 except CantRefreshShowException as error:
@@ -749,7 +749,7 @@ class QueueItemRefresh(ShowQueueItem):
         ShowQueueItem.run(self)
 
         log.info(
-            '{id}: Performing refresh on {show}',
+            '{id}: Performing rescan on {show}',
             {'id': self.show.series_id, 'show': self.show.name}
         )
         ws.Message('QueueItemShow', self.to_json).push()
@@ -772,7 +772,7 @@ class QueueItemRefresh(ShowQueueItem):
             )
         except Exception as error:
             log.error(
-                '{id}: Error while refreshing show {show}. Error: {error_msg}',
+                '{id}: Error while rescanning show {show}. Error: {error_msg}',
                 {'id': self.show.series_id, 'show': self.show.name, 'error_msg': error}
             )
 
@@ -950,7 +950,7 @@ class QueueItemUpdate(ShowQueueItem):
             episodes_from_indexer = self.show.load_episodes_from_indexer()
         except IndexerException as error:
             log.warning(
-                '{id}: Unable to get info from {indexer}. The show info will not be refreshed.'
+                '{id}: Unable to get info from {indexer}. The show info will not be updated.'
                 ' Error: {error_msg}',
                 {'id': self.show.series_id, 'indexer': indexerApi(self.show.indexer).name,
                  'error_msg': error}
@@ -1117,7 +1117,7 @@ class QueueItemSeasonUpdate(ShowQueueItem):
             episodes_from_indexer = self.show.load_episodes_from_indexer(self.seasons)
         except IndexerException as error:
             log.warning(
-                '{id}: Unable to get info from {indexer}. The show info will not be refreshed.'
+                '{id}: Unable to get info from {indexer}. The show info will not be updated.'
                 ' Error: {error_msg}',
                 {'id': self.show.series_id, 'indexer': indexerApi(self.show.indexer).name,
                  'error_msg': error}

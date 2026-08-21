@@ -151,7 +151,7 @@ class SeriesMassEdit(BaseRequestHandler):
                     app.show_queue_scheduler.action.refreshShow(show_obj)
                 except CantRefreshShowException as error:
                     errors += 1
-                    log.warning("Unable to refresh show '{show}': {error}", {
+                    log.warning("Unable to rescan show '{show}': {error}", {
                         'show': show_obj.name, 'error': error
                     })
 
@@ -207,7 +207,7 @@ class SeriesMassEdit(BaseRequestHandler):
                         app.show_queue_scheduler.action.refreshShow(show_obj)
                     except CantRefreshShowException as error:
                         errors += 1
-                        log.warning("Unable to refresh show '{show}'. Error: {error}", {
+                        log.warning("Unable to rescan show '{show}'. Error: {error}", {
                                     'show': show_obj.name, 'error': error})
 
             # Save all settings changed while in show_obj.lock
@@ -228,13 +228,13 @@ class SeriesMassEdit(BaseRequestHandler):
             show_obj.flush_episodes()
             show_obj.erase_cached_parse()
 
-            # Need to refresh show as we updated scene numbering or changed show format
+            # Need to rescan the show after updating scene numbering or changing the show format
             try:
                 app.show_queue_scheduler.action.refreshShow(show_obj)
             except CantRefreshShowException as error:
                 errors += 1
                 log.warning(
-                    "Unable to refresh show '{show}'. Please manually trigger a full show refresh. "
+                    "Unable to rescan show '{show}'. Please manually trigger a full show rescan. "
                     'Error: {error!r}'.format(show=show_obj.name, error=error),
                     {'show': show_obj.name, 'error': error}
                 )

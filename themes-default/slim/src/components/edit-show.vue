@@ -415,7 +415,7 @@ export default {
             try {
                 await saveShowConfig({ show });
                 this.$snotify.success(
-                    'You may need to "Re-scan files" or "Force Full Update".',
+                    'You may need to "Rescan files" or "Force Full Update".',
                     'Saved',
                     { timeout: 5000 }
                 );
