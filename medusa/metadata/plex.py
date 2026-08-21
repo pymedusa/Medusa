@@ -170,7 +170,7 @@ class PlexMetadata(generic.GenericMetadata):
 
         # Add the location for the new episode.
         if ep_obj.series.location in ep_obj.location and ep_obj.location.replace(ep_obj.series.location, ''):
-            location = ep_obj.location.replace(ep_obj.series.location, '')
+            location = os.path.relpath(ep_obj.location, ep_obj.series.location).replace(os.path.sep, '/')
             if location:
                 if ep_obj.season == 0:
                     episodes.append(f'sp: {ep_obj.episode:02d}: {location}')

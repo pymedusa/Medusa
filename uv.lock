@@ -569,7 +569,7 @@ wheels = [
 
 [[package]]
 name = "medusa"
-version = "1.0.25"
+version = "1.0.26"
 source = { virtual = "." }
 dependencies = [
     { name = "adba" },
