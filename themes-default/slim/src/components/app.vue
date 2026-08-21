@@ -57,7 +57,9 @@ export default {
                 'new-show-existing',
                 'news',
                 'changelog',
-                'status'
+                'status',
+                'logs',
+                'log-reporter'
             ];
         }
     }

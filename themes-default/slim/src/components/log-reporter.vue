@@ -65,6 +65,12 @@ export default {
             return this.$route.query.level || this.level;
         }
     },
+    destroyed() {
+        this.autoUpdate = false;
+        if (this.autoUpdateTimer) {
+            clearTimeout(this.autoUpdateTimer);
+        }
+    },
     methods: {
         async fetchLogs() {
             const { client, logLevel, loggingLevels } = this;
@@ -91,6 +97,9 @@ export default {
         async autoUpdateTask(errors = 0) {
             if (this.autoUpdate) {
                 const result = await this.fetchLogs();
+                if (!this.autoUpdate) {
+                    return;
+                }
                 // Increment if false
                 errors += Number(!result);
                 // Stop after 5 network errors
