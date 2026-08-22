@@ -8,7 +8,7 @@ from decimal import Decimal, ROUND_CEILING, ROUND_FLOOR
 from types import SimpleNamespace
 from urllib.parse import parse_qsl, urlencode
 
-from medusa.common import DOWNLOADED, FAILED, Quality, SNATCHED
+from medusa.common import DOWNLOADED, FAILED, Quality, SNATCHED, SUBTITLED
 from medusa.indexers.config import indexerConfig
 from medusa.schedulers.download_handler import ClientStatusEnum, status_strings
 from medusa.server.api.v2 import history as history_module
@@ -1708,3 +1708,454 @@ async def test_detailed_pagination_with_title_filter_uses_total_row_count(histor
     assert second_response.headers['X-Pagination-Count'] == '5'
     assert [row['id'] for row in first_rows] == [inserted[4], inserted[3]]
     assert [row['id'] for row in second_rows] == [inserted[2], inserted[1]]
+
+
+class _CorrectionInMemoryHistoryDB(object):
+    """Small database double for sort and compact-history regressions."""
+
+    def __init__(self):
+        self.connection = sqlite3.connect(':memory:', check_same_thread=False)
+        self.connection.row_factory = sqlite3.Row
+        self.queries = []
+        self.connection.execute(
+            'CREATE TABLE history ('
+            'date, action, quality, provider, version, resource, size, proper_tags, '
+            'indexer_id, showid, season, episode, manually_searched, info_hash, '
+            'provider_type, client_status, part_of_batch)'
+        )
+        self.connection.execute(
+            'CREATE TABLE tv_shows (indexer, indexer_id, show_name TEXT)'
+        )
+        self.connection.execute(
+            'CREATE TABLE scene_exceptions (indexer, series_id, title TEXT)'
+        )
+
+    def add_row(self, provider, quality, date=0, indexer_id=0, showid=0, season=1,
+                episode=1, action=DOWNLOADED, resource='resource'):
+        """Insert a history row with the fields used by HistoryHandler."""
+        self.connection.execute(
+            'INSERT INTO history ('
+            'date, action, quality, provider, version, resource, size, proper_tags, '
+            'indexer_id, showid, season, episode, manually_searched, info_hash, '
+            'provider_type, client_status, part_of_batch'
+            ') VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            (date, action, quality, provider, '', resource, 0, '', indexer_id, showid,
+             season, episode, 0, '', '', None, 0)
+        )
+        self.connection.commit()
+
+    def select(self, query, args=None):
+        """Execute and record a history select query."""
+        self.queries.append(query)
+        cursor = self.connection.execute(query, args or [])
+        return [dict(row) for row in cursor.fetchall()]
+
+
+@pytest.fixture
+def correction_history_db(monkeypatch):
+    database = _CorrectionInMemoryHistoryDB()
+    for provider, quality in (
+        ('zzz', 0),
+        ('beta', 1),
+        ('alpha', 1),
+        ('gamma', 1),
+    ):
+        database.add_row(provider, quality)
+    monkeypatch.setattr(history_module.db, 'DBConnection', lambda: database)
+    monkeypatch.setattr(
+        history_module.Series,
+        'find_by_identifier',
+        staticmethod(lambda identifier: None)
+    )
+    yield database
+    database.connection.close()
+
+
+@pytest.fixture
+def correction_compact_history_db(monkeypatch):
+    """Provide an empty database for compact-history regressions."""
+    database = _CorrectionInMemoryHistoryDB()
+    monkeypatch.setattr(history_module.db, 'DBConnection', lambda: database)
+    monkeypatch.setattr(
+        history_module.Series,
+        'find_by_identifier',
+        staticmethod(lambda identifier: None)
+    )
+    yield database
+    database.connection.close()
+
+
+def _correction_history_url(create_url, sort):
+    """Build a detailed URL with the active quality filter."""
+    return _history_url(
+        create_url,
+        column_filters={'quality': 1},
+        sort=[sort]
+    )
+
+
+def _correction_raw_history_url(create_url, sort):
+    """Build a detailed URL without wrapping supplied sort JSON."""
+    return _history_url(
+        create_url,
+        column_filters={'quality': 1},
+        sort=sort
+    )
+
+
+def _correction_compact_history_url(create_url, sort=None, page=None, limit=None,
+                                    resource_filter=None):
+    """Build a compact URL with optional sorting, pagination, and resource filter."""
+    return _history_url(
+        create_url,
+        resource_filter=resource_filter,
+        compact=True,
+        page=page,
+        limit=limit,
+        sort=[sort] if sort is not None else None
+    )
+
+
+def _correction_release_groups(response):
+    """Return release groups emitted for downloaded history rows."""
+    return [item['releaseGroup'] for item in json.loads(response.body)]
+
+
+def _correction_compact_items(response):
+    """Return compact history groups from an API response."""
+    return json.loads(response.body)
+
+
+@pytest.mark.gen_test
+@pytest.mark.parametrize('direction, expected', [
+    ('asc', ['alpha', 'beta', 'gamma']),
+    ('DESC', ['gamma', 'beta', 'alpha']),
+    ('AsC', ['alpha', 'beta', 'gamma']),
+    ('dEsC', ['gamma', 'beta', 'alpha']),
+])
+async def test_history_correction_provider_sort_with_quality_filter(
+        http_client, create_url, auth_headers, correction_history_db, direction, expected):
+    url = _correction_history_url(
+        create_url, {'field': 'providerId', 'type': direction}
+    )
+
+    response = await http_client.fetch(url, **auth_headers)
+
+    assert response.code == 200
+    assert _correction_release_groups(response) == expected
+    assert 'order by provider {0}'.format(direction.lower()) in correction_history_db.queries[-1].lower()
+
+
+@pytest.mark.gen_test
+@pytest.mark.parametrize('direction', ['ascending', 'asc ', None, 1])
+async def test_history_correction_malformed_direction_is_unsorted(
+        http_client, create_url, auth_headers, correction_history_db, direction):
+    url = _correction_history_url(
+        create_url, {'field': 'providerId', 'type': direction}
+    )
+
+    response = await http_client.fetch(url, **auth_headers)
+
+    assert response.code == 200
+    assert _correction_release_groups(response) == ['beta', 'alpha', 'gamma']
+    assert 'ORDER BY' not in correction_history_db.queries[-1].upper()
+
+
+@pytest.mark.gen_test
+@pytest.mark.parametrize('sort', [
+    {},
+    'sort',
+    1,
+    [],
+    [{'field': 'providerId', 'type': 'asc'}, {'field': 'providerId', 'type': 'desc'}],
+    [None],
+    [[]],
+    [{'field': {}, 'type': 'asc'}],
+    [{'field': [], 'type': 'asc'}],
+    [{'field': 'providerId', 'type': 1}],
+])
+async def test_history_correction_malformed_sort_shape_is_unsorted(
+        http_client, create_url, auth_headers, correction_history_db, sort):
+    response = await http_client.fetch(
+        _correction_raw_history_url(create_url, sort), **auth_headers
+    )
+
+    assert response.code == 200
+    assert _correction_release_groups(response) == ['beta', 'alpha', 'gamma']
+    assert 'ORDER BY' not in correction_history_db.queries[-1].upper()
+
+
+@pytest.mark.gen_test
+async def test_history_correction_unsupported_sort_field_is_unsorted(
+        http_client, create_url, auth_headers, correction_history_db):
+    url = _correction_history_url(
+        create_url, {'field': 'unsupported', 'type': 'asc'}
+    )
+
+    response = await http_client.fetch(url, **auth_headers)
+
+    assert response.code == 200
+    assert _correction_release_groups(response) == ['beta', 'alpha', 'gamma']
+    assert 'ORDER BY' not in correction_history_db.queries[-1].upper()
+
+
+@pytest.mark.gen_test
+async def test_history_correction_compact_keeps_season_zero_and_excludes_missing_identity(
+        http_client, create_url, auth_headers, correction_compact_history_db):
+    correction_compact_history_db.add_row(
+        'season-zero', 1, date=10, indexer_id=1, showid=100, season=0, episode=1
+    )
+    correction_compact_history_db.add_row(
+        'missing-indexer', 1, date=20, indexer_id=None, showid=101, season=1, episode=1
+    )
+    correction_compact_history_db.add_row(
+        'missing-show', 1, date=30, indexer_id=1, showid=0, season=1, episode=2
+    )
+    correction_compact_history_db.add_row(
+        'missing-episode', 1, date=40, indexer_id=1, showid=103, season=1, episode=0
+    )
+
+    response = await http_client.fetch(
+        _correction_compact_history_url(create_url), **auth_headers
+    )
+
+    assert response.code == 200
+    groups = _correction_compact_items(response)
+    assert response.headers['X-Pagination-Count'] == '1'
+    assert len(groups) == 1
+    assert groups[0]['showSlug'] == 'tvdb100'
+    assert groups[0]['actionDate'] == 10
+    assert groups[0]['rows'][0]['season'] == 0
+
+
+@pytest.mark.gen_test
+async def test_history_correction_compact_action_date_is_group_max(
+        http_client, create_url, auth_headers, correction_compact_history_db):
+    correction_compact_history_db.add_row(
+        'max-date', 1, date=300, indexer_id=1, showid=100, season=1, episode=1
+    )
+    correction_compact_history_db.add_row(
+        'other-max', 1, date=250, indexer_id=1, showid=101, season=1, episode=1
+    )
+    correction_compact_history_db.add_row(
+        'older-date', 1, date=100, indexer_id=1, showid=100, season=1, episode=1
+    )
+    correction_compact_history_db.add_row(
+        'other-old', 1, date=50, indexer_id=1, showid=101, season=1, episode=1
+    )
+    correction_compact_history_db.add_row(
+        'last-but-not-newest', 1, date=200, indexer_id=1, showid=100, season=1, episode=1
+    )
+
+    response = await http_client.fetch(
+        _correction_compact_history_url(create_url), **auth_headers
+    )
+
+    assert response.code == 200
+    groups = _correction_compact_items(response)
+    assert groups[0]['showSlug'] == 'tvdb100'
+    assert groups[0]['actionDate'] == 300
+    assert [item['actionDate'] for item in groups[0]['rows']] == [300, 100, 200]
+
+
+@pytest.mark.gen_test
+@pytest.mark.parametrize('sort_field', ['date', 'actionDate'])
+async def test_history_correction_compact_time_sort_orders_groups_before_pagination(
+        http_client, create_url, auth_headers, correction_compact_history_db, sort_field):
+    for showid, date in ((101, 200), (102, 100), (103, 300)):
+        correction_compact_history_db.add_row(
+            'show-{0}'.format(showid), 1, date=date, indexer_id=1,
+            showid=showid, season=1, episode=1
+        )
+
+    asc_url = _correction_compact_history_url(
+        create_url, {'field': sort_field, 'type': 'asc'}
+    )
+    asc_response = await http_client.fetch(asc_url, **auth_headers)
+    assert asc_response.code == 200
+    assert [item['actionDate'] for item in _correction_compact_items(asc_response)] == [100, 200, 300]
+    assert [item['showSlug'] for item in _correction_compact_items(asc_response)] == [
+        'tvdb102', 'tvdb101', 'tvdb103'
+    ]
+    assert asc_response.headers['X-Pagination-Count'] == '3'
+
+    asc_page_response = await http_client.fetch(
+        _correction_compact_history_url(
+            create_url, {'field': sort_field, 'type': 'asc'}, page=2, limit=2
+        ),
+        **auth_headers
+    )
+    assert [item['actionDate'] for item in _correction_compact_items(asc_page_response)] == [300]
+    assert asc_page_response.headers['X-Pagination-Count'] == '3'
+
+    desc_response = await http_client.fetch(
+        _correction_compact_history_url(
+            create_url, {'field': sort_field, 'type': 'desc'}, limit=2
+        ),
+        **auth_headers
+    )
+    assert desc_response.code == 200
+    assert [item['actionDate'] for item in _correction_compact_items(desc_response)] == [300, 200]
+    assert desc_response.headers['X-Pagination-Count'] == '3'
+
+
+@pytest.mark.gen_test
+@pytest.mark.parametrize('sort_field', ['date', 'actionDate'])
+@pytest.mark.parametrize('direction', ['asc', 'desc'])
+async def test_history_correction_compact_equal_max_dates_use_lexical_group_key(
+        http_client, create_url, auth_headers, correction_compact_history_db, sort_field, direction):
+    for showid in (103, 101, 102):
+        correction_compact_history_db.add_row(
+            'show-{0}'.format(showid), 1, date=100, indexer_id=1,
+            showid=showid, season=1, episode=1
+        )
+
+    response = await http_client.fetch(
+        _correction_compact_history_url(
+            create_url, {'field': sort_field, 'type': direction}
+        ),
+        **auth_headers
+    )
+
+    assert response.code == 200
+    assert [item['showSlug'] for item in _correction_compact_items(response)] == [
+        'tvdb101', 'tvdb102', 'tvdb103'
+    ]
+    assert [item['actionDate'] for item in _correction_compact_items(response)] == [100, 100, 100]
+    assert response.headers['X-Pagination-Count'] == '3'
+
+
+@pytest.mark.gen_test
+@pytest.mark.parametrize('direction, expected', [
+    ('AsC', ['tvdb100', 'tvdb102', 'tvdb101', 'tvdb103']),
+    ('DESC', ['tvdb103', 'tvdb102', 'tvdb101', 'tvdb100']),
+])
+async def test_history_correction_compact_subtitled_sort_counts_groups_before_pagination(
+        http_client, create_url, auth_headers, correction_compact_history_db, direction, expected):
+    correction_compact_history_db.add_row(
+        'zero', 1, date=100, indexer_id=1, showid=100, season=1, episode=1
+    )
+    correction_compact_history_db.add_row(
+        'one-old', 1, date=200, indexer_id=1, showid=101, season=1, episode=1,
+        action=SUBTITLED
+    )
+    correction_compact_history_db.add_row(
+        'one-new', 1, date=300, indexer_id=1, showid=102, season=1, episode=1,
+        action=SUBTITLED
+    )
+    for date in (400, 350):
+        correction_compact_history_db.add_row(
+            'two-{0}'.format(date), 1, date=date, indexer_id=1, showid=103,
+            season=1, episode=1, action=SUBTITLED
+        )
+
+    response = await http_client.fetch(
+        _correction_compact_history_url(
+            create_url, {'field': 'SUBTITLED', 'type': direction}
+        ),
+        **auth_headers
+    )
+
+    assert response.code == 200
+    assert [item['showSlug'] for item in _correction_compact_items(response)] == expected
+    assert response.headers['X-Pagination-Count'] == '4'
+
+    if direction == 'AsC':
+        page_response = await http_client.fetch(
+            _correction_compact_history_url(
+                create_url, {'field': 'subtitled', 'type': 'asc'}, page=2, limit=2
+            ),
+            **auth_headers
+        )
+        assert [item['showSlug'] for item in _correction_compact_items(page_response)] == [
+            'tvdb101', 'tvdb103'
+        ]
+        assert page_response.headers['X-Pagination-Count'] == '4'
+
+
+@pytest.mark.gen_test
+@pytest.mark.parametrize('direction, expected', [
+    ('asc', ['tvdb204', 'tvdb201', 'tvdb202', 'tvdb203']),
+    ('desc', ['tvdb203', 'tvdb201', 'tvdb202', 'tvdb204']),
+])
+async def test_history_correction_compact_subtitled_equal_dates_use_lexical_group_key(
+        http_client, create_url, auth_headers, correction_compact_history_db, direction, expected):
+    correction_compact_history_db.add_row(
+        'count-zero', 1, date=50, indexer_id=1, showid=204, season=1, episode=1
+    )
+    for showid in (202, 201):
+        correction_compact_history_db.add_row(
+            'count-one-{0}'.format(showid), 1, date=100, indexer_id=1,
+            showid=showid, season=1, episode=1, action=SUBTITLED
+        )
+    for date in (200, 150):
+        correction_compact_history_db.add_row(
+            'count-two-{0}'.format(date), 1, date=date, indexer_id=1, showid=203,
+            season=1, episode=1, action=SUBTITLED
+        )
+
+    response = await http_client.fetch(
+        _correction_compact_history_url(
+            create_url, {'field': 'subtitled', 'type': direction}
+        ),
+        **auth_headers
+    )
+
+    assert response.code == 200
+    assert [item['showSlug'] for item in _correction_compact_items(response)] == expected
+
+
+@pytest.mark.gen_test
+async def test_history_correction_detailed_subtitled_sort_is_unsupported(
+        http_client, create_url, auth_headers, correction_history_db):
+    response = await http_client.fetch(
+        _correction_history_url(
+            create_url, {'field': 'subtitled', 'type': 'asc'}
+        ),
+        **auth_headers
+    )
+
+    assert response.code == 200
+    assert _correction_release_groups(response) == ['beta', 'alpha', 'gamma']
+    assert 'ORDER BY' not in correction_history_db.queries[-1].upper()
+
+
+@pytest.mark.gen_test
+async def test_history_correction_compact_subtitled_sort_composes_with_resource_filter(
+        http_client, create_url, auth_headers, correction_compact_history_db):
+    correction_compact_history_db.add_row(
+        'keep-zero', 1, date=100, indexer_id=1, showid=100, season=1, episode=1,
+        resource='keep-zero'
+    )
+    correction_compact_history_db.add_row(
+        'keep-one-old', 1, date=200, indexer_id=1, showid=101, season=1, episode=1,
+        action=SUBTITLED, resource='keep-one-old'
+    )
+    correction_compact_history_db.add_row(
+        'keep-one-new', 1, date=300, indexer_id=1, showid=102, season=1, episode=1,
+        action=SUBTITLED, resource='keep-one-new'
+    )
+    for date in (400, 350):
+        correction_compact_history_db.add_row(
+            'keep-two-{0}'.format(date), 1, date=date, indexer_id=1, showid=103,
+            season=1, episode=1, action=SUBTITLED,
+            resource='keep-two-{0}'.format(date)
+        )
+    correction_compact_history_db.add_row(
+        'drop-one', 1, date=500, indexer_id=1, showid=104, season=1, episode=1,
+        action=SUBTITLED, resource='drop-one'
+    )
+
+    response = await http_client.fetch(
+        _correction_compact_history_url(
+            create_url, {'field': 'subtitled', 'type': 'asc'}, page=2, limit=2,
+            resource_filter='keep'
+        ),
+        **auth_headers
+    )
+
+    assert response.code == 200
+    assert [item['showSlug'] for item in _correction_compact_items(response)] == [
+        'tvdb101', 'tvdb103'
+    ]
+    assert response.headers['X-Pagination-Count'] == '4'

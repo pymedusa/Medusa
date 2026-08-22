@@ -17,6 +17,7 @@ from medusa.providers.generic_provider import GenericProvider
 from medusa.schedulers.download_handler import ClientStatus, ClientStatusEnum, status_strings
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.tv.series import Series, SeriesIdentifier
+from six import string_types
 
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -217,7 +218,7 @@ class HistoryHandler(BaseRequestHandler):
             'date': 'date',
             'action': 'action',
             'statusname': 'action',
-            'providerId': 'provider',
+            'providerid': 'provider',
             'clientstatus': 'client_status',
             'size': 'size',
             'quality': 'quality'
@@ -339,11 +340,22 @@ class HistoryHandler(BaseRequestHandler):
             sql_base += ' WHERE ' if not where else ' AND '
             sql_base += ' AND '.join(where_with_ops)
 
-        if sort is not None and len(sort) == 1:  # Only support one sort column right now.
-            field = sort[0].get('field').lower()
+        sort_field = None
+        sort_order = None
+        if isinstance(sort, list) and len(sort) == 1 and isinstance(sort[0], dict):
+            # Only support one sort column right now.
+            field = sort[0].get('field')
             order = sort[0].get('type')
-            if field_map.get(field):
-                sql_base += f' ORDER BY {field_map[field]} {order} '
+            if isinstance(field, string_types) and isinstance(order, string_types):
+                field = field.lower()
+                order = order.lower()
+                if field_map.get(field) and order in ('asc', 'desc'):
+                    sort_field = field
+                    sort_order = order
+                    sql_base += f' ORDER BY {field_map[field]} {sort_order} '
+                elif compact_layout and field == 'subtitled' and order in ('asc', 'desc'):
+                    sort_field = field
+                    sort_order = order
 
         if total_rows:
             sql_base += ' LIMIT ?'
@@ -356,10 +368,29 @@ class HistoryHandler(BaseRequestHandler):
             res = OrderedDict()
 
             for item in results:
-                if item.get('showid') and item.get('season') and item.get('episode') and item.get('indexer_id'):
+                if item.get('showid') and item.get('season') is not None and item.get('episode') and item.get('indexer_id'):
                     item['showslug'] = f"{indexer_id_to_name(item['indexer_id'])}{item['showid']}"
                     group_by_key = f"{item['showslug']}S{item['season']}E{item['episode']}Q{item['quality']}"
                     res.setdefault(group_by_key, []).append(item)
+
+            if sort_field in ('date', 'actiondate'):
+                groups = sorted(res.items(), key=lambda group: group[0])
+                groups.sort(
+                    key=lambda group: max(item['date'] for item in group[1]),
+                    reverse=sort_order == 'desc'
+                )
+                res = OrderedDict(groups)
+            elif sort_field == 'subtitled':
+                groups = sorted(res.items(), key=lambda group: group[0])
+                groups.sort(
+                    key=lambda group: max(item['date'] for item in group[1]),
+                    reverse=True
+                )
+                groups.sort(
+                    key=lambda group: sum(item['action'] == SUBTITLED for item in group[1]),
+                    reverse=sort_order == 'desc'
+                )
+                res = OrderedDict(groups)
             results = res
         headers['X-Pagination-Count'] = len(results)
 
@@ -455,7 +486,10 @@ class HistoryHandler(BaseRequestHandler):
             start = arg_limit * (arg_page - 1)
 
             for compact_item in list(results.values())[start:start + arg_limit]:
-                return_item = {'rows': []}
+                return_item = {
+                    'actionDate': max(item['date'] for item in compact_item),
+                    'rows': []
+                }
                 for item in compact_item:
                     provider = {}
                     release_group = None
@@ -497,7 +531,6 @@ class HistoryHandler(BaseRequestHandler):
                         if show:
                             item['showTitle'] = show.title
 
-                    return_item['actionDate'] = item['date']
                     return_item['showSlug'] = item['showslug']
                     return_item['episodeTitle'] = '{0} - s{1:02d}e{2:02d}'.format(
                         item['showTitle'], item['season'], item['episode']
