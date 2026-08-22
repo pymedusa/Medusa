@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 import json
 import sqlite3
+from decimal import Decimal, ROUND_CEILING, ROUND_FLOOR
 from types import SimpleNamespace
 from urllib.parse import parse_qsl, urlencode
 
@@ -1128,13 +1129,20 @@ async def test_size_filter_accepts_optional_quotes_and_operator_spacing(
         '<= 1024',
         '>= 1024',
         '>> 1024',
-        '< 1024 MB',
+        '>.5',
+        '>1.',
+        '>1.345',
+        '>1.4.5',
         '< 1024junk',
+        '< 1024kb',
         '; DROP TABLE history',
         '"<1024',
         '<1024"',
         '"<1024`',
         '`<1024"',
+        '>8589934592.00',
+        '>8589934592.00 MB',
+        '>8589934592.00 GB',
     ]
 )
 async def test_malformed_size_filter_is_ignored_without_affecting_other_filters(
@@ -1169,11 +1177,11 @@ async def test_malformed_size_filter_is_ignored_without_affecting_other_filters(
     [
         ('>1', {'small', 'large'}),
         ('>123456', set()),
-        ('>1234567', {'zero', 'small', 'large'}),
+        ('>123456789.99', set()),
         ('>１２３', {'zero', 'small', 'large'}),
     ]
 )
-async def test_size_filter_enforces_ascii_digit_length(size_filter, expected_names, history_db, fetch_history):
+async def test_size_filter_accepts_long_ascii_digits_and_rejects_unicode_digits(size_filter, expected_names, history_db, fetch_history):
     rows_by_name = {
         'zero': _insert_history_row(history_db, SNATCHED, 'size-boundary-zero.mkv', size=0),
         'small': _insert_history_row(
@@ -1189,6 +1197,126 @@ async def test_size_filter_enforces_ascii_digit_length(size_filter, expected_nam
 
     assert response.code == 200
     assert {name for name, row_id in rows_by_name.items() if row_id in {row['id'] for row in rows}} == expected_names
+
+
+@pytest.mark.parametrize(
+    'size_filter,expected_operator,expected_numeric,size_multiplier,rounding',
+    [
+        ('>123456789.99', '>', Decimal('123456789.99'), Decimal(1024 ** 2), ROUND_FLOOR),
+        ('>123 MB', '>', Decimal('123'), Decimal(1024 ** 2), ROUND_FLOOR),
+        ('>123 Gb', '>', Decimal('123'), Decimal(1024 ** 3), ROUND_FLOOR),
+        ('> 1.3', '>', Decimal('1.3'), Decimal(1024 ** 2), ROUND_FLOOR),
+        ('<1.35MB', '<', Decimal('1.35'), Decimal(1024 ** 2), ROUND_CEILING),
+        ('> 900.45 mB', '>', Decimal('900.45'), Decimal(1024 ** 2), ROUND_FLOOR),
+        ('< 2.4 Gb', '<', Decimal('2.4'), Decimal(1024 ** 3), ROUND_CEILING),
+        ('>8589934591.99', '>', Decimal('8589934591.99'), Decimal(1024 ** 2), ROUND_FLOOR),
+        ('>8589934591.99 MB', '>', Decimal('8589934591.99'), Decimal(1024 ** 2), ROUND_FLOOR),
+        ('<8589934591.99 gB', '<', Decimal('8589934591.99'), Decimal(1024 ** 3), ROUND_CEILING),
+    ]
+)
+def test_size_parser_accepts_decimal_units_and_shared_cap(
+    size_filter, expected_operator, expected_numeric, size_multiplier, rounding
+):
+    expected_size = int((expected_numeric * size_multiplier).to_integral_value(rounding=rounding))
+
+    assert history_module._parse_size_filter(size_filter) == (expected_operator, expected_size)
+
+
+@pytest.mark.parametrize(
+    'size_filter',
+    [
+        '<8589934592.00',
+        '>8589934592.00 MB',
+        '<8589934592.00 mB',
+        '>8589934592.00 GB',
+        '<8589934592.00 gB',
+    ]
+)
+def test_size_parser_rejects_values_above_shared_cap(size_filter):
+    assert history_module._parse_size_filter(size_filter) is None
+
+
+@pytest.mark.gen_test
+@pytest.mark.parametrize(
+    'size_filter,expected_names',
+    [
+        ('> 900.45 mB', {
+            'nine-hundred-mb-above', 'two-point-four-gb-floor', 'two-point-four-gb-above'
+        }),
+        ('< 2.4 Gb', {
+            'nine-hundred-mb-floor', 'nine-hundred-mb-above', 'two-point-four-gb-floor'
+        }),
+    ]
+)
+async def test_size_filter_accepts_mb_and_gb_decimal_values(size_filter, expected_names, history_db, fetch_history):
+    decimal_mb = Decimal(1024 ** 2)
+    decimal_gb = Decimal(1024 ** 3)
+    nine_hundred_mb_floor = int(
+        (Decimal('900.45') * decimal_mb).to_integral_value(rounding=ROUND_FLOOR)
+    )
+    two_point_four_gb_floor = int(
+        (Decimal('2.4') * decimal_gb).to_integral_value(rounding=ROUND_FLOOR)
+    )
+
+    rows_by_name = {
+        'nine-hundred-mb-floor': _insert_history_row(
+            history_db, SNATCHED, 'size-900.45-mb-floor.mkv', size=nine_hundred_mb_floor
+        ),
+        'nine-hundred-mb-above': _insert_history_row(
+            history_db, SNATCHED, 'size-900.45-mb-above.mkv', size=nine_hundred_mb_floor + 1
+        ),
+        'two-point-four-gb-floor': _insert_history_row(
+            history_db, SNATCHED, 'size-2.4-gb-floor.mkv', size=two_point_four_gb_floor
+        ),
+        'two-point-four-gb-above': _insert_history_row(
+            history_db, SNATCHED, 'size-2.4-gb-above.mkv', size=two_point_four_gb_floor + 1
+        ),
+    }
+
+    rows = json.loads((await fetch_history(
+        'My English Title', column_filters={'size': size_filter}
+    )).body)
+    returned_names = {name for name, row_id in rows_by_name.items() if row_id in {row['id'] for row in rows}}
+
+    assert returned_names == expected_names
+
+
+@pytest.mark.gen_test
+@pytest.mark.parametrize(
+    'size_filter,expected_names',
+    [
+        ('>1.3gb', {'one-point-three-gb-above', 'two-gb'}),
+        ('>1.3 Gb', {'one-point-three-gb-above', 'two-gb'}),
+        ('" <1.3 gb "', {'small', 'one-point-three-gb-floor'}),
+        ('<1.3 gb', {'small', 'one-point-three-gb-floor'}),
+        ('>1.4 gb', {'two-gb'}),
+        ('`>1.4 gb`', {'two-gb'}),
+        ('<0.00', set()),
+    ]
+)
+async def test_size_filter_accepts_unit_variants_and_decimal_rounding(
+    size_filter, expected_names, history_db, fetch_history
+):
+    decimal_gb = Decimal('1073741824')
+    one_point_three_floor = int(
+        (Decimal('1.3') * decimal_gb).to_integral_value(rounding=ROUND_FLOOR)
+    )
+
+    rows_by_name = {
+        'small': _insert_history_row(history_db, SNATCHED, 'size-decimal-small.mkv', size=950 * 1024 * 1024),
+        'one-point-three-gb-floor': _insert_history_row(
+            history_db, SNATCHED, 'size-decimal-floor.mkv', size=one_point_three_floor
+        ),
+        'one-point-three-gb-above': _insert_history_row(
+            history_db, SNATCHED, 'size-decimal-above.mkv', size=one_point_three_floor + 1
+        ),
+        'two-gb': _insert_history_row(history_db, SNATCHED, 'size-decimal-huge.mkv', size=2 * 1024 * 1024 * 1024),
+    }
+
+    rows = json.loads((await fetch_history('My English Title', column_filters={'size': size_filter})).body)
+    returned_names = {name for name, row_id in rows_by_name.items() if row_id in {row['id'] for row in rows}}
+
+    assert returned_names == expected_names
 
 
 @pytest.mark.gen_test
@@ -1241,6 +1369,29 @@ async def test_episode_filter_with_whitespace_only_size_preserves_other_filters(
     )).body)
 
     assert {row['id'] for row in rows} == {matching_row}
+
+
+@pytest.mark.gen_test
+async def test_history_size_sort_is_numeric(history_db, fetch_history):
+    one_point_three_floor = int(
+        (Decimal('1.3') * Decimal('1073741824')).to_integral_value(rounding=ROUND_FLOOR)
+    )
+    rows_by_size = [
+        ('size-sort-2gb', _insert_history_row(history_db, SNATCHED, 'size-sort-2gb.mkv', size=2 * 1024 * 1024 * 1024)),
+        ('size-sort-1.3gb', _insert_history_row(
+            history_db, SNATCHED, 'size-sort-1.3gb.mkv', size=one_point_three_floor
+        )),
+        ('size-sort-950mb', _insert_history_row(
+            history_db, SNATCHED, 'size-sort-950mb.mkv', size=950 * 1024 * 1024
+        )),
+    ]
+
+    rows = json.loads((await fetch_history(
+        'My English Title',
+        sort=[{'field': 'size', 'type': 'desc'}]
+    )).body)
+
+    assert [row['id'] for row in rows] == [row_id for _, row_id in rows_by_size]
 
 
 @pytest.mark.gen_test

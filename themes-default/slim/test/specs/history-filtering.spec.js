@@ -5,7 +5,7 @@ import History from '../../src/components/history.vue';
 import HistoryDetailed from '../../src/components/history-detailed.vue';
 import HistoryCompact from '../../src/components/history-compact.vue';
 import historyModule from '../../src/store/modules/history';
-import { normalizeHistoryTextFilter } from '../../src/utils/history';
+import { normalizeHistorySizeFilter, normalizeHistoryTextFilter } from '../../src/utils/history';
 
 Vue.use(Vuex);
 
@@ -670,6 +670,60 @@ describe('normalizeHistoryTextFilter', () => {
     });
 });
 
+describe('normalizeHistorySizeFilter', () => {
+    it.each([
+        ['<300', '< 300'],
+        ['>400', '> 400'],
+        ['>1.3gb', '> 1.3 GB'],
+        ['<200mb', '< 200 MB'],
+        ['>1.4 gb', '> 1.4 GB'],
+        ['<900.45 MB', '< 900.45 MB'],
+        ['>2.4GB', '> 2.4 GB'],
+        ['>123456789.99', '> 123456789.99'],
+        ['  "  >1.4 gb  "  ', '> 1.4 GB'],
+        ['`<900.45 MB`', '< 900.45 MB'],
+        ['<8589934591.99', '< 8589934591.99'],
+        ['>8589934591.99 GB', '> 8589934591.99 GB']
+    ])('normalizes valid Size grammar %s', (value, filterValue) => {
+        expect(normalizeHistorySizeFilter(value)).toEqual({
+            filterValue,
+            valid: true,
+            clearFilter: false
+        });
+    });
+
+    it.each([
+        '= 1024',
+        '<= 1024',
+        '>= 1024',
+        '< 1024 OR 1=1',
+        '< 1.345',
+        '< 1.4.5',
+        '< .5',
+        '< 1.',
+        '< 1024 TB',
+        '123456789.99',
+        '< 8589934592',
+        '< 8589934591.999',
+        "'< 1024\"",
+        '<1024MB`'
+    ])('rejects malformed or over-cap Size grammar %s', value => {
+        expect(normalizeHistorySizeFilter(value)).toEqual({
+            filterValue: '',
+            valid: false,
+            clearFilter: false
+        });
+    });
+
+    it.each(['', '   ', "''", '""', '``', '  `  `  '])('marks empty Size forms for clearing: %j', value => {
+        expect(normalizeHistorySizeFilter(value)).toEqual({
+            filterValue: '',
+            valid: false,
+            clearFilter: true
+        });
+    });
+});
+
 describe('History filter state composition', () => {
     it.each([
         ['detailed', HistoryDetailed, 'remote', {
@@ -1298,9 +1352,9 @@ describe('History filter state composition', () => {
             '= 1024',
             '<= 1024',
             '>= 1024',
-            '< 1024 MB',
+            '< 1.345',
             '< 1024 OR 1=1',
-            '< 1234567',
+            '< 12345678901',
             "'< 1024\""
         ];
 
@@ -1368,6 +1422,255 @@ describe('History filter state composition', () => {
             expect(wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
         });
         wrapper.destroy();
+    });
+
+    it('detailed Size input starts from the active canonical filter and keeps valid raw typing visible', async () => {
+        const { wrapper } = mountDetailed({
+            remote: {
+                page: 9,
+                filter: {
+                    columnFilters: {
+                        size: '> 400'
+                    }
+                }
+            }
+        });
+        const sizeInput = wrapper.findAll('input').at(2);
+
+        expect(sizeInput.element.value).toBe('> 400');
+        wrapper.vm.loadItemsDebounced.mockClear();
+        const rawValue = '  >1.3gb  ';
+        wrapper.vm.updateSizeFilter({
+            currentTarget: {
+                value: rawValue
+            }
+        });
+        await wrapper.vm.$nextTick();
+
+        expect(sizeInput.element.value).toBe(rawValue);
+        expect(wrapper.vm.sizeFilterPendingCleanup).toBe(false);
+        expect(wrapper.vm.remoteHistory.filter.columnFilters.size).toBe('> 1.3 GB');
+        expect(wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
+        wrapper.destroy();
+    });
+
+    it('detailed invalid Size input stays raw and leaves the applied filter, page, and request unchanged', async () => {
+        const { wrapper } = mountDetailed({
+            remote: {
+                page: 7,
+                filter: {
+                    columnFilters: {
+                        size: '> 400'
+                    }
+                }
+            }
+        });
+        const sizeInput = wrapper.findAll('input').at(2);
+        const filterBefore = JSON.parse(JSON.stringify(wrapper.vm.remoteHistory.filter));
+        wrapper.vm.loadItemsDebounced.mockClear();
+        const rawValue = '< 1.4.5';
+        wrapper.vm.updateSizeFilter({
+            currentTarget: {
+                value: rawValue
+            }
+        });
+        await wrapper.vm.$nextTick();
+
+        expect(sizeInput.element.value).toBe(rawValue);
+        expect(wrapper.vm.sizeFilterPendingCleanup).toBe(true);
+        expect(wrapper.vm.remoteHistory.filter).toEqual(filterBefore);
+        expect(wrapper.vm.remoteHistory.page).toBe(7);
+        expect(wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(0);
+        wrapper.destroy();
+    });
+
+    it.each([
+        ['Episode', vm => vm.updateResource({ currentTarget: { value: 'new episode' } })],
+        ['Provider', vm => vm.updateProvider({ currentTarget: { value: 'new provider' } })],
+        ['Action', vm => vm.onColumnFilter({ columnFilters: { statusName: 'Failed' } })],
+        ['Quality', vm => vm.updateQualityFilter({ currentTarget: { value: '1080p' } })],
+        ['Client Status', vm => vm.updateClientStatusFilter([{ value: 1 }, { value: 2 }])]
+    ])('restores the applied Size value on %s filter commit with only the triggering request', async (_name, trigger) => {
+        const { wrapper } = mountDetailed({
+            remote: {
+                page: 4,
+                filter: {
+                    columnFilters: {
+                        size: '> 400'
+                    }
+                }
+            }
+        });
+        const sizeInput = wrapper.findAll('input').at(2);
+        wrapper.vm.updateSizeFilter({
+            currentTarget: {
+                value: '>1.3.5gb'
+            }
+        });
+        wrapper.vm.loadItemsDebounced.mockClear();
+        wrapper.vm.remoteHistory.page = 4;
+
+        trigger(wrapper.vm);
+        await wrapper.vm.$nextTick();
+
+        expect(sizeInput.element.value).toBe('> 400');
+        expect(wrapper.vm.sizeFilterPendingCleanup).toBe(false);
+        expect(wrapper.vm.remoteHistory.filter.columnFilters.size).toBe('> 400');
+        expect(wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
+        wrapper.destroy();
+    });
+
+    it.each([
+        ['active', [{ field: 'quality', type: 'asc' }]],
+        ['clear-to-default', [{ field: 'actionDate', type: 'none' }]]
+    ])('restores the applied Size value on Detailed %s sort with only one request', async (_name, sortEvent) => {
+        const { wrapper } = mountDetailed({
+            remote: {
+                page: 4,
+                filter: {
+                    columnFilters: {
+                        size: '> 400'
+                    }
+                }
+            }
+        });
+        const sizeInput = wrapper.findAll('input').at(2);
+        wrapper.vm.updateSizeFilter({
+            currentTarget: {
+                value: '>1.3.5gb'
+            }
+        });
+        wrapper.vm.loadItemsDebounced.mockClear();
+        wrapper.vm.remoteHistory.page = 4;
+
+        wrapper.vm.$refs['detailed-history'].emitSort(sortEvent);
+        await wrapper.vm.$nextTick();
+
+        expect(sizeInput.element.value).toBe('> 400');
+        expect(wrapper.vm.sizeFilterPendingCleanup).toBe(false);
+        expect(wrapper.vm.remoteHistory.filter.columnFilters.size).toBe('> 400');
+        expect(wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
+        wrapper.destroy();
+    });
+
+    it('keeps valid raw Size input visible through a filter commit while using its canonical filter value', async () => {
+        const { wrapper } = mountDetailed({
+            remote: {
+                filter: {
+                    columnFilters: {
+                        size: '> 400'
+                    }
+                }
+            }
+        });
+        const sizeInput = wrapper.findAll('input').at(2);
+        const rawValue = '  >1.3gb  ';
+
+        wrapper.vm.updateSizeFilter({
+            currentTarget: {
+                value: rawValue
+            }
+        });
+        wrapper.vm.loadItemsDebounced.mockClear();
+        wrapper.vm.updateQualityFilter({ currentTarget: { value: '1080p' } });
+        await wrapper.vm.$nextTick();
+
+        expect(sizeInput.element.value).toBe(rawValue);
+        expect(wrapper.vm.sizeFilterPendingCleanup).toBe(false);
+        expect(wrapper.vm.remoteHistory.filter.columnFilters.size).toBe('> 1.3 GB');
+        expect(wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
+        wrapper.destroy();
+    });
+
+    it('clears Size filter semantics while retaining whitespace and quote-only raw input until another filter commits', async () => {
+        const { wrapper } = mountDetailed({
+            remote: {
+                filter: {
+                    columnFilters: {
+                        size: '> 400'
+                    }
+                }
+            }
+        });
+        const sizeInput = wrapper.findAll('input').at(2);
+
+        for (const rawValue of ['   ', "''"]) {
+            wrapper.vm.loadItemsDebounced.mockClear();
+            wrapper.vm.updateSizeFilter({
+                currentTarget: {
+                    value: rawValue
+                }
+            });
+
+            expect(wrapper.vm.sizeFilterInputValue).toBe(rawValue);
+            expect(wrapper.vm.sizeFilterPendingCleanup).toBe(true);
+            expect(wrapper.vm.remoteHistory.filter.columnFilters.size).toBe('');
+            expect(wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
+        }
+
+        wrapper.vm.loadItemsDebounced.mockClear();
+        wrapper.vm.updateQualityFilter({ currentTarget: { value: '1080p' } });
+        await wrapper.vm.$nextTick();
+        expect(sizeInput.element.value).toBe('');
+        expect(wrapper.vm.sizeFilterPendingCleanup).toBe(false);
+        expect(wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
+        wrapper.destroy();
+    });
+
+    it('does not carry component-local Size input through Detailed to Compact and back', async () => {
+        const store = createHistoryStore({
+            layout: 'detailed',
+            remote: {
+                filter: {
+                    columnFilters: {
+                        size: '> 400'
+                    }
+                }
+            },
+            remoteCompact: {
+                filter: {
+                    columnFilters: {
+                        size: '> 400'
+                    }
+                }
+            }
+        });
+        const detailed = mountHistoryComponent(HistoryDetailed, store, {}, {
+            VueGoodTable: VueGoodTableStub,
+            AppLink: true,
+            QualityPill: true,
+            FontAwesomeIcon: true,
+            Multiselect: true
+        });
+        detailed.wrapper.vm.updateSizeFilter({
+            currentTarget: {
+                value: '>1.3gb'
+            }
+        });
+        await store.dispatch('prepareHistoryLayoutTransition', { layout: 'compact' });
+        store.state.config.layout.history = 'compact';
+        expect(store.state.history.remote.filter.columnFilters).toEqual({});
+        expect(store.state.history.remoteCompact.filter.columnFilters).toEqual({});
+        detailed.wrapper.destroy();
+
+        const compact = mountHistoryComponent(HistoryCompact, store, {}, {
+            VueGoodTable: VueGoodTableStub,
+            AppLink: true,
+            QualityPill: true
+        });
+        compact.wrapper.destroy();
+        await store.dispatch('prepareHistoryLayoutTransition', { layout: 'detailed' });
+        store.state.config.layout.history = 'detailed';
+
+        const returnedDetailed = mountHistoryComponent(HistoryDetailed, store, {}, {
+            VueGoodTable: VueGoodTableStub,
+            AppLink: true,
+            QualityPill: true,
+            FontAwesomeIcon: true,
+            Multiselect: true
+        });
+        expect(returnedDetailed.wrapper.findAll('input').at(2).element.value).toBe('');
+        returnedDetailed.wrapper.destroy();
     });
 
     it('detailed manual update from null filter is safe', () => {
@@ -1778,7 +2081,7 @@ describe('History filter state composition', () => {
         });
         expect(returnedDetailed.wrapper.find('input[placeholder="Show title or release"]').element.value).toBe(cleanEpisode);
         expect(returnedDetailed.wrapper.find('input[placeholder="Provider | Group"]').element.value).toBe('');
-        expect(returnedDetailed.wrapper.find('input[placeholder="e.g. < 1024 MB"]').element.value).toBe('');
+        expect(returnedDetailed.wrapper.findAll('input').at(2).element.value).toBe('');
         expect(returnedDetailed.wrapper.vm.selectedClientStatusValue).toEqual([]);
         expect(store.state.history.remote.filter.columnFilters).toEqual({
             resource: cleanEpisode
@@ -2515,8 +2818,9 @@ describe('History filter state composition', () => {
     it('detailed Size filter placeholder uses an unquoted example', () => {
         const { wrapper } = mountDetailed();
 
-        expect(wrapper.find('input[placeholder="e.g. < 1024 MB"]').exists()).toBe(true);
-        expect(wrapper.find('input[placeholder*="`"]').exists()).toBe(false);
+        const sizeInput = wrapper.findAll('input').at(2);
+        expect(sizeInput.attributes('placeholder')).toBe('e.g. <200 MB or >1.3 GB');
+        expect(sizeInput.attributes('placeholder')).not.toContain('`');
         wrapper.destroy();
     });
 });

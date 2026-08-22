@@ -112,7 +112,7 @@
                 </span>
 
                 <span v-else-if="column.field === 'size'">
-                    <input placeholder="e.g. < 1024 MB" class="'form-control input-sm vgt-input" @input="updateSizeFilter">
+                    <input :value="sizeFilterInputValue" placeholder="e.g. <200 MB or >1.3 GB" class="'form-control input-sm vgt-input" @input="updateSizeFilter">
                 </span>
 
                 <span v-else-if="column.field === 'clientStatus'">
@@ -136,7 +136,7 @@ import debounce from 'lodash/debounce';
 import { mapActions, mapGetters, mapState } from 'vuex';
 import { VueGoodTable } from 'vue-good-table';
 import { humanFileSize } from '../utils/core';
-import { normalizeHistoryTextFilter } from '../utils/history';
+import { normalizeHistorySizeFilter, normalizeHistoryTextFilter } from '../utils/history';
 import { manageCookieMixin } from '../mixins/manage-cookie';
 import AppLink from './helpers/app-link.vue';
 import QualityPill from './helpers/quality-pill.vue';
@@ -244,6 +244,8 @@ export default {
             historyHeaderSort: [],
             restoringSortHeader: false,
             providerFilterValue: '',
+            sizeFilterInputValue: '',
+            sizeFilterPendingCleanup: false,
             malformedTextFilters: {
                 providerId: false
             }
@@ -257,6 +259,7 @@ export default {
         this.initializeEpisodeFilter({ layout: 'detailed' });
         const currentFilters = this.remoteHistory.filter && this.remoteHistory.filter.columnFilters ? this.remoteHistory.filter.columnFilters : {};
         this.providerFilterValue = currentFilters.providerId || '';
+        this.sizeFilterInputValue = currentFilters.size || '';
         this.initializeHistorySort({
             layout: 'detailed',
             sort: this.getSortFromCookie()
@@ -390,6 +393,11 @@ export default {
                 this.providerFilterValue = currentFilters.providerId || '';
                 this.malformedTextFilters.providerId = false;
             }
+            if (exceptField !== 'size' && this.sizeFilterPendingCleanup) {
+                const currentFilters = this.remoteHistory.filter && this.remoteHistory.filter.columnFilters ? this.remoteHistory.filter.columnFilters : {};
+                this.sizeFilterInputValue = currentFilters.size || '';
+                this.sizeFilterPendingCleanup = false;
+            }
         },
         onColumnFilter(params) {
             this.canonicalizeMalformedTextFilters();
@@ -415,7 +423,7 @@ export default {
         },
         updateFilterValue(field, value) {
             if (!['resource', 'providerId'].includes(field)) {
-                this.canonicalizeMalformedTextFilters();
+                this.canonicalizeMalformedTextFilters(field === 'size' ? 'size' : undefined);
             }
             const currentFilters = this.remoteHistory.filter && this.remoteHistory.filter.columnFilters ? this.remoteHistory.filter.columnFilters : {};
             const columnFilters = Object.assign({}, currentFilters, {
@@ -434,28 +442,21 @@ export default {
             this.updateFilterValue('quality', quality.currentTarget.value);
         },
         /**
-         * Update the size filter.
-         * As a specific size filter is useless. I've choosen to use a > or < operator.
-         * The backend will parse these into queries.
-         * @param {string} size - Operator with size in MB.
+         * Update the History Size filter.
+         * @param {Event} event - Input event containing a comparison with optional MB or GB units.
          */
-        updateSizeFilter(size) {
-            size = size.currentTarget.value.trim();
+        updateSizeFilter(event) {
+            const rawValue = event.currentTarget.value;
+            const normalized = normalizeHistorySizeFilter(rawValue);
+            this.sizeFilterInputValue = rawValue;
 
-            const quote = size[0];
-            if (['\'', '"', '`'].includes(quote) && size[size.length - 1] === quote) {
-                size = size.slice(1, -1).trim();
-            }
-
-            if (!size) {
-                this.updateFilterValue('size', size);
+            if (!normalized.valid && !normalized.clearFilter) {
+                this.sizeFilterPendingCleanup = true;
                 return;
             }
 
-            const validSizeMatch = size.match(/^([<>])\s*(\d{1,6})$/);
-            if (validSizeMatch) {
-                this.updateFilterValue('size', `${validSizeMatch[1]} ${validSizeMatch[2]}`);
-            }
+            this.sizeFilterPendingCleanup = !normalized.valid;
+            this.updateFilterValue('size', normalized.filterValue);
         },
         updateResource(resource) {
             const { value } = resource.currentTarget;

@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 import json
 import logging
 import re
+from decimal import Decimal, ROUND_CEILING, ROUND_FLOOR
 from os.path import basename
 
 from medusa import db
@@ -22,6 +23,12 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 SQLITE_MAX_INTEGER = (1 << 63) - 1
+SIZE_BYTES_PER_MB = 1024 ** 2
+SIZE_BYTES_PER_GB = 1024 ** 3
+
+# Keep one two-decimal numeric cap for every accepted unit. This is derived
+# from floor((SQLITE_MAX_INTEGER / 1024^3) * 100) / 100.
+SIZE_MAX_INPUT = Decimal((SQLITE_MAX_INTEGER * 100) // SIZE_BYTES_PER_GB) / Decimal(100)
 
 
 def _normalize_text_filter(value):
@@ -53,14 +60,44 @@ def _parse_size_filter(value):
     if not value:
         return None
 
-    if len(value) >= 2 and value[0] in "'\"`" and value[-1] == value[0]:
-        value = value[1:-1].strip()
+    if value[0] in "'\"`":
+        if len(value) < 2 or value[-1] != value[0]:
+            return None
+        value = value[1:-1]
 
-    match = re.fullmatch(r'(?P<operator>[<>])\s*(?P<size>[0-9]{1,6})', value)
+    value = value.strip()
+    if not value:
+        return None
+
+    match = re.fullmatch(
+        r'(?P<operator>[<>])\s*(?P<size>[0-9]{1,10}(?:\.[0-9]{1,2})?)(?:\s*(?P<unit>mb|gb))?$',
+        value,
+        re.IGNORECASE
+    )
     if not match:
         return None
 
-    return match.group('operator'), int(match.group('size')) * 1024 * 1024
+    numeric_size = Decimal(match.group('size'))
+    if numeric_size > SIZE_MAX_INPUT:
+        return None
+
+    size_multiplier = Decimal(
+        SIZE_BYTES_PER_GB if match.group('unit') and match.group('unit').lower() == 'gb' else SIZE_BYTES_PER_MB
+    )
+
+    exact_size = numeric_size * size_multiplier
+    if exact_size > SQLITE_MAX_INTEGER:
+        return None
+
+    if match.group('operator') == '<':
+        size = int(exact_size.to_integral_value(rounding=ROUND_CEILING))
+    else:
+        size = int(exact_size.to_integral_value(rounding=ROUND_FLOOR))
+
+    if size > SQLITE_MAX_INTEGER:
+        return None
+
+    return match.group('operator'), size
 
 
 def _parse_series_identifier_slug(value):
