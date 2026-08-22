@@ -322,13 +322,18 @@ export default {
         getSortFromCookie() {
             const { getCookie } = this;
             const sort = getCookie('sort'); // From manage-cookie.js mixin
-            if (sort) {
-                if (sort[0].type === 'none') {
-                    sort[0].type = 'desc';
-                }
-                return sort;
+            const supportedFields = ['date', 'actionDate', 'statusName', 'quality', 'providerId', 'size', 'clientStatus'];
+            const defaultSort = [{ field: 'date', type: 'desc' }];
+            if (!Array.isArray(sort) || sort.length === 0) {
+                return defaultSort;
             }
-            return [{ field: 'date', type: 'desc' }];
+            const [firstSort] = sort;
+            const firstSortPrototype = firstSort !== null && typeof firstSort === 'object' ? Object.getPrototypeOf(firstSort) : undefined;
+            const isPlainObject = firstSortPrototype === Object.prototype || firstSortPrototype === null;
+            if (!isPlainObject || typeof firstSort.field !== 'string' || typeof firstSort.type !== 'string' || !supportedFields.includes(firstSort.field) || !['asc', 'desc'].includes(firstSort.type)) {
+                return defaultSort;
+            }
+            return [{ field: firstSort.field, type: firstSort.type }];
         },
         rowStyleClassFn(row) {
             return `${row.statusName.toLowerCase()} status` || 'skipped status';

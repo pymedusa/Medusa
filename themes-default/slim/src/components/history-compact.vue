@@ -136,7 +136,7 @@ export default {
             dateOutputFormat: 'yyyy-MM-dd HH:mm:ss',
             type: 'date',
             firstSortType: 'desc',
-            hidden: getCookie('Date')
+            hidden: getCookie('Time')
         }, {
             label: 'Episode',
             field: 'episodeTitle',
@@ -145,26 +145,26 @@ export default {
                 enabled: true,
                 customFilter: true
             },
-            hidden: getCookie('Status')
+            hidden: getCookie('Episode')
         }, {
             label: 'Snatched',
             field: 'snatched',
             type: 'number',
             sortable: false,
-            hidden: getCookie('Quality')
+            hidden: getCookie('Snatched')
         }, {
             label: 'Downloaded',
             field: 'downloaded',
             sortable: false,
-            hidden: getCookie('Provider/Group')
+            hidden: getCookie('Downloaded')
         }, {
             label: 'Subtitled',
             field: 'subtitled',
-            hidden: getCookie('Release')
+            hidden: getCookie('Subtitled')
         }, {
             label: 'Quality',
             field: 'quality',
-            hidden: getCookie('Release')
+            hidden: getCookie('Quality')
         }];
 
         return {
@@ -245,17 +245,56 @@ export default {
         getSortFromCookie() {
             const { getCookie } = this;
             const sort = getCookie('sort'); // From manage-cookie.js mixin
-            if (sort) {
-                if (sort[0].type === 'none') {
-                    sort[0].type = 'desc';
-                }
-                return sort;
+            const supportedFields = ['date', 'actionDate', 'subtitled', 'quality'];
+            const defaultSort = [{ field: 'date', type: 'desc' }];
+            if (!Array.isArray(sort) || sort.length === 0) {
+                return defaultSort;
             }
-            return [{ field: 'date', type: 'desc' }];
+            const [firstSort] = sort;
+            const firstSortPrototype = firstSort !== null && typeof firstSort === 'object' ? Object.getPrototypeOf(firstSort) : undefined;
+            const isPlainObject = firstSortPrototype === Object.prototype || firstSortPrototype === null;
+            if (!isPlainObject || typeof firstSort.field !== 'string' || typeof firstSort.type !== 'string' || !supportedFields.includes(firstSort.field) || !['asc', 'desc'].includes(firstSort.type)) {
+                return defaultSort;
+            }
+            return [{ field: firstSort.field, type: firstSort.type }];
         },
         sortDate(rows) {
             const cloneRows = [...rows];
-            return cloneRows.sort(x => x.actionDate).reverse();
+            const getNumericDate = value => {
+                if (typeof value === 'number' && Number.isFinite(value)) {
+                    return value;
+                }
+                if (typeof value === 'string' && value.trim() !== '') {
+                    const numericValue = Number(value);
+                    if (Number.isFinite(numericValue)) {
+                        return numericValue;
+                    }
+                }
+                return null;
+            };
+            const compareIds = (left, right) => {
+                const leftId = Number(left.id);
+                const rightId = Number(right.id);
+                if (Number.isFinite(leftId) && Number.isFinite(rightId)) {
+                    return leftId - rightId;
+                }
+                return String(left.id).localeCompare(String(right.id));
+            };
+
+            return cloneRows.sort((left, right) => {
+                const leftDate = getNumericDate(left.actionDate);
+                const rightDate = getNumericDate(right.actionDate);
+                if (leftDate === null && rightDate !== null) {
+                    return 1;
+                }
+                if (leftDate !== null && rightDate === null) {
+                    return -1;
+                }
+                if (leftDate !== null && rightDate !== null && leftDate !== rightDate) {
+                    return rightDate - leftDate;
+                }
+                return compareIds(left, right);
+            });
         },
         getFileBaseName(path) {
             if (path) {
