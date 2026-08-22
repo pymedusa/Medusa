@@ -20,6 +20,7 @@
                 perPage: remoteHistory.perPage,
                 perPageDropdown,
                 dropdownAllowAll: false,
+                setCurrentPage: remoteHistory.page,
                 position: 'both'
             }"
             :column-filter-options="{
@@ -96,11 +97,11 @@
 
             <template #column-filter="{ column }">
                 <span v-if="column.field === 'episodeTitle'">
-                    <input placeholder="Resource" class="'form-control input-sm vgt-input" @input="updateResource">
+                    <input :value="resourceFilterValue" placeholder="Show title or release" class="'form-control input-sm vgt-input" @input="updateResource">
                 </span>
 
                 <span v-else-if="column.field === 'providerId'">
-                    <input placeholder="Provider | Group" class="'form-control input-sm vgt-input" @input="updateProvider">
+                    <input :value="providerFilterValue" placeholder="Provider | Group" class="'form-control input-sm vgt-input" @input="updateProvider">
                 </span>
 
                 <span v-else-if="column.field === 'quality'">
@@ -111,7 +112,7 @@
                 </span>
 
                 <span v-else-if="column.field === 'size'">
-                    <input placeholder="ex. `< 1024` (MB)" class="'form-control input-sm vgt-input" @input="updateSizeFilter">
+                    <input placeholder="e.g. < 1024 MB" class="'form-control input-sm vgt-input" @input="updateSizeFilter">
                 </span>
 
                 <span v-else-if="column.field === 'clientStatus'">
@@ -135,6 +136,7 @@ import debounce from 'lodash/debounce';
 import { mapActions, mapGetters, mapState } from 'vuex';
 import { VueGoodTable } from 'vue-good-table';
 import { humanFileSize } from '../utils/core';
+import { normalizeHistoryTextFilter } from '../utils/history';
 import { manageCookieMixin } from '../mixins/manage-cookie';
 import AppLink from './helpers/app-link.vue';
 import QualityPill from './helpers/quality-pill.vue';
@@ -236,7 +238,13 @@ export default {
         return {
             columns,
             selectedClientStatusValue: [],
-            perPageDropdown
+            perPageDropdown,
+            resourceFilterValue: '',
+            providerFilterValue: '',
+            malformedTextFilters: {
+                resource: false,
+                providerId: false
+            }
         };
     },
     mounted() {
@@ -251,6 +259,9 @@ export default {
         this.remoteHistory.sort = getSortFromCookie();
     },
     created() {
+        const currentFilters = this.remoteHistory.filter && this.remoteHistory.filter.columnFilters ? this.remoteHistory.filter.columnFilters : {};
+        this.resourceFilterValue = currentFilters.resource || '';
+        this.providerFilterValue = currentFilters.providerId || '';
         this.loadItemsDebounced = debounce(this.loadItems, 500);
     },
     computed: {
@@ -321,28 +332,60 @@ export default {
             this.remoteHistory.sort = params.filter(item => item.type !== 'none');
             this.loadItemsDebounced();
         },
+        canonicalizeMalformedTextFilters(exceptField) {
+            Object.keys(this.malformedTextFilters).forEach(field => {
+                if (field !== exceptField && this.malformedTextFilters[field]) {
+                    const inputKey = field === 'resource' ? 'resourceFilterValue' : 'providerFilterValue';
+                    const currentFilters = this.remoteHistory.filter && this.remoteHistory.filter.columnFilters ? this.remoteHistory.filter.columnFilters : {};
+                    this[inputKey] = currentFilters[field] || '';
+                    this.malformedTextFilters[field] = false;
+                }
+            });
+        },
         onColumnFilter(params) {
-            this.setCookie('filter', params);
-            this.remoteHistory.filter = params;
+            this.canonicalizeMalformedTextFilters();
+            const nextFilter = params && Object.prototype.hasOwnProperty.call(params, 'columnFilters') ? params.columnFilters : params || {};
+            const currentFilters = this.remoteHistory.filter && this.remoteHistory.filter.columnFilters ? this.remoteHistory.filter.columnFilters : {};
+            const manualKeys = ['resource', 'providerId', 'quality', 'size', 'clientStatus'];
+            const manualFilters = manualKeys.reduce((result, key) => {
+                if (Object.prototype.hasOwnProperty.call(currentFilters, key)) {
+                    result[key] = currentFilters[key];
+                }
+                return result;
+            }, {});
+
+            this.applyFilter(Object.assign({}, manualFilters, nextFilter), true);
+        },
+        applyFilter(columnFilters, persistFilterCookie) {
+            const nextFilter = Object.assign({}, this.remoteHistory.filter, {
+                columnFilters
+            });
+            this.remoteHistory.filter = nextFilter;
+            if (persistFilterCookie) {
+                this.setCookie('filter', nextFilter);
+            }
+            this.remoteHistory.page = 1;
             this.loadItemsDebounced();
+        },
+        updateFilterValue(field, value) {
+            if (!['resource', 'providerId'].includes(field)) {
+                this.canonicalizeMalformedTextFilters();
+            }
+            const currentFilters = this.remoteHistory.filter && this.remoteHistory.filter.columnFilters ? this.remoteHistory.filter.columnFilters : {};
+            const columnFilters = Object.assign({}, currentFilters, {
+                [field]: value
+            });
+            this.applyFilter(columnFilters, false);
         },
         updateClientStatusFilter(event) {
             const combinedStatus = event.reduce((result, item) => {
                 return result | item.value;
             }, 0);
-            if (!this.remoteHistory.filter) {
-                this.remoteHistory.filter = { columnFilters: {} };
-            }
             this.selectedClientStatusValue = event;
-            this.remoteHistory.filter.columnFilters.clientStatus = combinedStatus;
-            this.loadItemsDebounced();
+            this.updateFilterValue('clientStatus', combinedStatus);
         },
         updateQualityFilter(quality) {
-            if (!this.remoteHistory.filter) {
-                this.remoteHistory.filter = { columnFilters: {} };
-            }
-            this.remoteHistory.filter.columnFilters.quality = quality.currentTarget.value;
-            this.loadItemsDebounced();
+            this.updateFilterValue('quality', quality.currentTarget.value);
         },
         /**
          * Update the size filter.
@@ -351,41 +394,38 @@ export default {
          * @param {string} size - Operator with size in MB.
          */
         updateSizeFilter(size) {
-            // Check for valid syntax, and pass along.
-            size = size.currentTarget.value;
+            size = size.currentTarget.value.trim();
+
+            const quote = size[0];
+            if (['\'', '"', '`'].includes(quote) && size[size.length - 1] === quote) {
+                size = size.slice(1, -1).trim();
+            }
+
             if (!size) {
-                this.remoteHistory.filter.columnFilters.size = size;
-                this.loadItemsDebounced();
+                this.updateFilterValue('size', size);
                 return;
             }
 
-            const validSizeRegex = /[<>] \d{2,6}/;
-            if (size.match(validSizeRegex)) {
-                this.invalidSizeMessage = '';
-                if (!this.remoteHistory.filter) {
-                    this.remoteHistory.filter = { columnFilters: {} };
-                }
-                this.remoteHistory.filter.columnFilters.size = size;
-                this.loadItemsDebounced();
+            const validSizeMatch = size.match(/^([<>])\s*(\d{1,6})$/);
+            if (validSizeMatch) {
+                this.updateFilterValue('size', `${validSizeMatch[1]} ${validSizeMatch[2]}`);
             }
         },
         updateResource(resource) {
-            resource = resource.currentTarget.value;
-            if (!this.remoteHistory.filter) {
-                this.remoteHistory.filter = { columnFilters: {} };
-            }
-
-            this.remoteHistory.filter.columnFilters.resource = resource;
-            this.loadItemsDebounced();
+            const { value } = resource.currentTarget;
+            const normalized = normalizeHistoryTextFilter(value);
+            this.resourceFilterValue = normalized.clearInput ? '' : value;
+            this.malformedTextFilters.resource = normalized.malformed;
+            this.canonicalizeMalformedTextFilters('resource');
+            this.updateFilterValue('resource', normalized.filterValue);
         },
         updateProvider(provider) {
-            provider = provider.currentTarget.value;
-            if (!this.remoteHistory.filter) {
-                this.remoteHistory.filter = { columnFilters: {} };
-            }
-
-            this.remoteHistory.filter.columnFilters.providerId = provider;
-            this.loadItemsDebounced();
+            const { value } = provider.currentTarget;
+            const normalized = normalizeHistoryTextFilter(value);
+            this.providerFilterValue = normalized.clearInput ? '' : value;
+            this.malformedTextFilters.providerId = normalized.malformed;
+            this.canonicalizeMalformedTextFilters('providerId');
+            this.updateFilterValue('providerId', normalized.filterValue);
         },
         // Load items is what brings back the rows from server
         loadItems() {

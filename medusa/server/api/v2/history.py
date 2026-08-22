@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 import json
 import logging
+import re
 from os.path import basename
 
 from medusa import db
@@ -20,6 +21,63 @@ from medusa.tv.series import Series, SeriesIdentifier
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
+SQLITE_MAX_INTEGER = (1 << 63) - 1
+
+
+def _normalize_text_filter(value):
+    """Normalize Episode or Provider text while preserving quoted boundary whitespace."""
+    if not isinstance(value, str):
+        return None
+
+    value = value.strip()
+    if not value:
+        return None
+
+    wrappers = "'\"`"
+    if value[0] in wrappers or value[-1] in wrappers:
+        if len(value) >= 2 and value[0] == value[-1]:
+            value = value[1:-1]
+            return value if value else None
+        value = value.strip(wrappers).strip()
+        return value or None
+
+    return value
+
+
+def _parse_size_filter(value):
+    """Return a validated size operator and byte value, or None."""
+    if not isinstance(value, str):
+        return None
+
+    value = value.strip()
+    if not value:
+        return None
+
+    if len(value) >= 2 and value[0] in "'\"`" and value[-1] == value[0]:
+        value = value[1:-1].strip()
+
+    match = re.fullmatch(r'(?P<operator>[<>])\s*(?P<size>[0-9]{1,6})', value)
+    if not match:
+        return None
+
+    return match.group('operator'), int(match.group('size')) * 1024 * 1024
+
+
+def _parse_series_identifier_slug(value):
+    """Return an identifier for an exact canonical series slug, if present."""
+    if not isinstance(value, str):
+        return None
+
+    slug = value.lower()
+    try:
+        identifier = SeriesIdentifier.from_slug(slug)
+    except (TypeError, ValueError):
+        return None
+    if identifier and identifier.id > SQLITE_MAX_INTEGER:
+        return None
+    if identifier and identifier.slug.lower() == slug:
+        return identifier
+
 
 class HistoryHandler(BaseRequestHandler):
     """History request handler."""
@@ -32,6 +90,18 @@ class HistoryHandler(BaseRequestHandler):
     path_param = ('path_param', r'\w+')
     #: allowed HTTP methods
     allowed_methods = ('GET', 'POST', 'PUT', 'DELETE')
+
+    @staticmethod
+    def _parse_episode_resource(resource):
+        """Return title, season, and episode when the input is a rendered episode text."""
+        match = re.fullmatch(
+            r'(?P<title>.+?)\s+-\s+s(?P<season>\d+)e(?P<episode>\d+)',
+            resource,
+            re.IGNORECASE
+        )
+        if not match:
+            return resource, None, None
+        return match.group('title'), int(match.group('season')), int(match.group('episode'))
 
     def get(self, series_slug, path_param):
         """
@@ -88,18 +158,15 @@ class HistoryHandler(BaseRequestHandler):
         }
 
         # Prepare an operator (> or <) and size, for the size query.
-        size_operator = None
-        size = None
+        size_filter = None
         provider = None
         resource = None
 
         if filter is not None and filter.get('columnFilters'):
             size = filter['columnFilters'].pop('size', None)
-            provider = filter['columnFilters'].pop('providerId', None)
-            resource = filter['columnFilters'].pop('resource', None)
-
-            if size:
-                size_operator, size = size.split(' ')
+            provider = _normalize_text_filter(filter['columnFilters'].pop('providerId', None))
+            resource = _normalize_text_filter(filter['columnFilters'].pop('resource', None))
+            size_filter = _parse_size_filter(size)
 
             for filter_field, filter_value in filter['columnFilters'].items():
                 # Loop through each column filter apply the mapping, and add to sql_base.
@@ -110,23 +177,80 @@ class HistoryHandler(BaseRequestHandler):
                 params += [filter_value]
 
         # Add size query (with operator)
-        if size_operator and size:
-            try:
-                size = int(size) * 1024 * 1024
-                where_with_ops += [f' size {size_operator} ? ']
-                params.append(size)
-            except ValueError:
-                log.info('Could not parse {size} into a valid number', {'size': size})
+        if size_filter:
+            size_operator, size = size_filter
+            where_with_ops += [f' size {size_operator} ? ']
+            params.append(size)
 
         # Add provider with like %provider%
         if provider:
             where_with_ops += [' provider LIKE ? ']
             params.append(f'%%{provider}%%')
 
+        cte_query = ''
+        cte_params = []
+
         # Search resource with like %resource%
         if resource:
-            where_with_ops += [' resource LIKE ? ']
-            params.append(f'%%{resource}%%')
+            (resource_title_filter, resource_season, resource_episode) = self._parse_episode_resource(resource)
+            resource_identifier = _parse_series_identifier_slug(resource_title_filter)
+            like_resource_title = f'%%{resource_title_filter}%%'
+            like_resource = f'%%{resource}%%'
+            cte_query = """
+                WITH show_match_identities AS (
+                    SELECT indexer, indexer_id
+                    FROM tv_shows
+                    WHERE LOWER(show_name) LIKE LOWER(?)
+                    UNION
+                    SELECT indexer, series_id AS indexer_id
+                    FROM scene_exceptions
+                    WHERE LOWER(title) LIKE LOWER(?)
+            """
+            cte_params.extend([like_resource_title, like_resource_title])
+            cte_query += """
+                )
+            """
+            if resource_season is not None and resource_episode is not None:
+                direct_identity = ''
+                direct_identity_params = []
+                if resource_identifier:
+                    direct_identity = (
+                        ' OR (history.indexer_id = ? AND history.showid = ?'
+                        ' AND history.season = ? AND history.episode = ?)'
+                    )
+                    direct_identity_params = [
+                        resource_identifier.indexer.id,
+                        resource_identifier.id,
+                        resource_season,
+                        resource_episode
+                    ]
+                where_with_ops += [
+                    '(LOWER(resource) LIKE LOWER(?)'
+                    + direct_identity
+                    + ' OR EXISTS ('
+                    ' SELECT 1 FROM show_match_identities sm'
+                    ' WHERE sm.indexer = history.indexer_id'
+                    ' AND sm.indexer_id = history.showid'
+                    ' AND history.season = ? AND history.episode = ?'
+                    '))'
+                ]
+                params += [like_resource] + direct_identity_params + [resource_season, resource_episode]
+            else:
+                direct_identity = ''
+                direct_identity_params = []
+                if resource_identifier:
+                    direct_identity = ' OR (history.indexer_id = ? AND history.showid = ?)'
+                    direct_identity_params = [resource_identifier.indexer.id, resource_identifier.id]
+                where_with_ops += [
+                    '(LOWER(resource) LIKE LOWER(?)'
+                    + direct_identity
+                    + ' OR EXISTS ('
+                    ' SELECT 1 FROM show_match_identities sm'
+                    ' WHERE sm.indexer = history.indexer_id'
+                    ' AND sm.indexer_id = history.showid'
+                    '))'
+                ]
+                params += [like_resource] + direct_identity_params
 
         if where:
             sql_base += ' WHERE ' + ' AND '.join(f'{item} = ?' for item in where)
@@ -145,7 +269,7 @@ class HistoryHandler(BaseRequestHandler):
             sql_base += ' LIMIT ?'
             params += [total_rows]
 
-        results = db.DBConnection().select(sql_base, params)
+        results = db.DBConnection().select(cte_query + sql_base, cte_params + params)
 
         if compact_layout:
             from collections import OrderedDict
