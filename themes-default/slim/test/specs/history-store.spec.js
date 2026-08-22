@@ -563,7 +563,7 @@ describe('history store', () => {
         expect(history.remote.totalRows).toBe(1);
     });
 
-    it('does not fetch or insert a raw row for active compact history', async () => {
+    it('refetches active compact history without inserting the raw websocket row', async () => {
         const existingRow = { id: 'compact-old-row' };
         const websocketRow = { id: 'websocket-row' };
         const { api, history, store } = createHistoryStore({
@@ -577,9 +577,19 @@ describe('history store', () => {
         await store.dispatch('setHistoryActive', true);
         await store.dispatch('updateHistory', websocketRow);
 
-        expect(api.get).not.toHaveBeenCalled();
-        expect(history.remoteCompact.rows).toEqual([existingRow]);
-        expect(history.remoteCompact.totalRows).toBe(1);
+        expect(api.get).toHaveBeenCalledTimes(1);
+        expect(api.get).toHaveBeenCalledWith('/history', {
+            params: {
+                page: 1,
+                limit: 25,
+                sort: JSON.stringify([{ field: 'date', type: 'desc' }]),
+                filter: JSON.stringify({}),
+                compact: true
+            }
+        });
+        expect(history.remoteCompact.rows).toEqual([{ id: 'api-row' }]);
+        expect(history.remoteCompact.rows).not.toContain(websocketRow);
+        expect(history.remoteCompact.totalRows).toBe(4);
     });
 
     it('keeps bare getHistory untracked and commits rows without clamping', async () => {

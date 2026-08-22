@@ -136,6 +136,10 @@ const isCurrentHistoryRequest = (state, { compact, tracked, requestId, querySnap
     );
 };
 
+const isLatestHistoryRequest = (state, { compact, tracked, requestId }) => {
+    return !tracked || state.historyRequestIds[historyLayoutKey(compact)] === requestId;
+};
+
 const lastHistoryPage = (total, perPage) => {
     if (!Number.isFinite(total) || !Number.isFinite(perPage) || perPage <= 0) {
         return null;
@@ -458,7 +462,9 @@ const actions = {
             }
         }
 
-        commit('setLoading', false);
+        if (isLatestHistoryRequest(state, { compact, tracked, requestId })) {
+            commit('setLoading', false);
+        }
     },
     /**
      * Get episode history from API and commit it to the store.
@@ -483,11 +489,20 @@ const actions = {
     },
     updateHistory({ rootState, commit, dispatch, state }, data) {
         // Update store's search queue item. (provided through websocket)
-        const layout = rootState.config.layout && rootState.config.layout.history;
-        const compact = layout === 'compact';
-        // We can't live update the compact layout, as it requires to aggregate the data.
-        if (compact) {
-            return;
+        const layout = rootState.config && rootState.config.layout && rootState.config.layout.history;
+        // Compact rows are aggregates, so refetch instead of inserting the raw event.
+        if (layout === 'compact') {
+            if (!state.historyActive) {
+                return;
+            }
+            const { page, perPage, sort, filter } = state.remoteCompact;
+            return dispatch('getHistory', {
+                page,
+                perPage,
+                sort,
+                filter,
+                compact: true
+            });
         }
         if (layout === 'detailed' && state.historyActive) {
             return dispatch('getHistory', {
