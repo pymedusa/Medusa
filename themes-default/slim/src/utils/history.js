@@ -24,8 +24,8 @@ export const normalizeHistoryTextFilter = value => {
         const isEmptyPair = normalized.length === 2;
         return {
             filterValue: isEmptyPair ? '' : normalized,
-            malformed: false,
-            clearInput: isEmptyPair
+            malformed: isEmptyPair,
+            clearInput: false
         };
     }
 

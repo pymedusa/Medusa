@@ -350,6 +350,266 @@ const assertCompactResourceUpdate = async ({ page, value, expected, existingFilt
     wrapper.destroy();
 };
 
+const matchingTextPairs = ["''", '""', '``'];
+
+const assertDetailedPairEditing = async ({ field, pair }) => {
+    const initialFilters = detailedFilterDefaults();
+    const { wrapper } = mountDetailed({
+        remote: {
+            page: 9,
+            filter: {
+                columnFilters: initialFilters
+            }
+        }
+    });
+    const updateField = detailedTextMethod(field);
+    const assertStage = async ({ value, filterValue, malformed }) => {
+        wrapper.vm[updateField]({
+            currentTarget: {
+                value
+            }
+        });
+        await wrapper.vm.$nextTick();
+
+        expect(wrapper.find(`input[placeholder="${detailedTextInput(field)}"]`).element.value).toBe(value);
+        expect(wrapper.vm.remoteHistory.filter.columnFilters[field]).toBe(filterValue);
+        if (field === 'resource') {
+            expect(wrapper.vm.episodeFilter).toMatchObject({
+                inputValue: value,
+                filterValue,
+                malformed,
+                initialized: true
+            });
+        } else {
+            expect(wrapper.vm.providerFilterValue).toBe(value);
+            expect(wrapper.vm.malformedTextFilters.providerId).toBe(malformed);
+        }
+    };
+    const completedValue = `${pair[0]}matched${pair[1]}`;
+
+    await assertStage({ value: pair[0], filterValue: '', malformed: true });
+    await assertStage({ value: pair, filterValue: '', malformed: true });
+    await assertStage({ value: completedValue, filterValue: completedValue, malformed: false });
+    expect(wrapper.vm.remoteHistory.page).toBe(1);
+    expect(wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(3);
+    wrapper.destroy();
+};
+
+const assertCompactPairEditing = async pair => {
+    const { wrapper } = mountCompact({
+        remoteCompact: {
+            page: 4,
+            filter: {
+                columnFilters: {
+                    resource: 'compact episode'
+                }
+            }
+        }
+    });
+    const assertStage = async ({ value, filterValue, malformed }) => {
+        wrapper.vm.updateResource({
+            currentTarget: {
+                value
+            }
+        });
+        await wrapper.vm.$nextTick();
+
+        expect(wrapper.find('input[placeholder="Show title or release"]').element.value).toBe(value);
+        expect(wrapper.vm.remoteHistory.filter.columnFilters.resource).toBe(filterValue);
+        expect(wrapper.vm.episodeFilter).toMatchObject({
+            inputValue: value,
+            filterValue,
+            malformed,
+            initialized: true
+        });
+    };
+    const completedValue = `${pair[0]}matched${pair[1]}`;
+
+    await assertStage({ value: pair[0], filterValue: '', malformed: true });
+    await assertStage({ value: pair, filterValue: '', malformed: true });
+    await assertStage({ value: completedValue, filterValue: completedValue, malformed: false });
+    expect(wrapper.vm.remoteHistory.page).toBe(1);
+    expect(wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(3);
+    wrapper.destroy();
+};
+
+const assertDetailedPairReset = async ({ field, pair, trigger, expectedPatch }) => {
+    const initialFilters = detailedFilterDefaults();
+    const { wrapper } = mountDetailed({
+        remote: {
+            page: 9,
+            filter: {
+                columnFilters: initialFilters
+            }
+        }
+    });
+    wrapper.vm[detailedTextMethod(field)]({
+        currentTarget: {
+            value: pair
+        }
+    });
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find(`input[placeholder="${detailedTextInput(field)}"]`).element.value).toBe(pair);
+    if (field === 'resource') {
+        expect(wrapper.vm.episodeFilter.malformed).toBe(true);
+    } else {
+        expect(wrapper.vm.malformedTextFilters.providerId).toBe(true);
+    }
+
+    wrapper.vm.loadItemsDebounced.mockClear();
+    trigger(wrapper.vm);
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find(`input[placeholder="${detailedTextInput(field)}"]`).element.value).toBe('');
+    expect(wrapper.vm.remoteHistory.filter.columnFilters[field]).toBe('');
+    if (field === 'resource') {
+        expect(wrapper.vm.episodeFilter).toMatchObject({
+            inputValue: '',
+            filterValue: '',
+            malformed: false,
+            initialized: true
+        });
+    } else {
+        expect(wrapper.vm.providerFilterValue).toBe('');
+        expect(wrapper.vm.malformedTextFilters.providerId).toBe(false);
+    }
+    Object.entries(expectedPatch).forEach(([key, value]) => {
+        expect(wrapper.vm.remoteHistory.filter.columnFilters[key]).toEqual(value);
+    });
+    expect(wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
+    wrapper.destroy();
+};
+
+const assertHistoryPairSortReset = async ({ layout, field, pair, sortEvent }) => {
+    const detailed = layout === 'detailed';
+    const remote = {
+        page: 4,
+        filter: {
+            columnFilters: detailed ? detailedFilterDefaults() : {
+                resource: 'old compact'
+            }
+        }
+    };
+    const { wrapper } = detailed ? mountDetailed({ remote }) : mountCompact({ remoteCompact: remote });
+    const inputPlaceholder = detailed ? detailedTextInput(field) : 'Show title or release';
+    const updateField = detailed ? detailedTextMethod(field) : 'updateResource';
+    wrapper.vm[updateField]({
+        currentTarget: {
+            value: pair
+        }
+    });
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find(`input[placeholder="${inputPlaceholder}"]`).element.value).toBe(pair);
+
+    wrapper.vm.loadItemsDebounced.mockClear();
+    wrapper.vm.remoteHistory.page = 4;
+    const table = wrapper.vm.$refs[detailed ? 'detailed-history' : 'compact-history'];
+    table.emitSort(sortEvent);
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.vm.remoteHistory.filter.columnFilters[field]).toBe('');
+    if (field === 'providerId') {
+        expect(wrapper.vm.providerFilterValue).toBe('');
+        expect(wrapper.vm.malformedTextFilters.providerId).toBe(false);
+    } else {
+        expect(wrapper.vm.episodeFilter).toMatchObject({
+            inputValue: '',
+            filterValue: '',
+            malformed: false,
+            initialized: true
+        });
+    }
+    expect(wrapper.find(`input[placeholder="${inputPlaceholder}"]`).element.value).toBe('');
+    expect(wrapper.vm.remoteHistory.page).toBe(4);
+    expect(wrapper.vm.remoteHistory.sort).toEqual(sortEvent[0].type === 'none' ? [{
+        field: 'actionDate',
+        type: 'desc'
+    }] : sortEvent);
+    expect(wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
+    wrapper.destroy();
+};
+
+const assertEpisodePairLayoutReset = async ({ fromLayout, toLayout, pair }) => {
+    const store = createHistoryStore({
+        layout: fromLayout,
+        remote: {
+            filter: {
+                columnFilters: {
+                    resource: 'detailed episode'
+                }
+            }
+        },
+        remoteCompact: {
+            filter: {
+                columnFilters: {
+                    resource: 'compact episode'
+                }
+            }
+        }
+    });
+    const normalized = normalizeHistoryTextFilter(pair);
+    store.commit('updateEpisodeFilter', {
+        inputValue: pair,
+        filterValue: normalized.filterValue,
+        malformed: normalized.malformed
+    });
+    expect(store.state.history.episodeFilter).toMatchObject({
+        inputValue: pair,
+        filterValue: '',
+        malformed: true,
+        initialized: true
+    });
+
+    await store.dispatch('prepareHistoryLayoutTransition', { layout: toLayout });
+
+    expect(store.state.history.episodeFilter).toMatchObject({
+        inputValue: '',
+        filterValue: '',
+        malformed: false,
+        initialized: true
+    });
+    expect(store.state.history.remote.filter.columnFilters.resource || '').toBe('');
+    expect(store.state.history.remoteCompact.filter.columnFilters.resource || '').toBe('');
+};
+
+const assertProviderPairLayoutReset = async pair => {
+    const { wrapper, store, cookieStore } = mountDetailed({
+        remote: {
+            filter: {
+                columnFilters: detailedFilterDefaults()
+            }
+        }
+    });
+    wrapper.vm.updateProvider({
+        currentTarget: {
+            value: pair
+        }
+    });
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('input[placeholder="Provider | Group"]').element.value).toBe(pair);
+    expect(wrapper.vm.malformedTextFilters.providerId).toBe(true);
+
+    await store.dispatch('prepareHistoryLayoutTransition', { layout: 'compact' });
+    expect(Object.prototype.hasOwnProperty.call(store.state.history.remote.filter.columnFilters, 'providerId')).toBe(false);
+    expect(Object.prototype.hasOwnProperty.call(store.state.history.remoteCompact.filter.columnFilters, 'providerId')).toBe(false);
+    store.state.config.layout.history = 'compact';
+    wrapper.destroy();
+
+    await store.dispatch('prepareHistoryLayoutTransition', { layout: 'detailed' });
+    store.state.config.layout.history = 'detailed';
+    const returnedDetailed = mountHistoryComponent(HistoryDetailed, store, cookieStore, {
+        VueGoodTable: VueGoodTableStub,
+        AppLink: true,
+        QualityPill: true,
+        FontAwesomeIcon: true,
+        Multiselect: true
+    });
+    expect(returnedDetailed.wrapper.find('input[placeholder="Provider | Group"]').element.value).toBe('');
+    expect(returnedDetailed.wrapper.vm.malformedTextFilters.providerId).toBe(false);
+    returnedDetailed.wrapper.destroy();
+};
+
 describe('normalizeHistoryTextFilter', () => {
     it('covers text boundary, punctuation, and Unicode normalization cases', () => {
         const cases = [
@@ -359,9 +619,9 @@ describe('normalizeHistoryTextFilter', () => {
             ["'  quoted title  '", "'  quoted title  '", false, false],
             ['"  quoted title  "', '"  quoted title  "', false, false],
             ['`  quoted title  `', '`  quoted title  `', false, false],
-            ["  ''  ", '', false, true],
-            ['""', '', false, true],
-            ['``', '', false, true],
+            ["  ''  ", '', true, false],
+            ['""', '', true, false],
+            ['``', '', true, false],
             ["'", '', true, false],
             ["'leading", 'leading', true, false],
             ['trailing"', 'trailing', true, false],
@@ -830,13 +1090,10 @@ describe('History filter state composition', () => {
         })));
     });
 
-    it('detailed empty matching pairs clear their stored and visible values', () => {
-        expect.assertions(8);
-        return Promise.all(['resource', 'providerId'].map(field => assertDetailedTextUpdate({
-            field,
-            value: "''",
-            expected: '',
-            visibleValue: ''
+    it('keeps all detailed quote-pair forms editable until content completes them', () => {
+        expect.hasAssertions();
+        return Promise.all(['resource', 'providerId'].flatMap(field => matchingTextPairs.map(pair => {
+            return assertDetailedPairEditing({ field, pair });
         })));
     });
 
@@ -922,6 +1179,27 @@ describe('History filter state composition', () => {
             expect(setCookie).toHaveBeenCalledTimes(0);
             wrapper.destroy();
         });
+    });
+
+    it.each([
+        ['Episode on Provider input', 'resource', vm => vm.updateProvider({ currentTarget: { value: 'cross provider' } }), { providerId: 'cross provider' }],
+        ['Provider on Episode input', 'providerId', vm => vm.updateResource({ currentTarget: { value: 'cross episode' } }), { resource: 'cross episode' }],
+        ['Episode on Action filter', 'resource', vm => vm.onColumnFilter({ columnFilters: { statusName: 'Failed' } }), { statusName: 'Failed' }],
+        ['Provider on Action filter', 'providerId', vm => vm.onColumnFilter({ columnFilters: { statusName: 'Failed' } }), { statusName: 'Failed' }],
+        ['Episode on Quality filter', 'resource', vm => vm.updateQualityFilter({ currentTarget: { value: '1080p' } }), { quality: '1080p' }],
+        ['Provider on Quality filter', 'providerId', vm => vm.updateQualityFilter({ currentTarget: { value: '1080p' } }), { quality: '1080p' }],
+        ['Episode on Size filter', 'resource', vm => vm.updateSizeFilter({ currentTarget: { value: '> 2048' } }), { size: '> 2048' }],
+        ['Provider on Size filter', 'providerId', vm => vm.updateSizeFilter({ currentTarget: { value: '> 2048' } }), { size: '> 2048' }],
+        ['Episode on Client Status filter', 'resource', vm => vm.updateClientStatusFilter([{ value: 1 }, { value: 2 }]), { clientStatus: 3 }],
+        ['Provider on Client Status filter', 'providerId', vm => vm.updateClientStatusFilter([{ value: 1 }, { value: 2 }]), { clientStatus: 3 }]
+    ])('canonicalizes every empty quote pair for %s', async (_name, field, trigger, expectedPatch) => {
+        expect.hasAssertions();
+        await Promise.all(matchingTextPairs.map(pair => assertDetailedPairReset({
+            field,
+            pair,
+            trigger,
+            expectedPatch
+        })));
     });
 
     it('detailed size filter canonicalizes valid values, including quoted values', () => {
@@ -1235,11 +1513,9 @@ describe('History filter state composition', () => {
         });
     });
 
-    it('compact resource filter clears each empty matching wrapper', async () => {
-        expect.assertions(12);
-        await assertCompactResourceUpdate({ page: 5, value: "''", expected: '', visibleValue: '' });
-        await assertCompactResourceUpdate({ page: 5, value: '""', expected: '', visibleValue: '' });
-        await assertCompactResourceUpdate({ page: 5, value: '``', expected: '', visibleValue: '' });
+    it('keeps all compact quote-pair forms editable until content completes them', async () => {
+        expect.hasAssertions();
+        await Promise.all(matchingTextPairs.map(pair => assertCompactPairEditing(pair)));
     });
 
     it('detailed Episode edits synchronize both layouts and only load detailed', async () => {
@@ -1608,7 +1884,24 @@ describe('History filter state composition', () => {
         detailed.wrapper.destroy();
     });
 
-    it('keeps shared Episode edits and clears normalized values in either layout', async () => {
+    it.each([
+        ['Detailed -> Compact', 'detailed', 'compact'],
+        ['Compact -> Detailed', 'compact', 'detailed']
+    ])('canonicalizes every empty Episode quote pair on %s layout changes', async (_name, fromLayout, toLayout) => {
+        expect.hasAssertions();
+        await Promise.all(matchingTextPairs.map(pair => assertEpisodePairLayoutReset({
+            fromLayout,
+            toLayout,
+            pair
+        })));
+    });
+
+    it('drops every pending Provider quote pair when leaving Detailed', async () => {
+        expect.hasAssertions();
+        await Promise.all(matchingTextPairs.map(pair => assertProviderPairLayoutReset(pair)));
+    });
+
+    it('keeps shared Episode edits and pending empty pairs in either layout', async () => {
         const store = createHistoryStore({
             layout: 'detailed',
             remote: {
@@ -1653,8 +1946,9 @@ describe('History filter state composition', () => {
             }
         });
         await detailed.wrapper.vm.$nextTick();
-        expect(store.state.history.episodeFilter.inputValue).toBe('');
+        expect(store.state.history.episodeFilter.inputValue).toBe('""');
         expect(store.state.history.episodeFilter.filterValue).toBe('');
+        expect(store.state.history.episodeFilter.malformed).toBe(true);
         expect(store.state.history.remote.filter.columnFilters.resource).toBe('');
         expect(store.state.history.remoteCompact.filter.columnFilters.resource).toBe('');
         expect(detailed.wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
@@ -1685,8 +1979,9 @@ describe('History filter state composition', () => {
             }
         });
         await compact.wrapper.vm.$nextTick();
-        expect(store.state.history.episodeFilter.inputValue).toBe('');
+        expect(store.state.history.episodeFilter.inputValue).toBe('``');
         expect(store.state.history.episodeFilter.filterValue).toBe('');
+        expect(store.state.history.episodeFilter.malformed).toBe(true);
         expect(store.state.history.remote.filter.columnFilters.resource).toBe('');
         expect(store.state.history.remoteCompact.filter.columnFilters.resource).toBe('');
         expect(compact.wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
@@ -2043,6 +2338,23 @@ describe('History filter state composition', () => {
         }] : sortEvent);
         expect(wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
         wrapper.destroy();
+    });
+
+    it.each([
+        ['Detailed Episode active', 'detailed', 'resource', [{ field: 'quality', type: 'asc' }]],
+        ['Detailed Episode clear-to-default', 'detailed', 'resource', [{ field: 'actionDate', type: 'none' }]],
+        ['Detailed Provider active', 'detailed', 'providerId', [{ field: 'quality', type: 'asc' }]],
+        ['Detailed Provider clear-to-default', 'detailed', 'providerId', [{ field: 'actionDate', type: 'none' }]],
+        ['Compact Episode active', 'compact', 'resource', [{ field: 'quality', type: 'asc' }]],
+        ['Compact Episode clear-to-default', 'compact', 'resource', [{ field: 'actionDate', type: 'none' }]]
+    ])('canonicalizes every empty quote pair on %s sort', async (_name, layout, field, sortEvent) => {
+        expect.hasAssertions();
+        await Promise.all(matchingTextPairs.map(pair => assertHistoryPairSortReset({
+            layout,
+            field,
+            pair,
+            sortEvent
+        })));
     });
 
     it.each([
