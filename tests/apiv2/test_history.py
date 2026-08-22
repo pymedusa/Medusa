@@ -10,6 +10,7 @@ from urllib.parse import parse_qsl, urlencode
 
 from medusa.common import DOWNLOADED, FAILED, Quality, SNATCHED
 from medusa.indexers.config import indexerConfig
+from medusa.schedulers.download_handler import ClientStatusEnum, status_strings
 from medusa.server.api.v2 import history as history_module
 from medusa.tv.series import Series, SeriesIdentifier
 
@@ -103,6 +104,9 @@ SERIES_SLUG_CASES = _build_series_slug_cases()
 PRIMARY_SERIES_SLUG_CASE = SERIES_SLUG_CASES[0]
 PRIMARY_INDEXER_ID, PRIMARY_INDEXER_NAME, PRIMARY_SHOWID, PRIMARY_SERIES_SLUG = PRIMARY_SERIES_SLUG_CASE
 IMDB_SERIES_SLUG_CASE = next(case for case in SERIES_SLUG_CASES if case[1] == 'imdb')
+CLIENT_STATUS_BITS = tuple(status.value for status in status_strings if status.value)
+CLIENT_STATUS_SUPPORTED_MASK = sum(CLIENT_STATUS_BITS)
+CLIENT_STATUS_UNSUPPORTED_MASK = CLIENT_STATUS_SUPPORTED_MASK << 1
 
 SERIES_SLUG_VARIANTS = tuple(dict.fromkeys([
     PRIMARY_SERIES_SLUG.lower(),
@@ -523,7 +527,7 @@ async def test_series_slug_filters_stack_with_pagination_and_compact_grouping(
         provider='Target Provider',
         quality=Quality.HDTV,
         size=8 * 1024 * 1024,
-        client_status=7
+        client_status=1
     )
     _insert_series_slug_row(
         history_db,
@@ -1429,7 +1433,7 @@ async def test_episode_filter_with_quality_size_and_client_status_filters_stacks
         'stack-clientstatus-miss.mkv',
         quality=Quality.HDTV,
         size=8 * 1024 * 1024,
-        client_status=7,
+        client_status=1,
         episode=10
     )
 
@@ -1441,6 +1445,169 @@ async def test_episode_filter_with_quality_size_and_client_status_filters_stacks
     ).body)
 
     assert {row['id'] for row in rows} == {match_row}
+
+
+@pytest.mark.gen_test
+async def test_client_status_zero_filter_matches_only_zero(history_db, fetch_history):
+    zero_row = _insert_history_row(history_db, SNATCHED, 'client-status-zero.mkv', client_status=0)
+    _insert_history_row(history_db, SNATCHED, 'client-status-null.mkv', client_status=None)
+    _insert_history_row(
+        history_db,
+        SNATCHED,
+        'client-status-nonzero.mkv',
+        client_status=CLIENT_STATUS_BITS[0]
+    )
+
+    rows = json.loads((await fetch_history(
+        'My English Title', column_filters={'clientStatus': 0}
+    )).body)
+
+    assert {row['id'] for row in rows} == {zero_row}
+
+
+@pytest.mark.gen_test
+@pytest.mark.parametrize('clear_value', [None, ''], ids=['null', 'empty'])
+async def test_client_status_clear_filter_matches_all_statuses(history_db, fetch_history, clear_value):
+    rows_by_status = {
+        'zero': _insert_history_row(history_db, SNATCHED, 'client-status-clear-zero.mkv', client_status=0),
+        'null': _insert_history_row(history_db, SNATCHED, 'client-status-clear-null.mkv', client_status=None),
+        'nonzero': _insert_history_row(
+            history_db,
+            SNATCHED,
+            'client-status-clear-nonzero.mkv',
+            client_status=CLIENT_STATUS_BITS[0]
+        ),
+    }
+
+    rows = json.loads((await fetch_history(
+        'My English Title', column_filters={'clientStatus': clear_value}
+    )).body)
+
+    assert {row['id'] for row in rows} == set(rows_by_status.values())
+
+
+@pytest.mark.gen_test
+@pytest.mark.parametrize('selected_bit', CLIENT_STATUS_BITS, ids=[str(bit) for bit in CLIENT_STATUS_BITS])
+async def test_client_status_individual_bit_matches_exact_and_superset_only(
+    history_db, fetch_history, selected_bit
+):
+    other_bit = next(bit for bit in CLIENT_STATUS_BITS if bit != selected_bit)
+    exact_row = _insert_history_row(
+        history_db, SNATCHED, 'client-status-bit-exact.mkv', client_status=selected_bit
+    )
+    superset_row = _insert_history_row(
+        history_db,
+        SNATCHED,
+        'client-status-bit-superset.mkv',
+        client_status=selected_bit | other_bit
+    )
+    unrelated_row = _insert_history_row(
+        history_db, SNATCHED, 'client-status-bit-unrelated.mkv', client_status=other_bit
+    )
+
+    rows = json.loads((await fetch_history(
+        'My English Title', column_filters={'clientStatus': selected_bit}
+    )).body)
+
+    assert {row['id'] for row in rows} == {exact_row, superset_row}
+    assert unrelated_row not in {row['id'] for row in rows}
+
+
+@pytest.mark.gen_test
+async def test_client_status_multiple_bits_require_all_and_allow_extra(
+    history_db, fetch_history
+):
+    selected_mask = CLIENT_STATUS_BITS[0] | CLIENT_STATUS_BITS[1]
+    extra_mask = CLIENT_STATUS_BITS[2]
+    exact_row = _insert_history_row(
+        history_db, SNATCHED, 'client-status-mask-exact.mkv', client_status=selected_mask
+    )
+    extra_row = _insert_history_row(
+        history_db,
+        SNATCHED,
+        'client-status-mask-extra.mkv',
+        client_status=selected_mask | extra_mask
+    )
+    missing_row = _insert_history_row(
+        history_db,
+        SNATCHED,
+        'client-status-mask-missing.mkv',
+        client_status=CLIENT_STATUS_BITS[0]
+    )
+
+    rows = json.loads((await fetch_history(
+        'My English Title', column_filters={'clientStatus': selected_mask}
+    )).body)
+
+    assert {row['id'] for row in rows} == {exact_row, extra_row}
+    assert missing_row not in {row['id'] for row in rows}
+
+
+@pytest.mark.gen_test
+@pytest.mark.parametrize(
+    'invalid_value',
+    [True, -1, '3', 1.5, CLIENT_STATUS_UNSUPPORTED_MASK],
+    ids=['bool', 'negative', 'string', 'float', 'unsupported-bit']
+)
+async def test_invalid_client_status_is_ignored_while_other_filters_stack(
+    history_db, fetch_history, invalid_value
+):
+    matching_row = _insert_history_row(
+        history_db,
+        DOWNLOADED,
+        'client-status-invalid-match.mkv',
+        provider='Target Provider',
+        client_status=CLIENT_STATUS_BITS[0]
+    )
+    _insert_history_row(
+        history_db,
+        DOWNLOADED,
+        'client-status-invalid-provider-miss.mkv',
+        provider='Other Provider',
+        client_status=CLIENT_STATUS_BITS[0]
+    )
+
+    rows = json.loads((await fetch_history(
+        'My English Title',
+        column_filters={'providerId': 'target provider', 'clientStatus': invalid_value}
+    )).body)
+
+    assert {row['id'] for row in rows} == {matching_row}
+
+
+@pytest.mark.gen_test
+async def test_client_status_zero_serializes_snatched_label(history_db, fetch_history):
+    row_id = _insert_history_row(
+        history_db, SNATCHED, 'client-status-zero-serialization.mkv', client_status=0
+    )
+
+    rows = json.loads((await fetch_history('My English Title')).body)
+
+    row = next(row for row in rows if row['id'] == row_id)
+    assert row['clientStatus'] == {
+        'status': [ClientStatusEnum.SNATCHED.value],
+        'string': [status_strings[ClientStatusEnum.SNATCHED]],
+    }
+
+
+@pytest.mark.gen_test
+async def test_client_status_composed_serialization_keeps_registry_order(history_db, fetch_history):
+    composed_status = CLIENT_STATUS_BITS[0] | CLIENT_STATUS_BITS[1]
+    row_id = _insert_history_row(
+        history_db,
+        SNATCHED,
+        'client-status-composed-serialization.mkv',
+        client_status=composed_status
+    )
+
+    rows = json.loads((await fetch_history('My English Title')).body)
+
+    row = next(row for row in rows if row['id'] == row_id)
+    expected_statuses = [status for status in status_strings if status.value & composed_status]
+    assert row['clientStatus'] == {
+        'status': [status.value for status in expected_statuses],
+        'string': [status_strings[status] for status in expected_statuses],
+    }
 
 
 @pytest.mark.gen_test

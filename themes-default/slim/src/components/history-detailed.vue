@@ -258,6 +258,7 @@ export default {
     created() {
         this.initializeEpisodeFilter({ layout: 'detailed' });
         const currentFilters = this.remoteHistory.filter && this.remoteHistory.filter.columnFilters ? this.remoteHistory.filter.columnFilters : {};
+        this.initializeClientStatusFilter(currentFilters.clientStatus);
         this.providerFilterValue = currentFilters.providerId || '';
         this.sizeFilterInputValue = currentFilters.size || '';
         this.initializeHistorySort({
@@ -431,11 +432,57 @@ export default {
             });
             this.applyFilter(columnFilters);
         },
+        initializeClientStatusFilter(value) {
+            const clientStatuses = Array.isArray(this.consts.clientStatuses) ? this.consts.clientStatuses : [];
+            if (value === undefined || value === null || value === '') {
+                this.selectedClientStatusValue = [];
+                return;
+            }
+
+            if (value === 0) {
+                this.selectedClientStatusValue = clientStatuses.filter(option => option.value === 0);
+                return;
+            }
+
+            const supportedMask = clientStatuses.reduce((result, option) => result | option.value, 0);
+            if (!Number.isInteger(value) || value < 0 || value > supportedMask) {
+                this.selectedClientStatusValue = [];
+                return;
+            }
+
+            if ((value & ~supportedMask) !== 0) {
+                this.selectedClientStatusValue = [];
+                return;
+            }
+
+            this.selectedClientStatusValue = clientStatuses.filter(option => {
+                return option.value !== 0 && (value & option.value) === option.value;
+            });
+        },
         updateClientStatusFilter(event) {
-            const combinedStatus = event.reduce((result, item) => {
+            const nextSelection = Array.isArray(event) ? event : [];
+            if (nextSelection.length === 0) {
+                this.selectedClientStatusValue = [];
+                this.updateFilterValue('clientStatus', '');
+                return;
+            }
+
+            const previousSelection = Array.isArray(this.selectedClientStatusValue) ? this.selectedClientStatusValue : [];
+            const previousValues = previousSelection.map(item => item.value);
+            const hasSnatched = nextSelection.some(item => item.value === 0);
+            const nonzeroSelection = nextSelection.filter(item => item.value !== 0);
+            let normalizedSelection = nextSelection;
+
+            if (hasSnatched && nonzeroSelection.length > 0) {
+                const hadSnatched = previousValues.includes(0);
+                const hadNonzero = previousValues.some(value => value !== 0);
+                normalizedSelection = hadNonzero && !hadSnatched ? nextSelection.filter(item => item.value === 0) : nonzeroSelection;
+            }
+
+            const combinedStatus = normalizedSelection.reduce((result, item) => {
                 return result | item.value;
             }, 0);
-            this.selectedClientStatusValue = event;
+            this.selectedClientStatusValue = normalizedSelection;
             this.updateFilterValue('clientStatus', combinedStatus);
         },
         updateQualityFilter(quality) {

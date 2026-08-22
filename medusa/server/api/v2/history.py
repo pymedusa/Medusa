@@ -14,7 +14,7 @@ from medusa.indexers.utils import indexer_id_to_name
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers import get_provider_class
 from medusa.providers.generic_provider import GenericProvider
-from medusa.schedulers.download_handler import ClientStatus
+from medusa.schedulers.download_handler import ClientStatus, ClientStatusEnum, status_strings
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.tv.series import Series, SeriesIdentifier
 
@@ -116,6 +116,35 @@ def _parse_series_identifier_slug(value):
         return identifier
 
 
+def _parse_client_status_filter(value):
+    """Return a supported client status mask, or None when the filter is invalid."""
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        return None
+
+    supported_mask = sum(status.value for status in status_strings if status.value)
+    if value & ~supported_mask:
+        return None
+
+    return value
+
+
+def _serialize_client_status(value):
+    """Return the API representation for a stored client status value."""
+    status = ClientStatus(status=value)
+    status_values = [status_item.value for status_item in status]
+    status_names = status.status_to_array_string()
+
+    if value == ClientStatusEnum.SNATCHED.value:
+        snatched = ClientStatusEnum.SNATCHED
+        status_values = [snatched.value]
+        status_names = [status_strings[snatched]]
+
+    return {
+        'status': status_values,
+        'string': status_names
+    }
+
+
 class HistoryHandler(BaseRequestHandler):
     """History request handler."""
 
@@ -203,6 +232,13 @@ class HistoryHandler(BaseRequestHandler):
             size = filter['columnFilters'].pop('size', None)
             provider = _normalize_text_filter(filter['columnFilters'].pop('providerId', None))
             resource = _normalize_text_filter(filter['columnFilters'].pop('resource', None))
+            client_status = None
+            for filter_field in tuple(filter['columnFilters']):
+                if filter_field.lower() == 'clientstatus':
+                    client_status = _parse_client_status_filter(
+                        filter['columnFilters'].pop(filter_field)
+                    )
+                    break
             size_filter = _parse_size_filter(size)
 
             for filter_field, filter_value in filter['columnFilters'].items():
@@ -212,6 +248,13 @@ class HistoryHandler(BaseRequestHandler):
                     continue
                 where += [filter_field]
                 params += [filter_value]
+
+            if client_status == ClientStatusEnum.SNATCHED.value:
+                where += ['client_status']
+                params += [client_status]
+            elif client_status is not None:
+                where_with_ops += [' (client_status & ?) = ? ']
+                params += [client_status, client_status]
 
         # Add size query (with operator)
         if size_filter:
@@ -362,11 +405,7 @@ class HistoryHandler(BaseRequestHandler):
                     provider['name'] = item['provider']
 
                 if item['client_status'] is not None:
-                    status = ClientStatus(status=item['client_status'])
-                    client_status = {
-                        'status': [s.value for s in status],
-                        'string': status.status_to_array_string()
-                    }
+                    client_status = _serialize_client_status(item['client_status'])
 
                 if item['indexer_id'] and item['showid']:
                     identifier = SeriesIdentifier.from_id(item['indexer_id'], item['showid'])

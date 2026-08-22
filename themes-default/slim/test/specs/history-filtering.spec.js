@@ -68,13 +68,45 @@ const consts = {
         }]
     },
     clientStatuses: [{
+        value: 0,
+        name: 'Snatched'
+    }, {
         value: 1,
-        name: 'test'
+        name: 'Paused'
     }, {
         value: 2,
-        name: 'also'
+        name: 'Downloading'
+    }, {
+        value: 4,
+        name: 'Downloaded'
+    }, {
+        value: 8,
+        name: 'Seeded'
+    }, {
+        value: 16,
+        name: 'Failed'
+    }, {
+        value: 32,
+        name: 'Aborted'
+    }, {
+        value: 64,
+        name: 'Extracting'
+    }, {
+        value: 128,
+        name: 'Completed'
+    }, {
+        value: 256,
+        name: 'Postprocessed'
+    }, {
+        value: 512,
+        name: 'SeededAction'
+    }, {
+        value: 1024,
+        name: 'Removed'
     }]
 };
+
+const clientStatusOption = value => consts.clientStatuses.find(option => option.value === value);
 
 const createLocalVueForHistory = () => {
     const localVue = createLocalVue();
@@ -1003,6 +1035,158 @@ describe('History filter state composition', () => {
         });
         expect(wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(0);
         expect(setCookie).toHaveBeenCalledTimes(0);
+        wrapper.destroy();
+    });
+
+    it('detailed Client Status applies each supported value, combined masks, and a distinct clear', () => {
+        const initialFilters = {
+            resource: 'old resource',
+            providerId: 'old provider',
+            quality: '720p',
+            size: '< 1024',
+            statusName: 'Downloaded'
+        };
+        const { wrapper } = mountDetailed({
+            remote: {
+                page: 9,
+                filter: {
+                    columnFilters: initialFilters
+                }
+            }
+        });
+        const values = [0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024];
+
+        values.forEach(value => {
+            const option = clientStatusOption(value);
+            wrapper.vm.loadItemsDebounced.mockClear();
+            wrapper.vm.updateClientStatusFilter([option]);
+
+            expect(wrapper.vm.selectedClientStatusValue).toEqual([option]);
+            expect(wrapper.vm.selectedClientStatusValue[0]).toBe(option);
+            expect(wrapper.vm.remoteHistory.filter.columnFilters.clientStatus).toBe(value);
+            expect(wrapper.vm.remoteHistory.page).toBe(1);
+            expect(wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
+        });
+
+        wrapper.vm.loadItemsDebounced.mockClear();
+        wrapper.vm.updateClientStatusFilter([]);
+        expect(wrapper.vm.selectedClientStatusValue).toEqual([]);
+        expect(wrapper.vm.remoteHistory.filter.columnFilters.clientStatus).toBe('');
+        expect(wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
+
+        const combinedOptions = [1, 2, 4].map(clientStatusOption);
+        wrapper.vm.loadItemsDebounced.mockClear();
+        wrapper.vm.updateClientStatusFilter(combinedOptions);
+        expect(wrapper.vm.selectedClientStatusValue).toEqual(combinedOptions);
+        expect(wrapper.vm.remoteHistory.filter.columnFilters).toEqual({
+            ...initialFilters,
+            clientStatus: 7
+        });
+        expect(wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
+        wrapper.destroy();
+    });
+
+    it('detailed Client Status keeps Snatched and nonzero selections mutually exclusive', () => {
+        const { wrapper } = mountDetailed({
+            remote: {
+                page: 9,
+                filter: {
+                    columnFilters: {
+                        resource: 'old resource',
+                        providerId: 'old provider',
+                        quality: '720p',
+                        size: '< 1024',
+                        statusName: 'Downloaded'
+                    }
+                }
+            }
+        });
+        const snatched = clientStatusOption(0);
+        const paused = clientStatusOption(1);
+        const downloading = clientStatusOption(2);
+        const completed = clientStatusOption(128);
+
+        wrapper.vm.updateClientStatusFilter([paused, downloading]);
+        expect(wrapper.vm.remoteHistory.filter.columnFilters.clientStatus).toBe(3);
+        wrapper.vm.loadItemsDebounced.mockClear();
+
+        wrapper.vm.updateClientStatusFilter([paused, downloading, snatched]);
+        expect(wrapper.vm.selectedClientStatusValue).toEqual([snatched]);
+        expect(wrapper.vm.selectedClientStatusValue[0]).toBe(snatched);
+        expect(wrapper.vm.remoteHistory.filter.columnFilters.clientStatus).toBe(0);
+        expect(wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
+        wrapper.vm.loadItemsDebounced.mockClear();
+
+        wrapper.vm.updateClientStatusFilter([snatched, completed]);
+        expect(wrapper.vm.selectedClientStatusValue).toEqual([completed]);
+        expect(wrapper.vm.selectedClientStatusValue[0]).toBe(completed);
+        expect(wrapper.vm.remoteHistory.filter.columnFilters.clientStatus).toBe(128);
+        expect(wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
+        wrapper.destroy();
+    });
+
+    it.each([
+        ['Snatched', 0, [0]],
+        ['composed nonzero', 128 | 256, [128, 256]],
+        ['cleared', '', []],
+        ['missing', undefined, []],
+        ['unsupported', 2048, []],
+        ['negative', -1, []],
+        ['non-integer', 1.5, []]
+    ])('restores %s Client Status selections from the active filter', (_name, clientStatus, expectedValues) => {
+        const columnFilters = {};
+        if (clientStatus !== undefined) {
+            columnFilters.clientStatus = clientStatus;
+        }
+        const { wrapper } = mountDetailed({
+            remote: {
+                filter: {
+                    columnFilters
+                }
+            }
+        });
+        const expectedOptions = expectedValues.map(clientStatusOption);
+
+        expect(wrapper.vm.selectedClientStatusValue).toEqual(expectedOptions);
+        expectedOptions.forEach((option, index) => {
+            expect(wrapper.vm.selectedClientStatusValue[index]).toBe(option);
+        });
+        wrapper.destroy();
+    });
+
+    it('detailed Client Status preserves explicit zero through native filter and sort commits', async () => {
+        const { wrapper } = mountDetailed({
+            remote: {
+                page: 9,
+                filter: {
+                    columnFilters: {
+                        resource: 'old resource',
+                        providerId: 'old provider',
+                        quality: '720p',
+                        size: '< 1024',
+                        statusName: 'Downloaded'
+                    }
+                }
+            }
+        });
+        wrapper.vm.updateClientStatusFilter([clientStatusOption(0)]);
+
+        wrapper.vm.loadItemsDebounced.mockClear();
+        wrapper.vm.onColumnFilter({
+            columnFilters: {
+                statusName: 'Failed'
+            }
+        });
+        expect(wrapper.vm.remoteHistory.filter.columnFilters.clientStatus).toBe(0);
+        expect(wrapper.vm.remoteHistory.filter.columnFilters.statusName).toBe('Failed');
+        expect(wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
+
+        wrapper.vm.loadItemsDebounced.mockClear();
+        wrapper.vm.$refs['detailed-history'].emitSort([{ field: 'quality', type: 'asc' }]);
+        await wrapper.vm.$nextTick();
+        expect(wrapper.vm.remoteHistory.filter.columnFilters.clientStatus).toBe(0);
+        expect(wrapper.vm.remoteHistory.sort).toEqual([{ field: 'quality', type: 'asc' }]);
+        expect(wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
         wrapper.destroy();
     });
 
