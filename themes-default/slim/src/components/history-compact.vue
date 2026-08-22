@@ -2,6 +2,7 @@
     <div class="history-wrapper-compact vgt-table-styling">
 
         <vue-good-table
+            ref="compact-history"
             mode="remote"
             @on-page-change="onPageChange"
             @on-per-page-change="onPerPageChange"
@@ -17,7 +18,7 @@
             :sort-options="{
                 enabled: true,
                 multipleColumns: false,
-                initialSortBy: getSortFromCookie()
+                initialSortBy: historyHeaderSort
             }"
             :pagination-options="{
                 enabled: true,
@@ -92,7 +93,7 @@
 
             <template #column-filter="{ column }">
                 <span v-if="column.field === 'episodeTitle'">
-                    <input :value="resourceFilterValue" placeholder="Show title or release" class="'form-control input-sm vgt-input" @input="updateResource">
+                    <input :value="episodeFilter.inputValue" placeholder="Show title or release" class="'form-control input-sm vgt-input" @input="updateResource">
                 </span>
             </template>
         </vue-good-table>
@@ -134,6 +135,7 @@ export default {
             dateInputFormat: 'yyyyMMddHHmmss', // E.g. 07-09-2017 19:16:25
             dateOutputFormat: 'yyyy-MM-dd HH:mm:ss',
             type: 'date',
+            firstSortType: 'desc',
             hidden: getCookie('Date')
         }, {
             label: 'Episode',
@@ -169,28 +171,45 @@ export default {
             columns,
             selectedClientStatusValue: [],
             perPageDropdown,
-            resourceFilterValue: ''
+            historyTableMounted: false,
+            historyHeaderSort: [],
+            restoringSortHeader: false
         };
     },
     mounted() {
-        const { getCookie, getSortFromCookie } = this;
-
-        // Get per-page pagination from cookie
-        const perPage = getCookie('pagination-perpage-history');
-        if (perPage) {
-            this.remoteHistory.perPage = perPage;
-        }
-        this.remoteHistory.sort = getSortFromCookie();
+        this.historyTableMounted = true;
+        this.loadItems();
     },
     created() {
-        const currentFilters = this.remoteHistory.filter && this.remoteHistory.filter.columnFilters ? this.remoteHistory.filter.columnFilters : {};
-        this.resourceFilterValue = currentFilters.resource || '';
+        this.initializeEpisodeFilter({ layout: 'compact' });
+        this.initializeHistorySort({
+            layout: 'compact',
+            sort: this.getSortFromCookie()
+        });
+        this.historyHeaderSort = this.remoteHistory.sort;
+        this.initializeHistoryPagination({
+            layout: 'compact',
+            perPage: this.getCookie('pagination-perpage-history')
+        });
+        this.setCookie('sort', this.remoteHistory.sort);
+        this.setCookie('pagination-perpage-history', this.remoteHistory.perPage);
         this.loadItemsDebounced = debounce(this.loadItems, 500);
+    },
+    beforeDestroy() {
+        if (this.loadItemsDebounced && this.loadItemsDebounced.cancel) {
+            this.loadItemsDebounced.cancel();
+        }
     },
     computed: {
         ...mapState({
             layout: state => state.config.layout,
             remoteHistory: state => state.history.remoteCompact,
+            episodeFilter: state => state.history.episodeFilter || {
+                inputValue: '',
+                filterValue: '',
+                malformed: false,
+                initialized: false
+            },
             consts: state => state.config.consts
         }),
         ...mapGetters({
@@ -217,6 +236,10 @@ export default {
         ...mapActions({
             getHistory: 'getHistory',
             checkHistory: 'checkHistory',
+            initializeEpisodeFilter: 'initializeEpisodeFilter',
+            initializeHistorySort: 'initializeHistorySort',
+            initializeHistoryPagination: 'initializeHistoryPagination',
+            updateEpisodeFilter: 'updateEpisodeFilter',
             setStoreLayout: 'setStoreLayout'
         }),
         getSortFromCookie() {
@@ -252,6 +275,9 @@ export default {
             setStoreLayout({ key: 'historyLimit', value: pageLimit });
         },
         onPageChange(params) {
+            if (!this.historyTableMounted && params.currentPage === 1 && this.remoteHistory.page !== 1) {
+                return;
+            }
             this.remoteHistory.page = params.currentPage;
             this.loadItemsDebounced();
         },
@@ -261,15 +287,41 @@ export default {
             this.loadItemsDebounced();
         },
         onSortChange(params) {
-            this.setCookie('sort', params);
-            this.remoteHistory.sort = params.filter(item => item.type !== 'none');
+            if (this.restoringSortHeader) {
+                return;
+            }
+            if (this.episodeFilter.malformed) {
+                this.updateEpisodeFilter({
+                    inputValue: this.episodeFilter.filterValue,
+                    filterValue: this.episodeFilter.filterValue,
+                    malformed: false,
+                    resetPage: false
+                });
+            }
+            const sort = Array.isArray(params) ? params.filter(item => item.type !== 'none') : [];
+            const canonicalSort = sort.length > 0 ? sort : [{ field: 'actionDate', type: 'desc' }];
+            this.setCookie('sort', canonicalSort);
+            this.remoteHistory.sort = canonicalSort;
+            if (sort.length === 0) {
+                this.historyHeaderSort = canonicalSort;
+                this.restoringSortHeader = true;
+                this.$nextTick(() => {
+                    try {
+                        const table = this.$refs['compact-history'];
+                        if (table && typeof table.initializeSort === 'function') {
+                            table.initializeSort();
+                        }
+                    } finally {
+                        this.restoringSortHeader = false;
+                    }
+                });
+            }
             this.loadItemsDebounced();
         },
-        onColumnFilter(params) {
-            const nextFilter = params && Object.prototype.hasOwnProperty.call(params, 'columnFilters') ? params.columnFilters : params || {};
+        onColumnFilter() {
             const currentFilters = this.remoteHistory.filter && this.remoteHistory.filter.columnFilters ? this.remoteHistory.filter.columnFilters : {};
-            const preservedResource = Object.prototype.hasOwnProperty.call(currentFilters, 'resource') ? { resource: currentFilters.resource } : {};
-            this.applyFilter(Object.assign({}, preservedResource, nextFilter));
+            const resource = this.episodeFilter.initialized ? this.episodeFilter.filterValue : currentFilters.resource;
+            this.applyFilter(resource ? { resource } : {});
         },
         applyFilter(columnFilters) {
             const nextFilter = Object.assign({}, this.remoteHistory.filter, {
@@ -299,8 +351,12 @@ export default {
         updateResource(resource) {
             const { value } = resource.currentTarget;
             const normalized = normalizeHistoryTextFilter(value);
-            this.resourceFilterValue = normalized.clearInput ? '' : value;
-            this.updateFilterValue('resource', normalized.filterValue);
+            this.updateEpisodeFilter({
+                inputValue: normalized.clearInput ? '' : value,
+                filterValue: normalized.filterValue,
+                malformed: normalized.malformed
+            });
+            this.loadItemsDebounced();
         },
         // Load items is what brings back the rows from server
         loadItems() {

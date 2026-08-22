@@ -1,11 +1,42 @@
+import Vue from 'vue';
 import Vuex from 'vuex';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
+import History from '../../src/components/history.vue';
 import HistoryDetailed from '../../src/components/history-detailed.vue';
 import HistoryCompact from '../../src/components/history-compact.vue';
+import historyModule from '../../src/store/modules/history';
 import { normalizeHistoryTextFilter } from '../../src/utils/history';
+
+Vue.use(Vuex);
 
 const VueGoodTableStub = {
     props: ['columns', 'rows', 'totalRows', 'searchOptions', 'sortOptions', 'paginationOptions', 'columnFilterOptions', 'rowStyleClass', 'styleClass'],
+    data() {
+        return {
+            headerSort: []
+        };
+    },
+    watch: {
+        sortOptions: {
+            deep: true,
+            handler(nextOptions, previousOptions) {
+                const nextSort = JSON.stringify(nextOptions && nextOptions.initialSortBy);
+                const previousSort = JSON.stringify(previousOptions && previousOptions.initialSortBy);
+                if (nextSort !== previousSort) {
+                    this.initializeSort();
+                }
+            }
+        }
+    },
+    methods: {
+        emitSort(sort) {
+            this.headerSort = sort.map(item => Object.assign({}, item));
+            this.$emit('on-sort-change', this.headerSort);
+        },
+        initializeSort() {
+            this.emitSort(this.sortOptions.initialSortBy.map(sort => Object.assign({}, sort)));
+        }
+    },
     render(h) {
         const slot = this.$scopedSlots['column-filter'];
         const fields = ['episodeTitle', 'providerId', 'size'];
@@ -14,6 +45,18 @@ const VueGoodTableStub = {
                 field
             }
         }) : null));
+    }
+};
+
+const VueGoodTableInitialPageStub = {
+    props: VueGoodTableStub.props,
+    created() {
+        this.$emit('on-page-change', {
+            currentPage: 1
+        });
+    },
+    render(h) {
+        return h('div');
     }
 };
 
@@ -39,52 +82,67 @@ const createLocalVueForHistory = () => {
     return localVue;
 };
 
+const cloneHistoryState = () => JSON.parse(JSON.stringify(historyModule.state));
+
 const createHistoryStore = (history = {}) => {
     const {
         remote = {},
         remoteCompact = {},
+        layout = 'detailed',
         ...historyState
     } = history;
-    const remoteStateDefaults = {
-        page: 2,
-        perPage: 25,
-        sort: [{ field: 'date', type: 'desc' }],
-        filter: {
-            columnFilters: {}
-        },
-        rows: [],
-        totalRows: 0
+    const moduleState = cloneHistoryState();
+    moduleState.remote = {
+        ...moduleState.remote,
+        ...remote
     };
+    moduleState.remoteCompact = {
+        ...moduleState.remoteCompact,
+        ...remoteCompact
+    };
+    Object.assign(moduleState, historyState);
 
     return new Vuex.Store({
-        state: {},
         modules: {
+            auth: {
+                state: {
+                    client: {
+                        api: {
+                            get: jest.fn(() => Promise.resolve({
+                                data: [],
+                                headers: {
+                                    'x-pagination-count': '0'
+                                }
+                            }))
+                        }
+                    }
+                }
+            },
             config: {
                 state: {
-                    consts
+                    consts,
+                    general: {
+                        randomShowSlug: ''
+                    },
+                    layout: {
+                        history: layout
+                    }
                 }
             },
             history: {
-                state: {
-                    remote: {
-                        ...remoteStateDefaults,
-                        ...remote
-                    },
-                    remoteCompact: {
-                        ...remoteStateDefaults,
-                        ...remoteCompact
-                    },
-                    ...historyState
-                }
+                ...historyModule,
+                state: moduleState
             }
-        },
-        actions: {
-            getHistory: jest.fn(),
-            checkHistory: jest.fn(),
-            setStoreLayout: jest.fn()
         },
         getters: {
             fuzzyParseDateTime: () => () => ''
+        },
+        actions: {
+            setLayout({ rootState }, { page, layout }) {
+                rootState.config.layout[page] = layout;
+            },
+            checkHistory: jest.fn(),
+            setStoreLayout: jest.fn()
         }
     });
 };
@@ -96,7 +154,9 @@ const makeMountedHistoryComponent = (component, cookieStore = {}) => {
     const setCookie = jest.fn((key, value) => {
         cookieStore[key] = value;
     });
-    const loadItems = jest.fn();
+    const loadItems = jest.fn(function() {
+        return this.serverParams;
+    });
 
     return {
         ...component,
@@ -114,54 +174,71 @@ const makeMountedHistoryComponent = (component, cookieStore = {}) => {
     };
 };
 
-const mountDetailed = (history = {}) => {
+const mountHistoryComponent = (component, store, cookieStore, stubs) => {
     const localVue = createLocalVueForHistory();
-    const store = createHistoryStore(history);
-    const cookieStore = {};
-    const component = makeMountedHistoryComponent(HistoryDetailed, cookieStore);
-
-    const wrapper = shallowMount(component, {
+    const mountedComponent = makeMountedHistoryComponent(component, cookieStore);
+    const wrapper = shallowMount(mountedComponent, {
         localVue,
         store,
-        stubs: {
-            VueGoodTable: VueGoodTableStub,
-            AppLink: true,
-            QualityPill: true,
-            FontAwesomeIcon: true,
-            Multiselect: true
-        }
+        stubs
     });
     wrapper.vm.loadItemsDebounced = jest.fn();
     return {
+        component: mountedComponent,
         wrapper,
-        store,
-        cookieStore,
-        ...component.__testMocks
+        ...mountedComponent.__testMocks
     };
 };
 
-const mountCompact = (history = {}) => {
-    const localVue = createLocalVueForHistory();
-    const store = createHistoryStore(history);
+const mountSharedHistoryComponents = store => {
     const cookieStore = {};
-    const component = makeMountedHistoryComponent(HistoryCompact, cookieStore);
-
-    const wrapper = shallowMount(component, {
-        localVue,
-        store,
-        stubs: {
-            VueGoodTable: VueGoodTableStub,
-            AppLink: true,
-            QualityPill: true
-        }
+    const detailed = mountHistoryComponent(HistoryDetailed, store, cookieStore, {
+        VueGoodTable: VueGoodTableStub,
+        AppLink: true,
+        QualityPill: true,
+        FontAwesomeIcon: true,
+        Multiselect: true
     });
-
-    wrapper.vm.loadItemsDebounced = jest.fn();
+    const compact = mountHistoryComponent(HistoryCompact, store, cookieStore, {
+        VueGoodTable: VueGoodTableStub,
+        AppLink: true,
+        QualityPill: true
+    });
     return {
-        wrapper,
+        detailed: detailed.wrapper,
+        compact: compact.wrapper,
+        detailedMount: detailed,
+        compactMount: compact
+    };
+};
+
+const mountDetailed = (history = {}, cookieStore = {}) => {
+    const store = createHistoryStore({ ...history, layout: 'detailed' });
+    const mounted = mountHistoryComponent(HistoryDetailed, store, cookieStore, {
+        VueGoodTable: VueGoodTableStub,
+        AppLink: true,
+        QualityPill: true,
+        FontAwesomeIcon: true,
+        Multiselect: true
+    });
+    return {
         store,
         cookieStore,
-        ...component.__testMocks
+        ...mounted
+    };
+};
+
+const mountCompact = (history = {}, cookieStore = {}) => {
+    const store = createHistoryStore({ ...history, layout: 'compact' });
+    const mounted = mountHistoryComponent(HistoryCompact, store, cookieStore, {
+        VueGoodTable: VueGoodTableStub,
+        AppLink: true,
+        QualityPill: true
+    });
+    return {
+        store,
+        cookieStore,
+        ...mounted
     };
 };
 
@@ -242,7 +319,7 @@ const assertDetailedOtherFilter = async ({ method, event, field, expected }) => 
     wrapper.destroy();
 };
 
-const assertCompactResourceUpdate = async ({ page, value, expected, existingFilters = { statusName: 'Downloaded' }, visibleValue = value }) => {
+const assertCompactResourceUpdate = async ({ page, value, expected, existingFilters = {}, visibleValue = value }) => {
     const initialFilters = {
         resource: 'old compact',
         ...existingFilters
@@ -334,7 +411,47 @@ describe('normalizeHistoryTextFilter', () => {
 });
 
 describe('History filter state composition', () => {
-    it('detailed onColumnFilter merges native action changes while preserving manual filters', () => {
+    it.each([
+        ['detailed', HistoryDetailed, 'remote', {
+            AppLink: true,
+            QualityPill: true,
+            FontAwesomeIcon: true,
+            Multiselect: true
+        }],
+        ['compact', HistoryCompact, 'remoteCompact', {
+            AppLink: true,
+            QualityPill: true
+        }]
+    ])('%s ignores the pre-mount page-one event but accepts mounted page changes', (_layout, component, remoteKey, componentStubs) => {
+        const store = createHistoryStore({
+            [remoteKey]: {
+                page: 4
+            }
+        });
+        const mounted = mountHistoryComponent(component, store, {}, {
+            VueGoodTable: VueGoodTableInitialPageStub,
+            ...componentStubs
+        });
+
+        expect(store.state.history[remoteKey].page).toBe(4);
+        expect(mounted.loadItems.mock.results[0].value.page).toBe(4);
+
+        mounted.wrapper.vm.loadItemsDebounced.mockClear();
+        mounted.wrapper.vm.onPageChange({
+            currentPage: 1
+        });
+        expect(mounted.wrapper.vm.remoteHistory.page).toBe(1);
+        expect(mounted.wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
+
+        mounted.wrapper.vm.onPageChange({
+            currentPage: 3
+        });
+        expect(mounted.wrapper.vm.remoteHistory.page).toBe(3);
+        expect(mounted.wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(2);
+        mounted.wrapper.destroy();
+    });
+
+    it('detailed onColumnFilter merges native and manual filters without persisting a filter cookie', () => {
         const { wrapper, setCookie } = mountDetailed({
             remote: {
                 page: 4,
@@ -372,7 +489,7 @@ describe('History filter state composition', () => {
             }
         });
         expect(wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
-        expect(setCookie).toHaveBeenCalledWith('filter', wrapper.vm.remoteHistory.filter);
+        expect(setCookie).toHaveBeenCalledTimes(0);
         wrapper.destroy();
     });
 
@@ -802,7 +919,7 @@ describe('History filter state composition', () => {
             });
             expect(wrapper.vm.remoteHistory.page).toBe(1);
             expect(wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
-            expect(setCookie).toHaveBeenCalledWith('filter', wrapper.vm.remoteHistory.filter);
+            expect(setCookie).toHaveBeenCalledTimes(0);
             wrapper.destroy();
         });
     });
@@ -992,6 +1109,7 @@ describe('History filter state composition', () => {
 
         expect(wrapper.vm.remoteHistory.filter).toEqual({
             columnFilters: {
+                resource: '',
                 providerId: 'provider-null-safe'
             }
         });
@@ -1000,12 +1118,13 @@ describe('History filter state composition', () => {
         wrapper.destroy();
     });
 
-    it('compact resource filter preserves existing filter keys and only updates remoteCompact page', async () => {
+    it('compact resource filter preserves existing keys and synchronizes both Episode filters', async () => {
         const sharedHistory = {
             remote: {
                 page: 10,
                 filter: {
                     columnFilters: {
+                        resource: 'old compact',
                         statusName: 'Downloaded',
                         other: 'detail only'
                     }
@@ -1015,8 +1134,7 @@ describe('History filter state composition', () => {
                 page: 7,
                 filter: {
                     columnFilters: {
-                        resource: 'old compact',
-                        statusName: 'Downloaded'
+                        resource: 'old compact'
                     }
                 }
             }
@@ -1069,19 +1187,19 @@ describe('History filter state composition', () => {
 
         expect(compact.vm.remoteHistory.page).toBe(1);
         expect(compact.vm.remoteHistory.filter.columnFilters).toEqual({
-            resource: 'new compact',
-            statusName: 'Downloaded'
+            resource: 'new compact'
         });
-        expect(detailed.vm.remoteHistory.page).toBe(10);
+        expect(detailed.vm.remoteHistory.page).toBe(1);
         expect(detailed.vm.remoteHistory.filter).toEqual({
             columnFilters: {
+                resource: 'new compact',
                 statusName: 'Downloaded',
                 other: 'detail only'
             }
         });
         await compact.vm.$nextTick();
         expect(getPaginationOptions(compact).setCurrentPage).toBe(1);
-        expect(getPaginationOptions(detailed).setCurrentPage).toBe(10);
+        expect(getPaginationOptions(detailed).setCurrentPage).toBe(1);
         expect(compact.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
         expect(detailed.vm.loadItemsDebounced).toHaveBeenCalledTimes(0);
         expect(compactSetCookie).toHaveBeenCalledTimes(0);
@@ -1095,11 +1213,7 @@ describe('History filter state composition', () => {
         await assertCompactResourceUpdate({
             page: 6,
             value: '  compact title  ',
-            expected: 'compact title',
-            existingFilters: {
-                statusName: 'Downloaded',
-                clientStatus: 5
-            }
+            expected: 'compact title'
         });
     });
 
@@ -1128,7 +1242,7 @@ describe('History filter state composition', () => {
         await assertCompactResourceUpdate({ page: 5, value: '``', expected: '', visibleValue: '' });
     });
 
-    it('detailed mutations do not alter compact state', async () => {
+    it('detailed Episode edits synchronize both layouts and only load detailed', async () => {
         const sharedHistory = {
             remote: {
                 page: 5,
@@ -1152,40 +1266,12 @@ describe('History filter state composition', () => {
                 }
             }
         };
-        const localVue = createLocalVueForHistory();
         const store = createHistoryStore(sharedHistory);
-        const cookieStore = {};
-        const detailedComponent = makeMountedHistoryComponent(HistoryDetailed, cookieStore);
-        const compactComponent = makeMountedHistoryComponent(HistoryCompact, cookieStore);
-
-        const detailed = shallowMount(detailedComponent, {
-            localVue,
-            store,
-            stubs: {
-                VueGoodTable: VueGoodTableStub,
-                AppLink: true,
-                QualityPill: true,
-                FontAwesomeIcon: true,
-                Multiselect: true
-            }
-        });
-        const compact = shallowMount(compactComponent, {
-            localVue,
-            store,
-            stubs: {
-                VueGoodTable: VueGoodTableStub,
-                AppLink: true,
-                QualityPill: true
-            }
-        });
-        const compactSetCookie = compactComponent.__testMocks.setCookie;
-        compactSetCookie.mockClear();
+        const { detailed, compact } = mountSharedHistoryComponents(store);
 
         detailed.vm.loadItemsDebounced = jest.fn();
         compact.vm.loadItemsDebounced = jest.fn();
 
-        const compactPageBefore = compact.vm.remoteHistory.page;
-        const compactFilterBefore = JSON.parse(JSON.stringify(compact.vm.remoteHistory.filter));
         await compact.vm.$nextTick();
         expect(getPaginationOptions(detailed).setCurrentPage).toBe(5);
         expect(getPaginationOptions(compact).setCurrentPage).toBe(8);
@@ -1194,20 +1280,20 @@ describe('History filter state composition', () => {
                 value: 'detailed-updated'
             }
         });
+        await detailed.vm.$nextTick();
         expect(detailed.vm.remoteHistory.filter.columnFilters.resource).toBe('detailed-updated');
-        expect(compact.vm.remoteHistory.page).toBe(compactPageBefore);
-        expect(compact.vm.remoteHistory.filter).toEqual(compactFilterBefore);
-        expect(compact.vm.remoteHistory.filter).not.toEqual(detailed.vm.remoteHistory.filter);
-        expect(getPaginationOptions(compact).setCurrentPage).toBe(8);
-        expect(getPaginationOptions(detailed).setCurrentPage).toBe(5);
+        expect(compact.vm.remoteHistory.page).toBe(1);
+        expect(compact.vm.remoteHistory.filter.columnFilters).toEqual({
+            resource: 'detailed-updated'
+        });
+        expect(detailed.vm.remoteHistory.page).toBe(1);
         expect(detailed.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
         expect(compact.vm.loadItemsDebounced).toHaveBeenCalledTimes(0);
-        expect(compactSetCookie).toHaveBeenCalledTimes(0);
         compact.destroy();
         detailed.destroy();
     });
 
-    it('compact mutations do not alter detailed state', async () => {
+    it('compact Episode edits synchronize both layouts and only load compact', async () => {
         const sharedHistory = {
             remote: {
                 page: 5,
@@ -1231,40 +1317,12 @@ describe('History filter state composition', () => {
                 }
             }
         };
-        const localVue = createLocalVueForHistory();
         const store = createHistoryStore(sharedHistory);
-        const cookieStore = {};
-        const detailedComponent = makeMountedHistoryComponent(HistoryDetailed, cookieStore);
-        const compactComponent = makeMountedHistoryComponent(HistoryCompact, cookieStore);
-
-        const detailed = shallowMount(detailedComponent, {
-            localVue,
-            store,
-            stubs: {
-                VueGoodTable: VueGoodTableStub,
-                AppLink: true,
-                QualityPill: true,
-                FontAwesomeIcon: true,
-                Multiselect: true
-            }
-        });
-        const compact = shallowMount(compactComponent, {
-            localVue,
-            store,
-            stubs: {
-                VueGoodTable: VueGoodTableStub,
-                AppLink: true,
-                QualityPill: true
-            }
-        });
-        const compactSetCookie = compactComponent.__testMocks.setCookie;
-        compactSetCookie.mockClear();
+        const { detailed, compact } = mountSharedHistoryComponents(store);
 
         detailed.vm.loadItemsDebounced = jest.fn();
         compact.vm.loadItemsDebounced = jest.fn();
 
-        const detailedPageBefore = detailed.vm.remoteHistory.page;
-        const detailedFilterBefore = JSON.parse(JSON.stringify(detailed.vm.remoteHistory.filter));
         await compact.vm.$nextTick();
         expect(getPaginationOptions(compact).setCurrentPage).toBe(8);
         expect(getPaginationOptions(detailed).setCurrentPage).toBe(5);
@@ -1276,26 +1334,30 @@ describe('History filter state composition', () => {
         await compact.vm.$nextTick();
         expect(compact.vm.remoteHistory.filter.columnFilters.resource).toBe('compact-updated');
         expect(compact.vm.remoteHistory.page).toBe(1);
-        expect(detailed.vm.remoteHistory.page).toBe(detailedPageBefore);
-        expect(detailed.vm.remoteHistory.filter).toEqual(detailedFilterBefore);
+        expect(detailed.vm.remoteHistory.page).toBe(1);
+        expect(detailed.vm.remoteHistory.filter.columnFilters).toEqual({
+            resource: 'compact-updated',
+            providerId: 'detailed-provider',
+            clientStatus: 1,
+            quality: '720p',
+            size: '< 500',
+            statusName: 'Downloaded'
+        });
         expect(getPaginationOptions(compact).setCurrentPage).toBe(1);
-        expect(getPaginationOptions(detailed).setCurrentPage).toBe(5);
+        expect(getPaginationOptions(detailed).setCurrentPage).toBe(1);
         expect(detailed.vm.loadItemsDebounced).toHaveBeenCalledTimes(0);
         expect(compact.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
-        expect(compactSetCookie).toHaveBeenCalledTimes(0);
         compact.destroy();
         detailed.destroy();
     });
 
-    it('compact onColumnFilter keeps resource and replaces/clears native keys with page reset and one load', () => {
+    it('compact onColumnFilter keeps Episode and discards unsupported native keys', () => {
         const { wrapper, setCookie } = mountCompact({
             remoteCompact: {
                 page: 6,
                 filter: {
                     columnFilters: {
-                        resource: 'compact show',
-                        statusName: 'Downloaded',
-                        clientStatus: 5
+                        resource: 'compact show'
                     }
                 }
             }
@@ -1304,13 +1366,14 @@ describe('History filter state composition', () => {
 
         wrapper.vm.onColumnFilter({
             columnFilters: {
-                statusName: 'Failed'
+                statusName: 'Failed',
+                providerId: 'discarded-provider',
+                clientStatus: 3
             }
         });
 
         expect(wrapper.vm.remoteHistory.filter.columnFilters).toEqual({
-            resource: 'compact show',
-            statusName: 'Failed'
+            resource: 'compact show'
         });
         expect(wrapper.vm.remoteHistory.page).toBe(1);
         expect(wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
@@ -1326,6 +1389,756 @@ describe('History filter state composition', () => {
         expect(wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
         expect(setCookie).toHaveBeenCalledTimes(0);
         wrapper.destroy();
+    });
+
+    it('canonicalizes malformed shared Episode values on layout transition', async () => {
+        const rawEpisode = "  'Round trip episode";
+        const cleanEpisode = 'Round trip episode';
+        const store = createHistoryStore({
+            layout: 'detailed',
+            remote: {
+                page: 4,
+                filter: {
+                    columnFilters: {
+                        resource: 'initial episode',
+                        statusName: 'Downloaded',
+                        providerId: 'provider-a',
+                        quality: '1',
+                        size: '< 1024',
+                        clientStatus: 3
+                    }
+                }
+            },
+            remoteCompact: {
+                page: 7,
+                filter: {
+                    columnFilters: {
+                        resource: 'stale episode',
+                        statusName: 'Failed'
+                    }
+                }
+            }
+        });
+        const cookieStore = {};
+        const detailed = mountHistoryComponent(HistoryDetailed, store, cookieStore, {
+            VueGoodTable: VueGoodTableStub,
+            AppLink: true,
+            QualityPill: true,
+            FontAwesomeIcon: true,
+            Multiselect: true
+        });
+
+        detailed.wrapper.vm.updateResource({
+            currentTarget: {
+                value: rawEpisode
+            }
+        });
+        await detailed.wrapper.vm.$nextTick();
+
+        expect(store.state.history.episodeFilter).toEqual({
+            inputValue: rawEpisode,
+            filterValue: cleanEpisode,
+            malformed: true,
+            initialized: true
+        });
+        expect(store.state.history.remote.page).toBe(1);
+        expect(store.state.history.remoteCompact.page).toBe(1);
+        expect(store.state.history.remote.filter.columnFilters).toEqual({
+            resource: cleanEpisode,
+            statusName: 'Downloaded',
+            providerId: 'provider-a',
+            quality: '1',
+            size: '< 1024',
+            clientStatus: 3
+        });
+        expect(store.state.history.remoteCompact.filter.columnFilters).toEqual({
+            resource: cleanEpisode,
+            statusName: 'Failed'
+        });
+
+        await store.dispatch('prepareHistoryLayoutTransition', { layout: 'compact' });
+
+        expect(store.state.history.episodeFilter).toEqual({
+            inputValue: cleanEpisode,
+            filterValue: cleanEpisode,
+            malformed: false,
+            initialized: true
+        });
+        expect(store.state.history.remote.page).toBe(1);
+        expect(store.state.history.remoteCompact.page).toBe(1);
+        expect(store.state.history.remote.filter.columnFilters).toEqual({
+            resource: cleanEpisode
+        });
+        expect(store.state.history.remoteCompact.filter.columnFilters).toEqual({
+            resource: cleanEpisode
+        });
+
+        store.state.config.layout.history = 'compact';
+        detailed.wrapper.destroy();
+
+        const compact = mountHistoryComponent(HistoryCompact, store, cookieStore, {
+            VueGoodTable: VueGoodTableStub,
+            AppLink: true,
+            QualityPill: true
+        });
+        expect(compact.wrapper.find('input[placeholder="Show title or release"]').element.value).toBe(cleanEpisode);
+        compact.wrapper.destroy();
+
+        await store.dispatch('prepareHistoryLayoutTransition', { layout: 'detailed' });
+        expect(store.state.history.episodeFilter).toEqual({
+            inputValue: cleanEpisode,
+            filterValue: cleanEpisode,
+            malformed: false,
+            initialized: true
+        });
+        store.state.config.layout.history = 'detailed';
+
+        const returnedDetailed = mountHistoryComponent(HistoryDetailed, store, cookieStore, {
+            VueGoodTable: VueGoodTableStub,
+            AppLink: true,
+            QualityPill: true,
+            FontAwesomeIcon: true,
+            Multiselect: true
+        });
+        expect(returnedDetailed.wrapper.find('input[placeholder="Show title or release"]').element.value).toBe(cleanEpisode);
+        expect(returnedDetailed.wrapper.find('input[placeholder="Provider | Group"]').element.value).toBe('');
+        expect(returnedDetailed.wrapper.find('input[placeholder="e.g. < 1024 MB"]').element.value).toBe('');
+        expect(returnedDetailed.wrapper.vm.selectedClientStatusValue).toEqual([]);
+        expect(store.state.history.remote.filter.columnFilters).toEqual({
+            resource: cleanEpisode
+        });
+        returnedDetailed.wrapper.destroy();
+    });
+
+    it('canonicalizes malformed shared Episode values on Compact -> Detailed layout transition', async () => {
+        const rawEpisode = '  "Compact route malformed';
+        const cleanEpisode = 'Compact route malformed';
+        const store = createHistoryStore({
+            layout: 'compact',
+            remote: {
+                page: 4,
+                filter: {
+                    columnFilters: {
+                        resource: 'detailed episode',
+                        statusName: 'Downloaded',
+                        providerId: 'provider-a',
+                        quality: '1',
+                        size: '< 1024',
+                        clientStatus: 3
+                    }
+                }
+            },
+            remoteCompact: {
+                page: 7,
+                filter: {
+                    columnFilters: {
+                        resource: 'compact episode',
+                        statusName: 'Failed'
+                    }
+                }
+            }
+        });
+        const cookieStore = {};
+        const compact = mountHistoryComponent(HistoryCompact, store, cookieStore, {
+            VueGoodTable: VueGoodTableStub,
+            AppLink: true,
+            QualityPill: true
+        });
+
+        compact.wrapper.vm.updateResource({
+            currentTarget: {
+                value: rawEpisode
+            }
+        });
+        await compact.wrapper.vm.$nextTick();
+
+        expect(store.state.history.episodeFilter).toEqual({
+            inputValue: rawEpisode,
+            filterValue: cleanEpisode,
+            malformed: true,
+            initialized: true
+        });
+        expect(compact.wrapper.find('input[placeholder="Show title or release"]').element.value).toBe(rawEpisode);
+        expect(store.state.history.remote.page).toBe(1);
+        expect(store.state.history.remoteCompact.page).toBe(1);
+        expect(store.state.history.remote.filter.columnFilters).toEqual({
+            resource: cleanEpisode,
+            statusName: 'Downloaded',
+            providerId: 'provider-a',
+            quality: '1',
+            size: '< 1024',
+            clientStatus: 3
+        });
+        expect(store.state.history.remoteCompact.filter.columnFilters).toEqual({
+            resource: cleanEpisode,
+            statusName: 'Failed'
+        });
+
+        await store.dispatch('prepareHistoryLayoutTransition', { layout: 'detailed' });
+
+        expect(store.state.history.episodeFilter).toEqual({
+            inputValue: cleanEpisode,
+            filterValue: cleanEpisode,
+            malformed: false,
+            initialized: true
+        });
+        expect(store.state.history.remote.filter.columnFilters).toEqual({
+            resource: cleanEpisode,
+            statusName: 'Downloaded',
+            providerId: 'provider-a',
+            quality: '1',
+            size: '< 1024',
+            clientStatus: 3
+        });
+        expect(store.state.history.remoteCompact.filter.columnFilters).toEqual({
+            resource: cleanEpisode,
+            statusName: 'Failed'
+        });
+        compact.wrapper.destroy();
+
+        store.state.config.layout.history = 'detailed';
+        const detailed = mountHistoryComponent(HistoryDetailed, store, cookieStore, {
+            VueGoodTable: VueGoodTableStub,
+            AppLink: true,
+            QualityPill: true,
+            FontAwesomeIcon: true,
+            Multiselect: true
+        });
+        expect(detailed.wrapper.find('input[placeholder="Show title or release"]').element.value).toBe(cleanEpisode);
+        detailed.wrapper.destroy();
+    });
+
+    it('keeps shared Episode edits and clears normalized values in either layout', async () => {
+        const store = createHistoryStore({
+            layout: 'detailed',
+            remote: {
+                filter: {
+                    columnFilters: {
+                        resource: 'initial detailed'
+                    }
+                }
+            },
+            remoteCompact: {
+                filter: {
+                    columnFilters: {
+                        resource: 'initial compact'
+                    }
+                }
+            }
+        });
+        const cookieStore = {};
+        const detailed = mountHistoryComponent(HistoryDetailed, store, cookieStore, {
+            VueGoodTable: VueGoodTableStub,
+            AppLink: true,
+            QualityPill: true,
+            FontAwesomeIcon: true,
+            Multiselect: true
+        });
+        detailed.wrapper.vm.loadItemsDebounced.mockClear();
+        detailed.wrapper.vm.updateResource({
+            currentTarget: {
+                value: '  "  Detailed title  "  '
+            }
+        });
+        await detailed.wrapper.vm.$nextTick();
+        expect(store.state.history.episodeFilter.filterValue).toBe('"  Detailed title  "');
+        expect(store.state.history.remote.filter.columnFilters.resource).toBe('"  Detailed title  "');
+        expect(store.state.history.remoteCompact.filter.columnFilters.resource).toBe('"  Detailed title  "');
+        expect(detailed.wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
+
+        detailed.wrapper.vm.loadItemsDebounced.mockClear();
+        detailed.wrapper.vm.updateResource({
+            currentTarget: {
+                value: '""'
+            }
+        });
+        await detailed.wrapper.vm.$nextTick();
+        expect(store.state.history.episodeFilter.inputValue).toBe('');
+        expect(store.state.history.episodeFilter.filterValue).toBe('');
+        expect(store.state.history.remote.filter.columnFilters.resource).toBe('');
+        expect(store.state.history.remoteCompact.filter.columnFilters.resource).toBe('');
+        expect(detailed.wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
+        detailed.wrapper.destroy();
+
+        store.state.config.layout.history = 'compact';
+        const compact = mountHistoryComponent(HistoryCompact, store, cookieStore, {
+            VueGoodTable: VueGoodTableStub,
+            AppLink: true,
+            QualityPill: true
+        });
+        compact.wrapper.vm.loadItemsDebounced.mockClear();
+        compact.wrapper.vm.updateResource({
+            currentTarget: {
+                value: '  `  Compact title  `  '
+            }
+        });
+        await compact.wrapper.vm.$nextTick();
+        expect(store.state.history.episodeFilter.filterValue).toBe('`  Compact title  `');
+        expect(store.state.history.remote.filter.columnFilters.resource).toBe('`  Compact title  `');
+        expect(store.state.history.remoteCompact.filter.columnFilters.resource).toBe('`  Compact title  `');
+        expect(compact.wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
+
+        compact.wrapper.vm.loadItemsDebounced.mockClear();
+        compact.wrapper.vm.updateResource({
+            currentTarget: {
+                value: '``'
+            }
+        });
+        await compact.wrapper.vm.$nextTick();
+        expect(store.state.history.episodeFilter.inputValue).toBe('');
+        expect(store.state.history.episodeFilter.filterValue).toBe('');
+        expect(store.state.history.remote.filter.columnFilters.resource).toBe('');
+        expect(store.state.history.remoteCompact.filter.columnFilters.resource).toBe('');
+        expect(compact.wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
+        compact.wrapper.destroy();
+    });
+
+    it('History parent transitions layouts and tracks active state', () => {
+        const store = createHistoryStore({ layout: 'detailed' });
+        const parent = makeMountedHistoryComponent(History);
+        const wrapper = shallowMount(parent, {
+            localVue: createLocalVueForHistory(),
+            store,
+            stubs: {
+                HistoryDetailed: true,
+                HistoryCompact: true,
+                Backstretch: true
+            }
+        });
+        expect(store.state.history.historyActive).toBe(true);
+
+        const dispatch = jest.spyOn(store, 'dispatch');
+        wrapper.vm.layout = 'compact';
+        expect(dispatch.mock.calls.slice(-2)).toEqual([
+            ['prepareHistoryLayoutTransition', { layout: 'compact' }],
+            ['setLayout', { page: 'history', layout: 'compact' }]
+        ]);
+        expect(store.state.config.layout.history).toBe('compact');
+        wrapper.destroy();
+        expect(store.state.history.historyActive).toBe(false);
+        dispatch.mockRestore();
+    });
+
+    it('cancels pending Detailed and Compact Episode debounces on destroy', () => {
+        const detailed = mountDetailed();
+        const detailedCancel = jest.fn();
+        const detailedPending = jest.fn();
+        detailedPending.cancel = detailedCancel;
+        detailed.wrapper.vm.loadItemsDebounced = detailedPending;
+        detailed.wrapper.destroy();
+        expect(detailedCancel).toHaveBeenCalledTimes(1);
+
+        const compact = mountCompact();
+        const compactCancel = jest.fn();
+        const compactPending = jest.fn();
+        compactPending.cancel = compactCancel;
+        compact.wrapper.vm.loadItemsDebounced = compactPending;
+        compact.wrapper.destroy();
+        expect(compactCancel).toHaveBeenCalledTimes(1);
+    });
+
+    it('loads Compact once with compact server parameters after restoring state', () => {
+        const { wrapper, loadItems } = mountCompact({
+            remoteCompact: {
+                page: 3,
+                perPage: 50,
+                sort: [{ field: 'actionDate', type: 'asc' }],
+                filter: {
+                    columnFilters: {
+                        resource: 'restored compact episode'
+                    }
+                }
+            }
+        });
+        expect(loadItems).toHaveBeenCalledTimes(1);
+        expect(loadItems.mock.results[0].value).toEqual(expect.objectContaining({
+            page: 3,
+            perPage: 50,
+            compact: true,
+            filter: {
+                columnFilters: {
+                    resource: 'restored compact episode'
+                }
+            }
+        }));
+        wrapper.destroy();
+    });
+
+    it('restores Detailed sort and pagination cookies before its one initial load', () => {
+        const { wrapper, loadItems, setCookie, store } = mountDetailed({
+            remote: {
+                page: 3
+            }
+        }, {
+            sort: [{ field: 'date', type: 'asc' }],
+            'pagination-perpage-history': '50'
+        });
+
+        expect(loadItems).toHaveBeenCalledTimes(1);
+        expect(loadItems.mock.results[0].value).toEqual(expect.objectContaining({
+            page: 3,
+            perPage: 50,
+            sort: [{ field: 'actionDate', type: 'asc' }]
+        }));
+        expect(store.state.history.remote.perPage).toBe(50);
+        expect(store.state.history.remote.sort).toEqual([{ field: 'actionDate', type: 'asc' }]);
+        expect(setCookie).toHaveBeenCalledWith('sort', [{ field: 'actionDate', type: 'asc' }]);
+        expect(setCookie).toHaveBeenCalledWith('pagination-perpage-history', 50);
+        wrapper.destroy();
+    });
+
+    it('restores Compact sort and pagination cookies before its one initial load', () => {
+        const { wrapper, loadItems, setCookie, store } = mountCompact({
+            remoteCompact: {
+                page: 4
+            }
+        }, {
+            sort: [{ field: 'date', type: 'desc' }],
+            'pagination-perpage-history': '100'
+        });
+
+        expect(loadItems).toHaveBeenCalledTimes(1);
+        expect(loadItems.mock.results[0].value).toEqual(expect.objectContaining({
+            page: 4,
+            perPage: 100,
+            sort: [{ field: 'actionDate', type: 'desc' }],
+            compact: true
+        }));
+        expect(store.state.history.remoteCompact.perPage).toBe(100);
+        expect(store.state.history.remoteCompact.sort).toEqual([{ field: 'actionDate', type: 'desc' }]);
+        expect(setCookie).toHaveBeenCalledWith('sort', [{ field: 'actionDate', type: 'desc' }]);
+        expect(setCookie).toHaveBeenCalledWith('pagination-perpage-history', 100);
+        wrapper.destroy();
+    });
+
+    it.each([
+        ['Detailed', {
+            component: HistoryDetailed,
+            remoteKey: 'remote',
+            tableRef: 'detailed-history',
+            stubs: {
+                VueGoodTable: VueGoodTableStub,
+                AppLink: true,
+                QualityPill: true,
+                FontAwesomeIcon: true,
+                Multiselect: true
+            }
+        }],
+        ['Compact', {
+            component: HistoryCompact,
+            remoteKey: 'remoteCompact',
+            tableRef: 'compact-history',
+            stubs: {
+                VueGoodTable: VueGoodTableStub,
+                AppLink: true,
+                QualityPill: true
+            }
+        }]
+    ])('restores the %s descending sort after VGT clears it', async (_name, options) => {
+        const { component, remoteKey, tableRef, stubs } = options;
+        const expectedSort = [{ field: 'actionDate', type: 'desc' }];
+        const cookieStore = {
+            sort: [{ field: 'quality', type: 'asc' }]
+        };
+        const store = createHistoryStore({
+            layout: remoteKey === 'remote' ? 'detailed' : 'compact',
+            [remoteKey]: {
+                sort: [{ field: 'quality', type: 'asc' }]
+            }
+        });
+        const mounted = mountHistoryComponent(component, store, cookieStore, stubs);
+        const { wrapper, setCookie, loadItems } = mounted;
+        const table = wrapper.vm.$refs[tableRef];
+        const initializeSort = jest.spyOn(table, 'initializeSort');
+        const actionDateColumn = wrapper.vm.columns.find(column => column.field === 'actionDate');
+        const ascendingSort = [{ field: 'actionDate', type: 'asc' }];
+
+        expect(actionDateColumn.firstSortType).toBe('desc');
+
+        wrapper.vm.loadItemsDebounced.mockClear();
+        table.emitSort([{ field: 'actionDate', type: 'none' }]);
+        await wrapper.vm.$nextTick();
+
+        expect(cookieStore.sort).toEqual(expectedSort);
+        expect(setCookie).toHaveBeenCalledWith('sort', expectedSort);
+        expect(store.state.history[remoteKey].sort).toEqual(expectedSort);
+        expect(wrapper.vm.serverParams.sort).toEqual(expectedSort);
+        expect(table.$props.sortOptions.initialSortBy).toEqual(expectedSort);
+        expect(table.headerSort).toEqual(expectedSort);
+        expect(initializeSort).toHaveBeenCalled();
+        expect(wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
+        expect(loadItems).toHaveBeenCalledTimes(1);
+
+        initializeSort.mockClear();
+        wrapper.vm.loadItemsDebounced.mockClear();
+        table.emitSort(ascendingSort);
+        await wrapper.vm.$nextTick();
+
+        expect(cookieStore.sort).toEqual(ascendingSort);
+        expect(setCookie).toHaveBeenLastCalledWith('sort', ascendingSort);
+        expect(store.state.history[remoteKey].sort).toEqual(ascendingSort);
+        expect(wrapper.vm.serverParams.sort).toEqual(ascendingSort);
+        expect(initializeSort).not.toHaveBeenCalled();
+        expect(wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
+        wrapper.destroy();
+    });
+
+    it.each([
+        ['active', [{ field: 'quality', type: 'asc' }]],
+        ['clear-to-default', [{ field: 'actionDate', type: 'none' }]]
+    ])('canonicalizes a malformed Detailed Episode filter on the %s sort', async (_name, sortEvent) => {
+        const initialFilters = {
+            resource: 'stored episode',
+            providerId: 'provider-a',
+            quality: '720p',
+            size: '< 1024',
+            clientStatus: 1,
+            statusName: 'Downloaded'
+        };
+        const { wrapper, store } = mountDetailed({
+            remote: {
+                page: 4,
+                filter: {
+                    columnFilters: initialFilters
+                }
+            }
+        });
+        const table = wrapper.vm.$refs['detailed-history'];
+
+        wrapper.vm.updateResource({
+            currentTarget: {
+                value: "'  malformed episode"
+            }
+        });
+        wrapper.vm.loadItemsDebounced.mockClear();
+        wrapper.vm.remoteHistory.page = 4;
+        store.state.history.remoteCompact.page = 7;
+
+        table.emitSort(sortEvent);
+        await wrapper.vm.$nextTick();
+
+        expect(wrapper.find('input[placeholder="Show title or release"]').element.value).toBe('malformed episode');
+        expect(store.state.history.episodeFilter).toEqual({
+            inputValue: 'malformed episode',
+            filterValue: 'malformed episode',
+            malformed: false,
+            initialized: true
+        });
+        expect(wrapper.vm.remoteHistory.filter.columnFilters).toEqual({
+            ...initialFilters,
+            resource: 'malformed episode'
+        });
+        expect(wrapper.vm.remoteHistory.page).toBe(4);
+        expect(store.state.history.remoteCompact.page).toBe(7);
+        expect(wrapper.vm.remoteHistory.sort).toEqual(sortEvent[0].type === 'none' ? [{
+            field: 'actionDate',
+            type: 'desc'
+        }] : sortEvent);
+        expect(wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
+        wrapper.destroy();
+    });
+
+    it.each([
+        ['active', [{ field: 'quality', type: 'asc' }]],
+        ['clear-to-default', [{ field: 'actionDate', type: 'none' }]]
+    ])('canonicalizes a malformed Detailed Provider filter on the %s sort', async (_name, sortEvent) => {
+        const initialFilters = {
+            resource: 'stored episode',
+            providerId: 'stored provider',
+            quality: '720p',
+            size: '< 1024',
+            clientStatus: 1,
+            statusName: 'Downloaded'
+        };
+        const { wrapper, store } = mountDetailed({
+            remote: {
+                page: 4,
+                filter: {
+                    columnFilters: initialFilters
+                }
+            }
+        });
+        const table = wrapper.vm.$refs['detailed-history'];
+
+        wrapper.vm.updateProvider({
+            currentTarget: {
+                value: "'  malformed provider"
+            }
+        });
+        wrapper.vm.loadItemsDebounced.mockClear();
+        wrapper.vm.remoteHistory.page = 4;
+
+        table.emitSort(sortEvent);
+        await wrapper.vm.$nextTick();
+
+        expect(wrapper.find('input[placeholder="Provider | Group"]').element.value).toBe('malformed provider');
+        expect(wrapper.vm.providerFilterValue).toBe('malformed provider');
+        expect(wrapper.vm.malformedTextFilters.providerId).toBe(false);
+        expect(store.state.history.episodeFilter).toEqual({
+            inputValue: 'stored episode',
+            filterValue: 'stored episode',
+            malformed: false,
+            initialized: true
+        });
+        expect(wrapper.vm.remoteHistory.filter.columnFilters).toEqual({
+            ...initialFilters,
+            providerId: 'malformed provider'
+        });
+        expect(wrapper.vm.remoteHistory.page).toBe(4);
+        expect(wrapper.vm.remoteHistory.sort).toEqual(sortEvent[0].type === 'none' ? [{
+            field: 'actionDate',
+            type: 'desc'
+        }] : sortEvent);
+        expect(wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
+        wrapper.destroy();
+    });
+
+    it.each([
+        ['active', [{ field: 'quality', type: 'asc' }]],
+        ['clear-to-default', [{ field: 'actionDate', type: 'none' }]]
+    ])('canonicalizes a malformed Compact Episode filter on the %s sort', async (_name, sortEvent) => {
+        const initialFilters = {
+            resource: 'stored compact episode',
+            statusName: 'Downloaded',
+            clientStatus: 1
+        };
+        const { wrapper, store } = mountCompact({
+            remoteCompact: {
+                page: 4,
+                filter: {
+                    columnFilters: initialFilters
+                }
+            }
+        });
+        const table = wrapper.vm.$refs['compact-history'];
+
+        wrapper.vm.updateResource({
+            currentTarget: {
+                value: '  "  malformed compact episode'
+            }
+        });
+        wrapper.vm.loadItemsDebounced.mockClear();
+        wrapper.vm.remoteHistory.page = 4;
+        store.state.history.remote.page = 7;
+
+        table.emitSort(sortEvent);
+        await wrapper.vm.$nextTick();
+
+        expect(wrapper.find('input[placeholder="Show title or release"]').element.value).toBe('malformed compact episode');
+        expect(store.state.history.episodeFilter).toEqual({
+            inputValue: 'malformed compact episode',
+            filterValue: 'malformed compact episode',
+            malformed: false,
+            initialized: true
+        });
+        expect(wrapper.vm.remoteHistory.filter.columnFilters).toEqual({
+            ...initialFilters,
+            resource: 'malformed compact episode'
+        });
+        expect(wrapper.vm.remoteHistory.page).toBe(4);
+        expect(store.state.history.remote.page).toBe(7);
+        expect(wrapper.vm.remoteHistory.sort).toEqual(sortEvent[0].type === 'none' ? [{
+            field: 'actionDate',
+            type: 'desc'
+        }] : sortEvent);
+        expect(wrapper.vm.loadItemsDebounced).toHaveBeenCalledTimes(1);
+        wrapper.destroy();
+    });
+
+    it.each([
+        ['Date/Time', {
+            firstSort: [{ field: 'date', type: 'asc' }],
+            expectedSort: [{ field: 'actionDate', type: 'asc' }],
+            compactStaleSort: [{ field: 'quality', type: 'desc' }],
+            detailedStaleSort: [{ field: 'quality', type: 'desc' }]
+        }],
+        ['Quality', {
+            firstSort: [{ field: 'quality', type: 'desc' }],
+            expectedSort: [{ field: 'quality', type: 'desc' }],
+            compactStaleSort: [{ field: 'date', type: 'asc' }],
+            detailedStaleSort: [{ field: 'date', type: 'asc' }]
+        }]
+    ])('does not let stale %s cookies overwrite carried sort and pagination state', async (_name, sortCase) => {
+        const store = createHistoryStore({
+            layout: 'detailed',
+            remote: {
+                page: 4,
+                perPage: 25,
+                sort: [{ field: 'date', type: 'desc' }],
+                filter: {
+                    columnFilters: {
+                        resource: 'carried episode'
+                    }
+                }
+            },
+            remoteCompact: {
+                page: 6,
+                perPage: 75,
+                sort: [{ field: 'quality', type: 'asc' }],
+                filter: {
+                    columnFilters: {
+                        resource: 'compact episode'
+                    }
+                }
+            }
+        });
+        const detailed = mountHistoryComponent(HistoryDetailed, store, {
+            sort: sortCase.firstSort,
+            'pagination-perpage-history': '50'
+        }, {
+            VueGoodTable: VueGoodTableStub,
+            AppLink: true,
+            QualityPill: true,
+            FontAwesomeIcon: true,
+            Multiselect: true
+        });
+        expect(detailed.loadItems).toHaveBeenCalledTimes(1);
+        detailed.wrapper.destroy();
+
+        await store.dispatch('prepareHistoryLayoutTransition', { layout: 'compact' });
+        store.state.config.layout.history = 'compact';
+        const compact = mountHistoryComponent(HistoryCompact, store, {
+            sort: sortCase.compactStaleSort,
+            'pagination-perpage-history': '100'
+        }, {
+            VueGoodTable: VueGoodTableStub,
+            AppLink: true,
+            QualityPill: true
+        });
+        expect(compact.loadItems).toHaveBeenCalledTimes(1);
+        expect(compact.loadItems.mock.results[0].value).toEqual(expect.objectContaining({
+            perPage: 50,
+            sort: sortCase.expectedSort,
+            compact: true
+        }));
+        expect(store.state.history.remoteCompact.perPage).toBe(50);
+        expect(store.state.history.remoteCompact.sort).toEqual(sortCase.expectedSort);
+        expect(compact.setCookie).toHaveBeenCalledWith('sort', sortCase.expectedSort);
+        expect(compact.setCookie).toHaveBeenCalledWith('pagination-perpage-history', 50);
+        compact.wrapper.destroy();
+
+        await store.dispatch('prepareHistoryLayoutTransition', { layout: 'detailed' });
+        store.state.config.layout.history = 'detailed';
+        const returnedDetailed = mountHistoryComponent(HistoryDetailed, store, {
+            sort: sortCase.detailedStaleSort,
+            'pagination-perpage-history': '75'
+        }, {
+            VueGoodTable: VueGoodTableStub,
+            AppLink: true,
+            QualityPill: true,
+            FontAwesomeIcon: true,
+            Multiselect: true
+        });
+        expect(returnedDetailed.loadItems).toHaveBeenCalledTimes(1);
+        expect(returnedDetailed.loadItems.mock.results[0].value).toEqual(expect.objectContaining({
+            perPage: 50,
+            sort: sortCase.expectedSort
+        }));
+        expect(store.state.history.remote.perPage).toBe(50);
+        expect(store.state.history.remote.sort).toEqual(sortCase.expectedSort);
+        expect(returnedDetailed.setCookie).toHaveBeenCalledWith('sort', sortCase.expectedSort);
+        expect(returnedDetailed.setCookie).toHaveBeenCalledWith('pagination-perpage-history', 50);
+        returnedDetailed.wrapper.destroy();
     });
 
     it('compact pager options track page and remain on first page when episode/resource filter is set and cleared', async () => {

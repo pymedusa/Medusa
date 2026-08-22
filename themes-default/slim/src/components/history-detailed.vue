@@ -13,7 +13,7 @@
             :sort-options="{
                 enabled: true,
                 multipleColumns: false,
-                initialSortBy: getSortFromCookie()
+                initialSortBy: historyHeaderSort
             }"
             :pagination-options="{
                 enabled: true,
@@ -97,7 +97,7 @@
 
             <template #column-filter="{ column }">
                 <span v-if="column.field === 'episodeTitle'">
-                    <input :value="resourceFilterValue" placeholder="Show title or release" class="'form-control input-sm vgt-input" @input="updateResource">
+                    <input :value="episodeFilter.inputValue" placeholder="Show title or release" class="'form-control input-sm vgt-input" @input="updateResource">
                 </span>
 
                 <span v-else-if="column.field === 'providerId'">
@@ -183,6 +183,7 @@ export default {
             dateInputFormat: 'yyyyMMddHHmmss', // E.g. 07-09-2017 19:16:25
             dateOutputFormat: 'yyyy-MM-dd HH:mm:ss',
             type: 'date',
+            firstSortType: 'desc',
             hidden: getCookie('Date')
         }, {
             label: 'Episode',
@@ -239,35 +240,51 @@ export default {
             columns,
             selectedClientStatusValue: [],
             perPageDropdown,
-            resourceFilterValue: '',
+            historyTableMounted: false,
+            historyHeaderSort: [],
+            restoringSortHeader: false,
             providerFilterValue: '',
             malformedTextFilters: {
-                resource: false,
                 providerId: false
             }
         };
     },
     mounted() {
-        const { getCookie, getSortFromCookie } = this;
+        this.historyTableMounted = true;
         this.loadItems();
-
-        // Get per-page pagination from cookie
-        const perPage = getCookie('pagination-perpage-history');
-        if (perPage) {
-            this.remoteHistory.perPage = perPage;
-        }
-        this.remoteHistory.sort = getSortFromCookie();
     },
     created() {
+        this.initializeEpisodeFilter({ layout: 'detailed' });
         const currentFilters = this.remoteHistory.filter && this.remoteHistory.filter.columnFilters ? this.remoteHistory.filter.columnFilters : {};
-        this.resourceFilterValue = currentFilters.resource || '';
         this.providerFilterValue = currentFilters.providerId || '';
+        this.initializeHistorySort({
+            layout: 'detailed',
+            sort: this.getSortFromCookie()
+        });
+        this.historyHeaderSort = this.remoteHistory.sort;
+        this.initializeHistoryPagination({
+            layout: 'detailed',
+            perPage: this.getCookie('pagination-perpage-history')
+        });
+        this.setCookie('sort', this.remoteHistory.sort);
+        this.setCookie('pagination-perpage-history', this.remoteHistory.perPage);
         this.loadItemsDebounced = debounce(this.loadItems, 500);
+    },
+    beforeDestroy() {
+        if (this.loadItemsDebounced && this.loadItemsDebounced.cancel) {
+            this.loadItemsDebounced.cancel();
+        }
     },
     computed: {
         ...mapState({
             layout: state => state.config.layout,
             remoteHistory: state => state.history.remote,
+            episodeFilter: state => state.history.episodeFilter || {
+                inputValue: '',
+                filterValue: '',
+                malformed: false,
+                initialized: false
+            },
             consts: state => state.config.consts
         }),
         ...mapGetters({
@@ -292,6 +309,10 @@ export default {
         humanFileSize,
         ...mapActions({
             getHistory: 'getHistory',
+            initializeEpisodeFilter: 'initializeEpisodeFilter',
+            initializeHistorySort: 'initializeHistorySort',
+            initializeHistoryPagination: 'initializeHistoryPagination',
+            updateEpisodeFilter: 'updateEpisodeFilter',
             setStoreLayout: 'setStoreLayout'
         }),
         getSortFromCookie() {
@@ -316,6 +337,9 @@ export default {
             this.$el.remove();
         },
         onPageChange(params) {
+            if (!this.historyTableMounted && params.currentPage === 1 && this.remoteHistory.page !== 1) {
+                return;
+            }
             console.log('page change called');
             console.log(params);
             this.remoteHistory.page = params.currentPage;
@@ -328,19 +352,44 @@ export default {
             this.loadItemsDebounced();
         },
         onSortChange(params) {
-            this.setCookie('sort', params);
-            this.remoteHistory.sort = params.filter(item => item.type !== 'none');
+            if (this.restoringSortHeader) {
+                return;
+            }
+            this.canonicalizeMalformedTextFilters(undefined, false);
+            const sort = Array.isArray(params) ? params.filter(item => item.type !== 'none') : [];
+            const canonicalSort = sort.length > 0 ? sort : [{ field: 'actionDate', type: 'desc' }];
+            this.setCookie('sort', canonicalSort);
+            this.remoteHistory.sort = canonicalSort;
+            if (sort.length === 0) {
+                this.historyHeaderSort = canonicalSort;
+                this.restoringSortHeader = true;
+                this.$nextTick(() => {
+                    try {
+                        const table = this.$refs['detailed-history'];
+                        if (table && typeof table.initializeSort === 'function') {
+                            table.initializeSort();
+                        }
+                    } finally {
+                        this.restoringSortHeader = false;
+                    }
+                });
+            }
             this.loadItemsDebounced();
         },
-        canonicalizeMalformedTextFilters(exceptField) {
-            Object.keys(this.malformedTextFilters).forEach(field => {
-                if (field !== exceptField && this.malformedTextFilters[field]) {
-                    const inputKey = field === 'resource' ? 'resourceFilterValue' : 'providerFilterValue';
-                    const currentFilters = this.remoteHistory.filter && this.remoteHistory.filter.columnFilters ? this.remoteHistory.filter.columnFilters : {};
-                    this[inputKey] = currentFilters[field] || '';
-                    this.malformedTextFilters[field] = false;
-                }
-            });
+        canonicalizeMalformedTextFilters(exceptField, resetPage = true) {
+            if (exceptField !== 'resource' && this.episodeFilter.malformed) {
+                this.updateEpisodeFilter({
+                    inputValue: this.episodeFilter.filterValue,
+                    filterValue: this.episodeFilter.filterValue,
+                    malformed: false,
+                    resetPage
+                });
+            }
+            if (exceptField !== 'providerId' && this.malformedTextFilters.providerId) {
+                const currentFilters = this.remoteHistory.filter && this.remoteHistory.filter.columnFilters ? this.remoteHistory.filter.columnFilters : {};
+                this.providerFilterValue = currentFilters.providerId || '';
+                this.malformedTextFilters.providerId = false;
+            }
         },
         onColumnFilter(params) {
             this.canonicalizeMalformedTextFilters();
@@ -354,16 +403,13 @@ export default {
                 return result;
             }, {});
 
-            this.applyFilter(Object.assign({}, manualFilters, nextFilter), true);
+            this.applyFilter(Object.assign({}, manualFilters, nextFilter));
         },
-        applyFilter(columnFilters, persistFilterCookie) {
+        applyFilter(columnFilters) {
             const nextFilter = Object.assign({}, this.remoteHistory.filter, {
                 columnFilters
             });
             this.remoteHistory.filter = nextFilter;
-            if (persistFilterCookie) {
-                this.setCookie('filter', nextFilter);
-            }
             this.remoteHistory.page = 1;
             this.loadItemsDebounced();
         },
@@ -375,7 +421,7 @@ export default {
             const columnFilters = Object.assign({}, currentFilters, {
                 [field]: value
             });
-            this.applyFilter(columnFilters, false);
+            this.applyFilter(columnFilters);
         },
         updateClientStatusFilter(event) {
             const combinedStatus = event.reduce((result, item) => {
@@ -414,10 +460,13 @@ export default {
         updateResource(resource) {
             const { value } = resource.currentTarget;
             const normalized = normalizeHistoryTextFilter(value);
-            this.resourceFilterValue = normalized.clearInput ? '' : value;
-            this.malformedTextFilters.resource = normalized.malformed;
+            this.updateEpisodeFilter({
+                inputValue: normalized.clearInput ? '' : value,
+                filterValue: normalized.filterValue,
+                malformed: normalized.malformed
+            });
             this.canonicalizeMalformedTextFilters('resource');
-            this.updateFilterValue('resource', normalized.filterValue);
+            this.loadItemsDebounced();
         },
         updateProvider(provider) {
             const { value } = provider.currentTarget;
