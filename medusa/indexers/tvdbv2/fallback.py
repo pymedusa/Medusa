@@ -110,8 +110,13 @@ class PlexFallback(object):
             # Run api request
             return self.func(*args, **kwargs)
         # Valid exception, which we don't want to fall back on.
-        except (IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerShowNotFound, IndexerShowNotFoundInLanguage):
+        except (IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerShowNotFoundInLanguage):
             raise
+        except IndexerShowNotFound as error:
+            # The retired legacy TVDB endpoints now return 404. Retry those requests once through Plex's mirror.
+            if session.api_client.host == app.FALLBACK_PLEX_API_URL:
+                raise
+            logger.info('Legacy TheTvdb.com API returned not found, retrying through Plex: %r', error)
         except IndexerUnavailable as error:
             logger.warning('Could not connect to TheTvdb.com, with reason: %r', error)
         except Exception as error:

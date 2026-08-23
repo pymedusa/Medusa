@@ -12,7 +12,7 @@ graft runscripts
 
 include CHANGELOG.md
 include COPYING.txt
-include readme.md
+include README.md
 include requirements.txt
 include SickBeard.py
 include start.py

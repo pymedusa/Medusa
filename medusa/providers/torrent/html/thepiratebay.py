@@ -38,6 +38,14 @@ class ThePirateBayProvider(TorrentProvider):
         self.url = 'https://thepiratebay.org'
         self.custom_url = None
 
+        # ThePirateBay's Cloudflare WAF blocks Medusa's default User-Agent
+        # string outright (403), regardless of IP or content. Spoof a
+        # regular browser UA for this provider to get past that rule.
+        self.session.headers['User-Agent'] = (
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+            '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        )
+
         # Proper Strings
 
         # Miscellaneous Options

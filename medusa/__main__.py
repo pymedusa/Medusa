@@ -187,7 +187,7 @@ class Application(object):
                             os.rename(src_thumb, dst_thumb)
                 except Exception as error:
                     logger.warning('Error while trying to move the images for series {series}. '
-                                   'Try to refresh the show, or move the images manually if you know '
+                                   'Try to rescan the show, or move the images manually if you know '
                                    'what you are doing. Error: {error}', series=series_obj.name, error=error)
 
     @staticmethod

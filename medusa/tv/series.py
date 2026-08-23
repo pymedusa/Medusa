@@ -477,7 +477,7 @@ class Series(TV):
             try:
                 app.show_queue_scheduler.action.refreshShow(self)
             except CantRefreshShowException as error:
-                log.warning("Unable to refresh show '{show}'. Error: {error}",
+                log.warning("Unable to rescan show '{show}'. Error: {error}",
                             {'show': self.name, 'error': error})
 
     @property
@@ -1846,6 +1846,7 @@ class Series(TV):
             '  AND showid = ? '
             '  AND airdate < ? '
             '  AND status <> ? '
+            '  AND season > 0 '
             'ORDER BY'
             '  airdate '
             'DESC LIMIT 1',
@@ -1885,6 +1886,7 @@ class Series(TV):
             '  indexer = ?'
             '  AND showid = ? '
             '  AND airdate >= ? '
+            '  AND season > 0 '
             'ORDER BY airdate ',
             [self.indexer, self.series_id, today - 1])
 
@@ -2143,7 +2145,7 @@ class Series(TV):
                     raise EpisodeDeletedException
             except EpisodeDeletedException:
                 log.debug(
-                    u"{id:} Episode '{show}' {ep} was deleted while we were refreshing it,"
+                    u"{id:} Episode '{show}' {ep} was deleted while we were rescanning it,"
                     u' moving on to the next one', {
                         'id': self.series_id,
                         'show': self.name,
@@ -2261,13 +2263,13 @@ class Series(TV):
              'message': 'The information on this page is in the process of being updated'},
             {'action': 'isBeingRefreshed',
              'active': app.show_queue_scheduler.action.isBeingRefreshed(self),
-             'message': 'The episodes below are currently being refreshed from disk'},
+             'message': 'The episodes below are currently being rescanned from disk'},
             {'action': 'isBeingSubtitled',
              'active': app.show_queue_scheduler.action.isBeingSubtitled(self),
              'message': 'Currently downloading subtitles for this show'},
             {'action': 'isInRefreshQueue',
              'active': app.show_queue_scheduler.action.isInRefreshQueue(self),
-             'message': 'This show is queued to be refreshed'},
+             'message': 'This show is queued to be rescanned'},
             {'action': 'isInUpdateQueue',
              'active': app.show_queue_scheduler.action.isInUpdateQueue(self),
              'message': 'This show is queued and awaiting an update'},

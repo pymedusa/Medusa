@@ -42,7 +42,9 @@ def cloudflare(session, resp, **kwargs):
         original_request = resp.request
 
         # Get the Cloudflare tokens and original user-agent
-        tokens, user_agent = cf.cloudscraper.get_tokens(original_request.url)
+        # Pass the timeout through explicitly - get_tokens() otherwise makes an
+        # unbounded request that can hang the calling thread indefinitely.
+        tokens, user_agent = cf.cloudscraper.get_tokens(original_request.url, timeout=kwargs.get('timeout', 30))
 
         # Add Cloudflare tokens to the session cookies
         session.cookies.update(tokens)

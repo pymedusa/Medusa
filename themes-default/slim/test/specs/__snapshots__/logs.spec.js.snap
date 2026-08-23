@@ -160,7 +160,7 @@ exports[`Logs.test.js renders 1`] = `
             <option
               value="SHOWQUEUE-REFRESH"
             >
-              Show Queue (Refresh)
+              Show Queue (Rescan)
             </option>
             <option
               value="SHOWQUEUE-SEASON-UPDATE"

@@ -1,6 +1,6 @@
 [project]
 name = "medusa"
-version = "1.0.25"
+version = "1.0.26"
 description = "Automatic Video Library Manager for TV Shows"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -46,7 +46,6 @@ dependencies = [
     "tmdbsimple==2.9.1",
     "tornado==6.5.2",
     "tornroutes==0.5.1",
-    "trans==2.1.0",
     "ttl-cache==1.6",
     "tvdbapiv2",
     "urllib3==2.5.0",

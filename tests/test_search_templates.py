@@ -269,6 +269,35 @@ def test_save_coerces_true_string_booleans(show_with_db, default_val, season_val
     assert rows[0]['season_search'] == 1
 
 
+def test_multiple_custom_templates_same_title_persist(show_with_db):
+    st = search_templates_module.SearchTemplates(show_with_db)
+    st.update([
+        {
+            'template': '%SN 1x%0E',
+            'title': 'Scene Alias',
+            'season': -1,
+            'enabled': 1,
+            'default': 0,
+            'seasonSearch': 0,
+        },
+        {
+            'template': '%SN %EN',
+            'title': 'Scene Alias',
+            'season': -1,
+            'enabled': 1,
+            'default': 0,
+            'seasonSearch': 0,
+        },
+    ])
+
+    st2 = search_templates_module.SearchTemplates(show_with_db)
+    st2.read_from_db()
+
+    customs = [t for t in st2.templates if t.title == 'Scene Alias' and not t.default]
+    patterns = {t.template for t in customs}
+    assert patterns == {'%SN 1x%0E', '%SN %EN'}
+
+
 def test_update_coerces_false_string_booleans(show_with_db):
     st = search_templates_module.SearchTemplates(show_with_db)
     templates = st.update([{
