@@ -174,7 +174,7 @@ A community-maintained alternative is available from [LinuxServer.io](https://hu
 
 ### From source
 
-Python 3.9 or later is required. Python 3.9 through 3.13 is currently tested in CI.
+Python 3.9 or later is required. Python 3.9 through 3.14 is currently tested in CI.
 
 You also need Git. [MediaInfo](https://mediaarea.net/en/MediaInfo) is recommended for richer video metadata extraction. UnRAR (or a compatible RAR extractor) is recommended when processing archived downloads. Using a virtual environment is strongly recommended.
 
