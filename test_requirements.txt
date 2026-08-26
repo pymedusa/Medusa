@@ -17,7 +17,7 @@ six==1.17.0
 tox
 tox-gh-actions
 tornado==6.5.8
-urllib3==2.6.3
+urllib3==2.7.0
 vcrpy
 mock
 requests-mock
