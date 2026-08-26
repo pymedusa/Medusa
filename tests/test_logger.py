@@ -162,6 +162,7 @@ def test_read_loglines__with_traceback(logger, commit_hash, logfile):
     try:
         1 // 0
     except ZeroDivisionError as error:
+        error_message = text_type(error)
         logger.exception(error)
 
     # When
@@ -169,14 +170,12 @@ def test_read_loglines__with_traceback(logger, commit_hash, logfile):
 
     # Then
     assert 3 == len(actual)
-    assert 'integer division or modulo by zero' == actual[0].message
+    assert error_message == actual[0].message
     assert 'ERROR' == actual[0].level_name
     assert actual[0].timestamp is not None
     assert commit_hash == actual[0].curhash
     assert len(actual[0].traceback_lines) > 3
     assert 'Traceback (most recent call last):' == actual[0].traceback_lines[0]
-    # assert 'ZeroDivisionError: integer division or modulo by zero' == actual[0].traceback_lines[3]
-
     assert line2 == actual[1].message
     assert 'DEBUG' == actual[1].level_name
     assert [] == actual[1].traceback_lines
