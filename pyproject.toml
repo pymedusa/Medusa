@@ -44,11 +44,11 @@ dependencies = [
     "six==1.17.0",
     "subliminal==2.2.1",
     "tmdbsimple==2.9.1",
-    "tornado==6.5.2",
+    "tornado==6.5.8",
     "tornroutes==0.5.1",
     "ttl-cache==1.6",
     "tvdbapiv2",
-    "urllib3==2.5.0",
+    "urllib3==2.6.3",
     "validators==0.35.0",
 ]
 
