@@ -359,8 +359,10 @@ class RequestHandler:
 
         :arg int status_code: Response status code.
         :arg str reason: Human-readable reason phrase describing the status
-            code. If ``None``, it will be filled in from
-            `http.client.responses` or "Unknown".
+            code (for example, the "Not Found" in ``HTTP/1.1 404 Not Found``).
+            Normally determined automatically from `http.client.responses`; this
+            argument should only be used if you need to use a non-standard
+            status code.
 
         .. versionchanged:: 5.0
 
@@ -369,6 +371,14 @@ class RequestHandler:
         """
         self._status_code = status_code
         if reason is not None:
+            if "<" in reason or not httputil._ABNF.reason_phrase.fullmatch(reason):
+                # Logically this would be better as an exception, but this method
+                # is called on error-handling paths that would need some refactoring
+                # to tolerate internal errors cleanly.
+                #
+                # The check for "<" is a defense-in-depth against XSS attacks (we also
+                # escape the reason when rendering error pages).
+                reason = "Unknown"
             self._reason = escape.native_str(reason)
         else:
             self._reason = httputil.responses.get(status_code, "Unknown")
@@ -683,9 +693,36 @@ class RequestHandler:
         # The cookie library only accepts type str, in both python 2 and 3
         name = escape.native_str(name)
         value = escape.native_str(value)
-        if re.search(r"[\x00-\x20]", name + value):
-            # Don't let us accidentally inject bad stuff
+        if re.search(r"[\x00-\x20]", value):
+            # Legacy check for control characters in cookie values. This check is no longer needed
+            # since the cookie library escapes these characters correctly now. It will be removed
+            # in the next feature release.
             raise ValueError(f"Invalid cookie {name!r}: {value!r}")
+        for attr_name, attr_value in [
+            ("name", name),
+            ("domain", domain),
+            ("path", path),
+            ("samesite", samesite),
+        ]:
+            # Cookie attributes may not contain control characters or semicolons (except when
+            # escaped in the value). A check for control characters was added to the http.cookies
+            # library in a Feb 2026 security release; as of March it still does not check for
+            # semicolons.
+            #
+            # When a semicolon check is added to the standard library (and the release has had time
+            # for adoption), this check may be removed, but be mindful of the fact that this may
+            # change the timing of the exception (to the generation of the Set-Cookie header in
+            # flush()). We m
+            if attr_value is not None and re.search(r"[\x00-\x20\x3b\x7f]", attr_value):
+                raise http.cookies.CookieError(
+                    f"Invalid cookie attribute {attr_name}={attr_value!r} for cookie {name!r}"
+                )
+        for k, v in kwargs.items():
+            # Also check for disallowed characters in deprecated kwargs.
+            if re.search(r"[\x00-\x20\x3b\x7f]", str(v)):
+                raise http.cookies.CookieError(
+                    f"Invalid cookie attribute {k}={v!r} for cookie {name!r}"
+                )
         if not hasattr(self, "_new_cookie"):
             self._new_cookie = (
                 http.cookies.SimpleCookie()
@@ -1345,7 +1382,8 @@ class RequestHandler:
                 reason = exception.reason
         self.set_status(status_code, reason=reason)
         try:
-            self.write_error(status_code, **kwargs)
+            if status_code != 304:
+                self.write_error(status_code, **kwargs)
         except Exception:
             app_log.error("Uncaught exception in write_error", exc_info=True)
         if not self._finished:
@@ -1373,7 +1411,7 @@ class RequestHandler:
             self.finish(
                 "<html><title>%(code)d: %(message)s</title>"
                 "<body>%(code)d: %(message)s</body></html>"
-                % {"code": status_code, "message": self._reason}
+                % {"code": status_code, "message": escape.xhtml_escape(self._reason)}
             )
 
     @property
@@ -2520,9 +2558,11 @@ class HTTPError(Exception):
         mode).  May contain ``%s``-style placeholders, which will be filled
         in with remaining positional parameters.
     :arg str reason: Keyword-only argument.  The HTTP "reason" phrase
-        to pass in the status line along with ``status_code``.  Normally
+        to pass in the status line along with ``status_code`` (for example,
+        the "Not Found" in ``HTTP/1.1 404 Not Found``).  Normally
         determined automatically from ``status_code``, but can be used
-        to use a non-standard numeric code.
+        to use a non-standard numeric code. This is not a general-purpose
+        error message.
     """
 
     def __init__(
