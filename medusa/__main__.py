@@ -581,10 +581,6 @@ class Application(object):
             except Exception:
                 pass
 
-            # A port of 0 disables the TCP listener.
-            if app.WEB_PORT != 0 and not 21 < app.WEB_PORT < 65535:
-                app.WEB_PORT = 8081
-
             app.WEB_HOST = check_setting_str(app.CFG, 'General', 'web_host', '0.0.0.0')
             app.WEB_IPV6 = bool(check_setting_int(app.CFG, 'General', 'web_ipv6', 0))
             app.WEB_UNIX_SOCKET = check_setting_str(app.CFG, 'General', 'web_unix_socket', '')
@@ -593,6 +589,11 @@ class Application(object):
             env_unix_socket = os.environ.get('MEDUSA_WEB_UNIX_SOCKET')
             if env_unix_socket:
                 app.WEB_UNIX_SOCKET = env_unix_socket
+
+            # Preserve the old fallback for invalid port 0 configurations unless a Unix socket is available.
+            if (app.WEB_PORT == 0 and not app.WEB_UNIX_SOCKET) or (app.WEB_PORT != 0 and not 21 < app.WEB_PORT < 65535):
+                app.WEB_PORT = 8081
+
             app.WEB_ROOT = check_setting_str(app.CFG, 'General', 'web_root', '').rstrip('/')
             app.WEB_LOG = bool(check_setting_int(app.CFG, 'General', 'web_log', 0))
             app.WEB_USERNAME = check_setting_str(app.CFG, 'General', 'web_username', '', censor_log='normal')
