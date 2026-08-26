@@ -41,10 +41,12 @@ from medusa.helper.exceptions import (
 )
 from medusa.image_cache import replace_images
 from medusa.indexers.api import indexerApi
+from medusa.indexers.config import INDEXER_IMDB
 from medusa.indexers.exceptions import (
     IndexerAttributeNotFound,
     IndexerError,
     IndexerException,
+    IndexerShowNotFound,
     IndexerShowNotFoundInLanguage,
 )
 from medusa.indexers.utils import indexer_id_to_slug
@@ -355,6 +357,63 @@ class QueueItemChangeIndexer(ShowQueueItem):
 
         self.show_dir = self.old_show._location
 
+    def _load_new_show_from_indexer(self):
+        """Create and load the replacement, resolving a stale indexer ID once if needed."""
+        identifier = SeriesIdentifier.from_slug(self.new_slug)
+        if not identifier:
+            raise ChangeIndexerException(f'Could not create identifier with slug {self.new_slug}')
+
+        self.new_show = Series.from_identifier(identifier)
+        api = self.new_show.identifier.get_indexer_api(self.options)
+
+        try:
+            indexed_show = api[self.new_show.series_id]
+        except IndexerShowNotFound:
+            target_indexer = self.new_show.indexer
+            stale_id = self.new_show.series_id
+            # A stale IMDb target cannot also be used to verify its own replacement.
+            expected_imdb_id = None if target_indexer == INDEXER_IMDB else (
+                self.old_show.imdb_id or self.old_show.externals.get('imdb_id')
+            )
+            resolved_id = api.resolve_series_id(
+                self.old_show.name,
+                imdb_id=expected_imdb_id,
+                year=self.old_show.start_year,
+            )
+            if not resolved_id or resolved_id == stale_id:
+                raise
+
+            log.info(
+                'Replacing stale {indexer} ID {old_id} with {new_id} for {show}',
+                {
+                    'indexer': indexerApi(target_indexer).name,
+                    'old_id': stale_id,
+                    'new_id': resolved_id,
+                    'show': self.old_show.name,
+                }
+            )
+            identifier = SeriesIdentifier.from_id(target_indexer, resolved_id)
+            self.new_slug = identifier.slug
+            self.new_show = Series.from_identifier(identifier)
+            api = self.new_show.identifier.get_indexer_api(self.options)
+            indexed_show = api[self.new_show.series_id]
+
+        if getattr(indexed_show, 'seriesname', None) is None:
+            log.error(
+                'Show in {path} has no name on {indexer}, probably searched with the wrong language.',
+                {'path': self.show_dir, 'indexer': indexerApi(self.new_show.indexer).name}
+            )
+            ui.notifications.error(
+                'Unable to add show',
+                'Show in {path} has no name on {indexer}, probably the wrong language.'
+                ' Delete .nfo and manually add the correct language.'.format(
+                    path=self.show_dir, indexer=indexerApi(self.new_show.indexer).name)
+            )
+            raise SaveSeriesException('Indexer is missing a showname in this language: {0!r}')
+
+        self.new_show.load_from_indexer(tvapi=api)
+        return api
+
     def run(self):
         """Run QueueItemChangeIndexer queue item."""
         step = []
@@ -387,7 +446,53 @@ class QueueItemChangeIndexer(ShowQueueItem):
             # Store needed options.
             self._store_options()
 
-            # Start of removing the old show
+            # Start adding the new show
+            log.info(
+                'Starting to add show by {0}',
+                ('show_dir: {0}'.format(self.show_dir)
+                 if self.show_dir else
+                 'New slug: {0}'.format(self.new_slug))
+            )
+
+            try:
+                # Push an update to any open Web UIs through the WebSocket
+                new_identifier = SeriesIdentifier.from_slug(self.new_slug)
+                if not new_identifier:
+                    raise ChangeIndexerException(f'Could not create identifier with slug {self.new_slug}')
+                message_step('load show from {indexer}'.format(indexer=indexerApi(new_identifier.indexer.id).name))
+
+                api = self._load_new_show_from_indexer()
+
+                message_step('load info from imdb')
+                self.new_show.load_imdb_info()
+            except IndexerException as error:
+                log.warning('Unable to load series from indexer: {0!r}'.format(error))
+                raise SaveSeriesException('Unable to load series from indexer: {0!r}'.format(error))
+
+            try:
+                message_step('configure show options')
+                self.new_show.configure(self)
+            except KeyError as error:
+                log.error(
+                    'Unable to add show {series_name} due to an error with one of the provided options: {error}',
+                    {'series_name': self.new_show.name, 'error': error}
+                )
+                ui.notifications.error(
+                    'Unable to add show {series_name} due to an error with one of the provided options: {error}'.format(
+                        series_name=self.new_show.name, error=error
+                    )
+                )
+                raise SaveSeriesException(
+                    'Unable to add show {series_name} due to an error with one of the provided options: {error}'.format(
+                        series_name=self.new_show.name, error=error
+                    ))
+
+            except Exception as error:
+                log.error('Error trying to configure show: {0}', error)
+                log.debug(traceback.format_exc())
+                raise
+
+            # Only remove the current show after the replacement has loaded and been configured.
             log.info(
                 '{id}: Removing {show}',
                 {'id': self.old_show.series_id, 'show': self.old_show.name}
@@ -418,69 +523,7 @@ class QueueItemChangeIndexer(ShowQueueItem):
 
             # Double check to see if the show really has been removed, else bail.
             if get_show_from_slug(self.old_slug):
-                raise ChangeIndexerException(f'Could not create identifier with slug {self.old_slug}')
-
-            # Start adding the new show
-            log.info(
-                'Starting to add show by {0}',
-                ('show_dir: {0}'.format(self.show_dir)
-                 if self.show_dir else
-                 'New slug: {0}'.format(self.new_slug))
-            )
-
-            self.new_show = Series.from_identifier(SeriesIdentifier.from_slug(self.new_slug))
-
-            try:
-                # Push an update to any open Web UIs through the WebSocket
-                message_step('load show from {indexer}'.format(indexer=indexerApi(self.new_show.indexer).name))
-
-                api = self.new_show.identifier.get_indexer_api(self.options)
-
-                if getattr(api[self.new_show.series_id], 'seriesname', None) is None:
-                    log.error(
-                        'Show in {path} has no name on {indexer}, probably searched with the wrong language.',
-                        {'path': self.show_dir, 'indexer': indexerApi(self.new_show.indexer).name}
-                    )
-
-                    ui.notifications.error(
-                        'Unable to add show',
-                        'Show in {path} has no name on {indexer}, probably the wrong language.'
-                        ' Delete .nfo and manually add the correct language.'.format(
-                            path=self.show_dir, indexer=indexerApi(self.new_show.indexer).name)
-                    )
-                    self._finish_early()
-                    raise SaveSeriesException('Indexer is missing a showname in this language: {0!r}')
-
-                self.new_show.load_from_indexer(tvapi=api)
-
-                message_step('load info from imdb')
-                self.new_show.load_imdb_info()
-            except IndexerException as error:
-                log.warning('Unable to load series from indexer: {0!r}'.format(error))
-                raise SaveSeriesException('Unable to load series from indexer: {0!r}'.format(error))
-
-            try:
-                message_step('configure show options')
-                self.new_show.configure(self)
-            except KeyError as error:
-                log.error(
-                    'Unable to add show {series_name} due to an error with one of the provided options: {error}',
-                    {'series_name': self.new_show.name, 'error': error}
-                )
-                ui.notifications.error(
-                    'Unable to add show {series_name} due to an error with one of the provided options: {error}'.format(
-                        series_name=self.new_show.name, error=error
-                    )
-                )
-                raise SaveSeriesException(
-                    'Unable to add show {series_name} due to an error with one of the provided options: {error}'.format(
-                        series_name=self.new_show.name, error=error
-                    ))
-
-            except Exception as error:
-                log.error('Error trying to configure show: {0}', error)
-                log.debug(traceback.format_exc())
-                raise
+                raise ChangeIndexerException(f'Could not remove show with slug {self.old_slug}')
 
             app.showList.append(self.new_show)
             self.new_show.save_to_db()
@@ -523,6 +566,7 @@ class QueueItemChangeIndexer(ShowQueueItem):
             self.success = False
             self._finish_early()
             log.debug(traceback.format_exc())
+            return
 
         default_status = self.options['default_status'] or app.STATUS_DEFAULT
         if statusStrings[default_status] == 'Wanted':
@@ -536,7 +580,7 @@ class QueueItemChangeIndexer(ShowQueueItem):
         self.finish()
 
     def _finish_early(self):
-        if self.new_show is not None:
+        if self.new_show is not None and any(show is self.new_show for show in app.showList):
             app.show_queue_scheduler.action.removeShow(self.new_show)
         self.finish()
 

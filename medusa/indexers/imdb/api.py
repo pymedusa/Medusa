@@ -154,6 +154,7 @@ class Imdb(BaseIndexer):
                         continue
                     if key == 'id' and value:
                         value = ImdbIdentifier(value.rstrip('/')).series_id
+                        return_dict['imdb_id'] = value
                     if key == 'contentrating':
                         value = text_type(value)
                     if key == 'poster':
