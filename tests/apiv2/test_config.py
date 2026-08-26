@@ -131,6 +131,7 @@ def config_main(monkeypatch, app_config):
     section_data['webInterface']['password'] = app.WEB_PASSWORD
     section_data['webInterface']['host'] = app.WEB_HOST
     section_data['webInterface']['port'] = int_default(app.WEB_PORT, 8081)
+    section_data['webInterface']['unixSocket'] = app.WEB_UNIX_SOCKET
     section_data['webInterface']['notifyOnLogin'] = bool(app.NOTIFY_ON_LOGIN)
     section_data['webInterface']['ipv6'] = bool(app.WEB_IPV6)
     section_data['webInterface']['httpsEnable'] = bool(app.ENABLE_HTTPS)
@@ -241,6 +242,17 @@ async def test_config_get_not_found(http_client, create_url, auth_headers):
 
     # then
     assert 404 == error.value.code
+
+
+@pytest.mark.gen_test
+async def test_config_patch_rejects_disabled_tcp_without_unix_socket(http_client, create_url, auth_headers):
+    url = create_url('/config/main')
+    body = {'webInterface': {'port': 0, 'unixSocket': ''}}
+
+    with pytest.raises(HTTPError) as error:
+        await http_client.fetch(url, method='PATCH', body=json.dumps(body), **auth_headers)
+
+    assert error.value.code == 400
 
 
 @pytest.mark.gen_test
