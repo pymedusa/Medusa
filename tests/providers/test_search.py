@@ -33,6 +33,8 @@ def search(search_type, provider):
     else:
         vcr_config = {}
 
+    # Decode legacy gzip cassettes before urllib3 handles the replayed response.
+    vcr_config.setdefault('decode_compressed_response', True)
     with vcr.use_cassette(cassette_path, record_mode=record_mode, **vcr_config):
         actual = provider.klass.search(test_case['search_strings'])
 
