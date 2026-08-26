@@ -6,12 +6,20 @@ import errno
 import os
 import socket
 import stat
+import tempfile
 
 from medusa.server import core
 
 from mock.mock import MagicMock, Mock
 
 import pytest
+
+
+@pytest.fixture
+def unix_socket_path():
+    # macOS limits Unix socket paths to 104 bytes, which pytest's temp path can exceed.
+    with tempfile.TemporaryDirectory(prefix='medusa-', dir='/tmp') as socket_dir:
+        yield os.path.join(socket_dir, 'medusa.sock')
 
 
 def test_bind_unix_socket_rejects_unsupported_platform(monkeypatch):
@@ -93,8 +101,8 @@ def test_remove_owned_unix_socket_preserves_replacement_file(tmpdir):
 
 
 @pytest.mark.skipif(not hasattr(socket, 'AF_UNIX'), reason='Unix sockets are not supported')
-def test_remove_stale_unix_socket(tmpdir):
-    path = str(tmpdir.join('medusa.sock'))
+def test_remove_stale_unix_socket(unix_socket_path):
+    path = unix_socket_path
     stale_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     stale_socket.bind(path)
     stale_socket.close()
@@ -105,8 +113,8 @@ def test_remove_stale_unix_socket(tmpdir):
 
 
 @pytest.mark.skipif(not hasattr(socket, 'AF_UNIX'), reason='Unix sockets are not supported')
-def test_remove_stale_unix_socket_preserves_real_active_socket(tmpdir):
-    path = str(tmpdir.join('medusa.sock'))
+def test_remove_stale_unix_socket_preserves_real_active_socket(unix_socket_path):
+    path = unix_socket_path
     active_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     active_socket.bind(path)
     active_socket.listen(1)
