@@ -1,9 +1,7 @@
 <template>
-    <div v-if="display" class="load-progress-bar-container">
-        <div class="border">
-            <div class="msg">{{loadMsg}}</div>
-            <div class="progress" :style="styleProgress" />
-        </div>
+    <div v-if="display" class="load-progress-bar-container alert alert-info hidden-print" role="status" aria-live="polite">
+        <i class="loading-indicator glyphicon glyphicon-refresh" aria-hidden="true" />
+        <span>{{loadMsg}}</span>
     </div>
 </template>
 <script>
@@ -23,59 +21,43 @@ export default {
         loadMsg() {
             const { current, total, description } = this;
             return `Loaded ${current} out of ${total} ${description}`;
-        },
-        styleProgress() {
-            const { current, total } = this;
-            return ({
-                height: '24px',
-                width: `${Math.round(current / total * 100)}%`
-            });
         }
     }
 };
 </script>
 <style>
 .load-progress-bar-container {
-    position: absolute;
-    bottom: 0;
-    right: 0;
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
     z-index: 2;
-}
-
-.border {
-    box-sizing: border-box;
-    height: 26px;
-    text-size-adjust: 100%;
-    width: 382px;
-    perspective-origin: 191px 13px;
-    transform-origin: 191px 13px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    margin: 0;
 }
 
 @media (max-width: 767px) {
-    .border {
-        width: 100%;
-    }
-
     .load-progress-bar-container {
+        right: 0;
+        bottom: 0;
+        justify-content: center;
         width: 100%;
+        border-radius: 0;
     }
 }
 
-.progress {
-    box-sizing: border-box;
-    height: 24px;
-    text-size-adjust: 100%;
-    width: 76px;
-    perspective-origin: 38px 12px;
-    transform-origin: 38px 12px;
-    background: rgba(99, 177, 137, 0.63) none repeat scroll 0% 0% / auto padding-box border-box;
+.loading-indicator {
+    margin-right: 0.5em;
+    animation: loading-indicator-spin 1s linear infinite;
 }
 
-.msg {
-    position: absolute;
-    padding: 3px 5px 0 5px;
-}
+@keyframes loading-indicator-spin {
+    from {
+        transform: rotate(0deg);
+    }
 
+    to {
+        transform: rotate(360deg);
+    }
+}
 </style>
