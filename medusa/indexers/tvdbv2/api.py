@@ -212,6 +212,14 @@ class TVDBv2(BaseIndexer):
             if image:
                 mapped_result['poster_thumb'] = image
 
+            remote_ids = result.get('remote_ids') or []
+            for remote_id in remote_ids if isinstance(remote_ids, list) else []:
+                if not isinstance(remote_id, dict):
+                    continue
+                if text_type(remote_id.get('sourceName') or '').casefold() == 'imdb':
+                    mapped_result['imdb_id'] = remote_id.get('id')
+                    break
+
             mapped_results.append(mapped_result)
 
         return mapped_results

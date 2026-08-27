@@ -1,4 +1,5 @@
 from tornado.httputil import (
+    parse_body_arguments,
     url_concat,
     parse_multipart_form_data,
     HTTPHeaders,
@@ -9,6 +10,7 @@ from tornado.httputil import (
     qs_to_qsl,
     HTTPInputError,
     HTTPFile,
+    ParseMultipartConfig,
 )
 from tornado.escape import utf8, native_str
 from tornado.log import gen_log
@@ -94,6 +96,23 @@ class QsParseTest(unittest.TestCase):
         self.assertIn(("b", "2"), qsl)
 
 
+class UrlEncodedDataTest(unittest.TestCase):
+    def test_urlencoded_data(self):
+        data = b"a=1&b=2&a=3"
+        args, files = form_data_args()
+        parse_body_arguments("application/x-www-form-urlencoded", data, args, files)
+        self.assertEqual(args["a"], [b"1", b"3"])
+        self.assertEqual(args["b"], [b"2"])
+        self.assertEqual(files, {})
+
+    def test_max_arguments(self):
+        data = b"".join(b"a=1&" for _ in range(1001))
+        args, files = form_data_args()
+        with self.assertRaises(HTTPInputError) as cm:
+            parse_body_arguments("application/x-www-form-urlencoded", data, args, files)
+        self.assertIn("Max number of fields exceeded", str(cm.exception))
+
+
 class MultipartFormDataTest(unittest.TestCase):
     def test_file_upload(self):
         data = b"""\
@@ -135,6 +154,8 @@ Foo
             'a";";.txt',
             'a\\"b.txt',
             "a\\b.txt",
+            "a b.txt",
+            "a\tb.txt",
         ]
         for filename in filenames:
             logging.debug("trying filename %r", filename)
@@ -154,6 +175,29 @@ Foo
             file = files["files"][0]
             self.assertEqual(file["filename"], filename)
             self.assertEqual(file["body"], b"Foo")
+
+    def test_invalid_chars(self):
+        filenames = [
+            "a\rb.txt",
+            "a\0b.txt",
+            "a\x08b.txt",
+        ]
+        for filename in filenames:
+            str_data = """\
+--1234
+Content-Disposition: form-data; name="files"; filename="%s"
+
+Foo
+--1234--""" % filename.replace(
+                "\\", "\\\\"
+            ).replace(
+                '"', '\\"'
+            )
+            data = utf8(str_data.replace("\n", "\r\n"))
+            args, files = form_data_args()
+            with self.assertRaises(HTTPInputError) as cm:
+                parse_multipart_form_data(b"1234", data, args, files)
+            self.assertIn("Invalid header value", str(cm.exception))
 
     def test_non_ascii_filename_rfc5987(self):
         data = b"""\
@@ -279,6 +323,64 @@ Foo
         self.assertEqual(file["filename"], "ab.txt")
         self.assertEqual(file["body"], b"Foo")
 
+    def test_disposition_param_linear_performance(self):
+        # This is a regression test for performance of parsing parameters
+        # to the content-disposition header, specifically for semicolons within
+        # quoted strings.
+        def f(n):
+            start = time.perf_counter()
+            message = (
+                b"--1234\r\nContent-Disposition: form-data; "
+                + b'x="'
+                + b";" * n
+                + b'"; '
+                + b'name="files"; filename="a.txt"\r\n\r\nFoo\r\n--1234--\r\n'
+            )
+            args: dict[str, list[bytes]] = {}
+            files: dict[str, list[HTTPFile]] = {}
+            parse_multipart_form_data(b"1234", message, args, files)
+            return time.perf_counter() - start
+
+        d1 = f(1_000)
+        # Note that headers larger than this are blocked by the default configuration.
+        d2 = f(10_000)
+        if d2 / d1 > 20:
+            self.fail(f"Disposition param parsing is not linear: {d1=} vs {d2=}")
+
+    def test_multipart_config(self):
+        boundary = b"1234"
+        body = b"""--1234
+Content-Disposition: form-data; name="files"; filename="ab.txt"
+
+--1234--""".replace(
+            b"\n", b"\r\n"
+        )
+        config = ParseMultipartConfig()
+        args, files = form_data_args()
+        parse_multipart_form_data(boundary, body, args, files, config=config)
+        self.assertEqual(files["files"][0]["filename"], "ab.txt")
+
+        config_no_parts = ParseMultipartConfig(max_parts=0)
+        with self.assertRaises(HTTPInputError) as cm:
+            parse_multipart_form_data(
+                boundary, body, args, files, config=config_no_parts
+            )
+        self.assertIn("too many parts", str(cm.exception))
+
+        config_small_headers = ParseMultipartConfig(max_part_header_size=10)
+        with self.assertRaises(HTTPInputError) as cm:
+            parse_multipart_form_data(
+                boundary, body, args, files, config=config_small_headers
+            )
+        self.assertIn("header too large", str(cm.exception))
+
+        config_disabled = ParseMultipartConfig(enabled=False)
+        with self.assertRaises(HTTPInputError) as cm:
+            parse_multipart_form_data(
+                boundary, body, args, files, config=config_disabled
+            )
+        self.assertIn("multipart/form-data parsing is disabled", str(cm.exception))
+
 
 class HTTPHeadersTest(unittest.TestCase):
     def test_multi_line(self):
@@ -306,6 +408,9 @@ Foo: even
             sorted(list(headers.get_all())),
             [("Asdf", "qwer zxcv"), ("Foo", "bar baz"), ("Foo", "even more lines")],
         )
+        # Verify case insensitivity in-operator
+        self.assertTrue("asdf" in headers)
+        self.assertTrue("Asdf" in headers)
 
     def test_continuation(self):
         data = "Foo: bar\r\n\tasdf"
@@ -470,6 +575,21 @@ Foo: even
             headers = HTTPHeaders()
             with self.assertRaises(HTTPInputError):
                 headers.add(name, "bar")
+
+    def test_linear_performance(self):
+        def f(n):
+            start = time.perf_counter()
+            headers = HTTPHeaders()
+            for i in range(n):
+                headers.add("X-Foo", "bar")
+            return time.perf_counter() - start
+
+        # This runs under 50ms on my laptop as of 2025-12-09.
+        d1 = f(10_000)
+        d2 = f(100_000)
+        if d2 / d1 > 20:
+            # d2 should be about 10x d1 but allow a wide margin for variability.
+            self.fail(f"HTTPHeaders.add() does not scale linearly: {d1=} vs {d2=}")
 
 
 class FormatTimestampTest(unittest.TestCase):

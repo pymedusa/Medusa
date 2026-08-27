@@ -22,6 +22,7 @@ via `tornado.web.RequestHandler.request`.
 import calendar
 import collections.abc
 import copy
+import dataclasses
 import datetime
 import email.utils
 from functools import lru_cache
@@ -35,7 +36,6 @@ from urllib.parse import urlencode, urlparse, urlunparse, parse_qsl
 
 from tornado.escape import native_str, parse_qs_bytes, utf8, to_unicode
 from tornado.util import ObjectDict, unicode_type
-
 
 # responses is unused in this file, but we re-export it to other files.
 # Reference it so pyflakes doesn't complain.
@@ -72,7 +72,7 @@ HTTP_WHITESPACE = " \t"
 
 # Roughly the inverse of RequestHandler._VALID_HEADER_CHARS, but permits
 # chars greater than \xFF (which may appear after decoding utf8).
-_FORBIDDEN_HEADER_CHARS_RE = re.compile(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]")
+_FORBIDDEN_HEADER_CHARS_RE = re.compile(r"[\x00-\x08\x0A-\x1F\x7F]")
 
 
 class _ABNF:
@@ -187,8 +187,14 @@ class HTTPHeaders(StrMutableMapping):
         pass
 
     def __init__(self, *args: typing.Any, **kwargs: str) -> None:  # noqa: F811
-        self._dict = {}  # type: typing.Dict[str, str]
-        self._as_list = {}  # type: typing.Dict[str, typing.List[str]]
+        # Formally, HTTP headers are a mapping from a field name to a "combined field value",
+        # which may be constructed from multiple field lines by joining them with commas.
+        # In practice, however, some headers (notably Set-Cookie) do not follow this convention,
+        # so we maintain a mapping from field name to a list of field lines in self._as_list.
+        # self._combined_cache is a cache of the combined field values derived from self._as_list
+        # on demand (and cleared whenever the list is modified).
+        self._as_list: dict[str, list[str]] = {}
+        self._combined_cache: dict[str, str] = {}
         self._last_key = None  # type: Optional[str]
         if len(args) == 1 and len(kwargs) == 0 and isinstance(args[0], HTTPHeaders):
             # Copy constructor
@@ -215,9 +221,7 @@ class HTTPHeaders(StrMutableMapping):
         norm_name = _normalize_header(name)
         self._last_key = norm_name
         if norm_name in self:
-            self._dict[norm_name] = (
-                native_str(self[norm_name]) + "," + native_str(value)
-            )
+            self._combined_cache.pop(norm_name, None)
             self._as_list[norm_name].append(value)
         else:
             self[norm_name] = value
@@ -278,7 +282,7 @@ class HTTPHeaders(StrMutableMapping):
                 if _FORBIDDEN_HEADER_CHARS_RE.search(new_part):
                     raise HTTPInputError("Invalid header value %r" % new_part)
             self._as_list[self._last_key][-1] += new_part
-            self._dict[self._last_key] += new_part
+            self._combined_cache.pop(self._last_key, None)
         else:
             try:
                 name, value = line.split(":", 1)
@@ -333,22 +337,33 @@ class HTTPHeaders(StrMutableMapping):
 
     def __setitem__(self, name: str, value: str) -> None:
         norm_name = _normalize_header(name)
-        self._dict[norm_name] = value
+        self._combined_cache[norm_name] = value
         self._as_list[norm_name] = [value]
 
+    def __contains__(self, name: object) -> bool:
+        # This is an important optimization to avoid the expensive concatenation
+        # in __getitem__ when it's not needed.
+        if not isinstance(name, str):
+            return False
+        norm_name = _normalize_header(name)
+        return norm_name in self._as_list
+
     def __getitem__(self, name: str) -> str:
-        return self._dict[_normalize_header(name)]
+        header = _normalize_header(name)
+        if header not in self._combined_cache:
+            self._combined_cache[header] = ",".join(self._as_list[header])
+        return self._combined_cache[header]
 
     def __delitem__(self, name: str) -> None:
         norm_name = _normalize_header(name)
-        del self._dict[norm_name]
+        del self._combined_cache[norm_name]
         del self._as_list[norm_name]
 
     def __len__(self) -> int:
-        return len(self._dict)
+        return len(self._as_list)
 
     def __iter__(self) -> Iterator[typing.Any]:
-        return iter(self._dict)
+        return iter(self._as_list)
 
     def copy(self) -> "HTTPHeaders":
         # defined in dict but not in MutableMapping.
@@ -898,12 +913,110 @@ def _int_or_none(val: str) -> Optional[int]:
     return int(val)
 
 
+@dataclasses.dataclass
+class ParseMultipartConfig:
+    """This class configures the parsing of ``multipart/form-data`` request bodies.
+
+    Its primary purpose is to place limits on the size and complexity of request messages
+    to avoid potential denial-of-service attacks.
+
+    .. versionadded:: 6.5.5
+    """
+
+    enabled: bool = True
+    """Set this to false to disable the parsing of ``multipart/form-data`` requests entirely.
+
+    This may be desirable for applications that do not need to handle this format, since
+    multipart request have a history of DoS vulnerabilities in Tornado. Multipart requests
+    are used primarily for ``<input type="file">`` in HTML forms, or in APIs that mimic this
+    format. File uploads that use the HTTP ``PUT`` method generally do not use the multipart
+    format.
+    """
+
+    max_parts: int = 100
+    """The maximum number of parts accepted in a multipart request.
+
+    Each ``<input>`` element in an HTML form corresponds to at least one "part".
+    """
+
+    max_part_header_size: int = 10 * 1024
+    """The maximum size of the headers for each part of a multipart request.
+
+    The header for a part contains the name of the form field and optionally the filename
+    and content type of the uploaded file.
+    """
+
+
+@dataclasses.dataclass
+class ParseUrlEncodedConfig:
+    """This class configures the parsing of ``application/x-www-form-urlencoded`` request bodies.
+
+    Its primary purpose is to place limits on the size and complexity of request messages
+    to avoid potential denial-of-service attacks.
+
+    .. versionadded:: 6.5.8
+    """
+
+    max_arguments: int = 1000
+    """The maximum number of arguments accepted in a urlencoded request.
+
+    Each ``<input>`` element in an HTML form corresponds to at least one argument.
+    """
+
+
+@dataclasses.dataclass
+class ParseBodyConfig:
+    """This class configures the parsing of request bodies.
+
+    .. versionadded:: 6.5.5
+    """
+
+    multipart: ParseMultipartConfig = dataclasses.field(
+        default_factory=ParseMultipartConfig
+    )
+    urlencoded: ParseUrlEncodedConfig = dataclasses.field(
+        default_factory=ParseUrlEncodedConfig
+    )
+    """Configuration for ``multipart/form-data`` request bodies."""
+
+
+_DEFAULT_PARSE_BODY_CONFIG = ParseBodyConfig()
+
+
+def set_parse_body_config(config: ParseBodyConfig) -> None:
+    r"""Sets the **global** default configuration for parsing request bodies.
+
+    This global setting is provided as a stopgap for applications that need to raise the limits
+    introduced in Tornado 6.5.5, or who wish to disable the parsing of multipart/form-data bodies
+    entirely. Non-global configuration for this functionality will be introduced in a future
+    release.
+
+    >>> content_type = "multipart/form-data; boundary=foo"
+    >>> multipart_body = b"--foo--\r\n"
+    >>> parse_body_arguments(content_type, multipart_body, {}, {})
+    >>> multipart_config = ParseMultipartConfig(enabled=False)
+    >>> config = ParseBodyConfig(multipart=multipart_config)
+    >>> set_parse_body_config(config)
+    >>> parse_body_arguments(content_type, multipart_body, {}, {})
+    Traceback (most recent call last):
+        ...
+    tornado.httputil.HTTPInputError: ...: multipart/form-data parsing is disabled
+    >>> set_parse_body_config(ParseBodyConfig())  # reset to defaults
+
+    .. versionadded:: 6.5.5
+    """
+    global _DEFAULT_PARSE_BODY_CONFIG
+    _DEFAULT_PARSE_BODY_CONFIG = config
+
+
 def parse_body_arguments(
     content_type: str,
     body: bytes,
     arguments: Dict[str, List[bytes]],
     files: Dict[str, List[HTTPFile]],
     headers: Optional[HTTPHeaders] = None,
+    *,
+    config: Optional[ParseBodyConfig] = None,
 ) -> None:
     """Parses a form request body.
 
@@ -913,6 +1026,8 @@ def parse_body_arguments(
     and ``files`` parameters are dictionaries that will be updated
     with the parsed contents.
     """
+    if config is None:
+        config = _DEFAULT_PARSE_BODY_CONFIG
     if content_type.startswith("application/x-www-form-urlencoded"):
         if headers and "Content-Encoding" in headers:
             raise HTTPInputError(
@@ -920,7 +1035,11 @@ def parse_body_arguments(
             )
         try:
             # real charset decoding will happen in RequestHandler.decode_argument()
-            uri_arguments = parse_qs_bytes(body, keep_blank_values=True)
+            uri_arguments = parse_qs_bytes(
+                body,
+                keep_blank_values=True,
+                max_num_fields=config.urlencoded.max_arguments,
+            )
         except Exception as e:
             raise HTTPInputError("Invalid x-www-form-urlencoded body: %s" % e) from e
         for name, values in uri_arguments.items():
@@ -933,10 +1052,15 @@ def parse_body_arguments(
             )
         try:
             fields = content_type.split(";")
+            if fields[0].strip() != "multipart/form-data":
+                # This catches "Content-Type: multipart/form-dataxyz"
+                raise HTTPInputError("Invalid content type")
             for field in fields:
                 k, sep, v = field.strip().partition("=")
                 if k == "boundary" and v:
-                    parse_multipart_form_data(utf8(v), body, arguments, files)
+                    parse_multipart_form_data(
+                        utf8(v), body, arguments, files, config=config.multipart
+                    )
                     break
             else:
                 raise HTTPInputError("multipart boundary not found")
@@ -949,6 +1073,8 @@ def parse_multipart_form_data(
     data: bytes,
     arguments: Dict[str, List[bytes]],
     files: Dict[str, List[HTTPFile]],
+    *,
+    config: Optional[ParseMultipartConfig] = None,
 ) -> None:
     """Parses a ``multipart/form-data`` body.
 
@@ -961,6 +1087,10 @@ def parse_multipart_form_data(
        Now recognizes non-ASCII filenames in RFC 2231/5987
        (``filename*=``) format.
     """
+    if config is None:
+        config = _DEFAULT_PARSE_BODY_CONFIG.multipart
+    if not config.enabled:
+        raise HTTPInputError("multipart/form-data parsing is disabled")
     # The standard allows for the boundary to be quoted in the header,
     # although it's rare (it happens at least for google app engine
     # xmpp).  I think we're also supposed to handle backslash-escapes
@@ -971,13 +1101,19 @@ def parse_multipart_form_data(
     final_boundary_index = data.rfind(b"--" + boundary + b"--")
     if final_boundary_index == -1:
         raise HTTPInputError("Invalid multipart/form-data: no final boundary found")
-    parts = data[:final_boundary_index].split(b"--" + boundary + b"\r\n")
+    parts = data[:final_boundary_index].split(
+        b"--" + boundary + b"\r\n", config.max_parts + 1
+    )
+    if len(parts) > config.max_parts:
+        raise HTTPInputError("multipart/form-data has too many parts")
     for part in parts:
         if not part:
             continue
         eoh = part.find(b"\r\n\r\n")
         if eoh == -1:
             raise HTTPInputError("multipart/form-data missing headers")
+        if eoh > config.max_part_header_size:
+            raise HTTPInputError("multipart/form-data part header too large")
         headers = HTTPHeaders.parse(part[:eoh].decode("utf-8"), _chars_are_bytes=False)
         disp_header = headers.get("Content-Disposition", "")
         disposition, disp_params = _parse_header(disp_header)
@@ -1080,19 +1216,34 @@ def parse_response_start_line(line: str) -> ResponseStartLine:
 # It has also been modified to support valueless parameters as seen in
 # websocket extension negotiations, and to support non-ascii values in
 # RFC 2231/5987 format.
+#
+# _parseparam has been further modified with the logic from
+# https://github.com/python/cpython/pull/136072/files
+# to avoid quadratic behavior when parsing semicolons in quoted strings.
+#
+# TODO: See if we can switch to email.message.Message for this functionality.
+# This is the suggested replacement for the cgi.py module now that cgi has
+# been removed from recent versions of Python.  We need to verify that
+# the email module is consistent with our existing behavior (and all relevant
+# RFCs for multipart/form-data) before making this change.
 
 
 def _parseparam(s: str) -> Generator[str, None, None]:
-    while s[:1] == ";":
-        s = s[1:]
-        end = s.find(";")
-        while end > 0 and (s.count('"', 0, end) - s.count('\\"', 0, end)) % 2:
-            end = s.find(";", end + 1)
+    start = 0
+    while s.find(";", start) == start:
+        start += 1
+        end = s.find(";", start)
+        ind, diff = start, 0
+        while end > 0:
+            diff += s.count('"', ind, end) - s.count('\\"', ind, end)
+            if diff % 2 == 0:
+                break
+            end, ind = ind, s.find(";", end + 1)
         if end < 0:
             end = len(s)
-        f = s[:end]
+        f = s[start:end]
         yield f.strip()
-        s = s[end:]
+        start = end
 
 
 def _parse_header(line: str) -> Tuple[str, Dict[str, str]]:
@@ -1170,7 +1321,7 @@ def doctests():
     # type: () -> unittest.TestSuite
     import doctest
 
-    return doctest.DocTestSuite()
+    return doctest.DocTestSuite(optionflags=doctest.ELLIPSIS)
 
 
 _netloc_re = re.compile(r"^(.+):(\d+)$")

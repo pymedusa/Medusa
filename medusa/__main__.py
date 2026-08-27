@@ -32,6 +32,9 @@ Options:
        --pidfile=[FILE]  Combined with --daemon creates a pid file
 
   -p,  --port=[PORT]     Override default/configured port to listen on
+       --unix-socket=[PATH]
+                         Listen on a Unix domain socket at PATH. Combine with
+                         --port=0 to serve only on the Unix socket.
        --datadir=[PATH]  Override folder (full path) as location for
                          storing database, config file, cache, and log files
                          Default Medusa directory
@@ -123,6 +126,7 @@ class Application(object):
         # web server constants
         self.web_server = None
         self.forced_port = None
+        self.forced_unix_socket = None
         self.no_launch = False
 
         self.web_host = '0.0.0.0'
@@ -223,7 +227,8 @@ class Application(object):
         try:
             opts, _ = getopt.getopt(
                 args, 'hqdp::',
-                ['help', 'quiet', 'nolaunch', 'daemon', 'pidfile=', 'port=', 'datadir=', 'config=', 'noresize']
+                ['help', 'quiet', 'nolaunch', 'daemon', 'pidfile=', 'port=', 'unix-socket=',
+                 'datadir=', 'config=', 'noresize']
             )
         except getopt.GetoptError:
             sys.exit(self.help_message())
@@ -249,6 +254,10 @@ class Application(object):
                     self.forced_port = int(value)
                 except ValueError:
                     sys.exit('Port: %s is not a number. Exiting.' % value)
+
+            # Listen on a unix socket instead of a TCP port
+            if option in ('--unix-socket',):
+                self.forced_unix_socket = os.path.abspath(value)
 
             # Run as a double forked daemon
             if option in ('-d', '--daemon'):
@@ -375,7 +384,7 @@ class Application(object):
         self.migrate_images()
         self.initialize_custom_logging()
 
-        if self.forced_port:
+        if self.forced_port is not None:
             logger.info('Forcing web server to port {port}', port=self.forced_port)
             self.start_port = self.forced_port
         else:
@@ -393,10 +402,17 @@ class Application(object):
         else:
             self.web_host = '' if app.WEB_IPV6 else '0.0.0.0'
 
+        unix_socket = self.forced_unix_socket or app.WEB_UNIX_SOCKET
+
+        # Only launch the browser if a TCP listener is active.
+        if int(self.start_port) == 0:
+            self.no_launch = True
+
         # web server options
         self.web_options = {
             'port': int(self.start_port),
             'host': self.web_host,
+            'unix_socket': unix_socket,
             'data_root': app.DATA_ROOT,
             'vue_root': os.path.join(app.PROG_DIR, 'vue'),
             'web_root': app.WEB_ROOT,
@@ -565,11 +581,19 @@ class Application(object):
             except Exception:
                 pass
 
-            if not 21 < app.WEB_PORT < 65535:
-                app.WEB_PORT = 8081
-
             app.WEB_HOST = check_setting_str(app.CFG, 'General', 'web_host', '0.0.0.0')
             app.WEB_IPV6 = bool(check_setting_int(app.CFG, 'General', 'web_ipv6', 0))
+            app.WEB_UNIX_SOCKET = check_setting_str(app.CFG, 'General', 'web_unix_socket', '')
+
+            # Allow overriding the unix socket path via environment variable
+            env_unix_socket = os.environ.get('MEDUSA_WEB_UNIX_SOCKET')
+            if env_unix_socket:
+                app.WEB_UNIX_SOCKET = env_unix_socket
+
+            # Preserve the old fallback for invalid port 0 configurations unless a Unix socket is available.
+            if (app.WEB_PORT == 0 and not app.WEB_UNIX_SOCKET) or (app.WEB_PORT != 0 and not 21 < app.WEB_PORT < 65535):
+                app.WEB_PORT = 8081
+
             app.WEB_ROOT = check_setting_str(app.CFG, 'General', 'web_root', '').rstrip('/')
             app.WEB_LOG = bool(check_setting_int(app.CFG, 'General', 'web_log', 0))
             app.WEB_USERNAME = check_setting_str(app.CFG, 'General', 'web_username', '', censor_log='normal')
@@ -1612,6 +1636,7 @@ class Application(object):
         new_config['General']['web_port'] = app.WEB_PORT
         new_config['General']['web_host'] = app.WEB_HOST
         new_config['General']['web_ipv6'] = int(app.WEB_IPV6)
+        new_config['General']['web_unix_socket'] = app.WEB_UNIX_SOCKET
         new_config['General']['web_log'] = int(app.WEB_LOG)
         new_config['General']['web_root'] = app.WEB_ROOT
         new_config['General']['web_username'] = app.WEB_USERNAME

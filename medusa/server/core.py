@@ -2,8 +2,11 @@
 
 from __future__ import unicode_literals
 
+import errno
 import logging
 import os
+import socket
+import stat
 import threading
 from posixpath import join
 
@@ -55,6 +58,7 @@ from medusa.ws.handler import WebSocketUIHandler
 
 import six
 
+from tornado import netutil
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.web import (
@@ -69,6 +73,63 @@ from tornroutes import route
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
+
+
+def _remove_stale_unix_socket(path):
+    """Remove an unused Unix socket without touching other filesystem entries."""
+    try:
+        path_stat = os.stat(path)
+    except OSError as ex:
+        if ex.errno == errno.ENOENT:
+            return
+        raise
+
+    if not stat.S_ISSOCK(path_stat.st_mode):
+        raise ValueError('File {0} exists and is not a socket'.format(path))
+
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as probe:
+        probe.settimeout(1)
+        try:
+            probe.connect(path)
+        except OSError as ex:
+            if ex.errno == errno.ENOENT:
+                return
+            if ex.errno != errno.ECONNREFUSED:
+                raise
+        else:
+            raise OSError(errno.EADDRINUSE, 'Unix socket is already in use: {0}'.format(path))
+
+    log.info('Removing stale unix socket: {path}', {'path': path})
+    try:
+        os.unlink(path)
+    except OSError as ex:
+        if ex.errno != errno.ENOENT:
+            raise
+
+
+def _bind_unix_socket(path):
+    """Bind a Unix socket when supported by the current platform."""
+    if not hasattr(socket, 'AF_UNIX') or not hasattr(netutil, 'bind_unix_socket'):
+        raise RuntimeError('Unix sockets are not supported on this platform')
+
+    _remove_stale_unix_socket(path)
+    return netutil.bind_unix_socket(path, mode=0o660)
+
+
+def _remove_owned_unix_socket(path, expected_stat):
+    """Remove the socket path only when it still belongs to this process."""
+    if expected_stat is None:
+        return
+
+    try:
+        path_stat = os.stat(path)
+    except OSError as ex:
+        if ex.errno == errno.ENOENT:
+            return
+        raise
+
+    if stat.S_ISSOCK(path_stat.st_mode) and os.path.samestat(path_stat, expected_stat):
+        os.unlink(path)
 
 
 def clean_url_path(*args, **kwargs):
@@ -178,6 +239,7 @@ class AppWebServer(threading.Thread):
         self.options = options or {}
         self.options.setdefault('port', 8081)
         self.options.setdefault('host', '0.0.0.0')
+        self.options.setdefault('unix_socket', None)
         self.options.setdefault('log_dir', None)
         self.options.setdefault('username', '')
         self.options.setdefault('password', '')
@@ -187,6 +249,7 @@ class AppWebServer(threading.Thread):
 
         self.server = None
         self.io_loop = None
+        self._unix_socket_stat = None
 
         # video root
         if app.ROOT_DIRS:
@@ -345,19 +408,39 @@ class AppWebServer(threading.Thread):
             protocol = 'http'
             self.server = HTTPServer(self.app)
 
-        log.info('Starting Medusa on {scheme}://{host}:{port}{web_root}/', {
-            'scheme': protocol, 'host': self.options['host'],
-            'port': self.options['port'], 'web_root': self.options['theme_path']
-        })
+        unix_socket = self.options.get('unix_socket')
+        tcp_enabled = self.options['port'] != 0
+
+        # At least one of the TCP listener or the unix socket must be active
+        if not tcp_enabled and not unix_socket:
+            log.error('Cannot start the web server: the TCP listener is disabled '
+                      '(port 0) and no unix socket is configured.')
+            os._exit(1)  # pylint: disable=protected-access
+
+        if tcp_enabled:
+            log.info('Starting Medusa on {scheme}://{host}:{port}{web_root}/', {
+                'scheme': protocol, 'host': self.options['host'],
+                'port': self.options['port'], 'web_root': self.options['theme_path']
+            })
+        if unix_socket:
+            log.info('Starting Medusa on unix://{path}{web_root}/', {
+                'path': unix_socket, 'web_root': self.options['theme_path']
+            })
 
         try:
-            self.server.listen(self.options['port'], self.options['host'])
+            if unix_socket:
+                sock = _bind_unix_socket(unix_socket)
+                self._unix_socket_stat = os.stat(unix_socket)
+                self.server.add_sockets([sock])
+            if tcp_enabled:
+                self.server.listen(self.options['port'], self.options['host'])
         except Exception as ex:
-            if app.LAUNCH_BROWSER and not self.daemon:
+            if tcp_enabled and app.LAUNCH_BROWSER and not self.daemon:
                 app.instance.launch_browser('https' if app.ENABLE_HTTPS else 'http', self.options['port'], app.WEB_ROOT)
                 log.info('Launching browser and exiting')
-            log.info('Could not start the web server on port {port}. Exception: {ex}', {
-                'port': self.options['port'],
+            log.info('Could not start the web server (port: {port}, unix socket: {path}). Exception: {ex}', {
+                'port': self.options['port'] if tcp_enabled else None,
+                'path': unix_socket or None,
                 'ex': ex
             })
             os._exit(1)  # pylint: disable=protected-access
@@ -372,6 +455,13 @@ class AppWebServer(threading.Thread):
     def shutDown(self):
         self.alive = False
         self.io_loop.stop()
+        unix_socket = self.options.get('unix_socket')
+        if unix_socket:
+            try:
+                _remove_owned_unix_socket(unix_socket, self._unix_socket_stat)
+            except OSError as ex:
+                log.warning('Failed to remove unix socket {path}: {ex}',
+                            {'path': unix_socket, 'ex': ex})
 
     def log_request(self, handler):
         """
