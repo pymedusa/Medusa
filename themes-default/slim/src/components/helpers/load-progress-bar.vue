@@ -39,6 +39,7 @@ export default {
     position: absolute;
     bottom: 0;
     right: 0;
+    z-index: 2;
 }
 
 .border {
