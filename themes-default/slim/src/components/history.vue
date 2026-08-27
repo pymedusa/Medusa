@@ -62,15 +62,24 @@ export default {
                 return stateLayout.history;
             },
             set(layout) {
-                const { setLayout } = this;
+                const { prepareHistoryLayoutTransition, setLayout } = this;
                 const page = 'history';
+                prepareHistoryLayoutTransition({ layout });
                 setLayout({ page, layout });
             }
         }
     },
+    mounted() {
+        this.setHistoryActive(true);
+    },
+    beforeDestroy() {
+        this.setHistoryActive(false);
+    },
     methods: {
         humanFileSize,
         ...mapActions({
+            prepareHistoryLayoutTransition: 'prepareHistoryLayoutTransition',
+            setHistoryActive: 'setHistoryActive',
             setLayout: 'setLayout'
         }),
         close() {
