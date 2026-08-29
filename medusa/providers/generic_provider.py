@@ -757,6 +757,12 @@ class GenericProvider(object):
         """
         return None
 
+    def _get_info_url(self, item):
+        """Return the per-release info page URL when the parser provides one."""
+        if not item:
+            return ''
+        return item.get('info_url', '') or ''
+
     def _get_title_and_url(self, item):
         """Return title and url from result."""
         if not item:
