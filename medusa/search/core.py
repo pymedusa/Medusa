@@ -11,6 +11,7 @@ import operator
 import os
 import threading
 import time
+import re
 
 from medusa import (
     app,
@@ -317,7 +318,8 @@ def filter_results(results):
         ignored_words = series_obj.show_words().ignored_words
         required_words = series_obj.show_words().required_words
         found_ignored_word = naming.contains_at_least_one_word(cur_result.name, ignored_words)
-        found_required_word = naming.contains_at_least_one_word(cur_result.name, required_words)
+        name_lower = cur_result.name.lower()
+        found_required_word = all(re.search(rf'\b{re.escape(word.lower())}\b', name_lower) for word in required_words)
 
         if ignored_words and found_ignored_word:
             log.info(u'Ignoring {0} based on ignored words filter: {1}', cur_result.name, found_ignored_word)
