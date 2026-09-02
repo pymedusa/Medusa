@@ -66,6 +66,57 @@ def test_should_process(p, create_structure):
     assert p['expected'] == result
 
 
+def test_should_process_single_file(create_structure):
+    """A video file passed as the processing path itself should be processed.
+
+    Torrent clients hand the content path of a single-file torrent straight to
+    post-processing, so the path is the video file and not a folder.
+    """
+    # Given
+    structure = ('show.name.s01e01.720p.webrip.x264-group.mkv',)
+    test_path = create_structure('media/postprocess', structure=structure)
+    path = os.path.join(test_path, os.path.normcase('media/postprocess'),
+                        'show.name.s01e01.720p.webrip.x264-group.mkv')
+    sut = ProcessResult(path)
+
+    # When
+    result = sut.should_process(path)
+
+    # Then
+    assert result is True
+
+
+def test_should_not_process_single_non_media_file(create_structure):
+    """A non-media file passed as the processing path itself should not be processed."""
+    # Given
+    structure = ('show.name.s01e01.720p.webrip.x264-group.nfo',)
+    test_path = create_structure('media/postprocess', structure=structure)
+    path = os.path.join(test_path, os.path.normcase('media/postprocess'),
+                        'show.name.s01e01.720p.webrip.x264-group.nfo')
+    sut = ProcessResult(path)
+
+    # When
+    result = sut.should_process(path)
+
+    # Then
+    assert result is False
+
+
+def test_process_does_not_report_success_when_nothing_was_processed(create_structure):
+    """Post-processing that could not process a single item must not report success."""
+    # Given
+    structure = ('show.name.s01e01.720p.webrip.x264-group.srt',)
+    test_path = create_structure('media/postprocess', structure=structure)
+    path = os.path.join(test_path, os.path.normcase('media/postprocess'))
+    sut = ProcessResult(path)
+
+    # When
+    sut.process()
+
+    # Then
+    assert sut.succeeded is False
+
+
 @pytest.mark.parametrize('p', [
     {   # resource_name is a folder
         'path': 'media/postprocess/Show.Name.S01E03.720p.WEBRip.x264-SKGTV',
