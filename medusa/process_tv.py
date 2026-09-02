@@ -451,6 +451,10 @@ class ProcessResult(object):
 
         if not processed_items:
             self.result = False
+            # Nothing was processed and nothing was deliberately postponed, so this
+            # run did not succeed. Without this the caller is told everything is fine.
+            if not self.postpone_any:
+                self.succeeded = False
 
         if self.succeeded:
             self.log_and_output('Post-processing completed.')
@@ -509,6 +513,12 @@ class ProcessResult(object):
             self.log_and_output('Ignoring folder: {folder}', level=logging.DEBUG, **{'folder': folder})
             self.missed_files.append('{0}: Hidden or ignored folder'.format(path))
             return False
+
+        # A single file can be passed as the path to process, for example the content
+        # path of a single-file torrent. os.walk() yields nothing for a file, so that
+        # case needs to be decided here.
+        if os.path.isfile(path):
+            return helpers.is_media_file(folder) or helpers.is_rar_file(folder)
 
         for root, dirs, files in os.walk(path):
             for subfolder in dirs:
