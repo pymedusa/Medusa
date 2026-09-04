@@ -1141,7 +1141,8 @@ class Episode(TV):
             data['statistics']['subtitleSearch']['last'] = self.subtitles_lastsearch
             data['statistics']['subtitleSearch']['count'] = self.subtitles_searchcount
             data['wantedQualities'] = self.wanted_quality
-            data['related'] = self.related_episodes
+            # Serialize related episodes; raw Episode instances break JSON/WebSocket dumps.
+            data['related'] = [ep.to_json(detailed=False) for ep in self.related_episodes]
 
             if self.file_size:
                 # Used by the test-rename vue component.
