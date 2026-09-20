@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 
 import locale
 import logging
-from collections import OrderedDict, namedtuple
+from collections import OrderedDict
 from datetime import datetime
 from itertools import chain
 from time import time
@@ -13,7 +13,6 @@ from time import time
 from imdbpie import imdbpie
 
 from medusa import app
-from medusa.bs4_parser import BS4Parser
 from medusa.indexers.base import (Actor, Actors, BaseIndexer)
 from medusa.indexers.exceptions import (
     IndexerError, IndexerShowIncomplete, IndexerShowNotFound, IndexerUnavailable
@@ -356,9 +355,6 @@ class Imdb(BaseIndexer):
                 # Enrich episode for the current season.
                 self._get_episodes_detailed(imdb_id, season['season'])
 
-                # Scrape the synopsys and the episode thumbnail.
-                self._enrich_episodes(imdb_id, season['season'])
-
         # Try to calculate the airs day of week
         self._calc_airs_day_of_week(imdb_id)
 
@@ -434,54 +430,6 @@ class Imdb(BaseIndexer):
 
             self._set_item(series_id, season, episode['episodeNumber'], 'rating', episode['rating'])
             self._set_item(series_id, season, episode['episodeNumber'], 'votes', episode['ratingCount'])
-
-    def _enrich_episodes(self, imdb_id, season):
-        """Enrich the episodes with additional information for a specific season.
-
-        For this we're making use of html scraping using beautiful soup.
-        :param imdb_id: imdb id including the `tt`.
-        :param season: season passed as integer.
-        """
-        episodes_url = 'http://www.imdb.com/title/{imdb_id}/episodes?season={season}'
-        episodes = []
-
-        try:
-            response = self.config['session'].get(episodes_url.format(
-                imdb_id=ImdbIdentifier(imdb_id).imdb_id, season=season)
-            )
-            if not response or not response.text:
-                log.warning('Problem requesting episode information for show {0}, and season {1}.', imdb_id, season)
-                return
-
-            Episode = namedtuple('Episode', ['episode_number', 'season_number', 'synopsis', 'thumbnail'])
-            with BS4Parser(response.text, 'html5lib') as html:
-                for episode in html.find_all('div', class_='list_item'):
-                    try:
-                        episode_number = int(episode.find('meta')['content'])
-                    except AttributeError:
-                        pass
-
-                    try:
-                        synopsis = episode.find('div', class_='item_description').get_text(strip=True)
-                        if 'Know what this is about?' in synopsis:
-                            synopsis = ''
-                    except AttributeError:
-                        synopsis = ''
-
-                    try:
-                        episode_thumbnail = episode.find('img', class_='zero-z-index')['src']
-                    except (AttributeError, TypeError):
-                        episode_thumbnail = None
-
-                    episodes.append(Episode(episode_number=episode_number, season_number=season,
-                                            synopsis=synopsis, thumbnail=episode_thumbnail))
-
-        except Exception as error:
-            log.exception('Error while trying to enrich imdb series {0}, {1}', ImdbIdentifier(imdb_id).imdb_id, error)
-
-        for episode in episodes:
-            self._set_item(imdb_id, episode.season_number, episode.episode_number, 'overview', episode.synopsis)
-            self._set_item(imdb_id, episode.season_number, episode.episode_number, 'filename', episode.thumbnail)
 
     def _parse_images(self, imdb_id, language='en'):
         """Parse Show and Season posters.
