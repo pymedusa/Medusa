@@ -584,7 +584,7 @@ requires-dist = [
     { name = "pytrakt", specifier = "==3.4.35" },
     { name = "pyyaml", specifier = "==6.0.3" },
     { name = "rarfile", specifier = "==4.2" },
-    { name = "rebulk", specifier = "==3.2.0" },
+    { name = "rebulk", specifier = "==6.0.1" },
     { name = "requests", specifier = "==2.32.5" },
     { name = "requests-oauthlib", specifier = "==2.0.0" },
     { name = "requests-toolbelt", specifier = "==1.0.0" },
@@ -871,11 +871,11 @@ wheels = [
 
 [[package]]
 name = "rebulk"
-version = "3.2.0"
+version = "6.0.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/f2/06/24c69f8d707c9eefc1108a64e079da56b5f351e3f59ed76e8f04b9f3e296/rebulk-3.2.0.tar.gz", hash = "sha256:0d30bf80fca00fa9c697185ac475daac9bde5f646ce3338c9ff5d5dc1ebdfebc", size = 261685, upload-time = "2023-02-18T09:10:14.378Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/09/d4/77c29644d1f9b1ef2881211c9c2a0f89d437f28c80edbc74c698f23055bd/rebulk-6.0.1.tar.gz", hash = "sha256:d6df0c8c896e160087c6981f3770ed513ec973a9f4066b9e4b0614eb08ba0ce1", size = 66093, upload-time = "2026-07-03T06:59:32.476Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/84/4d/df073d593f7e7e4a5a7e19148b2e9b4ae63b4ddcbb863f1e7bb2b6f19c62/rebulk-3.2.0-py3-none-any.whl", hash = "sha256:6bc31ae4b37200623c5827d2f539f9ec3e52b50431322dad8154642a39b0a53e", size = 56298, upload-time = "2023-02-18T09:10:12.435Z" },
+    { url = "https://files.pythonhosted.org/packages/01/44/6a16b13cb50ca25cc88928bf85adef1227d21add9c4cd830958d0124d48b/rebulk-6.0.1-py3-none-any.whl", hash = "sha256:fe67fd0af60962c7f3957fa01ef0039c43631c09146228698ee22e20ac33907e", size = 78315, upload-time = "2026-07-03T06:59:31.192Z" },
 ]
 
 [[package]]
