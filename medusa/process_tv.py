@@ -1085,21 +1085,22 @@ class ProcessResult(object):
             processor = failed_processor.FailedProcessor(
                 path, resource_name or self.resource_name, self.episodes
             )
-            self.result = processor.process()
+            # Handling a failed download successfully does not make processing successful.
+            failure_handled = processor.process()
             process_fail_message = ''
         except FailedPostProcessingFailedException as error:
             processor = None
-            self.result = False
+            failure_handled = False
             process_fail_message = ex(error)
 
         if processor:
             self._output.append(processor.output)
 
-        if app.DELETE_FAILED and self.result:
+        if app.DELETE_FAILED and failure_handled:
             if self.delete_folder(path, check_empty=False):
                 self.log_and_output('Deleted folder: {path}', level=logging.DEBUG, **{'path': path})
 
-        if self.result:
+        if failure_handled:
             self.log_and_output('Failed Download Processing succeeded: {resource}, {path}', **{'resource': self.resource_name, 'path': path})
         else:
             self.log_and_output('Failed Download Processing failed: {resource}, {path}: {process_fail_message}',
