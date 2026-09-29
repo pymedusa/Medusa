@@ -451,13 +451,12 @@ class ProcessResult(object):
 
         if not processed_items:
             self.result = False
-            # Nothing was processed and nothing was deliberately postponed, so this
-            # run did not succeed. Without this the caller is told everything is fine.
-            if not self.postpone_any:
-                self.succeeded = False
 
         if self.succeeded:
-            self.log_and_output('Post-processing completed.')
+            if not processed_items and not self.postpone_any:
+                self.log_and_output('No processable items found.')
+            else:
+                self.log_and_output('Post-processing completed.')
 
             # Clean Kodi library
             if app.KODI_LIBRARY_CLEAN_PENDING and notifiers.kodi_notifier.clean_library():
@@ -559,6 +558,10 @@ class ProcessResult(object):
 
     def _get_files(self, path):
         """Return the path to a folder and its contents as a tuple."""
+        if os.path.isfile(path):
+            yield os.path.dirname(path), [os.path.basename(path)]
+            return
+
         # If resource_name is a file and not an NZB, process it directly
         def walk_path(path_name):
             topdown = True if self.directory == path_name else False

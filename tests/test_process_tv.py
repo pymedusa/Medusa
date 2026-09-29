@@ -5,7 +5,7 @@ import os
 
 from medusa import app
 from medusa.post_processor import PostProcessor
-from medusa.process_tv import ProcessResult
+from medusa.process_tv import PostProcessQueueItem, ProcessResult
 
 from mock.mock import Mock
 
@@ -102,8 +102,8 @@ def test_should_not_process_single_non_media_file(create_structure):
     assert result is False
 
 
-def test_process_does_not_report_success_when_nothing_was_processed(create_structure):
-    """Post-processing that could not process a single item must not report success."""
+def test_process_reports_no_items_without_failing_download(create_structure):
+    """An empty scan is neither a completed post-process nor a failed download."""
     # Given
     structure = ('show.name.s01e01.720p.webrip.x264-group.srt',)
     test_path = create_structure('media/postprocess', structure=structure)
@@ -114,7 +114,107 @@ def test_process_does_not_report_success_when_nothing_was_processed(create_struc
     sut.process()
 
     # Then
-    assert sut.succeeded is False
+    assert sut.result is False
+    assert sut.succeeded is True
+    assert 'No processable items found.' in sut.output
+    assert 'Post-processing completed.' not in sut.output
+    assert 'Problem(s) during processing' not in sut.output
+
+
+@pytest.mark.parametrize('with_resource', [False, True])
+@pytest.mark.parametrize('extension', ['mkv', 'rar'])
+def test_get_files_direct_file(create_file, with_resource, extension):
+    """Resolve a direct file without walking it or appending its name twice."""
+    path = create_file('show.name.s01e01.' + extension)
+    sut = ProcessResult(path)
+    sut.resource_name = os.path.basename(path) if with_resource else None
+
+    assert list(sut._get_files(sut.directory)) == [
+        (os.path.dirname(sut.directory), [os.path.basename(path)])
+    ]
+
+
+@pytest.mark.parametrize('input_form', ['file', 'file_and_resource', 'directory_and_resource'])
+@pytest.mark.parametrize('proc_type,delete_on', [('auto', False), ('manual', False), ('manual', True)])
+def test_process_single_video_respects_cleanup(create_file, monkeypatch, input_form, proc_type, delete_on):
+    """Process the selected file while retaining the existing manual deletion behavior."""
+    path = create_file('downloads/show.name.s01e01.mkv')
+    sibling = create_file('downloads/other.show.s01e01.mkv')
+    resource = os.path.basename(path) if input_form != 'file' else None
+    process_path = os.path.dirname(path) if input_form == 'directory_and_resource' else path
+    processor = Mock()
+    processor.process.return_value = True
+    processor._output = []
+    processor_class = Mock(return_value=processor)
+    failed_handler = Mock()
+    monkeypatch.setattr('medusa.process_tv.post_processor.PostProcessor', processor_class)
+    monkeypatch.setattr(ProcessResult, 'already_postprocessed', Mock(return_value=False))
+    monkeypatch.setattr(ProcessResult, 'process_failed', failed_handler)
+    monkeypatch.setattr(app, 'NO_DELETE', False)
+    item = PostProcessQueueItem(
+        path=process_path, resource_name=resource, process_method='move',
+        proc_type=proc_type, delete_on=delete_on, process_single_resource=True
+    )
+
+    result = item.process_path()
+
+    processor_class.assert_called_once_with(os.path.realpath(path), resource, 'move', False)
+    processor.process.assert_called_once_with()
+    failed_handler.assert_not_called()
+    assert result.result is True
+    assert result.succeeded is True
+    assert os.path.isfile(sibling) is not delete_on
+    assert os.path.isdir(os.path.dirname(path)) is not delete_on
+
+
+@pytest.mark.parametrize('folder_name', ['_UNPACK_show.name.s01e01', '_unpack_show.name.s01e01', '@eaDir', 'empty'])
+def test_skipped_folder_does_not_trigger_failed_download(create_dir, monkeypatch, folder_name):
+    """Unpacking, ignored and empty folders must not trigger failed download handling."""
+    path = create_dir(folder_name)
+    failed_handler = Mock()
+    monkeypatch.setattr(ProcessResult, 'process_failed', failed_handler)
+    item = PostProcessQueueItem(path=path, process_method='copy', process_single_resource=True)
+
+    result = item.process_path()
+
+    failed_handler.assert_not_called()
+    assert result.result is False
+
+
+@pytest.mark.parametrize('folder_name', ['_FAILED_show.name.s01e01', '_UNDERSIZED_show.name.s01e01'])
+def test_failed_folder_still_triggers_failed_download(create_dir, monkeypatch, folder_name):
+    """Preserve failure handling for folders explicitly marked as failed downloads."""
+    path = create_dir(folder_name)
+    failed_handler = Mock()
+    monkeypatch.setattr(ProcessResult, 'process_failed', failed_handler)
+    item = PostProcessQueueItem(path=path, process_method='copy', process_single_resource=True)
+
+    result = item.process_path()
+
+    failed_handler.assert_called_once_with(path)
+    assert result.failed is True
+
+
+def test_sync_files_still_postpone_processing(create_file, monkeypatch):
+    """Keep sync postponement distinct from a no-op scan or failed download."""
+    path = create_file('downloads/show.name.s01e01.mkv')
+    create_file('downloads/.syncthing.show.tmp')
+    failed_handler = Mock()
+    processor_class = Mock()
+    monkeypatch.setattr(ProcessResult, 'process_failed', failed_handler)
+    monkeypatch.setattr('medusa.process_tv.post_processor.PostProcessor', processor_class)
+    monkeypatch.setattr(app, 'POSTPONE_IF_SYNC_FILES', True)
+    item = PostProcessQueueItem(path=os.path.dirname(path), process_method='copy', process_single_resource=True)
+
+    result = item.process_path()
+
+    failed_handler.assert_not_called()
+    processor_class.assert_not_called()
+    assert result.postpone_processing is True
+    assert result.postpone_any is True
+    assert result.result is False
+    assert result.succeeded is True
+    assert 'No processable items found.' not in result.output
 
 
 @pytest.mark.parametrize('p', [
