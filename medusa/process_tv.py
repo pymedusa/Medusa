@@ -132,7 +132,7 @@ class PostProcessQueueItem(generic_queue.QueueItem):
 
             # If succeeded store Postprocessed + Completed. (384)
             # If failed store Postprocessed + Failed. (272)
-            if process_results.result and not process_results.failed:
+            if process_results.result and process_results.succeeded and not process_results.failed:
                 status.add_status_string('Completed')
                 self.success = True
             else:
@@ -837,9 +837,11 @@ class ProcessResult(object):
         if not files:
             return
 
-        if not self.result and force:
-            self.log_and_output('Forcing deletion of files, even though last result was not successful.', level=logging.DEBUG)
-        elif not self.result:
+        # A later successful file must not allow cleanup of failed or postponed media.
+        completed = self.result and self.succeeded and not self.postpone_any
+        if not completed and force:
+            self.log_and_output('Forcing deletion of files, even though processing did not complete successfully.', level=logging.DEBUG)
+        elif not completed:
             return
 
         # Delete all file not needed
