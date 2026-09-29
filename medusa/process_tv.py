@@ -436,12 +436,26 @@ class ProcessResult(object):
             self.result = True
 
             for dir_path, filelist in self._get_files(path):
-                sync_files = (filename
-                              for filename in filelist
-                              if is_sync_file(filename))
-
                 # Don't process files if they are still being synced
-                postpone = app.POSTPONE_IF_SYNC_FILES and any(sync_files)
+                postpone = False
+                sync_path = dir_path
+                if app.POSTPONE_IF_SYNC_FILES:
+                    if resource_path:
+                        # Check siblings without adding them to the selected files.
+                        sync_path = os.path.dirname(resource_path)
+                        try:
+                            with os.scandir(sync_path) as entries:
+                                postpone = any(is_sync_file(entry.name) and not entry.is_dir() for entry in entries)
+                        except OSError as error:
+                            self.postpone_processing = True
+                            self.postpone_any = True
+                            self.log_and_output(
+                                'Unable to check temporary sync files in folder: {path}: {error}',
+                                level=logging.WARNING, **{'path': sync_path, 'error': ex(error)})
+                            self.missed_files.append('{0}: Unable to check sync files'.format(sync_path))
+                            continue
+                    else:
+                        postpone = any(is_sync_file(filename) for filename in filelist)
                 if not postpone:
                     self.log_and_output('Processing folder: {dir_path}', level=logging.DEBUG, **{'dir_path': dir_path})
 
@@ -454,7 +468,7 @@ class ProcessResult(object):
                 else:
                     self.postpone_processing = True
                     self.postpone_any = True
-                    self.log_and_output('Found temporary sync files in folder: {dir_path}', **{'dir_path': dir_path})
+                    self.log_and_output('Found temporary sync files in folder: {dir_path}', **{'dir_path': sync_path})
                     self.log_and_output('Skipping post-processing for folder: {dir_path}', **{'dir_path': dir_path})
 
                     self.missed_files.append('{0}: Sync files found'.format(dir_path))

@@ -274,26 +274,111 @@ def test_failed_archive_still_updates_history(create_file, monkeypatch):
     assert history_update.call_args[0][0].status == ClientStatusEnum.FAILED.value | ClientStatusEnum.POSTPROCESSED.value
 
 
-def test_sync_files_still_postpone_processing(create_file, monkeypatch):
-    """Keep sync postponement distinct from a no-op scan or failed download."""
-    path = create_file('downloads/show.name.s01e01.mkv')
-    create_file('downloads/.syncthing.show.tmp')
+@pytest.mark.parametrize('input_form', [
+    'directory', 'file', 'file_and_resource', 'directory_and_resource', 'directory_and_nested_resource'
+])
+@pytest.mark.parametrize('marker', ['.syncthing.show.tmp', 'transfer.part'])
+def test_sync_files_still_postpone_processing(create_file, monkeypatch, input_form, marker):
+    """Check sibling sync markers even when only one file was selected."""
+    download_dir = 'downloads/release' if input_form == 'directory_and_nested_resource' else 'downloads'
+    path = create_file(download_dir + '/show.name.s01e01.mkv')
+    create_file(download_dir + '/' + marker)
+    resource = os.path.basename(path) if input_form.endswith('and_resource') else None
+    process_path = path if input_form in ('file', 'file_and_resource') else os.path.dirname(path)
+    if input_form == 'directory_and_nested_resource':
+        resource = os.path.join('release', os.path.basename(path))
+        process_path = os.path.dirname(process_path)
     failed_handler = Mock()
-    processor_class = Mock()
+    processor_class = Mock(return_value=Mock(_output=[], **{'process.return_value': True}))
+    history_update = Mock()
     monkeypatch.setattr(ProcessResult, 'process_failed', failed_handler)
+    monkeypatch.setattr(ProcessResult, 'already_postprocessed', Mock(return_value=False))
     monkeypatch.setattr('medusa.process_tv.post_processor.PostProcessor', processor_class)
+    monkeypatch.setattr(PostProcessQueueItem, 'update_resource', history_update)
     monkeypatch.setattr(app, 'POSTPONE_IF_SYNC_FILES', True)
-    item = PostProcessQueueItem(path=os.path.dirname(path), process_method='copy', process_single_resource=True)
+    item = PostProcessQueueItem(
+        path=process_path, info_hash='test-hash', resource_name=resource,
+        process_method='copy', process_single_resource=True
+    )
 
     result = item.process_path()
 
     failed_handler.assert_not_called()
     processor_class.assert_not_called()
+    history_update.assert_not_called()
     assert result.postpone_processing is True
     assert result.postpone_any is True
     assert result.result is False
     assert result.succeeded is True
     assert 'No processable items found.' not in result.output
+
+
+def test_single_file_sync_scan_can_be_disabled(create_file, monkeypatch):
+    """Disabling the sync guard avoids scanning the selected file's parent."""
+    path = create_file('downloads/show.name.s01e01.mkv')
+    create_file('downloads/transfer.part')
+    resource = os.path.basename(path)
+    processor_class = Mock(return_value=Mock(_output=[], **{'process.return_value': True}))
+    scan = Mock(wraps=os.scandir)
+    monkeypatch.setattr(os, 'scandir', scan)
+    monkeypatch.setattr(app, 'POSTPONE_IF_SYNC_FILES', False)
+    monkeypatch.setattr(ProcessResult, 'already_postprocessed', Mock(return_value=False))
+    monkeypatch.setattr('medusa.process_tv.post_processor.PostProcessor', processor_class)
+    item = PostProcessQueueItem(path=path, resource_name=resource, process_method='copy', process_single_resource=True)
+
+    result = item.process_path()
+
+    scan.assert_not_called()
+    processor_class.assert_called_once_with(os.path.realpath(path), resource, 'copy', False)
+    assert result.result is True
+    assert result.postpone_any is False
+
+
+def test_single_file_sync_scan_ignores_directories(create_file, create_dir, monkeypatch):
+    """Sync-named directories and markers in unrelated subfolders do not postpone a file."""
+    path = create_file('downloads/show.name.s01e01.mkv')
+    create_dir('downloads/transfer.part')
+    create_file('downloads/other/.syncthing.show.tmp')
+    resource = os.path.basename(path)
+    processor_class = Mock(return_value=Mock(_output=[], **{'process.return_value': True}))
+    monkeypatch.setattr(app, 'POSTPONE_IF_SYNC_FILES', True)
+    monkeypatch.setattr(ProcessResult, 'already_postprocessed', Mock(return_value=False))
+    monkeypatch.setattr('medusa.process_tv.post_processor.PostProcessor', processor_class)
+    item = PostProcessQueueItem(path=path, resource_name=resource, process_method='copy', process_single_resource=True)
+
+    result = item.process_path()
+
+    processor_class.assert_called_once_with(os.path.realpath(path), resource, 'copy', False)
+    assert result.result is True
+    assert result.postpone_any is False
+
+
+def test_single_file_sync_scan_error_postpones_processing(create_file, monkeypatch):
+    """An unreadable parent must not bypass the sync guard or finalize history."""
+    path = create_file('downloads/show.name.s01e01.mkv')
+    processor_class = Mock(return_value=Mock(_output=[], **{'process.return_value': True}))
+    failed_handler = Mock()
+    history_update = Mock()
+    monkeypatch.setattr(os, 'scandir', Mock(side_effect=OSError('access denied')))
+    monkeypatch.setattr(app, 'POSTPONE_IF_SYNC_FILES', True)
+    monkeypatch.setattr(ProcessResult, 'already_postprocessed', Mock(return_value=False))
+    monkeypatch.setattr(ProcessResult, 'process_failed', failed_handler)
+    monkeypatch.setattr(PostProcessQueueItem, 'update_resource', history_update)
+    monkeypatch.setattr('medusa.process_tv.post_processor.PostProcessor', processor_class)
+    item = PostProcessQueueItem(
+        path=path, resource_name=os.path.basename(path), info_hash='test-hash',
+        process_method='copy', process_single_resource=True
+    )
+
+    result = item.process_path()
+
+    processor_class.assert_not_called()
+    failed_handler.assert_not_called()
+    history_update.assert_not_called()
+    assert result.postpone_processing is True
+    assert result.postpone_any is True
+    assert 'Unable to check temporary sync files' in result.output
+    assert 'Found temporary sync files' not in result.output
 
 
 @pytest.mark.parametrize('p', [
