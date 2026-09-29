@@ -115,6 +115,14 @@ class PostProcessQueueItem(generic_queue.QueueItem):
     def update_history_processed(self, process_results):
         """Update the history table when we have a processed path + resource."""
         from medusa.schedulers.download_handler import ClientStatus
+
+        if process_results.skipped:
+            log.info('Skipped PP for: {path} and resource: {resource} keeping existing status', {
+                'path': self.path,
+                'resource': self.resource_name
+            })
+            return
+
         status = ClientStatus()
 
         # Postpone the process, and setting the client_status.
@@ -276,6 +284,8 @@ class ProcessResult(object):
         self.aborted = False
         # Processing succeeded. Trigger failed downlaod handling and update history client status.
         self.succeeded = True
+        # No processing was attempted and no explicit failure was reported.
+        self.skipped = False
         # Processing postponed. Stop postprocessing and don't update history client status.
         self.postpone_processing = False
         self.missed_files = []
@@ -449,6 +459,7 @@ class ProcessResult(object):
 
                     self.missed_files.append('{0}: Sync files found'.format(dir_path))
 
+        self.skipped = not processed_items and self.succeeded and not self.failed and not self.postpone_any
         if not processed_items:
             self.result = False
 

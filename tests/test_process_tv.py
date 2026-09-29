@@ -6,6 +6,7 @@ import os
 from medusa import app
 from medusa.post_processor import PostProcessor
 from medusa.process_tv import PostProcessQueueItem, ProcessResult
+from medusa.schedulers.download_handler import ClientStatusEnum
 
 from mock.mock import Mock
 
@@ -201,13 +202,17 @@ def test_skipped_folder_does_not_trigger_failed_download(create_dir, monkeypatch
     """Unpacking, ignored and empty folders must not trigger failed download handling."""
     path = create_dir(folder_name)
     failed_handler = Mock()
+    history_update = Mock()
     monkeypatch.setattr(ProcessResult, 'process_failed', failed_handler)
-    item = PostProcessQueueItem(path=path, process_method='copy', process_single_resource=True)
+    monkeypatch.setattr(PostProcessQueueItem, 'update_resource', history_update)
+    item = PostProcessQueueItem(path=path, info_hash='test-hash', process_method='copy', process_single_resource=True)
 
     result = item.process_path()
 
     failed_handler.assert_not_called()
+    history_update.assert_not_called()
     assert result.result is False
+    assert result.skipped is True
 
 
 @pytest.mark.parametrize('folder_name', ['_FAILED_show.name.s01e01', '_UNDERSIZED_show.name.s01e01'])
@@ -215,13 +220,58 @@ def test_failed_folder_still_triggers_failed_download(create_dir, monkeypatch, f
     """Preserve failure handling for folders explicitly marked as failed downloads."""
     path = create_dir(folder_name)
     failed_handler = Mock()
+    history_update = Mock()
     monkeypatch.setattr(ProcessResult, 'process_failed', failed_handler)
-    item = PostProcessQueueItem(path=path, process_method='copy', process_single_resource=True)
+    monkeypatch.setattr(PostProcessQueueItem, 'update_resource', history_update)
+    item = PostProcessQueueItem(path=path, info_hash='test-hash', process_method='copy', process_single_resource=True)
 
     result = item.process_path()
 
     failed_handler.assert_called_once_with(path)
     assert result.failed is True
+    assert result.skipped is False
+    history_update.assert_called_once()
+    assert history_update.call_args[0][0].status == ClientStatusEnum.FAILED.value | ClientStatusEnum.POSTPROCESSED.value
+
+
+@pytest.mark.parametrize('extension,processed,expected', [
+    ('mkv', True, ClientStatusEnum.COMPLETED),
+    ('mkv', False, ClientStatusEnum.FAILED),
+    ('exe', False, ClientStatusEnum.FAILED),
+])
+def test_processing_outcomes_still_update_history(create_file, monkeypatch, extension, processed, expected):
+    """Keep success and real failures distinct from deliberately skipped input."""
+    path = create_file('show.name.s01e01.' + extension)
+    processor = Mock(_output=[], **{'process.return_value': processed})
+    history_update = Mock()
+    monkeypatch.setattr('medusa.process_tv.post_processor.PostProcessor', Mock(return_value=processor))
+    monkeypatch.setattr(ProcessResult, 'already_postprocessed', Mock(return_value=False))
+    monkeypatch.setattr(ProcessResult, 'process_failed', Mock())
+    monkeypatch.setattr(PostProcessQueueItem, 'update_resource', history_update)
+    item = PostProcessQueueItem(path=path, info_hash='test-hash', process_method='copy', process_single_resource=True)
+
+    result = item.process_path()
+
+    assert result.skipped is False
+    history_update.assert_called_once()
+    assert history_update.call_args[0][0].status == expected.value | ClientStatusEnum.POSTPROCESSED.value
+
+
+def test_failed_archive_still_updates_history(create_file, monkeypatch):
+    """An attempted but failed extraction is not an empty or skipped scan."""
+    path = create_file('show.name.s01e01.rar')
+    history_update = Mock()
+    monkeypatch.setattr(app, 'UNPACK', True)
+    monkeypatch.setattr('medusa.process_tv.RarFile', Mock(side_effect=ValueError('Rar requires a password')))
+    monkeypatch.setattr(PostProcessQueueItem, 'update_resource', history_update)
+    item = PostProcessQueueItem(path=path, info_hash='test-hash', process_method='copy', process_single_resource=True)
+
+    result = item.process_path()
+
+    assert result.result is False
+    assert result.skipped is False
+    history_update.assert_called_once()
+    assert history_update.call_args[0][0].status == ClientStatusEnum.FAILED.value | ClientStatusEnum.POSTPROCESSED.value
 
 
 def test_sync_files_still_postpone_processing(create_file, monkeypatch):
