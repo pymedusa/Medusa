@@ -462,7 +462,7 @@ class ProcessResult(object):
                 self.result = False
                 continue
 
-            if not self.should_process(path):
+            if not self.should_process(path, resource_path):
                 continue
 
             self.result = True
@@ -537,18 +537,33 @@ class ProcessResult(object):
                 if self.delete_folder(path, check_empty=check_empty):
                     self.log_and_output('Deleted folder: {path}', level=logging.DEBUG, **{'path': path})
 
-    def should_process(self, path):
+    def should_process(self, path, resource_path=None):
         """
         Determine if a directory should be processed.
 
         :param path: Path we want to verify
+        :param resource_path: A selected file within the processing path, if any
         :return: True if the directory is valid for processing, otherwise False
         :rtype: Boolean
         """
-        is_file = os.path.isfile(path)
+        selected_path = resource_path or path
+        is_file = os.path.isfile(selected_path)
         # A directly selected file must also respect its containing folder's state.
-        paths_to_check = (path, os.path.dirname(os.path.abspath(path))) if is_file else (path,)
-        for checked_path in paths_to_check:
+        paths_to_check = [path]
+        if is_file:
+            parent = os.path.dirname(os.path.abspath(selected_path))
+            paths_to_check.extend((selected_path, parent))
+            # Validate intermediate folders for nested resources, without scanning siblings.
+            root = os.path.abspath(path)
+            try:
+                contained = os.path.commonpath((root, parent)) == root
+            except ValueError:  # Paths on different drives have no common parent.
+                contained = False
+            while contained and parent != root:
+                parent = os.path.dirname(parent)
+                paths_to_check.append(parent)
+
+        for checked_path in dict.fromkeys(paths_to_check):
             if not self._is_valid_folder(checked_path):
                 return False
 
@@ -562,7 +577,7 @@ class ProcessResult(object):
         # path of a single-file torrent. os.walk() yields nothing for a file, so that
         # case needs to be decided here.
         if is_file:
-            return helpers.is_media_file(path) or helpers.is_rar_file(path)
+            return helpers.is_media_file(selected_path) or helpers.is_rar_file(selected_path)
 
         for root, dirs, files in os.walk(path):
             for subfolder in dirs:
