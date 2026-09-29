@@ -471,6 +471,15 @@ class ProcessResult(object):
                 if self._postpone_for_sync_files(dir_path, filelist, resource_path):
                     continue
 
+                if (not app.UNPACK and any(helpers.is_rar_file(filename) for filename in filelist)
+                        and not any(helpers.is_media_file(filename) for filename in filelist)):
+                    self.postpone_processing = True
+                    self.postpone_any = True
+                    self.log_and_output('Skipping folder with archives because unpacking is disabled: {path}',
+                                        **{'path': dir_path})
+                    self.missed_files.append('{0}: Archive unpacking is disabled'.format(dir_path))
+                    continue
+
                 self.log_and_output('Processing folder: {dir_path}', level=logging.DEBUG, **{'dir_path': dir_path})
 
                 self.prepare_files(dir_path, filelist, force)
@@ -719,6 +728,9 @@ class ProcessResult(object):
                           if filename not in video_files
                           and helpers.get_extension(filename) not in
                           self.allowed_extensions]
+        # External extraction may leave archives and their volumes alongside the videos.
+        if rar_files and not app.UNPACK:
+            unwanted_files = []
         if unwanted_files:
             self.log_and_output('Found unwanted files: {unwanted_files}', level=logging.DEBUG, **{'unwanted_files': unwanted_files})
 
