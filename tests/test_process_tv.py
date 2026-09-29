@@ -167,6 +167,35 @@ def test_process_single_video_respects_cleanup(create_file, monkeypatch, input_f
     assert os.path.isdir(os.path.dirname(path)) is not delete_on
 
 
+@pytest.mark.parametrize('input_form', ['file', 'file_and_resource', 'directory_and_resource'])
+@pytest.mark.parametrize('folder_name,failed', [
+    ('_UNPACK_release', False), ('_unpack_release', False),
+    ('_FAILED_release', True), ('_UNDERSIZED_release', True),
+    ('@eaDir', False), ('.hidden', False),
+])
+def test_single_file_respects_parent_folder(create_file, monkeypatch, input_form, folder_name, failed):
+    """Selecting a file must not bypass validation of its containing folder."""
+    path = create_file(folder_name + '/show.name.s01e01.mkv')
+    resource = os.path.basename(path) if input_form != 'file' else None
+    process_path = os.path.dirname(path) if input_form == 'directory_and_resource' else path
+    processor_class = Mock()
+    failed_handler = Mock()
+    monkeypatch.setattr('medusa.process_tv.post_processor.PostProcessor', processor_class)
+    monkeypatch.setattr(ProcessResult, 'process_failed', failed_handler)
+    item = PostProcessQueueItem(path=process_path, resource_name=resource, process_method='copy', process_single_resource=True)
+
+    result = item.process_path()
+
+    processor_class.assert_not_called()
+    assert result.result is False
+    assert result.failed is failed
+    assert os.path.isfile(path)
+    if failed:
+        failed_handler.assert_called_once_with(process_path)
+    else:
+        failed_handler.assert_not_called()
+
+
 @pytest.mark.parametrize('folder_name', ['_UNPACK_show.name.s01e01', '_unpack_show.name.s01e01', '@eaDir', 'empty'])
 def test_skipped_folder_does_not_trigger_failed_download(create_dir, monkeypatch, folder_name):
     """Unpacking, ignored and empty folders must not trigger failed download handling."""

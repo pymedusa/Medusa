@@ -504,20 +504,24 @@ class ProcessResult(object):
         :return: True if the directory is valid for processing, otherwise False
         :rtype: Boolean
         """
-        if not self._is_valid_folder(path):
-            return False
+        is_file = os.path.isfile(path)
+        # A directly selected file must also respect its containing folder's state.
+        paths_to_check = (path, os.path.dirname(os.path.abspath(path))) if is_file else (path,)
+        for checked_path in paths_to_check:
+            if not self._is_valid_folder(checked_path):
+                return False
 
-        folder = os.path.basename(path)
-        if helpers.is_hidden_folder(path) or any(f == folder for f in self.IGNORED_FOLDERS):
-            self.log_and_output('Ignoring folder: {folder}', level=logging.DEBUG, **{'folder': folder})
-            self.missed_files.append('{0}: Hidden or ignored folder'.format(path))
-            return False
+            folder = os.path.basename(checked_path)
+            if helpers.is_hidden_folder(checked_path) or folder in self.IGNORED_FOLDERS:
+                self.log_and_output('Ignoring folder: {folder}', level=logging.DEBUG, **{'folder': folder})
+                self.missed_files.append('{0}: Hidden or ignored folder'.format(checked_path))
+                return False
 
         # A single file can be passed as the path to process, for example the content
         # path of a single-file torrent. os.walk() yields nothing for a file, so that
         # case needs to be decided here.
-        if os.path.isfile(path):
-            return helpers.is_media_file(folder) or helpers.is_rar_file(folder)
+        if is_file:
+            return helpers.is_media_file(path) or helpers.is_rar_file(path)
 
         for root, dirs, files in os.walk(path):
             for subfolder in dirs:
