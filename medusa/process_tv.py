@@ -117,7 +117,7 @@ class PostProcessQueueItem(generic_queue.QueueItem):
         from medusa.schedulers.download_handler import ClientStatus
 
         if process_results.skipped:
-            log.info('Skipped PP for: {path} and resource: {resource} keeping existing status', {
+            log.info('Skipped post-processing for: {path} and resource: {resource} keeping existing status', {
                 'path': self.path,
                 'resource': self.resource_name
             })
@@ -140,7 +140,7 @@ class PostProcessQueueItem(generic_queue.QueueItem):
                 self.success = False
             self.update_resource(status)
         else:
-            log.info('Postponed PP for: {path} and resource: {resource} keeping existing status', {
+            log.info('Postponed post-processing for: {path} and resource: {resource} keeping existing status', {
                 'path': self.path,
                 'resource': self.resource_name
             })
