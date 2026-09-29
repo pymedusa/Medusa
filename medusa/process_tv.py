@@ -28,7 +28,7 @@ from medusa.name_parser.parser import InvalidNameException, InvalidShowException
 from medusa.queues import generic_queue
 from medusa.subtitles import accept_any, accept_unknown, get_embedded_subtitles
 
-from rarfile import BadRarFile, Error, NotRarFile, RarCannotExec, RarFile
+from rarfile import BadRarFile, Error, NotRarFile, RarCannotExec, RarFile, sanitize_filename
 
 from six import iteritems
 
@@ -893,10 +893,11 @@ class ProcessResult(object):
 
                     # Skip extraction if any file in archive has previously been extracted
                     skip_extraction = False
-                    for file_in_archive in [os.path.basename(each.filename)
-                                            for each in rar_handle.infolist()
-                                            if not each.isdir()]:
-                        if not force and self.already_postprocessed(file_in_archive):
+                    # Match rarfile's extraction paths, including its path sanitization.
+                    archive_files = [sanitize_filename(each.filename, os.path.sep, os.name == 'nt')
+                                     for each in rar_handle.infolist() if not each.isdir()]
+                    for file_in_archive in archive_files:
+                        if not force and self.already_postprocessed(os.path.basename(file_in_archive)):
                             self.log_and_output('Archive file already post-processed, extraction skipped: {file_in_archive}',
                                                 level=logging.DEBUG, **{'file_in_archive': file_in_archive})
                             skip_extraction = True
@@ -913,10 +914,7 @@ class ProcessResult(object):
                         rar_handle.testrar()
                         rar_handle.extractall(path=path)
 
-                    for each in rar_handle.infolist():
-                        if not each.isdir():
-                            basename = os.path.basename(each.filename)
-                            unpacked_files.append(basename)
+                    unpacked_files.extend(archive_files)
 
                     del rar_handle
 
@@ -991,7 +989,7 @@ class ProcessResult(object):
         for video in video_files:
             file_path = os.path.join(path, video)
 
-            if not force and self.already_postprocessed(video):
+            if not force and self.already_postprocessed(os.path.basename(video)):
                 self.log_and_output('Skipping already processed file: {video}', level=logging.DEBUG, **{'video': video})
                 continue
 
