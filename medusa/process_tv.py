@@ -444,6 +444,8 @@ class ProcessResult(object):
             self.log_and_output('Processing resource: {resource}', level=logging.DEBUG, **{'resource': self.resource_name})
 
         if not self.directory:
+            self.result = False
+            self.skipped = not self.failed
             return self.output
 
         if app.POSTPONE_IF_NO_SUBS:
