@@ -395,6 +395,38 @@ class ProcessResult(object):
 
         return None
 
+    def _postpone_for_sync_files(self, path, files, resource_path=None):
+        """Record sync-related postponement and return whether to skip processing."""
+        if not app.POSTPONE_IF_SYNC_FILES:
+            return False
+
+        sync_path = os.path.dirname(resource_path) if resource_path else path
+        if resource_path:
+            try:
+                # Check siblings without adding them to the selected files.
+                with os.scandir(sync_path) as entries:
+                    postpone = any(is_sync_file(entry.name) and not entry.is_dir() for entry in entries)
+            except OSError as error:
+                self.postpone_processing = True
+                self.postpone_any = True
+                self.log_and_output(
+                    'Unable to check temporary sync files in folder: {path}: {error}',
+                    level=logging.WARNING, **{'path': sync_path, 'error': ex(error)})
+                self.missed_files.append('{0}: Unable to check sync files'.format(sync_path))
+                return True
+        else:
+            postpone = any(is_sync_file(filename) for filename in files)
+
+        if not postpone:
+            return False
+
+        self.postpone_processing = True
+        self.postpone_any = True
+        self.log_and_output('Found temporary sync files in folder: {dir_path}', **{'dir_path': sync_path})
+        self.log_and_output('Skipping post-processing for folder: {dir_path}', **{'dir_path': path})
+        self.missed_files.append('{0}: Sync files found'.format(path))
+        return True
+
     def process(self, resource_name=None, force=False, is_priority=None, delete_on=False,
                 proc_type='auto', ignore_subs=False):
         """
@@ -436,42 +468,17 @@ class ProcessResult(object):
             self.result = True
 
             for dir_path, filelist in self._get_files(path):
-                # Don't process files if they are still being synced
-                postpone = False
-                sync_path = dir_path
-                if app.POSTPONE_IF_SYNC_FILES:
-                    if resource_path:
-                        # Check siblings without adding them to the selected files.
-                        sync_path = os.path.dirname(resource_path)
-                        try:
-                            with os.scandir(sync_path) as entries:
-                                postpone = any(is_sync_file(entry.name) and not entry.is_dir() for entry in entries)
-                        except OSError as error:
-                            self.postpone_processing = True
-                            self.postpone_any = True
-                            self.log_and_output(
-                                'Unable to check temporary sync files in folder: {path}: {error}',
-                                level=logging.WARNING, **{'path': sync_path, 'error': ex(error)})
-                            self.missed_files.append('{0}: Unable to check sync files'.format(sync_path))
-                            continue
-                    else:
-                        postpone = any(is_sync_file(filename) for filename in filelist)
-                if not postpone:
-                    self.log_and_output('Processing folder: {dir_path}', level=logging.DEBUG, **{'dir_path': dir_path})
+                if self._postpone_for_sync_files(dir_path, filelist, resource_path):
+                    continue
 
-                    self.prepare_files(dir_path, filelist, force)
-                    self.process_files(dir_path, force=force, is_priority=is_priority,
-                                       ignore_subs=ignore_subs)
-                    self._clean_up(dir_path, proc_type, delete=delete_on)
-                    # Keep track if processed anything.
-                    processed_items = True
-                else:
-                    self.postpone_processing = True
-                    self.postpone_any = True
-                    self.log_and_output('Found temporary sync files in folder: {dir_path}', **{'dir_path': sync_path})
-                    self.log_and_output('Skipping post-processing for folder: {dir_path}', **{'dir_path': dir_path})
+                self.log_and_output('Processing folder: {dir_path}', level=logging.DEBUG, **{'dir_path': dir_path})
 
-                    self.missed_files.append('{0}: Sync files found'.format(dir_path))
+                self.prepare_files(dir_path, filelist, force)
+                self.process_files(dir_path, force=force, is_priority=is_priority,
+                                   ignore_subs=ignore_subs)
+                self._clean_up(dir_path, proc_type, delete=delete_on)
+                # Keep track if processed anything.
+                processed_items = True
 
         self.skipped = not processed_items and self.succeeded and not self.failed and not self.postpone_any
         if not processed_items:
