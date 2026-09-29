@@ -2,7 +2,9 @@
 """Tests for validating the resource selected for post-processing."""
 from __future__ import unicode_literals
 
+import ntpath
 import os
+import posixpath
 
 from medusa.process_tv import PostProcessQueueItem, ProcessResult
 
@@ -100,3 +102,36 @@ def test_nested_resource_respects_input_folder(create_file, selected_file_proces
         failed_handler.assert_called_once_with(process_path)
     else:
         failed_handler.assert_not_called()
+
+
+@pytest.mark.parametrize('path_module,root,resource,parents,expected', [
+    (ntpath, r'C:\Downloads', r'c:\downloads\show.mkv', [], True),
+    (ntpath, r'C:\Downloads', r'c:\downloads\Season 01\show.mkv', [r'c:\downloads\Season 01'], True),
+    (ntpath, 'C:\\', r'c:\Season 01\show.mkv', [r'c:\Season 01'], True),
+    (ntpath, r'\\Server\Share\Downloads', r'\\server\share\downloads\Season 01\show.mkv',
+     [r'\\server\share\downloads\Season 01'], True),
+    (ntpath, r'C:\Downloads', r'c:\downloads\_UNPACK_release\inner\show.mkv',
+     [r'c:\downloads\_UNPACK_release\inner', r'c:\downloads\_UNPACK_release'], False),
+    (ntpath, r'C:\Downloads', r'D:\Downloads\show.mkv', [], True),
+    (posixpath, '/Downloads', '/downloads/Season 01/show.mkv', [], True),
+])
+def test_selected_file_parent_walk_uses_platform_case_rules(
+        create_dir, monkeypatch, path_module, root, resource, parents, expected):
+    """Stop at differently cased Windows roots without changing POSIX path comparisons."""
+    sut = ProcessResult(create_dir('downloads'))
+    visited = []
+
+    def bounded_dirname(path):
+        # Fail promptly if the regression returns, rather than hanging the test runner.
+        assert len(visited) < 10, 'Parent-directory walk did not terminate'
+        visited.append(path)
+        return path_module.dirname(path)
+
+    path_functions = Mock(wraps=path_module)
+    path_functions.isfile.return_value = True
+    path_functions.dirname.side_effect = bounded_dirname
+    monkeypatch.setattr('medusa.process_tv.os', Mock(path=path_functions))
+    monkeypatch.setattr('medusa.process_tv.helpers.is_hidden_folder', Mock(return_value=False))
+
+    assert sut.should_process(root, resource) is expected
+    assert visited == [resource] + parents

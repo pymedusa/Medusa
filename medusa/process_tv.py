@@ -556,13 +556,16 @@ class ProcessResult(object):
             parent = os.path.dirname(os.path.abspath(selected_path))
             paths_to_check.extend((selected_path, parent))
             # Validate intermediate folders for nested resources, without scanning siblings.
-            root = os.path.abspath(path)
+            root = os.path.normcase(os.path.abspath(path))
             try:
-                contained = os.path.commonpath((root, parent)) == root
+                contained = os.path.normcase(os.path.commonpath((root, parent))) == root
             except ValueError:  # Paths on different drives have no common parent.
                 contained = False
-            while contained and parent != root:
-                parent = os.path.dirname(parent)
+            while contained and os.path.normcase(parent) != root:
+                next_parent = os.path.dirname(parent)
+                if next_parent == parent:
+                    break
+                parent = next_parent
                 paths_to_check.append(parent)
 
         for checked_path in dict.fromkeys(paths_to_check):
