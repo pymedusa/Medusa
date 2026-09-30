@@ -130,8 +130,8 @@ def test_get_files_direct_file(create_file, with_resource, extension):
     sut = ProcessResult(path)
     sut.resource_name = os.path.basename(path) if with_resource else None
 
-    assert list(sut._get_files(sut.directory)) == [
-        (os.path.dirname(sut.directory), [os.path.basename(path)])
+    assert list(sut._get_files(sut._resolve_target(sut.input_path))) == [
+        (os.path.dirname(sut.input_path), [os.path.basename(path)])
     ]
 
 
@@ -212,7 +212,9 @@ def test_skipped_folder_does_not_trigger_failed_download(create_dir, monkeypatch
     failed_handler.assert_not_called()
     history_update.assert_not_called()
     assert result.result is False
-    assert result.skipped is True
+    postponed = folder_name.startswith(('_UNPACK_', '_unpack'))
+    assert result.postpone_any is postponed
+    assert result.skipped is not postponed
 
 
 @pytest.mark.parametrize('folder_name', ['_FAILED_show.name.s01e01', '_UNDERSIZED_show.name.s01e01'])
@@ -442,10 +444,10 @@ def test_paths(monkeypatch, p, create_structure):
         'path': 'media/postprocess/Show.Name.S01E03.HDTV.x264-LOL',
         'resource_name': 'Show.Name.S01E03.HDTV.x264-LOL',
         'failed': False,
-        'expected': [('media/postprocess/Show.Name.S01E03.HDTV.x264-LOL',
-                      ['show.name.103.hdtv.x264-lol.mkv']),
-                     ('media/postprocess/Show.Name.S01E03.HDTV.x264-LOL/other',
-                      ['readme.txt', 'sample.mkv'])
+        'expected': [('media/postprocess/Show.Name.S01E03.HDTV.x264-LOL/other',
+                      ['readme.txt', 'sample.mkv']),
+                     ('media/postprocess/Show.Name.S01E03.HDTV.x264-LOL',
+                      ['show.name.103.hdtv.x264-lol.mkv'])
                      ],
         'structure': (
             'show.name.103.hdtv.x264-lol.mkv',
@@ -472,9 +474,9 @@ def test_paths(monkeypatch, p, create_structure):
         'path': 'media/postprocess',
         'resource_name': 'show.name.s02e01.webrip.x264-kovalski.nzb',
         'failed': False,
-        'expected': [('media/postprocess',
-                      ['sample.mkv', 'show.name.s02e01.webrip.x264-kovalski.mkv']),
-                     ('media/postprocess/subfolder', ['readme.txt'])
+        'expected': [('media/postprocess/subfolder', ['readme.txt']),
+                     ('media/postprocess',
+                      ['sample.mkv', 'show.name.s02e01.webrip.x264-kovalski.mkv'])
                      ],
         'structure': (
             'sample.mkv',
@@ -494,12 +496,12 @@ def test__get_files(monkeypatch, p, create_structure):
     monkeypatch.setattr(sut, 'resource_name', p['resource_name'])
 
     # When
-    result = sut._get_files(path)
+    result = sut._get_files(sut._resolve_target(sut.input_path))
 
     # Then
-    for i, (dir_path, filelist) in enumerate(result):
-        assert dir_path == os.path.join(test_path, os.path.normcase(p['expected'][i][0]))
-        assert filelist == p['expected'][i][1]
+    assert [(os.path.normcase(dir_path), files) for dir_path, files in result] == [
+        (os.path.normcase(os.path.join(test_path, dir_path)), files) for dir_path, files in p['expected']
+    ]
 
 
 @pytest.mark.parametrize('p', [
@@ -689,7 +691,7 @@ def test__process(monkeypatch, p, create_structure):
     sut.process(resource_name=p.get('resource_name'))
 
     # Then
-    assert p['expected'] == sut.video_files
+    assert p['expected'] == [video.name for video in sut.video_files]
 
 
 def test_process_rejects_direct_non_media_file(create_file):

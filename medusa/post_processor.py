@@ -89,6 +89,15 @@ LANGUAGE_TAGS = {
 }
 
 
+class TorrentMoveCandidate(object):
+    """A seed move queued until its source scans and client relocation succeed."""
+
+    def __init__(self):
+        """Keep release names and incomplete scan scopes together in the move queue."""
+        self.release_names = []
+        self.pending_scans = set()
+
+
 class PostProcessor(object):
     """A class which will process a media file according to the post processing settings in the config."""
 
@@ -1342,9 +1351,8 @@ class PostProcessor(object):
                                       self.process_method in ('hardlink', 'symlink', 'reflink', 'keeplink', 'copy')]):
             # Store self.info_hash and self.release_name so later we can remove from client if setting is enabled
             if self.info_hash:
-                existing_release_names = app.RECENTLY_POSTPROCESSED.get(self.info_hash, [])
-                existing_release_names.append(self.release_name or 'N/A')
-                app.RECENTLY_POSTPROCESSED[self.info_hash] = existing_release_names
+                candidate = app.RECENTLY_POSTPROCESSED.setdefault(self.info_hash, TorrentMoveCandidate())
+                candidate.release_names.append(self.release_name or 'N/A')
             else:
                 if not self.in_history:
                     logger.log(u"Please consider manually move torrent to seed folder as it wasn't snatched from "

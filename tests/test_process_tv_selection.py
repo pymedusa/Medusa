@@ -46,6 +46,61 @@ def test_selected_file_ignores_unrelated_folders(create_file, selected_file_proc
     assert os.path.isfile(sibling)
 
 
+@pytest.mark.parametrize('selection', ['relative', 'absolute', 'direct'])
+@pytest.mark.parametrize('filename,processable', [
+    ('RARBG.mp4', False),
+    ('RARBG.to.avi', False),
+    ('._episode.mkv', False),
+    ('show.name.s01e01.mkv', True),
+])
+def test_selected_file_respects_media_exclusions(
+        create_file, selected_file_processor, monkeypatch, app_config, selection, filename, processable):
+    """A sole selected artifact stays skipped without failed handling or history changes."""
+    resource_name = os.path.join('nested', filename)
+    path = create_file(os.path.join('downloads', resource_name))
+    process_path = path if selection == 'direct' else os.path.dirname(os.path.dirname(path))
+    if selection != 'relative':
+        resource_name = path if selection == 'absolute' else None
+    processor_class, failed_handler = selected_file_processor
+    history_update = Mock()
+    monkeypatch.setattr(PostProcessQueueItem, 'update_resource', history_update)
+    app_config('POSTPONE_IF_SYNC_FILES', False)
+    app_config('POSTPONE_IF_NO_SUBS', False)
+    item = PostProcessQueueItem(
+        path=process_path, resource_name=resource_name, info_hash='download-id',
+        process_method='copy', process_single_resource=True
+    )
+
+    result = item.process_path()
+
+    if processable:
+        processor_class.assert_called_once_with(os.path.realpath(path), resource_name, 'copy', False)
+        history_update.assert_called_once()
+    else:
+        processor_class.assert_not_called()
+        history_update.assert_not_called()
+    failed_handler.assert_not_called()
+    assert result.result is processable
+    assert result.skipped is not processable
+    assert result.succeeded is True
+    assert result.failed is False
+    assert os.path.isfile(path)
+
+
+@pytest.mark.parametrize('selection', ['relative', 'absolute', 'direct'])
+def test_selected_archive_remains_processable(create_file, selection):
+    """Media filename exclusions must not reject a valid selected RAR archive."""
+    path = create_file(os.path.join('downloads', 'nested', 'release.rar'))
+    process_path = path if selection == 'direct' else os.path.dirname(os.path.dirname(path))
+    sut = ProcessResult(process_path)
+    if selection == 'relative':
+        sut.resource_name = os.path.join('nested', 'release.rar')
+    elif selection == 'absolute':
+        sut.resource_name = path
+
+    assert sut.should_process(sut.input_path, sut._resolve_target(sut.input_path).file_path) is True
+
+
 @pytest.mark.parametrize('folder_name,failed', [
     ('_UNPACK_release', False), ('_unpack_release', False),
     ('_FAILED_release', True), ('_UNDERSIZED_release', True),
@@ -110,6 +165,17 @@ def test_nested_resource_respects_input_folder(create_file, selected_file_proces
     (ntpath, 'C:\\', r'c:\Season 01\show.mkv', [r'c:\Season 01'], True),
     (ntpath, r'\\Server\Share\Downloads', r'\\server\share\downloads\Season 01\show.mkv',
      [r'\\server\share\downloads\Season 01'], True),
+    (ntpath, r'\\Server\Share', r'\\server\share\show.mkv', [], True),
+    (ntpath, r'\\Server\Share', r'\\server\share\Season 01\show.mkv',
+     [r'\\server\share\Season 01'], True),
+    (ntpath, r'\\Server\Share', r'\\server\share\_UNPACK_release\inner\show.mkv',
+     [r'\\server\share\_UNPACK_release\inner', r'\\server\share\_UNPACK_release'], False),
+    (ntpath, '\\\\Server\\Share\\', r'\\server\share\_UNPACK_release\inner\show.mkv',
+     [r'\\server\share\_UNPACK_release\inner', r'\\server\share\_UNPACK_release'], False),
+    (ntpath, r'\\Server\Share', r'\\server\share\_FAILED_release\inner\show.mkv',
+     [r'\\server\share\_FAILED_release\inner', r'\\server\share\_FAILED_release'], False),
+    (ntpath, '\\\\Server\\Share\\', r'\\server\share\_FAILED_release\inner\show.mkv',
+     [r'\\server\share\_FAILED_release\inner', r'\\server\share\_FAILED_release'], False),
     (ntpath, r'C:\Downloads', r'c:\downloads\_UNPACK_release\inner\show.mkv',
      [r'c:\downloads\_UNPACK_release\inner', r'c:\downloads\_UNPACK_release'], False),
     (ntpath, r'C:\Downloads', r'D:\Downloads\show.mkv', [], True),
@@ -128,9 +194,9 @@ def test_selected_file_parent_walk_uses_platform_case_rules(
         return path_module.dirname(path)
 
     path_functions = Mock(wraps=path_module)
-    path_functions.isfile.return_value = True
+    path_functions.isfile.side_effect = lambda filename: filename == resource
     path_functions.dirname.side_effect = bounded_dirname
-    monkeypatch.setattr('medusa.process_tv.os', Mock(path=path_functions))
+    monkeypatch.setattr('medusa.process_tv.os', Mock(path=path_functions, curdir='.'))
     monkeypatch.setattr('medusa.process_tv.helpers.is_hidden_folder', Mock(return_value=False))
 
     assert sut.should_process(root, resource) is expected

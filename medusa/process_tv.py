@@ -10,6 +10,8 @@ import shutil
 import stat
 import traceback
 from builtins import object
+from collections import namedtuple
+from threading import Lock
 
 
 from medusa import app, db, failed_processor, helpers, notifiers, post_processor, ws
@@ -35,6 +37,23 @@ from six import iteritems
 
 log = CustomBraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
+
+# Scheduled scans and queued jobs share both source files and the torrent move queue.
+_PROCESS_LOCK = Lock()
+
+
+class ProcessingTarget(namedtuple('ProcessingTarget', 'path directory filename')):
+    """Resolved selection: validation path, scan/extraction directory, and optional file."""
+
+    __slots__ = ()
+
+    @property
+    def file_path(self):
+        """Return the selected file without rediscovering its input form."""
+        return os.path.join(self.directory, self.filename) if self.filename is not None else None
+
+
+MediaFile = namedtuple('MediaFile', 'name history_name')
 
 
 class PostProcessQueueItem(generic_queue.QueueItem):
@@ -165,13 +184,13 @@ class PostProcessQueueItem(generic_queue.QueueItem):
         if (
             self.process_single_resource
             and (process_results.failed or not process_results.succeeded)
-            and not process_results.postpone_processing
+            and not process_results.postpone_any
         ):
             process_results.process_failed(self.path)
 
         # In case we have an info_hash or (nzbid), update the history table with the pp results.
-        # Skip the history update when the postponed (because of missing subs) flag was enabled.
-        if self.info_hash and not process_results.postpone_processing:
+        # Keep history pending if any part of the request was postponed.
+        if self.info_hash and not process_results.postpone_any:
             self.update_history_processed(process_results)
 
         return process_results
@@ -274,10 +293,14 @@ class ProcessResult(object):
             Currently only used by the Download Handler.
         """
         self._output = []
-        self.directory = path
+        self.input_path = self._resolve_input_path(path)
+        self._original_file_path = self._get_original_file_path()
         self.process_method = process_method or app.PROCESS_METHOD
         self.failed = failed
         self.resource_name = None
+        self._processed_media = set()
+        self._incomplete_archive_members = set()
+        self._processed_torrent_hashes = set()
         self.result = True
         # Processing aborted. So we don't want to trigger any failed download handling.
         # We do want to update the history client status.
@@ -291,7 +314,6 @@ class ProcessResult(object):
         self.missed_files = []
         self.unwanted_files = []
         self.allowed_extensions = app.ALLOWED_EXTENSIONS
-        self.process_file = False
         # When multiple media folders/files processed. Flag postpone_any of any them was postponed.
         self.postpone_any = False
         self.episodes = episodes
@@ -314,30 +336,25 @@ class ProcessResult(object):
 
         return True
 
-    @property
-    def directory(self):
-        """Return the root directory we are going to process."""
-        return getattr(self, '_directory')
-
-    @directory.setter
-    def directory(self, path):
-        directory = None
+    def _resolve_input_path(self, path):
+        """Resolve the client's input to a local file or directory."""
+        resolved_path = None
         if os.path.isdir(path):
             self.log_and_output('Processing path: {path}', **{'path': path})
-            directory = os.path.realpath(path)
+            resolved_path = os.path.realpath(path)
 
         elif os.path.isfile(path):
             self.log_and_output('Processing path: {path} as a single file', **{'path': path})
-            directory = os.path.realpath(path)
+            resolved_path = os.path.realpath(path)
 
         # If the client and the application are not on the same machine,
-        # translate the directory into a network directory
+        # translate the input into a local download path.
         elif self._is_tv_download_dir(path):
-            directory = os.path.join(
+            resolved_path = os.path.join(
                 app.TV_DOWNLOAD_DIR,
                 os.path.abspath(path).split(os.path.sep)[-1]
             )
-            self.log_and_output('Trying to use folder: {directory}', level=logging.DEBUG, **{'directory': directory})
+            self.log_and_output('Trying to use folder: {directory}', level=logging.DEBUG, **{'directory': resolved_path})
 
         else:
             self.log_and_output(
@@ -346,21 +363,44 @@ class ProcessResult(object):
                 ' machine, make sure to fill out the Post Processing Dir'
                 ' field in the config.', level=logging.WARNING
             )
-        setattr(self, '_directory', directory)
+        return resolved_path
+
+    def _get_original_file_path(self):
+        """Capture file-only input before processing can move or remove the source."""
+        # Failure cleanup must retain file scope, not expand to the containing directory.
+        if self.input_path and os.path.isfile(self.input_path):
+            return self.input_path
+        return None
 
     @property
     def paths(self):
         """Return the paths we are going to try to process."""
-        if self.directory:
-            yield self.directory
-            if self.resource_name:
+        if self.input_path:
+            # An invalid selection must not be reopened through its children.
+            if os.path.isdir(self.input_path) and not self._can_process_folder(self.input_path):
                 return
-            for root, dirs, files in os.walk(self.directory):
-                del files  # unused variable
-                for folder in dirs:
-                    path = os.path.join(root, folder)
-                    yield path
-                break
+            yield self.input_path
+            # File inputs and roots removed by successful cleanup have no children.
+            if self.resource_name or not os.path.isdir(self.input_path):
+                return
+            try:
+                for root, dirs, files in os.walk(self.input_path, onerror=self._on_walk_error):
+                    for folder in dirs:
+                        yield os.path.join(root, folder)
+                    break
+            except OSError:
+                return
+
+    def _on_walk_error(self, error):
+        """Stop an incomplete directory walk and leave the download pending for retry."""
+        path = error.filename or self.input_path
+        self.postpone_processing = True
+        self.postpone_any = True
+        self.result = False
+        self.log_and_output('Unable to scan folder: {path}: {error}', level=logging.WARNING,
+                            **{'path': path, 'error': ex(error)})
+        self.missed_files.append('{0}: Unable to scan folder'.format(path))
+        raise error
 
     @property
     def video_files(self):
@@ -382,18 +422,37 @@ class ProcessResult(object):
         log.log(level, message, kwargs)
         self._output.append(message.format(**kwargs))
 
-    def _get_single_file_resource(self, path):
-        """Return a directly supplied file resource, if one exists."""
+    def _resolve_target(self, path):
+        """Interpret path and release metadata once, before validation or traversal."""
         if os.path.isfile(path):
-            return path
+            return ProcessingTarget(path, os.path.dirname(path), os.path.basename(path))
 
-        # An NZB resource name identifies a download directory, not a file to process directly.
-        if self.resource_name and not self.resource_name.endswith('.nzb'):
-            resource_path = os.path.join(path, self.resource_name)
-            if os.path.isfile(resource_path):
-                return resource_path
+        if not self.resource_name:
+            return ProcessingTarget(path, path, None)
 
-        return None
+        combined_path = os.path.join(path, self.resource_name)
+        if os.path.isdir(combined_path):
+            return ProcessingTarget(path, combined_path, None)
+
+        # An NZB name is release metadata, unless it names an existing directory.
+        if (self.resource_name.endswith('.nzb')
+                or (os.path.isdir(path) and os.path.basename(path) == self.resource_name)):
+            return ProcessingTarget(path, path, None)
+
+        if os.path.isfile(combined_path):
+            # Keep qualified filenames and their original extraction/cleanup root.
+            return ProcessingTarget(path, path, self.resource_name)
+
+        self.log_and_output(
+            'Could not get a valid path or file for processing. path: [{path}], resource: [{resource}]',
+            level=logging.DEBUG, **{'path': path, 'resource': self.resource_name})
+        return ProcessingTarget(path, None, None)
+
+    @staticmethod
+    def _is_media_file(path):
+        """Apply both path-based sample filtering and basename-only media exclusions."""
+        filename = os.path.basename(path)
+        return helpers.is_media_file(path) and (filename == path or helpers.is_media_file(filename))
 
     def _postpone_for_sync_files(self, path, files, resource_path=None):
         """Record sync-related postponement and return whether to skip processing."""
@@ -439,11 +498,28 @@ class ProcessResult(object):
         :param proc_type: Type of postprocessing auto or manual
         :param ignore_subs: True to ignore setting 'postpone if no subs'
         """
+        with _PROCESS_LOCK:
+            try:
+                return self._process(resource_name, force, is_priority, delete_on, proc_type, ignore_subs)
+            except Exception:
+                # Even an interrupted scan must leave its queued torrent moves pending.
+                self.result = False
+                self.succeeded = False
+                raise
+            finally:
+                if self.input_path:
+                    self._move_processed_torrents()
+
+    def _process(self, resource_name, force, is_priority, delete_on, proc_type, ignore_subs):
+        """Process one selection while holding the shared execution guard."""
+        self._processed_media.clear()
+        self._incomplete_archive_members.clear()
+        self._processed_torrent_hashes.clear()
         if resource_name:
             self.resource_name = resource_name
             self.log_and_output('Processing resource: {resource}', level=logging.DEBUG, **{'resource': self.resource_name})
 
-        if not self.directory:
+        if not self.input_path:
             self.result = False
             self.skipped = not self.failed
             return self.output
@@ -454,7 +530,10 @@ class ProcessResult(object):
         processed_items = False
         for path in self.paths:
 
-            resource_path = self._get_single_file_resource(path)
+            target = self._resolve_target(path)
+            if target.directory is None:
+                continue
+            resource_path = target.file_path
             if resource_path and not (helpers.is_media_file(resource_path) or helpers.is_rar_file(resource_path)):
                 self.log_and_output(
                     'Resource is not a recognized video or RAR file: {path}',
@@ -464,12 +543,12 @@ class ProcessResult(object):
                 self.result = False
                 continue
 
-            if not self.should_process(path, resource_path):
+            if not self.should_process(target.path, resource_path or target.directory):
                 continue
 
             self.result = True
 
-            for dir_path, filelist in self._get_files(path):
+            for dir_path, filelist in self._get_files(target):
                 if self._postpone_for_sync_files(dir_path, filelist, resource_path):
                     continue
 
@@ -515,13 +594,45 @@ class ProcessResult(object):
             for missed_file in self.missed_files:
                 self.log_and_output('Missed file: {missed_file}', level=logging.WARNING, **{'missed_file': missed_file})
 
+        return self.output
+
+    def _move_processed_torrents(self):
+        """Move completed torrents without relocating downloads still needed for retry."""
+        scope = (os.path.normcase(os.path.abspath(self.input_path)), self.resource_name or None)
+        if self.postpone_any or not self.succeeded or self.failed or not self.result:
+            # Preserve candidates for retry, but do not let unrelated requests move them.
+            for info_hash in self._processed_torrent_hashes:
+                candidate = app.RECENTLY_POSTPROCESSED.get(info_hash)
+                if candidate:
+                    candidate.pending_scans.add(scope)
+            return
+
+        # History may skip all previously imported media, so release deferred moves
+        # even when this successful scan did not register a new candidate.
+        for candidate in list(app.RECENTLY_POSTPROCESSED.values()):
+            for pending_scope in list(candidate.pending_scans):
+                if self._covers_scan_scope(scope, pending_scope):
+                    candidate.pending_scans.discard(pending_scope)
+
         if all([app.USE_TORRENTS, app.TORRENT_SEED_LOCATION,
                 self.process_method in ('hardlink', 'symlink', 'reflink', 'keeplink', 'copy')]):
-            for info_hash, release_names in list(iteritems(app.RECENTLY_POSTPROCESSED)):
-                if self.move_torrent(info_hash, release_names):
+            for info_hash, candidate in list(iteritems(app.RECENTLY_POSTPROCESSED)):
+                if not candidate.pending_scans and self.move_torrent(info_hash, candidate.release_names):
                     app.RECENTLY_POSTPROCESSED.pop(info_hash, None)
 
-        return self.output
+    @staticmethod
+    def _covers_scan_scope(scope, pending_scope):
+        """Require a matching selection or a broader directory scan to release a move."""
+        if scope == pending_scope:
+            return True
+        path, resource_name = scope
+        pending_path, _ = pending_scope
+        if resource_name:
+            return False
+        try:
+            return os.path.normcase(os.path.commonpath((path, pending_path))) == path
+        except ValueError:  # Different drives cannot cover the same download.
+            return False
 
     def _clean_up(self, path, proc_type, delete=False):
         """Clean up post-processed folder based on the checks below."""
@@ -539,24 +650,44 @@ class ProcessResult(object):
                 if self.delete_folder(path, check_empty=check_empty):
                     self.log_and_output('Deleted folder: {path}', level=logging.DEBUG, **{'path': path})
 
+    @staticmethod
+    def _get_validation_root(path):
+        """Bound file validation to its download root, without widening directory requests."""
+        # Preserve the trailing separator on UNC share roots for commonpath().
+        root = os.path.abspath(os.path.join(path, os.curdir))
+        if not os.path.isfile(path):
+            return os.path.normcase(root)
+
+        parent = os.path.dirname(root)
+        if app.TV_DOWNLOAD_DIR:
+            download_root = os.path.realpath(os.path.join(app.TV_DOWNLOAD_DIR, os.curdir))
+            try:
+                if os.path.normcase(os.path.commonpath((download_root, parent))) == os.path.normcase(download_root):
+                    return os.path.normcase(download_root)
+            except ValueError:  # A download root on another drive cannot contain this file.
+                pass
+
+        # Without an enclosing download root, only the immediate parent is in scope.
+        return os.path.normcase(parent)
+
     def should_process(self, path, resource_path=None):
         """
-        Determine if a directory should be processed.
+        Determine if a selected file or directory should be processed.
 
         :param path: Path we want to verify
-        :param resource_path: A selected file within the processing path, if any
+        :param resource_path: A selected file or directory within the processing path, if any
         :return: True if the directory is valid for processing, otherwise False
         :rtype: Boolean
         """
         selected_path = resource_path or path
         is_file = os.path.isfile(selected_path)
-        # A directly selected file must also respect its containing folder's state.
+        # Validate the selected resource and its ancestors without inspecting siblings.
         paths_to_check = [path]
-        if is_file:
+        if is_file or selected_path != path:
             parent = os.path.dirname(os.path.abspath(selected_path))
             paths_to_check.extend((selected_path, parent))
             # Validate intermediate folders for nested resources, without scanning siblings.
-            root = os.path.normcase(os.path.abspath(path))
+            root = self._get_validation_root(path)
             try:
                 contained = os.path.normcase(os.path.commonpath((root, parent))) == root
             except ValueError:  # Paths on different drives have no common parent.
@@ -569,34 +700,57 @@ class ProcessResult(object):
                 paths_to_check.append(parent)
 
         for checked_path in dict.fromkeys(paths_to_check):
-            if not self._is_valid_folder(checked_path):
-                return False
-
-            folder = os.path.basename(checked_path)
-            if helpers.is_hidden_folder(checked_path) or folder in self.IGNORED_FOLDERS:
-                self.log_and_output('Ignoring folder: {folder}', level=logging.DEBUG, **{'folder': folder})
-                self.missed_files.append('{0}: Hidden or ignored folder'.format(checked_path))
+            if not self._can_process_folder(checked_path):
                 return False
 
         # A single file can be passed as the path to process, for example the content
         # path of a single-file torrent. os.walk() yields nothing for a file, so that
         # case needs to be decided here.
         if is_file:
-            return helpers.is_media_file(selected_path) or helpers.is_rar_file(selected_path)
+            # Full paths must also respect basename-only media exclusions.
+            return self._is_media_file(selected_path) or helpers.is_rar_file(selected_path)
 
-        for root, dirs, files in os.walk(path):
-            for subfolder in dirs:
-                if not self._is_valid_folder(os.path.join(root, subfolder)):
+        scan_root = selected_path == self.input_path and not self.resource_name
+        processable = False
+        try:
+            for root, dirs, files in os.walk(selected_path, onerror=self._on_walk_error):
+                dirs[:] = [folder for folder in dirs if not self._is_ignored_folder(os.path.join(root, folder))]
+                # Broad scans validate each child as its own download through paths.
+                if not scan_root:
+                    for subfolder in dirs:
+                        if not self._is_valid_folder(os.path.join(root, subfolder)):
+                            return False
+                # Validate the whole release before processing any descendant.
+                if not scan_root and self._postpone_for_sync_files(root, files):
                     return False
-            for each_file in files:
-                if helpers.is_media_file(each_file) or helpers.is_rar_file(each_file):
-                    return True
-            # Stop at first subdirectories if post-processing path
-            if self.directory == path and not self.resource_name:
-                break
+                if not scan_root:
+                    # Bottom-up processing must not import partial child files before
+                    # their parent archive gets a chance to repair them.
+                    self._check_retained_archive_members(root, files)
+                for each_file in files:
+                    if self._is_media_file(os.path.join(root, each_file)) or helpers.is_rar_file(each_file):
+                        processable = True
+                        break
+                if scan_root:
+                    break
+        except OSError:
+            return False
 
+        if processable:
+            return True
         self.log_and_output('No processable items found in folder: {path}', level=logging.DEBUG, **{'path': path})
         return False
+
+    def _can_process_folder(self, path):
+        """Apply structural folder checks consistently to selections and descendants."""
+        if not self._is_valid_folder(path):
+            return False
+        if self._is_ignored_folder(path):
+            self.log_and_output('Ignoring folder: {folder}', level=logging.DEBUG,
+                                **{'folder': os.path.basename(path)})
+            self.missed_files.append('{0}: Hidden or ignored folder'.format(path))
+            return False
+        return True
 
     def _is_valid_folder(self, path):
         """Verify folder validity based on the checks below."""
@@ -604,110 +758,68 @@ class ProcessResult(object):
 
         if folder.startswith('_FAILED_'):
             self.log_and_output('The directory name indicates it failed to extract.', level=logging.DEBUG)
-            self.failed = True
         elif folder.startswith('_UNDERSIZED_'):
             self.log_and_output('The directory name indicates that it was previously rejected for being undersized.', level=logging.DEBUG)
-            self.failed = True
 
-        if self.failed:
+        failed_folder = folder.startswith(('_FAILED_', '_UNDERSIZED_'))
+        if failed_folder and (self.resource_name or self._original_file_path or path == self.input_path):
+            # A failed child in a broad scan must not fail unrelated downloads or the scan root.
+            self.failed = True
+        if self.failed or failed_folder:
             self.missed_files.append('{0}: Failed download.'.format(path))
             return False
 
         # SABnzbd: _UNPACK_, NZBGet: _unpack
         if folder.startswith(('_UNPACK_', '_unpack')):
+            self.postpone_processing = True
+            self.postpone_any = True
             self.log_and_output('The directory name indicates that this release is in the process of being unpacked.', level=logging.DEBUG)
             self.missed_files.append('{0}: Being unpacked.'.format(path))
             return False
 
         return True
 
-    def _get_files(self, path):
-        """Return the path to a folder and its contents as a tuple."""
-        if os.path.isfile(path):
-            yield os.path.dirname(path), [os.path.basename(path)]
+    def _is_ignored_folder(self, path):
+        """Apply the shared hidden-folder and ignored-name exclusions."""
+        return os.path.basename(path) in self.IGNORED_FOLDERS or helpers.is_hidden_folder(path)
+
+    def _is_ignored_subfolder(self, path, subfolder):
+        """Check a relative folder and its ancestors, excluding the root path."""
+        while subfolder and subfolder != os.curdir:
+            if self._is_ignored_folder(os.path.join(path, subfolder)):
+                return True
+            subfolder = os.path.dirname(subfolder)
+        return False
+
+    def _get_files(self, target):
+        """Yield file batches from a resolved target without reinterpreting the request."""
+        if target.filename is not None:
+            yield target.directory, [target.filename]
             return
 
-        # If resource_name is a file and not an NZB, process it directly
-        def walk_path(path_name):
-            topdown = True if self.directory == path_name else False
-            for root, dirs, files in os.walk(path_name, topdown=topdown):
-                if files:
+        if target.directory is None:
+            return
+
+        # Broad scans discover root children lazily through paths. A selected release
+        # must include its descendants here because paths yields only that selection.
+        topdown = self.input_path == target.directory and not self.resource_name
+
+        def on_walk_error(error):
+            # Bottom-up walks enter ignored subtrees before we can filter their files.
+            if error.filename:
+                subfolder = os.path.relpath(error.filename, target.directory)
+                if self._is_ignored_subfolder(target.directory, subfolder):
+                    return
+            self._on_walk_error(error)
+
+        try:
+            for root, dirs, files in os.walk(target.directory, topdown=topdown, onerror=on_walk_error):
+                if files and not self._is_ignored_subfolder(target.directory, os.path.relpath(root, target.directory)):
                     yield root, sorted(files)
                 if topdown:
                     break
-                del dirs  # unused variable
-
-        combine_path = path
-        path_and_resource_is_folder = None
-        if self.resource_name:
-            combine_path = os.path.join(path, self.resource_name)
-            path_and_resource_is_folder = os.path.isdir(combine_path)
-
-        if path_and_resource_is_folder:
-            self.log_and_output(
-                'Combined path with resource detected, using path [{combine_path}] to process as a source folder',
-                level=logging.DEBUG,
-                **{'combine_path': combine_path})
-
-            yield from walk_path(combine_path)
+        except OSError:
             return
-
-        if not path_and_resource_is_folder and os.path.isdir(path) and os.path.basename(path) == self.resource_name:
-            """Example:
-                path: /downloads/completed/[ReleaseGroup] Show Title (01-12) [1080p]
-                resource: [ReleaseGroup] Show Title (01-12) [1080p]
-            """
-            self.log_and_output(
-                'Same path and resource detected, using path [{name}] to process as a source folder',
-                level=logging.DEBUG,
-                **{'name': path})
-            yield from walk_path(path)
-            return
-
-        if self.resource_name and self.resource_name.endswith('.nzb'):
-            """Example:
-                path: /downloads/completed/[ReleaseGroup] Show Title (01-12) [1080p]
-                resource: [ReleaseGroup] Show Title (01-12) [1080p].nzb
-                note! resource is not a folder or file!
-            """
-            self.log_and_output(
-                'Nzb folder detected, using path [{name}] to process as a source folder',
-                level=logging.DEBUG,
-                **{'name': path})
-            yield from walk_path(path)
-            return
-
-        if path and not self.resource_name:
-            """Example:
-                path: /downloads/completed
-                resource: ""
-            """
-            self.log_and_output(
-                'No resource_name passed, using path [{name}] to process as a source folder',
-                level=logging.DEBUG,
-                **{'name': path})
-            yield from walk_path(path)
-            return
-
-        # Process as a file
-        if os.path.isfile(combine_path):
-            """Example:
-                path: /downloads/completed
-                resource: [ReleaseGroup] Show Title S01E12 [1080p].mkv
-                note! resource is a file.
-            """
-            self.log_and_output(
-                'File detected, Using Resource [{name}] to process as a single file',
-                level=logging.DEBUG,
-                **{'name': self.resource_name})
-            yield path, [self.resource_name]
-            return
-
-        # Catch all
-        self.log_and_output(
-            'Could not get a valid path or file for processing. path: [{path}], resource: [{resource}]',
-            level=logging.DEBUG,
-            **{'path': path, 'resource': self.resource_name})
 
     def prepare_files(self, path, files, force=False):
         """
@@ -718,13 +830,14 @@ class ProcessResult(object):
             Collect new video files. -> self.video_in_rar
             List unwanted files -> self.unwanted_files
         :param path: Path to start looking for rar/video files.
-        :param files: Array of files.
+        :param files: Filenames from traversal, or the exact selected resource name.
         """
         video_files = []
         rar_files = []
         for each_file in files:
-            if helpers.is_media_file(each_file):
-                video_files.append(each_file)
+            if self._is_media_file(os.path.join(path, each_file)):
+                # Traversal supplies basenames; a selected resource keeps its qualification.
+                video_files.append(MediaFile(each_file, each_file))
             elif helpers.is_rar_file(each_file):
                 rar_files.append(each_file)
 
@@ -733,19 +846,24 @@ class ProcessResult(object):
         if rar_files:
             rar_content = self.unrar(path, rar_files, force)
             files.extend(rar_content)
-            video_in_rar = [each_file for each_file in rar_content if helpers.is_media_file(each_file)]
+            # Extraction paths may be nested, but archive history matches basenames.
+            video_in_rar = [MediaFile(each_file, os.path.basename(each_file)) for each_file in rar_content
+                            if self._is_media_file(os.path.join(path, each_file))
+                            and not self._is_ignored_subfolder(path, os.path.dirname(each_file))]
             video_files.extend(video_in_rar)
 
         self.log_and_output('Post-processing files: {files}', level=logging.DEBUG, **{'files': files})
-        self.log_and_output('Post-processing video files: {video_files}', level=logging.DEBUG, **{'video_files': video_files})
+        video_names = [video.name for video in video_files]
+        self.log_and_output('Post-processing video files: {video_files}', level=logging.DEBUG, **{'video_files': video_names})
 
         if rar_content:
             self.log_and_output('Post-processing rar content: {rar_content}', level=logging.DEBUG, **{'rar_content': rar_content})
-            self.log_and_output('Post-processing video in rar: {video_in_rar}', level=logging.DEBUG, **{'video_in_rar': video_in_rar})
+            self.log_and_output('Post-processing video in rar: {video_in_rar}', level=logging.DEBUG,
+                                **{'video_in_rar': [video.name for video in video_in_rar]})
 
         unwanted_files = [filename
                           for filename in files
-                          if filename not in video_files
+                          if filename not in video_names
                           and helpers.get_extension(filename) not in
                           self.allowed_extensions]
         # External extraction may leave archives and their volumes alongside the videos.
@@ -871,6 +989,46 @@ class ProcessResult(object):
             except OSError as error:
                 self.log_and_output('Unable to delete file {cur_file}: {error}', level=logging.DEBUG, **{'cur_file': cur_file, 'error': ex(error)})
 
+    @staticmethod
+    def _archive_member_is_complete(path, size):
+        """Check retained output against the archive's expected uncompressed size."""
+        try:
+            return os.path.isfile(path) and os.path.getsize(path) == size
+        except OSError:
+            return False
+
+    def _check_retained_archive_members(self, path, files):
+        """Identify incomplete retained files before descending into a release."""
+        if not app.UNPACK or not app.POSTPONE_IF_NO_SUBS:
+            return
+        for filename in files:
+            if not helpers.is_rar_file(filename):
+                continue
+            try:
+                archive = RarFile(os.path.join(path, filename))
+                try:
+                    for member in archive.infolist():
+                        if member.isdir():
+                            continue
+                        name = sanitize_filename(member.filename, os.path.sep, os.name == 'nt')
+                        member_path = os.path.join(path, name)
+                        if not self._archive_member_is_complete(member_path, member.file_size):
+                            self._incomplete_archive_members.add(os.path.normcase(os.path.abspath(member_path)))
+                finally:
+                    archive.close()
+            except Exception as error:
+                # The extraction pass reports failures; this check only protects existing output.
+                self.log_and_output('Unable to check retained archive members: {archive}: {error}',
+                                    level=logging.DEBUG, **{'archive': filename, 'error': ex(error)})
+
+    def _archive_member_needs_extraction(self, path, filename, size, force=False):
+        """Check a member's history and whether it is available for a subtitle retry."""
+        if not force and self.already_postprocessed(os.path.basename(filename)):
+            return False
+        if app.POSTPONE_IF_NO_SUBS and self._archive_member_is_complete(os.path.join(path, filename), size):
+            return False
+        return True
+
     def unrar(self, path, rar_files, force=False):
         """
         Extract RAR files.
@@ -889,6 +1047,7 @@ class ProcessResult(object):
                 self.log_and_output('Unpacking archive: {archive}', level=logging.DEBUG, **{'archive': archive})
 
                 failure = None
+                archive_files = []
                 try:
                     rar_handle = RarFile(os.path.join(path, archive))
 
@@ -896,30 +1055,27 @@ class ProcessResult(object):
                     if rar_handle.needs_password():
                         raise ValueError('Rar requires a password')
 
-                    # Skip extraction if any file in archive has previously been extracted
-                    skip_extraction = False
                     # Match rarfile's extraction paths, including its path sanitization.
-                    archive_files = [sanitize_filename(each.filename, os.path.sep, os.name == 'nt')
-                                     for each in rar_handle.infolist() if not each.isdir()]
-                    for file_in_archive in archive_files:
-                        if not force and self.already_postprocessed(os.path.basename(file_in_archive)):
-                            self.log_and_output('Archive file already post-processed, extraction skipped: {file_in_archive}',
-                                                level=logging.DEBUG, **{'file_in_archive': file_in_archive})
-                            skip_extraction = True
-                            break
-
-                        if app.POSTPONE_IF_NO_SUBS and os.path.isfile(os.path.join(path, file_in_archive)):
-                            self.log_and_output('Archive file already extracted, extraction skipped: {file_in_archive}',
-                                                level=logging.DEBUG, **{'file_in_archive': file_in_archive})
-                            skip_extraction = True
-                            break
-
-                    if not skip_extraction:
+                    archive_members = [member for member in rar_handle.infolist() if not member.isdir()]
+                    archive_files = [sanitize_filename(member.filename, os.path.sep, os.name == 'nt')
+                                     for member in archive_members]
+                    needed_members = [member for member, filename in zip(archive_members, archive_files)
+                                      if self._archive_member_needs_extraction(path, filename, member.file_size, force)]
+                    if needed_members or not archive_members:
                         # raise an exception if the rar file is broken
                         rar_handle.testrar()
-                        rar_handle.extractall(path=path)
+                        if len(needed_members) == len(archive_members):
+                            rar_handle.extractall(path=path)
+                        else:
+                            # Do not overwrite members retained for a subtitle retry.
+                            rar_handle.extractall(path=path, members=needed_members)
+                    else:
+                        self.log_and_output('All archive members already processed or extracted, skipping extraction: {archive}',
+                                            level=logging.DEBUG, **{'archive': archive})
 
                     unpacked_files.extend(archive_files)
+                    self._incomplete_archive_members.difference_update(
+                        os.path.normcase(os.path.abspath(os.path.join(path, filename))) for filename in archive_files)
 
                     del rar_handle
 
@@ -929,9 +1085,12 @@ class ProcessResult(object):
                     failure = (ex(error), 'Unpacking failed for an unknown reason')
 
                 if failure is not None:
+                    self._incomplete_archive_members.update(
+                        os.path.normcase(os.path.abspath(os.path.join(path, filename))) for filename in archive_files)
                     self.log_and_output('Failed unpacking archive {archive}: {failure}', level=logging.WARNING, **{'archive': archive, 'failure': failure[0]})
                     self.missed_files.append('{0}: Unpacking failed: {1}'.format(archive, failure[1]))
                     self.result = False
+                    self.succeeded = False
                     continue
 
             self.log_and_output('Extracted content: {unpacked_files}', level=logging.DEBUG, **{'unpacked_files': unpacked_files})
@@ -945,14 +1104,18 @@ class ProcessResult(object):
         :param video_file: File name
         :return:
         """
+        # Match complete filenames or qualified path suffixes, treating wildcards literally.
+        history_name = video_file.replace('!', '!!').replace('%', '!%').replace('_', '!_')
         main_db_con = db.DBConnection()
         history_result = main_db_con.select(
             'SELECT showid, season, episode, indexer_id '
             'FROM history '
             'WHERE action = ? '
-            'AND resource LIKE ?'
+            "AND (resource LIKE ? ESCAPE '!' "
+            "OR resource LIKE ? ESCAPE '!' "
+            "OR resource LIKE ? ESCAPE '!') "
             'ORDER BY date DESC',
-            [DOWNLOADED, '%' + video_file])
+            [DOWNLOADED, history_name, '%/' + history_name, '%\\' + history_name])
 
         if history_result:
             snatched_statuses = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
@@ -982,7 +1145,7 @@ class ProcessResult(object):
         Postprocess media files.
 
         :param path: Path to postprocess in
-        :param video_files: Filenames to look for and postprocess
+        :param video_files: MediaFile candidates, including their history lookup names
         :param force: Postprocess currently postprocessing file
         :param is_priority: Boolean, is this a priority download
         :param ignore_subs: True to ignore setting 'postpone if no subs'
@@ -991,10 +1154,21 @@ class ProcessResult(object):
         # A path can have multiple media to process.
         self.postpone_processing = False
 
-        for video in video_files:
+        for media in video_files:
+            video = media.name
             file_path = os.path.join(path, video)
+            media_path = os.path.normcase(os.path.abspath(file_path))
+            if media_path in self._incomplete_archive_members:
+                self.log_and_output('Skipping incomplete archive member: {file_path}', level=logging.DEBUG,
+                                    **{'file_path': file_path})
+                continue
+            # Directory traversal can rediscover retained archive members.
+            if media_path in self._processed_media:
+                self.log_and_output('Skipping file already processed in this run: {file_path}',
+                                    level=logging.DEBUG, **{'file_path': file_path})
+                continue
 
-            if not force and self.already_postprocessed(os.path.basename(video)):
+            if not force and self.already_postprocessed(media.history_name):
                 self.log_and_output('Skipping already processed file: {video}', level=logging.DEBUG, **{'video': video})
                 continue
 
@@ -1009,6 +1183,10 @@ class ProcessResult(object):
                         )
 
                 self.result = processor.process()
+                if self.result:
+                    self._processed_media.add(media_path)
+                    if processor.info_hash in app.RECENTLY_POSTPROCESSED:
+                        self._processed_torrent_hashes.add(processor.info_hash)
                 process_fail_message = ''
             except EpisodePostProcessingFailedException as error:
                 processor = None
@@ -1084,9 +1262,19 @@ class ProcessResult(object):
         if not app.USE_FAILED_DOWNLOADS:
             return
 
+        if self._original_file_path:
+            # Use the resolved file, not a remote client path or its containing folder.
+            path = self._original_file_path
+
+        resource_name = resource_name or self.resource_name
+        if not resource_name and (self._original_file_path or os.path.isfile(path)):
+            # A file-only request has no directory to inspect for a release name.
+            # Keep the original cleanup target so siblings cannot be deleted.
+            resource_name = os.path.basename(path)
+
         try:
             processor = failed_processor.FailedProcessor(
-                path, resource_name or self.resource_name, self.episodes
+                path, resource_name, self.episodes
             )
             # Handling a failed download successfully does not make processing successful.
             failure_handled = processor.process()

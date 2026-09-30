@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 import os
 
 from medusa import app
-from medusa.process_tv import PostProcessQueueItem, ProcessResult
+from medusa.process_tv import MediaFile, PostProcessQueueItem, ProcessResult
 from medusa.schedulers.download_handler import ClientStatusEnum
 
 from mock.mock import Mock
@@ -36,9 +36,10 @@ def test_archive_cleanup_requires_complete_processing(create_file, monkeypatch, 
     monkeypatch.setattr(app, 'DELRARCONTENTS', True)
     monkeypatch.setattr(app, 'NO_DELETE', False)
     sut = ProcessResult(path, process_method=process_method, process_single_resource=True)
-    sut.video_files = [os.path.basename(first_video), os.path.basename(second_video)]
+    sut.video_files = [MediaFile(os.path.basename(video), os.path.basename(video))
+                       for video in (first_video, second_video)]
     sut.video_in_rar = list(sut.video_files)
-    sut.rar_content = sut.video_files + [os.path.basename(metadata)]
+    sut.rar_content = [video.name for video in sut.video_files] + [os.path.basename(metadata)]
     sut.unwanted_files = [os.path.basename(archive), os.path.basename(metadata)]
 
     sut.process_files(path)
@@ -93,7 +94,7 @@ def test_archive_history_reflects_all_media_results(create_file, monkeypatch, fi
     if first_succeeded:
         failed_processor_class.assert_not_called()
     else:
-        failed_processor_class.assert_called_once_with(archive, None, [])
+        failed_processor_class.assert_called_once_with(archive, os.path.basename(archive), [])
         failed_processor.process.assert_called_once_with()
     history_update.assert_called_once()
     expected_status = ClientStatusEnum.COMPLETED if first_succeeded else ClientStatusEnum.FAILED
