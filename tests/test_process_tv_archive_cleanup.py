@@ -93,7 +93,7 @@ def test_archive_history_reflects_all_media_results(create_file, monkeypatch, fi
     if first_succeeded:
         failed_processor_class.assert_not_called()
     else:
-        failed_processor_class.assert_called_once_with(archive, None, [])
+        failed_processor_class.assert_called_once_with(archive, os.path.basename(archive), [])
         failed_processor.process.assert_called_once_with()
     history_update.assert_called_once()
     expected_status = ClientStatusEnum.COMPLETED if first_succeeded else ClientStatusEnum.FAILED
