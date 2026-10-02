@@ -13,6 +13,7 @@ from medusa import (
     ui,
 )
 from medusa.helper.common import try_int
+from medusa.search.backlog import effective_refill_threshold
 from medusa.server.web.config.handler import Config
 from medusa.server.web.core import PageTemplate
 
@@ -51,7 +52,7 @@ class ConfigSearch(Config):
                    torrent_rpcurl=None, torrent_auth_type=None, ignore_words=None, download_handler_frequency=None,
                    preferred_words=None, undesired_words=None, trackers_list=None, require_words=None,
                    ignored_subs_list=None, ignore_und_subs=None, cache_trimming=None, max_cache_age=None,
-                   torrent_seed_location=None):
+                   torrent_seed_location=None, backlog_batch_size=None, backlog_batch_refill_threshold=None):
         """
         Save Search related settings
         """
@@ -67,6 +68,17 @@ class ConfigSearch(Config):
         config.change_DOWNLOAD_HANDLER_FREQUENCY(download_handler_frequency)
         config.change_BACKLOG_FREQUENCY(backlog_frequency)
         app.BACKLOG_DAYS = try_int(backlog_days, 7)
+        # The Vue form hides the threshold input when batching is disabled, so
+        # an omitted field must preserve the current value rather than reset it
+        # to the initial default of 2.
+        if backlog_batch_refill_threshold is None:
+            threshold = app.BACKLOG_BATCH_REFILL_THRESHOLD
+        else:
+            threshold = try_int(backlog_batch_refill_threshold,
+                                app.BACKLOG_BATCH_REFILL_THRESHOLD)
+        app.BACKLOG_BATCH_SIZE = max(0, try_int(backlog_batch_size, 0))
+        app.BACKLOG_BATCH_REFILL_THRESHOLD = effective_refill_threshold(
+            app.BACKLOG_BATCH_SIZE, threshold)
 
         app.CACHE_TRIMMING = config.checkbox_to_value(cache_trimming)
         app.MAX_CACHE_AGE = try_int(max_cache_age, 0)
