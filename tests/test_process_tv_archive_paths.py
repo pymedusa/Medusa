@@ -48,10 +48,10 @@ def test_unrar_preserves_member_paths(archive_setup, members, expected):
     """Preserve extracted subdirectories and distinct files with the same basename."""
     sut, archive, history_check = archive_setup(members)
 
-    unpacked = sut.unrar(sut.directory, ['release.rar'])
+    unpacked = sut.unrar(sut.input_path, ['release.rar'])
 
     assert unpacked == expected
-    archive.extractall.assert_called_once_with(path=sut.directory)
+    archive.extractall.assert_called_once_with(path=sut.input_path)
     assert history_check.call_args_list == [call(os.path.basename(filename)) for filename in expected]
 
 
@@ -64,8 +64,8 @@ def test_unrar_uses_safe_extraction_paths(archive_setup, member, expected):
     """Track sanitized extraction paths, never archive-supplied absolute or parent paths."""
     sut, archive, _ = archive_setup([member])
 
-    assert sut.unrar(sut.directory, ['release.rar']) == [expected]
-    archive.extractall.assert_called_once_with(path=sut.directory)
+    assert sut.unrar(sut.input_path, ['release.rar']) == [expected]
+    archive.extractall.assert_called_once_with(path=sut.input_path)
 
 
 def test_unrar_checks_nested_extracted_file(archive_setup, create_file, monkeypatch):
@@ -75,7 +75,7 @@ def test_unrar_checks_nested_extracted_file(archive_setup, create_file, monkeypa
     sut, archive, history_check = archive_setup(['nested/episode.mkv'])
     monkeypatch.setattr(app, 'POSTPONE_IF_NO_SUBS', True)
 
-    assert sut.unrar(sut.directory, ['release.rar']) == [filename]
+    assert sut.unrar(sut.input_path, ['release.rar']) == [filename]
 
     archive.extractall.assert_not_called()
     archive.testrar.assert_not_called()
@@ -93,8 +93,8 @@ def test_extracted_member_reaches_postprocessor(archive_setup, create_file, monk
     processor_class = Mock(return_value=processor)
     monkeypatch.setattr('medusa.process_tv.post_processor.PostProcessor', processor_class)
 
-    sut.prepare_files(sut.directory, ['release.rar'], force=False)
-    sut.process_files(sut.directory)
+    sut.prepare_files(sut.input_path, ['release.rar'], force=False)
+    sut.process_files(sut.input_path)
 
     processor_class.assert_called_once_with(extracted_path, None, 'copy', None)
     processor.process.assert_called_once_with()

@@ -128,9 +128,9 @@ def test_selected_file_parent_walk_uses_platform_case_rules(
         return path_module.dirname(path)
 
     path_functions = Mock(wraps=path_module)
-    path_functions.isfile.return_value = True
+    path_functions.isfile.side_effect = lambda filename: filename == resource
     path_functions.dirname.side_effect = bounded_dirname
-    monkeypatch.setattr('medusa.process_tv.os', Mock(path=path_functions))
+    monkeypatch.setattr('medusa.process_tv.os', Mock(path=path_functions, curdir='.'))
     monkeypatch.setattr('medusa.process_tv.helpers.is_hidden_folder', Mock(return_value=False))
 
     assert sut.should_process(root, resource) is expected

@@ -130,8 +130,8 @@ def test_get_files_direct_file(create_file, with_resource, extension):
     sut = ProcessResult(path)
     sut.resource_name = os.path.basename(path) if with_resource else None
 
-    assert list(sut._get_files(sut.directory)) == [
-        (os.path.dirname(sut.directory), [os.path.basename(path)])
+    assert list(sut._get_files(sut.input_path)) == [
+        (os.path.dirname(sut.input_path), [os.path.basename(path)])
     ]
 
 
