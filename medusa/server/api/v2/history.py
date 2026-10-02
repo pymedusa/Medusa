@@ -17,6 +17,7 @@ from medusa.providers.generic_provider import GenericProvider
 from medusa.schedulers.download_handler import ClientStatus, ClientStatusEnum, status_strings
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.tv.series import Series, SeriesIdentifier
+
 from six import string_types
 
 
