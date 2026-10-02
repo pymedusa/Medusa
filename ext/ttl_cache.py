@@ -28,29 +28,36 @@ def cache(ttl, typed=False, ignore_error=False, random_base=0):
             return x
 
         _tmp = {}
+        # Bound retention of unused expired entries without scanning on every call.
+        eviction_interval = max(0.0, min(ttl, 60.0))
+        next_eviction = 0.0
+
+        def _evict_expired(now):
+            nonlocal next_eviction
+            if now < next_eviction:
+                return
+            next_eviction = now + eviction_interval
+            for expired_key, (expired_cd, _) in list(_tmp.items()):
+                if expired_cd <= now:
+                    del _tmp[expired_key]
 
         @functools.wraps(fn)
         def fn_wrapped(*args, **kwargs):
             now = monotonic()
-
-            def _evict_expired():
-                for expired_key, (expired_cd, _) in list(_tmp.items()):
-                    if expired_cd <= now:
-                        del _tmp[expired_key]
 
             key = _hash(args) + _hash(kwargs)
             if typed:
                 key += tuple(map(type, args))
 
             stale_entry = _tmp.get(key)
+            _evict_expired(now)
 
             if stale_entry:
                 cd, result = stale_entry
                 if cd > now:
-                    _evict_expired()
                     return result
-
-            _evict_expired()
+                # Expiry of the requested key must not wait for a full sweep.
+                _tmp.pop(key, None)
 
             try:
                 result = fn(*args, **kwargs)

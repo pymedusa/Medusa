@@ -28,7 +28,7 @@ from medusa.name_parser.parser import InvalidNameException, InvalidShowException
 from medusa.queues import generic_queue
 from medusa.subtitles import accept_any, accept_unknown, get_embedded_subtitles
 
-from rarfile import BadRarFile, Error, NotRarFile, RarCannotExec, RarFile
+from rarfile import BadRarFile, Error, NotRarFile, RarCannotExec, RarFile, sanitize_filename
 
 from six import iteritems
 
@@ -115,6 +115,14 @@ class PostProcessQueueItem(generic_queue.QueueItem):
     def update_history_processed(self, process_results):
         """Update the history table when we have a processed path + resource."""
         from medusa.schedulers.download_handler import ClientStatus
+
+        if process_results.skipped:
+            log.info('Skipped post-processing for: {path} and resource: {resource} keeping existing status', {
+                'path': self.path,
+                'resource': self.resource_name
+            })
+            return
+
         status = ClientStatus()
 
         # Postpone the process, and setting the client_status.
@@ -124,7 +132,7 @@ class PostProcessQueueItem(generic_queue.QueueItem):
 
             # If succeeded store Postprocessed + Completed. (384)
             # If failed store Postprocessed + Failed. (272)
-            if process_results.result and not process_results.failed:
+            if process_results.result and process_results.succeeded and not process_results.failed:
                 status.add_status_string('Completed')
                 self.success = True
             else:
@@ -132,7 +140,7 @@ class PostProcessQueueItem(generic_queue.QueueItem):
                 self.success = False
             self.update_resource(status)
         else:
-            log.info('Postponed PP for: {path} and resource: {resource} keeping existing status', {
+            log.info('Postponed post-processing for: {path} and resource: {resource} keeping existing status', {
                 'path': self.path,
                 'resource': self.resource_name
             })
@@ -276,6 +284,8 @@ class ProcessResult(object):
         self.aborted = False
         # Processing succeeded. Trigger failed downlaod handling and update history client status.
         self.succeeded = True
+        # No processing was attempted and no explicit failure was reported.
+        self.skipped = False
         # Processing postponed. Stop postprocessing and don't update history client status.
         self.postpone_processing = False
         self.missed_files = []
@@ -385,6 +395,38 @@ class ProcessResult(object):
 
         return None
 
+    def _postpone_for_sync_files(self, path, files, resource_path=None):
+        """Record sync-related postponement and return whether to skip processing."""
+        if not app.POSTPONE_IF_SYNC_FILES:
+            return False
+
+        sync_path = os.path.dirname(resource_path) if resource_path else path
+        if resource_path:
+            try:
+                # Check siblings without adding them to the selected files.
+                with os.scandir(sync_path) as entries:
+                    postpone = any(is_sync_file(entry.name) and not entry.is_dir() for entry in entries)
+            except OSError as error:
+                self.postpone_processing = True
+                self.postpone_any = True
+                self.log_and_output(
+                    'Unable to check temporary sync files in folder: {path}: {error}',
+                    level=logging.WARNING, **{'path': sync_path, 'error': ex(error)})
+                self.missed_files.append('{0}: Unable to check sync files'.format(sync_path))
+                return True
+        else:
+            postpone = any(is_sync_file(filename) for filename in files)
+
+        if not postpone:
+            return False
+
+        self.postpone_processing = True
+        self.postpone_any = True
+        self.log_and_output('Found temporary sync files in folder: {dir_path}', **{'dir_path': sync_path})
+        self.log_and_output('Skipping post-processing for folder: {dir_path}', **{'dir_path': path})
+        self.missed_files.append('{0}: Sync files found'.format(path))
+        return True
+
     def process(self, resource_name=None, force=False, is_priority=None, delete_on=False,
                 proc_type='auto', ignore_subs=False):
         """
@@ -402,6 +444,8 @@ class ProcessResult(object):
             self.log_and_output('Processing resource: {resource}', level=logging.DEBUG, **{'resource': self.resource_name})
 
         if not self.directory:
+            self.result = False
+            self.skipped = not self.failed
             return self.output
 
         if app.POSTPONE_IF_NO_SUBS:
@@ -420,40 +464,42 @@ class ProcessResult(object):
                 self.result = False
                 continue
 
-            if not self.should_process(path):
+            if not self.should_process(path, resource_path):
                 continue
 
             self.result = True
 
             for dir_path, filelist in self._get_files(path):
-                sync_files = (filename
-                              for filename in filelist
-                              if is_sync_file(filename))
+                if self._postpone_for_sync_files(dir_path, filelist, resource_path):
+                    continue
 
-                # Don't process files if they are still being synced
-                postpone = app.POSTPONE_IF_SYNC_FILES and any(sync_files)
-                if not postpone:
-                    self.log_and_output('Processing folder: {dir_path}', level=logging.DEBUG, **{'dir_path': dir_path})
-
-                    self.prepare_files(dir_path, filelist, force)
-                    self.process_files(dir_path, force=force, is_priority=is_priority,
-                                       ignore_subs=ignore_subs)
-                    self._clean_up(dir_path, proc_type, delete=delete_on)
-                    # Keep track if processed anything.
-                    processed_items = True
-                else:
+                if (not app.UNPACK and any(helpers.is_rar_file(filename) for filename in filelist)
+                        and not any(helpers.is_media_file(filename) for filename in filelist)):
                     self.postpone_processing = True
                     self.postpone_any = True
-                    self.log_and_output('Found temporary sync files in folder: {dir_path}', **{'dir_path': dir_path})
-                    self.log_and_output('Skipping post-processing for folder: {dir_path}', **{'dir_path': dir_path})
+                    self.log_and_output('Skipping folder with archives because unpacking is disabled: {path}',
+                                        **{'path': dir_path})
+                    self.missed_files.append('{0}: Archive unpacking is disabled'.format(dir_path))
+                    continue
 
-                    self.missed_files.append('{0}: Sync files found'.format(dir_path))
+                self.log_and_output('Processing folder: {dir_path}', level=logging.DEBUG, **{'dir_path': dir_path})
 
+                self.prepare_files(dir_path, filelist, force)
+                self.process_files(dir_path, force=force, is_priority=is_priority,
+                                   ignore_subs=ignore_subs)
+                self._clean_up(dir_path, proc_type, delete=delete_on)
+                # Keep track if processed anything.
+                processed_items = True
+
+        self.skipped = not processed_items and self.succeeded and not self.failed and not self.postpone_any
         if not processed_items:
             self.result = False
 
         if self.succeeded:
-            self.log_and_output('Post-processing completed.')
+            if not processed_items and not self.postpone_any:
+                self.log_and_output('No processable items found.')
+            else:
+                self.log_and_output('Post-processing completed.')
 
             # Clean Kodi library
             if app.KODI_LIBRARY_CLEAN_PENDING and notifiers.kodi_notifier.clean_library():
@@ -493,22 +539,50 @@ class ProcessResult(object):
                 if self.delete_folder(path, check_empty=check_empty):
                     self.log_and_output('Deleted folder: {path}', level=logging.DEBUG, **{'path': path})
 
-    def should_process(self, path):
+    def should_process(self, path, resource_path=None):
         """
         Determine if a directory should be processed.
 
         :param path: Path we want to verify
+        :param resource_path: A selected file within the processing path, if any
         :return: True if the directory is valid for processing, otherwise False
         :rtype: Boolean
         """
-        if not self._is_valid_folder(path):
-            return False
+        selected_path = resource_path or path
+        is_file = os.path.isfile(selected_path)
+        # A directly selected file must also respect its containing folder's state.
+        paths_to_check = [path]
+        if is_file:
+            parent = os.path.dirname(os.path.abspath(selected_path))
+            paths_to_check.extend((selected_path, parent))
+            # Validate intermediate folders for nested resources, without scanning siblings.
+            root = os.path.normcase(os.path.abspath(path))
+            try:
+                contained = os.path.normcase(os.path.commonpath((root, parent))) == root
+            except ValueError:  # Paths on different drives have no common parent.
+                contained = False
+            while contained and os.path.normcase(parent) != root:
+                next_parent = os.path.dirname(parent)
+                if next_parent == parent:
+                    break
+                parent = next_parent
+                paths_to_check.append(parent)
 
-        folder = os.path.basename(path)
-        if helpers.is_hidden_folder(path) or any(f == folder for f in self.IGNORED_FOLDERS):
-            self.log_and_output('Ignoring folder: {folder}', level=logging.DEBUG, **{'folder': folder})
-            self.missed_files.append('{0}: Hidden or ignored folder'.format(path))
-            return False
+        for checked_path in dict.fromkeys(paths_to_check):
+            if not self._is_valid_folder(checked_path):
+                return False
+
+            folder = os.path.basename(checked_path)
+            if helpers.is_hidden_folder(checked_path) or folder in self.IGNORED_FOLDERS:
+                self.log_and_output('Ignoring folder: {folder}', level=logging.DEBUG, **{'folder': folder})
+                self.missed_files.append('{0}: Hidden or ignored folder'.format(checked_path))
+                return False
+
+        # A single file can be passed as the path to process, for example the content
+        # path of a single-file torrent. os.walk() yields nothing for a file, so that
+        # case needs to be decided here.
+        if is_file:
+            return helpers.is_media_file(selected_path) or helpers.is_rar_file(selected_path)
 
         for root, dirs, files in os.walk(path):
             for subfolder in dirs:
@@ -549,6 +623,10 @@ class ProcessResult(object):
 
     def _get_files(self, path):
         """Return the path to a folder and its contents as a tuple."""
+        if os.path.isfile(path):
+            yield os.path.dirname(path), [os.path.basename(path)]
+            return
+
         # If resource_name is a file and not an NZB, process it directly
         def walk_path(path_name):
             topdown = True if self.directory == path_name else False
@@ -670,6 +748,9 @@ class ProcessResult(object):
                           if filename not in video_files
                           and helpers.get_extension(filename) not in
                           self.allowed_extensions]
+        # External extraction may leave archives and their volumes alongside the videos.
+        if rar_files and not app.UNPACK:
+            unwanted_files = []
         if unwanted_files:
             self.log_and_output('Found unwanted files: {unwanted_files}', level=logging.DEBUG, **{'unwanted_files': unwanted_files})
 
@@ -759,9 +840,11 @@ class ProcessResult(object):
         if not files:
             return
 
-        if not self.result and force:
-            self.log_and_output('Forcing deletion of files, even though last result was not successful.', level=logging.DEBUG)
-        elif not self.result:
+        # A later successful file must not allow cleanup of failed or postponed media.
+        completed = self.result and self.succeeded and not self.postpone_any
+        if not completed and force:
+            self.log_and_output('Forcing deletion of files, even though processing did not complete successfully.', level=logging.DEBUG)
+        elif not completed:
             return
 
         # Delete all file not needed
@@ -815,10 +898,11 @@ class ProcessResult(object):
 
                     # Skip extraction if any file in archive has previously been extracted
                     skip_extraction = False
-                    for file_in_archive in [os.path.basename(each.filename)
-                                            for each in rar_handle.infolist()
-                                            if not each.isdir()]:
-                        if not force and self.already_postprocessed(file_in_archive):
+                    # Match rarfile's extraction paths, including its path sanitization.
+                    archive_files = [sanitize_filename(each.filename, os.path.sep, os.name == 'nt')
+                                     for each in rar_handle.infolist() if not each.isdir()]
+                    for file_in_archive in archive_files:
+                        if not force and self.already_postprocessed(os.path.basename(file_in_archive)):
                             self.log_and_output('Archive file already post-processed, extraction skipped: {file_in_archive}',
                                                 level=logging.DEBUG, **{'file_in_archive': file_in_archive})
                             skip_extraction = True
@@ -835,10 +919,7 @@ class ProcessResult(object):
                         rar_handle.testrar()
                         rar_handle.extractall(path=path)
 
-                    for each in rar_handle.infolist():
-                        if not each.isdir():
-                            basename = os.path.basename(each.filename)
-                            unpacked_files.append(basename)
+                    unpacked_files.extend(archive_files)
 
                     del rar_handle
 
@@ -913,7 +994,7 @@ class ProcessResult(object):
         for video in video_files:
             file_path = os.path.join(path, video)
 
-            if not force and self.already_postprocessed(video):
+            if not force and self.already_postprocessed(os.path.basename(video)):
                 self.log_and_output('Skipping already processed file: {video}', level=logging.DEBUG, **{'video': video})
                 continue
 
@@ -1007,21 +1088,22 @@ class ProcessResult(object):
             processor = failed_processor.FailedProcessor(
                 path, resource_name or self.resource_name, self.episodes
             )
-            self.result = processor.process()
+            # Handling a failed download successfully does not make processing successful.
+            failure_handled = processor.process()
             process_fail_message = ''
         except FailedPostProcessingFailedException as error:
             processor = None
-            self.result = False
+            failure_handled = False
             process_fail_message = ex(error)
 
         if processor:
             self._output.append(processor.output)
 
-        if app.DELETE_FAILED and self.result:
+        if app.DELETE_FAILED and failure_handled:
             if self.delete_folder(path, check_empty=False):
                 self.log_and_output('Deleted folder: {path}', level=logging.DEBUG, **{'path': path})
 
-        if self.result:
+        if failure_handled:
             self.log_and_output('Failed Download Processing succeeded: {resource}, {path}', **{'resource': self.resource_name, 'path': path})
         else:
             self.log_and_output('Failed Download Processing failed: {resource}, {path}: {process_fail_message}',
