@@ -8,12 +8,6 @@ export default {
     props: {
         slug: String
     },
-    data() {
-        return {
-            created: false,
-            wrapper: null
-        };
-    },
     computed: {
         ...mapState({
             enabled: state => state.config.layout.fanartBackground,
@@ -30,6 +24,10 @@ export default {
             }
             return offset;
         }
+    },
+    created() {
+        // Keep the plugin instance out of Vue's reactive data.
+        this.backstretchInstance = null;
     },
     mounted() {
         this.setBackStretch();
@@ -50,18 +48,19 @@ export default {
                 const imgUrl = `api/v2/series/${slug}/asset/fanart?api_key=${this.apiKey}`;
 
                 // If no element is supplied, attaches to `<body>`
-                const { $wrap } = $.backstretch(imgUrl);
+                this.backstretchInstance = $.backstretch(imgUrl);
+                const { $wrap } = this.backstretchInstance;
                 $wrap.css('top', offset);
                 $wrap.css('opacity', opacity).fadeIn(500);
-                this.created = true;
-                this.wrapper = $wrap;
             }
         },
         removeBackStretch() {
-            if (this.created) {
-                $.backstretch('destroy');
-                this.created = false;
+            const { backstretchInstance } = this;
+            // Another page may have replaced or removed the shared background.
+            if (backstretchInstance && backstretchInstance === $('body').data('backstretch')) {
+                backstretchInstance.destroy();
             }
+            this.backstretchInstance = null;
         }
     },
     destroyed() {
@@ -75,8 +74,9 @@ export default {
     },
     watch: {
         opacity(newOpacity) {
-            if (this.created) {
-                const { $wrap } = $('body').data('backstretch');
+            const { backstretchInstance } = this;
+            if (backstretchInstance && backstretchInstance === $('body').data('backstretch')) {
+                const { $wrap } = backstretchInstance;
                 $wrap.css('opacity', newOpacity).fadeIn(500);
             }
         }
