@@ -2,6 +2,7 @@
     <div class="history-wrapper-compact vgt-table-styling">
 
         <vue-good-table
+            ref="compact-history"
             mode="remote"
             @on-page-change="onPageChange"
             @on-per-page-change="onPerPageChange"
@@ -17,13 +18,14 @@
             :sort-options="{
                 enabled: true,
                 multipleColumns: false,
-                initialSortBy: getSortFromCookie()
+                initialSortBy: historyHeaderSort
             }"
             :pagination-options="{
                 enabled: true,
                 perPage: remoteHistory.perPage,
                 perPageDropdown,
                 dropdownAllowAll: false,
+                setCurrentPage: remoteHistory.page,
                 position: 'both'
             }"
             :column-filter-options="{
@@ -91,7 +93,7 @@
 
             <template #column-filter="{ column }">
                 <span v-if="column.field === 'episodeTitle'">
-                    <input placeholder="Resource" class="'form-control input-sm vgt-input" @input="updateResource">
+                    <input :value="episodeFilter.inputValue" placeholder="Show title or release" class="'form-control input-sm vgt-input" @input="updateResource">
                 </span>
             </template>
         </vue-good-table>
@@ -103,6 +105,7 @@ import debounce from 'lodash/debounce';
 import { mapActions, mapGetters, mapState } from 'vuex';
 import { VueGoodTable } from 'vue-good-table';
 import { humanFileSize } from '../utils/core';
+import { normalizeHistoryTextFilter } from '../utils/history';
 import { manageCookieMixin } from '../mixins/manage-cookie';
 import QualityPill from './helpers/quality-pill.vue';
 import AppLink from './helpers/app-link.vue';
@@ -132,7 +135,8 @@ export default {
             dateInputFormat: 'yyyyMMddHHmmss', // E.g. 07-09-2017 19:16:25
             dateOutputFormat: 'yyyy-MM-dd HH:mm:ss',
             type: 'date',
-            hidden: getCookie('Date')
+            firstSortType: 'desc',
+            hidden: getCookie('Time')
         }, {
             label: 'Episode',
             field: 'episodeTitle',
@@ -141,51 +145,71 @@ export default {
                 enabled: true,
                 customFilter: true
             },
-            hidden: getCookie('Status')
+            hidden: getCookie('Episode')
         }, {
             label: 'Snatched',
             field: 'snatched',
             type: 'number',
             sortable: false,
-            hidden: getCookie('Quality')
+            hidden: getCookie('Snatched')
         }, {
             label: 'Downloaded',
             field: 'downloaded',
             sortable: false,
-            hidden: getCookie('Provider/Group')
+            hidden: getCookie('Downloaded')
         }, {
             label: 'Subtitled',
             field: 'subtitled',
-            hidden: getCookie('Release')
+            hidden: getCookie('Subtitled')
         }, {
             label: 'Quality',
             field: 'quality',
-            hidden: getCookie('Release')
+            hidden: getCookie('Quality')
         }];
 
         return {
             columns,
             selectedClientStatusValue: [],
-            perPageDropdown
+            perPageDropdown,
+            historyTableMounted: false,
+            historyHeaderSort: [],
+            restoringSortHeader: false
         };
     },
     mounted() {
-        const { getCookie, getSortFromCookie } = this;
-
-        // Get per-page pagination from cookie
-        const perPage = getCookie('pagination-perpage-history');
-        if (perPage) {
-            this.remoteHistory.perPage = perPage;
-        }
-        this.remoteHistory.sort = getSortFromCookie();
+        this.historyTableMounted = true;
+        this.loadItems();
     },
     created() {
+        this.initializeEpisodeFilter({ layout: 'compact' });
+        this.initializeHistorySort({
+            layout: 'compact',
+            sort: this.getSortFromCookie()
+        });
+        this.historyHeaderSort = this.remoteHistory.sort;
+        this.initializeHistoryPagination({
+            layout: 'compact',
+            perPage: this.getCookie('pagination-perpage-history')
+        });
+        this.setCookie('sort', this.remoteHistory.sort);
+        this.setCookie('pagination-perpage-history', this.remoteHistory.perPage);
         this.loadItemsDebounced = debounce(this.loadItems, 500);
+    },
+    beforeDestroy() {
+        if (this.loadItemsDebounced && this.loadItemsDebounced.cancel) {
+            this.loadItemsDebounced.cancel();
+        }
     },
     computed: {
         ...mapState({
             layout: state => state.config.layout,
             remoteHistory: state => state.history.remoteCompact,
+            episodeFilter: state => state.history.episodeFilter || {
+                inputValue: '',
+                filterValue: '',
+                malformed: false,
+                initialized: false
+            },
             consts: state => state.config.consts
         }),
         ...mapGetters({
@@ -212,22 +236,65 @@ export default {
         ...mapActions({
             getHistory: 'getHistory',
             checkHistory: 'checkHistory',
+            initializeEpisodeFilter: 'initializeEpisodeFilter',
+            initializeHistorySort: 'initializeHistorySort',
+            initializeHistoryPagination: 'initializeHistoryPagination',
+            updateEpisodeFilter: 'updateEpisodeFilter',
             setStoreLayout: 'setStoreLayout'
         }),
         getSortFromCookie() {
             const { getCookie } = this;
             const sort = getCookie('sort'); // From manage-cookie.js mixin
-            if (sort) {
-                if (sort[0].type === 'none') {
-                    sort[0].type = 'desc';
-                }
-                return sort;
+            const supportedFields = ['date', 'actionDate', 'subtitled', 'quality'];
+            const defaultSort = [{ field: 'date', type: 'desc' }];
+            if (!Array.isArray(sort) || sort.length === 0) {
+                return defaultSort;
             }
-            return [{ field: 'date', type: 'desc' }];
+            const [firstSort] = sort;
+            const firstSortPrototype = firstSort !== null && typeof firstSort === 'object' ? Object.getPrototypeOf(firstSort) : undefined;
+            const isPlainObject = firstSortPrototype === Object.prototype || firstSortPrototype === null;
+            if (!isPlainObject || typeof firstSort.field !== 'string' || typeof firstSort.type !== 'string' || !supportedFields.includes(firstSort.field) || !['asc', 'desc'].includes(firstSort.type)) {
+                return defaultSort;
+            }
+            return [{ field: firstSort.field, type: firstSort.type }];
         },
         sortDate(rows) {
             const cloneRows = [...rows];
-            return cloneRows.sort(x => x.actionDate).reverse();
+            const getNumericDate = value => {
+                if (typeof value === 'number' && Number.isFinite(value)) {
+                    return value;
+                }
+                if (typeof value === 'string' && value.trim() !== '') {
+                    const numericValue = Number(value);
+                    if (Number.isFinite(numericValue)) {
+                        return numericValue;
+                    }
+                }
+                return null;
+            };
+            const compareIds = (left, right) => {
+                const leftId = Number(left.id);
+                const rightId = Number(right.id);
+                if (Number.isFinite(leftId) && Number.isFinite(rightId)) {
+                    return leftId - rightId;
+                }
+                return String(left.id).localeCompare(String(right.id));
+            };
+
+            return cloneRows.sort((left, right) => {
+                const leftDate = getNumericDate(left.actionDate);
+                const rightDate = getNumericDate(right.actionDate);
+                if (leftDate === null && rightDate !== null) {
+                    return 1;
+                }
+                if (leftDate !== null && rightDate === null) {
+                    return -1;
+                }
+                if (leftDate !== null && rightDate !== null && leftDate !== rightDate) {
+                    return rightDate - leftDate;
+                }
+                return compareIds(left, right);
+            });
         },
         getFileBaseName(path) {
             if (path) {
@@ -247,6 +314,9 @@ export default {
             setStoreLayout({ key: 'historyLimit', value: pageLimit });
         },
         onPageChange(params) {
+            if (!this.historyTableMounted && params.currentPage === 1 && this.remoteHistory.page !== 1) {
+                return;
+            }
             this.remoteHistory.page = params.currentPage;
             this.loadItemsDebounced();
         },
@@ -256,39 +326,75 @@ export default {
             this.loadItemsDebounced();
         },
         onSortChange(params) {
-            this.setCookie('sort', params);
-            this.remoteHistory.sort = params.filter(item => item.type !== 'none');
+            if (this.restoringSortHeader) {
+                return;
+            }
+            if (this.episodeFilter.malformed) {
+                this.updateEpisodeFilter({
+                    inputValue: this.episodeFilter.filterValue,
+                    filterValue: this.episodeFilter.filterValue,
+                    malformed: false,
+                    resetPage: false
+                });
+            }
+            const sort = Array.isArray(params) ? params.filter(item => item.type !== 'none') : [];
+            const canonicalSort = sort.length > 0 ? sort : [{ field: 'actionDate', type: 'desc' }];
+            this.setCookie('sort', canonicalSort);
+            this.remoteHistory.sort = canonicalSort;
+            if (sort.length === 0) {
+                this.historyHeaderSort = canonicalSort;
+                this.restoringSortHeader = true;
+                this.$nextTick(() => {
+                    try {
+                        const table = this.$refs['compact-history'];
+                        if (table && typeof table.initializeSort === 'function') {
+                            table.initializeSort();
+                        }
+                    } finally {
+                        this.restoringSortHeader = false;
+                    }
+                });
+            }
             this.loadItemsDebounced();
         },
-        onColumnFilter(params) {
-            this.remoteHistory.filter = params;
+        onColumnFilter() {
+            const currentFilters = this.remoteHistory.filter && this.remoteHistory.filter.columnFilters ? this.remoteHistory.filter.columnFilters : {};
+            const resource = this.episodeFilter.initialized ? this.episodeFilter.filterValue : currentFilters.resource;
+            this.applyFilter(resource ? { resource } : {});
+        },
+        applyFilter(columnFilters) {
+            const nextFilter = Object.assign({}, this.remoteHistory.filter, {
+                columnFilters
+            });
+            this.remoteHistory.filter = nextFilter;
+            this.remoteHistory.page = 1;
             this.loadItemsDebounced();
+        },
+        updateFilterValue(field, value) {
+            const currentFilters = this.remoteHistory.filter && this.remoteHistory.filter.columnFilters ? this.remoteHistory.filter.columnFilters : {};
+            const columnFilters = Object.assign({}, currentFilters, {
+                [field]: value
+            });
+            this.applyFilter(columnFilters);
         },
         updateClientStatusFilter(event) {
             const combinedStatus = event.reduce((result, item) => {
                 return result | item.value;
             }, 0);
-            if (!this.remoteHistory.filter) {
-                this.remoteHistory.filter = { columnFilters: {} };
-            }
             this.selectedClientStatusValue = event;
-            this.remoteHistory.filter.columnFilters.clientStatus = combinedStatus;
-            this.loadItemsDebounced();
+            this.updateFilterValue('clientStatus', combinedStatus);
         },
         updateQualityFilter(quality) {
-            if (!this.remoteHistory.filter) {
-                this.remoteHistory.filter = { columnFilters: {} };
-            }
-            this.remoteHistory.filter.columnFilters.quality = quality.currentTarget.value;
-            this.loadItemsDebounced();
+            this.updateFilterValue('quality', quality.currentTarget.value);
         },
         updateResource(resource) {
-            resource = resource.currentTarget.value;
-            if (!this.remoteHistory.filter) {
-                this.remoteHistory.filter = { columnFilters: {} };
-            }
-
-            this.remoteHistory.filter.columnFilters.resource = resource;
+            const { value } = resource.currentTarget;
+            const normalized = normalizeHistoryTextFilter(value);
+            this.updateEpisodeFilter({
+                inputValue: normalized.clearInput ? '' : value,
+                filterValue: normalized.filterValue,
+                malformed: normalized.malformed
+            });
             this.loadItemsDebounced();
         },
         // Load items is what brings back the rows from server
