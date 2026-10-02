@@ -95,6 +95,65 @@ def other():
     return rebulk
 
 
+def _prefer_over_polluted(match, other):
+    """Keep broadcast/duration tags over mistaken release_group or alternative_title."""
+    if other.name in ('release_group', 'alternative_title'):
+        return match
+    return '__default__'
+
+
+def duration():
+    """Parse broadcast-style runtimes such as ``42m35s`` or ``1h05m``.
+
+    GuessIt has no duration property; these tokens often become release_group.
+    """
+    rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE)
+    rebulk.defaults(
+        name='duration',
+        validator=seps_surround,
+        conflict_solver=_prefer_over_polluted,
+    )
+    rebulk.regex(
+        r'(?P<value>\d{1,2}h\d{1,2}m|\d{1,3}m\d{1,2}s)',
+        formatter=lambda value: value.lower(),
+    )
+    return rebulk
+
+
+def broadcast_channel():
+    """Parse common FR/EU broadcast channel tokens from rip filenames.
+
+    Matched as ``broadcast_channel`` so GuessIt's ``ValidateStreamingService``
+    does not strip standalone names like ``ARTE``. A POST_PROCESS rule renames
+    them to ``streaming_service`` for Medusa consumers.
+    """
+    rebulk = Rebulk().string_defaults(ignore_case=True).regex_defaults(
+        flags=re.IGNORECASE, abbreviations=[dash]
+    )
+    rebulk.defaults(
+        name='broadcast_channel',
+        validator=seps_surround,
+        conflict_solver=_prefer_over_polluted,
+        tags=['medusa-broadcast-channel'],
+    )
+
+    rebulk.string('ARTE', value='ARTE')
+    rebulk.string('TF1', value='TF1')
+    rebulk.string('M6', value='M6')
+    rebulk.string('C8', value='C8')
+    rebulk.string('TMC', value='TMC')
+    rebulk.string('W9', value='W9')
+    rebulk.string('Gulli', value='Gulli')
+    rebulk.string('FranceTV', 'France TV', value='FranceTV')
+    rebulk.string('France 2', 'France2', 'France-2', value='France 2')
+    rebulk.string('France 3', 'France3', 'France-3', value='France 3')
+    rebulk.string('France 4', 'France4', 'France-4', value='France 4')
+    rebulk.string('France 5', 'France5', 'France-5', 'Fr5', 'Fr 5', value='France 5')
+    rebulk.string('Canal+', 'CanalPlus', 'Canal Plus', value='Canal+')
+
+    return rebulk
+
+
 def container():
     """Builder for rebulk object.
 
