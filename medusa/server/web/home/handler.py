@@ -70,7 +70,7 @@ class Home(WebRoot):
         t = PageTemplate(rh=self, filename='genericMessage.mako')
         return t.render(message=message, subject=subject, title='')
 
-    def index(self):
+    def index(self, **query_args):
         """
         Render the home page.
 
