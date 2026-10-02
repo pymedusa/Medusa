@@ -7,6 +7,7 @@ from datetime import date, datetime, timedelta
 
 from dateutil import tz
 
+from medusa.providers import generic_provider
 from medusa.providers.generic_provider import GenericProvider
 
 import pytest
@@ -169,6 +170,33 @@ def test_parse_pubdate(p):
             f"Expected ~{expected}s, got {actual}s (diff {expected - actual}s)"
     else:
         assert expected == actual
+
+
+@pytest.mark.parametrize(('pubdate', 'expected'), [
+    ('today at 19:42:35', datetime(2026, 8, 27, 19, 42, 35, tzinfo=tz.gettz('UTC'))),
+    ('yesterday at 19:42:35', datetime(2026, 8, 26, 19, 42, 35, tzinfo=tz.gettz('UTC'))),
+], ids=['today', 'yesterday'])
+def test_parse_pubdate_relative_day_uses_utc_date(monkeypatch, pubdate, expected):
+    """Deterministically verify UTC default handling for today/yesterday phrases."""
+    local_now = datetime(2026, 8, 28, 5, 53, 0)
+    utc_now = datetime(2026, 8, 27, 19, 53, 0, tzinfo=tz.gettz('UTC'))
+    original_parse = generic_provider.parser.parse
+
+    class FixedDatetime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            if tz is None:
+                return local_now
+            return utc_now.astimezone(tz)
+
+    def fake_parse(*args, **kwargs):
+        kwargs.setdefault('default', datetime(2026, 8, 28))
+        return original_parse(*args, **kwargs)
+
+    monkeypatch.setattr(generic_provider, 'datetime', FixedDatetime)
+    monkeypatch.setattr(generic_provider.parser, 'parse', fake_parse)
+
+    assert expected == sut.parse_pubdate(pubdate)
 
 
 @pytest.mark.parametrize('p', [
