@@ -31,6 +31,9 @@ expected_groups = [
 
     # Scene release group confused with episode.
     'E7',
+
+    # Trailing broadcast-rip tag (_clo2.ext) often missed as release_group
+    'clo2',
 ]
 
 allowed_languages = [

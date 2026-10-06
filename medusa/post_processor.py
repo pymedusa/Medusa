@@ -128,6 +128,8 @@ class PostProcessor(object):
         self.item_resources = OrderedDict([('file name', self.file_name),
                                            ('relative path', self.rel_path),
                                            ('nzb name', self.nzb_name)])
+        # Last NameParser failure while resolving series for this file (diagnostics).
+        self._last_parse_error = None
 
     def log(self, message, level=logger.INFO):
         """
@@ -680,6 +682,19 @@ class PostProcessor(object):
 
         return series_obj, season, episodes, quality, version
 
+    def _unresolved_series_message(self):
+        """Build a precise user-facing error when series resolution failed."""
+        error = self._last_parse_error
+        if isinstance(error, InvalidShowException):
+            if error.series_name:
+                return u'Unable to resolve parsed show "{0}" to a series in Medusa'.format(
+                    error.series_name
+                )
+            return u'Unable to resolve release to a series in Medusa'
+        if isinstance(error, InvalidNameException):
+            return u'Unable to parse episode information from release'
+        return u'Unable to resolve release to a series in Medusa'
+
     def _analyze_name(self, name):
         """
         Take a name and try to figure out a show, season, episodes, version and quality from it.
@@ -698,6 +713,7 @@ class PostProcessor(object):
         try:
             parse_result = NameParser().parse(name, use_cache=False)
         except (InvalidNameException, InvalidShowException) as error:
+            self._last_parse_error = error
             self.log(u'{0}'.format(error), logger.DEBUG)
             return to_return
 
@@ -709,11 +725,19 @@ class PostProcessor(object):
                 parse_result.series.erase_cached_parse()
                 parse_result = NameParser(parse_method='anime').parse(name, use_cache=False)
             except (InvalidNameException, InvalidShowException) as error:
+                self._last_parse_error = error
                 self.log(u'{0}'.format(error), logger.DEBUG)
                 return to_return
 
-        if parse_result.series and all([parse_result.series.air_by_date or parse_result.series.is_sports,
-                                        parse_result.is_air_by_date]):
+        # Air-by-date / sports shows: convert airdate to SxE via DB. Prefer explicit
+        # season/episode numbering when the release already has it — broadcast dates in
+        # filenames are often rebroadcasts, not the indexer airdate.
+        if (
+            parse_result.series
+            and (parse_result.series.air_by_date or parse_result.series.is_sports)
+            and parse_result.is_air_by_date
+            and not parse_result.episode_numbers
+        ):
             season = -1
             episodes = [parse_result.air_date]
         else:
@@ -1066,8 +1090,7 @@ class PostProcessor(object):
         # try to find the file info
         (series_obj, season, episodes, quality, version) = self._find_info()
         if not series_obj:
-            raise EpisodePostProcessingFailedException(u"This show isn't in your list, you need to add it "
-                                                       u'before post-processing an episode')
+            raise EpisodePostProcessingFailedException(self._unresolved_series_message())
         elif season is None or not episodes:
             raise EpisodePostProcessingFailedException(u'Not enough information to determine what episode this is')
 
