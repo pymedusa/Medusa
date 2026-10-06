@@ -5,10 +5,12 @@ from __future__ import unicode_literals
 
 import locale
 import logging
+import re
 from collections import OrderedDict
 from datetime import datetime
 from itertools import chain
 from time import time
+from urllib.parse import urlsplit
 
 from imdbpie import imdbpie
 
@@ -22,7 +24,7 @@ from medusa.show.show import Show
 
 from requests.exceptions import RequestException
 
-from six import string_types, text_type
+from six import integer_types, string_types, text_type
 
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -42,8 +44,28 @@ class ImdbIdentifier(object):
         self.imdb_id = imdb_id
 
     def _clean(self, imdb_id):
-        if isinstance(imdb_id, string_types):
-            return imdb_id.strip('/').split('/')[-1]
+        """Extract a complete identifier from text or unambiguous URL path segments."""
+        imdb_id = imdb_id.strip()
+        if not imdb_id or re.search(r'[\x00-\x1f\x7f-\x9f]|\s', imdb_id):
+            return
+        if re.fullmatch(r'[0-9]+', imdb_id):
+            return 'tt' + imdb_id.zfill(7)
+
+        try:
+            parsed = urlsplit(imdb_id)
+            if parsed.scheme and (parsed.scheme not in ('http', 'https') or not parsed.netloc):
+                return
+            if parsed.netloc:
+                # Validate malformed hosts and ports before interpreting their paths.
+                if not parsed.hostname:
+                    return
+                parsed.port
+        except ValueError:
+            return
+
+        identifiers = {segment for segment in parsed.path.split('/') if re.fullmatch(r'tt[0-9]+', segment)}
+        if len(identifiers) == 1:
+            return identifiers.pop()
 
     @property
     def series_id(self):
@@ -63,19 +85,22 @@ class ImdbIdentifier(object):
     @imdb_id.setter
     def imdb_id(self, value):
         """Set imdb id."""
-        if value is None or value == '':
-            self._imdb_id = self.series_id = None
-            return
+        self._imdb_id = self.series_id = None
+        try:
+            if isinstance(value, string_types):
+                imdb_id = self._clean(value)
+            elif isinstance(value, integer_types) and not isinstance(value, bool) and value >= 0:
+                imdb_id = 'tt' + text_type(value).zfill(7)
+            else:
+                return
 
-        if isinstance(value, string_types) and 'tt' in value:
-            self._imdb_id = self._clean(value)
-            self.series_id = int(self._imdb_id.split('tt')[-1])
-        else:
-            self._imdb_id = 'tt{0}'.format(text_type(value).zfill(7))
-            try:
-                self.series_id = int(value)
-            except (TypeError, ValueError):
-                self.series_id = None
+            if imdb_id is not None:
+                series_id = int(imdb_id[2:])
+                self._imdb_id = imdb_id
+                self.series_id = series_id
+        except ValueError:
+            # Python may reject excessively long integer/string conversions.
+            return
 
 
 class Imdb(BaseIndexer):
