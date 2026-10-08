@@ -568,15 +568,21 @@ class GenericProvider(object):
                 dt = datetime.fromtimestamp(int(pubdate), tz=tz.gettz('UTC'))
             else:
                 day_offset = 0
+                date_default = None
                 if 'yesterday at' in pubdate.lower() or 'today at' in pubdate.lower():
                     # Extract a time
                     time = re.search(r'(?P<time>[0-9:]+)', pubdate)
                     if time:
                         if 'yesterday' in pubdate:
                             day_offset = 1
+                        date_default = datetime.now(tz=tz.gettz('UTC')).replace(
+                            hour=0, minute=0, second=0, microsecond=0
+                        )
                         pubdate = time.group('time').strip()
 
-                dt = parser.parse(pubdate, dayfirst=df, yearfirst=yf, fuzzy=True) - timedelta(days=day_offset)
+                dt = parser.parse(pubdate, dayfirst=df, yearfirst=yf, fuzzy=True, default=date_default) - timedelta(
+                    days=day_offset
+                )
 
             # Always make UTC aware if naive
             if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) is None:
