@@ -178,6 +178,7 @@ class MedusaApp(object):
         self.WEB_PASSWORD = None
         self.WEB_HOST = None
         self.WEB_IPV6 = None
+        self.WEB_UNIX_SOCKET = None
         self.WEB_COOKIE_SECRET = None
         self.WEB_USE_GZIP = True
 

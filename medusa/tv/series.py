@@ -477,7 +477,7 @@ class Series(TV):
             try:
                 app.show_queue_scheduler.action.refreshShow(self)
             except CantRefreshShowException as error:
-                log.warning("Unable to refresh show '{show}'. Error: {error}",
+                log.warning("Unable to rescan show '{show}'. Error: {error}",
                             {'show': self.name, 'error': error})
 
     @property
@@ -1370,6 +1370,8 @@ class Series(TV):
             if external in reverse_mappings and self.externals[external]:
                 if external == 'imdb_id':
                     self.externals[external] = ImdbIdentifier(self.externals[external]).series_id
+                    if self.externals[external] is None:
+                        continue
                 sql_l.append(['INSERT OR IGNORE '
                               'INTO indexer_mapping (indexer_id, indexer, mindexer_id, mindexer) '
                               'VALUES (?,?,?,?)',
@@ -1633,9 +1635,12 @@ class Series(TV):
         if self.indexer_api.indexer == INDEXER_IMDB:
             self.externals['imdb_id'] = ImdbIdentifier(getattr(indexed_show, 'id')).series_id
 
-        self.imdb_id = None
-        if self.externals.get('imdb_id') or getattr(indexed_show, 'imdb_id', ''):
-            self.imdb_id = ImdbIdentifier(self.externals.get('imdb_id')).imdb_id or getattr(indexed_show, 'imdb_id', '')
+        self.imdb_id = ImdbIdentifier(self.externals.get('imdb_id')).imdb_id
+        if self.imdb_id is None:
+            imdb_id = getattr(indexed_show, 'imdb_id', None)
+            if isinstance(imdb_id, string_types):
+                imdb_id = imdb_id.split(',')[0]
+            self.imdb_id = ImdbIdentifier(imdb_id).imdb_id
 
         if getattr(indexed_show, 'airs_dayofweek', '') and getattr(indexed_show, 'airs_time', ''):
             self.airs = '{airs_day_of_week} {airs_time}'.format(airs_day_of_week=indexed_show['airs_dayofweek'],
@@ -1673,7 +1678,12 @@ class Series(TV):
                 return
 
         # Make sure we only use the first ID
-        self.imdb_id = self.imdb_id.split(',')[0]
+        imdb_id = self.imdb_id.split(',')[0] if isinstance(self.imdb_id, string_types) else self.imdb_id
+        self.imdb_id = ImdbIdentifier(imdb_id).imdb_id
+        if self.imdb_id is None:
+            log.info(u"{id}: Not loading show info from IMDb, because we don't know its ID.",
+                     {'id': self.series_id})
+            return
 
         # Set retrieved IMDb ID as imdb_id for externals
         self.externals['imdb_id'] = self.imdb_id
@@ -2145,7 +2155,7 @@ class Series(TV):
                     raise EpisodeDeletedException
             except EpisodeDeletedException:
                 log.debug(
-                    u"{id:} Episode '{show}' {ep} was deleted while we were refreshing it,"
+                    u"{id:} Episode '{show}' {ep} was deleted while we were rescanning it,"
                     u' moving on to the next one', {
                         'id': self.series_id,
                         'show': self.name,
@@ -2263,13 +2273,13 @@ class Series(TV):
              'message': 'The information on this page is in the process of being updated'},
             {'action': 'isBeingRefreshed',
              'active': app.show_queue_scheduler.action.isBeingRefreshed(self),
-             'message': 'The episodes below are currently being refreshed from disk'},
+             'message': 'The episodes below are currently being rescanned from disk'},
             {'action': 'isBeingSubtitled',
              'active': app.show_queue_scheduler.action.isBeingSubtitled(self),
              'message': 'Currently downloading subtitles for this show'},
             {'action': 'isInRefreshQueue',
              'active': app.show_queue_scheduler.action.isInRefreshQueue(self),
-             'message': 'This show is queued to be refreshed'},
+             'message': 'This show is queued to be rescanned'},
             {'action': 'isInUpdateQueue',
              'active': app.show_queue_scheduler.action.isInUpdateQueue(self),
              'message': 'This show is queued and awaiting an update'},

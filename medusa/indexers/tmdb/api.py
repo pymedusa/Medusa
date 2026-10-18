@@ -238,7 +238,15 @@ class Tmdb(BaseIndexer):
                 language='{0}'.format(request_language),
                 append_to_response=extra_info
             )
-        except (AttributeError, RequestException) as error:
+        except RequestException as error:
+            if getattr(error.response, 'status_code', None) == 404:
+                raise IndexerShowNotFound(
+                    'Show search failed in getting a result with reason: Not found'
+                )
+            raise IndexerUnavailable('Show info retrieval failed using indexer TMDB. Cause: {cause!r}'.format(
+                cause=error
+            ))
+        except AttributeError as error:
             raise IndexerUnavailable('Show info retrieval failed using indexer TMDB. Cause: {cause!r}'.format(
                 cause=error
             ))

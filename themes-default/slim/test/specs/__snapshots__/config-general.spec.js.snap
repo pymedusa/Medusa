@@ -995,7 +995,7 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   id="web_port"
                   inputclass="form-control input-sm input75"
                   label="HTTP port"
-                  min="1"
+                  min="0"
                   placeholder=""
                   step="1"
                   value="8081"
@@ -1003,7 +1003,37 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   <p>
                     web port to browse and access Medusa (default:8081)
                   </p>
+                   
+                  <p>
+                    set to 0 to disable the TCP listener
+                  </p>
                 </config-textbox-number-stub>
+                 
+                <config-textbox-stub
+                  autocomplete="no"
+                  explanations=""
+                  id="web_unix_socket"
+                  inputclass="form-control input-sm max-input350"
+                  label="Unix socket"
+                  placeholder=""
+                  type="text"
+                  value=""
+                >
+                  <p>
+                    listen on a Unix domain socket at this path
+                  </p>
+                   
+                  <p>
+                    blank = disabled (listen on the HTTP port above)
+                  </p>
+                   
+                  <p>
+                    <b>
+                      Note:
+                    </b>
+                     Set the HTTP port to 0 to serve only on the Unix socket. Must restart to have effect.
+                  </p>
+                </config-textbox-stub>
                  
                 <config-toggle-slider-stub
                   explanations=""

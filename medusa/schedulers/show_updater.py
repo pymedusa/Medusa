@@ -194,10 +194,10 @@ class ShowUpdater(object):
             try:
                 app.show_queue_scheduler.action.refreshShow(show, True)
             except CantRefreshShowException as e:
-                logger.warning('Show refresh on show {show_name} failed. Error: {error}',
+                logger.warning('Show rescan on show {show_name} failed. Error: {error}',
                                show_name=show.name, error=e)
             except Exception as e:
-                logger.error('Show refresh on show {show_name} failed: Unexpected Error: {error}',
+                logger.error('Show rescan on show {show_name} failed: Unexpected Error: {error}',
                              show_name=show.name, error=e)
 
         if refresh_shows or season_updates:

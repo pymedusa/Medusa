@@ -73,13 +73,13 @@ class SeriesMassOperation(BaseRequestHandler):
                 except CantUpdateShowException as msg:
                     result['shows'][slug].append('Unable to update show: {error}'.format(error=msg))
 
-            elif slug in rescan:  # don't bother refreshing shows that were updated
+            elif slug in rescan:  # don't bother rescanning shows that were updated
                 try:
                     app.show_queue_scheduler.action.refreshShow(series_obj)
                     result['totals']['rescan'] += 1
                 except CantRefreshShowException as msg:
                     result['shows'][slug].append(
-                        'Unable to refresh show {show.name}: {error}'.format(show=series_obj, error=msg)
+                        'Unable to rescan show {show.name}: {error}'.format(show=series_obj, error=msg)
                     )
 
             if slug in rename:

@@ -95,7 +95,7 @@ export const showSubMenu = vm => {
                 icon: 'ui-icon ui-icon-trash'
             },
             {
-                title: 'Re-scan files',
+                title: 'Rescan files',
                 path: `home/refreshShow?showslug=${showSlug}`,
                 icon: 'ui-icon ui-icon-refresh'
             },

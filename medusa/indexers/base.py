@@ -27,7 +27,7 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import IndexerSession
 from medusa.statistics import weights
 
-from six import integer_types, itervalues, string_types, viewitems
+from six import integer_types, itervalues, string_types, text_type, viewitems
 
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -212,6 +212,119 @@ class BaseIndexer(object):
                 ui = ConsoleUI(config=self.config)  # pylint: disable=redefined-variable-type
 
         return ui.select_series(all_series)
+
+    @staticmethod
+    def _normalize_imdb_id(imdb_id):
+        """Return a comparable numeric IMDb ID, if the provided value is valid."""
+        if imdb_id is None or imdb_id == '':
+            return
+
+        normalized_id = text_type(imdb_id).strip('/').split('/')[-1].casefold()
+        if normalized_id.startswith('tt'):
+            normalized_id = normalized_id[2:]
+        if normalized_id.isdigit():
+            return int(normalized_id)
+
+    @staticmethod
+    def _normalize_title(title):
+        """Normalize a title for conservative exact matching."""
+        return ' '.join(text_type(title or '').split()).casefold()
+
+    @classmethod
+    def _search_result_titles(cls, result):
+        """Return normalized titles and aliases from an indexer search result."""
+        titles = set()
+        for key in ('seriesname', 'name', 'title', 'aliasnames', 'aliases'):
+            value = result.get(key)
+            if isinstance(value, dict):
+                values = value.values()
+            elif isinstance(value, (list, tuple, set)):
+                values = value
+            else:
+                values = text_type(value or '').split('|')
+
+            titles.update(cls._normalize_title(title) for title in values if title)
+        return titles
+
+    @classmethod
+    def _search_result_imdb_ids(cls, result):
+        """Return normalized IMDb IDs from an indexer search result."""
+        imdb_ids = {
+            cls._normalize_imdb_id(result.get('imdb_id')),
+        }
+        for key in ('externals', 'external_ids'):
+            externals = result.get(key) or {}
+            if isinstance(externals, dict):
+                imdb_ids.update({
+                    cls._normalize_imdb_id(externals.get('imdb_id')),
+                    cls._normalize_imdb_id(externals.get('imdb')),
+                })
+        imdb_ids.discard(None)
+        return imdb_ids
+
+    @classmethod
+    def _resolve_series_id_from_results(cls, results, show, imdb_id=None, year=None):
+        """Return a unique strongly matching series ID from normalized search results."""
+        if not results:
+            return
+        if not isinstance(results, list):
+            results = [results]
+
+        expected_imdb_id = cls._normalize_imdb_id(imdb_id)
+        normalized_title = cls._normalize_title(show)
+        imdb_matches = set()
+        title_year_matches = set()
+
+        try:
+            expected_year = int(year) if year else None
+        except (TypeError, ValueError):
+            expected_year = None
+
+        for result in results:
+            if not isinstance(result, dict):
+                continue
+            try:
+                series_id = int(result.get('id'))
+            except (TypeError, ValueError):
+                continue
+
+            result_imdb_ids = cls._search_result_imdb_ids(result)
+            if expected_imdb_id in result_imdb_ids:
+                imdb_matches.add(series_id)
+
+            if not expected_year:
+                continue
+            if expected_imdb_id and result_imdb_ids and expected_imdb_id not in result_imdb_ids:
+                continue
+
+            result_year = result.get('firstaired') or result.get('year')
+            try:
+                result_year = int(text_type(result_year).split('-', 1)[0])
+            except (TypeError, ValueError):
+                continue
+
+            if result_year == expected_year and normalized_title in cls._search_result_titles(result):
+                title_year_matches.add(series_id)
+
+        if len(imdb_matches) == 1:
+            return imdb_matches.pop()
+        if imdb_matches:
+            return
+        if len(title_year_matches) == 1:
+            return title_year_matches.pop()
+
+    def resolve_series_id(self, show, imdb_id=None, year=None):
+        """Search once and resolve a stale ID only when the identity match is unique."""
+        resolved_id = self._resolve_series_id_from_results(
+            self.search(show), show, imdb_id=imdb_id, year=year
+        )
+        if resolved_id:
+            return resolved_id
+
+        log.debug(
+            '{indexer} search did not return a unique identity match for {show}',
+            {'indexer': self.name, 'show': show}
+        )
 
     def _set_show_data(self, sid, key, value):
         """Set self.shows[sid] to a new Show instance, or sets the data."""

@@ -107,3 +107,55 @@ def test_search_rejects_website_error(requests_mock):
 
     with pytest.raises(IndexerUnavailable):
         create_indexer().search('test')
+
+
+def test_resolve_series_id_uses_unique_imdb_match(requests_mock):
+    mock_web_search(requests_mock, [
+        {
+            'id': 443213,
+            'name': 'American Hostage',
+            'year': '2024',
+            'remote_ids': [{'id': 'tt1234567', 'sourceName': 'IMDB'}],
+        },
+        {
+            'id': 462907,
+            'name': 'American Hostage',
+            'year': '2026',
+            'remote_ids': [{'id': 'tt30051064', 'sourceName': 'IMDB'}],
+        },
+    ])
+
+    assert 462907 == create_indexer().resolve_series_id(
+        'American Hostage', imdb_id='tt30051064', year=2026
+    )
+
+
+def test_resolve_series_id_uses_unique_title_and_year_match(requests_mock):
+    mock_web_search(requests_mock, [
+        {'id': 123, 'name': 'Test Show', 'year': '2025'},
+        {'id': 456, 'name': 'Test Show', 'first_air_date': '2026-03-12'},
+    ])
+
+    assert 456 == create_indexer().resolve_series_id('  test SHOW ', year=2026)
+
+
+def test_resolve_series_id_rejects_ambiguous_match(requests_mock):
+    mock_web_search(requests_mock, [
+        {'id': 123, 'name': 'Test Show', 'year': '2026'},
+        {'id': 456, 'name': 'Test Show', 'year': '2026'},
+    ])
+
+    assert create_indexer().resolve_series_id('Test Show', year=2026) is None
+
+
+def test_resolve_series_id_rejects_conflicting_imdb_match(requests_mock):
+    mock_web_search(requests_mock, [{
+        'id': 456,
+        'name': 'Test Show',
+        'year': '2026',
+        'remote_ids': [{'id': 'tt7654321', 'sourceName': 'IMDB'}],
+    }])
+
+    assert create_indexer().resolve_series_id(
+        'Test Show', imdb_id='tt1234567', year=2026
+    ) is None

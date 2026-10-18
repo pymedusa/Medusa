@@ -135,6 +135,7 @@ class ConfigHandler(BaseRequestHandler):
         'webInterface.password': StringField(app, 'WEB_PASSWORD'),
         'webInterface.port': IntegerField(app, 'WEB_PORT'),
         'webInterface.host': StringField(app, 'WEB_HOST'),
+        'webInterface.unixSocket': StringField(app, 'WEB_UNIX_SOCKET'),
         'webInterface.notifyOnLogin': BooleanField(app, 'NOTIFY_ON_LOGIN'),
         'webInterface.ipv6': BooleanField(app, 'WEB_IPV6'),
         'webInterface.httpsEnable': BooleanField(app, 'ENABLE_HTTPS'),
@@ -592,6 +593,20 @@ class ConfigHandler(BaseRequestHandler):
             return self._not_found('Config not found')
 
         data = json_decode(self.request.body)
+
+        # Refuse a configuration with no listeners
+        web_interface = data.get('webInterface') or {}
+        prospective_port = web_interface.get('port', app.WEB_PORT)
+        prospective_unix_socket = web_interface.get('unixSocket', app.WEB_UNIX_SOCKET)
+        try:
+            prospective_port = int(prospective_port)
+        except (TypeError, ValueError):
+            prospective_port = app.WEB_PORT
+        if prospective_port == 0 and not prospective_unix_socket:
+            return self._bad_request(
+                'A web port of 0 disables the TCP listener and requires a unix socket to be configured.'
+            )
+
         accepted = {}
         ignored = {}
 
@@ -739,6 +754,7 @@ class DataGenerator(object):
         section_data['webInterface']['password'] = app.WEB_PASSWORD
         section_data['webInterface']['port'] = int_default(app.WEB_PORT, 8081)
         section_data['webInterface']['host'] = app.WEB_HOST
+        section_data['webInterface']['unixSocket'] = app.WEB_UNIX_SOCKET
         section_data['webInterface']['notifyOnLogin'] = bool(app.NOTIFY_ON_LOGIN)
         section_data['webInterface']['ipv6'] = bool(app.WEB_IPV6)
         section_data['webInterface']['httpsEnable'] = bool(app.ENABLE_HTTPS)

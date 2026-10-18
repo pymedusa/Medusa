@@ -1,3 +1,40 @@
+## 1.0.27 (2026-10-18)
+
+Special thanks to @DavidHunterJS, @XxUnkn0wnxX, @Mika3578 and @fffe for the great contributions to this release!
+
+Python 3.10 or newer is now required. Node.js 20 is no longer supported for frontend builds. ([12293](https://github.com/pymedusa/Medusa/pull/12293), [12292](https://github.com/pymedusa/Medusa/pull/12292))
+
+#### New Features
+
+- Add Unix domain socket support, including socket-only web access ([12223](https://github.com/pymedusa/Medusa/pull/12223))
+- Add support for Python 3.14 ([12292](https://github.com/pymedusa/Medusa/pull/12292))
+
+#### Improvements
+
+- Use consistent update and rescan terminology throughout the web interface ([12284](https://github.com/pymedusa/Medusa/pull/12284))
+- Update Tornado to 6.5.8 and urllib3 to 2.7.0 ([12293](https://github.com/pymedusa/Medusa/pull/12293))
+- Update Axios to 1.20.0, Lodash to 4.18.1, and Sass to 1.103.1 ([12294](https://github.com/pymedusa/Medusa/pull/12294))
+- Update GuessIt to 4.1.0 and Rebulk to 6.0.1 ([12239](https://github.com/pymedusa/Medusa/pull/12239))
+- Update frontend and build dependencies ([12312](https://github.com/pymedusa/Medusa/pull/12312))
+- Keep the show-loading indicator visible above tables and while scrolling ([12295](https://github.com/pymedusa/Medusa/pull/12295), [12297](https://github.com/pymedusa/Medusa/pull/12297))
+- Remove the discontinued SDBits provider ([12327](https://github.com/pymedusa/Medusa/pull/12327))
+
+#### Fixes
+
+- Recover stale IDs when changing indexers and preserve the existing show if the replacement cannot load ([12291](https://github.com/pymedusa/Medusa/pull/12291))
+- Preserve status-colored table rows on hover ([12286](https://github.com/pymedusa/Medusa/pull/12286))
+- Parse alternative season and episode names such as S2-01 ([12307](https://github.com/pymedusa/Medusa/pull/12307))
+- Throttle expired-cache eviction sweeps to avoid repeated full-cache scans ([12319](https://github.com/pymedusa/Medusa/pull/12319))
+- Stop obsolete IMDb episode-page scraping for synopsis and thumbnails ([12315](https://github.com/pymedusa/Medusa/pull/12315))
+- Fix related-episode WebSocket JSON serialization ([12304](https://github.com/pymedusa/Medusa/pull/12304))
+- Process single-file torrents while preserving validation, exclusions, download history, and failure scope ([12302](https://github.com/pymedusa/Medusa/pull/12302), [12324](https://github.com/pymedusa/Medusa/pull/12324))
+- Use UTC dates for relative provider timestamps near midnight ([12298](https://github.com/pymedusa/Medusa/pull/12298))
+- Ignore unused home-page request parameters ([12325](https://github.com/pymedusa/Medusa/pull/12325))
+- Safely clean up shared fanart backgrounds without spurious /destroy requests ([12326](https://github.com/pymedusa/Medusa/pull/12326))
+- Handle malformed IMDb IDs without blocking show addition ([12327](https://github.com/pymedusa/Medusa/pull/12327))
+
+-----
+
 ## 1.0.26 (2026-08-21)
 
 Special thanks to @DavidHunterJS and @Mika3578 for the great contributions to this release!

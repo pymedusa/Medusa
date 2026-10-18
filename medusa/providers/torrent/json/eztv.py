@@ -71,6 +71,8 @@ class EztvProvider(TorrentProvider):
                     imdb_id = self.series.externals.get(mappings[10])
                     if imdb_id:
                         imdb_id = ImdbIdentifier(imdb_id).imdb_id
+
+                    if imdb_id:
                         search_params['imdb_id'] = imdb_id[2:]
                         log.debug('Search string (IMDb ID): {imdb_id}', {'imdb_id': imdb_id})
                     else:

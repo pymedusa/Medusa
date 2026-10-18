@@ -1,9 +1,9 @@
 [project]
 name = "medusa"
-version = "1.0.26"
+version = "1.0.27"
 description = "Automatic Video Library Manager for TV Shows"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "adba",
     "appdirs==1.4.4",
@@ -37,18 +37,18 @@ dependencies = [
     "pytrakt==3.4.35",
     "pyyaml==6.0.3",
     "rarfile==4.2",
-    "rebulk==3.2.0",
+    "rebulk==6.0.1",
     "requests==2.32.5",
     "requests-oauthlib==2.0.0",
     "requests-toolbelt==1.0.0",
     "six==1.17.0",
     "subliminal==2.2.1",
     "tmdbsimple==2.9.1",
-    "tornado==6.5.2",
+    "tornado==6.5.8",
     "tornroutes==0.5.1",
     "ttl-cache==1.6",
     "tvdbapiv2",
-    "urllib3==2.5.0",
+    "urllib3==2.7.0",
     "validators==0.35.0",
 ]
 

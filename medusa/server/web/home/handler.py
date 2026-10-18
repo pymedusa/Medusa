@@ -70,7 +70,7 @@ class Home(WebRoot):
         t = PageTemplate(rh=self, filename='genericMessage.mako')
         return t.render(message=message, subject=subject, title='')
 
-    def index(self):
+    def index(self, **query_args):
         """
         Render the home page.
 
@@ -731,9 +731,9 @@ class Home(WebRoot):
         if error is not None and series_obj is None:
             return self._genericMessage('Error', error)
 
-        # This is a refresh error
+        # This is a rescan error
         if error is not None:
-            ui.notifications.error('Unable to refresh this show.', error)
+            ui.notifications.error('Unable to rescan this show.', error)
 
         time.sleep(cpu_presets[app.CPU_PRESET])
 

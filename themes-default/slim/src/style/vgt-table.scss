@@ -119,8 +119,8 @@ $opacity: 0.8;
             height: 25px;
         }
 
-        tr:hover {
-            background-color: rgba(var(--row-background-color), 0.8);
+        tbody tr:hover {
+            opacity: $opacity;
         }
 
         /* When using collored rows (using the episode status name, Snatched, Downloaded, Failed, etc.)
@@ -167,6 +167,16 @@ $opacity: 0.8;
         .archived {
             --row-background-color: #{$lightYellow};
             background-color: rgb(var(--row-background-color));
+        }
+
+        tbody tr.skipped:hover,
+        tbody tr.snatched:hover,
+        tbody tr.downloaded:hover,
+        tbody tr.failed:hover,
+        tbody tr.subtitled:hover,
+        tbody tr.archived:hover {
+            opacity: 1;
+            background-color: rgba(var(--row-background-color), $opacity);
         }
     }
 
@@ -374,6 +384,14 @@ $opacity: 0.8;
     .schedule tr.later {
         --row-background-color: #{$blue};
         background-color: rgb(var(--row-background-color));
+    }
+
+    .schedule tbody tr.today:hover,
+    .schedule tbody tr.soon:hover,
+    .schedule tbody tr.missed:hover,
+    .schedule tbody tr.later:hover {
+        opacity: 1;
+        background-color: rgba(var(--row-background-color), $opacity);
     }
 
     .schedule tr,

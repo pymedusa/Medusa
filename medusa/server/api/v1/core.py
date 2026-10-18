@@ -2459,7 +2459,7 @@ class CMD_ShowPause(ApiCall):
 
 class CMD_ShowRefresh(ApiCall):
     _help = {
-        'desc': 'Refresh a show in Medusa',
+        'desc': "Rescan a show's files in Medusa",
         'requiredParameters': {
             'indexerid': {'desc': 'Unique ID of a show'},
         },
@@ -2476,13 +2476,13 @@ class CMD_ShowRefresh(ApiCall):
         ApiCall.__init__(self, args, kwargs)
 
     def run(self):
-        """ Refresh a show in Medusa """
+        """Rescan a show's files in Medusa."""
         error, show = Show.refresh(INDEXER_TVDBV2, self.indexerid)
 
         if error:
             return _responds(RESULT_FAILURE, msg=error)
 
-        return _responds(RESULT_SUCCESS, msg='{0} has queued to be refreshed'.format(show.name))
+        return _responds(RESULT_SUCCESS, msg='{0} has been queued to be rescanned'.format(show.name))
 
 
 class CMD_ShowSeasonList(ApiCall):

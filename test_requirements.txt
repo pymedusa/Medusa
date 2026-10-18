@@ -16,8 +16,8 @@ setuptools==68.0.0
 six==1.17.0
 tox
 tox-gh-actions
-tornado==6.5.2
-urllib3<2.0.0
+tornado==6.5.8
+urllib3==2.7.0
 vcrpy
 mock
 requests-mock

@@ -5,7 +5,7 @@
                 <svg class="back-arrow"><use xlink:href="images/svg/go-back-arrow.svg#arrow" /></svg>
             </app-link>
             <h3>Main Settings</h3>
-            <em class="note"><b>Note:</b> Changing any settings marked with (<span class="separator">*</span>) will force a refresh of the selected shows.</em>
+            <em class="note"><b>Note:</b> Changing any settings marked with (<span class="separator">*</span>) will force a rescan of the selected shows.</em>
 
             <fieldset class="component-group-list">
                 <config-template label-for="selected_shows" label="Selected Shows" class="field-pair">
