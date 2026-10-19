@@ -914,6 +914,8 @@ def get_show(name, try_indexers=False):
     :return: The found series object or None.
     """
     from medusa import classes, name_cache, scene_exceptions
+    from medusa.name_parser.series_name import normalize_series_name_for_comparison
+
     if not app.showList:
         return
 
@@ -924,8 +926,20 @@ def get_show(name, try_indexers=False):
         return series
 
     for series_name in generate(name):
+        normalized_name = normalize_series_name_for_comparison(series_name)
         # check cache for series
         indexer_id, series_id = name_cache.retrieveNameFromCache(series_name)
+        log.debug(
+            'get_show lookup key={key!r} normalized={normalized!r} '
+            'name_cache=({indexer_id}, {series_id}) try_indexers={try_indexers}',
+            {
+                'key': series_name,
+                'normalized': normalized_name,
+                'indexer_id': indexer_id,
+                'series_id': series_id,
+                'try_indexers': try_indexers,
+            }
+        )
         if series_id:
             from_cache = True
             series = Show.find_by_id(app.showList, indexer_id, series_id)
@@ -953,6 +967,10 @@ def get_show(name, try_indexers=False):
         if series and not from_cache:
             name_cache.addNameToCache(series_name, series.indexer, series.indexerid)
 
+        log.debug(
+            'get_show result for {key!r}: {series}',
+            {'key': series_name, 'series': series.name if series else None}
+        )
         return series
 
 
