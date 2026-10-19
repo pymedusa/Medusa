@@ -41,6 +41,10 @@
                                         <p>time in minutes between searches (min. {{search.general.minBacklogFrequency}})</p>
                                     </config-textbox-number>
 
+                                    <config-textbox-number :min="0" :step="1" v-model.number="search.general.backlogBatchSize" label="Backlog batch size" id="backlog_batch_size" :explanations="['maximum number of season segments queued per backlog batch', 'the next batch is queued once the current one has cleared, spreading a large backlog over time (default: 0 = unlimited)']" />
+
+                                    <config-textbox-number v-if="search.general.backlogBatchSize > 0" :min="0" :max="search.general.backlogBatchSize - 1" :step="1" v-model.number="search.general.backlogBatchRefillThreshold" label="Backlog batch refill threshold" id="backlog_batch_refill_threshold" :explanations="['queue the next batch as soon as this many (or fewer) backlog searches are still pending (default: 2)', 'must be lower than the batch size, otherwise batches would refill immediately']" />
+
                                     <config-textbox-number :min="search.general.minDailySearchFrequency" :step="1" v-model.number="search.general.dailySearchFrequency" label="Daily search interval" id="daily_frequency">
                                         <p>time in minutes between searches (min. {{search.general.minDailySearchFrequency}})</p>
                                     </config-textbox-number>

@@ -802,6 +802,8 @@ def config_search():
     section_data['general']['checkPropersInterval'] = app.CHECK_PROPERS_INTERVAL
     section_data['general']['propersSearchDays'] = int(app.PROPERS_SEARCH_DAYS)
     section_data['general']['backlogDays'] = int(app.BACKLOG_DAYS)
+    section_data['general']['backlogBatchSize'] = int(app.BACKLOG_BATCH_SIZE)
+    section_data['general']['backlogBatchRefillThreshold'] = int(app.BACKLOG_BATCH_REFILL_THRESHOLD)
     section_data['general']['backlogFrequency'] = int_default(app.BACKLOG_FREQUENCY, app.DEFAULT_BACKLOG_FREQUENCY)
     section_data['general']['minBacklogFrequency'] = int(app.MIN_BACKLOG_FREQUENCY)
     section_data['general']['dailySearchFrequency'] = int_default(app.DAILYSEARCH_FREQUENCY, app.DEFAULT_DAILYSEARCH_FREQUENCY)
@@ -840,6 +842,171 @@ async def test_config_get_search(http_client, create_url, auth_headers, config_s
     # then
     assert response.code == 200
     assert expected == json.loads(response.body)
+
+
+@pytest.fixture
+def backlog_batch_config(monkeypatch):
+    """Set the backlog batch settings and capture what a PATCH would persist."""
+    saved = []
+
+    class FakeInstance(object):
+        def save_config(self):
+            # save_config() serializes the live app attributes, so what it sees
+            # at call time is exactly what would land in the config file.
+            saved.append((app.BACKLOG_BATCH_SIZE, app.BACKLOG_BATCH_REFILL_THRESHOLD))
+
+    monkeypatch.setattr(app, 'instance', FakeInstance())
+
+    def configure(batch_size, threshold):
+        monkeypatch.setattr(app, 'BACKLOG_BATCH_SIZE', batch_size)
+        monkeypatch.setattr(app, 'BACKLOG_BATCH_REFILL_THRESHOLD', threshold)
+        return saved
+
+    return configure
+
+
+@pytest.mark.gen_test
+@pytest.mark.parametrize('p', [
+    {  # negative batch size is disabled batching
+        'initial': (5, 2),
+        'body': {'backlogBatchSize': -5},
+        'expected': (0, 2),
+    },
+    {  # negative threshold becomes 0 when batching is enabled
+        'initial': (5, 2),
+        'body': {'backlogBatchRefillThreshold': -10},
+        'expected': (5, 0),
+    },
+    {  # threshold >= batch size is clamped to batch size - 1
+        'initial': (5, 2),
+        'body': {'backlogBatchRefillThreshold': 20},
+        'expected': (5, 4),
+    },
+    {  # lowering the batch size re-normalizes the existing threshold
+        'initial': (10, 8),
+        'body': {'backlogBatchSize': 3},
+        'expected': (3, 2),
+    },
+    {  # batch size 1 forces threshold 0
+        'initial': (10, 5),
+        'body': {'backlogBatchSize': 1},
+        'expected': (1, 0),
+    },
+    {  # batch size 0 (legacy mode) keeps a non-negative threshold as-is
+        'initial': (5, 2),
+        'body': {'backlogBatchSize': 0, 'backlogBatchRefillThreshold': 7},
+        'expected': (0, 7),
+    },
+    {  # negative threshold is still floored at 0 in legacy mode
+        'initial': (0, 2),
+        'body': {'backlogBatchRefillThreshold': -1},
+        'expected': (0, 0),
+    },
+])
+async def test_config_patch_normalizes_backlog_batch_settings(http_client, create_url, auth_headers,
+                                                              backlog_batch_config, p):
+    # given
+    saved = backlog_batch_config(*p['initial'])
+    url = create_url('/config/main')
+    body = {'search': {'general': p['body']}}
+
+    # when
+    response = await http_client.fetch(url, method='PATCH', body=json.dumps(body), **auth_headers)
+
+    # then
+    assert response.code == 200
+    assert (app.BACKLOG_BATCH_SIZE, app.BACKLOG_BATCH_REFILL_THRESHOLD) == p['expected']
+    # the normalized pair is what gets persisted, not the raw submitted values
+    assert saved == [p['expected']]
+    # the response echoes the stored values for the submitted fields
+    expected_size, expected_threshold = p['expected']
+    expected_response = {}
+    if 'backlogBatchSize' in p['body']:
+        expected_response['backlogBatchSize'] = expected_size
+    if 'backlogBatchRefillThreshold' in p['body']:
+        expected_response['backlogBatchRefillThreshold'] = expected_threshold
+    assert json.loads(response.body)['search']['general'] == expected_response
+
+
+@pytest.mark.gen_test
+@pytest.mark.parametrize('body', [
+    '{"search": {"general": {"backlogBatchSize": 4, "backlogBatchRefillThreshold": 99}}}',
+    '{"search": {"general": {"backlogBatchRefillThreshold": 99, "backlogBatchSize": 4}}}',
+])
+async def test_config_patch_backlog_batch_settings_is_order_independent(http_client, create_url, auth_headers,
+                                                                        backlog_batch_config, body):
+    # given: an initial size that would clamp 99 differently if applied field by field
+    saved = backlog_batch_config(10, 2)
+    url = create_url('/config/main')
+
+    # when
+    response = await http_client.fetch(url, method='PATCH', body=body, **auth_headers)
+
+    # then
+    assert response.code == 200
+    assert (app.BACKLOG_BATCH_SIZE, app.BACKLOG_BATCH_REFILL_THRESHOLD) == (4, 3)
+    assert saved == [(4, 3)]
+    assert json.loads(response.body)['search']['general'] == {
+        'backlogBatchSize': 4, 'backlogBatchRefillThreshold': 3}
+
+
+@pytest.mark.gen_test
+@pytest.mark.parametrize('body', [
+    '{"search": {"general": {"backlogBatchSize": 0, "backlogBatchRefillThreshold": 7}}}',
+    '{"search": {"general": {"backlogBatchRefillThreshold": 7, "backlogBatchSize": 0}}}',
+])
+async def test_config_patch_disabling_backlog_batching_keeps_threshold_regardless_of_order(
+        http_client, create_url, auth_headers, backlog_batch_config, body):
+    # given: applying the threshold first against the old size 5 would clamp it to 4
+    saved = backlog_batch_config(5, 2)
+    url = create_url('/config/main')
+
+    # when
+    response = await http_client.fetch(url, method='PATCH', body=body, **auth_headers)
+
+    # then
+    assert response.code == 200
+    assert (app.BACKLOG_BATCH_SIZE, app.BACKLOG_BATCH_REFILL_THRESHOLD) == (0, 7)
+    assert saved == [(0, 7)]
+
+
+@pytest.mark.gen_test
+async def test_config_get_search_reports_normalized_backlog_batch_settings(http_client, create_url, auth_headers,
+                                                                           backlog_batch_config):
+    # given
+    backlog_batch_config(10, 2)
+    body = {'search': {'general': {'backlogBatchSize': -3, 'backlogBatchRefillThreshold': 50}}}
+
+    # when
+    response = await http_client.fetch(create_url('/config/main'), method='PATCH',
+                                       body=json.dumps(body), **auth_headers)
+    assert response.code == 200
+    response = await http_client.fetch(create_url('/config/search'), **auth_headers)
+
+    # then
+    assert response.code == 200
+    general = json.loads(response.body)['general']
+    assert general['backlogBatchSize'] == 0
+    assert general['backlogBatchRefillThreshold'] == 50
+
+
+@pytest.mark.gen_test
+async def test_config_patch_unrelated_setting_leaves_backlog_batch_settings_alone(
+        http_client, create_url, auth_headers, backlog_batch_config, monkeypatch):
+    # given
+    saved = backlog_batch_config(10, 8)
+    monkeypatch.setattr(app, 'BACKLOG_DAYS', 7)
+    url = create_url('/config/main')
+    body = {'search': {'general': {'backlogDays': 15}}}
+
+    # when
+    response = await http_client.fetch(url, method='PATCH', body=json.dumps(body), **auth_headers)
+
+    # then
+    assert response.code == 200
+    assert app.BACKLOG_DAYS == 15
+    assert (app.BACKLOG_BATCH_SIZE, app.BACKLOG_BATCH_REFILL_THRESHOLD) == (10, 8)
+    assert saved == [(10, 8)]
 
 
 @pytest.fixture

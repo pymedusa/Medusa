@@ -38,6 +38,8 @@ const state = {
         usenetRetention: 500,
         maxCacheAge: 30,
         backlogDays: 7,
+        backlogBatchSize: 0,
+        backlogBatchRefillThreshold: 2,
         backlogFrequency: 720,
         cacheTrimming: false,
         downloadPropers: true,

@@ -1037,3 +1037,23 @@ class AddSearchTemplates(AddHistoryFDHFields):
             self.addColumn('tv_shows', 'templates', 'NUMERIC', 0)
 
         self.inc_minor_version()
+
+
+class AddBacklogCursor(AddSearchTemplates):
+    """Add the backlog_cursor column to the info table."""
+
+    def test(self):
+        """
+        Test if the version is at least 44.20
+        """
+        return self.connection.version >= (44, 20)
+
+    def execute(self):
+        utils.backup_database(self.connection.path, self.connection.version)
+
+        # Persists the position of a throttled backlog pass so it resumes after a restart.
+        log.info(u'Adding column backlog_cursor to the info table')
+        if not self.hasColumn('info', 'backlog_cursor'):
+            self.addColumn('info', 'backlog_cursor', 'TEXT', '')
+
+        self.inc_minor_version()
