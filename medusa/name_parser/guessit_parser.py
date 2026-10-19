@@ -12,6 +12,7 @@ from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.cache import BaseCache
 from medusa.name_parser.rules import default_api
+from medusa.name_parser.rules.month_date import is_compact_scene_alias
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -99,8 +100,11 @@ def guessit(name, options=None, cached=True):
 def get_expected_titles(show_list):
     """Return expected titles to be used by guessit.
 
-    It iterates over user's show list and only returns a regex for titles that contains numbers
-    or dashes (since they can confuse guessit).
+    Scene exceptions are included when they contain numbers or dashes (GuessIt
+    otherwise splits them), match the show title, or are short letter-only
+    acronyms needed for compact month/year packs. Long aliases without those
+    cues stay out so they are not force-matched as substrings in other names.
+    The show's own title is added only when it contains numbers or dashes.
 
     :param show_list:
     :type show_list: list of medusa.tv.Series
@@ -120,17 +124,13 @@ def get_expected_titles(show_list):
             if not match:
                 continue
 
-            # Add when show exception has a year (without brackets),
-            # a number or '-' in its title.
-            if any(char.isdigit() or char == '-' for char in match.group(1)):
+            series_name = match.group(1)
+            if (
+                any(char.isdigit() or char == '-' for char in series_name)
+                or show_title.casefold() == exception.casefold()
+                or is_compact_scene_alias(exception)
+            ):
                 expected_titles.append(exception)
-                continue
-
-            # Add when show name is the same as exception,
-            # to allow an explicit match.
-            if show_title.casefold() == exception.casefold():
-                expected_titles.append(exception)
-                continue
 
         # Do not add only numbers to expected titles.
         if show_title.isdigit():
@@ -140,7 +140,7 @@ def get_expected_titles(show_list):
         if not match:
             continue
 
-        # Add when show exception has a year (without brackets),
+        # Add when show name has a year (without brackets),
         # a number or '-' in its title.
         if any(char.isdigit() or char == '-' for char in match.group(1)):
             expected_titles.append(show_title)

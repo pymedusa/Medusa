@@ -714,8 +714,21 @@ class PostProcessor(object):
 
         if parse_result.series and all([parse_result.series.air_by_date or parse_result.series.is_sports,
                                         parse_result.is_air_by_date]):
-            season = -1
-            episodes = [parse_result.air_date]
+            if parse_result.date_precision == 'month':
+                if parse_result.episode_numbers:
+                    # Month-only release: NameParser already resolved the real
+                    # episode by year+month. An exact-airdate lookup on the
+                    # placeholder day 1 would fail when airing is later.
+                    season = parse_result.season_number
+                    episodes = parse_result.episode_numbers
+                else:
+                    # Ambiguous/unresolved month: fail cleanly instead of
+                    # retrying the placeholder day-1 airdate conversion.
+                    season = None
+                    episodes = []
+            else:
+                season = -1
+                episodes = [parse_result.air_date]
         else:
             season = parse_result.season_number
             episodes = parse_result.episode_numbers

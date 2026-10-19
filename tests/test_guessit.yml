@@ -4691,6 +4691,322 @@
   crc32: "1EB7B45D"
   subtitle_language: "mul"
 
+# monthly_month_name_year
+? Show.Name.Mai.2016.FRENCH.HDTV.x264-GROUP
+: title: Show Name
+  date: 2016-05-01
+  date_precision: month
+  language: fr
+  source: HDTV
+  video_codec: H.264
+  video_encoder: x264
+  release_group: GROUP
+  type: episode
+
+# monthly_month_name_year
+? Show.Name.Aout.2017.FRENCH.720p.HDTV.x264-GROUP
+: title: Show Name
+  date: 2017-08-01
+  date_precision: month
+  language: fr
+  screen_size: 720p
+  source: HDTV
+  video_codec: H.264
+  video_encoder: x264
+  release_group: GROUP
+  type: episode
+
+# monthly_month_name_year
+? Show.Name.Fevrier.2018.FRENCH.720p.HDTV.x264-GROUP
+: title: Show Name
+  date: 2018-02-01
+  date_precision: month
+  language: fr
+  screen_size: 720p
+  source: HDTV
+  video_codec: H.264
+  video_encoder: x264
+  release_group: GROUP
+  type: episode
+
+# monthly_month_name_year
+? Show.Name.Decembre.2018.FRENCH.720p.HDTV.x264-GROUP
+: title: Show Name
+  date: 2018-12-01
+  date_precision: month
+  language: fr
+  screen_size: 720p
+  source: HDTV
+  video_codec: H.264
+  video_encoder: x264
+  release_group: GROUP
+  type: episode
+
+# monthly_month_name_year
+? Show.Name.August.2017.HDTV.x264-GROUP
+: title: Show Name
+  date: 2017-08-01
+  date_precision: month
+  source: HDTV
+  video_codec: H.264
+  video_encoder: x264
+  release_group: GROUP
+  type: episode
+
+# monthly_mm_yyyy
+? Show.Name.08.1998
+: title: Show Name
+  date: 1998-08-01
+  date_precision: month
+  type: episode
+
+# monthly_mm_yyyy
+? Show.Name.10.2024
+: title: Show Name
+  date: 2024-10-01
+  date_precision: month
+  type: episode
+
+# monthly_yyyy_mm
+? group-show.name.2011.01.french.720p.hdtv
+: title: show name
+  date: 2011-01-01
+  date_precision: month
+  language: fr
+  screen_size: 720p
+  source: HDTV
+  release_group: group
+  type: episode
+
+# year_season_sxxexx_untouched
+? Show.Name.S2016E08.HDTV.x264-GROUP
+: title: Show Name
+  season: 2016
+  episode: 8
+  year: 2016
+  source: HDTV
+  video_codec: H.264
+  video_encoder: x264
+  release_group: GROUP
+  type: episode
+
+# monthly_month_name_year - remaining French months
+? Show.Name.Janvier.2019.FRENCH.720p.HDTV.x264-GROUP
+: title: Show Name
+  date: 2019-01-01
+  date_precision: month
+  language: fr
+  screen_size: 720p
+  source: HDTV
+  video_codec: H.264
+  video_encoder: x264
+  release_group: GROUP
+  type: episode
+
+? Show.Name.Mars.2018.FRENCH.720p.HDTV.x264-GROUP
+: title: Show Name
+  date: 2018-03-01
+  date_precision: month
+  language: fr
+  screen_size: 720p
+  source: HDTV
+  video_codec: H.264
+  video_encoder: x264
+  release_group: GROUP
+  type: episode
+
+? Show.Name.Avril.2018.FRENCH.720p.HDTV.x264-GROUP
+: title: Show Name
+  date: 2018-04-01
+  date_precision: month
+  language: fr
+  screen_size: 720p
+  source: HDTV
+  video_codec: H.264
+  video_encoder: x264
+  release_group: GROUP
+  type: episode
+
+? Show.Name.Juin.2018.FRENCH.720p.HDTV.x264-GROUP
+: title: Show Name
+  date: 2018-06-01
+  date_precision: month
+  language: fr
+  screen_size: 720p
+  source: HDTV
+  video_codec: H.264
+  video_encoder: x264
+  release_group: GROUP
+  type: episode
+
+? Show.Name.Juillet.2017.FRENCH.720p.HDTV.x264-GROUP
+: title: Show Name
+  date: 2017-07-01
+  date_precision: month
+  language: fr
+  screen_size: 720p
+  source: HDTV
+  video_codec: H.264
+  video_encoder: x264
+  release_group: GROUP
+  type: episode
+
+? Show.Name.Septembre.2018.FRENCH.720p.HDTV.x264-GROUP
+: title: Show Name
+  date: 2018-09-01
+  date_precision: month
+  language: fr
+  screen_size: 720p
+  source: HDTV
+  video_codec: H.264
+  video_encoder: x264
+  release_group: GROUP
+  type: episode
+
+? Show.Name.Octobre.2017.FRENCH.720p.HDTV.x264-GROUP
+: title: Show Name
+  date: 2017-10-01
+  date_precision: month
+  language: fr
+  screen_size: 720p
+  source: HDTV
+  video_codec: H.264
+  video_encoder: x264
+  release_group: GROUP
+  type: episode
+
+? Show.Name.Novembre.2019.FRENCH.720p.HDTV.x264-GROUP
+: title: Show Name
+  date: 2019-11-01
+  date_precision: month
+  language: fr
+  screen_size: 720p
+  source: HDTV
+  video_codec: H.264
+  video_encoder: x264
+  release_group: GROUP
+  type: episode
+
+# monthly_month_name_year - English
+? Show.Name.January.2018.HDTV.x264-GROUP
+: title: Show Name
+  date: 2018-01-01
+  date_precision: month
+  source: HDTV
+  video_codec: H.264
+  video_encoder: x264
+  release_group: GROUP
+  type: episode
+
+? Monthly.Show.Sep.2020.720p.WEB.h264-GROUP
+: title: Monthly Show
+  date: 2020-09-01
+  date_precision: month
+  screen_size: 720p
+  source: Web
+  video_codec: H.264
+  release_group: GROUP
+  type: episode
+
+# monthly_mm_yyyy / yyyy_mm numeric
+? Show.Name.05.2016.HDTV.x264-GROUP
+: title: Show Name
+  date: 2016-05-01
+  date_precision: month
+  source: HDTV
+  video_codec: H.264
+  video_encoder: x264
+  release_group: GROUP
+  type: episode
+
+? Show.Name.2016.05
+: title: Show Name
+  date: 2016-05-01
+  date_precision: month
+  type: episode
+
+? Show.Name.07.2024
+: title: Show Name
+  date: 2024-07-01
+  date_precision: month
+  type: episode
+
+# monthly_full_date_untouched
+? Show.Name.2016.01.03.FRENCH.720p.HDTV.x264-GROUP
+: title: Show Name
+  date: 2016-01-03
+  language: fr
+  screen_size: 720p
+  source: HDTV
+  video_codec: H.264
+  video_encoder: x264
+  release_group: GROUP
+  type: episode
+
+? Show Name Emission du 03 juin 2023.mp4
+: title: Show Name
+  date: 2023-06-03
+  container: mp4
+  mimetype: video/mp4
+  type: episode
+
+? Show.Name_S01E01_Emission du 03 juin 2023.mp4
+: title: Show Name
+  date: 2023-06-03
+  container: mp4
+  mimetype: video/mp4
+  type: episode
+
+? Show Name Aout (2017)
+: title: Show Name
+  date: 2017-08-01
+  date_precision: month
+  type: episode
+
+# monthly_no_false_positive - standard SxxExx
+? Show.Name.S01E05.HDTV.x264-GROUP
+: title: Show Name
+  season: 1
+  episode: 5
+  source: HDTV
+  video_codec: H.264
+  video_encoder: x264
+  release_group: GROUP
+  type: episode
+
+# monthly_no_false_positive - weak multi-episode style must not become a date
+? Show.Name.12.13.HDTV.x264-GROUP
+: title: Show Name
+  episode: 12
+  absolute_episode: 12
+  source: HDTV
+  video_codec: H.264
+  video_encoder: x264
+  release_group: GROUP
+  type: episode
+
+? Show.Name.09.10.HDTV.x264-GROUP
+: title: Show Name
+  episode: 9
+  absolute_episode: 9
+  source: HDTV
+  video_codec: H.264
+  video_encoder: x264
+  release_group: GROUP
+  type: episode
+
+# monthly_no_false_positive - numbered show title
+? The.100.S01E01.720p.HDTV.x264-GROUP
+: title: The 100
+  season: 1
+  episode: 1
+  screen_size: 720p
+  source: HDTV
+  video_codec: H.264
+  video_encoder: x264
+  release_group: GROUP
+  type: episode
+
 # Alternative Sx-xx numbering: S2-01 means season 2 episode 1
 ? Show Name - S2-01 - Episode Title.2013-06-11.mp4
 : title: Show Name
