@@ -496,7 +496,7 @@ export default {
                 label: 'Size',
                 field: 'file.size',
                 type: 'number',
-                formatFn: humanFileSize,
+                formatFn: bytes => humanFileSize(bytes),
                 hidden: getCookie('Size')
             }, {
                 // For now i'm using a custom function the parse it. As the type: date, isn't working for us.

@@ -146,7 +146,7 @@ export default {
         }, {
             label: 'Size',
             field: 'size',
-            formatFn: humanFileSize,
+            formatFn: bytes => humanFileSize(bytes),
             type: 'number',
             hidden: getCookie('Size')
         }];
