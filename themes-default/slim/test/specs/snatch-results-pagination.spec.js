@@ -29,6 +29,8 @@ const mountResults = (perPage, options = {}) => {
             history: { episodeHistory: {} }, queue: { queueitems: [] }, auth: { client: {} }
         },
         mutations: {
+            claimProviderCache: jest.fn(),
+            releaseProviderCache: jest.fn(),
             appendResult(state, result) {
                 state.provider.providers[0].cache.push(result);
             },
@@ -273,10 +275,12 @@ describe('Manual search result pagination', () => {
         const state = { providers: [{ id: 'provider', config: { enabled: true }, cache: [] }] };
         const get = jest.fn().mockResolvedValueOnce({ data: firstPage }).mockResolvedValueOnce({ data: lastPage });
         const commit = (type, payload) => providerModule.mutations[type](state, payload);
+        const owner = {};
+        commit('claimProviderCache', { owner, showSlug, season: 1, episode: 1 });
 
         const result = await providerModule.actions.getProviderCacheResults({
             state, commit, rootState: { auth: { client: { api: { get } } } }
-        }, { showSlug, season: 1, episode: 1 });
+        }, { owner, showSlug, season: 1, episode: 1 });
 
         expect(get).toHaveBeenCalledTimes(2);
         expect(result.totalSearchResults).toHaveLength(1001);

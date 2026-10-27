@@ -54,6 +54,7 @@ export default {
             // Exclude components from caching, using their `name` option.
             return [
                 'show',
+                'snatch-selection',
                 'new-show',
                 'new-show-existing',
                 'news',

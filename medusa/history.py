@@ -64,7 +64,7 @@ def create_history_item(history_row, compact=False):
             provider.update({
                 'id': provider_id,
                 'name': history_row['provider'],
-                'imageName': f'{provider_id}.png'
+                'imageName': 'missing.png'
             })
         release_name = history_row['resource']
 

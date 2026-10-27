@@ -305,20 +305,22 @@ describe('snatch results loading scope', () => {
         ['episode', { showSlug: 'tvdb-target', season: 2, episode: 3 }, { showslug: 'tvdb-target', season: 2, episode: 3, limit: 1000, page: 1 }],
         ['season', { showSlug: 'tvdb-target', season: 2, episode: undefined }, { showslug: 'tvdb-target', season: 2, limit: 1000, page: 1 }]
     ])('preserves valid %s cache searches and results', async (_label, request, expectedParams) => {
-        const row = { identifier: 'result', showSlug: request.showSlug, season: request.season };
+        const row = { identifier: 'result', showSlug: request.showSlug, season: request.season, episodes: [request.episode || 1] };
         const apiGet = jest.fn().mockResolvedValue({ data: [row] });
         const commit = jest.fn();
         const state = { providers: [{ id: 'provider', name: 'Provider', config: { enabled: true } }] };
+        const owner = {};
+        providerModule.mutations.claimProviderCache(state, { ...request, owner });
 
         const result = await providerModule.actions.getProviderCacheResults({
             rootState: { auth: { client: { api: { get: apiGet } } } },
             commit,
             state
-        }, request);
+        }, { ...request, owner });
 
         expect(apiGet).toHaveBeenCalledWith('/providers/provider/results', { params: expectedParams });
         expect(result).toEqual({ providersSearched: 1, totalSearchResults: [row] });
-        expect(commit).toHaveBeenCalledWith(ADD_PROVIDER_CACHE, { providerId: 'provider', cache: [row] });
+        expect(commit).toHaveBeenCalledWith(ADD_PROVIDER_CACHE, expect.objectContaining({ providerId: 'provider', cache: [row] }));
     });
 
     it('does not automatically force search when the valid cache lookup searched zero providers', async () => {
@@ -329,6 +331,10 @@ describe('snatch results loading scope', () => {
         const getProviders = jest.fn();
         const store = new Store({
             state: { provider: { providers: [] }, history: { episodeHistory: {} }, config: { general: {}, search: {} }, queue: { queueitems: [] }, auth: { client: { api: { put: apiPut } } } },
+            mutations: {
+                claimProviderCache() {},
+                releaseProviderCache() {}
+            },
             actions: {
                 getProviders,
                 getProviderCacheResults
@@ -347,9 +353,9 @@ describe('snatch results loading scope', () => {
         });
 
         await flush(localVueWithCookies);
-        expect(getProviderCacheResults).toHaveBeenCalledWith(expect.anything(), {
+        expect(getProviderCacheResults).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
             showSlug: 'tvdb-target', season: 2, episode: 3
-        });
+        }));
         expect(apiPut).not.toHaveBeenCalled();
         wrapper.destroy();
     });

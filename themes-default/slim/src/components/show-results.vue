@@ -249,16 +249,24 @@ export default {
             paginationPerPage: getPaginationPerPage()
         };
     },
-    async mounted() {
-        const { forceSearch, getProviders, getProviderCacheResults, show, season, episode } = this;
-        await getProviders();
-
-        const result = await getProviderCacheResults({ showSlug: show.id.slug, season, episode });
-
-        // TODO: put a modal in between
-        if (result.providersSearched > 0 && result.totalSearchResults.length === 0) {
-            forceSearch();
-        }
+    created() {
+        this.resultsActive = false;
+        // Keep only an identity token in the store, never the component itself.
+        this.resultsOwner = {};
+        this.resultsRequestGeneration = 0;
+        this.loadingTimeout = null;
+    },
+    mounted() {
+        return this.activateResults();
+    },
+    activated() {
+        return this.activateResults();
+    },
+    deactivated() {
+        this.stopResults();
+    },
+    beforeDestroy() {
+        this.stopResults();
     },
     computed: {
         ...mapState({
@@ -336,6 +344,71 @@ export default {
             getProviderCacheResults: 'getProviderCacheResults',
             getShowEpisodeHistory: 'getShowEpisodeHistory'
         }),
+        hasInactiveParent() {
+            // Cached route parents can render new children while they are inactive.
+            for (let parent = this; parent; parent = parent.$parent) {
+                if (parent._inactive) {
+                    return true;
+                }
+            }
+            return false;
+        },
+        isResultsActive() {
+            return this.resultsActive && !this._isDestroyed && !this.hasInactiveParent();
+        },
+        activateResults() {
+            if (this.resultsActive || this.hasInactiveParent()) {
+                return;
+            }
+            this.resultsActive = true;
+            this.$store.commit('claimProviderCache', {
+                owner: this.resultsOwner, showSlug: this.show.id.slug, season: this.season, episode: this.episode
+            });
+            return this.loadInitialResults();
+        },
+        stopResults() {
+            this.resultsActive = false;
+            ++this.resultsRequestGeneration;
+            this.$store.commit('releaseProviderCache', this.resultsOwner);
+            clearTimeout(this.loadingTimeout);
+            this.loadingTimeout = null;
+            this.loading = false;
+            this.loadingMessage = '';
+        },
+        createResultsRequest() {
+            const { season, episode } = this;
+            const showSlug = this.show.id.slug;
+            const generation = ++this.resultsRequestGeneration;
+            clearTimeout(this.loadingTimeout);
+            this.loadingTimeout = null;
+            return {
+                owner: this.resultsOwner, showSlug, season, episode,
+                isCurrent: () => this.isResultsActive() && generation === this.resultsRequestGeneration &&
+                    this.show.id.slug === showSlug && this.season === season && this.episode === episode
+            };
+        },
+        async loadInitialResults() {
+            const request = this.createResultsRequest();
+            await this.getProviders();
+            if (!request.isCurrent()) {
+                return;
+            }
+            const result = await this.getProviderCacheResults(request);
+            if (request.isCurrent() && !result.cancelled && result.providersSearched > 0 &&
+                result.totalSearchResults.length === 0 && this.combinedResults.length === 0) {
+                this.forceSearch();
+            }
+        },
+        finishLoading(request, delay) {
+            clearTimeout(this.loadingTimeout);
+            this.loadingTimeout = setTimeout(() => {
+                this.loadingTimeout = null;
+                if (request.isCurrent()) {
+                    this.loading = false;
+                    this.loadingMessage = '';
+                }
+            }, delay);
+        },
         close() {
             this.$emit('close');
             // Destroy the vue listeners, etc
@@ -344,15 +417,22 @@ export default {
             this.$el.remove();
         },
         async getProviderResults() {
-            const { episode, getProviderCacheResults, season, show } = this;
+            if (!this.isResultsActive()) {
+                return;
+            }
+            const request = this.createResultsRequest();
             this.loading = true;
             this.loadingMessage = 'Refreshing results from cache';
-            await getProviderCacheResults({ showSlug: show.id.slug, season, episode });
-            setTimeout(() => {
-                this.loading = false;
-            }, 1000);
+            const result = await this.getProviderCacheResults(request);
+            if (request.isCurrent()) {
+                this.finishLoading(request, result.cancelled ? 0 : 1000);
+            }
         },
         forceSearch() {
+            if (!this.isResultsActive()) {
+                return;
+            }
+            const request = this.createResultsRequest();
             const { episode, episodeSlug, season, show } = this;
             let data = {};
 
@@ -364,10 +444,12 @@ export default {
 
             this.loading = true;
             this.loadingMessage = 'Queue search...';
-            this.client.api.put('search/manual', data) // eslint-disable-line no-undef
+            return this.client.api.put('search/manual', data) // eslint-disable-line no-undef
                 .then(() => {
-                    console.info(`Queued search for show: ${show.id.slug} season: ${season}, episode: ${episode}`);
-                    this.loadingMessage = 'Queued search...';
+                    if (request.isCurrent()) {
+                        console.info(`Queued search for show: ${show.id.slug} season: ${season}, episode: ${episode}`);
+                        this.loadingMessage = 'Queued search...';
+                    }
                 }).catch(error => {
                     console.error(String(error));
                 });
@@ -432,14 +514,14 @@ export default {
     watch: {
         combinedResults() {
             const table = this.$refs['vgt-show-results'];
-            if (!table || table.currentPage <= 1) {
+            if (!this.isResultsActive() || !table || table.currentPage <= 1) {
                 return;
             }
 
             const page = table.currentPage;
             const controls = cloneDeep({ filters: table.columnFilters, sorts: table.sorts, perPage: table.currentPerPage });
             this.$nextTick(() => {
-                if (this._isDestroyed || this.$refs['vgt-show-results'] !== table || !isEqual(controls, {
+                if (!this.isResultsActive() || this.$refs['vgt-show-results'] !== table || !isEqual(controls, {
                     filters: table.columnFilters, sorts: table.sorts, perPage: table.currentPerPage
                 })) {
                     return;
@@ -454,39 +536,50 @@ export default {
         },
         queueitems: {
             async handler(queue) {
+                if (!this.isResultsActive()) {
+                    return;
+                }
+                const matchesScope = item => item.show && item.show.id.slug === this.show.id.slug &&
+                    item.segment.some(ep => ep.season === this.season && (this.episode === undefined || ep.episode === this.episode));
                 // Check for manual searches
-                const queueForThisEpisode = queue.filter(q => ['MANUAL-SEARCH'].includes(q.name) && q.segment.length && q.segment.find(
-                    ep => ep.season === this.season && ep.episode === this.episode
-                ));
+                const queueForThisEpisode = queue.filter(q => q.name === 'MANUAL-SEARCH' && matchesScope(q));
 
                 const [last] = queueForThisEpisode.slice(-1);
                 if (last) {
+                    const generation = this.resultsRequestGeneration;
+                    const request = { isCurrent: () => this.isResultsActive() && generation === this.resultsRequestGeneration };
                     const searchStatus = last.success === null ? 'running' : 'finished';
 
                     if (searchStatus === 'running') {
+                        clearTimeout(this.loadingTimeout);
                         this.loading = true;
                         this.loadingMessage = 'Started searching providers...';
                     } else {
                         this.loadingMessage = 'Finished manual search';
-                        setTimeout(() => {
-                            this.loading = false;
-                            this.loadingMessage = '';
-                        }, 5000);
+                        this.finishLoading(request, 5000);
                     }
                 }
 
                 // Check for snach selection
-                const snatchedForThisEpisode = queue.filter(q => q.name === 'SNATCH-RESULT' && q.segment.length && q.segment.find(
-                    ep => ep.season === this.season && ep.episode === this.episode
-                ));
+                const snatchedForThisEpisode = queue.filter(q => q.name === 'SNATCH-RESULT' && matchesScope(q));
 
                 const [lastSnatch] = snatchedForThisEpisode.slice(-1);
                 if (lastSnatch && lastSnatch.success === true) {
-                    const { getProviderCacheResults, getShowEpisodeHistory, show, season, episode, episodeSlug } = this;
+                    const request = this.createResultsRequest();
+                    const { getProviderCacheResults, getShowEpisodeHistory, show, episodeSlug } = this;
+                    if (last && last.success !== null) {
+                        // A failed history fetch must not keep a completed search's spinner alive.
+                        this.finishLoading(request, 5000);
+                    }
 
                     // Something changed, let's get a new batch of provider results.
                     await getShowEpisodeHistory({ showSlug: show.id.slug, episodeSlug });
-                    await getProviderCacheResults({ showSlug: show.id.slug, season, episode });
+                    if (request.isCurrent()) {
+                        await getProviderCacheResults(request);
+                        if (request.isCurrent() && (!last || last.success !== null)) {
+                            this.finishLoading(request, 1000);
+                        }
+                    }
                 }
             },
             deep: true,
