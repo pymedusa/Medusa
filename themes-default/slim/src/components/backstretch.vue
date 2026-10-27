@@ -28,19 +28,30 @@ export default {
     created() {
         // Keep the plugin instance out of Vue's reactive data.
         this.backstretchInstance = null;
+        this.backstretchActive = false;
+        this.backstretchActivation = 0;
     },
     mounted() {
         this.setBackStretch();
     },
     methods: {
         async setBackStretch() {
+            // A kept-alive component receives both mounted and activated initially.
+            if (this.backstretchActive) {
+                return;
+            }
+            this.backstretchActive = true;
+            const activation = ++this.backstretchActivation;
             try {
-                await waitFor(() => this.enabled !== null);
+                await waitFor(() => activation !== this.backstretchActivation || this.enabled !== null);
             } catch (error) {
-                console.error(error);
+                if (activation === this.backstretchActivation) {
+                    console.error(error);
+                }
+                return;
             }
 
-            if (!this.enabled) {
+            if (activation !== this.backstretchActivation || !this.enabled) {
                 return;
             }
             const { opacity, slug, offset } = this;
@@ -55,6 +66,8 @@ export default {
             }
         },
         removeBackStretch() {
+            this.backstretchActive = false;
+            ++this.backstretchActivation;
             const { backstretchInstance } = this;
             // Another page may have replaced or removed the shared background.
             if (backstretchInstance && backstretchInstance === $('body').data('backstretch')) {

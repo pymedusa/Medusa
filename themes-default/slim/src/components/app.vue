@@ -53,6 +53,7 @@ export default {
         excludeFromCaching() {
             // Exclude components from caching, using their `name` option.
             return [
+                'show',
                 'new-show',
                 'new-show-existing',
                 'news',
