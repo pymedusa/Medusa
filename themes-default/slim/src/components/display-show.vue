@@ -542,6 +542,7 @@ export default {
         }),
         ...mapGetters({
             show: 'getCurrentShow',
+            isShowEpisodeCacheStale: 'isShowEpisodeCacheStale',
             getOverviewStatus: 'getOverviewStatus',
             fuzzyParseDateTime: 'fuzzyParseDateTime'
         }),
@@ -624,19 +625,22 @@ export default {
         ...mapActions({
             getShow: 'getShow', // Map `this.getShow()` to `this.$store.dispatch('getShow')`
             getEpisodes: 'getEpisodes',
+            refreshShowFiles: 'refreshShowFiles',
             setCurrentShow: 'setCurrentShow',
             setRecentShow: 'setRecentShow'
         }),
         async loadShow() {
-            const { setCurrentShow, showSlug, initializeEpisodes, getShow } = this;
+            const { setCurrentShow, showSlug, initializeEpisodes, getShow, isShowEpisodeCacheStale, refreshShowFiles } = this;
             // We need detailed info for the xem / scene exceptions, so let's get it.
-            await getShow({ showSlug, detailed: true });
+            const { fileCacheRevision } = await getShow({ showSlug, detailed: true, withFileCacheRevision: true });
 
             // Let's tell the store which show we currently want as current.
             // Run this after getShow(), as it will trigger the initializeEpisodes() method.
             setCurrentShow(showSlug);
 
-            // Load all episodes
+            if (isShowEpisodeCacheStale(showSlug)) {
+                await refreshShowFiles({ showSlug, freshDetailsRevision: fileCacheRevision });
+            }
             initializeEpisodes();
         },
         statusQualityUpdate(event) {
@@ -951,12 +955,21 @@ export default {
             }
             return pages[page] || [];
         },
-        loadEpisodes(page) {
-            const { showSlug, getEpisodes } = this;
+        isSeasonLoaded(seasonNumber) {
+            const { seasons = [], seasonCount = [] } = this.show;
+            const cached = seasons.find(season => season.season === seasonNumber);
+            const expected = seasonCount.find(season => season.season === seasonNumber);
+            return Boolean(cached && expected && cached.children.length === expected.episodeCount);
+        },
+        loadEpisodes(page, force = false) {
+            const { showSlug, getEpisodes, isSeasonLoaded } = this;
             // Wrap getEpisodes into an async/await function, so we can wait for the season to have been committed
             // before going on to the next one.
             const _getEpisodes = async showSlug => {
                 for (const season of this.neededSeasons(page)) {
+                    if (!force && isSeasonLoaded(season)) {
+                        continue;
+                    }
                     // We're waiting for the results by design, to give vue the chance to update the dom.
                     // If we fire all the promises at once for, for example 25 seasons. We'll overload medusa's app
                     // and chance is high a number of requests will timeout.
@@ -967,12 +980,12 @@ export default {
             _getEpisodes(showSlug);
         },
         initializeEpisodes(force = false) {
-            const { getEpisodes, showSlug, setRecentShow, show } = this;
-            if (force || (!show.seasons && show.seasonCount)) {
+            const { getEpisodes, showSlug, setRecentShow, show, isSeasonLoaded } = this;
+            if (show.seasonCount) {
                 // Load episodes for the first page.
-                this.loadEpisodes(1);
-                // Always get special episodes if available.
-                if (show.seasonCount.length > 0 && show.seasonCount[0].season === 0) {
+                this.loadEpisodes(1, force);
+                // Load special episodes when available and not already cached.
+                if (show.seasonCount.some(season => season.season === 0) && (force || !isSeasonLoaded(0))) {
                     getEpisodes({ showSlug, season: 0 });
                 }
             }

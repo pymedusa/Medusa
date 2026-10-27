@@ -518,15 +518,20 @@ class Series(TV):
 
     @property
     def size(self):
-        """Size of the show on disk."""
-        return helpers.get_size(self.location)
+        """Total recorded episode size, matching episode rows and season totals."""
+        main_db_con = db.DBConnection()
+        result = main_db_con.select(
+            'SELECT COALESCE(SUM(file_size), 0) AS size '
+            'FROM tv_episodes WHERE indexer = ? AND showid = ?',
+            [self.indexer, self.series_id])
+        return int(result[0]['size'])
 
     def show_size(self, pretty=False):
         """
-        Get the size of the show on disk (deprecated).
+        Get the total recorded episode size (deprecated).
 
         :param pretty: True if you want a pretty size. (e.g. 3 GB)
-        :return:  Size of the show on disk.
+        :return:  Total recorded episode size.
         """
         warnings.warn(
             u'Method show_size is deprecated.  Use size property instead.',

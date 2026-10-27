@@ -1354,7 +1354,7 @@ definitions:
         description: Total number of episodes. Available through the episodes query param.
       size:
         type: integer
-        description: Show size on disk calculated from the shows configured location. Available through the detailed query param.
+        description: Sum of recorded episode file sizes, matching episode rows and season totals. Available through the detailed query param.
       showQueueStatus:
         type: array
         description: Array of objects with information on the different queues used for operations on a show. Available through the detailed query param.

@@ -215,14 +215,16 @@ const actions = {
                 });
         });
     },
-    updateHistory({ rootState, commit }, data) {
+    updateHistory({ rootState, commit, dispatch }, data) {
         // Update store's search queue item. (provided through websocket)
         const compact = rootState.config.layout.history === 'compact';
         // We can't live update the compact layout, as it requires to aggregate the data.
-        if (compact) {
-            return;
+        if (!compact) {
+            commit(ADD_HISTORY_ROW, { history: data });
         }
-        commit(ADD_HISTORY_ROW, { history: data });
+        if (data.statusName === 'Downloaded') {
+            return dispatch('refreshShowFiles', { showSlug: data.series, episodes: true, season: data.season });
+        }
     }
 };
 

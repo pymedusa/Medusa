@@ -29,10 +29,28 @@ const state = {
         display: false,
         finished: false
     },
-    queueitems: []
+    queueitems: [],
+    staleEpisodeShows: {}
 };
 
+let episodeCacheRevision = 0;
+
 const mutations = {
+    invalidateShowEpisodeCache(state, { showSlug, season }) {
+        if (!state.staleEpisodeShows) {
+            Vue.set(state, 'staleEpisodeShows', {});
+        }
+        const existing = state.staleEpisodeShows[showSlug];
+        const allSeasons = !Number.isInteger(season) || season < 0 || (existing && existing.seasons === null);
+        const seasons = allSeasons ? null : [...new Set([...(existing ? existing.seasons : []), season])];
+        Vue.set(state.staleEpisodeShows, showSlug, { revision: ++episodeCacheRevision, seasons });
+    },
+    clearShowEpisodeCacheStale(state, { showSlug, revision }) {
+        const cache = state.staleEpisodeShows && state.staleEpisodeShows[showSlug];
+        if (cache && cache.revision === revision) {
+            cache.seasons = [];
+        }
+    },
     [ADD_SHOW](state, show) {
         const existingShow = state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer]));
 
@@ -210,17 +228,27 @@ const mutations = {
     },
     [REMOVE_SHOW](state, removedShow) {
         state.shows = state.shows.filter(existingShow => removedShow.id.slug !== existingShow.id.slug);
+        if (state.staleEpisodeShows) {
+            Vue.delete(state.staleEpisodeShows, removedShow.id.slug);
+        }
     },
     loadShowsFromStore(state, namespace) {
         // Check if the ID exists
         // Update (namespaced) localStorage
         if (localStorage.getItem('shows')) {
             Vue.set(state, 'shows', JSON.parse(localStorage.getItem(`${namespace}shows`)));
+            state.shows.filter(show => show.seasons).forEach(show => {
+                mutations.invalidateShowEpisodeCache(state, { showSlug: show.id.slug });
+            });
         }
     }
 };
 
 const getters = {
+    isShowEpisodeCacheStale: state => showSlug => {
+        const cache = state.staleEpisodeShows && state.staleEpisodeShows[showSlug];
+        return Boolean(cache && (cache.seasons === null || cache.seasons.length > 0));
+    },
     getShowById: state => {
         /**
          * Get a show from the loaded shows state, identified by show slug.
@@ -364,7 +392,12 @@ const getters = {
  * @typedef {object} ShowGetParameters
  * @property {boolean} detailed Fetch detailed information? (e.g. scene/xem numbering)
  * @property {boolean} episodes Fetch seasons & episodes?
+ * @property {boolean} withFileCacheRevision Return a revision for reusing these fresh details?
  */
+
+// Coalesce file refreshes and prevent older responses replacing newer totals.
+const fileRefreshes = new Map();
+const episodeRequests = new Map();
 
 const actions = {
     /**
@@ -374,8 +407,9 @@ const actions = {
      * @param {ShowIdentifier&ShowGetParameters} parameters Request parameters.
      * @returns {Promise} The API response.
      */
-    getShow({ rootState, commit }, { showSlug, detailed, episodes }) {
+    getShow({ state, rootState, commit, getters }, { showSlug, detailed, episodes, withFileCacheRevision }) {
         return new Promise((resolve, reject) => {
+            const requestRevision = state.staleEpisodeShows?.[showSlug]?.revision || 0;
             const params = {};
             let timeout = 30000;
 
@@ -392,8 +426,17 @@ const actions = {
 
             rootState.auth.client.api.get(`/series/${showSlug}`, { params, timeout })
                 .then(res => {
+                    const unchangedRevision = requestRevision === (state.staleEpisodeShows?.[showSlug]?.revision || 0);
+                    const existingShow = state.shows.find(show => show.id.slug === showSlug);
+                    if (existingShow && existingShow.seasons && (
+                        (res.data.size !== undefined && res.data.size !== existingShow.size && !getters.isShowEpisodeCacheStale(showSlug)) ||
+                        (res.data.seasonCount !== undefined && JSON.stringify(res.data.seasonCount) !== JSON.stringify(existingShow.seasonCount))
+                    )) {
+                        commit('invalidateShowEpisodeCache', { showSlug });
+                    }
                     commit(ADD_SHOW, res.data);
-                    resolve(res.data);
+                    const fileCacheRevision = unchangedRevision ? (state.staleEpisodeShows?.[showSlug]?.revision || 0) : undefined;
+                    resolve(withFileCacheRevision ? { show: res.data, fileCacheRevision } : res.data);
                 })
                 .catch(error => {
                     reject(error);
@@ -411,6 +454,9 @@ const actions = {
         return new Promise((resolve, reject) => {
             const { getShowById } = getters;
             const show = getShowById(showSlug);
+            const requestKey = `${showSlug}/${season}`;
+            const request = {};
+            episodeRequests.set(requestKey, request);
 
             const limit = 1000;
             const params = {
@@ -424,12 +470,22 @@ const actions = {
             // Get episodes
             rootState.auth.client.api.get(`/series/${showSlug}/episodes`, { params })
                 .then(response => {
-                    commit(ADD_SHOW_EPISODE, { show, episodes: response.data });
-                    resolve();
+                    if (episodeRequests.get(requestKey) === request) {
+                        commit(ADD_SHOW_EPISODE, { show, episodes: response.data });
+                        resolve();
+                    } else {
+                        // A newer request owns this season's cached rows.
+                        resolve(false);
+                    }
                 })
                 .catch(error => {
                     console.log(`Could not retrieve a episodes for show ${showSlug}, error: ${error}`);
                     reject(error);
+                })
+                .finally(() => {
+                    if (episodeRequests.get(requestKey) === request) {
+                        episodeRequests.delete(requestKey);
+                    }
                 });
         });
     },
@@ -564,10 +620,12 @@ const actions = {
             console.warn(error);
         }
     },
-    updateShowQueueItem(context, queueItem) {
+    updateShowQueueItem({ commit, dispatch }, queueItem) {
         // Update store's search queue item. (provided through websocket)
-        const { commit } = context;
-        return commit(ADD_SHOW_QUEUE_ITEM, queueItem);
+        commit(ADD_SHOW_QUEUE_ITEM, queueItem);
+        if (queueItem.name === 'REFRESH' && queueItem.startTime && queueItem.inProgress === false) {
+            return dispatch('refreshShowFiles', { showSlug: queueItem.show.id.slug, episodes: true });
+        }
     },
     addSearchTemplate({ rootState, getters, commit }, { show, template }) {
         commit(ADD_SHOW_CONFIG_TEMPLATE, { show, template });
@@ -591,9 +649,99 @@ const actions = {
         const namespace = rootState.config.system.webRoot ? `${rootState.config.system.webRoot}_` : '';
         return commit('loadShowsFromStore', namespace);
     },
-    updateEpisode({ state, commit }, episode) {
+    refreshShowFiles({ state, commit, dispatch }, { showSlug, episodes = false, season, freshDetailsRevision }) {
+        if (!state.shows.some(show => show.id.slug === showSlug)) {
+            return;
+        }
+        if (episodes || season !== undefined) {
+            commit('invalidateShowEpisodeCache', { showSlug, season });
+        }
+        const pendingRefresh = fileRefreshes.get(showSlug);
+        if (pendingRefresh) {
+            pendingRefresh.pending = true;
+            return pendingRefresh.promise;
+        }
+
+        const refresh = { pending: true };
+        let detailsRevision = freshDetailsRevision;
+        refresh.promise = Promise.resolve().then(async () => {
+            try {
+                while (refresh.pending) {
+                    refresh.pending = false;
+                    const show = state.shows.find(({ id }) => id.slug === showSlug);
+                    if (!show || state.currentShow.showSlug !== showSlug || show.size === null || !(show.size >= 0)) {
+                        return;
+                    }
+
+                    try {
+                        const reuseDetails = detailsRevision !== undefined &&
+                            detailsRevision === (state.staleEpisodeShows?.[showSlug]?.revision || 0);
+                        detailsRevision = undefined;
+                        if (!reuseDetails) {
+                            // Finish each pass before starting the latest requested refresh.
+                            await dispatch('getShow', { showSlug, detailed: true }); // eslint-disable-line no-await-in-loop
+                        }
+                        const cache = state.staleEpisodeShows?.[showSlug];
+                        const revision = cache ? cache.revision : 0;
+                        const currentShow = state.shows.find(({ id }) => id.slug === showSlug);
+                        if (!currentShow || state.currentShow.showSlug !== showSlug) {
+                            return;
+                        }
+                        const seasons = (currentShow.seasons || []).map(season => season.season)
+                            .filter(season => cache && (cache.seasons === null || cache.seasons.includes(season)));
+                        let episodesRefreshed = true;
+                        for (const season of seasons) {
+                            // Load cached seasons sequentially, as on the show page.
+                            const result = await dispatch('getEpisodes', { showSlug, season }); // eslint-disable-line no-await-in-loop
+                            episodesRefreshed = result !== false && episodesRefreshed;
+                        }
+                        if (!episodesRefreshed) {
+                            continue;
+                        }
+                        if ((state.staleEpisodeShows?.[showSlug]?.revision || 0) !== revision) {
+                            // Setting true preserves any concurrently queued refresh.
+                            refresh.pending = true; // eslint-disable-line require-atomic-updates
+                        } else if (!refresh.pending) {
+                            commit('clearShowEpisodeCacheStale', { showSlug, revision });
+                        }
+                    } catch (error) {
+                        console.warn(`Could not refresh recorded files for show ${showSlug}: ${error}`);
+                    }
+                }
+            } finally {
+                fileRefreshes.delete(showSlug);
+            }
+        });
+        fileRefreshes.set(showSlug, refresh);
+        return refresh.promise;
+    },
+    updateEpisode({ state, commit, dispatch }, episode) {
         const show = state.shows.find(({ id }) => id.slug === episode.showSlug);
+        if (!show) {
+            return;
+        }
+
+        const season = (show.seasons || []).find(season => season.season === episode.season);
+        const previousEpisode = season && season.children.find(item => item.slug === episode.slug);
+        const previousSize = (previousEpisode && previousEpisode.file && previousEpisode.file.size) || 0;
+        const size = (episode.file && episode.file.size) || 0;
+        const previousLocation = previousEpisode && previousEpisode.file && previousEpisode.file.location;
+        const location = episode.file && episode.file.location;
+        const fileChanged = !previousEpisode || previousSize !== size || previousLocation !== location;
         commit(ADD_SHOW_EPISODE, { show, episodes: [episode] });
+        if (fileChanged) {
+            commit('invalidateShowEpisodeCache', { showSlug: episode.showSlug, season: episode.season });
+            const refresh = fileRefreshes.get(episode.showSlug);
+            if (refresh) {
+                refresh.pending = true;
+            }
+        }
+
+        const rescanning = state.queueitems.some(item => item.name === 'REFRESH' &&
+            item.inProgress && item.show.id.slug === episode.showSlug);
+        if (!rescanning && fileChanged) {
+            return dispatch('refreshShowFiles', { showSlug: episode.showSlug });
+        }
     },
     saveShowConfig({ rootState }, { show }) {
         const showConfig = show.config;
