@@ -21,7 +21,7 @@
                 <!-- Display non-special episodes, paginate if enabled -->
                 <vue-good-table v-if="show.seasons"
                                 :columns="columns"
-                                :rows="orderedSeasons"
+                                :rows="seasonTableRows"
                                 :groupOptions="{
                                     enabled: true,
                                     mode: 'span',
@@ -29,7 +29,9 @@
                                 :pagination-options="{
                                     enabled: layout.show.pagination.enable,
                                     perPage: paginationPerPage,
-                                    perPageDropdown
+                                    perPageDropdown: [...perPageDropdown, -1],
+                                    perPageDropdownEnabled: false,
+                                    infoFn: paginationInfo
                                 }"
                                 :search-options="{
                                     enabled: true,
@@ -54,10 +56,13 @@
                                     enabled: true
                                 }"
                                 ref="table-seasons"
-                                @on-selected-rows-change="selectedEpisodes=$event.selectedRows"
+                                @on-selected-rows-change="updateSelectedEpisodes('seasons', $event.selectedRows)"
                                 @on-per-page-change="updatePaginationPerPage($event.currentPerPage)"
                                 @on-page-change="onPageChange">
 
+                    <template v-if="layout.show.pagination.enable" slot="table-actions-bottom">
+                        <table-page-size :value="paginationPerPage" :options="perPageDropdown" @input="updatePaginationPerPage" />
+                    </template>
                     <template slot="table-header-row" slot-scope="props">
                         <h3 class="season-header toggle collapse">
                             <app-link :name="'season-'+ props.row.season" />
@@ -180,7 +185,7 @@
                 <!-- Display special episodes -->
                 <vue-good-table v-if="layout.show.specials && specials && specials.length > 0"
                                 :columns="columns"
-                                :rows="specials"
+                                :rows="specialTableRows"
                                 :groupOptions="{
                                     enabled: true,
                                     mode: 'span',
@@ -213,7 +218,7 @@
                                     enabled: false
                                 }"
                                 ref="table-specials"
-                                @on-selected-rows-change="selectedEpisodes=$event.selectedRows">
+                                @on-selected-rows-change="updateSelectedEpisodes('specials', $event.selectedRows)">
 
                     <template slot="table-header-row" slot-scope="props">
                         <h3 class="season-header toggle collapse"><app-link :name="'season-'+ props.row.season" />
@@ -386,6 +391,8 @@
 
 <script>
 import debounce from 'lodash/debounce';
+import cloneDeep from 'lodash/cloneDeep';
+import isEqual from 'lodash/isEqual';
 import Vue from 'vue';
 import { mapState, mapGetters, mapActions } from 'vuex';
 import { AppLink, PlotInfo, Search, SceneNumberInput, SceneNumberAnimeInput } from './helpers';
@@ -397,6 +404,7 @@ import Backstretch from './backstretch.vue';
 import ShowHeader from './show-header.vue';
 import SubtitleSearch from './subtitle-search.vue';
 import QualityPill from './helpers/quality-pill.vue';
+import TablePageSize, { formatPaginationInfo } from './helpers/table-page-size.vue';
 
 export default {
     name: 'show',
@@ -409,7 +417,8 @@ export default {
         SceneNumberInput,
         SceneNumberAnimeInput,
         ShowHeader,
-        VueGoodTable
+        VueGoodTable,
+        TablePageSize
     },
     mixins: [
         manageCookieMixin('displayShow')
@@ -444,7 +453,7 @@ export default {
                 return 50;
             }
 
-            if (!perPageDropdown.includes(rows)) {
+            if (rows !== -1 && !perPageDropdown.includes(rows)) {
                 return 500;
             }
             return rows;
@@ -524,7 +533,12 @@ export default {
             }],
             perPageDropdown,
             paginationPerPage: getPaginationPerPage(),
-            selectedEpisodes: [],
+            paginationSizeChanging: false,
+            seasonTableRows: [],
+            specialTableRows: [],
+            tableOwnerSlug: null,
+            selectedSeasonSlugs: [],
+            selectedSpecialSlugs: [],
             // We need to keep track of which episode where trying to search, for the vue-modal
             failedSearchEpisodes: [],
             backlogSearchEpisodes: [],
@@ -550,6 +564,25 @@ export default {
         showSlug() {
             const { slug } = this;
             return slug || this.$route.query.showslug;
+        },
+        tableRowsSource() {
+            const { layout, orderedSeasons, show, specials } = this;
+            return {
+                showSlug: show.id.slug,
+                seasons: orderedSeasons,
+                specials: layout.show.specials ? specials : []
+            };
+        },
+        selectedEpisodes() {
+            const { selectedSeasonSlugs, selectedSpecialSlugs, show, tableOwnerSlug, tableRowsSource } = this;
+            if (tableOwnerSlug !== show.id.slug) {
+                return [];
+            }
+            const eligibleSlugs = new Set([...tableRowsSource.seasons, ...tableRowsSource.specials]
+                .flatMap(season => season.children.map(episode => episode.slug)));
+            const selectedSlugs = new Set([...selectedSeasonSlugs, ...selectedSpecialSlugs]
+                .filter(slug => eligibleSlugs.has(slug)));
+            return (show.seasons || []).flatMap(season => season.children.filter(episode => selectedSlugs.has(episode.slug)));
         },
         theme() {
             const { layout } = this;
@@ -598,6 +631,31 @@ export default {
             return show.seasons.filter(season => season.season === 0);
         }
     },
+    watch: {
+        tableRowsSource: {
+            immediate: true,
+            deep: true,
+            handler(source) {
+                const ownerChanged = this.tableOwnerSlug !== source.showSlug;
+                if (ownerChanged) {
+                    this.tableOwnerSlug = source.showSlug;
+                    this.selectedSeasonSlugs = [];
+                    this.selectedSpecialSlugs = [];
+                }
+
+                // VGT mutates processed rows only; these independent inputs also act as the equality snapshot.
+                if (ownerChanged || !isEqual(this.seasonTableRows, source.seasons)) {
+                    this.seasonTableRows = cloneDeep(source.seasons);
+                    this.selectedSeasonSlugs = [];
+                }
+
+                if (ownerChanged || !isEqual(this.specialTableRows, source.specials)) {
+                    this.specialTableRows = cloneDeep(source.specials);
+                    this.selectedSpecialSlugs = [];
+                }
+            }
+        }
+    },
 
     created() {
         this.reflowLayout = debounce(this.reflowLayout, 1000);
@@ -642,6 +700,14 @@ export default {
             });
         },
         humanFileSize,
+        updateSelectedEpisodes(table, selectedRows) {
+            const selectedSlugs = selectedRows.map(episode => episode.slug);
+            if (table === 'specials') {
+                this.selectedSpecialSlugs = selectedSlugs;
+            } else {
+                this.selectedSeasonSlugs = selectedSlugs;
+            }
+        },
         ...mapActions({
             getShow: 'getShow', // Map `this.getShow()` to `this.$store.dispatch('getShow')`
             getEpisodes: 'getEpisodes',
@@ -938,11 +1004,24 @@ export default {
         },
         updatePaginationPerPage(rows) {
             const { setCookie } = this;
+            if (this.paginationPerPage === rows) {
+                return;
+            }
+            this.paginationSizeChanging = true;
             this.paginationPerPage = rows;
             setCookie('pagination-perPage', rows);
+            this.$nextTick(() => {
+                this.paginationSizeChanging = false;
+                if (!this.isLeaving && this.layout.show.pagination.enable) {
+                    this.loadEpisodes(1);
+                }
+            });
+        },
+        paginationInfo(info) {
+            return formatPaginationInfo(info, this.paginationPerPage);
         },
         onPageChange(params) {
-            if (params.prevPage !== params.currentPage) {
+            if (!this.paginationSizeChanging && params.prevPage !== params.currentPage) {
                 this.loadEpisodes(params.currentPage);
             }
         },

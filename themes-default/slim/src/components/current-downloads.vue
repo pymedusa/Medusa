@@ -32,7 +32,7 @@
                             <!-- These should get a provider icon -->
                             <template v-if="['Snatched', 'Failed'].includes(props.row.statusName)">
                                 <img  class="addQTip" style="margin-right: 5px;"
-                                      :src="`images/providers/${props.row.provider.id}.png`"
+                                      :src="`images/providers/${props.row.provider.imageName || 'missing.png'}`"
                                       :alt="props.row.provider.name" width="16" height="16"
                                       :title="props.row.provider.name"
                                       onError="this.onerror=null;this.src='images/providers/missing.png';"

@@ -188,7 +188,7 @@ class HistoryHandler(BaseRequestHandler):
                         provider.update({
                             'id': provider_id,
                             'name': item['provider'],
-                            'imageName': f'{provider_id}.png'
+                            'imageName': 'missing.png'
                         })
                     release_name = item['resource']
 
@@ -276,7 +276,7 @@ class HistoryHandler(BaseRequestHandler):
                             provider.update({
                                 'id': provider_id,
                                 'name': item['provider'],
-                                'imageName': f'{provider_id}.png'
+                                'imageName': 'missing.png'
                             })
                         release_name = item['resource']
 
