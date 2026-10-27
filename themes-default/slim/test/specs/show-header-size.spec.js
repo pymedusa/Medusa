@@ -6,6 +6,8 @@ import showsModule from '../../src/store/modules/shows';
 import fixtures from '../__fixtures__/common';
 import showFixture from '../__fixtures__/show-detailed';
 
+jest.mock('../../src/utils/jquery', () => ({ attachImdbTooltip: jest.fn() }));
+
 describe('Show header recorded size', () => {
     let show;
     let wrapper;

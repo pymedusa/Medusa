@@ -450,6 +450,7 @@ export default {
             return rows;
         };
         return {
+            isLeaving: false,
             invertTable: true,
             subtitleSearchComponents: [],
             columns: [{
@@ -598,15 +599,36 @@ export default {
         }
     },
 
+    created() {
+        this.reflowLayout = debounce(this.reflowLayout, 1000);
+    },
     mounted() {
         this.loadShow();
-        ['load', 'resize'].map(event => {
-            return window.addEventListener(event, () => {
-                this.reflowLayout();
-            });
+        ['load', 'resize'].forEach(event => {
+            window.addEventListener(event, this.reflowLayout);
         });
 
-        $(document.body).on('click', '.seasonCheck', event => {
+        $(document.body).on('click', '.seasonCheck', this.toggleSeasonSelection);
+    },
+    beforeDestroy() {
+        this.isLeaving = true;
+        ['load', 'resize'].forEach(event => {
+            window.removeEventListener(event, this.reflowLayout);
+        });
+        this.reflowLayout.cancel();
+        $(document.body).off('click', '.seasonCheck', this.toggleSeasonSelection);
+        const tooltips = $(this.$el).find('[data-hasqtip]');
+        if (tooltips.length > 0) {
+            tooltips.qtip('destroy', true);
+        }
+        // These children are mounted outside the page's rendered component tree.
+        this.subtitleSearchComponents.slice().forEach(instance => {
+            instance.$destroy();
+            instance.$el.remove();
+        });
+    },
+    methods: {
+        toggleSeasonSelection(event) {
             const seasCheck = event.currentTarget;
             const seasNo = $(seasCheck).attr('id');
 
@@ -618,9 +640,7 @@ export default {
                     element.checked = seasCheck.checked;
                 }
             });
-        });
-    },
-    methods: {
+        },
         humanFileSize,
         ...mapActions({
             getShow: 'getShow', // Map `this.getShow()` to `this.$store.dispatch('getShow')`
@@ -633,6 +653,9 @@ export default {
             const { setCurrentShow, showSlug, initializeEpisodes, getShow, isShowEpisodeCacheStale, refreshShowFiles } = this;
             // We need detailed info for the xem / scene exceptions, so let's get it.
             const { fileCacheRevision } = await getShow({ showSlug, detailed: true, withFileCacheRevision: true });
+            if (this.isLeaving) {
+                return;
+            }
 
             // Let's tell the store which show we currently want as current.
             // Run this after getShow(), as it will trigger the initializeEpisodes() method.
@@ -641,7 +664,9 @@ export default {
             if (isShowEpisodeCacheStale(showSlug)) {
                 await refreshShowFiles({ showSlug, freshDetailsRevision: fileCacheRevision });
             }
-            initializeEpisodes();
+            if (!this.isLeaving) {
+                initializeEpisodes();
+            }
         },
         statusQualityUpdate(event) {
             const { selectedEpisodes, setStatus, setQuality } = this;
@@ -736,6 +761,13 @@ export default {
                 }
             });
 
+            instance.$once('hook:destroyed', () => {
+                const index = subtitleSearchComponents.indexOf(instance);
+                if (index !== -1) {
+                    subtitleSearchComponents.splice(index, 1);
+                }
+            });
+
             const node = document.createElement('div');
             const tableRef = episode.season === 0 ? 'table-specials' : 'table-seasons';
             this.$refs[tableRef].$refs[`row-${episode.originalIndex}`][0].after(node);
@@ -746,10 +778,10 @@ export default {
         /**
          * Attaches IMDB tooltip
          */
-        reflowLayout: debounce(() => {
+        reflowLayout() {
             console.debug('Reflowing layout');
             addQTip(); // eslint-disable-line no-undef
-        }, 1000),
+        },
         /**
          * Check if any of the episodes in this season does not have the status "unaired".
          * If that's the case we want to manual season search icon.
@@ -967,6 +999,9 @@ export default {
             // before going on to the next one.
             const _getEpisodes = async showSlug => {
                 for (const season of this.neededSeasons(page)) {
+                    if (this.isLeaving) {
+                        return;
+                    }
                     if (!force && isSeasonLoaded(season)) {
                         continue;
                     }
@@ -980,6 +1015,9 @@ export default {
             _getEpisodes(showSlug);
         },
         initializeEpisodes(force = false) {
+            if (this.isLeaving) {
+                return;
+            }
             const { getEpisodes, showSlug, setRecentShow, show, isSeasonLoaded } = this;
             if (show.seasonCount) {
                 // Load episodes for the first page.
@@ -1028,14 +1066,6 @@ export default {
     filters: {
         sceneObjectToString(value) {
             return `${value.season}x${value.episode}`;
-        }
-    },
-    watch: {
-        $route(to, from) {
-            if (to.name === 'show' && from.name === 'testRename') {
-                // Load all episodes if we're coming from the testRename page.
-                this.initializeEpisodes(true);
-            }
         }
     }
 };

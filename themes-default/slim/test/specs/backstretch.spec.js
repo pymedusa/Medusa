@@ -46,6 +46,8 @@ describe('Backstretch', () => {
         wrappers.forEach(wrapper => wrapper.destroy());
         $('body').removeData('backstretch');
         $.backstretch = originalBackstretch;
+        jest.clearAllTimers();
+        jest.useRealTimers();
     });
 
     const mountBackground = async (slug = 'tvdb-123') => {
@@ -112,6 +114,61 @@ describe('Backstretch', () => {
         wrapper.destroy();
         expect(instance.destroy).toHaveBeenCalledTimes(1);
         expect($.backstretch).not.toHaveBeenCalled();
+    });
+
+    it('does not replace a newer background after being destroyed while waiting for config', async () => {
+        jest.useFakeTimers();
+        store.state.config.layout.fanartBackground = null;
+        const previous = await mountBackground();
+        store.state.config.layout.fanartBackground = true;
+        previous.destroy();
+
+        await mountBackground('tvdb-456');
+        const current = $('body').data('backstretch');
+        jest.advanceTimersByTime(100);
+        await localVue.nextTick();
+        await localVue.nextTick();
+
+        expect($.backstretch).toHaveBeenCalledTimes(1);
+        expect($('body').data('backstretch')).toBe(current);
+        expect(current.destroy).not.toHaveBeenCalled();
+    });
+
+    it('does not attach after being deactivated while waiting for config', async () => {
+        jest.useFakeTimers();
+        store.state.config.layout.fanartBackground = null;
+        const wrapper = await mountBackground();
+        wrapper.vm.$options.deactivated[0].call(wrapper.vm);
+        store.state.config.layout.fanartBackground = true;
+        jest.advanceTimersByTime(100);
+        await localVue.nextTick();
+        await localVue.nextTick();
+
+        expect($.backstretch).not.toHaveBeenCalled();
+        expect($('body').data('backstretch')).toBeUndefined();
+    });
+
+    it('attaches only the latest activation after config becomes available', async () => {
+        jest.useFakeTimers();
+        store.state.config.layout.fanartBackground = null;
+        const wrapper = await mountBackground();
+        wrapper.vm.$options.deactivated[0].call(wrapper.vm);
+        wrapper.vm.$options.activated[0].call(wrapper.vm);
+        store.state.config.layout.fanartBackground = true;
+        jest.advanceTimersByTime(100);
+        await localVue.nextTick();
+        await localVue.nextTick();
+
+        expect($.backstretch).toHaveBeenCalledTimes(1);
+        expect(wrapper.vm.backstretchInstance).toBe($('body').data('backstretch'));
+    });
+
+    it('does not attach twice for mounted and activated hooks', async () => {
+        const wrapper = await mountBackground();
+        wrapper.vm.$options.activated[0].call(wrapper.vm);
+        await localVue.nextTick();
+
+        expect($.backstretch).toHaveBeenCalledTimes(1);
     });
 
     it('updates opacity on the currently owned background', async () => {
