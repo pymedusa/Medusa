@@ -699,7 +699,10 @@ class Application(object):
             app.NEWS_LATEST = app.NEWS_LAST_READ
 
             app.BROKEN_PROVIDERS = check_setting_list(app.CFG, 'General', 'broken_providers',
-                                                      helpers.get_broken_providers() or app.BROKEN_PROVIDERS)
+                                                      app.BROKEN_PROVIDERS)
+            broken_providers = helpers.get_broken_providers()
+            if broken_providers is not None:
+                app.BROKEN_PROVIDERS = broken_providers
 
             app.NZB_DIR = check_setting_str(app.CFG, 'Blackhole', 'nzb_dir', '')
             app.TORRENT_DIR = check_setting_str(app.CFG, 'Blackhole', 'torrent_dir', '')
@@ -1775,7 +1778,7 @@ class Application(object):
         new_config['General']['developer'] = int(app.DEVELOPER)
         new_config['General']['python_version'] = app.PYTHON_VERSION
         new_config['General']['news_last_read'] = app.NEWS_LAST_READ
-        new_config['General']['broken_providers'] = helpers.get_broken_providers() or app.BROKEN_PROVIDERS
+        new_config['General']['broken_providers'] = app.BROKEN_PROVIDERS
         new_config['General']['selected_root'] = int(app.SELECTED_ROOT)
         new_config['General']['backlog_period'] = app.BACKLOG_PERIOD
         new_config['General']['backlog_status'] = app.BACKLOG_STATUS

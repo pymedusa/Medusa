@@ -1656,10 +1656,10 @@ def canonical_name(obj, fmt=u'{key}:{value}', separator=u'|', ignore_list=frozen
 
 
 def get_broken_providers():
-    """Get broken providers from cdn.pymedusa.com."""
+    """Get the broken-provider list, or None when skipped or unavailable."""
     # Check if last broken providers update happened less than 60 minutes ago
     if app.BROKEN_PROVIDERS_UPDATE and isinstance(app.BROKEN_PROVIDERS_UPDATE, datetime.datetime) and \
-            (datetime.datetime.now() - app.BROKEN_PROVIDERS_UPDATE).seconds < 3600:
+            (datetime.datetime.now() - app.BROKEN_PROVIDERS_UPDATE).total_seconds() < 3600:
         log.debug('Broken providers already updated in the last hour')
         return
 
@@ -1669,12 +1669,12 @@ def get_broken_providers():
     url = '{base_url}/providers/broken_providers.json'.format(base_url=app.BASE_PYMEDUSA_URL)
 
     response = MedusaSafeSession().get_json(url)
-    if response is None:
+    if not isinstance(response, list):
         log.info('Unable to update the list with broken providers.'
                  ' This list is used to disable broken providers.'
                  ' You may encounter errors in the log files if you are'
                  ' using a broken provider.')
-        return []
+        return
 
     log.info('Broken providers found: {0}', response)
     return response
