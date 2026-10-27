@@ -35,6 +35,9 @@ const createHistoryStore = ({ layout = 'detailed', remote = {}, remoteCompact = 
     };
 
     const store = new Vuex.Store({
+        actions: {
+            refreshShowFiles: () => Promise.resolve()
+        },
         modules: {
             auth: {
                 state: {
