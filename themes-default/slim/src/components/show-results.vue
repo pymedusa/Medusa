@@ -251,6 +251,8 @@ export default {
     },
     created() {
         this.resultsActive = false;
+        // Keep only an identity token in the store, never the component itself.
+        this.resultsOwner = {};
         this.resultsRequestGeneration = 0;
         this.loadingTimeout = null;
     },
@@ -359,11 +361,15 @@ export default {
                 return;
             }
             this.resultsActive = true;
+            this.$store.commit('claimProviderCache', {
+                owner: this.resultsOwner, showSlug: this.show.id.slug, season: this.season, episode: this.episode
+            });
             return this.loadInitialResults();
         },
         stopResults() {
             this.resultsActive = false;
             ++this.resultsRequestGeneration;
+            this.$store.commit('releaseProviderCache', this.resultsOwner);
             clearTimeout(this.loadingTimeout);
             this.loadingTimeout = null;
             this.loading = false;
@@ -376,7 +382,7 @@ export default {
             clearTimeout(this.loadingTimeout);
             this.loadingTimeout = null;
             return {
-                showSlug, season, episode,
+                owner: this.resultsOwner, showSlug, season, episode,
                 isCurrent: () => this.isResultsActive() && generation === this.resultsRequestGeneration &&
                     this.show.id.slug === showSlug && this.season === season && this.episode === episode
             };

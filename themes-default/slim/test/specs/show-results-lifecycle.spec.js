@@ -57,6 +57,8 @@ describe('Manual search page request ownership', () => {
                 auth: { client: { api: { put: apiPut } } }
             },
             mutations: {
+                claimProviderCache: jest.fn(),
+                releaseProviderCache: jest.fn(),
                 setQueue(state, queue) {
                     state.queue.queueitems = queue;
                 },

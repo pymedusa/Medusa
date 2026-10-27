@@ -8,10 +8,27 @@ import {
 } from '../mutation-types';
 
 const state = {
-    providers: []
+    providers: [],
+    activeCache: null
 };
 
 const cacheRequests = new WeakMap();
+
+const getScope = ({ showSlug, season, episode }) => ({
+    showSlug,
+    season: season === undefined || season === null ? null : Number(season),
+    episode: episode === undefined || episode === null ? null : Number(episode)
+});
+
+const sameScope = (first, second) => first.showSlug === second.showSlug &&
+    first.season === second.season && first.episode === second.episode;
+
+const clearProviderResults = state => {
+    cacheRequests.delete(state);
+    state.providers.forEach(provider => {
+        Vue.set(provider, 'cache', []);
+    });
+};
 
 // Match the backend query so a refresh replaces only the cached rows it can return.
 const matchesScope = (result, { showSlug, season, episode }) => {
@@ -30,17 +47,29 @@ const matchesScope = (result, { showSlug, season, episode }) => {
         return true;
     }
 
-    // An episode query matches exactly '|N|' in the backend, not a list containing N.
-    // For example, refreshing episode 3 must retain a cached [3, 4] release because
-    // that request cannot return its replacement.
-    if (result.episodes.length !== 1) {
-        return false;
-    }
-
-    return result.episodes[0] === episode;
+    // An episode request also includes multi-episode releases containing that episode.
+    // For example, episode 3 matches [3] and [3, 4], but not [13].
+    return result.episodes.includes(episode);
 };
 
 const mutations = {
+    claimProviderCache(state, { owner, ...request }) {
+        if (!owner || !request.showSlug) {
+            return;
+        }
+        const scope = getScope(request);
+        if (state.activeCache && state.activeCache.owner === owner && sameScope(state.activeCache, scope)) {
+            return;
+        }
+        clearProviderResults(state);
+        Vue.set(state, 'activeCache', { owner, ...scope });
+    },
+    releaseProviderCache(state, owner) {
+        if (state.activeCache && state.activeCache.owner === owner) {
+            clearProviderResults(state);
+            state.activeCache = null;
+        }
+    },
     [ADD_PROVIDER](state, provider) {
         if (!state.providers.find(p => p.id === provider.id)) {
             state.providers.push(provider);
@@ -51,17 +80,20 @@ const mutations = {
             const existingProvider = state.providers.find(p => p.id === provider.id);
             if (existingProvider) {
                 Vue.set(state.providers, state.providers.indexOf(existingProvider), {
-                    ...provider, cache: existingProvider.cache || []
+                    ...provider, cache: state.activeCache ? existingProvider.cache || [] : []
                 });
             } else {
-                state.providers.push(provider);
+                state.providers.push({ ...provider, cache: [] });
             }
         });
     },
     [REMOVE_PROVIDER](state, providerId) {
         state.providers = state.providers.filter(prov => prov.id !== providerId);
     },
-    [ADD_PROVIDER_CACHE](state, { providerId, cache, scope, previousCache }) {
+    [ADD_PROVIDER_CACHE](state, { providerId, cache, owner, scope, previousCache }) {
+        if (!state.activeCache || state.activeCache.owner !== owner || !sameScope(state.activeCache, scope)) {
+            return;
+        }
         // Check if this provider has already been added.
         let currentProvider = state.providers.find(prov => prov.id === providerId);
         if (!currentProvider) {
@@ -80,7 +112,9 @@ const mutations = {
         const previousRows = new Set(previousCache || currentProvider.cache);
         const incoming = new Map();
         for (const result of cache) {
-            incoming.set(result.identifier, result);
+            if (matchesScope(result, scope)) {
+                incoming.set(result.identifier, result);
+            }
         }
 
         const merged = [];
@@ -88,8 +122,8 @@ const mutations = {
             // Consume unchanged snapshot rows; replaced rows must keep their newer values.
             const unchanged = previousRows.delete(current);
             const fetched = incoming.get(current.identifier);
-            if (!unchanged || (scope && !matchesScope(current, scope))) {
-                merged.push(unchanged && fetched ? { ...current, ...fetched } : current);
+            if (!unchanged) {
+                merged.push(current);
                 incoming.delete(current.identifier);
             } else if (fetched) {
                 incoming.set(current.identifier, { ...current, ...fetched });
@@ -112,6 +146,9 @@ const mutations = {
      */
     [ADD_SEARCH_RESULTS](state, searchResults) {
         for (const searchResult of searchResults) {
+            if (!state.activeCache || !matchesScope(searchResult, state.activeCache)) {
+                continue;
+            }
             let currentProvider = state.providers.find(prov => prov.id === searchResult.provider.id);
 
             if (!currentProvider) {
@@ -179,29 +216,23 @@ const actions = {
      * @param {String} The provider id.
      * @returns {void}.
      */
-    async getProviderCacheResults({ rootState, commit, state }, { showSlug, season, episode, isCurrent = () => true }) {
+    async getProviderCacheResults({ rootState, commit, state }, { showSlug, season, episode, owner, isCurrent = () => true }) {
         const result = { providersSearched: 0, totalSearchResults: [] };
         if (!showSlug) {
             return result;
         }
-        if (!isCurrent()) {
+        const scope = getScope({ showSlug, season, episode });
+        const { activeCache } = state;
+        if (!owner || !activeCache || activeCache.owner !== owner || !sameScope(activeCache, scope) || !isCurrent()) {
             return { ...result, cancelled: true };
         }
 
-        const scope = {
-            showSlug,
-            season: season === undefined || season === null ? null : Number(season),
-            episode: episode ? Number(episode) : null
-        };
-        const key = JSON.stringify(scope);
-        const requests = cacheRequests.get(state) || new Map();
-        cacheRequests.set(state, requests);
         const request = {};
-        requests.set(key, request);
-        const current = () => isCurrent() && requests.get(key) === request;
+        cacheRequests.set(state, request);
+        const current = () => state.activeCache === activeCache && isCurrent() && cacheRequests.get(state) === request;
         const limit = 1000;
         const params = { limit, showslug: showSlug, season };
-        if (episode) {
+        if (scope.episode !== null) {
             params.episode = episode;
         }
 
@@ -224,9 +255,9 @@ const actions = {
                 if (!current()) {
                     return results;
                 }
-                results.push(...response.data);
+                results.push(...response.data.filter(row => matchesScope(row, scope)));
                 if (response.data.length < limit) {
-                    commit(ADD_PROVIDER_CACHE, { providerId: provider.id, cache: results, scope, previousCache });
+                    commit(ADD_PROVIDER_CACHE, { providerId: provider.id, cache: results, owner, scope, previousCache });
                     return results;
                 }
             }
@@ -247,8 +278,8 @@ const actions = {
             }
             return current() ? result : { ...result, cancelled: true };
         } finally {
-            if (requests.get(key) === request) {
-                requests.delete(key);
+            if (cacheRequests.get(state) === request) {
+                cacheRequests.delete(state);
             }
         }
     },
