@@ -318,7 +318,7 @@ describe('snatch results loading scope', () => {
 
         expect(apiGet).toHaveBeenCalledWith('/providers/provider/results', { params: expectedParams });
         expect(result).toEqual({ providersSearched: 1, totalSearchResults: [row] });
-        expect(commit).toHaveBeenCalledWith(ADD_PROVIDER_CACHE, { providerId: 'provider', cache: [row] });
+        expect(commit).toHaveBeenCalledWith(ADD_PROVIDER_CACHE, expect.objectContaining({ providerId: 'provider', cache: [row] }));
     });
 
     it('does not automatically force search when the valid cache lookup searched zero providers', async () => {
@@ -347,9 +347,9 @@ describe('snatch results loading scope', () => {
         });
 
         await flush(localVueWithCookies);
-        expect(getProviderCacheResults).toHaveBeenCalledWith(expect.anything(), {
+        expect(getProviderCacheResults).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
             showSlug: 'tvdb-target', season: 2, episode: 3
-        });
+        }));
         expect(apiPut).not.toHaveBeenCalled();
         wrapper.destroy();
     });

@@ -11,6 +11,35 @@ const state = {
     providers: []
 };
 
+const cacheRequests = new WeakMap();
+
+// Match the backend query so a refresh replaces only the cached rows it can return.
+const matchesScope = (result, { showSlug, season, episode }) => {
+    if (result.showSlug !== showSlug) {
+        return false;
+    }
+
+    // A null season means any season. Season 0 is specials and must still match.
+    if (season !== null && result.season !== season) {
+        return false;
+    }
+
+    // Without an episode filter, every release type in the selected show/season matches,
+    // including individual episodes, multi-episode releases and season packs.
+    if (episode === null) {
+        return true;
+    }
+
+    // An episode query matches exactly '|N|' in the backend, not a list containing N.
+    // For example, refreshing episode 3 must retain a cached [3, 4] release because
+    // that request cannot return its replacement.
+    if (result.episodes.length !== 1) {
+        return false;
+    }
+
+    return result.episodes[0] === episode;
+};
+
 const mutations = {
     [ADD_PROVIDER](state, provider) {
         if (!state.providers.find(p => p.id === provider.id)) {
@@ -21,7 +50,9 @@ const mutations = {
         providers.forEach(provider => {
             const existingProvider = state.providers.find(p => p.id === provider.id);
             if (existingProvider) {
-                Vue.set(state.providers, state.providers.indexOf(existingProvider), provider);
+                Vue.set(state.providers, state.providers.indexOf(existingProvider), {
+                    ...provider, cache: existingProvider.cache || []
+                });
             } else {
                 state.providers.push(provider);
             }
@@ -30,11 +61,12 @@ const mutations = {
     [REMOVE_PROVIDER](state, providerId) {
         state.providers = state.providers.filter(prov => prov.id !== providerId);
     },
-    [ADD_PROVIDER_CACHE](state, { providerId, cache }) {
+    [ADD_PROVIDER_CACHE](state, { providerId, cache, scope, previousCache }) {
         // Check if this provider has already been added.
         let currentProvider = state.providers.find(prov => prov.id === providerId);
         if (!currentProvider) {
             currentProvider = {
+                id: providerId,
                 name: '',
                 config: {}
             };
@@ -45,18 +77,33 @@ const mutations = {
             Vue.set(currentProvider, 'cache', []);
         }
 
-        const newCache = [];
-
+        const previousRows = new Set(previousCache || currentProvider.cache);
+        const incoming = new Map();
         for (const result of cache) {
-            const existingIdentifier = currentProvider.cache.find(item => item.identifier === result.identifier);
-            if (existingIdentifier) {
-                newCache.push({ ...existingIdentifier, ...result });
-            } else {
-                newCache.push(result);
+            incoming.set(result.identifier, result);
+        }
+
+        const merged = [];
+        for (const current of currentProvider.cache) {
+            // Consume unchanged snapshot rows; replaced rows must keep their newer values.
+            const unchanged = previousRows.delete(current);
+            const fetched = incoming.get(current.identifier);
+            if (!unchanged || (scope && !matchesScope(current, scope))) {
+                merged.push(unchanged && fetched ? { ...current, ...fetched } : current);
+                incoming.delete(current.identifier);
+            } else if (fetched) {
+                incoming.set(current.identifier, { ...current, ...fetched });
             }
         }
 
-        Vue.set(currentProvider, 'cache', newCache);
+        // Remaining snapshot rows were removed or replaced by a newer update.
+        for (const previous of previousRows) {
+            incoming.delete(previous.identifier);
+        }
+        for (const result of incoming.values()) {
+            merged.push(result);
+        }
+        Vue.set(currentProvider, 'cache', merged);
     },
     /**
      * Add search results which have been retreived through the webSocket.
@@ -69,10 +116,12 @@ const mutations = {
 
             if (!currentProvider) {
                 currentProvider = {
-                    name: '',
+                    id: searchResult.provider.id,
+                    name: searchResult.provider.name,
                     config: {},
                     cache: []
                 };
+                state.providers.push(currentProvider);
             }
 
             const { cache } = currentProvider;
@@ -130,14 +179,26 @@ const actions = {
      * @param {String} The provider id.
      * @returns {void}.
      */
-    async getProviderCacheResults({ rootState, commit, state }, { showSlug, season, episode }) {
+    async getProviderCacheResults({ rootState, commit, state }, { showSlug, season, episode, isCurrent = () => true }) {
+        const result = { providersSearched: 0, totalSearchResults: [] };
         if (!showSlug) {
-            return {
-                providersSearched: 0,
-                totalSearchResults: []
-            };
+            return result;
+        }
+        if (!isCurrent()) {
+            return { ...result, cancelled: true };
         }
 
+        const scope = {
+            showSlug,
+            season: season === undefined || season === null ? null : Number(season),
+            episode: episode ? Number(episode) : null
+        };
+        const key = JSON.stringify(scope);
+        const requests = cacheRequests.get(state) || new Map();
+        cacheRequests.set(state, requests);
+        const request = {};
+        requests.set(key, request);
+        const current = () => isCurrent() && requests.get(key) === request;
         const limit = 1000;
         const params = { limit, showslug: showSlug, season };
         if (episode) {
@@ -146,65 +207,50 @@ const actions = {
 
         const getProviderResults = async provider => {
             let page = 0;
-            let lastPage = false;
             const results = [];
-
-            const currentProvider = state.providers.find(prov => prov.id === provider.id);
-            if (!currentProvider) {
-                return results;
-            }
-
-            const { id: providerId } = currentProvider;
-
-            page = 0;
-            lastPage = false;
-
-            while (!lastPage) {
-                let response = null;
+            const previousCache = (provider.cache || []).slice();
+            while (current()) {
+                let response;
                 page += 1;
-
-                params.page = page;
-
                 try {
-                    response = await rootState.auth.client.api.get(`/providers/${providerId}/results`, { params }); // eslint-disable-line no-await-in-loop
+                    response = await rootState.auth.client.api.get(`/providers/${provider.id}/results`, { params: { ...params, page } }); // eslint-disable-line no-await-in-loop
                 } catch (error) {
                     if (error.response && error.response.status === 404) {
-                        console.debug(`No results available for provider ${provider.name}`);
+                        response = { data: [] };
+                    } else {
+                        return results;
                     }
-
-                    lastPage = true;
                 }
-
-                if (response) {
-                    results.push(...response.data);
-                    commit(ADD_PROVIDER_CACHE, { providerId, cache: [...results] });
-
-                    if (response.data.length < limit) {
-                        lastPage = true;
-                    }
-                } else {
-                    lastPage = true;
+                if (!current()) {
+                    return results;
+                }
+                results.push(...response.data);
+                if (response.data.length < limit) {
+                    commit(ADD_PROVIDER_CACHE, { providerId: provider.id, cache: results, scope, previousCache });
+                    return results;
                 }
             }
             return results;
         };
 
-        const result = {
-            providersSearched: 0,
-            totalSearchResults: []
-        };
-
-        for (const provider of state.providers) {
-            if (!provider.config.enabled) {
-                continue;
+        try {
+            for (const provider of state.providers) {
+                if (!current()) {
+                    break;
+                }
+                if (!provider.config.enabled) {
+                    continue;
+                }
+                result.providersSearched += 1;
+                const providerResults = await getProviderResults(provider); // eslint-disable-line no-await-in-loop
+                result.totalSearchResults.push(...providerResults);
             }
-
-            result.providersSearched += 1;
-            const providerResults = await getProviderResults(provider); // eslint-disable-line no-await-in-loop
-            result.totalSearchResults.push(...providerResults);
+            return current() ? result : { ...result, cancelled: true };
+        } finally {
+            if (requests.get(key) === request) {
+                requests.delete(key);
+            }
         }
-
-        return result;
     },
     /**
      * Get provider cache results for enabled providers.
