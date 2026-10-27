@@ -29,13 +29,17 @@
                     styleClass="vgt-table condensed"
                     :pagination-options="{
                         enabled: true,
-                        perPage: getPaginationPerPage(),
-                        perPageDropdown
+                        perPage: paginationPerPage,
+                        perPageDropdown: [...perPageDropdown, -1],
+                        perPageDropdownEnabled: false,
+                        infoFn: paginationInfo
                     }"
                     @on-per-page-change="updatePaginationPerPage($event.currentPerPage)"
                     @on-sort-change="saveSorting"
                 >
-                    <template slot="table-row" slot-scope="props">
+                    <template slot="table-actions-bottom">
+                        <table-page-size :value="paginationPerPage" :options="perPageDropdown" @input="updatePaginationPerPage" />
+                    </template><template slot="table-row" slot-scope="props">
                         <span v-if="props.column.label === 'Provider'" class="align-center">
                             <img :src="`images/providers/${props.row.provider.imageName}`"
                                  :alt="props.row.provider.name" width="16"
@@ -93,6 +97,7 @@
 </template>
 <script>
 
+import { cloneDeep, isEqual } from 'lodash';
 import { mapActions, mapGetters, mapState } from 'vuex';
 import { VueGoodTable } from 'vue-good-table';
 import { manageCookieMixin } from '../mixins/manage-cookie';
@@ -101,6 +106,7 @@ import QualityPill from './helpers/quality-pill.vue';
 import { episodeToSlug, humanFileSize } from '../utils/core';
 import { VTooltip } from 'v-tooltip';
 import ManageWhitelist from './show-results/manage-whitelist.vue';
+import TablePageSize, { formatPaginationInfo } from './helpers/table-page-size.vue';
 
 export default {
     name: 'show-results',
@@ -108,7 +114,8 @@ export default {
         VueGoodTable,
         StateSwitch,
         QualityPill,
-        ManageWhitelist
+        ManageWhitelist,
+        TablePageSize
     },
     directives: {
         tooltip: VTooltip
@@ -143,7 +150,7 @@ export default {
                 return 50;
             }
 
-            if (!perPageDropdown.includes(rows)) {
+            if (rows !== -1 && !perPageDropdown.includes(rows)) {
                 return 500;
             }
             return rows;
@@ -239,7 +246,7 @@ export default {
             loading: false,
             loadingMessage: '',
             perPageDropdown,
-            getPaginationPerPage
+            paginationPerPage: getPaginationPerPage()
         };
     },
     async mounted() {
@@ -412,11 +419,39 @@ export default {
         },
         updatePaginationPerPage(rows) {
             const { setCookie } = this;
+            if (this.paginationPerPage === rows) {
+                return;
+            }
             this.paginationPerPage = rows;
             setCookie('pagination-perPage', rows);
+        },
+        paginationInfo(info) {
+            return formatPaginationInfo(info, this.paginationPerPage);
         }
     },
     watch: {
+        combinedResults() {
+            const table = this.$refs['vgt-show-results'];
+            if (!table || table.currentPage <= 1) {
+                return;
+            }
+
+            const page = table.currentPage;
+            const controls = cloneDeep({ filters: table.columnFilters, sorts: table.sorts, perPage: table.currentPerPage });
+            this.$nextTick(() => {
+                if (this._isDestroyed || this.$refs['vgt-show-results'] !== table || !isEqual(controls, {
+                    filters: table.columnFilters, sorts: table.sorts, perPage: table.currentPerPage
+                })) {
+                    return;
+                }
+
+                const maxPage = table.currentPerPage > 0 ? Math.max(1, Math.ceil(table.totalRowCount / table.currentPerPage)) : 1;
+                const currentPage = Math.min(page, maxPage);
+                if (table.currentPage !== currentPage) {
+                    table.changePage(currentPage);
+                }
+            });
+        },
         queueitems: {
             async handler(queue) {
                 // Check for manual searches

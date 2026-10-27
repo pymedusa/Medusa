@@ -131,6 +131,13 @@ const actions = {
      * @returns {void}.
      */
     async getProviderCacheResults({ rootState, commit, state }, { showSlug, season, episode }) {
+        if (!showSlug) {
+            return {
+                providersSearched: 0,
+                totalSearchResults: []
+            };
+        }
+
         const limit = 1000;
         const params = { limit, showslug: showSlug, season };
         if (episode) {
@@ -169,8 +176,8 @@ const actions = {
                 }
 
                 if (response) {
-                    commit(ADD_PROVIDER_CACHE, { providerId, cache: response.data });
                     results.push(...response.data);
+                    commit(ADD_PROVIDER_CACHE, { providerId, cache: [...results] });
 
                     if (response.data.length < limit) {
                         lastPage = true;
