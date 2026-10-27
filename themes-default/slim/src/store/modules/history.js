@@ -490,29 +490,42 @@ const actions = {
     updateHistory({ rootState, commit, dispatch, state }, data) {
         // Update store's search queue item. (provided through websocket)
         const layout = rootState.config && rootState.config.layout && rootState.config.layout.history;
-        // Compact rows are aggregates, so refetch instead of inserting the raw event.
-        if (layout === 'compact') {
-            if (!state.historyActive) {
-                return;
+        const updateHistoryRows = () => {
+            // Compact rows are aggregates, so refetch instead of inserting the raw event.
+            if (layout === 'compact') {
+                if (!state.historyActive) {
+                    return;
+                }
+                const { page, perPage, sort, filter } = state.remoteCompact;
+                return dispatch('getHistory', {
+                    page,
+                    perPage,
+                    sort,
+                    filter,
+                    compact: true
+                });
             }
-            const { page, perPage, sort, filter } = state.remoteCompact;
-            return dispatch('getHistory', {
-                page,
-                perPage,
-                sort,
-                filter,
-                compact: true
-            });
+            if (layout === 'detailed' && state.historyActive) {
+                return dispatch('getHistory', {
+                    page: state.remote.page,
+                    perPage: state.remote.perPage,
+                    sort: state.remote.sort,
+                    filter: state.remote.filter
+                });
+            }
+            commit(ADD_HISTORY_ROW, { history: data });
+        };
+
+        const historyResult = updateHistoryRows();
+        if (data.statusName !== 'Downloaded') {
+            return historyResult;
         }
-        if (layout === 'detailed' && state.historyActive) {
-            return dispatch('getHistory', {
-                page: state.remote.page,
-                perPage: state.remote.perPage,
-                sort: state.remote.sort,
-                filter: state.remote.filter
-            });
-        }
-        commit(ADD_HISTORY_ROW, { history: data });
+        const fileRefresh = dispatch('refreshShowFiles', {
+            showSlug: data.series,
+            episodes: true,
+            season: data.season
+        });
+        return Promise.all([historyResult, fileRefresh]).then(([result]) => result);
     }
 };
 
