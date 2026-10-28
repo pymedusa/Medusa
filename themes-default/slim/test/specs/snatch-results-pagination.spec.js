@@ -1,6 +1,5 @@
 import Vuex, { Store } from 'vuex';
 import { createLocalVue, mount } from '@vue/test-utils';
-import { VueGoodTable } from 'vue-good-table';
 import ShowResults from '../../src/components/show-results.vue';
 import providerModule from '../../src/store/modules/provider';
 
@@ -66,7 +65,7 @@ const mountResults = (perPage, options = {}) => {
         } },
         stubs: { QualityPill: true, ManageWhitelist: true }
     });
-    return { localVue, store, wrapper, table: wrapper.findComponent(VueGoodTable).vm, cookies, refresh };
+    return { localVue, store, wrapper, table: wrapper.findComponent({ ref: 'vgt-show-results' }).vm, cookies, refresh };
 };
 
 describe('Manual search result pagination', () => {
@@ -91,7 +90,12 @@ describe('Manual search result pagination', () => {
         let pending;
         try {
             await flush(localVue);
-            await wrapper.find('select[name="perPageSelect"]').setValue('25');
+            expect(table.$refs.paginationBottom).toBeDefined();
+            expect(wrapper.findAll('.vgt-wrap__footer select[name="perPageSelect"]')).toHaveLength(1);
+            expect(wrapper.find('.vgt-wrap__actions-footer').exists()).toBe(false);
+            const selector = wrapper.find('.vgt-wrap__footer select[name="perPageSelect"]');
+            expect(wrapper.find('.vgt-wrap__footer label').attributes('for')).toBe(selector.attributes('id'));
+            await selector.setValue('25');
             await flush(localVue);
             table.filterRows({ release: 'Match' });
             await flush(localVue);
@@ -199,6 +203,14 @@ describe('Manual search result pagination', () => {
 
     it('keeps a later filtered page while more matching provider results arrive', async () => {
         const { localVue, store, wrapper, table } = mountResults(25);
+        const expectRendered = (count, range) => {
+            const rows = wrapper.findAll('.vgt-table tbody tr').wrappers
+                .filter(item => item.findAll('td').length === 2 && !item.find('#no-result').exists());
+            expect(rows).toHaveLength(count);
+            expect(wrapper.find('.vgt-table thead').exists()).toBe(true);
+            expect(wrapper.find('.vgt-wrap__footer select[name="perPageSelect"]').exists()).toBe(true);
+            expect(wrapper.find('.footer__navigation__page-info').text()).toBe(range);
+        };
         await flush(localVue);
         table.filterRows({ release: 'Match' });
         await flush(localVue);
@@ -213,9 +225,18 @@ describe('Manual search result pagination', () => {
         expect(table.totalRowCount).toBe(27);
         expect(table.currentPerPage).toBe(25);
         expect(table.currentPage).toBe(2);
+        expectRendered(2, '26 - 27 of 27');
         table.filterRows({ release: 'Match 0' });
         await flush(localVue);
         expect(table.currentPage).toBe(1);
+        expectRendered(1, '1 - 1 of 1');
+        table.filterRows({ release: 'no matching release' });
+        await flush(localVue);
+        expectRendered(0, '0 - 0 of 0');
+        expect(wrapper.find('#no-result').exists()).toBe(true);
+        table.filterRows({ release: '' });
+        await flush(localVue);
+        expectRendered(25, '1 - 25 of 28');
         wrapper.destroy();
     });
 

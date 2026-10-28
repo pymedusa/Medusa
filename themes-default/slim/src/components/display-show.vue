@@ -19,50 +19,47 @@
         <div class="row">
             <div class="col-md-12 top-15 displayShow horizontal-scroll">
                 <!-- Display non-special episodes, paginate if enabled -->
-                <vue-good-table v-if="show.seasons"
-                                :columns="columns"
-                                :rows="seasonTableRows"
-                                :groupOptions="{
-                                    enabled: true,
-                                    mode: 'span',
-                                }"
-                                :pagination-options="{
-                                    enabled: layout.show.pagination.enable,
-                                    perPage: paginationPerPage,
-                                    perPageDropdown: [...perPageDropdown, -1],
-                                    perPageDropdownEnabled: false,
-                                    infoFn: paginationInfo
-                                }"
-                                :search-options="{
-                                    enabled: true,
-                                    trigger: 'enter',
-                                    skipDiacritics: false,
-                                    placeholder: 'Search episodes',
-                                }"
-                                :sort-options="{
-                                    enabled: true,
-                                    initialSortBy: getSortBy('episode', 'desc')
-                                }"
-                                :selectOptions="{
-                                    enabled: true,
-                                    selectOnCheckboxOnly: true, // only select when checkbox is clicked instead of the row
-                                    selectionInfoClass: 'select-info',
-                                    selectionText: 'episodes selected',
-                                    clearSelectionText: 'clear',
-                                    selectAllByGroup: true
-                                }"
-                                :row-style-class="rowStyleClassFn"
-                                :column-filter-options="{
-                                    enabled: true
-                                }"
-                                ref="table-seasons"
-                                @on-selected-rows-change="updateSelectedEpisodes('seasons', $event.selectedRows)"
-                                @on-per-page-change="updatePaginationPerPage($event.currentPerPage)"
-                                @on-page-change="onPageChange">
+                <paginated-table v-if="show.seasons"
+                                 :columns="columns"
+                                 :rows="seasonTableRows"
+                                 :groupOptions="{
+                                     enabled: true,
+                                     mode: 'span',
+                                 }"
+                                 :pagination-options="{
+                                     enabled: layout.show.pagination.enable,
+                                     perPage: paginationPerPage,
+                                     perPageDropdown: [...perPageDropdown, -1],
+                                     perPageDropdownEnabled: false,
+                                     infoFn: paginationInfo
+                                 }"
+                                 :search-options="{
+                                     enabled: true,
+                                     trigger: 'enter',
+                                     skipDiacritics: false,
+                                     placeholder: 'Search episodes',
+                                 }"
+                                 :sort-options="{
+                                     enabled: true,
+                                     initialSortBy: getSortBy('episode', 'desc')
+                                 }"
+                                 :selectOptions="{
+                                     enabled: true,
+                                     selectOnCheckboxOnly: true, // only select when checkbox is clicked instead of the row
+                                     selectionInfoClass: 'select-info',
+                                     selectionText: 'episodes selected',
+                                     clearSelectionText: 'clear',
+                                     selectAllByGroup: true
+                                 }"
+                                 :row-style-class="rowStyleClassFn"
+                                 :column-filter-options="{
+                                     enabled: true
+                                 }"
+                                 ref="table-seasons"
+                                 @on-selected-rows-change="updateSelectedEpisodes('seasons', $event.selectedRows)"
+                                 @on-per-page-change="updatePaginationPerPage($event.currentPerPage)"
+                                 @on-page-change="onPageChange">
 
-                    <template v-if="layout.show.pagination.enable" slot="table-actions-bottom">
-                        <table-page-size :value="paginationPerPage" :options="perPageDropdown" @input="updatePaginationPerPage" />
-                    </template>
                     <template slot="table-header-row" slot-scope="props">
                         <h3 class="season-header toggle collapse">
                             <app-link :name="'season-'+ props.row.season" />
@@ -180,7 +177,7 @@
                         </span>
                     </template>
 
-                </vue-good-table>
+                </paginated-table>
 
                 <!-- Display special episodes -->
                 <vue-good-table v-if="layout.show.specials && specials && specials.length > 0"
@@ -400,11 +397,12 @@ import { humanFileSize } from '../utils/core';
 import { manageCookieMixin } from '../mixins/manage-cookie';
 import { addQTip } from '../utils/jquery';
 import { VueGoodTable } from 'vue-good-table';
+import PaginatedTable from './helpers/paginated-table';
 import Backstretch from './backstretch.vue';
 import ShowHeader from './show-header.vue';
 import SubtitleSearch from './subtitle-search.vue';
 import QualityPill from './helpers/quality-pill.vue';
-import TablePageSize, { formatPaginationInfo } from './helpers/table-page-size.vue';
+import { formatPaginationInfo } from './helpers/table-page-size.vue';
 
 export default {
     name: 'show',
@@ -418,7 +416,7 @@ export default {
         SceneNumberAnimeInput,
         ShowHeader,
         VueGoodTable,
-        TablePageSize
+        PaginatedTable
     },
     mixins: [
         manageCookieMixin('displayShow')

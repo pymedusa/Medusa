@@ -181,6 +181,53 @@ describe('DisplayShow episode selection', () => {
         expect(page.findAll('.vgt-wrap').at(1).find('tbody .vgt-checkbox-col input[type="checkbox"]').element.checked).toBe(true);
     });
 
+    it.each([null, false])('shows page-size controls when pagination loads after mounting with %s', async initialPagination => {
+        store.state.config.layout.show.pagination.enable = initialPagination;
+        const page = mountShow();
+        await flush(localVue);
+
+        const seasonTable = page.findComponent({ ref: 'table-seasons' });
+        const initialPerPage = seasonTable.find('select[name="perPageSelect"]');
+        expect(initialPerPage.exists()).toBe(false);
+        expect(seasonTable.vm.$refs.paginationBottom).toBeUndefined();
+
+        store.state.config.layout.show.pagination.enable = true;
+        await flush(localVue);
+
+        expect(page.findComponent({ ref: 'table-seasons' }).vm).toBe(seasonTable.vm);
+        const perPage = seasonTable.find('select[name="perPageSelect"]');
+        expect(perPage.exists()).toBe(true);
+        expect(seasonTable.findAll('.vgt-wrap__footer select[name="perPageSelect"]')).toHaveLength(1);
+        expect(seasonTable.find('.vgt-wrap__actions-footer').exists()).toBe(false);
+        expect(seasonTable.vm.$refs.paginationBottom).toBeDefined();
+        expect(seasonTable.find('.vgt-wrap__footer label').attributes('for')).toBe(perPage.attributes('id'));
+        expect(perPage.isVisible()).toBe(true);
+        expect([...perPage.element.options].map(option => option.text)).toEqual(['25', '50', '100', '250', '500', 'All']);
+
+        const normalCheckbox = seasonTable.find('tbody .vgt-checkbox-col input[type="checkbox"]');
+        await normalCheckbox.trigger('click');
+        await flush(localVue);
+        expect(page.vm.selectedEpisodes.map(row => row.slug)).toEqual(['s01e02']);
+
+        const allOption = [...perPage.element.options].find(option => option.text === 'All');
+        perPage.element.value = allOption.value;
+        await perPage.trigger('change');
+        await flush(localVue);
+        expect(page.vm.paginationPerPage).toBe(-1);
+        expect(localVue.prototype.$cookies.get('displayShow-pagination-perPage')).toBe('-1');
+        expect(seasonTable.find('tbody .vgt-checkbox-col input[type="checkbox"]').element.checked).toBe(true);
+
+        store.state.config.layout.show.pagination.enable = false;
+        await flush(localVue);
+        expect(seasonTable.find('select[name="perPageSelect"]').exists()).toBe(false);
+        store.state.config.layout.show.pagination.enable = true;
+        await flush(localVue);
+        expect(page.findComponent({ ref: 'table-seasons' }).vm).toBe(seasonTable.vm);
+        expect(seasonTable.find('.vgt-wrap__footer select[name="perPageSelect"]').isVisible()).toBe(true);
+        expect(seasonTable.find('tbody .vgt-checkbox-col input[type="checkbox"]').element.checked).toBe(true);
+        expect(page.vm.selectedEpisodes.map(row => row.slug)).toEqual(['s01e02']);
+    });
+
     it('keeps page-two and All-mode selection stable through checkbox and summary updates', async () => {
         const show = store.getters.getShowById(showSlug);
         show.seasons[1].children.push(episode(1, 3));
@@ -314,6 +361,8 @@ describe('DisplayShow episode selection', () => {
         }
         expect(table.vm.currentPage).toBe(currentPage);
         expect(getEpisodes).not.toHaveBeenCalled();
+        const setCookie = jest.spyOn(page.vm, 'setCookie');
+        const loadEpisodes = jest.spyOn(page.vm, 'loadEpisodes');
         const selector = table.find('select[name="perPageSelect"]');
         const allIndex = [...selector.element.options].findIndex(option => option.text === 'All');
         selector.element.selectedIndex = allIndex;
@@ -322,6 +371,9 @@ describe('DisplayShow episode selection', () => {
         await flush(localVue);
 
         expect(page.vm.paginationPerPage).toBe(-1);
+        expect(setCookie).toHaveBeenCalledTimes(1);
+        expect(setCookie).toHaveBeenCalledWith('pagination-perPage', -1);
+        expect(loadEpisodes).toHaveBeenCalledTimes(1);
         expect(getEpisodes).toHaveBeenCalledTimes(1);
         expect(getEpisodes).toHaveBeenCalledWith({ showSlug, season: 2 });
         expect(table.vm.totalRowCount).toBe(26);
