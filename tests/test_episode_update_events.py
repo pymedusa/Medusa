@@ -3,10 +3,14 @@
 from __future__ import unicode_literals
 
 import json
+import os
+import shutil
 import threading
 
-from medusa import app, db, ws
-from medusa.common import SKIPPED, SNATCHED, UNAIRED, WANTED
+from medusa import app, db, post_processor, ws
+from medusa.common import DOWNLOADED, Quality, SKIPPED, SNATCHED, UNAIRED, WANTED
+from medusa.helper.exceptions import EpisodePostProcessingFailedException
+from medusa.post_processor import PostProcessor
 from medusa.search import core
 from medusa.server.api.v2 import internal, search
 from medusa.tv.episode import Episode
@@ -179,3 +183,107 @@ def test_single_episode_save_keeps_postcommit_notification(recorded_events, writ
     else:
         Episode.save_to_db(episode)
         assert [event for event, _ in events] == ['commit', 'episodeUpdated']
+
+
+@pytest.fixture
+def postprocessor_factory(monkeypatch, create_file, create_dir):
+    """Run real postprocessing completion while isolating parsing and external services."""
+    source = create_file('downloads/Example.S01E01E02.mkv', size=1024)
+    destination = create_dir('shows/Example')
+    for setting in ('FFMPEG_CHECK_STREAMS', 'USE_SUBTITLES', 'CREATE_MISSING_SHOW_DIRS',
+                    'RENAME_EPISODES', 'USE_TORRENTS'):
+        monkeypatch.setattr(app, setting, False)
+    monkeypatch.setattr(post_processor, 'FfMpeg', Mock())
+    monkeypatch.setattr(post_processor, 'verify_freespace', Mock(return_value=True))
+    monkeypatch.setattr(post_processor.helpers, 'is_file_locked', Mock(return_value=False))
+    monkeypatch.setattr(post_processor.naming, 'determine_release_name', Mock(return_value=None))
+    monkeypatch.setattr(post_processor.history, 'log_download', Mock())
+    monkeypatch.setattr(post_processor, 'notifiers', Mock())
+
+    def create(episode_count):
+        episodes = [make_episode('tvdb123', 1, number, SNATCHED) for number in range(1, episode_count + 1)]
+        series = episodes[0].series
+        series._location = destination
+        series.validate_location = destination
+        series.is_anime = False
+        for episode in episodes:
+            episode.series = series
+            episode.quality = Quality.SDTV
+            episode.location = ''
+            episode.proper_path.return_value = 'Example.S01E01E02'
+
+            def episode_json(episode=episode):
+                return {
+                    'series': 'tvdb123', 'season': episode.season, 'episode': episode.episode,
+                    'status': episode.status,
+                    'file': {'location': episode.location, 'size': os.path.getsize(episode.location)}
+                }
+
+            episode.to_json.side_effect = episode_json
+        episodes[0].related_episodes = episodes[1:]
+        processor = PostProcessor(source, process_method='copy', is_priority=True)
+        monkeypatch.setattr(processor, '_find_info', Mock(return_value=(
+            series, 1, list(range(1, episode_count + 1)), Quality.SDTV, -1
+        )))
+        monkeypatch.setattr(processor, '_get_ep_obj', Mock(return_value=episodes[0]))
+        monkeypatch.setattr(processor, '_priority_from_history', Mock())
+        monkeypatch.setattr(processor, '_delete', Mock())
+        monkeypatch.setattr(processor, '_run_extra_scripts', Mock())
+        monkeypatch.setattr(processor, 'post_process_action', Mock(side_effect=lambda *args: shutil.copyfile(
+            source, os.path.join(destination, processor.file_name)
+        )))
+        return processor, episodes
+
+    return create
+
+
+@pytest.mark.parametrize('episode_count, change_during_commit', [(1, False), (2, False), (2, True)])
+def test_postprocessing_notifies_each_downloaded_episode_after_commit(
+        recorded_events, postprocessor_factory, episode_count, change_during_commit):
+    """Single and multi-episode completion publish the final status and destination file."""
+    events, database = recorded_events
+    processor, episodes = postprocessor_factory(episode_count)
+    if change_during_commit:
+        commit = database.mass_action.side_effect
+
+        def commit_then_update(queries):
+            result = commit(queries)
+            for episode in episodes:
+                episode.status = WANTED
+            return result
+
+        database.mass_action.side_effect = commit_then_update
+
+    assert processor.process() is True
+
+    assert [event for event, _ in events] == ['commit'] + ['episodeUpdated'] * episode_count
+    assert events[0][1] == episode_count
+    assert [payload['episode'] for _, payload in events[1:]] == list(range(1, episode_count + 1))
+    for (_, payload), episode in zip(events[1:], episodes):
+        assert payload['status'] == DOWNLOADED
+        assert payload['file'] == {'location': episode.location, 'size': 1024}
+        assert payload['file']['location'] != processor.file_path
+
+
+@pytest.mark.parametrize('failure', ['exception', 'uncommitted', 'failed_statement', 'transfer'])
+def test_postprocessing_does_not_publish_unsaved_downloads(recorded_events, postprocessor_factory, failure):
+    """Failed file processing or database persistence must not advertise downloaded episodes."""
+    events, database = recorded_events
+    processor, _ = postprocessor_factory(2)
+    if failure == 'exception':
+        database.mass_action.side_effect = OSError('write failed')
+        with pytest.raises(OSError):
+            processor.process()
+    elif failure == 'uncommitted':
+        database.mass_action.side_effect = lambda queries: []
+        processor.process()
+    elif failure == 'failed_statement':
+        database.mass_action.side_effect = lambda queries: [None] * len(queries)
+        processor.process()
+    else:
+        processor.post_process_action.side_effect = OSError('copy failed')
+        with pytest.raises(EpisodePostProcessingFailedException):
+            processor.process()
+        database.mass_action.assert_not_called()
+
+    assert events == []
