@@ -31,8 +31,11 @@ describe('Live homepage counters', () => {
             status: 'Wanted', airDate: '2026-01-01T20:00:00', file: {}
         };
         stats = { indexerId: 1, seriesId: 123, epDownloaded: 1, epSnatched: 0, epTotal: 3, seriesSize: 1000 };
-        get = jest.fn().mockImplementation(() => Promise.resolve({
-            data: { stats: [{ ...stats }], maxDownloadCount: 100000 }
+        get = jest.fn().mockImplementation(url => Promise.resolve({
+            data: url === '/stats/' ? {
+                episodes: { downloaded: stats.epDownloaded, snatched: stats.epSnatched, total: stats.epTotal },
+                shows: { total: 1, active: 1 }
+            } : { stats: [{ ...stats }], maxDownloadCount: 100000 }
         }));
         store = new Store({
             state: {
@@ -108,7 +111,7 @@ describe('Live homepage counters', () => {
         expect(wrapper.findComponent(Home).vm).toBe(home);
         expect(wrapper.findComponent(ProgressBar).text()).toBe('1+1 / 3');
         expect(get.mock.calls).toEqual([
-            ['/stats/show'], ['/stats/show', { params: { showslug: showSlug } }]
+            ['/stats/show'], ['/stats/show', { params: { showslug: showSlug } }], ['/stats/']
         ]);
     });
 
@@ -119,7 +122,7 @@ describe('Live homepage counters', () => {
         await flush();
 
         expect(wrapper.findComponent(ProgressBar).text()).toBe('2 / 3');
-        expect(get).toHaveBeenCalledTimes(2);
+        expect(get).toHaveBeenCalledTimes(3);
     });
 
     it('groups simultaneous episode status updates into one targeted statistics request', async () => {
@@ -129,7 +132,7 @@ describe('Live homepage counters', () => {
 
         await Promise.all([episode, secondEpisode].map(row => store.dispatch('updateEpisode', { ...row, status: 'Snatched' })));
 
-        expect(get.mock.calls).toEqual([['/stats/show', { params: { showslug: showSlug } }]]);
+        expect(get.mock.calls).toEqual([['/stats/show', { params: { showslug: showSlug } }], ['/stats/']]);
         expect(store.getters.showsWithStats[0].stats.tooltip.text).toBe('1+2 / 3');
     });
 
@@ -139,7 +142,7 @@ describe('Live homepage counters', () => {
 
         await store.dispatch('updateEpisode', { ...episode, status: 'Snatched' });
 
-        expect(get.mock.calls).toEqual([['/stats/show', { params: { showslug: showSlug } }]]);
+        expect(get.mock.calls).toEqual([['/stats/show', { params: { showslug: showSlug } }], ['/stats/']]);
         expect(store.getters.showsWithStats[0].stats.episodes.snatched).toBe(1);
     });
 
@@ -150,7 +153,7 @@ describe('Live homepage counters', () => {
         ]);
         await store.dispatch('updateEpisode', { ...episode, showSlug: 'tvdb999', status: 'Snatched' });
 
-        expect(get.mock.calls).toEqual([['/stats/show', { params: { showslug: showSlug } }]]);
+        expect(get.mock.calls).toEqual([['/stats/show', { params: { showslug: showSlug } }], ['/stats/']]);
     });
 
     it('refreshes stale counters even when an episode request beats its live notification', async () => {
@@ -182,7 +185,9 @@ describe('Live homepage counters', () => {
 
         expect(get.mock.calls).toEqual([
             ['/stats/show', { params: { showslug: showSlug } }],
-            ['/stats/show', { params: { showslug: showSlug } }]
+            ['/stats/'],
+            ['/stats/show', { params: { showslug: showSlug } }],
+            ['/stats/']
         ]);
         expect(store.getters.showsWithStats[0].stats.episodes.total).toBe(2);
     });

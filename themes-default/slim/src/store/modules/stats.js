@@ -18,7 +18,7 @@ const state = {
     }
 };
 
-const showStatsRequests = new WeakMap();
+const statsRequests = new WeakMap();
 
 const fetchShowStats = async ({ rootState, rootGetters, commit }, showSlug) => {
     const show = rootState.shows.shows.find(show => show.id.slug === showSlug);
@@ -35,16 +35,28 @@ const fetchShowStats = async ({ rootState, rootGetters, commit }, showSlug) => {
     }
 };
 
-const queueShowStats = (context, showSlug) => {
+const queueStats = (context, { showSlug, overall = false } = {}) => {
     const { state, rootState, commit } = context;
-    let refresh = showStatsRequests.get(state);
+    let refresh = statsRequests.get(state);
     if (!refresh) {
-        refresh = { pending: new Set(), full: false };
-        showStatsRequests.set(state, refresh);
+        refresh = { pending: new Set(), full: false, overall: false };
+        statsRequests.set(state, refresh);
         // One drain batches bursts and prevents a full response overwriting a newer single-show response.
         refresh.promise = Promise.resolve().then(async () => {
             try {
-                while (refresh.full || refresh.pending.size > 0) {
+                while (refresh.full || refresh.pending.size > 0 || refresh.overall) {
+                    // Refresh the footer once the pending show updates have settled.
+                    // Clear before awaiting so a new event can request fresh totals again.
+                    if (!refresh.full && refresh.pending.size === 0) {
+                        refresh.overall = false;
+                        try {
+                            const response = await rootState.auth.client.api.get('/stats/'); // eslint-disable-line no-await-in-loop
+                            commit(ADD_STATS, { type: 'overall', stats: response.data });
+                        } catch (error) {
+                            console.warn('Unable to refresh overall statistics', error);
+                        }
+                        continue;
+                    }
                     const { full } = refresh;
                     const covered = full ? [...refresh.pending] : [];
                     const nextSlug = refresh.pending.values().next().value;
@@ -67,12 +79,15 @@ const queueShowStats = (context, showSlug) => {
                     }
                 }
             } finally {
-                showStatsRequests.delete(state);
+                statsRequests.delete(state);
             }
         });
     }
     if (showSlug) {
         refresh.pending.add(showSlug);
+        refresh.overall = true;
+    } else if (overall) {
+        refresh.overall = true;
     } else {
         refresh.full = true;
     }
@@ -109,7 +124,10 @@ const getters = {};
 const actions = {
     getStats(context, type) {
         if (type === 'show') {
-            return queueShowStats(context);
+            return queueStats(context);
+        }
+        if (!type || type === 'overall') {
+            return queueStats(context, { overall: true });
         }
         const { rootState, commit } = context;
         return rootState.auth.client.api.get(`/stats/${(type || '')}`).then(res => {
@@ -120,8 +138,8 @@ const actions = {
         });
     },
     refreshShowStats(context, showSlug) {
-        if (showSlug) {
-            return queueShowStats(context, showSlug);
+        if (showSlug && context.rootState.shows.shows.some(show => show.id.slug === showSlug)) {
+            return queueStats(context, { showSlug });
         }
     }
 };
