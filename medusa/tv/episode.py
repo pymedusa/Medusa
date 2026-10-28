@@ -2166,6 +2166,7 @@ class Episode(TV):
         :type new_status: int
 
         :returns: The episodes update sql to be used in a mass action.
+            The caller must publish episodeUpdated after committing the batch.
         """
         with self.lock:
             if self.status == UNAIRED:
@@ -2206,8 +2207,6 @@ class Episode(TV):
                     self.manually_searched = False
 
             self.status = new_status
-            # Push an update with the updated episode to any open Web UIs through the WebSocket
-            ws.Message('episodeUpdated', self.to_json()).push()
 
             # Make sure to run the collected sql through a mass action.
             return self.get_sql()
