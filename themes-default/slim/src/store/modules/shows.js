@@ -715,7 +715,7 @@ const actions = {
         fileRefreshes.set(showSlug, refresh);
         return refresh.promise;
     },
-    updateEpisode({ state, commit, dispatch }, episode) {
+    async updateEpisode({ state, commit, dispatch }, episode) {
         const show = state.shows.find(({ id }) => id.slug === episode.showSlug);
         if (!show) {
             return;
@@ -729,6 +729,9 @@ const actions = {
         const location = episode.file && episode.file.location;
         const fileChanged = !previousEpisode || previousSize !== size || previousLocation !== location;
         commit(ADD_SHOW_EPISODE, { show, episodes: [episode] });
+        // Counters are cached separately from episode rows. Even an identical row can
+        // follow a newer HTTP episode load while the counters still need refreshing.
+        const statsRefresh = dispatch('refreshShowStats', episode.showSlug);
         if (fileChanged) {
             commit('invalidateShowEpisodeCache', { showSlug: episode.showSlug, season: episode.season });
             const refresh = fileRefreshes.get(episode.showSlug);
@@ -740,7 +743,9 @@ const actions = {
         const rescanning = state.queueitems.some(item => item.name === 'REFRESH' &&
             item.inProgress && item.show.id.slug === episode.showSlug);
         if (!rescanning && fileChanged) {
-            return dispatch('refreshShowFiles', { showSlug: episode.showSlug });
+            await Promise.all([statsRefresh, dispatch('refreshShowFiles', { showSlug: episode.showSlug })]);
+        } else {
+            await statsRefresh;
         }
     },
     saveShowConfig({ rootState }, { show }) {

@@ -53,6 +53,7 @@ describe('Recorded show size refresh', () => {
         get = jest.fn();
         store = new Store({
             state: { auth: { client: { api: { get } } } },
+            actions: { refreshShowStats: jest.fn() },
             modules: {
                 shows: {
                     ...showsModule,
@@ -105,7 +106,7 @@ describe('Recorded show size refresh', () => {
         expect(store.getters.getCurrentShow.size).toBe(9000);
     });
 
-    it('does not fetch a total for a watched update with unchanged size', async () => {
+    it('does not reload recorded file details for a watched update with unchanged size', async () => {
         await store.dispatch('updateEpisode', { ...episode, watched: true });
 
         expect(get).not.toHaveBeenCalled();

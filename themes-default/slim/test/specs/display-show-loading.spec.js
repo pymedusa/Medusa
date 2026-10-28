@@ -118,6 +118,7 @@ describe('Show page request counts', () => {
                 auth: { client: { api: { get } } },
                 config: { layout: { history: 'detailed' } }
             },
+            actions: { refreshShowStats: jest.fn() },
             modules: {
                 shows: {
                     ...showsModule,
