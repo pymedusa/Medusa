@@ -19,46 +19,46 @@
         <div class="row">
             <div class="col-md-12 top-15 displayShow horizontal-scroll">
                 <!-- Display non-special episodes, paginate if enabled -->
-                <paginated-table v-if="show.seasons"
-                                 :columns="columns"
-                                 :rows="seasonTableRows"
-                                 :groupOptions="{
-                                     enabled: true,
-                                     mode: 'span',
-                                 }"
-                                 :pagination-options="{
-                                     enabled: layout.show.pagination.enable,
-                                     perPage: paginationPerPage,
-                                     perPageDropdown: [...perPageDropdown, -1],
-                                     perPageDropdownEnabled: false,
-                                     infoFn: paginationInfo
-                                 }"
-                                 :search-options="{
-                                     enabled: true,
-                                     trigger: 'enter',
-                                     skipDiacritics: false,
-                                     placeholder: 'Search episodes',
-                                 }"
-                                 :sort-options="{
-                                     enabled: true,
-                                     initialSortBy: getSortBy('episode', 'desc')
-                                 }"
-                                 :selectOptions="{
-                                     enabled: true,
-                                     selectOnCheckboxOnly: true, // only select when checkbox is clicked instead of the row
-                                     selectionInfoClass: 'select-info',
-                                     selectionText: 'episodes selected',
-                                     clearSelectionText: 'clear',
-                                     selectAllByGroup: true
-                                 }"
-                                 :row-style-class="rowStyleClassFn"
-                                 :column-filter-options="{
-                                     enabled: true
-                                 }"
-                                 ref="table-seasons"
-                                 @on-selected-rows-change="updateSelectedEpisodes('seasons', $event.selectedRows)"
-                                 @on-per-page-change="updatePaginationPerPage($event.currentPerPage)"
-                                 @on-page-change="onPageChange">
+                <episode-table v-if="show.seasons"
+                               :columns="columns"
+                               :rows="seasonTableRows"
+                               :groupOptions="{
+                                   enabled: true,
+                                   mode: 'span',
+                               }"
+                               :pagination-options="{
+                                   enabled: layout.show.pagination.enable,
+                                   perPage: paginationPerPage,
+                                   perPageDropdown: [...perPageDropdown, -1],
+                                   perPageDropdownEnabled: false,
+                                   infoFn: paginationInfo
+                               }"
+                               :search-options="{
+                                   enabled: true,
+                                   trigger: 'enter',
+                                   skipDiacritics: false,
+                                   placeholder: 'Search episodes',
+                               }"
+                               :sort-options="{
+                                   enabled: true,
+                                   initialSortBy: getSortBy('episode', 'desc')
+                               }"
+                               :selectOptions="{
+                                   enabled: true,
+                                   selectOnCheckboxOnly: true, // only select when checkbox is clicked instead of the row
+                                   selectionInfoClass: 'select-info',
+                                   selectionText: 'episodes selected',
+                                   clearSelectionText: 'clear',
+                                   selectAllByGroup: true
+                               }"
+                               :row-style-class="rowStyleClassFn"
+                               :column-filter-options="{
+                                   enabled: true
+                               }"
+                               ref="table-seasons"
+                               @on-selected-rows-change="updateSelectedEpisodes('seasons', $event.selectedRows)"
+                               @on-per-page-change="updatePaginationPerPage($event.currentPerPage)"
+                               @on-page-change="onPageChange">
 
                     <template slot="table-header-row" slot-scope="props">
                         <h3 class="season-header toggle collapse">
@@ -177,7 +177,7 @@
                         </span>
                     </template>
 
-                </paginated-table>
+                </episode-table>
 
                 <!-- Display special episodes -->
                 <vue-good-table v-if="layout.show.specials && specials && specials.length > 0"
@@ -397,7 +397,7 @@ import { humanFileSize } from '../utils/core';
 import { manageCookieMixin } from '../mixins/manage-cookie';
 import { addQTip } from '../utils/jquery';
 import { VueGoodTable } from 'vue-good-table';
-import PaginatedTable from './helpers/paginated-table';
+import EpisodeTable from './helpers/episode-table';
 import Backstretch from './backstretch.vue';
 import ShowHeader from './show-header.vue';
 import SubtitleSearch from './subtitle-search.vue';
@@ -416,7 +416,7 @@ export default {
         SceneNumberAnimeInput,
         ShowHeader,
         VueGoodTable,
-        PaginatedTable
+        EpisodeTable
     },
     mixins: [
         manageCookieMixin('displayShow')
