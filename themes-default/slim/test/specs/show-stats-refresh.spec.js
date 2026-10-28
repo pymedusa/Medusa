@@ -6,6 +6,8 @@ describe('Live show statistics', () => {
     const showSlug = 'tvdb123';
     let store;
     let get;
+    let getOverall;
+    let apiGet;
     let warn;
     let first;
     let second;
@@ -26,9 +28,13 @@ describe('Live show statistics', () => {
         first = { indexerId: 1, seriesId: 123, epDownloaded: 1, epSnatched: 0, epTotal: 5, seriesSize: 1000 };
         second = { ...first, seriesId: 456, epTotal: 2000 };
         get = jest.fn().mockResolvedValue(response({ ...first, epDownloaded: 2, seriesSize: 2000 }));
+        getOverall = jest.fn().mockResolvedValue({ data: {
+            episodes: { downloaded: 3, snatched: 0, total: 2005 }, shows: { active: 2, total: 2 }
+        } });
+        apiGet = jest.fn((...args) => args[0] === '/stats/' ? getOverall(...args) : get(...args));
         store = new Store({
             state: {
-                auth: { client: { api: { get } } },
+                auth: { client: { api: { get: apiGet } } },
                 shows: {
                     shows: [123, 456].map(id => ({ indexer: 'tvdb', id: { slug: `tvdb${id}`, tvdb: id } }))
                 }
@@ -55,6 +61,7 @@ describe('Live show statistics', () => {
         expect(store.state.stats.show.stats).toEqual([{ ...first, epDownloaded: 2, seriesSize: 2000 }, second]);
         expect(store.state.stats.show.stats[1]).toBe(second);
         expect(store.state.stats.show.maxDownloadCount).toBe(200000);
+        expect(getOverall).toHaveBeenCalledTimes(1);
     });
 
     it('adds a missing row without loading the entire library', async () => {
@@ -219,11 +226,11 @@ describe('Live show statistics', () => {
 
     it('keeps overall statistics on their existing request path', async () => {
         const overall = { episodes: { downloaded: 5, total: 10 } };
-        get.mockResolvedValue({ data: overall });
+        getOverall.mockResolvedValue({ data: overall });
 
         await store.dispatch('getStats');
 
-        expect(get).toHaveBeenCalledWith('/stats/');
+        expect(apiGet).toHaveBeenCalledWith('/stats/');
         expect(store.state.stats.overall).toEqual(overall);
     });
 });
