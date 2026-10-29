@@ -8,12 +8,6 @@ export default {
     props: {
         slug: String
     },
-    data() {
-        return {
-            created: false,
-            wrapper: null
-        };
-    },
     computed: {
         ...mapState({
             enabled: state => state.config.layout.fanartBackground,
@@ -31,18 +25,33 @@ export default {
             return offset;
         }
     },
+    created() {
+        // Keep the plugin instance out of Vue's reactive data.
+        this.backstretchInstance = null;
+        this.backstretchActive = false;
+        this.backstretchActivation = 0;
+    },
     mounted() {
         this.setBackStretch();
     },
     methods: {
         async setBackStretch() {
+            // A kept-alive component receives both mounted and activated initially.
+            if (this.backstretchActive) {
+                return;
+            }
+            this.backstretchActive = true;
+            const activation = ++this.backstretchActivation;
             try {
-                await waitFor(() => this.enabled !== null);
+                await waitFor(() => activation !== this.backstretchActivation || this.enabled !== null);
             } catch (error) {
-                console.error(error);
+                if (activation === this.backstretchActivation) {
+                    console.error(error);
+                }
+                return;
             }
 
-            if (!this.enabled) {
+            if (activation !== this.backstretchActivation || !this.enabled) {
                 return;
             }
             const { opacity, slug, offset } = this;
@@ -50,18 +59,21 @@ export default {
                 const imgUrl = `api/v2/series/${slug}/asset/fanart?api_key=${this.apiKey}`;
 
                 // If no element is supplied, attaches to `<body>`
-                const { $wrap } = $.backstretch(imgUrl);
+                this.backstretchInstance = $.backstretch(imgUrl);
+                const { $wrap } = this.backstretchInstance;
                 $wrap.css('top', offset);
                 $wrap.css('opacity', opacity).fadeIn(500);
-                this.created = true;
-                this.wrapper = $wrap;
             }
         },
         removeBackStretch() {
-            if (this.created) {
-                $.backstretch('destroy');
-                this.created = false;
+            this.backstretchActive = false;
+            ++this.backstretchActivation;
+            const { backstretchInstance } = this;
+            // Another page may have replaced or removed the shared background.
+            if (backstretchInstance && backstretchInstance === $('body').data('backstretch')) {
+                backstretchInstance.destroy();
             }
+            this.backstretchInstance = null;
         }
     },
     destroyed() {
@@ -75,8 +87,9 @@ export default {
     },
     watch: {
         opacity(newOpacity) {
-            if (this.created) {
-                const { $wrap } = $('body').data('backstretch');
+            const { backstretchInstance } = this;
+            if (backstretchInstance && backstretchInstance === $('body').data('backstretch')) {
+                const { $wrap } = backstretchInstance;
                 $wrap.css('opacity', newOpacity).fadeIn(500);
             }
         }

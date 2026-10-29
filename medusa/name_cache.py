@@ -7,8 +7,8 @@ import logging
 import threading
 
 from medusa import app, db
-from medusa.helpers import full_sanitize_scene_name
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.name_parser.series_name import normalize_series_name_for_comparison
 from medusa.scene_exceptions import (
     exceptions_cache,
     refresh_exceptions_cache,
@@ -35,7 +35,7 @@ def addNameToCache(name, indexer_id=1, series_id=0):
     cache_db_con = db.DBConnection('cache.db')
 
     # standardize the name we're using to account for small differences in providers
-    name = full_sanitize_scene_name(name)
+    name = normalize_series_name_for_comparison(name)
     if name not in name_cache:
         name_cache[name] = (indexer_id, series_id)
         cache_db_con.action('INSERT OR REPLACE INTO scene_names (indexer_id, name, indexer) VALUES (?, ?, ?)', [series_id, name, indexer_id])
@@ -48,7 +48,7 @@ def retrieveNameFromCache(name):
     :param name: The show name to look up.
     :return: Return a tuple with two items. First: indexer_id, Second: series_id.
     """
-    name = full_sanitize_scene_name(name)
+    name = normalize_series_name_for_comparison(name)
     if name in name_cache:
         return name_cache[name]
     return None, None
@@ -97,12 +97,12 @@ def build_name_cache(series_obj=None):
         series_identifier = (cache_series_obj.indexer, cache_series_obj.series_id)
         scene_exceptions = exceptions_cache[series_identifier].copy()
         names = {
-            full_sanitize_scene_name(exception.title): series_identifier
+            normalize_series_name_for_comparison(exception.title): series_identifier
             for season_exceptions in itervalues(scene_exceptions)
             for exception in season_exceptions
         }
         # Add original name to name cache
-        series_name = full_sanitize_scene_name(cache_series_obj.name)
+        series_name = normalize_series_name_for_comparison(cache_series_obj.name)
         names[series_name] = series_identifier
 
         # Add scene exceptions to name cache

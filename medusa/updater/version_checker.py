@@ -35,6 +35,14 @@ class CheckVersion(object):
 
         self.amActive = True
 
+        broken_providers = helpers.get_broken_providers()
+        if broken_providers is not None and broken_providers != app.BROKEN_PROVIDERS:
+            app.BROKEN_PROVIDERS = broken_providers
+            try:
+                app.instance.save_config()
+            except OSError as error:
+                log.warning('Unable to save the updated broken-provider list: {0!r}', error)
+
         # Update remote branches and store in app.GIT_REMOTE_BRANCHES
         self.list_remote_branches()
 

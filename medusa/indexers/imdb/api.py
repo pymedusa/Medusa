@@ -5,15 +5,16 @@ from __future__ import unicode_literals
 
 import locale
 import logging
-from collections import OrderedDict, namedtuple
+import re
+from collections import OrderedDict
 from datetime import datetime
 from itertools import chain
 from time import time
+from urllib.parse import urlsplit
 
 from imdbpie import imdbpie
 
 from medusa import app
-from medusa.bs4_parser import BS4Parser
 from medusa.indexers.base import (Actor, Actors, BaseIndexer)
 from medusa.indexers.exceptions import (
     IndexerError, IndexerShowIncomplete, IndexerShowNotFound, IndexerUnavailable
@@ -23,7 +24,7 @@ from medusa.show.show import Show
 
 from requests.exceptions import RequestException
 
-from six import string_types, text_type
+from six import integer_types, string_types, text_type
 
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -43,8 +44,28 @@ class ImdbIdentifier(object):
         self.imdb_id = imdb_id
 
     def _clean(self, imdb_id):
-        if isinstance(imdb_id, string_types):
-            return imdb_id.strip('/').split('/')[-1]
+        """Extract a complete identifier from text or unambiguous URL path segments."""
+        imdb_id = imdb_id.strip()
+        if not imdb_id or re.search(r'[\x00-\x1f\x7f-\x9f]|\s', imdb_id):
+            return
+        if re.fullmatch(r'[0-9]+', imdb_id):
+            return 'tt' + imdb_id.zfill(7)
+
+        try:
+            parsed = urlsplit(imdb_id)
+            if parsed.scheme and (parsed.scheme not in ('http', 'https') or not parsed.netloc):
+                return
+            if parsed.netloc:
+                # Validate malformed hosts and ports before interpreting their paths.
+                if not parsed.hostname:
+                    return
+                parsed.port
+        except ValueError:
+            return
+
+        identifiers = {segment for segment in parsed.path.split('/') if re.fullmatch(r'tt[0-9]+', segment)}
+        if len(identifiers) == 1:
+            return identifiers.pop()
 
     @property
     def series_id(self):
@@ -64,19 +85,22 @@ class ImdbIdentifier(object):
     @imdb_id.setter
     def imdb_id(self, value):
         """Set imdb id."""
-        if value is None or value == '':
-            self._imdb_id = self.series_id = None
-            return
+        self._imdb_id = self.series_id = None
+        try:
+            if isinstance(value, string_types):
+                imdb_id = self._clean(value)
+            elif isinstance(value, integer_types) and not isinstance(value, bool) and value >= 0:
+                imdb_id = 'tt' + text_type(value).zfill(7)
+            else:
+                return
 
-        if isinstance(value, string_types) and 'tt' in value:
-            self._imdb_id = self._clean(value)
-            self.series_id = int(self._imdb_id.split('tt')[-1])
-        else:
-            self._imdb_id = 'tt{0}'.format(text_type(value).zfill(7))
-            try:
-                self.series_id = int(value)
-            except (TypeError, ValueError):
-                self.series_id = None
+            if imdb_id is not None:
+                series_id = int(imdb_id[2:])
+                self._imdb_id = imdb_id
+                self.series_id = series_id
+        except ValueError:
+            # Python may reject excessively long integer/string conversions.
+            return
 
 
 class Imdb(BaseIndexer):
@@ -356,9 +380,6 @@ class Imdb(BaseIndexer):
                 # Enrich episode for the current season.
                 self._get_episodes_detailed(imdb_id, season['season'])
 
-                # Scrape the synopsys and the episode thumbnail.
-                self._enrich_episodes(imdb_id, season['season'])
-
         # Try to calculate the airs day of week
         self._calc_airs_day_of_week(imdb_id)
 
@@ -434,54 +455,6 @@ class Imdb(BaseIndexer):
 
             self._set_item(series_id, season, episode['episodeNumber'], 'rating', episode['rating'])
             self._set_item(series_id, season, episode['episodeNumber'], 'votes', episode['ratingCount'])
-
-    def _enrich_episodes(self, imdb_id, season):
-        """Enrich the episodes with additional information for a specific season.
-
-        For this we're making use of html scraping using beautiful soup.
-        :param imdb_id: imdb id including the `tt`.
-        :param season: season passed as integer.
-        """
-        episodes_url = 'http://www.imdb.com/title/{imdb_id}/episodes?season={season}'
-        episodes = []
-
-        try:
-            response = self.config['session'].get(episodes_url.format(
-                imdb_id=ImdbIdentifier(imdb_id).imdb_id, season=season)
-            )
-            if not response or not response.text:
-                log.warning('Problem requesting episode information for show {0}, and season {1}.', imdb_id, season)
-                return
-
-            Episode = namedtuple('Episode', ['episode_number', 'season_number', 'synopsis', 'thumbnail'])
-            with BS4Parser(response.text, 'html5lib') as html:
-                for episode in html.find_all('div', class_='list_item'):
-                    try:
-                        episode_number = int(episode.find('meta')['content'])
-                    except AttributeError:
-                        pass
-
-                    try:
-                        synopsis = episode.find('div', class_='item_description').get_text(strip=True)
-                        if 'Know what this is about?' in synopsis:
-                            synopsis = ''
-                    except AttributeError:
-                        synopsis = ''
-
-                    try:
-                        episode_thumbnail = episode.find('img', class_='zero-z-index')['src']
-                    except (AttributeError, TypeError):
-                        episode_thumbnail = None
-
-                    episodes.append(Episode(episode_number=episode_number, season_number=season,
-                                            synopsis=synopsis, thumbnail=episode_thumbnail))
-
-        except Exception as error:
-            log.exception('Error while trying to enrich imdb series {0}, {1}', ImdbIdentifier(imdb_id).imdb_id, error)
-
-        for episode in episodes:
-            self._set_item(imdb_id, episode.season_number, episode.episode_number, 'overview', episode.synopsis)
-            self._set_item(imdb_id, episode.season_number, episode.episode_number, 'filename', episode.thumbnail)
 
     def _parse_images(self, imdb_id, language='en'):
         """Parse Show and Season posters.

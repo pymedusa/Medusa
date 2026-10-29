@@ -518,15 +518,20 @@ class Series(TV):
 
     @property
     def size(self):
-        """Size of the show on disk."""
-        return helpers.get_size(self.location)
+        """Total recorded episode size, matching episode rows and season totals."""
+        main_db_con = db.DBConnection()
+        result = main_db_con.select(
+            'SELECT COALESCE(SUM(file_size), 0) AS size '
+            'FROM tv_episodes WHERE indexer = ? AND showid = ?',
+            [self.indexer, self.series_id])
+        return int(result[0]['size'])
 
     def show_size(self, pretty=False):
         """
-        Get the size of the show on disk (deprecated).
+        Get the total recorded episode size (deprecated).
 
         :param pretty: True if you want a pretty size. (e.g. 3 GB)
-        :return:  Size of the show on disk.
+        :return:  Total recorded episode size.
         """
         warnings.warn(
             u'Method show_size is deprecated.  Use size property instead.',
@@ -1370,6 +1375,8 @@ class Series(TV):
             if external in reverse_mappings and self.externals[external]:
                 if external == 'imdb_id':
                     self.externals[external] = ImdbIdentifier(self.externals[external]).series_id
+                    if self.externals[external] is None:
+                        continue
                 sql_l.append(['INSERT OR IGNORE '
                               'INTO indexer_mapping (indexer_id, indexer, mindexer_id, mindexer) '
                               'VALUES (?,?,?,?)',
@@ -1633,9 +1640,12 @@ class Series(TV):
         if self.indexer_api.indexer == INDEXER_IMDB:
             self.externals['imdb_id'] = ImdbIdentifier(getattr(indexed_show, 'id')).series_id
 
-        self.imdb_id = None
-        if self.externals.get('imdb_id') or getattr(indexed_show, 'imdb_id', ''):
-            self.imdb_id = ImdbIdentifier(self.externals.get('imdb_id')).imdb_id or getattr(indexed_show, 'imdb_id', '')
+        self.imdb_id = ImdbIdentifier(self.externals.get('imdb_id')).imdb_id
+        if self.imdb_id is None:
+            imdb_id = getattr(indexed_show, 'imdb_id', None)
+            if isinstance(imdb_id, string_types):
+                imdb_id = imdb_id.split(',')[0]
+            self.imdb_id = ImdbIdentifier(imdb_id).imdb_id
 
         if getattr(indexed_show, 'airs_dayofweek', '') and getattr(indexed_show, 'airs_time', ''):
             self.airs = '{airs_day_of_week} {airs_time}'.format(airs_day_of_week=indexed_show['airs_dayofweek'],
@@ -1673,7 +1683,12 @@ class Series(TV):
                 return
 
         # Make sure we only use the first ID
-        self.imdb_id = self.imdb_id.split(',')[0]
+        imdb_id = self.imdb_id.split(',')[0] if isinstance(self.imdb_id, string_types) else self.imdb_id
+        self.imdb_id = ImdbIdentifier(imdb_id).imdb_id
+        if self.imdb_id is None:
+            log.info(u"{id}: Not loading show info from IMDb, because we don't know its ID.",
+                     {'id': self.series_id})
+            return
 
         # Set retrieved IMDb ID as imdb_id for externals
         self.externals['imdb_id'] = self.imdb_id
