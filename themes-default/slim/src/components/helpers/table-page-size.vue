@@ -1,13 +1,11 @@
 <template>
-    <div class="table-page-size footer__row-count">
-        <label class="footer__row-count__label">
-            Rows per page:
-            <select name="perPageSelect" class="footer__row-count__select" aria-label="Rows per page"
-                    :value="value" @change="$emit('input', Number($event.target.value))">
-                <option v-for="size in options" :key="size" :value="size">{{size}}</option>
-                <option :value="-1">All</option>
-            </select>
-        </label>
+    <div class="footer__row-count vgt-pull-left">
+        <label :for="id" class="footer__row-count__label">Rows per page:</label>
+        <select :id="id" name="perPageSelect" class="footer__row-count__select"
+                :value="value" @change="$emit('input', Number($event.target.value))">
+            <option v-for="size in options" :key="size" :value="size">{{size}}</option>
+            <option :value="-1">All</option>
+        </select>
     </div>
 </template>
 
@@ -22,24 +20,9 @@ export const formatPaginationInfo = (info, perPage) => {
 export default {
     name: 'table-page-size',
     props: {
+        id: { type: String, required: true },
         value: { type: Number, required: true },
         options: { type: Array, required: true }
     }
 };
 </script>
-
-<style scoped>
-.table-page-size {
-    padding: 0.6em 1em;
-}
-
-label {
-    display: inline-flex;
-    align-items: center;
-    margin: 0;
-}
-
-select {
-    margin-left: 8px;
-}
-</style>
