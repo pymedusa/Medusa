@@ -520,6 +520,7 @@ class InternalHandler(BaseRequestHandler):
                 episode = Episode.find_by_series_and_episode(series, episode_number)
                 if not episode:
                     log.warning('Episode not found with slug {slug}', {'slug': episode_slug})
+                    continue
 
                 ep_sql = episode.mass_update_episode_status(status)
                 if ep_sql:
@@ -701,6 +702,7 @@ class InternalHandler(BaseRequestHandler):
                 episode = Episode.find_by_series_and_episode(series, episode_number)
                 if not episode:
                     log.warning('Episode not found with slug {slug}', {'slug': episode_slug})
+                    continue
 
                 episode.download_subtitles(lang=language if language != 'all' else None)
 
