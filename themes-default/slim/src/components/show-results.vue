@@ -37,9 +37,7 @@
                     @on-per-page-change="updatePaginationPerPage($event.currentPerPage)"
                     @on-sort-change="saveSorting"
                 >
-                    <template slot="table-actions-bottom">
-                        <table-page-size :value="paginationPerPage" :options="perPageDropdown" @input="updatePaginationPerPage" />
-                    </template><template slot="table-row" slot-scope="props">
+                    <template slot="table-row" slot-scope="props">
                         <span v-if="props.column.label === 'Provider'" class="align-center">
                             <img :src="`images/providers/${props.row.provider.imageName}`"
                                  :alt="props.row.provider.name" width="16"
@@ -99,14 +97,14 @@
 
 import { cloneDeep, isEqual } from 'lodash';
 import { mapActions, mapGetters, mapState } from 'vuex';
-import { VueGoodTable } from 'vue-good-table';
+import VueGoodTable from './helpers/paginated-table';
 import { manageCookieMixin } from '../mixins/manage-cookie';
 import { StateSwitch } from './helpers';
 import QualityPill from './helpers/quality-pill.vue';
 import { episodeToSlug, humanFileSize } from '../utils/core';
 import { VTooltip } from 'v-tooltip';
 import ManageWhitelist from './show-results/manage-whitelist.vue';
-import TablePageSize, { formatPaginationInfo } from './helpers/table-page-size.vue';
+import { formatPaginationInfo } from './helpers/table-page-size.vue';
 
 export default {
     name: 'show-results',
@@ -114,8 +112,7 @@ export default {
         VueGoodTable,
         StateSwitch,
         QualityPill,
-        ManageWhitelist,
-        TablePageSize
+        ManageWhitelist
     },
     directives: {
         tooltip: VTooltip

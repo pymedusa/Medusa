@@ -43,12 +43,6 @@ exports[`ShowResults.test.js renders show-results component 1`] = `
         styleclass="vgt-table condensed"
         theme=""
       >
-        <template>
-          <table-page-size-stub
-            options="25,50,100,250,500"
-            value="50"
-          />
-        </template>
          
         <div
           id="no-result"
