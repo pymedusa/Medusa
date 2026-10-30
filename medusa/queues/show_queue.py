@@ -755,6 +755,7 @@ class QueueItemAdd(ShowQueueItem):
             self.success = False
             self._finish_early()
             log.debug(traceback.format_exc())
+            return
 
         default_status = self.options['default_status'] or app.STATUS_DEFAULT
         if statusStrings[default_status] == 'Wanted':
