@@ -34,5 +34,7 @@ jobs:
         uv add -r test_requirements.txt
     - name: Test with tox
       run: uv run python setup.py test -a 'tests -vv --cov=medusa --cov-report=xml'
+    - name: Run Flake8
+      run: uv run python setup.py test -a 'medusa --flake8 --cache-clear'
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5
