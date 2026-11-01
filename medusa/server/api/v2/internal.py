@@ -298,7 +298,7 @@ class InternalHandler(BaseRequestHandler):
         root_dir = self.get_argument('rootdir', '').strip()
         title = self.get_argument('title', '').strip()
 
-        if not show_dir and not(root_dir and title):
+        if not show_dir and not (root_dir and title):
             return self._bad_request({
                 'showDir': show_dir,
                 'rootDir': root_dir,
