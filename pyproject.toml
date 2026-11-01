@@ -27,6 +27,7 @@ dependencies = [
     "mako==1.3.12",
     "markdown2==2.5.4",
     "packaging==25.0",
+    "pint",
     "profilehooks==1.13.0",
     "pygithub==1.53",
     "pyjwt==2.10.1",
