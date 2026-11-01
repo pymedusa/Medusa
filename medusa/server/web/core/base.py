@@ -34,7 +34,7 @@ from tornado.concurrent import run_on_executor
 from tornado.escape import utf8
 from tornado.gen import coroutine
 from tornado.web import (
-    HTTPError,
+    HTTPError as _HTTPError,
     RequestHandler,
     StaticFileHandler,
     addslash,
@@ -42,6 +42,10 @@ from tornado.web import (
 )
 
 from tornroutes import route
+
+# Keep HTTPError available from this module.
+HTTPError = _HTTPError
+del _HTTPError
 
 mako_lookup = None
 mako_cache = None

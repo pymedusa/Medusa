@@ -61,7 +61,7 @@ class FfMpeg(object):
         video_details = self.get_video_details(video_file)
         if 'streams' not in video_details:
             return False
-        
+
         video_streams = [item for item in video_details['streams'] if item['codec_type'] == 'video']
         audio_streams = [item for item in video_details['streams'] if item['codec_type'] == 'audio']
         if len(video_streams) > 0 and len(audio_streams) > 0:
@@ -86,7 +86,7 @@ class FfMpeg(object):
 
         _, errors = process.communicate()
         err = [err.strip() for err in errors.split('\n') if err]
-        if(err):
+        if (err):
             print(err)
             return {
                 'file': video_file,

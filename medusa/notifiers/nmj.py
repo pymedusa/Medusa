@@ -23,26 +23,31 @@ except ImportError:
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
+
 class SimpleTelnet:
     """Minimal Telnet implementation for Medusa NMJ commands."""
+
     def __init__(self, host, port=23, timeout=10):
         self.sock = socket.create_connection((host, port), timeout=timeout)
-        self.buffer = b""
+        self.buffer = b''
+
     def read_until(self, expected=b'# ', timeout=10):
         """Read until expected prompt appears."""
         import time
         start = time.time()
         while expected not in self.buffer:
             if time.time() - start > timeout:
-                raise TimeoutError("Timed out waiting for prompt")
+                raise TimeoutError('Timed out waiting for prompt')
             data = self.sock.recv(1024)
             if not data:
                 break
             self.buffer += data
         return self.buffer.decode('utf-8', errors='ignore')
+
     def write(self, cmd):
         """Send a command with CRLF."""
         self.sock.sendall(cmd.encode('utf-8') + b'\n')
+
     def read_all(self):
         """Read everything remaining on the socket."""
         chunks = []
@@ -52,8 +57,10 @@ class SimpleTelnet:
                 break
             chunks.append(data)
         return b''.join(chunks).decode('utf-8', errors='ignore')
+
     def close(self):
         self.sock.close()
+
 
 class Notifier(object):
     def notify_settings(self, host):
