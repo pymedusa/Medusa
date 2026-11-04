@@ -27,6 +27,20 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: ${{ matrix.node-version }}
+    - name: Discover Yarn cache directory
+      id: yarn-cache-info
+      working-directory: ./themes-default/slim
+      shell: bash
+      run: |
+        yarn_cache_dir="$(yarn cache dir)"
+        yarn_version="$(yarn --version)"
+        printf 'directory=%s\n' "$yarn_cache_dir" >> "$GITHUB_OUTPUT"
+        printf 'version=%s\n' "$yarn_version" >> "$GITHUB_OUTPUT"
+    - name: Cache Yarn downloads
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.yarn-cache-info.outputs.directory }}
+        key: medusa-yarn-v1-${{ runner.os }}-${{ runner.arch }}-yarn-${{ steps.yarn-cache-info.outputs.version }}-${{ hashFiles('themes-default/slim/package.json', 'themes-default/slim/yarn.lock', 'themes-default/slim/.yarnrc', 'themes-default/slim/.yarnrc.yml') }}
     - name: Install themes dependencies
       working-directory: ./themes-default/slim
       run: yarn install --ignore-scripts

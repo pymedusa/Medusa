@@ -26,13 +26,27 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
+    - name: Set up uv cache directory
+      id: uv-cache-dir
+      shell: bash
+      run: |
+        uv_cache_dir="$RUNNER_TEMP/uv-cache"
+        printf 'UV_CACHE_DIR=%s\n' "$uv_cache_dir" >> "$GITHUB_ENV"
+        printf 'path=%s\n' "$uv_cache_dir" >> "$GITHUB_OUTPUT"
+    - name: Cache uv downloads and wheels
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.uv-cache-dir.outputs.path }}
+        key: medusa-uv-v1-${{ runner.os }}-${{ runner.arch }}-python-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml', 'uv.lock', 'requirements.txt', 'test_requirements.txt') }}
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install uv
-        uv add -r requirements.txt
-        uv add -r test_requirements.txt
+        uv add --refresh -r requirements.txt
+        uv add --refresh -r test_requirements.txt
     - name: Test with tox
       run: uv run python setup.py test -a 'tests -vv --cov=medusa --cov-report=xml'
+    - name: Run Flake8
+      run: uv run python setup.py test -a 'medusa --flake8 --cache-clear'
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5

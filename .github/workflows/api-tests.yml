@@ -31,6 +31,23 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
+    - name: Discover dependency cache directories
+      id: dependency-cache-info
+      shell: bash
+      run: |
+        yarn_cache_dir="$(yarn cache dir)"
+        yarn_version="$(yarn --version)"
+        pip_cache_dir="$(python -m pip cache dir)"
+        printf 'yarn-directory=%s\n' "$yarn_cache_dir" >> "$GITHUB_OUTPUT"
+        printf 'yarn-version=%s\n' "$yarn_version" >> "$GITHUB_OUTPUT"
+        printf 'pip-directory=%s\n' "$pip_cache_dir" >> "$GITHUB_OUTPUT"
+    - name: Cache Python and Yarn downloads
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: |
+          ${{ steps.dependency-cache-info.outputs.yarn-directory }}
+          ${{ steps.dependency-cache-info.outputs.pip-directory }}
+        key: medusa-api-deps-v1-${{ runner.os }}-${{ runner.arch }}-python-${{ matrix.python-version }}-yarn-${{ steps.dependency-cache-info.outputs.yarn-version }}-${{ hashFiles('package.json', 'yarn.lock', '.yarnrc', '.github/workflows/api-tests.yml') }}
     - name: Install Python dependencies
       run: |
         pip install dredd_hooks

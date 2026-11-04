@@ -28,7 +28,7 @@ import re
 import sys
 from builtins import object
 from builtins import range
-from collections import deque, OrderedDict
+from collections import OrderedDict, deque
 from logging import (
     CRITICAL,
     DEBUG,
@@ -213,8 +213,11 @@ def read_loglines(log_file=None, modification_time=None, start_index=0, max_line
 
     if traceback_lines:
         message = traceback_lines[-1]
-        logline = LogLine(message, message=message,
-                         traceback_lines=tuple(reversed(list(traceback_lines)[:-1])))
+        logline = LogLine(
+            message,
+            message=message,
+            traceback_lines=tuple(reversed(list(traceback_lines)[:-1])),
+        )
 
         if not predicate(logline):
             return

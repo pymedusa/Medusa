@@ -2,8 +2,8 @@
 """Tests for the show queue."""
 from __future__ import unicode_literals
 
-from copy import deepcopy
 import threading
+from copy import deepcopy
 from types import SimpleNamespace
 
 from medusa import app

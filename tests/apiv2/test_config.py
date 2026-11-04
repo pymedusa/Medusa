@@ -25,11 +25,11 @@ from medusa.subtitles import (
 
 from mock.mock import Mock
 
-from tests.apiv2.conftest import TEST_API_KEY
-
 import pytest
 
 from six import integer_types, iteritems, itervalues, string_types, text_type
+
+from tests.apiv2.conftest import TEST_API_KEY
 
 from tornado.httpclient import HTTPError
 
@@ -379,6 +379,10 @@ def config_system(monkeypatch):
     def memory_usage_mock(*args, **kwargs):
         return '124.86 MB'
     monkeypatch.setattr(helpers, 'memory_usage', memory_usage_mock)
+    monkeypatch.setattr(
+        config_api.FfMpeg, 'get_ffprobe_version',
+        Mock(side_effect=config_api.FfprobeBinaryException())
+    )
 
     section_data = {}
     section_data['configLoaded'] = True
@@ -754,7 +758,7 @@ def config_notifiers():
     section_data['discord']['notifyOnSubtitleDownload'] = bool(app.DISCORD_NOTIFY_ONSUBTITLEDOWNLOAD)
     section_data['discord']['webhook'] = app.DISCORD_WEBHOOK
     section_data['discord']['tts'] = bool(app.DISCORD_TTS)
-    section_data['discord']['overrideAvatar'] = bool(app.DISCORD_OVERRIDE_AVATAR)    
+    section_data['discord']['overrideAvatar'] = bool(app.DISCORD_OVERRIDE_AVATAR)
     section_data['discord']['name'] = app.DISCORD_NAME
 
     section_data['twitter'] = {}
