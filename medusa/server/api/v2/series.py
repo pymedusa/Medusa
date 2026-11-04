@@ -101,7 +101,7 @@ class SeriesHandler(BaseRequestHandler):
 
         status_after = data_options.get('statusAfter')
         if status_after is not None and status_after not in (WANTED, SKIPPED, IGNORED):
-            return self._bad_request(f"Invalid statusAfter, allowed values are {WANTED} (Wanted), {SKIPPED} (Skipped) or {IGNORED} (Ignored)")
+            return self._bad_request(f'Invalid statusAfter, allowed values are {WANTED} (Wanted), {SKIPPED} (Skipped) or {IGNORED} (Ignored)')
 
         try:
             options = {
