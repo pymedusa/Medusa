@@ -35,6 +35,7 @@
                                         :selected-root-dir="selectedRootDir"
                                         @navigate-step="navigateStep"
                                         @selected="selected"
+                                        @update-language="indexerLanguage = $event"
                                     />
                                 </div>
                             </tab-content>
@@ -154,6 +155,7 @@ export default {
             selectedRootDir: '',
             selectedShow: null,
             selectedShowSlug: '',
+            indexerLanguage: null,
             selectedShowOptions: {
                 subtitles: null,
                 status: null,
@@ -295,7 +297,7 @@ export default {
                 options.language = providedInfo.indexerLanguage || general.indexerDefaultLanguage;
                 showId[indexerIdToName(providedInfo.indexerId)] = providedInfo.showId;
             } else {
-                options.language = indexerLanguage;
+                options.language = indexerLanguage || general.indexerDefaultLanguage;
                 showId[indexerIdToName(selectedShow.indexerId)] = selectedShow.showId;
             }
 
