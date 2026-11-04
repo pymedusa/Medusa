@@ -75,9 +75,19 @@
                             class="form-control-inline-max input-sm max-input350 search-pattern"
                             style="padding-left: 50px"
                             :disabled="!selectedTitle"
+                            placeholder="e.g. %MM %Y or %0M.%Y"
                         >
                         <input type="checkbox" v-model="enabled">
                         <p v-if="!validated && isValidMessage">{{isValidMessage}}</p>
+                        <p class="help-block">
+                            Monthly shows: <code>%MM %Y</code> (Mai 2016),
+                            <code>%0M-%Y</code> (05-2016),
+                            <code>%0M-%y</code> (05-16),
+                            <code>%0M.%Y</code> (05.2016),
+                            <code>%Y.%0M</code> (2016.05),
+                            <code>%A-D</code> (actual airdate, e.g. 2016-05-07).
+                            <code>%MM</code>/<code>%Mm</code> use the show language.
+                        </p>
                     </div>
                 </div>
 
