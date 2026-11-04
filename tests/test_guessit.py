@@ -3,7 +3,9 @@
 from __future__ import unicode_literals
 
 import datetime
+import importlib
 import os
+from types import SimpleNamespace
 
 import guessit
 import medusa.name_parser.guessit_parser as sut
@@ -14,6 +16,7 @@ from six import binary_type, text_type, iteritems
 import yaml
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+rules_module = importlib.import_module('medusa.name_parser.rules.rules')
 
 
 @pytest.fixture
@@ -115,3 +118,41 @@ def test_guess(monkeypatch, show_list, release_name, expected):
 
     if not expected.get('disabled'):
         assert expected == actual
+
+
+def test_season_dash_episode_uses_full_string_boundaries(monkeypatch):
+    monkeypatch.setattr(rules_module, 'marker_sorted', lambda fileparts, matches: fileparts)
+
+    class FakeMarkers(object):
+        def __init__(self, fileparts):
+            self._fileparts = fileparts
+
+        def named(self, name):
+            if name == 'path':
+                return self._fileparts
+            return []
+
+    class FakeMatches(object):
+        def __init__(self, input_string, fileparts, named_matches):
+            self.input_string = input_string
+            self.markers = FakeMarkers(fileparts)
+            self._named_matches = named_matches
+
+        def named(self, name):
+            return list(self._named_matches.get(name, []))
+
+    input_string = 'prefixS2-01 - Episode Title.mkv'
+    fileparts = [SimpleNamespace(start=6, end=len(input_string))]
+    named_matches = {
+        'episode': [],
+        'season': [],
+        'title': [SimpleNamespace(name='title', value='Show Name', start=0, end=5)],
+        'episode_title': [],
+    }
+
+    result = rules_module.SeasonDashEpisodeNumbers().when(
+        FakeMatches(input_string, fileparts, named_matches),
+        {},
+    )
+
+    assert result is None

@@ -241,7 +241,7 @@
                                                 <td class="showLegend">Daily search offset:</td>
                                                 <td>{{show.config.airdateOffset}} hours</td>
                                             </tr>
-                                            <tr v-if="show.config.locationValid && show.size > -1">
+                                            <tr v-if="show.size !== null && show.size >= 0">
                                                 <td class="showLegend">Size:</td>
                                                 <td>{{humanFileSize(show.size)}}</td>
                                             </tr>
@@ -525,25 +525,56 @@ export default {
             return '';
         }
     },
+    created() {
+        this.unwatchShow = null;
+    },
     mounted() {
         if (!this.show.id.slug || this.slug !== this.show.id.slug) {
             this.setCurrentShow(this.slug);
         }
 
-        ['load', 'resize'].map(event => {
-            return window.addEventListener(event, () => {
-                this.$nextTick(() => this.reflowLayout());
-            });
-        });
-        this.$watch('show', function(slug) { // eslint-disable-line object-shorthand
-            // Show has changed. Meaning we should reflow the layout.
-            if (slug) {
-                const { reflowLayout } = this;
-                this.$nextTick(() => reflowLayout());
-            }
-        }, { deep: true });
+        this.startWatching();
+    },
+    activated() {
+        this.startWatching();
+    },
+    deactivated() {
+        this.stopWatching();
+    },
+    beforeDestroy() {
+        this.stopWatching();
     },
     methods: {
+        startWatching() {
+            if (this.unwatchShow) {
+                return;
+            }
+            ['load', 'resize'].forEach(event => {
+                window.addEventListener(event, this.requestReflow);
+            });
+            this.unwatchShow = this.$watch('show', this.requestReflow, { deep: true });
+            this.requestReflow();
+        },
+        stopWatching() {
+            ['load', 'resize'].forEach(event => {
+                window.removeEventListener(event, this.requestReflow);
+            });
+            if (this.unwatchShow) {
+                this.unwatchShow();
+                this.unwatchShow = null;
+            }
+            const tooltips = $(this.$el).find('[data-hasqtip]');
+            if (tooltips.length > 0) {
+                tooltips.qtip('destroy', true);
+            }
+        },
+        requestReflow() {
+            this.$nextTick(() => {
+                if (this.unwatchShow) {
+                    this.reflowLayout();
+                }
+            });
+        },
         ...mapActions([
             'setSpecials',
             'setCurrentShow'

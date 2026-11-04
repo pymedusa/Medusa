@@ -2,13 +2,102 @@
 """Tests for the show queue."""
 from __future__ import unicode_literals
 
+from copy import deepcopy
+import threading
+from types import SimpleNamespace
+
 from medusa import app
+from medusa.common import SKIPPED, WANTED
 from medusa.indexers.config import INDEXER_IMDB, INDEXER_TVDBV2, INDEXER_TVMAZE
 from medusa.indexers.exceptions import IndexerShowNotFound
 from medusa.queues import show_queue
 from medusa.tv.series import SeriesIdentifier
 
 from mock.mock import MagicMock, Mock
+
+import pytest
+
+
+@pytest.fixture
+def add_show_job(monkeypatch):
+    """Run the real add lifecycle with isolated indexer and cleanup services."""
+    monkeypatch.setattr(threading.current_thread(), 'name', threading.current_thread().name)
+    series = Mock()
+    series.name = 'Example Show'
+    series.to_json.return_value = {'id': {'slug': 'tvdb123'}}
+    api = MagicMock()
+    api.__getitem__.return_value = Mock(seriesname=series.name)
+    series.identifier.get_indexer_api.return_value = api
+    events = []
+
+    def message(event, payload):
+        return Mock(push=lambda: events.append((event, deepcopy(payload))))
+
+    cleanup = Mock(side_effect=lambda show: events.append(('cleanup', None)))
+    backlog = Mock()
+    monkeypatch.setattr(app, 'showList', [])
+    monkeypatch.setattr(app, 'show_queue_scheduler', Mock(action=Mock(removeShow=cleanup)))
+    monkeypatch.setattr(app, 'backlog_search_scheduler', Mock(action=Mock(search_backlog=backlog)))
+    monkeypatch.setattr(show_queue.Series, 'from_identifier', Mock(return_value=series))
+    monkeypatch.setattr(show_queue, 'log', Mock())
+    monkeypatch.setattr(show_queue.ws, 'Message', message)
+    monkeypatch.setattr(show_queue.ui.notifications, 'error', Mock())
+    monkeypatch.setattr(show_queue, 'build_name_cache', Mock())
+    item = show_queue.QueueItemAdd(
+        INDEXER_TVDBV2, 123, None, default_status=WANTED, default_status_after=SKIPPED
+    )
+    return SimpleNamespace(item=item, series=series, api=api, events=events, cleanup=cleanup, backlog=backlog)
+
+
+@pytest.mark.parametrize('failure', ['missing_name', 'indexer', 'options', 'episodes'])
+def test_add_show_publishes_failed_job_after_cleanup(add_show_job, failure):
+    """Handled failures must finish the original UI job without announcing an added show."""
+    job = add_show_job
+    if failure == 'missing_name':
+        job.api.__getitem__.return_value.seriesname = None
+    elif failure == 'indexer':
+        job.series.identifier.get_indexer_api.side_effect = IndexerShowNotFound('Unavailable')
+    elif failure == 'options':
+        job.series.configure.side_effect = KeyError('quality')
+    else:
+        job.series.load_episodes_from_indexer.side_effect = IndexerShowNotFound('Episodes unavailable')
+
+    job.item.run()
+
+    assert job.item.success is False
+    assert job.item.inProgress is False
+    job.cleanup.assert_called_once_with(job.series)
+    job.backlog.assert_not_called()
+    assert not any(event == 'showAdded' for event, _ in job.events)
+    terminal = [payload for event, payload in job.events if event == 'QueueItemShow'][-1]
+    assert terminal['identifier'] == job.item.identifier
+    assert terminal['success'] is False
+    assert terminal['inProgress'] is False
+    assert terminal['step'][-1] == 'failed'
+    assert job.events[-2][0] == 'cleanup'
+    assert job.events[-1] == ('QueueItemShow', terminal)
+
+
+@pytest.mark.parametrize('default_status', [SKIPPED, WANTED])
+def test_add_show_success_keeps_backlog_and_completion(add_show_job, default_status):
+    """Successful additions still publish completion and honor the requested backlog status."""
+    job = add_show_job
+    job.item.options['default_status'] = default_status
+
+    job.item.run()
+
+    assert job.item.success is True
+    assert job.item.inProgress is False
+    assert app.showList == [job.series]
+    job.cleanup.assert_not_called()
+    if default_status == WANTED:
+        job.backlog.assert_called_once_with([job.series])
+    else:
+        job.backlog.assert_not_called()
+    assert [payload for event, payload in job.events if event == 'showAdded'] == [job.series.to_json.return_value]
+    assert job.events[-1][0] == 'QueueItemShow'
+    assert job.events[-1][1]['success'] is True
+    assert job.events[-1][1]['step'][-1] == 'finished'
 
 
 def test_refresh_queue_item_logs_rescan_terminology(monkeypatch):

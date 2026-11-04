@@ -677,7 +677,6 @@ class QueueItemAdd(ShowQueueItem):
                         ' Delete .nfo and manually add the correct language.'.format(
                             path=self.show_dir, indexer=indexerApi(self.indexer).name)
                     )
-                    self._finish_early()
                     raise SaveSeriesException('Indexer is missing a showname in this language: {0!r}')
 
                 self.show.load_from_indexer(tvapi=api)
@@ -755,7 +754,9 @@ class QueueItemAdd(ShowQueueItem):
             log.warning('Unable to add series: {0!r}'.format(error))
             self.success = False
             self._finish_early()
+            message_step('failed')
             log.debug(traceback.format_exc())
+            return
 
         default_status = self.options['default_status'] or app.STATUS_DEFAULT
         if statusStrings[default_status] == 'Wanted':

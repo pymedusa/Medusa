@@ -9,7 +9,7 @@ import re
 
 import markdown2
 
-from medusa import app, classes, db, network_timezones, providers
+from medusa import app, classes, db, network_timezones, providers, ws
 from medusa.common import (
     DOWNLOADED, Overview, Quality,
     SNATCHED, SNATCHED_BEST, SNATCHED_PROPER,
@@ -497,6 +497,7 @@ class InternalHandler(BaseRequestHandler):
             return self._bad_request('You need to provide a valid status code')
 
         ep_sql_l = []
+        episode_updates = []
         for show in shows:
             # Loop through the shows. Each show should have an array of episode slugs
             series_identifier = SeriesIdentifier.from_slug(show.get('slug'))
@@ -519,10 +520,12 @@ class InternalHandler(BaseRequestHandler):
                 episode = Episode.find_by_series_and_episode(series, episode_number)
                 if not episode:
                     log.warning('Episode not found with slug {slug}', {'slug': episode_slug})
+                    continue
 
                 ep_sql = episode.mass_update_episode_status(status)
                 if ep_sql:
                     ep_sql_l.append(ep_sql)
+                    episode_updates.append(episode.to_json())
 
                     # Keep an array of episodes for the trakt sync
                     episodes.append(episode)
@@ -532,7 +535,9 @@ class InternalHandler(BaseRequestHandler):
 
         if ep_sql_l:
             main_db_con = db.DBConnection()
-            main_db_con.mass_action(ep_sql_l)
+            if main_db_con.mass_action(ep_sql_l):
+                for episode_data in episode_updates:
+                    ws.Message('episodeUpdated', episode_data).push()
 
         return self._ok(data={'count': len(ep_sql_l)})
 
@@ -697,6 +702,7 @@ class InternalHandler(BaseRequestHandler):
                 episode = Episode.find_by_series_and_episode(series, episode_number)
                 if not episode:
                     log.warning('Episode not found with slug {slug}', {'slug': episode_slug})
+                    continue
 
                 episode.download_subtitles(lang=language if language != 'all' else None)
 

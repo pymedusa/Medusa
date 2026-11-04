@@ -197,6 +197,7 @@ def snatch_result(result):
 
     # don't notify when we re-download an episode
     sql_l = []
+    episode_updates = []
     trakt_data = []
     for cur_ep_obj in result.episodes:
         with cur_ep_obj.lock:
@@ -229,10 +230,10 @@ def snatch_result(result):
 
             cur_ep_obj.manually_searched = result.manually_searched
 
-            sql_l.append(cur_ep_obj.get_sql())
-
-            # Push an update with the updated episode to any open Web UIs through the WebSocket
-            ws.Message('episodeUpdated', cur_ep_obj.to_json()).push()
+            ep_sql = cur_ep_obj.get_sql()
+            if ep_sql:
+                sql_l.append(ep_sql)
+                episode_updates.append(cur_ep_obj.to_json())
 
         if cur_ep_obj.status != common.DOWNLOADED:
             notifiers.notify_snatch(cur_ep_obj, result)
@@ -251,7 +252,9 @@ def snatch_result(result):
 
     if sql_l:
         main_db_con = db.DBConnection()
-        main_db_con.mass_action(sql_l)
+        if main_db_con.mass_action(sql_l):
+            for episode_data in episode_updates:
+                ws.Message('episodeUpdated', episode_data).push()
 
     return True
 

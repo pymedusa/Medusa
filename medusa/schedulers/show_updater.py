@@ -54,7 +54,7 @@ class ShowUpdater(object):
             show_updates_supported = True
 
             if show.paused:
-                logger.info('The show {show} is paused, not updating it.', show=show.name)
+                logger.info('The show {show} is paused, not updating its metadata.', show=show.name)
                 continue
 
             indexer_name = indexerApi(show.indexer).name
@@ -188,11 +188,14 @@ class ShowUpdater(object):
 
         ui.ProgressIndicators.setIndicator('dailyUpdate', ui.QueueProgressIndicator('Daily Update', pi_list))
 
-        # Only refresh updated shows that have been updated using the season updates.
-        # The full refreshed shows, are updated from the queueItem.
-        for show in set(show[1] for show in season_updates):
+        # Check files every night, including paused shows and unchanged metadata.
+        # refreshShow already defers to queued full updates, which rescan on completion.
+        season_shows = set(show[1] for show in season_updates)
+        for show in app.showList:
             try:
-                app.show_queue_scheduler.action.refreshShow(show, True)
+                queue = app.show_queue_scheduler.action
+                if not queue.isInRefreshQueue(show) and not queue.isBeingRefreshed(show):
+                    queue.refreshShow(show, show in season_shows)
             except CantRefreshShowException as e:
                 logger.warning('Show rescan on show {show_name} failed. Error: {error}',
                                show_name=show.name, error=e)
@@ -205,9 +208,9 @@ class ShowUpdater(object):
                 indexer_api = indexerApi(indexer)
                 self.update_cache.set_last_indexer_update(indexer_api.name)
                 logger.info('Updated lastUpdate timestamp for {indexer_name}', indexer_name=indexer_api.name)
-            logger.info('Completed scheduling updates on shows')
+            logger.info('Completed scheduling show updates and file rescans')
         else:
-            logger.info('Completed scheduling updates on shows, but there was nothing to update')
+            logger.info('Completed scheduling file rescans; no metadata updates were needed')
 
         self.amActive = False
 

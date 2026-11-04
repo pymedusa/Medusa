@@ -220,7 +220,7 @@ export default {
             label: 'Size',
             field: 'size',
             tdClass: 'align-center-span',
-            formatFn: humanFileSize,
+            formatFn: bytes => humanFileSize(bytes),
             type: 'number',
             filterOptions: {
                 customFilter: true

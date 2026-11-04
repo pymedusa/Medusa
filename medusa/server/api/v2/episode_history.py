@@ -8,6 +8,7 @@ from os.path import basename
 from medusa import db
 from medusa.common import DOWNLOADED, FAILED, SNATCHED, SUBTITLED, statusStrings
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.providers import get_provider_class
 from medusa.providers.generic_provider import GenericProvider
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.server.api.v2.history import HistoryHandler
@@ -82,9 +83,12 @@ class EpisodeHistoryHandler(BaseRequestHandler):
                 subtitle_language = None
 
                 if item['action'] in (SNATCHED, FAILED):
+                    provider_id = GenericProvider.make_id(item['provider'])
+                    provider_class = get_provider_class(provider_id)
                     provider.update({
-                        'id': GenericProvider.make_id(item['provider']),
-                        'name': item['provider']
+                        'id': provider_id,
+                        'name': item['provider'],
+                        'imageName': provider_class.image_name() if provider_class else 'missing.png'
                     })
                     release_name = item['resource']
 

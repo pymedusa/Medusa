@@ -72,7 +72,7 @@
     "vuex": "3.6.2"
   },
   "devDependencies": {
-    "@babel/core": "7.28.5",
+    "@babel/core": "7.29.6",
     "@babel/eslint-parser": "7.28.5",
     "@babel/plugin-transform-runtime": "7.28.5",
     "@babel/preset-env": "7.28.5",
@@ -120,7 +120,7 @@
     "webpack-cli": "6.0.1"
   },
   "resolutions": {
-    "underscore": "^1.13.7",
+    "underscore": "^1.13.8",
     "minimist": "^1.2.8",
     "getobject": "^1.1.1",
     "form-data": "^4.0.6",

@@ -15,12 +15,15 @@ from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.network_timezones import app_timezone
 from medusa.sbdatetime import date_presets, time_presets
 from medusa.schedulers.utils import all_schedulers
+from medusa.server.api.v2 import config as config_api
 from medusa.show.recommendations.trakt import TraktPopular
 from medusa.subtitles import (
     name_from_code,
     subtitle_code_filter,
     wanted_languages
 )
+
+from mock.mock import Mock
 
 from tests.apiv2.conftest import TEST_API_KEY
 
@@ -253,6 +256,35 @@ async def test_config_patch_rejects_disabled_tcp_without_unix_socket(http_client
         await http_client.fetch(url, method='PATCH', body=json.dumps(body), **auth_headers)
 
     assert error.value.code == 400
+
+
+@pytest.mark.parametrize('settings', [{}, {'brokenProviders': ['known-broken']}])
+@pytest.mark.gen_test
+async def test_recent_shows_patch_only_saves_persistent_settings(
+        http_client, create_url, auth_headers, app_config, monkeypatch, settings):
+    """Share recent-show navigation without writing unrelated configuration."""
+    app_config('WEB_PORT', 8081)
+    app_config('SHOWS_RECENT', [])
+    app_config('BROKEN_PROVIDERS', [])
+    instance = app_config('instance', Mock())
+    message = Mock()
+    create_message = Mock(return_value=message)
+    monkeypatch.setattr(config_api.ws, 'Message', create_message)
+    monkeypatch.setattr(config_api.DataGenerator, 'get_data', lambda section: {'recentShows': app.SHOWS_RECENT})
+    recent_shows = [{'showSlug': 'tvdb123', 'name': 'Example Show'}]
+    body = dict(settings, recentShows=recent_shows)
+
+    response = await http_client.fetch(
+        create_url('/config/main'), method='PATCH', body=json.dumps(body), **auth_headers)
+
+    assert response.code == 200
+    assert json.loads(response.body) == body
+    assert app.SHOWS_RECENT == recent_shows
+    assert instance.save_config.call_count == bool(settings)
+    create_message.assert_called_once_with('configUpdated', {
+        'section': 'main', 'config': {'recentShows': recent_shows},
+    })
+    message.push.assert_called_once_with()
 
 
 @pytest.mark.gen_test

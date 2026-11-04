@@ -633,7 +633,7 @@ class Cache(object):
         return cache_results
 
     def get_results(self, show_slug=None, season=None, episode=None):
-        """Get cached results for this provider."""
+        """Get cached results, including releases containing the requested episode."""
         cache_db_con = self._get_db()
 
         param = []
@@ -641,15 +641,15 @@ class Cache(object):
 
         if show_slug:
             show = SeriesIdentifier.from_slug(show_slug)
-            where += ['indexer', 'indexerid']
+            where += ['indexer = ?', 'indexerid = ?']
             param += [show.indexer.id, show.id]
 
-        if season:
-            where += ['season']
+        if season is not None:
+            where += ['season = ?']
             param += [season]
 
-        if episode:
-            where += ['episodes']
+        if episode is not None:
+            where += ['instr(episodes, ?) > 0']
             param += ['|{0}|'.format(episode)]
 
         base_sql = 'SELECT * FROM [{name}]'.format(name=self.provider_id)
@@ -657,7 +657,7 @@ class Cache(object):
 
         if where and param:
             base_sql += ' WHERE '
-            base_sql += ' AND '.join([item + ' = ? ' for item in where])
+            base_sql += ' AND '.join(where)
             base_params += param
 
         results = cache_db_con.select(

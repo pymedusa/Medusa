@@ -155,15 +155,20 @@ class Show(object):
         total_status = [SKIPPED, WANTED]
 
         results = db.select(
-            'SELECT airdate, status, quality '
+            'SELECT '
+            'COALESCE(SUM(status IN (?, ?)), 0) AS downloaded, '
+            'COALESCE(SUM(status IN (?, ?, ?)), 0) AS snatched, '
+            'COALESCE(SUM(status IN (?, ?, ?, ?, ?) '
+            'OR (airdate <= ? AND status IN (?, ?))), 0) AS total '
             'FROM tv_episodes '
             'WHERE season > 0 '
             'AND episode > 0 '
-            'AND airdate > 1'
+            'AND airdate > 1',
+            downloaded_status + snatched_status + downloaded_status + snatched_status + [today] + total_status
         )
 
-        stats = {
-            'episodes': {
+        return {
+            'episodes': results[0] if results else {
                 'downloaded': 0,
                 'snatched': 0,
                 'total': 0,
@@ -173,18 +178,6 @@ class Show(object):
                 'total': len(shows),
             },
         }
-
-        for result in results:
-            if result['status'] in downloaded_status:
-                stats['episodes']['downloaded'] += 1
-                stats['episodes']['total'] += 1
-            elif result['status'] in snatched_status:
-                stats['episodes']['snatched'] += 1
-                stats['episodes']['total'] += 1
-            elif result['airdate'] <= today and result['status'] in total_status:
-                stats['episodes']['total'] += 1
-
-        return stats
 
     @staticmethod
     def pause(indexer_id, series_id, pause=None):

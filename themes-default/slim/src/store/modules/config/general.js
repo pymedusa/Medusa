@@ -145,6 +145,11 @@ const mutations = {
         state.recentShows.unshift(show); // Add the new show object to the start of the array.
         state.recentShows = state.recentShows.slice(0, 5); // Cut the array of at 5 items.
     },
+    restoreRecentShows(state, { previousShows, updatedShows }) {
+        if (state.recentShows === updatedShows) {
+            state.recentShows = previousShows;
+        }
+    },
     updateTraktSelectedLists(state, selectedLists) {
         state.recommended.trakt.selectedLists = selectedLists;
     }
@@ -168,6 +173,9 @@ const getters = {
         return arrayExclude(globalRequired, seriesRequired);
     }
 };
+
+// A failed save may be restored by another rollback and must remain eligible for retry.
+const failedRecentShows = new WeakSet();
 
 const actions = {
     getConfig({ rootState, commit }, section) {
@@ -202,11 +210,23 @@ const actions = {
             });
     },
     setRecentShow({ rootState, commit, state }, show) {
+        const previousShows = state.recentShows;
         commit('addRecentShow', { show });
+        const updatedShows = state.recentShows;
+        if (!failedRecentShows.has(previousShows) && previousShows.length === updatedShows.length && updatedShows.every((item, index) =>
+            item.showSlug === previousShows[index].showSlug && item.name === previousShows[index].name)) {
+            // Preserve the reference used by any pending save's conditional rollback.
+            commit('restoreRecentShows', { previousShows, updatedShows });
+            return;
+        }
         const config = {
-            recentShows: state.recentShows
+            recentShows: updatedShows
         };
-        return rootState.auth.client.api.patch('config/main', config);
+        return rootState.auth.client.api.patch('config/main', config).catch(error => {
+            failedRecentShows.add(updatedShows);
+            commit('restoreRecentShows', { previousShows, updatedShows });
+            throw error;
+        });
     },
     setCustomLogs({ rootState, commit }, logs) {
         // Convert back to object.
