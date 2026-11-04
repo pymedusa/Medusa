@@ -52,7 +52,7 @@ const mutations = {
         }
     },
     [ADD_SHOW](state, show) {
-        const existingShow = state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer]));
+        const existingShow = state.shows.find(({ id }) => show.id.slug === id.slug);
 
         if (!existingShow) {
             console.debug(`Adding ${show.title || show.indexer + String(show.id)} as it wasn't found in the shows array`, show);
@@ -102,7 +102,7 @@ const mutations = {
         console.debug(`Added ${shows.length} shows to store`);
     },
     [ADD_SHOW_CONFIG](state, { show, config }) {
-        const existingShow = state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer]));
+        const existingShow = state.shows.find(({ id }) => show.id.slug === id.slug);
         existingShow.config = { ...existingShow.config, ...config };
     },
     currentShow(state, showSlug) {
@@ -125,7 +125,7 @@ const mutations = {
     },
     [ADD_SHOW_EPISODE](state, { show, episodes }) {
         // Creating a new show object (from the state one) as we want to trigger a store update
-        const newShow = Object.assign({}, state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer])));
+        const newShow = Object.assign({}, state.shows.find(({ id }) => show.id.slug === id.slug));
 
         if (!newShow.seasons) {
             newShow.seasons = [];
@@ -160,13 +160,13 @@ const mutations = {
         });
 
         // Update state
-        const existingShow = state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer]));
+        const existingShow = state.shows.find(({ id }) => show.id.slug === id.slug);
         Vue.set(state.shows, state.shows.indexOf(existingShow), newShow);
         console.log(`Storing episodes for show ${newShow.title} seasons: ${[...new Set(episodes.map(episode => episode.season))].join(', ')}`);
     },
     [ADD_SHOW_SCENE_EXCEPTION](state, { show, exception }) {
         // Get current show object
-        const currentShow = Object.assign({}, state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer])));
+        const currentShow = Object.assign({}, state.shows.find(({ id }) => show.id.slug === id.slug));
 
         if (currentShow.config.aliases.find(e => e.title === exception.title && e.season === exception.season)) {
             console.warn(`Can't add exception ${exception.title} with season ${exception.season} to show ${currentShow.title} as it already exists.`);
@@ -177,7 +177,7 @@ const mutations = {
     },
     [REMOVE_SHOW_SCENE_EXCEPTION](state, { show, exception }) {
         // Get current show object
-        const currentShow = Object.assign({}, state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer])));
+        const currentShow = Object.assign({}, state.shows.find(({ id }) => show.id.slug === id.slug));
 
         if (!currentShow.config.aliases.find(e => e.title === exception.title && e.season === exception.season)) {
             console.warn(`Can't remove exception ${exception.title} with season ${exception.season} to show ${currentShow.title} as it does not exist.`);
@@ -197,7 +197,7 @@ const mutations = {
     },
     [ADD_SHOW_CONFIG_TEMPLATE](state, { show, template }) {
         // Get current show object
-        const currentShow = Object.assign({}, state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer])));
+        const currentShow = Object.assign({}, state.shows.find(({ id }) => show.id.slug === id.slug));
 
         if (currentShow.config.searchTemplates.find(
             t => t.template === template.template &&
@@ -213,7 +213,7 @@ const mutations = {
     },
     [REMOVE_SHOW_CONFIG_TEMPLATE](state, { show, template }) {
         // Get current show object
-        const currentShow = Object.assign({}, state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer])));
+        const currentShow = Object.assign({}, state.shows.find(({ id }) => show.id.slug === id.slug));
 
         if (template.id) {
             currentShow.config.searchTemplates = currentShow.config.searchTemplates.filter(
