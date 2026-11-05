@@ -18,6 +18,8 @@ from medusa.name_parser.series_name import normalize_series_name_for_comparison
     ('3 Show på (abc2)', '3 Show pa (abc2)'),
     ('1923 (2022)', '1923 2022'),
     ('1883 (2021)', '1883 2021'),
+    # Optional plural (s): must not turn Name(s) into "names"
+    ('Show Name', 'Show Name(s)'),
 ])
 def test_normalize_series_name_for_comparison_matches_guessit4_titles(raw, library):
     """Punctuated GuessIt 4 titles must still match library / alias forms."""
@@ -30,6 +32,7 @@ def test_normalize_series_name_for_comparison_matches_guessit4_titles(raw, libra
     ('9-1-1', '911'),
     ('1923', '1883'),
     ('1923 (2022)', '1883 (2021)'),
+    ('Show Name', 'Show Names'),
 ])
 def test_normalize_series_name_for_comparison_keeps_distinct_shows(left, right):
     """Normalization must not collapse clearly different series names."""
@@ -39,3 +42,17 @@ def test_normalize_series_name_for_comparison_keeps_distinct_shows(left, right):
 def test_normalize_preserves_empty():
     assert normalize_series_name_for_comparison('') == ''
     assert normalize_series_name_for_comparison(None) == ''
+
+
+def test_optional_plural_normalizes_to_base_title():
+    assert normalize_series_name_for_comparison('Show Name(s)') == 'show name'
+    assert normalize_series_name_for_comparison('Show Name') == 'show name'
+
+
+def test_strip_optional_plural_marker_only_parentheses():
+    from medusa.name_parser.series_name import strip_optional_plural_marker
+
+    assert strip_optional_plural_marker('Example Place(s)') == 'Example Place'
+    assert strip_optional_plural_marker('Example Place(S)') == 'Example Place'
+    assert strip_optional_plural_marker('Example Places') == 'Example Places'
+    assert strip_optional_plural_marker('Nature Series') == 'Nature Series'
