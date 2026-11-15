@@ -3,10 +3,12 @@
 
 from __future__ import unicode_literals
 
+import hashlib
 import logging
 import threading
 import time
 from builtins import object
+from datetime import datetime
 
 from medusa import app, db, network_timezones, ui
 from medusa.helper.exceptions import CantRefreshShowException, CantUpdateShowException
@@ -18,6 +20,22 @@ from medusa.session.core import MedusaSession
 from requests.exceptions import HTTPError, RequestException
 
 logger = logging.getLogger(__name__)
+
+
+def local_file_check_due(show, now):
+    """Check active shows nightly and paused/ended shows on their assigned weekday.
+
+    The stable weekly assignment survives restarts. Missed weekdays wait until
+    their next normal slot; the nightly updater queues today's batch immediately.
+    """
+    if not show.paused and show.status != 'Ended':
+        return True
+
+    identity = '{0}:{1}'.format(show.indexer, show.series_id).encode('utf-8')
+    digest = hashlib.sha256(identity).digest()
+    weekday = int.from_bytes(digest[:8], 'big') % 7
+
+    return weekday == datetime.fromtimestamp(now).weekday()
 
 
 class ShowUpdater(object):
@@ -53,8 +71,8 @@ class ShowUpdater(object):
         for show in app.showList:
             show_updates_supported = True
 
-            if show.paused:
-                logger.info('The show {show} is paused, not updating its metadata.', show=show.name)
+            if show.paused or show.status == 'Ended':
+                logger.debug('The show {show} is paused or ended, skipping metadata updates.', show=show.name)
                 continue
 
             indexer_name = indexerApi(show.indexer).name
@@ -188,14 +206,20 @@ class ShowUpdater(object):
 
         ui.ProgressIndicators.setIndicator('dailyUpdate', ui.QueueProgressIndicator('Daily Update', pi_list))
 
-        # Check files every night, including paused shows and unchanged metadata.
-        # refreshShow already defers to queued full updates, which rescan on completion.
+        # Season updates retain their full rescan. Other shows receive local-only checks.
+        # A previous automatic pass must drain before another whole-library pass starts.
+        queue = app.show_queue_scheduler.action
+        file_check_pass_pending = queue.hasPendingFileChecks()
         season_shows = set(show[1] for show in season_updates)
+        file_check_time = time.time()
         for show in app.showList:
             try:
-                queue = app.show_queue_scheduler.action
-                if not queue.isInRefreshQueue(show) and not queue.isBeingRefreshed(show):
-                    queue.refreshShow(show, show in season_shows)
+                if show in season_shows:
+                    if not queue.isBeingRefreshed(show) or queue.current_item.local_only:
+                        queue.refreshShow(show, True)
+                elif not file_check_pass_pending:
+                    if local_file_check_due(show, file_check_time):
+                        queue.refreshShow(show, local_only=True)
             except CantRefreshShowException as e:
                 logger.warning('Show rescan on show {show_name} failed. Error: {error}',
                                show_name=show.name, error=e)
