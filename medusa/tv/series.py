@@ -113,6 +113,7 @@ from medusa.subtitles import (
 from medusa.tv.base import Identifier, TV
 from medusa.tv.episode import Episode
 from medusa.tv.indexer import Indexer
+from medusa.tv.local_files import invalidate_local_file_inventory, reconcile_local_files
 
 from six import ensure_text, iteritems, itervalues, string_types, text_type, viewitems
 
@@ -1947,6 +1948,8 @@ class Series(TV):
 
         action = ('delete', 'trash')[app.TRASH_REMOVE_SHOW]
 
+        invalidate_local_file_inventory(self)
+
         # remove self from show list
         app.showList = [x for x in app.showList if x.identifier != self.identifier]
 
@@ -2120,6 +2123,10 @@ class Series(TV):
                     cache_db_con.action(query, params)
                     return True
 
+    def reconcile_local_files(self):
+        """Check local media changes without external metadata or file side effects."""
+        return reconcile_local_files(self)
+
     def refresh_dir(self):
         """Refresh show using its location.
 
@@ -2245,6 +2252,8 @@ class Series(TV):
         if sql_l:
             main_db_con = db.DBConnection()
             main_db_con.mass_action(sql_l)
+
+        invalidate_local_file_inventory(self)
 
     def download_subtitles(self):
         """Download subtitles."""
