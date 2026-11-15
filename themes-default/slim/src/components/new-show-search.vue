@@ -503,6 +503,9 @@ export default {
         }
     },
     watch: {
+        indexerLanguage(language) {
+            this.$emit('update-language', language);
+        },
         filteredSearchResults(newResults, oldResults) {
             if (oldResults.length === newResults.length) {
                 return;
