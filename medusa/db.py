@@ -38,6 +38,10 @@ db_cons = {}
 db_locks = {}
 
 
+class StaleRecordError(Exception):
+    """A conditional batch write found a record that changed since it was read."""
+
+
 class DBConnection(object):
     def __init__(self, filename=None, suffix=None, row_type='dict'):
 
@@ -192,17 +196,21 @@ class DBConnection(object):
         """
         return self.check_db_major_version(), self.check_db_minor_version()
 
-    def mass_action(self, querylist=None, logTransaction=False, fetchall=False):
+    def mass_action(self, querylist=None, logTransaction=False, fetchall=False, expected_rowcount=None):
         """
         Execute multiple queries
 
         :param querylist: list of queries
         :param logTransaction: Boolean to wrap all in one transaction
         :param fetchall: Boolean, when using a select query force returning all results
+        :param expected_rowcount: Optional affected row count per write; a mismatch rolls back the entire batch
         :return: list of results
         """
+        if expected_rowcount is not None and fetchall:
+            raise ValueError('Affected row checks require write queries without fetchall.')
+
         # Remove Falsey types
-        querylist = (q for q in querylist or [] if q)
+        querylist = [q for q in querylist or [] if q]
 
         sql_results = []
         attempt = 0
@@ -220,11 +228,16 @@ class DBConnection(object):
                             if logTransaction:
                                 logger.log(qu[0] + ' with args ' + str(qu[1]), logger.DEBUG)
                             sql_results.append(self._execute(qu[0], qu[1], fetchall=fetchall))
+                        if expected_rowcount is not None and sql_results[-1].rowcount != expected_rowcount:
+                            raise StaleRecordError('A record changed while preparing a conditional batch write.')
                     self.connection.commit()
                     logger.log(u'Transaction with ' + str(len(sql_results)) + u' queries executed', logger.DEBUG)
 
                     # finished
                     break
+                except StaleRecordError:
+                    self._try_rollback()
+                    raise
                 except sqlite3.OperationalError as e:
                     sql_results = []
                     self._try_rollback()
