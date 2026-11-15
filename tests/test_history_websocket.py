@@ -2,11 +2,11 @@
 """Tests for the legacy websocket history item serializer."""
 from __future__ import unicode_literals
 
-import pytest
-
 from medusa.common import DOWNLOADED
 from medusa.history import create_history_item
 from medusa.schedulers.download_handler import ClientStatusEnum
+
+import pytest
 
 
 def _history_row(client_status):
