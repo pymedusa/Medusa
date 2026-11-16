@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 import logging
 
 from medusa import app, ws
+from medusa.common import IGNORED, SKIPPED, WANTED
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
@@ -98,6 +99,10 @@ class SeriesHandler(BaseRequestHandler):
 
         data_options = data.get('options', {})
 
+        status_after = data_options.get('statusAfter')
+        if status_after is not None and status_after not in (WANTED, SKIPPED, IGNORED):
+            return self._bad_request(f"Invalid statusAfter, allowed values are {WANTED} (Wanted), {SKIPPED} (Skipped) or {IGNORED} (Ignored)")
+
         try:
             options = {
                 'default_status': data_options.get('status'),
@@ -110,7 +115,7 @@ class SeriesHandler(BaseRequestHandler):
                 'paused': data_options.get('paused'),
                 'blacklist': data_options['release'].get('blacklist', []) if data_options.get('release') else None,
                 'whitelist': data_options['release'].get('whitelist', []) if data_options.get('release') else None,
-                'default_status_after': None,
+                'default_status_after': status_after,
                 'root_dir': data_options.get('rootDir'),
                 'show_lists': data_options.get('showLists')
             }

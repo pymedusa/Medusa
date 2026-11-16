@@ -201,9 +201,19 @@ class ShowQueue(generic_queue.GenericQueue):
 
         return queue_item_update_show
 
-    def refreshShow(self, show, force=False):
+    def hasPendingFileChecks(self):
+        """Keep an automatic library pass from overlapping the next nightly pass."""
+        with self.lock:
+            items = self.queue + [self.current_item]
+            return any(item is not None and getattr(item, 'local_only', False) for item in items)
 
-        if self.isBeingRefreshed(show) and not force:
+    def refreshShow(self, show, force=False, local_only=False):
+        """Queue a manual full rescan or an automatic local file check."""
+        if local_only and (self.isInRefreshQueue(show) or self.isBeingRefreshed(show)):
+            return
+
+        running_full_rescan = self.isBeingRefreshed(show) and not self.current_item.local_only
+        if running_full_rescan and not force:
             raise CantRefreshShowException('This show is already being rescanned, not rescanning again.')
 
         if (self.isBeingUpdated(show) or self.isInUpdateQueue(show)) and not force:
@@ -211,7 +221,18 @@ class ShowQueue(generic_queue.GenericQueue):
                       " Since updates do a rescan at the end anyway I'm skipping this request.")
             return
 
-        queue_item_obj = QueueItemRefresh(show, force=force)
+        # A manual request replaces pending lightweight work rather than losing its side effects.
+        if not local_only:
+            with self.lock:
+                for item in self.queue:
+                    if item.action_id == ShowQueueActions.REFRESH and item.show == show:
+                        item.local_only = False
+                        item.force = item.force or force
+                        item.priority = generic_queue.QueuePriorities.HIGH
+                        item.to_json['priority'] = item.priority
+                        return item
+
+        queue_item_obj = QueueItemRefresh(show, force=force, local_only=local_only)
 
         log.debug('{id}: Queueing show rescan for {show}', {'id': show.series_id, 'show': show.name})
 
@@ -777,14 +798,15 @@ class QueueItemAdd(ShowQueueItem):
 
 
 class QueueItemRefresh(ShowQueueItem):
-    """QueueItemRefresh class."""
+    """A full manual rescan or a lightweight automatic file reconciliation."""
 
-    def __init__(self, show=None, force=False):
+    def __init__(self, show=None, force=False, local_only=False):
         """Queue item refresh constructor."""
         ShowQueueItem.__init__(self, ShowQueueActions.REFRESH, show)
 
-        # do refreshes first because they're quick
-        self.priority = generic_queue.QueuePriorities.HIGH
+        self.local_only = local_only
+        self.priority = generic_queue.QueuePriorities.LOW if local_only else generic_queue.QueuePriorities.HIGH
+        self.to_json['priority'] = self.priority
 
         # force refresh certain items
         self.force = force
@@ -800,15 +822,18 @@ class QueueItemRefresh(ShowQueueItem):
         ws.Message('QueueItemShow', self.to_json).push()
 
         try:
-            self.show.refresh_dir()
-            if self.force:
-                self.show.update_metadata()
-            self.show.write_metadata()
-            self.show.populate_cache()
+            if self.local_only:
+                self.success = self.show.reconcile_local_files() is not False
+            else:
+                self.show.refresh_dir()
+                if self.force:
+                    self.show.update_metadata()
+                self.show.write_metadata()
+                self.show.populate_cache()
 
-            # Load XEM data to DB for show
-            scene_numbering.xem_refresh(self.show, force=True)
-            self.success = True
+                # Load XEM data to DB for show only during a full rescan.
+                scene_numbering.xem_refresh(self.show, force=True)
+                self.success = True
         except IndexerException as error:
             log.warning(
                 '{id}: Unable to contact {indexer}. Aborting: {error_msg}',
