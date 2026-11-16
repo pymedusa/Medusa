@@ -94,3 +94,25 @@ unavailable storage, mount identity changes, and filesystem/database races.
 `tests/test_db_conditional_batch.py` verifies the real batch helper's atomic
 conflict rollback. The scheduler and queue tests cover weekly distribution,
 nightly execution, overlap prevention, and immediate manual upgrades.
+
+## Cache backend compatibility
+
+An existing DBM cache can outlive the Python extension that created it. For
+example, a GNU DBM cache cannot be opened by a Python installation without
+`dbm.gnu`. Cache initialization now detects that mismatch and preserves the
+original DBM file while creating a SQLite-based persistent fallback using the
+already bundled diskcache library. The application cache fallback is stored in
+`application.dbm.sqlite/` beside `application.dbm`; the other persistent cache
+regions follow the same naming rule.
+
+The first check after recovery rebuilds the inventory. Later checks and restarts
+reuse it. Once present, the fallback remains authoritative even if GNU DBM is
+installed later, preventing stale entries from the original cache from returning.
+Permission and corruption errors remain visible; they are not treated as missing
+Python modules. Recovery does not delete episode databases, media files, or
+original caches. The existing explicit erase-cache setting also clears fallback
+values while keeping its directory so old DBM entries cannot become active again.
+
+To restore access to the original GNU DBM cache before switching to the fallback,
+install GNU DBM support for the exact Python interpreter used by the Medusa
+service and restart Medusa. Debian's Python 3.11 package is `python3-gdbm`.

@@ -771,3 +771,50 @@ def test_directory_timestamp_race_does_not_accept_a_partial_baseline(library, mo
     assert library.snapshots[key] is previous
     library.database.mass_action.assert_not_called()
     library.snapshot_cache.set.assert_not_called()
+
+
+def test_inventory_survives_restart_with_unavailable_gnu_dbm(library, monkeypatch, tmp_path):
+    """A durable fallback prevents both the reported error and full scans after restart."""
+    import struct
+
+    from dogpile.cache import make_region
+    from medusa import cache as application_cache
+
+    filename = tmp_path / 'application.dbm'
+    original_bytes = struct.pack('=l', 0x13579acf) + b'preserved incompatible cache'
+    filename.write_bytes(original_bytes)
+    real_import = application_cache.importlib.import_module
+
+    def import_module(name, *args, **kwargs):
+        if name == 'dbm.gnu':
+            raise ImportError('GNU DBM is not installed')
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(application_cache.importlib, 'import_module', import_module)
+    path = media_file(library)
+    record_episode(library, 1, path, path.stat().st_size)
+    region = make_region()
+    application_cache._configure_persistent_cache(region, str(filename), 86400)
+    monkeypatch.setattr(local_files, 'cache', region)
+    try:
+        assert local_files.reconcile_local_files(library.series) is True
+    finally:
+        region.backend.store.close()
+
+    restarted = make_region()
+    application_cache._configure_persistent_cache(restarted, str(filename), 86400)
+    monkeypatch.setattr(local_files, 'cache', restarted)
+    library.database.reset_mock()
+    forbidden_scandir = Mock(side_effect=AssertionError('Restart lost the saved folder inventory'))
+    monkeypatch.setattr(local_files.os, 'scandir', forbidden_scandir)
+    try:
+        assert local_files.reconcile_local_files(library.series) is True
+        library.database.select.assert_not_called()
+        library.database.mass_action.assert_not_called()
+        library.parser.assert_not_called()
+        assert filename.read_bytes() == original_bytes
+
+        local_files.invalidate_local_file_inventory(library.series)
+        assert restarted.get(local_files._inventory_key(library.series)) is NO_VALUE
+    finally:
+        restarted.backend.store.close()

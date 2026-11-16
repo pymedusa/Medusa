@@ -1220,6 +1220,7 @@ class Application(object):
                         if os.path.isfile(file_path):
                             logger.info(u'Removing subtitles cache file: {cache_file}', cache_file=file_path)
                             os.remove(file_path)
+                        cache.clear_fallback_cache(file_path)
                 except OSError as e:
                     logger.warning(u'Unable to remove subtitles cache files. Error: {error}', error=e)
                 # Disable flag to erase cache
