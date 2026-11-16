@@ -109,6 +109,7 @@ def _configure_persistent_cache(region, filename, expiration_time, replace=False
     """
     sqlite_directory = filename + '.sqlite'
     use_sqlite = os.path.isdir(sqlite_directory)
+    unavailable_backend = None
 
     if not use_sqlite:
         backend = dbm.whichdb(filename)
@@ -117,12 +118,15 @@ def _configure_persistent_cache(region, filename, expiration_time, replace=False
                 importlib.import_module(backend)
             except ImportError:
                 use_sqlite = True
-                log.warning('Cache %s uses unavailable backend %s; preserving it and using persistent cache %s.',
-                            filename, backend, sqlite_directory)
+                unavailable_backend = backend
 
     if use_sqlite:
         region.configure('medusa.cache.diskcache', expiration_time=expiration_time,
                          replace_existing_backend=replace, arguments={'directory': sqlite_directory})
+
+        if unavailable_backend is not None:
+            log.info('Cache %s uses unavailable backend %s; preserving it and using persistent cache %s.',
+                     filename, unavailable_backend, sqlite_directory)
         return
 
     region.configure('dogpile.cache.dbm', expiration_time=expiration_time,

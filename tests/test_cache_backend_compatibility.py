@@ -55,13 +55,13 @@ def configure_region():
             region.backend.store.close()
 
 
-def test_missing_gnu_backend_preserves_file_and_recovers_persistently(unavailable_gnu_cache, configure_region, monkeypatch):
+def test_missing_gnu_backend_preserves_file_and_recovers_persistently(
+        unavailable_gnu_cache, configure_region, monkeypatch, logger, read_loglines):
     """The failing production cache can be replaced without erasing its contents."""
     filename = unavailable_gnu_cache
     original = filename.read_bytes()
     inventory = {'version': 2, 'files': {'episode.mkv': (42, 123456789)}, 'directories': {}}
-    warning = Mock()
-    monkeypatch.setattr(cache.log, 'warning', warning)
+    monkeypatch.setattr(cache, 'log', logger)
 
     region = configure_region(filename)
 
@@ -77,10 +77,25 @@ def test_missing_gnu_backend_preserves_file_and_recovers_persistently(unavailabl
     assert restarted.get('inventory', ignore_expiration=True) == inventory
     assert isinstance(restarted.get('inventory')['files']['episode.mkv'], tuple)
     assert filename.read_bytes() == original
-    warning.assert_called_once_with(
-        'Cache %s uses unavailable backend %s; preserving it and using persistent cache %s.',
-        str(filename), 'dbm.gnu', str(filename) + '.sqlite',
-    )
+
+    loglines = list(read_loglines)
+    assert len(loglines) == 1
+    assert loglines[0].level_name == 'INFO'
+    assert loglines[0].traceback_lines == []
+    assert 'dbm.gnu' in loglines[0].message
+    assert str(filename) in loglines[0].message
+    assert str(filename) + '.sqlite' in loglines[0].message
+
+
+def test_failed_fallback_does_not_log_success(unavailable_gnu_cache, configure_region, monkeypatch, logger, read_loglines):
+    """A failed SQLite initialization must raise without claiming recovery."""
+    monkeypatch.setattr(cache, 'log', logger)
+    monkeypatch.setattr(cache, 'DiskCache', Mock(side_effect=PermissionError('fallback directory is read-only')))
+
+    with pytest.raises(PermissionError, match='fallback directory is read-only'):
+        configure_region(unavailable_gnu_cache)
+
+    assert list(read_loglines) == []
 
 
 def test_fallback_stays_authoritative_after_restart(unavailable_gnu_cache, configure_region, monkeypatch):
