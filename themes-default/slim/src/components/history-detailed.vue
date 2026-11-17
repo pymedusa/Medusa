@@ -13,13 +13,14 @@
             :sort-options="{
                 enabled: true,
                 multipleColumns: false,
-                initialSortBy: getSortFromCookie()
+                initialSortBy: historyHeaderSort
             }"
             :pagination-options="{
                 enabled: true,
                 perPage: remoteHistory.perPage,
                 perPageDropdown,
                 dropdownAllowAll: false,
+                setCurrentPage: remoteHistory.page,
                 position: 'both'
             }"
             :column-filter-options="{
@@ -96,11 +97,11 @@
 
             <template #column-filter="{ column }">
                 <span v-if="column.field === 'episodeTitle'">
-                    <input placeholder="Resource" class="'form-control input-sm vgt-input" @input="updateResource">
+                    <input :value="episodeFilter.inputValue" placeholder="Show title or release" class="'form-control input-sm vgt-input" @input="updateResource">
                 </span>
 
                 <span v-else-if="column.field === 'providerId'">
-                    <input placeholder="Provider | Group" class="'form-control input-sm vgt-input" @input="updateProvider">
+                    <input :value="providerFilterValue" placeholder="Provider | Group" class="'form-control input-sm vgt-input" @input="updateProvider">
                 </span>
 
                 <span v-else-if="column.field === 'quality'">
@@ -111,7 +112,7 @@
                 </span>
 
                 <span v-else-if="column.field === 'size'">
-                    <input placeholder="ex. `< 1024` (MB)" class="'form-control input-sm vgt-input" @input="updateSizeFilter">
+                    <input :value="sizeFilterInputValue" placeholder="e.g. <200 MB or >1.3 GB" class="'form-control input-sm vgt-input" @input="updateSizeFilter">
                 </span>
 
                 <span v-else-if="column.field === 'clientStatus'">
@@ -135,6 +136,7 @@ import debounce from 'lodash/debounce';
 import { mapActions, mapGetters, mapState } from 'vuex';
 import { VueGoodTable } from 'vue-good-table';
 import { humanFileSize } from '../utils/core';
+import { normalizeHistorySizeFilter, normalizeHistoryTextFilter } from '../utils/history';
 import { manageCookieMixin } from '../mixins/manage-cookie';
 import AppLink from './helpers/app-link.vue';
 import QualityPill from './helpers/quality-pill.vue';
@@ -181,6 +183,7 @@ export default {
             dateInputFormat: 'yyyyMMddHHmmss', // E.g. 07-09-2017 19:16:25
             dateOutputFormat: 'yyyy-MM-dd HH:mm:ss',
             type: 'date',
+            firstSortType: 'desc',
             hidden: getCookie('Date')
         }, {
             label: 'Episode',
@@ -236,27 +239,56 @@ export default {
         return {
             columns,
             selectedClientStatusValue: [],
-            perPageDropdown
+            perPageDropdown,
+            historyTableMounted: false,
+            historyHeaderSort: [],
+            restoringSortHeader: false,
+            providerFilterValue: '',
+            sizeFilterInputValue: '',
+            sizeFilterPendingCleanup: false,
+            malformedTextFilters: {
+                providerId: false
+            }
         };
     },
     mounted() {
-        const { getCookie, getSortFromCookie } = this;
+        this.historyTableMounted = true;
         this.loadItems();
-
-        // Get per-page pagination from cookie
-        const perPage = getCookie('pagination-perpage-history');
-        if (perPage) {
-            this.remoteHistory.perPage = perPage;
-        }
-        this.remoteHistory.sort = getSortFromCookie();
     },
     created() {
+        this.initializeEpisodeFilter({ layout: 'detailed' });
+        const currentFilters = this.remoteHistory.filter && this.remoteHistory.filter.columnFilters ? this.remoteHistory.filter.columnFilters : {};
+        this.initializeClientStatusFilter(currentFilters.clientStatus);
+        this.providerFilterValue = currentFilters.providerId || '';
+        this.sizeFilterInputValue = currentFilters.size || '';
+        this.initializeHistorySort({
+            layout: 'detailed',
+            sort: this.getSortFromCookie()
+        });
+        this.historyHeaderSort = this.remoteHistory.sort;
+        this.initializeHistoryPagination({
+            layout: 'detailed',
+            perPage: this.getCookie('pagination-perpage-history')
+        });
+        this.setCookie('sort', this.remoteHistory.sort);
+        this.setCookie('pagination-perpage-history', this.remoteHistory.perPage);
         this.loadItemsDebounced = debounce(this.loadItems, 500);
+    },
+    beforeDestroy() {
+        if (this.loadItemsDebounced && this.loadItemsDebounced.cancel) {
+            this.loadItemsDebounced.cancel();
+        }
     },
     computed: {
         ...mapState({
             layout: state => state.config.layout,
             remoteHistory: state => state.history.remote,
+            episodeFilter: state => state.history.episodeFilter || {
+                inputValue: '',
+                filterValue: '',
+                malformed: false,
+                initialized: false
+            },
             consts: state => state.config.consts
         }),
         ...mapGetters({
@@ -281,18 +313,27 @@ export default {
         humanFileSize,
         ...mapActions({
             getHistory: 'getHistory',
+            initializeEpisodeFilter: 'initializeEpisodeFilter',
+            initializeHistorySort: 'initializeHistorySort',
+            initializeHistoryPagination: 'initializeHistoryPagination',
+            updateEpisodeFilter: 'updateEpisodeFilter',
             setStoreLayout: 'setStoreLayout'
         }),
         getSortFromCookie() {
             const { getCookie } = this;
             const sort = getCookie('sort'); // From manage-cookie.js mixin
-            if (sort) {
-                if (sort[0].type === 'none') {
-                    sort[0].type = 'desc';
-                }
-                return sort;
+            const supportedFields = ['date', 'actionDate', 'statusName', 'quality', 'providerId', 'size', 'clientStatus'];
+            const defaultSort = [{ field: 'date', type: 'desc' }];
+            if (!Array.isArray(sort) || sort.length === 0) {
+                return defaultSort;
             }
-            return [{ field: 'date', type: 'desc' }];
+            const [firstSort] = sort;
+            const firstSortPrototype = firstSort !== null && typeof firstSort === 'object' ? Object.getPrototypeOf(firstSort) : undefined;
+            const isPlainObject = firstSortPrototype === Object.prototype || firstSortPrototype === null;
+            if (!isPlainObject || typeof firstSort.field !== 'string' || typeof firstSort.type !== 'string' || !supportedFields.includes(firstSort.field) || !['asc', 'desc'].includes(firstSort.type)) {
+                return defaultSort;
+            }
+            return [{ field: firstSort.field, type: firstSort.type }];
         },
         rowStyleClassFn(row) {
             return `${row.statusName.toLowerCase()} status` || 'skipped status';
@@ -305,6 +346,9 @@ export default {
             this.$el.remove();
         },
         onPageChange(params) {
+            if (!this.historyTableMounted && params.currentPage === 1 && this.remoteHistory.page !== 1) {
+                return;
+            }
             console.log('page change called');
             console.log(params);
             this.remoteHistory.page = params.currentPage;
@@ -317,75 +361,173 @@ export default {
             this.loadItemsDebounced();
         },
         onSortChange(params) {
-            this.setCookie('sort', params);
-            this.remoteHistory.sort = params.filter(item => item.type !== 'none');
+            if (this.restoringSortHeader) {
+                return;
+            }
+            this.canonicalizeMalformedTextFilters(undefined, false);
+            const sort = Array.isArray(params) ? params.filter(item => item.type !== 'none') : [];
+            const canonicalSort = sort.length > 0 ? sort : [{ field: 'actionDate', type: 'desc' }];
+            this.setCookie('sort', canonicalSort);
+            this.remoteHistory.sort = canonicalSort;
+            if (sort.length === 0) {
+                this.historyHeaderSort = canonicalSort;
+                this.restoringSortHeader = true;
+                this.$nextTick(() => {
+                    try {
+                        const table = this.$refs['detailed-history'];
+                        if (table && typeof table.initializeSort === 'function') {
+                            table.initializeSort();
+                        }
+                    } finally {
+                        this.restoringSortHeader = false;
+                    }
+                });
+            }
             this.loadItemsDebounced();
+        },
+        canonicalizeMalformedTextFilters(exceptField, resetPage = true) {
+            if (exceptField !== 'resource' && this.episodeFilter.malformed) {
+                this.updateEpisodeFilter({
+                    inputValue: this.episodeFilter.filterValue,
+                    filterValue: this.episodeFilter.filterValue,
+                    malformed: false,
+                    resetPage
+                });
+            }
+            if (exceptField !== 'providerId' && this.malformedTextFilters.providerId) {
+                const currentFilters = this.remoteHistory.filter && this.remoteHistory.filter.columnFilters ? this.remoteHistory.filter.columnFilters : {};
+                this.providerFilterValue = currentFilters.providerId || '';
+                this.malformedTextFilters.providerId = false;
+            }
+            if (exceptField !== 'size' && this.sizeFilterPendingCleanup) {
+                const currentFilters = this.remoteHistory.filter && this.remoteHistory.filter.columnFilters ? this.remoteHistory.filter.columnFilters : {};
+                this.sizeFilterInputValue = currentFilters.size || '';
+                this.sizeFilterPendingCleanup = false;
+            }
         },
         onColumnFilter(params) {
-            this.setCookie('filter', params);
-            this.remoteHistory.filter = params;
+            this.canonicalizeMalformedTextFilters();
+            const nextFilter = params && Object.prototype.hasOwnProperty.call(params, 'columnFilters') ? params.columnFilters : params || {};
+            const currentFilters = this.remoteHistory.filter && this.remoteHistory.filter.columnFilters ? this.remoteHistory.filter.columnFilters : {};
+            const manualKeys = ['resource', 'providerId', 'quality', 'size', 'clientStatus'];
+            const manualFilters = manualKeys.reduce((result, key) => {
+                if (Object.prototype.hasOwnProperty.call(currentFilters, key)) {
+                    result[key] = currentFilters[key];
+                }
+                return result;
+            }, {});
+
+            this.applyFilter(Object.assign({}, manualFilters, nextFilter));
+        },
+        applyFilter(columnFilters) {
+            const nextFilter = Object.assign({}, this.remoteHistory.filter, {
+                columnFilters
+            });
+            this.remoteHistory.filter = nextFilter;
+            this.remoteHistory.page = 1;
             this.loadItemsDebounced();
         },
-        updateClientStatusFilter(event) {
-            const combinedStatus = event.reduce((result, item) => {
-                return result | item.value;
-            }, 0);
-            if (!this.remoteHistory.filter) {
-                this.remoteHistory.filter = { columnFilters: {} };
+        updateFilterValue(field, value) {
+            if (!['resource', 'providerId'].includes(field)) {
+                this.canonicalizeMalformedTextFilters(field === 'size' ? 'size' : undefined);
             }
-            this.selectedClientStatusValue = event;
-            this.remoteHistory.filter.columnFilters.clientStatus = combinedStatus;
-            this.loadItemsDebounced();
+            const currentFilters = this.remoteHistory.filter && this.remoteHistory.filter.columnFilters ? this.remoteHistory.filter.columnFilters : {};
+            const columnFilters = Object.assign({}, currentFilters, {
+                [field]: value
+            });
+            this.applyFilter(columnFilters);
         },
-        updateQualityFilter(quality) {
-            if (!this.remoteHistory.filter) {
-                this.remoteHistory.filter = { columnFilters: {} };
-            }
-            this.remoteHistory.filter.columnFilters.quality = quality.currentTarget.value;
-            this.loadItemsDebounced();
-        },
-        /**
-         * Update the size filter.
-         * As a specific size filter is useless. I've choosen to use a > or < operator.
-         * The backend will parse these into queries.
-         * @param {string} size - Operator with size in MB.
-         */
-        updateSizeFilter(size) {
-            // Check for valid syntax, and pass along.
-            size = size.currentTarget.value;
-            if (!size) {
-                this.remoteHistory.filter.columnFilters.size = size;
-                this.loadItemsDebounced();
+        initializeClientStatusFilter(value) {
+            const clientStatuses = Array.isArray(this.consts.clientStatuses) ? this.consts.clientStatuses : [];
+            if (value === undefined || value === null || value === '') {
+                this.selectedClientStatusValue = [];
                 return;
             }
 
-            const validSizeRegex = /[<>] \d{2,6}/;
-            if (size.match(validSizeRegex)) {
-                this.invalidSizeMessage = '';
-                if (!this.remoteHistory.filter) {
-                    this.remoteHistory.filter = { columnFilters: {} };
-                }
-                this.remoteHistory.filter.columnFilters.size = size;
-                this.loadItemsDebounced();
-            }
-        },
-        updateResource(resource) {
-            resource = resource.currentTarget.value;
-            if (!this.remoteHistory.filter) {
-                this.remoteHistory.filter = { columnFilters: {} };
+            if (value === 0) {
+                this.selectedClientStatusValue = clientStatuses.filter(option => option.value === 0);
+                return;
             }
 
-            this.remoteHistory.filter.columnFilters.resource = resource;
+            const supportedMask = clientStatuses.reduce((result, option) => result | option.value, 0);
+            if (!Number.isInteger(value) || value < 0 || value > supportedMask) {
+                this.selectedClientStatusValue = [];
+                return;
+            }
+
+            if ((value & ~supportedMask) !== 0) {
+                this.selectedClientStatusValue = [];
+                return;
+            }
+
+            this.selectedClientStatusValue = clientStatuses.filter(option => {
+                return option.value !== 0 && (value & option.value) === option.value;
+            });
+        },
+        updateClientStatusFilter(event) {
+            const nextSelection = Array.isArray(event) ? event : [];
+            if (nextSelection.length === 0) {
+                this.selectedClientStatusValue = [];
+                this.updateFilterValue('clientStatus', '');
+                return;
+            }
+
+            const previousSelection = Array.isArray(this.selectedClientStatusValue) ? this.selectedClientStatusValue : [];
+            const previousValues = previousSelection.map(item => item.value);
+            const hasSnatched = nextSelection.some(item => item.value === 0);
+            const nonzeroSelection = nextSelection.filter(item => item.value !== 0);
+            let normalizedSelection = nextSelection;
+
+            if (hasSnatched && nonzeroSelection.length > 0) {
+                const hadSnatched = previousValues.includes(0);
+                const hadNonzero = previousValues.some(value => value !== 0);
+                normalizedSelection = hadNonzero && !hadSnatched ? nextSelection.filter(item => item.value === 0) : nonzeroSelection;
+            }
+
+            const combinedStatus = normalizedSelection.reduce((result, item) => {
+                return result | item.value;
+            }, 0);
+            this.selectedClientStatusValue = normalizedSelection;
+            this.updateFilterValue('clientStatus', combinedStatus);
+        },
+        updateQualityFilter(quality) {
+            this.updateFilterValue('quality', quality.currentTarget.value);
+        },
+        /**
+         * Update the History Size filter.
+         * @param {Event} event - Input event containing a comparison with optional MB or GB units.
+         */
+        updateSizeFilter(event) {
+            const rawValue = event.currentTarget.value;
+            const normalized = normalizeHistorySizeFilter(rawValue);
+            this.sizeFilterInputValue = rawValue;
+
+            if (!normalized.valid && !normalized.clearFilter) {
+                this.sizeFilterPendingCleanup = true;
+                return;
+            }
+
+            this.sizeFilterPendingCleanup = !normalized.valid;
+            this.updateFilterValue('size', normalized.filterValue);
+        },
+        updateResource(resource) {
+            const { value } = resource.currentTarget;
+            const normalized = normalizeHistoryTextFilter(value);
+            this.updateEpisodeFilter({
+                inputValue: normalized.clearInput ? '' : value,
+                filterValue: normalized.filterValue,
+                malformed: normalized.malformed
+            });
+            this.canonicalizeMalformedTextFilters('resource');
             this.loadItemsDebounced();
         },
         updateProvider(provider) {
-            provider = provider.currentTarget.value;
-            if (!this.remoteHistory.filter) {
-                this.remoteHistory.filter = { columnFilters: {} };
-            }
-
-            this.remoteHistory.filter.columnFilters.providerId = provider;
-            this.loadItemsDebounced();
+            const { value } = provider.currentTarget;
+            const normalized = normalizeHistoryTextFilter(value);
+            this.providerFilterValue = normalized.clearInput ? '' : value;
+            this.malformedTextFilters.providerId = normalized.malformed;
+            this.canonicalizeMalformedTextFilters('providerId');
+            this.updateFilterValue('providerId', normalized.filterValue);
         },
         // Load items is what brings back the rows from server
         loadItems() {

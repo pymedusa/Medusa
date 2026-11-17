@@ -77,11 +77,17 @@ def create_history_item(history_row, compact=False):
         provider['name'] = history_row['provider']
 
     if history_row['client_status'] is not None:
-        status = ClientStatus(status=history_row['client_status'])
-        client_status = {
-            'status': [s.value for s in status],
-            'string': status.status_to_array_string()
-        }
+        if history_row['client_status'] == ClientStatusEnum.SNATCHED.value:
+            client_status = {
+                'status': [ClientStatusEnum.SNATCHED.value],
+                'string': [ClientStatus.STRINGS[ClientStatusEnum.SNATCHED]]
+            }
+        else:
+            status = ClientStatus(status=history_row['client_status'])
+            client_status = {
+                'status': [s.value for s in status],
+                'string': status.status_to_array_string()
+            }
 
     if history_row['indexer_id'] and history_row['showid']:
         identifier = SeriesIdentifier.from_id(history_row['indexer_id'], history_row['showid'])

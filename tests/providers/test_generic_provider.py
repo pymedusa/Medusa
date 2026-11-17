@@ -174,8 +174,9 @@ def test_parse_pubdate(p, monkeypatch):
 
     # Calculate the difference for human date comparison
     if ht and actual:
-        # Use the same NOW_UTC reference to avoid DST drift
-        actual = int((NOW_UTC - actual).total_seconds())
+        # Compare against the parser's execution-time clock, not collection time.
+        now_utc = datetime.now(tz=tz.gettz('UTC')).replace(microsecond=0)
+        actual = int((now_utc - actual).total_seconds())
 
     # Then
     if ht and isinstance(expected, (int, float)):
