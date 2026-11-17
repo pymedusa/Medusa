@@ -67,10 +67,8 @@ log_periods = {
 def rename_thread(new_name=None):
     """Context manager to rename a thread (if it's truthy), and revert it when done."""
     if not new_name:
-        try:
-            yield
-        finally:
-            return
+        yield
+        return
 
     original_name = threading.current_thread().name
     threading.current_thread().name = '{0} :: [{1}]'.format(original_name, new_name)
