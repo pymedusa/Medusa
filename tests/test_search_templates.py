@@ -3,12 +3,12 @@
 
 from __future__ import unicode_literals
 
+import os
 import sqlite3
 from types import SimpleNamespace
-import os
 
-from medusa import app
 import medusa.search_templates as search_templates_module
+from medusa import app
 
 import pytest
 
@@ -50,26 +50,26 @@ class SQLiteDBConnection(object):
     def select(self, query, args=None):
         return self.action(query, args, fetchall=True) or []
 
-    def upsert(self, tableName, valueDict, keyDict):
+    def upsert(self, table_name, value_dict, key_dict):
         def gen_params(my_dict):
             return [key + ' = ?' for key in my_dict]
 
         changes_before = self.connection.total_changes
         query = 'UPDATE [{0}] SET {1} WHERE {2}'.format(
-            tableName,
-            ', '.join(gen_params(valueDict)),
-            ' AND '.join(gen_params(keyDict)),
+            table_name,
+            ', '.join(gen_params(value_dict)),
+            ' AND '.join(gen_params(key_dict)),
         )
-        self.action(query, list(valueDict.values()) + list(keyDict.values()))
+        self.action(query, list(value_dict.values()) + list(key_dict.values()))
 
         if self.connection.total_changes == changes_before:
-            cols = list(valueDict) + list(keyDict)
+            cols = list(value_dict) + list(key_dict)
             query = 'INSERT INTO [{0}] ({1}) VALUES ({2})'.format(
-                tableName,
+                table_name,
                 ', '.join(cols),
                 ', '.join(['?'] * len(cols)),
             )
-            self.action(query, list(valueDict.values()) + list(keyDict.values()))
+            self.action(query, list(value_dict.values()) + list(key_dict.values()))
 
     def close(self):
         """Close the underlying sqlite3 connection."""

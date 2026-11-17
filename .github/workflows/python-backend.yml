@@ -21,18 +21,28 @@ jobs:
         python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
         os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
       with:
         python-version: ${{ matrix.python-version }}
+    - name: Set up uv
+      uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+      with:
+        python-version: ${{ matrix.python-version }}
+        enable-cache: true
+        cache-dependency-glob: |
+          pyproject.toml
+          uv.lock
+          requirements.txt
+          test_requirements.txt
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install uv
-        uv add -r requirements.txt
-        uv add -r test_requirements.txt
+        uv add --refresh -r requirements.txt
+        uv add --refresh -r test_requirements.txt
     - name: Test with tox
       run: uv run python setup.py test -a 'tests -vv --cov=medusa --cov-report=xml'
+    - name: Run Flake8
+      run: uv run python setup.py test -a 'medusa --flake8 --cache-clear'
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v5
+      uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1

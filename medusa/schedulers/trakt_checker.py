@@ -250,7 +250,7 @@ class TraktChecker(object):
 
         For episodes that have a media file (location)
         """
-        if not(app.TRAKT_SYNC and app.USE_TRAKT):
+        if not (app.TRAKT_SYNC and app.USE_TRAKT):
             return
 
         main_db_con = db.DBConnection()
@@ -390,7 +390,7 @@ class TraktChecker(object):
 
     def add_episode_watchlist(self):
         """Add episode to Tratk watchlist."""
-        if not(app.TRAKT_SYNC_WATCHLIST and app.USE_TRAKT):
+        if not (app.TRAKT_SYNC_WATCHLIST and app.USE_TRAKT):
             return
 
         main_db_con = db.DBConnection()

@@ -2,11 +2,11 @@
 """Medusa patch for GuessIt expected_title / expected_group values."""
 from __future__ import unicode_literals
 
+from guessit.rules.common import dash, seps
+
 from rebulk import Rebulk
 from rebulk.remodule import re
 from rebulk.utils import find_all
-
-from guessit.rules.common import dash, seps
 
 
 def build_expected_function(context_key):

@@ -1518,7 +1518,7 @@ def get_image_size(image_path):
                     byte = f.read(1)
                 ftype = ord(byte)
                 if 0xc0 <= ftype <= 0xcf and ftype != 0xc4 and ftype != 0xc8 and ftype != 0xcc:
-                    break # Found SOF marker
+                    break  # Found SOF marker
                 size_bytes = f.read(2)
                 if len(size_bytes) != 2:
                     return None
