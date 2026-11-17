@@ -1,6 +1,5 @@
 configparser==7.2.0
 pyparsing==3.2.5
-# Flake8 7.5 requires Python 3.11; retain the tested version for Python 3.10.
 flake8==7.4.1; python_version < "3.11"
 flake8==7.5.0; python_version >= "3.11"
 pycodestyle==2.15.0
