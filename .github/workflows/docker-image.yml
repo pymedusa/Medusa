@@ -58,7 +58,6 @@ jobs:
         labels: ${{ steps.meta.outputs.labels }}
         push: true
         pull: true
-        provenance: false
         cache-from: type=registry,ref=${{ fromJSON(steps.meta.outputs.json).tags[0] }}-buildcache
         cache-to: type=registry,ref=${{ fromJSON(steps.meta.outputs.json).tags[0] }}-buildcache,mode=max,ignore-error=true
         build-args: |
